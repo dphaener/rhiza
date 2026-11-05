@@ -1,0 +1,132 @@
+{
+  "actor": "01M6PVV1V6W6V5F5AFBJ5XYDCT",
+  "after": [
+    "01M6PVSFX77B7TFHAREQDC46G5"
+  ],
+  "at": "2026-11-05T22:08:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at 61f23305 with a binary built from the branch (go build -trimpath), in a scratch repo with an accepted change set 'Keep exports in the store' blocked by a 300-char question on capability 'store' and by a leaf-failed template question with journalled advisor advice, plus a plan run stopped at its gate on two questions (one with advice). rhiza tui app inbox driven in tmux: the blocker's answer form wrapped the full question to the pane at 60, 80 and 160 columns with 'Blocks: Kept store reachable' (the word 'store' kept) above 'Your answer'; the leaf-failed blocker's form showed the restatement, 'Recommended: Keep the old path' and 'Why: Callers still use it' above the text box; the gate form showed '1 of 2: <restatement>', Blocks, Recommended, Why, '2 of 2: <statement>' above 'Your answer to question N of 2', no handles. Submitting wrote answer-park-disk ('Use the SSD') and answer-park-format ('JSON') to the right questions, and the blocker's answer wrote answer-store-q answering store-q in its change set."
+        },
+        "handle": "inbox-app-answer-shows-question-qa-2",
+        "id": "01M6PW2NJ7GJCDD5APCR6252S4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PW2NJ7GJCDD5APCPNEEXKC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PW2NJ7GJCDD5APCPNEEXKC",
+        "id": "01M6PW2NKP5RHTHQ8220RPW26T",
+        "link": "01M6PW2NKP5RHTHQ821ZMS57JR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1T22SZY3QGXYD783Z3JE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at 61f23305 with a binary built from the branch (go build -trimpath), in a scratch repo with an accepted change set 'Keep exports in the store' blocked by a 300-char question on capability 'store' and by a leaf-failed template question with journalled advisor advice, plus a plan run stopped at its gate on two questions (one with advice). rhiza tui app inbox in tmux at 80 columns: each row was one line, kind, change set title and the restatement or statement, cut to fit ('open · Plan reports · gate  Choose where exports are stored (+1 more)', 'blocker · Keep exports in the store  Which disk should hold the store whe…'); opening an item wrapped the full question and named what it blocks by statement; 'store' stayed in the text; no handle, ULID or short ID in rows, forms or the detail panel (the detail's next line read 'rhiza run resume …')."
+        },
+        "handle": "inbox-app-question-rows-qa-2",
+        "id": "01M6PW2NN2MYAVC3BGHX68N4GB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PW2NN2MYAVC3BGHVZV6MYE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PW2NN2MYAVC3BGHVZV6MYE",
+        "id": "01M6PW2NPJPDYD45EE4XD9DZEC",
+        "link": "01M6PW2NPJPDYD45EE4X6822DJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1T0KHDFWC5KNHJJHSQZT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at 61f23305 with a binary built from the branch (go build -trimpath), in a scratch repo with an accepted change set 'Keep exports in the store' blocked by a 300-char question on capability 'store' and by a leaf-failed template question with journalled advisor advice, plus a plan run stopped at its gate on two questions (one with advice). rhiza inbox printed each gate question's full statement with handle, 'in plain words', blocks by statement, recommendation and reasons; the leaf-failed blocker showed the template question plus the advisor's restatement, recommendation and reasons; the long blocker printed its full 300-char statement and 'blocks: Kept store reachable (store)'. Scoped tests: go test ./cmd/rhiza -run 'TestScripts/(inbox-.*|daemon-notify-hook)$' ok."
+        },
+        "handle": "inbox-question-text-qa-2",
+        "id": "01M6PW2NRCCM3FAWNPE2WRA914",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PW2NRCCM3FAWNPE1J5QGSZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PW2NRCCM3FAWNPE1J5QGSZ",
+        "id": "01M6PW2NSVKAWVSKCDHRFXQMR2",
+        "link": "01M6PW2NSVKAWVSKCDHNFE0R6P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1SXMJV5FCGDM5YXJ7RQX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at 61f23305 with a binary built from the branch (go build -trimpath), in a scratch repo with an accepted change set 'Keep exports in the store' blocked by a 300-char question on capability 'store' and by a leaf-failed template question with journalled advisor advice, plus a plan run stopped at its gate on two questions (one with advice). rhiza daemon --once --max-runs 0 with a fake notify hook (fake claude/rex/gh on PATH) gave 'Plan reports: a plan run stopped for open questions, the first: Choose where exports are stored' and 'a change set: a run failed' (that run's change set is not in the model): no handle or ID. go test ./internal/api -run 'Inbox|Notice' ok."
+        },
+        "handle": "inbox-notices-by-title-qa-2",
+        "id": "01M6PW2NV3M2RANPN1QZW7GSQ9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PW2NV3M2RANPN1QXQV93M7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PW2NV3M2RANPN1QXQV93M7",
+        "id": "01M6PW2NW43F05QBVD59FS1RRV",
+        "link": "01M6PW2NW43F05QBVD59DSPWTV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1T3JF18NJRVC33BQH6ZM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at 61f23305 with a binary built from the branch (go build -trimpath), in a scratch repo with an accepted change set 'Keep exports in the store' blocked by a 300-char question on capability 'store' and by a leaf-failed template question with journalled advisor advice, plus a plan run stopped at its gate on two questions (one with advice). With the advisor's 'recommended' entry journalled against the leaf-failed question node's ID, rhiza inbox (text and --json) and the Inbox app's blocker form showed the restatement 'Should leaf-a keep the old export path?', recommendation and reasons, while the item's question stayed the template text."
+        },
+        "handle": "owner-question-advisor-qa-2",
+        "id": "01M6PW2NWZHT3Q5XV9WPDT32WY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PW2NWZHT3Q5XV9WMB84BQT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PW2NWZHT3Q5XV9WMB84BQT",
+        "id": "01M6PW2NXSCZHPPXJC2RB0C7YW",
+        "link": "01M6PW2NXSCZHPPXJC2QZH2XR5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1SZC653J5D55644NRYXE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PW2NYN95TTH1KEK4MG987Z",
+  "type": "ops",
+  "v": 1
+}

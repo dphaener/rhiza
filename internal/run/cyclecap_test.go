@@ -132,6 +132,34 @@ func TestCycleCapRaisesQuestions(t *testing.T) {
 	}
 }
 
+// Leaving a review-cycle-cap question for the owner starts one advisor on
+// the question node, journalled as an advisor entry asked by the node's ID;
+// the arbiter of an autonomous run gets none.
+func TestCycleCapQuestionStartsAdvisor(t *testing.T) {
+	e, r := capSetup(t, false)
+	r.advisorOK = true
+	failAlphaOnLeaf(r, 1, 2, 3)
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(r.advisors) != 1 || !strings.HasPrefix(r.advisors[0], "QL1 ") || !strings.Contains(r.advisors[0], "check alpha") {
+		t.Fatalf("advisors = %q", r.advisors)
+	}
+	if len(st.Advice) != 1 || st.Advice[0].Asker != "QL1" || st.Advice[0].Advisor != "ADV-QL1" {
+		t.Errorf("advice = %+v", st.Advice)
+	}
+	e2, r2 := capSetup(t, true)
+	r2.advisorOK = true
+	failAlphaOnLeaf(r2, 1, 2, 3)
+	if _, err := e2.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	if len(r2.advisors) != 0 {
+		t.Errorf("autonomous run started advisors %q", r2.advisors)
+	}
+}
+
 // A check failing with no confirmed finding to name (its session failed)
 // and a finding naming no leaf of the change set each raise a question in
 // the run's change set (AddReviewQuestion), one per finding or failure.

@@ -790,6 +790,9 @@ func (r *running) endLeaf(lr LeafRunner, step workflow.Step, a leafAction) (res 
 	}
 	if en.Question != "" {
 		r.log("step %s: leaf %s %s; question %s (%s)", step.Name, a.leaf.Handle, a.outcome, en.QuestionHandle, en.Question)
+		if err := r.adviseQuestion(step, Question{ID: en.Question, Handle: en.QuestionHandle}, leafQuestionText(r.leafStates(step.Name)[a.leaf.ID])); err != nil {
+			return result{}, false, err
+		}
 	} else {
 		r.log("step %s: leaf %s %s", step.Name, a.leaf.Handle, a.outcome)
 	}

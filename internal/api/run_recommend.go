@@ -32,6 +32,7 @@ const runRecommendNext = "rhiza guide advisor"
 type RunRecommendRequest struct {
 	Recommendation string `json:"recommendation" desc:"What to answer, in one or two sentences"`
 	Reasons        string `json:"reasons" desc:"Why: what was read and weighed"`
+	Restatement    string `json:"restatement,omitempty" desc:"What is asked, in plain words with no handles, IDs or finding IDs; for a question a run raised from a template"`
 	Session        string `json:"session,omitempty" desc:"The advisor session; default RHIZA_SESSION, which a launched advisor has"`
 }
 
@@ -96,6 +97,7 @@ func runRunRecommend(ctx *Ctx, req any) (any, error) {
 	e := run.Entry{
 		Type: run.TypeRecommended, At: ctx.Now(), Step: rec.Step, Session: rec.ID, Asker: rec.Advises,
 		Text: strings.TrimSpace(r.Recommendation), Detail: strings.TrimSpace(r.Reasons),
+		Restated: strings.TrimSpace(r.Restatement),
 	}
 	if err := rs.Append(j.ID, e); err != nil {
 		return nil, Errorf("journal the recommendation in run %s: %v", j.ID, err).WithNext("rhiza run status " + j.ID)

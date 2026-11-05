@@ -1,0 +1,118 @@
+# When a normal run leaves a question for the owner from a template (here a
+# command step that, as run review-check does, adds a question node,
+# journals it as a session-less asked entry and stops at the gate on it),
+# the engine launches an advisor on the question node. The advisor records
+# through rhiza run recommend a plain-language restatement with its
+# recommendation and reasons, journalled against the question node, and
+# rhiza inbox --json shows them on the question's item. The node's
+# statement stays the template text.
+#
+# The fake claude is the advisor only: it logs its prompt and recommends.
+# The fake rex runs the tab in the background.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gate
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Gated runs' --title 'Gated runs' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+mkdir .rhiza/workflows
+cp $WORK/stop.toml .rhiza/workflows/stop.toml
+exec git add -A
+exec git commit -qm 'Gated runs'
+
+env REX_BLOCK=block:root
+env REX_SESSION=session:s1
+
+exec rhiza run start --foreground --workflow stop --permission-mode manual
+stdout '^Run [0-9A-Z]{26} stopped$'
+exec sh -c 'i=0; until [ -f $WORK/advisor.done ]; do i=$((i+1)); [ $i -gt 800 ] && exit 1; sleep 0.025; done'
+
+# One advisor, on the question node, with the template text in its prompt.
+exec cat $WORK/advisor.log
+stdout -count=1 '^Recommend an answer to this question the owner was asked: Plan review round 1 of run R: finding f1 on leaf-a failed\. -- follow rhiza guide advisor\.$'
+exec cat $WORK/recommend.out
+stdout 'Recommended an answer'
+exec sh -c 'grep -c "\"type\":\"advisor\"" .git/rhiza/runs/*.jsonl'
+stdout '^1$'
+exec sh -c 'grep "\"type\":\"advisor\"" .git/rhiza/runs/*.jsonl | grep -c "\"asker\":\"$(cat $WORK/qid)\""'
+stdout '^1$'
+exec sh -c 'grep "\"type\":\"recommended\"" .git/rhiza/runs/*.jsonl | grep "\"asker\":\"$(cat $WORK/qid)\""'
+stdout '"text":"Store exports on the ssd"'
+stdout '"restated":"Where should exports be stored\?"'
+
+# The inbox shows the restatement, recommendation and reasons on the
+# question's item; the statement stays the template text.
+exec rhiza inbox --json
+stdout '"handle": "gate-q"'
+stdout '"statement": "Plan review round 1 of run R: finding f1 on leaf-a failed\."'
+stdout '"restatement": "Where should exports be stored\?"'
+stdout '"recommendation": "Store exports on the ssd"'
+stdout '"reasons": "It is the fast disk"'
+exec rhiza inbox
+stdout '^  question: Plan review round 1 of run R: finding f1 on leaf-a failed\. \(gate-q\)$'
+stdout '^    in plain words: Where should exports be stored\?$'
+stdout '^    recommendation: Store exports on the ssd$'
+
+-- stop.toml --
+name = "stop"
+
+[step.gate]
+kind = "command"
+run = "gate"
+on.pass = "done"
+on.fail = "done"
+-- bin/gate --
+#!/bin/sh
+# Leave question gate-q for the owner as run review-check does, then stop
+# at the gate on it.
+rhiza add question gate-q --field 'statement=Plan review round 1 of run R: finding f1 on leaf-a failed.' >> "$WORK/gate.out" 2>&1 || exit 3
+qid=$(rhiza show gate-q --json | sed -n 's/^    "id": "\([0-9A-Z]*\)".*/\1/p' | head -1)
+[ -n "$qid" ] || exit 4
+echo "$qid" > "$WORK/qid"
+echo '{"type":"asked","at":"2026-01-01T00:00:00Z","step":"gate","question":"'$qid'","handle":"gate-q","detail":"Plan review round 1 of run R: finding f1 on leaf-a failed."}' >> "$(git rev-parse --git-common-dir)/rhiza/runs/$RHIZA_RUN.jsonl"
+echo "stop: open questions: gate-q; answer each with a Decision, then rhiza run resume $RHIZA_RUN"
+exit 75
+-- bin/rex --
+#!/bin/sh
+case "$1" in
+events)
+	exit 0
+	;;
+send | send-key)
+	echo "$*" >> "$WORK/typed.log"
+	exit 0
+	;;
+esac
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+case "$last" in
+*'rhiza guide advisor'*)
+	echo "$last" >> "$WORK/advisor.log"
+	rhiza run recommend --recommendation 'Store exports on the ssd' --reasons 'It is the fast disk' \
+		--restatement 'Where should exports be stored?' >> "$WORK/recommend.out" 2>&1 || exit 7
+	echo > "$WORK/advisor.done"
+	exit 0
+	;;
+esac
+exit 9

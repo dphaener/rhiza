@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PVHNHG618R42EPA8Z800TT",
+  "after": [
+    "01M6PV8NF49YV52JD6WBWBKRN1"
+  ],
+  "at": "2026-11-05T22:01:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 791b7139 (review cycle 2 fix for model finding f3): read the diff. daemonNotify now fills titles for change sets with no run from the fold (DisplayTitle), and noticeSubject falls back to 'a change set', never the ID, in both the Rex notice and daemonHook. Ran go test -trimpath -count=1 ./internal/api/ -run 'TestInboxNotice|TestDaemonNotify|TestInbox|Daemon' (ok): TestInboxNoticeNamesNoHandleOrID has one case per inbox kind with IDs and handles in every field, none appear, overlap holds the other change set's title, question and open hold the question's text; TestDaemonNotifyOverlapByTitle shows an overlap between two run-less change sets notified as 'Rename N: an overlap with Rename M' with neither ID. Ran go test -trimpath -count=1 ./cmd/rhiza -run TestScripts/daemon-notify (ok), whose hook expects 'a change set' in place of the ID."
+        },
+        "handle": "inbox-notices-by-title-review-verified",
+        "id": "01M6PVNKTKR4WBDYRQK8ZH36TJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PVNKTKR4WBDYRQK637B5XF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PVNKTKR4WBDYRQK637B5XF",
+        "id": "01M6PVNKZAYN2K7CR3QYEAC95X",
+        "link": "01M6PVNKZAYN2K7CR3QVFXS59S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1T3JF18NJRVC33BQH6ZM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PVNM657454R8NVVZYJDGB6",
+  "type": "ops",
+  "v": 1
+}

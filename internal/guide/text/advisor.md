@@ -20,8 +20,14 @@ model, the code and the change set's intent support best.
 ## Recommend
 
 ```
-rhiza run recommend --recommendation "<what to answer>" --reasons "<what you read and weighed>"
+rhiza run recommend --recommendation "<what to answer>" --reasons "<what you read and weighed>" \
+  [--restatement "<what is asked, in plain words>"]
 ```
+
+- `--restatement`: when the question was raised by the run itself (a failed leaf, a review
+  finding that kept failing), its text reads like an engineering record, with handles, IDs and
+  finding IDs. Restate what is being asked in plain language the owner can decide from, with no
+  handles, IDs or finding IDs. Leave it out for a question a session asked in its own words.
 
 - `--recommendation` is one or two sentences the owner can adopt as is.
 - `--reasons` says why: which nodes and code you read, and what made the difference.

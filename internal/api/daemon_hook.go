@@ -46,10 +46,7 @@ func daemonHook(ctx *Ctx, command string, items []InboxItem, titles map[string]s
 		if slices.Contains(hooked, it.ID) {
 			continue
 		}
-		what := titles[it.Change]
-		if what == "" {
-			what = it.Change
-		}
+		what := noticeSubject(titles, it.Change)
 		if err := runNotifyCommand(ctx, command, it, inboxNotice(what, it)); err != nil && ctx.Stderr != nil {
 			fmt.Fprintf(ctx.Stderr, "rhiza: daemon: notify command for item %s: %v\n", it.ID, err)
 		}

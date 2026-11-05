@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PTJWTVZGVZ2EGNWSM0NV42",
+  "after": [
+    "01M6PTWNTP5FTRG4TMK7P651P4"
+  ],
+  "at": "2026-11-05T21:49:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2 at 69988347. I read the fix diff: inboxBlockers now joins questionAdvice(runs), the latest advice with a recommendation per question node ID across runs, onto blocker items. These carry a new restatement field plus the recommendation and reasons. rhiza inbox prints them, and the Inbox app shows the restatement in the row and above the answer form. Ran: go test ./internal/run -run StartsAdvisor -v: TestLeafFailureStartsAdvisor, TestCycleCapQuestionStartsAdvisor and TestCommandAskedNormalRunStartsAdvisor (plan-review) pass. go test ./cmd/rhiza -run 'TestScripts/(inbox-.*|describe-golden|tui-inbox-app)$' is ok. That includes inbox-question-advisor (fake claude, run recommend, inbox --json shows the restatement, recommendation and reasons; the node's statement stays the template), the new inbox-blocker-advice (a leaf-failed question's blocker item shows restatement, recommendation and reasons in --json and text, with the template question kept) and describe-golden (run.recommend plus the new field). go test ./internal/tui/inboxapp (incl. TestBlockerShowsAdvisorRestatement) is ok. go test ./internal/api -run 'Inbox|Blocker|Advice|Recommend' is ok. An earlier unscoped internal/api run was killed by a signal in the timing-budget tests, not by a failed assertion. This fixes the attempt-1 finding f2: leaf-failed and cycle-cap advice now reaches the blocker item."
+        },
+        "handle": "owner-question-advisor-verified-2",
+        "id": "01M6PV1ANZBBDX2BJ9EHH44NBG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PV1ANZBBDX2BJ9EG5HYZG5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PV1ANZBBDX2BJ9EG5HYZG5",
+        "id": "01M6PV1ATW4HZQ02RCC5T7RHWJ",
+        "link": "01M6PV1ATW4HZQ02RCC3DHC0G4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1SZC653J5D55644NRYXE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PV1AYBKTFD2X7QB7B5XQ83",
+  "type": "ops",
+  "v": 1
+}

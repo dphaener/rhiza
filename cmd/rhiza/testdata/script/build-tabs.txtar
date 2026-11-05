@@ -3,13 +3,15 @@
 # verifier and two retry builders are six `rex window new` calls, no split
 # and no size read. Every session's tab closes as soon as it is judged,
 # passed or failed, before the next session opens, so every tab is closed
-# by the end and none waits for it.
+# by the end and none waits for it. b's failure raises a question, and the
+# advisor started on it opens a seventh tab, last; it is no session of the
+# step, so the step neither judges nor closes it.
 #
 # The fake rex logs each call to rex.log, numbering new blocks b1, b2, ...
 # in order, answers `block call size` from size.json and runs a pane's
 # command in the background in its -c directory. The fake claude, as a
 # builder, commits its leaf's file with a Leaf: trailer on attempt 1 and
-# exits 1 on a retry. Verifier a waits until verifier b has started, then
+# exits 1 on a retry; as the advisor (no leaf) it exits at once. Verifier a waits until verifier b has started, then
 # writes its Evidence and passes; verifier b exits 1. Leaves a and b are
 # independent.
 
@@ -38,11 +40,13 @@ exec rhiza run status
 stdout '^- a \(step build\): passed: attempt 1: verifier passed$'
 stdout '^- b \(step build\): failed: attempt 3: builder failed: exit 1$'
 
-# Six tabs, no split, no size read.
+# Six tabs and the advisor's, no split, no size read.
 exec sh -c 'grep -c "^window new" $WORK/rex.log'
-stdout '^6$'
+stdout '^7$'
 ! grep 'split|size' $WORK/rex.log
-# Every tab closed.
+exec tail -n1 $WORK/rex.log
+stdout '^window new -> block:b7$'
+# Every session's tab closed.
 exec sh -c 'grep -c "^close" $WORK/rex.log'
 stdout '^6$'
 fold-ok
@@ -157,6 +161,7 @@ fi
 echo "$out"
 -- bin/claude --
 #!/bin/sh
+[ -z "$RHIZA_LEAF" ] && exit 0
 if [ "$RHIZA_ROLE" = builder ]; then
 	[ "$RHIZA_ATTEMPT" != 1 ] && exit 1
 	echo "$RHIZA_LEAF" > "$RHIZA_LEAF.txt"

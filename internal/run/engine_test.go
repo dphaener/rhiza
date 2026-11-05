@@ -46,6 +46,8 @@ type fakeRunner struct {
 	arbiters   []string          // "<step> <question>" per StartArbiter call
 	asked      []string          // "<session> <text>" per AddQuestion call
 	askErr     error             // AddQuestion's error, when set
+	advisors   []string          // "<asker> <text>" per StartAdvisor call that succeeded
+	advisorOK  bool              // StartAdvisor launches an advisor instead of failing
 	delivered  []string          // "<session> <question> <decision> <statement>" per Deliver call
 	deliverErr error             // Deliver's error, when set
 	ended      []string          // "step:session" per AgentEnded call, in order
@@ -203,7 +205,11 @@ func (f *fakeRunner) StartArbiter(step workflow.Step, question string, env []str
 }
 
 func (f *fakeRunner) StartAdvisor(step workflow.Step, asker, text string, env []string) (string, error) {
-	return "", fmt.Errorf("no advisor here")
+	if !f.advisorOK {
+		return "", fmt.Errorf("no advisor here")
+	}
+	f.advisors = append(f.advisors, asker+" "+text)
+	return "ADV-" + asker, nil
 }
 
 func (f *fakeRunner) AddQuestion(session, text string) (Question, error) {
@@ -2058,6 +2064,28 @@ func TestCommandAskedNormalRunLeftOpen(t *testing.T) {
 	}
 	if st.Result != Succeeded || len(r.arbiters) != 0 || countType(t, e, TypeArbiter) != 0 || countType(t, e, TypeArbitrated) != 0 {
 		t.Fatalf("result %q arbiters %v", st.Result, r.arbiters)
+	}
+}
+
+// TestCommandAskedNormalRunStartsAdvisor: in a normal run a plan-review
+// question a command step journalled gets one advisor on its node, asked
+// by the node's ID, and no second one from a later command step.
+func TestCommandAskedNormalRunStartsAdvisor(t *testing.T) {
+	e, r, _, _ := setup(t, askedWF)
+	r.advisorOK = true
+	journalAsked(t, e, r, "Q9")
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || !reflect.DeepEqual(r.advisors, []string{"Q9 How?"}) {
+		t.Fatalf("result %q advisors %q", st.Result, r.advisors)
+	}
+	if len(st.Advice) != 1 || st.Advice[0].Asker != "Q9" || st.Advice[0].Advisor != "ADV-Q9" || st.Advice[0].Step != "check" {
+		t.Errorf("advice = %+v", st.Advice)
+	}
+	if n := countType(t, e, TypeAdvisor); n != 1 {
+		t.Errorf("advisor entries = %d", n)
 	}
 }
 

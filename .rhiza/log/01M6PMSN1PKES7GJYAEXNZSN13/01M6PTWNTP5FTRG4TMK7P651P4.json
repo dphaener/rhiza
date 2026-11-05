@@ -1,0 +1,30 @@
+{
+  "actor": "01M6PTKA9SYFZQKF669YQGRVBR",
+  "after": [
+    "01M6PS0F7166CT39WD9ZXEK9S9"
+  ],
+  "at": "2026-11-05T21:47:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/tui/inboxapp with a fake runner: a blocker with a 300-character statement renders every word across wrapped lines at the modal's width once opened; a gate row shows its first question's text, and opening it shows each question's text and what each blocks; a blocker on a node whose handle is an ordinary word keeps that word in its question and Blocks line; a test renders every item kind's row, form and detail panel and asserts no handle, ULID or short ID from the items appears.",
+          "statement": "In the Inbox app a question, blocker or gate row shows its kind, its change set title and the question's restatement (else its full statement) on one line, cut to fit; opening the item shows the question wrapped over as many lines as it needs and what it blocks by title. No row, form or detail panel shows a handle or an ID (item, run, change set or node), and a handle that is an ordinary word stays in the text."
+        },
+        "handle": "inbox-app-question-rows",
+        "id": "01M6PN1T0KHDFWC5KNHP9QBJEW",
+        "key": "zzzzzzz",
+        "kind": "capability",
+        "node": "01M6PN1T0KHDFWC5KNHJJHSQZT",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PTWNTP5FTRG4TMK7P651P4",
+  "type": "ops",
+  "v": 1
+}

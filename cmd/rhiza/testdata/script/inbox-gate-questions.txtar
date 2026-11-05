@@ -1,0 +1,69 @@
+# rhiza inbox gives every owner question its full text. A plan run stopped
+# at its gate is an open item that lists each question it stopped on with
+# its full statement and what it blocks by name, and the advisor's
+# recommendation once one is journalled; a blocker names what it blocks by
+# name too. --json keeps each question's handle for the commands. The gate's
+# questions are read from the run's worktree, here the repository itself.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza add capability store --record
+exec rhiza set store --field statement=Exports-go-to-the-store --record
+
+# An accepted change set blocked by a question: a blocker item.
+exec rhiza change new Blocked
+exec rhiza set store --field statement=Kept
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza add question store-q --field statement=Which-disk-holds-the-store --record
+exec rhiza link store-q blocks store --record
+
+# The plan change set the run is in, with two open questions.
+exec rhiza change new 'Plan reports' --kind record --title 'Plan reports'
+exec rhiza add question park-disk --field statement=Which-disk-do-exports-use
+exec rhiza add question park-format --field statement=Which-format-do-exports-take
+exec rhiza link park-disk blocks store
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1 > ../csid'
+mkdir .git/rhiza/runs
+exec sh -c 'sed -e "s/CSID/$(cat ../csid)/" -e "s#WORKTREE#$PWD#" ../plan.jsonl > .git/rhiza/runs/PLANRUN00001.jsonl'
+
+exec rhiza inbox
+stdout 'open run PLANRUN00001'
+stdout 'open questions: park-disk, park-format'
+stdout 'question: Which-disk-do-exports-use \(park-disk\)'
+stdout 'blocks: Exports-go-to-the-store'
+stdout 'question: Which-format-do-exports-take \(park-format\)'
+! stdout 'recommendation'
+stdout 'blocker change set'
+stdout 'question: Which-disk-holds-the-store \(store-q\)'
+stdout 'blocks: Kept \(store\)'
+
+exec rhiza inbox --json
+stdout '"handle": "park-disk"'
+stdout '"statement": "Which-disk-do-exports-use"'
+stdout '"statement": "Which-format-do-exports-take"'
+stdout '"blocks": "Exports-go-to-the-store"'
+stdout '"blocks_title": "Kept"'
+
+# The advisor recommends on park-disk: shown, in text and --json.
+exec sh -c 'cat ../advice.jsonl >> .git/rhiza/runs/PLANRUN00001.jsonl'
+exec rhiza inbox
+stdout 'recommendation: Use the ssd'
+stdout 'reasons: It is the fast one'
+stdout 'in plain words: Choose where exports are stored'
+exec rhiza inbox --json
+stdout '"recommendation": "Use the ssd"'
+stdout '"reasons": "It is the fast one"'
+stdout '"restatement": "Choose where exports are stored"'
+-- plan.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"gate","started":{"workflow":"plan","definition":"","change":"CSID","worktree":"WORKTREE"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"gate","visit":1}
+{"type":"stopped","at":"2026-01-01T01:00:00Z","step":"gate","detail":"open questions: park-disk, park-format; answer each with a Decision, then rhiza run resume PLANRUN00001"}
+-- advice.jsonl --
+{"type":"advisor","at":"2026-01-01T01:01:00Z","step":"gate","session":"ADV1","asker":"park-disk"}
+{"type":"recommended","at":"2026-01-01T01:02:00Z","step":"gate","session":"ADV1","asker":"park-disk","text":"Use the ssd","detail":"It is the fast one","restated":"Choose where exports are stored"}

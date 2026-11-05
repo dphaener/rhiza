@@ -334,8 +334,17 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	host, _ := os.Hostname()
 	stateOf := func(string) (string, bool) { return "", false }
 	var overlaps []InboxItem
-	if fold, err := daemonFoldOf(ctx); err == nil {
-		stateOf, overlaps = fold.stateOf, fold.overlaps
+	fold, ferr := daemonFoldOf(ctx)
+	if ferr == nil {
+		stateOf = fold.stateOf
+		for _, ov := range fold.overlaps {
+			if o, err := id.Parse(ov.Other); err == nil {
+				if c, ok := fold.changeSet(o); ok {
+					ov.OtherTitle = c.Open.DisplayTitle()
+				}
+			}
+			overlaps = append(overlaps, ov)
+		}
 	}
 	items := inboxItems(runs, host, nil, rs.Live, stateOf, nil, nil)
 	items = append(items, overlaps...)
@@ -351,6 +360,27 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 			titles[st.Change] = st.Title
 		}
 	}
+	// A change set with no run, such as either side of an overlap, takes
+	// its title from the fold: a notice never names a change set by ID.
+	if ferr == nil {
+		for _, it := range items {
+			if _, ok := titles[it.Change]; ok || it.Change == "" {
+				continue
+			}
+			if cs, err := id.Parse(it.Change); err == nil {
+				if c, ok := fold.changeSet(cs); ok {
+					titles[it.Change] = c.Open.DisplayTitle()
+				}
+			}
+		}
+	}
+	for i := range items {
+		if items[i].Kind == InboxOpen && items[i].Questions == nil {
+			if j := slices.IndexFunc(runs, func(j run.Journal) bool { return j.ID == items[i].Run }); j >= 0 {
+				items[i].Questions = inboxGateQuestions(ctx, runs[j].State())
+			}
+		}
+	}
 	state.Hooked = daemonHook(ctx, notifyCmd, items, titles, state.Hooked)
 	var kept []string
 	for _, it := range items {
@@ -360,16 +390,22 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 		}
 		if ctx.Rex != nil {
 			kept = append(kept, it.ID)
-			what := titles[it.Change]
-			if what == "" {
-				what = it.Change
-			}
+			what := noticeSubject(titles, it.Change)
 			ctx.Rex.Write(rexReport("working", "", "", ""))
 			ctx.Rex.Write(rexReport("blocked", "", "", inboxNotice(what, it)))
 		}
 	}
 	state.Notified = kept
 	return nil
+}
+
+// noticeSubject is what a notice calls change set change: its title, or
+// "a change set" when no title is known, never its ID.
+func noticeSubject(titles map[string]string, change string) string {
+	if t := titles[change]; t != "" {
+		return t
+	}
+	return "a change set"
 }
 
 // inboxNotice is the notification text for item it of the change set called
@@ -387,7 +423,22 @@ func inboxNotice(what string, it InboxItem) string {
 	case InboxSignoff:
 		return what + ": a sign-off waits on you"
 	case InboxOpen:
+		if len(it.Questions) > 0 {
+			if q := noticeQuestionText(it.Questions[0]); q != "" {
+				return what + ": a plan run stopped for open questions, the first: " + q
+			}
+		}
 		return what + ": a plan run stopped for open questions"
+	case InboxBlocker:
+		msg := what + ": a question blocks it"
+		if q := strings.TrimSpace(it.Question); q != "" {
+			msg += ": " + q
+		}
+		return msg
+	case InboxAccept:
+		return what + ": a plan waits for your acceptance"
+	case InboxStalled:
+		return what + ": a session stalled"
 	case InboxFailed:
 		return what + ": a run failed"
 	case InboxSkipped:
@@ -399,10 +450,23 @@ func inboxNotice(what string, it InboxItem) string {
 	case InboxMainStale:
 		return what + ": main was not updated after the merge: " + it.Detail
 	case InboxOverlap:
-		return what + ": an overlap with change set " + it.Other + " waits on you"
+		other := it.OtherTitle
+		if other == "" {
+			other = "another change set"
+		}
+		return what + ": an overlap with " + other + " waits on you"
 	default:
 		return what + ": the daemon gave up on a run"
 	}
+}
+
+// noticeQuestionText is the question in plain words: the advisor's
+// restatement when it has one, else the full statement.
+func noticeQuestionText(q InboxGateQuestion) string {
+	if r := strings.TrimSpace(q.Restatement); r != "" {
+		return r
+	}
+	return strings.TrimSpace(q.Statement)
 }
 
 // daemonStartGrace is how long a change set the daemon started is held as

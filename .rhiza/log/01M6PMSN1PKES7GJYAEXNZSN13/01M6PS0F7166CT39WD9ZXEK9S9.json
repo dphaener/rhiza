@@ -1,0 +1,109 @@
+{
+  "actor": "01M6PRSY1H21H8WRPXJYKKDJQD",
+  "after": [
+    "01M6PRRE3JSM8B2FT5W4MS0E95"
+  ],
+  "at": "2026-11-05T21:14:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at a2f3e32b with a binary built from the branch (go build -trimpath), in a scratch repo: an accepted change set 'Blocked' with question store-q (300-char statement) blocking capability store, and a plan change set 'Plan reports' with a run journal stopped at its gate on park-disk and park-format plus a journalled advisor recommendation on park-disk. rhiza inbox printed both gate questions' full statements with their handles, 'in plain words', 'blocks: Exports go to the store', the recommendation and reasons on park-disk, and the blocker's full 300-char statement with 'blocks: Kept store reachable (store)'. rhiza inbox --json gave questions[] with handle, statement, blocks, restatement, recommendation, reasons, and the blocker's blocks_title."
+        },
+        "handle": "inbox-question-text-qa-1",
+        "id": "01M6PS0EZ6T5413EMQAHHADC47",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PS0EZ6T5413EMQAGPH64NZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PS0EZ6T5413EMQAGPH64NZ",
+        "id": "01M6PS0EZZ95D9SNTYSB5Y5YWJ",
+        "link": "01M6PS0EZZ95D9SNTYS8DHR698",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1SXMJV5FCGDM5YXJ7RQX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at a2f3e32b with a binary built from the branch (go build -trimpath), in a scratch repo: the inbox-question-advisor workflow (command step adds question gate-q and journals a session-less asked entry, then stops) run via rhiza run start --foreground with fake claude/rex on PATH. The run logged 'advisor session ... on question gate-q', the fake advisor got the template text in its prompt and ran rhiza run recommend; the journal got one advisor and one recommended entry with asker = the question node ID and restated text; rhiza inbox then showed 'in plain words: Where should exports be stored?', the recommendation and reasons, and the statement stayed the template text."
+        },
+        "handle": "owner-question-advisor-qa-1",
+        "id": "01M6PS0F12XAG7RGAAVBWANM6F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PS0F12XAG7RGAAV8V7T2GH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PS0F12XAG7RGAAV8V7T2GH",
+        "id": "01M6PS0F2G9K6R266QHEX2P77N",
+        "link": "01M6PS0F2G9K6R266QHCS71KBS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1SZC653J5D55644NRYXE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at a2f3e32b with a binary built from the branch (go build -trimpath), in a scratch repo: rhiza tui app inbox driven in tmux. The gate form for the two-question plan run showed '1 of 2: <restatement>', Blocks, Recommended, Why and '2 of 2: <statement>' above 'Your answer to question N of 2', no handles; typing two answers and submitting wrote decisions answer-park-disk (quote 'Use the SSD') and answer-park-format (quote 'JSON') to the right questions (resume then failed only because the fake journal's workflow is empty). But the blocker's answer form at 60/80/90/160 columns showed the 300-char question on ONE line cut at the pane edge, not wrapped, until the pane was resized; and the word 'store' (the handle of what it blocks) was replaced by '…' in the question and in 'Blocks: Kept … reachable'."
+        },
+        "handle": "inbox-app-answer-shows-question-qa-1",
+        "id": "01M6PS0F39EPE5CB58K6JGS6FZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PS0F39EPE5CB58K38DPND6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PS0F39EPE5CB58K38DPND6",
+        "id": "01M6PS0F46Q24THV4PDMW2DYPF",
+        "link": "01M6PS0F46Q24THV4PDJQY2D8Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1T22SZY3QGXYD783Z3JE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at a2f3e32b with a binary built from the branch (go build -trimpath), in a scratch repo: rhiza tui app inbox in tmux at 60-160 columns: the list rows are one line each, truncated with an ellipsis ('Which disk should hold the … when the machin…'), not wrapped, and do not say what they block; the blocker row and answer form show 'hold the … when' because scrub replaced the substring 'store' (the blocked capability's handle) inside the question's prose. The gate detail panel (after answering) wrapped and showed no handle or ID except 'next: rhiza run resume …'."
+        },
+        "handle": "inbox-app-question-rows-qa-1",
+        "id": "01M6PS0F53Y1A6TNSST464G0JF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PS0F53Y1A6TNSST09JEE3G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PS0F53Y1A6TNSST09JEE3G",
+        "id": "01M6PS0F69MH9TDFGYJ9EGPVFX",
+        "link": "01M6PS0F69MH9TDFGYJ8ARQTN0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1T0KHDFWC5KNHJJHSQZT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PS0F7166CT39WD9ZXEK9S9",
+  "type": "ops",
+  "v": 1
+}

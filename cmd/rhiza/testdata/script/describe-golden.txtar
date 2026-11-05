@@ -2724,6 +2724,10 @@ cmp stdout describe.golden.json
                   "description": "A blocker: what the question blocks, this change set or the handle of the node",
                   "type": "string"
                 },
+                "blocks_title": {
+                  "description": "A blocker: what the question blocks by name, the node's statement or the change set's title; absent when it has none",
+                  "type": "string"
+                },
                 "change": {
                   "description": "The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)",
                   "type": "string"
@@ -2756,16 +2760,62 @@ cmp stdout describe.golden.json
                   "description": "An overlap: the second change set (B)",
                   "type": "string"
                 },
+                "other_title": {
+                  "description": "An overlap: the second change set's title; absent when the log has no such change set",
+                  "type": "string"
+                },
                 "question": {
                   "description": "A question: what the agent asked; a blocker: the question's statement",
                   "type": "string"
                 },
+                "questions": {
+                  "description": "An open item at a plan run's gate: each open question it stopped on, in the order it names them; absent when the run has no worktree to read them from",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "blocks": {
+                        "description": "What it blocks by name: the node's statement or the change set's title; absent when it blocks nothing",
+                        "type": "string"
+                      },
+                      "handle": {
+                        "description": "The question's handle, for the commands that take it",
+                        "type": "string"
+                      },
+                      "reasons": {
+                        "description": "Why the advisor recommends it",
+                        "type": "string"
+                      },
+                      "recommendation": {
+                        "description": "What the advisor recommends answering; absent until it has written one",
+                        "type": "string"
+                      },
+                      "restatement": {
+                        "description": "What is asked in plain words, as the advisor restated it; absent until it has",
+                        "type": "string"
+                      },
+                      "statement": {
+                        "description": "The question's full statement",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "handle",
+                      "statement"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
                 "reasons": {
-                  "description": "A question: why the advisor recommends it",
+                  "description": "A question or a blocker: why the advisor recommends it",
                   "type": "string"
                 },
                 "recommendation": {
-                  "description": "A question: what the advisor recommends answering; absent while it has not, or when it failed",
+                  "description": "A question or a blocker: what the advisor recommends answering; absent while it has not, or when it failed",
+                  "type": "string"
+                },
+                "restatement": {
+                  "description": "A blocker: what is asked in plain words, as the advisor restated it; absent until it has",
                   "type": "string"
                 },
                 "run": {
@@ -2794,6 +2844,10 @@ cmp stdout describe.golden.json
                 },
                 "target": {
                   "description": "An overlap: the node or link both change sets write, its handle when it has one",
+                  "type": "string"
+                },
+                "target_title": {
+                  "description": "An overlap: the target node's statement; absent when it has none",
                   "type": "string"
                 }
               },
@@ -11376,6 +11430,10 @@ cmp stdout describe.golden.json
           },
           "recommendation": {
             "description": "What to answer, in one or two sentences",
+            "type": "string"
+          },
+          "restatement": {
+            "description": "What is asked, in plain words with no handles, IDs or finding IDs; for a question a run raised from a template",
             "type": "string"
           },
           "session": {
