@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NG2E3SBC3GG3224QPTRCSB",
+  "after": [
+    "01M6NFZCEYWX0NHKV7Z78WS2DW"
+  ],
+  "at": "2026-11-05T09:21:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 13770358 (attempt 2): `go test -trimpath -count=1 -run 'TestDaemonNudge|Stall' -v ./internal/api/` passes TestDaemonNudgeStalled. Read the test and diff: on a fake clock with a session.Store and a fake sender, an autonomous run A whose session 'auto' now reports hook state idle (Autonomous record, so session.Stalled stalls it after StallAfter=20m) and an owner-attended run O whose session reports working go through daemonNudgeStalled: no send at 19m; exactly one message to 'auto' at 21m, checked to contain 'background shell' and '`rhiza session done`'; a poll at 25m on the same stall sends nothing; runStalledAll still lists both stalled sessions (2) after the nudge; a new report then 21 silent minutes sends a second message; 'owner' is never sent to; a failed send is retried next poll. daemonNudgeStalled skips states whose own run.State.Autonomous is false and keys each stall on session@since; daemonNudge feeds it live, non-ended runs and is called from runDaemon's poll (daemon.go:195). This fixes compliance f1 (idle stall now driven through the nudge)."
+        },
+        "handle": "daemon-nudges-stalled-verified-2",
+        "id": "01M6NG792DY06EZXCG0WND7VTB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NG792DY06EZXCG0VYDK6C8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NG792DY06EZXCG0VYDK6C8",
+        "id": "01M6NG7BW8CPKCGZVJKZJ4JP4W",
+        "link": "01M6NG7BW8CPKCGZVJKWFCFYK2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N9MBXAAWMHC53534PGKQ4H",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6N9AF69ZGMTB1EEG5RK9MPD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NG7FWGAYY0K6HTAXSQC87Y",
+  "type": "ops",
+  "v": 1
+}
