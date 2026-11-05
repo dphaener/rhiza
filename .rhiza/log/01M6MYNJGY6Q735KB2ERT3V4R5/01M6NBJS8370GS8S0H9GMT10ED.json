@@ -1,0 +1,24 @@
+{
+  "actor": "01M6NBG6XAXRBWD3F8HR0P7QM7",
+  "after": [
+    "01M6NBAC2H8DWGGRATR926RG0T"
+  ],
+  "at": "2026-11-05T08:00:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M686V969FDV2SVYM7SGCAHZW",
+        "id": "01M6NBJGYZM5139R44Z1078HTN",
+        "node": "01M686V969FDV2SVYM7P244E86",
+        "op": "node.retire",
+        "reason": "internal/tui/liveapp is deleted; the runs app (runs-app-glance) replaces the live app's glance"
+      }
+    ]
+  },
+  "change_set": "01M6MYNJGY6Q735KB2ERT3V4R5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NBJS8370GS8S0H9GMT10ED",
+  "type": "ops",
+  "v": 1
+}
