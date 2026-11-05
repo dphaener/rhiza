@@ -6,6 +6,8 @@ package launcher
 import (
 	"sort"
 	"sync"
+
+	"github.com/dphaener/rhiza/internal/tui/modalshell"
 )
 
 // App is one rhiza app.
@@ -15,9 +17,11 @@ type App struct {
 	Name string
 	// Summary is the description of the app's action.
 	Summary string
-	// Cols and Rows are the app layer's size in cells; zero means the
-	// default.
-	Cols, Rows int
+	// Component, when set, builds the rexuikit component the app opens
+	// with, hosted by the modal shell. The app's modal is sized to that
+	// component's NaturalSize. An app not yet on a component leaves it nil
+	// and opens at the default size.
+	Component func() modalshell.Component
 	// Key, when set, is the app's key in the rhiza key mode; it is
 	// reserved before the other apps pick theirs, so it moves none of them.
 	Key string
@@ -52,10 +56,12 @@ const (
 	defaultRows = 30
 )
 
-// Size returns the app layer's size in cells, the defaults where the app
-// sets none.
+// Size returns the app layer's size in cells: the NaturalSize of the
+// app's component, the defaults where the app has none or it reports zero.
 func (a App) Size() (cols, rows int) {
-	cols, rows = a.Cols, a.Rows
+	if a.Component != nil {
+		cols, rows = a.Component().NaturalSize()
+	}
 	if cols == 0 {
 		cols = defaultCols
 	}

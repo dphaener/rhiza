@@ -19,6 +19,9 @@ Small modal: each app opens as a rexuikit Modal sized to its content (Form, List
 ### In
 
 - decided-by [milestone-26](../intent/milestone-26.md)
+- decided-by [modal-shell-hosts-component](../capability/rhiza/modal-shell-hosts-component.md)
+- decided-by [modal-shell-closes](../capability/rhiza/modal-shell-closes.md)
+- decided-by [modal-sized-to-content](../capability/rhiza/modal-sized-to-content.md)
 
 ## History
 

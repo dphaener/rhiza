@@ -30,6 +30,9 @@ exec rhiza show store --json
 cp stdout want-show.json
 exec rhiza tui app show store --once
 cmp stdout want-show.json
+# The opener's --size-file is the shell's, never the operation's.
+exec rhiza tui app show store --size-file $WORK/size --once
+cmp stdout want-show.json
 
 exec rhiza why store --json
 cp stdout want-why.json
