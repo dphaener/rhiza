@@ -5,7 +5,7 @@ package api
 // what the runs live and the next one are expected to burn would eat into
 // the reserve. If so it holds everything it would launch, like the disk-low
 // guard, until the window resets. Live runs and the owner's own starts are
-// untouched.
+// untouched, and so is a milestone request's plan run.
 
 import (
 	"fmt"

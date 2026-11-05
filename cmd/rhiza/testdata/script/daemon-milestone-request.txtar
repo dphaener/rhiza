@@ -1,0 +1,61 @@
+# A usage-reserve hold does not hold a milestone request's plan run: with the
+# hold in effect a poll starts the queued milestone request and not the
+# queued feature. A paused daemon, and the disk-low guard, start neither.
+# The hold comes from a Claude transcript that fills the session limit.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+env RHIZA_TEST_FREE_BYTES=1099511627776
+env CLAUDE_CONFIG_DIR=$WORK/claude
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+exec git add -A
+exec git commit -qm init
+
+exec rhiza daemon set rhiza.daemon.usage.session 1000
+exec rhiza request 'Add exports'
+exec rhiza request --kind milestone 'Backlog empty'
+
+# Paused: neither starts.
+exec rhiza daemon set rhiza.daemon.paused true
+exec rhiza daemon --permission-mode manual --once
+! stdout 'plan run'
+exec rhiza daemon set rhiza.daemon.paused false
+
+# Disk low: neither starts.
+env RHIZA_TEST_FREE_BYTES=1073741824
+exec rhiza daemon --permission-mode manual --once
+! stdout 'plan run'
+env RHIZA_TEST_FREE_BYTES=1099511627776
+! exists $WORK/detach.log
+
+# The usage hold: the milestone request starts, the feature stays queued.
+# (Without the transcript the feature would start too: see usage-hold.)
+exec rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started the plan run of request '
+exec rhiza request ls
+stdout 'milestone planning: Backlog empty'
+stdout 'feature queued: Add exports'
+exec sh -c 'grep -c "run start --foreground --workflow plan --new Backlog empty" $WORK/detach.log'
+stdout '^1$'
+exec sh -c 'grep -c "Add exports" $WORK/detach.log || true'
+stdout '^0$'
+
+-- plan.toml --
+name = "plan"
+
+[step.interview]
+kind = "agent"
+prompt = "Plan {change}"
+on.pass = "done"
+-- claude/projects/p/s.jsonl --
+{"type":"assistant","isSidechain":false,"timestamp":"2026-10-24T11:30:00Z","message":{"id":"m1","usage":{"input_tokens":2000,"output_tokens":0,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}}}
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

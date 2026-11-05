@@ -227,8 +227,10 @@ func requestInfo(q daemon.Request, runs []run.Journal) RequestInfo {
 // back in the queue, not started again until daemonUnjournaledHold after
 // that start. The run is autonomous when plan autonomy is auto. Every read
 // and write of the queue holds its lock (daemon.UpdateRequests), the tab's
-// opening does not. It returns the requests started.
-func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, max int, mode string) ([]string, error) {
+// opening does not. A non-empty onlyKind starts only requests of that kind
+// (a usage hold lets milestone requests through). It returns the requests
+// started.
+func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, max int, mode string, onlyKind string) ([]string, error) {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return nil, err
@@ -282,7 +284,7 @@ func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, ma
 		var q daemon.Request
 		err := daemon.UpdateRequests(common, func(reqs []daemon.Request) ([]daemon.Request, error) {
 			for i := range reqs {
-				if reqs[i].Run != "" || now.Before(reqs[i].RetryAt) {
+				if reqs[i].Run != "" || now.Before(reqs[i].RetryAt) || (onlyKind != "" && reqs[i].Kind != onlyKind) {
 					continue
 				}
 				rid, err := newRequestRunID(ctx, rs, reqs)

@@ -577,7 +577,8 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	}
 	host, _ := os.Hostname()
 	low, free := daemonDiskLow(ctx, minFree)
-	// A usage hold stops everything the daemon would launch, as low disk does.
+	// A usage hold stops everything the daemon would launch but a milestone
+	// request's plan run; low disk stops all.
 	stopped := low || hold != nil
 	accepted := func(change string) bool {
 		st, ok := fold.stateOf(change)
@@ -709,7 +710,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		pending[cs] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, cs)}
 		started = append(started, cs)
 	}
-	if paused || stopped {
+	if paused || low {
 		return started, resumed, nil, nil
 	}
 	running := len(held) + len(started)
@@ -717,6 +718,12 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		if j.State().Liveness(host, nil) == run.LiveRunning {
 			running++
 		}
+	}
+	if hold != nil {
+		// A usage hold stops every launch but a milestone request's plan
+		// run: the owner's own, attended start.
+		planned, err = daemonPlanRequests(ctx, rs, runs, running, max, mode, daemon.KindMilestone)
+		return started, resumed, planned, err
 	}
 	continued, err := daemonQueuedContinues(ctx, rs, runs, running, max)
 	resumed = append(resumed, continued...)
@@ -735,7 +742,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	if err != nil {
 		return started, resumed, nil, err
 	}
-	planned, err = daemonPlanRequests(ctx, rs, runs, running+len(queued), max, mode)
+	planned, err = daemonPlanRequests(ctx, rs, runs, running+len(queued), max, mode, "")
 	return started, resumed, planned, err
 }
 
