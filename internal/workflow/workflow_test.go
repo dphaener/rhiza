@@ -494,6 +494,7 @@ func TestPlanBuiltin(t *testing.T) {
 		{"wait-rebased", OutcomePass, "rebased-green", EndNone},
 		{"rebased-green", OutcomePass, "merge", EndNone},
 		{"merge", OutcomePass, "close-out", EndNone},
+		{"merge", OutcomeFail, "rebase", EndNone},
 		{"close-out", OutcomePass, "", EndSucceeded},
 	}
 	for _, tt := range trans {
@@ -503,7 +504,7 @@ func TestPlanBuiltin(t *testing.T) {
 		}
 	}
 
-	caps := map[string]int{"interview": 1, "review": 3, "critic": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 3}
+	caps := map[string]int{"rebase": 3, "wait-rebased": 3, "rebased-green": 3, "merge": 3, "interview": 1, "review": 3, "critic": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 3}
 	for name, c := range caps {
 		if got := def.Steps[name].Cap(); got != c {
 			t.Errorf("%s cap = %d; want %d", name, got, c)
