@@ -96,6 +96,11 @@ type workspace struct {
 	// readLog reads the log from disk; nil means st.ReadLog. A test sets it
 	// through Ctx to count the folds a read costs.
 	readLog func() store.Log
+	// ix is the index a write validates against, nil when it reads the
+	// log. See write_indexed.go.
+	ix *writeIndex
+	// written counts the entries written to disk.
+	written int
 }
 
 // openWorkspace opens the repository in root. No repository is not_found
@@ -146,9 +151,23 @@ func (w *workspace) log() store.Log {
 }
 
 // model builds the interim model over the log with current as the current
-// change set (zero for none).
+// change set (zero for none), or, in a write over the index, the view of
+// the index.
 func (w *workspace) model(current id.ID) Model {
+	if w.ix != nil {
+		return w.ix.model(w, current)
+	}
 	return newModel(w.log(), current)
+}
+
+// entriesOfSet returns the entries of change set cs, sorted by ID: the
+// index's and the dry run's pending ones in a write over the index, else
+// the log's.
+func (w *workspace) entriesOfSet(cs id.ID) []entry.Entry {
+	if w.ix != nil {
+		return w.ix.entries(w, cs)
+	}
+	return entriesOf(w.log(), cs)
 }
 
 // entriesOf returns the log's entries of change set cs.
@@ -165,7 +184,7 @@ func entriesOf(l store.Log, cs id.ID) []entry.Entry {
 // changeSet folds change set cs. It reports false if the log has no entry
 // of cs.
 func (w *workspace) changeSet(cs id.ID) (changeset.ChangeSet, bool) {
-	es := entriesOf(w.log(), cs)
+	es := w.entriesOfSet(cs)
 	if len(es) == 0 {
 		return changeset.ChangeSet{}, false
 	}
@@ -175,6 +194,9 @@ func (w *workspace) changeSet(cs id.ID) (changeset.ChangeSet, bool) {
 
 // changeSets folds every change set in the log.
 func (w *workspace) changeSets() []changeset.ChangeSet {
+	if w.ix != nil {
+		return w.ix.changeSets(w)
+	}
 	sets, _ := changeset.FoldLog(w.log())
 	return sets
 }
@@ -253,6 +275,9 @@ const minPrefix = 4
 // of 4+ characters (any case), over the change sets in the log. No match is
 // not_found; several are a usage error listing them.
 func (w *workspace) resolveChangeSet(ref string) (id.ID, error) {
+	if w.ix != nil {
+		return matchChangeSet(w.ix.setIDs(w), ref)
+	}
 	var sets []id.ID
 	for _, e := range w.log().Entries {
 		if len(sets) == 0 || sets[len(sets)-1] != e.ChangeSet {
@@ -348,7 +373,7 @@ func (w *workspace) appendEntryID(cs id.ID, body changeset.Body, actor, forID, e
 // one. Whether a lifecycle move is legal in a non-terminal state is the
 // caller's check.
 func (w *workspace) buildEntry(cs id.ID, body changeset.Body, actor, forID, eid id.ID) (entry.Entry, error) {
-	es := entriesOf(w.log(), cs)
+	es := w.entriesOfSet(cs)
 	var after []id.ID
 	if body.Type() == entry.TypeOpen {
 		if len(es) > 0 {
@@ -390,6 +415,10 @@ func (w *workspace) writeEntry(e entry.Entry) error {
 	}
 	if err := w.st.Write(e); err != nil {
 		return Errorf("%s", err.Error())
+	}
+	w.written++
+	if w.ix != nil {
+		w.ix.stale = true
 	}
 	return nil
 }

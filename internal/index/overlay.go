@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/model"
 	"github.com/dphaener/rhiza/internal/op"
@@ -35,13 +36,21 @@ type Overlay struct {
 // is not in the log, or not in flight, the overlay is the as-is view and
 // the problems are ErrMissing or ErrState, as model.WhatIf gives them.
 func (x *Index) WhatIfOverlay(cs id.ID) (*Overlay, []model.Problem, error) {
+	return x.WhatIfOverlayOver(cs, nil)
+}
+
+// WhatIfOverlayOver is WhatIfOverlay with change set cs taken as over
+// instead of folded from its stored entries, when over is not nil: the
+// view of a change set with entries not yet written (a dry run's, or a
+// record change set's), which need not be stored at all.
+func (x *Index) WhatIfOverlayOver(cs id.ID, over *changeset.ChangeSet) (*Overlay, []model.Problem, error) {
 	tx, err := x.db.Begin()
 	if err != nil {
 		return nil, nil, err
 	}
 	defer tx.Rollback()
 
-	sets, err := whatIfSets(tx, cs)
+	sets, err := whatIfSets(tx, cs, over)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -114,6 +123,21 @@ func (s txSource) SeedLink(i id.ID) (model.SeedLink, bool, error) {
 		return model.SeedLink{}, false, err
 	}
 	return sl, true, nil
+}
+
+// HandleTaken reports which live node has handle h, the smallest ID of
+// them, if any.
+func (o *Overlay) HandleTaken(h string) (id.ID, bool, error) {
+	ns, err := o.x.nodes(nodeSelect+` INDEXED BY nodes_handle WHERE view = ? AND handle = ? AND retired = 0`, viewAsIs, h)
+	if err != nil {
+		return id.ID{}, false, err
+	}
+	ns = append(o.dropNodes(ns), o.pickNodes(func(n model.Node) bool { return !n.Retired && n.Handle == h })...)
+	if len(ns) == 0 {
+		return id.ID{}, false, nil
+	}
+	slices.SortFunc(ns, nodeByID)
+	return ns[0].ID, true, nil
 }
 
 // Overridden reports whether the overlay overrides node or link i.
