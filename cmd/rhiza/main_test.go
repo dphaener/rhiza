@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/store"
@@ -28,7 +29,7 @@ func TestScripts(t *testing.T) {
 	testscript.Run(t, testscript.Params{
 		Dir:           "testdata/script",
 		Setup:         setup,
-		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK},
+		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "chtimes": chtimes},
 		UpdateScripts: *update,
 	})
 }
@@ -62,6 +63,20 @@ func setup(env *testscript.Env) error {
 // dir (default $WORK/.rhiza) with store.ReadLog, folds it with
 // changeset.FoldLog and prints every log and fold problem to stdout, one per
 // line. It fails if there is any; `! fold-ok` fails if there is none.
+// chtimes sets the modification time of files: chtimes <RFC 3339 time> file...
+func chtimes(ts *testscript.TestScript, neg bool, args []string) {
+	if neg || len(args) < 2 {
+		ts.Fatalf("usage: chtimes time file...")
+	}
+	t, err := time.Parse(time.RFC3339, args[0])
+	if err != nil {
+		ts.Fatalf("chtimes: %v", err)
+	}
+	for _, f := range args[1:] {
+		ts.Check(os.Chtimes(ts.MkAbs(f), t, t))
+	}
+}
+
 func foldOK(ts *testscript.TestScript, neg bool, args []string) {
 	if len(args) > 1 {
 		ts.Fatalf("usage: fold-ok [dir]")

@@ -1,0 +1,63 @@
+{
+  "actor": "01M6NTFB85DC8Q31JXZZXYXD4R",
+  "after": [
+    "01M6NTDBC8T0WTWZRQCKYCNQXC"
+  ],
+  "at": "2026-11-05T12:25:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e129e9f1 with the built binary (go build -trimpath) in a scratch repo, real clock: a fake GOCACHE held 5h-old (touch -d) entries in shards ab/ and 0f/, a fresh ab/ entry, a 5h-old entry in non-shard zz/ and a 5h-old top-level README; a fake TMPDIR held a 3h-old go-build123 (2000-byte file), a 30m-old go-build999 and a 3h-old other-old. rhiza daemon --once removed only the two stale shard entries and go-build123, logging 'go build sweep freed 6.8 KiB: 2 cache entries, 1 temp folders' (5000+2+2000 bytes, correct); fresh-a, zz/, README, go-build999 and other-old stayed. With GOCACHE=off a 5h-old ab/ entry stayed and no sweep line was logged. With GOCACHE unset and XDG_CACHE_HOME pointed at a fake dir, the 5h-old entry under $XDG_CACHE_HOME/go-build/cd/ was removed (os.UserCacheDir()/go-build fallback). Scoped go test of internal/gosweep passes."
+        },
+        "handle": "go-build-cache-sweep-qa-1",
+        "id": "01M6NTQQP57W6PATBPR6WEB5H8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NTQQP57W6PATBPR2XZVWDX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NTQQP57W6PATBPR2XZVWDX",
+        "id": "01M6NTQVMG1B5N96D0YMZ395BV",
+        "link": "01M6NTQVMG1B5N96D0YJKM4PYG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NREHKHFKZWMXYWG2F38AM5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e129e9f1 with the built binary in a scratch repo: rhiza daemon settings lists 'rhiza.daemon.trimGoCache = true (default)'; daemon set ... maybe is refused (exit 2, must be true or false). With trimGoCache false, daemon --permission-mode manual --once left every stale cache entry and go-build* folder and logged no sweep line; set true, the same run swept them and logged one line; a third --once with nothing stale logged no line. A foreground daemon run for 25s with RHIZA_TEST_FREE_BYTES=15G (under 2x the 10G minFree) swept at start (4 entries), and two entries back-dated 5h after start were still there at stop: no repeat sweep within 10 minutes despite low space. Hourly and urgent-after-10-minute timing not observable in real time; covered by TestSweepSchedule, which passes with internal/daemon, plus TestScripts/daemon-trims-go-cache and describe-golden."
+        },
+        "handle": "daemon-trims-go-cache-qa-1",
+        "id": "01M6NTQZRK0TCGZW4HZD81RA56",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NTQZRK0TCGZW4HZA6ZFW3Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NTQZRK0TCGZW4HZA6ZFW3Z",
+        "id": "01M6NTR41ACPSG0WZYJWSCZE0Y",
+        "link": "01M6NTR41ACPSG0WZYJT9SES2A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NRETPP5SJ8RMGV901X4G33",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6NR6EK065HB06P15DYMB0XX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NTRAV6ZPKMJMZS5AN0RP93",
+  "type": "ops",
+  "v": 1
+}

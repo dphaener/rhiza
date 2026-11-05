@@ -1,0 +1,35 @@
+# go-cache-sweep-plan
+
+source · `01M6NRDB9DHGAJD2E5PAQSCRK0`
+
+## quotes
+
+```json
+[]
+```
+
+## raw_sha256
+
+ba669c05f30f785979f61a4a261e42ebcab5b5e930643397d1a7db54f0dc92d6
+
+## session
+
+4c7d9954-929b-4ec4-9dc0-01a1ab8367a9
+
+## summary
+
+Autonomous plan run for change set 01M6NR6E: on 2026-11-05 the VM's ~/.cache/go-build reached 47G and stale go-build* temp folders piled up in TMPDIR. With no owner present, the planner raised one question (intent, trigger, scope) to the arbiter. The arbiter ruled in Decision go-cache-sweep-shape: the change set serves milestone-25 (the backlog). The daemon sweeps when it starts, then hourly, and also at once when free space drops under 2x rhiza.daemon.minFree, at most once every 10 minutes. A sweep removes Go build cache entries with an mtime over 3 hours old and go-build* folders directly under os.TempDir() with an mtime over 2 hours old. The cache is $GOCACHE, or os.UserCacheDir()/go-build when GOCACHE is unset; GOCACHE=off skips the cache. A new setting, rhiza.daemon.trimGoCache (default on), turns the sweep off. One stderr line reports what was freed, only when something was. Two leaves were planned: the sweep itself and the daemon's schedule and setting for it. Nothing is left open.
+
+## title
+
+Planning the daemon's Go build cache sweep (autonomous)
+
+## Links
+
+### In
+
+- derived-from [go-cache-sweep-shape](../decision/go-cache-sweep-shape.md)
+
+## History
+
+- `01M6NR6EK065HB06P15DYMB0XX` The daemon keeps the Go build cache and stale build temp folders from filling the disk: on 2026-11-05 the VM's ~/.cache/go-build reached 47G and ~/tmp held stale go-build* folders from killed builds (disk 19G free of 97G) after one evening of runs; Go only trims entries unused for 5 days. When free space nears rhiza.daemon.minFree (or on a schedule), the daemon trims go-build entries untouched for a few hours (mtime, which go refreshes on use) and removes go-build* temp folders older than a couple of hours, logging what it freed; a test with a fake cache dir shows only stale entries go.

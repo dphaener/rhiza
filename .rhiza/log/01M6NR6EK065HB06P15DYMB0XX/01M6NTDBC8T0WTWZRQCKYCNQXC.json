@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NTARYG58W2SYBMF168E8Y7",
+  "after": [
+    "01M6NSRC8RD9H4KV5Q6R4HKBJG"
+  ],
+  "at": "2026-11-05T12:19:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 230826ed: go test -trimpath ./internal/daemon/... ./internal/gosweep/... pass; TestSweepSchedule (injected clock and free space) shows a sweep due at start, not at 5/59 min, due after an hour, urgent at 10 min under 2x minFree but not at 9 min, not at exactly 2x, not with guard off or unknown free space, and not within 10 min of an urgent sweep. TestScripts/daemon-trims-go-cache passes: with a fake GOCACHE holding an entry back-dated 6h, daemon --once with rhiza.daemon.trimGoCache false keeps it and logs nothing; set true it removes it, keeps the fresh entry and logs one 'go build sweep freed ...: 1 cache entries, 0 temp folders' line; a third run logs nothing; daemon settings lists 'rhiza.daemon.trimGoCache = true'. describe-golden passes and -update leaves it unchanged (settings keys are not in the schema), so it is current. All TestScripts/daemon-* pass. Read the diff: sweep runs per poll gated by conf.trimGoCache, GOCACHE/TMPDIR read via ctx env. Nit only: chtimes was inserted between foldOK's doc comment and foldOK in cmd/rhiza/main_test.go, so foldOK's comment now sits above chtimes."
+        },
+        "handle": "daemon-trims-go-cache-verified",
+        "id": "01M6NTD248JZ0ADGFX0CZHHR6R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NTD248JZ0ADGFX090PW12C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NTD248JZ0ADGFX090PW12C",
+        "id": "01M6NTD5YD6KGM8XSGHCHWKKY7",
+        "link": "01M6NTD5YD6KGM8XSGH9BZH41C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NRETPP5SJ8RMGV901X4G33",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6NR6EK065HB06P15DYMB0XX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NTDBC8T0WTWZRQCKYCNQXC",
+  "type": "ops",
+  "v": 1
+}

@@ -21,6 +21,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/gosweep"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/usage"
@@ -145,6 +146,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		daemon.WriteState(common, state)
 	}()
 	selfUpdateOn := false
+	var sweep daemon.SweepSchedule
 	poll := func() error {
 		var skips []daemon.Skip
 		conf, err := daemonConfOf(ctx, r)
@@ -154,6 +156,9 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 		minFree := conf.minFree
 		selfUpdateOn = conf.selfUpdate
+		if conf.trimGoCache {
+			daemonSweepGoCache(ctx, &sweep, minFree)
+		}
 		state.MaxRuns, state.Settings = conf.maxRuns, conf.stateRows()
 		learnLimits(ctx, common, &state)
 		var hold *usageHold
@@ -880,6 +885,28 @@ func daemonQueuedContinues(ctx *Ctx, rs *run.Store, runs []run.Journal, running,
 		return continued, Errorf("read queued continuations: %v", err)
 	}
 	return continued, nil
+}
+
+// daemonSweepGoCache trims the Go build cache and stale go-build* temp
+// folders when the schedule says so, writing one stderr line with what was
+// freed, only when something was.
+func daemonSweepGoCache(ctx *Ctx, sched *daemon.SweepSchedule, minFree uint64) {
+	now := ctx.Now()
+	free, ferr := repoFreeBytes(ctx)
+	if !sched.Due(now, free, minFree, ferr == nil) {
+		return
+	}
+	sched.Done(now)
+	getenv := ctxGetenv(ctx)
+	tmp := getenv("TMPDIR")
+	if tmp == "" {
+		tmp = os.TempDir()
+	}
+	f := gosweep.SweepDirs(gosweep.CacheDirFrom(getenv), tmp, now)
+	if f.Any() && ctx.Stderr != nil {
+		fmt.Fprintf(ctx.Stderr, "rhiza: daemon: go build sweep freed %s: %d cache entries, %d temp folders\n",
+			daemon.FormatSize(uint64(f.Bytes())), f.CacheEntries, f.TempFolders)
+	}
 }
 
 // daemonDiskLow reports whether free space on the repo's filesystem is under
