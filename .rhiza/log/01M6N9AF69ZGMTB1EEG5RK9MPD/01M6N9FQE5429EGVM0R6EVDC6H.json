@@ -1,0 +1,41 @@
+{
+  "actor": "01M6N9E5JP04RM0FFACW1QSM8S",
+  "after": [
+    "01M6N9DZQGZRXPGRYJ5VP6BC90"
+  ],
+  "at": "2026-11-05T07:24:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "internal/session/status.go Stalled returns false for every hook state but working, so a session that hit Stop (idle) while its background shell ran is invisible to runStalledAll in internal/api/run.go and to the inbox; that is the bug the change set's intent names. A run step waits only for `rhiza session done`, so idle without done means the run waits; the shell is not observable from hook status, so the rule keys on idle-without-done rather than on detecting a shell. Exclusions mirror the existing ones (usage-limit pause) plus states that already have an owner or arbiter path (Asked, blocked). Today nudging exists only as the inbox's manual n (internal/tui/inboxapp nudge sending carryOn via session.message), so keeping that path covers attended runs; the intent says the session should be nudged, and the owner's stated goal is that the daemon does all orchestration in autonomous mode, so the daemon nudges there. One nudge per stall avoids a loop of messages to a session that is genuinely stuck, leaving that case to the owner.",
+          "statement": "A live run-step session that has not said `rhiza session done` counts as stalled once its hook status, working or idle, has gone unchanged for more than StallAfter (20 min), whether or not it holds a background shell. Never stalled: a session waiting on the arbiter (Status.Asked set), one paused at its usage limit, one blocked on a permission prompt (already its own inbox item), and an exited one. A stalled session shows in the inbox as today, where the owner nudges it with n. When the daemon runs autonomously, the daemon nudges it itself, once per stall (keyed on the report time it stalled at), with a message that tells it to check any background shell's result and carry on, or run `rhiza session done` if its work is finished; a session still stalled after that stays in the inbox for the owner and gets no repeat nudges.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "idle-run-session-stalls",
+        "id": "01M6N9FFNSVCXW4GGGDJNFS88F",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6N9FFNSVCXW4GGGDGXERBZC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N9FFNSVCXW4GGGDGXERBZC",
+        "id": "01M6N9FJDPGDCYZV6J1JB1FZPC",
+        "link": "01M6N9FJDPGDCYZV6J1J8ZY5V1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N9DXRSKHJWY3GARDJ68ETG",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6N9AF69ZGMTB1EEG5RK9MPD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N9FQE5429EGVM0R6EVDC6H",
+  "type": "ops",
+  "v": 1
+}

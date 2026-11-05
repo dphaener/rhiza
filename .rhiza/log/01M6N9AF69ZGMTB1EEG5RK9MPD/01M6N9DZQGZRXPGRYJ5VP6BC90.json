@@ -1,0 +1,30 @@
+{
+  "actor": "01M6N9AXYY7SR7VER4RYMW39JX",
+  "after": [
+    "01M6N9AF69ZGMTB1EEG81VS0X6"
+  ],
+  "at": "2026-11-05T07:23:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "f0ae9dff-3406-48f0-9c7d-01a1aa956836",
+          "statement": "Change set 01M6N9AF (idle session with a background shell never flagged): today session.Stalled counts only hook-status 'working' sessions silent >20 min; an idle session that never said `rhiza session done` waits forever. What should count as stalled? / Once such a session counts as stalled, who nudges it?"
+        },
+        "handle": "question-f0ae9dff-1",
+        "id": "01M6N9DXRSKHJWY3GARF7JF9PH",
+        "key": null,
+        "kind": "question",
+        "node": "01M6N9DXRSKHJWY3GARDJ68ETG",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6N9AF69ZGMTB1EEG5RK9MPD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N9DZQGZRXPGRYJ5VP6BC90",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6NA21MHXNZAF5PJWE1HG4EE"
+  ],
+  "at": "2026-11-05T07:39:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on run-session-idle-stall): The widened rule stalls any live run-step session idle >20 min without done, excluding only Status.Asked, usage-paused, blocked and exited. But in an owner-attended run an interactive step (e.g. a plan run's planner interviewing the owner, see rhiza-plan and the plan workflow) sits idle at its prompt waiting on the owner's reply, not on itself; Status.Asked is only set for autonomous sessions (internal/session/status.go), so such a session would be listed as 'stalled' in the inbox and run status, and the inbox's n would send it carryOn ('You have been silent...') when it is the owner who owes the next word. The Decision idle-run-session-stalls and this leaf's statement/acceptance should say how an attended session awaiting the owner is told apart (e.g. stall idle only in autonomous runs, or only for non-interactive steps), or state explicitly that it is accepted noise. The critic confirmed it: Verified: Status.Asked is set only when rec.Autonomous (internal/api/session_run.go:794-809), so an attended session's question to the owner never sets it. The plan workflow's interview step (internal/workflow/builtin/plan.toml) is an agent step that ends only on `rhiza session done` and spends most of its life idle at its prompt waiting for the owner's reply. Under run-session-idle-stall and idle-run-session-stalls, which exclude only Asked, usage-paused, blocked and exited, that session counts as stalled after 20 idle minutes. It would show in run status and the inbox, and the owner's n would send it carryOn, when it is the owner who owes the next word. The leaf and Decision must say how a session waiting on the owner is told apart, or accept that noise in so many words. How should it be settled?"
+        },
+        "handle": "review-01m6n9ad-r3-f1",
+        "id": "01M6NAB0JB7YTF7RJ68NGHXAFQ",
+        "key": null,
+        "kind": "question",
+        "node": "01M6NAB0JB7YTF7RJ68MP9DF2H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NAB0JB7YTF7RJ68MP9DF2H",
+        "id": "01M6NAB5KHVDF2Y17NCA109PQR",
+        "link": "01M6NAB5KHVDF2Y17NC6MC8GFV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N9M6BMS0XZBJDD16M2B0Z2",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6N9AF69ZGMTB1EEG5RK9MPD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NABEJHP5SVR4Q47GFCDDB0",
+  "type": "ops",
+  "v": 1
+}
