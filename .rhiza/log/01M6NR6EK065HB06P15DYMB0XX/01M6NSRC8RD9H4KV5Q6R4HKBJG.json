@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NSPY199SS801PEHK49N09C",
+  "after": [
+    "01M6NRKPXKW215R9THMX77KE2C"
+  ],
+  "at": "2026-11-05T12:08:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d5ab5678 ran go test -trimpath -count=1 -v ./internal/gosweep/...: all 4 tests pass, plus go vet and gofmt -l clean. TestSweepDirsRemovesOnlyStale builds a fake GOCACHE and TMPDIR with os.Chtimes back-dated (4h, 5h) and fresh (1h) shard entries, a 9h-old top-level README, an old (3h) and a fresh (30m) go-build* folder and an old other-old folder; SweepDirs removes only the two stale shard entries and the old go-build111 and reports Freed{CacheEntries:2, CacheBytes:30, TempFolders:1, TempBytes:100}. TestCacheOffTouchesNoEntry sets GOCACHE=off: CacheDir() is empty and no cache entry is removed, though the old temp folder still goes. Read the diff: the cutoffs are 3h for the cache and 2h for temp folders; the cache dir is $GOCACHE, else os.UserCacheDir()/go-build; only entries in two-hex shard folders are removed, so trim.txt, README and fuzz/ stay; the temp sweep covers only go-build* folders directly under os.TempDir(). This matches the leaf statement and the go-cache-sweep-shape decision."
+        },
+        "handle": "go-build-cache-sweep-verified",
+        "id": "01M6NSR3W4EW9AKK62D845JFK7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NSR3W4EW9AKK62D6DKGT91",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NSR3W4EW9AKK62D6DKGT91",
+        "id": "01M6NSR74AA0ASJZVVDCB67ADV",
+        "link": "01M6NSR74AA0ASJZVVDB7FD260",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NREHKHFKZWMXYWG2F38AM5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6NR6EK065HB06P15DYMB0XX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NSRC8RD9H4KV5Q6R4HKBJG",
+  "type": "ops",
+  "v": 1
+}
