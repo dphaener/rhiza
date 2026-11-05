@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NF8K28H8D802MM0E2JGT77",
+  "after": [
+    "01M6NF6SWH4YB8SV83TDMGBDAV"
+  ],
+  "at": "2026-11-05T09:06:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 9abac36b, session.Stalled (internal/session/status.go) stalls a hook-sourced session only when working, or idle with Record.Autonomous true, and never when Status.SaidDone(), Status.Asked is set, usage-paused, blocked or exited. go test -trimpath ./internal/session -run TestStalled PASS: it covers autonomous idle at 19m (not stalled) and 21m (stalled), attended idle at 21m (not stalled), attended working at 21m (stalled), and at 21m idle/working with the done mark, idle/working with Asked, idle usage-paused, autonomous blocked and autonomous exited (none stalled). go test -trimpath ./cmd/rhiza -run 'TestScripts/(inbox-stalled|describe-golden)$' PASS: inbox-stalled.txtar asserts that an idle record with no autonomous key gives no stalled item in inbox or run status at T+21m; after marking it autonomous, none at T+19m, a stalled inbox item at T+21m, and run status shows stalled; then with the done mark, none. go test -trimpath ./internal/api -run TestRunStalledNow PASS. make self-check fails only on stale .rhiza/rendered files for run actors, which are rendered after landing."
+        },
+        "handle": "run-session-idle-stall-verified",
+        "id": "01M6NFBGW9V7B585DY8BQJ5J33",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NFBGW9V7B585DY88T6T8NV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NFBGW9V7B585DY88T6T8NV",
+        "id": "01M6NFBKVP9ETMEZYP6JBYEV47",
+        "link": "01M6NFBKVP9ETMEZYP6F8CY3WM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N9M6BMS0XZBJDD16M2B0Z2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6N9AF69ZGMTB1EEG5RK9MPD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NFBSRSVZY814501XWM25BS",
+  "type": "ops",
+  "v": 1
+}
