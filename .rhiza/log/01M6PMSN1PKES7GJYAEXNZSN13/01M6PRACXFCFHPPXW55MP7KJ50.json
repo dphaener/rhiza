@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PQPT2GBH6TZ72FBKPFWWXD",
+  "after": [
+    "01M6PQT60BBR0VX6HFXBNC9ZS7"
+  ],
+  "at": "2026-11-05T21:02:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at d0200787 (leaf commits 2c0166a7 and d0200787). I read the diff. In a normal run, adviseQuestion starts one advisor on a question node and journals an advisor entry whose Asker is the node ID. It is called from endLeaf (failed leaf), from capped (review cycle cap) and from arbitrateAsked (a session-less asked entry from a command step, as run review-check writes for plan-review questions; each question is advised once). run recommend takes --restatement, journalled as restated, and the inbox gate item shows it as restatement / 'in plain words', with the template statement unchanged. Ran go test -trimpath ./internal/run/... ./internal/api/...: ok. TestLeafFailureStartsAdvisor, TestCycleCapQuestionStartsAdvisor and TestCommandAskedNormalRunStartsAdvisor use a fake runner. Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(inbox-question-advisor|inbox-gate-questions|inbox-advisor|describe-golden|run-review.*)$': all PASS. In inbox-question-advisor.txtar a fake claude advisor launched on a plan-review-style question node runs rhiza run recommend with restatement, recommendation and reasons. One advisor entry and the recommended entry are journalled against the node ID, and rhiza inbox --json shows restatement, recommendation and reasons on the gate-q item. describe-golden includes run.recommend's restatement. Both earlier findings (f1, f2) are addressed."
+        },
+        "handle": "owner-question-advisor-verified",
+        "id": "01M6PRACVMPTMPKJYFYZ2FB4ZR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PRACVMPTMPKJYFYWHQGEG4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PRACVMPTMPKJYFYWHQGEG4",
+        "id": "01M6PRACWKEC7ZF5PY6VJKBT7S",
+        "link": "01M6PRACWKEC7ZF5PY6S10R75V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1SZC653J5D55644NRYXE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PRACXFCFHPPXW55MP7KJ50",
+  "type": "ops",
+  "v": 1
+}
