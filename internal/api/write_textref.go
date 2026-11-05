@@ -81,9 +81,14 @@ func storedIDs(text string) map[string]bool {
 	return out
 }
 
+// nodeLookup finds a node by ID: a Model, or a read of the index.
+type nodeLookup interface {
+	Node(n id.ID) (Node, bool)
+}
+
 // modelHandleOf gives the current handle of a live node of m, for showing the
 // references in texts.
-func modelHandleOf(m Model) gmodel.HandleOf {
+func modelHandleOf(m nodeLookup) gmodel.HandleOf {
 	return func(i id.ID) (string, bool) {
 		n, ok := m.Node(i)
 		return n.Handle, ok && !n.Retired
@@ -91,7 +96,7 @@ func modelHandleOf(m Model) gmodel.HandleOf {
 }
 
 // showOp is o with the texts of its fields shown by current handle in m.
-func showOp(m Model, o op.Op) op.Op {
+func showOp(m nodeLookup, o op.Op) op.Op {
 	kind := o.Kind
 	if n, ok := m.Node(o.Node); ok {
 		kind = n.Kind

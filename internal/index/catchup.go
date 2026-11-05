@@ -13,6 +13,7 @@ import (
 	"io/fs"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
@@ -503,7 +504,7 @@ func storedSets(q querier) ([]changeset.ChangeSet, error) {
 // the change sets css; a change set with no entries has no key. The result
 // equals what changeset.FoldLog gives for them over the whole log.
 func (x *Index) FoldedOf(css []id.ID) (map[id.ID]changeset.ChangeSet, error) {
-	out := map[id.ID]changeset.ChangeSet{}
+	var blobs [][]byte
 	for _, chunk := range batchChunks(css) {
 		rows, err := x.db.Query(`SELECT f.data FROM json_each(?1) j CROSS JOIN folded f ON f.change_set = j.value`, idJSON(chunk))
 		if err != nil {
@@ -515,18 +516,37 @@ func (x *Index) FoldedOf(css []id.ID) (map[id.ID]changeset.ChangeSet, error) {
 				rows.Close()
 				return nil, err
 			}
-			c, err := decodeFolded(data)
-			if err != nil {
-				rows.Close()
-				return nil, err
-			}
-			out[c.ID] = c
+			blobs = append(blobs, data)
 		}
 		err = rows.Err()
 		rows.Close()
 		if err != nil {
 			return nil, err
 		}
+	}
+	// Decoding is most of the cost, so decodeWorkers do it at once.
+	sets := make([]changeset.ChangeSet, len(blobs))
+	errs := make([]error, len(blobs))
+	next := make(chan int)
+	var wg sync.WaitGroup
+	for range min(decodeWorkers, len(blobs)) {
+		wg.Go(func() {
+			for i := range next {
+				sets[i], errs[i] = decodeFolded(blobs[i])
+			}
+		})
+	}
+	for i := range blobs {
+		next <- i
+	}
+	close(next)
+	wg.Wait()
+	out := make(map[id.ID]changeset.ChangeSet, len(blobs))
+	for i, c := range sets {
+		if errs[i] != nil {
+			return nil, errs[i]
+		}
+		out[c.ID] = c
 	}
 	return out, nil
 }
