@@ -1,0 +1,44 @@
+{
+  "actor": "01M6N9SBH9ARWA2R8P2NMNVYVP",
+  "after": [
+    "01M6N9MYXDRY1CF3S40C2C893T"
+  ],
+  "at": "2026-11-05T07:30:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "internal/session/status.go Stalled returns false for every hook state but working, so a session that hit Stop (idle) while its background shell ran is invisible to runStalledAll in internal/api/run.go and to the inbox; that is the bug the change set's intent names. A run step waits only for `rhiza session done`, so idle without done means the run waits; the shell is not observable from hook status, so the rule keys on idle-without-done rather than on detecting a shell. Exclusions mirror the existing ones (usage-limit pause) plus states that already have an owner or arbiter path (Asked, blocked). Today nudging exists only as the inbox's manual n (internal/tui/inboxapp nudge sending carryOn via session.message), so keeping that path covers attended runs; the intent says the session should be nudged, and the owner's stated goal is that the daemon does all orchestration in autonomous mode, so the daemon nudges there. One nudge per stall avoids a loop of messages to a session that is genuinely stuck, leaving that case to the owner.",
+          "statement": "A live run-step session that has not said `rhiza session done` counts as stalled once its hook status, working or idle, has gone unchanged for more than StallAfter (20 min), whether or not it holds a background shell. Never stalled: a session waiting on the arbiter (Status.Asked set), one paused at its usage limit, one blocked on a permission prompt (already its own inbox item), and an exited one. A stalled session shows in the inbox as today, where the owner nudges it with n. When the run itself is autonomous (the run's own Autonomous, decided per run by the autonomy config, not the daemon's --autonomous flag, which every shipped daemon carries), the daemon nudges it itself, once per stall (keyed on the report time it stalled at), with a message that tells it to check any background shell's result and carry on, or run `rhiza session done` if its work is finished; a session still stalled after that stays in the inbox for the owner and gets no repeat nudges. A session of an owner-attended run is never nudged by the daemon.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "idle-run-session-stalls",
+        "id": "01M6N9FFNSVCXW4GGGDJNFS88F",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6N9FFNSVCXW4GGGDGXERBZC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test of the daemon poll on a fake clock, session store and message sender, with one autonomous run and one owner-attended run under the same daemon: a session of the autonomous run idle without done for 21 minutes gets one message naming background shells and `rhiza session done`; a second poll at the same stall sends nothing; a new hook report followed by another 21 silent minutes gets a second message; the owner-attended run's session, stalled the same way, gets no message on any poll; the inbox still lists both stalled sessions after the nudge",
+          "statement": "The daemon sends each stalled session of its live autonomous runs (the run's own Autonomous, as its journal records it, not the daemon's --autonomous flag) one message per stall, keyed on the report time it stalled at, telling it to check any background shell's result and carry on, or run `rhiza session done` if its work is finished; a session still stalled after the nudge gets no further one and stays in the inbox, and a stalled session of an owner-attended run is never nudged by the daemon"
+        },
+        "handle": "daemon-nudges-stalled",
+        "id": "01M6N9MBXAAWMHC53536FFEN14",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M6N9MBXAAWMHC53534PGKQ4H",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      }
+    ]
+  },
+  "change_set": "01M6N9AF69ZGMTB1EEG5RK9MPD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N9V2DX117MQ19WPV1HVNTP",
+  "type": "ops",
+  "v": 1
+}
