@@ -1,6 +1,10 @@
 package session
 
-import "testing"
+import (
+	"strings"
+	"testing"
+	"unicode/utf8"
+)
 
 func TestSlug(t *testing.T) {
 	cases := map[string]string{
@@ -57,5 +61,26 @@ func TestRunTabTitle(t *testing.T) {
 		if got := RunTabTitle("rhiza", "Readable tabs", "R1", c.step, c.label); got != c.want {
 			t.Errorf("RunTabTitle(%q,%q) = %q, want %q", c.step, c.label, got, c.want)
 		}
+	}
+}
+
+func TestTabTitlesFitRex(t *testing.T) {
+	long := strings.Repeat("Inbox and daemon treat a landed plan run ", 3)
+	got := RunTabTitle("rhiza", long, "01M6MHWK3K41VADZ6YD6M0B39J", "build/build", "verifier inbox-landed-plan-run-in-flight #1")
+	if n := utf8.RuneCountInString(got); n > MaxTabTitle {
+		t.Fatalf("RunTabTitle is %d characters, over %d: %q", n, MaxTabTitle, got)
+	}
+	if want := "… · run 01M6MHWK3K41VADZ6YD6M0B39J · build/build · verifier inbox-landed-plan-run-in-flight #1"; !strings.HasSuffix(got, want) {
+		t.Errorf("RunTabTitle = %q, want the title shortened and the tail %q kept", got, want)
+	}
+	if !strings.HasPrefix(got, "rhiza: Inbox and daemon") {
+		t.Errorf("RunTabTitle = %q, want the repo and the title's start kept", got)
+	}
+	if got := TabTitle("rhiza", long+long, "review"); utf8.RuneCountInString(got) > MaxTabTitle || !strings.HasSuffix(got, "… · review") {
+		t.Errorf("TabTitle = %q, want at most %d characters ending in the step", got, MaxTabTitle)
+	}
+	tail := strings.Repeat("x", 200)
+	if got := RunTabTitle("rhiza", "T", "R", "s", tail); utf8.RuneCountInString(got) != MaxTabTitle {
+		t.Errorf("RunTabTitle with an overlong tail is %d characters, want %d", utf8.RuneCountInString(got), MaxTabTitle)
 	}
 }
