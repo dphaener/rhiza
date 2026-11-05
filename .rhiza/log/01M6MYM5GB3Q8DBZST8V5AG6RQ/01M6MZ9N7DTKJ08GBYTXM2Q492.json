@@ -1,0 +1,128 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MYM5GB3Q8DBZST8XFR823S"
+  ],
+  "at": "2026-11-05T04:25:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests in the shell's package, with no Rex and no socket: a hosted Form, List and Dialog each render through rexuikit (the view carries the component's own render), a dark and a light tea.BackgroundColorMsg give theme.Dark and theme.Light tokens, and the program model is a surface/program.Model; the tui-launch-usage testscript still passes.",
+          "statement": "A shared modal shell package under internal/tui runs any Rhiza app as one rexuikit ui component (Form, List, Dialog or InfoPanel), themed from the terminal's background with rexuikit's ui/theme and wrapped in rexuikit's surface/program for focus, and rhiza tui app runs every app through it."
+        },
+        "handle": "modal-shell-hosts-component",
+        "id": "01M6MZ8VSGET61TPSYJQ4F0469",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M6MZ8VSGET61TPSYJQ4AQCX1",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ8VSGET61TPSYJQ4AQCX1",
+        "id": "01M6MZ8XV34CKND5JNHMC8CQAS",
+        "link": "01M6MZ8XV34CKND5JNHGZDXPFP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1Y00QBPXD7CD7958XT18",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ8VSGET61TPSYJQ4AQCX1",
+        "id": "01M6MZ90684KF56EN3RVVMJC8S",
+        "link": "01M6MZ90684KF56EN3RTD7BKBH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1FTNR106GCV6NS1KEDMW",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in the shell's package drive it with bubbletea messages: Esc, FormCancelledMsg, ListCancelledMsg and the app's done message each return tea.Quit, any other key does not, and the result the app set is what the shell returns.",
+          "statement": "The modal shell closes the app on Esc, on the hosted component's cancel (ui.FormCancelledMsg, ui.ListCancelledMsg) and when the app reports its job done, and hands back the app's result for --once."
+        },
+        "handle": "modal-shell-closes",
+        "id": "01M6MZ92NEJNWBVABS0M63FZ37",
+        "key": "zzzzz",
+        "kind": "capability",
+        "node": "01M6MZ92NEJNWBVABS0JB290GE",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ92NEJNWBVABS0JB290GE",
+        "id": "01M6MZ955ARJCKFJ9T73W4K3AK",
+        "link": "01M6MZ955ARJCKFJ9T7031XWN0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1Y00QBPXD7CD7958XT18",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/api checks that each registered app's Rex action opens a layer sized to the cells of the app's component NaturalSize, centred as surface.BoundsForCells places a Modal (zero Anchor), not the whole window; the rex-install testscript greps those sizes from the written rhiza.lua with a fake rex.",
+          "statement": "Each app opens as a centred rexuikit Modal over the current pane, sized to its component's NaturalSize and never full-screen."
+        },
+        "handle": "modal-sized-to-content",
+        "id": "01M6MZ97WECAS9XNZNBH6C96VC",
+        "key": "zzzzzi",
+        "kind": "capability",
+        "node": "01M6MZ97WECAS9XNZNBF3T2JV3",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ97WECAS9XNZNBF3T2JV3",
+        "id": "01M6MZ9AV14QTMVT9KPDDRFMVA",
+        "link": "01M6MZ9AV14QTMVT9KP9KS4JK9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1Y00QBPXD7CD7958XT18",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ97WECAS9XNZNBF3T2JV3",
+        "id": "01M6MZ9D38YFQ3TQGW74491W4S",
+        "link": "01M6MZ9D38YFQ3TQGW72902FR1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1FTNR106GCV6NS1KEDMW",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "How does an app's Rex action open its Modal, and does the Modal follow its content's size as it changes (an inbox list growing or shrinking)? Either the Lua action keeps opening the layer with rex.session.new_layer, sized from cells fixed when rhiza rex install writes it, or a Go opener calls rexuikit surface.Open (Kind Modal, Cells from NaturalSize) over Rex's control connection and resizes with Handle.Resize."
+        },
+        "handle": "modal-open-mechanism",
+        "id": "01M6MZ9FFYJF8W6MDPVS34MCWY",
+        "key": null,
+        "kind": "question",
+        "node": "01M6MZ9FFYJF8W6MDPVS2T2SVK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ9FFYJF8W6MDPVS2T2SVK",
+        "id": "01M6MZ9HVDBEP6Z4ADYWF3F7XK",
+        "link": "01M6MZ9HVDBEP6Z4ADYT1RJPFB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ97WECAS9XNZNBF3T2JV3",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6MYM5GB3Q8DBZST8V5AG6RQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MZ9N7DTKJ08GBYTXM2Q492",
+  "type": "ops",
+  "v": 1
+}

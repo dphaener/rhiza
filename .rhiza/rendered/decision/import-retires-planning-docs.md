@@ -18,7 +18,7 @@ Retire planning, keep reference: retire PLAN.md, decisions.md, todo.md, .shipit/
 
 ### In
 
-- decided-by [m26-nebari-imported](../intent/milestone-26/m26-nebari-imported.md)
+- decided-by [m27-nebari-imported](../intent/milestone-27/m27-nebari-imported.md)
 
 ## History
 
