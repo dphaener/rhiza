@@ -1,0 +1,48 @@
+# A run that fails a leaf raises a question node from a template and starts
+# the advisor on it (Asker: the node's ID); the run ends failed rather than
+# stopping at its gate. rhiza inbox joins the advisor's restatement,
+# recommendation and reasons onto the question's blocker item, in text and
+# --json; the item's question stays the template text.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza add capability store --record
+exec rhiza change new Accepted
+exec rhiza set store --field statement=Kept
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza add question leaf-q --field 'statement=Leaf leaf-a failed after 3 attempts: attempt 1 verifier failed: f1' --record
+exec rhiza link leaf-q blocks store --record
+exec sh -c 'rhiza show leaf-q --json | sed -n "s/^    \"id\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1 > qid'
+
+# Before the advisor recommends, the blocker has the template text only.
+exec rhiza inbox --json
+stdout '"kind": "blocker"'
+! stdout '"restatement"'
+! stdout '"recommendation"'
+
+mkdir .git/rhiza/runs
+exec sh -c 'sed "s/QID/$(cat qid)/" ../failed.jsonl > .git/rhiza/runs/FAILEDRUN.jsonl'
+
+exec rhiza inbox --json
+stdout '"kind": "blocker"'
+stdout '"question": "Leaf leaf-a failed after 3 attempts: attempt 1 verifier failed: f1"'
+stdout '"restatement": "Should leaf-a keep the old export path\?"'
+stdout '"recommendation": "Keep the old path"'
+stdout '"reasons": "Callers still use it"'
+exec rhiza inbox
+stdout '^  question: Leaf leaf-a failed after 3 attempts: attempt 1 verifier failed: f1 \(leaf-q\)$'
+stdout '^  in plain words: Should leaf-a keep the old export path\?$'
+stdout '^  recommendation: Keep the old path$'
+stdout '^  reasons: Callers still use it$'
+-- failed.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"01M5SWR000000000000000000A"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"advisor","at":"2026-01-01T01:00:00Z","step":"build","session":"A1","asker":"QID"}
+{"type":"recommended","at":"2026-01-01T01:05:00Z","step":"build","session":"A1","asker":"QID","text":"Keep the old path","detail":"Callers still use it","restated":"Should leaf-a keep the old export path?"}
+{"type":"finished","at":"2026-01-01T02:00:00Z","step":"build","end":"failed","detail":"leaf leaf-a failed"}

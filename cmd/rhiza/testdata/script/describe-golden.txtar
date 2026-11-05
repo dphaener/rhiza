@@ -2807,11 +2807,15 @@ cmp stdout describe.golden.json
                   "type": "array"
                 },
                 "reasons": {
-                  "description": "A question: why the advisor recommends it",
+                  "description": "A question or a blocker: why the advisor recommends it",
                   "type": "string"
                 },
                 "recommendation": {
-                  "description": "A question: what the advisor recommends answering; absent while it has not, or when it failed",
+                  "description": "A question or a blocker: what the advisor recommends answering; absent while it has not, or when it failed",
+                  "type": "string"
+                },
+                "restatement": {
+                  "description": "A blocker: what is asked in plain words, as the advisor restated it; absent until it has",
                   "type": "string"
                 },
                 "run": {

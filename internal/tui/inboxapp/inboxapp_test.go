@@ -620,6 +620,26 @@ func TestGateRowShowsQuestionsAndWhatTheyBlock(t *testing.T) {
 	}
 }
 
+func TestBlockerShowsAdvisorRestatement(t *testing.T) {
+	out := `{"items":[{"id":"b2","kind":"blocker","change":"C5","change_title":"Five","question":"Leaf leaf-a failed after 3 attempts: f1",` +
+		`"restatement":"Should exports keep the old path?","recommendation":"Keep it","reasons":"Callers use it","handle":"leaf-q","blocks":"this change set"}]}`
+	m := NewModel(fake(out, new([]call)))
+	if r := m.Rows()[0]; !strings.Contains(r, "Should exports keep the old path?") || strings.Contains(r, "attempts") {
+		t.Errorf("row = %q", r)
+	}
+	enter(m)
+	m.Update(tea.WindowSizeMsg{Width: 70, Height: 30})
+	v := plain(m.View().Content)
+	for _, w := range []string{"Should exports keep the old path?", "Blocks: Five", "Recommended: Keep it", "Why: Callers use it"} {
+		if !strings.Contains(v, w) {
+			t.Errorf("view lacks %q:\n%s", w, v)
+		}
+	}
+	if strings.Contains(v, "attempts") {
+		t.Errorf("view shows the template text beside its restatement:\n%s", v)
+	}
+}
+
 // idsIn are the handles and IDs the items carry.
 var idsIn = []string{"01M6PF30ABCDEFGHJKMNPQRSTV", "review-01m6pf30-r3-f1", "RUN01M6PF30", "SES01M6PF30", "i7x9k2f", "gate-q-handle", "01M6PN1SW"}
 

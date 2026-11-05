@@ -102,8 +102,9 @@ type InboxItem struct {
 	TabBlock       string              `json:"tab_block,omitempty" desc:"A question or an interview: the Rex block of the session's tab"`
 	TabSession     string              `json:"tab_session,omitempty" desc:"A question or an interview: the Rex session of the session's tab"`
 	Session        string              `json:"session,omitempty" desc:"A question: the asking session; an interview: the interview's session; a stalled item: the stalled session"`
-	Recommendation string              `json:"recommendation,omitempty" desc:"A question: what the advisor recommends answering; absent while it has not, or when it failed"`
-	Reasons        string              `json:"reasons,omitempty" desc:"A question: why the advisor recommends it"`
+	Recommendation string              `json:"recommendation,omitempty" desc:"A question or a blocker: what the advisor recommends answering; absent while it has not, or when it failed"`
+	Reasons        string              `json:"reasons,omitempty" desc:"A question or a blocker: why the advisor recommends it"`
+	Restatement    string              `json:"restatement,omitempty" desc:"A blocker: what is asked in plain words, as the advisor restated it; absent until it has"`
 	Handle         string              `json:"handle,omitempty" desc:"A blocker: the question's handle"`
 	Blocks         string              `json:"blocks,omitempty" desc:"A blocker: what the question blocks, this change set or the handle of the node"`
 	BlocksTitle    string              `json:"blocks_title,omitempty" desc:"A blocker: what the question blocks by name, the node's statement or the change set's title; absent when it has none"`
@@ -143,10 +144,17 @@ func (r InboxResponse) Human(w io.Writer) {
 				fmt.Fprintf(w, "  change set: %s\n", it.ChangeTitle)
 			}
 			fmt.Fprintf(w, "  question: %s (%s)\n", it.Question, it.Handle)
+			if it.Restatement != "" {
+				fmt.Fprintf(w, "  in plain words: %s\n", it.Restatement)
+			}
 			if it.BlocksTitle != "" {
 				fmt.Fprintf(w, "  blocks: %s (%s)\n", it.BlocksTitle, it.Blocks)
 			} else {
 				fmt.Fprintf(w, "  blocks: %s\n", it.Blocks)
+			}
+			if it.Recommendation != "" {
+				fmt.Fprintf(w, "  recommendation: %s\n", it.Recommendation)
+				fmt.Fprintf(w, "  reasons: %s\n", it.Reasons)
 			}
 			if it.Next != "" {
 				fmt.Fprintf(w, "  next: %s\n", it.Next)
@@ -599,7 +607,7 @@ func runInbox(ctx *Ctx, req any) (any, error) {
 	fold := newInboxFold(ctx)
 	defer fold.close()
 	items := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxTabOf(ctx, common))
-	blockers, err := inboxBlockers(ctx)
+	blockers, err := inboxBlockers(ctx, questionAdvice(runs))
 	if err != nil {
 		return nil, err
 	}
@@ -642,7 +650,10 @@ func sortInboxItems(items []InboxItem) []InboxItem {
 // accepted change set it blocks, read from the to-be view as ready reads
 // it: a question on a draft or landed change set is never listed. A
 // blocker began to wait when its question was raised, which its ID dates.
-func inboxBlockers(ctx *Ctx) ([]InboxItem, error) {
+// advice gives the advisor's restatement and recommendation on a question
+// by its node ID (questionAdvice), for a question a run raised from a
+// template: a failed leaf, a review cycle cap.
+func inboxBlockers(ctx *Ctx, advice map[string]run.Advice) ([]InboxItem, error) {
 	r, err := openReader(ctx, "inbox", "", toBeView)
 	if err != nil {
 		return nil, err
@@ -700,13 +711,35 @@ func inboxBlockers(ctx *Ctx) ([]InboxItem, error) {
 			}
 			at := ulid.Time(ulid.ULID(b.question).Time()).UTC().Format(time.RFC3339)
 			sum := sha256.Sum256([]byte(strings.Join([]string{InboxBlocker, b.question.String(), p.info.ID.String()}, "\x00")))
-			items = append(items, InboxItem{
+			it := InboxItem{
 				ID: hex.EncodeToString(sum[:])[:7], Kind: InboxBlocker, At: at, Change: p.info.ID.String(),
 				Question: text, Handle: handle, Blocks: blocks, BlocksTitle: blocksTitle, Next: "rhiza show " + handle,
-			})
+			}
+			if a, ok := advice[b.question.String()]; ok {
+				it.Recommendation, it.Reasons, it.Restatement = a.Recommendation, a.Reasons, a.Restatement
+			}
+			items = append(items, it)
 		}
 	}
 	return items, nil
+}
+
+// questionAdvice is the latest advice with a recommendation on each
+// question node, by the node's ID (the Asker of an advisor the engine
+// started on a question it raised), across every run.
+func questionAdvice(runs []run.Journal) map[string]run.Advice {
+	out := map[string]run.Advice{}
+	for _, j := range runs {
+		for _, a := range j.State().Advice {
+			if a.Recommendation == "" {
+				continue
+			}
+			if old, ok := out[a.Asker]; !ok || !a.At.Before(old.At) {
+				out[a.Asker] = a
+			}
+		}
+	}
+	return out
 }
 
 // overlapItems are the overlap items of ovs, targets named by m.
@@ -878,7 +911,7 @@ func findInboxItem(ctx *Ctx, ref string) (InboxItem, run.State, error) {
 	fold := newInboxFold(ctx)
 	defer fold.close()
 	all := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxTabOf(ctx, common))
-	blockers, err := inboxBlockers(ctx)
+	blockers, err := inboxBlockers(ctx, questionAdvice(runs))
 	if err != nil {
 		return InboxItem{}, run.State{}, err
 	}

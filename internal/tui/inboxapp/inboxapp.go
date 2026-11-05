@@ -524,10 +524,14 @@ func asked(q api.InboxGateQuestion) string {
 	return q.Statement
 }
 
-// waits is what the item waits for, on one line.
+// waits is what the item waits for, on one line: for a question or a
+// blocker, the advisor's restatement once it has one.
 func waits(it api.InboxItem) string {
 	switch it.Kind {
 	case api.InboxQuestion, api.InboxBlocker:
+		if it.Restatement != "" {
+			return scrub(it, it.Restatement)
+		}
 		if it.Question != "" {
 			return scrub(it, it.Question)
 		}
@@ -560,7 +564,8 @@ func blocksOf(it api.InboxItem) string {
 }
 
 // askLines are the lines of text above an answer form at width: every
-// question in full and wrapped, what each blocks and the advisor's
+// question in full and wrapped (the advisor's plain-words restatement once
+// it has one), what each blocks and the advisor's
 // recommendation.
 func askLines(it api.InboxItem, qs []api.InboxGateQuestion, width int) []string {
 	var out []string
@@ -570,7 +575,11 @@ func askLines(it api.InboxItem, qs []api.InboxGateQuestion, width int) []string 
 		}
 	}
 	if len(qs) == 0 {
-		add("", it.Question)
+		if it.Restatement != "" {
+			add("", it.Restatement)
+		} else {
+			add("", it.Question)
+		}
 		add("Blocks: ", blocksOf(it))
 		add("Recommended: ", it.Recommendation)
 		add("Why: ", it.Reasons)
