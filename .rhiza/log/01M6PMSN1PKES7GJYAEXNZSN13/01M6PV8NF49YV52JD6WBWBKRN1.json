@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PV79Z941ETJSR2JGBE1B22",
+  "after": [
+    "01M6PV1AYBKTFD2X7QB7B5XQ83"
+  ],
+  "at": "2026-11-05T21:53:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-62f69d10 at 059598cd (attempt 2): ran go test -trimpath -count=1 ./internal/tui/inboxapp/... (ok) plus -v on the answer/gate tests, all PASS, and read the diff. TestQuestionFormShowsStatementAndRecommendationAboveAnswer (new, fixing finding f1) asserts, for both question and blocker items over a fake runner, every word of the full statement, then 'Recommended: ...', then 'Your answer' in that order. TestGateFormShowsEachQuestionNoHandleAndAnswersRightOne shows each of two gate questions' text (and recommendation) above its own TextArea with neither handle in the view, and checks question.answer was called with each handle and its typed text (--run R4). TestAnswerFormOpenedAfterResizeWraps checks a form opened after a resize wraps within the pane. go vet and gofmt clean."
+        },
+        "handle": "inbox-app-answer-shows-question-verified-2",
+        "id": "01M6PV8ND7JRH097RWYDSVQ8JG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PV8ND7JRH097RWYA2JG19Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PV8ND7JRH097RWYA2JG19Q",
+        "id": "01M6PV8NDPGTFJV6RS9XH2KMT2",
+        "link": "01M6PV8NDPGTFJV6RS9TQ5PHNC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1T22SZY3QGXYD783Z3JE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PV8NF49YV52JD6WBWBKRN1",
+  "type": "ops",
+  "v": 1
+}
