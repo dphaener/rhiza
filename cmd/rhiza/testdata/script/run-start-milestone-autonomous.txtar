@@ -1,6 +1,6 @@
 # run start --workflow plan --autonomous is a usage error (exit 2) when the
-# run plans a milestone: --new --milestone, or an existing record change
-# set. It writes no draft and no journal. The same starts without
+# run plans a milestone: --new --milestone, --request naming a milestone
+# request (with or without --milestone), or an existing record change set. It writes no draft and no journal. The same starts without
 # --autonomous run, an intention with --autonomous still runs, and run
 # resume refuses a milestone plan run journaled autonomous.
 #
@@ -8,6 +8,7 @@
 
 chmod 755 bin/rex
 env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 mkdir repo
 cd repo
 exec git init -q
@@ -25,6 +26,16 @@ exec sh -c 'rhiza run start --foreground --workflow plan --new "Plan the milesto
 stdout 'milestone planning needs the owner'
 stdout '^exit=2$'
 exec sh -c 'rhiza run start --foreground $(cat $WORK/rec) --workflow plan --permission-mode manual --autonomous 2>&1; echo exit=$?'
+stdout 'milestone planning needs the owner'
+stdout '^exit=2$'
+exec rhiza request 'Ship v3' --kind milestone
+exec rhiza daemon --permission-mode manual --max-runs 1 --once
+stdout '^Started the plan run of request '
+exec sh -c 'rhiza request ls --json | sed -n "s/^      \"id\": \"\(.*\)\",$/\1/p" | tr -d "\n" > $WORK/req'
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Ship v3" --request $(cat $WORK/req) --permission-mode manual --autonomous --dry-run --json 2>&1; echo exit=$?'
+stdout 'milestone planning needs the owner'
+stdout '^exit=2$'
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Ship v3" --request $(cat $WORK/req) --permission-mode manual --autonomous 2>&1; echo exit=$?'
 stdout 'milestone planning needs the owner'
 stdout '^exit=2$'
 exec sh -c 'rhiza change ls --json | grep -c "\"intent\""'

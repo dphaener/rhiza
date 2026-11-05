@@ -554,9 +554,15 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		if reqRun, reqMilestone, err = requestRun(common, q, run.NewStore(run.Dir(common))); err != nil {
+		req, err := requestRun(common, q, run.NewStore(run.Dir(common)))
+		if err != nil {
 			return nil, err
 		}
+		// A milestone request's plan plans the milestone, --milestone or not.
+		if r.Autonomous && def.Name == planWorkflow && req.Kind == daemon.KindMilestone {
+			return nil, milestoneNeedsOwner(runStartNext)
+		}
+		reqRun, reqMilestone = req.Run, req.Milestone
 	}
 	var t changeWorktree
 	if strings.TrimSpace(r.New) != "" {
