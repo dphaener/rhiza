@@ -1,0 +1,28 @@
+{
+  "actor": "01M6NM4XHRPV5RH8FQ62N3KVTK",
+  "after": [
+    "01M6NM37FQW3ZMRK3V60YEF937"
+  ],
+  "at": "2026-11-05T10:30:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M644QW8GJBD8KTJ8Q3KVMJRE",
+        "handle": null,
+        "id": "01M6NM5RVQQQ97K293F1YSTMHC",
+        "node": "01M644QW8GJBD8KTJ8Q00MMNYY",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A rex-install script test: after rhiza rex install, rhiza.lua has one rex.action per registered app (inbox, request, runs, daemon and autonomy, exactly five), each named rhiza_app_<name> and running rhiza tui open <name>; internal/api TestRexInstallRegistersAnActionPerApp registers one more app and reinstalls, and finds its action in rhiza.lua"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NM5X6Q0HAQ0C65KSSZYK7X",
+  "type": "ops",
+  "v": 1
+}
