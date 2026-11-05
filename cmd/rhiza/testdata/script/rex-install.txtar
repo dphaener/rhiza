@@ -32,6 +32,9 @@ grep 'title = "model"' conf/rhiza.lua
 grep 'title = "accept"' conf/rhiza.lua
 grep 'bounds = cell_bounds\(ctx.block_id, 100, 30\)' conf/rhiza.lua
 grep 'window_id = block_window\(ctx.block_id\),' conf/rhiza.lua
+# No app opens full-screen: every layer is sized by cell_bounds to cells.
+! grep 'bounds = LAYER_BOUNDS' conf/rhiza.lua
+! grep 'cell_bounds\(ctx.block_id, 0' conf/rhiza.lua
 
 # The launch key enters the rhiza key mode, which binds one key per app to
 # that app's action.
