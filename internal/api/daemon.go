@@ -645,6 +645,16 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	if signoffMode == AutonomyOwner {
 		autonomous = false
 	}
+	// A milestone request's plan run is the owner's own interactive start:
+	// it goes first, whether or not a run slot is free, and counts as a
+	// running run for the picks below.
+	var milestoned []string
+	if !paused && !low {
+		milestoned, err = daemonPlanRequests(ctx, rs, runs, 0, max, mode, daemon.KindMilestone)
+		if err != nil {
+			return nil, resumed, milestoned, err
+		}
+	}
 	var picked []string
 	if paused {
 		var ps []daemon.Skip
@@ -680,6 +690,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		if max > 1 && daemonRequestWaits(ctx) {
 			kept++
 		}
+		kept += len(milestoned)
 		shipMax := max - kept
 		if shipMax < 0 {
 			shipMax = 0
@@ -705,7 +716,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	}
 	for _, cs := range picked {
 		if err := daemonStart(ctx, cs, autonomous, mode); err != nil {
-			return started, resumed, nil, err
+			return started, resumed, milestoned, err
 		}
 		pending[cs] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, cs)}
 		started = append(started, cs)
@@ -713,7 +724,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	if paused || low {
 		return started, resumed, nil, nil
 	}
-	running := len(held) + len(started)
+	running := len(held) + len(started) + len(milestoned)
 	for _, j := range runs {
 		if j.State().Liveness(host, nil) == run.LiveRunning {
 			running++
@@ -721,9 +732,8 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	}
 	if hold != nil {
 		// A usage hold stops every launch but a milestone request's plan
-		// run: the owner's own, attended start.
-		planned, err = daemonPlanRequests(ctx, rs, runs, running, max, mode, daemon.KindMilestone)
-		return started, resumed, planned, err
+		// run, started above.
+		return started, resumed, milestoned, nil
 	}
 	continued, err := daemonQueuedContinues(ctx, rs, runs, running, max)
 	resumed = append(resumed, continued...)
@@ -743,7 +753,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		return started, resumed, nil, err
 	}
 	planned, err = daemonPlanRequests(ctx, rs, runs, running+len(queued), max, mode, "")
-	return started, resumed, planned, err
+	return started, resumed, append(milestoned, planned...), err
 }
 
 // daemonQueuedStarts starts the runs the owner queued with rhiza run start,

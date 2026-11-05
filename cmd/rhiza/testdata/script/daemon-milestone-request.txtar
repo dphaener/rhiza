@@ -46,6 +46,50 @@ stdout '^1$'
 exec sh -c 'grep -c "Add exports" $WORK/detach.log || true'
 stdout '^0$'
 
+# A milestone request starts at once, ahead of the queue and without a free
+# slot: in a second repo with --max-runs 1 and one run already started, a
+# feature then a milestone request are queued; a poll starts only the
+# milestone request. A second milestone request waits while the first's run
+# is live.
+cd ..
+env RHIZA_TEST_DETACH_LOG=$WORK/detach2.log
+env CLAUDE_CONFIG_DIR=$WORK/none
+mkdir repo2
+cd repo2
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+exec git add -A
+exec git commit -qm init
+exec rhiza change new One --title One
+exec rhiza add capability one-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza daemon --permission-mode manual --once --max-runs 1
+stdout -count=1 '^Started a run of '
+
+exec rhiza request 'Add exports'
+exec rhiza request --kind milestone 'First milestone'
+exec rhiza daemon --permission-mode manual --once --max-runs 1
+stdout -count=1 '^Started the plan run of request '
+exec rhiza request ls
+stdout 'milestone planning: First milestone'
+stdout 'feature queued: Add exports'
+exec sh -c 'grep -c "run start --foreground --workflow plan --new First milestone .* --milestone" $WORK/detach2.log'
+stdout '^1$'
+
+exec rhiza request --kind milestone 'Second milestone'
+exec rhiza daemon --permission-mode manual --once --max-runs 1
+! stdout 'plan run'
+exec rhiza request ls
+stdout 'milestone queued: Second milestone'
+stdout 'feature queued: Add exports'
+exec sh -c 'grep -c "Second milestone" $WORK/detach2.log || true'
+stdout '^0$'
+
 -- plan.toml --
 name = "plan"
 

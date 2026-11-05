@@ -71,26 +71,28 @@ exec rhiza daemon --permission-mode manual --once
 exec rhiza request ls --json
 stdout -count=3 '"state": "queued"'
 
-# Unpaused, one slot: the oldest request's plan run starts, not autonomous.
+# Unpaused, one slot: the milestone request's plan run starts first, not
+# autonomous, whatever the queue order.
 exec rhiza daemon set rhiza.daemon.paused false
 exec rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout -count=1 '^Started the plan run of request '
 exec cat $WORK/detach.log
 stdout -count=1 '^REX_SESSION=.* rhiza '
-stdout 'run start --foreground --workflow plan --new Add exports --request [0-9A-Z]{26} --permission-mode manual$'
+stdout 'run start --foreground --workflow plan --new Ship v2 --request [0-9A-Z]{26} --permission-mode manual --milestone$'
 exec rhiza request ls
-stdout 'feature planning: Add exports \(run [0-9A-Z]{26}\)$'
+stdout 'milestone planning: Ship v2'
+stdout 'feature queued: Add exports$'
 stdout 'bug queued: Login fails$'
 
-# Plan autonomy auto, three slots: the first start, not journaled yet, holds
-# one; the bug and the milestone start, autonomous.
+# Plan autonomy auto, three slots: the milestone's start, not journaled yet,
+# holds one; the feature and the bug start, autonomous.
 exec rhiza daemon set rhiza.autonomy.plan auto
 exec rhiza daemon --permission-mode manual --max-runs 3 --once
 stdout -count=2 '^Started the plan run of request '
 exec cat $WORK/detach.log
 stdout -count=3 '^REX_SESSION=.* rhiza '
+stdout 'run start --foreground --workflow plan --new Add exports --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
 stdout 'run start --foreground --workflow plan --new Fix Login fails --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
-stdout 'run start --foreground --workflow plan --new Ship v2 --request [0-9A-Z]{26} --permission-mode manual --milestone --autonomous$'
 exec rhiza request ls --json
 stdout -count=3 '"state": "planning"'
 
