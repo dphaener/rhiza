@@ -644,16 +644,30 @@ func (r *running) command(step workflow.Step, env []string) result {
 // answering Decision is in the model. A failed verdict ends the step with
 // an error outcome naming the question, so the run fails whatever the
 // step's on. entries say; otherwise res stands. A normal run leaves the
-// questions open for the owner. The error return is for journal failures.
+// questions open for the owner, starting the advisor on each one that has
+// none yet (adviseQuestion). The error return is for journal failures.
 func (r *running) arbitrateAsked(step workflow.Step, res result) (result, error) {
-	if !r.j.State().Autonomous {
-		return res, nil
-	}
 	j, err := r.e.Store.Read(r.j.ID)
 	if err != nil {
 		return result{}, err
 	}
 	r.j = j
+	if st := r.j.State(); !st.Autonomous {
+		advised := map[string]bool{}
+		for _, a := range st.Advice {
+			advised[a.Asker] = true
+		}
+		for _, asked := range undecidedAsks(r.j.Entries) {
+			if advised[asked.Question] {
+				continue
+			}
+			advised[asked.Question] = true
+			if err := r.adviseQuestion(step, Question{ID: asked.Question, Handle: asked.Handle}, asked.Text); err != nil {
+				return result{}, err
+			}
+		}
+		return res, nil
+	}
 	for _, asked := range undecidedAsks(r.j.Entries) {
 		v, err := r.arbitrate(step, asked.Question)
 		if err != nil {
@@ -1034,8 +1048,9 @@ func (r *running) advise(step, session string, b *Block) error {
 	return nil
 }
 
-// adviseQuestion launches the advisor on question node q, which the
-// engine raised from a template (a failed leaf, a review cycle cap) for
+// adviseQuestion launches the advisor on question node q, which the run
+// raised from a template (a failed leaf, a review cycle cap, a plan-review
+// finding run review-check carried to the gate) for
 // the owner, and journals an advisor entry whose Asker is the node's ID.
 // The advisor restates the question in plain words and recommends; the
 // node's statement stays the engineering record. An autonomous run's

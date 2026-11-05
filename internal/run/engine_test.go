@@ -2067,6 +2067,28 @@ func TestCommandAskedNormalRunLeftOpen(t *testing.T) {
 	}
 }
 
+// TestCommandAskedNormalRunStartsAdvisor: in a normal run a plan-review
+// question a command step journalled gets one advisor on its node, asked
+// by the node's ID, and no second one from a later command step.
+func TestCommandAskedNormalRunStartsAdvisor(t *testing.T) {
+	e, r, _, _ := setup(t, askedWF)
+	r.advisorOK = true
+	journalAsked(t, e, r, "Q9")
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || !reflect.DeepEqual(r.advisors, []string{"Q9 How?"}) {
+		t.Fatalf("result %q advisors %q", st.Result, r.advisors)
+	}
+	if len(st.Advice) != 1 || st.Advice[0].Asker != "Q9" || st.Advice[0].Advisor != "ADV-Q9" || st.Advice[0].Step != "check" {
+		t.Errorf("advice = %+v", st.Advice)
+	}
+	if n := countType(t, e, TypeAdvisor); n != 1 {
+		t.Errorf("advisor entries = %d", n)
+	}
+}
+
 // TestCommandAskedNotArbitratedTwice: a question already decided is not
 // decided again by a later command step, nor by a resume; a session's
 // question (it has a Session) is not this path's.
