@@ -20,6 +20,12 @@ The first web UI is served by the daemon process on localhost, read-only and for
 
 - decided-by [milestone-28](../intent/milestone-28.md)
 - decided-by [web-monitor](../capability/rhiza/web-monitor.md)
+- decided-by [web-serve-loopback](../capability/rhiza/web-monitor/web-serve-loopback.md)
+- decided-by [web-api-read-only](../capability/rhiza/web-monitor/web-api-read-only.md)
+- decided-by [web-events-stream](../capability/rhiza/web-monitor/web-events-stream.md)
+- decided-by [web-templates-embedded](../capability/rhiza/web-monitor/web-templates-embedded.md)
+- decided-by [web-live-sections](../capability/rhiza/web-monitor/web-live-sections.md)
+- decided-by [web-url-in-daemon-status](../capability/rhiza/web-monitor/web-url-in-daemon-status.md)
 
 ## History
 
