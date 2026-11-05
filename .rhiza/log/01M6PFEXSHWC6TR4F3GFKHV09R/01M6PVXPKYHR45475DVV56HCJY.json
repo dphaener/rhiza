@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PVSEJFVB8NM4QG87BZXGMW",
+  "after": [
+    "01M6PTWK202YAJ5GVXS32KK7MX"
+  ],
+  "at": "2026-11-05T22:05:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at d8816f86 (attempt 2). Read the diff: dirFingerprints now fingerprints each change-set directory by its entries' count and last name, which fixes attempt 1's finding f1 (an entry appended to an existing change set sent no change event). TestEventsNameWhatChanged (internal/web/events_test.go) drives web.Events over api.WebEventSources with a locked recorder in a fixture repo. It appends a log entry to a new change set and then to an existing one, moves a run journal, writes driver log lines, changes the daemon's state file, and adds then removes a disk-low inbox item. It reads a matching named event for each (change ×2 for the same ID, run, log, daemon, inbox arrive and leave) and checks the stream holds no stray lines. Ran: go test -trimpath -count=1 ./internal/web/... ok; go test -trimpath -race -count=5 -run TestEvents ./internal/web/ ok (no races); go test -trimpath -count=1 -run 'Web|Inbox' ./internal/api/ ok; go vet and gofmt -l on internal/web and internal/api were clean. TestEventsRefuseWrites gives 405 for POST, PUT and DELETE."
+        },
+        "handle": "web-events-stream-verified",
+        "id": "01M6PVXPG7S5XSJ6NDAMPJ1BGN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PVXPG7S5XSJ6NDAMD3Q1DQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PVXPG7S5XSJ6NDAMD3Q1DQ",
+        "id": "01M6PVXPJ3FF1M3JTKW9B9VWY9",
+        "link": "01M6PVXPJ3FF1M3JTKW81QNC6E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ98BKT1ES8F6WJTVJ893",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFEXSHWC6TR4F3GFKHV09R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PVXPKYHR45475DVV56HCJY",
+  "type": "ops",
+  "v": 1
+}
