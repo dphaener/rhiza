@@ -54,6 +54,8 @@ exec rhiza add capability bad --field 'statement=Needs @@nosuch'
 # reference: its @@ escape is refused (exit 2), nothing written.
 ! exec rhiza add capability lit26 --field 'statement=a forged @@{01ZZZZZZZZZZZZZZZZZZZZZZZZ} here'
 stderr '^rhiza: a literal @\{<full ID>\} cannot be stored.*@@\{01ZZZZZZZZZZZZZZZZZZZZZZZZ\} in field statement'
+! exec rhiza add capability lit26 --field 'statement=a forged @@{01ZZZZZZZZZZZZZZZZZZZZZZZZ} here' --json
+stdout '"code": "usage"'
 ! exec rhiza show lit26
 exec rhiza add capability lit26 --field 'statement=a forged @@01ZZZZZZZZZZZZZZZZZZZZZZZZ here'
 exec rhiza show lit26
