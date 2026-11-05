@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NA7SRBPNYPCJDSE39Q9VB4",
+  "after": [
+    "01M6N457Z2Z2BVKDJQ52Q3Z2Y3"
+  ],
+  "at": "2026-11-05T07:41:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-19373354 at 14bb597f: read the diff of internal/tui/inboxapp (one rexuikit ui.List with a row per item in the inbox operation's order; ActionFor maps question/open/blocker to answer, signoff to signoff, failed/gave-up/skipped to resolve, accept to accept, everything else to show; show opens an InfoPanel with the detail and calls inbox.open on the item's run). Ran go test -trimpath -count=1 ./internal/tui/inboxapp/... (ok): TestRowPerItemInOrder (six rows in order with kind, change set title and what it waits for), TestEnterOpensActionPerKind (Enter on question, signoff, failed and accept items calls the Open hook with that action and no runner op), TestActionFor (all 13 kinds incl. stalled, overlap, disk-low, usage-reserve, main-stale -> show), TestOtherKindShowsDetailAndOpensTab (Enter on stalled shows its detail and calls inbox.open h8), TestEmptyInbox (one empty-state line). Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(tui-inbox-app|inbox-open|tui-.*)$' (ok): tui-inbox-app cmps rhiza tui app inbox --once with rhiza inbox --json byte for byte for an empty inbox and a failed run. go build ./... and go vet on internal/tui and cmd/rhiza clean."
+        },
+        "handle": "inbox-app-pick-list-verified",
+        "id": "01M6NAEB62N57BSJ3RG1DJYGJW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NAEB62N57BSJ3RG0JHY33M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NAEB62N57BSJ3RG0JHY33M",
+        "id": "01M6NAF075NG7J7YJ7MHBK6DS3",
+        "link": "01M6NAF075NG7J7YJ7MFTQ31V7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ9RZ8M65B2FB58A75WYZ2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYN9GRWHRJSHA31D9S838H",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NAG3F3JXRW10VK8D0GMEPQ",
+  "type": "ops",
+  "v": 1
+}
