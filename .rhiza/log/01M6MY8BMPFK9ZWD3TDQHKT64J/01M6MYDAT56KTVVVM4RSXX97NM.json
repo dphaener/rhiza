@@ -1,0 +1,41 @@
+{
+  "actor": "01M6MYBQ2DVR56SSZ7B8CJSSX3",
+  "after": [
+    "01M6MYBJBVRXYWWXAYF7NTB0ZN"
+  ],
+  "at": "2026-11-05T04:10:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "milestone-22's statement is the one about each stage (planning included) switching between autonomous and owner-driven, and this change set narrows how the plan stage's autonomy applies; milestone-25 is about emptying the backlog, which this does not serve. In the code, the daemon decides autonomy in daemonPlanRequests/daemonStartPlan (internal/api/request.go) from autonomyStage(plan) alone, adding --milestone for KindMilestone requests; run start (internal/api/run.go runRunStart/newPlanChange) maps --milestone to a record change set and accepts --autonomous with it. Gating only the daemon would leave a hand-started or resumed run able to go autonomous, so the owner's rule ('that always requires a human') needs the run start refusal too; a refusal there is explicit, while the daemon simply drops the flag so its milestone requests still start and wait for the owner.",
+          "statement": "The change set serves milestone-22 (switching each stage between autonomous and owner-driven). Rhiza enforces it in two places: (1) the daemon's daemonStartPlan never passes --autonomous for a request of kind milestone, whatever rhiza.autonomy.plan says, so that plan run waits on the owner's interview; (2) run start refuses --autonomous on a plan run that plans a milestone (--milestone, a request of kind milestone, or an existing record change set) with a usage error naming the rule, so no other path, by hand or on resume, starts one autonomously. Feature and bug requests keep following rhiza.autonomy.plan.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "milestone-plan-never-autonomous",
+        "id": "01M6MYD57G39XAW6AF3EJ7CF1T",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MYD57G39XAW6AF3CXS8XA8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MYD57G39XAW6AF3CXS8XA8",
+        "id": "01M6MYD7N58YVC65P98M4JJJ2X",
+        "link": "01M6MYD7N58YVC65P98KGR978H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYBH597QRAM0PS1MTJFMEP",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6MY8BMPFK9ZWD3TDQHKT64J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MYDAT56KTVVVM4RSXX97NM",
+  "type": "ops",
+  "v": 1
+}

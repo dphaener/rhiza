@@ -1,0 +1,29 @@
+# `rhiza tui open <app>` is what each app's Rex action runs: it opens the
+# app as a rexuikit Modal over Rex's control connection. These cases fail
+# before any connection is made; internal/tui/modalopen's tests drive the
+# open and the resizes against a fake Rex.
+
+env REX_SESSION=
+env REX_BLOCK=
+env REX_SERVER=
+
+# An unknown app is not found.
+exec sh -c 'rhiza tui open nosuch --session s; echo exit=$?'
+stdout '^exit=4$'
+stderr 'unknown app "nosuch"'
+
+# Outside Rex, with no --session, there is no session to open in.
+exec sh -c 'rhiza tui open inbox; echo exit=$?'
+stdout '^exit=2$'
+stderr 'no Rex session'
+
+# A flag without its value, or an unknown one, prints the usage.
+exec sh -c 'rhiza tui open inbox --session; echo exit=$?'
+stdout '^exit=2$'
+stderr 'usage: rhiza tui open <app>'
+exec sh -c 'rhiza tui open inbox --size 3; echo exit=$?'
+stdout '^exit=2$'
+stderr 'usage: rhiza tui open <app>'
+
+! exec rhiza tui
+stderr 'rhiza tui open <app> \[--session <id>\] \[--block <id>\]'

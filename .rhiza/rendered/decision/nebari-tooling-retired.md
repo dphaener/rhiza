@@ -22,7 +22,7 @@ Nebari's own tooling (afk, shipit, zap) goes away in favour of Rhiza workflows, 
 
 ### In
 
-- decided-by [m26-nebari-on-rhiza](../intent/milestone-26/m26-nebari-on-rhiza.md)
+- decided-by [m27-nebari-on-rhiza](../intent/milestone-27/m27-nebari-on-rhiza.md)
 
 ## History
 

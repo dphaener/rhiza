@@ -18,7 +18,7 @@ In Nebari's own model: rhiza init in Nebari, open the import change set there, a
 
 ### In
 
-- decided-by [m26-nebari-imported](../intent/milestone-26/m26-nebari-imported.md)
+- decided-by [m27-nebari-imported](../intent/milestone-27/m27-nebari-imported.md)
 
 ## History
 

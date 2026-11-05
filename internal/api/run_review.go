@@ -1016,7 +1016,7 @@ func runRunReviewCheck(ctx *Ctx, _ any) (any, error) {
 				targets = append(targets, t)
 			}
 			add := AddRequest{Kind: string(op.KindQuestion), Handle: q.Handle,
-				Fields: []string{"statement=" + reviewQuestionText(rd.Number, f, v.Reason)}}
+				Fields: []string{"statement=" + reviewQuestionText(rd.Number, f, v.Reason)}, lenient: true}
 			items[t] = append(items[t], applyItem{op: "add", build: func(b writeBase) (edit, error) { return buildAdd(b, add) }})
 			if q.Blocks != "" {
 				link := LinkRequest{From: q.Handle, Type: string(op.LinkBlocks), To: q.Blocks}

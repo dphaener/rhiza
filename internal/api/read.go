@@ -148,6 +148,9 @@ type reader struct {
 	view view
 	// ov is the what-if overlay on the as-is rows, nil for a stored view.
 	ov *index.Overlay
+	// live caches the current handle of the nodes the shown texts refer to,
+	// "" for a retired or unknown one.
+	live map[id.ID]string
 }
 
 // openReader opens a reader for operation opName in the view named by s,
@@ -359,6 +362,12 @@ func readError(err error) error {
 
 // Node returns the node with ID i, live or retired.
 func (r *reader) Node(i id.ID) (gmodel.Node, bool, error) {
+	n, ok, err := r.rawNode(i)
+	return r.shown(n), ok, err
+}
+
+// rawNode is Node with the texts as stored.
+func (r *reader) rawNode(i id.ID) (gmodel.Node, bool, error) {
 	if r.ov != nil {
 		n, ok, err := r.ov.Node(i)
 		return n, ok, readError(err)
@@ -382,10 +391,10 @@ func (r *reader) Link(i id.ID) (gmodel.Link, bool, error) {
 func (r *reader) Resolve(ref string) (gmodel.Node, error) {
 	if r.ov != nil {
 		n, err := r.ov.Resolve(ref)
-		return n, readError(err)
+		return r.shown(n), readError(err)
 	}
 	n, err := r.x.Resolve(r.view.stored, ref)
-	return n, readError(err)
+	return r.shown(n), readError(err)
 }
 
 // ResolveLink finds a link by ref as index.Index.ResolveLink does: a full
@@ -404,10 +413,10 @@ func (r *reader) ResolveLink(ref string) (gmodel.Link, error) {
 func (r *reader) Children(parent id.ID) ([]gmodel.Node, error) {
 	if r.ov != nil {
 		ns, err := r.ov.Children(parent)
-		return ns, readError(err)
+		return r.shownAll(ns), readError(err)
 	}
 	ns, err := r.x.Children(r.view.stored, parent)
-	return ns, readError(err)
+	return r.shownAll(ns), readError(err)
 }
 
 // maxDepth bounds every walk of the tree, as the index bounds its own.
@@ -418,10 +427,10 @@ const maxDepth = 1000
 func (r *reader) Ancestors(i id.ID) ([]gmodel.Node, error) {
 	if r.ov != nil {
 		ns, err := r.ov.Ancestors(i)
-		return ns, readError(err)
+		return r.shownAll(ns), readError(err)
 	}
 	ns, err := r.x.Ancestors(r.view.stored, i)
-	return ns, readError(err)
+	return r.shownAll(ns), readError(err)
 }
 
 // Links returns the links at node in direction dir, live and retired,
@@ -440,10 +449,10 @@ func (r *reader) Links(node id.ID, dir index.Direction) ([]gmodel.Link, error) {
 func (r *reader) Subtree(root id.ID, depth int, retired bool) ([]index.TreeNode, error) {
 	if r.ov != nil {
 		ts, err := r.ov.Subtree(root, depth, retired)
-		return ts, readError(err)
+		return r.shownTree(ts), readError(err)
 	}
 	ts, err := r.x.Subtree(r.view.stored, root, depth, retired)
-	return ts, readError(err)
+	return r.shownTree(ts), readError(err)
 }
 
 // SubtreeLight is Subtree with light nodes, as index.Index.SubtreeLight
@@ -473,10 +482,10 @@ func (r *reader) NodesLight(ids []id.ID) ([]gmodel.Node, error) {
 func (r *reader) NodesFields(ids []id.ID) ([]gmodel.Node, error) {
 	if r.ov != nil {
 		ns, err := r.ov.NodesFields(ids)
-		return ns, readError(err)
+		return r.shownAll(ns), readError(err)
 	}
 	ns, err := r.x.NodesFields(r.view.stored, ids)
-	return ns, readError(err)
+	return r.shownAll(ns), readError(err)
 }
 
 // LinksAt returns the links at any of ids in direction dir, live and
@@ -506,10 +515,10 @@ func (r *reader) LinksTo(ids []id.ID, t op.LinkType) ([]gmodel.Link, error) {
 func (r *reader) List(q index.ListQuery) ([]gmodel.Node, error) {
 	if r.ov != nil {
 		ns, err := r.ov.List(q)
-		return ns, readError(err)
+		return r.shownAll(ns), readError(err)
 	}
 	ns, err := r.x.List(r.view.stored, q)
-	return ns, readError(err)
+	return r.shownAll(ns), readError(err)
 }
 
 // lightNode is n without its Fields and History.
@@ -597,4 +606,41 @@ func fieldText(raw json.RawMessage) string {
 		return string(raw)
 	}
 	return strings.TrimRight(string(body), "\n")
+}
+
+// handleOf gives the current handle of the live node i in the reader's view.
+func (r *reader) handleOf(i id.ID) (string, bool) {
+	h, ok := r.live[i]
+	if !ok {
+		if n, found, err := r.rawNode(i); err == nil && found && !n.Retired {
+			h = n.Handle
+		}
+		if r.live == nil {
+			r.live = map[id.ID]string{}
+		}
+		r.live[i] = h
+	}
+	return h, h != ""
+}
+
+// shown is n with its texts shown: each stored @{<ID>} as @<current handle>,
+// or left as @{<ID>} when the node is retired or not in the view, and a
+// literal @ that would start a reference as @@ (see package textref).
+func (r *reader) shown(n gmodel.Node) gmodel.Node {
+	n.Fields = gmodel.ShowFields(n.Kind, n.Fields, r.handleOf)
+	return n
+}
+
+func (r *reader) shownAll(ns []gmodel.Node) []gmodel.Node {
+	for i := range ns {
+		ns[i] = r.shown(ns[i])
+	}
+	return ns
+}
+
+func (r *reader) shownTree(ts []index.TreeNode) []index.TreeNode {
+	for i := range ts {
+		ts[i].Node = r.shown(ts[i].Node)
+	}
+	return ts
 }

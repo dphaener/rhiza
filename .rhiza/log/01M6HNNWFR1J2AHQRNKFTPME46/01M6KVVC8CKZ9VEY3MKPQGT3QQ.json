@@ -1,0 +1,109 @@
+{
+  "actor": "01M6KVB9DN3YM4D3455BW6TMA2",
+  "after": [
+    "01M6KV9MGR82Z2WZFPW26JEJP7"
+  ],
+  "at": "2026-11-04T18:06:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of the branch head in a fresh repo: add capability with 'Builds on @other (and [@other]) mail darin@hey.com checkout@v7 @@lit, prefix @<10-char ID prefix>' stored @{<full ID>} for @other, [@other] and the prefix, kept darin@hey.com and checkout@v7 as written, stored @@lit as @lit; show printed '@other ... @@lit'. A write of @@{<26-char ID>} is now refused (exit 2, 'a literal @{<full ID>} cannot be stored'), so the cycle-1 f2 hole is closed"
+        },
+        "handle": "text-ref-syntax-qa-2",
+        "id": "01M6KVSR233SXSF0B0AEBR64D5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KVSR233SXSF0B0ABN4YC16",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KVSR233SXSF0B0ABN4YC16",
+        "id": "01M6KVSXX956WZY41Y060DWEDZ",
+        "link": "01M6KVSXX956WZY41Y04TWH9PC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0CQRJFFH7Q40JCV9H2DG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build, fresh repo: @nosuch and @{BOGUS} refused with exit 4, code not_found naming each reference and field, next 'fix the handle, or write @@ for a literal @', nothing written, same with --dry-run and through rhiza apply (writes[1] named); a decision's quote kept '@nosuch' verbatim while its statement stored @{ID}; after retiring gone, set of holder with its shown @{<gone ID>} text kept it, while the same ID in another node or in holder's title was refused; note add 'ping @nosuch and @renamed' was written leniently and shown '@@nosuch and @renamed'; question answer 'Yes, per @nosuch and @renamed' stored the quote verbatim and the Decision statement with @{ID}, shown '@@nosuch and @renamed'"
+        },
+        "handle": "text-ref-write-qa-2",
+        "id": "01M6KVT4HDAVNRGZJJQKZWFJPJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KVT4HDAVNRGZJJQGXRT7AY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KVT4HDAVNRGZJJQGXRT7AY",
+        "id": "01M6KVTB7P64EQJXKHYE51ZEWJ",
+        "link": "01M6KVTB7P64EQJXKHYA8NNB6V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0GQ76PY04WKDAPVY30Q6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build, fresh repo: after set other --handle renamed, show, why, slice --json, search '@renamed', change show and change diff (text and --json), rhiza render's capability page and tui app show/why --once all printed @renamed; a retired node's reference showed as @{<full ID>} and writing that shown text back with set stored the same; a log entry hand-edited to 'legacy @word and @{ID}' showed '@@word and @@{ID}' and writing that back stored the same literal text"
+        },
+        "handle": "text-ref-display-qa-2",
+        "id": "01M6KVTMCC8Z9XMNVSKCYJ07MR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KVTMCC8Z9XMNVSKB24EMH7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KVTMCC8Z9XMNVSKB24EMH7",
+        "id": "01M6KVTTAFDC127XNRPYACWK32",
+        "link": "01M6KVTTAFDC127XNRPTHVM860",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0SAAHDCRXKDTXRXZF7BT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build: a hand-edited log entry holding @{01ZZZZZZZZZZZZZZZZZZZZZZZZ} made rhiza check exit 1 with 'fail text-ref ... victim field statement holds @{01ZZ...}, which names no node'; a kept reference to a retired node gave a warn with check still ok; hand-written '@{ID}' gave nothing. On this repo at the branch head with a fresh cache, rhiza check reports no text-ref finding (cycle-1 f1 fixed); its only fails are stale rendered actor/index files from the verifiers' evidence commits, which the run's gate render regenerates"
+        },
+        "handle": "text-ref-check-qa-2",
+        "id": "01M6KVTZTYWPGMXBHZTG0SV4ES",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KVTZTYWPGMXBHZTC8ZYP4A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KVTZTYWPGMXBHZTC8ZYP4A",
+        "id": "01M6KVV4Y4NTX10XBPXEX7XEY9",
+        "link": "01M6KVV4Y4NTX10XBPXBWW2SNJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP108NW407PT5CRA556JBA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KVVC8CKZ9VEY3MKPQGT3QQ",
+  "type": "ops",
+  "v": 1
+}

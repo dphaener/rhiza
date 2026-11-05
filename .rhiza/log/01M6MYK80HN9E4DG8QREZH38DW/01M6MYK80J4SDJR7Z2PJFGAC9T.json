@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-05T04:13:43Z",
+  "body": {
+    "intent": "Milestone 26: Rhiza runs are fully managed from five small single-purpose Rex apps built on rexuikit, each a small modal that opens, does one job and closes; the Nebari import moves to milestone 27",
+    "kind": "record",
+    "sources": [],
+    "title": "Open milestone 26: TUI apps"
+  },
+  "change_set": "01M6MYK80HN9E4DG8QREZH38DW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MYK80J4SDJR7Z2PJFGAC9T",
+  "type": "open",
+  "v": 2
+}

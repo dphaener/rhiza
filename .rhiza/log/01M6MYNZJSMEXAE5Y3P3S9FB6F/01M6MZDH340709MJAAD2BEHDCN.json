@@ -1,0 +1,73 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MYNZJSMEXAE5Y3P4PKNBWE"
+  ],
+  "at": "2026-11-05T04:28:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go build ./... and go vet ./... pass with the packages removed; a testscript runs rhiza tui app roadmap, model, health, changes, show and live and each exits 4 with unknown app; the existing testscripts of the commands those apps wrapped (roadmap, show, why, slice, health, change ls) pass unchanged.",
+          "statement": "The changes, health, model, read, roadmap, write, live and requests apps are gone: their packages under internal/tui, their branches in cmd/rhiza/tui.go, their tests and testscripts, and internal/tui/modelapp in the Makefile's budget packages; the CLI commands they wrapped stay."
+        },
+        "handle": "old-apps-deleted",
+        "id": "01M6MZD2ER8DDHNYK3W7AW1NWD",
+        "key": "zzzzzzi",
+        "kind": "capability",
+        "node": "01M6MZD2ER8DDHNYK3W3C04SYB",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZD2ER8DDHNYK3W3C04SYB",
+        "id": "01M6MZD579WBX262M7BGN2H7C4",
+        "link": "01M6MZD579WBX262M7BCWKFS21",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1RKJQB246AKPE3WEH15W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/api counts exactly five rex.action entries, named rhiza_app_inbox, rhiza_app_request, rhiza_app_runs, rhiza_app_daemon and rhiza_app_autonomy, each with one key; the rex-install testscript, with a fake rex, greps those five and grep -count=5 for rex.action.",
+          "statement": "rhiza rex install registers exactly five Rex actions with their keys in the rhiza key mode: inbox, request, runs, daemon and autonomy."
+        },
+        "handle": "rex-install-five-apps",
+        "id": "01M6MZD7XSJD2ENEG7WC8655G6",
+        "key": "zzzzzzr",
+        "kind": "capability",
+        "node": "01M6MZD7XSJD2ENEG7W98BKDJV",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZD7XSJD2ENEG7W98BKDJV",
+        "id": "01M6MZDAWXKF75947VRBT4AN36",
+        "link": "01M6MZDAWXKF75947VR95DFTXZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1RKJQB246AKPE3WEH15W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZD7XSJD2ENEG7W98BKDJV",
+        "id": "01M6MZDCYZFAHW7VSHNYDJ5PBT",
+        "link": "01M6MZDCYZFAHW7VSHNTRYYZVW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MZDH340709MJAAD2BEHDCN",
+  "type": "ops",
+  "v": 1
+}

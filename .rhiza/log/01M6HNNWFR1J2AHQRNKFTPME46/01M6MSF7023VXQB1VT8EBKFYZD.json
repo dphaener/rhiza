@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MR9T2YVEGR9BJW1XVP95PK",
+  "after": [
+    "01M6MQ8TWQSM8P947CDD3GTKTQ"
+  ],
+  "at": "2026-11-05T02:44:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 7, at 7b94d569: read internal/check/textrefs.go and its tests. go test ./internal/check -run 'TestTextRefs|TestRunOrder' passes: a dangling stored reference gives one fail naming holder, statement and the ID, with OK false; a retired target gives a warn with OK true; live, plain and look-alike text give nothing; a superseded value is not read; a retired holder is skipped. The check-text-refs, text-refs-* and describe-golden scripts pass: a hand-edited log entry with a dangling reference makes rhiza check exit non-zero with the fail text-ref finding, and text-ref is in check.Rules() and in describe. make check on a clean worktree at this commit exits 0, and rhiza check on this repo shows no text-ref findings."
+        },
+        "handle": "text-ref-check-verified-7",
+        "id": "01M6MSF1QK1J36XQCJY2NYR830",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MSF1QK1J36XQCJY0B5PW4Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MSF1QK1J36XQCJY0B5PW4Y",
+        "id": "01M6MSF3XKXAY8ZHS2873WSG48",
+        "link": "01M6MSF3XKXAY8ZHS283QE8FKM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP108NW407PT5CRA556JBA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MSF7023VXQB1VT8EBKFYZD",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,66 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6N07RC8ZYTRAQ5SESWR2TS1"
+  ],
+  "at": "2026-11-05T04:43:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/tui/inboxapp with a fake runner: a row per inbox item in order; Enter on a question, gate, signoff, failed or accept item opens that item's action; Enter on a stalled, overlap, disk-low, usage-reserve or main-stale item shows its detail and asks the runner to open its run's tab; an empty inbox shows one empty-state line; the tui-inbox-app testscript compares rhiza tui app inbox --once with rhiza inbox --json byte for byte.",
+          "statement": "The Inbox app lists every inbox item as one rexuikit List, a row per item with its kind, change set title and what it waits for; Enter picks the item and opens its action (answer for questions and gates, sign-off, retry or abandon for a failed run, accept for an accept item), and any other kind shows its detail and opens the run's tab; --once prints what rhiza inbox --json prints."
+        },
+        "handle": "inbox-app-pick-list",
+        "id": "01M6MZ9RZ964A9BQMY9QYP5K4P",
+        "key": "zzzzzr",
+        "kind": "capability",
+        "node": "01M6MZ9RZ8M65B2FB58A75WYZ2",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/tui/inboxapp with a fake runner: Approve on a signoff item calls run.approve with its run and the app quits; Send back with a note calls run.send-back with the run and the note and quits; Send back with an empty note is refused; Esc calls nothing.",
+          "statement": "Picking a sign-off opens a rexuikit Dialog naming the run and what it waits for, with Approve and Send back: Approve signs it off through run.approve and Send back takes a note through run.send-back, either then closing the app; Esc closes it with nothing done."
+        },
+        "handle": "inbox-app-signoff",
+        "id": "01M6MZA8WT3TB8HWR4D5T1YH4E",
+        "key": "zzzzzy",
+        "kind": "capability",
+        "node": "01M6MZA8WT3TB8HWR4D33QMMQ5",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript (run-send-back.txtar) with a fake claude drives a ship-change run to signoff, runs rhiza run send-back with a note, and shows the note in rhiza run status as a finding, the run's next step a fixer, and no signoff journaled; send-back on a run not at signoff exits non-zero and changes nothing.",
+          "statement": "rhiza run send-back <run> --note <text> sends a run waiting at a signoff step back to a fixer: the note is journaled as the next review round's findings, the run returns to its review fixer step instead of signing off, and the continuation is queued for the daemon."
+        },
+        "handle": "run-send-back",
+        "id": "01M6N099H464KP7VPM9VFQ5A3C",
+        "key": "zzzzzzi",
+        "kind": "capability",
+        "node": "01M6N099H464KP7VPM9TVD8RAZ",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6N099H464KP7VPM9TVD8RAZ",
+        "id": "01M6N09BZGYZNYYJNYNDQP7QFD",
+        "link": "01M6N09BZGYZNYYJNYNBRKRDRS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N07EQSBWX87XGQZ08K60ER",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6MYN9GRWHRJSHA31D9S838H",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N09KQF4FHTNCXREM3Q9PDX",
+  "type": "ops",
+  "v": 1
+}

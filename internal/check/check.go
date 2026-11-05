@@ -71,6 +71,11 @@
 //     Next rhiza anchor refresh <anchor>, on each anchor that resolves but
 //     whose stored fingerprint differs from that of its declaration (or
 //     file). Without a Tree the rule is skipped silently.
+//   - text-ref scans the stored references (@{<full 26-character ID>}; any
+//     other @{...} is literal) in the text fields that each landed, draft,
+//     proposed or accepted change set wrote, each in that change set's view
+//     (as-is for a landed one, what-if otherwise), skipping verbatim fields.
+//     It fails on one naming no node and warns on one naming a retired node.
 //   - render fails on each rendered file that differs from what
 //     render.Render writes, is missing or is extra, and on a missing
 //     rendered folder.
@@ -121,6 +126,7 @@ const (
 	RuleEvidenceActor = "evidence-actor"
 	RuleUnclaimed     = "unclaimed"
 	RuleAnchor        = "anchor"
+	RuleTextRef       = "text-ref"
 	RuleRender        = "render"
 	RuleAppendOnly    = "append-only"
 )
@@ -128,7 +134,7 @@ const (
 // Rules returns the rules in report order.
 func Rules() []string {
 	return []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleEvidenceActor, RuleUnclaimed, RuleAnchor,
-		RuleRender, RuleAppendOnly}
+		RuleTextRef, RuleRender, RuleAppendOnly}
 }
 
 // Paths in findings are relative to the project root.
@@ -229,6 +235,7 @@ func Run(in Input) Report {
 	c.evidenceActor(asIs, sets)
 	c.unclaimed(sets)
 	c.anchors(asIs)
+	c.textRefs(asIs, sets)
 	c.render(asIs, sets)
 	c.appendOnly()
 

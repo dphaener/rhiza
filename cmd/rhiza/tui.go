@@ -20,6 +20,7 @@ import (
 	"github.com/dphaener/rhiza/internal/tui/healthapp"
 	"github.com/dphaener/rhiza/internal/tui/inboxapp"
 	"github.com/dphaener/rhiza/internal/tui/liveapp"
+	"github.com/dphaener/rhiza/internal/tui/modalshell"
 	"github.com/dphaener/rhiza/internal/tui/modelapp"
 	"github.com/dphaener/rhiza/internal/tui/readapps"
 	"github.com/dphaener/rhiza/internal/tui/requestsapp"
@@ -28,10 +29,24 @@ import (
 )
 
 func tuiCommand(g globals, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
-	if len(args) >= 3 && args[1] == "app" {
-		return tuiApp(g, args[2], args[3:], stdout, stderr, getenv)
+	if len(args) >= 3 && args[1] == "open" {
+		return tuiOpen(args[2], args[3:], stdout, stderr, getenv)
 	}
-	fmt.Fprintln(stderr, "usage: rhiza tui app <name> [args] [--once]")
+	if len(args) >= 3 && args[1] == "app" {
+		// The opener names a file for the app to report its content's
+		// size to, so the modal follows it (modalshell.SizeFileFlag).
+		rest := make([]string, 0, len(args)-3)
+		for i := 3; i < len(args); i++ {
+			if args[i] == modalshell.SizeFileFlag && i+1 < len(args) {
+				modalshell.ReportSizeTo(args[i+1])
+				i++
+				continue
+			}
+			rest = append(rest, args[i])
+		}
+		return tuiApp(g, args[2], rest, stdout, stderr, getenv)
+	}
+	fmt.Fprintln(stderr, "usage: rhiza tui app <name> [args] [--once]\n       "+tuiOpenUsage)
 	return 2
 }
 
@@ -185,7 +200,7 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		stdout.Write(out)
 		return 0
 	}
-	if _, err := tea.NewProgram(m).Run(); err != nil {
+	if err := modalshell.Run(m); err != nil {
 		return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
 	}
 	return 0
@@ -238,7 +253,7 @@ func tuiModel(g globals, args []string, stdout, stderr io.Writer, getenv func(st
 		io.WriteString(stdout, m.Text("tree")+"\n"+m.Text("roadmap"))
 		return 0
 	}
-	if _, err := tea.NewProgram(m).Run(); err != nil {
+	if err := modalshell.Run(m); err != nil {
 		return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
 	}
 	return 0
@@ -318,7 +333,7 @@ func tuiChanges(g globals, args []string, stdout, stderr io.Writer, getenv func(
 	if err := m.MarkSeen(); err != nil {
 		return writeError(stdout, stderr, err, false)
 	}
-	if _, err := tea.NewProgram(m).Run(); err != nil {
+	if err := modalshell.Run(m); err != nil {
 		return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
 	}
 	return 0

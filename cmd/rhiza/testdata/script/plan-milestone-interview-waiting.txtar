@@ -1,8 +1,9 @@
 # Inside Rex (REX_BLOCK set), a milestone plan run's driver reports its
 # status blocked, waiting on the owner (OSC 7501), as the interview session
 # launches, before the agent asks anything: the fake claude only exits. A
-# feature plan run's driver writes no such report, and neither does an
-# autonomous milestone run's. A daemon-started run's driver runs outside Rex
+# feature plan run's driver writes no such report; an autonomous milestone
+# run is refused (milestone planning needs the owner), so it starts no run
+# and writes none either. A daemon-started run's driver runs outside Rex
 # and writes none; the daemon's inbox notification covers it.
 #
 # The fake rex runs the tab's command; inside Rex a run's reports go to
@@ -39,9 +40,9 @@ exec rhiza run start --foreground --workflow plan --new 'Add exports' --permissi
 stdout '"state": "succeeded"'
 ! stderr 'state=blocked'
 
-# An autonomous milestone run: none.
-exec rhiza run start --foreground --workflow plan --new 'Backlog again' --milestone --autonomous --permission-mode manual --json
-stdout '"state": "succeeded"'
+# An autonomous milestone run: refused before it starts, so none.
+! exec rhiza run start --foreground --workflow plan --new 'Backlog again' --milestone --autonomous --permission-mode manual --json
+stdout 'milestone planning needs the owner'
 ! stderr 'state=blocked'
 
 -- plan.toml --

@@ -45,7 +45,9 @@
 //     when it has a parent ("<handle> (retired)" for a retired one). An
 //     Evidence page adds " · actor <endpoint>": the actor that created it
 //     (see model.CreatedBy), when sets say who that was.
-//   - One "## <name>" per field, sorted by name. A JSON string is decoded
+//   - One "## <name>" per field, sorted by name. A text shows each reference
+//     it holds (stored as @{<ID>}) as @<the node's current handle>, or as
+//     @{<ID>} for a retired node (see package textref). A JSON string is decoded
 //     and written as markdown, line endings made LF and leading and trailing
 //     blank lines trimmed; an empty one leaves the heading alone. Any other
 //     JSON is its canonical form in a ```json fence, the fence longer than
@@ -263,6 +265,13 @@ func (r *renderer) retired() []string {
 	return lines
 }
 
+// handleOf gives the current handle of the live node i, for the references in
+// the texts of a page.
+func (r *renderer) handleOf(i id.ID) (string, bool) {
+	n, ok := r.nodes[i]
+	return n.Handle, ok && !n.Retired
+}
+
 // page returns the page of n, whose path is self.
 func (r *renderer) page(n model.Node, self string) []byte {
 	head := fmt.Sprintf("%s · `%s`", n.Kind, n.ID)
@@ -282,7 +291,7 @@ func (r *renderer) page(n model.Node, self string) []byte {
 	slices.Sort(names)
 	for _, name := range names {
 		blocks = append(blocks, "## "+oneLine(name))
-		if v := fieldValue(n.Fields[name]); v != "" {
+		if v := fieldValue(model.ShowFieldValue(n.Kind, name, n.Fields[name], r.handleOf)); v != "" {
 			blocks = append(blocks, v)
 		}
 	}
