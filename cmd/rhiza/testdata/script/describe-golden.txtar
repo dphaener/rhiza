@@ -2105,6 +2105,10 @@ cmp stdout describe.golden.json
           "version": {
             "description": "The version of the binary the daemon runs, as recorded when it started",
             "type": "string"
+          },
+          "web": {
+            "description": "The web UI as the daemon's last poll recorded it from rhiza.web.port: its URL (http://127.0.0.1:<port>), or off; it is the recorded setting, the listener is not probed; absent when none was recorded",
+            "type": "string"
           }
         },
         "required": [
