@@ -54,13 +54,16 @@ func TestResumableOnlyAcceptedOrLandedPastLand(t *testing.T) {
 	add("accepted", "accepted", "ship-change", false)
 	add("landed-past", "landed", "ship-change", true)
 	add("landed-never", "landed", "ship-change", false)
-	add("landed-plan", "landed", "plan", true)
+	add("landed-plan", "landed", "plan", false)
+	add("withdrawn-plan", "withdrawn", "plan", false)
+	add("rejected-plan", "rejected", "plan", false)
+	add("superseded-plan", "superseded", "plan", false)
 	for _, s := range []string{"rejected", "withdrawn", "proposed", "draft"} {
 		add(s, s, "ship-change", true)
 	}
 	got := Resumable(runs, "h", dead, func(string) bool { return false }, func(cs string) string { return states[cs] }, "plan", now)
-	if len(got) != 2 || got[0] != "run-accepted" || got[1] != "run-landed-past" {
-		t.Fatalf("Resumable = %v, want [run-accepted run-landed-past]", got)
+	if len(got) != 3 || got[0] != "run-accepted" || got[1] != "run-landed-past" || got[2] != "run-landed-plan" {
+		t.Fatalf("Resumable = %v, want [run-accepted run-landed-past run-landed-plan]", got)
 	}
 }
 

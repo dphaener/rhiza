@@ -143,10 +143,11 @@ const Unrecorded = time.Minute
 // process holds (locked reports it), which is running whatever its journal
 // says, or one with no process record started less than Unrecorded before
 // now, whose process may not have recorded itself yet. Nor is a run whose
-// change set state reports as neither accepted nor, for a run of a workflow
-// other than plan that entered its land step, landed: a run on a change set
-// that has been rejected or withdrawn, is still proposed or draft, or has
-// landed without the run reaching land waits in the inbox for the owner.
+// change set state reports as neither accepted nor landed, where landed
+// counts only for a run of the plan workflow, or of another workflow that
+// entered its land step: a run on a change set that has been rejected,
+// withdrawn or superseded, is still proposed or draft, or has landed without
+// a non-plan run reaching land waits in the inbox for the owner.
 func Resumable(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, state func(change string) string, plan string, now time.Time) []string {
 	var ids []string
 	for _, j := range runs {
@@ -163,7 +164,7 @@ func Resumable(runs []run.Journal, host string, alive func(pid int) bool, locked
 		switch state(st.Change) {
 		case "accepted":
 		case "landed":
-			if st.Workflow == plan || st.Visits["land"] == 0 {
+			if st.Workflow != plan && st.Visits["land"] == 0 {
 				continue
 			}
 		default:
