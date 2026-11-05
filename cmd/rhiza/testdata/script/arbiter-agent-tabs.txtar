@@ -79,7 +79,7 @@ fold-ok
 {"title":"Planning interview","summary":"An autonomous planner planned the exports milestone; the arbiter settled its one question.","quotes":[]}
 -- record.json --
 {"writes":[
-  {"op":"add","kind":"intent","handle":"exports","fields":["statement=Users take their reports out of the product"]}
+  {"op":"add","kind":"intent","handle":"exports","fields":["statement=Users take their reports out of the product","milestone=1"]}
 ]}
 -- leaf.json --
 {"writes":[

@@ -92,6 +92,9 @@ type SessionStartRequest struct {
 	// autonomous marks the session as launched by an autonomous run. Only
 	// a run's StartAgent sets it, so it stays off the request schema.
 	autonomous bool
+	// milestone is the session record's Milestone. Only a plan run's
+	// StartAgent sets it.
+	milestone string
 	// writes and writesRecord are the session record's Writes and
 	// WritesRecord. Only a run's StartArbiter sets them.
 	writes       string
@@ -267,7 +270,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	tab := session.Tab{Session: rexSession, Title: tabTitle}
 	reuse := t.reuse
 	rec := session.Record{
-		ID: sid, Agent: a.Name(), Change: cs.String(), Title: title, Step: step, Run: r.Run, Autonomous: r.autonomous,
+		ID: sid, Agent: a.Name(), Change: cs.String(), Title: title, Step: step, Run: r.Run, Autonomous: r.autonomous, Milestone: r.milestone,
 		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode, Prompt: r.Prompt,
 		Worktree: worktree, Branch: branch, Tab: tab, StartedAt: ctx.Now().UTC().Truncate(time.Second),
 		Advises: r.advises, Writes: r.writes, WritesRecord: r.writesRecord, Leaf: r.leaf, Attempt: r.attempt, Role: r.role, Commit: r.commit, Model: r.model,

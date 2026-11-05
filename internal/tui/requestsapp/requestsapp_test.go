@@ -163,3 +163,40 @@ func TestResultIsRequestLsAndAppIsRegistered(t *testing.T) {
 		t.Fatal("requests not registered")
 	}
 }
+
+func TestMilestoneFieldDefaultsToAutoAndIsFiledWhenChosen(t *testing.T) {
+	var argv [][]string
+	run := func(op string, args []string) ([]byte, error) {
+		if op == "request" {
+			argv = append(argv, args)
+			return json.Marshal(api.RequestResponse{Request: api.RequestInfo{ID: "R1", Kind: "feature"}})
+		}
+		return json.Marshal(api.RequestLsResponse{})
+	}
+	m := NewModel(run)
+	ctrlO := tea.KeyPressMsg{Code: 'o', Mod: tea.ModCtrl}
+
+	key(m, "n")
+	if v := m.View().Content; !strings.Contains(v, "milestone: auto") {
+		t.Fatalf("entry lacks the milestone field:\n%s", v)
+	}
+	typeText(m, "dark mode")
+	key(m, "enter")
+
+	key(m, "n")
+	typeText(m, "paging")
+	m.Update(ctrlO)
+	typeText(m, "milestone-25")
+	if v := m.View().Content; !strings.Contains(v, "milestone: milestone-25") {
+		t.Fatalf("chosen milestone not shown:\n%s", v)
+	}
+	key(m, "enter")
+
+	want := [][]string{
+		{"--kind", "feature", "--", "dark mode"},
+		{"--kind", "feature", "--milestone", "milestone-25", "--", "paging"},
+	}
+	if fmt.Sprint(argv) != fmt.Sprint(want) {
+		t.Fatalf("argv = %q, want %q", argv, want)
+	}
+}

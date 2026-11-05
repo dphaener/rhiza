@@ -7113,6 +7113,10 @@ cmp stdout describe.golden.json
             ],
             "type": "string"
           },
+          "milestone": {
+            "description": "A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)",
+            "type": "string"
+          },
           "text": {
             "description": "What to plan, in one line",
             "type": "string"
@@ -7148,6 +7152,10 @@ cmp stdout describe.golden.json
               },
               "kind": {
                 "description": "feature, bug or milestone",
+                "type": "string"
+              },
+              "milestone": {
+                "description": "The ID of the milestone intent the request names; absent if none",
                 "type": "string"
               },
               "run": {
@@ -7211,6 +7219,10 @@ cmp stdout describe.golden.json
                 },
                 "kind": {
                   "description": "feature, bug or milestone",
+                  "type": "string"
+                },
+                "milestone": {
+                  "description": "The ID of the milestone intent the request names; absent if none",
                   "type": "string"
                 },
                 "run": {
@@ -11254,6 +11266,38 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "List the repository's runs newest first, each with its ID, change set, title, state, current step, start time and whether it is live",
+      "write": false
+    },
+    {
+      "name": "run.milestone-check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_sets": {
+            "description": "The plan's change sets checked, by ID, each serving a milestone",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_sets",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Check that each change set the plan of the run RHIZA_RUN names makes serves a milestone, directly or through an intent under one: pass, or fail naming each that does not",
       "write": false
     },
     {
