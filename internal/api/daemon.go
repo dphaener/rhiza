@@ -408,6 +408,16 @@ func inboxNotice(what string, it InboxItem) string {
 			}
 		}
 		return what + ": a plan run stopped for open questions"
+	case InboxBlocker:
+		msg := what + ": a question blocks it"
+		if q := strings.TrimSpace(it.Question); q != "" {
+			msg += ": " + q
+		}
+		return msg
+	case InboxAccept:
+		return what + ": a plan waits for your acceptance"
+	case InboxStalled:
+		return what + ": a session stalled"
 	case InboxFailed:
 		return what + ": a run failed"
 	case InboxSkipped:
