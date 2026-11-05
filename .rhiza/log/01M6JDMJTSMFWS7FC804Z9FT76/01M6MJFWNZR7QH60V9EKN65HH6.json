@@ -1,0 +1,29 @@
+{
+  "actor": "01M6MJCFHFG4NFNH562MM61X92",
+  "after": [
+    "01M6MJ8XA99GBP69TK9E4FAPJ0"
+  ],
+  "at": "2026-11-05T00:42:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M695J8MM753EH68C5SY9KNRK",
+        "handle": null,
+        "id": "01M6MJFRDB10S1DKAEE2HWHRF8",
+        "node": "01M5WSGDJMV9EEVE603M22PTYT",
+        "op": "node.update",
+        "set": {
+          "acceptance": "Go workflow tests: BuiltinNames lists plan and its file parses with steps interview, milestone-check, review, critic, check, revise, gate, open-pr, wait-pr, pr-green, rebase, wait-rebased, rebased-green, merge and close-out, the gate passing to open-pr and close-out ending the run; the review step's prompt names only {change} and rhiza guide plan-review, and the interview step's prompt names the rhiza-plan skill. A testscript runs rhiza run start --workflow plan with fake agents and a fake gh on a draft change set through the gate to open-pr, and the run's branch is rendered and committed: git status is clean, rhiza check passes, and no plan file is written.",
+          "statement": "The binary ships a built-in plan workflow: an interview agent step driven by the rhiza-plan skill, then a milestone-check command step (rhiza run milestone-check) that ends the run failed when a change set the plan makes serves no milestone, then rounds of a fresh review agent step told only the change set's ID, a critic agent step and rhiza run review-check, with a revise agent step on a failed check, then rhiza run gate, and after it the ship steps open-pr, wait-pr, pr-green, rebase, wait-rebased, rebased-green, merge and close-out. It writes no plan file."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6JDMJTSMFWS7FC804Z9FT76",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MJFWNZR7QH60V9EKN65HH6",
+  "type": "ops",
+  "v": 1
+}

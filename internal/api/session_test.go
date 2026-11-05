@@ -523,7 +523,7 @@ func TestSessionRun(t *testing.T) {
 		t.Errorf("agent terminal %v, dir %q", agent.Terminal, agent.Dir)
 	}
 	wantEnv := []string{"RHIZA_CHANGE=" + s.Change, "RHIZA_ACTOR=" + s.Actor, "RHIZA_FOR=" + s.For, "RHIZA_SESSION=" + s.ID, "RHIZA_RUN=run-1"}
-	if !slices.Equal(agent.Env, wantEnv) || !slices.Equal(agent.Unset, []string{"RHIZA_AUTONOMOUS", "RHIZA_LEAF", "RHIZA_ATTEMPT", "RHIZA_CHECK", "RHIZA_CYCLE", "RHIZA_ROLE", "RHIZA_COMMIT", "RHIZA_ROOT"}) {
+	if !slices.Equal(agent.Env, wantEnv) || !slices.Equal(agent.Unset, []string{"RHIZA_AUTONOMOUS", "RHIZA_MILESTONE", "RHIZA_LEAF", "RHIZA_ATTEMPT", "RHIZA_CHECK", "RHIZA_CYCLE", "RHIZA_ROLE", "RHIZA_COMMIT", "RHIZA_ROOT"}) {
 		t.Errorf("env %v unset %v, want %v", agent.Env, agent.Unset, wantEnv)
 	}
 
@@ -585,7 +585,7 @@ func TestSessionRunNoRunNoRex(t *testing.T) {
 	}
 	agent := fs.programs[0]
 	if slices.ContainsFunc(agent.Env, func(kv string) bool { return strings.HasPrefix(kv, "RHIZA_RUN=") }) ||
-		!slices.Equal(agent.Unset, []string{"RHIZA_RUN", "RHIZA_AUTONOMOUS", "RHIZA_LEAF", "RHIZA_ATTEMPT", "RHIZA_CHECK", "RHIZA_CYCLE", "RHIZA_ROLE", "RHIZA_COMMIT", "RHIZA_ROOT"}) {
+		!slices.Equal(agent.Unset, []string{"RHIZA_RUN", "RHIZA_AUTONOMOUS", "RHIZA_MILESTONE", "RHIZA_LEAF", "RHIZA_ATTEMPT", "RHIZA_CHECK", "RHIZA_CYCLE", "RHIZA_ROLE", "RHIZA_COMMIT", "RHIZA_ROOT"}) {
 		t.Errorf("env %v unset %v", agent.Env, agent.Unset)
 	}
 }

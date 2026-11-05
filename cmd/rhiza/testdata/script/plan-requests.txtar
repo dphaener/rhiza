@@ -29,6 +29,23 @@ stderr 'needs its text'
 ! exec rhiza request 'Add exports' --kind chore
 stderr 'one of feature, bug, milestone'
 
+# --milestone names a live milestone intent; anything else is a usage error
+# and queues nothing.
+exec rhiza add intent ms --field milestone=1 --record
+exec rhiza add intent area --record
+! exec rhiza request 'Bad one' --milestone area
+stderr 'not a live milestone intent'
+! exec rhiza request 'Bad two' --milestone nonesuch
+stderr 'no such node'
+exec rhiza request ls
+stdout '^No plan requests$'
+exec rhiza request 'Add paging' --milestone ms
+exec rhiza request ls --json
+stdout '"milestone": "[0-9A-Z]{26}"'
+exec rhiza request ls
+stdout 'Add paging'
+exec rm .git/rhiza/requests.json
+
 # Queue a feature, a bug and a milestone.
 exec rhiza request 'Add exports'
 stdout '^Queued feature request [0-9A-Z]{26}: Add exports$'

@@ -1,0 +1,63 @@
+{
+  "actor": "01M6MJNDSR8SZCW0AM0FCDXGAX",
+  "after": [
+    "01M6MJMYPE0N7N46CV6Z63C7ZF"
+  ],
+  "at": "2026-11-05T00:52:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at ac9cf15f, built binary, built-in plan workflow via run start --foreground, fake rex/claude planner left live after session done, landed milestone ms and area intent: intention change set adding a NEW unlanded intent under ms into itself and serving it -> milestone-check pass, then review (the cycle-1 failure is fixed); serving ms directly -> pass; adding a new milestone intent with a child and serving the child -> pass; serving a new intent with no parent, or one under the landed area intent -> run ends failed at milestone-check (fail, then end) naming the change set with the Fix line, never enters review. Record plan that lands the record then serves a new change set to an intent under ms -> pass."
+        },
+        "handle": "plan-step-milestone-check-qa-2",
+        "id": "01M6MK36YKRHWQXWW4NBYCGRP7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MK36YKRHWQXWW4NAEM6XXF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MK36YKRHWQXWW4NAEM6XXF",
+        "id": "01M6MK39VCW40P5D74WZKCPD8V",
+        "link": "01M6MK39VCW40P5D74WY3RTGMC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JE3T47QE8E8YPMBHR38MAE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at ac9cf15f, built binary in a scratch repo: rhiza request 'Add paging' --milestone ms queued it and request ls --json shows milestone=<ms ID>; --milestone area (an intent with no milestone field) and --milestone nosuch each exit 2 with a usage error and queue nothing (request ls holds only the one request)."
+        },
+        "handle": "request-names-milestone-qa-2",
+        "id": "01M6MK3DKRKDBM4GS65Z9GJVD7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MK3DKRKDBM4GS65WJEPRZ7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MK3DKRKDBM4GS65WJEPRZ7",
+        "id": "01M6MK3GG869YPDB5H6VBCRKY0",
+        "link": "01M6MK3GG869YPDB5H6T895DJP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JE32Q9Y16GT0CG6254C38Y",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JDMJTSMFWS7FC804Z9FT76",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MK3M66XQP016FA6MT868NG",
+  "type": "ops",
+  "v": 1
+}

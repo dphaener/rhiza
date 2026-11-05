@@ -545,13 +545,13 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	}
 	// A request's run takes the ID the daemon drew for it: check it before
 	// a draft is opened, so a refused start leaves none.
-	var reqRun string
+	var reqRun, reqMilestone string
 	if q := strings.TrimSpace(r.Request); q != "" {
 		common, err := gitCommonDir(ctx)
 		if err != nil {
 			return nil, err
 		}
-		if reqRun, err = requestRun(common, q, run.NewStore(run.Dir(common))); err != nil {
+		if reqRun, reqMilestone, err = requestRun(common, q, run.NewStore(run.Dir(common))); err != nil {
 			return nil, err
 		}
 	}
@@ -579,7 +579,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	started := run.Started{
 		Workflow: def.Name, WorkflowPath: path, Definition: string(data), Includes: def.Includes,
 		Change: t.cs.String(), Title: t.title, Worktree: t.worktree, Branch: t.branch,
-		PermissionMode: r.PermissionMode, Agent: r.Agent, Autonomous: r.Autonomous,
+		PermissionMode: r.PermissionMode, Agent: r.Agent, Autonomous: r.Autonomous, Milestone: reqMilestone,
 	}
 	if ctx.DryRun {
 		if err := refuseLiveRun(rs, started.Change, ""); err != nil {
@@ -1727,6 +1727,7 @@ func (r *stepRunner) sh(cmd string, env []string, out io.Writer) (int, error) {
 func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous, req.model = r.change, r.run, r.autonomous, model
+	req.milestone = r.milestoneOf()
 	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
 	if err != nil {
 		return "", err
@@ -1739,6 +1740,20 @@ func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (s
 		return "", err
 	}
 	return resp.(SessionStartResponse).Session.ID, nil
+}
+
+// milestoneOf is the milestone the run's request names, from its journal;
+// empty for none or when the journal cannot be read.
+func (r *stepRunner) milestoneOf() string {
+	common, err := gitCommonDir(r.ctx)
+	if err != nil {
+		return ""
+	}
+	j, err := run.NewStore(run.Dir(common)).Read(r.run)
+	if err != nil {
+		return ""
+	}
+	return j.State().Milestone
 }
 
 // arbiterPrompt is the arbiter's whole prompt, over the question node's

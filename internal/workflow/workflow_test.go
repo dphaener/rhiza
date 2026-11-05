@@ -420,7 +420,7 @@ func TestPlanBuiltin(t *testing.T) {
 	if def.Name != "plan" || def.Start != "interview" {
 		t.Errorf("name %q, start %q; want plan, interview", def.Name, def.Start)
 	}
-	want := []string{"interview", "review", "critic", "check", "revise", "gate", "open-pr", "wait-pr", "pr-green", "rebase", "wait-rebased", "rebased-green", "merge", "close-out"}
+	want := []string{"interview", "milestone-check", "review", "critic", "check", "revise", "gate", "open-pr", "wait-pr", "pr-green", "rebase", "wait-rebased", "rebased-green", "merge", "close-out"}
 	if !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
@@ -473,7 +473,9 @@ func TestPlanBuiltin(t *testing.T) {
 		step, outcome, next string
 		end                 End
 	}{
-		{"interview", OutcomePass, "review", EndNone},
+		{"interview", OutcomePass, "milestone-check", EndNone},
+		{"milestone-check", OutcomePass, "review", EndNone},
+		{"milestone-check", OutcomeFail, "", EndFailed},
 		{"interview", OutcomeFail, "", EndFailed},
 		{"review", OutcomePass, "critic", EndNone},
 		{"critic", OutcomePass, "check", EndNone},
