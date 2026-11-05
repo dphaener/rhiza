@@ -48,6 +48,14 @@ func init() {
 		},
 		Run: runRunRequestChanges,
 	})
+	register(Operation{
+		Name:     "run.send-back",
+		Summary:  "Send a run waiting at a signoff step back to a fixer with a note: the note is journalled as the next review round's one finding (the owner's, naming the first check of the checks step the sign-off goes back to), the run returns to that step's fixer instead of signing off, and the continuation is queued for the daemon (--foreground continues it in this process). Exit 2 on a run not waiting at a sign-off step; nothing changes",
+		Write:    true,
+		Request:  reflect.TypeFor[RunSendBackRequest](),
+		Response: reflect.TypeFor[RunSignoffResponse](),
+		Run:      runRunSendBack,
+	})
 }
 
 const runRequestChangesNext = "rhiza describe run.request-changes"
@@ -63,6 +71,13 @@ type RunApproveRequest struct {
 type RunRequestChangesRequest struct {
 	File       string `json:"file" arg:"0" desc:"A JSON file of the owner's findings, or - for stdin (see the input schema)"`
 	Run        string `json:"run,omitempty" arg:"1" desc:"The run: a full ID or a unique prefix of 4+ characters; default the latest run of the current change set, else the latest run"`
+	Foreground bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
+}
+
+// RunSendBackRequest names the run and the note that sends it back.
+type RunSendBackRequest struct {
+	Run        string `json:"run,omitempty" arg:"0" desc:"The run: a full ID or a unique prefix of 4+ characters; default the latest run of the current change set, else the latest run"`
+	Note       string `json:"note" desc:"What to change; must not be blank. It becomes the one finding of the next review round"`
 	Foreground bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
 }
 
@@ -278,6 +293,58 @@ func runRunApprove(ctx *Ctx, req any) (any, error) {
 	}, "", r.Foreground)
 }
 
+// changesChecks is the checks step the sign-off step's on.changes names,
+// once another visit of it and of the sign-off step stays within its
+// max_visits; else a refusal.
+func (sr signoffRun) changesChecks(cmd string) (workflow.Step, error) {
+	target := sr.step.On[workflow.OutcomeChanges]
+	checks, ok := sr.def.Steps[target]
+	if !ok || checks.Kind != workflow.KindChecks {
+		return workflow.Step{}, Errorf("run %s: step %s's on.changes names %q, which is not a checks step", sr.j.ID, sr.step.Name, target)
+	}
+	for _, s := range []workflow.Step{checks, sr.step} {
+		if n := sr.state.CapVisits(s.Name); n+1 > s.Cap() {
+			return workflow.Step{}, Usagef("%s: another visit of step %s of run %s would go over its max_visits %d, so no more changes can be fixed in this run; rhiza run approve signs it off",
+				cmd, s.Name, sr.j.ID, s.Cap()).WithNext("rhiza run approve " + sr.j.ID)
+		}
+	}
+	return checks, nil
+}
+
+// runRunSendBack sends the run back to its fixer: the note is the one
+// finding of an owner's changes sign-off, with no leaf (the change set's
+// fixer takes it), named for the first check of the checks step, which
+// runs again once it is fixed.
+func runRunSendBack(ctx *Ctx, req any) (any, error) {
+	r := req.(RunSendBackRequest)
+	const cmd = "run send-back"
+	note := strings.TrimSpace(r.Note)
+	if note == "" {
+		return nil, Usagef("%s needs a note: --note <text>", cmd).WithNext("rhiza describe run.send-back")
+	}
+	sr, err := openSignoffRun(ctx, cmd, r.Run)
+	if err != nil {
+		return nil, err
+	}
+	checks, err := sr.changesChecks(cmd)
+	if err != nil {
+		return nil, err
+	}
+	names := checkNames(checks)
+	if len(names) == 0 {
+		return nil, Errorf("run %s: step %s has no check to send the note back to", sr.j.ID, checks.Name)
+	}
+	from, err := messageSender(ctx)
+	if err != nil {
+		return nil, err
+	}
+	found := []run.Finding{{ID: "f1", Check: names[0], Severity: "major", Place: "owner", Reason: note}}
+	return sr.signoff(ctx, run.Entry{
+		Type: run.TypeSignoff, At: ctx.Now(), Step: sr.step.Name, Visit: sr.state.CurrentVisit,
+		Actor: from.Handle, Rule: run.RuleOwner, Outcome: run.SignoffChanges, Findings: found,
+	}, checks.Name, r.Foreground)
+}
+
 // changesFile is run.request-changes' input.
 type changesFile struct {
 	Findings []struct {
@@ -307,16 +374,9 @@ func runRunRequestChanges(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	target := sr.step.On[workflow.OutcomeChanges]
-	checks, ok := sr.def.Steps[target]
-	if !ok || checks.Kind != workflow.KindChecks {
-		return nil, Errorf("run %s: step %s's on.changes names %q, which is not a checks step", sr.j.ID, sr.step.Name, target)
-	}
-	for _, s := range []workflow.Step{checks, sr.step} {
-		if n := sr.state.CapVisits(s.Name); n+1 > s.Cap() {
-			return nil, Usagef("%s: another visit of step %s of run %s would go over its max_visits %d, so no more changes can be fixed in this run; rhiza run approve signs it off",
-				cmd, s.Name, sr.j.ID, s.Cap()).WithNext("rhiza run approve " + sr.j.ID)
-		}
+	checks, err := sr.changesChecks(cmd)
+	if err != nil {
+		return nil, err
 	}
 	var f changesFile
 	if err := readReviewFile(ctx, cmd, next, r.File, &f); err != nil {

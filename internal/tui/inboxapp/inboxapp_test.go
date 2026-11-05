@@ -320,7 +320,7 @@ func TestSignoffSendBackNote(t *testing.T) {
 		t.Fatal("app did not quit")
 	}
 	last := calls[len(calls)-1]
-	if last.op != "run.send-back" || !slices.Equal(last.args, []string{"R2", "fix the tests"}) {
+	if last.op != "run.send-back" || !slices.Equal(last.args, []string{"R2", "--note", "fix the tests"}) {
 		t.Fatalf("calls: %+v", calls)
 	}
 }

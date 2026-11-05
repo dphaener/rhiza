@@ -290,7 +290,7 @@ func (m *Model) sendBack(note string) tea.Cmd {
 	if note == "" {
 		return m.openNote("a send-back needs a note")
 	}
-	if _, err := m.run("run.send-back", []string{m.asked.Run, note}); err != nil {
+	if _, err := m.run("run.send-back", []string{m.asked.Run, "--note", note}); err != nil {
 		return m.openNote("send back failed: " + err.Error())
 	}
 	return tea.Quit
