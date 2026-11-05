@@ -15,10 +15,11 @@ import (
 
 // fake is a runner over in-memory settings.
 type fake struct {
-	vals  map[string]string
-	order []string
-	calls [][]string
-	err   error
+	vals    map[string]string
+	order   []string
+	calls   [][]string
+	err     error
+	loadErr error
 }
 
 func newFake() *fake {
@@ -39,6 +40,9 @@ func (f *fake) run(op string, args []string) ([]byte, error) {
 	f.calls = append(f.calls, append([]string{op}, args...))
 	switch op {
 	case "daemon.settings":
+		if f.loadErr != nil {
+			return nil, f.loadErr
+		}
 		var rows []api.Setting
 		for _, k := range f.order {
 			rows = append(rows, api.Setting{Key: k, Value: f.vals[k], Source: "default"})
@@ -221,5 +225,27 @@ func TestResultIsDaemonSettings(t *testing.T) {
 	got, err := m.Result()
 	if err != nil || string(got) != string(want) {
 		t.Errorf("Result = %q, %v", got, err)
+	}
+}
+
+func TestLoadErrorShownAndNotWritten(t *testing.T) {
+	f := newFake()
+	f.loadErr = fmt.Errorf("daemon unreachable")
+	m, sh := start(f)
+	if !strings.Contains(m.Render(), "daemon unreachable") {
+		t.Errorf("load error not shown:\n%s", m.Render())
+	}
+	if _, err := m.Result(); err == nil {
+		t.Error("Result err = nil")
+	}
+	key(sh, "up")
+	for range 4 {
+		key(sh, "enter")
+	}
+	if n := len(f.sets()); n != 0 {
+		t.Errorf("sets = %d", n)
+	}
+	if _, err := sh.Result(); err == nil || !strings.Contains(err.Error(), "daemon unreachable") {
+		t.Errorf("err = %v", err)
 	}
 }

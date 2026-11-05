@@ -87,7 +87,9 @@ func newComponent(run Runner, vals map[string]string, out []byte) *Model {
 }
 
 // NewModel returns the app over run, loaded once from daemon.settings. A
-// failure to load is kept for Result and the form shows the defaults.
+// failure to load is kept for Result and shown as the form's subtitle; the
+// form then holds the defaults, not the real settings, so submitting writes
+// nothing and closes with that error.
 func NewModel(run Runner) *Model {
 	out, err := run("daemon.settings", nil)
 	vals := defaultValues()
@@ -103,6 +105,9 @@ func NewModel(run Runner) *Model {
 	}
 	m := newComponent(run, vals, out)
 	m.err = err
+	if err != nil {
+		m.form.WithSubtitle(fmt.Sprintf("rhiza: %v (showing defaults, not the settings)", err))
+	}
 	return m
 }
 
@@ -134,6 +139,9 @@ func (m *Model) Update(msg tea.Msg) tea.Cmd {
 }
 
 func (m *Model) submit(v ui.Values) ([]byte, error) {
+	if m.err != nil {
+		return nil, fmt.Errorf("settings not loaded, nothing written: %w", m.err)
+	}
 	for _, t := range Toggles {
 		want := v.String(t.Key)
 		if want == "" || want == m.initial[t.Key] {

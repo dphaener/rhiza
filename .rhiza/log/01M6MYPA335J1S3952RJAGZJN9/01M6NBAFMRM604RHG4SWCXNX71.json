@@ -1,0 +1,24 @@
+{
+  "actor": "01M6NB8XG7RWQYW8VTZTKT2PKQ",
+  "after": [
+    "01M6NB34YD8E8E4SCAMRP0HQ7Q"
+  ],
+  "at": "2026-11-05T07:56:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6FF5F759GA3EJ7KV5M4MAYA",
+        "id": "01M6NBA9QPDFQRT58WBM0KHJ20",
+        "node": "01M6CS2HRAWMCTPDHFXBHFCX1C",
+        "op": "node.retire",
+        "reason": "Replaced by autonomy-app-toggles: the autonomy app is now one form of the plan, accept, ship and sign-off toggles; it no longer lists daemon settings, toggles paused, edits numbers or starts/stops the daemon"
+      }
+    ]
+  },
+  "change_set": "01M6MYPA335J1S3952RJAGZJN9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NBAFMRM604RHG4SWCXNX71",
+  "type": "ops",
+  "v": 1
+}
