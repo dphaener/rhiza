@@ -1,0 +1,83 @@
+{
+  "actor": "01M6MY8M2C9XGH1FKJ6GHRTCB2",
+  "after": [
+    "01M6MYFWYM2FSHZCKXFTGR5DSY"
+  ],
+  "at": "2026-11-05T04:12:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake rex sets rhiza.autonomy.plan=auto and queues a milestone request and a feature request: the daemon's plan run start of the milestone request has --milestone and no --autonomous, its journal's started entry is not autonomous, and the feature request's run start carries --autonomous",
+          "statement": "The daemon starts the plan run of a milestone request without --autonomous even when rhiza.autonomy.plan is auto, so it waits on the owner's interview; feature and bug requests keep following rhiza.autonomy.plan"
+        },
+        "handle": "milestone-request-owner-plan",
+        "id": "01M6MYG5CW1WV56MB9989MTZVF",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6MYG5CW1WV56MB997XMDE93",
+        "op": "node.create",
+        "parent": "01M5SWTCJQP64M9ZDHGT7GS7PT"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYG5CW1WV56MB997XMDE93",
+        "id": "01M6MYGAX4XJ8EH49JXQMMG761",
+        "link": "01M6MYGAX4XJ8EH49JXN8B531X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYD57G39XAW6AF3CXS8XA8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYG5CW1WV56MB997XMDE93",
+        "id": "01M6MYGF9A05QWQ4HHA17EC13V",
+        "link": "01M6MYGF9A05QWQ4HHA01MDJ2H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYEZJY2J3AEG84YZ9YKBR3",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscripts: run start --workflow plan --new <intent> --milestone --autonomous, and run start --workflow plan --autonomous on a record change set, each exit with a usage error naming the rule and write no journal and no draft; the same starts without --autonomous run, and run start --workflow plan --new <intent> --autonomous (an intention) still runs autonomous; run resume of a plan run on a record change set whose started entry is autonomous exits with the same usage error",
+          "statement": "rhiza run start refuses --autonomous on a plan run that plans a milestone (with --milestone, for a request of kind milestone, or on an existing record change set) with a usage error naming the rule that milestone planning needs the owner, and run resume refuses to continue such a run journaled autonomous, so no milestone plan run's agent gets RHIZA_AUTONOMOUS=1"
+        },
+        "handle": "milestone-plan-refuses-autonomous",
+        "id": "01M6MYGJT14RGWC73S0VWHD448",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6MYGJT14RGWC73S0V3A5YEB",
+        "op": "node.create",
+        "parent": "01M5WRHD790X47F8VK7RQEHEHX"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYGJT14RGWC73S0V3A5YEB",
+        "id": "01M6MYGP4NNZKK7KZP0E41C9WF",
+        "link": "01M6MYGP4NNZKK7KZP0C28Y3XC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYD57G39XAW6AF3CXS8XA8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYGJT14RGWC73S0V3A5YEB",
+        "id": "01M6MYGSAKRGH3T0469V4KBKF6",
+        "link": "01M6MYGSAKRGH3T0469TCGHM67",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYEZJY2J3AEG84YZ9YKBR3",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6MY8BMPFK9ZWD3TDQHKT64J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MYGY1P22CW13MZPGY8S846",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-05T04:07:46Z",
+  "body": {
+    "intent": "Milestone planning always needs a human: a plan run for a milestone (a record change set, or a request of kind milestone) never runs autonomously, even when the daemon or run is autonomous (rhiza.autonomy.plan=auto); it waits for the owner's interview instead of the arbiter answering. Owner, 2026-11-05: \"milestone planning should never be autonomous even in autonomous mode. that always requires a human.\"",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6MY8BMPFK9ZWD3TDQHKT64J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MY8BMPFK9ZWD3TDQN02XNQ",
+  "type": "open",
+  "v": 1
+}
