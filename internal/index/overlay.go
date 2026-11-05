@@ -36,21 +36,13 @@ type Overlay struct {
 // is not in the log, or not in flight, the overlay is the as-is view and
 // the problems are ErrMissing or ErrState, as model.WhatIf gives them.
 func (x *Index) WhatIfOverlay(cs id.ID) (*Overlay, []model.Problem, error) {
-	return x.WhatIfOverlayOver(cs, nil)
-}
-
-// WhatIfOverlayOver is WhatIfOverlay with change set cs taken as over
-// instead of folded from its stored entries, when over is not nil: the
-// view of a change set with entries not yet written (a dry run's, or a
-// record change set's), which need not be stored at all.
-func (x *Index) WhatIfOverlayOver(cs id.ID, over *changeset.ChangeSet) (*Overlay, []model.Problem, error) {
 	tx, err := x.db.Begin()
 	if err != nil {
 		return nil, nil, err
 	}
 	defer tx.Rollback()
 
-	sets, err := whatIfSets(tx, cs, over)
+	sets, err := whatIfSets(tx, cs, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -62,14 +54,33 @@ func (x *Index) WhatIfOverlayOver(cs id.ID, over *changeset.ChangeSet) (*Overlay
 	if err != nil {
 		return nil, nil, err
 	}
-	o := &Overlay{x: x, nodes: make(map[id.ID]model.Node, len(d.Nodes)), links: make(map[id.ID]model.Link, len(d.Links))}
-	for _, n := range d.Nodes {
+	return x.OverlayOf(d.Nodes, d.Links), ps, nil
+}
+
+// WhatIfSets returns the change sets a what-if of change set cs reads (see
+// whatIfSets), with cs taken as over instead of folded from its stored
+// entries when over is not nil: a change set with entries not yet written
+// (a dry run's, or a record change set's), which need not be stored at all.
+func (x *Index) WhatIfSets(cs id.ID, over *changeset.ChangeSet) ([]changeset.ChangeSet, error) {
+	tx, err := x.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	return whatIfSets(tx, cs, over)
+}
+
+// OverlayOf returns the as-is view overridden by nodes and links: a view a
+// caller computed over the rows it read, answered as WhatIfOverlay's is.
+func (x *Index) OverlayOf(nodes []model.Node, links []model.Link) *Overlay {
+	o := &Overlay{x: x, nodes: make(map[id.ID]model.Node, len(nodes)), links: make(map[id.ID]model.Link, len(links))}
+	for _, n := range nodes {
 		o.nodes[n.ID] = n
 	}
-	for _, l := range d.Links {
+	for _, l := range links {
 		o.links[l.ID] = l
 	}
-	return o, ps, nil
+	return o
 }
 
 // txSource gives a delta computation the stored as-is rows.

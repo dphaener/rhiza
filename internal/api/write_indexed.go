@@ -11,6 +11,7 @@ import (
 	"cmp"
 	"encoding/json"
 	"errors"
+	"maps"
 	"slices"
 	"strings"
 
@@ -132,13 +133,18 @@ func (ix *writeIndex) changeSets(w *workspace) []changeset.ChangeSet {
 	return out
 }
 
-// model is the write view of change set current (zero for none).
+// model is the write view of change set current (zero for none), as
+// newModel builds it: the stored as-is rows, then the ops of current's
+// in-flight dependencies in dependencyOrder, then current's own, each
+// applied as newModel's model.apply does. The strict what-if view is not
+// it: that one drops a node whose create no longer applies (its parent's
+// create gone with a retirement in the change set, or a move under a node
+// created later), which the interim model keeps.
 func (ix *writeIndex) model(w *workspace, current id.ID) Model {
 	m := &writeModel{ix: ix, cs: current}
 	var over *changeset.ChangeSet
 	if !current.IsZero() {
-		es := ix.entries(w, current)
-		if len(es) > 0 {
+		if es := ix.entries(w, current); len(es) > 0 {
 			c, _ := changeset.Fold(current, es)
 			if inFlightState(c.State) {
 				m.ops = c.Ops
@@ -147,17 +153,135 @@ func (ix *writeIndex) model(w *workspace, current id.ID) Model {
 					m.pend[o.Target()] = append(m.pend[o.Target()], o.ID)
 				}
 			}
-			if slices.ContainsFunc(w.pending, func(e entry.Entry) bool { return e.ChangeSet == current }) {
-				over = &c
-			}
+			over = &c
 		}
 	}
-	ov, _, err := ix.index().WhatIfOverlayOver(current, over)
-	if err != nil {
+	l := &writeLayer{ix: ix, nodes: map[id.ID]*gmodel.Node{}, links: map[id.ID]*gmodel.Link{}}
+	if over != nil && inFlightState(over.State) {
+		sets, err := ix.index().WhatIfSets(current, over)
 		ix.fail(err)
+		byID := map[id.ID]changeset.ChangeSet{}
+		for _, c := range sets {
+			byID[c.ID] = c
+		}
+		for _, d := range dependencyOrder(sets, current) {
+			for _, o := range byID[d].Ops {
+				l.apply(d, o)
+			}
+		}
+		for _, o := range over.Ops {
+			l.apply(current, o)
+		}
 	}
-	m.ov = ov
+	m.ov = ix.index().OverlayOf(l.list())
 	return m
+}
+
+// writeLayer is the nodes and links in-flight ops touch, each loaded from
+// the stored as-is rows on first use, with the ops applied on top.
+type writeLayer struct {
+	ix    *writeIndex
+	nodes map[id.ID]*gmodel.Node
+	links map[id.ID]*gmodel.Link
+}
+
+// node returns node i of the layer, loaded from as-is on first use; nil
+// when neither holds it.
+func (l *writeLayer) node(i id.ID) *gmodel.Node {
+	if n, ok := l.nodes[i]; ok {
+		return n
+	}
+	n, ok, err := l.ix.index().Node(index.AsIs, i)
+	l.ix.fail(err)
+	if !ok || err != nil {
+		return nil
+	}
+	n.Fields, n.History = maps.Clone(n.Fields), slices.Clone(n.History)
+	l.nodes[i] = &n
+	return &n
+}
+
+// link is node for links.
+func (l *writeLayer) link(i id.ID) *gmodel.Link {
+	if k, ok := l.links[i]; ok {
+		return k
+	}
+	k, ok, err := l.ix.index().Link(index.AsIs, i)
+	l.ix.fail(err)
+	if !ok || err != nil {
+		return nil
+	}
+	k.History = slices.Clone(k.History)
+	l.links[i] = &k
+	return &k
+}
+
+// apply applies op o of change set cs as model.apply does: a create sets
+// its target whatever it was, and an op on a target with no create is
+// ignored. Each op applied joins its target's History, which versionOf
+// reads.
+func (l *writeLayer) apply(cs id.ID, o op.Op) {
+	ref := gmodel.Ref{ChangeSet: cs, Op: o.ID}
+	switch o.Type {
+	case op.TypeNodeCreate:
+		n := l.node(o.Node)
+		if n == nil {
+			n = &gmodel.Node{ID: o.Node, Created: cs}
+			l.nodes[o.Node] = n
+		}
+		n.Kind, n.Handle, n.Parent, n.Key = o.Kind, o.Handle, o.Parent, o.Key
+		n.Fields = maps.Clone(o.Fields)
+		n.History = append(n.History, ref)
+	case op.TypeNodeUpdate, op.TypeNodeMove, op.TypeNodeRetire:
+		n := l.node(o.Node)
+		if n == nil {
+			return
+		}
+		switch o.Type {
+		case op.TypeNodeUpdate:
+			if o.Handle != "" {
+				n.Handle = o.Handle
+			}
+			if n.Fields == nil && len(o.Set) > 0 {
+				n.Fields = map[string]json.RawMessage{}
+			}
+			maps.Copy(n.Fields, o.Set)
+			for _, k := range o.Unset {
+				delete(n.Fields, k)
+			}
+		case op.TypeNodeMove:
+			n.Parent, n.Key = o.Parent, o.Key
+		default:
+			n.Retired = true
+		}
+		n.History = append(n.History, ref)
+	case op.TypeLinkCreate:
+		k := l.link(o.Link)
+		if k == nil {
+			k = &gmodel.Link{ID: o.Link, Created: cs}
+			l.links[o.Link] = k
+		}
+		k.Type, k.From, k.To, k.Note, k.Decision = o.LinkType, o.From, o.To, o.Note, o.Decision
+		k.History = append(k.History, ref)
+	case op.TypeLinkRetire:
+		if k := l.link(o.Link); k != nil {
+			k.Retired = true
+			k.History = append(k.History, ref)
+		}
+	}
+}
+
+// list returns the layer's nodes and links.
+func (l *writeLayer) list() ([]gmodel.Node, []gmodel.Link) {
+	ns := make([]gmodel.Node, 0, len(l.nodes))
+	for _, n := range l.nodes {
+		ns = append(ns, *n)
+	}
+	ls := make([]gmodel.Link, 0, len(l.links))
+	for _, k := range l.links {
+		ls = append(ls, *k)
+	}
+	return ns, ls
 }
 
 // writeModel is the Model of a write over the index.
