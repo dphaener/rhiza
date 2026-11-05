@@ -105,6 +105,8 @@ type Model struct {
 	// confirm is up.
 	stage  string
 	gateQs []api.InboxGateQuestion // the gate's open questions, in form order
+	// w, h are the last window size, given to each view opened after it.
+	w, h int
 }
 
 // NewModel returns the model over run, loaded once.
@@ -172,6 +174,8 @@ func (m *Model) Init() tea.Cmd { return tea.RequestBackgroundColor }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.w, m.h = msg.Width, msg.Height
 	case ui.ListCancelledMsg, ui.InfoClosedMsg:
 		return m, tea.Quit
 	case ui.ListSelectedMsg:
@@ -276,8 +280,7 @@ func (m *Model) openGate(it api.InboxItem, qs []api.InboxGateQuestion, msg strin
 	}
 	f := ui.NewForm(theme.Dark(), colorprofile.TrueColor, fields...).WithSubtitle(sub)
 	m.form, m.asked, m.stage, m.gateQs = f, &it, "gate", qs
-	m.cur = &questionView{form: f, text: func(w int) []string { return askLines(it, qs, w) }}
-	return f.Init()
+	return m.ask(f, func(w int) []string { return askLines(it, qs, w) })
 }
 
 // answerGate answers each open question through question.answer --run,
@@ -330,9 +333,10 @@ func (m *Model) accept(ok bool) tea.Cmd {
 	return tea.Quit
 }
 
-// openAnswer shows a form with one TextArea for the owner's words.
+// openAnswer shows a form with one TextArea for the owner's words, under
+// the question in full; the subtitle's one line does not repeat it.
 func (m *Model) openAnswer(it api.InboxItem) tea.Cmd {
-	return m.answerForm(it, waits(it))
+	return m.answerForm(it, "answer below")
 }
 
 // answerForm opens a fresh answer form whose subtitle carries msg. A
@@ -342,8 +346,20 @@ func (m *Model) answerForm(it api.InboxItem, msg string) tea.Cmd {
 	f := ui.NewForm(theme.Dark(), colorprofile.TrueColor,
 		ui.NewTextArea("answer", "Your answer")).WithSubtitle(title(it) + " · " + msg)
 	m.form, m.asked = f, &it
-	m.cur = &questionView{form: f, text: func(w int) []string { return askLines(it, nil, w) }}
-	return f.Init()
+	return m.ask(f, func(w int) []string { return askLines(it, nil, w) })
+}
+
+// ask shows form f under text, sized to the last window size: a view
+// opened after the window's WindowSizeMsg gets no other.
+func (m *Model) ask(f *ui.Form, text func(width int) []string) tea.Cmd {
+	q := &questionView{form: f, text: text}
+	m.cur = q
+	cmd := f.Init()
+	if m.w > 0 {
+		_, c := q.Update(tea.WindowSizeMsg{Width: m.w, Height: m.h})
+		cmd = tea.Batch(cmd, c)
+	}
+	return cmd
 }
 
 // dialogView adapts the Dialog to the component the model shows.
@@ -743,9 +759,11 @@ func (q *questionView) Init() tea.Cmd { return q.form.Init() }
 
 func (q *questionView) Theme() theme.Theme { return q.form.Theme() }
 
+// NaturalSize is qvMinWidth wide, the text wrapped to it: a Form's
+// natural width follows its subtitle, which may be any length.
 func (q *questionView) NaturalSize() (int, int) {
-	fw, fh := q.form.NaturalSize()
-	w := max(fw, qvMinWidth)
+	_, fh := q.form.NaturalSize()
+	w := qvMinWidth
 	return w, fh + len(q.lines(w))
 }
 

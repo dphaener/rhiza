@@ -595,6 +595,50 @@ func TestBlockerShowsEveryWordWrapped(t *testing.T) {
 	}
 }
 
+// A question's answer form shows its full statement, then its
+// recommendation, above the TextArea.
+func TestQuestionFormShowsStatementAndRecommendationAboveAnswer(t *testing.T) {
+	for _, kind := range []string{"question", "blocker"} {
+		out := `{"items":[{"id":"q1","kind":"` + kind + `","change":"C1","change_title":"Web UI","run":"R1","session":"S1","question":` + quote(longText) + `,"handle":"web-ui-write","recommendation":"Split it behind a read-only interface"}]}`
+		m := NewModel(fake(out, new([]call)))
+		enter(m)
+		m.Update(tea.WindowSizeMsg{Width: 80, Height: 40})
+		v := strings.Join(strings.Fields(plain(m.View().Content)), " ")
+		s, r, a := strings.Index(v, "Should the web UI"), strings.Index(v, "Recommended: Split it behind a read-only interface"), strings.Index(v, "Your answer")
+		if s < 0 || r < 0 || a < 0 || !(s < r && r < a) {
+			t.Errorf("%s: statement at %d, recommendation at %d, answer at %d:\n%s", kind, s, r, a, v)
+		}
+		for _, w := range words(longText) {
+			if !strings.Contains(v, w) {
+				t.Fatalf("%s: view lacks %q:\n%s", kind, w, v)
+			}
+		}
+	}
+}
+
+// A form opened after the window's size wraps to it, and its natural
+// width does not follow the question.
+func TestAnswerFormOpenedAfterResizeWraps(t *testing.T) {
+	out := `{"items":[{"id":"b1","kind":"blocker","change":"C1","change_title":"Web UI","question":` + quote(longText) + `,"handle":"web-ui-write"}]}`
+	m := NewModel(fake(out, new([]call)))
+	m.Update(tea.WindowSizeMsg{Width: 60, Height: 40})
+	enter(m)
+	v := plain(m.View().Content)
+	for _, l := range strings.Split(v, "\n") {
+		if lipgloss.Width(l) > 60 {
+			t.Errorf("line wider than the pane: %q", l)
+		}
+	}
+	for _, w := range words(longText) {
+		if !strings.Contains(v, w) {
+			t.Fatalf("view lacks %q:\n%s", w, v)
+		}
+	}
+	if w, _ := m.NaturalSize(); w > qvMinWidth {
+		t.Errorf("natural width %d follows the question", w)
+	}
+}
+
 func quote(s string) string { b, _ := json.Marshal(s); return string(b) }
 
 func plain(s string) string { return ansi.Strip(s) }
