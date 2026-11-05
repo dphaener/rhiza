@@ -2,6 +2,7 @@ package api
 
 import (
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -30,7 +31,16 @@ func TestDaemonNudgeStalled(t *testing.T) {
 		{ID: "O", Current: "build", Session: map[string]string{"build": "owner"}},
 	}
 	var sent []string
-	send := func(sid string) error { sent = append(sent, sid); return nil }
+	send := func(sid, text string) error {
+		// The message names background shells and `rhiza session done`.
+		for _, want := range []string{"background shell", "`rhiza session done`"} {
+			if !strings.Contains(text, want) {
+				t.Errorf("nudge to %s lacks %q: %q", sid, want, text)
+			}
+		}
+		sent = append(sent, sid)
+		return nil
+	}
 	var nudged []string
 	poll := func(now time.Time) {
 		t.Helper()
@@ -73,7 +83,7 @@ func TestDaemonNudgeStalled(t *testing.T) {
 	// A failed send is retried by the next poll.
 	report("auto", t1.Add(40*time.Minute))
 	fail := true
-	send = func(sid string) error {
+	send = func(sid, text string) error {
 		if fail {
 			return errTest
 		}

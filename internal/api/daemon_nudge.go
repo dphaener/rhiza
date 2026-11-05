@@ -42,7 +42,7 @@ func daemonNudge(ctx *Ctx, rs *run.Store, state *daemon.State) error {
 		}
 	}
 	kept, err := daemonNudgeStalled(live, session.NewStore(session.Dir(common)), ctx.Now(), state.Nudged,
-		func(sid string) error { return daemonSend(ctx, sid, daemonNudgeText) })
+		func(sid, text string) error { return daemonSend(ctx, sid, text) })
 	state.Nudged = kept
 	return err
 }
@@ -50,11 +50,11 @@ func daemonNudge(ctx *Ctx, rs *run.Store, state *daemon.State) error {
 // daemonNudgeStalled sends, for each stalled session of an autonomous run
 // among states (the run's own Autonomous, not the daemon's flag), one
 // message per stall, a stall being keyed on the report time the session
-// stalled at. It returns the keys of the stalls that still last. A send that
+// stalled at; the message is daemonNudgeText. It returns the keys of the stalls that still last. A send that
 // fails is not recorded, so the next poll tries again; the first error is
 // returned. Owner-attended runs are never nudged: the owner may be the one
 // they wait on.
-func daemonNudgeStalled(states []run.State, sessions *session.Store, now time.Time, nudged []string, send func(sid string) error) ([]string, error) {
+func daemonNudgeStalled(states []run.State, sessions *session.Store, now time.Time, nudged []string, send func(sid, text string) error) ([]string, error) {
 	var kept []string
 	var first error
 	for _, st := range states {
@@ -64,7 +64,7 @@ func daemonNudgeStalled(states []run.State, sessions *session.Store, now time.Ti
 		for _, sl := range runStalledAll(st, true, sessions, now) {
 			key := sl.Session + "@" + sl.Since
 			if !slices.Contains(nudged, key) {
-				if err := send(sl.Session); err != nil {
+				if err := send(sl.Session, daemonNudgeText); err != nil {
 					if first == nil {
 						first = fmt.Errorf("nudge session %s: %w", sl.Session, err)
 					}
