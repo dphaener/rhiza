@@ -10,6 +10,9 @@ exec rhiza change new B
 stdout 'change set 01M5PWGJC82P7YGZTWYFFZ0VJG '
 exec rhiza render
 exec git init -q
+# HOME (and the index cache in it) is under $WORK: git keeps out of it, or
+# both branches commit the index and the merge conflicts on it.
+cp $WORK/home.gitignore .gitignore
 exec git add -A
 exec git commit -qm base
 exec git branch other
@@ -64,3 +67,6 @@ stdout '^Nothing is ready\.$'
 exec rhiza ready --json
 stdout '"reasons": \[\n +"not accepted: proposed",\n +"depends on 01M5PWGJC82P7Y \(proposed\)",\n +"depends-on cycle"\n +\]'
 stdout '"reasons": \[\n +"not accepted: proposed",\n +"depends on 01M5PWGEF85Y18 \(proposed\)",\n +"depends-on cycle"\n +\]'
+
+-- home.gitignore --
+/home/

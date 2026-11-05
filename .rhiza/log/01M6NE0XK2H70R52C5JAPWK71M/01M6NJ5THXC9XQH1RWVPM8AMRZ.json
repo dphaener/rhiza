@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NJ2KY759T0SP7HB58QJXS5",
+  "after": [
+    "01M6NFHCDB3HG57VYR595N9G9M"
+  ],
+  "at": "2026-11-05T09:55:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-debd4e8b at 87802e01 ran: go test -trimpath ./internal/index/... -run 'TestPropertyFoldedEveryStep|TestCatchUpFoldsOnlyTouched|TestCatchUpBudget' -v -count=1. Result: PASS. TestPropertyFoldedEveryStep (rapid, 100 cases) appends a generated log's files one at a time in a permuted order. After each catch-up it checks that FoldedOf (history included, reflect.DeepEqual) and the stored fold problems equal changeset.FoldLog over the whole log. The generator supersedes by in-log change sets and by an absent one, so the unknown-supersede clear and re-add paths run. TestCatchUpFoldsOnlyTouched appends one note to set 57 of a 120-set log: read 1, folded 1, decoded 4 (that set's 3 entries plus the new one), no view recomputed, and the result still equals FoldLog. TestCatchUpBudget on the 50,000-node budget model: median 22.6ms after one appended entry (min 15.3ms, max 33.0ms), under the 50ms bar. The full internal/index and internal/changeset packages also pass with -count=1. In the diff, refold folds only the touched sets from decodeEntriesOf, keeps the rest in the folded gob table, merges fold problems per change set and redoes FoldLog's unknown-supersede check in both directions. Deleted files still trigger a full rebuild, and SchemaVersion is bumped to 4."
+        },
+        "handle": "index-catchup-refolds-incrementally-verified",
+        "id": "01M6NJ5MY4NG83Q6Y8JP0WG2FS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NJ5MY4NG83Q6Y8JMEDKNNS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NJ5MY4NG83Q6Y8JMEDKNNS",
+        "id": "01M6NJ5Q2KY0PEVDZJ4AJWZ1RC",
+        "link": "01M6NJ5Q2KY0PEVDZJ491PH0G7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEZN44VV5TKPM24EY59X4R",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6NE0XK2H70R52C5JAPWK71M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NJ5THXC9XQH1RWVPM8AMRZ",
+  "type": "ops",
+  "v": 1
+}

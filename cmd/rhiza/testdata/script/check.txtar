@@ -63,6 +63,9 @@ exec rhiza add intent fast --record
 exec rhiza add capability store --record
 exec rhiza link store serves fast --record
 exec sh -c 'for f in $(grep -l "\"serves\"" .rhiza/log/*/*.json); do sed "s/\"serves\"/\"verifies\"/" $f > $f.new && mv $f.new $f; done'
+# The index trusts the log to be append-only, so a forged entry needs it dropped.
+[darwin] rm $HOME/Library/Caches/rhiza/index
+[linux] rm $HOME/.cache/rhiza/index
 exec rhiza render
 fold-ok
 ! exec rhiza check

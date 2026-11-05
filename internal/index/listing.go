@@ -138,6 +138,12 @@ type statResult struct {
 // statWorkers at once and hashed in the order log/ lists them, so the
 // fingerprint does not depend on which finished first.
 func takeStats(fsys fs.FS, now time.Time) statPrint {
+	return takeStatsBy(fsys, now, statWorkers)
+}
+
+// takeStatsBy is takeStats with workers goroutines. One stats in the
+// caller's goroutine: the same fingerprint for less CPU, at more time.
+func takeStatsBy(fsys fs.FS, now time.Time, workers int) statPrint {
 	des, err := fs.ReadDir(fsys, store.LogDir)
 	if err != nil {
 		return statPrint{}
@@ -145,16 +151,21 @@ func takeStats(fsys fs.FS, now time.Time) statPrint {
 	stats := make([]statResult, len(des))
 	var next atomic.Int64
 	var wg sync.WaitGroup
-	for range min(statWorkers, len(des)) {
-		wg.Go(func() {
-			for k := int(next.Add(1)) - 1; k < len(des); k = int(next.Add(1)) - 1 {
-				if de := des[k]; de.IsDir() && !strings.HasPrefix(de.Name(), ".") {
-					stats[k].fi, stats[k].err = fs.Stat(fsys, path.Join(store.LogDir, de.Name()))
-				}
+	work := func() {
+		for k := int(next.Add(1)) - 1; k < len(des); k = int(next.Add(1)) - 1 {
+			if de := des[k]; de.IsDir() && !strings.HasPrefix(de.Name(), ".") {
+				stats[k].fi, stats[k].err = fs.Stat(fsys, path.Join(store.LogDir, de.Name()))
 			}
-		})
+		}
 	}
-	wg.Wait()
+	if workers <= 1 {
+		work()
+	} else {
+		for range min(workers, len(des)) {
+			wg.Go(work)
+		}
+		wg.Wait()
+	}
 	cutoff := now.Add(-racyWindow)
 	h := sha256.New()
 	var buf [8]byte

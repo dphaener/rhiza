@@ -218,23 +218,33 @@ func graph(sets []ChangeSet) map[id.ID][]id.ID {
 	return g
 }
 
-// links are depends-on link.creates by link ID, and the link IDs retired.
+// links are the ends of depends-on link.creates by link ID, and the link
+// IDs retired.
 type links struct {
-	created map[id.ID]op.Op
+	created map[id.ID]edge
 	retired map[id.ID]bool
+	// from lists the IDs of the links created from each change set, so
+	// that dependsOn reads only those, not every created link. A link
+	// created again from elsewhere stays listed under its first end;
+	// created says which end it has now.
+	from map[id.ID][]id.ID
 }
 
 func (ls *links) add(o op.Op) {
 	switch {
 	case o.Type == op.TypeLinkCreate && o.LinkType == op.LinkDependsOn:
-		ls.created[o.Link] = o
+		ls.created[o.Link] = edge{o.From, o.To}
+		ls.from[o.From] = append(ls.from[o.From], o.Link)
 	case o.Type == op.TypeLinkRetire:
 		ls.retired[o.Link] = true
 	}
 }
 
+// edge is a depends-on link's ends.
+type edge struct{ From, To id.ID }
+
 func newLinks() links {
-	return links{created: map[id.ID]op.Op{}, retired: map[id.ID]bool{}}
+	return links{created: map[id.ID]edge{}, retired: map[id.ID]bool{}, from: map[id.ID][]id.ID{}}
 }
 
 // landedLinks gathers the depends-on links and retires of every landed
@@ -255,7 +265,13 @@ func landedLinks(sets []ChangeSet) links {
 func opsByID(sets []ChangeSet) map[id.ID][]op.Op {
 	m := make(map[id.ID][]op.Op, len(sets))
 	for _, s := range sets {
-		m[s.ID] = append(m[s.ID], s.Ops...)
+		if prev, ok := m[s.ID]; ok {
+			// Clipped, so the append never writes into another
+			// change set's ops.
+			m[s.ID] = append(slices.Clip(prev), s.Ops...)
+		} else {
+			m[s.ID] = slices.Clip(s.Ops)
+		}
 	}
 	return m
 }
@@ -271,8 +287,8 @@ func dependsOn(landed links, cs id.ID, ops []op.Op) []id.ID {
 	}
 	var out []id.ID
 	for _, from := range []links{landed, own} {
-		for l, o := range from.created {
-			if o.From == cs && !landed.retired[l] && !own.retired[l] {
+		for _, l := range from.from[cs] {
+			if o := from.created[l]; o.From == cs && !landed.retired[l] && !own.retired[l] {
 				out = append(out, o.To)
 			}
 		}

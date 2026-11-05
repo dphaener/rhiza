@@ -1,9 +1,11 @@
 package index
 
 import (
+	"bytes"
 	"cmp"
 	"crypto/sha256"
 	"database/sql"
+	"encoding/gob"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -11,6 +13,7 @@ import (
 	"io/fs"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
@@ -171,7 +174,7 @@ func (x *Index) catchUpTx(tx *sql.Tx, sp statPrint) error {
 		}
 	}
 	if x.stats.rebuilt {
-		for _, t := range []string{"meta", "files", "entries", "change_sets", "nodes", "links", "problems", "landed_links"} {
+		for _, t := range []string{"meta", "files", "entries", "change_sets", "folded", "nodes", "links", "problems", "landed_links"} {
 			if _, err := tx.Exec(`DELETE FROM ` + t); err != nil {
 				return err
 			}
@@ -287,44 +290,82 @@ func pathIDs(p string) (cs, eid string) {
 	return parts[1], strings.TrimSuffix(parts[2], ".json")
 }
 
-// refold folds every stored entry with changeset.FoldLog, replaces the
-// stored change sets and fold problems, and recomputes the views whose
-// inputs changed.
+// refold folds the change sets the new entries touched, from their own
+// stored entries, and keeps every other change set's stored fold. It
+// replaces the touched change sets' stored rows, their fold problems and
+// the unknown-supersede problems the touch changed, and recomputes the
+// views whose inputs changed. The result equals changeset.FoldLog over the
+// whole log.
 func (x *Index) refold(tx *sql.Tx, touched map[id.ID]bool) error {
 	before := map[id.ID]changeset.State{}
-	rows, err := tx.Query(`SELECT id, state FROM change_sets`)
+	supersededBy := map[id.ID][]id.ID{}
+	rows, err := tx.Query(`SELECT id, state, superseded_by FROM change_sets`)
 	if err != nil {
 		return err
 	}
 	for rows.Next() {
-		var s, state string
-		if err := rows.Scan(&s, &state); err != nil {
+		var s, state, by string
+		if err := rows.Scan(&s, &state, &by); err != nil {
 			rows.Close()
 			return err
 		}
 		before[parseID(s)] = changeset.State(state)
+		if by != "" {
+			supersededBy[parseID(by)] = append(supersededBy[parseID(by)], parseID(s))
+		}
 	}
 	rows.Close()
 	if err := rows.Err(); err != nil {
 		return err
 	}
 
-	sets, problems, err := foldStored(tx)
-	if err != nil {
+	ids := make([]id.ID, 0, len(touched))
+	for cs := range touched {
+		ids = append(ids, cs)
+	}
+	slices.SortFunc(ids, id.Compare)
+
+	var sets []changeset.ChangeSet
+	var problems []changeset.Problem
+	for _, cs := range ids {
+		es, err := decodeEntriesOf(tx, cs, &x.stats)
+		if err != nil {
+			return err
+		}
+		c, ps := changeset.Fold(cs, es)
+		x.stats.folded++
+		sets = append(sets, c)
+		problems = append(problems, ps...)
+		if c.State == changeset.StateSuperseded && !touched[c.SupersededBy] {
+			has, err := hasEntries(tx, c.SupersededBy)
+			if err != nil {
+				return err
+			}
+			if !has {
+				problems = append(problems, unknownSupersede(c))
+			}
+		}
+	}
+
+	// Untouched change sets superseded by a touched one: the by now has
+	// entries, so their unknown-supersede problem, if any, is gone.
+	cleared := map[string]bool{}
+	for cs := range touched {
+		for _, s := range supersededBy[cs] {
+			if !touched[s] {
+				cleared[idText(s)] = true
+			}
+		}
+	}
+	if err := x.writeFoldedSets(tx, ids, sets); err != nil {
 		return err
 	}
-	if err := writeChangeSets(tx, sets); err != nil {
-		return err
-	}
-	if err := writeFoldProblems(tx, problems); err != nil {
+	if err := replaceFoldProblems(tx, touched, cleared, problems); err != nil {
 		return err
 	}
 
 	asIs, toBe := x.stats.rebuilt, x.stats.rebuilt
 	for _, s := range sets {
-		if !touched[s.ID] {
-			continue
-		}
 		was, ok := before[s.ID]
 		switch {
 		case !ok:
@@ -337,40 +378,248 @@ func (x *Index) refold(tx *sql.Tx, touched map[id.ID]bool) error {
 		}
 	}
 	x.stats.asIs, x.stats.toBe = asIs, toBe
-	return writeViews(tx, sets, asIs, toBe, x.stats.writes)
+	if !asIs && !toBe {
+		return nil
+	}
+	all, err := storedSets(tx)
+	if err != nil {
+		return err
+	}
+	return writeViews(tx, all, asIs, toBe, x.stats.writes)
 }
 
-// foldStored decodes every stored entry and folds the log.
-func foldStored(q querier) ([]changeset.ChangeSet, []changeset.Problem, error) {
-	rows, err := q.Query(`SELECT raw FROM entries ORDER BY change_set, id`)
+// unknownSupersede is the problem FoldLog reports on a superseded change
+// set whose by has no entries.
+func unknownSupersede(c changeset.ChangeSet) changeset.Problem {
+	return changeset.Problem{ChangeSet: c.ID, Entry: c.TerminalEntry,
+		Err: fmt.Errorf("%w: superseded by %s, which has no entries in the log", changeset.ErrUnknownChangeSet, c.SupersededBy)}
+}
+
+// hasEntries reports whether cs has a good entry stored.
+func hasEntries(q querier, cs id.ID) (bool, error) {
+	var one int
+	err := q.QueryRow(`SELECT 1 FROM entries WHERE change_set = ? LIMIT 1`, idText(cs)).Scan(&one)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
+	return err == nil, err
+}
+
+// decodeEntriesOf decodes cs's stored entries.
+func decodeEntriesOf(q querier, cs id.ID, st *stats) ([]entry.Entry, error) {
+	rows, err := q.Query(`SELECT raw FROM entries WHERE change_set = ? ORDER BY id`, idText(cs))
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	defer rows.Close()
-	var log store.Log
+	var out []entry.Entry
 	for rows.Next() {
 		var raw []byte
 		if err := rows.Scan(&raw); err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		e, err := entry.Decode(raw)
 		if err != nil {
-			return nil, nil, fmt.Errorf("decode stored entry: %w", err)
+			return nil, fmt.Errorf("decode stored entry: %w", err)
 		}
-		log.Entries = append(log.Entries, e)
+		st.decoded++
+		out = append(out, e)
 	}
-	if err := rows.Err(); err != nil {
-		return nil, nil, err
-	}
-	sets, problems := changeset.FoldLog(log)
-	return sets, problems, nil
+	return out, rows.Err()
 }
 
-// writeChangeSets replaces the stored change sets.
-func writeChangeSets(tx *sql.Tx, sets []changeset.ChangeSet) error {
-	if _, err := tx.Exec(`DELETE FROM change_sets`); err != nil {
+// writeFoldedSets replaces the stored rows of the change sets ids with
+// sets (the same change sets, in the same order): the summary row, the
+// landed links and the folded state.
+func (x *Index) writeFoldedSets(tx *sql.Tx, ids []id.ID, sets []changeset.ChangeSet) error {
+	for _, t := range []string{"change_sets", "landed_links", "folded"} {
+		col := "id"
+		if t != "change_sets" {
+			col = "change_set"
+		}
+		st, err := tx.Prepare(`DELETE FROM ` + t + ` WHERE ` + col + ` = ?`)
+		if err != nil {
+			return err
+		}
+		for _, cs := range ids {
+			if _, err := st.Exec(idText(cs)); err != nil {
+				st.Close()
+				return err
+			}
+		}
+		st.Close()
+	}
+	if err := writeChangeSets(tx, sets); err != nil {
 		return err
 	}
+	st, err := tx.Prepare(`INSERT INTO folded (change_set, ops, data) VALUES (?, ?, ?)`)
+	if err != nil {
+		return err
+	}
+	defer st.Close()
+	for _, s := range sets {
+		var ops, data bytes.Buffer
+		if err := gob.NewEncoder(&ops).Encode(opsOnly{ID: s.ID, State: s.State, Ops: s.Ops}); err != nil {
+			return fmt.Errorf("encode folded %s: %w", s.ID, err)
+		}
+		if err := gob.NewEncoder(&data).Encode(s); err != nil {
+			return fmt.Errorf("encode folded %s: %w", s.ID, err)
+		}
+		if _, err := st.Exec(idText(s.ID), ops.Bytes(), data.Bytes()); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// decodeFolded decodes one stored folded change set.
+func decodeFolded(data []byte) (changeset.ChangeSet, error) {
+	var c changeset.ChangeSet
+	if err := gob.NewDecoder(bytes.NewReader(data)).Decode(&c); err != nil {
+		return c, fmt.Errorf("decode folded change set: %w", err)
+	}
+	return c, nil
+}
+
+// storedSets returns every stored folded change set, sorted by ID.
+func storedSets(q querier) ([]changeset.ChangeSet, error) {
+	rows, err := q.Query(`SELECT data FROM folded ORDER BY change_set`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []changeset.ChangeSet
+	for rows.Next() {
+		var data []byte
+		if err := rows.Scan(&data); err != nil {
+			return nil, err
+		}
+		c, err := decodeFolded(data)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, c)
+	}
+	return out, rows.Err()
+}
+
+// FoldedOf returns the stored folded state, history included, of each of
+// the change sets css; a change set with no entries has no key. The result
+// equals what changeset.FoldLog gives for them over the whole log.
+func (x *Index) FoldedOf(css []id.ID) (map[id.ID]changeset.ChangeSet, error) {
+	return x.foldedOf(css, "data", decodeFolded)
+}
+
+// OpsOf is FoldedOf with only the ID, State and Ops of each change set
+// set, read from their own stored copy: the rest of the stored state, the
+// history above all, is not read, which makes it several times cheaper.
+func (x *Index) OpsOf(css []id.ID) (map[id.ID]changeset.ChangeSet, error) {
+	return x.foldedOf(css, "ops", decodeOps)
+}
+
+// opsOnly is the part of a folded change set stored as its ops.
+type opsOnly struct {
+	ID    id.ID
+	State changeset.State
+	Ops   []op.Op
+}
+
+// decodeOps decodes the stored ops of one folded change set.
+func decodeOps(data []byte) (changeset.ChangeSet, error) {
+	var c opsOnly
+	if err := gob.NewDecoder(bytes.NewReader(data)).Decode(&c); err != nil {
+		return changeset.ChangeSet{}, fmt.Errorf("decode folded change set: %w", err)
+	}
+	return changeset.ChangeSet{ID: c.ID, State: c.State, Ops: c.Ops}, nil
+}
+
+// foldedOf reads column col of the stored folded change sets css, each
+// through decode.
+func (x *Index) foldedOf(css []id.ID, col string, decode func([]byte) (changeset.ChangeSet, error)) (map[id.ID]changeset.ChangeSet, error) {
+	var blobs [][]byte
+	for _, chunk := range batchChunks(css) {
+		rows, err := x.db.Query(`SELECT f.`+col+` FROM json_each(?1) j CROSS JOIN folded f ON f.change_set = j.value`, idJSON(chunk))
+		if err != nil {
+			return nil, err
+		}
+		for rows.Next() {
+			var data []byte
+			if err := rows.Scan(&data); err != nil {
+				rows.Close()
+				return nil, err
+			}
+			blobs = append(blobs, data)
+		}
+		err = rows.Err()
+		rows.Close()
+		if err != nil {
+			return nil, err
+		}
+	}
+	// Decoding is most of the cost, so decodeWorkers do it at once.
+	sets := make([]changeset.ChangeSet, len(blobs))
+	errs := make([]error, len(blobs))
+	next := make(chan int)
+	var wg sync.WaitGroup
+	for range min(decodeWorkers, len(blobs)) {
+		wg.Go(func() {
+			for i := range next {
+				sets[i], errs[i] = decode(blobs[i])
+			}
+		})
+	}
+	for i := range blobs {
+		next <- i
+	}
+	close(next)
+	wg.Wait()
+	out := make(map[id.ID]changeset.ChangeSet, len(blobs))
+	for i, c := range sets {
+		if errs[i] != nil {
+			return nil, errs[i]
+		}
+		out[c.ID] = c
+	}
+	return out, nil
+}
+
+// replaceFoldProblems makes the stored fold problems those of the other
+// change sets, minus the unknown-supersede problems of the change sets in
+// cleared, plus fresh, in FoldLog's order.
+func replaceFoldProblems(tx *sql.Tx, touched map[id.ID]bool, cleared map[string]bool, fresh []changeset.Problem) error {
+	rows, err := tx.Query(`SELECT change_set, entry, sentinel, message FROM problems WHERE source = ? ORDER BY seq`, sourceFold)
+	if err != nil {
+		return err
+	}
+	var out []storedProblem
+	for rows.Next() {
+		var p storedProblem
+		if err := rows.Scan(&p.ChangeSet, &p.Entry, &p.Sentinel, &p.Message); err != nil {
+			rows.Close()
+			return err
+		}
+		if touched[parseID(p.ChangeSet)] || (cleared[p.ChangeSet] && p.Sentinel == "unknown-change-set") {
+			continue
+		}
+		out = append(out, p)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	for _, p := range fresh {
+		out = append(out, storedProblem{ChangeSet: idText(p.ChangeSet), Entry: idText(p.Entry),
+			Sentinel: foldSentinel(p.Err), Message: p.Err.Error()})
+	}
+	slices.SortStableFunc(out, func(a, b storedProblem) int {
+		return cmp.Or(strings.Compare(a.ChangeSet, b.ChangeSet), strings.Compare(a.Entry, b.Entry),
+			strings.Compare(a.Message, b.Message))
+	})
+	return replaceProblems(tx, sourceFold, out)
+}
+
+// writeChangeSets inserts the stored rows of sets.
+func writeChangeSets(tx *sql.Tx, sets []changeset.ChangeSet) error {
 	st, err := tx.Prepare(`INSERT INTO change_sets (id, state, kind, intent, open_entry, superseded_by, terminal_entry)
 		VALUES (?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
@@ -386,11 +635,8 @@ func writeChangeSets(tx *sql.Tx, sets []changeset.ChangeSet) error {
 	return writeLandedLinks(tx, sets)
 }
 
-// writeLandedLinks replaces the stored landed_links of sets.
+// writeLandedLinks inserts the landed_links of sets.
 func writeLandedLinks(tx *sql.Tx, sets []changeset.ChangeSet) error {
-	if _, err := tx.Exec(`DELETE FROM landed_links`); err != nil {
-		return err
-	}
 	st, err := tx.Prepare(`INSERT INTO landed_links (change_set, n, retire, link, from_id, to_id) VALUES (?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		return err
@@ -415,17 +661,6 @@ func writeLandedLinks(tx *sql.Tx, sets []changeset.ChangeSet) error {
 		}
 	}
 	return nil
-}
-
-// writeFoldProblems replaces the stored fold problems, which FoldLog
-// returns sorted.
-func writeFoldProblems(tx *sql.Tx, ps []changeset.Problem) error {
-	out := make([]storedProblem, 0, len(ps))
-	for _, p := range ps {
-		out = append(out, storedProblem{ChangeSet: idText(p.ChangeSet), Entry: idText(p.Entry),
-			Sentinel: foldSentinel(p.Err), Message: p.Err.Error()})
-	}
-	return replaceProblems(tx, sourceFold, out)
 }
 
 // writeLogProblems replaces the stored log problems with the listing's
@@ -552,4 +787,65 @@ func parseID(s string) id.ID {
 		return id.ID{}
 	}
 	return i
+}
+
+// Stamp names the log state the index is level with: the fingerprint of
+// the listing it last caught up with. It changes whenever an entry file is
+// added, so a value computed from the index stays good while the stamp does.
+func (x *Index) Stamp() (string, error) {
+	return metaOf(x.db, metaListing)
+}
+
+// Refresh catches the index up with the log again, as Open does: a log
+// that has not changed costs a read of log/ and a stat per change set
+// folder, with no listing, no read and no write. It stats the folders in
+// the caller's goroutine: a long-lived reader that refreshes often cares
+// for CPU more than time.
+func (x *Index) Refresh() error {
+	return x.catchUpFrom(takeStatsBy(x.fsys, time.Now(), 1))
+}
+
+// CatchUp describes what the last Open or Refresh did.
+type CatchUp struct {
+	// Fresh is true when the index was already level with the log.
+	Fresh bool
+	// Rebuilt is true when every table was emptied first.
+	Rebuilt bool
+	// Read is the number of entry files read; Decoded the number of stored
+	// entries decoded and Folded the number of change sets folded.
+	Read, Decoded, Folded int
+}
+
+// LastCatchUp reports what the last Open or Refresh did.
+func (x *Index) LastCatchUp() CatchUp {
+	s := x.stats
+	return CatchUp{Fresh: s.fresh, Rebuilt: s.rebuilt, Read: s.read, Decoded: s.decoded, Folded: s.folded}
+}
+
+// Signature digests what a what-if view of the change sets in sets reads
+// of the log: those sets' entries (their number and the newest) and the
+// change sets that are no longer in flight (their number and the newest
+// terminal entry), which make up as-is. It is equal for two calls when the
+// view over sets is, whatever else the log gained between them, a draft's
+// new entry say.
+func (x *Index) Signature(sets []id.ID) (string, error) {
+	var landed int
+	var last string
+	if err := x.db.QueryRow(`SELECT count(*), coalesce(max(terminal_entry), '') FROM change_sets
+		WHERE state NOT IN ('draft', 'proposed', 'accepted')`).Scan(&landed, &last); err != nil {
+		return "", err
+	}
+	h := sha256.New()
+	fmt.Fprintf(h, "%d %s\n", landed, last)
+	sorted := slices.Clone(sets)
+	slices.SortFunc(sorted, id.Compare)
+	for _, cs := range slices.Compact(sorted) {
+		var n int
+		var newest string
+		if err := x.db.QueryRow(`SELECT count(*), coalesce(max(id), '') FROM entries WHERE change_set = ?`, idText(cs)).Scan(&n, &newest); err != nil {
+			return "", err
+		}
+		fmt.Fprintf(h, "%s %d %s\n", cs, n, newest)
+	}
+	return hex.EncodeToString(h.Sum(nil)), nil
 }

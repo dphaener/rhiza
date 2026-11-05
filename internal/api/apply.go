@@ -239,6 +239,9 @@ func buildApply(w *workspace, cs id.ID, ids *id.Generator, items []applyItem) (e
 	for i, it := range items {
 		e, err := it.build(writeBase{root: s.root, m: s.model(target), ops: ops, ids: ids, changeSet: s.resolveChangeSet, changeSets: s.changeSets})
 		if err == nil {
+			err = s.ix.failure()
+		}
+		if err == nil {
 			err = e.check(it.op)
 		}
 		if err != nil {
@@ -309,7 +312,7 @@ func buildApply(w *workspace, cs id.ID, ids *id.Generator, items []applyItem) (e
 // scratchOps folds change set cs of the scratch workspace; a fold problem
 // means an item could not be applied as built.
 func scratchOps(s *workspace, cs id.ID) ([]op.Op, error) {
-	c, problems := changeset.Fold(cs, entriesOf(s.log(), cs))
+	c, problems := changeset.Fold(cs, s.entriesOfSet(cs))
 	if len(problems) > 0 {
 		return nil, Errorf("%s", problems[0].Err.Error())
 	}

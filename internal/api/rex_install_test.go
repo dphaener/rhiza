@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/dphaener/rhiza/internal/tui/launcher"
+	"github.com/dphaener/rhiza/internal/tui/modalshell"
 )
 
 // rexTestCtx is a ctx with a fake Rex config folder and a fake rex that
@@ -208,7 +209,7 @@ func TestRexInstallRegistersAnActionPerApp(t *testing.T) {
 	for _, want := range []string{
 		`name = "rhiza_app_zz_extra"`,
 		`title = "zz-extra"`,
-		`local argv = open_argv("zz-extra")`,
+		`options = { command = app_command("zz-extra"), cwd = block_cwd(ctx.block_id) }`,
 	} {
 		if !strings.Contains(script, want) {
 			t.Errorf("rhiza.lua lacks %s:\n%s", want, script)
@@ -223,8 +224,50 @@ func TestRexInstallRegistersAnActionPerApp(t *testing.T) {
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
 		t.Fatal(err)
 	}
-	if script = readFile(t, filepath.Join(dir, "rhiza.lua")); !strings.Contains(script, `open_argv("zz-later")`) {
+	if script = readFile(t, filepath.Join(dir, "rhiza.lua")); !strings.Contains(script, `app_command("zz-later")`) {
 		t.Errorf("reinstall lacks the new app's action:\n%s", script)
+	}
+}
+
+// sizedComponent is a modalshell.Component that only reports its size.
+type sizedComponent struct {
+	modalshell.Component
+	cols, rows int
+}
+
+func (c sizedComponent) NaturalSize() (int, int) { return c.cols, c.rows }
+
+// TestRexInstallSizesEachAppLayerToItsCells checks each action's layer is
+// sized at install time from its app's component's NaturalSize, and an app
+// without a component from the default size.
+func TestRexInstallSizesEachAppLayerToItsCells(t *testing.T) {
+	launcher.Register(launcher.App{Name: "zz-sized", Summary: "Sized", Component: func() modalshell.Component {
+		return sizedComponent{cols: 77, rows: 21}
+	}})
+	launcher.Register(launcher.App{Name: "zz-default", Summary: "Default size"})
+	ctx, dir, _ := rexTestCtx(t)
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
+	action := func(name string) string {
+		i := strings.Index(script, `name = "`+rexActionName(name)+`"`)
+		if i < 0 {
+			t.Fatalf("no action for %s:\n%s", name, script)
+		}
+		end := strings.Index(script[i:], "\n}\n")
+		return script[i : i+end]
+	}
+	sized := action("zz-sized")
+	if !strings.Contains(sized, "bounds = cell_bounds(ctx.block_id, 77, 21)") {
+		t.Errorf("zz-sized is not sized from its component:\n%s", sized)
+	}
+	if !strings.Contains(sized, `command = app_command("zz-sized")`) {
+		t.Errorf("zz-sized does not run its app:\n%s", sized)
+	}
+	dc, dr := launcher.App{}.Size()
+	if want := fmt.Sprintf("cell_bounds(ctx.block_id, %d, %d)", dc, dr); !strings.Contains(action("zz-default"), want) {
+		t.Errorf("zz-default lacks %s", want)
 	}
 }
 

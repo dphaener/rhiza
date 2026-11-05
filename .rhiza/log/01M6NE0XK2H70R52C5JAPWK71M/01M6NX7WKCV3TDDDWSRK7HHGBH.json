@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NWHZ1T0Q0XQK4AT2WZKA08",
+  "after": [
+    "01M6NTT8RJFPW5YG5EK45F9CG2"
+  ],
+  "at": "2026-11-05T13:09:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at de45583d. Read the diff: stepRunner's Leaves, LeafAnswer, Answer and Evidence (the calls the leaves and checks steps and their arbiter waits make) now go through readModel (internal/api/run_model_cache.go), which keeps the worktree's index open, refreshes it by a stat fingerprint (Index.Refresh/Stamp) and keeps answers while the stamp, or the per-change-set Signature, is unchanged. Ran go test -trimpath -count=1 -v -run TestDriverPollIsCheap ./internal/api/ (PASS; also PASS under -race): on a gen'd log of 120 landed + 6 in-flight change sets with IndexPath set and a live session record, 5 idle polls show ctx.readLog 0, catch-up Read/Decoded/Folded 0 and no answer recomputed; after an entry in an unrelated change set the next poll reads the log 0 times and folds exactly 1 change set; after an entry in the run's change set the leaves go 2->3, and a session done mark is seen (SaidDone). Ran go test -trimpath -count=1 -v -run TestReadBudget ./internal/api/ (PASS, quiettest, medians): driver poll idle median 4.06ms CPU (budget 5ms), after an unrelated entry 5.51ms (budget 50ms); a second run (whole package, go test -trimpath -count=1 ./internal/api/, ok) gave 2.24ms and 6.33ms. go test -trimpath ./internal/index/... ok, incl. TestSignature."
+        },
+        "handle": "run-driver-idle-poll-cheap-verified",
+        "id": "01M6NX7PPP8AFYX0HXPCFRG3C0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NX7PPP8AFYX0HXPB78XSMQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NX7PPP8AFYX0HXPB78XSMQ",
+        "id": "01M6NX7RY132C8J2V1KMS6Q42C",
+        "link": "01M6NX7RY132C8J2V1KJX2N3C7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEKX4E0HFPHC9ZSZKPE7KX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6NE0XK2H70R52C5JAPWK71M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NX7WKCV3TDDDWSRK7HHGBH",
+  "type": "ops",
+  "v": 1
+}

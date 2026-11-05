@@ -80,10 +80,10 @@ func TestMakeTestTimeout(t *testing.T) {
 	// The suite runs with the timing budgets skipped, then the budgets run
 	// alone, one package at a time; every phase keeps the 20m timeout and
 	// closes the lock's descriptor, so no leftover process can hold it.
-	skip := "go test -trimpath -timeout 20m -skip '^(TestReadBudget|TestBudget|TestGeneratedModel)$' "
+	skip := "go test -trimpath -timeout 20m -skip '^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap|TestGeneratedModel)$' "
 	rest := skip + "$(go list ./... | grep -v '/cmd/rhiza$') >$rest 2>&1 9>&- &"
 	scripts := skip + "./cmd/rhiza 9>&-"
-	budgets := "go test -trimpath -timeout 20m -count=1 -p 1 -run '^(TestReadBudget|TestBudget|TestGeneratedModel)$' ./internal/api ./internal/index ./internal/slice 9>&-"
+	budgets := "go test -trimpath -timeout 20m -count=1 -p 1 -run '^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap|TestGeneratedModel)$' ./internal/api ./internal/index ./internal/slice 9>&-"
 	lockScripts := `lock "the cmd/rhiza scripts"`
 	lockBudgets := `lock "the timing budgets"`
 	for _, want := range []string{

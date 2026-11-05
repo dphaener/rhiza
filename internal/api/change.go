@@ -269,6 +269,9 @@ func runChangeShow(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(w.pending) == 0 && ctx.IndexPath != "" {
+		return runChangeShowIndexed(ctx, w, r)
+	}
 	current, err := w.current()
 	if err != nil {
 		return nil, err
@@ -409,16 +412,31 @@ func (r ChangeShowResponse) Human(w io.Writer) {
 // leaf the walk does not reach, under a retired parent, sorts after the
 // rest by ID.
 func changeLeaves(m Model, ops []op.Op) []ChangeLeaf {
-	rank := map[id.ID]int{}
-	var walk func(parent id.ID)
-	walk = func(parent id.ID) {
-		for _, n := range m.Children(op.KindCapability, parent) {
-			rank[n.ID] = len(rank)
-			walk(n.ID)
+	return changeLeavesIn(m, ops, func([]Node) map[id.ID]int {
+		rank := map[id.ID]int{}
+		var walk func(parent id.ID)
+		walk = func(parent id.ID) {
+			for _, n := range m.Children(op.KindCapability, parent) {
+				rank[n.ID] = len(rank)
+				walk(n.ID)
+			}
 		}
-	}
-	walk(id.ID{})
+		walk(id.ID{})
+		return rank
+	})
+}
 
+// leafModel is what changeLeavesIn asks of a model.
+type leafModel interface {
+	Node(n id.ID) (Node, bool)
+	Children(kind op.Kind, parent id.ID) []Node
+	DependsOn(n id.ID) []id.ID
+}
+
+// changeLeavesIn is changeLeaves with the tree order given: rankOf gives
+// each of the leaves the place it has in a depth-first walk of the tree,
+// and none to one the walk does not reach.
+func changeLeavesIn(m leafModel, ops []op.Op, rankOf func(leaves []Node) map[id.ID]int) []ChangeLeaf {
 	var leaves []Node
 	for _, o := range ops {
 		if o.Type != op.TypeNodeCreate || o.Kind != op.KindCapability {
@@ -430,6 +448,7 @@ func changeLeaves(m Model, ops []op.Op) []ChangeLeaf {
 		}
 		leaves = append(leaves, n)
 	}
+	rank := rankOf(leaves)
 	slices.SortFunc(leaves, func(a, b Node) int {
 		ra, oka := rank[a.ID]
 		rb, okb := rank[b.ID]
@@ -470,7 +489,7 @@ func changeLeaves(m Model, ops []op.Op) []ChangeLeaf {
 }
 
 // leafNeeds is the sorted handles of the live capabilities n depends on.
-func leafNeeds(m Model, n id.ID) []string {
+func leafNeeds(m leafModel, n id.ID) []string {
 	needs := []string{}
 	for _, d := range m.DependsOn(n) {
 		if t, ok := m.Node(d); ok && !t.Retired && t.Kind == op.KindCapability {

@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/model"
 	"github.com/dphaener/rhiza/internal/op"
@@ -41,7 +42,7 @@ func (x *Index) WhatIfOverlay(cs id.ID) (*Overlay, []model.Problem, error) {
 	}
 	defer tx.Rollback()
 
-	sets, err := whatIfSets(tx, cs)
+	sets, err := whatIfSets(tx, cs, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -53,14 +54,33 @@ func (x *Index) WhatIfOverlay(cs id.ID) (*Overlay, []model.Problem, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	o := &Overlay{x: x, nodes: make(map[id.ID]model.Node, len(d.Nodes)), links: make(map[id.ID]model.Link, len(d.Links))}
-	for _, n := range d.Nodes {
+	return x.OverlayOf(d.Nodes, d.Links), ps, nil
+}
+
+// WhatIfSets returns the change sets a what-if of change set cs reads (see
+// whatIfSets), with cs taken as over instead of folded from its stored
+// entries when over is not nil: a change set with entries not yet written
+// (a dry run's, or a record change set's), which need not be stored at all.
+func (x *Index) WhatIfSets(cs id.ID, over *changeset.ChangeSet) ([]changeset.ChangeSet, error) {
+	tx, err := x.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	return whatIfSets(tx, cs, over)
+}
+
+// OverlayOf returns the as-is view overridden by nodes and links: a view a
+// caller computed over the rows it read, answered as WhatIfOverlay's is.
+func (x *Index) OverlayOf(nodes []model.Node, links []model.Link) *Overlay {
+	o := &Overlay{x: x, nodes: make(map[id.ID]model.Node, len(nodes)), links: make(map[id.ID]model.Link, len(links))}
+	for _, n := range nodes {
 		o.nodes[n.ID] = n
 	}
-	for _, l := range d.Links {
+	for _, l := range links {
 		o.links[l.ID] = l
 	}
-	return o, ps, nil
+	return o
 }
 
 // txSource gives a delta computation the stored as-is rows.
@@ -114,6 +134,21 @@ func (s txSource) SeedLink(i id.ID) (model.SeedLink, bool, error) {
 		return model.SeedLink{}, false, err
 	}
 	return sl, true, nil
+}
+
+// HandleTaken reports which live node has handle h, the smallest ID of
+// them, if any.
+func (o *Overlay) HandleTaken(h string) (id.ID, bool, error) {
+	ns, err := o.x.nodes(nodeSelect+` INDEXED BY nodes_handle WHERE view = ? AND handle = ? AND retired = 0`, viewAsIs, h)
+	if err != nil {
+		return id.ID{}, false, err
+	}
+	ns = append(o.dropNodes(ns), o.pickNodes(func(n model.Node) bool { return !n.Retired && n.Handle == h })...)
+	if len(ns) == 0 {
+		return id.ID{}, false, nil
+	}
+	slices.SortFunc(ns, nodeByID)
+	return ns[0].ID, true, nil
 }
 
 // Overridden reports whether the overlay overrides node or link i.

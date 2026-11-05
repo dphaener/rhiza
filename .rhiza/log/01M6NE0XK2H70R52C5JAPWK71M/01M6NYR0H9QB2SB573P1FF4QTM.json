@@ -1,0 +1,109 @@
+{
+  "actor": "01M6NX99JD7WQFQP2VX8R1TZ5J",
+  "after": [
+    "01M6NX7WKCV3TDDDWSRK7HHGBH"
+  ],
+  "at": "2026-11-05T13:35:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 35496535, hands-on with binaries built from this branch (rhiza-new) and from the merge-base (rhiza-old), each run in its own scratch git repo that holds a copy of this repo's real .rhiza (2,617 entries, 51 MB), with RHIZA_ROOT/CHANGE/RUN unset. Timed with /usr/bin/time. A single `rhiza add capability` into a new draft took 0.27-0.34 s CPU (new, index warm) against 9.8-11 s (old). `link ... verifies` took 0.34 s against 9.4 s. `retire --reason` took 0.14 s against 10.2 s. `rhiza apply` of 4 writes (2 adds, mv under parent, set) took 0.34 s against 24.6 s. Refusals matched on both binaries: duplicate handle gave conflict, a missing link target gave not_found, set on a retired node gave not_found, and mv under its own descendant gave the usage error. Normalised `change show --json` of the resulting change set (IDs and times stripped) is byte-identical across both binaries. `rhiza check` by both binaries on both repos: ok, no problems. go test -trimpath -count=1 ./internal/api -run 'TestWritesThroughIndexMatchFold|TestApplyIndexedReadsNoLog': PASS, 18-29 accepted and 51-62 refused per seed. TestReadBudgetApply: median 124.9 ms (budget 200 ms), zero log reads, PASS. TestScripts/(apply|link): PASS."
+        },
+        "handle": "apply-validates-from-index-qa-1",
+        "id": "01M6NYQCBR3NZ5JRYXF0Z3Q0CN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NYQCBR3NZ5JRYXEYPD4EHK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NYQCBR3NZ5JRYXEYPD4EHK",
+        "id": "01M6NYQEMEENS98F26CWK9P1N0",
+        "link": "01M6NYQEMEENS98F26CTC7K6QW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEMD8NQT1DE0SEYVGE7X2X",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 35496535, hands-on with binaries built from this branch (rhiza-new) and from the merge-base (rhiza-old), each run in its own scratch git repo that holds a copy of this repo's real .rhiza (2,617 entries, 51 MB), with RHIZA_ROOT/CHANGE/RUN unset. `rhiza change show 01M6NE0XK2H70R52C5JAPWK71M --json`: with the index warm, new took 0.16-0.34 s CPU per call against 9.1-10.4 s on old. After this branch's own writes it still took 0.19-0.31 s, against 8.2-10.0 s on old. The first call built the index (8.3 s). Normalised change show output of a change set written with 8 writes is byte-identical across both binaries. TestReadBudget on a 4-core VM at load ~3-8: change show draft/accepted fresh, medians 36.4/29.2 ms; after an unrelated entry, 37.6/31.8 ms (budget 50 ms). PASS. TestScripts/(change-show-serves|ship-check-settles-conflict|ship-check-ci-test-findings|ship-check-follows-moved-head): PASS. go test -trimpath -timeout 20m with make's BUDGET_TESTS skip over ./internal/api/... ./internal/index/... ./internal/changeset/...: all ok."
+        },
+        "handle": "change-show-ship-check-from-index-qa-1",
+        "id": "01M6NYQH1B6E2AGGJKNAT35QJW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NYQH1B6E2AGGJKN8W806P0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NYQH1B6E2AGGJKN8W806P0",
+        "id": "01M6NYQK9TSAF5K8YK0BAQ7SHJ",
+        "link": "01M6NYQK9TSAF5K8YK08K5EHHQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEM5KT6HR07M515NWRDSRD",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 35496535, hands-on with binaries built from this branch (rhiza-new) and from the merge-base (rhiza-old), each run in its own scratch git repo that holds a copy of this repo's real .rhiza (2,617 entries, 51 MB), with RHIZA_ROOT/CHANGE/RUN unset. Every write on the new binary is followed by a catch-up on the next command. After each add, link, apply or retire, the next `change show` took 0.2-0.3 s CPU, against 7-10 s for a whole-log fold on old. `rhiza check` (a full FoldLog) by both binaries on the index-written repo: ok. go test -trimpath -count=1 ./internal/index/...: ok, including the refold property and counter tests. TestCatchUpBudget: catch-up after one entry, median 34.0 ms (budget 50 ms), PASS. TestBudget: PASS."
+        },
+        "handle": "index-catchup-refolds-incrementally-qa-1",
+        "id": "01M6NYQNMCGF07718E0XB32AC9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NYQNMCGF07718E0WCNMC8H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NYQNMCGF07718E0WCNMC8H",
+        "id": "01M6NYQQYG7Q6GGBM4WMMS9ACS",
+        "link": "01M6NYQQYG7Q6GGBM4WM692ZNB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEZN44VV5TKPM24EY59X4R",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 35496535, hands-on with binaries built from this branch (rhiza-new) and from the merge-base (rhiza-old), each run in its own scratch git repo that holds a copy of this repo's real .rhiza (2,617 entries, 51 MB), with RHIZA_ROOT/CHANGE/RUN unset. Ran a real `rhiza run start --foreground` driver (workflow: a leaves step, interval 2s), with a fake rex (from build-tabs.txtar) and a fake claude that sleeps, on PATH. The builder session started and the driver idle-polled it. Process CPU from /proc/<pid>/stat: 0.01 s over 40 s of idle polls (~20 polls). After an entry was appended to an unrelated change set in the run worktree, the next 6 s used 0 s. Main's driver also idled at ~0 here, because a leaves step reads leaves once per step entry. So this harness confirms the new driver idles cheap but does not reproduce the original burn. The Go budget covers the poll cost: TestReadBudget driver poll idle median 2.745 ms CPU (budget 5 ms), and after an unrelated entry 5.723 ms (budget 50 ms), PASS. go test -trimpath ./internal/api (run_model_cache_test.go among them): ok."
+        },
+        "handle": "run-driver-idle-poll-cheap-qa-1",
+        "id": "01M6NYQT8WM94ZK683BR3JQBG6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NYQT8WM94ZK683BQATY5CW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NYQT8WM94ZK683BQATY5CW",
+        "id": "01M6NYQWK22XJ3KH4EEG7T0VT7",
+        "link": "01M6NYQWK22XJ3KH4EED4G3PGA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEKX4E0HFPHC9ZSZKPE7KX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6NE0XK2H70R52C5JAPWK71M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NYR0H9QB2SB573P1FF4QTM",
+  "type": "ops",
+  "v": 1
+}

@@ -250,7 +250,7 @@ func (x *Index) WhatIf(cs id.ID) (model.Model, []model.Problem, error) {
 	}
 	defer tx.Rollback()
 
-	sets, err := whatIfSets(tx, cs)
+	sets, err := whatIfSets(tx, cs, nil)
 	if err != nil {
 		return model.Model{}, nil, err
 	}
@@ -266,7 +266,7 @@ func (x *Index) WhatIf(cs id.ID) (model.Model, []model.Problem, error) {
 // set's ID and state, the whole of cs, of the in-flight change sets it
 // depends on and of the landed ones it depends on, and the landed
 // depends-on links, as model.WhatIfFrom wants them.
-func whatIfSets(tx *sql.Tx, cs id.ID) ([]changeset.ChangeSet, error) {
+func whatIfSets(tx *sql.Tx, cs id.ID, over *changeset.ChangeSet) ([]changeset.ChangeSet, error) {
 	var stubs []changeset.ChangeSet
 	rows, err := tx.Query(`SELECT id, state FROM change_sets ORDER BY id`)
 	if err != nil {
@@ -311,6 +311,27 @@ func whatIfSets(tx *sql.Tx, cs id.ID) ([]changeset.ChangeSet, error) {
 
 	full := map[id.ID]changeset.ChangeSet{}
 	var extraCreates []op.Op
+	if over != nil {
+		// cs is the given fold, whatever the index holds of it.
+		o := *over
+		o.ID = cs
+		full[cs] = o
+		i := slices.IndexFunc(stubs, func(s changeset.ChangeSet) bool { return s.ID == cs })
+		if i < 0 {
+			stubs = append(stubs, changeset.ChangeSet{ID: cs})
+			slices.SortFunc(stubs, func(a, b changeset.ChangeSet) int { return id.Compare(a.ID, b.ID) })
+			i = slices.IndexFunc(stubs, func(s changeset.ChangeSet) bool { return s.ID == cs })
+		}
+		stubs[i].State = o.State
+		var err error
+		if extraCreates, err = createdByLanded(tx, o.Ops); err != nil {
+			return nil, err
+		}
+	}
+	// The landed bucket is built again only when extraCreates is set,
+	// which happens once at most.
+	var bucket []op.Op
+	bucketExtra := false
 	build := func() []changeset.ChangeSet {
 		out := make([]changeset.ChangeSet, 0, len(stubs)+1)
 		for _, s := range stubs {
@@ -319,24 +340,40 @@ func whatIfSets(tx *sql.Tx, cs id.ID) ([]changeset.ChangeSet, error) {
 			}
 			out = append(out, s)
 		}
-		ops := slices.Concat(landed, extraCreates)
-		return append(out, changeset.ChangeSet{State: changeset.StateLanded, Ops: ops})
+		if bucket == nil || bucketExtra != (extraCreates != nil) {
+			bucket, bucketExtra = slices.Concat(landed, extraCreates), extraCreates != nil
+		}
+		return append(out, changeset.ChangeSet{State: changeset.StateLanded, Ops: bucket})
+	}
+	states := make(map[id.ID]changeset.State, len(stubs))
+	for _, s := range stubs {
+		states[s.ID] = s.State
 	}
 	state := func(c id.ID) (changeset.State, bool) {
-		for _, s := range stubs {
-			if s.ID == c {
-				return s.State, true
-			}
-		}
-		return "", false
+		st, ok := states[c]
+		return st, ok
 	}
 
+	// cs is always wanted: fold it first, so the analysis below starts
+	// from its ops rather than finding it needed on a pass of its own.
+	if st, ok := state(cs); ok && inFlightState(st) {
+		if _, ok := full[cs]; !ok {
+			c, err := foldOne(tx, cs)
+			if err != nil {
+				return nil, err
+			}
+			full[cs] = c
+			if extraCreates, err = createdByLanded(tx, c.Ops); err != nil {
+				return nil, err
+			}
+		}
+	}
 	for {
 		if st, ok := state(cs); !ok || !inFlightState(st) {
 			break
 		}
-		sets := build()
-		want := slices.Concat([]id.ID{cs}, changeset.Closure(sets, cs), changeset.Dependencies(sets, cs))
+		a := changeset.Analyze(build())
+		want := slices.Concat([]id.ID{cs}, a.Closure(cs), a.Dependencies(cs))
 		var need []id.ID
 		for _, w := range want {
 			if _, ok := full[w]; !ok && !slices.Contains(need, w) {
