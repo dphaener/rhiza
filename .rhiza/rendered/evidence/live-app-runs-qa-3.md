@@ -14,7 +14,7 @@ QA at e65e34a with a scratch build in a real 80x24 Rex pane over this repo's 20 
 
 ### Out
 
-- verifies [live-app-runs](../capability/rhiza/live-app-runs.md)
+- verifies live-app-runs (retired)
 
 ## History
 

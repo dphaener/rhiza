@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NA98RMRDDBAMB37BCW6Y3F",
+  "after": [
+    "01M6N45NHYY38652SSESC72K2N"
+  ],
+  "at": "2026-11-05T07:41:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ff652bac, go test -trimpath -count=1 -v ./internal/tui/runsapp/ passed 7 tests with a fake runner: TestRowsAreLiveRunsOnly (live run shows title, current step review and elapsed 1m05s; finished run not listed), TestTickRefreshes (TickMsg reloads rows and schedules the next tick), TestEmptyState (exactly one 'No live runs' line), TestOnlyReadOperations (after tick and keypresses every runner op is run.ls), TestResultIsRunLs, TestClosesInShell, TestRegistered. go test ./cmd/rhiza -run 'TestScripts/(tui-runs-app|rex-install)$' passed: tui-runs-app cmps rhiza tui app runs --once against rhiza run ls --json byte for byte, empty and with a run. healthapp tests pass; go build ./... and go vet clean. Diff read: runsapp is a rexuikit InfoPanel in the modal shell calling only run.ls; no liveapp references remain."
+        },
+        "handle": "runs-app-glance-verified",
+        "id": "01M6NAE91BFPRTJ0MVVDB673EK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NAE91BFPRTJ0MVVC171E9N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NAE91BFPRTJ0MVVC171E9N",
+        "id": "01M6NAESMQR6WS047E5A8YTMSK",
+        "link": "01M6NAESMQR6WS047E5A09WQZF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZBJWTAMCNY0T5ZBANQJNN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNJGY6Q735KB2ERT3V4R5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NAFVRRCQMTMJW426PFZSCX",
+  "type": "ops",
+  "v": 1
+}

@@ -18,7 +18,7 @@ The autonomy app (key y) lists every setting with its value and source, toggles 
 
 ### In
 
-- decided-by [autonomy-app](../capability/rhiza/orchestration/daemon/daemon-settings/autonomy-app.md)
+- decided-by autonomy-app (retired)
 - decided-by [inbox-nudge-stalled](../capability/rhiza/orchestration/inbox/inbox-list/inbox-stalled-items/inbox-nudge-stalled.md)
 
 ## History

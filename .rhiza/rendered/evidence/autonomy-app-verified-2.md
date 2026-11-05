@@ -14,7 +14,7 @@ At 1a5e3269 (fix for QA f1): go test ./internal/tui/autonomyapp -count=1 -v pass
 
 ### Out
 
-- verifies [autonomy-app](../capability/rhiza/orchestration/daemon/daemon-settings/autonomy-app.md)
+- verifies autonomy-app (retired)
 
 ## History
 

@@ -14,7 +14,7 @@ Attempt 2 at 2d2519d (fix for review findings quality f1, model f1, qa f1). Read
 
 ### Out
 
-- verifies [live-app-runs](../capability/rhiza/live-app-runs.md)
+- verifies live-app-runs (retired)
 
 ## History
 

@@ -19,8 +19,8 @@ The runs view is the live app, so no existing app's default Rex key moves, and i
 ### In
 
 - decided-by [run-ls](../capability/rhiza/workflows/workflow-runs/run-ls.md)
-- decided-by [live-app-runs](../capability/rhiza/live-app-runs.md)
-- decided-by [live-app-focus](../capability/rhiza/live-app-focus.md)
+- decided-by live-app-runs (retired)
+- decided-by live-app-focus (retired)
 - decided-by [roadmap-detail-run-tick](../capability/rhiza/roadmap-detail-run-tick.md)
 
 ## History

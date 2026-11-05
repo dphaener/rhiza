@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NAC7AWS233YE3E6Q4BQXWQ",
+  "after": [
+    "01M6N461D6RST8F4CCHP3AWN4P"
+  ],
+  "at": "2026-11-05T07:43:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 3b55185c: go test -trimpath -count=1 -v ./internal/tui/autonomyapp/... passed all 7 tests with a fake runner: TestStartsAtDaemonSettings (the four Select fields Plan/Accept/Ship/Sign-off start at the daemon.settings values owner/auto/auto/owner), TestSubmitWritesChangedOnly (changing plan and ship then submitting makes exactly 2 daemon.set calls, values written, shell closed), TestSubmitUnchangedWritesNothing (0 sets, closed), TestEscCallsNothing (after changing a field, Esc makes 0 sets and closes), TestSetErrorIsResult, TestResultIsDaemonSettings. go test -trimpath ./cmd/rhiza -run 'TestScripts/(tui-autonomy-app|tui-health|describe-golden)$' passed: tui app autonomy --once cmp-matches rhiza daemon settings --json before and after a set. Read the diff: submit skips unchanged toggles and calls daemon.set with [--, key, value], which requestFromArgs in cmd/rhiza/argv.go maps to the key/value positional args; cmd/rhiza/tui.go runs the app in its modal shell and keeps --once on Result. go vet and gofmt clean."
+        },
+        "handle": "autonomy-app-toggles-verified",
+        "id": "01M6NAH6PKBMG1B5T38BNCDHJT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NAH6PHJDFP03V7TZZ0G0C2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NAH6PHJDFP03V7TZZ0G0C2",
+        "id": "01M6NAHTNHYF1K4CC4R23J2VX1",
+        "link": "01M6NAHTNHYF1K4CC4R145G39A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZCNKTRF4KEY30SV1J4YHD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYPA335J1S3952RJAGZJN9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NAJGNGMPBQ1GCH66B3TS02",
+  "type": "ops",
+  "v": 1
+}

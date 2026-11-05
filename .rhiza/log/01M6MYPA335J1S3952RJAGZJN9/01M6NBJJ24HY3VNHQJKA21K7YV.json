@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NBDPTE7J5JNJ1DYCV5GYW5",
+  "after": [
+    "01M6NBGPAKFQ5CDGV2T45HBMHW"
+  ],
+  "at": "2026-11-05T08:00:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2, at aa6c9ded: go test -trimpath -count=1 -v ./internal/tui/autonomyapp/... passes all 8 tests with a fake runner: TestStartsAtDaemonSettings (the four Select fields Plan/Accept/Ship/Sign-off start at the fake's daemon.settings values), TestSubmitWritesChangedOnly (two changed toggles give exactly two daemon.set calls, shell closes, nil error), TestSubmitUnchangedWritesNothing (0 sets, closes), TestEscCallsNothing (0 sets, closes), TestSetErrorIsResult, TestResultIsDaemonSettings, TestRegistered, and the new TestLoadErrorShownAndNotWritten (a failing daemon.settings shows the error in the rendered form, submit writes nothing and closes with that error, fixing review finding f1). go test ./cmd/rhiza -run TestScripts/(tui-autonomy-app|describe-golden)$ passes: tui app autonomy --once cmp-matches rhiza daemon settings --json before and after a daemon set. Read the diff (autonomyapp.go, tests, cmd/rhiza/tui.go): one rexuikit ui.Form of four auto/owner Selects over rhiza.autonomy.{plan,accept,ship,signoff}, submit diffs against the loaded values and writes via daemon.set -- key value, then modalshell.Done. go vet and gofmt clean."
+        },
+        "handle": "autonomy-app-toggles-verified-2",
+        "id": "01M6NBJ3GTWA4W7FV9G3WS17E4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NBJ3GTWA4W7FV9G211H3SE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NBJ3GTWA4W7FV9G211H3SE",
+        "id": "01M6NBJA4P05FKY4XSZDMNM0HD",
+        "link": "01M6NBJA4P05FKY4XSZB5MBJTH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZCNKTRF4KEY30SV1J4YHD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYPA335J1S3952RJAGZJN9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NBJJ24HY3VNHQJKA21K7YV",
+  "type": "ops",
+  "v": 1
+}

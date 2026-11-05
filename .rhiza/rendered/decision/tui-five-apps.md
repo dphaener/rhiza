@@ -24,8 +24,10 @@ Inbox: pick an item and do its one action (answer a question or gate, sign off a
 - decided-by [m26-daemon-app](../intent/milestone-26/m26-daemon-app.md)
 - decided-by [m26-autonomy-app](../intent/milestone-26/m26-autonomy-app.md)
 - decided-by [request-app-form](../capability/rhiza/request-app-form.md)
+- decided-by [runs-app-glance](../capability/rhiza/runs-app-glance.md)
 - decided-by [daemon-app-pause](../capability/rhiza/daemon-app-pause.md)
 - decided-by [daemon-app-run-limit](../capability/rhiza/daemon-app-run-limit.md)
+- decided-by [autonomy-app-toggles](../capability/rhiza/autonomy-app-toggles.md)
 
 ## History
 

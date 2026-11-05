@@ -20,12 +20,12 @@ import (
 	"github.com/dphaener/rhiza/internal/tui/changesapp"
 	"github.com/dphaener/rhiza/internal/tui/healthapp"
 	"github.com/dphaener/rhiza/internal/tui/inboxapp"
-	"github.com/dphaener/rhiza/internal/tui/liveapp"
 	"github.com/dphaener/rhiza/internal/tui/modalshell"
 	"github.com/dphaener/rhiza/internal/tui/modelapp"
 	"github.com/dphaener/rhiza/internal/tui/readapps"
 	"github.com/dphaener/rhiza/internal/tui/requestapp"
 	"github.com/dphaener/rhiza/internal/tui/roadmapapp"
+	"github.com/dphaener/rhiza/internal/tui/runsapp"
 	"github.com/dphaener/rhiza/internal/tui/writeapps"
 )
 
@@ -71,12 +71,12 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 	read, isRead := readapps.Lookup(name)
 	isInbox := name == inboxapp.Name
 	isRoadmap := name == roadmapapp.Name
-	isLive := name == liveapp.Name
+	isRuns := name == runsapp.Name
 	isHealth := name == healthapp.Name
 	isRequests := name == requestapp.Name
 	isAutonomy := name == autonomyapp.Name
 	write, isWrite := writeapps.Lookup(name)
-	if !isRead && !isWrite && !isInbox && !isRoadmap && !isLive && !isHealth && !isRequests && !isAutonomy {
+	if !isRead && !isWrite && !isInbox && !isRoadmap && !isRuns && !isHealth && !isRequests && !isAutonomy {
 		return writeError(stdout, stderr, api.NotFoundf("unknown app %q", name), false)
 	}
 	once, confirm := false, false
@@ -129,29 +129,39 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		})
 		return im
 	}
-	liveModel := func() *liveapp.Model {
-		return liveapp.NewModel(func(op string, args []string) ([]byte, error) {
+	runsModel := func() *runsapp.Model {
+		return runsapp.NewModel(func(op string, args []string) ([]byte, error) {
 			return call(op, false, false, args)
 		}, nil)
 	}
 	autonomyModel := func() *autonomyapp.Model {
-		am := autonomyapp.NewModel(func(op string, args []string) ([]byte, error) {
+		return autonomyapp.NewModel(func(op string, args []string) ([]byte, error) {
 			return call(op, false, false, args)
 		})
-		return am
 	}
 	var m tea.Model
 	var result func() ([]byte, error)
 	switch {
 	case isAutonomy:
 		am := autonomyModel()
-		m, result = am, am.Result
+		result = am.Result
+		if once {
+			break
+		}
+		sh := am.Shell()
+		if _, err := sh.Run(); err != nil {
+			return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
+		}
+		if _, err := sh.Result(); err != nil {
+			return writeError(stdout, stderr, err, false)
+		}
+		return 0
 	case isInbox:
 		im := inboxModel()
 		m, result = im, im.Result
-	case isLive:
-		lm := liveModel()
-		m, result = lm, lm.Result
+	case isRuns:
+		rm := runsModel()
+		m, result = modalshell.New(rm), rm.Result
 	case isHealth:
 		hm := healthapp.NewModel(func(op string, args []string) ([]byte, error) {
 			return call(op, false, false, args)
@@ -159,10 +169,10 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 			switch app {
 			case inboxapp.Name:
 				return inboxModel(), nil
-			case liveapp.Name:
-				return liveModel(), nil
+			case runsapp.Name:
+				return modalshell.New(runsModel()), nil
 			case autonomyapp.Name:
-				return autonomyModel(), nil
+				return autonomyModel().Shell(), nil
 			}
 			return nil, api.NotFoundf("unknown app %q", app)
 		})

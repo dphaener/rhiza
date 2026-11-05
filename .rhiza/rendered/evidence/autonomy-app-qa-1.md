@@ -14,7 +14,7 @@ At 69611388, built rhiza to a scratch path and ran it in a scratch repo. `rhiza 
 
 ### Out
 
-- verifies [autonomy-app](../capability/rhiza/orchestration/daemon/daemon-settings/autonomy-app.md)
+- verifies autonomy-app (retired)
 
 ## History
 

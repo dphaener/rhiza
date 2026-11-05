@@ -14,7 +14,7 @@ QA at e65e34a in a real Rex pane: in rhiza tui app live, enter on the live run 0
 
 ### Out
 
-- verifies [live-app-focus](../capability/rhiza/live-app-focus.md)
+- verifies live-app-focus (retired)
 
 ## History
 
