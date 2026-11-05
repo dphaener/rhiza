@@ -839,6 +839,10 @@ func TestRunStalledNow(t *testing.T) {
 	} {
 		rec := session.Record{ID: id}
 		rec.Status.Hook = &session.Report{State: state, At: old}
+		if id == "idle" {
+			// An idle session stalls too, unless it has said it is done.
+			rec.Status.Done = &session.Report{State: session.StateDone, At: old}
+		}
 		if err := sessions.Write(rec); err != nil {
 			t.Fatal(err)
 		}

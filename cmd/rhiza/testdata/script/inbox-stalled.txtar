@@ -46,8 +46,19 @@ exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\
 exec rhiza inbox --json
 ! stdout '"stalled"'
 
-# Nor is an idle one.
+# An idle one stalls like a working one: it may hold a background shell.
 exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"state\": \")blocked/\${1}idle/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+env RHIZA_TEST_NOW=2030-01-01T00:19:00Z
+exec rhiza inbox --json
+! stdout '"stalled"'
+env RHIZA_TEST_NOW=2030-01-01T00:21:00Z
+exec rhiza inbox --json
+stdout '"kind": "stalled"'
+exec rhiza run status --json
+stdout '"stalled"'
+
+# Unless it has said it is done.
+exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/\"hook\": \{/\"done\": {\"state\": \"done\", \"at\": \"2030-01-01T00:00:00Z\"}, \"hook\": {/" "$f" > "$f.new" && mv "$f.new" "$f"; done'
 exec rhiza inbox --json
 ! stdout '"stalled"'
 
