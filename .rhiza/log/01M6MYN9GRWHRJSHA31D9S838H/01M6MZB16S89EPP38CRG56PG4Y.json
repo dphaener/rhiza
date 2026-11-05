@@ -1,0 +1,193 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MYN9GRWHRJSHA31EWA6VQY"
+  ],
+  "at": "2026-11-05T04:26:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/tui/inboxapp with a fake runner: a row per inbox item in order, Enter on a row opens that item's action, an empty inbox shows one empty-state line; the tui-inbox-app testscript compares rhiza tui app inbox --once with rhiza inbox --json byte for byte.",
+          "statement": "The Inbox app lists what waits on the owner as one rexuikit List, a row per item with its kind, change set title and what it waits for; Enter picks the item, and --once prints what rhiza inbox --json prints."
+        },
+        "handle": "inbox-app-pick-list",
+        "id": "01M6MZ9RZ964A9BQMY9QYP5K4P",
+        "key": "zzzzzr",
+        "kind": "capability",
+        "node": "01M6MZ9RZ8M65B2FB58A75WYZ2",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ9RZ8M65B2FB58A75WYZ2",
+        "id": "01M6MZ9VHN32DFRX1RGHJ0AAEJ",
+        "link": "01M6MZ9VHN32DFRX1RGDNAR3XT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ9RZ8M65B2FB58A75WYZ2",
+        "id": "01M6MZ9XTDP7PRNPBR953PK2ZC",
+        "link": "01M6MZ9XTDP7PRNPBR92MXK2HR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1FTNR106GCV6NS1KEDMW",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/tui/inboxapp with a fake runner: submitting on a question calls session.message with the item's session and the typed text, on a blocker calls question.answer with the question, its change set and the typed text, then the app quits; Esc or an empty answer calls nothing.",
+          "statement": "Picking a question or a blocker opens a rexuikit Form with one TextArea; submitting sends the owner's typed words (session.message to the asking session for a run's question, question.answer for a blocker) and closes the app, and Esc closes it with nothing sent."
+        },
+        "handle": "inbox-app-answer",
+        "id": "01M6MZA0N04GRKJ6486XYFSTVY",
+        "key": "zzzzzw",
+        "kind": "capability",
+        "node": "01M6MZA0N04GRKJ6486V5XRAX9",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZA0N04GRKJ6486V5XRAX9",
+        "id": "01M6MZA3VSD0Y4MN0REZTB6JH4",
+        "link": "01M6MZA3VRJN7QRZJVN47C5NMR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZA0N04GRKJ6486V5XRAX9",
+        "id": "01M6MZA6APTQJS3YEGEVF9SPN4",
+        "link": "01M6MZA6APTQJS3YEGESC9ZE6T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1FTNR106GCV6NS1KEDMW",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/tui/inboxapp with a fake runner: confirming on a signoff item calls run.approve with its run and the app quits; Esc calls nothing.",
+          "statement": "Picking a sign-off opens a rexuikit Dialog naming the run and what it waits for; confirming approves it through run.approve and closes the app, and Esc closes it with nothing approved."
+        },
+        "handle": "inbox-app-signoff",
+        "id": "01M6MZA8WT3TB8HWR4D5T1YH4E",
+        "key": "zzzzzy",
+        "kind": "capability",
+        "node": "01M6MZA8WT3TB8HWR4D33QMMQ5",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZA8WT3TB8HWR4D33QMMQ5",
+        "id": "01M6MZAB4QQ0K13FWHPPXQC9JV",
+        "link": "01M6MZAB4QQ0K13FWHPPWM0073",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZA8WT3TB8HWR4D33QMMQ5",
+        "id": "01M6MZADETDXQVTWBCADTCYS1Z",
+        "link": "01M6MZADETDXQVTWBCAA3ZPSPJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1FTNR106GCV6NS1KEDMW",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/tui/inboxapp with a fake runner: retry calls run.resume and abandon calls run.abandon on the item's run, each then quitting the app; abandon without the Confirm and Esc call nothing; neither choice is offered on other kinds.",
+          "statement": "Picking a failed, gave-up or skipped run offers retry or abandon in a rexuikit Form (a Select, with a Confirm before abandoning); retry queues run.resume, abandon runs run.abandon, and the app closes after either."
+        },
+        "handle": "inbox-app-retry-abandon",
+        "id": "01M6MZAFPVHK2JM4JJAT2D353S",
+        "key": "zzzzzz",
+        "kind": "capability",
+        "node": "01M6MZAFPVHK2JM4JJAP4953HC",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZAFPVHK2JM4JJAP4953HC",
+        "id": "01M6MZAHSJE3622HW901RCYZRF",
+        "link": "01M6MZAHSJE3622HW9010YSGER",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZAFPVHK2JM4JJAP4953HC",
+        "id": "01M6MZAKWTC4QYXRSR00NNWPGK",
+        "link": "01M6MZAKWTC4QYXRSQZYZ1GHM9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1FTNR106GCV6NS1KEDMW",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Which inbox kinds does the Inbox app list and act on? The owner named answering a question or gate, signing off and retrying or abandoning a failed run: is a gate a blocker (a question blocking a change set), an accept item, or both, and are the other kinds (open, stalled, overlap, disk-low, usage-reserve, main-stale) listed read-only, left out, or given an action? Do the old app's other actions stay (open the item's Rex tab, take the advisor's recommendation, nudge a stalled session)?"
+        },
+        "handle": "inbox-app-kinds",
+        "id": "01M6MZANYQFS6TDEKFS6DNC7QY",
+        "key": null,
+        "kind": "question",
+        "node": "01M6MZANYQFS6TDEKFS3P4RT6D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MZANYQFS6TDEKFS3P4RT6D",
+        "id": "01M6MZAR9M2RKA1N86GMHS6QN1",
+        "link": "01M6MZAR9M2RKA1N86GJHRJZ9E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ9RZ8M65B2FB58A75WYZ2",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Does signing off a run in the Inbox app only approve it, or can the owner also request changes there (inbox.request-changes, as the old app's c did)?"
+        },
+        "handle": "inbox-signoff-request-changes",
+        "id": "01M6MZATM6JDM5M8P24Y84FJN0",
+        "key": null,
+        "kind": "question",
+        "node": "01M6MZATM6JDM5M8P24TCH24JM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MZATM6JDM5M8P24TCH24JM",
+        "id": "01M6MZAX11XDZ6DF49KGRZB8QQ",
+        "link": "01M6MZAX11XDZ6DF49KEJ3P52K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZA8WT3TB8HWR4D33QMMQ5",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6MYN9GRWHRJSHA31D9S838H",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MZB16S89EPP38CRG56PG4Y",
+  "type": "ops",
+  "v": 1
+}

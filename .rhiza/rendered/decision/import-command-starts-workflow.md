@@ -18,7 +18,7 @@ Command starts an import workflow: rhiza import runs init if needed and starts a
 
 ### In
 
-- decided-by [m26-import-repeatable](../intent/milestone-26/m26-import-repeatable.md)
+- decided-by [m27-import-repeatable](../intent/milestone-27/m27-import-repeatable.md)
 
 ## History
 

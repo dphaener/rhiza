@@ -1,0 +1,18 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-05T04:15:13Z",
+  "body": {
+    "intent": "Delete the old apps: remove changesapp, healthapp, modelapp, readapps, roadmapapp and writeapps with their Rex actions, keys and testscripts, and retire their capabilities; rhiza rex install registers exactly the five apps Inbox, Request, Runs, Daemon and Autonomy; the CLI keeps every command",
+    "kind": "intention",
+    "sources": [
+      "01M6MYKNE2EZ4DA6RS0B5XEGHQ"
+    ],
+    "title": "Delete the old Rex apps"
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MYNZJSMEXAE5Y3P4PKNBWE",
+  "type": "open",
+  "v": 2
+}

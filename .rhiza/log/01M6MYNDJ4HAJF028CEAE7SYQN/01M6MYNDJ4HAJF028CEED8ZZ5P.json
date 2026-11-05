@@ -1,0 +1,18 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-05T04:14:54Z",
+  "body": {
+    "intent": "Request app: file a feature, bug or milestone request in one rexuikit Form, then close; rebuilt on the modal shell over the request operation, replacing internal/tui/requestsapp and retiring the capabilities of the old requests app it replaces",
+    "kind": "intention",
+    "sources": [
+      "01M6MYKNE2EZ4DA6RS0B5XEGHQ"
+    ],
+    "title": "Request app on the modal shell"
+  },
+  "change_set": "01M6MYNDJ4HAJF028CEAE7SYQN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MYNDJ4HAJF028CEED8ZZ5P",
+  "type": "open",
+  "v": 2
+}

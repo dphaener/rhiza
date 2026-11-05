@@ -1,0 +1,18 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-05T04:15:05Z",
+  "body": {
+    "intent": "Daemon app: pause or resume the daemon and set its run limit, rebuilt on the modal shell over daemon.settings and daemon.set (rhiza.daemon.paused, rhiza.daemon.maxRuns)",
+    "kind": "intention",
+    "sources": [
+      "01M6MYKNE2EZ4DA6RS0B5XEGHQ"
+    ],
+    "title": "Daemon app on the modal shell"
+  },
+  "change_set": "01M6MYNQTAMMV8YEZHDS1G5HMD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MYNQTAMMV8YEZHDWHX9MEK",
+  "type": "open",
+  "v": 2
+}

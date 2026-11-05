@@ -1,0 +1,18 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-05T04:15:24Z",
+  "body": {
+    "intent": "Autonomy app: the plan, accept, ship and sign-off toggles (rhiza.autonomy.*), rebuilt on the modal shell over daemon.settings and daemon.set, replacing internal/tui/autonomyapp and retiring the capabilities of the old autonomy app it replaces",
+    "kind": "intention",
+    "sources": [
+      "01M6MYKNE2EZ4DA6RS0B5XEGHQ"
+    ],
+    "title": "Autonomy app on modal shell"
+  },
+  "change_set": "01M6MYPA335J1S3952RJAGZJN9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MYPA335J1S3952RMQ6ZPH0",
+  "type": "open",
+  "v": 2
+}

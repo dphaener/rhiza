@@ -1,0 +1,50 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MYPA335J1S3952RMQ6ZPH0"
+  ],
+  "at": "2026-11-05T04:27:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/tui/autonomyapp with a fake runner: the four fields start at the values daemon.settings gives, submitting calls daemon.set once per changed toggle and none for unchanged ones, then quits; Esc calls nothing; the tui-autonomy-app testscript's --once still prints what rhiza daemon settings --json prints.",
+          "statement": "The Autonomy app is one rexuikit Form of the plan, accept, ship and sign-off toggles, each auto or owner, prefilled from daemon.settings; submitting writes each changed toggle (rhiza.autonomy.plan, accept, ship, signoff) through daemon.set and closes the app."
+        },
+        "handle": "autonomy-app-toggles",
+        "id": "01M6MZCNKTRF4KEY30SY6FD9QY",
+        "key": "zzzzzr",
+        "kind": "capability",
+        "node": "01M6MZCNKTRF4KEY30SV1J4YHD",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZCNKTRF4KEY30SV1J4YHD",
+        "id": "01M6MZCR0KMZZ4QE24ZN3X35TA",
+        "link": "01M6MZCR0KMZZ4QE24ZM2A89QC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZCNKTRF4KEY30SV1J4YHD",
+        "id": "01M6MZCT2037MKFCBFV0YQ7R0R",
+        "link": "01M6MZCT2037MKFCBFV08V437S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1FTNR106GCV6NS1KEDMW",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6MYPA335J1S3952RJAGZJN9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MZCY7ZQAHW10H5D7R82ZP1",
+  "type": "ops",
+  "v": 1
+}
