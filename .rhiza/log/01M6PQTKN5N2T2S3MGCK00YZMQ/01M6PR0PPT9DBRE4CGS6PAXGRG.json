@@ -1,0 +1,33 @@
+{
+  "actor": "01M6PQTZZ74P1ZJFAQFBD0ZBYN",
+  "after": [
+    "01M6PR0PGXHXYBSPRZMCSBSCTT"
+  ],
+  "at": "2026-11-05T20:57:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "7cb4f7da8296a18402e86ada7b0dde7503633cb4380b66b256fe719e3b9a6be3",
+          "session": "627fef4e-be7d-42fa-908e-01a1ad7d72e6",
+          "summary": "Autonomous plan run, no owner. The planner read the gate (internal/api/run_review.go runRunGate: a non-autonomous run proposes its plan's drafts and returns before any accept) and the Inbox (internal/api/inbox.go: accept items only for autonomous runs' gated proposals). It raised three questions to the arbiter: which intent the change set serves, which rule an owner-run gate accepts under when rhiza.autonomy.accept is auto, and whether that accept needs the plan's review to have passed. The arbiter's Decision owner-run-gate-auto-accept: serve milestone-25; accept under a new rule 'autonomy', allowed only while rhiza.autonomy.accept is auto, with 'autonomous' keeping its meaning; accept only after the review has passed by gateReview's check, else keep the proposals waiting as with accept owner. The planner wrote three leaves: the owner-run gate accepts under rule autonomy, rule autonomy itself, and the Inbox listing any run's gated proposals that still wait.",
+          "title": "Plan of Fix An owner-run plan's gate (autonomous, arbiter)"
+        },
+        "handle": "owner-run-gate-plan",
+        "id": "01M6PR0PP63YAFMJWV8N58VG1J",
+        "key": null,
+        "kind": "source",
+        "node": "01M6PR0PP63YAFMJWV8M41DNNK",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6PQTKN5N2T2S3MGCK00YZMQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PR0PPT9DBRE4CGS6PAXGRG",
+  "type": "ops",
+  "v": 1
+}

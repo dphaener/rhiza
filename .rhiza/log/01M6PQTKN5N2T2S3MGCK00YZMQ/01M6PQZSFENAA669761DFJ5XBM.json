@@ -1,0 +1,41 @@
+{
+  "actor": "01M6PQY8N5V0AM7P1WFNYY0V6N",
+  "after": [
+    "01M6PQY0RBY5CF0Z9CY0Z4DFN5"
+  ],
+  "at": "2026-11-05T20:56:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "(1) The change set's intent is a bug/polish fix that unblocks the daemon building planned work, which is milestone-25's 'bugs and polish' scope; the question itself notes recent Fix change sets serve it. (2) internal/api/lifecycle.go documents rule autonomous as 'always means such a run made the move' and guards it on RHIZA_RUN naming an unfinished autonomous run; reusing it for an owner-run plan would break that invariant, and rule 'owner' would falsely claim the owner accepted (the owner's point was these 'should never have been waiting for my acceptance'). A distinct rule naming the setting keeps the record honest about who accepted and why, and mirrors the autonomous guard. (3) The plan workflow runs the capped plan review in normal runs as well (evidence plan-review-arbitrated-verified: a normal run leaves review questions open rather than arbitrating them), so gateReview has a round to check. Accepting without the owner should carry the same safety as the autonomous gate; accepting an unreviewed plan or one with open review questions would bypass the review the owner relies on. Reusing gateReview keeps one rule for 'may the gate accept without the owner'.",
+          "statement": "(1) Change set 'Fix An owner-run plan's gate' serves milestone-25, as the other recent Fix change sets do. (2) When an owner-run (non-autonomous) plan's gate accepts because rhiza.autonomy.accept is auto, it accepts under a new rule 'autonomy' (the owner's standing rhiza.autonomy.accept setting accepted it), not rule 'autonomous' and not rule 'owner'; rule 'autonomy' is allowed only while rhiza.autonomy.accept is auto, and 'autonomous' keeps its meaning (an unfinished autonomous run made the move). (3) Yes: the owner-run gate auto-accepts only after the plan's review has passed by the same check as the autonomous gate (gateReview: a review round exists, every confirmed finding has a question, no review question open); if it has not passed, it accepts nothing, keeps the proposals, and they wait as they do with accept owner.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "owner-run-gate-auto-accept",
+        "id": "01M6PQZSD9GN7MMRNFBPMVZ1DG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6PQZSD9GN7MMRNFBNK03TGE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PQZSD9GN7MMRNFBNK03TGE",
+        "id": "01M6PQZSEA4FKKDVF7KVRB28G4",
+        "link": "01M6PQZSEA4FKKDVF7KV7WZQQX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PQXYWRF7FEA88EHHHBHDDG",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6PQTKN5N2T2S3MGCK00YZMQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PQZSFENAA669761DFJ5XBM",
+  "type": "ops",
+  "v": 1
+}
