@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MM9W8N0TZQXENWJM511T82",
+  "after": [
+    "01M6J7KK3CT9JNGYY67JZCZBX8"
+  ],
+  "at": "2026-11-05T01:14:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 958729ca ran go test -trimpath -count=1 ./internal/guide/... (ok) and -run TestPlanWhoRecords -v (PASS). The new test checks rhiza guide plan for: capture records the owner's AskUserQuestion picks, writes no Decision for a plain owner pick, the proxy exception (orchestrator or arbiter) with the proxy's wording, and copying the asked question verbatim into the question field; it also fails on any line pairing 'plain' with 'write a Decision'. Read plan.md diff: the old 'A picked option instead: wording=..., picked by the owner' recipe is replaced by a proxy-only recipe with question=, and a new 'Who records a pick' section states the rule. No remaining guide line tells the planner to write Decisions for plain picks. go vet and gofmt clean."
+        },
+        "handle": "plan-guide-who-records-verified",
+        "id": "01M6MMB69QGSW6YWBT761E2T8M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MMB69QGSW6YWBT748HWVWM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MMB69QGSW6YWBT748HWVWM",
+        "id": "01M6MMB9GM0739N0P7Y02BHZ1C",
+        "link": "01M6MMB9GM0739N0P7XZWB62HC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J7BMWSJXFQXYYDNRV7XD66",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J6FDD9GXDW4AENMS6YNY63",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MMBFPTB71AY9F8681P76ZS",
+  "type": "ops",
+  "v": 1
+}
