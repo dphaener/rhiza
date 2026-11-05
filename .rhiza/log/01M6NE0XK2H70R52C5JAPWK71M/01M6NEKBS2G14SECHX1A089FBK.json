@@ -1,0 +1,33 @@
+{
+  "actor": "01M6NE20AB8JW4PDEKF18EP281",
+  "after": [
+    "01M6NEHSEBDTJ9KMFJHFYE4932"
+  ],
+  "at": "2026-11-05T08:53:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "6276853ef6393c1c77f461b89be762c0ceb0d2df9e85196dfbad88ceb67456b6",
+          "session": "a750dc81-b9fe-4c2e-904f-01a1aae0d697",
+          "summary": "Autonomous plan run for 'Fix Run drivers burn CPU while they wait'. The planner profiled 'rhiza change show' on this repo (2,539 log entries) with RHIZA_CPUPROFILE: about 8 s of CPU, ~5 s reading the log (store.ReadEntries: entry.Decode and canon.Canonicalize of every entry), ~1.5 s in changeset.FoldLog and ~2.3 s in changeNotes; driver poll paths (run_leaves, run_checks, run_review, run_build) read w.model() and w.changeSets(), and ship steps run 'rhiza ship check --settled' every 10 s. Live drivers were near idle while their runs sat in ship wait steps. No owner answered; the arbiter decided (assumed): the change set serves milestone-25, and model reads in drivers, 'rhiza change show', 'rhiza ship check --settled' and 'rhiza apply' go through the existing per-worktree SQLite index (internal/index) instead of reading and folding the whole log; an unchanged stat fingerprint means no model work; writes validate against the index's folded state plus their own entries; only 'rhiza check' and 'rhiza render' read the whole log; no second cache; an idle driver gets a CPU budget test. The planner wrote three leaves: idle driver polls, change show and ship check from the index, and apply from the index. Nothing is left open.",
+          "title": "Plan of the driver CPU fix, autonomous"
+        },
+        "handle": "cpu-drivers-plan-interview",
+        "id": "01M6NEK8BZMXB3KGV402MZMNQH",
+        "key": null,
+        "kind": "source",
+        "node": "01M6NEK8BY7P63JMRE5MZ27FBQ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6NE0XK2H70R52C5JAPWK71M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NEKBS2G14SECHX1A089FBK",
+  "type": "ops",
+  "v": 1
+}

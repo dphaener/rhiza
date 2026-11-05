@@ -1,0 +1,96 @@
+{
+  "actor": "01M6NE20AB8JW4PDEKF18EP281",
+  "after": [
+    "01M6NEKBS2G14SECHX1A089FBK"
+  ],
+  "at": "2026-11-05T08:54:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api builds a repo with a large log (100+ change sets, several in flight) and its index (IndexPath set), drives a run's leaves and checks steps through the stepRunner with live sessions, polls repeatedly with nothing changed and asserts, through the ctx.readLog counter and a fold counter, that those polls read the log zero times and fold nothing; it then adds a log entry and a session done mark and asserts the next poll sees both. A CPU budget test (quiettest, median, like TestReadBudget) measures the process CPU time of idle driver polls on the 50,000-node budget model and asserts each costs under 5 ms of CPU",
+          "statement": "A run driver's poll (agent, leaves and checks steps, and their arbiter waits) reads the model through the worktree's index, and a poll where the log's stat fingerprint, the run journal and the polled session records are unchanged does no model work: no log read, no decode and no fold"
+        },
+        "handle": "run-driver-idle-poll-cheap",
+        "id": "01M6NEKX4E0HFPHC9ZT2TREYWW",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M6NEKX4E0HFPHC9ZSZKPE7KX",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6NEKX4E0HFPHC9ZSZKPE7KX",
+        "id": "01M6NEM1R3852G2S7PHMYNF0TF",
+        "link": "01M6NEM1R3852G2S7PHJY9P52N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEHG641TR9VC8NXJ78M4GA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "TestReadBudget times rhiza change show of an in-flight change set on the 50,000-node budget model under the 50 ms median; a Go test with a counting log reader and a fresh index asserts change show and ship check --settled read the log zero times; the existing change show and ship testscripts pass unchanged",
+          "statement": "rhiza change show and rhiza ship check --settled take the model and change sets from the worktree's index, caught up incrementally, instead of reading and folding the whole log, with the same answers as before"
+        },
+        "handle": "change-show-ship-check-from-index",
+        "id": "01M6NEM5KT6HR07M515SVCSHP4",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6NEM5KT6HR07M515NWRDSRD",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M6NEM5KT6HR07M515NWRDSRD",
+        "id": "01M6NEM9TZ91F2QDMFPVR62QR6",
+        "link": "01M6NEM9TZ91F2QDMFPV1TT3CX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEHG641TR9VC8NXJ78M4GA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test with a counting log reader and a fresh index asserts an apply of several writes reads the log zero times; a property test over generated logs and writes finds every write accepted or refused, with the same problems, through the index as through the full fold; a budget test times one rhiza apply write on the 50,000-node budget model under 200 ms median",
+          "statement": "rhiza apply (and the single-write commands add, set, link, retire, mv) validate a write against the index's folded state plus the write's own new entries, so a write never reads and folds the whole log; only rhiza check and rhiza render still read the whole log"
+        },
+        "handle": "apply-validates-from-index",
+        "id": "01M6NEMD8NQT1DE0SEYWQVVAKJ",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6NEMD8NQT1DE0SEYVGE7X2X",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M6NEMD8NQT1DE0SEYVGE7X2X",
+        "id": "01M6NEMHY5J4G7ZSTGAXH23YKY",
+        "link": "01M6NEMHY5J4G7ZSTGASQ83H0Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEHG641TR9VC8NXJ78M4GA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6NEHG641TR9VC8NXJ78M4GA",
+        "id": "01M6NEMPJJC8QJY39PWKZPBXSH",
+        "link": "01M6NEMPJJC8QJY39PWGFTXAW6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEK8BY7P63JMRE5MZ27FBQ",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6NE0XK2H70R52C5JAPWK71M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NEMWCBV0T0H3N8RM7FFX6N",
+  "type": "ops",
+  "v": 1
+}

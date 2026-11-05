@@ -1,0 +1,30 @@
+{
+  "actor": "01M6NE20AB8JW4PDEKF18EP281",
+  "after": [
+    "01M6NE0XK2H70R52C5JB6E1SBT"
+  ],
+  "at": "2026-11-05T08:48:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "a750dc81-b9fe-4c2e-904f-01a1aae0d697",
+          "statement": "Change set 'Fix Run drivers burn CPU while they wait' serves no intent yet. Which intent should it serve? Earlier fix change sets (e.g. Fix Test temp folders leak) served milestone-25, the backlog intent."
+        },
+        "handle": "question-a750dc81-1",
+        "id": "01M6NEAK07BMQRE64NCZBFQWDJ",
+        "key": null,
+        "kind": "question",
+        "node": "01M6NEAK07BMQRE64NCYGHYF5Z",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6NE0XK2H70R52C5JAPWK71M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NEAMX2D00K10765NK47Y4M",
+  "type": "ops",
+  "v": 1
+}
