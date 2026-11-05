@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"unicode/utf8"
 )
 
 // Slug lowercases title, turns each run of characters outside [a-z0-9] into
@@ -39,11 +40,11 @@ func Worktree(repoRoot, repo, slug string) string {
 // TabTitle is "<repo>: <title>", plus " · <step>" when step is set and is
 // not build. Pass the change set's display title.
 func TabTitle(repo, title, step string) string {
-	t := repo + ": " + title
+	tail := ""
 	if step != "" && step != "build" {
-		t += " · " + step
+		tail = " · " + step
 	}
-	return t
+	return fitTitle(repo+": ", title, tail)
 }
 
 // RunTabTitle is the tab title of a run's session: "<repo>: <title> · run
@@ -51,14 +52,37 @@ func TabTitle(repo, title, step string) string {
 // export-csv #2". Unlike TabTitle it keeps a build step's name, so every
 // tab of a run names both the run and the step.
 func RunTabTitle(repo, title, run, step, label string) string {
-	t := repo + ": " + title + " · run " + run
+	tail := " · run " + run
 	if step != "" {
-		t += " · " + step
+		tail += " · " + step
 	}
 	if label != "" {
-		t += " · " + label
+		tail += " · " + label
 	}
-	return t
+	return fitTitle(repo+": ", title, tail)
+}
+
+// MaxTabTitle is the longest tab title Rex accepts, in characters.
+const MaxTabTitle = 128
+
+// fitTitle joins head, title and tail, shortening title with an ellipsis
+// so the whole fits in MaxTabTitle characters. The head and tail are kept
+// whole, as they tell a run's tabs apart; if they alone are too long, the
+// end is cut.
+func fitTitle(head, title, tail string) string {
+	t := head + title + tail
+	if utf8.RuneCountInString(t) <= MaxTabTitle {
+		return t
+	}
+	room := MaxTabTitle - utf8.RuneCountInString(head+tail) - 1
+	if room > 0 {
+		r := []rune(title)
+		if room < len(r) {
+			return head + strings.TrimRight(string(r[:room]), " ") + "…" + tail
+		}
+	}
+	r := []rune(t)
+	return string(r[:MaxTabTitle-1]) + "…"
 }
 
 // NewID formats 16 bytes as a version-4, RFC 4122 variant UUID.
