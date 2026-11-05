@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PPCS8V2KPZH5AR0TF9ATDK",
+  "after": [
+    "01M6PN5MGE250SKEWYED2XFYFJ"
+  ],
+  "at": "2026-11-05T20:39:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at fcc25e3e: read the diff (internal/api/inbox.go adds InboxItem.Questions []InboxGateQuestion {handle, statement, blocks, recommendation, reasons} read from the run's worktree for open items, and BlocksTitle on blockers, printed by Human). Ran go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(inbox|describe-golden)' -v: all 13 inbox scripts, including the new inbox-gate-questions, and describe-golden PASS. inbox-gate-questions sets up a plan run stopped at its gate on two open questions (park-disk, park-format) plus an accepted change set's blocker. rhiza inbox prints each full statement with its handle and what it blocks by statement, and the blocker as 'blocks: Kept (store)'. --json carries each question's handle and statement, blocks 'Exports-go-to-the-store' and blocks_title 'Kept'. After a journalled advisor recommendation, both text and --json show the recommendation and reasons. Also ran go test -trimpath ./internal/api/... (ok); gofmt -l and go vet on internal/api are clean. Note: a separate restatement field is not part of this leaf; the sibling advisor leaf adds it, and this leaf shows the advisor's recorded recommendation text and reasons."
+        },
+        "handle": "inbox-question-text-verified",
+        "id": "01M6PQ12SR429CZK5WX8HSZ2MV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PQ12SR429CZK5WX752AZ6F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PQ12SR429CZK5WX752AZ6F",
+        "id": "01M6PQ12TNV9EV0RYKX62ZENY1",
+        "link": "01M6PQ12TNV9EV0RYKX385H831",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1SXMJV5FCGDM5YXJ7RQX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PQ12VRG814FHVFY18YSJZX",
+  "type": "ops",
+  "v": 1
+}
