@@ -32,7 +32,7 @@ update: install ## Rebuild into $(PREFIX), then rewrite the Rex script and reloa
 # The timing budgets measure reads against fixed limits, so they run on
 # their own after the rest of the suite: run beside cmd/rhiza's scripts they
 # measured their neighbours (PR #210 failed twice, then passed, on one SHA).
-BUDGET_TESTS = ^(TestReadBudget|TestBudget|TestGeneratedModel)$$
+BUDGET_TESTS = ^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap|TestGeneratedModel)$$
 BUDGET_PKGS = ./internal/api ./internal/index ./internal/slice
 
 # -trimpath keeps each worktree's absolute path out of the compiled

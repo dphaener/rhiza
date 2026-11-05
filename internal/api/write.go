@@ -186,6 +186,12 @@ func runWriteOn(ctx *Ctx, opName, intent string, build func(w *workspace, cs id.
 	if err != nil {
 		return nil, err
 	}
+	if ctx.IndexPath != "" {
+		if w.ix, err = openWriteIndex(ctx); err != nil {
+			return nil, err
+		}
+		defer w.ix.close()
+	}
 	var cs id.ID
 	if !ctx.Record {
 		if cs, err = writeTarget(w, ctx); err != nil {
@@ -194,6 +200,9 @@ func runWriteOn(ctx *Ctx, opName, intent string, build func(w *workspace, cs id.
 	}
 	buildEdit := func() (edit, error) {
 		e, err := build(w, cs)
+		if err == nil {
+			err = w.ix.failure()
+		}
 		if err != nil {
 			return edit{}, err
 		}
@@ -203,12 +212,12 @@ func runWriteOn(ctx *Ctx, opName, intent string, build func(w *workspace, cs id.
 	if err != nil {
 		return nil, err
 	}
-	before := len(w.log().Entries)
+	before := w.written
 	actor, forID, err := w.resolveActor(cs, ctx)
 	if err != nil {
 		return nil, err
 	}
-	if len(w.log().Entries) != before {
+	if w.written != before {
 		if e, err = buildEdit(); err != nil {
 			return nil, err
 		}

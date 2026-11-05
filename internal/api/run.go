@@ -1549,6 +1549,7 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 		}
 		return unlock, nil
 	}
+	defer e.Runner.(*stepRunner).closeModel()
 	run1 := e.Run
 	if retry {
 		run1 = e.Retry
@@ -1622,6 +1623,15 @@ type stepRunner struct {
 	// has not answered yet (see run_lost.go).
 	lostMu       sync.Mutex
 	blockPending map[string]bool
+	// wtRoot, modelMu and rm are the run worktree's Rhiza root and the
+	// open index its polls read (see run_model_cache.go).
+	wtRoot  string
+	modelMu sync.Mutex
+	rm      *runModel
+	// debounce overrides pollDebounce; writeUntil is when the settle after
+	// the runner's own write ends.
+	debounce   time.Duration
+	writeUntil time.Time
 }
 
 // Command runs the step's command, its standard output and error
@@ -1872,6 +1882,9 @@ func (r *stepRunner) StartAdvisor(step workflow.Step, asker, text string, _ []st
 // worktreeWorkspace opens the model as the run's worktree holds it, where
 // its sessions write; read only unless write.
 func (r *stepRunner) worktreeWorkspace(write bool) (*workspace, error) {
+	if write {
+		r.wrote()
+	}
 	prefix, err := r.ctx.Git("rev-parse", "--show-prefix")
 	if err != nil {
 		return nil, err
@@ -1992,11 +2005,13 @@ func (r *stepRunner) Answer(question, sid string) (run.Answer, error) {
 	if err != nil {
 		return run.Answer{}, fmt.Errorf("run %s names change set %q: %v", r.run, ref, err)
 	}
-	ww, err := r.worktreeWorkspace(false)
+	v, err := r.readModel("answer:"+cs.String()+":"+q.String(), cs, func(ww *workspace) (any, error) {
+		return arbiterAnswer(ww.model(cs), q), nil
+	})
 	if err != nil {
 		return run.Answer{}, err
 	}
-	ans := arbiterAnswer(ww.model(cs), q)
+	ans := v.(run.Answer)
 	if record {
 		if why := r.settleArbiterRecord(ref, ans.OK); why != "" {
 			if ans.OK {

@@ -28,7 +28,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
@@ -171,14 +173,22 @@ func findShipTarget(ctx *Ctx) (shipTarget, error) {
 	if err != nil {
 		return t, err
 	}
-	cs, err := w.effectiveChangeSet(ctx)
+	var cs id.ID
+	var c changeset.ChangeSet
+	if len(w.pending) == 0 && ctx.IndexPath != "" {
+		cs, c, err = indexedShipChangeSet(ctx, w)
+	} else {
+		cs, err = w.effectiveChangeSet(ctx)
+		if err == nil && !cs.IsZero() {
+			c, _ = w.changeSet(cs)
+		}
+	}
 	if err != nil {
 		return t, err
 	}
 	if cs.IsZero() {
 		return t, Usagef("no change set: name one with --change or make one current").WithNext(changeLsNext)
 	}
-	c, _ := w.changeSet(cs)
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return t, err
@@ -197,6 +207,33 @@ func findShipTarget(ctx *Ctx) (shipTarget, error) {
 	mainRoot := filepath.Dir(common)
 	t.worktree = session.Worktree(mainRoot, filepath.Base(mainRoot), t.slug)
 	return t, nil
+}
+
+// indexedShipChangeSet is the effective change set and its fold, from the
+// index's stored change sets: the log is not read.
+func indexedShipChangeSet(ctx *Ctx, w *workspace) (id.ID, changeset.ChangeSet, error) {
+	x, err := index.Open(ctx.Root, ctx.IndexPath)
+	if err != nil {
+		return id.ID{}, changeset.ChangeSet{}, Errorf("%s", err.Error())
+	}
+	defer x.Close()
+	current, err := w.current()
+	if err != nil {
+		return id.ID{}, changeset.ChangeSet{}, err
+	}
+	infos, err := x.ChangeSets()
+	if err != nil {
+		return id.ID{}, changeset.ChangeSet{}, Errorf("%s", err.Error())
+	}
+	cs, err := indexedEffective(ctx, current, infos)
+	if err != nil || cs.IsZero() {
+		return cs, changeset.ChangeSet{}, err
+	}
+	got, err := x.FoldedOf([]id.ID{cs})
+	if err != nil {
+		return id.ID{}, changeset.ChangeSet{}, Errorf("%s", err.Error())
+	}
+	return cs, got[cs], nil
 }
 
 // firstWorktree is the path of the first entry of `git worktree list
