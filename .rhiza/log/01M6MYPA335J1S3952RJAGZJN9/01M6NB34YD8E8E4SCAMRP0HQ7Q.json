@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NARCX8GMNYB8SJJECTTBP2",
+  "after": [
+    "01M6NAJGNGMPBQ1GCH66B3TS02"
+  ],
+  "at": "2026-11-05T07:52:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1de07e73 with the built binary (go build -trimpath ./cmd/rhiza) in a scratch git repo with rhiza init, driving the real TUI in tmux: rhiza tui app autonomy drew one form with Plan/Accept/Ship/Sign-off, each auto/owner, prefilled from daemon settings (plan owner default, accept auto from git config, ship auto, signoff auto). Changing plan to auto and ship to owner and pressing enter through to the last field closed the app with exit 0; .git/config then held rhiza.autonomy.plan=auto and rhiza.autonomy.ship=owner, accept stayed as before and signoff was never written; rhiza daemon settings --json showed both as git config. Reopening prefilled the new values; changing plan then Esc exited 0 with .git/config byte-identical. rhiza tui app autonomy --once cmp-matched rhiza daemon settings --json. go test -trimpath ./internal/tui/autonomyapp/... and TestScripts/tui-autonomy-app passed."
+        },
+        "handle": "autonomy-app-toggles-qa-1",
+        "id": "01M6NB1H7QK6VF66Z27JFEF9D2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NB1H7C8KN0V9PMH17P1D5S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NB1H7C8KN0V9PMH17P1D5S",
+        "id": "01M6NB2E674KXD43FXKNEKT74F",
+        "link": "01M6NB2E674KXD43FXKJ4DABCD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZCNKTRF4KEY30SV1J4YHD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYPA335J1S3952RJAGZJN9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NB34YD8E8E4SCAMRP0HQ7Q",
+  "type": "ops",
+  "v": 1
+}

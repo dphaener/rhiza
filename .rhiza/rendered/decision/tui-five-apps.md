@@ -26,6 +26,7 @@ Inbox: pick an item and do its one action (answer a question or gate, sign off a
 - decided-by [request-app-form](../capability/rhiza/request-app-form.md)
 - decided-by [daemon-app-pause](../capability/rhiza/daemon-app-pause.md)
 - decided-by [daemon-app-run-limit](../capability/rhiza/daemon-app-run-limit.md)
+- decided-by [autonomy-app-toggles](../capability/rhiza/autonomy-app-toggles.md)
 
 ## History
 

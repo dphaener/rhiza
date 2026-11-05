@@ -14,7 +14,7 @@ QA at 78a3b478: rhiza tui app autonomy --once in scratch repo qarepo printed the
 
 ### Out
 
-- verifies [autonomy-app](../capability/rhiza/orchestration/daemon/daemon-settings/autonomy-app.md)
+- verifies autonomy-app (retired)
 
 ## History
 

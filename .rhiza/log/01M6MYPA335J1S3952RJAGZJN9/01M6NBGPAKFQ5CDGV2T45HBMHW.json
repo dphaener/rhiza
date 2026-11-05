@@ -1,0 +1,29 @@
+{
+  "actor": "01M6NBE63A3YWJW2YB6TDJEMXB",
+  "after": [
+    "01M6NBAFMRM604RHG4SWCXNX71"
+  ],
+  "at": "2026-11-05T07:59:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6FES4J3E8VXG2KW0Z836RHW",
+        "handle": null,
+        "id": "01M6NBGAFW9S7TBFDNTSDFWDW6",
+        "node": "01M6FES4J3E8VXG2KW0Y9Z1C96",
+        "op": "node.update",
+        "set": {
+          "acceptance": "Testscripts with a fake systemctl and a fake Rex: with the unit installed, start calls systemctl --user start and stop calls systemctl --user stop, and daemon status --json reports mode service; with none, start opens a rex window named 'rhiza daemon' running rhiza daemon, stop ends that daemon, and status reports mode tab",
+          "statement": "rhiza daemon start and rhiza daemon stop start or stop this repo's daemon the way its installation runs it: through the systemd unit when rhiza daemon install wrote one, else in the Rex tab 'rhiza daemon' in the repo's session, and daemon status says which mode runs"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6MYPA335J1S3952RJAGZJN9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NBGPAKFQ5CDGV2T45HBMHW",
+  "type": "ops",
+  "v": 1
+}

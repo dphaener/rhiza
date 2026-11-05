@@ -14,7 +14,7 @@ At 7f653b81 (after fix 1a5e3269), built rhiza to a scratch path and ran `rhiza t
 
 ### Out
 
-- verifies [autonomy-app](../capability/rhiza/orchestration/daemon/daemon-settings/autonomy-app.md)
+- verifies autonomy-app (retired)
 
 ## History
 
