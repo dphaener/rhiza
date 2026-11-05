@@ -13,6 +13,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/dphaener/rhiza/internal/tmpsweep"
 )
 
 // quietWait is the most Wait waits for the other packages' builds
@@ -46,8 +48,10 @@ const (
 // own packages take turns: otherTestProcesses looks at that run alone, and
 // a lock shared by every run on the machine made a waiter queue behind
 // another run's whole quiet wait (over five minutes beside one other run).
+const quietPrefix = "rhiza-quiet-"
+
 var (
-	waiterDir  = filepath.Join(os.TempDir(), "rhiza-quiet-"+strconv.Itoa(os.Getppid()))
+	waiterDir  = filepath.Join(os.TempDir(), quietPrefix+strconv.Itoa(os.Getppid()))
 	waiterLock = filepath.Join(waiterDir, "lock")
 )
 
@@ -170,6 +174,8 @@ func Wait(t testing.TB) Quiet {
 // releasing both when t ends. The mark comes first so that the waiter
 // holding the lock leaves this one out while it is blocked.
 func takeTurn(t testing.TB) error {
+	// A run killed by a go test timeout never removed its waiterDir.
+	tmpsweep.StaleTemp(quietPrefix)
 	if err := os.MkdirAll(waiterDir, 0o700); err != nil {
 		return err
 	}
