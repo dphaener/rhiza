@@ -20,7 +20,8 @@ import (
 // on each that names a retired node. A landed change set is read in the
 // as-is view, a draft, proposed or accepted one in its what-if view; other
 // change sets are not read. Only the folded nodes' current fields are
-// scanned, so a value a later write superseded is never read. Verbatim
+// scanned, so a value a later write superseded is never read, and a retired
+// node's fields, history like a superseded value, are not read. Verbatim
 // fields (an owner's words, a source) are not scanned, and any other @{...}
 // is literal text.
 func (c *checker) textRefs(asIs model.Model, sets []changeset.ChangeSet) {
@@ -52,7 +53,7 @@ func (c *checker) textRefs(asIs model.Model, sets []changeset.ChangeSet) {
 		var uses []textUse
 		for node := range touched {
 			n, ok := view.Node(node)
-			if !ok {
+			if !ok || n.Retired {
 				continue
 			}
 			for name, raw := range n.Fields {

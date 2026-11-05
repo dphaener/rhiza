@@ -111,3 +111,22 @@ func TestTextRefsCurrentValue(t *testing.T) {
 		})
 	}
 }
+
+// TestTextRefsRetiredHolder skips a retired node's fields: retiring a holder
+// together with the node its text names leaves no warning.
+func TestTextRefsRetiredHolder(t *testing.T) {
+	r := newRepo(t)
+	clean(r)
+	bee, beeOp := r.next(), r.next()
+	r.record("Bee", mkNode(beeOp, bee, op.KindDecision, "bee"))
+	aye, ayeOp := r.next(), r.next()
+	o := textNode(r, aye, "aye", "see @{"+bee.String()+"}")
+	o.ID = ayeOp
+	r.record("Aye", o)
+	r.record("Retire both",
+		op.Op{ID: r.next(), Type: op.TypeNodeRetire, Node: aye, Base: ayeOp, Reason: "x"},
+		op.Op{ID: r.next(), Type: op.TypeNodeRetire, Node: bee, Base: beeOp, Reason: "x"})
+	if got := textRefFindings(Run(r.input())); len(got) != 0 {
+		t.Fatalf("findings %+v, want none", got)
+	}
+}
