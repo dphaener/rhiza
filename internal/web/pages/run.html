@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run 01M6PF31 · Rhiza</title>
+<link rel="icon" href="../static/icons/favicon.ico" sizes="48x48">
+<link rel="icon" href="../static/icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../static/icons/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<meta name="theme-color" content="#0D0C09" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2EEE4" media="(prefers-color-scheme: light)">
+<link rel="stylesheet" href="../static/css/rhiza-tokens.css">
+<link rel="stylesheet" href="../static/css/rhiza.css">
+</head>
+<body class="rz">
+<div class="rz-app">
+<header class="rz-header">
+  <a class="rz-wordmark" href="/"><b>Rhiza</b><span>monitor</span></a>
+  <nav class="rz-nav" aria-label="Pages"><a href="/">Overview</a><a href="/runs" aria-current="page">Runs</a><a href="/roadmap">Roadmap</a></nav>
+  <div class="rz-header-end"><span class="rz-pill rz-pill--running"><span class="rz-live-dot" aria-hidden="true"></span>daemon · 2/4</span><span class="rz-live" title="Live stream connected"><span class="rz-live-dot" aria-hidden="true"></span>live</span></div>
+</header>
+<main class="rz-main">
+<div class="rz-stale" id="rz-stale" role="status" hidden><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.6 13 12.2H1Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7 5.6v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="10.3" r=".8" fill="currentColor"/></svg><span><b>Live stream dropped.</b> Showing what was true <span id="rz-stale-since">a moment ago</span>.</span><span class="rz-meta">retrying</span></div>
+<div class="rz-detailhead" style="margin-bottom:32px">
+  <p class="rz-crumb"><a href="/runs">Runs</a> / 01M6PF31</p>
+  <h1>Retry webhook delivery with backoff</h1>
+  <div class="rz-facts"><span class="rz-pill rz-pill--running"><span class="rz-live-dot" aria-hidden="true"></span>running</span><span class="rz-row-step is-live" style="font-size:13px">step 4 of 6 · build</span>
+  <span class="rz-meta">change set <a class="rz-id" href="/cs/01M6NZ8K">01M6NZ8K</a></span>
+  <span class="rz-meta">milestone <a href="/roadmap#m3">M3 Durable delivery</a></span>
+  <span class="rz-meta">started 24m ago · 5 sessions · 147k tokens</span></div>
+</div>
+<div class="rz-grid rz-grid--2">
+  <div class="rz-stack">
+    <section class="rz-panel"><div class="rz-panel-head"><div><p class="rz-kicker">Workflow</p><h2>Steps</h2></div><span class="rz-aside">elapsed 24m 18s</span></div><ol class="rz-steps"><li class="rz-step is-done"><span class="rz-node rz-node--done" aria-hidden="true"><svg class="" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4" fill="currentColor"/></svg></span><div><div class="rz-step-head"><span class="rz-step-name">Plan</span><span class="rz-pill rz-pill--done"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 5.3 4.2 7.4 8.1 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>planned</span><span class="rz-num">2m 41s</span></div></div><div class="rz-step-body"><p class="rz-step-note">3 leaves, 1 decision recorded.</p><ul class="rz-sessions"><li class="rz-session"><a class="rz-id" href="/sessions/01M6PF3A">01M6PF3A</a><span class="rz-session-who"><b>planner</b> · opus</span><span class="rz-num">41k tok · 2m 38s</span></li></ul></div></li><li class="rz-step is-done"><span class="rz-node rz-node--done" aria-hidden="true"><svg class="" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4" fill="currentColor"/></svg></span><div><div class="rz-step-head"><span class="rz-step-name">Review</span><span class="rz-pill rz-pill--done"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 5.3 4.2 7.4 8.1 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>approved</span><span class="rz-num">1m 05s</span></div></div><div class="rz-step-body"><ul class="rz-sessions"><li class="rz-session"><a class="rz-id" href="/sessions/01M6PF5C">01M6PF5C</a><span class="rz-session-who"><b>plan-reviewer</b> · sonnet</span><span class="rz-num">12k tok · 1m 02s</span></li></ul></div></li><li class="rz-step is-done"><span class="rz-node rz-node--done" aria-hidden="true"><svg class="" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4" fill="currentColor"/></svg></span><div><div class="rz-step-head"><span class="rz-step-name">Gate</span><span class="rz-pill rz-pill--done"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 5.3 4.2 7.4 8.1 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>signed off</span><span class="rz-num">14m 20s</span></div></div><div class="rz-step-body"><p class="rz-step-note">Signed off by owner after 14m.</p></div></li><li class="rz-step is-running"><span class="rz-node rz-node--running" aria-hidden="true"><svg class="" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4" fill="currentColor"/></svg></span><div><div class="rz-step-head"><span class="rz-step-name">Build</span><span class="rz-pill rz-pill--running"><span class="rz-live-dot" aria-hidden="true"></span>running</span><span class="rz-num">6m 12s</span></div></div><div class="rz-step-body"><p class="rz-step-note">Running clippy after the second edit.</p><ul class="rz-sessions"><li class="rz-session"><a class="rz-id" href="/sessions/01M6PG2C">01M6PG2C</a><span class="rz-session-who"><b>builder</b> · opus</span><span class="rz-num">88k tok · 6m 12s</span></li><li class="rz-session"><a class="rz-id" href="/sessions/01M6PG9H">01M6PG9H</a><span class="rz-session-who"><b>test-runner</b> · haiku</span><span class="rz-num">6k tok · 24s</span></li></ul></div></li><li class="rz-step is-pending"><span class="rz-node rz-node--pending" aria-hidden="true"><svg class="" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.75" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span><div><div class="rz-step-head"><span class="rz-step-name">Review</span><span class="rz-num">—</span></div></div></li><li class="rz-step is-pending"><span class="rz-node rz-node--pending" aria-hidden="true"><svg class="" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.75" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span><div><div class="rz-step-head"><span class="rz-step-name">Ship</span><span class="rz-num">—</span></div></div></li></ol></section>
+    <section class="rz-panel"><div class="rz-panel-head"><div><p class="rz-kicker">Session 01M6PG2C · builder</p><h2>Log tail</h2></div><span class="rz-aside">last 40 lines</span></div><div class="rz-term" role="log" aria-label="Live log">
+  <div class="rz-term-head"><span class="rz-live-dot" aria-hidden="true"></span><span>log · tail</span><span class="rz-path">session 01M6PG2C · builder</span></div>
+  <pre><span class="t">10:41:52</span> build   reading <span class="k">src/delivery/retry.rs</span>
+<span class="t">10:42:03</span> build   edit    <span class="k">src/delivery/retry.rs</span> +38 −6
+<span class="t">10:42:07</span> build   run     cargo test -p delivery
+<span class="t">10:42:31</span> build   <span class="g">✓</span> 14 passed, 0 failed (24.1s)
+<span class="t">10:42:33</span> build   <span class="w">warn</span>    clippy: needless_return at retry.rs:88
+<span class="t">10:42:40</span> build   edit    <span class="k">src/delivery/retry.rs</span> +1 −1
+<span class="t">10:42:44</span> build   run     cargo clippy -p delivery -- -D warnings<span class="rz-cursor" aria-hidden="true"></span></pre>
+</div></section>
+  </div>
+  <div class="rz-stack">
+    <section class="rz-panel">
+      <div class="rz-panel-head"><div><p class="rz-kicker">Review summary · step 2</p><h2>Approved, with 3 findings</h2></div></div>
+      <div class="rz-verdict"><span class="rz-pill rz-pill--done"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 5.3 4.2 7.4 8.1 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>approved</span><span>plan-reviewer · <a class="rz-id" href="/sessions/01M6PF5C">01M6PF5C</a></span><span class="rz-meta" style="margin-left:auto">1 high · 1 med · 1 low</span></div>
+      <ul class="rz-findings"><li class="rz-finding"><span class="rz-sev rz-sev--high">high</span><p>Retry loop does not respect Retry-After on 429; it uses its own backoff and can hammer a rate-limited endpoint.</p><span class="rz-meta"><code>src/delivery/retry.rs:62 · leaf L2</code></span></li><li class="rz-finding"><span class="rz-sev rz-sev--med">med</span><p>Backoff cap of six attempts is a constant; the change set's constraint says it must come from daemon.toml.</p><span class="rz-meta"><code>src/delivery/retry.rs:14 · constraint C1</code></span></li><li class="rz-finding"><span class="rz-sev rz-sev--low">low</span><p>Test names repeat the module name (retry_retries_…).</p><span class="rz-meta"><code>tests/retry.rs</code></span></li></ul>
+    </section>
+    <section class="rz-panel">
+      <div class="rz-panel-head"><div><p class="rz-kicker">Run</p><h2>Details</h2></div></div>
+      <dl class="rz-dl">
+        <dt>Run</dt><dd><span class="rz-id">01M6PF31</span></dd>
+        <dt>Change set</dt><dd><a class="rz-id" href="/cs/01M6NZ8K">01M6NZ8K</a><span class="rz-pill rz-pill--accepted"><svg viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="2.6" fill="currentColor"/></svg>accepted</span></dd>
+        <dt>Workflow</dt><dd><code>default</code><span class="rz-meta">6 steps</span></dd>
+        <dt>Branch</dt><dd><code>rz/01M6NZ8K-retry-backoff</code></dd>
+        <dt>Slot</dt><dd>2 of 4</dd>
+        <dt>Started</dt><dd><span class="rz-num">10:18:02</span><span class="rz-meta">24m ago</span></dd>
+      </dl>
+    </section>
+  </div>
+</div>
+</main>
+</div>
+<script src="../static/js/live.js" defer></script>
+</body>
+</html>

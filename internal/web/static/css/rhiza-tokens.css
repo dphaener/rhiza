@@ -1,0 +1,108 @@
+/* Rhiza Monitor — tokens. Dark is the default; light follows prefers-color-scheme.
+   Force a theme with <html data-theme="dark|light">. Generated from tokens.json. */
+
+:root {
+  color-scheme: dark light;
+  --font-display: Petrona, "Iowan Old Style", Georgia, serif;
+  --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --content-max: 1200px;
+  --header-h: 52px;
+  --rule: 1px;
+}
+
+/* dark (soil) — default */
+:root, [data-theme="dark"] {
+  --ground: #0d0c09;
+  --panel: #17140f;
+  --panel-hover: #1e1a14;
+  --line: #2b261d;
+  --ink: #ede6d6;
+  --ink-2: #b5ac97;
+  --ink-3: #918975;
+  --gold: #e8d49a;
+  --teal: #86c9b7;
+  --rose: #d9a48f;
+  --gold-soft: #e8d49a1a;
+  --teal-soft: #86c9b71a;
+  --rose-soft: #d9a48f1f;
+  --gold-glow: #e8d49a59;
+  --on-solid: #0d0c09;
+  --term-bg: #0d0c09;
+  --term-line: #2b261d;
+  --term-ink: #ede6d6;
+  --term-ink-3: #918975;
+  --term-gold: #e8d49a;
+  --term-teal: #86c9b7;
+  --term-rose: #d9a48f;
+  --glow: 0 0 0 1px #e8d49a33, 0 0 10px #e8d49a40;
+}
+
+/* light (paper) — when the OS asks for it, unless the page forces dark */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --ground: #f2eee4;
+    --panel: #faf8f2;
+    --panel-hover: #f2eee4;
+    --line: #dad3c2;
+    --ink: #1d1a14;
+    --ink-2: #4c4535;
+    --ink-3: #665e4c;
+    --gold: #82600f;
+    --teal: #2b7364;
+    --rose: #9a4f37;
+    --gold-soft: #82600f14;
+    --teal-soft: #2b736414;
+    --rose-soft: #9a4f3714;
+    --gold-glow: #82600f40;
+    --on-solid: #f2eee4;
+    --term-bg: #0d0c09;
+    --term-line: #2b261d;
+    --term-ink: #ede6d6;
+    --term-ink-3: #918975;
+    --term-gold: #e8d49a;
+    --term-teal: #86c9b7;
+    --term-rose: #d9a48f;
+    --glow: 0 0 0 1px #82600f26, 0 0 8px #82600f26;
+  }
+}
+[data-theme="light"] {
+  --ground: #f2eee4;
+  --panel: #faf8f2;
+  --panel-hover: #f2eee4;
+  --line: #dad3c2;
+  --ink: #1d1a14;
+  --ink-2: #4c4535;
+  --ink-3: #665e4c;
+  --gold: #82600f;
+  --teal: #2b7364;
+  --rose: #9a4f37;
+  --gold-soft: #82600f14;
+  --teal-soft: #2b736414;
+  --rose-soft: #9a4f3714;
+  --gold-glow: #82600f40;
+  --on-solid: #f2eee4;
+  --term-bg: #0d0c09;
+  --term-line: #2b261d;
+  --term-ink: #ede6d6;
+  --term-ink-3: #918975;
+  --term-gold: #e8d49a;
+  --term-teal: #86c9b7;
+  --term-rose: #d9a48f;
+  --glow: 0 0 0 1px #82600f26, 0 0 8px #82600f26;
+}
+
+/* self-hosted faces — paths are relative to this file: keep fonts/ beside css/ */
+@font-face { font-family: "Petrona"; src: url("../fonts/Petrona-Variable.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: "Instrument Sans"; src: url("../fonts/InstrumentSans-Variable.woff2") format("woff2"); font-weight: 400 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "JetBrains Mono"; src: url("../fonts/JetBrainsMono-Variable.woff2") format("woff2"); font-weight: 100 800; font-style: normal; font-display: swap; }

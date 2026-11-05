@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview · Rhiza</title>
+<link rel="icon" href="../static/icons/favicon.ico" sizes="48x48">
+<link rel="icon" href="../static/icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../static/icons/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<meta name="theme-color" content="#0D0C09" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2EEE4" media="(prefers-color-scheme: light)">
+<link rel="stylesheet" href="../static/css/rhiza-tokens.css">
+<link rel="stylesheet" href="../static/css/rhiza.css">
+</head>
+<body class="rz">
+<div class="rz-app">
+<header class="rz-header">
+  <a class="rz-wordmark" href="/"><b>Rhiza</b><span>monitor</span></a>
+  <nav class="rz-nav" aria-label="Pages"><a href="/" aria-current="page">Overview</a><a href="/runs">Runs</a><a href="/roadmap">Roadmap</a></nav>
+  <div class="rz-header-end"><span class="rz-pill rz-pill--running"><span class="rz-live-dot" aria-hidden="true"></span>daemon · 2/4</span><span class="rz-live" title="Live stream connected"><span class="rz-live-dot" aria-hidden="true"></span>live</span></div>
+</header>
+<main class="rz-main">
+<div class="rz-stale" id="rz-stale" role="status" hidden><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.6 13 12.2H1Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7 5.6v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="10.3" r=".8" fill="currentColor"/></svg><span><b>Live stream dropped.</b> Showing what was true <span id="rz-stale-since">a moment ago</span>.</span><span class="rz-meta">retrying</span></div>
+<div class="rz-pagehead"><div><p class="rz-kicker">Overview · Thu 5 Nov, 10:42</p><h1>2 running, 3 waiting on you</h1></div></div>
+<div class="rz-grid rz-grid--2">
+  <div class="rz-stack"><section class="rz-panel">
+  <div class="rz-panel-head"><div><p class="rz-kicker">Daemon</p><h2>Running, 2 of 4 slots in use</h2></div><span class="rz-aside">pid 48211 · up 3d 4h</span></div>
+  <div class="rz-daemon">
+    <div class="rz-stat"><p class="rz-kicker">State</p><div class="rz-stat-val"><span class="rz-live-dot" aria-hidden="true"></span>Running</div></div>
+    <div class="rz-stat"><p class="rz-kicker">Run slots</p><div class="rz-stat-val">2<small>/ 4</small></div><div class="rz-slots" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+    <div class="rz-stat"><p class="rz-kicker">Today</p><div class="rz-stat-val">11<small>runs · 2 failed</small></div></div>
+  </div>
+  <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <p class="rz-kicker" style="margin-right:4px">Health</p>
+    <span class="rz-health"><span class="rz-pill rz-pill--health rz-pill--ok" title="store: ok"><svg viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="2.6" fill="currentColor"/></svg>store</span><span class="rz-pill rz-pill--health rz-pill--ok" title="git: ok"><svg viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="2.6" fill="currentColor"/></svg>git</span><span class="rz-pill rz-pill--health rz-pill--ok" title="agent-api: ok"><svg viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="2.6" fill="currentColor"/></svg>agent-api</span><span class="rz-pill rz-pill--health rz-pill--warn" title="disk 81%: warn"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 2.4v3.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="5" cy="7.6" r=".95" fill="currentColor"/></svg>disk 81%</span><span class="rz-pill rz-pill--health rz-pill--ok" title="events: ok"><svg viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="2.6" fill="currentColor"/></svg>events</span></span>
+  </div>
+</section><section class="rz-panel rz-panel--flush">
+  <div class="rz-panel-head"><div><p class="rz-kicker">Live runs</p><h2>Building one, waiting on one</h2></div><a class="rz-aside" style="color:var(--teal)" href="/runs">All runs →</a></div>
+  <div class="rz-rows-head" aria-hidden="true"><span>ID</span><span>Title</span><span>State</span><span>Step</span><span style="text-align:right">Updated</span></div>
+  <ol class="rz-rows">
+  <li class="rz-row"><a class="rz-id" href="/runs/01M6PF31">01M6PF31</a><span class="rz-row-title">Retry webhook delivery with backoff<small>cs 01M6NZ8K · M3 Durable delivery</small></span><span class="rz-pill-cell"><span class="rz-pill rz-pill--running"><span class="rz-live-dot" aria-hidden="true"></span>running</span></span><span class="rz-row-step is-live"><span class="rz-live-dot" aria-hidden="true"></span>build · 6m</span><span class="rz-row-time">4s ago</span></li>
+  <li class="rz-row"><a class="rz-id" href="/runs/01M6PE7Q">01M6PE7Q</a><span class="rz-row-title">Idempotency keys on outbound calls<small>cs 01M6NY2D · M3 Durable delivery</small></span><span class="rz-pill-cell"><span class="rz-pill rz-pill--waiting"><svg viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>waiting on you</span></span><span class="rz-row-step">gate</span><span class="rz-row-time">12m ago</span></li>
+  </ol>
+</section><section class="rz-panel">
+  <div class="rz-panel-head"><div><p class="rz-kicker">Active milestone · M3</p><h2>Durable delivery</h2></div><span class="rz-aside">5 of 11 landed</span></div>
+  <div class="rz-bar" role="img" aria-label="5 landed, 1 active, 2 accepted, 2 proposed, 1 draft"><i class="landed" style="flex:5"></i><i class="active" style="flex:1"></i><i class="accepted" style="flex:2"></i><i class="proposed" style="flex:2"></i><i class="draft" style="flex:1"></i></div>
+  <div class="rz-legend"><span><i style="background:var(--teal)"></i><b>5</b> landed</span><span><i style="background:var(--gold);box-shadow:var(--glow)"></i><b>1</b> running</span><span><i style="background:var(--teal);opacity:.42"></i><b>2</b> accepted</span><span><i style="background:var(--ink-3);opacity:.55"></i><b>2</b> proposed</span><span><i style="background:var(--line)"></i><b>1</b> draft</span></div>
+  <p class="rz-kicker" style="margin:18px 0 4px">Next up</p>
+  <ul style="list-style:none;margin:0;padding:0"><li style="display:flex;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:14px;line-height:20px"><a class="rz-id" href="/cs/01M6NZ8K">01M6NZ8K</a><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Retry webhook delivery with backoff</span><span class="rz-pill rz-pill--accepted"><svg viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="2.6" fill="currentColor"/></svg>accepted</span></li><li style="display:flex;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:14px;line-height:20px"><a class="rz-id" href="/cs/01M6NY2D">01M6NY2D</a><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Idempotency keys on outbound calls</span><span class="rz-pill rz-pill--accepted"><svg viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="2.6" fill="currentColor"/></svg>accepted</span></li><li style="display:flex;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:14px;line-height:20px"><a class="rz-id" href="/cs/01M6P2TT">01M6P2TT</a><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Replay from the dead-letter queue</span><span class="rz-pill rz-pill--proposed"><svg viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>proposed</span></li></ul>
+</section></div>
+  <div class="rz-stack"><section class="rz-panel rz-panel--flush rz-panel--waiting">
+  <div class="rz-panel-head"><div><p class="rz-kicker">Inbox</p><h2>3 waiting on you</h2></div><span class="rz-aside">oldest 38m</span></div>
+  <ul class="rz-inbox" style="border-top:1px solid var(--line)"><li><svg class="rz-glyph" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.4 10.6 6 6 10.6 1.4 6Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span class="rz-inbox-kind">Question</span><span class="rz-meta" style="text-align:right">6m ago</span>
+<p class="rz-inbox-text">Should a 410 Gone stop retries immediately, or count as one failed attempt?</p>
+<span class="rz-inbox-meta"><a class="rz-id" href="/cs/01M6NZ8K">01M6NZ8K</a><span>change set · asked by planner in run 01M6PF31</span></span></li><li><svg class="rz-glyph" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.75" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span class="rz-inbox-kind">Sign-off</span><span class="rz-meta" style="text-align:right">12m ago</span>
+<p class="rz-inbox-text">Gate: approve the plan for idempotency keys on outbound calls.</p>
+<span class="rz-inbox-meta"><a class="rz-id" href="/runs/01M6PE7Q">01M6PE7Q</a><span>run · plan approved by reviewer, 2 leaves</span></span></li><li><svg class="rz-glyph" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3 9 9M9 3 3 9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span class="rz-inbox-kind">Failed run</span><span class="rz-meta" style="text-align:right">38m ago</span>
+<p class="rz-inbox-text">Dead-letter queue for poisoned events failed review with 2 high findings.</p>
+<span class="rz-inbox-meta"><a class="rz-id" href="/runs/01M6P9X2">01M6P9X2</a><span>run · review · 3 attempts</span></span></li></ul>
+</section>
+    <section class="rz-panel"><div class="rz-panel-head"><div><p class="rz-kicker">Log · 01M6PF31</p><h2>Build, tailing</h2></div></div><div class="rz-term" role="log" aria-label="Live log">
+  <div class="rz-term-head"><span class="rz-live-dot" aria-hidden="true"></span><span>log · tail</span><span class="rz-path">session 01M6PG2C · builder</span></div>
+  <pre><span class="t">10:41:52</span> build   reading <span class="k">src/delivery/retry.rs</span>
+<span class="t">10:42:03</span> build   edit    <span class="k">src/delivery/retry.rs</span> +38 −6
+<span class="t">10:42:07</span> build   run     cargo test -p delivery
+<span class="t">10:42:31</span> build   <span class="g">✓</span> 14 passed, 0 failed (24.1s)
+<span class="t">10:42:33</span> build   <span class="w">warn</span>    clippy: needless_return at retry.rs:88
+<span class="t">10:42:40</span> build   edit    <span class="k">src/delivery/retry.rs</span> +1 −1
+<span class="t">10:42:44</span> build   run     cargo clippy -p delivery -- -D warnings<span class="rz-cursor" aria-hidden="true"></span></pre>
+</div></section>
+  </div>
+</div>
+</main>
+</div>
+<script src="../static/js/live.js" defer></script>
+</body>
+</html>

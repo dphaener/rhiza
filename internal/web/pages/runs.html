@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Runs · Rhiza</title>
+<link rel="icon" href="../static/icons/favicon.ico" sizes="48x48">
+<link rel="icon" href="../static/icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../static/icons/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<meta name="theme-color" content="#0D0C09" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2EEE4" media="(prefers-color-scheme: light)">
+<link rel="stylesheet" href="../static/css/rhiza-tokens.css">
+<link rel="stylesheet" href="../static/css/rhiza.css">
+</head>
+<body class="rz">
+<div class="rz-app">
+<header class="rz-header">
+  <a class="rz-wordmark" href="/"><b>Rhiza</b><span>monitor</span></a>
+  <nav class="rz-nav" aria-label="Pages"><a href="/">Overview</a><a href="/runs" aria-current="page">Runs</a><a href="/roadmap">Roadmap</a></nav>
+  <div class="rz-header-end"><span class="rz-pill rz-pill--running"><span class="rz-live-dot" aria-hidden="true"></span>daemon · 2/4</span><span class="rz-live" title="Live stream connected"><span class="rz-live-dot" aria-hidden="true"></span>live</span></div>
+</header>
+<main class="rz-main">
+<div class="rz-stale" id="rz-stale" role="status" hidden><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.6 13 12.2H1Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7 5.6v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="10.3" r=".8" fill="currentColor"/></svg><span><b>Live stream dropped.</b> Showing what was true <span id="rz-stale-since">a moment ago</span>.</span><span class="rz-meta">retrying</span></div>
+<div class="rz-pagehead"><div><p class="rz-kicker">2 live · 41 this week · 6 failed</p><h1>Runs</h1></div></div>
+<section class="rz-panel rz-panel--flush" style="padding-top:16px">
+  <div class="rz-rows-head" aria-hidden="true"><span>ID</span><span>Title</span><span>State</span><span>Step</span><span style="text-align:right">Updated</span></div>
+  <p class="rz-rows-group" style="border-top:0;padding-top:12px">Live</p>
+  <ol class="rz-rows">
+  <li class="rz-row"><a class="rz-id" href="/runs/01M6PF31">01M6PF31</a><span class="rz-row-title">Retry webhook delivery with backoff<small>cs 01M6NZ8K · M3</small></span><span class="rz-pill-cell"><span class="rz-pill rz-pill--running"><span class="rz-live-dot" aria-hidden="true"></span>running</span></span><span class="rz-row-step is-live"><span class="rz-live-dot" aria-hidden="true"></span>build · 6m</span><span class="rz-row-time">4s ago</span></li>
+  <li class="rz-row"><a class="rz-id" href="/runs/01M6PE7Q">01M6PE7Q</a><span class="rz-row-title">Idempotency keys on outbound calls<small>cs 01M6NY2D · M3</small></span><span class="rz-pill-cell"><span class="rz-pill rz-pill--waiting"><svg viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>waiting on you</span></span><span class="rz-row-step">gate</span><span class="rz-row-time">12m ago</span></li>
+  </ol>
+  <p class="rz-rows-group">Recent</p>
+  <ol class="rz-rows"><li class="rz-row"><a class="rz-id" href="/runs/01M6P9X2">01M6P9X2</a><span class="rz-row-title">Dead-letter queue for poisoned events<small>cs 01M6NV51 · M3</small></span><span class="rz-pill-cell"><span class="rz-pill rz-pill--failed"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2.9 2.9 7.1 7.1M7.1 2.9 2.9 7.1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>failed</span></span><span class="rz-row-step">review</span><span class="rz-row-time">38m ago</span></li><li class="rz-row"><a class="rz-id" href="/runs/01M6P4RT">01M6P4RT</a><span class="rz-row-title">Tighten retry jitter bounds<small>cs 01M6NT0B · M3</small></span><span class="rz-pill-cell"><span class="rz-pill rz-pill--done"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 5.3 4.2 7.4 8.1 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>done</span></span><span class="rz-row-step">ship</span><span class="rz-row-time">1h ago</span></li><li class="rz-row"><a class="rz-id" href="/runs/01M6P1KD">01M6P1KD</a><span class="rz-row-title">Backoff config in daemon.toml<small>cs 01M6NS7W · M3</small></span><span class="rz-pill-cell"><span class="rz-pill rz-pill--done"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 5.3 4.2 7.4 8.1 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>done</span></span><span class="rz-row-step">ship</span><span class="rz-row-time">2h ago</span></li><li class="rz-row"><a class="rz-id" href="/runs/01M6NXQ0">01M6NXQ0</a><span class="rz-row-title">Webhook signature rotation<small>cs 01M6NP3E · M2</small></span><span class="rz-pill-cell"><span class="rz-pill rz-pill--interrupted"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3.6 2.6v4.8M6.4 2.6v4.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>interrupted</span></span><span class="rz-row-step">build</span><span class="rz-row-time">3h ago</span></li><li class="rz-row"><a class="rz-id" href="/runs/01M6NW8M">01M6NW8M</a><span class="rz-row-title">Delivery attempts table<small>cs 01M6NN1A · M3</small></span><span class="rz-pill-cell"><span class="rz-pill rz-pill--done"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 5.3 4.2 7.4 8.1 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>done</span></span><span class="rz-row-step">ship</span><span class="rz-row-time">5h ago</span></li><li class="rz-row"><a class="rz-id" href="/runs/01M6NT5F">01M6NT5F</a><span class="rz-row-title">Outbound HTTP client timeouts<small>cs 01M6NK9C · M3</small></span><span class="rz-pill-cell"><span class="rz-pill rz-pill--done"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 5.3 4.2 7.4 8.1 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>done</span></span><span class="rz-row-step">ship</span><span class="rz-row-time">6h ago</span></li><li class="rz-row"><a class="rz-id" href="/runs/01M6NR2B">01M6NR2B</a><span class="rz-row-title">Event schema v2 migration<small>cs 01M6NH4R · M2</small></span><span class="rz-pill-cell"><span class="rz-pill rz-pill--failed"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2.9 2.9 7.1 7.1M7.1 2.9 2.9 7.1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>failed</span></span><span class="rz-row-step">build</span><span class="rz-row-time">yesterday</span></li><li class="rz-row"><a class="rz-id" href="/runs/01M6NM7Z">01M6NM7Z</a><span class="rz-row-title">Structured logs for the delivery worker<small>cs 01M6NF0J · M2</small></span><span class="rz-pill-cell"><span class="rz-pill rz-pill--done"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 5.3 4.2 7.4 8.1 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>done</span></span><span class="rz-row-step">ship</span><span class="rz-row-time">yesterday</span></li></ol>
+  <div class="rz-panel-foot"><a href="/runs?before=01M6NM7Z">Older runs →</a></div>
+</section>
+</main>
+</div>
+<script src="../static/js/live.js" defer></script>
+</body>
+</html>
