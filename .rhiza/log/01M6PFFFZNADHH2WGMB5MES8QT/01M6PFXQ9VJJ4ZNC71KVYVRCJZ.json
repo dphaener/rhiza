@@ -1,0 +1,30 @@
+{
+  "actor": "01M6PFWGF1NCG57KCHVBJDFAWK",
+  "after": [
+    "01M6PFJWVJ1R179XXT3C9E0SWH"
+  ],
+  "at": "2026-11-05T18:35:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A web package test parses the embedded stylesheet and asserts the colour tokens of both themes equal the token sheet of the delivered Claude Design system (where claude-design-output points), and that no gradient appears in it.",
+          "statement": "One embedded stylesheet carries the Claude Design system as CSS custom properties: the dark soil theme by default and the light paper theme under prefers-color-scheme, the gold, teal and rose accents, the Petrona, Instrument Sans and JetBrains Mono type scale, 12-16px radii and 1px rules, with no gradients."
+        },
+        "handle": "web-design-tokens",
+        "id": "01M6PFJWQ0ZX6WPEX4SCZKPXBG",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6PFJWQ0ZX6WPEX4S94N8ZNW",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      }
+    ]
+  },
+  "change_set": "01M6PFFFZNADHH2WGMB5MES8QT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PFXQ9VJJ4ZNC71KVYVRCJZ",
+  "type": "ops",
+  "v": 1
+}

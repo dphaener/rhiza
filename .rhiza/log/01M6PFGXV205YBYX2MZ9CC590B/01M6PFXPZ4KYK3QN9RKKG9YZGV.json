@@ -1,0 +1,30 @@
+{
+  "actor": "01M6PFWGF1NCG57KCHVBJDFAWK",
+  "after": [
+    "01M6PFJX6CY57JE58S2A4N6CNA"
+  ],
+  "at": "2026-11-05T18:35:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A web package test asserts each Overview section declares its event names and that each section's fragment URL renders that section alone.",
+          "statement": "Each Overview section is a live section that re-renders on its events: the runs section on run journal moves, the inbox on inbox changes, the milestone section on change set moves, the daemon section on the stream's daemon status event."
+        },
+        "handle": "web-overview-live",
+        "id": "01M6PFJX4SRG58AJJWJ2KBFZ7D",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M6PFJX4SRG58AJJWHZYKN4DK",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      }
+    ]
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PFXPZ4KYK3QN9RKKG9YZGV",
+  "type": "ops",
+  "v": 1
+}

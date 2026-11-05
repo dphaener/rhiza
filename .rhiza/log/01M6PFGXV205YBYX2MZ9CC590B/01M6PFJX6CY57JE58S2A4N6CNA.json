@@ -1,0 +1,132 @@
+{
+  "actor": "01M6PF3BB5JAEEX5SK80H8BKK9",
+  "after": [
+    "01M6PFGXV205YBYX2MZCAMGGYJ"
+  ],
+  "at": "2026-11-05T18:29:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A web package test renders / over a fixture repo with daemon status and health data and asserts the paused state, the slots and each health part with its state.",
+          "statement": "The Overview page at / shows the daemon: running or paused, run slots used of its limit, and each health part with its ok, warn or bad state."
+        },
+        "handle": "web-overview-daemon",
+        "id": "01M6PFJX06P8P1JQS8RQWAP76A",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6PFJX06P8P1JQS8RKY327J2",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJX06P8P1JQS8RKY327J2",
+        "id": "01M6PFJX0KEGSS5186F7M8JRAY",
+        "link": "01M6PFJX0KEGSS5186F4KBD2FV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A web package test renders / over fixture run journals and asserts each live run's title, workflow, current step and link, and that finished runs are not listed.",
+          "statement": "The Overview page lists the live runs, each with its change set's title, workflow and current step, linking to its run page."
+        },
+        "handle": "web-overview-runs",
+        "id": "01M6PFJX11CXNAKJWHN1040ND6",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6PFJX11CXNAKJWHMY772YAF",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJX11CXNAKJWHMY772YAF",
+        "id": "01M6PFJX1GHKGSF1FTYCRW1APJ",
+        "link": "01M6PFJX1GHKGSF1FTYBBCTW8K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A web package test renders / over a fixture inbox with a question, a sign-off and a failed run and asserts all three, oldest first, and an empty state when the inbox is empty.",
+          "statement": "The Overview page lists what waits on the owner, as rhiza inbox does (questions, sign-offs, failed or given-up runs, stalled sessions), oldest first, marked in the warning accent."
+        },
+        "handle": "web-overview-inbox",
+        "id": "01M6PFJX24XAF6CBGRW996Q9M2",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M6PFJX24XAF6CBGRW7W837AV",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJX24XAF6CBGRW7W837AV",
+        "id": "01M6PFJX2JBAFHCD2Z4N8YD4R4",
+        "link": "01M6PFJX2JBAFHCD2Z4MMWNGZ9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A web package test renders / over a fixture with a milestone of change sets in several states and asserts the counts by state and the roadmap link.",
+          "statement": "The Overview page shows each open milestone's progress: its change sets counted by state, linking to the roadmap."
+        },
+        "handle": "web-overview-milestone",
+        "id": "01M6PFJX3BQYXMYH08ZCCC2279",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M6PFJX3BQYXMYH08ZAQN0ER8",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJX3BQYXMYH08ZAQN0ER8",
+        "id": "01M6PFJX406XV79CBXA7M3V1FC",
+        "link": "01M6PFJX406XV79CBXA5CB5JWR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A web package test asserts each Overview section declares its event names and that each section's fragment URL renders that section alone.",
+          "statement": "Each Overview section is a live section that re-renders on its events: the runs section on run journal moves, the inbox on inbox changes, the milestone section on change set moves, the daemon section on status changes."
+        },
+        "handle": "web-overview-live",
+        "id": "01M6PFJX4SRG58AJJWJ2KBFZ7D",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M6PFJX4SRG58AJJWHZYKN4DK",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJX4SRG58AJJWHZYKN4DK",
+        "id": "01M6PFJX5Q716HMTJBK9PT5CFC",
+        "link": "01M6PFJX5Q716HMTJBK8JW6YRY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PFJX6CY57JE58S2A4N6CNA",
+  "type": "ops",
+  "v": 1
+}

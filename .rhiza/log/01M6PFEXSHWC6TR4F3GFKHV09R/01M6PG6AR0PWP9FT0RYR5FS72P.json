@@ -1,0 +1,43 @@
+{
+  "actor": "01M6PG4GSBSCF1KEJ34XVH2G6Z",
+  "after": [
+    "01M6PFXPSY8NCVN3Y5KPMDZK13"
+  ],
+  "at": "2026-11-05T18:40:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test ./internal/web/... and ./internal/daemon/... cover the default 7787, a changed port, off, and that the listen address is always 127.0.0.1, through the handler and the computed address with no socket bound; a test drives the listener manager through successive polls with rhiza.web.port 7787, then 8080, then off, then 7787 again, using a fake listener factory, and checks it starts, moves, stops and restarts the listener at each poll, and that --once and a set RHIZA_TEST_NOW open no listener. The daemon-settings testscript lists rhiza.web.port with its default, accepts rhiza daemon set rhiza.web.port 8080 and off, and rejects 0, 70000 and abc with an error naming the key.",
+          "statement": "The long-running daemon serves the web UI over HTTP on 127.0.0.1 at the port rhiza.web.port names, 7787 by default, and serves nothing when it is set to off; rhiza daemon --once never serves, and the daemon binds no listener when RHIZA_TEST_NOW is set, so the default test run binds no socket and parallel testscripts never race for the port. rhiza daemon set accepts rhiza.web.port only as a port number from 1 to 65535 or off, and a running daemon picks up a change at its next poll: it starts, moves or stops the listener to match."
+        },
+        "handle": "web-serve-loopback",
+        "id": "01M6PFJ960GFE6G98GNDA10V1P",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6PFJ960GFE6G98GN9GVTABG",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "The daemon-status testscript runs rhiza daemon --once, then rhiza daemon status shows http://127.0.0.1:7787 in text and --json; after rhiza daemon set rhiza.web.port off and another rhiza daemon --once, status shows the web UI off.",
+          "statement": "rhiza daemon status shows the web UI as the daemon's state file recorded it from the last poll's effective rhiza.web.port: its URL (http://127.0.0.1:<port>) for a port, or that the web UI is off; it reads the recorded setting and does not probe the listener."
+        },
+        "handle": "web-url-in-daemon-status",
+        "id": "01M6PFJ9CD8XKQZK2PNDXW02PE",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6PFJ9CD8XKQZK2PNA3B6973",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      }
+    ]
+  },
+  "change_set": "01M6PFEXSHWC6TR4F3GFKHV09R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PG6AR0PWP9FT0RYR5FS72P",
+  "type": "ops",
+  "v": 1
+}

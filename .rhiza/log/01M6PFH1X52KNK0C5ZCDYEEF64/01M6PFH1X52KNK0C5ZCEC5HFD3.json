@@ -1,0 +1,18 @@
+{
+  "actor": "01M6PF3BB5JAEEX5SK80H8BKK9",
+  "after": [],
+  "at": "2026-11-05T18:28:51Z",
+  "body": {
+    "intent": "Web Runs pages: runs live first then recent, and a run's detail with its steps, sessions, review summary and a live log tail",
+    "kind": "intention",
+    "sources": [
+      "01M6PFE13VHPKWY3QZ00HWMS8B"
+    ],
+    "title": "Web UI Runs pages"
+  },
+  "change_set": "01M6PFH1X52KNK0C5ZCDYEEF64",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PFH1X52KNK0C5ZCEC5HFD3",
+  "type": "open",
+  "v": 2
+}

@@ -1,0 +1,18 @@
+{
+  "actor": "01M6PF3BB5JAEEX5SK80H8BKK9",
+  "after": [],
+  "at": "2026-11-05T18:27:42Z",
+  "body": {
+    "intent": "Web server: the daemon serves a read-only web UI on 127.0.0.1:7787 (rhiza.web.port, or off), with read-only internal/api operations as JSON, server-sent events and embedded templates and assets",
+    "kind": "intention",
+    "sources": [
+      "01M6PFE13VHPKWY3QZ00HWMS8B"
+    ],
+    "title": "Web UI server"
+  },
+  "change_set": "01M6PFEXSHWC6TR4F3GFKHV09R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PFEXSHWC6TR4F3GG1X8QK6",
+  "type": "open",
+  "v": 2
+}

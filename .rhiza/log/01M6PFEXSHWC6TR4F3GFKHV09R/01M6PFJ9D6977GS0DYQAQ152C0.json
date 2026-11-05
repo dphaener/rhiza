@@ -1,0 +1,155 @@
+{
+  "actor": "01M6PF3BB5JAEEX5SK80H8BKK9",
+  "after": [
+    "01M6PFEXSHWC6TR4F3GG1X8QK6"
+  ],
+  "at": "2026-11-05T18:29:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Tests in the new web package and internal/daemon cover the default 7787, a changed port, off, and that the listen address is always 127.0.0.1 (exercised through the handler and the computed address, binding no socket in the default test run); the daemon settings testscript lists rhiza.web.port with its default.",
+          "statement": "The running daemon serves the web UI over HTTP on 127.0.0.1 at the port rhiza.web.port names, 7787 by default, and serves nothing when it is set to off; rhiza daemon set validates the key and a running daemon picks up a change at its next poll."
+        },
+        "handle": "web-serve-loopback",
+        "id": "01M6PFJ960GFE6G98GNDA10V1P",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6PFJ960GFE6G98GN9GVTABG",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJ960GFE6G98GN9GVTABG",
+        "id": "01M6PFJ96C3GDXZ8SF39H1836H",
+        "link": "01M6PFJ96C3GDXZ8SF384KXA5A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A web package test compares /api/run.ls and /api/roadmap bodies against the api handlers' JSON for the same fixture repo, and a test walks the api registry asserting every allowlisted operation is a read and a write operation such as land, accept or daemon.set answers 404 or 405.",
+          "statement": "GET /api/<op> runs an allowlisted read-only internal/api operation with its request built from the query string and answers the same JSON bytes rhiza <cmd> --json prints; every other operation, and every non-GET method, is refused, so no write is reachable."
+        },
+        "handle": "web-api-read-only",
+        "id": "01M6PFJ9736AS6TE510QW80951",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6PFJ9736AS6TE510QA5VVBS",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJ9736AS6TE510QA5VVBS",
+        "id": "01M6PFJ97HK79VQ9BQDPY67WHP",
+        "link": "01M6PFJ97HK79VQ9BQDKG626V2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A web package test drives the events handler with a recorder, appends a log entry, a run journal move and an inbox item in a fixture repo, and reads one matching named event for each from the stream.",
+          "statement": "GET /events streams server-sent events naming what changed (a change set moved or landed, a run's journal moved, an inbox item arrived or left), so an open page knows to re-fetch."
+        },
+        "handle": "web-events-stream",
+        "id": "01M6PFJ98BKT1ES8F6WJYGG6VX",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6PFJ98BKT1ES8F6WJTVJ893",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJ98BKT1ES8F6WJTVJ893",
+        "id": "01M6PFJ99CWPFVR5SX49KQ6YY8",
+        "link": "01M6PFJ99CWPFVR5SX46MEQJBK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A web package test GETs / and /static/app.js from the handler and gets a rendered page and the script with their content types; the Makefile and CI gain no Node or other build toolchain.",
+          "statement": "Pages are server-rendered from html/template files embedded with go:embed, with static assets (CSS, fonts, one small vanilla JS file) served from the binary under /static/, so the web UI needs no build step and no files on disk."
+        },
+        "handle": "web-templates-embedded",
+        "id": "01M6PFJ9A1H6A1YBM55WRYEZ6G",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6PFJ9A1H6A1YBM55VS6HDQG",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJ9A1H6A1YBM55VS6HDQG",
+        "id": "01M6PFJ9AS1WGZWX8TXVE3FX8V",
+        "link": "01M6PFJ9AS1WGZWX8TXR4EHEC0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A web package test renders a sample section with its event names and fragment URL, GETs the fragment URL and gets just that section's HTML; the script is served and names the stale state; no browser test.",
+          "statement": "A page section declares the events it listens to and a fragment URL; the embedded script subscribes to /events and re-fetches and swaps only the sections a matching event names, and marks the page stale while the stream is down."
+        },
+        "handle": "web-live-sections",
+        "id": "01M6PFJ9BEWSJ8QDFFKBENSFR4",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6PFJ9BEWSJ8QDFFK8NR8N48",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJ9BEWSJ8QDFFK8NR8N48",
+        "id": "01M6PFJ9BXP69D10678JS624BZ",
+        "link": "01M6PFJ9BXP69D10678G3J5W2V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "The daemon status testscript shows the URL with the default port and shows off after rhiza daemon set rhiza.web.port off.",
+          "statement": "rhiza daemon status shows the web UI's URL (http://127.0.0.1:<port>) while the daemon serves it, or that the web UI is off."
+        },
+        "handle": "web-url-in-daemon-status",
+        "id": "01M6PFJ9CD8XKQZK2PNDXW02PE",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6PFJ9CD8XKQZK2PNA3B6973",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJ9CD8XKQZK2PNA3B6973",
+        "id": "01M6PFJ9CVFV13H0PBH8EEGBHC",
+        "link": "01M6PFJ9CVFV13H0PBH7QJSCSZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6PFEXSHWC6TR4F3GFKHV09R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PFJ9D6977GS0DYQAQ152C0",
+  "type": "ops",
+  "v": 1
+}

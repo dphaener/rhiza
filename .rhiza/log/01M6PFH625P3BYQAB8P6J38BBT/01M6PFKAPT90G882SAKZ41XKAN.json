@@ -1,0 +1,63 @@
+{
+  "actor": "01M6PF3BB5JAEEX5SK80H8BKK9",
+  "after": [
+    "01M6PFH625P3BYQAB8P7TRVZXY"
+  ],
+  "at": "2026-11-05T18:30:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A web package test renders /roadmap over a fixture with two milestones and a backlog and asserts the same groups and order as the roadmap operation, each change set's state and link.",
+          "statement": "The Roadmap page at /roadmap shows the milestone groups, then the backlog, as rhiza roadmap groups them, each change set with its short ID, title and state, linking to its change set page; it re-renders live when a change set moves."
+        },
+        "handle": "web-roadmap-page",
+        "id": "01M6PFKAN1436CCE15ST7N4A05",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6PFKAN1436CCE15SQMFT2B9",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFKAN1436CCE15SQMFT2B9",
+        "id": "01M6PFKANDJ8QARWQTVFVV0JP3",
+        "link": "01M6PFKANDJ8QARWQTVCV9ZX6Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A web package test renders /changes/<id> for a fixture change set with leaves (one with Evidence), a blocking question, a dependency and a run, and asserts each part and its links, and a 404 for an unknown change set.",
+          "statement": "A change set's page at /changes/<id> shows its title, intent, kind and state, what it serves and depends on, its leaves with each statement, acceptance and whether it has Evidence, its open questions, its runs linking to their run pages, and its lifecycle history."
+        },
+        "handle": "web-change-set-page",
+        "id": "01M6PFKANQ23RTM5QSR9GRGA25",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6PFKANQ23RTM5QSR6H1CGBX",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFKANQ23RTM5QSR6H1CGBX",
+        "id": "01M6PFKAPDFF2QFE4B6P19P2FG",
+        "link": "01M6PFKAPDFF2QFE4B6NRAREAS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6PFH625P3BYQAB8P6J38BBT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PFKAPT90G882SAKZ41XKAN",
+  "type": "ops",
+  "v": 1
+}
