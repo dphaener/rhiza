@@ -17661,6 +17661,13 @@ cmp stdout describe.golden.json
             "description": "The session's full ID",
             "type": "string"
           },
+          "skipped": {
+            "description": "Handles of answers already recorded as Decisions, left alone (see session.interview)",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "warnings": {
             "description": "Answers that could not be captured, or token use that could not be read or recorded, when the session said done; the done mark stands",
             "items": {
@@ -18498,6 +18505,13 @@ cmp stdout describe.golden.json
               "worktree"
             ],
             "type": "object"
+          },
+          "skipped": {
+            "description": "Handles of answers already recorded as Decisions, left alone (see session.interview)",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "warnings": {
             "description": "Status reports that could not be copied while the agent ran, token use that could not be recorded, and a failed capture of the owner's answers",

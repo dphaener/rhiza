@@ -1,0 +1,85 @@
+# session interview skips an answered question when the change set already
+# holds a live Decision whose question field is the asked question verbatim,
+# and reports it skipped; a question that differs by one character does not
+# stop the proposal. Once the change set has landed, a landed Decision
+# derived-from the session's Source does the same. session done skips and
+# reports the same way. The fake rex opens a window and runs nothing.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir $HOME/.claude/projects/p
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Capture answers' --title 'Answers' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza session start --permission-mode manual --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+cp $WORK/transcript.jsonl $HOME/.claude/projects/p/158fe87f-5cf3-4ff0-ae50-01a16dc84988.jsonl
+
+# A Decision with the first question verbatim, and one that differs by a
+# character from the second.
+cd $WORK/repo.answers
+exec rhiza add decision planner-colour --field 'statement=Blue' --field 'question=Which colour?' --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza add decision planner-store --field 'statement=DuckDB' --field 'question=Which store' --change 01M5PWGEF85Y185JZ2ZGCNH40N
+
+# Only the second answer and the near miss are proposed.
+cd $WORK/repo
+exec rhiza session interview 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+stdout -count=1 '"answer-158fe87f-1"'
+stdout '"handle": "answer-158fe87f-2"'
+! stdout '"handle": "answer-158fe87f-1"'
+stdout '"skipped": \[\s+"answer-158fe87f-1"'
+cd $WORK/repo.answers
+! exec rhiza show answer-158fe87f-1 --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza show answer-158fe87f-2 --change 01M5PWGEF85Y185JZ2ZGCNH40N
+fold-ok
+
+# A landed change set: a landed Decision derived-from the session's Source
+# with the first question stops that answer; only the second is recorded.
+cd $WORK/repo
+exec rhiza change new 'Plan M' --kind record --title 'Plan M' --json
+stdout '"change_set": "(01[0-9A-Z]{24})"'
+exec rhiza session start --permission-mode manual --json
+exec sh -c 'rhiza session ls --json | sed -n "s/.*\"id\": \"\([0-9a-f-]\{36\}\)\".*/\1/p" | tail -1 > $WORK/sid2'
+exec sh -c 'cp $WORK/transcript.jsonl $HOME/.claude/projects/p/$(cat $WORK/sid2).jsonl'
+cd $WORK/repo.plan-m
+exec sh -c 'rhiza source add plan $WORK/s.json --raw-session $(cat $WORK/sid2) --json'
+exec rhiza add decision landed-colour --field 'statement=Blue' --field 'question=Which colour?'
+exec rhiza link landed-colour derived-from plan
+exec rhiza land --json
+stdout '"to": "landed"'
+cd $WORK/repo
+env RHIZA_TEST_SEED=2
+exec sh -c 'rhiza session interview $(cat $WORK/sid2) --json'
+stdout '"record": "01[0-9A-Z]{24}"'
+stdout -count=1 '"handle": "answer-'
+stdout -count=1 '"question": "Which store\?"'
+! stdout '"question": "Which colour\?"'
+exec sh -c 'rhiza session interview $(cat $WORK/sid2) --json'
+stdout '"proposed": \[\]'
+
+# session done proposes only the second answer and reports the first,
+# already recorded, as skipped.
+exec rhiza change new 'Capture on done' --title 'Done' --json
+stdout '"change_set": "(01[0-9A-Z]{24})"'
+exec rhiza session start --permission-mode manual --json
+exec sh -c 'rhiza session ls --json | sed -n "s/.*\"id\": \"\([0-9a-f-]\{36\}\)\".*/\1/p" | tail -1 > $WORK/sid3'
+exec sh -c 'cp $WORK/transcript.jsonl $HOME/.claude/projects/p/$(cat $WORK/sid3).jsonl'
+cd $WORK/repo.done
+exec rhiza add decision done-colour --field 'statement=Blue' --field 'question=Which colour?'
+cd $WORK/repo
+exec sh -c 'rhiza session done $(cat $WORK/sid3) --json'
+stdout '"decisions": \[\s+"answer-[0-9a-f]{8}-2"\s+\]'
+stdout '"skipped": \[\s+"answer-[0-9a-f]{8}-1"\s+\]'
+
+-- s.json --
+{"title":"Planning interview","summary":"The owner answered.","quotes":[]}
+-- bin/rex --
+#!/bin/sh
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- transcript.jsonl --
+{"type": "user", "message": {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "toolu_1", "content": "answered"}]}, "toolUseResult": {"questions": [{"question": "Which colour?", "header": "Colour", "multiSelect": false, "options": [{"label": "Red", "description": "d"}, {"label": "Blue", "description": "d"}]}, {"question": "Which store?", "header": "Store", "multiSelect": false, "options": [{"label": "SQLite", "description": "d"}, {"label": "Postgres", "description": "d"}]}], "answers": {"Which colour?": "Blue", "Which store?": "Something like DuckDB, but local"}}}

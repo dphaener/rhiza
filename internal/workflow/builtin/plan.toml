@@ -92,6 +92,7 @@ on.pass = "rebase"
 [step.rebase]
 kind = "command"
 run = "rhiza ship rebase"
+max_visits = 3
 on.pass = "wait-rebased"
 
 [step.wait-rebased]
@@ -99,17 +100,24 @@ kind = "wait"
 until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
+max_visits = 3
 on.pass = "rebased-green"
 
 [step.rebased-green]
 kind = "command"
 run = "rhiza ship check"
+max_visits = 3
 on.pass = "merge"
 
+# Merges nothing when origin/main moved after the head's checks passed:
+# the step fails and the run rebases and waits on the new head again, up
+# to 3 times.
 [step.merge]
 kind = "command"
 run = "rhiza ship merge"
+max_visits = 3
 on.pass = "close-out"
+on.fail = "rebase"
 
 [step.close-out]
 kind = "command"

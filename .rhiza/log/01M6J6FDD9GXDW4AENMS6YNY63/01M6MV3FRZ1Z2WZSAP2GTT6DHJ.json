@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MTPXEH1FSH6Y74VBAP7843",
+  "after": [
+    "01M6MN7Y0VWD7BS752KV9E633K"
+  ],
+  "at": "2026-11-05T03:12:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 56b21fe4 (verifier, attempt 2) I read the leaf diff (recordedQuestions in internal/api/session_interview.go; captureAfterRun now returns skipped; session done and session run report a skipped field and 'Skipped <handle>: already recorded' lines) and ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(session-interview-recorded|session-done|session-interview|session-run|describe-golden)' and go test -trimpath ./internal/api/...: both ok. session-interview-recorded.txtar, with a fake rex and a transcript holding two picked answers, checks that a change-set Decision with question 'Which colour?' verbatim makes session interview skip and report answer-<sid8>-1 while a Decision whose question 'Which store' differs by one character still lets answer-<sid8>-2 be proposed; that after landing, a landed Decision derived-from the session's Source with the first question leaves the record capture writing only the 'Which store?' answer; and that session done proposes exactly [answer-<sid8>-2] and reports skipped [answer-<sid8>-1]. go vet and gofmt are clean. The quality nit that captureInterview's doc comment does not mention the question skip is still open, but it is outside the acceptance."
+        },
+        "handle": "capture-skips-recorded-answers-verified-2",
+        "id": "01M6MV3A2E2DMQR68C5WYS43YS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MV3A2E2DMQR68C5SFMXZHF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MV3A2E2DMQR68C5SFMXZHF",
+        "id": "01M6MV3C5CFB2MMKX89ZCNEK02",
+        "link": "01M6MV3C5CFB2MMKX89Y6YM6Q4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J7B10MH74CTH61H69ETSDW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J6FDD9GXDW4AENMS6YNY63",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MV3FRZ1Z2WZSAP2GTT6DHJ",
+  "type": "ops",
+  "v": 1
+}

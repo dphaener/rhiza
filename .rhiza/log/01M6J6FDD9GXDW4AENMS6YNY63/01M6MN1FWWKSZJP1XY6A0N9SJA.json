@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MM7A6GP7GHWKG5XZ3ET54C",
+  "after": [
+    "01M6MMBFPTB71AY9F8681P76ZS"
+  ],
+  "at": "2026-11-05T01:26:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at b5f725e3. Read the diff: captureInterview (shared by session interview and session done, session_run.go:462) now skips any answer whose question equals, verbatim, the question field of a live Decision the change set's ops created, or once landed a live Decision derived-from the session's Sources, and reports it in skipped. Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/session-(interview|done)' -count=1: ok (session-interview, -landed, -source, -recorded, session-done-captures). session-interview-recorded.txtar covers the acceptance: with a Decision 'Which colour?' only answer-<sid8>-2 is proposed and answer-1 is reported skipped; a Decision 'Which store' (one character off) does not stop answer-2; with the record change set landed and a landed Decision derived-from the session's Source carrying 'Which colour?', the record capture writes only the 'Which store?' answer. Mutation check: with session_interview.go reverted to HEAD~1 in a scratch worktree, the script fails at line 34 (answer-158fe87f-1 proposed). go test ./internal/api/...: every test passes except TestReadBudget (roadmap what-if timing median over 50ms at load average ~6.5), a read-path timing budget this diff does not touch. gofmt clean."
+        },
+        "handle": "capture-skips-recorded-answers-verified",
+        "id": "01M6MN195YSAM7F81X28EQ7QDJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MN195YSAM7F81X26MBNAXF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MN195YSAM7F81X26MBNAXF",
+        "id": "01M6MN1BY3YN4GFK6MXSJBZQAW",
+        "link": "01M6MN1BY3YN4GFK6MXP7KJHZX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J7B10MH74CTH61H69ETSDW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J6FDD9GXDW4AENMS6YNY63",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MN1FWWKSZJP1XY6A0N9SJA",
+  "type": "ops",
+  "v": 1
+}

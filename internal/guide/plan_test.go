@@ -88,6 +88,25 @@ func TestPlanText(t *testing.T) {
 	})
 }
 
+func TestPlanWhoRecords(t *testing.T) {
+	checkPhrases(t, "plan", map[string][]string{
+		"plan-guide-who-records": {
+			"The run's capture records the owner's AskUserQuestion picks",
+			"writes no Decision for a plain owner pick",
+			"a proxy such as an orchestrator or arbiter answered",
+			"the proxy's wording",
+			"copy the asked question\nverbatim into its `question` field",
+		},
+	})
+	tx, _ := Lookup("plan")
+	for _, line := range strings.Split(tx.Body, "\n") {
+		l := strings.ToLower(line)
+		if strings.Contains(l, "plain") && strings.Contains(l, "write a decision") {
+			t.Errorf("plan tells the planner to write a Decision for a plain pick: %q", line)
+		}
+	}
+}
+
 func TestPlanReviewText(t *testing.T) {
 	checkPhrases(t, "plan-review", map[string][]string{
 		"plan-review-guide": {
