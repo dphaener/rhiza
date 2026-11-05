@@ -88,8 +88,8 @@ func TestRowPerItemInOrder(t *testing.T) {
 
 func TestEnterOpensActionPerKind(t *testing.T) {
 	for i, want := range []Action{ActionAnswer, ActionSignoff, ActionResolve} {
-		if i == 0 {
-			continue // a question opens the answer form, not the Open hook
+		if i <= 1 {
+			continue // a question and a sign-off open their own views, not the Open hook
 		}
 		var calls []call
 		m := NewModel(fake(full, &calls))
@@ -272,6 +272,63 @@ func TestAnswerEscAndEmptyCallNothing(t *testing.T) {
 	}
 	_, cmd := m.Update(ui.FormCancelledMsg{})
 	if !isQuit(cmd) {
+		t.Fatal("esc did not quit")
+	}
+	if len(calls) != 1 {
+		t.Fatalf("calls: %+v", calls)
+	}
+}
+
+func signoffModel(calls *[]call) *Model {
+	m := NewModel(fake(full, calls))
+	press(m, "down")
+	enter(m)
+	return m
+}
+
+func key(m *Model, s string) tea.Cmd {
+	_, cmd := m.Update(tea.KeyPressMsg{Code: rune(s[0]), Text: s})
+	return cmd
+}
+
+func TestSignoffDialogApprove(t *testing.T) {
+	var calls []call
+	m := signoffModel(&calls)
+	v := m.View().Content
+	for _, w := range []string{"Two", "R2", "signoff-wait"} {
+		if !strings.Contains(v, w) {
+			t.Errorf("dialog lacks %q:\n%s", w, v)
+		}
+	}
+	if !isQuit(key(m, "a")) {
+		t.Fatal("app did not quit")
+	}
+	last := calls[len(calls)-1]
+	if last.op != "run.approve" || !slices.Equal(last.args, []string{"R2"}) {
+		t.Fatalf("calls: %+v", calls)
+	}
+}
+
+func TestSignoffSendBackNote(t *testing.T) {
+	var calls []call
+	m := signoffModel(&calls)
+	key(m, "s")
+	if isQuit(typeAndSubmit(m, "")) || len(calls) != 1 {
+		t.Fatalf("empty note went through: %+v", calls)
+	}
+	if !isQuit(typeAndSubmit(m, "fix the tests")) {
+		t.Fatal("app did not quit")
+	}
+	last := calls[len(calls)-1]
+	if last.op != "run.send-back" || !slices.Equal(last.args, []string{"R2", "fix the tests"}) {
+		t.Fatalf("calls: %+v", calls)
+	}
+}
+
+func TestSignoffEscCallsNothing(t *testing.T) {
+	var calls []call
+	m := signoffModel(&calls)
+	if !isQuit(press(m, "esc")) {
 		t.Fatal("esc did not quit")
 	}
 	if len(calls) != 1 {

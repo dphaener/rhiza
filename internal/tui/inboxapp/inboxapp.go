@@ -94,6 +94,8 @@ type Model struct {
 	note  string
 	form  *ui.Form
 	asked *api.InboxItem
+	dlg   *ui.Dialog
+	back  bool // the form asks for a send-back note
 
 	// Open, when set, is called with each pick of an actionable kind and
 	// returns the command that opens its action.
@@ -172,8 +174,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ui.FormCancelledMsg:
 		return m, tea.Quit
 	case ui.FormSubmittedMsg:
+		if m.back {
+			return m, m.sendBack(msg.Values.String("note"))
+		}
 		return m, m.send(msg.Values.String("answer"))
 	case tea.KeyPressMsg:
+		if m.dlg != nil && m.cur == component(dialogView{m}) {
+			switch msg.String() {
+			case "a":
+				return m, m.approve()
+			case "s":
+				return m, m.openNote("send back")
+			}
+		}
 		if k := msg.String(); k == "ctrl+c" || (k == "esc" && m.cur != component(m.list)) {
 			return m, tea.Quit
 		}
@@ -192,6 +205,9 @@ func (m *Model) choose(i int) tea.Cmd {
 	m.pick = &p
 	if it.Kind == api.InboxQuestion || it.Kind == api.InboxBlocker {
 		return m.openAnswer(it)
+	}
+	if p.Action == ActionSignoff {
+		return m.openSignoff(it)
 	}
 	if p.Action != ActionShow {
 		if m.Open != nil {
@@ -218,6 +234,56 @@ func (m *Model) openAnswer(it api.InboxItem) tea.Cmd {
 	m.form, m.asked = f, &it
 	m.cur = f
 	return f.Init()
+}
+
+// dialogView adapts the Dialog to the component the model shows.
+type dialogView struct{ m *Model }
+
+func (d dialogView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	return d.m, d.m.dlg.Update(msg)
+}
+func (d dialogView) View() tea.View          { return tea.NewView(d.m.dlg.View()) }
+func (d dialogView) NaturalSize() (int, int) { return d.m.dlg.NaturalSize() }
+func (d dialogView) Theme() theme.Theme      { return d.m.dlg.Theme() }
+
+// openSignoff shows the dialog naming the run and what it waits for.
+func (m *Model) openSignoff(it api.InboxItem) tea.Cmd {
+	body := []string{"run: " + it.Run, "waits for: " + waits(it)}
+	m.asked = &it
+	m.dlg = ui.NewDialog(theme.Dark(), colorprofile.TrueColor, "Sign off · "+title(it), body).
+		WithHint("a approve · s send back · esc close")
+	m.cur = dialogView{m}
+	return m.dlg.Init()
+}
+
+// approve signs the run off through run.approve and quits.
+func (m *Model) approve() tea.Cmd {
+	if _, err := m.run("run.approve", []string{m.asked.Run}); err != nil {
+		m.dlg.SetBody([]string{"run: " + m.asked.Run, "approve failed: " + err.Error()})
+		return nil
+	}
+	return tea.Quit
+}
+
+// openNote asks for the note a send-back carries.
+func (m *Model) openNote(msg string) tea.Cmd {
+	f := ui.NewForm(theme.Dark(), colorprofile.TrueColor,
+		ui.NewTextArea("note", "What to change")).WithSubtitle(title(*m.asked) + " · " + msg)
+	m.form, m.back, m.cur = f, true, f
+	return f.Init()
+}
+
+// sendBack sends the run back through run.send-back with the note. An empty
+// note is refused and leaves the form open.
+func (m *Model) sendBack(note string) tea.Cmd {
+	note = strings.TrimSpace(note)
+	if note == "" {
+		return m.openNote("a send-back needs a note")
+	}
+	if _, err := m.run("run.send-back", []string{m.asked.Run, note}); err != nil {
+		return m.openNote("send back failed: " + err.Error())
+	}
+	return tea.Quit
 }
 
 // send sends the typed words: session.message to the asking session for a
