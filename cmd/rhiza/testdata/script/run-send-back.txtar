@@ -44,6 +44,7 @@ exec cat $WORK/claude.log
 stdout '\Arole=check check=alpha cycle=1 leaf=\nrole=fixer check= cycle=2 leaf=\nrole=check check=alpha cycle=2 leaf=\n\z'
 exec rhiza run status
 stdout '^- signoff \(visit 1\): changes, then review/review: changes asked by test: 1 finding$'
+stdout '^  - alpha f1 major at owner: say more$'
 stdout '^- Current step: signoff$'
 ! exec cat $WORK/order.log
 
