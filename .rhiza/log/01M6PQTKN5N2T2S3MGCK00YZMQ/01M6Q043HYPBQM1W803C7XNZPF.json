@@ -1,0 +1,73 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6PY6N7AJ92BK314V1EB90D2"
+  ],
+  "at": "2026-11-05T23:18:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "37a8ef2053acf61598cb923cc51aebc0b059b8fc",
+          "pr": "https://github.com/dphaener/rhiza/pull/315",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #315 (https://github.com/dphaener/rhiza/pull/315) passed CI at 37a8ef2",
+          "status": "verified"
+        },
+        "handle": "pr-315-fix-an-owner-run-plan-s-gate",
+        "id": "01M6Q043E552F498VDBFJV8TDF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q043E552F498VDBDB1G5RT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q043E552F498VDBDB1G5RT",
+        "id": "01M6Q043EGT52HXKTDF9HBKKZC",
+        "link": "01M6Q043EGT52HXKTDF6YZ7GS9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PR133TKYZKSJRVSXNQ4Y9T",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6Q043E552F498VDBDB1G5RT",
+        "id": "01M6Q043EZS74JFP7Y2TRN358P",
+        "link": "01M6Q043EZS74JFP7Y2RS7YABH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PR135E00DF7NHH46BYZF87",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6Q043E552F498VDBDB1G5RT",
+        "id": "01M6Q043FE8FYN1E2FR6WW37X8",
+        "link": "01M6Q043FE8FYN1E2FR54FNWYW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PR136HA6VBMENME6VDFANQ",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6Q043E552F498VDBDB1G5RT",
+        "id": "01M6Q043G2E8M644M8MGV68XPW",
+        "link": "01M6Q043G2E8M644M8MGK24S8D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGDEE854PFE4BXJM13CWS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PQTKN5N2T2S3MGCK00YZMQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q043HYPBQM1W803C7XNZPF",
+  "type": "ops",
+  "v": 1
+}

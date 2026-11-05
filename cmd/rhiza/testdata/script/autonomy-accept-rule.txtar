@@ -1,0 +1,52 @@
+# accept --rule autonomy is refused as usage unless rhiza.autonomy.accept is
+# auto; with auto it accepts and the log entry records rule autonomy. Rule
+# autonomous outside an autonomous run is still refused.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Autonomy rule' --title 'Autonomy rule' --json
+mkdir .rhiza/workflows
+cp $WORK/hold.toml .rhiza/workflows/hold.toml
+exec sh -c 'ls .git/rhiza/runs 2>/dev/null | sed "s/\.jsonl$//" > $WORK/before; true'
+exec rhiza run start --foreground --workflow hold --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/run'
+exec rhiza propose
+
+# accept owner: refused as usage, nothing written.
+exec git config rhiza.autonomy.accept owner
+exec sh -c 'RHIZA_RUN=$(cat $WORK/run) rhiza accept --rule autonomy --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'rhiza.autonomy.accept is owner'
+stdout '^exit=2$'
+exec rhiza change show --json
+stdout '"state": "proposed"'
+
+# rule autonomous outside an autonomous run: refused as before.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/run) rhiza accept --rule autonomous --json; echo exit=$?'
+stdout 'is not autonomous'
+stdout '^exit=2$'
+
+# accept auto: accepted under rule autonomy.
+exec git config rhiza.autonomy.accept auto
+exec sh -c 'RHIZA_RUN=$(cat $WORK/run) rhiza accept --rule autonomy --json'
+stdout '"rule": "autonomy"'
+exec rhiza change show --json
+stdout '"state": "accepted"'
+stdout '"rule": "autonomy"'
+
+fold-ok
+
+-- hold.toml --
+name = "hold"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"

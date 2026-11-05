@@ -1,0 +1,107 @@
+# An owner-run (non-autonomous) plan run's gate accepts what it proposed,
+# under rule autonomy, when rhiza.autonomy.accept is auto and the review
+# passed (here: a clean round). With accept owner, or with a confirmed
+# finding no question was left for, it accepts nothing and leaves each
+# proposal with rhiza accept --rule owner next (exit 0).
+#
+# Every run stops at a wait step whose until does not hold, so it stays
+# unfinished and launches no agent.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .rhiza/workflows
+cp $WORK/hold.toml .rhiza/workflows/hold.toml
+
+# --- accept auto, clean review: both accepted under rule autonomy.
+exec rhiza change new 'Plan A' --kind record --title 'Plan A' --json
+exec rhiza add intent want-a
+exec sh -c 'ls .git/rhiza/runs 2>/dev/null | sed "s/\.jsonl$//" > $WORK/before; true'
+exec rhiza run start --foreground --workflow hold --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runa'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runa) rhiza run findings $WORK/clean.json'
+exec rhiza land
+exec sh -c 'rhiza change new "Serve A one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/a1'
+exec sh -c 'rhiza link $(cat $WORK/a1) serves want-a'
+exec sh -c 'rhiza change new "Serve A two" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/a2'
+exec sh -c 'rhiza link $(cat $WORK/a2) serves want-a'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runa) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+stdout '"autonomous": false'
+exec sh -c 'rhiza change show $(cat $WORK/a1) --json'
+stdout '"state": "accepted"'
+stdout '"rule": "autonomy"'
+exec sh -c 'rhiza change show $(cat $WORK/a2) --json'
+stdout '"state": "accepted"'
+stdout '"rule": "autonomy"'
+exec sh -c 'grep -c "\"type\":\"accepted\"" .git/rhiza/runs/$(cat $WORK/runa).jsonl'
+stdout '^2$'
+# Again: nothing more to do.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runa) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+exec sh -c 'grep -c "\"type\":\"accepted\"" .git/rhiza/runs/$(cat $WORK/runa).jsonl'
+stdout '^2$'
+
+# --- accept owner: the same gate leaves both proposed.
+exec git config rhiza.autonomy.accept owner
+exec rhiza change new 'Plan B' --kind record --title 'Plan B' --json
+exec rhiza add intent want-b
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
+exec rhiza run start --foreground --workflow hold --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runb'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run findings $WORK/clean.json'
+exec rhiza land
+exec sh -c 'rhiza change new "Serve B one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/b1'
+exec sh -c 'rhiza link $(cat $WORK/b1) serves want-b'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+stdout 'rhiza accept --rule owner --change '
+exec sh -c 'rhiza change show $(cat $WORK/b1) --json'
+stdout '"state": "proposed"'
+exec sh -c 'grep -c "\"type\":\"accepted\"" .git/rhiza/runs/$(cat $WORK/runb).jsonl; true'
+stdout '^0$'
+exec git config --unset rhiza.autonomy.accept
+
+# --- accept auto, but a confirmed finding with no question left: proposed.
+exec rhiza change new 'Plan C' --kind record --title 'Plan C' --json
+exec rhiza add intent want-c
+exec rhiza add decision dec-c --field 'statement=Use C'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
+exec rhiza run start --foreground --workflow hold --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runc'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run findings $WORK/findings.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run findings $WORK/findings.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run findings $WORK/findings.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run verdict $WORK/verdict.json'
+exec rhiza land
+exec sh -c 'rhiza change new "Serve C one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/c1'
+exec sh -c 'rhiza link $(cat $WORK/c1) serves want-c'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+stdout 'rhiza accept --rule owner --change '
+exec sh -c 'rhiza change show $(cat $WORK/c1) --json'
+stdout '"state": "proposed"'
+exec sh -c 'grep -c "\"type\":\"accepted\"" .git/rhiza/runs/$(cat $WORK/runc).jsonl; true'
+stdout '^0$'
+
+fold-ok
+
+-- hold.toml --
+name = "hold"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- clean.json --
+{"findings":[]}
+-- findings.json --
+{"findings":[{"node":"dec-c","kind":"contradiction","reason":"Contradicts want-c"}]}
+-- verdict.json --
+{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"It does"}]}

@@ -1,0 +1,86 @@
+{
+  "actor": "01M6PX58MF18J6C2YSHDYQ92EY",
+  "after": [
+    "01M6PX3KGYK6GBKD7ED246NS27"
+  ],
+  "at": "2026-11-05T22:28:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5b3ccbe9 with a scratch build (go build -trimpath) in a fresh scratch repo, RHIZA_* unset, hold workflow keeping runs unfinished: a normal (non-autonomous) plan run with a clean review round and accept auto (default): RHIZA_RUN=<run> rhiza run gate exited 0, said 'Gated the plan of normal run' and both served change sets went proposed then accepted; change show records rule autonomy, reason 'rhiza.autonomy.accept is auto, run <id>'. With git config rhiza.autonomy.accept owner the same gate exited 0, left the change set proposed with next rhiza accept --rule owner --change <id>. With accept auto and no review round at all, the gate exited 0 and left it proposed with the owner accept next. rhiza check passed after. Scoped testscripts owner-run-gate-accept, run-gate, autonomous-gate-rule, stage-autonomy pass."
+        },
+        "handle": "owner-run-gate-accepts-qa-1",
+        "id": "01M6PX8Q669Z2909TVHCWE5PND",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PX8Q669Z2909TVHB5K70XX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PX8Q669Z2909TVHB5K70XX",
+        "id": "01M6PX8Q7EW5ZTAC3QDF10MCS4",
+        "link": "01M6PX8Q7EW5ZTAC3QDDHV8QMQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PR133TKYZKSJRVSXNQ4Y9T",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5b3ccbe9 with a scratch build (go build -trimpath) in a fresh scratch repo, RHIZA_* unset, hold workflow keeping runs unfinished: rhiza accept --rule autonomy inside an unfinished normal run with rhiza.autonomy.accept owner was refused, exit 2, 'rhiza.autonomy.accept is owner, so only the owner accepts'; with accept auto but RHIZA_RUN unset refused, exit 2, 'only for a move made inside a run, and RHIZA_RUN is not set'; rule autonomous in the normal run still refused, exit 2, 'is not autonomous'; the gate's accept under accept auto recorded rule autonomy. autonomy-accept-rule testscript passes."
+        },
+        "handle": "autonomy-accept-rule-qa-1",
+        "id": "01M6PX8Q8P3G0M0GT56HMPYTX3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PX8Q8P3G0M0GT56EK34X2T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PX8Q8P3G0M0GT56EK34X2T",
+        "id": "01M6PX8Q9RD57X6HV6P711KXSR",
+        "link": "01M6PX8Q9RD57X6HV6P3JBW0Y6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PR135E00DF7NHH46BYZF87",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5b3ccbe9 with a scratch build (go build -trimpath) in a fresh scratch repo, RHIZA_* unset, hold workflow keeping runs unfinished: after a normal plan run's gate with accept owner left a change set proposed, rhiza inbox listed it as 'accept run <run>, change set <id> / waiting for acceptance / next: rhiza accept --rule owner --change <id>'; running that next accepted it (Rule: owner) and the item left the inbox. A normal run whose gate left a proposal for want of a review round (accept auto) also listed it. inbox-owner-run-accept testscript passes."
+        },
+        "handle": "inbox-lists-owner-run-proposals-qa-1",
+        "id": "01M6PX8QARTZHE111DYWTZJFBH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PX8QARTZHE111DYVG0RTGP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PX8QARTZHE111DYVG0RTGP",
+        "id": "01M6PX8QB8P6BDVQMQ86ADGGF5",
+        "link": "01M6PX8QB8P6BDVQMQ837VTTAZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PR136HA6VBMENME6VDFANQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PQTKN5N2T2S3MGCK00YZMQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PX8QC1CT7ZJ4AR43WJEPDH",
+  "type": "ops",
+  "v": 1
+}

@@ -77,8 +77,9 @@ var settingDefs = []settingDef{
 		return nil
 	}},
 	{key: "rhiza.autonomy.plan", def: AutonomyOwner, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
-	// accept governs only an autonomous plan's gate, which accepts unless
-	// it is owner; other change sets always wait for the owner.
+	// accept governs every plan run's gate, autonomous or owner-run, which
+	// accepts once the review passed unless it is owner; other change sets
+	// always wait for the owner.
 	{key: "rhiza.autonomy.accept", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	{key: "rhiza.autonomy.ship", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	{key: "rhiza.autonomy.signoff", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
