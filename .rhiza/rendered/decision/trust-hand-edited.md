@@ -19,6 +19,7 @@ Trust is set only by hand-editing the machine config: rhiza has no command or AP
 ### In
 
 - decided-by [machine-show](../capability/rhiza/runtime/machine-show.md)
+- decided-by [machine-trust-unwritten](../capability/rhiza/runtime/machine-trust-unwritten.md)
 
 ## History
 
