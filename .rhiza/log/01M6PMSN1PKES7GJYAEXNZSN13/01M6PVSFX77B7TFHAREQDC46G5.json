@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PV3PCM533NA5GNQV0QTCYT",
+  "after": [
+    "01M6PVNM657454R8NVVZYJDGB6"
+  ],
+  "at": "2026-11-05T22:03:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at eeb31b73 (attempt 2). go test -trimpath -count=1 -v ./internal/tui/inboxapp/: all 34 tests pass, including TestBlockerShowsEveryWordWrapped (300+ char blocker, every word present once opened at width 70, no line wider than 70, 'Blocks: Web UI'), TestGateRowShowsQuestionsAndWhatTheyBlock (row shows the first question's restatement; opened view shows each question with 'Blocks: Pick storage' and 'Blocks: Scale out'), TestScrubKeepsWordsAndDropsOnlyWholeIDs (blocker on handle 'store' keeps 'hold the store when' in the question and 'Blocks: Kept store reachable'), TestNoSurfaceShowsAnIDOrHandle (every kind's row, form, detail, send-back and resolve form shows no handle, ULID or short ID), TestOverlapRowNamesBothChangeSetsAndTarget. go test ./internal/api -run 'Inbox|Overlap' ok; go test ./cmd/rhiza -run 'TestScripts/(describe-golden|inbox.*)$' ok. Read the diff: scrub now replaces only whole id-like tokens (digit, -, _ or .), overlap rows name the other change set and target statement, target_title added to InboxItem and the describe golden. A whole ./internal/api run hit the 600s go test timeout at load average ~10 (machine contention); the inbox-scoped subset passes in 15s."
+        },
+        "handle": "inbox-app-question-rows-verified-2",
+        "id": "01M6PVSFSR02CBQMS79MTSNF77",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PVSFSR02CBQMS79KC3V38G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PVSFSR02CBQMS79KC3V38G",
+        "id": "01M6PVSFV8BRC08CY2JVFF7W2X",
+        "link": "01M6PVSFV8BRC08CY2JR2HHMM0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1T0KHDFWC5KNHJJHSQZT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PVSFX77B7TFHAREQDC46G5",
+  "type": "ops",
+  "v": 1
+}
