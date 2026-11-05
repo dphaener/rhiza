@@ -11,15 +11,22 @@ import (
 )
 
 // TestDaemonNudgeStalled checks one autonomous and one owner-attended run
-// under the same daemon: the autonomous run's stalled session gets one
+// under the same daemon: the autonomous run's session, idle at its prompt
+// without saying done, stalls and gets one
 // message per stall, keyed on its report time; the attended run's gets none;
 // the inbox's stalled list is untouched by the nudge.
 func TestDaemonNudgeStalled(t *testing.T) {
 	sessions := session.NewStore(t.TempDir())
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	report := func(id string, at time.Time) {
+		// The autonomous session ended its turn: its hook reports idle,
+		// which stalls it because its record is autonomous.
+		state := session.StateWorking
+		if id == "auto" {
+			state = session.StateIdle
+		}
 		rec := session.Record{ID: id, Autonomous: id == "auto"}
-		rec.Status.Hook = &session.Report{State: session.StateWorking, At: at}
+		rec.Status.Hook = &session.Report{State: state, At: at}
 		if err := sessions.Write(rec); err != nil {
 			t.Fatal(err)
 		}
