@@ -542,9 +542,10 @@ func daemonContinuesWaiting(ctx *Ctx, rs *run.Store, runs []run.Journal) int {
 	return n
 }
 
-// daemonRequestWaits reports whether a queued plan request could start now:
-// one with no run whose retry time has passed, as daemonPlanRequests picks
-// them. An unreadable queue reports false.
+// daemonRequestWaits reports whether a queued feature or bug plan request
+// could start now: one with no run whose retry time has passed, as
+// daemonPlanRequests picks them. A milestone request starts without a slot,
+// so it never counts. An unreadable queue reports false.
 func daemonRequestWaits(ctx *Ctx) bool {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
@@ -556,7 +557,7 @@ func daemonRequestWaits(ctx *Ctx) bool {
 	}
 	now := ctx.Now()
 	return slices.ContainsFunc(reqs, func(q daemon.Request) bool {
-		return q.Run == "" && !now.Before(q.RetryAt)
+		return q.Kind != daemon.KindMilestone && q.Run == "" && !now.Before(q.RetryAt)
 	})
 }
 
@@ -648,8 +649,9 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		autonomous = false
 	}
 	// A milestone request's plan run is the owner's own interactive start:
-	// it goes first, whether or not a run slot is free, and counts as a
-	// running run for the picks below.
+	// it goes first, whether or not a run slot is free, and keeps no ship
+	// slot; the later picks (continuations, queued starts, plan requests)
+	// count it as a running run.
 	var milestoned []string
 	if !paused && !low {
 		milestoned, err = daemonPlanRequests(ctx, rs, runs, 0, max, mode, daemon.KindMilestone)
@@ -692,7 +694,6 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		if max > 1 && daemonRequestWaits(ctx) {
 			kept++
 		}
-		kept += len(milestoned)
 		shipMax := max - kept
 		if shipMax < 0 {
 			shipMax = 0

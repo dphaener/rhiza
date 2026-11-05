@@ -2,7 +2,9 @@
 # 2, two ready change sets and a queued request, one poll starts one ship run
 # and the request's plan run, and status says why the other change set
 # waits. With no request waiting, both ship runs start. With --max-runs 1
-# the ship pick keeps the one slot, as before. Rex is faked and only logs.
+# the ship pick keeps the one slot, as before. A queued milestone request
+# keeps no slot: with --max-runs 2 both ship runs start beside its plan run.
+# Rex is faked and only logs.
 
 chmod 755 bin/rex
 env PATH=$WORK/bin:$PATH
@@ -64,6 +66,19 @@ stdout '"reason": "no-slot"'
 stdout 'waiting for a slot: kept for queued continuations or a plan request'
 exec rhiza daemon status
 stdout 'Two: .*\(waiting for a slot: kept for queued continuations or a plan request\)'
+
+# Only a milestone request waits (the feature request is planning): it keeps
+# no slot, so both ship runs start beside its plan run, and no change set
+# waits for a slot.
+exec rhiza request --kind milestone 'Backlog empty'
+exec rhiza daemon --permission-mode manual --once --max-runs 2
+stdout -count=2 '^Started a run of '
+stdout -count=1 '^Started the plan run of request '
+exec rhiza daemon status --json
+! stdout 'no-slot'
+exec rhiza daemon status
+! stdout 'waiting for a slot'
+exec rm $WORK/detach.log
 
 fold-ok
 
