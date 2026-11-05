@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PRPED2R721K7AM7SVDV69Q",
+  "after": [
+    "01M6PRACXFCFHPPXW55MP7KJ50"
+  ],
+  "at": "2026-11-05T21:10:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1ba53138 I read the diff from 623c4061 and ran go test -trimpath ./internal/api/ -run 'TestInboxNotice|Daemon|Inbox' -count=1 (ok), go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden -count=1 (ok), plus go vet and gofmt -l on internal/api (clean). TestInboxNoticeNamesNoHandleOrID in internal/api/daemon_notice_test.go is a table over inboxNotice with a case for each of the 14 inbox kinds in inbox.go, and it fails if any kind has no case. Each item carries IDs and handles in every field (ID, Run, Change, Other, Handle, Blocks, Target, Session, TabBlock, Next), and the test asserts that no notice contains any of them. The overlap case expects the other change set's title, with 'another change set' when there is no title. The question case expects the question text. The open cases expect the first question's restatement, falling back to its statement. In production, OtherTitle is filled in daemonNotify and in runInbox. The open item's Questions come from inboxGateQuestions in daemonNotify. Not covered by this leaf: daemonNotify and daemonHook still prefix the notice with the change ID when no journal has a title for it. That prefix is set outside inboxNotice and predates this change."
+        },
+        "handle": "inbox-notices-by-title-verified",
+        "id": "01M6PRRE2GRJNMN8WYNZ408E0G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PRRE2FEEC8J4R2DAJNFEAA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PRRE2FEEC8J4R2DAJNFEAA",
+        "id": "01M6PRRE31ZV6WQJQK2JY203GV",
+        "link": "01M6PRRE31ZV6WQJQK2F5FACVJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1T3JF18NJRVC33BQH6ZM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PRRE3JSM8B2FT5W4MS0E95",
+  "type": "ops",
+  "v": 1
+}
