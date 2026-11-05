@@ -145,8 +145,8 @@ func (m *Model) Picked() (Pick, bool) {
 	return *m.pick, true
 }
 
-// Note is the outcome of the last pick that was not an action: an error
-// from opening a tab, or empty.
+// Note is the outcome the shown detail carries: an error from opening a
+// tab, a gate's failed resume, or empty.
 func (m *Model) Note() string { return m.note }
 
 // Rows is the text of the rows as the list shows them.
@@ -245,6 +245,11 @@ func (m *Model) show(it api.InboxItem) tea.Cmd {
 			m.note = fmt.Sprintf("open failed: %v", err)
 		}
 	}
+	return m.panel(it)
+}
+
+// panel shows item it's detail with the current note, opening nothing.
+func (m *Model) panel(it api.InboxItem) tea.Cmd {
 	m.cur = ui.NewInfoPanel(theme.Dark(), colorprofile.TrueColor, title(it), func(int) []string {
 		return detail(it, m.note)
 	})
@@ -283,9 +288,11 @@ func (m *Model) openGate(it api.InboxItem, qs []string, msg string) tea.Cmd {
 	return f.Init()
 }
 
-// answerGate answers each open question through question.answer into the
-// run's change set, then queues the run's continuation with run.resume and
-// quits. A blank answer sends nothing and asks again.
+// answerGate answers each open question through question.answer --run,
+// which writes it in the run's worktree into the plan change set holding
+// the question, then queues the run's continuation with run.resume and
+// quits. A blank answer sends nothing and asks again. A failed resume
+// shows the item's detail with the failure, the answers kept.
 func (m *Model) answerGate(v ui.Values) tea.Cmd {
 	it, qs := *m.asked, m.gateQs
 	texts := make([]string, len(qs))
@@ -296,13 +303,13 @@ func (m *Model) answerGate(v ui.Values) tea.Cmd {
 		}
 	}
 	for i, q := range qs {
-		if _, err := m.run("question.answer", []string{q, it.Change, texts[i]}); err != nil {
+		if _, err := m.run("question.answer", []string{q, texts[i], "--run", it.Run}); err != nil {
 			return m.openGate(it, qs[i:], "answer failed: "+err.Error())
 		}
 	}
 	if _, err := m.run("run.resume", []string{it.Run}); err != nil {
 		m.note = "answered; resume failed: " + err.Error()
-		return m.show(it)
+		return m.panel(it)
 	}
 	return tea.Quit
 }

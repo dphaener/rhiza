@@ -162,8 +162,8 @@ func TestGateAnswersEachThenResumes(t *testing.T) {
 	}
 	want := []call{
 		{Name, nil},
-		{"question.answer", []string{"which-db", "C4", "sqlite"}},
-		{"question.answer", []string{"how-many", "C4", "three"}},
+		{"question.answer", []string{"which-db", "sqlite", "--run", "R4"}},
+		{"question.answer", []string{"how-many", "three", "--run", "R4"}},
 		{"run.resume", []string{"R4"}},
 	}
 	if len(calls) != len(want) {
@@ -173,6 +173,29 @@ func TestGateAnswersEachThenResumes(t *testing.T) {
 		if calls[i].op != want[i].op || !slices.Equal(calls[i].args, want[i].args) {
 			t.Fatalf("call %d = %+v, want %+v", i, calls[i], want[i])
 		}
+	}
+}
+
+func TestGateResumeFailureShowsNote(t *testing.T) {
+	var calls []call
+	gate := `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","detail":"open questions: which-db; answer each with a Decision, then rhiza run resume R4"}]}`
+	run := fake(gate, &calls)
+	m := NewModel(func(op string, args []string) ([]byte, error) {
+		if op == "run.resume" {
+			calls = append(calls, call{op, args})
+			return nil, errors.New("run is busy")
+		}
+		return run(op, args)
+	})
+	enter(m)
+	if isQuit(typeAndSubmit(m, "sqlite")) {
+		t.Fatal("quit though the resume failed")
+	}
+	if want := "answered; resume failed: run is busy"; m.Note() != want || !strings.Contains(m.View().Content, want) {
+		t.Fatalf("note %q, view:\n%s", m.Note(), m.View().Content)
+	}
+	if last := calls[len(calls)-1]; last.op != "run.resume" {
+		t.Fatalf("called %s after the failed resume: %+v", last.op, calls)
 	}
 }
 

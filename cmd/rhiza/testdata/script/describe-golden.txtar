@@ -6787,6 +6787,10 @@ cmp stdout describe.golden.json
             "description": "The question: an ID, a unique ID prefix of 4+ characters, or a live question's handle",
             "type": "string"
           },
+          "run": {
+            "description": "A plan run stopped at its gate on this question: the Decision goes into the run's worktree, in the plan change set that creates the question (the run's change set when none does), and the question need block nothing; --change is ignored",
+            "type": "string"
+          },
           "text": {
             "description": "The owner's words, kept verbatim as the Decision's quote; must not be blank",
             "type": "string"
