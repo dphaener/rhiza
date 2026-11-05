@@ -2724,6 +2724,10 @@ cmp stdout describe.golden.json
                   "description": "A blocker: what the question blocks, this change set or the handle of the node",
                   "type": "string"
                 },
+                "blocks_title": {
+                  "description": "A blocker: what the question blocks by name, the node's statement or the change set's title; absent when it has none",
+                  "type": "string"
+                },
                 "change": {
                   "description": "The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)",
                   "type": "string"
@@ -2759,6 +2763,40 @@ cmp stdout describe.golden.json
                 "question": {
                   "description": "A question: what the agent asked; a blocker: the question's statement",
                   "type": "string"
+                },
+                "questions": {
+                  "description": "An open item at a plan run's gate: each open question it stopped on, in the order it names them; absent when the run has no worktree to read them from",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "blocks": {
+                        "description": "What it blocks by name: the node's statement or the change set's title; absent when it blocks nothing",
+                        "type": "string"
+                      },
+                      "handle": {
+                        "description": "The question's handle, for the commands that take it",
+                        "type": "string"
+                      },
+                      "reasons": {
+                        "description": "Why the advisor recommends it",
+                        "type": "string"
+                      },
+                      "recommendation": {
+                        "description": "What the advisor recommends answering; absent until it has written one",
+                        "type": "string"
+                      },
+                      "statement": {
+                        "description": "The question's full statement",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "handle",
+                      "statement"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
                 },
                 "reasons": {
                   "description": "A question: why the advisor recommends it",

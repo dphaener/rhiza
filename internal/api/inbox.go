@@ -24,6 +24,7 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
 	gmodel "github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/workflow"
@@ -89,26 +90,37 @@ type InboxRequest struct{}
 
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
-	ID             string `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale, accept or interview"`
-	At             string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
-	Run            string `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
-	Change         string `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
-	ChangeTitle    string `json:"change_title,omitempty" desc:"The change set's title; absent when the log has no such change set"`
-	Step           string `json:"step,omitempty" desc:"The step: the asking session's, the sign-off's, the failed step, or where the run was interrupted"`
-	Question       string `json:"question,omitempty" desc:"A question: what the agent asked; a blocker: the question's statement"`
-	Tab            string `json:"tab,omitempty" desc:"A question or an interview: the title of the session's tab"`
-	TabBlock       string `json:"tab_block,omitempty" desc:"A question or an interview: the Rex block of the session's tab"`
-	TabSession     string `json:"tab_session,omitempty" desc:"A question or an interview: the Rex session of the session's tab"`
-	Session        string `json:"session,omitempty" desc:"A question: the asking session; an interview: the interview's session; a stalled item: the stalled session"`
-	Recommendation string `json:"recommendation,omitempty" desc:"A question: what the advisor recommends answering; absent while it has not, or when it failed"`
-	Reasons        string `json:"reasons,omitempty" desc:"A question: why the advisor recommends it"`
-	Handle         string `json:"handle,omitempty" desc:"A blocker: the question's handle"`
-	Blocks         string `json:"blocks,omitempty" desc:"A blocker: what the question blocks, this change set or the handle of the node"`
-	Other          string `json:"other,omitempty" desc:"An overlap: the second change set (B)"`
-	Target         string `json:"target,omitempty" desc:"An overlap: the node or link both change sets write, its handle when it has one"`
-	Detail         string `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for"`
-	Next           string `json:"next,omitempty" desc:"The command that clears it, when one does"`
+	ID             string              `json:"id" desc:"The item's short ID: stable while the item waits"`
+	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale, accept or interview"`
+	At             string              `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
+	Run            string              `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
+	Change         string              `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
+	ChangeTitle    string              `json:"change_title,omitempty" desc:"The change set's title; absent when the log has no such change set"`
+	Step           string              `json:"step,omitempty" desc:"The step: the asking session's, the sign-off's, the failed step, or where the run was interrupted"`
+	Question       string              `json:"question,omitempty" desc:"A question: what the agent asked; a blocker: the question's statement"`
+	Tab            string              `json:"tab,omitempty" desc:"A question or an interview: the title of the session's tab"`
+	TabBlock       string              `json:"tab_block,omitempty" desc:"A question or an interview: the Rex block of the session's tab"`
+	TabSession     string              `json:"tab_session,omitempty" desc:"A question or an interview: the Rex session of the session's tab"`
+	Session        string              `json:"session,omitempty" desc:"A question: the asking session; an interview: the interview's session; a stalled item: the stalled session"`
+	Recommendation string              `json:"recommendation,omitempty" desc:"A question: what the advisor recommends answering; absent while it has not, or when it failed"`
+	Reasons        string              `json:"reasons,omitempty" desc:"A question: why the advisor recommends it"`
+	Handle         string              `json:"handle,omitempty" desc:"A blocker: the question's handle"`
+	Blocks         string              `json:"blocks,omitempty" desc:"A blocker: what the question blocks, this change set or the handle of the node"`
+	BlocksTitle    string              `json:"blocks_title,omitempty" desc:"A blocker: what the question blocks by name, the node's statement or the change set's title; absent when it has none"`
+	Questions      []InboxGateQuestion `json:"questions,omitempty" desc:"An open item at a plan run's gate: each open question it stopped on, in the order it names them; absent when the run has no worktree to read them from"`
+	Other          string              `json:"other,omitempty" desc:"An overlap: the second change set (B)"`
+	Target         string              `json:"target,omitempty" desc:"An overlap: the node or link both change sets write, its handle when it has one"`
+	Detail         string              `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for"`
+	Next           string              `json:"next,omitempty" desc:"The command that clears it, when one does"`
+}
+
+// InboxGateQuestion is one open question a plan run's gate stopped on.
+type InboxGateQuestion struct {
+	Handle         string `json:"handle" desc:"The question's handle, for the commands that take it"`
+	Statement      string `json:"statement" desc:"The question's full statement"`
+	Blocks         string `json:"blocks,omitempty" desc:"What it blocks by name: the node's statement or the change set's title; absent when it blocks nothing"`
+	Recommendation string `json:"recommendation,omitempty" desc:"What the advisor recommends answering; absent until it has written one"`
+	Reasons        string `json:"reasons,omitempty" desc:"Why the advisor recommends it"`
 }
 
 // InboxResponse is the inbox.
@@ -129,7 +141,11 @@ func (r InboxResponse) Human(w io.Writer) {
 				fmt.Fprintf(w, "  change set: %s\n", it.ChangeTitle)
 			}
 			fmt.Fprintf(w, "  question: %s (%s)\n", it.Question, it.Handle)
-			fmt.Fprintf(w, "  blocks: %s\n", it.Blocks)
+			if it.BlocksTitle != "" {
+				fmt.Fprintf(w, "  blocks: %s (%s)\n", it.BlocksTitle, it.Blocks)
+			} else {
+				fmt.Fprintf(w, "  blocks: %s\n", it.Blocks)
+			}
 			if it.Next != "" {
 				fmt.Fprintf(w, "  next: %s\n", it.Next)
 			}
@@ -170,6 +186,19 @@ func (r InboxResponse) Human(w io.Writer) {
 				fmt.Fprintf(w, "  tab: %s\n", it.Tab)
 			}
 			fmt.Fprintf(w, "  %s\n", it.Detail)
+		case InboxOpen:
+			first, _, _ := strings.Cut(it.Detail, "\n")
+			fmt.Fprintf(w, "  %s\n", first)
+			for _, q := range it.Questions {
+				fmt.Fprintf(w, "  question: %s (%s)\n", q.Statement, q.Handle)
+				if q.Blocks != "" {
+					fmt.Fprintf(w, "    blocks: %s\n", q.Blocks)
+				}
+				if q.Recommendation != "" {
+					fmt.Fprintf(w, "    recommendation: %s\n", q.Recommendation)
+					fmt.Fprintf(w, "    reasons: %s\n", q.Reasons)
+				}
+			}
 		case InboxQuestion:
 			if it.Tab != "" {
 				fmt.Fprintf(w, "  tab: %s\n", it.Tab)
@@ -574,8 +603,18 @@ func runInbox(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	items = sortInboxItems(append(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...))
+	byRun := map[string]run.State{}
+	for _, j := range runs {
+		byRun[j.ID] = j.State()
+	}
 	for i := range items {
 		items[i].ChangeTitle = fold.titleOf(items[i].Change)
+		switch {
+		case items[i].Kind == InboxBlocker && items[i].Blocks == "this change set":
+			items[i].BlocksTitle = items[i].ChangeTitle
+		case items[i].Kind == InboxOpen:
+			items[i].Questions = inboxGateQuestions(ctx, byRun[items[i].Run])
+		}
 	}
 	return InboxResponse{Items: items}, nil
 }
@@ -613,6 +652,9 @@ func inboxBlockers(ctx *Ctx) ([]InboxItem, error) {
 		}
 		for _, b := range p.blockers {
 			qs = append(qs, b.question)
+			if _, ok := in.nodes[b.target]; ok {
+				qs = append(qs, b.target)
+			}
 		}
 	}
 	statements := map[id.ID]string{}
@@ -639,9 +681,10 @@ func inboxBlockers(ctx *Ctx) ([]InboxItem, error) {
 			}
 			seen[b.question] = true
 			handle := planHandle(b.question, in.nodes)
-			blocks := "this change set"
+			blocks, blocksTitle := "this change set", ""
 			if b.target != p.info.ID {
 				blocks = planHandle(b.target, in.nodes)
+				blocksTitle = statements[b.target]
 			}
 			text := statements[b.question]
 			if text == "" {
@@ -651,7 +694,7 @@ func inboxBlockers(ctx *Ctx) ([]InboxItem, error) {
 			sum := sha256.Sum256([]byte(strings.Join([]string{InboxBlocker, b.question.String(), p.info.ID.String()}, "\x00")))
 			items = append(items, InboxItem{
 				ID: hex.EncodeToString(sum[:])[:7], Kind: InboxBlocker, At: at, Change: p.info.ID.String(),
-				Question: text, Handle: handle, Blocks: blocks, Next: "rhiza show " + handle,
+				Question: text, Handle: handle, Blocks: blocks, BlocksTitle: blocksTitle, Next: "rhiza show " + handle,
 			})
 		}
 	}
@@ -955,4 +998,71 @@ func runInboxRequestChanges(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	return runRunRequestChanges(ctx, RunRequestChangesRequest{File: r.File, Run: id, Foreground: r.Foreground})
+}
+
+// inboxGateQuestions are the open questions a plan run stopped on at its
+// gate (run.OpenStop), read from the run's worktree as answering one
+// reads them (gateAnswerCtx): each question's full statement and what it
+// blocks by name, with the advisor's recommendation once it has
+// recommended on the question by handle or ID. It is nil when the run is
+// not stopped at its gate, has no worktree, or the worktree does not read.
+func inboxGateQuestions(ctx *Ctx, st run.State) []InboxGateQuestion {
+	handles := gateStopQuestions(st.Stopped)
+	if len(handles) == 0 || st.Worktree == "" {
+		return nil
+	}
+	c := *ctx
+	c.Root, c.IndexPath = st.Worktree, ""
+	w, err := openCtxWorkspace(&c)
+	if err != nil {
+		return nil
+	}
+	own, err := id.Parse(st.Change)
+	if err != nil {
+		return nil
+	}
+	sets := w.changeSets()
+	plan, err := planChangeSets(sets, w.model(own), own)
+	if err != nil {
+		return nil
+	}
+	text := func(m Model, n id.ID) string {
+		if x, ok := m.Node(n); ok {
+			var s string
+			_ = json.Unmarshal(x.Fields["statement"], &s)
+			return s
+		}
+		for _, cs := range sets {
+			if cs.ID == n {
+				return cs.Open.DisplayTitle()
+			}
+		}
+		return ""
+	}
+	out := make([]InboxGateQuestion, 0, len(handles))
+	for _, h := range handles {
+		q := InboxGateQuestion{Handle: h}
+		asker := h
+		for _, cs := range plan {
+			m := w.model(cs.ID)
+			n, err := m.Resolve(h)
+			if err != nil || n.Kind != op.KindQuestion {
+				continue
+			}
+			_ = json.Unmarshal(n.Fields["statement"], &q.Statement)
+			asker = n.ID.String()
+			if ls := m.LinksFrom(n.ID, op.LinkBlocks); len(ls) > 0 {
+				q.Blocks = text(m, ls[0].To)
+			}
+			break
+		}
+		for i := len(st.Advice) - 1; i >= 0; i-- {
+			if a := st.Advice[i]; (a.Asker == h || a.Asker == asker) && a.Recommendation != "" {
+				q.Recommendation, q.Reasons = a.Recommendation, a.Reasons
+				break
+			}
+		}
+		out = append(out, q)
+	}
+	return out
 }

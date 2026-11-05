@@ -52,7 +52,7 @@ stdout 'question run QUESTIONRUN, change set '
 stdout 'question: Which store\?'
 stdout 'blocker change set '
 stdout 'question: Which-store \(store-q\)'
-stdout 'blocks: store'
+stdout 'blocks: Kept \(store\)'
 ! stdout 'Which-cache'
 ! stdout 'Which-old'
 exec rhiza inbox --json
