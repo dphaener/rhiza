@@ -401,6 +401,7 @@
       - [run-continue-through-daemon](capability/rhiza/orchestration/daemon/run-continue-through-daemon.md)
       - [run-log](capability/rhiza/orchestration/daemon/run-log.md)
       - [daemon-idle-poll-no-fold](capability/rhiza/orchestration/daemon/daemon-idle-poll-no-fold.md)
+      - [rhiza-on-vm](capability/rhiza/orchestration/daemon/rhiza-on-vm.md)
       - [daemon-poll-cache-invalidates](capability/rhiza/orchestration/daemon/daemon-poll-cache-invalidates.md)
       - [daemon-resumes-landed-past-land](capability/rhiza/orchestration/daemon/daemon-resumes-landed-past-land.md)
       - [daemon-service-env](capability/rhiza/orchestration/daemon/daemon-service-env.md)
@@ -640,6 +641,8 @@
 - [answer-reuses-blocker-rule](decision/answer-reuses-blocker-rule.md)
 - [answer-review-01m6fdsp-r3-f1](decision/answer-review-01m6fdsp-r3-f1.md)
 - [answer-sent-as-caller](decision/answer-sent-as-caller.md)
+- [answer-vm-move-who](decision/answer-vm-move-who.md)
+- [answer-vm-runbook-commit](decision/answer-vm-runbook-commit.md)
 - [app-plan-interactive-ship-autonomous](decision/app-plan-interactive-ship-autonomous.md)
 - [app-runs-open-rex-tabs](decision/app-runs-open-rex-tabs.md)
 - [append-only-log](decision/append-only-log.md)
@@ -963,6 +966,7 @@
 - [re-review-failures-only](decision/re-review-failures-only.md)
 - [ready-pure-function](decision/ready-pure-function.md)
 - [rebase-conflict-a-milestone-request-resolved](decision/rebase-conflict-a-milestone-request-resolved.md)
+- [rebase-conflict-move-this-repo-s-rhiza-resolved](decision/rebase-conflict-move-this-repo-s-rhiza-resolved.md)
 - [rebase-conflict-text-references-resolved](decision/rebase-conflict-text-references-resolved.md)
 - [reconcile-on-trigger](decision/reconcile-on-trigger.md)
 - [references-by-id](decision/references-by-id.md)
@@ -1030,6 +1034,7 @@
 - [rex-notice-by-program-status](decision/rex-notice-by-program-status.md)
 - [rex-picker-removed](decision/rex-picker-removed.md)
 - [rex-required](decision/rex-required.md)
+- [rhiza-on-vm-wait-for-mac-checks](decision/rhiza-on-vm-wait-for-mac-checks.md)
 - [roadmap-paged-drop-deleted-app-readers](decision/roadmap-paged-drop-deleted-app-readers.md)
 - [root-intents-and-constraints](decision/root-intents-and-constraints.md)
 - [run-drivers-rebase-resolution](decision/run-drivers-rebase-resolution.md)
@@ -1294,6 +1299,8 @@
 - [usage-limit-wait-from-message](decision/usage-limit-wait-from-message.md)
 - [user-level-plugin](decision/user-level-plugin.md)
 - [verifier-writes-evidence](decision/verifier-writes-evidence.md)
+- [vm-move-mac-no-daemon](decision/vm-move-mac-no-daemon.md)
+- [vm-move-notify-chime-and-marker](decision/vm-move-notify-chime-and-marker.md)
 - [wait-settles-conflict-rule](decision/wait-settles-conflict-rule.md)
 - [whatif-folds-inflight-over-asis](decision/whatif-folds-inflight-over-asis.md)
 - [whatif-overlay-reader](decision/whatif-overlay-reader.md)
@@ -1329,6 +1336,8 @@
 - [leaf-failed-01m60atz-2](question/leaf-failed-01m60atz-2.md)
 - [leaf-failed-01m60atz-3](question/leaf-failed-01m60atz-3.md)
 - [leaf-failed-01m60atz-4](question/leaf-failed-01m60atz-4.md)
+- [leaf-failed-01m6h8hy-1](question/leaf-failed-01m6h8hy-1.md)
+- [leaf-failed-01m6h8hy-2](question/leaf-failed-01m6h8hy-2.md)
 - [leaf-failed-01m6njpm-1](question/leaf-failed-01m6njpm-1.md)
 - [leaf-failed-01m6njpm-2](question/leaf-failed-01m6njpm-2.md)
 - [message-recipient-session](question/message-recipient-session.md)
@@ -1389,6 +1398,7 @@
 - [rebase-conflict-health-app](question/rebase-conflict-health-app.md)
 - [rebase-conflict-inbox-clears-stale-failures](question/rebase-conflict-inbox-clears-stale-failures.md)
 - [rebase-conflict-live-daemon-settings](question/rebase-conflict-live-daemon-settings.md)
+- [rebase-conflict-move-this-repo-s-rhiza](question/rebase-conflict-move-this-repo-s-rhiza.md)
 - [rebase-conflict-run-drivers-run-headless-as](question/rebase-conflict-run-drivers-run-headless-as.md)
 - [rebase-conflict-text-references](question/rebase-conflict-text-references.md)
 - [rebase-conflict-tui-model-view](question/rebase-conflict-tui-model-view.md)
@@ -1428,6 +1438,9 @@
 - [step-amend-meaning](question/step-amend-meaning.md)
 - [token-gap-read-at-print](question/token-gap-read-at-print.md)
 - [usage-limit-detect-and-wait](question/usage-limit-detect-and-wait.md)
+- [vm-move-mac-checks](question/vm-move-mac-checks.md)
+- [vm-move-who](question/vm-move-who.md)
+- [vm-runbook-commit](question/vm-runbook-commit.md)
 
 ## Evidence
 
@@ -2066,6 +2079,7 @@
 - [pr-301-delete-the-old-rex-apps](evidence/pr-301-delete-the-old-rex-apps.md)
 - [pr-303-the-daemon-keeps-the-go-build](evidence/pr-303-the-daemon-keeps-the-go-build.md)
 - [pr-304-fix-run-drivers-burn-cpu-while](evidence/pr-304-fix-run-drivers-burn-cpu-while.md)
+- [pr-307-move-this-repo-s-rhiza](evidence/pr-307-move-this-repo-s-rhiza.md)
 - [pr-35-reopening-a-change-set](evidence/pr-35-reopening-a-change-set.md)
 - [pr-36-leaf-dependencies-and](evidence/pr-36-leaf-dependencies-and.md)
 - [pr-38-session-messages-and-token-use](evidence/pr-38-session-messages-and-token-use.md)
@@ -2198,6 +2212,8 @@
 - [rex-launch-key-setting-verified](evidence/rex-launch-key-setting-verified.md)
 - [rex-launch-key-setting-verified-2](evidence/rex-launch-key-setting-verified-2.md)
 - [rex-tab-launch-test](evidence/rex-tab-launch-test.md)
+- [rhiza-on-vm-qa-1](evidence/rhiza-on-vm-qa-1.md)
+- [rhiza-on-vm-verified](evidence/rhiza-on-vm-verified.md)
 - [roadmap-app-accept-answer-qa-1](evidence/roadmap-app-accept-answer-qa-1.md)
 - [roadmap-app-accept-answer-verified](evidence/roadmap-app-accept-answer-verified.md)
 - [roadmap-app-accept-answer-verified-2](evidence/roadmap-app-accept-answer-verified-2.md)
@@ -5063,6 +5079,12 @@
 - [claude-code-task-11](actor/claude-code-task-11.md)
 - [darin-haener](actor/darin-haener.md)
 - [dphaener](actor/dphaener.md)
+
+## Notes
+
+- [note-01m6h8ya0f8vwn](note/note-01m6h8ya0f8vwn.md)
+- [note-01m6h9zyb93sb7](note/note-01m6h9zyb93sb7.md)
+- [note-01m6ha3hvkw24y](note/note-01m6ha3hvkw24y.md)
 
 ## Retired
 
