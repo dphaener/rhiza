@@ -1,0 +1,54 @@
+{
+  "actor": "01M6MYPQJCR2ZX6VP01K6W37JB",
+  "after": [
+    "01M6MYGY1P22CW13MZPGY8S846"
+  ],
+  "at": "2026-11-05T04:16:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake rex sets rhiza.autonomy.plan=auto and queues a milestone request and a feature request: the daemon's plan run start of the milestone request has --milestone and no --autonomous, its journal's started entry is not autonomous, and the feature request's run start carries --autonomous",
+          "statement": "The daemon starts the plan run of a milestone request without --autonomous even when rhiza.autonomy.plan is auto, so it waits on the owner's interview; feature and bug requests keep following rhiza.autonomy.plan"
+        },
+        "handle": "milestone-request-owner-plan",
+        "id": "01M6MYG5CW1WV56MB9989MTZVF",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6MYG5CW1WV56MB997XMDE93",
+        "op": "node.create",
+        "parent": "01M6D4SYDB1P7NX7DGKT0D19HM"
+      },
+      {
+        "base": "01M6GDT9VK53AY69FGK8KV8PR3",
+        "handle": null,
+        "id": "01M6MYRKAME8Z5V2SWHAATNE5Z",
+        "node": "01M6D4SYDB1P7NX7DGKT0D19HM",
+        "op": "node.update",
+        "set": {
+          "acceptance": "plan-requests.txtar with a fake rex: request queues an item shown queued by request ls; daemon --once starts run start --workflow plan --new with the request's text (a bug's prefixed \"Fix \", so its title names the bug, a milestone's with --milestone), --autonomous only with plan auto and never for a milestone request, and request ls then shows planning with the run; when the run's journal names the planned change set, request ls shows planned with it; paused starts nothing; the roadmap app's n and m keys then reach a working request command; describe-golden.txtar is regenerated",
+          "statement": "rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the clone's .git/rhiza/requests.json, rhiza request ls shows each request's state, and the daemon, when not paused and a slot is free, starts a plan run for the oldest queued request, autonomous when rhiza.autonomy.plan is auto unless the request is of kind milestone (a milestone's plan run always waits on the owner), marking the request with its run and later the change set it planned"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6GDT2C7CCT830D82QSFWSAN",
+        "handle": null,
+        "id": "01M6MYRP4M83JK23K84GRC5H96",
+        "node": "01M6CS230463DT24PWBJCPWD9Q",
+        "op": "node.update",
+        "set": {
+          "acceptance": "plan-requests.txtar with a fake rex: request queues an item shown queued by request ls; daemon --once starts run start --workflow plan --new with the request's text (a bug's prefixed \"Fix \", so its title names the bug, a milestone's with --milestone), --autonomous only with plan auto and never for a milestone request, and request ls then shows planning with the run; when the run's journal names the planned change set, request ls shows planned with it; paused starts nothing; describe-golden.txtar is regenerated",
+          "statement": "rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the clone, rhiza request ls shows each request's state, and the daemon, when not paused and a slot is free, starts a plan run for the oldest queued request, autonomous when plan autonomy is auto unless the request is of kind milestone, marking the request with its run and later the change set it planned"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6MY8BMPFK9ZWD3TDQHKT64J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MYRV5R679A5BA6T7PKQA99",
+  "type": "ops",
+  "v": 1
+}
