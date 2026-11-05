@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PVF7A9SVH04ACD45KQJS5R",
+  "after": [
+    "01M6PVZVDY7PWRXJ8AE3X69J4T"
+  ],
+  "at": "2026-11-05T22:10:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-bba5fe8b at fb81edc3: read the diff (internal/api/inbox.go drops the st.Autonomous condition so any plan run's Gated change sets still proposed list as accept items, unless a newer run retried the change set) and the new cmd/rhiza/testdata/script/inbox-owner-run-accept.txtar, which sets rhiza.autonomy.accept owner, gates a non-autonomous plan run (asserts \"autonomous\": false), shows rhiza inbox --json listing kind accept with detail 'waiting for acceptance' and next 'rhiza accept --rule owner --change <id>', then after rhiza accept --rule owner shows no accept item, and passes fold-ok. Ran go test -trimpath ./cmd/rhiza -count=1 -run TestScripts/(inbox-.*|owner-run-gate-accept|plan-workflow-autonomous.*|run-gate|autonomous-gate-rule|tui-inbox-app|autonomy-accept-rule|stage-autonomy): ok. stage-autonomy still lists the autonomous plan's accept items under accept owner. go test -trimpath ./internal/api -run Inbox: ok. (The whole internal/api package hit go test's 10m timeout once while the machine ran several other suites at the same time; the inbox tests pass when run on their own.)"
+        },
+        "handle": "inbox-lists-owner-run-proposals-verified",
+        "id": "01M6PW6JTRJG651GZ0NPG2AFHJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PW6JTRJG651GZ0NP549ZW7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PW6JTRJG651GZ0NP549ZW7",
+        "id": "01M6PW6JVTYM7RMHY4D52WDX78",
+        "link": "01M6PW6JVTYM7RMHY4D27VVHC2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PR136HA6VBMENME6VDFANQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PQTKN5N2T2S3MGCK00YZMQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PW6JWGWWK7SQDB058HXTDF",
+  "type": "ops",
+  "v": 1
+}
