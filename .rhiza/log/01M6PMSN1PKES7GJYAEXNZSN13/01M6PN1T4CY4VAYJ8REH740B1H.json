@@ -1,0 +1,217 @@
+{
+  "actor": "01M6PMSZR4V7YT92QGA1ADVHVV",
+  "after": [
+    "01M6PN0TEP0MKDRGWWS66N621P"
+  ],
+  "at": "2026-11-05T20:05:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "The full text would have been more helpful than the internal handle. No need to ever show the internal handle, it's nonsense to a user.",
+          "statement": "No owner-facing surface shows a node's internal handle or ID: show the question's full text and refer to things by their titles"
+        },
+        "handle": "owner-surfaces-full-text",
+        "id": "01M6PN1SV5R599HFBNJ3CWGNW3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6PN1SV5R599HFBNJ0N4C1BJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PN1SV5R599HFBNJ0N4C1BJ",
+        "id": "01M6PN1SVHERV2GRKY78R5D9DM",
+        "link": "01M6PN1SVHERV2GRKY786KCFG8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN0RAQYP12ANPT84MWSMVN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6PN015M9RH75DV0K2A125CF",
+        "id": "01M6PN1SVZFC5YPWBJQ197WKT0",
+        "link": "01M6PN1SVZFC5YPWBJPXYZVPBF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN0RAQYP12ANPT84MWSMVN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "No owner-facing surface (the Rex apps, notifications, the web UI) shows a node's handle, a node, run, change set or inbox item ID, or a finding ID: it shows a question's full text and names change sets and runs by title and nodes by statement. The CLI's human text and --json keep handles and IDs, as commands take them."
+        },
+        "handle": "owner-surfaces-no-ids",
+        "id": "01M6PN1SW9KPRJPV70E468AJKH",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M6PN1SW9KPRJPV70E0G68AP7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PN1SW9KPRJPV70E0G68AP7",
+        "id": "01M6PN1SWRSHEG9TV7KA6DGD01",
+        "link": "01M6PN1SWRSHEG9TV7K83406W3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "type": "constrains"
+      },
+      {
+        "decision": null,
+        "from": "01M6PN1SW9KPRJPV70E0G68AP7",
+        "id": "01M6PN1SX4CEG2RYTWW378VESP",
+        "link": "01M6PN1SX4CEG2RYTWW00DZDT1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN0RAQYP12ANPT84MWSMVN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A new testscript inbox-gate-questions (plus the existing inbox scripts and describe-golden, regenerated) on a plan run stopped at its gate with two open questions and a blocker: rhiza inbox --json lists each gate question with its handle, full statement and blocks title, and the blocker with the title of what it blocks; rhiza inbox prints each full statement and, after a recorded recommendation, the restatement and recommendation.",
+          "statement": "The inbox gives every owner question its full text: a gate (open) item lists each open question it stopped on with its full statement, the advisor's plain restatement and recommendation once written, and what it blocks by statement or change set title; a blocker item names what it blocks the same way; --json keeps each question's handle for the commands, and rhiza inbox's text prints each question's full statement and recommendation, not its handle alone."
+        },
+        "handle": "inbox-question-text",
+        "id": "01M6PN1SXMJV5FCGDM61MSD17C",
+        "key": "zzzzzzw",
+        "kind": "capability",
+        "node": "01M6PN1SXMJV5FCGDM5YXJ7RQX",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PN1SXMJV5FCGDM5YXJ7RQX",
+        "id": "01M6PN1SY6NV48VBSMSD0FWATW",
+        "link": "01M6PN1SY6NV48VBSMSB3HY7EX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1SV5R599HFBNJ0N4C1BJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6PN1SXMJV5FCGDM5YXJ7RQX",
+        "id": "01M6PN1SYJ9RYZ5K8V02J1EVP0",
+        "link": "01M6PN1SYJ9RYZ5K8TZYRGPER0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN015M9RH75DV0K2A125CF",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/run with a fake runner: leaving a plan-review, leaf-failed or cycle-cap question starts one advisor on that question and an advisor entry is journalled; a testscript (fake claude) run recommend on such a question records the restatement, recommendation and reasons, and rhiza inbox --json then shows them on the question's item; describe-golden regenerated for run.recommend.",
+          "statement": "When a run leaves a question for the owner from a Go template (a plan-review finding carried to the gate, a failed leaf, a review cycle cap), it starts the advisor on that question node as it does for a session's blocking question; the advisor records through rhiza run recommend a plain-language restatement of what is asked (no handles, IDs or finding IDs) with its recommendation and reasons, journalled against the question, while the template text stays the node's statement as the engineering record."
+        },
+        "handle": "owner-question-advisor",
+        "id": "01M6PN1SZC653J5D55661N80NT",
+        "key": "zzzzzzy",
+        "kind": "capability",
+        "node": "01M6PN1SZC653J5D55644NRYXE",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PN1SZC653J5D55644NRYXE",
+        "id": "01M6PN1T006CG9NTER3G9WW9FA",
+        "link": "01M6PN1T006CG9NTER3F8XS4NB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN015M9RH75DV0K2A125CF",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/tui/inboxapp with a fake runner: a blocker with a 300-character statement renders every word across wrapped lines at the modal's width; a gate row shows its questions' text and what each blocks; a test renders every item kind's row, form and detail panel and asserts no handle, ULID or short ID from the items appears.",
+          "statement": "In the Inbox app a question, blocker or gate row shows the question's restatement (else its full statement) wrapped over as many lines as it needs, its change set title and what it blocks by title, and no row, form or detail panel shows a handle or an ID (item, run, change set or node)."
+        },
+        "handle": "inbox-app-question-rows",
+        "id": "01M6PN1T0KHDFWC5KNHP9QBJEW",
+        "key": "zzzzzzz",
+        "kind": "capability",
+        "node": "01M6PN1T0KHDFWC5KNHJJHSQZT",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PN1T0KHDFWC5KNHJJHSQZT",
+        "id": "01M6PN1T160RXNQ50DGE0SFP11",
+        "link": "01M6PN1T160RXNQ50DGDA32VEE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1SV5R599HFBNJ0N4C1BJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/tui/inboxapp with a fake runner: a question's answer form shows its full statement and recommendation above the TextArea; a gate form with two questions shows each one's statement above its own TextArea with no handle in the view, and submitting calls question.answer with each question's handle and its typed text.",
+          "statement": "The Inbox app's answer form, and its gate form for each open question, shows the full question wrapped above its text box (the advisor's restatement and recommendation once written, else the statement), never a handle as the label, while the answer still goes to the right question."
+        },
+        "handle": "inbox-app-answer-shows-question",
+        "id": "01M6PN1T22SZY3QGXYDB5XD7PK",
+        "key": "zzzzzzzi",
+        "kind": "capability",
+        "node": "01M6PN1T22SZY3QGXYD783Z3JE",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PN1T22SZY3QGXYD783Z3JE",
+        "id": "01M6PN1T2J0JF3YP9NN0W59AEC",
+        "link": "01M6PN1T2J0JF3YP9NN05YVQ6J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1SV5R599HFBNJ0N4C1BJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6PN1T22SZY3QGXYD783Z3JE",
+        "id": "01M6PN1T3026493VK1J7GRHK8K",
+        "link": "01M6PN1T3026493VK1J76G07ZQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN015M9RH75DV0K2A125CF",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A table test in internal/api over inboxNotice, one case per inbox kind with items carrying IDs and handles: no notice contains any of them, the overlap notice holds the other change set's title, and the question and open notices hold the question's text.",
+          "statement": "The daemon's inbox notifications name change sets by title and questions by their restatement or full statement, never by handle or ID: an overlap names the other change set's title, and a gate stopped on open questions names the first question's text."
+        },
+        "handle": "inbox-notices-by-title",
+        "id": "01M6PN1T3JF18NJRVC33YPEZ7R",
+        "key": "zzzzzzzr",
+        "kind": "capability",
+        "node": "01M6PN1T3JF18NJRVC33BQH6ZM",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PN1T3JF18NJRVC33BQH6ZM",
+        "id": "01M6PN1T3Z9WA1PB91D3CW9MNF",
+        "link": "01M6PN1T3Z9WA1PB91D10KNRGS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1SV5R599HFBNJ0N4C1BJ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PN1T4CY4VAYJ8REH740B1H",
+  "type": "ops",
+  "v": 1
+}

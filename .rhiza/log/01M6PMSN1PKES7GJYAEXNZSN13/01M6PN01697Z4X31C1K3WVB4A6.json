@@ -1,0 +1,41 @@
+{
+  "actor": "01M6PMYYFEG4W1WM7FR2ZSDEEG",
+  "after": [
+    "01M6PMYSB0G1W3R452JBBKF109"
+  ],
+  "at": "2026-11-05T20:04:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the question, the change set intent and the code. internal/api/run_review.go reviewQuestionText builds the plan-review question from the finding with fmt.Sprintf; a Go template cannot write plain language or weigh a recommendation, so an agent must. The run engine already has exactly that agent: internal/run/engine.go advise() starts an advisor (rhiza guide advisor) that writes a recommendation with reasons via rhiza run recommend, and internal/api/inbox.go already carries Recommendation/Reasons on question items. Reusing it for template-raised questions adds no new session kind and gives the owner the recommendation the intent asks for, while keeping the engineering finding intact for agents and audit. Making the raising step's own agent word it was rejected: the gate questions are written by Go after the critic, not by an agent session. For the CLI: the owner's goal is to run Rhiza from the Rex apps (owner-goal-rex-only); the CLI is the agents' and developers' interface, where handles and IDs are how nodes are addressed, so removing them would break its use; the intent's failure (a row showing only a handle) is fixed there by also printing the full statement.",
+          "statement": "(1) The run's existing advisor session writes the owner-facing wording. For every question a run leaves for the owner from a Go template (plan-review findings carried to the gate, leaf-failed questions, review cycle-cap questions), the run starts the advisor on that question node, as it already does for a session's blocking question; the advisor reads the slice, the finding and the code and records, through rhiza run recommend, a plain-language restatement of what is being asked plus its recommendation and reasons. The Inbox row, answer form and notifications show that restatement and recommendation; the template text stays as the node's statement, the engineering record, viewable as detail. Until the advisor has written, surfaces show the template statement in full. (2) The no-handle-or-ID rule does not cover the CLI's human text: rhiza inbox, rhiza run status and other CLI output stay agent and developer surfaces and keep handles and IDs, since commands take them as arguments; they should also print the question's full statement and recommendation, not the handle alone.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "owner-question-wording-by-advisor",
+        "id": "01M6PN015M9RH75DV0K4P3EFMG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6PN015M9RH75DV0K2A125CF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PN015M9RH75DV0K2A125CF",
+        "id": "01M6PN0161RY6P2A9ERCN4MNTM",
+        "link": "01M6PN0161RY6P2A9ER9K2HWAH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PMYQY84J91NMR5XNSHBJMY",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PN01697Z4X31C1K3WVB4A6",
+  "type": "ops",
+  "v": 1
+}

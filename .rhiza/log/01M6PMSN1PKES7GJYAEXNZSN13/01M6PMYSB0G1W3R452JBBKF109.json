@@ -1,0 +1,30 @@
+{
+  "actor": "01M6PMSZR4V7YT92QGA1ADVHVV",
+  "after": [
+    "01M6PMSN1PKES7GJYAF0C1GC07"
+  ],
+  "at": "2026-11-05T20:03:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "4dd18cc3-6192-406a-b78d-01a1ad4cf530",
+          "statement": "Questions the runs raise for the owner (plan-review findings left at the gate, leaf-failed questions, review cycle-cap questions) are written today by Go templates from engineering findings, e.g. 'Plan review round 3 left finding f1 (gap on <handle>): ...'. To word them in plain language with a recommendation, who writes that wording? / The rule 'no owner-facing surface shows a node's handle or ID' covers the Rex apps (Inbox rows, answer form, detail panel), notifications and the web UI. Does it also cover the CLI's human text (e.g. rhiza inbox, rhiza run status)?"
+        },
+        "handle": "question-4dd18cc3-1",
+        "id": "01M6PMYQY84J91NMR5XPE9GZ1A",
+        "key": null,
+        "kind": "question",
+        "node": "01M6PMYQY84J91NMR5XNSHBJMY",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PMYSB0G1W3R452JBBKF109",
+  "type": "ops",
+  "v": 1
+}
