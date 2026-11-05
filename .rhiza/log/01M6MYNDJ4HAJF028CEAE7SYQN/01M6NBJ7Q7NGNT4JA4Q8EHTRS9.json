@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NBB2J1MKV94K723QBT88E0",
+  "after": [
+    "01M6NB85K1B5KWGFJ2DEMFS1MK"
+  ],
+  "at": "2026-11-05T08:00:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at 1bd20b12 with a scratch build (go build -trimpath ./cmd/rhiza) in a fresh rhiza init repo, driving `rhiza tui app request` in a real tmux pty: the form drew a Kind Select (Feature, Bug, Milestone; Feature default) and a Request TextArea. Picking Milestone and pressing Enter on empty text showed '✗ A request needs its text' and queued nothing; typing 'VM milestone' and Enter printed the queued request (kind milestone) and exited 0. Picking Bug and submitting '--json   broken' queued kind bug, text '--json broken' (dash-leading text kept, whitespace collapsed), exit 0, listed by `rhiza request ls --json`. Typing 'dark mode' then Esc exited 0 and queued nothing. `tui app request --once` exits 2; the old `tui app requests` exits 4 'unknown app'. The slice shows requests-app and requests-app-milestone proposed for retirement in this change set. go test -trimpath ./internal/tui/requestapp/... and ./cmd/rhiza -run 'TestScripts/(tui-request-app|rex-install)$' pass."
+        },
+        "handle": "request-app-form-qa-2",
+        "id": "01M6NBH96D3XRAR9WBFMYKQ9G1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NBH96D3XRAR9WBFKR4R5SZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NBH96D3XRAR9WBFKR4R5SZ",
+        "id": "01M6NBHPGN9EXAGC4JEQSFPJCT",
+        "link": "01M6NBHPGN9EXAGC4JEP2T4WG2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZB5FB63DG4763MZBYRBPM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNDJ4HAJF028CEAE7SYQN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NBJ7Q7NGNT4JA4Q8EHTRS9",
+  "type": "ops",
+  "v": 1
+}
