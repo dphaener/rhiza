@@ -1,0 +1,83 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MYNQTAMMV8YEZHDWHX9MEK"
+  ],
+  "at": "2026-11-05T04:27:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests in the daemon app's package with a fake runner: the Confirm starts at the paused value daemon.settings gives, flipping it and submitting calls daemon.set with rhiza.daemon.paused and the new value and quits, submitting unchanged or Esc calls no daemon.set.",
+          "statement": "The Daemon app's rexuikit Form shows whether the daemon is paused as a Confirm, prefilled from daemon.settings; submitting a change writes rhiza.daemon.paused through daemon.set and closes the app."
+        },
+        "handle": "daemon-app-pause",
+        "id": "01M6MZC0J2KTTEAQ16DJ2Y9KVP",
+        "key": "zzzzzr",
+        "kind": "capability",
+        "node": "01M6MZC0J2KTTEAQ16DF31DZBV",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZC0J2KTTEAQ16DF31DZBV",
+        "id": "01M6MZC3154V4W7H7BSTZQBQBZ",
+        "link": "01M6MZC3154V4W7H7BSRM5CR60",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZC0J2KTTEAQ16DF31DZBV",
+        "id": "01M6MZC5KN5SWWWVJE235TRCTS",
+        "link": "01M6MZC5KN5SWWWVJE21JJY7N1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1FTNR106GCV6NS1KEDMW",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in the daemon app's package with a fake runner: the field starts at maxRuns from daemon.settings, a positive integer is written with daemon.set rhiza.daemon.maxRuns and the app quits, a non-number or 0 is refused by the field's validator and calls nothing.",
+          "statement": "The same Form shows the run limit as a Text field prefilled from rhiza.daemon.maxRuns; submitting a valid new limit writes it through daemon.set and closes the app."
+        },
+        "handle": "daemon-app-run-limit",
+        "id": "01M6MZC8G897NPM4BYCE7Y9ET1",
+        "key": "zzzzzw",
+        "kind": "capability",
+        "node": "01M6MZC8G897NPM4BYCBAFE5MP",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZC8G897NPM4BYCBAFE5MP",
+        "id": "01M6MZCBVEX490B71GB3GY26YB",
+        "link": "01M6MZCBVEX490B71GB22JAKV9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZC8G897NPM4BYCBAFE5MP",
+        "id": "01M6MZCE4D47J1CEKWE031KHEF",
+        "link": "01M6MZCE4D47J1CEKWDZKXEVGD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1FTNR106GCV6NS1KEDMW",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6MYNQTAMMV8YEZHDS1G5HMD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MZCHMH04G36KDMT94WDBK2",
+  "type": "ops",
+  "v": 1
+}

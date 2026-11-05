@@ -1,0 +1,30 @@
+{
+  "actor": "01M6N6TY73PSZ8V60T71T899S3",
+  "after": [
+    "01M6N6C1DGCAE8Q64Q6DWDGT31"
+  ],
+  "at": "2026-11-05T06:46:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/tui/modalopen drive the opener against a fake Rex: it opens the app with rexuikit surface.Open as a Modal over the invoking block's window, with new_layer bounds equal to surface.BoundsForCells of the content's NaturalSize centred (zero Anchor) and never the whole window, and each new size the modal shell reports resizes the layer with Handle.Resize to BoundsForCells of it; a test in internal/api runs every registered app's Rex action from the written rhiza.lua under a fake rex and checks it opens no layer itself but starts rhiza tui open <app> detached, and the rex-install testscript greps that from the written rhiza.lua with a fake rex.",
+          "statement": "Each app opens as a centred rexuikit Modal over the current pane, sized to its component's NaturalSize and never full-screen."
+        },
+        "handle": "modal-sized-to-content",
+        "id": "01M6MZ97WECAS9XNZNBH6C96VC",
+        "key": "zzzzzi",
+        "kind": "capability",
+        "node": "01M6MZ97WECAS9XNZNBF3T2JV3",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      }
+    ]
+  },
+  "change_set": "01M6MYM5GB3Q8DBZST8V5AG6RQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N7B7VGHKMKHJA8Z22R8AEK",
+  "type": "ops",
+  "v": 1
+}

@@ -79,7 +79,7 @@ func runNoteAdd(ctx *Ctx, req any) (any, error) {
 		}
 		items := []applyItem{
 			{op: "add", build: func(b writeBase) (edit, error) {
-				return buildAdd(b, AddRequest{Kind: string(op.KindNote), Fields: fields, handleFor: func(n id.ID) string {
+				return buildAdd(b, AddRequest{Kind: string(op.KindNote), Fields: fields, lenient: true, handleFor: func(n id.ID) string {
 					handle = noteHandle(n)
 					return handle
 				}})

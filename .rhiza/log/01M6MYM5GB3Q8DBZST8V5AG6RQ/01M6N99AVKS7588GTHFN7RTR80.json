@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6N7NZFNXE9H054EBVZEMPQ5"
+  ],
+  "at": "2026-11-05T07:20:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "fa3963d3ce658c6090335839c49607306e478f84",
+          "pr": "https://github.com/dphaener/rhiza/pull/290",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #290 (https://github.com/dphaener/rhiza/pull/290) passed CI at fa3963d",
+          "status": "verified"
+        },
+        "handle": "pr-290-modal-shell-for-rex-apps",
+        "id": "01M6N9908MEWM671T9PQZ7MHP4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N9908MEWM671T9PN1S8DRN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N9908MEWM671T9PN1S8DRN",
+        "id": "01M6N992Q01W1X6NPWM02D3XFR",
+        "link": "01M6N992Q01W1X6NPWKXEQWSN3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ8VSGET61TPSYJQ4AQCX1",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6N9908MEWM671T9PN1S8DRN",
+        "id": "01M6N9952D5GWMCEBKKJ4738HS",
+        "link": "01M6N9952D5GWMCEBKKFH1MZW5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ92NEJNWBVABS0JB290GE",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6N9908MEWM671T9PN1S8DRN",
+        "id": "01M6N997AF5NW678FNRAAQANBF",
+        "link": "01M6N997AF5NW678FNR9S36GS7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ97WECAS9XNZNBF3T2JV3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYM5GB3Q8DBZST8V5AG6RQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N99AVKS7588GTHFN7RTR80",
+  "type": "ops",
+  "v": 1
+}

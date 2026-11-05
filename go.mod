@@ -9,6 +9,7 @@ require (
 	github.com/dphaener/rexuikit v0.2.0
 	github.com/oklog/ulid/v2 v2.1.2
 	github.com/rogpeppe/go-internal v1.14.1
+	github.com/yuin/gopher-lua v1.1.2
 	modernc.org/sqlite v1.59.0
 	pgregory.net/rapid v1.3.0
 )

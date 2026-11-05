@@ -18,7 +18,7 @@ A. Import procedure, B. Import Nebari, C. Deploy check on ship, D. rhiza import 
 
 ### In
 
-- decided-by [milestone-26](../intent/milestone-26.md)
+- decided-by [milestone-27](../intent/milestone-27.md)
 
 ## History
 

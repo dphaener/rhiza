@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-05T05:43:21Z",
+  "body": {
+    "intent": "Record agent actor claude-code-52720e90 for session 52720e90-2b37-423e-a0f7-01a1aa3b9ed8",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6N3QC2P07HEW0DH3MD2PC7D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N3QC2P07HEW0DH3NXKNHJB",
+  "type": "open",
+  "v": 1
+}

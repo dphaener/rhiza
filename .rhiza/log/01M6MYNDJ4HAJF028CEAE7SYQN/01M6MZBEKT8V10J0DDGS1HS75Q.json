@@ -1,0 +1,50 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MYNDJ4HAJF028CEED8ZZ5P"
+  ],
+  "at": "2026-11-05T04:26:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests in the request app's package with a fake runner: submitting calls request with --kind and the typed text and the app quits; an empty text is refused by the Form's validator and calls nothing; Esc calls nothing; the app registers with the launcher as request.",
+          "statement": "The Request app is one rexuikit Form, a Select of kind (feature, bug or milestone) and a TextArea for the request's text; submitting queues it through the request operation and closes the app, and Esc closes it with nothing queued."
+        },
+        "handle": "request-app-form",
+        "id": "01M6MZB5FB63DG4763N2JJGA86",
+        "key": "zzzzzr",
+        "kind": "capability",
+        "node": "01M6MZB5FB63DG4763MZBYRBPM",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZB5FB63DG4763MZBYRBPM",
+        "id": "01M6MZB8C8AVXBW2PCVEP17F65",
+        "link": "01M6MZB8C8AVXBW2PCVBTKAK3R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZB5FB63DG4763MZBYRBPM",
+        "id": "01M6MZBATFAYC73JC0YM7S8QXW",
+        "link": "01M6MZBATFAYC73JC0YH8ABR6N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1FTNR106GCV6NS1KEDMW",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6MYNDJ4HAJF028CEAE7SYQN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MZBEKT8V10J0DDGS1HS75Q",
+  "type": "ops",
+  "v": 1
+}

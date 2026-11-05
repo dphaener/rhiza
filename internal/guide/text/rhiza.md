@@ -79,6 +79,12 @@ constraints on it, so you add to the model rather than duplicate it.
   "(Recommended)" pick) is never the owner's words: record it as the agent's wording, accepted
   by the owner.
 - When something is unknown, add a question rather than guess. Park it, don't block on it.
+- To refer to another node inside a statement or other text field, write `@handle` (an ID or
+  an ID prefix of 4+ characters works too). The write stores it by ID, so a rename never breaks
+  the sentence, and refuses one that names no node it may refer to. Write `@@` for a literal `@`,
+  except before `{<full ID>}`, which is refused as it would read back as a reference: write the
+  ID without braces. Emails and `name@host` are not references. `quote`, `quote_where` and
+  `wording` are stored exactly as given.
 - Use `--dry-run` to see the operations a write would make before making it.
 
 ## Recipes

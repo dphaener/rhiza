@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MNSCJ85KAE96D4PFSW7FR6",
+  "after": [
+    "01M6MNQGAG0815QH0P2QK286C5"
+  ],
+  "at": "2026-11-05T01:42:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b6365ae6 (review cycle 3 fix): go test -count=1 ./internal/textref passes (TestFind, TestResolve, TestResolveLiteralFullID, TestFormat); FuzzRoundTrip and FuzzStoredRoundTrip each ran 30s (1.1M and 1.3M execs) with no failure; go vet and gofmt clean; go test ./cmd/rhiza -run TestScripts/text-refs passes. Probes on a scratch copy of the package: references start only at text start or after whitespace, ( or [ (not after x or {); @ABC (3 chars) is no reference, @ABCD and @01M6 are; @abc--def is none; darin@hey.com, checkout@v7, '@key' hold none; @@ is a literal @, never a reference. Resolve returns @@{<full ID>} (missing and live IDs alike) as unresolved with Escaped set and an unmapped @{<full ID>} as unresolved without it, writes both as @<full ID> without braces, which Format shows as @@<full ID> (no reference); @@{ID} still stores the literal @{ID}, shown @@{ID}; @{BOGUS} is unresolved with its offset while @{<live ID>} resolves. Format shows a live stored ID as @<handle>, a retired or unknown one as @{<full ID>}, stored '@{ID}', '@{BOGUS}', '@{<full ID>}' as @@{...}, and @word as @@word. The diff of b6365ae6 adds Decision text-ref-stored-escape, amends this leaf's statement and acceptance to match the code, updates the guide, and checks the usage code in text-refs-write.txtar."
+        },
+        "handle": "text-ref-syntax-verified-3",
+        "id": "01M6MNY5XXM9ZGCRGBZGPE842T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MNY5XXM9ZGCRGBZD6KTCDF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MNY5XXM9ZGCRGBZD6KTCDF",
+        "id": "01M6MNY8VSJAPM75R6TJWR37EC",
+        "link": "01M6MNY8VSJAPM75R6TJ1K2KP6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0CQRJFFH7Q40JCV9H2DG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MNYFADPPECC5FBFTSXGYV1",
+  "type": "ops",
+  "v": 1
+}

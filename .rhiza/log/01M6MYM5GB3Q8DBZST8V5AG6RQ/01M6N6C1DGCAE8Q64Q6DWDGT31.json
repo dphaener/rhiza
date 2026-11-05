@@ -1,0 +1,86 @@
+{
+  "actor": "01M6N676DBY00YVJXYXK6G2NAG",
+  "after": [
+    "01M6N65SQQ6BNSZBCXGP2T97BM"
+  ],
+  "at": "2026-11-05T06:29:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c64eb6fa built go build -o $TMPDIR/rhiza-x ./cmd/rhiza and ran `rhiza-x tui app roadmap` and `rhiza-x tui app inbox` in a 120x40 tmux pane (no Rex): both now run through modalshell.Run (surface/program wrapper) and render their full views (roadmap milestones, inbox Overlaps/Failed runs), same as a base build at the merge-base. Scoped tests pass: go test -trimpath ./internal/tui/modalshell/... ./internal/tui/launcher/... and TestScripts/tui-launch-usage. No registered app hosts a rexuikit component yet, so component hosting itself is covered only by the package tests."
+        },
+        "handle": "modal-shell-hosts-component-qa-1",
+        "id": "01M6N6BEJS6SX810TXSKJ6TMDV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N6BEJS6SX810TXSFW0D52Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N6BEJS6SX810TXSFW0D52Y",
+        "id": "01M6N6BHA9D8F94MZTZZ47VV4Z",
+        "link": "01M6N6BHA9D8F94MZTZVTJ8CJG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ8VSGET61TPSYJQ4AQCX1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c64eb6fa, with the built binary in a tmux pane, sent Escape to `rhiza-x tui app roadmap` and to `rhiza-x tui app inbox`: each exited with EXIT=0 within 2s, matching a base build at the merge-base. go test -trimpath -count=1 ./internal/tui/modalshell/... passes (Esc, FormCancelledMsg, ListCancelledMsg and DoneMsg quit; a plain key does not; Result returns the app's result)."
+        },
+        "handle": "modal-shell-closes-qa-1",
+        "id": "01M6N6BM8MK4N3EB82N47NMJM4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N6BM8MK4N3EB82N3CZ2234",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N6BM8MK4N3EB82N3CZ2234",
+        "id": "01M6N6BQ3GEHJQ0SGT8S1GB94G",
+        "link": "01M6N6BQ3GEHJQ0SGT8PT4XCZM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ92NEJNWBVABS0JB290GE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c64eb6fa ran the built `rhiza-x rex install` with REX_CONFIG in a scratch folder and a fake rex on PATH: it wrote rhiza.lua and init.lua and the fake rex logged `config reload`. Every action's layer is `bounds = cell_bounds(ctx.block_id, 100, 30)` (the default, since no app registers a Component yet), and cell_bounds centres a span capped at 1 from the window's cells, so no action opens full-screen. go test -trimpath ./internal/api -run TestRexInstall (incl. the Form/List/Dialog NaturalSize modal test) and TestScripts/rex-install pass."
+        },
+        "handle": "modal-sized-to-content-qa-1",
+        "id": "01M6N6BSWGXXCC9V3B8KMRS2J0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N6BSWGXXCC9V3B8HDEJ6XK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N6BSWGXXCC9V3B8HDEJ6XK",
+        "id": "01M6N6BWJE8NDJAESSNGKD1ZDH",
+        "link": "01M6N6BWJE8NDJAESSNF72CEP8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ97WECAS9XNZNBF3T2JV3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYM5GB3Q8DBZST8V5AG6RQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N6C1DGCAE8Q64Q6DWDGT31",
+  "type": "ops",
+  "v": 1
+}

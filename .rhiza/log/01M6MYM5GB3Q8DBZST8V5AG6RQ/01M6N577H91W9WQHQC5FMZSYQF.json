@@ -1,0 +1,40 @@
+{
+  "actor": "01M6N55QQN8YCTC25NWNC8G49R",
+  "after": [
+    "01M6N562H47ZP6D718FW4P4S33"
+  ],
+  "at": "2026-11-05T06:09:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e7bb73fc ran go test -trimpath -count=1 -v ./internal/tui/modalshell/...: all pass. TestCloses drives a hosted Dialog shell with bubbletea messages and asserts Esc (tea.KeyPressMsg KeyEscape), ui.FormCancelledMsg, ui.ListCancelledMsg and DoneMsg each return a cmd yielding tea.QuitMsg and set Closed, while a plain 'a' key and a WindowSizeMsg do not. TestClosesEveryHost repeats the plain-key/Esc check across Form, List, Dialog and InfoPanel hosts. TestResult checks DoneMsg{Result:\"out\"} makes Result() return \"out\", DoneMsg{Err} returns that error, and a cancel keeps no result. Read the diff and Shell.Update in internal/tui/modalshell/modalshell.go: it quits on DoneMsg (keeping Result/Err), the cancel messages and esc, and forwards everything else to the component; Run returns s.Result(). go vet and gofmt clean."
+        },
+        "handle": "modal-shell-closes-verified",
+        "id": "01M6N570ENYFC6CKZKMWZSDN4E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N570ENYFC6CKZKMSRCN2NM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N570ENYFC6CKZKMSRCN2NM",
+        "id": "01M6N57333GGYCQH8KKCQR8DT9",
+        "link": "01M6N57333GGYCQH8KKAWEPR54",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ92NEJNWBVABS0JB290GE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYM5GB3Q8DBZST8V5AG6RQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N577H91W9WQHQC5FMZSYQF",
+  "type": "ops",
+  "v": 1
+}

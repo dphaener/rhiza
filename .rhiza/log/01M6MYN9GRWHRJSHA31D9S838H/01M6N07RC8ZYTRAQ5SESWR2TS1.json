@@ -1,0 +1,103 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MZB16S89EPP38CRG56PG4Y"
+  ],
+  "at": "2026-11-05T04:42:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The Inbox app lists every inbox item: questions and gates are answered, a sign-off is signed off, a failed run is retried or abandoned, an accept item is accepted; every other kind (stalled, overlap, disk-low, usage-reserve, main-stale) shows its detail and opens the run's tab, with no special action",
+          "wording": "All items, act or open: questions and gates answer, sign-off signs off, failed runs retry or abandon, accept items accept, and the rest show their detail and open the run's tab, the agent's option, picked by the owner"
+        },
+        "handle": "tui-inbox-all-items",
+        "id": "01M6N0763RMWPEPXWFA5RDQJZB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6N0763RMWPEPXWFA3RQ8CB1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N0763RMWPEPXWFA3RQ8CB1",
+        "id": "01M6N07884C7KV7RF6N44RKB4H",
+        "link": "01M6N07884C7KV7RF6N2XGQ5KE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYKNE2EZ4DA6RS0B5XEGHQ",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6N0763RMWPEPXWFA3RQ8CB1",
+        "id": "01M6N07AGW1SE57JWVE3PMR6HT",
+        "link": "01M6N07AGW1SE57JWVE39GJTHP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZANYQFS6TDEKFS3P4RT6D",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ9RZ8M65B2FB58A75WYZ2",
+        "id": "01M6N07CJRGQBM2W9W3CK1CKDY",
+        "link": "01M6N07CJRGQBM2W9W39VGQEDE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N0763RMWPEPXWFA3RQ8CB1",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "The Inbox app's sign-off dialog offers Approve, and Send back with a note; the note becomes findings for another fixer cycle of the run",
+          "wording": "Approve or send back: the dialog has Approve, and Send back with a note that becomes findings for another fixer cycle, the agent's option, picked by the owner"
+        },
+        "handle": "tui-signoff-approve-or-send-back",
+        "id": "01M6N07EQSBWX87XGQZ0RGWG9B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6N07EQSBWX87XGQZ08K60ER",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N07EQSBWX87XGQZ08K60ER",
+        "id": "01M6N07GT7RY9DYKYKWWVYWTXZ",
+        "link": "01M6N07GT7RY9DYKYKWT48JWQQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYKNE2EZ4DA6RS0B5XEGHQ",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6N07EQSBWX87XGQZ08K60ER",
+        "id": "01M6N07JW6FRN6V8W4D1DXQXYT",
+        "link": "01M6N07JW6FRN6V8W4CY56ZE3Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZATM6JDM5M8P24TCH24JM",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZA8WT3TB8HWR4D33QMMQ5",
+        "id": "01M6N07MZN8WZ44Q44KV8XHGVW",
+        "link": "01M6N07MZN8WZ44Q44KRHP3369",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N07EQSBWX87XGQZ08K60ER",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6MYN9GRWHRJSHA31D9S838H",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N07RC8ZYTRAQ5SESWR2TS1",
+  "type": "ops",
+  "v": 1
+}

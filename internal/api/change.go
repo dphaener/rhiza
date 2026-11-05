@@ -311,7 +311,7 @@ func runChangeShow(ctx *Ctx, req any) (any, error) {
 		Applied:      orEmpty(c.Applied),
 		History:      []LifecycleEvent{},
 		Problems:     foldProblems(problems),
-		Changes:      buildChangeDiff(cs, changeset.BuildDiff(w.changeSets(), cs)),
+		Changes:      buildChangeDiff(cs, changeset.BuildDiff(w.changeSets(), cs), modelHandleOf(m)),
 		Notes:        changeNotes(w, cs, current),
 	}
 	for _, m := range c.Lifecycle {
@@ -319,7 +319,7 @@ func runChangeShow(ctx *Ctx, req any) (any, error) {
 			At: m.At.UTC().Format(lineageAtLayout), Actor: m.Actor})
 	}
 	for _, o := range c.Ops {
-		raw, err := op.Encode(o)
+		raw, err := op.Encode(showOp(m, o))
 		if err != nil {
 			return nil, Errorf("change set %s: op %s: %v", cs, o.ID, err)
 		}

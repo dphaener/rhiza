@@ -1,0 +1,60 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MZ9N7DTKJ08GBYTXM2Q492"
+  ],
+  "at": "2026-11-05T04:42:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Each app's modal is opened by rhiza itself: the Rex action runs rhiza, which opens the layer through rexuikit's surface over Rex's control connection, so the modal is sized to its content and can resize as the content changes",
+          "wording": "Go opener: the Rex action runs rhiza, which opens the modal through rexuikit's surface over Rex's control connection, so it can resize as its content changes, the agent's option, picked by the owner"
+        },
+        "handle": "tui-modal-go-opener",
+        "id": "01M6N06QV22B773C7W5MH7DWND",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6N06QV22B773C7W5HHYP7KT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N06QV22B773C7W5HHYP7KT",
+        "id": "01M6N06SX3YQ638FY1VKR17RX4",
+        "link": "01M6N06SX3YQ638FY1VJEM7G17",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYKNE2EZ4DA6RS0B5XEGHQ",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6N06QV22B773C7W5HHYP7KT",
+        "id": "01M6N06W1J8MCAQW1C4SENJNTB",
+        "link": "01M6N06W1J8MCAQW1C4R8QDWZ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ9FFYJF8W6MDPVS2T2SVK",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ97WECAS9XNZNBF3T2JV3",
+        "id": "01M6N06Y3F7KZGTTF1QQ7PXPXD",
+        "link": "01M6N06Y3F7KZGTTF1QQ243R7D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N06QV22B773C7W5HHYP7KT",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6MYM5GB3Q8DBZST8V5AG6RQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N071PB9F1X42TKKXPZF9XG",
+  "type": "ops",
+  "v": 1
+}
