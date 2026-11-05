@@ -1,0 +1,53 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6NB4C7D9SAG06VE2KPFA8YJ"
+  ],
+  "at": "2026-11-05T08:07:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "aaf6e0f1847f592e2edaa8785c0c5c247e72b744",
+          "pr": "https://github.com/dphaener/rhiza/pull/293",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #293 (https://github.com/dphaener/rhiza/pull/293) passed CI at aaf6e0f",
+          "status": "verified"
+        },
+        "handle": "pr-293-daemon-app-on-the-modal-shell",
+        "id": "01M6NBYYVMCRWTJBBNN3HXJ6X4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NBYYVMCRWTJBBNN2FFMHW8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NBYYVMCRWTJBBNN2FFMHW8",
+        "id": "01M6NBZ2BZCN0R19VNDG5358VZ",
+        "link": "01M6NBZ2BZCN0R19VNDERAX92Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZC0J2KTTEAQ16DF31DZBV",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6NBYYVMCRWTJBBNN2FFMHW8",
+        "id": "01M6NBZ6V2ACPZTR0C4CWX8C3P",
+        "link": "01M6NBZ6V2ACPZTR0C4BT4JG91",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZC8G897NPM4BYCBAFE5MP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNQTAMMV8YEZHDS1G5HMD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NBZCRDA4GBJ89PB7PRRXP1",
+  "type": "ops",
+  "v": 1
+}

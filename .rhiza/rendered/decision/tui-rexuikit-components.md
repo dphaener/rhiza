@@ -25,6 +25,8 @@ Every app draws its UI with rexuikit's ui components (Form with its Text, TextAr
 - decided-by [milestone-26](../intent/milestone-26.md)
 - decided-by [modal-shell-hosts-component](../capability/rhiza/modal-shell-hosts-component.md)
 - decided-by [modal-sized-to-content](../capability/rhiza/modal-sized-to-content.md)
+- decided-by [daemon-app-pause](../capability/rhiza/daemon-app-pause.md)
+- decided-by [daemon-app-run-limit](../capability/rhiza/daemon-app-run-limit.md)
 
 ## History
 
