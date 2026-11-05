@@ -41,7 +41,7 @@ const (
 // to time, named by its pid, and waiterLock the lock that gives the turn.
 // Wait leaves those processes out: one blocked on the lock, or itself
 // timing, is not a package go test is still running beside the waiter,
-// and counting it made two waiters (api.test and modelapp.test) each wait
+// and counting it made two waiters (api.test and another budget package) each wait
 // out quietWait and then time beside the other.
 //
 // Both are named by this process's parent, the go test run, so only its

@@ -33,7 +33,7 @@ update: install ## Rebuild into $(PREFIX), then rewrite the Rex script and reloa
 # their own after the rest of the suite: run beside cmd/rhiza's scripts they
 # measured their neighbours (PR #210 failed twice, then passed, on one SHA).
 BUDGET_TESTS = ^(TestReadBudget|TestBudget|TestGeneratedModel)$$
-BUDGET_PKGS = ./internal/api ./internal/index ./internal/slice ./internal/tui/modelapp
+BUDGET_PKGS = ./internal/api ./internal/index ./internal/slice
 
 # -trimpath keeps each worktree's absolute path out of the compiled
 # packages and test binaries, so a second worktree at the same code reuses

@@ -83,7 +83,7 @@ func TestMakeTestTimeout(t *testing.T) {
 	skip := "go test -trimpath -timeout 20m -skip '^(TestReadBudget|TestBudget|TestGeneratedModel)$' "
 	rest := skip + "$(go list ./... | grep -v '/cmd/rhiza$') >$rest 2>&1 9>&- &"
 	scripts := skip + "./cmd/rhiza 9>&-"
-	budgets := "go test -trimpath -timeout 20m -count=1 -p 1 -run '^(TestReadBudget|TestBudget|TestGeneratedModel)$' ./internal/api ./internal/index ./internal/slice ./internal/tui/modelapp 9>&-"
+	budgets := "go test -trimpath -timeout 20m -count=1 -p 1 -run '^(TestReadBudget|TestBudget|TestGeneratedModel)$' ./internal/api ./internal/index ./internal/slice 9>&-"
 	lockScripts := `lock "the cmd/rhiza scripts"`
 	lockBudgets := `lock "the timing budgets"`
 	for _, want := range []string{
