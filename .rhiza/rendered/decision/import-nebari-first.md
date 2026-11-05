@@ -18,7 +18,7 @@ Milestone, Nebari first: import Nebari by hand with agents following a written i
 
 ### In
 
-- decided-by [milestone-26](../intent/milestone-26.md)
+- decided-by [milestone-27](../intent/milestone-27.md)
 
 ## History
 
