@@ -1,0 +1,109 @@
+{
+  "actor": "01M6N37JY8DBE84PHX4GC3YZZS",
+  "after": [
+    "01M6N366B0T3T8SX8WWP889JJK"
+  ],
+  "at": "2026-11-05T05:40:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dea4e5b6 with a scratch build (go build -trimpath) in a scratch git repo, fake rex that runs the tab command and a fake claude that sleeps: rhiza run start --foreground --workflow plan --new 'Backlog empty' --milestone gave OSC 7501 states working, blocked, done on stderr, the blocked msg decoding to '<cs>: interview waits on you in tab <session>: the milestone interview waits on you', emitted before the agent asked anything; a feature plan run and a --milestone --autonomous run gave only working, done. The run's journal carries milestone_plan:true only for the milestone run."
+        },
+        "handle": "milestone-interview-waiting-at-launch-qa-1",
+        "id": "01M6N3HX43WFBZ0VBC3NVMMF4D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N3HX43WFBZ0VBC3N7VJXKS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N3HX43WFBZ0VBC3N7VJXKS",
+        "id": "01M6N3J00FRZ9WV7F4MG7R0VEE",
+        "link": "01M6N3J00FRZ9WV7F4ME057PHT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYSV344P11Y2K0555WP96J",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dea4e5b6, built binary, fake rex/claude: while a non-autonomous milestone plan run's interview was live, rhiza inbox listed one 'interview' item naming the run, change set and title, tab 'repo: Backlog empty · run <id> · interview', block/session of the tab and 'the milestone interview waits on you'; rhiza inbox open <id> ran rex block inspect then rex focus on that tab's block; after the run ended the inbox was empty; feature and autonomous milestone runs gave no item. rhiza daemon --once with the interview live sent one blocked Rex report 'Backlog empty: a milestone interview waits on you'; a second --once sent none."
+        },
+        "handle": "inbox-milestone-interview-qa-1",
+        "id": "01M6N3J3FWG17B3TPWW96WSTVM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N3J3FWG17B3TPWW80RNDQM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N3J3FWG17B3TPWW80RNDQM",
+        "id": "01M6N3J5SPAST838XMMDYR7FNY",
+        "link": "01M6N3J5SPAST838XMMA1QD84A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYT17VS6C6MX8YRDZ6PMKD",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dea4e5b6, built binary, real detached runs with fake rex/claude: with rhiza.daemon.usage.session 1000 and a Claude transcript of 2000 tokens, a queued feature and a queued milestone request: paused, daemon --once started neither; --min-free 1000T (disk low) started neither; unpaused under the usage-reserve hold (inbox lists usage-reserve) it started only the milestone request's plan run and request ls showed the feature still queued."
+        },
+        "handle": "milestone-request-past-usage-hold-qa-1",
+        "id": "01M6N3J8RDN7CGB83CRHM4B93V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N3J8RDN7CGB83CRE0SQ1YJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N3J8RDN7CGB83CRE0SQ1YJ",
+        "id": "01M6N3JC631QDTEJR3KKGAEK4A",
+        "link": "01M6N3JC631QDTEJR3KHGDDG4R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYSMGQFQDM84ANE2GRY4M9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dea4e5b6, built binary, fake rex/claude, real detached runs: with --max-runs 1 and a feature request's plan run already live, queuing a second feature then a milestone request, daemon --once started only the milestone request's plan run and request ls showed the second feature still queued; with one milestone interview live a second milestone request stayed queued after the next daemon --once."
+        },
+        "handle": "milestone-request-starts-at-once-qa-1",
+        "id": "01M6N3JEZDS3W3WHV34TW8VZ4B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N3JEZDS3W3WHV34RR2AFDH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N3JEZDS3W3WHV34RR2AFDH",
+        "id": "01M6N3JH4E8H29PY3P1XAB0P8E",
+        "link": "01M6N3JH4E8H29PY3P1SJ898GV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYSEB8N545M8M9APZTBXYS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYFH4QYGSKDATBH509SEJF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N3JN2G8AYERV5EB1P6D88M",
+  "type": "ops",
+  "v": 1
+}
