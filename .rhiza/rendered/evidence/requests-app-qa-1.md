@@ -14,7 +14,7 @@ QA at 1916b724 with a scratch build (go build ./cmd/rhiza) in a scratch git repo
 
 ### Out
 
-- verifies [requests-app](../capability/rhiza/orchestration/daemon/plan-requests/requests-app.md)
+- verifies requests-app (retired)
 
 ## History
 

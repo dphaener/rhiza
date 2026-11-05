@@ -1,0 +1,24 @@
+{
+  "actor": "01M6NB5KW30BQ6KMR7GPKEYSFR",
+  "after": [
+    "01M6NAXKH06MRXV6H6P5SE4XMT"
+  ],
+  "at": "2026-11-05T07:54:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6CS27ZCVXPWK3GXSB977TMG",
+        "id": "01M6NB7H7N18EV571Y0TFM62ZD",
+        "node": "01M6CS27ZCVXPWK3GXS8B8PQ2C",
+        "op": "node.retire",
+        "reason": "Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): internal/tui/requestsapp and tui-requests-app.txtar are deleted, the requests app and its listing are gone"
+      }
+    ]
+  },
+  "change_set": "01M6MYNDJ4HAJF028CEAE7SYQN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NB7SDYMAZH488VZDXR3YYB",
+  "type": "ops",
+  "v": 1
+}

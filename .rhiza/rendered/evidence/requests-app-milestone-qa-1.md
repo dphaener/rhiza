@@ -14,7 +14,7 @@ QA at e443109e, built binary: rhiza tui app requests driven in tmux. n shows the
 
 ### Out
 
-- verifies [requests-app-milestone](../capability/rhiza/orchestration/daemon/plan-requests/requests-app-milestone.md)
+- verifies requests-app-milestone (retired)
 
 ## History
 

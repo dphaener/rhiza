@@ -30,7 +30,7 @@ verified
 - verifies [plan-run-hands-milestone](../capability/rhiza/orchestration/daemon/plan-requests/plan-run-hands-milestone.md)
 - verifies [planner-serves-milestone](../capability/rhiza/orchestration/daemon/plan-requests/planner-serves-milestone.md)
 - verifies [plan-step-milestone-check](../capability/rhiza/orchestration/daemon/plan-requests/plan-step-milestone-check.md)
-- verifies [requests-app-milestone](../capability/rhiza/orchestration/daemon/plan-requests/requests-app-milestone.md)
+- verifies requests-app-milestone (retired)
 - verifies [plan-workflow-file](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-workflow-file.md)
 
 ## History

@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/charmbracelet/colorprofile"
 
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/canon"
@@ -23,7 +24,7 @@ import (
 	"github.com/dphaener/rhiza/internal/tui/modalshell"
 	"github.com/dphaener/rhiza/internal/tui/modelapp"
 	"github.com/dphaener/rhiza/internal/tui/readapps"
-	"github.com/dphaener/rhiza/internal/tui/requestsapp"
+	"github.com/dphaener/rhiza/internal/tui/requestapp"
 	"github.com/dphaener/rhiza/internal/tui/roadmapapp"
 	"github.com/dphaener/rhiza/internal/tui/writeapps"
 )
@@ -72,7 +73,7 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 	isRoadmap := name == roadmapapp.Name
 	isLive := name == liveapp.Name
 	isHealth := name == healthapp.Name
-	isRequests := name == requestsapp.Name
+	isRequests := name == requestapp.Name
 	isAutonomy := name == autonomyapp.Name
 	write, isWrite := writeapps.Lookup(name)
 	if !isRead && !isWrite && !isInbox && !isRoadmap && !isLive && !isHealth && !isRequests && !isAutonomy {
@@ -167,10 +168,17 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		})
 		m, result = hm, hm.Result
 	case isRequests:
-		qm := requestsapp.NewModel(func(op string, args []string) ([]byte, error) {
+		if once {
+			return writeError(stdout, stderr, api.Usagef("tui app request has no --once: it files a request from its form"), false)
+		}
+		out, err := modalshell.New(requestapp.New(func(op string, args []string) ([]byte, error) {
 			return call(op, false, false, args)
-		})
-		m, result = qm, qm.Result
+		}, colorprofile.Detect(os.Stdout, os.Environ()))).Run()
+		if err != nil {
+			return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
+		}
+		stdout.Write(out)
+		return 0
 	case isRoadmap:
 		am := roadmapModel(g, callWith)
 		m, result = am, am.Result

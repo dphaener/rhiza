@@ -1,0 +1,24 @@
+{
+  "actor": "01M6NB5KW30BQ6KMR7GPKEYSFR",
+  "after": [
+    "01M6NB7SDYMAZH488VZDXR3YYB"
+  ],
+  "at": "2026-11-05T07:54:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6JE40PG6Z1ZG27N7EV789EK",
+        "id": "01M6NB80CM78R1MVAAA0R6KSG6",
+        "node": "01M6JE40PG6Z1ZG27N7DMFH3FF",
+        "op": "node.retire",
+        "reason": "Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): the old requests app and its milestone field are deleted; the new request form has no milestone field"
+      }
+    ]
+  },
+  "change_set": "01M6MYNDJ4HAJF028CEAE7SYQN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NB85K1B5KWGFJ2DEMFS1MK",
+  "type": "ops",
+  "v": 1
+}
