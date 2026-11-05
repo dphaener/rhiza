@@ -1,0 +1,41 @@
+{
+  "actor": "01M6MYMDZYV9877HQJMRY388PY",
+  "after": [
+    "01M6MYM7MKZ1ENMC5PXX4SP325"
+  ],
+  "at": "2026-11-05T04:15:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent is that a milestone request 'automatically launches' an interactive session and 'notifies the owner that it is waiting', and milestone planning always needs a human: an interview queued behind build runs (daemonPlanRequests only starts requests while running < max, after ship picks and queued starts) defeats that, and the session spends most of its time waiting on the owner, so it costs little compute and need not compete for a slot; one at a time because there is one owner to interview. Notifying only at the first AskUserQuestion leaves the owner unaware of a tab that already waits on them, and Rex has no notify API (notifications follow the program's OSC 7501 status), so the status must say waiting at launch and the inbox must list it. internal/api/usage_hold.go says the governor holds what the daemon would launch while 'live runs and the owner's own starts are untouched'; a milestone request is the owner's own, attended start, and the reserve exists to keep usage for exactly that kind of owner-driven work, so it is not held. Pause is the owner's explicit stop and disk-low is a safety guard (a run needs a worktree), so neither is changed by this answer.",
+          "statement": "A queued milestone request's plan run starts at the daemon's next poll, ahead of every other queued request and without waiting for a free run slot: it is the owner's own interactive start, not a pick. It still counts as a running run once started, so later picks see it, and only one milestone interview is live at a time; a second milestone request waits for the first to end. The owner is told the moment the interview's tab opens: the plan session's status goes to waiting-on-the-owner at launch (so Rex's notification fires from the OSC 7501 status) and the inbox lists the live milestone interview as an item from launch until the run ends, not from the first AskUserQuestion. A usage-reserve hold does not hold a milestone interview's start; it keeps holding build, review and other autonomous launches. Pause and the disk-low guard are unchanged and still hold it.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "milestone-interview-starts-at-once",
+        "id": "01M6MYP9D5XEFXQ5DHG00Y7WHH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MYP9D5XEFXQ5DHFXZQ8JDZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MYP9D5XEFXQ5DHFXZQ8JDZ",
+        "id": "01M6MYPBZP7902MQXDX5X2Z04R",
+        "link": "01M6MYPBZP7902MQXDX3T54344",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYM641F6JEE2SKH35DXQGH",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6MYFH4QYGSKDATBH509SEJF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MYPFNEZ013M7G1SQC63XTT",
+  "type": "ops",
+  "v": 1
+}

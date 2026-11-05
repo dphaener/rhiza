@@ -1,0 +1,33 @@
+{
+  "actor": "01M6MYG8QZHBZZ5SZGEHCG38T2",
+  "after": [
+    "01M6MYPFNEZ013M7G1SQC63XTT"
+  ],
+  "at": "2026-11-05T04:16:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "be4603c3027fde058d709ae7304d3912e61822c0a078d15d6d8cc0eb9a9d0f97",
+          "session": "a7e31117-48f2-4f83-8965-01a1a9e80a6a",
+          "summary": "Autonomous plan run of change set 01M6MYFH4QYGSKDATBH509SEJF (A milestone request launches an interactive planning session). The planner read internal/api/request.go (daemonPlanRequests starts requests only while running < max, oldest first, held by the usage governor), internal/api/inbox.go (a non-autonomous run's question item appears only once an AskUserQuestion blocks) and internal/api/daemon.go (daemonNotify). The daemon already starts a milestone request's plan run and its interview opens a Rex tab; what is missing is starting it at once and telling the owner at launch. Three questions (start timing, notification, usage hold) went to the arbiter, which answered with Decision milestone-interview-starts-at-once: start at the next poll ahead of every request and past run slots, one milestone interview live at a time; waiting status at launch plus an inbox item from launch until the run ends; not held by a usage-reserve hold, still held by pause and disk-low. The never-autonomous part is the sibling change set 01M6MY8BMPFK9ZWD3TDQHKT64J. The change set serves milestone-25. No owner was present, so no owner words are quoted.",
+          "title": "Planning the milestone-request launch, autonomous run"
+        },
+        "handle": "milestone-request-launch-plan",
+        "id": "01M6MYRT7MF52S4B7811F0FGN9",
+        "key": null,
+        "kind": "source",
+        "node": "01M6MYRT7GAXXCPJZZAWQN5FAW",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6MYFH4QYGSKDATBH509SEJF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MYRXAM4N6V2M10DZYX7FZR",
+  "type": "ops",
+  "v": 1
+}
