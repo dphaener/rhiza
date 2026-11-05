@@ -1,0 +1,71 @@
+# While a plan request waits, owner-queued starts (rhiza run start, here on
+# draft change sets) leave it one slot when --max-runs is above 1: with
+# --max-runs 2 and no request both queued starts run; with a request queued
+# one queued start and the request's plan run start, and the other start
+# stays queued. With --max-runs 1 the queued start takes the slot and the
+# request waits. Rex is faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+env RHIZA_TEST_FREE_BYTES=1099511627776
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new One --title One
+exec rhiza run start --workflow plan --permission-mode manual
+exec rhiza change new Two --title Two
+exec rhiza run start --workflow plan --permission-mode manual
+exec sh -c 'grep -c "\"change\"" .git/rhiza/starts.json'
+stdout '^2$'
+
+# No request waits: both queued starts run.
+exec cp .git/rhiza/starts.json $WORK/starts.json
+exec rhiza daemon --permission-mode manual --once --max-runs 2
+stdout -count=2 '^Started a run of '
+exec sh -c 'grep -c "\"change\"" .git/rhiza/starts.json || true'
+stdout '^0$'
+exec rm $WORK/detach.log
+exec cp $WORK/starts.json .git/rhiza/starts.json
+
+# One slot, a request waiting: the queued start takes it, the request waits.
+exec rhiza request 'Add exports'
+exec rhiza daemon --permission-mode manual --once --max-runs 1
+stdout -count=1 '^Started a run of '
+! stdout 'plan run'
+exec rhiza request ls
+stdout 'feature queued: Add exports$'
+exec sh -c 'grep -c "\"change\"" .git/rhiza/starts.json'
+stdout '^1$'
+exec rm $WORK/detach.log
+exec cp $WORK/starts.json .git/rhiza/starts.json
+
+# Two slots, a request waiting: one queued start and the plan run; the other
+# start stays queued.
+exec rhiza daemon --permission-mode manual --once --max-runs 2
+stdout -count=1 '^Started a run of '
+stdout -count=1 '^Started the plan run of request '
+exec sh -c 'grep -c "\"change\"" .git/rhiza/starts.json'
+stdout '^1$'
+exec rhiza request ls
+stdout 'feature planning: Add exports'
+
+fold-ok
+
+-- plan.toml --
+name = "plan"
+
+[step.interview]
+kind = "agent"
+prompt = "Plan {change}"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
