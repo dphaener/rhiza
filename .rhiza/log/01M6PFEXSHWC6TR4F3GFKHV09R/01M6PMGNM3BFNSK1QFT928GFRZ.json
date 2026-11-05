@@ -1,0 +1,73 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6PGBPMNB3BRT6YHRQ6SYN7B"
+  ],
+  "at": "2026-11-05T19:56:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A web package test compares /api/run.ls and /api/roadmap bodies against the api handlers' JSON for the same fixture repo and shows land, accept, daemon.set, render and ship.merge answer 404 or 405; an internal/api test asserts the ReadOnly marker is set on the operations the web UI uses and is not set on any operation that writes the log, settings, files, Rex or GitHub (daemon.set, daemon.start, render, ship.merge and every log write among them).",
+          "statement": "GET /api/<op> runs an internal/api operation that the registry marks ReadOnly, with its request built from the query string, and answers the same JSON bytes rhiza <cmd> --json prints; every operation without the ReadOnly marker, and every non-GET method, is refused, so no write is reachable."
+        },
+        "handle": "web-api-read-only",
+        "id": "01M6PFJ9736AS6TE510QW80951",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6PFJ9736AS6TE510QA5VVBS",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "quote": "Yes a simple marker will do.",
+          "statement": "An internal/api operation is exposed by the web UI's /api/<op> only when the registry marks it ReadOnly: a new explicit flag on the operation, set only on operations that change nothing (not the model log, settings, files, Rex or GitHub). /api/ refuses every operation without the marker, so even a hand-typed URL cannot change anything. Write (which only means appends to the log) is not used for this"
+        },
+        "handle": "web-api-read-only-marker",
+        "id": "01M6PMGNFR7EQWGKHF0GD6YSX3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6PMGNFR7EQWGKHF0EKREYBG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PMGNFR7EQWGKHF0EKREYBG",
+        "id": "01M6PMGNGJAVGPNH7P0MNY2M26",
+        "link": "01M6PMGNGJAVGPNH7P0J6X9AN8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFE13VHPKWY3QZ00HWMS8B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6PMGNFR7EQWGKHF0EKREYBG",
+        "id": "01M6PMGNH8FX6T1W3TW8G1X9FT",
+        "link": "01M6PMGNH8FX6T1W3TW629D7RY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PGBJM14G29CMMYB19YSYRS",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJ9736AS6TE510QA5VVBS",
+        "id": "01M6PMGNJGS82CE58AY3K3TQVA",
+        "link": "01M6PMGNJGS82CE58AY3796Z30",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PMGNFR7EQWGKHF0EKREYBG",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6PFEXSHWC6TR4F3GFKHV09R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PMGNM3BFNSK1QFT928GFRZ",
+  "type": "ops",
+  "v": 1
+}

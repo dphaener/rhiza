@@ -1,0 +1,86 @@
+{
+  "actor": "01M6PF3BB5JAEEX5SK80H8BKK9",
+  "after": [
+    "01M6PFH1X52KNK0C5ZCEC5HFD3"
+  ],
+  "at": "2026-11-05T18:30:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A web package test renders /runs over fixture journals with live, done and failed runs and asserts their order, fields and links, and that the list section declares the run events.",
+          "statement": "The Runs page at /runs lists live runs first, then recent ones newest first, each with its short ID, change set title, workflow, state, current step and start time, linking to its run page; the list re-renders live on run journal moves."
+        },
+        "handle": "web-runs-list",
+        "id": "01M6PFKAD643RMG5EKFCW00WWC",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6PFKAD5JGK5R4PD07FT82DE",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFKAD5JGK5R4PD07FT82DE",
+        "id": "01M6PFKADK2NZVWWAMZAVBJ2F2",
+        "link": "01M6PFKADK2NZVWWAMZ8P3Y08Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A web package test renders /runs/<id> for a fixture plan run and a fixture review run and asserts the steps in order with outcomes, the sessions and the review summary's findings, and a 404 for an unknown run.",
+          "statement": "A run's page at /runs/<id> shows its steps from the journal as a timeline with each step's outcome and time, the agent sessions of each step with their status, and for a review run its review summary with findings and severities; it re-renders live on that run's journal moves."
+        },
+        "handle": "web-run-detail",
+        "id": "01M6PFKAE3P8MJB7E7CMMCTYBX",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6PFKAE3P8MJB7E7CJ4FCWHB",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFKAE3P8MJB7E7CJ4FCWHB",
+        "id": "01M6PFKAEHG2J2A707TXVBW44W",
+        "link": "01M6PFKAEHG2J2A707TWNN9EZA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A web package test renders a fixture run's log tail with its last lines, appends lines and reads them through the run's log event and fragment, and asserts the no-log state for a run without one.",
+          "statement": "A headless run's page shows the last lines of its driver log in an always-dark terminal block that follows new lines live, and says so when the run has no log."
+        },
+        "handle": "web-run-log-tail",
+        "id": "01M6PFKAF52MNXBPR8SVFJF2RX",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M6PFKAF52MNXBPR8STKSW15M",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFKAF52MNXBPR8STKSW15M",
+        "id": "01M6PFKAFPWDXH8YWQKHWJ6R8K",
+        "link": "01M6PFKAFPWDXH8YWQKHPHXCXK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6PFH1X52KNK0C5ZCDYEEF64",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PFKAG8BF8EJD9AV0260BZV",
+  "type": "ops",
+  "v": 1
+}

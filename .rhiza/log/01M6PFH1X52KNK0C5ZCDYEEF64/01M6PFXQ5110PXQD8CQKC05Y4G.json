@@ -1,0 +1,30 @@
+{
+  "actor": "01M6PFWGF1NCG57KCHVBJDFAWK",
+  "after": [
+    "01M6PFKAG8BF8EJD9AV0260BZV"
+  ],
+  "at": "2026-11-05T18:35:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A web package test renders a fixture run's log tail with its last lines, appends lines to its driver log and reads them through the stream's run log event and the tail fragment, and asserts the no-log state for a run without one.",
+          "statement": "A headless run's page shows the last lines of its driver log in an always-dark terminal block that follows new lines live, and says so when the run has no log."
+        },
+        "handle": "web-run-log-tail",
+        "id": "01M6PFKAF52MNXBPR8SVFJF2RX",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M6PFKAF52MNXBPR8STKSW15M",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      }
+    ]
+  },
+  "change_set": "01M6PFH1X52KNK0C5ZCDYEEF64",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PFXQ5110PXQD8CQKC05Y4G",
+  "type": "ops",
+  "v": 1
+}

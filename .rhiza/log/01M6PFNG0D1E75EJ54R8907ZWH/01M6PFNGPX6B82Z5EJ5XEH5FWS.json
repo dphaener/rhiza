@@ -1,0 +1,293 @@
+{
+  "actor": "01M6PF3BB5JAEEX5SK80H8BKK9",
+  "after": [
+    "01M6PFNG0D1E75EJ54RAPGWKV9"
+  ],
+  "at": "2026-11-05T18:31:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "Go templates, no build (Recommended)",
+            "SPA with a build step",
+            "Vanilla JS client, no build"
+          ],
+          "picked": "Go templates, no build (Recommended)",
+          "question": "How should the web UI's frontend be built? (Rhiza is one Go binary with no Node toolchain today.)",
+          "session": "ea442c0d-1f6e-46a3-908f-01a1acf1a3a2",
+          "statement": "How should the web UI's frontend be built? (Rhiza is one Go binary with no Node toolchain today.) — Go templates, no build (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ea442c0d-1f6e-46a3-908f-01a1acf1a3a2"
+        },
+        "handle": "answer-ea442c0d-1",
+        "id": "01M6PFM4BYR81XBVP9JWDVH0V5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6PFM4BYR81XBVP9JSP0PK25",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PFM4BYR81XBVP9JSP0PK25",
+        "id": "01M6PFM6VVMTR1Z1TBTBJQGSWY",
+        "link": "01M6PFM6VVMTR1Z1TBT89X4F08",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFE13VHPKWY3QZ00HWMS8B",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "internal/api read ops (Recommended)",
+            "Direct package reads"
+          ],
+          "picked": "internal/api read ops (Recommended)",
+          "question": "Where does the web UI get its data?",
+          "session": "ea442c0d-1f6e-46a3-908f-01a1acf1a3a2",
+          "statement": "Where does the web UI get its data? — internal/api read ops (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ea442c0d-1f6e-46a3-908f-01a1acf1a3a2"
+        },
+        "handle": "answer-ea442c0d-2",
+        "id": "01M6PFM98925EM4M0G7050KY4Z",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6PFM98925EM4M0G6Y0X1H6P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PFM98925EM4M0G6Y0X1H6P",
+        "id": "01M6PFMBK1970PW2KYT76X453D",
+        "link": "01M6PFMBK1970PW2KYT6N4AC91",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFE13VHPKWY3QZ00HWMS8B",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Server-sent events (Recommended)",
+            "Polling",
+            "Manual refresh"
+          ],
+          "picked": "Server-sent events (Recommended)",
+          "question": "How should pages stay current while you watch?",
+          "session": "ea442c0d-1f6e-46a3-908f-01a1acf1a3a2",
+          "statement": "How should pages stay current while you watch? — Server-sent events (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ea442c0d-1f6e-46a3-908f-01a1acf1a3a2"
+        },
+        "handle": "answer-ea442c0d-3",
+        "id": "01M6PFME66P6X2WC164YR44EGP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6PFME66P6X2WC164YPEARKR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PFME66P6X2WC164YPEARKR",
+        "id": "01M6PFMGKS7XYHMJSHGCEKTQRN",
+        "link": "01M6PFMGKS7XYHMJSHGB9VZC62",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFE13VHPKWY3QZ00HWMS8B",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "On by default, 127.0.0.1 (Recommended)",
+            "Off until enabled"
+          ],
+          "picked": "On by default, 127.0.0.1 (Recommended)",
+          "question": "How is the web server turned on and bound?",
+          "session": "ea442c0d-1f6e-46a3-908f-01a1acf1a3a2",
+          "statement": "How is the web server turned on and bound? — On by default, 127.0.0.1 (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ea442c0d-1f6e-46a3-908f-01a1acf1a3a2"
+        },
+        "handle": "answer-ea442c0d-4",
+        "id": "01M6PFMK18Q53F74FP8KS7FNMK",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6PFMK18Q53F74FP8JMP6NEX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PFMK18Q53F74FP8JMP6NEX",
+        "id": "01M6PFMNDPK2TABG1YJKFPFKWD",
+        "link": "01M6PFMNDPK2TABG1YJKDJMHBV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFE13VHPKWY3QZ00HWMS8B",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Overview",
+            "Runs",
+            "Roadmap & change sets",
+            "Model browser"
+          ],
+          "picked": "Overview, Runs, Roadmap & change sets",
+          "question": "Which pages are in the first pass? (Each becomes its own change set, built on a shared server change set.)",
+          "session": "ea442c0d-1f6e-46a3-908f-01a1acf1a3a2",
+          "statement": "Which pages are in the first pass? (Each becomes its own change set, built on a shared server change set.) — Overview, Runs, Roadmap & change sets",
+          "wording": "the agent's option, picked by the owner in session ea442c0d-1f6e-46a3-908f-01a1acf1a3a2"
+        },
+        "handle": "answer-ea442c0d-5",
+        "id": "01M6PFMQRZHF3AXB466XP3XYQ9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6PFMQRZHF3AXB466T75RJQV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PFMQRZHF3AXB466T75RJQV",
+        "id": "01M6PFMT5GXBMXQEQYVZWDGVKK",
+        "link": "01M6PFMT5GXBMXQEQYVZTTK43H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFE13VHPKWY3QZ00HWMS8B",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Prompt now; design CS waits (Recommended)",
+            "Prompt as a repo file",
+            "Build on your basics now"
+          ],
+          "picked": "Prompt now; design CS waits (Recommended)",
+          "question": "How do the design prompt and Claude Design's output fit in?",
+          "session": "ea442c0d-1f6e-46a3-908f-01a1acf1a3a2",
+          "statement": "How do the design prompt and Claude Design's output fit in? — Prompt now; design CS waits (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ea442c0d-1f6e-46a3-908f-01a1acf1a3a2"
+        },
+        "handle": "answer-ea442c0d-6",
+        "id": "01M6PFMWSTQF75Y0T9FQARVYVQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6PFMWSTQF75Y0T9FM88W23E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PFMWSTQF75Y0T9FM88W23E",
+        "id": "01M6PFMZ47GG0EYKBR8ZEDCXFZ",
+        "link": "01M6PFMZ47GG0EYKBR8YJAVXSY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFE13VHPKWY3QZ00HWMS8B",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "All five now (Recommended)",
+            "Server and design only"
+          ],
+          "picked": "All five now (Recommended)",
+          "question": "Which change sets get their leaves planned now? (Server; Design system; Overview; Runs; Roadmap & change sets.)",
+          "session": "ea442c0d-1f6e-46a3-908f-01a1acf1a3a2",
+          "statement": "Which change sets get their leaves planned now? (Server; Design system; Overview; Runs; Roadmap & change sets.) — All five now (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ea442c0d-1f6e-46a3-908f-01a1acf1a3a2"
+        },
+        "handle": "answer-ea442c0d-7",
+        "id": "01M6PFN280T6HXZ85WH1ZCMNE7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6PFN280T6HXZ85WH0JJMX3G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PFN280T6HXZ85WH0JJMX3G",
+        "id": "01M6PFN4MX70AT6DCSF2SFWS8G",
+        "link": "01M6PFN4MX70AT6DCSEZ927744",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFE13VHPKWY3QZ00HWMS8B",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "7787 (Recommended)",
+            "8080",
+            "Random free port"
+          ],
+          "picked": "7787 (Recommended)",
+          "question": "What default port does the daemon serve the web UI on?",
+          "session": "ea442c0d-1f6e-46a3-908f-01a1acf1a3a2",
+          "statement": "What default port does the daemon serve the web UI on? — 7787 (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ea442c0d-1f6e-46a3-908f-01a1acf1a3a2"
+        },
+        "handle": "answer-ea442c0d-8",
+        "id": "01M6PFN72GTR5MAQC2Y1YBGSK5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6PFN72GTR5MAQC2XZGPKA0N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PFN72GTR5MAQC2XZGPKA0N",
+        "id": "01M6PFN9CCT49R4FXR3TZMENZZ",
+        "link": "01M6PFN9CCT49R4FXR3QSHZ7XP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFE13VHPKWY3QZ00HWMS8B",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Embedded in the binary (Recommended)",
+            "Google Fonts"
+          ],
+          "picked": "Embedded in the binary (Recommended)",
+          "question": "Where do the web UI's fonts (Petrona, Instrument Sans, JetBrains Mono) load from?",
+          "session": "ea442c0d-1f6e-46a3-908f-01a1acf1a3a2",
+          "statement": "Where do the web UI's fonts (Petrona, Instrument Sans, JetBrains Mono) load from? — Embedded in the binary (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ea442c0d-1f6e-46a3-908f-01a1acf1a3a2"
+        },
+        "handle": "answer-ea442c0d-9",
+        "id": "01M6PFNC23WW1CM5NTXMWRNFXM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6PFNC23WW1CM5NTXHGDWQ6G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PFNC23WW1CM5NTXHGDWQ6G",
+        "id": "01M6PFNEHK2BMSAMWW3PKXR4BF",
+        "link": "01M6PFNEHK2BMSAMWW3MC2QK9P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFE13VHPKWY3QZ00HWMS8B",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6PFNG0D1E75EJ54R8907ZWH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PFNGPX6B82Z5EJ5XEH5FWS",
+  "type": "ops",
+  "v": 1
+}

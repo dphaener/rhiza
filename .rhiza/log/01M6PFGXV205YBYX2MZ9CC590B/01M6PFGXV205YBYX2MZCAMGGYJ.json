@@ -1,0 +1,18 @@
+{
+  "actor": "01M6PF3BB5JAEEX5SK80H8BKK9",
+  "after": [],
+  "at": "2026-11-05T18:28:47Z",
+  "body": {
+    "intent": "Web Overview page: the daemon and its health, live runs and their current step, the inbox and the active milestone's progress on one live page",
+    "kind": "intention",
+    "sources": [
+      "01M6PFE13VHPKWY3QZ00HWMS8B"
+    ],
+    "title": "Web UI Overview page"
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PFGXV205YBYX2MZCAMGGYJ",
+  "type": "open",
+  "v": 2
+}

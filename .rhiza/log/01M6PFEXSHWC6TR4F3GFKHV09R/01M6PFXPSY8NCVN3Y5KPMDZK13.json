@@ -1,0 +1,30 @@
+{
+  "actor": "01M6PFWGF1NCG57KCHVBJDFAWK",
+  "after": [
+    "01M6PFJ9D6977GS0DYQAQ152C0"
+  ],
+  "at": "2026-11-05T18:35:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A web package test drives the events handler with a recorder, appends a log entry, a run journal move, driver log lines and an inbox item and changes the daemon's status in a fixture repo, and reads one matching named event for each from the stream.",
+          "statement": "GET /events streams server-sent events naming what changed (a change set moved or landed, a run's journal moved, a run's driver log grew, an inbox item arrived or left, the daemon's status changed: paused, slots or health), so an open page knows to re-fetch."
+        },
+        "handle": "web-events-stream",
+        "id": "01M6PFJ98BKT1ES8F6WJYGG6VX",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6PFJ98BKT1ES8F6WJTVJ893",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      }
+    ]
+  },
+  "change_set": "01M6PFEXSHWC6TR4F3GFKHV09R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PFXPSY8NCVN3Y5KPMDZK13",
+  "type": "ops",
+  "v": 1
+}

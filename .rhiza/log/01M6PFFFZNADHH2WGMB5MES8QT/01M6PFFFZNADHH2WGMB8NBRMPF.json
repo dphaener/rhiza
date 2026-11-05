@@ -1,0 +1,18 @@
+{
+  "actor": "01M6PF3BB5JAEEX5SK80H8BKK9",
+  "after": [],
+  "at": "2026-11-05T18:28:00Z",
+  "body": {
+    "intent": "Web design system: the Claude Design system built from the owner's basics as one embedded stylesheet, embedded fonts and the shared layout and partials every page renders with",
+    "kind": "intention",
+    "sources": [
+      "01M6PFE13VHPKWY3QZ00HWMS8B"
+    ],
+    "title": "Web UI design system"
+  },
+  "change_set": "01M6PFFFZNADHH2WGMB5MES8QT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PFFFZNADHH2WGMB8NBRMPF",
+  "type": "open",
+  "v": 2
+}

@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6PG6AR0PWP9FT0RYR5FS72P"
+  ],
+  "at": "2026-11-05T18:43:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on web-api-read-only): The acceptance has a test 'walk the api registry asserting every allowlisted operation is a read', but the registry has no read marker. Operation.Write (internal/api/api.go) only records whether an operation appends to the log. daemon.set, daemon.start, render and ship.merge all have Write false yet write config, files or GitHub, so a Write-based assertion would pass for them. The leaf needs to name what makes an operation a read (an explicit allowlist checked against a named set, or a new registry flag) so the check can actually fail. The critic confirmed it: internal/api Operation has no read marker: Write only means 'appends to the log', and daemon.set, daemon.start, render and ship.merge all leave Write false while writing git config, files or GitHub. The acceptance's 'every allowlisted operation is a read' has no defined test, so a Write-based check would pass for those writes; the leaf must name what makes an operation a read. How should it be settled?"
+        },
+        "handle": "review-01m6pf30-r3-f1",
+        "id": "01M6PGBJM14G29CMMYB3QAHZSR",
+        "key": null,
+        "kind": "question",
+        "node": "01M6PGBJM14G29CMMYB19YSYRS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PGBJM14G29CMMYB19YSYRS",
+        "id": "01M6PGBJM9ZQAYFNK8RTG24PZQ",
+        "link": "01M6PGBJM9ZQAYFNK8RQQYGD6Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ9736AS6TE510QA5VVBS",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6PFEXSHWC6TR4F3GFKHV09R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PGBJNBM0QJFFGNX4WGCY3P",
+  "type": "ops",
+  "v": 1
+}

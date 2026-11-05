@@ -1,0 +1,18 @@
+{
+  "actor": "01M6PF3BB5JAEEX5SK80H8BKK9",
+  "after": [],
+  "at": "2026-11-05T18:28:56Z",
+  "body": {
+    "intent": "Web Roadmap pages: milestone groups and the backlog, and a change set's page with its intent, state, leaves, questions, runs and history",
+    "kind": "intention",
+    "sources": [
+      "01M6PFE13VHPKWY3QZ00HWMS8B"
+    ],
+    "title": "Web UI Roadmap pages"
+  },
+  "change_set": "01M6PFH625P3BYQAB8P6J38BBT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PFH625P3BYQAB8P7TRVZXY",
+  "type": "open",
+  "v": 2
+}
