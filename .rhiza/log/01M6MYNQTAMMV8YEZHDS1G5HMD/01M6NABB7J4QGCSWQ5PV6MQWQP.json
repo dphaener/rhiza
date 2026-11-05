@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NA66438JRM3D1V4VZXZ0M6",
+  "after": [
+    "01M6N45VG5V50PRDVR2X3T41ZM"
+  ],
+  "at": "2026-11-05T07:39:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 05f87d94 ran go test -trimpath -count=1 -v ./internal/tui/daemonapp/... (fake runner, no real daemon/Rex): TestPrefilledFromSettings (Confirm and Paused() follow daemon.settings' rhiza.daemon.paused for true and false), TestFlipAndSubmitSetsAndQuits (flipping either way and Enter makes exactly one call 'daemon.set -- rhiza.daemon.paused <new>' and the shell closes with its result), TestUnchangedSubmitSetsNothing and TestEscSetsNothing (no daemon.set, shell closes) all PASS; go vet and gofmt clean. Read the diff: daemonapp.New reads daemon.settings, prefills ui.NewConfirm via Default(paused), and Update writes daemon.set only when the submitted value differs, matching DaemonSetRequest's key/value args and autonomyapp's '--' convention."
+        },
+        "handle": "daemon-app-pause-verified",
+        "id": "01M6NA9RNTXJK65Q92XBJ40KZ0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NA9RNTXJK65Q92XAB069XS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NA9RNTXJK65Q92XAB069XS",
+        "id": "01M6NAAA0AXQYTC1MSGZCXN9R4",
+        "link": "01M6NAAA0AXQYTC1MSGXWQNDHR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZC0J2KTTEAQ16DF31DZBV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNQTAMMV8YEZHDS1G5HMD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NABB7J4QGCSWQ5PV6MQWQP",
+  "type": "ops",
+  "v": 1
+}
