@@ -26,11 +26,15 @@ For each plan change set run `rhiza overlaps --change <cs> --json`: it lists the
 change sets that write the same node or link. Record each overlap that contradicts the plan as
 a `contradiction` finding naming the other change set; skip one that fits the plan.
 
+Record the round from stdin with a heredoc, no temp file:
+
 ```
+rhiza run findings - --json <<'EOF'
 {"findings":[{"node":"<handle or ID>","kind":"missing-acceptance","reason":"<why>"}]}
+EOF
 ```
 
-`rhiza run findings <file> --json` records the round; findings are numbered f1, f2, ...
+The command records the round; findings are numbered f1, f2, ...
 When the plan is clean, record `{"findings":[]}`: every review records a round.
 
 ## Critic
@@ -39,10 +43,12 @@ Read the latest round in `rhiza run status --json`, check each finding against t
 and the code, and confirm or drop it. Never add a finding.
 
 ```
+rhiza run verdict - --json <<'EOF'
 {"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"<why>"}]}
+EOF
 ```
 
-`verdict` is `confirmed` or `dropped`. Record them with `rhiza run verdict <file> --json`.
+`verdict` is `confirmed` or `dropped`.
 
 ## Reviser
 
