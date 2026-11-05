@@ -288,6 +288,16 @@ func checkAutonomousRule(ctx *Ctx, verb, rule string) (autonomousGate, error) {
 	if rule == autonomyRule {
 		why = "it is only for a move made inside a run"
 	}
+	if rule == autonomyRule {
+		mode, err := autonomyStage(ctx, "accept")
+		if err != nil {
+			return autonomousGate{}, err
+		}
+		if mode != AutonomyAuto {
+			return autonomousGate{}, Usagef("cannot %s under rule %s: rhiza.autonomy.accept is %s, so only the owner accepts", verb, rule, mode).
+				WithNext(next)
+		}
+	}
 	ref := strings.TrimSpace(ctxGetenv(ctx)(envRun))
 	if ref == "" {
 		return autonomousGate{}, Usagef("cannot %s under rule %s: %s, and %s is not set",
