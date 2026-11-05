@@ -73,6 +73,11 @@ const defaultRule = "owner"
 // autonomous run, so it always means such a run made the move.
 const autonomousRule = "autonomous"
 
+// autonomyRule is the rule of an accept the gate of an owner-run plan made
+// because rhiza.autonomy.accept is auto. It is allowed only while RHIZA_RUN
+// names an unfinished run, autonomous or not.
+const autonomyRule = "autonomy"
+
 // autonomousRuleWhy is why rule autonomous is refused outside an
 // autonomous run, for its messages.
 const autonomousRuleWhy = "it is only for a move made inside a run started with rhiza run start --autonomous"
@@ -184,14 +189,17 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 		base = strings.TrimSpace(r.Base)
 	}
 	var auto *autonomousGate
-	if v.decision && rule == autonomousRule {
-		g, err := checkAutonomousRule(ctx, v.name)
+	if v.decision && (rule == autonomousRule || rule == autonomyRule) {
+		g, err := checkAutonomousRule(ctx, v.name, rule)
 		if err != nil {
 			return nil, err
 		}
 		auto = &g
 		if strings.TrimSpace(reason) == "" {
 			reason = "autonomous run " + g.run
+			if rule == autonomyRule {
+				reason = "rhiza.autonomy.accept is auto, run " + g.run
+			}
 		}
 	}
 	body := v.body(rule, reason)
@@ -274,12 +282,16 @@ type autonomousGate struct {
 
 // checkAutonomousRule finds the run RHIZA_RUN names and refuses, as
 // usage, unless it is an unfinished autonomous run.
-func checkAutonomousRule(ctx *Ctx, verb string) (autonomousGate, error) {
+func checkAutonomousRule(ctx *Ctx, verb, rule string) (autonomousGate, error) {
 	next := "rhiza describe " + verb
+	why := autonomousRuleWhy
+	if rule == autonomyRule {
+		why = "it is only for a move made inside a run"
+	}
 	ref := strings.TrimSpace(ctxGetenv(ctx)(envRun))
 	if ref == "" {
-		return autonomousGate{}, Usagef("cannot %s under rule autonomous: %s, and %s is not set",
-			verb, autonomousRuleWhy, envRun).WithNext(next)
+		return autonomousGate{}, Usagef("cannot %s under rule %s: %s, and %s is not set",
+			verb, rule, why, envRun).WithNext(next)
 	}
 	common, err := gitCommonDir(ctx)
 	if err != nil {
@@ -291,18 +303,18 @@ func checkAutonomousRule(ctx *Ctx, verb string) (autonomousGate, error) {
 	var amb *run.AmbiguousError
 	switch {
 	case errors.As(err, &nf), errors.As(err, &amb):
-		return autonomousGate{}, Usagef("cannot %s under rule autonomous: %s, and %s=%s names no run: %v", verb, autonomousRuleWhy, envRun, ref, err).
+		return autonomousGate{}, Usagef("cannot %s under rule %s: %s, and %s=%s names no run: %v", verb, rule, why, envRun, ref, err).
 			WithNext(next)
 	case err != nil:
 		return autonomousGate{}, Errorf("read run %s: %v", ref, err)
 	}
 	st := j.State()
-	if !st.Autonomous {
-		return autonomousGate{}, Usagef("cannot %s under rule autonomous: %s, and run %s is not autonomous", verb, autonomousRuleWhy, j.ID).
+	if !st.Autonomous && rule == autonomousRule {
+		return autonomousGate{}, Usagef("cannot %s under rule %s: %s, and run %s is not autonomous", verb, rule, why, j.ID).
 			WithNext(next)
 	}
 	if st.Ended {
-		return autonomousGate{}, Usagef("cannot %s under rule autonomous: %s, and run %s is finished: it %s", verb, autonomousRuleWhy, j.ID, st.Result).
+		return autonomousGate{}, Usagef("cannot %s under rule %s: %s, and run %s is finished: it %s", verb, rule, why, j.ID, st.Result).
 			WithNext(next)
 	}
 	return autonomousGate{store: rs, run: j.ID}, nil

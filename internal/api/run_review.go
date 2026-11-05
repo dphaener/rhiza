@@ -1251,12 +1251,13 @@ func gateRenderCommit(ctx *Ctx, cs id.ID) (string, error) {
 // runRunGate ends the plan of the run RHIZA_RUN names. It proposes each
 // draft among the plan's change sets (planChangeSets) and leaves the
 // others as they are, then journals a gated entry naming them all. A
-// normal run stops there: the owner accepts, and run status names rhiza
-// accept --rule owner for each still proposed. An autonomous run then
-// checks the review (gateReview): if it has not passed it fails (exit 1)
-// having accepted nothing, the proposals kept; else it accepts each
-// proposed change set under rule autonomous, which journals an accepted
-// entry per change set. Running it again moves nothing already moved.
+// run then checks the review (gateReview). An autonomous run whose review
+// has not passed fails (exit 1) having accepted nothing, the proposals
+// kept; an owner-run one just leaves them, each with rhiza accept --rule
+// owner next, as it does when rhiza.autonomy.accept is owner. Else it
+// accepts each proposed change set, under rule autonomous (autonomous
+// run) or autonomy (owner-run), which journals an accepted entry per
+// change set. Running it again moves nothing already moved.
 func runRunGate(ctx *Ctx, _ any) (any, error) {
 	const cmd = "run gate"
 	rr, err := openReviewRun(ctx, cmd, runGateNext)
@@ -1292,7 +1293,7 @@ func runRunGate(ctx *Ctx, _ any) (any, error) {
 			return nil, err
 		}
 	}
-	if !rr.state.Autonomous {
+	leave := func() (any, error) {
 		for i, g := range resp.ChangeSets {
 			if g.State == changeset.StateProposed {
 				resp.ChangeSets[i].Next = ownerAcceptNext(g.ID)
@@ -1305,7 +1306,14 @@ func runRunGate(ctx *Ctx, _ any) (any, error) {
 	}
 	reviewOpen, err := gateReview(sets, m, rr)
 	if err != nil {
-		return nil, err
+		if rr.state.Autonomous {
+			return nil, err
+		}
+		// An owner-run plan whose review has not passed accepts nothing.
+		return leave()
+	}
+	if reviewOpen && !rr.state.Autonomous {
+		return leave()
 	}
 	if reviewOpen {
 		// A review question still open stops the run for the owner, as a
@@ -1323,15 +1331,11 @@ func runRunGate(ctx *Ctx, _ any) (any, error) {
 	if acceptMode == AutonomyOwner {
 		// rhiza.autonomy.accept is owner: the proposals stay for the owner,
 		// and the inbox lists each as waiting for acceptance.
-		for i, g := range resp.ChangeSets {
-			if g.State == changeset.StateProposed {
-				resp.ChangeSets[i].Next = ownerAcceptNext(g.ID)
-			}
-		}
-		if err := gateCommitResp(ctx, &resp, rr.change); err != nil {
-			return nil, err
-		}
-		return resp, nil
+		return leave()
+	}
+	rule := autonomousRule
+	if !rr.state.Autonomous {
+		rule = autonomyRule
 	}
 	accept, _ := Lookup("accept")
 	for i, g := range resp.ChangeSets {
@@ -1339,7 +1343,7 @@ func runRunGate(ctx *Ctx, _ any) (any, error) {
 			continue
 		}
 		if !ctx.DryRun {
-			if _, err := accept.Run(gateCtx(ctx, mustParseID(g.ID)), DecisionRequest{Rule: autonomousRule}); err != nil {
+			if _, err := accept.Run(gateCtx(ctx, mustParseID(g.ID)), DecisionRequest{Rule: rule}); err != nil {
 				return nil, err
 			}
 		}
