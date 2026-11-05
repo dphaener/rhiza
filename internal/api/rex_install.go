@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/dphaener/rexuikit/surface"
 	"github.com/dphaener/rhiza/internal/tui/launcher"
 )
 
@@ -49,6 +50,7 @@ const (
 // every app action shares. Each app's layer starts in the invoking block's
 // directory; without one Rex starts it in $HOME.
 const rexPreludeLua = `local TERM = "com.superlogical.terminal"
+local LAYER_BOUNDS = { 0.3, 0.25, 0.4, 0.5 }
 
 -- block_cwd returns the working directory of the terminal block's
 -- foreground program, else of its shell, else nil.
@@ -59,12 +61,13 @@ local function block_cwd(block_id)
   return (p.foreground and p.foreground.cwd) or (p.child and p.child.cwd)
 end
 
--- open_argv returns the command that opens app: BIN as given when
--- settings.bin names it, else BIN found by the owner's login shell.
-local function open_argv(app)
-  if BIN_SET then return { BIN, "tui", "open", app } end
+-- app_command returns the command an app's layer runs: BIN as given when
+-- settings.bin names it, else BIN found by the owner's login shell, since
+-- the Rex server's PATH can lack the owner's.
+local function app_command(app)
+  if BIN_SET then return { BIN, "tui", "app", app } end
   local sh = (os and os.getenv and os.getenv("SHELL")) or "/bin/sh"
-  return { sh, "-lc", 'exec "$0" "$@"', BIN, "tui", "open", app }
+  return { sh, "-lc", 'exec "$0" "$@"', BIN, "tui", "app", app }
 end
 `
 
@@ -155,17 +158,109 @@ func rexKeyMode() string {
 	return b.String() + rexKeyModeLua
 }
 
+// rexCellBoundsLua is the Lua that sizes a layer to a number of cells: the
+// chrome model of rexuikit's surface.BoundsForCells, centred, with its
+// constants (frame, border and margin in pixels, cols then rows) filled in
+// by rexCellBounds. The window's size is the invoking block's terminal
+// size scaled up by the block's rect in the tiled layout, as rexuikit's
+// Surface.Window does (windowCellsFrom); without a size to work from, or
+// for a block in a floating layer, it gives LAYER_BOUNDS.
+const rexCellBoundsLua = `
+-- find_leaf returns the rect of block id in a layout node, or nil.
+local function find_leaf(node, id)
+  if node == nil then return nil end
+  if node.block_id == id then return node.rect end
+  if node.split ~= nil then
+    return find_leaf(node.split.before, id) or find_leaf(node.split.after, id)
+  end
+  return nil
+end
+
+-- block_window returns the ID of the window holding block id, in any of
+-- its layers, or nil. A layer opened without a window goes to the
+-- session's active window, which need not be the one the user is looking
+-- at, so each app's layer opens in the window of the focused block.
+local function block_window(block_id)
+  if block_id == nil then return nil end
+  local ok, view = pcall(rex.session.view, {})
+  if not ok or type(view) ~= "table" then return nil end
+  for _, w in ipairs(view.windows or {}) do
+    for _, l in ipairs(w.layers or {}) do
+      if find_leaf(l.layout, block_id) ~= nil then return w.window_id end
+    end
+  end
+  return nil
+end
+
+-- window_cells returns the window holding block id in cells, and the pixel
+-- size of a cell: the block's size divided by its share of the window. In
+-- a split it comes out a few cells short, which makes the layer larger
+-- than the app, never smaller. nil when the block is not tiled or has no
+-- size in pixels.
+local function window_cells(block_id)
+  local ok, view = pcall(rex.session.view, {})
+  if not ok or type(view) ~= "table" then return nil end
+  for _, w in ipairs(view.windows or {}) do
+    for _, l in ipairs(w.layers or {}) do
+      local rect = find_leaf(l.layout, block_id)
+      if rect ~= nil then
+        if l.kind ~= "tiled" or (rect[3] or 0) <= 0 or (rect[4] or 0) <= 0 then return nil end
+        local sok, sz = pcall(rex.block.call, TERM, "size", { block_id = block_id })
+        if not sok or type(sz) ~= "table" or (sz.cell_width_px or 0) <= 0 or (sz.cell_height_px or 0) <= 0
+          or (sz.columns or 0) <= 0 or (sz.rows or 0) <= 0 then
+          return nil
+        end
+        return {
+          cols = math.floor(sz.columns / rect[3] + 0.5),
+          rows = math.floor(sz.rows / rect[4] + 0.5),
+          cell_w = sz.cell_width_px,
+          cell_h = sz.cell_height_px,
+        }
+      end
+    end
+  end
+  return nil
+end
+
+-- cell_bounds returns bounds that give a program cols x rows cells.
+local function cell_bounds(block_id, cols, rows)
+  if block_id == nil then return LAYER_BOUNDS end
+  local wc = window_cells(block_id)
+  if wc == nil then return LAYER_BOUNDS end
+  local function edge(v) return math.floor(v + 0.5) end
+  local function fit_axis(win, frame, cell, border, margin, want)
+    local px = win * cell + frame
+    local span = math.min(1, (want * cell + border + margin) / px)
+    while true do
+      local pos = math.max(0, (1 - span) / 2)
+      local got = math.floor((edge(px * (pos + span)) - edge(px * pos) - border - margin) / cell)
+      if got >= want or span >= 1 then return pos, span end
+      span = math.min(1, span + 1 / px)
+    end
+  end
+  local x, w = fit_axis(wc.cols, %[1]d, wc.cell_w, %[2]d, %[3]d, cols)
+  local y, h = fit_axis(wc.rows, %[4]d, wc.cell_h, %[5]d, %[6]d, rows)
+  return { x, y, w, h }
+end
+`
+
+// rexCellBounds returns rexCellBoundsLua with rexuikit's surface frame,
+// border and margin constants filled in.
+func rexCellBounds() string {
+	return fmt.Sprintf(rexCellBoundsLua,
+		surface.FramePxCols, surface.BorderPxCols, surface.InverseMarginPxCols,
+		surface.FramePxRows, surface.BorderPxRows, surface.InverseMarginPxRows)
+}
+
 // rexAppActionLua is the Lua of one app's action: its own entry in Rex's
 // command palette, titled with the app's name, that opens the app straight
-// away; no list step comes first. The action only starts
-// `rhiza tui open <app>`, detached, in the invoking block's directory:
-// that opens the app as a rexuikit Modal over Rex's control connection,
-// centred over the invoking block's window and sized to the app's content,
-// and resizes it as the content changes (internal/tui/modalopen). Config
-// Lua runs it with the Rex server's environment, whose PATH can lack the
-// owner's, so BIN goes through a login shell, unless settings.bin names
-// it, which runs as given. The arguments are Lua string literals (action
-// name, title, description, keywords, app name), quoted by rexAppActions.
+// away, in a focused layer of its own in the invoking block's window,
+// sized to the app's cells and running `rhiza tui app <name>` in the
+// invoking block's directory; no list step comes first. The arguments are
+// Lua string literals (action name, title, description, keywords, app
+// name), quoted by rexAppActions, then the app's columns and rows.
+// `rhiza tui open` (internal/tui/modalopen) is not used here: see the Lua
+// comment.
 const rexAppActionLua = `
 rex.action{
   name = %[1]s,
@@ -174,17 +269,29 @@ rex.action{
   category = "rhiza",
   keywords = %[4]s,
   run = function(ctx)
-    local argv = open_argv(%[5]s)
-    if ctx.session_id ~= nil then argv[#argv + 1] = "--session"; argv[#argv + 1] = ctx.session_id end
-    if ctx.block_id ~= nil then argv[#argv + 1] = "--block"; argv[#argv + 1] = ctx.block_id end
-    return rex.exec(argv, { detach = true, cwd = block_cwd(ctx.block_id) })
+    -- The action opens its layer itself, not through rex.exec: rex.exec's
+    -- detach starts nothing on Rex r10, and exec from a remote client's
+    -- action doesn't run.
+    local res, err = rex.session.new_layer{
+      window_id = block_window(ctx.block_id),
+      bounds = cell_bounds(ctx.block_id, %[6]d, %[7]d),
+      layout = rex.layout.block{
+        flavor = TERM .. ".shell",
+        label = %[2]s,
+        options = { command = app_command(%[5]s), cwd = block_cwd(ctx.block_id) },
+      },
+      focus = true,
+    }
+    if err ~= nil then error(err, 0) end
+    return res
   end,
 }
 `
 
 // rexAppActions returns the Lua registering one rex.action per registered
 // app, in the order launcher.Apps gives (by name), so the same apps always
-// give the same bytes.
+// give the same bytes. Each app's layer is sized at install time from
+// launcher.App.Size: its component's NaturalSize, else the default.
 func rexAppActions() string {
 	var b strings.Builder
 	for _, a := range launcher.Apps() {
@@ -192,9 +299,10 @@ func rexAppActions() string {
 		if desc == "" {
 			desc = "Open the " + a.Name + " app"
 		}
+		cols, rows := a.Size()
 		fmt.Fprintf(&b, rexAppActionLua,
 			strconv.Quote(rexActionName(a.Name)), strconv.Quote(a.Name), strconv.Quote(desc),
-			strconv.Quote("rhiza app "+a.Name), strconv.Quote(a.Name))
+			strconv.Quote("rhiza app "+a.Name), strconv.Quote(a.Name), cols, rows)
 	}
 	return b.String()
 }
@@ -316,7 +424,7 @@ func rexScript(have []byte) []byte {
 		"-- Edit the settings block; a reinstall keeps it. Everything else is rewritten.\n" +
 		settings +
 		"\nlocal BIN, BIN_SET = \"rhiza\", false\nif type(settings.bin) == \"string\" and settings.bin ~= \"\" then BIN, BIN_SET = settings.bin, true end\n" +
-		rexPreludeLua + rexAppActions() + rexKeyMode() + rexScriptTail)
+		rexPreludeLua + rexCellBounds() + rexAppActions() + rexKeyMode() + rexScriptTail)
 }
 
 // rexHasRequire reports whether init.lua already loads rhiza: any line that

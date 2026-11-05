@@ -18,32 +18,35 @@ grep '^-- mine$' conf/init.lua
 grep -count=1 '^config reload$' rex.log
 
 # Every registered app is a Rex action of its own, titled with its name and
-# starting `rhiza tui open <name>`: exactly the apps inbox, request, runs, daemon
+# opening a layer that runs `rhiza tui app <name>`: exactly the apps inbox, request, runs, daemon
 # and autonomy, and none of the old ones.
 grep 'name = "rhiza_app_inbox"' conf/rhiza.lua
-grep 'open_argv\("inbox"\)' conf/rhiza.lua
+grep 'command = app_command\("inbox"\)' conf/rhiza.lua
 grep 'name = "rhiza_app_request"' conf/rhiza.lua
-grep 'open_argv\("request"\)' conf/rhiza.lua
+grep 'command = app_command\("request"\)' conf/rhiza.lua
 grep 'name = "rhiza_app_runs"' conf/rhiza.lua
-grep 'open_argv\("runs"\)' conf/rhiza.lua
+grep 'command = app_command\("runs"\)' conf/rhiza.lua
 grep 'name = "rhiza_app_daemon"' conf/rhiza.lua
-grep 'open_argv\("daemon"\)' conf/rhiza.lua
+grep 'command = app_command\("daemon"\)' conf/rhiza.lua
 grep 'name = "rhiza_app_autonomy"' conf/rhiza.lua
-grep 'open_argv\("autonomy"\)' conf/rhiza.lua
+grep 'command = app_command\("autonomy"\)' conf/rhiza.lua
 grep -count=5 'rex\.action' conf/rhiza.lua
 grep -count=5 'name = "rhiza_app_' conf/rhiza.lua
 ! grep 'rhiza_app_(roadmap|model|health|changes|show|why|slice|ready|live|session_ls|run_status|accept|land|propose|record|change_show)' conf/rhiza.lua
 ! grep 'name = "rhiza_app_[a-z0-9_]*[^a-z0-9_"]' conf/rhiza.lua
-# No action opens a layer itself: each starts `rhiza tui open <app>`
-# detached, which opens the app as a centred rexuikit Modal sized to its
-# content over Rex's control connection and resizes it as the content
-# changes (internal/tui/modalopen's tests). internal/api's
-# TestRexInstallActionsStartTheModalOpener runs the actions.
-grep 'return rex.exec\(argv, \{ detach = true, cwd = block_cwd\(ctx.block_id\) \}\)' conf/rhiza.lua
-grep '"tui", "open", app' conf/rhiza.lua
-! grep 'new_layer' conf/rhiza.lua
-! grep 'bounds' conf/rhiza.lua
-! grep '"tui", "app"' conf/rhiza.lua
+# Each action opens its own focused layer in the invoking block's window,
+# sized at install time to its app's cells, with a terminal block running
+# `rhiza tui app <name>` in the block's directory; none goes through
+# rex.exec, whose detach starts nothing on Rex r10. internal/api's
+# TestRexInstallActionsOpenALayerPerApp runs the actions.
+grep -count=5 'rex\.session\.new_layer\{' conf/rhiza.lua
+grep -count=5 'window_id = block_window\(ctx.block_id\),' conf/rhiza.lua
+grep -count=5 'bounds = cell_bounds\(ctx.block_id, [0-9]+, [0-9]+\),' conf/rhiza.lua
+grep -count=5 'cwd = block_cwd\(ctx.block_id\) \},' conf/rhiza.lua
+grep -count=5 'focus = true,' conf/rhiza.lua
+grep '"tui", "app", app' conf/rhiza.lua
+! grep 'rex\.exec\(' conf/rhiza.lua
+! grep '"tui", "open"' conf/rhiza.lua
 
 # The launch key enters the rhiza key mode, which binds one key per app to
 # that app's action; the keys did not move.
