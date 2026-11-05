@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PQRMKDDA3JW2EQYFE5AHBJ",
+  "after": [
+    "01M6PQG16D0EAAF15YF0TR0K6A"
+  ],
+  "at": "2026-11-05T20:53:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at e9e08fd3: ran go test -trimpath ./internal/tui/inboxapp/... -count=1 -v; all 31 tests PASS with the fake runner, including the new TestGateFormShowsEachQuestionNoHandleAndAnswersRightOne: a two-question gate form shows '1 of 2: <restatement>' and 'Recommended: Keep it' above 'Your answer to question 1 of 2', no handle (review-01m6pf30-r3-f1, claude-design-output) anywhere in either step's view, and submitting calls question.answer with [review-01m6pf30-r3-f1 yes --run R4] then [claude-design-output no --run R4]. For the single answer form, a throwaway (deleted, uncommitted) test with a 300+ char question item at width 70 showed every word wrapped, then 'Recommended:' and 'Why:', all above the 'Your answer' TextArea; TestBlockerShowsEveryWordWrapped and TestNoSurfaceShowsAnIDOrHandle also pass. Read the diff: test-only, matching askLines/openGate/answerGate in inboxapp.go."
+        },
+        "handle": "inbox-app-answer-shows-question-verified",
+        "id": "01M6PQT5YS201NJ959VTNZ3K1X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PQT5YS201NJ959VRW51KNR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PQT5YS201NJ959VRW51KNR",
+        "id": "01M6PQT5ZPKHM9MNKBSACB2RER",
+        "link": "01M6PQT5ZPKHM9MNKBS8KYBV2K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PN1T22SZY3QGXYD783Z3JE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PQT60BBR0VX6HFXBNC9ZS7",
+  "type": "ops",
+  "v": 1
+}
