@@ -102,7 +102,9 @@ func WebEventSources(base *Ctx) web.Sources {
 
 // dirFingerprints fingerprints the entries of dir: with suffix, the files
 // ending in it (by name without it) by size and mtime; with dirs, the
-// subdirectories, by name. A missing dir has none.
+// subdirectories, by their entries' count and last name, so an entry
+// appended to a change set's existing directory moves it. A missing dir has
+// none.
 func dirFingerprints(dir, suffix string, dirs bool) map[string]string {
 	got := map[string]string{}
 	es, err := os.ReadDir(dir)
@@ -116,7 +118,12 @@ func dirFingerprints(dir, suffix string, dirs bool) map[string]string {
 		}
 		if dirs {
 			if e.IsDir() {
-				got[n] = "x"
+				sub, _ := os.ReadDir(filepath.Join(dir, n))
+				last := ""
+				if len(sub) > 0 {
+					last = sub[len(sub)-1].Name()
+				}
+				got[n] = fmt.Sprintf("%d:%s", len(sub), last)
 			}
 			continue
 		}

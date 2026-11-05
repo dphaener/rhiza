@@ -90,6 +90,14 @@ func TestEventsNameWhatChanged(t *testing.T) {
 	// A log entry.
 	write(filepath.Join(ctx.Root, ".rhiza", "log", "01ZZZZZZZZZZZZZZZZZZZZZZZZ", "a.json"), "{}\n")
 	expect("change", "01ZZZZZZZZZZZZZZZZZZZZZZZZ")
+	// Another entry in the same change set: it moved or landed.
+	moved := "event: change\ndata: {\"id\":\"01ZZZZZZZZZZZZZZZZZZZZZZZZ\"}\n\n"
+	write(filepath.Join(ctx.Root, ".rhiza", "log", "01ZZZZZZZZZZZZZZZZZZZZZZZZ", "b.json"), "{}\n")
+	for end := time.Now().Add(10 * time.Second); strings.Count(l.body(), moved) < 2; time.Sleep(5 * time.Millisecond) {
+		if time.Now().After(end) {
+			t.Fatalf("no change event for an entry appended to an existing change set:\n%s", l.body())
+		}
+	}
 	// A run journal moves.
 	write(filepath.Join(common, "rhiza", "runs", "run1.jsonl"), "{}\n")
 	expect("run", "run1")
