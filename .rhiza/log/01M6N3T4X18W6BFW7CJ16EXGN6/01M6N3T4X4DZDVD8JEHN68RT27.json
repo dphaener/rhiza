@@ -1,0 +1,15 @@
+{
+  "actor": "01M6N3QC2P07HEW0DH3JP3TDKR",
+  "after": [],
+  "at": "2026-11-05T05:44:54Z",
+  "body": {
+    "intent": "Record the owner's rule as a constraint: milestone planning always needs a human; no plan run for a milestone (a record change set, or a request of kind milestone) runs autonomous, whatever the daemon's or a stage's autonomy (owner, 2026-11-05: \"milestone planning should never be autonomous even in autonomous mode. that always requires a human.\")",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6N3T4X18W6BFW7CJ16EXGN6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N3T4X4DZDVD8JEHN68RT27",
+  "type": "open",
+  "v": 1
+}
