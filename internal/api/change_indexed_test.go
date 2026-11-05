@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"math/rand"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -138,5 +139,51 @@ func TestShipCheckSettledReadsNoLog(t *testing.T) {
 			t.Fatal(err)
 		}
 		_ = other
+	}
+}
+
+// TestChangeShowIndexedKeepsMovedUnderLater: a node moved under one the
+// change set creates after it keeps its place in change show over the
+// index, as in the fold: its create no longer applies strictly, but the
+// interim model keeps it, so the leaf is the moved node, not its new parent.
+func TestChangeShowIndexedKeepsMovedUnderLater(t *testing.T) {
+	ctx, _, _ := readLog(t)
+	folded := *ctx
+	folded.IndexPath = ""
+	cs := newChange(t, ctx, `{"intent":"Edge"}`).ChangeSet
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"early"}`)
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"late"}`)
+	mustWrite(t, ctx, "mv", `{"ref":"early","parent":"late"}`)
+	want := showJSON(t, &folded, cs.String())
+	if !strings.Contains(want, `"handle":"early"`) {
+		t.Fatalf("thin fixture: no early in %s", want)
+	}
+	if got := showJSON(t, ctx, cs.String()); got != want {
+		t.Errorf("change show %s\nindexed %s\nfolded  %s", cs, got, want)
+	}
+}
+
+// TestChangeShowIndexedMatchesFoldGenerated: over generated logs, change
+// show of every change set answers through the index what it answers
+// through the fold of the log.
+func TestChangeShowIndexedMatchesFoldGenerated(t *testing.T) {
+	seeds := int64(6)
+	if testing.Short() {
+		seeds = 2
+	}
+	for seed := int64(1); seed <= seeds; seed++ {
+		ctx, landed, accepted := readLog(t)
+		folded := *ctx
+		folded.IndexPath = ""
+		g := &writeGen{t: t, rng: rand.New(rand.NewSource(seed)), dir: t.TempDir(),
+			handles: []string{"store", "cache", "disk", "tape", "old", "under-old", "faster", "use-ssd", "ram", "ghost"},
+			sets:    []id.ID{landed, accepted}, base: 8}
+		genLog(t, ctx, g)
+		for _, cs := range g.sets {
+			want := showJSON(t, &folded, cs.String())
+			if got := showJSON(t, ctx, cs.String()); got != want {
+				t.Errorf("seed %d: change show %s\nindexed %s\nfolded  %s", seed, cs, got, want)
+			}
+		}
 	}
 }

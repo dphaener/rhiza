@@ -19,8 +19,11 @@ import (
 	"github.com/dphaener/rhiza/internal/op"
 )
 
-// indexModel is a change set's view as the index gives it: the what-if
-// overlay for a change set in flight, the as-is rows for any other. It
+// indexModel is a change set's view as the index gives it: for a change
+// set in flight, the write path's view (writeIndex.model: the as-is rows
+// with its in-flight dependencies' ops and its own applied as the interim
+// model applies them, so a node whose create no longer applies strictly is
+// kept, as the fold keeps it), the as-is rows for any other. It
 // answers what the interim Model answers about the same change set. An
 // index error stops the answers (nothing found) and is kept in err.
 type indexModel struct {
@@ -33,11 +36,12 @@ type indexModel struct {
 func newIndexModel(x *index.Index, cs id.ID, state changeset.State) (*indexModel, error) {
 	m := &indexModel{x: x}
 	if inFlightState(state) {
-		ov, _, err := x.WhatIfOverlay(cs)
-		if err != nil {
-			return nil, Errorf("%s", err.Error())
+		ix := &writeIndex{x: x}
+		wm := ix.buildModel(&workspace{}, cs).(*writeModel)
+		if err := ix.failure(); err != nil {
+			return nil, err
 		}
-		m.ov = ov
+		m.ov = wm.ov
 	}
 	return m, nil
 }
