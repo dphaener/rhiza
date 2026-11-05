@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NR2047B66YASWJQ73MCNSZ",
+  "after": [
+    "01M6NJ5THXC9XQH1RWVPM8AMRZ"
+  ],
+  "at": "2026-11-05T12:00:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 7457eacf (attempt 2). Read the diff: the write view (internal/api/write_indexed.go writeIndex.model) now loads only the as-is rows the in-flight ops touch, applies the dependencies' ops in dependencyOrder and then the change set's own as newModelSets/model.apply do, and answers through index.OverlayOf. No log fold. (1) go test -trimpath -count=1 ./internal/api -run 'TestWritesThroughIndexMatchFold|TestApplyIndexedReadsNoLog' -v: both PASS. TestApplyIndexedReadsNoLog uses a counting log reader and a fresh index and asserts zero log reads for an apply of several writes. TestWritesThroughIndexMatchFold now generates the log (genLog: 3-5 random change sets with random writes, random depends-on links, end states draft/proposed/accepted/landed/withdrawn) and then random add/set/mv/retire/link/unlink/apply writes to random change sets, with no generator exclusions. Every write got the same error or the same ops through the index as through the fold, with 18-29 accepted and 51-62 refused per seed. This answers finding f2. In a scratch copy I raised it to 16 seeds and all passed (13-29 accepted per seed). (2) Finding f1 re-probed in a scratch copy with an extra test: indexedLog draft, retire ssd, then dry-run set/mv/link/retire of nvme (ssd's child). The indexed and folded answers are byte-identical, all accepted, and the indexed path read the log 0 times. f1 is fixed. (3) go test -trimpath -count=1 ./internal/api -run 'TestReadBudgetApply$' -v, twice, under load 5-7 on 4 cores: one apply write on the 50,000-node model had medians of 131.5ms and 102.5ms (budget 200ms) and read the log zero times; PASS. `-run TestReadBudget` also matches TestReadBudget itself. Its change show/ready timings went over 50ms under this load. Those belong to the change-show-ship-check-from-index leaf, already in its findings, and are not this leaf's point. (4) go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(apply|link)$': PASS. (5) go test -trimpath -count=1 -short ./internal/api/... ./internal/index/...: ok."
+        },
+        "handle": "apply-validates-from-index-verified",
+        "id": "01M6NSA5M87SMXSKH7PXYAX2RD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NSA5M87SMXSKH7PVQBE9QM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NSA5M87SMXSKH7PVQBE9QM",
+        "id": "01M6NSA8HQXZNVZVS8V1VZRD1K",
+        "link": "01M6NSA8HQXZNVZVS8V1JK8FNT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEMD8NQT1DE0SEYVGE7X2X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6NE0XK2H70R52C5JAPWK71M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NSADDDQXXEZDFFY3A8QJD0",
+  "type": "ops",
+  "v": 1
+}
