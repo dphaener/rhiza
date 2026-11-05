@@ -25,10 +25,47 @@ var writers = map[string]bool{
 	"Symlink": true, "Link": true, "Truncate": true,
 }
 
-// writeFlags are the os.OpenFile flags that make a file writable.
-var writeFlags = map[string]bool{
-	"O_WRONLY": true, "O_RDWR": true, "O_APPEND": true, "O_CREATE": true,
-	"O_TRUNC": true,
+// importNames maps each name a file uses for an import to its path, so an
+// aliased import ("xos" for "os") is caught like the plain one.
+func importNames(f *ast.File) map[string]string {
+	names := map[string]string{}
+	for _, im := range f.Imports {
+		p, err := strconv.Unquote(im.Path.Value)
+		if err != nil {
+			continue
+		}
+		name := p[strings.LastIndex(p, "/")+1:]
+		if im.Name != nil {
+			name = im.Name.Name
+		}
+		names[name] = p
+	}
+	return names
+}
+
+// pkgCall returns the import path and function name of a call to a
+// package-level function, or "" when the call is not one.
+func pkgCall(imports map[string]string, call *ast.CallExpr) (string, string) {
+	sel, ok := call.Fun.(*ast.SelectorExpr)
+	if !ok {
+		return "", ""
+	}
+	id, ok := sel.X.(*ast.Ident)
+	if !ok || id.Obj != nil {
+		return "", ""
+	}
+	return imports[id.Name], sel.Sel.Name
+}
+
+// readOnly reports whether an os.OpenFile flag argument is exactly
+// os.O_RDONLY: any other flag, or one held in a variable, may write.
+func readOnly(imports map[string]string, flag ast.Expr) bool {
+	sel, ok := flag.(*ast.SelectorExpr)
+	if !ok {
+		return false
+	}
+	id, ok := sel.X.(*ast.Ident)
+	return ok && imports[id.Name] == "os" && sel.Sel.Name == "O_RDONLY"
 }
 
 func parseDir(t *testing.T, root string, skip func(rel string) bool) map[string]*ast.File {
@@ -68,31 +105,18 @@ func TestMachineNeverWritesFiles(t *testing.T) {
 		t.Fatal("no source parsed")
 	}
 	for name, f := range files {
+		imports := importNames(f)
 		ast.Inspect(f, func(n ast.Node) bool {
 			call, ok := n.(*ast.CallExpr)
 			if !ok {
 				return true
 			}
-			sel, ok := call.Fun.(*ast.SelectorExpr)
-			if !ok {
-				return true
-			}
-			pkg, ok := sel.X.(*ast.Ident)
-			if !ok || pkg.Name != "os" {
-				return true
-			}
+			pkg, fn := pkgCall(imports, call)
 			switch {
-			case writers[sel.Sel.Name]:
-				t.Errorf("%s calls os.%s: internal/machine may only read", name, sel.Sel.Name)
-			case sel.Sel.Name == "OpenFile":
-				ast.Inspect(call, func(m ast.Node) bool {
-					if s, ok := m.(*ast.SelectorExpr); ok {
-						if p, ok := s.X.(*ast.Ident); ok && p.Name == "os" && writeFlags[s.Sel.Name] {
-							t.Errorf("%s opens a file with os.%s", name, s.Sel.Name)
-						}
-					}
-					return true
-				})
+			case (pkg == "os" || pkg == "io/ioutil") && writers[fn]:
+				t.Errorf("%s calls %s.%s: internal/machine may only read", name, pkg, fn)
+			case pkg == "os" && fn == "OpenFile" && (len(call.Args) < 2 || !readOnly(imports, call.Args[1])):
+				t.Errorf("%s calls os.OpenFile without os.O_RDONLY: internal/machine may only read", name)
 			}
 			return true
 		})
@@ -146,26 +170,23 @@ func TestNothingElseTouchesMachineFile(t *testing.T) {
 	if len(files) < 10 {
 		t.Fatalf("parsed only %d files from %s", len(files), root)
 	}
-	fileAPIs := map[string]bool{"filepath": true, "path": true, "os": true, "ioutil": true}
+	fileAPIs := map[string]bool{"path/filepath": true, "path": true, "os": true, "io/ioutil": true}
 	for name, f := range files {
+		imports := importNames(f)
 		ast.Inspect(f, func(n ast.Node) bool {
 			call, ok := n.(*ast.CallExpr)
 			if !ok {
 				return true
 			}
-			sel, ok := call.Fun.(*ast.SelectorExpr)
-			if !ok {
-				return true
-			}
-			pkg, ok := sel.X.(*ast.Ident)
-			if !ok || !fileAPIs[pkg.Name] {
+			pkg, fn := pkgCall(imports, call)
+			if !fileAPIs[pkg] {
 				return true
 			}
 			for _, a := range call.Args {
 				ast.Inspect(a, func(m ast.Node) bool {
 					if l, ok := m.(*ast.BasicLit); ok && l.Kind == token.STRING {
 						if s, err := strconv.Unquote(l.Value); err == nil && strings.Contains(s, "machine.toml") {
-							t.Errorf("%s passes %q to %s.%s: the machine config is reached only through internal/machine", name, s, pkg.Name, sel.Sel.Name)
+							t.Errorf("%s passes %q to %s.%s: the machine config is reached only through internal/machine", name, s, pkg, fn)
 						}
 					}
 					return true

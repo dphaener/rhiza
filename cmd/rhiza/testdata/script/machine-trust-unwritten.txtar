@@ -19,6 +19,8 @@ exec git commit -qm change
 ! exists $WORK/xdg/rhiza/machine.toml
 exec rhiza machine show
 exec rhiza api call machine.show
+stdout '"file": false'
+stdout '"trust": "daily"'
 exec sh -c 'rhiza health >/dev/null 2>&1 || true'
 ! exec rhiza session start --permission-mode bypassPermissions
 stderr 'bypasses the agent''s permission checks'
@@ -31,6 +33,8 @@ cp $WORK/daily.toml $WORK/xdg/rhiza/machine.toml
 exec rhiza machine show
 stdout 'trust: daily'
 exec rhiza api call machine.show
+stdout '"file": true'
+stdout '"trust": "daily"'
 exec sh -c 'rhiza health >/dev/null 2>&1 || true'
 ! exec rhiza session start --permission-mode bypassPermissions
 stderr 'bypasses the agent''s permission checks'
