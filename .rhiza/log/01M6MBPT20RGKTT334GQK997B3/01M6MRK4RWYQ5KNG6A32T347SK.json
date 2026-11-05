@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MQ4WKNGEWED5BC605V9RTJ",
+  "after": [
+    "01M6MNY5X9PG393EYW5349HQ3Q"
+  ],
+  "at": "2026-11-05T02:28:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 03bc97ba read the diff (ship-change.toml: pr-green and rebased-green on.fail = ci-triage; ci-triage runs rhiza ship check --test-failures, on.pass ci-fix, no on.fail, max_visits 3; ci-fix agent step to render-pr, max_visits 2, prompt names Review: {run} and ship check --json; caps 5 on render-pr/open-pr/wait-pr/pr-green/signoff, 3 on rebase/wait-rebased/rebased-green; landed-green and rebased-merge-green keep no on.fail; ship.go --test-failures reads the state file only, and a red check's detail now names the failing tests). Ran go test -trimpath ./internal/workflow/... (ok; TestShipChangeBuiltin asserts every point above), go test -trimpath ./internal/api/... -run TestShip (ok; TestShipCheckTestFailures: no state and infra-only state fail with exit 1, a recorded test failure passes, no gh call, --settled refused), go test -trimpath ./cmd/rhiza -run TestScripts/run-ship (ok, includes run-ship-ci-fix covering: red at pr-green -> ci-triage -> one ci-fix commit with Review: trailer -> green -> signoff; red at rebased-green -> ci-fix -> signoff -> rebase visit 2 -> lands; red after two fixes fails at ci-triage visit 3 with TestScripts/x in status; infra-only fails at ci-triage with no ci-fix), and describe-golden (ok). The full internal/api run failed only TestReadBudget timing budgets at load average 14-16 on 4 cores, which is unrelated to this diff"
+        },
+        "handle": "ship-change-ci-fix-step-verified",
+        "id": "01M6MRJJXHTTPPW88HZM9DYY15",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MRJJXHTTPPW88HZH4VAV6R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MRJJXHTTPPW88HZH4VAV6R",
+        "id": "01M6MRJSVKH8HK1W2V0PJ0QP0N",
+        "link": "01M6MRJSVKH8HK1W2V0K39RBWF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MC56XH2VTXCYDT1G5WD55E",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MBPT20RGKTT334GQK997B3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MRK4RWYQ5KNG6A32T347SK",
+  "type": "ops",
+  "v": 1
+}

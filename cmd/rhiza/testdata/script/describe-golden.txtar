@@ -19437,6 +19437,10 @@ cmp stdout describe.golden.json
           "settled": {
             "description": "Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it rebases the branch onto main as ship rebase does, then reports not settled, and exits 75 with a stop: line on a conflict in code",
             "type": "boolean"
+          },
+          "test_failures": {
+            "description": "Exit 0 only if the head's latest ship check recorded at least one failing test read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)",
+            "type": "boolean"
           }
         },
         "required": [],
@@ -19501,6 +19505,28 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "findings": {
+            "description": "One finding, with no leaf, per failing test, for a fix step; recorded in the state file as well",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "reason": {
+                  "description": "What failed and where it was read",
+                  "type": "string"
+                },
+                "test": {
+                  "description": "The failing test or testscript",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "reason",
+                "test"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "green": {
             "description": "True if settled and every check passed (success, neutral or skipped)",
             "type": "boolean"
@@ -19543,6 +19569,13 @@ cmp stdout describe.golden.json
           "stop": {
             "description": "With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75",
             "type": "string"
+          },
+          "tests": {
+            "description": "The Go tests and testscripts, such as TestScripts/x, that the failed Actions runs' logs name with a '--- FAIL:' line, once the failed jobs were rerun and failed again",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "url": {
             "description": "The pull request's URL",

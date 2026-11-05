@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MT69VYGC9094JD4745605R",
+  "after": [
+    "01M6MS4YZ50XMYMY1WEPXNMXZN"
+  ],
+  "at": "2026-11-05T03:08:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4c73aede (attempt 2, fixing quality f1) read the diff: parseFailedTests now drops any name another '--- FAIL:' line extends with name+'/', keeping only leaf tests; TestParseFailedTests' nested case now expects only TestScripts/review-check-worktree (two-tests and infra cases unchanged), and run-ship-ci-fix's fake gh log names TestScripts/x and TestScripts/x/sub and its fixer asserts the ship check JSON holds TestScripts/x/sub and not the bare parent. Ran go test -trimpath ./internal/api/... (ok) and go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship|ship-check-ci-test-findings)' (ok, 204s), which covers the run-ship* scripts and the leaf's ship-check-ci-test-findings script that the acceptance's 'TestScripts/run-ship' pattern alone would skip (compliance nit f1)."
+        },
+        "handle": "ship-check-ci-test-findings-verified-2",
+        "id": "01M6MTW6GDP2A0NGCBEJDEJQ5B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MTW6GCYW9JT9EQSA6MC8GT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MTW6GCYW9JT9EQSA6MC8GT",
+        "id": "01M6MTW90KTB184N9ZSCB6B33Z",
+        "link": "01M6MTW90KTB184N9ZS8YFJ880",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MC4GXTJ7SWF8NV4SYXD3F9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MBPT20RGKTT334GQK997B3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MTWCY5D8CNF48S1SCTR04D",
+  "type": "ops",
+  "v": 1
+}
