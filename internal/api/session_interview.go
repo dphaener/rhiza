@@ -146,9 +146,10 @@ func captureInterview(ctx *Ctx, rec session.Record) (SessionInterviewResponse, e
 	if landed {
 		sources = landedSessionSources(m, sources, rec.ID)
 	}
+	recorded := recordedQuestions(m, c.Ops, sources, landed)
 	var items []applyItem
 	for _, w := range writes {
-		if answerProposed(m, c.Ops, w.add.Handle) {
+		if answerProposed(m, c.Ops, w.add.Handle) || recorded[w.answer.Question] {
 			resp.Skipped = append(resp.Skipped, w.add.Handle)
 			continue
 		}
@@ -293,6 +294,41 @@ func answerProposed(m Model, ops []op.Op, h string) bool {
 	return slices.ContainsFunc(ops, func(o op.Op) bool { return o.Type == op.TypeNodeCreate && o.Handle == h })
 }
 
+// recordedQuestions is the set of questions already answered by a live
+// Decision: one the change set's ops created, or, when the change set has
+// landed, one derived-from a Source of the session, whose question field
+// is the question verbatim. A planner's own Decision for an answer stops
+// the capture from proposing a duplicate.
+func recordedQuestions(m Model, ops []op.Op, sources []id.ID, landed bool) map[string]bool {
+	out := map[string]bool{}
+	add := func(n Node) {
+		if n.Retired || n.Kind != op.KindDecision {
+			return
+		}
+		if q := fieldText(n.Fields["question"]); q != "" {
+			out[q] = true
+		}
+	}
+	for _, o := range ops {
+		if o.Type != op.TypeNodeCreate || o.Kind != op.KindDecision {
+			continue
+		}
+		if n, ok := m.Node(o.Node); ok {
+			add(n)
+		}
+	}
+	if landed {
+		for _, src := range sources {
+			for _, l := range m.LinksTo(src, op.LinkDerivedFrom) {
+				if n, ok := m.Node(l.From); ok {
+					add(n)
+				}
+			}
+		}
+	}
+	return out
+}
+
 // sessionSources lists the Sources the change set's ops create whose
 // session field names session sid, in op order: those a source add
 // --raw-session of that session wrote, still live in m.
@@ -416,7 +452,7 @@ func (r SessionInterviewResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "- %s: %s\n", p.Handle, p.Question)
 	}
 	for _, h := range r.Skipped {
-		fmt.Fprintf(w, "- Skipped %s: already proposed\n", h)
+		fmt.Fprintf(w, "- Skipped %s: already recorded\n", h)
 	}
 	if r.DryRun {
 		fmt.Fprintf(w, "\nThis was a dry run: nothing was written.\n")
