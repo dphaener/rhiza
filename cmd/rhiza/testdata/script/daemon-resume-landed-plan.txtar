@@ -1,0 +1,54 @@
+# The daemon resumes, once, an interrupted plan run whose change set has
+# landed (the withdrawn and rejected cases are unit-tested in internal/daemon).
+# Rex is faked; the detached resume only logs, so the test runs it by hand.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .rhiza/workflows
+cp $WORK/shape.toml .rhiza/workflows/shape.toml
+
+exec rhiza change new 'Ship S' --kind record --title 'Ship S' --json
+exec rhiza add intent want-s
+exec rhiza run start --foreground --workflow shape --no-wait
+stdout '^Run (01[0-9A-Z]{24}) stopped$'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'sed -i s/\"workflow\":\"shape\"/\"workflow\":\"plan\"/ .git/rhiza/runs/*.jsonl'
+exec rhiza land
+
+# Make the stop an interruption: the run's process is gone.
+exec sh -c 'grep -v "\"type\":\"stopped\"" .git/rhiza/runs/*.jsonl > $WORK/j; cp $WORK/j .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+exec sh -c 'printf "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}\n" >> .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+
+exec rhiza daemon --permission-mode manual --once
+stdout '^Resumed run '
+exec sh -c 'grep -c "\"type\":\"daemon-resumed\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '^1$'
+exec sh -c 'grep -c "run resume --foreground $(cat $WORK/runid)" $WORK/detach.log'
+stdout '^1$'
+
+# Once only.
+exec rhiza daemon --permission-mode manual --once --json
+stdout '"resumed": \[\]'
+
+
+-- shape.toml --
+name = "shape"
+
+[step.wait-main]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

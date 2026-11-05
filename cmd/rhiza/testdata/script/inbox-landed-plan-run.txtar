@@ -1,0 +1,68 @@
+# A plan run on a landed change set is in flight: interrupted it is not listed
+# as skipped, interrupted again after the daemon's one resume it is gave-up,
+# and failed it is failed. A build run on a landed change set that never
+# reached land and a plan run on a withdrawn one stay skipped. The journals are
+# fixtures.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec sh ../mkchanges.sh
+fold-ok
+mkdir .git/rhiza/runs
+exec sh ../mkruns.sh
+
+exec rhiza inbox --json
+! stdout '"run": "R-PLAN"'
+stdout '"run": "G-PLAN"'
+stdout '"kind": "gave-up"'
+stdout '"next": "rhiza run resume G-PLAN"'
+stdout '"run": "F-PLAN"'
+stdout '"kind": "failed"'
+stdout '"next": "rhiza run resume --retry F-PLAN"'
+stdout '"run": "N-PLAN"'
+stdout '"next": "rhiza run abandon N-PLAN"'
+stdout '"next": "rhiza run abandon W-PLAN"'
+exec sh -c 'rhiza inbox --json | grep -c "\"kind\""'
+stdout '^4$'
+exec rhiza inbox
+! stdout 'R-PLAN'
+stdout 'skipped run N-PLAN'
+-- mkchanges.sh --
+set -e
+for k in r g f n; do
+  rhiza change new "c$k" --json | sed -n 's/.*"change_set": "\([0-9A-Z]*\)".*/\1/p' | head -1 > "id.$k"
+  rhiza add capability "cap-$k" >/dev/null
+  rhiza propose >/dev/null
+  rhiza accept --reason ok >/dev/null
+  rhiza land >/dev/null
+done
+rhiza change new "cw" --json | sed -n 's/.*"change_set": "\([0-9A-Z]*\)".*/\1/p' | head -1 > id.w
+rhiza add capability cap-w >/dev/null
+rhiza withdraw >/dev/null
+-- mkruns.sh --
+set -e
+host=$(hostname)
+head() {
+  cat <<J
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"$3","definition":"","change":"$(cat id.$1)"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"$2","visit":1}
+{"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"$host","pid":999999}}
+J
+}
+head r build plan > .git/rhiza/runs/R-PLAN.jsonl
+head g build plan > .git/rhiza/runs/G-PLAN.jsonl
+cat >> .git/rhiza/runs/G-PLAN.jsonl <<J
+{"type":"daemon-resumed","at":"2026-01-01T04:00:00Z","detail":"resumed by the daemon"}
+{"type":"process","at":"2026-01-01T04:00:30Z","process":{"host":"$host","pid":999999}}
+J
+head n build ship-change > .git/rhiza/runs/N-PLAN.jsonl
+head w build plan > .git/rhiza/runs/W-PLAN.jsonl
+cat > .git/rhiza/runs/F-PLAN.jsonl <<J
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"plan","definition":"","change":"$(cat id.f)"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"finished","at":"2026-01-01T03:00:00Z","step":"build","end":"failed","detail":"boom"}
+J

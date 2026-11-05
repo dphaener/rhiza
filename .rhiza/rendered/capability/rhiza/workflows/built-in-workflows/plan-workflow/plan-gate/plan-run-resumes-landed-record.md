@@ -19,6 +19,7 @@ rhiza run resume continues an unfinished plan-workflow run whose change set has 
 
 ### In
 
+- relates-to [daemon-resumes-landed-plan-run](../../../../orchestration/daemon/daemon-resumes-landed-plan-run.md) — Same exemption as rhiza run resume: plan workflow, landed state only
 - verifies [plan-run-resumes-landed-record-verified](../../../../../../evidence/plan-run-resumes-landed-record-verified.md)
 - verifies [plan-run-resumes-landed-record-qa-1](../../../../../../evidence/plan-run-resumes-landed-record-qa-1.md)
 - verifies [plan-run-resumes-landed-record-verified-2](../../../../../../evidence/plan-run-resumes-landed-record-verified-2.md)
