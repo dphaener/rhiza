@@ -74,3 +74,16 @@ alone may explain a chime with no banner for Claude Code's own report.
 If a remote host's block reports `state=blocked` and the Mac plays the chime,
 post the macOS banner too, or document the rule that suppresses it for remote
 hosts or focused windows.
+
+## iPhone: no notifications at all (2026-11-05)
+
+A titled blocked report (as rhiza writes it) and an untitled one (as Claude
+Code writes it) were sent a minute apart from a scratch tab on the VM while
+the owner watched an iPhone 15 Pro running Rex Dev 0.1.0 (1779) with the app
+in the background. Neither produced a notification. `rex client list` showed
+the iPhone connected for under a minute (the Mac's Rex Beta 0.1.0 (1758) had
+held its connection for 7 hours), so the phone app appears to reconnect only
+when opened. iOS Settings has no notification entry for Rex, so the app has
+never asked for notification permission. Request: notifications on iOS for
+blocked programs, which while the app is suspended means push (APNs) from
+the server.
