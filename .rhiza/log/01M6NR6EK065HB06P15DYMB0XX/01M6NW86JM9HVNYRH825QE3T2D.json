@@ -1,0 +1,53 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6NTRAV6ZPKMJMZS5AN0RP93"
+  ],
+  "at": "2026-11-05T12:51:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "da9537bc45e79ca03c5181ea51e503bd15141253",
+          "pr": "https://github.com/dphaener/rhiza/pull/303",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #303 (https://github.com/dphaener/rhiza/pull/303) passed CI at da9537b",
+          "status": "verified"
+        },
+        "handle": "pr-303-the-daemon-keeps-the-go-build",
+        "id": "01M6NW7WEXRKQJMNM61C0WRDQX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NW7WEXRKQJMNM619BGDP92",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NW7WEXRKQJMNM619BGDP92",
+        "id": "01M6NW7Z6CHEBDZDAVC7GBFE22",
+        "link": "01M6NW7Z6CHEBDZDAVC46F3TQW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NREHKHFKZWMXYWG2F38AM5",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6NW7WEXRKQJMNM619BGDP92",
+        "id": "01M6NW81YY6QKXY3XB0BAXAMHM",
+        "link": "01M6NW81YY6QKXY3XB0AS23B7J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NRETPP5SJ8RMGV901X4G33",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6NR6EK065HB06P15DYMB0XX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NW86JM9HVNYRH825QE3T2D",
+  "type": "ops",
+  "v": 1
+}
