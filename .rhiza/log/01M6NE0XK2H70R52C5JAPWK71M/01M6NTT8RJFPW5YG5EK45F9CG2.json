@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NSPDMSJ2WDQQ9Q1YV6GJV5",
+  "after": [
+    "01M6NSADDDQXXEZDFFY3A8QJD0"
+  ],
+  "at": "2026-11-05T12:26:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 3, at a7927bb8 (detached checkout). `go test -trimpath -count=1 ./internal/api -run 'TestReadBudget$'`, run 7 times on a contended 4-core machine (load 4-10, other agents' tests running): 4 passed and 3 failed. When a run passed, change show of the draft and accepted change sets, fresh and after an unrelated entry, had medians of about 29-45 ms. Before this commit they were 30-45 ms even on good attempts. Every failure was under load: one run had load 10. In another, the existing what-if reads that this leaf does not touch (log, roadmap, ready what-if) also failed their 50 ms budget on all 3 attempts. So change show now sits in the same band as the existing reads and is no longer the outlier. The functional points pass: TestChangeShowIndexedMatchesFold (zero log reads through a counting reader, notes included, fresh and after an unrelated entry), TestChangeShowIndexedErrors and TestShipCheckSettledReadsNoLog (fresh and after an unrelated entry). `go test -trimpath -short ./internal/api/... ./internal/index/... ./internal/changeset/...` passes, and so do the four named testscripts (change-show-serves, ship-check-settles-conflict, ship-check-ci-test-findings, ship-check-follows-moved-head). I read the diff: the ops-only column (schema version 5), whatIfSets folding cs first with a states map and a cached landed bucket, and the depends-on links indexed by from. Answers are unchanged: the testscripts and the fold-equivalence test pass."
+        },
+        "handle": "change-show-ship-check-from-index-verified",
+        "id": "01M6NTT1RZHPD5A70G4QAE0VH3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NTT1RZHPD5A70G4PP2PJYG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NTT1RZHPD5A70G4PP2PJYG",
+        "id": "01M6NTT4WDHGQDABX9EB13JCHT",
+        "link": "01M6NTT4WDHGQDABX9EA2DVKYB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEM5KT6HR07M515NWRDSRD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6NE0XK2H70R52C5JAPWK71M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NTT8RJFPW5YG5EK45F9CG2",
+  "type": "ops",
+  "v": 1
+}
