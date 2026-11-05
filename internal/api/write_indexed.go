@@ -363,6 +363,31 @@ func (m *writeModel) versionOf(hist []gmodel.Ref) (id.ID, bool) {
 	return head(ops)
 }
 
+// creator is the actor that created node n (gmodel.CreatedBy): the one
+// stamped on the entry that first wrote its create, read from the change
+// set that holds the create (History[0]) alone.
+func (m *writeModel) creator(n id.ID) (id.ID, bool) {
+	if !m.ok() {
+		return id.ID{}, false
+	}
+	g, ok, err := m.ov.Node(n)
+	m.ix.fail(err)
+	if !ok || err != nil || len(g.History) == 0 {
+		return id.ID{}, false
+	}
+	cs := g.History[0].ChangeSet
+	got, err := m.ix.index().FoldedOf([]id.ID{cs})
+	if err != nil {
+		m.ix.fail(err)
+		return id.ID{}, false
+	}
+	c, ok := got[cs]
+	if !ok {
+		return id.ID{}, false
+	}
+	return gmodel.CreatedBy(g, []changeset.ChangeSet{c})
+}
+
 func (m *writeModel) node(n gmodel.Node, version bool) Node {
 	out := apiNode(n)
 	out.Pending = slices.Clone(m.pend[n.ID])

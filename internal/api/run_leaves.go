@@ -433,13 +433,17 @@ func (r *stepRunner) Evidence(leaf run.Leaf, session string) (bool, string, erro
 		ok     bool
 		detail string
 	}
-	v, err := r.readModel("evidence:"+cs.String()+":"+lid.String()+":"+rec.Actor, id.ID{}, func(w *workspace) (any, error) {
+	// Kept under the run's change set: every node of its view, and the
+	// change set that created it, is in what that view reads (as-is and
+	// the change set with its in-flight dependencies), so an entry in an
+	// unrelated change set keeps the answer.
+	v, err := r.readModel("evidence:"+cs.String()+":"+lid.String()+":"+rec.Actor, cs, func(w *workspace) (any, error) {
 		m := w.model(cs)
 		actor, err := liveActor(m, rec.Actor)
 		if err != nil {
 			return nil, fmt.Errorf("session %s's actor %s: %s", session, rec.Actor, AsError(err).Message)
 		}
-		ok, detail := leafEvidence(m, w.changeSets(), lid, actor)
+		ok, detail := leafEvidence(m, w.creator(m), lid, actor)
 		return judged{ok, detail}, nil
 	})
 	if err != nil {
@@ -449,12 +453,12 @@ func (r *stepRunner) Evidence(leaf run.Leaf, session string) (bool, string, erro
 	return j.ok, j.detail, nil
 }
 
-// leafEvidence is Evidence's judgement over view m and the change sets
-// sets: whether a live Evidence node with a live verifies link to leaf was
-// created by actor (the actor stamped on the entry that first wrote its
-// create), and, when none was, which actors created the ones that verify
-// it ("" when none does).
-func leafEvidence(m Model, sets []changeset.ChangeSet, leaf, actor id.ID) (bool, string) {
+// leafEvidence is Evidence's judgement over view m, creator naming the
+// actor that created a node: whether a live Evidence node with a live
+// verifies link to leaf was created by actor (the actor stamped on the
+// entry that first wrote its create), and, when none was, which actors
+// created the ones that verify it ("" when none does).
+func leafEvidence(m Model, creator func(id.ID) (id.ID, bool), leaf, actor id.ID) (bool, string) {
 	name := func(n id.ID) string {
 		if a, ok := m.Node(n); ok && a.Handle != "" {
 			return a.Handle
@@ -467,7 +471,7 @@ func leafEvidence(m Model, sets []changeset.ChangeSet, leaf, actor id.ID) (bool,
 		if !ok || ev.Retired || ev.Kind != op.KindEvidence {
 			continue
 		}
-		who, ok := nodeCreator(sets, ev.ID)
+		who, ok := creator(ev.ID)
 		if ok && who == actor {
 			return true, ""
 		}
@@ -481,6 +485,24 @@ func leafEvidence(m Model, sets []changeset.ChangeSet, leaf, actor id.ID) (bool,
 		return false, ""
 	}
 	return false, strings.Join(others, "; ") + ", not by the verifier's actor " + name(actor)
+}
+
+// creator returns what names the actor that created a node of view m (a
+// model of w): over the index, model.CreatedBy over the one change set
+// that holds the node's create, folded alone; over the log, nodeCreator
+// over every change set, folded on first use.
+func (w *workspace) creator(m Model) func(id.ID) (id.ID, bool) {
+	if wm, ok := m.(*writeModel); ok {
+		return wm.creator
+	}
+	var sets []changeset.ChangeSet
+	folded := false
+	return func(n id.ID) (id.ID, bool) {
+		if !folded {
+			sets, folded = w.changeSets(), true
+		}
+		return nodeCreator(sets, n)
+	}
 }
 
 // nodeCreator is the actor stamped on the entry that first wrote node n's

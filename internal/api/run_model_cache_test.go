@@ -83,7 +83,8 @@ func newDriverFixture(t testing.TB, root, indexPath string, cs, actor id.ID, deb
 }
 
 // An idle poll does no model work; a poll after an entry in an unrelated
-// change set catches up that change set alone and reads the log never; a
+// change set catches up that change set alone, computes no answer again
+// and reads the log never; a
 // poll after an entry in the run's change set, or a session done mark,
 // sees it.
 func TestDriverPollIsCheap(t *testing.T) {
@@ -138,9 +139,9 @@ func TestDriverPollIsCheap(t *testing.T) {
 	if c := rm.caught; c.Read != 2 && c.Read != 1 || c.Folded != 1 || c.Decoded > 3 {
 		t.Errorf("a poll after an unrelated entry caught up %+v, want its change set alone", c)
 	}
-	// Only the Evidence, which reads every change set, is judged again.
-	if n := rm.computed - computed; n != 1 {
-		t.Errorf("a poll after an unrelated entry computed %d answers, want 1", n)
+	// No answer, the Evidence's included, is computed again.
+	if n := rm.computed - computed; n != 0 {
+		t.Errorf("a poll after an unrelated entry computed %d answers, want none", n)
 	}
 	rm.caught = index.CatchUp{Fresh: true}
 	f.poll(t, "leaf-a")
@@ -194,7 +195,6 @@ const (
 // it last.
 func driverPollBudget(t *testing.T, g generated, log func(string)) {
 	t.Helper()
-	s := g.summary
 	// The run's change set: a few leaves, as a planned change set has.
 	mk := testCtx(g.root)
 	mk.IndexPath = g.indexPath
@@ -203,7 +203,9 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 	for _, h := range []string{"driver-leaf-a", "driver-leaf-b", "driver-leaf-c"} {
 		mustWrite(t, mk, "add", fmt.Sprintf(`{"kind":"capability","handle":%q}`, h))
 	}
-	f := newDriverFixture(t, g.root, g.indexPath, cs, s.Actor, 0)
+	// The verifier session's actor, whose Evidence each poll judges.
+	verifier := recordAda(t, mk, "driver-verifier@example.com")
+	f := newDriverFixture(t, g.root, g.indexPath, cs, verifier, 0)
 	measure := func(label string, budget time.Duration, runs int, between func()) {
 		t.Helper()
 		var per []time.Duration
@@ -215,7 +217,7 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 			// catches up, the rest of its calls take the index as it is.
 			time.Sleep(2 * pollDebounce)
 			start := cpuTime()
-			f.poll(t, "")
+			f.poll(t, "driver-leaf-a")
 			per = append(per, cpuTime()-start)
 		}
 		slices.Sort(per)
@@ -226,10 +228,10 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 		}
 	}
 	// Warm the answers and let the racy window pass, so the index holds
-	// its stat fingerprint.
-	f.poll(t, "")
+	// its stat fingerprint. Each poll judges a verifier's Evidence too.
+	f.poll(t, "driver-leaf-a")
 	time.Sleep(2200 * time.Millisecond)
-	f.poll(t, "")
+	f.poll(t, "driver-leaf-a")
 	measure("idle", idlePollCPUBudget, readBudgetRuns, nil)
 
 	// An entry in another small change set that is in flight. (A new change
@@ -240,7 +242,7 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 	other.IndexPath = g.indexPath
 	other.IDs = id.NewGenerator(other.Now, rand.New(rand.NewSource(991)))
 	other.ChangeSet = newChange(t, other, `{"intent":"Unrelated to the driver"}`).ChangeSet
-	f.poll(t, "")
+	f.poll(t, "driver-leaf-a")
 	n := 0
 	measure("after an unrelated entry", unrelatedPollCPUBudget, 9, func() {
 		n++
