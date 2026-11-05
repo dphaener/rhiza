@@ -352,29 +352,29 @@ func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) e
 }
 
 // requestRun is the run ID run start --request <id> takes: the one the
-// daemon drew for the request. A request that is unknown, has no run yet,
+// daemon drew for the request, with the milestone it names. A request that is unknown, has no run yet,
 // or whose run already journaled is a usage error.
-func requestRun(common, reqID string, rs *run.Store) (string, error) {
+func requestRun(common, reqID string, rs *run.Store) (string, string, error) {
 	reqs, err := daemon.ReadRequests(common)
 	if err != nil {
-		return "", Errorf("read requests: %v", err)
+		return "", "", Errorf("read requests: %v", err)
 	}
 	for _, q := range reqs {
 		if q.ID != reqID {
 			continue
 		}
 		if q.Run == "" {
-			return "", Usagef("request %s is queued: the daemon starts its plan run", reqID).WithNext("rhiza request ls")
+			return "", "", Usagef("request %s is queued: the daemon starts its plan run", reqID).WithNext("rhiza request ls")
 		}
 		_, err := rs.Read(q.Run)
 		var nf *run.NotFoundError
 		switch {
 		case err == nil:
-			return "", Usagef("request %s already has run %s", reqID, q.Run).WithNext("rhiza request ls")
+			return "", "", Usagef("request %s already has run %s", reqID, q.Run).WithNext("rhiza request ls")
 		case !errors.As(err, &nf):
-			return "", Errorf("read run %s: %v", q.Run, err)
+			return "", "", Errorf("read run %s: %v", q.Run, err)
 		}
-		return q.Run, nil
+		return q.Run, q.Milestone, nil
 	}
-	return "", Usagef("no request %s", reqID).WithNext("rhiza request ls")
+	return "", "", Usagef("no request %s", reqID).WithNext("rhiza request ls")
 }

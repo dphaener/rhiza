@@ -35,6 +35,9 @@ type Record struct {
 	// Autonomous is true when an autonomous run launched the session: the
 	// owner is not there to answer it.
 	Autonomous bool `json:"autonomous,omitempty"`
+	// Milestone is the ID of the milestone a plan run's request names,
+	// the session's RHIZA_MILESTONE; empty for none.
+	Milestone string `json:"milestone,omitempty"`
 	// Pending holds the message pointers sent to the session while it
 	// worked, in order: the next tool-call hook hands them to the agent and
 	// clears them.
