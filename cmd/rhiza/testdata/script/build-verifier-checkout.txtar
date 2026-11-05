@@ -10,7 +10,8 @@
 # then leaves a staged and an unstaged edit and an untracked file behind
 # and snapshots them. As a verifier it logs where it runs and what it
 # sees; the verifier of good writes its Evidence as its own actor and
-# passes, the verifier of bad exits 1.
+# passes, the verifier of bad exits 1. The advisor started on bad's
+# question exits at once.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -117,6 +118,8 @@ done
 echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 -- bin/claude --
 #!/bin/sh
+# The advisor on bad's question (it has no leaf) does nothing.
+[ -z "$RHIZA_LEAF" ] && exit 0
 # A retry builder (attempt 2 on) gives up at once, so each leaf's verdict
 # is its first attempt's.
 [ "$RHIZA_ROLE" = builder ] && [ "$RHIZA_ATTEMPT" != 1 ] && exit 1
