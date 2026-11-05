@@ -14,7 +14,7 @@ At 69611388, with the built binary: `rhiza session key ZZZZ tab` refuses with 'w
 
 ### Out
 
-- verifies [inbox-nudge-stalled](../capability/rhiza/orchestration/inbox/inbox-list/inbox-stalled-items/inbox-nudge-stalled.md)
+- verifies inbox-nudge-stalled (retired)
 
 ## History
 

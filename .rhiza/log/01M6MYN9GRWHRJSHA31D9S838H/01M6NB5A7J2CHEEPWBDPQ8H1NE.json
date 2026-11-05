@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NAXTGPQK6C2X5EX1YV0RS6",
+  "after": [
+    "01M6NAXZXRV855WZ4AFV1ZX4AJ"
+  ],
+  "at": "2026-11-05T07:53:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 97af3548, ran go test -trimpath -count=1 ./internal/tui/inboxapp/... (ok) and go vet (clean). With the fake Runner: TestResolveRetryCallsRunResume shows the Retry/Abandon Select on the failed item and Enter calls run.resume --retry R3 then quits; TestResolveAbandonConfirmed confirms with y and calls run.abandon R3 then quits; TestResolveAbandonNeedsConfirm submits the Confirm unconfirmed and no op beyond the inbox load is called, no quit; TestResolveEscCallsNothing cancels the form and nothing is called (rexuikit Form maps esc/ctrl+c to FormCancelledMsg, form.go:188); TestResolveOnlyForFailedKinds maps only failed/gave-up/skipped to ActionResolve, and choose() opens the resolve form only for ActionResolve. Diff read: args match RunResumeRequest (run arg 0, --retry flag) and RunAbandonRequest (run arg 0)."
+        },
+        "handle": "inbox-app-retry-abandon-verified",
+        "id": "01M6NB3XJ5S13EMJBY9WVREE2A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NB3XJ5S13EMJBY9TV4AGQW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NB3XJ5S13EMJBY9TV4AGQW",
+        "id": "01M6NB4GM81WE6QJTGJKFW7MBX",
+        "link": "01M6NB4GM81WE6QJTGJJ0W8A5Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZAFPVHK2JM4JJAP4953HC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYN9GRWHRJSHA31D9S838H",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NB5A7J2CHEEPWBDPQ8H1NE",
+  "type": "ops",
+  "v": 1
+}

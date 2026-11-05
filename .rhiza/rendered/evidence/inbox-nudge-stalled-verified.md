@@ -14,7 +14,7 @@ At 2f4d0eb2, go test ./internal/tui/inboxapp -run Nudge -v passes TestNudgeSends
 
 ### Out
 
-- verifies [inbox-nudge-stalled](../capability/rhiza/orchestration/inbox/inbox-list/inbox-stalled-items/inbox-nudge-stalled.md)
+- verifies inbox-nudge-stalled (retired)
 
 ## History
 

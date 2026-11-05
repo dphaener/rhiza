@@ -14,8 +14,8 @@ An inbox app shows what waits on the owner across every run and acts on each ite
 
 ### In
 
-- serves [inbox-app-list](../../capability/rhiza/inbox-app-list.md)
-- serves [inbox-app-actions](../../capability/rhiza/inbox-app-actions.md)
+- serves inbox-app-list (retired)
+- serves inbox-app-actions (retired)
 
 ## History
 

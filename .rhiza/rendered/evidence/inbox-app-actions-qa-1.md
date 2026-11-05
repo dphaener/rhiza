@@ -14,7 +14,7 @@ Built at 8f9c3b9 and drove rhiza tui app inbox in a real Rex window over a scrat
 
 ### Out
 
-- verifies [inbox-app-actions](../capability/rhiza/inbox-app-actions.md)
+- verifies inbox-app-actions (retired)
 
 ## History
 

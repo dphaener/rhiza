@@ -1,7 +1,7 @@
 # A plan run whose gate finds a question the planner parked does not
 # succeed and opens no PR: it stops at the gate for the owner, run status
 # and the inbox name the question and the command to resume, and resuming
-# after a Decision answers it goes on to open the PR and merge it.
+# after the owner answers it at the gate goes on to open the PR and merge it.
 #
 # The fake rex, claude and gh are plan-workflow-pr.txtar's; the planner
 # also parks one question in the planned change set, and the reviewer
@@ -53,9 +53,22 @@ cd $WORK/repo.plan-reports
 exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
 stdout '"state": "proposed"'
 
-# A Decision answers it, and resuming goes on to ship the plan.
-exec sh -c 'rhiza add decision disk-ssd --field "statement=Exports go on the ssd" --change $(cat $WORK/cs)'
-exec sh -c 'rhiza link disk-ssd answers park-disk --change $(cat $WORK/cs)'
+# From the main checkout, as the inbox app does, the owner answers it at
+# the gate: question answer --run writes the Decision in the run's
+# worktree, into the planned change set that parks the question, though
+# the question blocks nothing. A question the gate did not stop on is
+# refused.
+cd $WORK/repo
+exec sh -c 'rhiza run status --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1 > $WORK/run'
+! exec sh -c 'rhiza question answer no-such "x" --run $(cat $WORK/run)'
+stderr 'not a question run'
+exec sh -c 'rhiza question answer park-disk "Exports go on the ssd" --run $(cat $WORK/run) --json | grep -c "\"change_set\": \"$(cat $WORK/cs)\""'
+stdout '^1$'
+cd $WORK/repo.plan-reports
+exec sh -c 'rhiza show answer-park-disk --change $(cat $WORK/cs) --json'
+stdout 'Exports go on the ssd'
+
+# Resuming goes on to ship the plan.
 cd $WORK/repo
 exec sh -c 'rhiza run resume --foreground $(rhiza run status --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1) > $WORK/out2 2> $WORK/err2; echo exit=$?'
 stdout '^exit=0$'

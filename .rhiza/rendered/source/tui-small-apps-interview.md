@@ -75,6 +75,8 @@ Milestone 26: small single-purpose TUI apps, with the owner
 - derived-from [tui-milestone-first](../decision/tui-milestone-first.md)
 - derived-from [tui-plan-all-now](../decision/tui-plan-all-now.md)
 - derived-from [tui-modal-go-opener](../decision/tui-modal-go-opener.md)
+- derived-from [tui-inbox-all-items](../decision/tui-inbox-all-items.md)
+- derived-from [tui-signoff-approve-or-send-back](../decision/tui-signoff-approve-or-send-back.md)
 
 ## History
 

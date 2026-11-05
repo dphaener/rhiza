@@ -1,0 +1,132 @@
+{
+  "actor": "01M6NC9950B1F1266AE76FDWQP",
+  "after": [
+    "01M6NC7M65EVHSKFY0NE6QXNBR"
+  ],
+  "at": "2026-11-05T08:20:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at e4777542, built binary driven in tmux on a scratch repo (fake rex/claude/gh) holding real question, signoff, blocker, failed, accept and open items: rhiza tui app inbox lists one row per item in rhiza inbox --json order with kind, change set title, step and what it waits for; rhiza tui app inbox --once is byte-identical to rhiza inbox --json (cmp). Enter on question, blocker, signoff and failed opens their action. But Enter on an accept item and on an open (open questions) item does nothing at all in the binary: the Open hook is never set in cmd/rhiza/tui.go. Show kinds (stalled etc.) not exercised hands-on."
+        },
+        "handle": "inbox-app-pick-list-qa-1",
+        "id": "01M6NCPQC6EZYQ02NBCMZ2JY95",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NCPQC6EZYQ02NBCHC6P4EE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NCPQC6EZYQ02NBCHC6P4EE",
+        "id": "01M6NCPSM1Z2PE2CPYACSJ2HHZ",
+        "link": "01M6NCPSM1Z2PE2CPYAAQGE6YW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ9RZ8M65B2FB58A75WYZ2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at e4777542 with the built binary in tmux: Enter on a blocker opens a one-TextArea form; typing 'Use a file' and Enter wrote the answer (quote and statement 'Use a file') into the blocker's change set via question.answer, the blocker left rhiza inbox and the app exited 0. Enter on a run question opens the form; submitting 'Use sqlite' called session.message for session S1 (failed as expected with the fake: no session matches \"S1\", shown in the subtitle). Esc on the form quits with nothing sent. Empty Enter sends nothing, but after it (and after the failed send) the form is frozen: input gone, keys ignored, only Esc works."
+        },
+        "handle": "inbox-app-answer-qa-1",
+        "id": "01M6NCPVSBXE2AD8BPKCCVS8F7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NCPVSBXE2AD8BPK8MEM50A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NCPVSBXE2AD8BPK8MEM50A",
+        "id": "01M6NCPYAQZPEAHXHZA10YH8TX",
+        "link": "01M6NCPYAQZPEAHXHZA058T4P1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZA0N04GRKJ6486V5XRAX9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e4777542 with the built binary in tmux on a real shiptest run stopped at signoff: Enter opens a Dialog 'Sign off · Sign it' with the run ID and what it waits for, hint 'a approve · s send back · esc close'. Esc closed it with the journal unchanged. 's' then empty Enter re-asked ('a send-back needs a note'); 'say more' + Enter journalled a signoff outcome changes with finding f1 alpha major at owner 'say more', queued the run in continues.json and the app exited 0. On a fresh copy 'a' journalled signoff outcome approved by the owner, queued the continuation and exited 0."
+        },
+        "handle": "inbox-app-signoff-qa-1",
+        "id": "01M6NCQ0D7BGT7FSKAY3CZFB0X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NCQ0D7BGT7FSKAXZTJ0339",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NCQ0D7BGT7FSKAXZTJ0339",
+        "id": "01M6NCQ2Q70XWDW4H8J5YXJZX2",
+        "link": "01M6NCQ2Q70XWDW4H8J4RY6K8A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZA8WT3TB8HWR4D33QMMQ5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e4777542 with the built binary in tmux: Enter on a failed run opens a form with a Retry/Abandon Select. Abandon then No re-showed the choice ('abandon needs the confirm') with the journal unchanged; Esc quit with nothing done; Abandon then Yes appended finished 'abandoned by t' and exited 0. On a real failed shiptest run (check session exiting 1), Retry queued it in continues.json with retry:true and the app exited 0."
+        },
+        "handle": "inbox-app-retry-abandon-qa-1",
+        "id": "01M6NCQ5J5JY75FXW56GE7C5HH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NCQ5J5JY75FXW56EKSA7NQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NCQ5J5JY75FXW56EKSA7NQ",
+        "id": "01M6NCQ8NJSXP9Z45ADNBS5AGH",
+        "link": "01M6NCQ8NJSXP9Z45ADHCDE1BH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZAFPVHK2JM4JJAP4953HC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e4777542 with the built binary on a scratch repo whose shiptest run (fake claude/gh/rex) stopped at signoff: send-back through the inbox app with note 'say more' journalled signoff outcome changes with one finding (alpha, major, place owner, reason 'say more'), rhiza run status lists it under Sign-offs as changes asked, the run is queued for the daemon and no approved signoff is journalled. go test -trimpath ./cmd/rhiza -run TestScripts/run-send-back passes."
+        },
+        "handle": "run-send-back-qa-1",
+        "id": "01M6NCQC2W6YE7PY6G10Q2J3WX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NCQC2W6YE7PY6G0YX39DHW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NCQC2W6YE7PY6G0YX39DHW",
+        "id": "01M6NCQF16TZM1YE7X3010VTZX",
+        "link": "01M6NCQF16TZM1YE7X2XBCGXM8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N099H464KP7VPM9TVD8RAZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYN9GRWHRJSHA31D9S838H",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NCQKBF3JM01Q9SZ09FRA7J",
+  "type": "ops",
+  "v": 1
+}

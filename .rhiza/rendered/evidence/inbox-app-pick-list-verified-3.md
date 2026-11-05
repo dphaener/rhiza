@@ -1,0 +1,21 @@
+# inbox-app-pick-list-verified-3
+
+evidence · `01M6NF0JYJXFBFWQNA94T7S09X` · actor [claude-code-caba7722](../actor/claude-code-caba7722.md)
+
+## result
+
+PASS
+
+## statement
+
+Verifier at 5d9d85ae (attempt 5): go test -trimpath ./internal/tui/inboxapp passes all 27 tests with a fake runner: rows per item in order (TestRowPerItemInOrder); Enter opens the action for question, blocker, gate (open), signoff, failed and accept items (TestEnterOpensActionPerKind, TestGateAnswersEachThenResumes, TestAccept*, TestSignoff*, TestResolve*); other kinds show detail and ask for the run's tab (TestOtherKindShowsDetailAndOpensTab); empty inbox shows one line (TestEmptyInbox); the new TestGateResumeFailureShowsNote shows 'answered; resume failed: ...' after a failed run.resume. TestScripts tui-inbox-app (cmp of tui app inbox --once with inbox --json, empty and with items), plan-workflow-open (question answer --run from the main checkout writes answer-park-disk into the planned change set in the run's worktree, refuses a question the gate did not stop on, then resume ships), question-answer, arbiter-question, inbox-open, inbox-list and describe-golden all pass; go vet and gofmt are clean. In the diff, the app now answers gates with question.answer <q> <words> --run <run>, routed through the generic argv call in cmd/rhiza/tui.go. internal/api tests pass except TestReadBudget, a timing budget that fails here under load average 9 on 4 CPUs and fails worse on the parent commit, so this change did not cause it.
+
+## Links
+
+### Out
+
+- verifies [inbox-app-pick-list](../capability/rhiza/inbox-app-pick-list.md)
+
+## History
+
+- `01M6MYN9GRWHRJSHA31D9S838H` Inbox app: pick an inbox item and do its one action (answer a question or gate, sign off a run, retry or abandon a failed run), then close; rebuilt on the modal shell over the inbox, question.answer, run.approve, run.resume and run.abandon operations, replacing internal/tui/inboxapp and retiring the capabilities of the old inbox app it replaces

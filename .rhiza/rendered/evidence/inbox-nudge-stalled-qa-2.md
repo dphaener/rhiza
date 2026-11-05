@@ -14,7 +14,7 @@ At 7f653b81, with the built binary against this live run session in Rex: `rhiza 
 
 ### Out
 
-- verifies [inbox-nudge-stalled](../capability/rhiza/orchestration/inbox/inbox-list/inbox-stalled-items/inbox-nudge-stalled.md)
+- verifies inbox-nudge-stalled (retired)
 
 ## History
 

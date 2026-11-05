@@ -14,7 +14,7 @@ At 302d9b36, drove the real inbox app (rhiza tui app inbox in a pty) on a scratc
 
 ### Out
 
-- verifies [inbox-app-answer-question](../capability/rhiza/inbox-app-actions/inbox-app-answer-question.md)
+- verifies inbox-app-answer-question (retired)
 
 ## History
 

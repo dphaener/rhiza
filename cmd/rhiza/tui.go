@@ -125,6 +125,13 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 				gg.change, gg.changeSet = args[1], true
 				return callWith(gg, op, false, false, []string{args[0], args[2]})
 			}
+			if op == "accept" && len(args) == 1 {
+				// The app passes the change set to accept: the write target,
+				// accepted under the default rule, owner.
+				gg := g
+				gg.change, gg.changeSet = args[0], true
+				return callWith(gg, op, false, false, nil)
+			}
 			return call(op, false, false, args)
 		})
 		return im

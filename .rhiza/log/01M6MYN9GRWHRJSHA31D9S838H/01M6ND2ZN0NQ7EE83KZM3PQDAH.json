@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ND1PF0DT5DHM2EWE9YJ6KF",
+  "after": [
+    "01M6ND1KXERCKSY4EJY8C8MCZT"
+  ],
+  "at": "2026-11-05T08:26:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3cfa418a ran go test -trimpath ./cmd/rhiza -run 'TestScripts/run-send-back$' -count=1: PASS. The script drives a shiptest run with fake claude/rex/gh to signoff_waiting, refuses a blank note (exit 2, status unchanged), then run send-back --note 'say more' exits 0; claude.log shows the fixer (cycle 2) and check running next; run status shows the changes round with '1 finding' and now asserts the line '  - alpha f1 major at owner: say more' (fixing finding f2), current step back at signoff, and no order.log (nothing landed/approved). After approve, send-back exits 2 and only the approve's landing is recorded; fold-ok passes. Read the fix diff: one added assertion line."
+        },
+        "handle": "run-send-back-verified-2",
+        "id": "01M6ND2PFSNC52GZEQKAQ7SFGN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ND2PFSNC52GZEQK75V9E19",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ND2PFSNC52GZEQK75V9E19",
+        "id": "01M6ND2SSBE4XBW48DVBMRGA1V",
+        "link": "01M6ND2SSBE4XBW48DVBEKMJXM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N099H464KP7VPM9TVD8RAZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYN9GRWHRJSHA31D9S838H",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ND2ZN0NQ7EE83KZM3PQDAH",
+  "type": "ops",
+  "v": 1
+}

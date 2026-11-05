@@ -6787,6 +6787,10 @@ cmp stdout describe.golden.json
             "description": "The question: an ID, a unique ID prefix of 4+ characters, or a live question's handle",
             "type": "string"
           },
+          "run": {
+            "description": "A plan run stopped at its gate on this question: the Decision goes into the run's worktree, in the plan change set that creates the question (the run's change set when none does), and the question need block nothing; --change is ignored",
+            "type": "string"
+          },
           "text": {
             "description": "The owner's words, kept verbatim as the Decision's quote; must not be blank",
             "type": "string"
@@ -14522,6 +14526,1516 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "Check the latest review round of the run RHIZA_RUN names: pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass",
+      "write": true
+    },
+    {
+      "name": "run.send-back",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "foreground": {
+            "description": "Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts",
+            "type": "boolean"
+          },
+          "note": {
+            "description": "What to change; must not be blank. It becomes the one finding of the next review round",
+            "type": "string"
+          },
+          "run": {
+            "description": "The run: a full ID or a unique prefix of 4+ characters; default the latest run of the current change set, else the latest run",
+            "type": "string"
+          }
+        },
+        "required": [
+          "note"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "changes": {
+            "description": "With changes: the checks step that fixes them",
+            "type": "string"
+          },
+          "daemon": {
+            "description": "With queued: the daemon's process, as host:pid; empty when no daemon runs and the run waits for one",
+            "type": "string"
+          },
+          "dry_run": {
+            "description": "True if nothing was journalled or run",
+            "type": "boolean"
+          },
+          "queued": {
+            "description": "True when the sign-off was journalled and the run's continuation queued for the daemon, which drives it headless, rather than driven in this process; absent otherwise",
+            "type": "boolean"
+          },
+          "run": {
+            "additionalProperties": false,
+            "description": "The run after it was continued; in a dry run, or when queued, as it stands. The command exits 1 when the run failed",
+            "properties": {
+              "accepts": {
+                "description": "The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "change": {
+                      "description": "The change set accepted or rejected",
+                      "type": "string"
+                    },
+                    "entry": {
+                      "description": "The model log entry ID of the accept or reject",
+                      "type": "string"
+                    },
+                    "verb": {
+                      "description": "accepted or rejected",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "change",
+                    "entry",
+                    "verb"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "amendments": {
+                "description": "The amendments made to its agent steps' briefs or plans, in order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "The sender's actor handle",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was amended, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "file": {
+                      "description": "The amended file, relative to the run's worktree",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The step's session, which was sent a pointer to the file",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The amended step",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "at",
+                    "file",
+                    "session",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "autonomous": {
+                "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
+                "type": "boolean"
+              },
+              "blocked": {
+                "additionalProperties": false,
+                "description": "What the run waits on while its agent step's session is blocked; absent otherwise",
+                "properties": {
+                  "kind": {
+                    "description": "What kind of block: permission, question or auth; empty when the session gave none",
+                    "type": "string"
+                  },
+                  "question": {
+                    "description": "What the session asks the owner, as it reported it; empty when it gave nothing",
+                    "type": "string"
+                  },
+                  "session": {
+                    "description": "The step's session",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The agent step that waits",
+                    "type": "string"
+                  },
+                  "tab": {
+                    "additionalProperties": false,
+                    "description": "The terminal tab the session runs in, where the owner answers",
+                    "properties": {
+                      "block": {
+                        "description": "The Rex block running the agent; empty until the tab opened",
+                        "type": "string"
+                      },
+                      "session": {
+                        "description": "The Rex session; empty when Rex chose it",
+                        "type": "string"
+                      },
+                      "title": {
+                        "description": "The tab title",
+                        "type": "string"
+                      },
+                      "window": {
+                        "description": "The Rex window ID; empty until the tab opened",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "block",
+                      "session",
+                      "title",
+                      "window"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "session",
+                  "step",
+                  "tab"
+                ],
+                "type": "object"
+              },
+              "change": {
+                "description": "The change set it runs on",
+                "type": "string"
+              },
+              "checks": {
+                "description": "The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "check": {
+                      "description": "The check's name",
+                      "type": "string"
+                    },
+                    "cycles": {
+                      "description": "The cycles it ran in, in order",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When the check's outcome in the cycle was journalled, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "cycle": {
+                            "description": "The cycle, from 1",
+                            "type": "integer"
+                          },
+                          "decisions": {
+                            "description": "For a fresh cycle past the cap, the Decisions (handles) answering the questions the cycle before raised; absent otherwise",
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          "detail": {
+                            "description": "Why the check ended the cycle as it did",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "answered for a fresh cycle past the cap, owner for the cycle fixing the owner's request for changes; absent for a cycle within the cap",
+                            "type": "string"
+                          },
+                          "outcome": {
+                            "description": "passed or failed; empty while the cycle is open for the check",
+                            "type": "string"
+                          },
+                          "sessions": {
+                            "description": "The check's sessions in the cycle, in the order they started",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "at": {
+                                  "description": "When it started, RFC 3339 UTC",
+                                  "type": "string"
+                                },
+                                "detail": {
+                                  "description": "Why it was judged so: the session's exit, or that its agent said done",
+                                  "type": "string"
+                                },
+                                "model": {
+                                  "description": "The model it runs; empty for the agent's default",
+                                  "type": "string"
+                                },
+                                "outcome": {
+                                  "description": "pass or fail once its work was judged; empty while it runs",
+                                  "type": "string"
+                                },
+                                "role": {
+                                  "description": "check",
+                                  "type": "string"
+                                },
+                                "session": {
+                                  "description": "The session's ID",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "at",
+                                "role",
+                                "session"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "cycle",
+                          "sessions"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "open_cycle": {
+                      "description": "The cycle that is open, when its latest cycle is open after an earlier one was judged; absent otherwise",
+                      "type": "integer"
+                    },
+                    "outcome": {
+                      "description": "passed or failed: its latest cycle's outcome; empty while that cycle is open, even when an earlier cycle was judged",
+                      "type": "string"
+                    },
+                    "prior_cycle": {
+                      "description": "The newest earlier cycle that was judged, when open_cycle is set",
+                      "type": "integer"
+                    },
+                    "prior_outcome": {
+                      "description": "That cycle's outcome, passed or failed, when open_cycle is set",
+                      "type": "string"
+                    },
+                    "questions": {
+                      "description": "The questions it raised when it still failed with no fix cycle left, in order; absent when none",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "cycle": {
+                            "description": "The cycle that ended with no fix cycle left",
+                            "type": "integer"
+                          },
+                          "finding": {
+                            "description": "The surviving confirmed finding it is about; empty for one on the check's failure itself",
+                            "type": "string"
+                          },
+                          "leaf": {
+                            "description": "The leaf node the finding names, which the question blocks; empty for a question in the change set at large",
+                            "type": "string"
+                          },
+                          "leaf_handle": {
+                            "description": "That leaf's handle",
+                            "type": "string"
+                          },
+                          "question": {
+                            "description": "The question node's ID",
+                            "type": "string"
+                          },
+                          "question_handle": {
+                            "description": "The question node's handle",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "cycle",
+                          "question",
+                          "question_handle"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "rounds": {
+                      "description": "Its findings rounds, journalled by run findings --check and judged by run verdict --check, in order; absent when there were none",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When its findings were journalled, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "confirmed": {
+                            "description": "How many findings the latest verdict confirms",
+                            "type": "integer"
+                          },
+                          "cycle": {
+                            "description": "The check's cycle it was recorded in, from 1",
+                            "type": "integer"
+                          },
+                          "findings": {
+                            "description": "The check's findings, in order, each with its latest verdict; empty for a clean check",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "check": {
+                                  "description": "A review check's finding: the check that found it",
+                                  "type": "string"
+                                },
+                                "handle": {
+                                  "description": "The node's handle when the finding was recorded; absent when it had none",
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "description": "The finding's ID in its round: f1, f2, ...",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                                  "type": "string"
+                                },
+                                "leaf": {
+                                  "description": "A review check's finding: the leaf it is about, by ID; absent when it names none",
+                                  "type": "string"
+                                },
+                                "leaf_handle": {
+                                  "description": "That leaf's handle when the finding was recorded",
+                                  "type": "string"
+                                },
+                                "node": {
+                                  "description": "The node it is about, by ID; absent for a leaf's finding",
+                                  "type": "string"
+                                },
+                                "place": {
+                                  "description": "A review check's finding: where, as file:line or a node",
+                                  "type": "string"
+                                },
+                                "reason": {
+                                  "description": "Why the reviewer found it",
+                                  "type": "string"
+                                },
+                                "severity": {
+                                  "description": "A review check's finding: blocker, major, minor or nit",
+                                  "type": "string"
+                                },
+                                "verdict": {
+                                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                                  "type": "string"
+                                },
+                                "verdict_reason": {
+                                  "description": "Why the critic gave it; absent before a verdict",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "reason"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "round": {
+                            "description": "The round's number in the check, from 1",
+                            "type": "integer"
+                          },
+                          "verdicts": {
+                            "description": "The verdicts journalled on the round, in order; absent before any",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "finding": {
+                                  "description": "The finding's ID in the round",
+                                  "type": "string"
+                                },
+                                "reason": {
+                                  "description": "Why",
+                                  "type": "string"
+                                },
+                                "verdict": {
+                                  "description": "confirmed or dropped",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "finding",
+                                "reason",
+                                "verdict"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "confirmed",
+                          "cycle",
+                          "findings",
+                          "round"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "step": {
+                      "description": "The checks step",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "check",
+                    "cycles",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "code_checks": {
+                "description": "The code checks rhiza run code-check journalled, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it ran, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "A fail's causes, separated by semicolons",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "outcome"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "current": {
+                "description": "The step being run or to run next; empty once the run is finished",
+                "type": "string"
+              },
+              "detail": {
+                "description": "Why it stopped or failed",
+                "type": "string"
+              },
+              "fixes": {
+                "description": "The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it started, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "commit": {
+                      "description": "A passed fixer's new commit whose Review: trailer names the run",
+                      "type": "string"
+                    },
+                    "cycle": {
+                      "description": "The cycle whose fix phase ran it, from 2",
+                      "type": "integer"
+                    },
+                    "detail": {
+                      "description": "Why it was judged so",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once its work was judged; empty while it runs",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The fixer session's ID",
+                      "type": "string"
+                    },
+                    "since": {
+                      "description": "The worktree's HEAD when it started, which its commit must follow",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The checks step",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "cycle",
+                    "session",
+                    "since",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "id": {
+                "description": "The run ID",
+                "type": "string"
+              },
+              "leaves": {
+                "description": "The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "attempts": {
+                      "description": "The judgements of its sessions' work, in order",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When it was judged, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "attempt": {
+                            "description": "The leaf's attempt, from 1; on a checks step, its session's attempt, one per try of a cycle's fix",
+                            "type": "integer"
+                          },
+                          "commit": {
+                            "description": "A passed builder's or fixer's commit naming its leaf; a passed verifier's Evidence commit",
+                            "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
+                          },
+                          "detail": {
+                            "description": "Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf",
+                            "type": "string"
+                          },
+                          "outcome": {
+                            "description": "pass or fail",
+                            "type": "string"
+                          },
+                          "role": {
+                            "description": "builder or verifier; on a checks step fixer or verifier",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "attempt",
+                          "outcome",
+                          "role"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "commit": {
+                      "description": "A passed leaf's Evidence commit: its verifier's Evidence entries, committed alone",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "Why the leaf ended as it did",
+                      "type": "string"
+                    },
+                    "findings": {
+                      "description": "The findings its verifiers journalled with run findings --leaf, in order; absent when there were none",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When it was journalled, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "attempt": {
+                            "description": "The leaf's attempt it is on, from 1",
+                            "type": "integer"
+                          },
+                          "id": {
+                            "description": "The finding's ID in the attempt: f1, f2, ...",
+                            "type": "string"
+                          },
+                          "reason": {
+                            "description": "What the verifier found wrong",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "attempt",
+                          "id",
+                          "reason"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "handle": {
+                      "description": "The leaf capability's handle",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf capability's ID",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "passed, failed or skipped; empty while the leaf is open, and always on a checks step",
+                      "type": "string"
+                    },
+                    "question": {
+                      "description": "The question node a failed leaf raised, by ID, if any",
+                      "type": "string"
+                    },
+                    "question_handle": {
+                      "description": "That question node's handle",
+                      "type": "string"
+                    },
+                    "round": {
+                      "description": "The leaf's current round of attempts, from 1",
+                      "type": "integer"
+                    },
+                    "rounds": {
+                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "after": {
+                            "description": "The attempts before it: its first attempt is after + 1",
+                            "type": "integer"
+                          },
+                          "at": {
+                            "description": "When the round began, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "decision": {
+                            "description": "The handle of the Decision that answers it",
+                            "type": "string"
+                          },
+                          "question": {
+                            "description": "The question node the leaf's failure raised, by ID",
+                            "type": "string"
+                          },
+                          "question_handle": {
+                            "description": "That question node's handle",
+                            "type": "string"
+                          },
+                          "round": {
+                            "description": "The round, from 2",
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "after",
+                          "at",
+                          "decision",
+                          "question",
+                          "round"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "sessions": {
+                      "description": "The leaf's sessions, in the order they started",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When it started, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "attempt": {
+                            "description": "The leaf's attempt it works on, from 1; on a checks step, one per try of a cycle's fix: cycle 2's first try is 2, and each cycle has 3 tries",
+                            "type": "integer"
+                          },
+                          "commit": {
+                            "description": "A builder's or fixer's: the worktree's HEAD when it started; a verifier's: the commit it checks",
+                            "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
+                          },
+                          "model": {
+                            "description": "The model it runs; empty for the agent's default",
+                            "type": "string"
+                          },
+                          "role": {
+                            "description": "builder or verifier; on a checks step fixer or verifier",
+                            "type": "string"
+                          },
+                          "session": {
+                            "description": "The session's ID",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "attempt",
+                          "role",
+                          "session"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "step": {
+                      "description": "The leaves step, or the checks step whose fixer fixed it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "attempts",
+                    "handle",
+                    "leaf",
+                    "round",
+                    "sessions",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "messages": {
+                "description": "The messages its sessions sent each other, in order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "The sender's actor handle",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was sent, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The sender's session",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The sender's step",
+                      "type": "string"
+                    },
+                    "structured": {
+                      "description": "True if the message was not a string, so text holds its raw JSON",
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "description": "The sender's summary of it; absent when it gave none",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "The message; a structured one is its raw JSON",
+                      "type": "string"
+                    },
+                    "to": {
+                      "description": "The recipient, as the sender named it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "at",
+                    "session",
+                    "step",
+                    "text",
+                    "to"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "pr": {
+                "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
+                "type": "string"
+              },
+              "questions": {
+                "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "answered": {
+                      "description": "True once the answer was delivered to the asking session",
+                      "type": "boolean"
+                    },
+                    "at": {
+                      "description": "When it was asked, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "decision": {
+                      "description": "The handle of the Decision that answers it, once the arbiter passed; empty otherwise",
+                      "type": "string"
+                    },
+                    "handle": {
+                      "description": "The question node's handle",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "The arbiter's verdict: pass, fail or error; empty while it is open",
+                      "type": "string"
+                    },
+                    "question": {
+                      "description": "The question node's ID",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The agent step that asked",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "What the session asked",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "handle",
+                    "question",
+                    "step",
+                    "text"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "retries": {
+                "description": "The retries of the run after it failed, in order; absent when it was never retried",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was retried, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "Why the run had failed",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was restarted at",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "rounds": {
+                "description": "The plan review rounds journalled by run findings and run verdict, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When its findings were journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "confirmed": {
+                      "description": "How many findings the critic's latest verdict confirms",
+                      "type": "integer"
+                    },
+                    "findings": {
+                      "description": "The reviewer's findings, in order; empty for a clean review",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "check": {
+                            "description": "A review check's finding: the check that found it",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle when the finding was recorded; absent when it had none",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "The finding's ID in its round: f1, f2, ...",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "type": "string"
+                          },
+                          "leaf": {
+                            "description": "A review check's finding: the leaf it is about, by ID; absent when it names none",
+                            "type": "string"
+                          },
+                          "leaf_handle": {
+                            "description": "That leaf's handle when the finding was recorded",
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "type": "string"
+                          },
+                          "place": {
+                            "description": "A review check's finding: where, as file:line or a node",
+                            "type": "string"
+                          },
+                          "reason": {
+                            "description": "Why the reviewer found it",
+                            "type": "string"
+                          },
+                          "severity": {
+                            "description": "A review check's finding: blocker, major, minor or nit",
+                            "type": "string"
+                          },
+                          "verdict": {
+                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "type": "string"
+                          },
+                          "verdict_reason": {
+                            "description": "Why the critic gave it; absent before a verdict",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "reason"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "round": {
+                      "description": "The round's number, from 1",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "confirmed",
+                    "findings",
+                    "round"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "sessions": {
+                "description": "The sessions it launched or read token use for, in order of first appearance, each with its latest reading",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "no_tokens": {
+                      "description": "Why no token use is shown, when tokens is absent: still running, or the transcript is unreadable with its warning",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The session ID",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the session first appeared under",
+                      "type": "string"
+                    },
+                    "tokens": {
+                      "additionalProperties": false,
+                      "description": "The latest reading of its token use; absent when none could be read, and then left out of the totals",
+                      "properties": {
+                        "helpers": {
+                          "additionalProperties": false,
+                          "description": "The tokens of the calls its helper agents logged in its transcript, kept apart from the session's",
+                          "properties": {
+                            "cache_creation": {
+                              "description": "Input tokens written to the cache",
+                              "type": "integer"
+                            },
+                            "cache_read": {
+                              "description": "Input tokens read from the cache",
+                              "type": "integer"
+                            },
+                            "input": {
+                              "description": "Input tokens neither written to nor read from the cache",
+                              "type": "integer"
+                            },
+                            "output": {
+                              "description": "Output tokens the model generated",
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "cache_creation",
+                            "cache_read",
+                            "input",
+                            "output"
+                          ],
+                          "type": "object"
+                        },
+                        "session": {
+                          "additionalProperties": false,
+                          "description": "The tokens of the session's own model calls",
+                          "properties": {
+                            "cache_creation": {
+                              "description": "Input tokens written to the cache",
+                              "type": "integer"
+                            },
+                            "cache_read": {
+                              "description": "Input tokens read from the cache",
+                              "type": "integer"
+                            },
+                            "input": {
+                              "description": "Input tokens neither written to nor read from the cache",
+                              "type": "integer"
+                            },
+                            "output": {
+                              "description": "Output tokens the model generated",
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "cache_creation",
+                            "cache_read",
+                            "input",
+                            "output"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "helpers",
+                        "session"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "session",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "signoff_waiting": {
+                "description": "True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise",
+                "type": "boolean"
+              },
+              "signoffs": {
+                "description": "The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "Who signed off, by actor handle; absent under rule autonomous",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "findings": {
+                      "description": "With changes: the owner's findings, each naming a check, which count as confirmed",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "check": {
+                            "description": "A review check's finding: the check that found it",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle when the finding was recorded; absent when it had none",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "The finding's ID in its round: f1, f2, ...",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "type": "string"
+                          },
+                          "leaf": {
+                            "description": "A review check's finding: the leaf it is about, by ID; absent when it names none",
+                            "type": "string"
+                          },
+                          "leaf_handle": {
+                            "description": "That leaf's handle when the finding was recorded",
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "type": "string"
+                          },
+                          "place": {
+                            "description": "A review check's finding: where, as file:line or a node",
+                            "type": "string"
+                          },
+                          "reason": {
+                            "description": "Why the reviewer found it",
+                            "type": "string"
+                          },
+                          "severity": {
+                            "description": "A review check's finding: blocker, major, minor or nit",
+                            "type": "string"
+                          },
+                          "verdict": {
+                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "type": "string"
+                          },
+                          "verdict_reason": {
+                            "description": "Why the critic gave it; absent before a verdict",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "reason"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "outcome": {
+                      "description": "approved, or changes when the owner asked for changes",
+                      "type": "string"
+                    },
+                    "rule": {
+                      "description": "owner, or autonomous when an autonomous run signed off in the owner's place",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The signoff step",
+                      "type": "string"
+                    },
+                    "visit": {
+                      "description": "Which visit of the step it signed off, from 1",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "outcome",
+                    "rule",
+                    "step",
+                    "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
+              },
+              "started_at": {
+                "description": "When it started, RFC 3339 UTC",
+                "type": "string"
+              },
+              "state": {
+                "description": "running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run",
+                "type": "string"
+              },
+              "steps": {
+                "description": "The steps done, in order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it ended, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "What the step reported, such as its exit code",
+                      "type": "string"
+                    },
+                    "next": {
+                      "description": "The step the outcome led to; empty when it ended the run",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "How it ended: pass, fail, timeout, or error when it could not run",
+                      "type": "string"
+                    },
+                    "retry": {
+                      "description": "True for the first visit of the step after a retry restarted the run at it",
+                      "type": "boolean"
+                    },
+                    "session": {
+                      "description": "An agent step's session",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step's name",
+                      "type": "string"
+                    },
+                    "visit": {
+                      "description": "Which visit of the step it was, from 1",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "outcome",
+                    "step",
+                    "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "title": {
+                "description": "The change set's title",
+                "type": "string"
+              },
+              "totals": {
+                "additionalProperties": false,
+                "description": "The sums of the sessions with recorded token use, the session's own and helpers' kept apart",
+                "properties": {
+                  "helpers": {
+                    "additionalProperties": false,
+                    "description": "The tokens of the calls its helper agents logged in its transcript, kept apart from the session's",
+                    "properties": {
+                      "cache_creation": {
+                        "description": "Input tokens written to the cache",
+                        "type": "integer"
+                      },
+                      "cache_read": {
+                        "description": "Input tokens read from the cache",
+                        "type": "integer"
+                      },
+                      "input": {
+                        "description": "Input tokens neither written to nor read from the cache",
+                        "type": "integer"
+                      },
+                      "output": {
+                        "description": "Output tokens the model generated",
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "cache_creation",
+                      "cache_read",
+                      "input",
+                      "output"
+                    ],
+                    "type": "object"
+                  },
+                  "session": {
+                    "additionalProperties": false,
+                    "description": "The tokens of the session's own model calls",
+                    "properties": {
+                      "cache_creation": {
+                        "description": "Input tokens written to the cache",
+                        "type": "integer"
+                      },
+                      "cache_read": {
+                        "description": "Input tokens read from the cache",
+                        "type": "integer"
+                      },
+                      "input": {
+                        "description": "Input tokens neither written to nor read from the cache",
+                        "type": "integer"
+                      },
+                      "output": {
+                        "description": "Output tokens the model generated",
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "cache_creation",
+                      "cache_read",
+                      "input",
+                      "output"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "helpers",
+                  "session"
+                ],
+                "type": "object"
+              },
+              "waiting": {
+                "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "change": {
+                      "description": "The change set's ID",
+                      "type": "string"
+                    },
+                    "next": {
+                      "description": "The owner's command to accept it: rhiza accept --rule owner --change <id>",
+                      "type": "string"
+                    },
+                    "title": {
+                      "description": "Its title",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "change",
+                    "next",
+                    "title"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "workflow": {
+                "description": "The workflow's name",
+                "type": "string"
+              },
+              "worktree": {
+                "description": "The worktree every step runs in",
+                "type": "string"
+              }
+            },
+            "required": [
+              "amendments",
+              "change",
+              "id",
+              "messages",
+              "sessions",
+              "started_at",
+              "state",
+              "steps",
+              "title",
+              "totals",
+              "workflow",
+              "worktree"
+            ],
+            "type": "object"
+          },
+          "signoff": {
+            "additionalProperties": false,
+            "description": "The sign-off journalled, or in a dry run the one that would be",
+            "properties": {
+              "actor": {
+                "description": "Who signed off, by actor handle; absent under rule autonomous",
+                "type": "string"
+              },
+              "at": {
+                "description": "When, RFC 3339 UTC",
+                "type": "string"
+              },
+              "findings": {
+                "description": "With changes: the owner's findings, each naming a check, which count as confirmed",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "check": {
+                      "description": "A review check's finding: the check that found it",
+                      "type": "string"
+                    },
+                    "handle": {
+                      "description": "The node's handle when the finding was recorded; absent when it had none",
+                      "type": "string"
+                    },
+                    "id": {
+                      "description": "The finding's ID in its round: f1, f2, ...",
+                      "type": "string"
+                    },
+                    "kind": {
+                      "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "A review check's finding: the leaf it is about, by ID; absent when it names none",
+                      "type": "string"
+                    },
+                    "leaf_handle": {
+                      "description": "That leaf's handle when the finding was recorded",
+                      "type": "string"
+                    },
+                    "node": {
+                      "description": "The node it is about, by ID; absent for a leaf's finding",
+                      "type": "string"
+                    },
+                    "place": {
+                      "description": "A review check's finding: where, as file:line or a node",
+                      "type": "string"
+                    },
+                    "reason": {
+                      "description": "Why the reviewer found it",
+                      "type": "string"
+                    },
+                    "severity": {
+                      "description": "A review check's finding: blocker, major, minor or nit",
+                      "type": "string"
+                    },
+                    "verdict": {
+                      "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                      "type": "string"
+                    },
+                    "verdict_reason": {
+                      "description": "Why the critic gave it; absent before a verdict",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "reason"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "outcome": {
+                "description": "approved, or changes when the owner asked for changes",
+                "type": "string"
+              },
+              "rule": {
+                "description": "owner, or autonomous when an autonomous run signed off in the owner's place",
+                "type": "string"
+              },
+              "step": {
+                "description": "The signoff step",
+                "type": "string"
+              },
+              "visit": {
+                "description": "Which visit of the step it signed off, from 1",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "at",
+              "outcome",
+              "rule",
+              "step",
+              "visit"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "run",
+          "signoff"
+        ],
+        "type": "object"
+      },
+      "summary": "Send a run waiting at a signoff step back to a fixer with a note: the note is journalled as the next review round's one finding (the owner's, naming the first check of the checks step the sign-off goes back to), the run returns to that step's fixer instead of signing off, and the continuation is queued for the daemon (--foreground continues it in this process). Exit 2 on a run not waiting at a sign-off step; nothing changes",
       "write": true
     },
     {

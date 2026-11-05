@@ -14,7 +14,7 @@ At 4e20b3c ran go test ./internal/tui/inboxapp -run 'Test(Open|Answer|Take|Appro
 
 ### Out
 
-- verifies [inbox-app-actions](../capability/rhiza/inbox-app-actions.md)
+- verifies inbox-app-actions (retired)
 
 ## History
 

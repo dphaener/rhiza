@@ -35,7 +35,7 @@ verified
 - verifies [daemon-repo-session](../capability/rhiza/orchestration/daemon/daemon-repo-session.md)
 - verifies [daemon-resume-once](../capability/rhiza/orchestration/daemon/daemon-resume-once.md)
 - verifies [roadmap-app-start-runs](../capability/rhiza/roadmap-app-start-runs.md)
-- verifies [inbox-app-actions](../capability/rhiza/inbox-app-actions.md)
+- verifies inbox-app-actions (retired)
 
 ## History
 
