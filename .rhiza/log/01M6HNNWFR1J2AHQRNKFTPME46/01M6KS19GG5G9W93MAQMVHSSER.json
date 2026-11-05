@@ -1,0 +1,40 @@
+{
+  "actor": "01M6KQ4JCXVC26MR10RE374EF6",
+  "after": [
+    "01M6KR9Q7MFEPASQJAMZHNMDVA"
+  ],
+  "at": "2026-11-04T17:17:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2 at 22bd296a. Read internal/textref and the fix diff. go test -count=1 -v ./internal/textref passes. TestFind covers: a reference starts at text start or after whitespace, ( or [; handles, IDs and 4+ char prefixes are found; darin@hey.com, checkout@v7, '@key' and @@alpha hold none. TestResolve: references, @{<ID>} included, become @{<full ID>}; @{BOGUS} and @nope come back unresolved with their offsets. New TestResolveLiteralFullID: an @@{<full ID>} escape and an unmapped @{<full ID>} are returned (Escaped set) and stored without braces, so they never read back as references. TestFormat: a live node shows @handle; a retired or missing node shows @{<full ID>}; stored @{ID}, @{BOGUS}, @{<full ID>} and @{...} show as @@{...}; stored @word shows @@word. Fuzz runs: FuzzRoundTrip for 45s, about 2.27M execs, which now also checks that every stored reference came from lookup; FuzzStoredRoundTrip for 45s, about 1.92M execs. Neither failed. go test ./cmd/rhiza -run TestScripts/text-refs passes, including the new text-refs-write.txtar cases: a strict @@{<full ID>} is refused with a usage error, and a lenient note stores the brace-less form with fold-ok. make fmt-check vet test passes. make self-check fails only on stale .rhiza/rendered (missing critic actor pages, index.md). Those come from the earlier critic chore commits; this commit touches no .rhiza file."
+        },
+        "handle": "text-ref-syntax-verified-2",
+        "id": "01M6KS126YR7T580JWVV0FMTE5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KS126YR7T580JWVR71R5EZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KS126YR7T580JWVR71R5EZ",
+        "id": "01M6KS152V2T6AWF1BH4S4SWVC",
+        "link": "01M6KS152V2T6AWF1BH2D7HFPW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0CQRJFFH7Q40JCV9H2DG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KS19GG5G9W93MAQMVHSSER",
+  "type": "ops",
+  "v": 1
+}

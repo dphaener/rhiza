@@ -1,0 +1,40 @@
+{
+  "actor": "01M6K4WMDMEK14XG1HSABX9SCP",
+  "after": [
+    "01M6HPWT4E0PWGC63ES3TPQ0Q6"
+  ],
+  "at": "2026-11-04T11:56:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified internal/textref at 6d9b05e3 (attempt 2). go test -count=1 ./internal/textref passes; FuzzRoundTrip and FuzzStoredRoundTrip each ran 30s clean. TestFind/TestResolve/TestFormat cover every acceptance point, and a scratch probe (removed) confirmed: references start at text start, after whitespace, ( or [; handles, IDs and 4+ char prefixes (@01M is none); darin@hey.com, checkout@v7, '@key' hold none; @@ resolves to a literal @; Resolve rewrites @alpha, @01M6HP0C and @{01M6HP0C} to @{<full ID>} and returns @{BOGUS} and @01M6 unresolved with offsets; Format shows a live stored ref as @alpha, a retired or unknown full ID as @{<full ID>}, and stored @{ID}, @{BOGUS} and @{<full ID>} as @@{ID}, @@{BOGUS}, @@{<full ID>} (attempt 1's finding f1 is fixed and covered in TestFormat), and @word as @@word. fmt-check and vet pass. make check's other failures do not come from this leaf: a stale render of the builder's committed actor record, and the TestReadBudget/TestBudget timing budgets in internal/api and internal/slice at load average 8-11. Nothing imports textref, and the leaf only adds that package."
+        },
+        "handle": "text-ref-syntax-verified",
+        "id": "01M6K6N4N191EM69Z3NMX7AVKY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6K6N4N191EM69Z3NH6PRNQH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6K6N4N191EM69Z3NH6PRNQH",
+        "id": "01M6K6NCRG5GBNSN732CZP0PFD",
+        "link": "01M6K6NCRG5GBNSN732B4D3SDG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0CQRJFFH7Q40JCV9H2DG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6K6NXKK71YKBFEQAAJWTKBM",
+  "type": "ops",
+  "v": 1
+}

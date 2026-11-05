@@ -85,6 +85,10 @@ type AddRequest struct {
 	// handleFor, when set, names the node from its new ID in place of
 	// Handle: note add's automatic note-<short id>.
 	handleFor func(id.ID) string
+	// lenient is set by the engine's own writes of free text (asks, notes,
+	// answers): an unresolvable reference is stored as a literal @ instead
+	// of refusing the write.
+	lenient bool
 }
 
 // SetRequest changes a node's handle or fields.
@@ -94,6 +98,9 @@ type SetRequest struct {
 	Fields     []string `json:"fields,omitempty" flag:"field" desc:"Set a text field, name=text"`
 	JSONFields []string `json:"json_fields,omitempty" flag:"json-field" desc:"Set a JSON field, name=<json>"`
 	Unset      []string `json:"unset,omitempty" desc:"Remove a field by name"`
+
+	// lenient is as on AddRequest.
+	lenient bool
 }
 
 // MvRequest moves a node in its tree.
@@ -119,7 +126,11 @@ func buildAdd(b writeBase, r AddRequest) (edit, error) {
 	if !slices.Contains(op.Kinds(), kind) {
 		return edit{}, Usagef("unknown kind %q: want one of %s", r.Kind, joinKinds()).WithNext("rhiza describe add")
 	}
-	fields, err := parseFields(r.Fields, r.JSONFields)
+	texts, err := resolveFieldTexts(b, kind, r.Fields, nil, r.lenient)
+	if err != nil {
+		return edit{}, err
+	}
+	fields, err := parseFields(texts, r.JSONFields)
 	if err != nil {
 		return edit{}, err
 	}
@@ -181,7 +192,11 @@ func buildSet(b writeBase, r SetRequest) (edit, error) {
 	if err != nil {
 		return edit{}, err
 	}
-	set, err := parseFields(r.Fields, r.JSONFields)
+	texts, err := resolveFieldTexts(b, n.Kind, r.Fields, n.Fields, r.lenient)
+	if err != nil {
+		return edit{}, err
+	}
+	set, err := parseFields(texts, r.JSONFields)
 	if err != nil {
 		return edit{}, err
 	}

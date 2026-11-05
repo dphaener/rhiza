@@ -1,0 +1,15 @@
+{
+  "actor": "01M6KNA8999SCV1PX8P72BJ88V",
+  "after": [],
+  "at": "2026-11-04T16:15:08Z",
+  "body": {
+    "intent": "Keep notes_quote verbatim: an interview Decision's notes_quote holds the owner's exact notes (internal/api/session_interview.go), but model.TextVerbatim (internal/model/textshow.go) lists only quote, quote_where and wording, so an @word in it is resolved to @{ID} on write and later shown by a renamed handle, altering the owner's words; add notes_quote to the verbatim fields and to text-references-shape's list",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6KNF9RSCVR1WCCE2P5P8KFP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KNF9RSCVR1WCCE2RZQ4X2R",
+  "type": "open",
+  "v": 1
+}

@@ -1,0 +1,113 @@
+# Writes resolve @references in text fields and store them as @{<full ID>}:
+# add, set and apply refuse an unresolvable one (exit 4, nothing written);
+# engine writes (notes, answers) store it as a literal @.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza add capability other --field statement=Other --record
+exec rhiza add capability gone --field statement=Gone --record
+exec rhiza add capability mine --field statement=Mine --record
+exec rhiza change new Refs
+exec rhiza add capability local --field statement=Local
+
+# A handle reference is stored by full ID; an email, @@ and 'v@x' are not references.
+exec rhiza add capability one --field 'statement=Builds on @other, mail me@x.org, @@lit'
+exec sh -c 'cat .rhiza/log/*/*.json'
+stdout 'Builds on @\{[0-9A-Z]{26}\}, mail me@x.org, @lit'
+
+# An ID prefix reference stores the full ID; so does a node of this change set.
+exec sh -c 'rhiza show other --json | grep "\"id\"" | head -1 | cut -d\" -f4 > id.txt'
+exec sh -c 'rhiza add capability pre --field "statement=Prefix @$(cut -c1-20 id.txt) here"'
+exec sh -c 'cat .rhiza/log/*/*.json | grep -c "Prefix @{$(cat id.txt)} here"'
+stdout '^1$'
+exec rhiza show pre
+stdout 'Prefix @other here'
+exec rhiza add capability two --field 'statement=See @local and (@other)'
+exec sh -c 'cat .rhiza/log/*/*.json'
+stdout 'See @\{[0-9A-Z]{26}\} and \(@\{[0-9A-Z]{26}\}\)'
+
+# Verbatim fields are stored as given.
+exec rhiza add decision d1 --field 'statement=Uses @other' --field 'quote=said @other' --field 'quote_where=at @other' --field 'wording=@other'
+exec sh -c 'cat .rhiza/log/*/*.json'
+stdout '"quote": "said @other"'
+stdout '"wording": "@other"'
+
+# An unresolvable reference exits 4, names the reference and field, writes nothing.
+! exec rhiza add capability bad --field 'statement=Needs @nosuch and @alsonot'
+stderr '^rhiza: .*@nosuch in field statement, @alsonot in field statement'
+stderr '^next: fix the handle, or write @@ for a literal @$'
+! exec rhiza add capability bad --field 'statement=Needs @nosuch' --json
+stdout '"code": "not_found"'
+! exec rhiza add capability bad --field 'statement=Needs @{BOGUS}' --json
+stdout '"code": "not_found"'
+! exec rhiza add capability bad --field 'statement=Needs @nosuch' --dry-run --json
+stdout '"code": "not_found"'
+! exec rhiza show bad
+exec rhiza add capability bad --field 'statement=Needs @@nosuch'
+
+# A literal @{<full ID>} cannot be stored, as it would read back as a
+# reference: its @@ escape is refused (exit 2), nothing written.
+! exec rhiza add capability lit26 --field 'statement=a forged @@{01ZZZZZZZZZZZZZZZZZZZZZZZZ} here'
+stderr '^rhiza: a literal @\{<full ID>\} cannot be stored.*@@\{01ZZZZZZZZZZZZZZZZZZZZZZZZ\} in field statement'
+! exec rhiza add capability lit26 --field 'statement=a forged @@{01ZZZZZZZZZZZZZZZZZZZZZZZZ} here' --json
+stdout '"code": "usage"'
+! exec rhiza show lit26
+exec rhiza add capability lit26 --field 'statement=a forged @@01ZZZZZZZZZZZZZZZZZZZZZZZZ here'
+exec rhiza show lit26
+stdout 'a forged @@01ZZZZZZZZZZZZZZZZZZZZZZZZ here'
+
+# A braced full ID resolves to the same ID.
+exec sh -c 'rhiza show other --json | grep "\"id\"" | head -1 | cut -d\" -f4 > id.txt'
+exec sh -c 'rhiza add capability braced --field "statement=Via @{$(cat id.txt)}"'
+exec sh -c 'cat .rhiza/log/*/*.json'
+stdout 'Via @\{[0-9A-Z]{26}\}'
+
+# A retired node is refused unless the field already holds its ID.
+exec rhiza add capability holder --field 'statement=Holds @gone'
+exec sh -c 'rhiza show gone --json | grep "\"id\"" | head -1 | cut -d\" -f4 > gone.txt'
+exec rhiza retire gone --reason Done --record
+! exec sh -c 'rhiza add capability late --field "statement=See @{$(cat gone.txt)}"'
+stderr 'not_found|no node to refer to'
+exec sh -c 'rhiza set holder --field "statement=Still @{$(cat gone.txt)}"'
+! exec sh -c 'rhiza set local --field "statement=Now @{$(cat gone.txt)}"'
+stderr 'no node to refer to'
+
+# apply behaves the same.
+cp ../apply-ok.json apply-ok.json
+exec rhiza apply apply-ok.json
+cp ../apply-bad.json apply-bad.json
+! exec rhiza apply apply-bad.json
+stderr 'no node to refer to'
+! exec rhiza show viabad
+exec rhiza show viaok --json
+stdout '"statement": "Apply sees @other"'
+
+# Engine writes never refuse: a note keeps an unresolvable word as a literal @.
+exec rhiza note add local 'Maybe @nowhere and @other'
+exec sh -c 'cat .rhiza/log/*/*.json'
+stdout 'Maybe @nowhere and @\{[0-9A-Z]{26}\}'
+exec rhiza show local
+stdout 'Maybe @@nowhere and @other'
+# ... and an unresolvable @{<full ID>} or @@{<full ID>} without braces, so it
+# never reads back as a reference.
+exec rhiza note add local 'Ghost @{01ZZZZZZZZZZZZZZZZZZZZZZZZ} and @@{01YYYYYYYYYYYYYYYYYYYYYYYY}'
+exec sh -c 'cat .rhiza/log/*/*.json'
+stdout 'Ghost @01ZZZZZZZZZZZZZZZZZZZZZZZZ and @01YYYYYYYYYYYYYYYYYYYYYYYY'
+! stdout '@\{01ZZ'
+fold-ok
+# A node of another unlanded change set is not referable.
+exec rhiza change new Other
+exec rhiza add capability elsewhere --field statement=Elsewhere
+exec rhiza change use 01M5PWGT68X5XKB54XFQMHKA0A
+! exec rhiza add capability x --field 'statement=Refers @elsewhere'
+stderr 'no node to refer to'
+
+-- apply-ok.json --
+{"writes":[{"op":"add","kind":"capability","handle":"viaok","fields":["statement=Apply sees @other"]}]}
+-- apply-bad.json --
+{"writes":[{"op":"add","kind":"capability","handle":"viabad","fields":["statement=Apply sees @nosuch"]}]}

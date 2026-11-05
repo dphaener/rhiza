@@ -1,0 +1,40 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MSPQPN6YR132AGM8EXKVSV"
+  ],
+  "at": "2026-11-05T04:24:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Resolve the text-references rebase conflicts by merging origin/main into cs/text-references, keeping both main's unclaimed check rule (#248) and the branch's text-ref rule (order: evidence-actor, unclaimed, anchor, text-ref), and regenerating .rhiza/rendered and describe-golden.txtar instead of hand-merging them; done in merge commits 19675ddb and 841f1008, scoped tests and rhiza check green",
+          "wording": "stated by the orchestrator acting as arbiter"
+        },
+        "handle": "rebase-conflict-text-references-resolved",
+        "id": "01M6MZ6XVSYC4X1VXDA4X4YZFN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MZ6XVSYC4X1VXDA2PW3M70",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ6XVSYC4X1VXDA2PW3M70",
+        "id": "01M6MZ71YF6C0X1GZJKBBG9VDB",
+        "link": "01M6MZ71YF6C0X1GZJKAH15ZBC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MSPG3Y1KBCTD94GGCSPTNE",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MZ77GWR9BKKK2HW690AANQ",
+  "type": "ops",
+  "v": 1
+}

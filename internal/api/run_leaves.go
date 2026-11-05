@@ -265,7 +265,7 @@ func (r *stepRunner) AddLeafQuestion(leaf run.Leaf, text string) (run.Question, 
 	if err != nil {
 		return run.Question{}, err
 	}
-	add := AddRequest{Kind: string(op.KindQuestion), Handle: handle, Fields: []string{"statement=" + text}}
+	add := AddRequest{Kind: string(op.KindQuestion), Handle: handle, Fields: []string{"statement=" + text}, lenient: true}
 	link := LinkRequest{From: handle, Type: string(op.LinkBlocks), To: lid.String()}
 	items := []applyItem{
 		{op: "add", build: func(b writeBase) (edit, error) { return buildAdd(b, add) }},

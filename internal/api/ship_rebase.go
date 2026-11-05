@@ -414,12 +414,18 @@ func shipRaiseQuestion(ctx *Ctx, t shipTarget, resp *ShipRebaseResponse) error {
 	}
 	statement := shipQuestionStatement(t, resp.Conflicts)
 	m := w.model(t.cs)
+	// The stored statement holds resolved references, so compare it with the
+	// input resolved the same way.
+	stored := statement
+	if r, err := resolveFieldTexts(writeBase{m: m}, op.KindQuestion, []string{"statement=" + statement}, nil, true); err == nil {
+		stored = strings.TrimPrefix(r[0], "statement=")
+	}
 	resp.Question = handleSlug("rebase-conflict-" + t.slug)
 	link := LinkRequest{From: resp.Question, Type: string(op.LinkBlocks), To: t.cs.String()}
 	var items []applyItem
 	addLink := applyItem{op: "link", build: func(b writeBase) (edit, error) { return buildLink(b, link) }}
 	if n, taken := m.HandleTaken(resp.Question); taken {
-		if node, ok := m.Node(n); ok && node.Kind == op.KindQuestion && fieldText(node.Fields["statement"]) == statement {
+		if node, ok := m.Node(n); ok && node.Kind == op.KindQuestion && fieldText(node.Fields["statement"]) == stored {
 			// An earlier call raised it; it gains the blocks link when it
 			// lacks one, else nothing is written.
 			if _, err := m.LinkBetween(n, t.cs, op.LinkBlocks); err == nil {
@@ -435,7 +441,7 @@ func shipRaiseQuestion(ctx *Ctx, t shipTarget, resp *ShipRebaseResponse) error {
 	}
 	if items == nil {
 		items = []applyItem{{op: "add", build: func(b writeBase) (edit, error) {
-			return buildAdd(b, AddRequest{Kind: string(op.KindQuestion), Handle: resp.Question, Fields: []string{"statement=" + statement}})
+			return buildAdd(b, AddRequest{Kind: string(op.KindQuestion), Handle: resp.Question, Fields: []string{"statement=" + statement}, lenient: true})
 		}}, addLink}
 	}
 	wctx := *ctx

@@ -204,6 +204,7 @@ func runSlice(ctx *Ctx, req any) (any, error) {
 		resolve = func(ref string) (gmodel.Node, error) { return resolveInModel(m, ref) }
 	}
 
+	rd, asIs = slice.Shown(rd), slice.Shown(asIs)
 	sreq := slice.Request{Change: change, View: view, InFlight: inFlight, ChangeSets: all}
 	if r.Ref != "" {
 		n, err := resolve(r.Ref)

@@ -86,7 +86,7 @@ func runQuestionAnswer(ctx *Ctx, req any) (any, error) {
 					"statement=" + text,
 					"quote=" + text,
 					"quote_where=the owner, answering question " + q.Handle,
-				}})
+				}, lenient: true})
 			}},
 			{op: "link", build: func(b writeBase) (edit, error) {
 				return buildLink(b, LinkRequest{From: handle, Type: "answers", To: q.Handle})

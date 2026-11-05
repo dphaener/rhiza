@@ -13,6 +13,8 @@ import (
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
+	gmodel "github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 func init() {
@@ -88,17 +90,17 @@ func runChangeDiff(ctx *Ctx, req any) (any, error) {
 	if len(entriesOf(w.log(), cs)) == 0 {
 		return nil, NotFoundf("no change set %s", cs).WithNext(changeLsNext)
 	}
-	return buildChangeDiff(cs, changeset.BuildDiff(w.changeSets(), cs)), nil
+	return buildChangeDiff(cs, changeset.BuildDiff(w.changeSets(), cs), modelHandleOf(w.model(cs))), nil
 }
 
 // buildChangeDiff turns a domain diff into the response.
-func buildChangeDiff(cs id.ID, d changeset.Diff) ChangeDiffResponse {
+func buildChangeDiff(cs id.ID, d changeset.Diff, handleOf gmodel.HandleOf) ChangeDiffResponse {
 	resp := ChangeDiffResponse{ID: cs, Nodes: []NodeChange{}, Links: []LinkChange{}}
 	for _, n := range d.Nodes {
 		nc := NodeChange{Node: n.Node, Action: string(n.Action), Kind: string(n.Kind),
 			Handle: n.Handle, Reason: n.Reason, Changes: []FieldChange{}}
 		for _, c := range n.Changes {
-			nc.Changes = append(nc.Changes, FieldChange{Name: c.Name, Old: diffValue(c.Old), New: diffValue(c.New)})
+			nc.Changes = append(nc.Changes, FieldChange{Name: c.Name, Old: diffValue(c.Old, op.Kind(n.Kind), c.Name, handleOf), New: diffValue(c.New, op.Kind(n.Kind), c.Name, handleOf)})
 		}
 		resp.Nodes = append(resp.Nodes, nc)
 	}
@@ -113,12 +115,13 @@ func buildChangeDiff(cs id.ID, d changeset.Diff) ChangeDiffResponse {
 	return resp
 }
 
-// diffValue shows a canonical JSON value: a string unquoted, anything else
-// as it is. Nil is absent.
-func diffValue(raw json.RawMessage) *string {
+// diffValue shows a canonical JSON value, a text with its references shown
+// by handle: a string unquoted, anything else as it is. Nil is absent.
+func diffValue(raw json.RawMessage, kind op.Kind, name string, handleOf gmodel.HandleOf) *string {
 	if raw == nil {
 		return nil
 	}
+	raw = gmodel.ShowFieldValue(kind, name, raw, handleOf)
 	var s string
 	if err := json.Unmarshal(raw, &s); err == nil {
 		return &s

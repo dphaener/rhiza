@@ -27,6 +27,7 @@ the assistant's summary in the founding conversation
 ### In
 
 - decided-by [model](../capability/rhiza/model.md)
+- decided-by [text-references](../capability/rhiza/model/text-references.md)
 
 ## History
 
