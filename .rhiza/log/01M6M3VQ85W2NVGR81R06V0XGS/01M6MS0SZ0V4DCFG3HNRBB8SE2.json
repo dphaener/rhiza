@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MQTTG1ASPE71YVZHX1H8AN",
+  "after": [
+    "01M6M480DSDDBX856T0QWV5KB7"
+  ],
+  "at": "2026-11-05T02:36:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 9d808d15. Read the diff: daemonPoll1 now passes daemonQueuedStarts startMax = max-1 when max > 1 and daemonRequestWaits (a request with no run and retry time passed), else max; the poll order (ship picks, queued continuations, queued starts, plan requests) is unchanged, and daemonPlanRequests still gets the full max. Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-queued-start-slot|daemon-request-slot)$' -count=1 -v: both PASS. The new daemon-queued-start-slot.txtar uses a fake rex and no ready change sets, with two plan-workflow starts queued by rhiza run start on draft change sets: with --max-runs 2 and no request, daemon --once starts both and the queue empties; with --max-runs 1, one queued start and a queued request, it starts the queued run, prints no plan run, the request stays 'feature queued' and one start stays queued; with --max-runs 2 and a request, it prints one 'Started a run of' and one 'Started the plan run of request', one start stays queued and the request is 'planning'. Copied the script onto the parent commit (HEAD~1) in a scratch worktree, where it FAILS at line 52 (have 2 'Started a run of', want 1), so it covers the fix. With RHIZA_* unset, go test ./internal/api -run Daemon (12 tests) and the usage_hold tests PASS. The whole internal/api package hit the go test timeout under machine load while running TestInboxReadsChangeSetsOnce, which this change does not touch; PR CI runs the full suite"
+        },
+        "handle": "queued-start-request-slot-kept-verified",
+        "id": "01M6MS0FF9GV21NMHME1ZBEETF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MS0FF81P9Q13ZKS2N8VCDG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MS0FF81P9Q13ZKS2N8VCDG",
+        "id": "01M6MS0KJPQ3567DCA9TFGSQEW",
+        "link": "01M6MS0KJPQ3567DCA9QG2G39M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M438EJP4VAN9P056CW2BNA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M3VQ85W2NVGR81R06V0XGS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MS0SZ0V4DCFG3HNRBB8SE2",
+  "type": "ops",
+  "v": 1
+}
