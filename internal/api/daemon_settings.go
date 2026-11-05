@@ -57,6 +57,7 @@ var settingDefs = []settingDef{
 		_, err := daemon.ParseSize(v)
 		return err
 	}},
+	{key: "rhiza.daemon.trimGoCache", def: "true", validate: validateChoice("true", "false")},
 	{key: "rhiza.daemon.permissionMode", def: "", flag: "--permission-mode", validate: func(v string) error {
 		if strings.TrimSpace(v) == "" || strings.ContainsAny(v, " \t\r\n") {
 			return fmt.Errorf("must be one word")
@@ -142,12 +143,13 @@ func settingValue(rows []Setting, key string) string {
 
 // daemonConf is the daemon's effective settings for one poll.
 type daemonConf struct {
-	rows       []Setting
-	maxRuns    int
-	minFree    uint64
-	mode       string
-	paused     bool
-	selfUpdate bool
+	rows        []Setting
+	maxRuns     int
+	minFree     uint64
+	mode        string
+	paused      bool
+	selfUpdate  bool
+	trimGoCache bool
 }
 
 // daemonConfOf resolves the settings for a poll: config, then the request's
@@ -175,6 +177,7 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 	c.minFree, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minFree"))
 	c.paused = settingValue(rows, "rhiza.daemon.paused") == "true"
 	c.selfUpdate = settingValue(rows, "rhiza.daemon.selfUpdate") == "true"
+	c.trimGoCache = settingValue(rows, "rhiza.daemon.trimGoCache") != "false"
 	c.mode = settingValue(rows, "rhiza.daemon.permissionMode")
 	return c, nil
 }

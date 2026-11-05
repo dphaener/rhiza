@@ -37,8 +37,12 @@ func (f Freed) Any() bool { return f.CacheEntries > 0 || f.TempFolders > 0 }
 
 // CacheDir is the Go build cache: $GOCACHE, or os.UserCacheDir()/go-build
 // when it is unset. It is empty when the cache is off or cannot be placed.
-func CacheDir() string {
-	if v := os.Getenv("GOCACHE"); v != "" {
+func CacheDir() string { return CacheDirFrom(os.Getenv) }
+
+// CacheDirFrom is CacheDir reading GOCACHE (and, to place the user cache
+// dir, the environment itself) through getenv for GOCACHE only.
+func CacheDirFrom(getenv func(string) string) string {
+	if v := getenv("GOCACHE"); v != "" {
 		if v == "off" {
 			return ""
 		}
