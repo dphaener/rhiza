@@ -1523,3 +1523,33 @@ test	Run tests	2026-11-04T10:00:00Z FAIL	github.com/dphaener/rhiza/cmd/rhiza	13.
 		t.Errorf("infra log = %v, want none", got)
 	}
 }
+
+// --test-failures passes only with a failing test recorded for the head,
+// reads the state file alone, and runs no gh.
+func TestShipCheckTestFailures(t *testing.T) {
+	f, g, state := shipFixture(t)
+	r := shipCheck(t, f, `{"test_failures":true}`)
+	if r.Passed || r.ExitCode() != 1 || r.Detail == "" {
+		t.Errorf("no state: %+v", r)
+	}
+	if err := writeShipState(state, shipState{RerunHead: "abc1234def"}); err != nil {
+		t.Fatal(err)
+	}
+	if r := shipCheck(t, f, `{"test_failures":true}`); r.Passed {
+		t.Errorf("infra-only failure passed: %+v", r)
+	}
+	st := shipState{RerunHead: "abc1234def", CIFindings: []ShipFinding{{Test: "TestScripts/x", Reason: "failed"}}}
+	if err := writeShipState(state, st); err != nil {
+		t.Fatal(err)
+	}
+	r = shipCheck(t, f, `{"test_failures":true}`)
+	if !r.Passed || r.ExitCode() != 0 || !slices.Equal(r.Tests, []string{"TestScripts/x"}) || len(r.Findings) != 1 {
+		t.Errorf("recorded failure: %+v", r)
+	}
+	if len(g.calls) != 0 {
+		t.Errorf("ran %v; want no gh", g.calls)
+	}
+	if _, err := callOp(t, f.ctx, "ship.check", `{"test_failures":true,"settled":true}`); err == nil {
+		t.Error("--test-failures with --settled was accepted")
+	}
+}

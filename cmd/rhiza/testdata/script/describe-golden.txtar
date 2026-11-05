@@ -19435,6 +19435,10 @@ cmp stdout describe.golden.json
           "settled": {
             "description": "Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it rebases the branch onto main as ship rebase does, then reports not settled, and exits 75 with a stop: line on a conflict in code",
             "type": "boolean"
+          },
+          "test_failures": {
+            "description": "Exit 0 only if the head's latest ship check recorded at least one failing test read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)",
+            "type": "boolean"
           }
         },
         "required": [],

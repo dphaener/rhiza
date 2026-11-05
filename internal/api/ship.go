@@ -66,6 +66,9 @@ type ShipCheckRequest struct {
 	Settled bool `json:"settled,omitempty" flag:"settled" desc:"Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it rebases the branch onto main as ship rebase does, then reports not settled, and exits 75 with a stop: line on a conflict in code"`
 	Main    bool `json:"main,omitempty" flag:"main" desc:"Check that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, locally with git and no wait on CI, instead of checking the pull request; a differing tree dispatches CI on the merge commit (once) and checks its runs as it does a pull request's, and a stop that cannot be waited out exits 75 with a stop: line"`
 	PROpen  bool `json:"pr_open,omitempty" flag:"pr-open" desc:"Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)"`
+	// TestFailures asks only whether the head's latest check recorded
+	// failing tests; it reads the state file and runs no gh.
+	TestFailures bool `json:"test_failures,omitempty" flag:"test-failures" desc:"Exit 0 only if the head's latest ship check recorded at least one failing test read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)"`
 }
 
 // ShipCheckResponse is what ship.check found.
@@ -411,6 +414,12 @@ func checksVerdict(checks []ShipCheck) (settled, green bool, failed []string) {
 // is open.
 func runShipCheck(ctx *Ctx, req any) (any, error) {
 	r := req.(ShipCheckRequest)
+	if r.TestFailures {
+		if r.PROpen || r.Main || r.Settled {
+			return nil, Usagef("--test-failures asks only whether the last check recorded failing tests; it takes none of --pr-open, --main or --settled")
+		}
+		return runShipTestFailures(ctx)
+	}
 	if r.PROpen && (r.Main || r.Settled) {
 		return nil, Usagef("--pr-open asks only whether the pull request is open; it takes neither --main nor --settled")
 	}
@@ -499,6 +508,9 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		}
 	} else if !resp.Green {
 		resp.Detail = "failed: " + strings.Join(resp.Failed, ", ")
+		if len(resp.Tests) > 0 {
+			resp.Detail += "; failing tests: " + strings.Join(resp.Tests, ", ")
+		}
 	}
 	if !resp.Passed || r.Settled {
 		return resp, nil
@@ -512,6 +524,29 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	resp.Written = true
+	return resp, nil
+}
+
+// runShipTestFailures passes only when the state file holds failing tests
+// the latest check read from the head's CI logs.
+func runShipTestFailures(ctx *Ctx) (any, error) {
+	t, err := findShipTarget(ctx)
+	if err != nil {
+		return nil, err
+	}
+	st, err := readShipState(t.statePath())
+	if err != nil {
+		return nil, err
+	}
+	resp := ShipCheckResponse{Change: t.cs.String(), Branch: t.branch, Checks: []ShipCheck{}, Commit: st.RerunHead, Findings: st.CIFindings}
+	for _, f := range st.CIFindings {
+		resp.Tests = append(resp.Tests, f.Test)
+	}
+	if len(resp.Tests) == 0 {
+		resp.Detail = "no failing test was recorded for the head: an infra or unparsable failure"
+		return resp, nil
+	}
+	resp.Passed = true
 	return resp, nil
 }
 
