@@ -51,7 +51,17 @@ func TestReviewText(t *testing.T) {
 			"missing constraints",
 		},
 		"done": {"rhiza session done"},
+		"scoped-tests": {
+			"Checks, critics and fixers run only the tests covering what the change touches",
+			"scoped commands", "never the repo's full\nsuite",
+			"the PR's CI runs it before merge",
+		},
 	})
+	for _, banned := range []string{"go test", "make check", "make test", "testscript"} {
+		if strings.Contains(review.Body, banned) {
+			t.Errorf("review names %q", banned)
+		}
+	}
 	// Constraint agents-named-only-in-adapters: no agent product by name.
 	if strings.Contains(review.Body+review.Description, "Claude") {
 		t.Errorf("review names an agent product")

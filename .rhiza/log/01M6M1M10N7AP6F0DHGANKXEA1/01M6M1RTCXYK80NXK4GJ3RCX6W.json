@@ -1,0 +1,33 @@
+{
+  "actor": "01M6M1MB3B1PST86H70HXXYCH5",
+  "after": [
+    "01M6M1QRCYBWERM2NF8G4Z81VP"
+  ],
+  "at": "2026-11-04T19:49:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "ca3855178467b484cdd138ccf26af272efa7c867142860d2b3fb1efcc9239c02",
+          "session": "45b188d1-8ca7-4482-a8d3-01a1a81a2270",
+          "summary": "Autonomous plan run for the change set fixing leaked test temp folders (rhiza-api/index/slice-budget-*, rhiza-quiet-*) that filled the VM disk when go test timeouts skipped TestMain's cleanup. The planner asked which intent the change set serves and how to clean up; no owner answered, and the arbiter decided (assumed): it serves milestone-25, and each package sweeps its own prefix's folders older than an hour at start through one shared helper, tested with a stale and a fresh folder. No per-run directory deleted by make test. Nothing is left open.",
+          "title": "Test temp folder cleanup, autonomous plan interview"
+        },
+        "handle": "test-temp-cleanup-plan",
+        "id": "01M6M1RQZAQ2KV2FE0205KN3TD",
+        "key": null,
+        "kind": "source",
+        "node": "01M6M1RQZAQ2KV2FE01W9RXWHH",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6M1M10N7AP6F0DHGANKXEA1",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M1RTCXYK80NXK4GJ3RCX6W",
+  "type": "ops",
+  "v": 1
+}

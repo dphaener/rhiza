@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MFWZFN8NK9FF4A3YR6JK9W",
+  "after": [
+    "01M6MFTHWPGKR0YYFK9RV8YR0K"
+  ],
+  "at": "2026-11-04T23:58:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at cbdf7a93 with a binary built from the branch (go build ./cmd/rhiza) in a scratch repo with a bare origin, RHIZA_ROOT/CHANGE/RUN unset. Unpushed case: run A (command build workflow) committed on cs/abandon-built, pushed with git push -u origin; run B committed again without pushing; run C failed its check; rhiza run abandon C printed 'remove-worktree done' and 'delete-branch kept: it has commits merged into neither its upstream nor HEAD', and git branch -vv showed cs/abandon-built [origin/cs/abandon-built: ahead 1] with both built commits. Control: same flow without run B (branch fully pushed) printed 'delete-branch done' and the branch was gone. go test -trimpath ./cmd/rhiza -run 'TestScripts/run-abandon-(unpushed|unmerged)$' passed."
+        },
+        "handle": "abandon-keeps-unpushed-branch-qa-1",
+        "id": "01M6MG0669EHSMFM01S5NAA4AM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MG0669EHSMFM01S4WE744C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MG0669EHSMFM01S4WE744C",
+        "id": "01M6MG09XR8SER3QX6NFGMWX0E",
+        "link": "01M6MG09XR8SER3QX6NCQGJTSG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JX3902A2MVZQSQQJVYCGBZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JWSCZYYQVFR6ZTVWS6JWJ0",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MG0G5W69W2DBTYR0T304M8",
+  "type": "ops",
+  "v": 1
+}

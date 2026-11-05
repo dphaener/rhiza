@@ -8,8 +8,11 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -195,6 +198,72 @@ func (s *Store) ids() ([]string, error) {
 // and is ignored; any other unreadable line is an error.
 func (s *Store) readFile(id string) (Journal, error) {
 	path := s.path(id)
+	info, err := os.Stat(path)
+	if err != nil {
+		// Read it anyway, for the error a read gives.
+		journalCache.drop(path)
+		return s.parseFile(id, path)
+	}
+	if es, ok := journalCache.get(path, info); ok {
+		return Journal{ID: id, Entries: es}, nil
+	}
+	j, err := s.parseFile(id, path)
+	if err != nil {
+		journalCache.drop(path)
+		return Journal{}, err
+	}
+	journalCache.put(path, info, j.Entries)
+	return j, nil
+}
+
+// journalCache keeps each journal's entries by path with the size and
+// modification time its file had just before it was read, so the daemon's
+// polls (several reads of every journal each) parse only the journals
+// that changed. A journal is only appended to, so a write changes its size.
+var journalCache = &entryCache{files: map[string]cachedJournal{}}
+
+// journalReads counts the journal files parsed, process-wide; tests read
+// it to see that an unchanged journal is not parsed again.
+var journalReads atomic.Int64
+
+type entryCache struct {
+	mu    sync.Mutex
+	files map[string]cachedJournal
+}
+
+type cachedJournal struct {
+	size    int64
+	mtime   time.Time
+	entries []Entry
+}
+
+// get returns a copy of the cached entries of path when its file is
+// unchanged: callers may append to the slice they get.
+func (c *entryCache) get(path string, info os.FileInfo) ([]Entry, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	f, ok := c.files[path]
+	if !ok || f.size != info.Size() || !f.mtime.Equal(info.ModTime()) {
+		return nil, false
+	}
+	return slices.Clone(f.entries), true
+}
+
+func (c *entryCache) put(path string, info os.FileInfo, es []Entry) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.files[path] = cachedJournal{size: info.Size(), mtime: info.ModTime(), entries: slices.Clone(es)}
+}
+
+func (c *entryCache) drop(path string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	delete(c.files, path)
+}
+
+// parseFile reads and parses the journal file of run id at path.
+func (s *Store) parseFile(id, path string) (Journal, error) {
+	journalReads.Add(1)
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return Journal{}, err

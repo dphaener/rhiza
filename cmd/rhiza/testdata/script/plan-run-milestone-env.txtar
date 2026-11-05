@@ -1,0 +1,79 @@
+# The plan run of a request queued with --milestone hands that milestone to
+# the planner: its interview step's environment carries RHIZA_MILESTONE with
+# the milestone's ID. The plan run of a request without one has none.
+#
+# The fake rex only logs the daemon's start commands; each plan run is then
+# run by hand, as its tab would, with a fake claude that prints its
+# RHIZA_MILESTONE to a file.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+env RHIZA_MILESTONE=
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+exec git add -A
+exec git commit -qm init
+
+exec rhiza add intent ms --field milestone=1 --record
+exec sh -c 'rhiza show ms --json | sed -n "s/^    \"id\": \"\(.*\)\",$/\1/p" | head -1 | tr -d "\n" > $WORK/msid'
+exec rhiza request 'Add paging' --milestone ms
+exec rhiza request 'Add exports'
+exec rhiza daemon --permission-mode manual --max-runs 2 --once
+stdout -count=2 '^Started the plan run of request '
+exec sh -c 'rhiza request ls --json | sed -n "s/^      \"id\": \"\(.*\)\",$/\1/p" > $WORK/ids'
+exec sh -c 'head -1 $WORK/ids | tr -d "\n" > $WORK/req1'
+exec sh -c 'tail -1 $WORK/ids | tr -d "\n" > $WORK/req2'
+
+# The milestone request's interview sees its milestone's ID.
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Add paging" --request $(cat $WORK/req1) --permission-mode manual --json'
+stdout '"state": "succeeded"'
+exec sh -c 'echo RHIZA_MILESTONE=$(cat $WORK/msid) > $WORK/want; cmp $WORK/env.out $WORK/want'
+
+# The other's does not.
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Add exports" --request $(cat $WORK/req2) --permission-mode manual --json'
+stdout '"state": "succeeded"'
+exec sh -c 'wc -c < $WORK/env.out'
+stdout '^0$'
+
+fold-ok
+
+-- plan.toml --
+name = "plan"
+
+[step.interview]
+kind = "agent"
+prompt = "Plan {change}"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+# A daemon's plan-run tab is only logged; any other tab (an agent's) runs.
+case "$*" in
+*--request*)
+	echo "rex $*" >> "$WORK/rex.log"
+	echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+	exit 0
+	;;
+esac
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+env | grep "^RHIZA_MILESTONE=" > "$WORK/env.out" || : > "$WORK/env.out"
+exit 0

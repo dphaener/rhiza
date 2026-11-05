@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-04T14:11:43Z",
+  "body": {
+    "intent": "Record agent actor claude-code-dc452748 for session dc452748-fce1-4454-9d80-01a1a6e6a8ee",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6KEDFJG8H6K2R5CTF12M9JS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KEDFJG8H6K2R5CTG4W6DW4",
+  "type": "open",
+  "v": 1
+}

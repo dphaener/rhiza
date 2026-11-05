@@ -1,0 +1,69 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6KV89S5MKWG2DHA77ZFPAMA"
+  ],
+  "at": "2026-11-04T17:57:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests: TestInboxReadsChangeSetsOnce (internal/api) gives an inbox over 100+ change sets, an overlap and a failed run per change set with zero log reads when an index is set and exactly one without, and byte-identical JSON both ways; TestStoreCachesUnchangedJournals (internal/run) parses an unchanged journal once over three lists and again after an append; TestUsageRecordsReadsOnlyAppended (internal/adapter/claudecode) reads only the appended bytes of a grown transcript, with the same records as a whole read, and reads a rewritten or truncated one whole. Measured on the rhiza repo (4-core VM, 2069 change sets, 7849 entries, 40 runs): rhiza inbox before 12.9 s wall (17.6 s under load), after 0.22-0.44 s with byte-identical output; an idle, paused daemon on a copy of the repo before 3.4-4.5 CPU-s per minute, after 1.2; a daemon fold after a model change before 5.5 s, after 1.8 s.",
+          "statement": "rhiza inbox and the daemon's polls stay cheap on a large repo: one inbox call reads the change sets once (from the index when there is one, else one log read) for every state, title and overlap lookup, and an idle daemon poll re-parses neither unchanged run journals nor the already-read part of a growing agent transcript"
+        },
+        "handle": "inbox-cheap",
+        "id": "01M6KVA76HM3KXBBGQJZDDHMWD",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6KVA76HM3KXBBGQJWP3NPGV",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "fields": {
+          "options": [
+            "read and fold the change sets once per inbox call, from the index when there is one",
+            "cache inbox items in a daemon-side file keyed by log stamp",
+            "compare overlap touched-field sets instead of what-if folds"
+          ],
+          "quote": "\"We are just killing the CPU on this machine. All of these builds are taking way too long. This needs a diagnosis. I think we need to pause and figure this out.\" (owner, 2026-11-04)",
+          "statement": "Profile first, then fix what the profile shows: the inbox's per-lookup log reads (changeStateOf and changeTitleOf decoded the whole log once per run), the daemon fold's re-fold of the log for every candidate's model, and the daemon's per-poll re-parse of run journals and growing Claude Code transcripts. Overlaps themselves were not the hot spot.",
+          "wording": "the owner's words; the design is the orchestrator's, as the owner's proxy"
+        },
+        "handle": "inbox-cheap-diagnosis",
+        "id": "01M6KVAAXE88YMEHYEZFMV2PNY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6KVAAXE88YMEHYEZEEEFNB1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KVA76HM3KXBBGQJWP3NPGV",
+        "id": "01M6KVAE9T5TQZH1TCHC00TQGC",
+        "link": "01M6KVAE9T5TQZH1TCH945DKAY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6KVAAXE88YMEHYEZEEEFNB1",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6KV89S5MKWG2DHA762F8WTZ",
+        "id": "01M6KVAP9A31JVW8RP6KHYPD8P",
+        "link": "01M6KVAP9A31JVW8RP6JYRNCH0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HKVRE1B7RPP12EN6J2GGXC",
+        "type": "serves"
+      }
+    ]
+  },
+  "change_set": "01M6KV89S5MKWG2DHA762F8WTZ",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6KVAZ8D3X5EX1WH19PSGWTD",
+  "type": "ops",
+  "v": 1
+}

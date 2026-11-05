@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MK8GDXSW9WPSHDMDGFDCZ6"
+  ],
+  "at": "2026-11-05T01:23:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "4e7621e5b49b8c027b73e77d34aad2daa57606c5",
+          "pr": "https://github.com/dphaener/rhiza/pull/271",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #271 (https://github.com/dphaener/rhiza/pull/271) passed CI at 4e7621e",
+          "status": "verified"
+        },
+        "handle": "pr-271-fix-test-temp-folders-leak-and",
+        "id": "01M6MMTMEC6HXFWED4FQNDPH19",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MMTMEAZRBXHP4AP08GT40G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MMTMEAZRBXHP4AP08GT40G",
+        "id": "01M6MMTS68N5783FG8RRCTYABN",
+        "link": "01M6MMTS68N5783FG8RQXD1J5Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M1S9S4QNBMCMDWPDM62T6M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M1M10N7AP6F0DHGANKXEA1",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MMTXSAT1GEC98EXE4KSV50",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,30 @@
+{
+  "actor": "01M6MA6ZEKHCJCVCYYB9RYKGCS",
+  "after": [
+    "01M6MA6P7KKMQPFBM6ZFN8NHK2"
+  ],
+  "at": "2026-11-04T22:19:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "ec5a304e-29cc-4f00-9ede-01a1a8a374d3",
+          "statement": "Change set 01M6MA6P (Fix Ship's new main-tree check) serves no intent yet. Which intent should it serve? Its parent change set #256 (Update github runner) served milestone-25 (empty the backlog). / When the merge commit's tree differs from the tested head's, ship dispatches CI on main. GitHub's workflow_dispatch only accepts a branch or tag as ref, not a SHA, so `gh workflow run --ref <sha>` cannot pin the merge commit. Which commit should the dispatched run test? / Which workflows should ship dispatch when the trees differ? ship-change is generic across repos (this repo has ci.yml; `rhiza ci install` writes its own file). / If the dispatched CI run on main fails, what should wait-main/main-green do?"
+        },
+        "handle": "question-ec5a304e-1",
+        "id": "01M6MA9ZQZFFFQAY6ZT02MR11F",
+        "key": null,
+        "kind": "question",
+        "node": "01M6MA9ZQZFFFQAY6ZSY834Y62",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6MA6P7KKMQPFBM6ZD6EMDM3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MAA1BEMASGQWNTSYC5H435",
+  "type": "ops",
+  "v": 1
+}

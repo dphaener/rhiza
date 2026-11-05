@@ -27,6 +27,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -102,7 +103,7 @@ const maxRunIDDraws = 100
 // RunStartRequest starts a run of a workflow on a change set.
 type RunStartRequest struct {
 	Change         string `json:"change,omitempty" arg:"0" desc:"The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one"`
-	Workflow       string `json:"workflow,omitempty" desc:"The workflow: a .toml file (a path with a / or ending in .toml), else a name: .rhiza/workflows/<name>.toml, else a built-in; default ship-change"`
+	Workflow       string `json:"workflow,omitempty" desc:"The workflow: a .toml file (a path with a / or ending in .toml), else a name: your personal $XDG_CONFIG_HOME/rhiza/workflows/<name>.toml, else .rhiza/workflows/<name>.toml, else a built-in; default ship-change"`
 	PermissionMode string `json:"permission_mode,omitempty" desc:"The permission mode of agent steps that set none; modes that bypass the agent's permission checks are refused"`
 	Agent          string `json:"agent,omitempty" desc:"The agent adapter of agent steps that name none; default the built-in default adapter"`
 	NoWait         bool   `json:"no_wait,omitempty" desc:"Stop at a wait step whose condition does not hold yet, instead of waiting; resume the run later"`
@@ -544,13 +545,13 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	}
 	// A request's run takes the ID the daemon drew for it: check it before
 	// a draft is opened, so a refused start leaves none.
-	var reqRun string
+	var reqRun, reqMilestone string
 	if q := strings.TrimSpace(r.Request); q != "" {
 		common, err := gitCommonDir(ctx)
 		if err != nil {
 			return nil, err
 		}
-		if reqRun, err = requestRun(common, q, run.NewStore(run.Dir(common))); err != nil {
+		if reqRun, reqMilestone, err = requestRun(common, q, run.NewStore(run.Dir(common))); err != nil {
 			return nil, err
 		}
 	}
@@ -578,7 +579,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	started := run.Started{
 		Workflow: def.Name, WorkflowPath: path, Definition: string(data), Includes: def.Includes,
 		Change: t.cs.String(), Title: t.title, Worktree: t.worktree, Branch: t.branch,
-		PermissionMode: r.PermissionMode, Agent: r.Agent, Autonomous: r.Autonomous,
+		PermissionMode: r.PermissionMode, Agent: r.Agent, Autonomous: r.Autonomous, Milestone: reqMilestone,
 	}
 	if ctx.DryRun {
 		if err := refuseLiveRun(rs, started.Change, ""); err != nil {
@@ -839,6 +840,11 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		// superseded ones still do.
 		state, ok := changeStateOf(ctx)(st.Change)
 		if ok && st.Workflow == planWorkflow && changeset.State(state) == changeset.StateLanded {
+			ok = false
+		}
+		// A non-plan run that reached its land step goes on past it: what
+		// is left (wait-main, close-out) happens after the landing.
+		if ok && st.Workflow != planWorkflow && changeset.State(state) == changeset.StateLanded && st.Visits["land"] > 0 {
 			ok = false
 		}
 		if ok && changeset.State(state).Terminal() {
@@ -1226,11 +1232,49 @@ func isWorkflowPath(ref string) bool {
 	return strings.ContainsRune(ref, '/') || strings.ContainsRune(ref, filepath.Separator) || strings.HasSuffix(ref, ".toml")
 }
 
+// personalWorkflowsDir is the user's own workflows directory:
+// $XDG_CONFIG_HOME/rhiza/workflows, else ~/.config/rhiza/workflows. It is
+// empty when neither can be known.
+func personalWorkflowsDir() string {
+	if x := os.Getenv("XDG_CONFIG_HOME"); x != "" {
+		return filepath.Join(x, "rhiza", "workflows")
+	}
+	if h, err := os.UserHomeDir(); err == nil && h != "" {
+		return filepath.Join(h, ".config", "rhiza", "workflows")
+	}
+	return ""
+}
+
+// lookupWorkflow is the one resolver of a bare workflow name, shared by run
+// start, workflow steps naming another workflow and the workflow commands:
+// the personal file, else the repo's .rhiza/workflows/<name>.toml, else the
+// built-in. It returns the path to record (the file, or builtin:<name>) and
+// the source; found is false when no layer has the name.
+func lookupWorkflow(root, name string) (path string, data []byte, found bool, err error) {
+	var files []string
+	if d := personalWorkflowsDir(); d != "" {
+		files = append(files, filepath.Join(d, name+".toml"))
+	}
+	files = append(files, filepath.Join(root, filepath.FromSlash(workflowsDir), name+".toml"))
+	for _, f := range files {
+		data, err := os.ReadFile(f)
+		if err == nil {
+			return f, data, true, nil
+		}
+		if !errors.Is(err, fs.ErrNotExist) {
+			return f, nil, false, err
+		}
+	}
+	if data, ok := workflow.Builtin(name); ok {
+		return builtinPrefix + name, data, true, nil
+	}
+	return "", nil, false, nil
+}
+
 // resolveWorkflow finds the workflow ref names and returns the path to
 // record in the journal (the file, or builtin:<name> for an embedded
-// one), its definition and its source. A bare name resolves to the repo's
-// .rhiza/workflows/<name>.toml when that exists, so a repo replaces a
-// built-in by name, else to the built-in of that name.
+// one), its definition and its source. A bare name goes through
+// lookupWorkflow: personal file, repo file, built-in.
 func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, error) {
 	ref = strings.TrimSpace(ref)
 	if ref == "" {
@@ -1241,18 +1285,22 @@ func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, er
 		return "", nil, nil, err
 	}
 	if !isWorkflowPath(ref) {
-		if _, statErr := os.Stat(path); errors.Is(statErr, fs.ErrNotExist) {
-			data, ok := workflow.Builtin(ref)
-			if !ok {
-				return "", nil, nil, Usagef("no workflow %q: %s does not exist and there is no built-in of that name (built-in: %s)",
-					ref, path, strings.Join(workflow.BuiltinNames(), ", ")).WithNext(runStartNext)
-			}
-			def, err := workflow.ParseWith(ref, data, workflowResolver(root))
-			if err != nil {
-				return "", nil, nil, Errorf("built-in workflow %s: %v", ref, err)
-			}
-			return builtinPrefix + ref, def, data, nil
+		found, data, ok, lerr := lookupWorkflow(root, ref)
+		if lerr != nil {
+			return "", nil, nil, Usagef("workflow %q: %v", ref, lerr).WithNext(runStartNext)
 		}
+		if !ok {
+			return "", nil, nil, Usagef("no workflow %q: %s does not exist and there is no built-in of that name (built-in: %s)",
+				ref, path, strings.Join(workflow.BuiltinNames(), ", ")).WithNext(runStartNext)
+		}
+		def, perr := workflow.ParseWith(ref, data, workflowResolver(root))
+		if perr != nil {
+			if strings.HasPrefix(found, builtinPrefix) {
+				return "", nil, nil, Errorf("built-in workflow %s: %v", ref, perr)
+			}
+			return "", nil, nil, Usagef("workflow %s: %v", found, perr).WithNext(runStartNext)
+		}
+		return found, def, data, nil
 	}
 	def, data, err := loadWorkflow(root, path, ref)
 	if err != nil {
@@ -1262,21 +1310,17 @@ func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, er
 }
 
 // workflowResolver resolves the workflow a workflow step names as run
-// start resolves a bare name: the repo's .rhiza/workflows/<name>.toml
-// when that exists, else the built-in of that name.
+// start resolves a bare name, through lookupWorkflow.
 func workflowResolver(root string) workflow.Resolver {
 	return func(name string) ([]byte, error) {
-		data, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(workflowsDir), name+".toml"))
-		if err == nil {
-			return data, nil
-		}
-		if !errors.Is(err, fs.ErrNotExist) {
+		_, data, ok, err := lookupWorkflow(root, name)
+		if err != nil {
 			return nil, err
 		}
-		if data, ok := workflow.Builtin(name); ok {
-			return data, nil
+		if !ok {
+			return nil, fmt.Errorf("there is no such workflow in %s, your personal workflows or built in", workflowsDir)
 		}
-		return nil, fmt.Errorf("there is no such workflow in %s or built in", workflowsDir)
+		return data, nil
 	}
 }
 
@@ -1538,6 +1582,10 @@ type stepRunner struct {
 	// environment tells it the owner is not there.
 	autonomous bool
 	sessions   *session.Store
+	// blockPending holds the rejoined sessions whose Rex block check Rex
+	// has not answered yet (see run_lost.go).
+	lostMu       sync.Mutex
+	blockPending map[string]bool
 }
 
 // Command runs the step's command, its standard output and error
@@ -1679,6 +1727,7 @@ func (r *stepRunner) sh(cmd string, env []string, out io.Writer) (int, error) {
 func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous, req.model = r.change, r.run, r.autonomous, model
+	req.milestone = r.milestoneOf()
 	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
 	if err != nil {
 		return "", err
@@ -1691,6 +1740,20 @@ func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (s
 		return "", err
 	}
 	return resp.(SessionStartResponse).Session.ID, nil
+}
+
+// milestoneOf is the milestone the run's request names, from its journal;
+// empty for none or when the journal cannot be read.
+func (r *stepRunner) milestoneOf() string {
+	common, err := gitCommonDir(r.ctx)
+	if err != nil {
+		return ""
+	}
+	j, err := run.NewStore(run.Dir(common)).Read(r.run)
+	if err != nil {
+		return ""
+	}
+	return j.State().Milestone
 }
 
 // arbiterPrompt is the arbiter's whole prompt, over the question node's
@@ -2032,6 +2095,12 @@ func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 		return run.AgentStatus{}, err
 	}
 	if !rec.Status.Exited() {
+		if rec, err = r.markLostIfEnded(rec, hookEndGrace); err != nil {
+			return run.AgentStatus{}, err
+		}
+		rec = r.retryBlock(rec)
+	}
+	if !rec.Status.Exited() {
 		rep, _ := session.Resolve(rec)
 		return run.AgentStatus{
 			Blocked: recordBlock(rec), Idle: rep.State == session.StateIdle, SaidDone: rec.Status.SaidDone(),
@@ -2048,7 +2117,10 @@ func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 	if x.Detail != "" {
 		detail += ": " + x.Detail
 	}
-	return run.AgentStatus{Done: true, Outcome: workflow.OutcomeFail, Detail: detail}, nil
+	return run.AgentStatus{
+		Done: true, Outcome: workflow.OutcomeFail, Detail: detail,
+		Lost: x.State == session.StateLost, SaidDone: rec.Status.SaidDone(),
+	}, nil
 }
 
 // AgentEnded records the session's token use as its step ends (see
@@ -2119,6 +2191,11 @@ func rexNotice(n run.Notice) []byte {
 	if !n.Blocked || n.Block == nil {
 		return rexReport("working", "", "", "")
 	}
+	return rexReport("blocked", n.Block.Kind, n.Block.TabTitle, rexNoticeMsg(n))
+}
+
+// rexNoticeMsg is the message of a blocked notice.
+func rexNoticeMsg(n run.Notice) string {
 	b := n.Block
 	what := n.Title
 	if what == "" {
@@ -2132,7 +2209,7 @@ func rexNotice(n run.Notice) []byte {
 	if q := strings.TrimSpace(b.Question); q != "" {
 		msg += ": " + q
 	}
-	return rexReport("blocked", b.Kind, b.TabTitle, msg)
+	return msg
 }
 
 // rexReport encodes one OSC 7501 root-record report from app rhiza (see

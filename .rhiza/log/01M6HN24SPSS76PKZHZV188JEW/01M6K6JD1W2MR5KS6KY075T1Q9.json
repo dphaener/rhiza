@@ -1,0 +1,40 @@
+{
+  "actor": "01M6K4TBQTVSDPDYXPDFS8MJ33",
+  "after": [
+    "01M6HNHRX366JVNB0NPN35VMNZ"
+  ],
+  "at": "2026-11-04T11:54:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a40e9c23 I read the diffs of c94a9094 (lookupWorkflow and personalWorkflowsDir in internal/api/run.go, shared by resolveWorkflow for run start and for workflow steps) and a40e9c23 (cmd/rhiza/testdata/script/workflow-personal-override.txtar). I ran go test ./cmd/rhiza -run TestScripts/workflow-personal-override -count=1 (ok) and go test ./internal/api -run Workflow -count=1 (ok). The script uses a hermetic HOME, sets XDG_CONFIG_HOME empty and then to $WORK/xdg, and runs real run start --foreground. Its cases: the repo's mine.toml runs and is recorded; ~/.config/rhiza/workflows/mine.toml shadows it while XDG_CONFIG_HOME is unset; $XDG_CONFIG_HOME/rhiza/workflows/mine.toml shadows both; a workflow step in outer naming mine runs the personal step; a repo build.toml shadows the built-in build; a personal build.toml shadows the repo file and the built-in; with no file the built-in runs. Each case greps the run journal for workflow_path set to the file's path, or builtin:build for the built-in, which resolves attempt 1's finding f1. In make check, fmt-check, vet, every functional test and make self-check passed. Only the timing budgets TestReadBudget and TestBudget missed their 50ms what-if medians, under load average ~10 from other worktrees' suites, on read paths this leaf does not touch."
+        },
+        "handle": "workflow-overrides-verified",
+        "id": "01M6K6J2QZK31AHETZY2T0PQA7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6K6J2QZK31AHETZY0ZF37DA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6K6J2QZK31AHETZY0ZF37DA",
+        "id": "01M6K6J6RVZXN7TQV2YD50DSNB",
+        "link": "01M6K6J6RVZXN7TQV2Y9KSXMXH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWT9GPK3F87HZRV8V9XY8D",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HN24SPSS76PKZHZV188JEW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6K6JD1W2MR5KS6KY075T1Q9",
+  "type": "ops",
+  "v": 1
+}

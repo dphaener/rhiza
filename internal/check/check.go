@@ -55,6 +55,14 @@
 //     only commits that change a file outside .rhiza/ (Input.Commits). The
 //     finding names the oldest such commit. Without git (Input.Commits nil)
 //     the rule is skipped silently.
+//   - unclaimed warns once on each commit of Input.Unclaimed (the non-merge
+//     commits of <cutoff>..HEAD that change a file outside .rhiza/) none of
+//     whose Claims names a change set in the log. The message says whether
+//     the Change: trailer is missing or names an unknown change set. A Change:
+//     counts from any wholly-trailer paragraph after the subject, so a
+//     GitHub squash body is claimed by its branch commits' paragraphs; Actor:,
+//     Leaf: and Review: trailers alone claim nothing. Without a cutoff
+//     (Input.UnclaimedSince "") the rule is off.
 //   - anchor fails once on each live as-is anchor whose path is gone from
 //     Input.Tree or whose symbol is gone from its file (a path that is not
 //     a clean relative one, a symbol on a non-Go file and a Go file that
@@ -116,6 +124,7 @@ const (
 	RuleLink          = "link"
 	RuleDependsOn     = "depends-on"
 	RuleEvidenceActor = "evidence-actor"
+	RuleUnclaimed     = "unclaimed"
 	RuleAnchor        = "anchor"
 	RuleTextRef       = "text-ref"
 	RuleRender        = "render"
@@ -124,7 +133,7 @@ const (
 
 // Rules returns the rules in report order.
 func Rules() []string {
-	return []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleEvidenceActor, RuleAnchor,
+	return []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleEvidenceActor, RuleUnclaimed, RuleAnchor,
 		RuleTextRef, RuleRender, RuleAppendOnly}
 }
 
@@ -156,6 +165,12 @@ type Input struct {
 	// alone is not listed. Nil means no git, and the evidence-actor rule is
 	// skipped.
 	Commits []Commit
+	// UnclaimedSince is the full hash of the unclaimed-changes cutoff from
+	// .rhiza/check.json, "" when the rule is off.
+	UnclaimedSince string
+	// Unclaimed are the non-merge commits of UnclaimedSince..HEAD that change
+	// a file outside .rhiza/, newest first.
+	Unclaimed []Commit
 }
 
 // Commit is one git commit and the values of its trailers: Changes of its
@@ -167,6 +182,10 @@ type Commit struct {
 	Hash                    string
 	Changes, Actors, Leaves []string
 	Reviews                 []string
+	// Subject is the first line of the message. Claims are the values of the
+	// Change: trailers of every wholly-trailer paragraph after the subject.
+	Subject string
+	Claims  []string
 }
 
 // Entry is one log entry file: its entry ID (the file name minus .json),
@@ -214,6 +233,7 @@ func Run(in Input) Report {
 	c.dependsOn(sets)
 	c.capabilityLoops(asIs)
 	c.evidenceActor(asIs, sets)
+	c.unclaimed(sets)
 	c.anchors(asIs)
 	c.textRefs(asIs, sets)
 	c.render(asIs, sets)
@@ -528,6 +548,33 @@ func (c *checker) evidenceActor(m model.Model, sets []changeset.ChangeSet) {
 			Message: fmt.Sprintf("evidence %s verifies capability %s, but its actor %s wrote that capability in commit %s",
 				name(ev), name(capab), actorName, hash),
 			Next: "rhiza show " + name(ev)})
+	}
+}
+
+// unclaimed warns on each commit of Input.Unclaimed that no known change set
+// claims (see the package comment).
+func (c *checker) unclaimed(sets []changeset.ChangeSet) {
+	if c.in.UnclaimedSince == "" {
+		return
+	}
+	known := map[string]bool{}
+	for _, s := range sets {
+		known[s.ID.String()] = true
+	}
+	for _, cm := range c.in.Unclaimed {
+		if slices.ContainsFunc(cm.Claims, func(v string) bool { return known[v] }) {
+			continue
+		}
+		hash := cm.Hash
+		if len(hash) > 12 {
+			hash = hash[:12]
+		}
+		why := "has no Change: trailer (missing)"
+		if len(cm.Claims) > 0 {
+			why = fmt.Sprintf("names unknown change set %s in its Change: trailer", strings.Join(cm.Claims, ", "))
+		}
+		c.add(Finding{Severity: SeverityWarn, Rule: RuleUnclaimed,
+			Message: fmt.Sprintf("commit %s %q changes code outside .rhiza/ but %s", hash, cm.Subject, why)})
 	}
 }
 

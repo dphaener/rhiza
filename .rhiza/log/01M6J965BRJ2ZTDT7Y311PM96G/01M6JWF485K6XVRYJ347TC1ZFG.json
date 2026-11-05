@@ -1,0 +1,86 @@
+{
+  "actor": "01M6JW5W1QRNWYGX6A7G4RRM2Y",
+  "after": [
+    "01M6JW391PTQ3345GA736JC1E2"
+  ],
+  "at": "2026-11-04T08:58:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7c67207e I built rhiza with go build into a scratch dir and drove it by hand in scratch repos (RHIZA_* unset, fake rex on PATH). A shape workflow (land -> wait-main -> close-out) run stopped at wait-main; I set its journal workflow to ship-change, ran rhiza land (change set landed), dropped the stopped entry and appended a dead-pid process. The merge-base binary's rhiza run resume --foreground refused it (exit 3, 'is landed, no longer accepted', next rhiza run abandon). The built binary resumed it: wait-main continuing visit 1, pass, close-out ran (wrote its file), 'Run ... succeeded', exit 0. A separate ship-change run on a landed change set whose journal only entered build was still refused with exit 3 naming rhiza run abandon, journal unchanged at 3 lines."
+        },
+        "handle": "run-resume-landed-past-land-qa-1",
+        "id": "01M6JWEB446Y71KGNTBN04312J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JWEB43RMMCMSTDJK3PHK4F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JWEB43RMMCMSTDJK3PHK4F",
+        "id": "01M6JWEFFR3RDN1KQ048E0X405",
+        "link": "01M6JWEFFR3RDN1KQ0487GVP86",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J9NTD1SF9Z8B72JJ0MV1HG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7c67207e I built rhiza with go build into a scratch dir and drove it by hand in scratch repos (RHIZA_* unset, fake rex on PATH). On the same interrupted ship-change run past land on a landed change set, rhiza daemon --permission-mode manual --once printed 'Resumed run <id>', journaled one daemon-resumed entry and spawned a real detached rhiza run resume --foreground, which went on past wait-main through close-out to a finished/succeeded entry with no 'no longer accepted' refusal. A second --once --json gave resumed: []. In another repo, --once resumed none of: a landed run that never entered land, a landed run already daemon-resumed and interrupted again, and a failed run after land."
+        },
+        "handle": "daemon-resumes-landed-past-land-qa-1",
+        "id": "01M6JWEKHE3F0YEEFZD402K7NV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JWEKHE3F0YEEFZD0DJ7BFS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JWEKHE3F0YEEFZD0DJ7BFS",
+        "id": "01M6JWEQ0GBMWHPQAR6SRXC6H6",
+        "link": "01M6JWEQ0GBMWHPQAR6PPJC1AR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J9P6J78MZ74PAM0VB6ZD5W",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7c67207e I built rhiza with go build into a scratch dir and drove it by hand in scratch repos (RHIZA_* unset, fake rex on PATH). rhiza inbox on the interrupted ship-change run past land on a landed change set printed 'Nothing waits on you' (the merge-base binary listed it as skipped with rhiza run abandon). In a repo with three landed change sets and fixture journals, rhiza inbox listed exactly: skipped run N-LAND (never reached land) with next rhiza run abandon N-LAND, failed run F-LAND (main-green failed after land) with next rhiza run resume --retry, and gave-up run G-LAND (entered land, daemon-resumed, interrupted again) with next rhiza run resume G-LAND."
+        },
+        "handle": "inbox-omits-resumable-landed-run-qa-1",
+        "id": "01M6JWETQQFAMRCJQJ1ZEM39JV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JWETQQFAMRCJQJ1VKNG3VF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JWETQQFAMRCJQJ1VKNG3VF",
+        "id": "01M6JWEXYRQAQD4M4XMTCZWHV1",
+        "link": "01M6JWEXYRQAQD4M4XMQSBF3E7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J9PJ6WZ9XMS1KV06HYRK4Q",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J965BRJ2ZTDT7Y311PM96G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JWF485K6XVRYJ347TC1ZFG",
+  "type": "ops",
+  "v": 1
+}

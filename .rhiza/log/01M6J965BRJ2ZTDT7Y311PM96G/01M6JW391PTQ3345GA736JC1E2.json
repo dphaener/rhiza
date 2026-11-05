@@ -1,0 +1,40 @@
+{
+  "actor": "01M6JRT1RX7HTG3294YF2GPEM6",
+  "after": [
+    "01M6JNHA3GZFKZSCBG6AK8HWGQ"
+  ],
+  "at": "2026-11-04T08:51:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6a768be8, cmd/rhiza/testdata/script/inbox-landed-resumable.txtar runs rhiza inbox --json over fixture journals on four landed change sets and asserts all three acceptance cases: (1) R-LAND, interrupted after entering land, is absent; (2) G-LAND, resumed by the daemon then interrupted again, is gave-up, and F-LAND, failed at main-green after land, is failed; (3) N-LAND, an interrupted build run that never reached land, is skipped with '\"next\": \"rhiza run abandon N-LAND\"' in JSON and 'next: rhiza run abandon N-LAND' in text (the attempt-1 finding), with exactly 3 items. go test ./cmd/rhiza -run TestScripts/inbox -count=1 passes. Mutation: with internal/api/inbox.go restored to 3b04cbed, the script fails at line 19 (R-LAND listed). The diff in inboxItems makes gone() false for a landed change set when a non-plan run has Visits[land]>0, used for the failed, skipped and gave-up branches. fmt-check, vet and self-check pass; go test ./... passes except timing budgets (TestReadBudget, slice TestBudget) and a plan-workflow timeout under load 12-17 on 4 cores, which pass when re-run alone at low load."
+        },
+        "handle": "inbox-omits-resumable-landed-run-verified",
+        "id": "01M6JW3255MN1RAZFMD03JZARE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JW3255MN1RAZFMCZKXY0M4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JW3255MN1RAZFMCZKXY0M4",
+        "id": "01M6JW351DTA4DYMNTZ505NQ72",
+        "link": "01M6JW351DTA4DYMNTZ337AS7K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J9PJ6WZ9XMS1KV06HYRK4Q",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J965BRJ2ZTDT7Y311PM96G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JW391PTQ3345GA736JC1E2",
+  "type": "ops",
+  "v": 1
+}

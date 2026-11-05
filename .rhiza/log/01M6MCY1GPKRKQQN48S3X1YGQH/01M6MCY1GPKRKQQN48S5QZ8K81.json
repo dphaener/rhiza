@@ -1,0 +1,16 @@
+{
+  "actor": "01M6MCWMQ5XE45RMV457VA5BW9",
+  "after": [],
+  "at": "2026-11-04T23:05:03Z",
+  "body": {
+    "intent": "Ship-change fixes red CI after land: when landed-green or rebased-merge-green finds main's checks failed with parsed test failures (after the once-per-head rerun), run a fixer cycle instead of failing the run. Change set 01M6MBPT (Ship-change fixes red PR CI) covers only pr-green and rebased-green, because re-entering render-pr after rhiza ship land would land twice; this post-land path needs its own route (a follow-up PR or commit on main, not a second land).",
+    "kind": "intention",
+    "sources": [],
+    "title": "Ship-change fixes post-land CI"
+  },
+  "change_set": "01M6MCY1GPKRKQQN48S3X1YGQH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MCY1GPKRKQQN48S5QZ8K81",
+  "type": "open",
+  "v": 2
+}

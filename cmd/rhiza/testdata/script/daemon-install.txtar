@@ -26,6 +26,7 @@ exec git worktree add -q ../wt
 chmod 755 $WORK/bin/systemctl
 chmod 755 $WORK/bin/loginctl
 env PATH=$WORK/bin:$PATH
+env 'TMPDIR=$WORK/tmp dir'
 cd ../wt
 exec rhiza daemon install
 stdout 'rhiza-repo.service'
@@ -35,6 +36,9 @@ grep '^WorkingDirectory=.*/repo$' $WORK/home/.config/systemd/user/rhiza-repo.ser
 grep '^Restart=always$' $WORK/home/.config/systemd/user/rhiza-repo.service
 grep '^After=rex.service$' $WORK/home/.config/systemd/user/rhiza-repo.service
 cmp $WORK/calls.log $WORK/want-install.log
+grep '^Environment="PATH=' $WORK/home/.config/systemd/user/rhiza-repo.service
+grep '^Environment="TMPDIR=.*/tmp dir"$' $WORK/home/.config/systemd/user/rhiza-repo.service
+grep '^Environment="PATH=.*bin' $WORK/home/.config/systemd/user/rhiza-repo.service
 
 # A second install writes nothing and does not reload.
 cp $WORK/home/.config/systemd/user/rhiza-repo.service $WORK/unit.copy
@@ -43,6 +47,14 @@ exec rhiza daemon install
 stdout 'nothing changed'
 cmp $WORK/home/.config/systemd/user/rhiza-repo.service $WORK/unit.copy
 ! grep 'daemon-reload' $WORK/calls.log
+
+# A changed PATH rewrites the unit and reloads systemd.
+rm $WORK/calls.log
+env PATH=$WORK/bin:$WORK/extra:$PATH
+exec rhiza daemon install
+stdout 'Installed'
+grep 'extra' $WORK/home/.config/systemd/user/rhiza-repo.service
+grep 'daemon-reload' $WORK/calls.log
 
 # Uninstall disables, removes the unit and reloads.
 rm $WORK/calls.log

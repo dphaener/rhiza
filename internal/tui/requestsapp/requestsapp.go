@@ -58,6 +58,11 @@ type Model struct {
 	typing bool
 	kind   string
 	text   []rune
+	// milestone is the entry's milestone field: a milestone intent's handle
+	// or ID, empty for auto (the planner picks the open milestone it fits).
+	// onMilestone is true while typing edits it instead of the text.
+	milestone   []rune
+	onMilestone bool
 }
 
 // NewModel returns the model over run, loaded once.
@@ -112,21 +117,33 @@ func (m *Model) Typing() bool { return m.typing }
 // milestone).
 func (m *Model) Start(kind string) {
 	m.typing, m.kind, m.text, m.notice = true, kind, nil, ""
+	m.milestone, m.onMilestone = nil, false
 }
 
 // Type adds s to the typed text, up to MaxText characters.
 func (m *Model) Type(s string) {
 	for _, r := range s {
-		if r >= ' ' && len(m.text) < MaxText {
+		switch {
+		case r < ' ':
+		case m.onMilestone:
+			if r != ' ' && len(m.milestone) < MaxText {
+				m.milestone = append(m.milestone, r)
+			}
+		case len(m.text) < MaxText:
 			m.text = append(m.text, r)
 		}
 	}
 }
 
-// RequestArgs is the argv of a request op for text of kind. The text
+// RequestArgs is the argv of a request op for text of kind. A milestone
+// (handle or ID) adds --milestone; empty is auto, with no flag. The text
 // goes after "--" so text starting with a dash is not read as a flag.
-func RequestArgs(kind, text string) []string {
-	return []string{"--kind", kind, "--", text}
+func RequestArgs(kind, text, milestone string) []string {
+	args := []string{"--kind", kind}
+	if milestone != "" {
+		args = append(args, "--milestone", milestone)
+	}
+	return append(args, "--", text)
 }
 
 // Submit files the typed text as a request of the chosen kind and closes
@@ -137,7 +154,7 @@ func (m *Model) Submit() {
 		m.notice = "A request needs its text"
 		return
 	}
-	out, err := m.run("request", RequestArgs(m.kind, text))
+	out, err := m.run("request", RequestArgs(m.kind, text, string(m.milestone)))
 	if err != nil {
 		m.notice = fmt.Sprintf("rhiza: %v", err)
 		return
@@ -147,7 +164,7 @@ func (m *Model) Submit() {
 		m.notice = fmt.Sprintf("request: %v", err)
 		return
 	}
-	m.typing, m.text = false, nil
+	m.typing, m.text, m.milestone, m.onMilestone = false, nil, nil, false
 	m.notice = fmt.Sprintf("Queued %s request %s", r.Request.Kind, r.Request.ID)
 	m.Reload()
 	for i, q := range m.requests {
@@ -171,7 +188,7 @@ func (m *Model) visible() int {
 		fixed++
 	}
 	if m.typing {
-		fixed += 2
+		fixed += 3
 	}
 	return max((m.height-fixed)/rowLines, 1)
 }
@@ -235,6 +252,9 @@ func (m *Model) typingKey(msg tea.KeyPressMsg) {
 	switch msg.String() {
 	case "esc", "ctrl+c":
 		m.typing, m.text, m.notice = false, nil, ""
+		m.milestone, m.onMilestone = nil, false
+	case "ctrl+o":
+		m.onMilestone = !m.onMilestone
 	case "enter":
 		m.Submit()
 	case "tab":
@@ -245,7 +265,11 @@ func (m *Model) typingKey(msg tea.KeyPressMsg) {
 			}
 		}
 	case "backspace":
-		if len(m.text) > 0 {
+		if m.onMilestone {
+			if len(m.milestone) > 0 {
+				m.milestone = m.milestone[:len(m.milestone)-1]
+			}
+		} else if len(m.text) > 0 {
 			m.text = m.text[:len(m.text)-1]
 		}
 	default:
@@ -301,13 +325,21 @@ func (m *Model) View() tea.View {
 		b.WriteString("\n" + mark + format(m.requests[i]))
 	}
 	if m.typing {
-		fmt.Fprintf(&b, "\nNew %s request (tab changes kind):\n> %s_", m.kind, string(m.text))
+		cur := [2]string{"_", ""}
+		if m.onMilestone {
+			cur = [2]string{"", "_"}
+		}
+		ms := string(m.milestone)
+		if ms == "" && !m.onMilestone {
+			ms = "auto"
+		}
+		fmt.Fprintf(&b, "\nNew %s request (tab changes kind):\n> %s%s\nmilestone: %s%s", m.kind, string(m.text), cur[0], ms, cur[1])
 	}
 	if m.notice != "" {
 		b.WriteString("\n" + m.notice)
 	}
 	if m.typing {
-		b.WriteString("\n" + Name + " · enter file · tab kind · esc cancel")
+		b.WriteString("\n" + Name + " · enter file · tab kind · ctrl+o milestone (empty = auto) · esc cancel")
 	} else {
 		b.WriteString("\n" + Name + " · j/k move · n/f feature · b bug · m milestone · enter focus run · r reload · q quit")
 	}

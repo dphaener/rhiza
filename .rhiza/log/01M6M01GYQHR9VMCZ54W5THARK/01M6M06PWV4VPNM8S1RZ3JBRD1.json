@@ -1,0 +1,30 @@
+{
+  "actor": "01M6M01VN00V21JZA7QZXS3CKW",
+  "after": [
+    "01M6M01GYQHR9VMCZ54YPSH848"
+  ],
+  "at": "2026-11-04T19:22:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "c2063c96-e994-4af5-babc-01a1a800e15c",
+          "statement": "Change set 'Agents in runs stop running' (scoped tests in runs; CI runs the full suite) serves no intent yet. Which landed intent should it serve? / The build/review/plan guide topics (and so the rhiza-build/-review/-plan skills) are product text used in every repo, Nebari included. How specific should their scoped-test rule be?"
+        },
+        "handle": "question-c2063c96-1",
+        "id": "01M6M06NCT2Z31K6CF8523Q2H5",
+        "key": null,
+        "kind": "question",
+        "node": "01M6M06NCT2Z31K6CF81ASAW2T",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6M01GYQHR9VMCZ54W5THARK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M06PWV4VPNM8S1RZ3JBRD1",
+  "type": "ops",
+  "v": 1
+}

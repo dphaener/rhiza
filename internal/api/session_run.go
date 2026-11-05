@@ -54,6 +54,8 @@ const (
 	envRun    = "RHIZA_RUN"
 	// envAutonomous is set to 1 for an agent an autonomous run launched.
 	envAutonomous = "RHIZA_AUTONOMOUS"
+	// envMilestone is the milestone a plan run's request names.
+	envMilestone = "RHIZA_MILESTONE"
 	// envLeaf, envAttempt, envRole and envCommit are a leaf session's leaf
 	// handle, attempt, role and, for a verifier, the commit it checks.
 	envLeaf    = run.EnvLeaf
@@ -185,7 +187,7 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("cannot run session %s: this caller starts no programs", rec.ID)
 	}
 
-	follow := followRex(ctx, st, rec.ID)
+	follow := followRex(ctx, st, rec)
 	var code int
 	var paused []string
 	for pause := 0; ; pause++ {
@@ -245,8 +247,12 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	}
 	resp.Warnings = append(follow.stop(), paused...)
 	resp.Code = code
+	// An exit already recorded (a run that judged the session lost) is
+	// final: the run has acted on it, so the record keeps it.
 	updated, err := st.Update(rec.ID, func(r *session.Record) {
-		r.Status.Exit = &session.Report{State: session.StateExited, Code: &code, At: ctx.Now().UTC()}
+		if !r.Status.Exited() {
+			r.Status.Exit = &session.Report{State: session.StateExited, Code: &code, At: ctx.Now().UTC()}
+		}
 	})
 	if err != nil {
 		resp.Warnings = append(resp.Warnings, fmt.Sprintf("record the exit: %v", err))
@@ -499,6 +505,11 @@ func launchEnv(rec session.Record) (set, unset []string) {
 	} else {
 		unset = append(unset, envAutonomous)
 	}
+	if rec.Milestone != "" {
+		set = append(set, envMilestone+"="+rec.Milestone)
+	} else {
+		unset = append(unset, envMilestone)
+	}
 	if rec.Leaf != "" {
 		set = append(set, envLeaf+"="+rec.Leaf, envAttempt+"="+strconv.Itoa(rec.Attempt))
 	} else {
@@ -564,7 +575,8 @@ type rexFollower struct {
 // followRex starts `rex events` for the caller's Rex session and copies
 // every status report of the caller's block into the record's rex source.
 // Outside Rex, or when Rex cannot be started, it follows nothing.
-func followRex(ctx *Ctx, st *session.Store, sid string) *rexFollower {
+func followRex(ctx *Ctx, st *session.Store, rec session.Record) *rexFollower {
+	sid := rec.ID
 	f := &rexFollower{}
 	if ctx.RexBlock == "" || ctx.RexSession == "" || ctx.Start == nil {
 		return f
@@ -575,12 +587,14 @@ func followRex(ctx *Ctx, st *session.Store, sid string) *rexFollower {
 		return f
 	}
 	f.p, f.done = p, make(chan struct{})
+	wrote := &blockedNotice{}
 	go func() {
 		defer close(f.done)
 		rd := bufio.NewReader(p.Output())
 		for {
 			line, err := rd.ReadBytes('\n')
-			if rep, exited, ok := rexStatus(line, ctx.RexBlock); ok {
+			if rep, exited, ok := rexStatus(line, ctx.RexBlock); ok && !wrote.echoes(rep) {
+				wrote.notify(ctx, rec, rep)
 				rep.At = ctx.Now().UTC()
 				if _, uerr := st.Update(sid, func(r *session.Record) { recordRex(r, rep, exited) }); uerr != nil {
 					f.warnings = append(f.warnings, fmt.Sprintf("record rex status %s: %v", rep.State, uerr))
@@ -995,4 +1009,45 @@ func trustFolders(ctx *Ctx, a adapter.Adapter, rec session.Record) string {
 		return warn(werr)
 	}
 	return ""
+}
+
+// blockedNotice is the blocked report a session's wrapper wrote to its own
+// tab, so a headless run's block reaches Rex with no driver: rexStatus has
+// no app filter, so the echo of the report must not become the record's Rex
+// status.
+type blockedNotice struct {
+	state, kind, msg string
+	set              bool
+}
+
+// echoes reports whether rep is the echo of the report written last.
+func (b *blockedNotice) echoes(rep session.Report) bool {
+	return b.set && rep.State == b.state && rep.Kind == b.kind && rep.Detail == b.msg
+}
+
+// notify writes rhiza's root-record blocked report for an agent's blocked
+// rep to the tab, once per block. It writes nothing for a question the
+// run's arbiter answers (an autonomous run's), outside a run, or when the
+// block ends: the agent's next report replaces the notice.
+func (b *blockedNotice) notify(ctx *Ctx, rec session.Record, rep session.Report) {
+	if rep.State != session.StateBlocked {
+		b.set = false
+		return
+	}
+	if ctx.Rex == nil || rec.Run == "" || (rec.Autonomous && rep.Kind == session.KindQuestion) {
+		return
+	}
+	n := run.Notice{
+		Change: rec.Change, Title: rec.Title, Step: rec.Step, Session: rec.ID, Blocked: true,
+		Block: &run.Block{Kind: rep.Kind, Question: rep.Detail, TabTitle: rec.Tab.Title},
+	}
+	ctx.Rex.Write(rexNotice(n))
+	// The echo carries the report as rexRecord encodes it: the kind only
+	// when Rex knows it, the message sanitized and capped by rexField.
+	kind := ""
+	switch rep.Kind {
+	case session.KindPermission, session.KindQuestion, session.KindAuth:
+		kind = rep.Kind
+	}
+	b.state, b.kind, b.msg, b.set = session.StateBlocked, kind, rexField(rexNoticeMsg(n), rexMsgMax), true
 }

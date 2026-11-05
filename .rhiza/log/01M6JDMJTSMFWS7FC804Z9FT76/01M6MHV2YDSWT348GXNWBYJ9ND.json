@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MGQ00NHC4EXPDH03CMKGD0",
+  "after": [
+    "01M6MG5W73Y4T22VT5BNA73X62"
+  ],
+  "at": "2026-11-05T00:30:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fb839bf1, go test -trimpath ./cmd/rhiza -run TestScripts/plan-run-milestone-env passes: the daemon starts plan runs for a request queued with --milestone ms and one without; run start --request for the first launches a fake claude whose env file holds exactly RHIZA_MILESTONE=<ms intent ID>, and for the second the file is empty even though the outer env sets RHIZA_MILESTONE= (launchEnv unsets it). The diff carries the request's Milestone through requestRun into the run's started entry (run.Started/State.Milestone), and StartAgent reads it into the session record, which launchEnv sets or unsets. The request/plan testscripts, internal/api (with the updated unset lists in session_test.go), internal/run and internal/session also pass."
+        },
+        "handle": "plan-run-hands-milestone-verified",
+        "id": "01M6MHTSCW9H01CVDCZYBHF15C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MHTSCW9H01CVDCZWEWCFQT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MHTSCW9H01CVDCZWEWCFQT",
+        "id": "01M6MHTX1Z7APM1SYG4Q2T275X",
+        "link": "01M6MHTX1Z7APM1SYG4NXVBCCG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JE39K3W6P0FZ3AMZV7W550",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JDMJTSMFWS7FC804Z9FT76",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MHV2YDSWT348GXNWBYJ9ND",
+  "type": "ops",
+  "v": 1
+}

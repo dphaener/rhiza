@@ -144,9 +144,9 @@ func daemonFold(ctx *Ctx) (*daemonFolded, error) {
 	}
 	f.cands, f.planSkips = daemonCandidates(res, func(cs id.ID) bool {
 		c, ok := f.sets[cs]
-		return ok && len(changeLeaves(newModel(l, cs), c.Ops)) > 0
+		return ok && len(changeLeaves(newModelSets(list, cs), c.Ops)) > 0
 	})
-	m0 := newModel(l, id.ID{})
+	m0 := newModelSets(list, id.ID{})
 	if ovs := gmodel.Overlaps(list); len(ovs) > 0 {
 		f.overlaps = overlapItems(ovs, m0)
 	}

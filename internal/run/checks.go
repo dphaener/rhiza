@@ -696,7 +696,7 @@ func (r *running) removeCheckCheckouts(cr CheckRunner, step workflow.Step, atEnd
 			case judged && !atEnd:
 				r.removeCheckout(cr, step, s.Detail)
 			case !judged && atEnd:
-				if st, err := r.e.Runner.AgentStatus(s.Session); err == nil && st.Done {
+				if st, err := r.agentStatus(s.Session); err == nil && st.Done {
 					r.removeCheckout(cr, step, s.Detail)
 				}
 			}
@@ -844,6 +844,7 @@ func (r *running) startReviewFix(cr CheckRunner, step workflow.Step, env []strin
 	if err != nil {
 		return errResult(fmt.Errorf("start the change set's fixer: %v", err)), true, nil
 	}
+	r.started(s)
 	if err := r.append(Entry{
 		Type: TypeReviewFix, Step: step.Name, Role: workflow.RoleFixer, Cycle: a.cycle, Attempt: a.attempt, Session: s, Model: spec.Model, Commit: head,
 	}); err != nil {
@@ -863,7 +864,7 @@ func (r *running) startReviewFix(cr CheckRunner, step workflow.Step, env []strin
 // notified as an agent step's, and in an autonomous run its question goes
 // to the arbiter; a failed verdict ends the step (ended true) with res.
 func (r *running) pollReviewFix(cr CheckRunner, step workflow.Step, a checkAction) (judged bool, res result, ended bool, err error) {
-	status, err := r.e.Runner.AgentStatus(a.session)
+	status, err := r.agentStatus(a.session)
 	if err != nil {
 		if err := r.unblock(step.Name, a.session); err != nil {
 			return false, result{}, false, err
@@ -982,6 +983,7 @@ func (r *running) startCheck(cr CheckRunner, step workflow.Step, env []string, a
 		r.removeCheckout(cr, step, dir)
 		return errResult(fmt.Errorf("check %s: start its %s: %v", a.check, sessionWord(a.role), err)), true, nil
 	}
+	r.started(s)
 	if err := r.append(Entry{
 		Type: TypeCheckSession, Step: step.Name, Check: a.check, Role: a.role, Cycle: a.cycle,
 		Session: s, Model: spec.Model, Detail: spec.Dir,
@@ -1011,7 +1013,7 @@ func sessionWord(role string) string {
 // notified as an agent step's, and in an autonomous run its question goes
 // to the arbiter; a failed verdict ends the step (ended true) with res.
 func (r *running) pollCheck(cr CheckRunner, step workflow.Step, a checkAction) (judged bool, res result, ended bool, err error) {
-	status, err := r.e.Runner.AgentStatus(a.session)
+	status, err := r.agentStatus(a.session)
 	if err != nil {
 		if err := r.unblock(step.Name, a.session); err != nil {
 			return false, result{}, false, err

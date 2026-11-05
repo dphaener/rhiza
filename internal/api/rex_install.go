@@ -40,7 +40,9 @@ const (
 	rexDefaultSettings = rexSettingsBegin +
 		"local settings = {\n  launch_key = \"ctrl+a>a\",\n" +
 		"  -- Remap an app's key in the rhiza key mode, e.g. keys = { roadmap = \"m\" }.\n" +
-		"  keys = {},\n}\n" +
+		"  keys = {},\n" +
+		"  -- Run rhiza from this path instead of the PATH, e.g. bin = \"/opt/rhiza/bin/rhiza\".\n" +
+		"  -- bin = \"rhiza\",\n}\n" +
 		rexSettingsEnd
 )
 
@@ -390,9 +392,11 @@ func readIfExists(p string) ([]byte, bool, error) {
 }
 
 // rexScript returns rhiza.lua's bytes, keeping the settings block of have
-// (the file now on disk, nil if none). bin is the absolute path of rhiza,
-// run by the layer the launch key opens.
-func rexScript(have []byte, bin string) []byte {
+// (the file now on disk, nil if none). BIN, the command each app's layer
+// runs, comes from settings.bin when that is a non-empty string, else it is
+// "rhiza", found on the PATH of the host running the pane; no path of the
+// installing machine is written.
+func rexScript(have []byte) []byte {
 	settings := rexDefaultSettings
 	s := string(have)
 	if i := strings.Index(s, rexSettingsBegin); i >= 0 {
@@ -403,7 +407,7 @@ func rexScript(have []byte, bin string) []byte {
 	return []byte(rexScriptMarker + "\n" +
 		"-- Edit the settings block; a reinstall keeps it. Everything else is rewritten.\n" +
 		settings +
-		"\nlocal BIN = " + strconv.Quote(bin) + "\n" +
+		"\nlocal BIN = \"rhiza\"\nif type(settings.bin) == \"string\" and settings.bin ~= \"\" then BIN = settings.bin end\n" +
 		rexPreludeLua + rexCellBounds() + rexAppActions() + rexKeyMode() + rexScriptTail)
 }
 
@@ -477,11 +481,7 @@ func runRexInstall(ctx *Ctx, req any) (any, error) {
 	}
 
 	resp := RexInstallResponse{Script: scriptPath, Init: initPath, Written: []string{}, Unchanged: []string{}}
-	bin := ctx.Self
-	if bin == "" {
-		bin = "rhiza"
-	}
-	wantScript := rexScript(haveScript, bin)
+	wantScript := rexScript(haveScript)
 	if scriptExists && bytes.Equal(haveScript, wantScript) {
 		resp.Unchanged = append(resp.Unchanged, rexScriptName)
 	} else {

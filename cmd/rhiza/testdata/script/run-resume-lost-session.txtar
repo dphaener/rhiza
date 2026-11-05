@@ -1,0 +1,55 @@
+# A run resumed after its agent session ended while no run watched it does
+# not wait forever: the rejoin asks Rex whether the session's block exists,
+# Rex answers it is not found, the session record gets a lost exit naming
+# why, and the step fails.
+#
+# The fake rex opens a window without running the agent (its process is
+# gone, as after a reboot) and answers block inspect with "not found".
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Lose a session' --title 'Lose a session'
+mkdir .rhiza/workflows
+cp $WORK/lost.toml .rhiza/workflows/lost.toml
+exec git add -A
+exec git commit -qm lost
+
+! exec rhiza run start --foreground --workflow lost --permission-mode manual &run&
+exec sh -c 'for i in $(seq 100); do ls .git/rhiza/sessions/*.json >/dev/null 2>&1 && break; sleep 0.1; done'
+kill run
+wait run
+
+! exec sh -c 'rhiza run resume --foreground $(ls .git/rhiza/runs | sed "s/\..*//" | head -1)'
+stderr 'failed'
+exec sh -c 'cat .git/rhiza/sessions/*.json'
+stdout '"state": "lost"'
+stdout 'Rex block not found'
+exec sh -c 'grep -c "block inspect" $WORK/rex.log'
+stdout '^1$'
+
+-- lost.toml --
+name = "lost"
+
+[step.build]
+kind = "agent"
+prompt = "build {change}"
+permission_mode = "manual"
+interval = "50ms"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+case "$*" in
+*"block inspect"*) echo "block not found" >&2; exit 1 ;;
+esac
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+exit 0

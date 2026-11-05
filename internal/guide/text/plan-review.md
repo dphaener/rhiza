@@ -15,7 +15,8 @@ The plan's change sets are that one and every change set serving an intent it ad
 
 Record what is wrong, one finding per problem, each of one of five kinds:
 
-- `missing-acceptance`: a leaf with no `acceptance` check, or one nothing could run.
+- `missing-acceptance`: a leaf with no `acceptance` check, or one nothing could run, or one that runs the repo's full suite
+  rather than the tests covering that leaf.
 - `missing-provenance`: a Decision with no `quote`, `wording` or `derived-from` Source.
 - `unreal-depends-on`: a `depends-on` link where neither needs the other's work.
 - `outside-intent`: a node outside its change set's intent.

@@ -14,6 +14,9 @@ const (
 	StateDone     = "done"
 	StateError    = "error"
 	StateExited   = "exited"
+	// StateLost is the state of an exit a run wrote for a session it found
+	// ended while no run watched it: the process's own exit never came.
+	StateLost = "lost"
 )
 
 // Kinds of a blocked report.
@@ -69,6 +72,10 @@ func (s Status) SaidDone() bool { return s.Done != nil }
 // report that arrives after that must not be recorded: it would not revive
 // the session.
 func (s Status) Exited() bool { return s.Exit != nil }
+
+// HookEnded reports whether the session's hook said it ended (SessionEnd
+// reports done), whether or not an exit was recorded.
+func (s Status) HookEnded() bool { return s.Hook != nil && s.Hook.State == StateDone }
 
 // ValidState reports whether state is one of the known states.
 func ValidState(state string) bool {

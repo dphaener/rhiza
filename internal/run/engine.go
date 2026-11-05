@@ -137,8 +137,12 @@ type AgentStatus struct {
 	// working nor blocked. It is ignored once Done.
 	Idle bool
 	// SaidDone is true once the agent has said its work is done (its
-	// session's done mark). It is ignored once Done.
+	// session's done mark). It is ignored once Done, unless Lost.
 	SaidDone bool
+	// Lost is true when Done is: the session was found ended unseen, so its
+	// exit code is unknown. Its Outcome is fail, never pass, and only a step
+	// that waits for done may pass on it (see pollAgent).
+	Lost bool
 }
 
 // Notice tells the caller that a run's agent step became blocked on the
@@ -401,6 +405,53 @@ type running struct {
 	leafList map[string][]Leaf
 	// lastStatus is the last report given to Engine.Status.
 	lastStatus *StatusReport
+	// seen holds the sessions this process started (true) or has polled
+	// once already (false), so a session first polled without being started
+	// here is a rejoin (see agentStatus).
+	seenMu sync.Mutex
+	seen   map[string]bool
+}
+
+// Rejoiner is a Runner capability: Rejoin tells the Runner the run is
+// rejoining a journalled session (a resume), before its first poll. The
+// Runner finds out whether the session ended while no run watched it and
+// judges it so, as its AgentStatus reports; an error is logged and changes
+// nothing, the Runner retrying the check on later polls.
+type Rejoiner interface {
+	Rejoin(session string) error
+}
+
+// started notes that this process started session, so it is no rejoin.
+func (r *running) started(session string) {
+	r.seenMu.Lock()
+	defer r.seenMu.Unlock()
+	if r.seen == nil {
+		r.seen = map[string]bool{}
+	}
+	r.seen[session] = true
+}
+
+// agentStatus is Runner.AgentStatus, preceded, on the first poll of a
+// session this process did not start, by the Runner's Rejoin (if it has
+// one).
+func (r *running) agentStatus(session string) (AgentStatus, error) {
+	r.seenMu.Lock()
+	if r.seen == nil {
+		r.seen = map[string]bool{}
+	}
+	_, known := r.seen[session]
+	if !known {
+		r.seen[session] = false
+	}
+	r.seenMu.Unlock()
+	if !known {
+		if rj, ok := r.e.Runner.(Rejoiner); ok {
+			if err := rj.Rejoin(session); err != nil {
+				r.log("rejoin session %s: %v", session, err)
+			}
+		}
+	}
+	return r.e.Runner.AgentStatus(session)
 }
 
 func (r *running) clock() Clock {
@@ -722,6 +773,7 @@ func (r *running) agent(step workflow.Step, env []string) (result, error) {
 		if err := r.append(Entry{Type: TypeSession, Step: step.Name, Session: s}); err != nil {
 			return result{}, err
 		}
+		r.started(s)
 		r.log("step %s: session %s", step.Name, s)
 		session = s
 	} else {
@@ -748,7 +800,7 @@ func (r *running) pollAgent(step workflow.Step, env []string, session string) (r
 		interval = workflow.DefaultInterval
 	}
 	for {
-		status, err := r.e.Runner.AgentStatus(session)
+		status, err := r.agentStatus(session)
 		if err != nil {
 			// The step ends with an error outcome: end its block first.
 			if err := r.unblock(step.Name, session); err != nil {
@@ -763,6 +815,11 @@ func (r *running) pollAgent(step workflow.Step, env []string, session string) (r
 			outcome := status.Outcome
 			if outcome == "" {
 				outcome = workflow.OutcomeFail
+			}
+			if status.Lost && step.Until != "" && step.WaitsForDone() && status.SaidDone {
+				res := r.exitedUntil(step, env, status.Detail)
+				res.finished = true
+				return res, nil
 			}
 			if outcome == workflow.OutcomePass && step.Until != "" && step.WaitsForDone() {
 				res := r.exitedUntil(step, env, status.Detail)
@@ -1032,6 +1089,7 @@ func (r *running) arbitrate(asking workflow.Step, question string) (result, erro
 		if err := r.append(Entry{Type: TypeArbiter, Step: asking.Name, Session: s, Question: question}); err != nil {
 			return result{}, err
 		}
+		r.started(s)
 		r.log("step %s: arbiter session %s on question %s", asking.Name, s, question)
 		session = s
 	}
@@ -1040,7 +1098,7 @@ func (r *running) arbitrate(asking workflow.Step, question string) (result, erro
 		interval = workflow.DefaultInterval
 	}
 	for {
-		status, err := r.e.Runner.AgentStatus(session)
+		status, err := r.agentStatus(session)
 		if err != nil {
 			return r.arbitrated(asking, question, errResult(err), "")
 		}

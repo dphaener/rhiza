@@ -60,6 +60,10 @@ func TestPlanText(t *testing.T) {
 			`rhiza link "$RHIZA_CHANGE" serves <intent>`, "before any leaf",
 			"`\"serves\": []` in `rhiza change show --json`", "own serves links",
 		},
+		"plan-serves-milestone": {
+			"RHIZA_MILESTONE", "reach one, directly or through an intent under one",
+			"umbrella or area intent under no", "milestone",
+		},
 		"plan-interview": {
 			"rhiza slice", "rhiza why", "Never ask a fact", "One topic per message",
 			"recommendation", "AskUserQuestion", "Only typed words are quoted",
@@ -96,4 +100,25 @@ func TestPlanReviewText(t *testing.T) {
 			"Never add a finding", "confirmed finding", "--record", "rhiza session done",
 		},
 	})
+}
+
+func TestPlanAcceptanceScoped(t *testing.T) {
+	checkPhrases(t, "plan", map[string][]string{
+		"plan-acceptance-scoped": {
+			"the tests covering that leaf, never the repo's full suite",
+		},
+	})
+	checkPhrases(t, "plan-review", map[string][]string{
+		"plan-review-acceptance-scoped": {
+			"runs the repo's full suite", "tests covering that leaf",
+		},
+	})
+	for _, name := range []string{"plan", "plan-review"} {
+		tx, _ := Lookup(name)
+		for _, bad := range []string{"go test", "make check", "make test", "testscript"} {
+			if strings.Contains(tx.Body, bad) {
+				t.Errorf("%s names %q", name, bad)
+			}
+		}
+	}
 }

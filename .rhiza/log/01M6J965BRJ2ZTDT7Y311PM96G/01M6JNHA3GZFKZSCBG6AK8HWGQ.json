@@ -1,0 +1,40 @@
+{
+  "actor": "01M6JJSKYB82NNRW5QWFVM0TC7",
+  "after": [
+    "01M6JJE7V7JR2DYT14V4AS9RZ2"
+  ],
+  "at": "2026-11-04T06:56:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 499e0789 I read the diff and ran go test ./internal/daemon -run Resumable -count=1: PASS. TestResumableOnlyAcceptedOrLandedPastLand returns run-accepted and run-landed-past (ship-change, entered land, change set landed), and leaves out a landed run that never reached land, a landed plan run, and runs on rejected, withdrawn, proposed and draft change sets. go test ./cmd/rhiza -run TestScripts/daemon-resume -count=1 passes both daemon-resume and the new daemon-resume-landed.txtar. The builder added the scenario as a sibling file, not inside daemon-resume.txtar. It takes a ship-change run that stopped after land, makes it interrupted, lands its change set and runs daemon --once: Resumed run, exactly one daemon-resumed journal entry, one detached run resume --foreground. A second --once resumes nothing. The resumed run then prints succeeded past its stopped wait step, with no 'no longer accepted'. The same txtar on the parent commit c092ae36 fails at 'Resumed run', so it covers the fix. make check under load average 22-30 failed only arbiter-agent-tabs (a timeout, which passes when run alone), TestReadBudget and slice TestBudget (timing budgets). TestBudget fails the same way on the parent commit, and the diff touches neither package's read path, so these failures are environmental."
+        },
+        "handle": "daemon-resumes-landed-past-land-verified",
+        "id": "01M6JNG113KKPAYK0FRH57QHK8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JNG113KKPAYK0FRDW746ND",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JNG113KKPAYK0FRDW746ND",
+        "id": "01M6JNGGNG4ANPKVETZEWM90W4",
+        "link": "01M6JNGGNG4ANPKVETZDNXBAVD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J9P6J78MZ74PAM0VB6ZD5W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J965BRJ2ZTDT7Y311PM96G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JNHA3GZFKZSCBG6AK8HWGQ",
+  "type": "ops",
+  "v": 1
+}

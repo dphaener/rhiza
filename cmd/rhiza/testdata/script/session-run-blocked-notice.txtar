@@ -1,0 +1,148 @@
+# A session's wrapper (session run) in its own Rex tab writes rhiza's
+# root-record blocked report when the agent blocks on something the owner
+# must answer, so a headless run's block reaches Rex with no driver. The
+# agent's own reports stay the session's Rex status: the echo of the
+# wrapper's report is skipped. An autonomous run's question is answered by
+# the arbiter, so it gets no report; its permission block still does.
+#
+# bin/scenario runs a session's wrapper against a fake rex whose events
+# stream gives the agent's blocked report ($KIND, $Q), the echo of the
+# wrapper's own report ($ECHO), then, once $WORK/resume exists, the agent's
+# working report. It checks the record while blocked, then after.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/scenario
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Run the agent' --title 'Agent runs' --json
+env REX_BLOCK=block:b1
+env REX_SESSION=session:s1
+
+# A permission block in a run: one root-record blocked report, kind
+# permission, the tab as title, the change set, step and tab in the message;
+# no working report. The record keeps the agent's own report, blocked and
+# then working, never the echoed message.
+exec rhiza session start --permission-mode manual --run run-1 --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+env KIND=permission
+env Q='Claude needs your permission to use Bash'
+exec scenario 158fe87f-5cf3-4ff0-ae50-01a16dc84988
+stdout '- rex: blocked permission: Claude needs your permission to use Bash at '
+stdout '- rex: working: Back to work at '
+exec cat $WORK/err
+stdout -count=1 'state=blocked'
+stdout -count=1 ']7501;state=blocked:kind=permission:app=rhiza:title=cmVwbzogQWdlbnQgcnVucyDCtyBydW4gcnVuLTEgwrcgYnVpbGQ=:msg=QWdlbnQgcnVuczogYnVpbGQgd2FpdHMgb24geW91IGluIHRhYiByZXBvOiBBZ2VudCBydW5zIMK3IHJ1biBydW4tMSDCtyBidWlsZDogQ2xhdWRlIG5lZWRzIHlvdXIgcGVybWlzc2lvbiB0byB1c2UgQmFzaA=='
+! stdout 'state=working'
+
+# A question block in a non-autonomous run: kind question.
+exec rhiza session start --permission-mode manual --run run-1 --json
+stdout '"id": "'
+exec sh -c 'rhiza session ls --json | grep -o "\"id\": \"[0-9a-f-]*\"" | tail -1 | cut -d\" -f4 > $WORK/sid'
+env KIND=question
+env Q='Which colour?'
+exec sh -c 'scenario $(cat $WORK/sid)'
+stdout '- rex: blocked question: Which colour\? at '
+stdout '- rex: working: Back to work at '
+exec cat $WORK/err
+stdout -count=1 'state=blocked:kind=question:app=rhiza:'
+! stdout 'state=working'
+
+# A multi-line question: the echo carries the message as the report
+# encoded it, control characters as spaces, and is still skipped, so the
+# wrapper writes one report and the record keeps the agent's question.
+exec rhiza session start --permission-mode manual --run run-1 --json
+exec sh -c 'rhiza session ls --json | grep -o "\"id\": \"[0-9a-f-]*\"" | tail -1 | cut -d\" -f4 > $WORK/sid'
+env Q='Which colour?\nRed or blue'
+env ECHOQ='Which colour? Red or blue'
+env WAIT='Red or blue'
+exec sh -c 'scenario $(cat $WORK/sid)'
+! stdout 'waits on you'
+stdout '- rex: working: Back to work at '
+exec cat $WORK/err
+stdout -count=1 'state=blocked:kind=question:app=rhiza:'
+! stdout 'state=working'
+env Q='Which colour?'
+env ECHOQ=
+env WAIT=
+
+# An autonomous run's question is answered by the arbiter: no report.
+exec rhiza session start --permission-mode manual --run run-1 --json
+exec sh -c 'rhiza session ls --json | grep -o "\"id\": \"[0-9a-f-]*\"" | tail -1 | cut -d\" -f4 > $WORK/sid'
+exec sh -c 'f=.git/rhiza/sessions/$(cat $WORK/sid).json; sed "s/\"run\": \"run-1\",/\"run\": \"run-1\", \"autonomous\": true,/" $f > $f.new && mv $f.new $f'
+env NOECHO=1
+exec sh -c 'scenario $(cat $WORK/sid)'
+stdout '- rex: blocked question: Which colour\? at '
+exec cat $WORK/err
+! stdout 'state='
+
+# ...but its permission block still gets one.
+env KIND=permission
+env Q='Claude needs your permission to use Bash'
+env NOECHO=
+exec rhiza session start --permission-mode manual --run run-1 --json
+exec sh -c 'rhiza session ls --json | grep -o "\"id\": \"[0-9a-f-]*\"" | tail -1 | cut -d\" -f4 > $WORK/sid'
+exec sh -c 'f=.git/rhiza/sessions/$(cat $WORK/sid).json; sed "s/\"run\": \"run-1\",/\"run\": \"run-1\", \"autonomous\": true,/" $f > $f.new && mv $f.new $f'
+exec sh -c 'scenario $(cat $WORK/sid)'
+stdout '- rex: working: Back to work at '
+exec cat $WORK/err
+stdout -count=1 'state=blocked:kind=permission:app=rhiza:'
+
+fold-ok
+
+-- bin/scenario --
+#!/bin/sh
+# usage: scenario <session>; the record is polled, never slept on blindly.
+sid=$1
+rec="$WORK/repo/.git/rhiza/sessions/$sid.json"
+rm -f "$WORK/resume" "$WORK/done" "$WORK/err" "$WORK/out"
+wait_for() { # pattern
+	i=0
+	until grep -q "$1" "$rec"; do
+		i=$((i + 1))
+		[ $i -gt 400 ] && { echo "timeout waiting for $1"; cat "$WORK/err" "$WORK/out" "$rec"; exit 1; }
+		sleep 0.025
+	done
+}
+rhiza session run "$sid" >"$WORK/out" 2>"$WORK/err" &
+pid=$!
+wait_for "${WAIT:-$Q}"
+sleep 1
+echo "== blocked"
+rhiza session show "$sid" | grep '^- rex:'
+touch "$WORK/resume"
+wait_for 'Back to work'
+echo "== after"
+rhiza session show "$sid" | grep '^- rex:'
+touch "$WORK/done"
+wait $pid
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+ev() { # state kind msg
+	k=
+	[ -n "$2" ] && k=',"kind":"'"$2"'"'
+	printf '%s\n' '{"type":"session_event","payload":{"session_id":"session:s1","event":{"type":"block_event","payload":{"block_id":"block:b1","creator_name":"com.superlogical.terminal","name":"program_status_changed","payload":{"id":"","record":{"state":"'"$1"'"'"$k"',"msg":"'"$3"'","updated_at":"2026-10-24T12:00:01Z"},"reason":"report"}}}}}'
+}
+if [ "$1" = events ]; then
+	ev blocked "$KIND" "$Q"
+	sleep 0.5
+	[ -n "$NOECHO" ] || ev blocked "$KIND" "Agent runs: build waits on you in tab repo: Agent runs · run run-1 · build: ${ECHOQ:-$Q}"
+	i=0
+	until [ -e "$WORK/resume" ] || [ $i -gt 400 ]; do i=$((i + 1)); sleep 0.025; done
+	ev working "" "Back to work"
+	sleep 30
+	exit 0
+fi
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+# A fake agent that stays up until $WORK/done.
+i=0
+until [ -e "$WORK/done" ] || [ $i -gt 1200 ]; do i=$((i + 1)); sleep 0.025; done
+exit 0
