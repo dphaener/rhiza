@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6P9FH83NSZKC1TME8K249X6"
+  ],
+  "at": "2026-11-05T17:17:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "28939aa2bd35771474d0d9a74bef6a59a584618d",
+          "pr": "https://github.com/dphaener/rhiza/pull/307",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #307 (https://github.com/dphaener/rhiza/pull/307) passed CI at 28939aa",
+          "status": "verified"
+        },
+        "handle": "pr-307-move-this-repo-s-rhiza",
+        "id": "01M6PBEDR04V85APW9E2MGG1H8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PBEDQXGPJ80HY10K531X0Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PBEDQXGPJ80HY10K531X0Y",
+        "id": "01M6PBEDRYATBKR2ZE0NY21CMS",
+        "link": "01M6PBEDRYATBKR2ZE0JX15CX7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESPV5PW1DHSM7HQC0F4CP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FENG43982SZMA5Q9VBGEVZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PBEDVNRTWQ948WPC3XG03E",
+  "type": "ops",
+  "v": 1
+}

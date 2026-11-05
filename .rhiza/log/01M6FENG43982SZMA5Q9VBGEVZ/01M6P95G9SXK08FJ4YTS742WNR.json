@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6P943DQD14795D40MSAFV7D"
+  ],
+  "at": "2026-11-05T16:37:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/move-this-repo-s-rhiza onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: docs/rex-upstream/notification-banner.md?"
+        },
+        "handle": "rebase-conflict-move-this-repo-s-rhiza",
+        "id": "01M6P95BMGG46EAAMDCKDRE16X",
+        "key": null,
+        "kind": "question",
+        "node": "01M6P95BMGG46EAAMDCFM9K2FM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6P95BMGG46EAAMDCFM9K2FM",
+        "id": "01M6P95DNZWHJ0VYB97PH9925J",
+        "link": "01M6P95DNZWHJ0VYB97N3XYC9W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FENG43982SZMA5Q9VBGEVZ",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6FENG43982SZMA5Q9VBGEVZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6P95G9SXK08FJ4YTS742WNR",
+  "type": "ops",
+  "v": 1
+}

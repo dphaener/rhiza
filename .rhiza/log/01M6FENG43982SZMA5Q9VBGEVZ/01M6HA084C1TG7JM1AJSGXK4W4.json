@@ -1,0 +1,39 @@
+{
+  "actor": "01M6H9XVP9RA83YXGJ4QQ7J3TS",
+  "after": [
+    "01M6H9T27NQE7GHXE254NHKATC"
+  ],
+  "at": "2026-11-03T18:16:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Re-checked on round 2 attempt 2 at 2026-11-03T18:2xZ: still unanswered. ssh 100.70.128.115:22 is refused (exit 255). rex client ls on the VM shows the Mac's Rex app (Rex Beta 0.1.0 (1758), node darins-macbook-pro) connected to the VM's Rex server over Tailscale since 16:15:40Z, holding this build's session, so the Mac works from the VM host. Its client actions are UI-only, with no notification history, so neither Mac-side check can be read from the VM. The leaf waits on the owner's answer, per rhiza-on-vm-wait-for-mac-checks."
+        },
+        "handle": "note-01m6h9zyb93sb7",
+        "id": "01M6H9ZYB93SB79BPXVTZ6XYA9",
+        "key": null,
+        "kind": "note",
+        "node": "01M6H9ZYB93SB79BPXVRE0J11J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6H9ZYB93SB79BPXVRE0J11J",
+        "id": "01M6HA0180W5M94EQAZMFV21SV",
+        "link": "01M6HA0180W5M94EQAZHPFR87C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H8Q8CWMEZXV640MZ8VEP4E",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M6FENG43982SZMA5Q9VBGEVZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HA084C1TG7JM1AJSGXK4W4",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,83 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6HA6340C6G3F0YGAN5HTVE0"
+  ],
+  "at": "2026-11-05T16:33:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "There is no daemon running on the mac",
+          "statement": "The owner checked the Mac on 2026-11-05: no Rhiza daemon runs there; the daemon runs only on the VM"
+        },
+        "handle": "vm-move-mac-no-daemon",
+        "id": "01M6P8WK40448P7H62378PH1F1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6P8WK40448P7H6236JSN7QJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "A question in an agent tab on the VM notifies the owner on the Mac by Rex's chime and the blocked marker on the tab and in the session picker; that is enough for this milestone. Rex's program-status protocol (rev 0.4) leaves presentation to the terminal and promises no macOS banner: in the owner's live test on 2026-11-05 every blocked report from a VM tab chimed on the Mac when the tab was not focused (tests C to G) and one showed a banner (test B). Reliable banners are a Rex upstream request (docs/rex-upstream/notification-banner.md)",
+          "wording": "Chime + tab marker is enough: accept what Rex does today, the chime plus the blocked marker on the tab and in the session picker, as the notification; ask Rex upstream for reliable banners separately, the agent's option, picked by the owner"
+        },
+        "handle": "vm-move-notify-chime-and-marker",
+        "id": "01M6P8WMSF00T3GAPX4BG8QR66",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6P8WMSF00T3GAPX4B4M3WS7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6P8WK40448P7H6236JSN7QJ",
+        "id": "01M6P8WPESGQHP91NXQQKVKHRG",
+        "link": "01M6P8WPESGQHP91NXQQ9S465X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H8Q8CWMEZXV640MZ8VEP4E",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M6P8WMSF00T3GAPX4B4M3WS7",
+        "id": "01M6P8WRHX921GSF8EJ5ESYRCK",
+        "link": "01M6P8WRHX921GSF8EJ1N8TGEP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H8Q8CWMEZXV640MZ8VEP4E",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M6P8WMSF00T3GAPX4B4M3WS7",
+        "id": "01M6P8WT6GG88AYMSM27TM8E6H",
+        "link": "01M6P8WT6GG88AYMSM250WYW6D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HA5YHASASNDPG09HE3S0S5",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M6P8WK40448P7H6236JSN7QJ",
+        "id": "01M6P8WVW2667TXX1PYVM0W3VC",
+        "link": "01M6P8WVW2667TXX1PYV72T7JZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HA5YHASASNDPG09HE3S0S5",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6FENG43982SZMA5Q9VBGEVZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6P8WYZCYJHVSDHS8Z7WP9WX",
+  "type": "ops",
+  "v": 1
+}

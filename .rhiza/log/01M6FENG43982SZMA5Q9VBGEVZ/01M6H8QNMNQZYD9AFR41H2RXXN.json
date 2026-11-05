@@ -1,0 +1,39 @@
+{
+  "actor": "01M6H8M82GW5PQ7XPANZH4DEPF",
+  "after": [
+    "01M6FVGB53THQYQVGPD70C2NDT"
+  ],
+  "at": "2026-11-03T17:53:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The rhiza-on-vm leaf needs two checks only the owner's Mac can give, and the VM cannot reach the Mac (ssh refused, its Rex host unreachable over Tailscale): did a question asked in an agent tab on the VM raise a Rex notification on the Mac (or was a report filed with Rex upstream), and does `rhiza daemon status` on the Mac show no daemon running? From the VM on 2026-11-03: `rhiza daemon status --json` shows mode service, running, under systemd user unit rhiza-rhiza.service (active); `rhiza run ls` shows ship-change run 01M6GPD3P4SDTAB9X4778TJJE4 (Machine trust), started by the VM daemon after the 05:45Z handoff, succeeded, its PR #212 merged 2026-11-03T17:12:23Z; ship-change run 01M6G29SNV0B6V7SZHHYNC7K3Z (Fix) also succeeded."
+        },
+        "handle": "vm-move-mac-checks",
+        "id": "01M6H8Q8CWMEZXV640N166WB5E",
+        "key": null,
+        "kind": "question",
+        "node": "01M6H8Q8CWMEZXV640MZ8VEP4E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6H8Q8CWMEZXV640MZ8VEP4E",
+        "id": "01M6H8QC3M4GBZK1YMGBH9SACT",
+        "link": "01M6H8QC3M4GBZK1YMGAHDJ7Z1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESPV5PW1DHSM7HQC0F4CP",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6FENG43982SZMA5Q9VBGEVZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6H8QNMNQZYD9AFR41H2RXXN",
+  "type": "ops",
+  "v": 1
+}
