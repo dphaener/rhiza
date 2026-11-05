@@ -1,0 +1,50 @@
+{
+  "actor": "01M6M3VZ807Y6ZNG9SN80CT6EC",
+  "after": [
+    "01M6M42TC41PTJJVVSQ051DHNB"
+  ],
+  "at": "2026-11-04T20:30:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6M41F92YJYEJYTF9XMK2NKM",
+        "id": "01M6M43666RR8Q1GM33HC6DRJR",
+        "link": "01M6M43666RR8Q1GM33FSBFQFQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M42RFTNGGRFNT2CF6Y1DCC",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "daemon-request-slot.txtar (or a new daemon-queued-start-slot.txtar) with a fake rex and no ready change sets: with max-runs 2, two runs queued with rhiza run start on draft change sets and no request, daemon --once starts both; with the same two queued and one queued request, daemon --once starts one queued run and the request's plan run, and the other queued start stays in the queue (it starts on a later poll once a slot frees); with max-runs 1, one queued start and a queued request, it starts the queued run and the request stays queued",
+          "statement": "While a queued plan request could start (daemonRequestWaits: no run, its retry time passed) and max-runs is above 1, the daemon starts owner-queued runs (rhiza run start, plan and plan-review runs of drafts included) only while fewer than max-runs minus 1 runs run, so one slot stays for the request's plan run; a queued start held back stays queued for a later poll. The poll order (ship picks, queued continuations, queued starts, plan requests) is unchanged, and with max-runs 1 or no request waiting, queued starts fill every free slot as before"
+        },
+        "handle": "queued-start-request-slot-kept",
+        "id": "01M6M438EJP4VAN9P056QJPNF2",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6M438EJP4VAN9P056CW2BNA",
+        "op": "node.create",
+        "parent": "01M6CS230463DT24PWBJCPWD9Q"
+      },
+      {
+        "decision": null,
+        "from": "01M6M438EJP4VAN9P056CW2BNA",
+        "id": "01M6M43AB5BP8TNJ72CYX19D3P",
+        "link": "01M6M43AB5BP8TNJ72CVKZK29T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M41F92YJYEJYTF9XMK2NKM",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6M3VQ85W2NVGR81R06V0XGS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M43DDV55EHHRK8V895H36J",
+  "type": "ops",
+  "v": 1
+}

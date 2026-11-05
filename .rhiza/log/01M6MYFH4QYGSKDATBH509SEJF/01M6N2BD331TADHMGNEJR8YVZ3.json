@@ -1,0 +1,40 @@
+{
+  "actor": "01M6N29QA64EFCD2TNK6QG3ARS",
+  "after": [
+    "01M6N22Y43CWXFABE0R10ZE8KP"
+  ],
+  "at": "2026-11-05T05:19:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 31e81310, go test -trimpath ./internal/api -run 'Inbox|DaemonNotify' passes (also -count=1 -v: TestInboxMilestoneInterview and TestDaemonNotifyMilestoneInterview PASS). The tests show a live non-autonomous milestone plan run gives exactly one interview item with the interview session's tab (title, block, session) from the interview session's launch, with no question block; none once the run ended; none for a feature plan run or an autonomous one; and daemonNotify run twice sends one blocked Rex report 'Plan it: a milestone interview waits on you'. describe-golden.txtar diff updates the InboxItem kind list (adds interview) and tab/session descs; go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes. Diff read: inboxItems adds InboxInterview inside the live branch keyed on st.Session[interview], itemTab opens its tab, inboxNotice has the text; gofmt and go vet clean."
+        },
+        "handle": "inbox-milestone-interview-verified",
+        "id": "01M6N2B64WDP5AS1CXE3S281NQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N2B64WDP5AS1CXE15QN1NP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N2B64WDP5AS1CXE15QN1NP",
+        "id": "01M6N2B8SPQG5XWYF16KJS8GAC",
+        "link": "01M6N2B8SPQG5XWYF16JC9BT03",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYT17VS6C6MX8YRDZ6PMKD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYFH4QYGSKDATBH509SEJF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N2BD331TADHMGNEJR8YVZ3",
+  "type": "ops",
+  "v": 1
+}

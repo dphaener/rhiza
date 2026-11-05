@@ -1,0 +1,151 @@
+{
+  "actor": "01M6NKNRKB7X4BJHDZ5P01RS9Z",
+  "after": [
+    "01M6NKJ6WVD9Z16KRH5ME5A91Y"
+  ],
+  "at": "2026-11-05T10:29:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M686TPQBCC7169KT6ZJ7Z17R",
+        "id": "01M6NM0TCVD1WKQMG2YGA3DR1T",
+        "key": "zzy",
+        "node": "01M686TPQBCC7169KT6WEPB85A",
+        "op": "node.move",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "base": "01M686TPQBCC7169KT6ZJ7Z17R",
+        "handle": null,
+        "id": "01M6NM0X45Q0W6S98ESHT3Q68B",
+        "node": "01M686TPQBCC7169KT6WEPB85A",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript where a question blocks an accepted change set: rhiza question answer <q> <words> --change <cs> --json makes ready drop the reason and fold-ok passes; --dry-run writes nothing; answering an unknown question exits 2; two answers to two questions get distinct handles; describe-golden.txtar is regenerated",
+          "statement": "A question.answer operation answers an open question that blocks a change set by recording the owner's words as a Decision quoting them, linked answers to the question, under a free handle, in the change set it blocks"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M686V2Z913H9XPK0E3CDE1PF",
+        "id": "01M6NM0ZVPJQ4MZ1AP0048HYA5",
+        "key": "r",
+        "node": "01M686V2Z913H9XPK0E1E861YG",
+        "op": "node.move",
+        "parent": "01M5TYGJASX1Q1J7DV6DVHB0DZ"
+      },
+      {
+        "base": "01M686V5H6DYGP62DZ2EV5S218",
+        "id": "01M6NM136KF8CS82A8BAHBAXRC",
+        "key": "zzzw",
+        "node": "01M686V5H6DYGP62DZ2DDEG5MR",
+        "op": "node.move",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "base": "01M686TZYQZXDVR5B38B1YDNRP",
+        "id": "01M6NM16ZNWFTZXW305TZEY790",
+        "node": "01M686TZYQZXDVR5B3880M6C21",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      },
+      {
+        "base": "01M67349MAEY43NAK3PCX2G7QT",
+        "id": "01M6NM1DKABE9PVEHHSKANHFZ4",
+        "node": "01M67349MAEY43NAK3P9PG0H74",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      },
+      {
+        "base": "01M6734AZGT872HRJ9ZRFGV6EM",
+        "id": "01M6NM1HZQ5KK1ZQJ1X8XCADSR",
+        "node": "01M6734AZGT872HRJ9ZRBWAABE",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      },
+      {
+        "base": "01M686VBX481BWSM5W1ZR6B4JX",
+        "id": "01M6NM1NMQJEXTW098Q225SJVC",
+        "node": "01M686VBX481BWSM5W1YT6N1PQ",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      },
+      {
+        "base": "01M6734EA3V7228YH8DJ0B84FT",
+        "id": "01M6NM1TCBEGVEXH5ZDEW04GNB",
+        "node": "01M6734EA3V7228YH8DGYVYDQA",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      },
+      {
+        "base": "01M6GD7BA5848DPG17AE0KD8T4",
+        "id": "01M6NM1Y81JMHR0R0VVHZ8QTGG",
+        "node": "01M6734CBEZPDTAJBANZVV5GXC",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      },
+      {
+        "base": "01M696Q30C6Z9DX0WGCWW8M5DT",
+        "id": "01M6NM23M9WDY8WPM4T50QWYJS",
+        "node": "01M696Q30C6Z9DX0WGCSNDSGHQ",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      },
+      {
+        "base": "01M62JPK2HTYRZW2PD8ZNRBDE1",
+        "id": "01M6NM28Q8JSDGV433MN85MAWR",
+        "node": "01M62JPK2HTYRZW2PD8ZFV1JVK",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      },
+      {
+        "base": "01M6BDAHCGWVSDN2MXQM8KDWF3",
+        "id": "01M6NM2CWRRD20WZC2YXC7MZTJ",
+        "node": "01M6BDAHCGWVSDN2MXQKK63CXJ",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      },
+      {
+        "base": "01M6B3PG5BQ496EZCTRGV9WCEA",
+        "id": "01M6NM2HZE34XXH34EEZSXV4AP",
+        "node": "01M6B3PG5BQ496EZCTRDFMH0T2",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      },
+      {
+        "base": "01M6CS2EDTXKNNH3BNJFFK2835",
+        "id": "01M6NM2NRNDWDMA56EPWTXAX6P",
+        "node": "01M6CS2EDTXKNNH3BNJBX81ZZ6",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      },
+      {
+        "base": "01M68589FFNQ5GR0XWRTESZCVW",
+        "id": "01M6NM2SG5GM9AGB3G0DC9T34G",
+        "node": "01M62JP9RTA2QHK5B6A53852M8",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      },
+      {
+        "base": "01M62JPNH7XH3E5F28FHX1V2EY",
+        "id": "01M6NM2XJ9ZNHYKBEHEFGD1ADM",
+        "node": "01M62JPNH7XH3E5F28FER1MW8E",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      },
+      {
+        "base": "01M62JPRMZ7XZ5RGATPBH6T1HK",
+        "id": "01M6NM31H0FMMG6BMSNJ4EWDSN",
+        "node": "01M62JPRMZ7XZ5RGATP7N7P0A5",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NM37FQW3ZMRK3V60YEF937",
+  "type": "ops",
+  "v": 1
+}

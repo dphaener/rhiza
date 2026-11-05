@@ -1,0 +1,35 @@
+# idle-stall-plan
+
+source · `01M6N9HSK7PYCPQ0V1P3Z4KNNG`
+
+## quotes
+
+```json
+[]
+```
+
+## raw_sha256
+
+21fb582a69fb38e6c316f63558c7e88513072dcbd6817d89bf8a9621c04aef9e
+
+## session
+
+f0ae9dff-3406-48f0-9c7d-01a1aa956836
+
+## summary
+
+Autonomous plan run, no owner. The planner found that session.Stalled (internal/session/status.go) flags only hook-status working sessions silent over 20 minutes, so a run-step session idle at its prompt without `rhiza session done` (for example after ending its turn while a background shell ran) is never flagged, and nudging exists only as the inbox app's manual n. The planner asked what should count as stalled and who nudges; the arbiter answered with Decision idle-run-session-stalls: idle or working unchanged for over 20 minutes without done is stalled (not when waiting on the arbiter, usage-paused, blocked or exited); the inbox lists it as today; an autonomous daemon nudges it once per stall, telling it to check any background shell's result and carry on or say done. The change set serves milestone-25 like the other fixes, and plans two leaves: the widened stall rule in run status and the inbox, and the daemon's one-time nudge. The landed capabilities run-status-stalled-session and inbox-stalled-items get acceptance updated so they no longer say idle sessions never stall.
+
+## title
+
+Idle run sessions stall: autonomous plan of change set 01M6N9AF
+
+## Links
+
+### In
+
+- derived-from [idle-run-session-stalls](../decision/idle-run-session-stalls.md)
+
+## History
+
+- `01M6N9AF69ZGMTB1EEG5RK9MPD` Fix A run's agent session that ends its turn while its own background shell runs (e.g. scoped tests started with run_in_background) sits idle at its prompt and is never flagged: no inbox stalled item and no nudge, so the run waits indefinitely. Seen 2026-11-05: run 01M6N133 fixer session 9130a4fa sat at its prompt about an hour after a recap ('Next, once the scoped daemon tests pass, I'll commit...') with 1 shell open, until the orchestrator sent rhiza session message. Stall detection should treat an idle prompt with no tool call for N minutes as stalled even when a background shell exists, and nudge it to check the shell's result.

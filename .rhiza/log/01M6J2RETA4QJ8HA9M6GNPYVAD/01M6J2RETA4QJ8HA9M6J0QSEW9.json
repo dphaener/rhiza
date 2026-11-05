@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-04T01:28:45Z",
+  "body": {
+    "intent": "apply .actor.json",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6J2RETA4QJ8HA9M6GNPYVAD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J2RETA4QJ8HA9M6J0QSEW9",
+  "type": "open",
+  "v": 1
+}

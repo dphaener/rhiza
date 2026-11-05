@@ -1,0 +1,33 @@
+{
+  "actor": "01M6NR6XRSHXMQTKQDG5WV9SVD",
+  "after": [
+    "01M6NRBQJQ1HHA7JF71Z8CK3G0"
+  ],
+  "at": "2026-11-05T11:44:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "ba669c05f30f785979f61a4a261e42ebcab5b5e930643397d1a7db54f0dc92d6",
+          "session": "4c7d9954-929b-4ec4-9dc0-01a1ab8367a9",
+          "summary": "Autonomous plan run for change set 01M6NR6E: on 2026-11-05 the VM's ~/.cache/go-build reached 47G and stale go-build* temp folders piled up in TMPDIR. With no owner present, the planner raised one question (intent, trigger, scope) to the arbiter. The arbiter ruled in Decision go-cache-sweep-shape: the change set serves milestone-25 (the backlog). The daemon sweeps when it starts, then hourly, and also at once when free space drops under 2x rhiza.daemon.minFree, at most once every 10 minutes. A sweep removes Go build cache entries with an mtime over 3 hours old and go-build* folders directly under os.TempDir() with an mtime over 2 hours old. The cache is $GOCACHE, or os.UserCacheDir()/go-build when GOCACHE is unset; GOCACHE=off skips the cache. A new setting, rhiza.daemon.trimGoCache (default on), turns the sweep off. One stderr line reports what was freed, only when something was. Two leaves were planned: the sweep itself and the daemon's schedule and setting for it. Nothing is left open.",
+          "title": "Planning the daemon's Go build cache sweep (autonomous)"
+        },
+        "handle": "go-cache-sweep-plan",
+        "id": "01M6NRDB9DHGAJD2E5PARVW5Y0",
+        "key": null,
+        "kind": "source",
+        "node": "01M6NRDB9DHGAJD2E5PAQSCRK0",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6NR6EK065HB06P15DYMB0XX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NRDE5161K18GADE26K4Q7T",
+  "type": "ops",
+  "v": 1
+}

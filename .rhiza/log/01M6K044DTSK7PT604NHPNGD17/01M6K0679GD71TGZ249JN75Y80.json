@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6K05JZ49JG8960MT1JST7DX"
+  ],
+  "at": "2026-11-04T10:03:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Ship picks leave a slot for each queued continuation that could start now, plus the one kept for a waiting plan request: two runs whose open-pr failed on a GitHub 500 were queued for retry and never started while 9 change sets were ready, and raising max-runs gave the new slot to another ship pick. Continuations are short (open-pr, a resume after a wait), so the kept slots cost little",
+          "wording": "the orchestrator's, as the owner's proxy (owner, 2026-11-04: \"i think you should monitor the daemon and adjust accordingly. we likely have some performance issues to tackle.\")"
+        },
+        "handle": "continue-slot-kept-owner",
+        "id": "01M6K05ZWCZJ9GDQZVRDV45NNS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6K05ZW2H5WPK3SYCBMQGV3E",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6K044DTSK7PT604NHPNGD17",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6K0679GD71TGZ249JN75Y80",
+  "type": "ops",
+  "v": 1
+}

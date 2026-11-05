@@ -1,0 +1,187 @@
+# A review run resumed after its change-set fixer session ended while no
+# run watched it does not wait forever on that fixer. Two cases, each in
+# a repository of its own:
+#
+# - hook: the fixer's record has a SessionEnd hook report and no exit
+#   report. The rejoin finds the mark before asking Rex anything.
+# - block: the record has neither, and Rex answers that the fixer's block
+#   is not found.
+#
+# In each the session record gets a lost exit naming why, the fixer is
+# judged failed, a fresh fixer attempt starts and commits, check alpha
+# re-runs and passes, and the run succeeds.
+#
+# Check alpha records a major finding on no leaf in cycle 1 and its critic
+# confirms it, so cycle 2 starts the change set's fixer. The critic then
+# touches $WORK/lose: while it exists the fake rex opens the fixer's tab
+# without running it (its process is gone, as after a reboot), so the run
+# polls the fixer until the test kills it. The fake rex answers block
+# inspect as $WORK/inspect says: "missing" is a not-found answer.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+
+# --- hook: the record has the SessionEnd mark and no exit ---
+mkdir hook
+cd hook
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Lose a fixer' --title 'Lose a fixer'
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+exec git add -A
+exec git commit -qm review
+
+rm $WORK/claude.log
+exec sh -c 'echo present > $WORK/inspect'
+! exec rhiza run start --foreground --workflow review --permission-mode manual &run&
+exec sh -c 'for i in $(seq 200); do grep -q "\"type\":\"review-fix\"" .git/rhiza/runs/*.jsonl 2>/dev/null && break; sleep 0.05; done; grep -c "\"type\":\"review-fix\"" .git/rhiza/runs/*.jsonl'
+stdout '^1$'
+kill run
+wait run
+
+# The fixer's SessionEnd hook report arrives with no exit report after it.
+exec sh -c 'grep "\"type\":\"review-fix\"" .git/rhiza/runs/*.jsonl | sed -n "s/.*\"session\":\"\([^\"]*\)\".*/\1/p" > $WORK/fixer'
+exec sh -c 'echo "{\"session_id\":\"$(cat $WORK/fixer)\",\"hook_event_name\":\"SessionEnd\"}" | rhiza session hook SessionEnd'
+exec sh -c 'cat .git/rhiza/sessions/$(cat $WORK/fixer).json'
+! stdout '"exit"'
+
+rm $WORK/lose
+exec sh -c 'rhiza run resume --foreground $(ls .git/rhiza/runs | sed "s/\..*//" | head -1)'
+stdout 'succeeded$'
+exec sh -c 'cat .git/rhiza/sessions/$(cat $WORK/fixer).json'
+stdout '"state": "lost"'
+stdout 'SessionEnd without an exit report'
+# The mark judged it: Rex was not asked about the block.
+! exists $WORK/inspect.log
+# Only the fresh fixer attempt ran an agent; the lost one was judged
+# failed and attempt 2 started in the same cycle, then alpha re-ran.
+exec cat $WORK/claude.log
+stdout '\Arole=check check=alpha cycle=1\nrole=critic check=alpha cycle=1\nrole=fixer check= cycle=2\nrole=check check=alpha cycle=2\n\z'
+exec sh -c 'grep "\"type\":\"review-fix-judged\"" .git/rhiza/runs/*.jsonl'
+stdout '"outcome":"fail","detail":"lost: SessionEnd without an exit report","role":"fixer","attempt":1,"cycle":2}'
+stdout '"outcome":"pass",.*"role":"fixer","attempt":2,'
+exec rhiza run status
+stdout '^- cycle 2 \(step review\): fixer session [0-9a-f-]{36}: fail \(lost: SessionEnd without an exit report\)$'
+stdout '^- cycle 2 \(step review\): fixer session [0-9a-f-]{36}: pass, commit [0-9a-f]{12} \(exit 0\)$'
+stdout '^- review \(visit 1\): pass, then end: 1 of 1 checks passed$'
+fold-ok
+cd ..
+
+# --- block: Rex answers the fixer's block is not found ---
+mkdir block
+cd block
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Lose a fixer' --title 'Lose a fixer'
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+exec git add -A
+exec git commit -qm review
+
+rm $WORK/claude.log
+exec sh -c 'echo missing > $WORK/inspect'
+! exec rhiza run start --foreground --workflow review --permission-mode manual &run&
+exec sh -c 'for i in $(seq 200); do grep -q "\"type\":\"review-fix\"" .git/rhiza/runs/*.jsonl 2>/dev/null && break; sleep 0.05; done; grep -c "\"type\":\"review-fix\"" .git/rhiza/runs/*.jsonl'
+stdout '^1$'
+kill run
+wait run
+exec sh -c 'grep "\"type\":\"review-fix\"" .git/rhiza/runs/*.jsonl | sed -n "s/.*\"session\":\"\([^\"]*\)\".*/\1/p" > $WORK/fixer'
+
+rm $WORK/lose
+exec sh -c 'rhiza run resume --foreground $(ls .git/rhiza/runs | sed "s/\..*//" | head -1)'
+stdout 'succeeded$'
+exec sh -c 'cat .git/rhiza/sessions/$(cat $WORK/fixer).json'
+stdout '"state": "lost"'
+stdout 'Rex block not found'
+# Rex was asked once, about the fixer's block.
+exec cat $WORK/inspect.log
+stdout '\Ablock inspect .*--json block:b1\n\z'
+# Only the fresh fixer attempt ran an agent; the lost one was judged
+# failed and attempt 2 started in the same cycle, then alpha re-ran.
+exec cat $WORK/claude.log
+stdout '\Arole=check check=alpha cycle=1\nrole=critic check=alpha cycle=1\nrole=fixer check= cycle=2\nrole=check check=alpha cycle=2\n\z'
+exec sh -c 'grep "\"type\":\"review-fix-judged\"" .git/rhiza/runs/*.jsonl'
+stdout '"outcome":"fail","detail":"lost: Rex block not found","role":"fixer","attempt":1,"cycle":2}'
+stdout '"outcome":"pass",.*"role":"fixer","attempt":2,'
+exec rhiza run status
+stdout '^- cycle 2 \(step review\): fixer session [0-9a-f-]{36}: fail \(lost: Rex block not found\)$'
+stdout '^- cycle 2 \(step review\): fixer session [0-9a-f-]{36}: pass, commit [0-9a-f]{12} \(exit 0\)$'
+stdout '^- review \(visit 1\): pass, then end: 1 of 1 checks passed$'
+fold-ok
+
+-- alpha.json --
+{"findings":[{"severity":"major","place":"main.go:12","reason":"panics on empty input"}]}
+-- empty.json --
+{"findings":[]}
+-- verdict.json --
+{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"reproduced"}]}
+-- claude.log --
+-- review.toml --
+[step.review]
+kind = "checks"
+interval = "50ms"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+case "$*" in
+*"block inspect"*)
+	echo "$@" >> "$WORK/inspect.log"
+	if [ "$(cat "$WORK/inspect")" = missing ]; then
+		echo "block not found" >&2
+		exit 1
+	fi
+	echo '{"block_id":"block:b1"}'
+	exit 0
+	;;
+esac
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		[ -f "$WORK/lose" ] || (cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+echo "role=$RHIZA_ROLE check=$RHIZA_CHECK cycle=$RHIZA_CYCLE" >> "$WORK/claude.log"
+case "$RHIZA_ROLE" in
+check)
+	if [ "$RHIZA_CYCLE" = 1 ]; then
+		rhiza run findings --check alpha "$WORK/alpha.json" >&2 || exit 1
+	else
+		rhiza run findings --check alpha "$WORK/empty.json" >&2 || exit 1
+	fi
+	;;
+critic)
+	rhiza run verdict --check alpha "$WORK/verdict.json" >&2 || exit 1
+	touch "$WORK/lose"
+	;;
+fixer)
+	git commit -q --allow-empty -m "Fix the panic" -m "Review: $RHIZA_RUN" || exit 1
+	;;
+esac
+exit 0

@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-04T21:08:07Z",
+  "body": {
+    "intent": "Record agent actor claude-code-c5bebbed for session c5bebbed-0273-4b2c-85b7-01a1a863e4f1",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6M67YECN0XWH3KSY7R86YDH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M67YECN0XWH3KSY87C3C2A",
+  "type": "open",
+  "v": 1
+}

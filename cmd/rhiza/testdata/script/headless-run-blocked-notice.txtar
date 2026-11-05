@@ -1,0 +1,117 @@
+# A headless run's driver sits in no tab (no REX_BLOCK), so it writes no
+# Rex report: the block reaches Rex from the agent session's own wrapper,
+# which writes rhiza's blocked report to its tab. The driver's output holds
+# no state= report at all.
+#
+# The fake rex runs each pane's command in the background with the new
+# block as its REX_BLOCK and the pane's output in pane.<block>. Its
+# `events` stream gives the agent's blocked permission report on the
+# caller's block, then working once the pane holds the wrapper's report.
+# The fake claude waits for that report in its pane before it finishes.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+env REX_SESSION=session:1
+env REX_BLOCK=
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Blocked' --title 'Blocked'
+exec rhiza add capability a
+mkdir .rhiza/workflows
+cp $WORK/build.toml .rhiza/workflows/build.toml
+exec git add -A
+exec git commit -qm leaves
+
+exec sh -c 'rhiza run start --foreground --workflow build --permission-mode manual > $WORK/driver.out 2>&1; echo exit=$?'
+stdout '^exit=0$'
+exec rhiza run status
+stdout '^- a \(step build\): passed: attempt 1: verifier passed$'
+
+# Each session's wrapper wrote one blocked permission report to its tab.
+exec sh -c 'cat $WORK/pane.block:b1'
+stdout -count=1 ']7501;state=blocked:kind=permission:app=rhiza:title='
+exec sh -c 'cat $WORK/pane.block:b2'
+stdout -count=1 ']7501;state=blocked:kind=permission:app=rhiza:title='
+
+# The driver wrote no report.
+exec cat $WORK/driver.out
+! stdout '7501'
+! stdout 'state='
+
+-- build.toml --
+name = "build"
+
+[step.build]
+kind = "leaves"
+interval = "50ms"
+on.pass = "done"
+on.fail = "done"
+
+[step.build.builder]
+prompt = "Build {leaf}"
+
+[step.build.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+log="$WORK/rex.log"
+ev() { # state kind msg
+	k=
+	[ -n "$2" ] && k=',"kind":"'"$2"'"'
+	printf '%s\n' '{"type":"session_event","payload":{"session_id":"session:1","event":{"type":"block_event","payload":{"block_id":"'"$REX_BLOCK"'","creator_name":"com.superlogical.terminal","name":"program_status_changed","payload":{"id":"","record":{"state":"'"$1"'"'"$k"',"msg":"'"$3"'","updated_at":"2026-10-24T12:00:01Z"},"reason":"report"}}}}}'
+}
+case "$1 $2" in
+"events -s")
+	ev blocked permission 'Claude needs your permission to use Bash'
+	i=0
+	until grep -q 'state=blocked' "$WORK/pane.$REX_BLOCK" 2>/dev/null || [ $i -gt 400 ]; do i=$((i + 1)); sleep 0.025; done
+	ev working "" "Back to work"
+	sleep 30
+	exit 0
+	;;
+"block close")
+	exit 0
+	;;
+"window new") ;;
+*)
+	echo "$*" >> "$log"
+	echo '{}'
+	exit 0
+	;;
+esac
+dir=
+while [ $# -gt 0 ]; do
+	case "$1" in
+	-c) dir=$2; shift ;;
+	--) shift; break ;;
+	esac
+	shift
+done
+n=$(cat "$WORK/rex.n" 2>/dev/null || echo 0)
+n=$((n + 1))
+echo $n > "$WORK/rex.n"
+(cd "$dir" && REX_BLOCK=block:b$n exec "$@") >>"$WORK/pane.block:b$n" 2>&1 </dev/null &
+echo "{\"window_id\":\"window:w$n\",\"block_ids\":[\"block:b$n\"]}"
+-- bin/claude --
+#!/bin/sh
+# Finish only once the wrapper's blocked report is in this pane.
+i=0
+until grep -q 'state=blocked' "$WORK/pane.$REX_BLOCK" 2>/dev/null; do
+	i=$((i + 1))
+	[ $i -gt 800 ] && exit 1
+	sleep 0.025
+done
+if [ "$RHIZA_ROLE" = builder ]; then
+	echo "$RHIZA_LEAF" > "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt"
+	git commit -q -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
+	exit 0
+fi
+rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" || exit 1
+rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" || exit 1
+exit 0

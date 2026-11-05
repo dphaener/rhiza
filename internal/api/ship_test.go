@@ -127,8 +127,22 @@ const (
 	shipPRView   = "pr view cs/ship-it --json number,url,state,headRefOid,mergeable,statusCheckRollup"
 	shipMergeArg = "pr merge 7 --squash --match-head-commit abc1234def"
 	shipMergedPR = "pr view 7 --json mergeCommit,state"
-	shipRunList  = "run list --commit fff0000aaa --json databaseId,name,status,conclusion"
+
+	// What ship merge asks git before it merges, and ship check --main
+	// asks to compare trees.
+	gitFetch      = "git fetch -q origin"
+	gitOriginMain = "git rev-parse --verify --quiet refs/remotes/origin/main"
+	gitHoldsMain  = "git merge-base --is-ancestor refs/remotes/origin/main abc1234def"
+	gitMergeTree  = "git rev-parse --verify --quiet fff0000aaa^{tree}"
+	gitHeadTree   = "git rev-parse --verify --quiet abc1234def^{tree}"
 )
+
+// mainHeld makes git answer that the head holds origin/main.
+func mainHeld(g *fakeGH) {
+	g.answers[gitFetch] = ""
+	g.answers[gitOriginMain] = "0123456789abcdef"
+	g.answers[gitHoldsMain] = ""
+}
 
 // shipFixture is a session fixture with the change set "Ship it" current
 // and a fake gh.
@@ -269,9 +283,28 @@ func TestShipCheckGreenThenMerge(t *testing.T) {
 		t.Errorf("state = %+v", st)
 	}
 
+	// Main moved after the checks passed: nothing is merged.
+	g.answers[gitFetch] = ""
+	g.answers[gitOriginMain] = "0123456789abcdef"
+	g.answers[gitHoldsMain] = "!exit status 1"
+	resp, err := callOp(t, f.ctx, "ship.merge", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m := resp.(ShipMergeResponse); !m.Moved || m.ExitCode() != 1 || m.MergeCommit != "" {
+		t.Errorf("moved merge = %+v", m)
+	}
+	if slices.Contains(g.calls, "gh "+shipMergeArg) {
+		t.Errorf("merged although main moved: %q", g.calls)
+	}
+	if st, _ := readShipState(state); st.MergeCommit != "" {
+		t.Errorf("state = %+v", st)
+	}
+
+	mainHeld(g)
 	g.answers[shipMergeArg] = ""
 	g.answers[shipMergedPR] = `{"mergeCommit":{"oid":"fff0000aaa"},"state":"MERGED"}`
-	resp, err := callOp(t, f.ctx, "ship.merge", `{}`)
+	resp, err = callOp(t, f.ctx, "ship.merge", `{}`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -296,20 +329,31 @@ func TestShipCheckGreenThenMerge(t *testing.T) {
 		t.Errorf("second merge: %+v, %v, calls %q", resp, err, g.calls[n:])
 	}
 
-	g.answers[shipRunList] = `[{"name":"CI","status":"in_progress","conclusion":""}]`
-	if r := shipCheck(t, f, `{"main":true,"settled":true}`); r.Passed || r.Settled {
-		t.Errorf("main pending: %+v", r)
+	// Main is confirmed by the trees alone, never by asking gh for runs,
+	// unless they differ: then CI is dispatched on the merge commit, and
+	// with no workflow to dispatch the step stops.
+	g.answers[gitMergeTree] = "tree1111"
+	g.answers[gitHeadTree] = "tree2222"
+	g.answers["git ls-tree --name-only refs/remotes/origin/main .github/workflows/"] = ""
+	r = shipCheck(t, f, `{"main":true,"settled":true}`)
+	if r.Passed || r.ExitCode() != 75 || !strings.Contains(r.Stop, "fff0000") || !strings.Contains(r.Stop, "no dispatchable workflow was found") {
+		t.Errorf("trees differ: %+v", r)
 	}
-	g.answers[shipRunList] = `[{"name":"CI","status":"completed","conclusion":"success"}]`
-	r = shipCheck(t, f, `{"main":true}`)
-	if !r.Passed || !r.Written || r.Commit != "fff0000aaa" {
-		t.Errorf("main green: %+v", r)
-	}
-	if got := human(t, r); got != "main at fff0000: 1 check passed\n" {
+	if got := human(t, r); !strings.HasPrefix(got, "stop: merge commit fff0000: ") {
 		t.Errorf("human = %q", got)
 	}
-	if st, _ := readShipState(state); len(st.Main) != 1 || st.MergeCommit != "fff0000aaa" || st.Head != "abc1234def" {
-		t.Errorf("state = %+v", st)
+	g.answers[gitHeadTree] = "tree1111"
+	r = shipCheck(t, f, `{"main":true}`)
+	if !r.Passed || r.Commit != "fff0000aaa" || r.ExitCode() != 0 {
+		t.Errorf("main green: %+v", r)
+	}
+	if got := human(t, r); got != "main at fff0000: the merge commit's tree is the tested head's\n" {
+		t.Errorf("human = %q", got)
+	}
+	for _, c := range g.calls {
+		if strings.HasPrefix(c, "gh run ") {
+			t.Errorf("gh call %q for main", c)
+		}
 	}
 }
 
@@ -318,6 +362,7 @@ func TestShipMergeNotMerged(t *testing.T) {
 	if err := writeShipState(state, shipState{PR: 7, Branch: "cs/ship-it", Head: "abc1234def"}); err != nil {
 		t.Fatal(err)
 	}
+	mainHeld(g)
 	g.answers[shipMergeArg] = "!Head branch was modified. Review and try the merge again."
 	_, err := callOp(t, f.ctx, "ship.merge", `{}`)
 	wantExit(t, err, 1)
@@ -766,6 +811,7 @@ func TestShipCheckFollowsMovedHead(t *testing.T) {
 	if st.Head != "abc1234def" || st.Pushed != "abc1234def" {
 		t.Errorf("state = %+v", st)
 	}
+	mainHeld(g)
 	g.answers[shipMergeArg] = ""
 	g.answers[shipMergedPR] = `{"state":"MERGED","mergeCommit":{"oid":"fff0000aaa"}}`
 	resp, err := callOp(t, f.ctx, "ship.merge", `{}`)
@@ -1328,7 +1374,8 @@ func TestShipFollowRefusesLocalCommits(t *testing.T) {
 // new PR's head and ship merge merges it instead of reporting the plan's
 // merge as already done.
 func TestShipMergeAfterPlanMerge(t *testing.T) {
-	ctx, g, _, _ := openPRFixture(t, true)
+	ctx, g, _, git := openPRFixture(t, true)
+	git("push", "-q", "origin", "main")
 	var merges []string
 	base := g.run
 	ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
@@ -1371,33 +1418,6 @@ func TestShipMergeAfterPlanMerge(t *testing.T) {
 	}
 	if m := resp.(ShipMergeResponse); m.AlreadyMerged || m.MergeCommit != "bbb2222ccc" || len(merges) != 1 {
 		t.Errorf("merge = %+v, merges %q", m, merges)
-	}
-}
-
-func TestShipCheckMainRerunsFailedOnce(t *testing.T) {
-	f, g, state := shipFixture(t)
-	if err := writeShipState(state, shipState{PR: 7, Branch: "cs/ship-it", Head: "abc1234def", MergeCommit: "fff0000aaa"}); err != nil {
-		t.Fatal(err)
-	}
-	g.answers[shipRunList] = `[{"databaseId":99,"name":"CI","status":"completed","conclusion":"failure"},{"name":"nodb","status":"completed","conclusion":"failure"}]`
-	g.answers["run rerun 99 --failed"] = ""
-	r := shipCheck(t, f, `{"main":true}`)
-	if r.Passed || r.Settled || !slices.Equal(r.Reran, []string{"99"}) || !strings.Contains(r.Detail, "not settled") {
-		t.Fatalf("first failure: %+v", r)
-	}
-	if st, _ := readShipState(state); st.RerunHead != "fff0000aaa" || !slices.Equal(st.Reruns, []string{"99"}) {
-		t.Errorf("state = %+v", st)
-	}
-	// Failing again on the same head fails as before, with no second rerun.
-	n := len(g.calls)
-	r = shipCheck(t, f, `{"main":true}`)
-	if r.Passed || !r.Settled || len(r.Reran) != 0 || !strings.HasPrefix(r.Detail, "failed: ") {
-		t.Errorf("second failure: %+v", r)
-	}
-	for _, c := range g.calls[n:] {
-		if strings.Contains(c, "run rerun") {
-			t.Errorf("reran twice: %q", g.calls[n:])
-		}
 	}
 }
 
@@ -1484,5 +1504,52 @@ func TestShipCloseOutRecordsStaleMain(t *testing.T) {
 	}
 	if h := healthMain(f.ctx); strings.Contains(h.Summary, stale) || strings.Contains(mainDetail(h), "has uncommitted changes") {
 		t.Errorf("health main after a successful pull = %+v", h)
+	}
+}
+
+func TestParseFailedTests(t *testing.T) {
+	nested := `test	Run tests	2026-11-04T10:00:00Z --- FAIL: TestScripts (12.00s)
+test	Run tests	2026-11-04T10:00:00Z     --- FAIL: TestScripts/review-check-worktree (1.20s)
+test	Run tests	2026-11-04T10:00:00Z FAIL	github.com/dphaener/rhiza/cmd/rhiza	13.1s
+`
+	if got, want := parseFailedTests(nested), []string{"TestScripts/review-check-worktree"}; !slices.Equal(got, want) {
+		t.Errorf("nested = %v, want %v", got, want)
+	}
+	two := "--- FAIL: TestA (0.00s)\n--- FAIL: TestB (0.01s)\n--- FAIL: TestA (0.00s)\n"
+	if got, want := parseFailedTests(two), []string{"TestA", "TestB"}; !slices.Equal(got, want) {
+		t.Errorf("two = %v, want %v", got, want)
+	}
+	if got := parseFailedTests("Error: setup-go failed\nprocess completed with exit code 1\n"); len(got) != 0 {
+		t.Errorf("infra log = %v, want none", got)
+	}
+}
+
+// --test-failures passes only with a failing test recorded for the head,
+// reads the state file alone, and runs no gh.
+func TestShipCheckTestFailures(t *testing.T) {
+	f, g, state := shipFixture(t)
+	r := shipCheck(t, f, `{"test_failures":true}`)
+	if r.Passed || r.ExitCode() != 1 || r.Detail == "" {
+		t.Errorf("no state: %+v", r)
+	}
+	if err := writeShipState(state, shipState{RerunHead: "abc1234def"}); err != nil {
+		t.Fatal(err)
+	}
+	if r := shipCheck(t, f, `{"test_failures":true}`); r.Passed {
+		t.Errorf("infra-only failure passed: %+v", r)
+	}
+	st := shipState{RerunHead: "abc1234def", CIFindings: []ShipFinding{{Test: "TestScripts/x", Reason: "failed"}}}
+	if err := writeShipState(state, st); err != nil {
+		t.Fatal(err)
+	}
+	r = shipCheck(t, f, `{"test_failures":true}`)
+	if !r.Passed || r.ExitCode() != 0 || !slices.Equal(r.Tests, []string{"TestScripts/x"}) || len(r.Findings) != 1 {
+		t.Errorf("recorded failure: %+v", r)
+	}
+	if len(g.calls) != 0 {
+		t.Errorf("ran %v; want no gh", g.calls)
+	}
+	if _, err := callOp(t, f.ctx, "ship.check", `{"test_failures":true,"settled":true}`); err == nil {
+		t.Error("--test-failures with --settled was accepted")
 	}
 }

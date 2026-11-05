@@ -20,8 +20,8 @@ A plan request is a line in a per-clone queue under .git/rhiza (requests.json), 
 
 - relates-to [bug-intent-fix-no-colon](bug-intent-fix-no-colon.md) — changes requests-queue-local's 'Fix:' prefix to 'Fix '
 - decided-by [plan-requests](../capability/rhiza/orchestration/daemon/plan-requests.md)
-- decided-by [roadmap-new-work-requests](../capability/rhiza/orchestration/daemon/plan-requests/roadmap-new-work-requests.md)
-- decided-by [requests-app](../capability/rhiza/orchestration/daemon/plan-requests/requests-app.md)
+- decided-by roadmap-new-work-requests (retired)
+- decided-by requests-app (retired)
 - decided-by [request-queue](../capability/rhiza/orchestration/daemon/plan-requests/request-queue.md)
 
 ## History

@@ -14,7 +14,7 @@ At commit 22551fb, go test ./internal/tui/roadmapapp -count=1 -v passes TestEnte
 
 ### Out
 
-- verifies [roadmap-app-detail](../capability/rhiza/roadmap-app-detail.md)
+- verifies roadmap-app-detail (retired)
 
 ## History
 

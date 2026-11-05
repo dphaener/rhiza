@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-03T23:34:43Z",
+  "body": {
+    "intent": "Update github runner to: Cancel stale runs, and stop re-testing on main",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6HW7MG0ZVWWHYP903FXV9YF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HW7MG0ZVWWHYP9051WVTCS",
+  "type": "open",
+  "v": 1
+}

@@ -1,0 +1,39 @@
+{
+  "actor": "01M6N9ZKDTTEK3XWY9GF8E8AK6",
+  "after": [
+    "01M6N9V2DX117MQ19WPV1HVNTP"
+  ],
+  "at": "2026-11-05T07:34:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6A0NWP7AH4JGMDT3B1CYKB1",
+        "handle": null,
+        "id": "01M6N9MJYMFSEPSAHBCYS17SXN",
+        "node": "01M6A0NWP7AH4JGMDT37F6X7DG",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A Go test of the stall cutoff: working at 19 minutes is not stalled, at 21 minutes is; blocked, usage-paused and exited sessions never are, and an idle one stalls only as run-session-idle-stall says; a testscript with a hand-written session record and RHIZA_TEST_NOW shows 'stalled' in run status only past the cutoff",
+          "statement": "rhiza run status marks a live run-step session stalled as run-session-idle-stall says: once its hook status, working or idle, has gone unchanged for more than 20 minutes and it has not said `rhiza session done`, unless it is waiting on the arbiter's answer, paused for a usage limit, blocked or exited"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6N9FFNSVCXW4GGGDGXERBZC",
+        "id": "01M6NA1FT8SD797JJV2MD6YWVR",
+        "link": "01M6NA1FT8SD797JJV2KW3PTE2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0MNY5QR1RSXNMW09VWDPZ",
+        "type": "supersedes"
+      }
+    ]
+  },
+  "change_set": "01M6N9AF69ZGMTB1EEG5RK9MPD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NA21MHXNZAF5PJWE1HG4EE",
+  "type": "ops",
+  "v": 1
+}

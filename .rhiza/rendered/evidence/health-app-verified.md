@@ -14,7 +14,7 @@ At 3fefb9a1, with RHIZA_ROOT/CHANGE/RUN unset: `go test ./cmd/rhiza -run 'TestSc
 
 ### Out
 
-- verifies [health-app](../capability/rhiza/orchestration/daemon/daemon-status/health-command/health-app.md)
+- verifies health-app (retired)
 
 ## History
 

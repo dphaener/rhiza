@@ -14,7 +14,7 @@ QA at cafec91c: `rhiza guide plan` from the scratch build prints the new step-2 
 
 ### Out
 
-- verifies [plan-guide-new-change-set](../capability/rhiza/roadmap-app-start-runs/plan-guide-new-change-set.md)
+- verifies [plan-guide-new-change-set](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-guide-new-change-set.md)
 
 ## History
 

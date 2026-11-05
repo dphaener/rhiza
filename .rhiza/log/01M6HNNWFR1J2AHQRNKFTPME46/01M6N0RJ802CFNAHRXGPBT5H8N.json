@@ -1,0 +1,83 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MZ77GWR9BKKK2HW690AANQ"
+  ],
+  "at": "2026-11-05T04:51:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "7d01b3d176a8003f60f1cf221c7b275ebebdb73b",
+          "pr": "https://github.com/dphaener/rhiza/pull/278",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #278 (https://github.com/dphaener/rhiza/pull/278) passed CI at 7d01b3d",
+          "status": "verified"
+        },
+        "handle": "pr-278-text-references",
+        "id": "01M6N0R4GZTANBWT5JAP92YVN1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N0R4GY23KT38PAYZANK90Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N0R4GY23KT38PAYZANK90Z",
+        "id": "01M6N0R6HXDAR7GQWTGXVRK5G9",
+        "link": "01M6N0R6HXDAR7GQWTGVS28P87",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSWH9Y4B8S2ADQCGPYQ1E",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6N0R4GY23KT38PAYZANK90Z",
+        "id": "01M6N0R8N8X35VBV58XJ4V9DZF",
+        "link": "01M6N0R8N8X35VBV58XFFNE0G9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0CQRJFFH7Q40JCV9H2DG",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6N0R4GY23KT38PAYZANK90Z",
+        "id": "01M6N0RASTQW3D6VZY9SQZ467A",
+        "link": "01M6N0RASTQW3D6VZY9PDT5GXG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0GQ76PY04WKDAPVY30Q6",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6N0R4GY23KT38PAYZANK90Z",
+        "id": "01M6N0RCVF9A0MDDFTPJFBE2D1",
+        "link": "01M6N0RCVF9A0MDDFTPJ39WV3C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0SAAHDCRXKDTXRXZF7BT",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6N0R4GY23KT38PAYZANK90Z",
+        "id": "01M6N0REVHXQHX9S5KNK5YB54Z",
+        "link": "01M6N0REVHXQHX9S5KNJKZ2964",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP108NW407PT5CRA556JBA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N0RJ802CFNAHRXGPBT5H8N",
+  "type": "ops",
+  "v": 1
+}

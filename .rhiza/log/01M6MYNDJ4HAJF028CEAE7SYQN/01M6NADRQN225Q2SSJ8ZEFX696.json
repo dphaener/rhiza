@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NA7D4WR28AWD63XKTERPF3",
+  "after": [
+    "01M6N45EGZTR593B3NYFJB89GF"
+  ],
+  "at": "2026-11-05T07:40:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 2cde0ee9: read the diff (internal/tui/requestapp replaces requestsapp; one rexuikit Form of a kind Select and a validated TextArea, hosted by modalshell; cmd/rhiza tui wires it). Ran go test -trimpath -count=1 -v ./internal/tui/requestapp/...: TestSubmitQueuesAndCloses (fake runner gets `request --kind bug -- login fails`, shell closes), TestEmptyTextRefused (empty and blank text: Form validator message shown, no call, not closed), TestEscCallsNothing (closes, no call), TestRegistered (launcher has app request with a component and size) all PASS. Also go test ./cmd/rhiza -run 'TestScripts/(tui-request-app|rex-install)$|TestRequestsAppArgs' PASS, go vet and go build ./... clean, no remaining requestsapp references."
+        },
+        "handle": "request-app-form-verified",
+        "id": "01M6NACFTMBK2S85GZPS0J8FKT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NACFTMBK2S85GZPQACEZ0V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NACFTMBK2S85GZPQACEZ0V",
+        "id": "01M6NAD905JETH1VJN66TKJPHN",
+        "link": "01M6NAD905JETH1VJN664X3AV4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZB5FB63DG4763MZBYRBPM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNDJ4HAJF028CEAE7SYQN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NADRQN225Q2SSJ8ZEFX696",
+  "type": "ops",
+  "v": 1
+}

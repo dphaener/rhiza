@@ -79,15 +79,39 @@ func serviceQuote(s string) string {
 	return `"` + r.Replace(s) + `"`
 }
 
+// serviceEnvNames are the variables of the installing shell the unit carries,
+// so the service starts agents with the Rex tab's tools and temp dir.
+var serviceEnvNames = []string{"PATH", "TMPDIR"}
+
+// serviceEnvQuote quotes an Environment= assignment the way systemd reads it:
+// the whole NAME=value in double quotes, backslash and double quote escaped,
+// % doubled and $ left as is (unlike an ExecStart word).
+func serviceEnvQuote(name, value string) string {
+	r := strings.NewReplacer(`\`, `\\`, `"`, `\"`, `%`, `%%`)
+	return `"` + r.Replace(name+"="+value) + `"`
+}
+
+// serviceEnvLines returns the Environment= lines for the variables that are set.
+func serviceEnvLines(getenv func(string) string) string {
+	var b strings.Builder
+	for _, n := range serviceEnvNames {
+		if v := getenv(n); v != "" {
+			b.WriteString("Environment=" + serviceEnvQuote(n, v) + "\n")
+		}
+	}
+	return b.String()
+}
+
 // serviceUnit returns the unit file for the daemon of the repository whose
-// main checkout is main, run by the rhiza at bin.
-func serviceUnit(main, bin string) []byte {
+// main checkout is main, run by the rhiza at bin, with env lines env.
+func serviceUnit(main, bin, env string) []byte {
 	return []byte(serviceMarker + "\n" +
 		"[Unit]\n" +
 		"Description=Rhiza daemon for " + filepath.Base(main) + "\n" +
 		"After=rex.service\n\n" +
 		"[Service]\n" +
 		"WorkingDirectory=" + main + "\n" +
+		env +
 		"ExecStart=" + serviceQuote(bin) + " " + strings.Join(daemonArgs, " ") + "\n" +
 		"Restart=always\n\n" +
 		"[Install]\n" +
@@ -154,7 +178,7 @@ func runDaemonInstall(ctx *Ctx, _ any) (any, error) {
 	if bin == "" {
 		return nil, Errorf("%s: cannot tell where rhiza is installed", cmd)
 	}
-	want := serviceUnit(main, bin)
+	want := serviceUnit(main, bin, serviceEnvLines(ctxGetenv(ctx)))
 	have, exists, err := readIfExists(path)
 	if err != nil {
 		return nil, Errorf("%s: %v", cmd, err)

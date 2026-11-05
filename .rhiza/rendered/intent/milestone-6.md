@@ -25,6 +25,7 @@ Rhiza runs unattended overnight: the daemon builds, reviews, lands and merges ac
 - serves change set `01M625W0AJZ6AMCCWGFXQW19FN` (A plan run that ends with confirmed review findings or parked questions still open does not report success: it stops for the owner with them listed, so nothing has to be fixed by hand after a succeeded run.)
 - serves change set `01M6580HBAKHN7XTR7XQV3XR0Q` (A failed review leaf fixer, or its verifier, is retried within its cycle as the change-set fixer is, so only a leaf fix failing every attempt spends the cycle)
 - serves change set `01M6489HCR688XKH99YV9E2VGY` (Remove the all-apps picker, as decision rex-picker-removed says: rhiza tui launch and the rhiza_launch action written by rhiza rex install go, and the capabilities that describe the picker are retired or revised, so each app opens only from its own key in the rhiza key mode or its own action in Rex's command palette.)
+- serves change set `01M6GCQACNNTMW5B57HW8N7K50` (Fix: rhiza run resume refuses a plan run whose record change set landed (internal/api/run.go ~792, the Terminal() guard). Every plan run lands its record during the interview, so a plan run stopped at the gate on open questions can never resume. Exempt plan-workflow runs from that guard)
 
 ## History
 

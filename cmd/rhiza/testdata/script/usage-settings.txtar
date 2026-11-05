@@ -1,0 +1,39 @@
+# The usage governor's settings: two token limits (unset by default) and a
+# reserve percent (20), shown by daemon settings and written by daemon set.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+
+exec rhiza daemon settings
+stdout 'rhiza.daemon.usage.session = "" \(default\)'
+stdout 'rhiza.daemon.usage.weekly = "" \(default\)'
+stdout 'rhiza.daemon.usage.reserve = 20 \(default\)'
+exec rhiza daemon settings --json
+stdout '"key": "rhiza.daemon.usage.reserve"'
+
+exec rhiza daemon set rhiza.daemon.usage.session 5000000
+exec rhiza daemon set rhiza.daemon.usage.weekly 90000000
+exec rhiza daemon set rhiza.daemon.usage.reserve 35
+exec rhiza daemon settings
+stdout 'rhiza.daemon.usage.session = 5000000 \(git config\)'
+stdout 'rhiza.daemon.usage.weekly = 90000000 \(git config\)'
+stdout 'rhiza.daemon.usage.reserve = 35 \(git config\)'
+exec rhiza daemon set rhiza.daemon.usage.reserve 0
+exec rhiza daemon set rhiza.daemon.usage.reserve 100
+
+# Bad values exit 2 and write nothing.
+! exec rhiza daemon set rhiza.daemon.usage.reserve 101
+stderr 'from 0 to 100'
+! exec rhiza daemon set rhiza.daemon.usage.reserve -1
+! exec rhiza daemon set rhiza.daemon.usage.reserve lots
+! exec rhiza daemon set rhiza.daemon.usage.session many
+stderr 'whole number of tokens'
+! exec rhiza daemon set rhiza.daemon.usage.weekly 1.5
+exec git config --get rhiza.daemon.usage.reserve
+stdout '^100$'
+exec git config --get rhiza.daemon.usage.session
+stdout '^5000000$'
+
+fold-ok

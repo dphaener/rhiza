@@ -1,0 +1,63 @@
+{
+  "actor": "01M6N5ED14T4R5YKF99WEPFHPK",
+  "after": [
+    "01M6N5DW7XW4HAQ1PN22WFPP2N"
+  ],
+  "at": "2026-11-05T06:16:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 54c67b81, built go build -trimpath ./cmd/rhiza and used it by hand in a scratch git repo (RHIZA_* unset, fake rex on PATH, a no-agent plan workflow). With a milestone request whose run the daemon had drawn, run start --workflow plan --new 'Ship v4' --request <it> --autonomous without --milestone exited 2 with '--autonomous is refused on a plan run that plans a milestone: milestone planning needs the owner, even in autonomous mode' (usage), queued, --foreground, --dry-run --json and via api call run.start; with --milestone too. No draft and no .git/rhiza/runs were written. The same request without --autonomous ran to succeeded with a journal not autonomous; a feature request's --request --autonomous run succeeded with autonomous true. run start <record change set> --autonomous and --new --milestone --autonomous each exited 2 the same way with change ls unchanged; after editing the milestone run's journal to autonomous:true, run resume exited 2 with the rule. The cycle-1 gap (milestone request kind not checked) is fixed. Scoped testscripts run-start-milestone-autonomous, plan-requests, plan-workflow-autonomous(-left) pass."
+        },
+        "handle": "milestone-plan-refuses-autonomous-qa-2",
+        "id": "01M6N5M6FMB4SGYXED9QR2PER1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N5M6FMB4SGYXED9NFB2RTS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N5M6FMB4SGYXED9NFB2RTS",
+        "id": "01M6N5M8Z4DE0SEE31P2TH0BFW",
+        "link": "01M6N5M8Z4DE0SEE31P0HQC6AQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYGJT14RGWC73S0V3A5YEB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 54c67b81, with the built binary in a scratch repo, rhiza.autonomy.plan=auto, queued a milestone request 'Ship v6' and a bug 'Crash on save' and ran rhiza daemon --permission-mode manual --max-runs 2 --once (RHIZA_TEST_NOW and RHIZA_TEST_DETACH_LOG set so nothing spawned). The detach log shows 'run start --foreground --workflow plan --new Ship v6 --request <id> --permission-mode manual --milestone' with no --autonomous, and 'run start ... --new Fix Crash on save ... --autonomous'. Starting a milestone request's run as the daemon does leaves its journal with no autonomous:true."
+        },
+        "handle": "milestone-request-owner-plan-qa-2",
+        "id": "01M6N5MBMJNEKECDWHY1PWA0PX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N5MBMJNEKECDWHXYEXB988",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N5MBMJNEKECDWHXYEXB988",
+        "id": "01M6N5ME2EVHXYX8S01799YTT9",
+        "link": "01M6N5ME2EVHXYX8S0142H5SMZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYG5CW1WV56MB997XMDE93",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MY8BMPFK9ZWD3TDQHKT64J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N5MJFQFY62TFC2NETN60GD",
+  "type": "ops",
+  "v": 1
+}

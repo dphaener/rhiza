@@ -1,0 +1,235 @@
+{
+  "actor": "01M6HHN3HYB6616HVP32096HMM",
+  "after": [
+    "01M6HHY6HZZSF5TGP82YMY1A1C"
+  ],
+  "at": "2026-11-03T20:36:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6HHVZH70MTTQ6JJ2D403TY5",
+        "id": "01M6HJ097PAXAW6KDBS19ACP1X",
+        "link": "01M6HJ097PAXAW6KDBRY218HPG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HHY4KK7Y87K1YY6FE8G20M",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC9RDZ6PDFHA1M25BGPK",
+        "id": "01M6HJ0BCHK2GSG0E4CE7SZV9X",
+        "link": "01M6HJ0BCHK2GSG0E4CBH8YZXM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HHVZH70MTTQ6JJ2D403TY5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/adapter/claudecode builds a fake config dir with transcripts in two project dirs, a message repeated across content-block lines, a helper's lines, cache-read tokens and records before and after the span, and gets the exact expected total; no file outside the fake config dir is read",
+          "statement": "An adapter reports the tokens used between two times across every one of its transcripts on the machine; the Claude Code adapter sums input, output and cache-creation tokens of sessions and their helpers under <config>/projects, each message once by id, counting only records timestamped inside the span and never cache reads"
+        },
+        "handle": "usage-window-tokens",
+        "id": "01M6HJ0DA7EGP43KHWE34ZW69W",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6HJ0DA7EGP43KHWDZZA0ZP8",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ0DA7EGP43KHWDZZA0ZP8",
+        "id": "01M6HJ0GJK4K4N1C7MEBATY3T8",
+        "link": "01M6HJ0GJK4K4N1C7MEANJ6WXS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HHVZH70MTTQ6JJ2D403TY5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests in a pure internal package, over token records and limit resets with fixed times, cover a first window, a record just after a window ended starting the next one, a gap with no records, and a usage-limit reset moving the start, for both window kinds",
+          "statement": "The governor tracks a 5-hour session window and a 7-day weekly window, each starting at the first token record after the previous window of its kind ended, or at the reset time a usage-limit message gave, and knows each window's start, reset and use so far"
+        },
+        "handle": "usage-windows",
+        "id": "01M6HJ0KXZCA4KV63M0RMP0QPW",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6HJ0KXZCA4KV63M0R3FN1BW",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ0KXZCA4KV63M0R3FN1BW",
+        "id": "01M6HJ0NZP5WSNZ1TBA1HVJFFH",
+        "link": "01M6HJ0NZP5WSNZ1TB9XQEYZ5Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HHVZH70MTTQ6JJ2D403TY5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A new usage-settings.txtar shows the three keys with their defaults in rhiza daemon settings --json, sets each with rhiza daemon set, rejects a reserve outside 0 to 100 and a non-number limit with exit 2, and describe-golden.txtar is regenerated",
+          "statement": "Daemon settings rhiza.daemon.usage.session and rhiza.daemon.usage.weekly set each window's token limit (unset by default) and rhiza.daemon.usage.reserve sets the reserve as a percent of the limit (default 20), shown by rhiza daemon settings and written by rhiza daemon set"
+        },
+        "handle": "usage-settings",
+        "id": "01M6HJ0R8X5Q00XXMB8ETAEPM9",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6HJ0R8X5Q00XXMB8CRVN89Q",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ0R8X5Q00XXMB8CRVN89Q",
+        "id": "01M6HJ0TBMRGG1Y97EYGZ1DNE3",
+        "link": "01M6HJ0TBMRGG1Y97EYFAHNYZ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HHVZH70MTTQ6JJ2D403TY5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/api's daemon tests with a fake adapter reporting a limit hit records the learned limit in the daemon's state, a later poll holds on it with no setting, a set rhiza.daemon.usage.session wins over it, and a window with no setting and no hit never holds",
+          "statement": "When an adapter reports that a session hit its usage limit, the daemon saves that window's use so far as the learned limit for its window kind, and uses it whenever the setting for that window is unset; a window with neither limit never holds"
+        },
+        "handle": "usage-learned-limit",
+        "id": "01M6HJ0WFSJ9JEM9JEBK3KD62M",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6HJ0WFSJ9JEM9JEBHND0VX9",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ0WFSJ9JEM9JEBHND0VX9",
+        "id": "01M6HJ0YETABA95M4A8KARVJHV",
+        "link": "01M6HJ0YETABA95M4A8J2CZMZM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HHVZH70MTTQ6JJ2D403TY5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api's daemon tests with a fake clock and fake token use show: under the line it starts; one projected run over the line holds picks, resumes, queued work and plans and stops no live run; with no finished runs only use so far counts; the next poll after the reset starts the held change set",
+          "statement": "At each poll the daemon holds everything it would launch (picks, resumes of interrupted runs, queued starts and continues, plan requests) while a window's use so far plus the mean tokens of the last 10 finished runs, once for each live run and once for the next, exceeds its limit minus the reserve; live runs and runs the owner starts directly are untouched, and the hold clears at the first poll after the window resets"
+        },
+        "handle": "usage-hold",
+        "id": "01M6HJ10G74HCGZ37HH810HG46",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "id": "01M6HJ12J211S1VADMMDHNV2XX",
+        "link": "01M6HJ12J211S1VADMMAGF2BB9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HHVZH70MTTQ6JJ2D403TY5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A new usage-hold.txtar with a seeded daemon state that holds shows the usage-reserve skip and its detail in daemon status --json and text, a warn usage part in health --json, and one usage-reserve item in inbox --json; with the hold cleared none of them shows and health's usage part is ok; describe-golden.txtar is regenerated",
+          "statement": "While the daemon holds for usage, each held change set is a skip with reason usage-reserve whose detail gives the window, use, limit and reset time in rhiza daemon status; rhiza health has a usage part (warn while held, ok with each window's use otherwise) and rhiza inbox lists one usage-reserve item until the hold clears"
+        },
+        "handle": "usage-hold-reported",
+        "id": "01M6HJ14J13C9N67W128KZP74D",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6HJ14J13C9N67W124QEQME1",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ14J13C9N67W124QEQME1",
+        "id": "01M6HJ16NSJ1JD997TAED5BCW0",
+        "link": "01M6HJ16NSJ1JD997TAD4TMB3R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HHVZH70MTTQ6JJ2D403TY5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ14J13C9N67W124QEQME1",
+        "id": "01M6HJ18QAYWM6GF15WAJGHTQ8",
+        "link": "01M6HJ18QAYWM6GF15W7SQBAZA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "id": "01M6HJ1AQ23S6DBKRVHTWN7KXN",
+        "link": "01M6HJ1AQ23S6DBKRVHQA7FZEZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0KXZCA4KV63M0R3FN1BW",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ0KXZCA4KV63M0R3FN1BW",
+        "id": "01M6HJ1CQG7VY9ABGVGPPN59TC",
+        "link": "01M6HJ1CQG7VY9ABGVGJVYHM4K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0DA7EGP43KHWDZZA0ZP8",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ0WFSJ9JEM9JEBHND0VX9",
+        "id": "01M6HJ1ERQAAZF295MR98YTS4B",
+        "link": "01M6HJ1ERQAAZF295MR5DREZGK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0KXZCA4KV63M0R3FN1BW",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "id": "01M6HJ1GWW9XBDA4VMG8VZBRRY",
+        "link": "01M6HJ1GWW9XBDA4VMG78CV43W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0R8X5Q00XXMB8CRVN89Q",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "id": "01M6HJ1K152ZE70DKRGSS4WSBJ",
+        "link": "01M6HJ1K152ZE70DKRGPB5PDMA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0WFSJ9JEM9JEBHND0VX9",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6HHMTEDFK2AWQKX50EB77DD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HJ1PRJ3TSX5W3CC9FT212T",
+  "type": "ops",
+  "v": 1
+}

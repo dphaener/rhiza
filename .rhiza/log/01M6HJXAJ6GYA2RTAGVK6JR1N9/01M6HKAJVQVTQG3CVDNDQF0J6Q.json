@@ -1,0 +1,193 @@
+{
+  "actor": "01M6HJXKRYZ1YQA1KG349QVM4D",
+  "after": [
+    "01M6HK8J0KBQPHGG2CV0J5Y85X"
+  ],
+  "at": "2026-11-03T20:59:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A capability is anchored to code by an anchor node, linked implements to it, that carries a path, an optional Go symbol and a content fingerprint, and rhiza check resolves every anchor against the working tree"
+        },
+        "handle": "anchors",
+        "id": "01M6HK83VHJ4H5M78G5G92GJ7Z",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SWT0Q3DHFNA33D1XP094VN",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "fields": {
+          "statement": "A changed content fingerprint on an anchor makes rhiza check warn, naming the capability to review, until the anchor is deliberately re-fingerprinted"
+        },
+        "handle": "fingerprints",
+        "id": "01M6HK83VMN8DWD8CX935G0WJM",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5SWT0S5PN1WS8HSXEDY111W",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "decision": null,
+        "from": "01M6HK5TSPZAT4G3YFQ02XQEKK",
+        "id": "01M6HK9GX0SKYQHN0CFSXRA764",
+        "link": "01M6HK9GX0SKYQHN0CFPNXHTPA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK8FVXEQSREWWBVVX2RHYF",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT0Q3DHFNA33D1XP094VN",
+        "id": "01M6HK9MSQKNTR4933A7W35QW0",
+        "link": "01M6HK9MSQKNTR4933A6TNVNHQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK5TSPZAT4G3YFQ02XQEKK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT0S5PN1WS8HSXEDY111W",
+        "id": "01M6HK9RZXGVS668TPT0F7FYD8",
+        "link": "01M6HK9RZXGVS668TPSZZ44B71",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK5TSPZAT4G3YFQ02XQEKK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests of the resolver resolve a func, a method on a value and on a pointer receiver (Type.Method), a type, and a var and a const inside grouped declarations, hash exactly the declaration's source bytes (the span go/ast gives its node, doc comment excluded), and report a missing path, a missing symbol and a symbol on a non-.go file; anchor-fields.txtar: rhiza add anchor with path and symbol stores fingerprint sha256:<hex> of the declaration bytes, without symbol sha256:<hex> of the file (matching sha256sum), an explicit fingerprint field is kept as given, set of path or symbol recomputes it, and a missing path, a missing symbol and a symbol on a .md file are each refused with a Next; field-schema.txtar now expects path, symbol and fingerprint on an anchor; describe-golden.txtar is regenerated if a schema changed",
+          "statement": "An anchor carries path (relative to the project root, slash-separated), an optional symbol (a top-level Go declaration name, Type.Method for a method, accepted only on a .go file) and fingerprint (sha256:<hex> of the declaration's source bytes when symbol is set, else of the whole file's bytes, read from the working tree); adding an anchor, or setting its path or symbol, computes the fingerprint when none is given and refuses a path or symbol that does not resolve"
+        },
+        "handle": "anchor-fields",
+        "id": "01M6HK9V1F5ZZNXE9RW414Z91E",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6HK9V1F5ZZNXE9RW11CZD1A",
+        "op": "node.create",
+        "parent": "01M5SWT0Q3DHFNA33D1XP094VN"
+      },
+      {
+        "decision": null,
+        "from": "01M6HK9V1F5ZZNXE9RW11CZD1A",
+        "id": "01M6HK9X0P35K44YYJ2QF7A9K6",
+        "link": "01M6HK9X0P35K44YYJ2P8YBW3H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK5TSPZAT4G3YFQ02XQEKK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "check.Run stays pure: check.Input gains the working tree as an fs.FS rooted at the project, filled by internal/api's check; unit tests in internal/check with fstest.MapFS warn once for a missing path and once for a missing symbol, naming the anchor and the capability it implements, find nothing for a resolving anchor or a retired one, and keep Report.OK true; check-anchors.txtar: after deleting the anchored function, rhiza check exits 0 with an anchor warn finding naming both, and after deleting the file a path warn finding; the rule is listed in the check package doc in report order",
+          "statement": "rhiza check has an anchor rule that resolves every live anchor of the folded model against the project's working tree and warns, never fails, when its path or its symbol is gone, each finding naming the anchor and the capability it implements"
+        },
+        "handle": "check-anchors-resolve",
+        "id": "01M6HK9YY5HRN9EVKGV9M9DGKX",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6HK9YY5HRN9EVKGV95EXMK1",
+        "op": "node.create",
+        "parent": "01M5SWT0Q3DHFNA33D1XP094VN"
+      },
+      {
+        "decision": null,
+        "from": "01M6HK9YY5HRN9EVKGV95EXMK1",
+        "id": "01M6HKA17HMASFG61NXDJ0PFFG",
+        "link": "01M6HKA17HMASFG61NXCCSG881",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK5TSPZAT4G3YFQ02XQEKK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HK9YY5HRN9EVKGV95EXMK1",
+        "id": "01M6HKA3E2V4ZRYFT4M6NHW3SC",
+        "link": "01M6HKA3E2V4ZRYFT4M6DEPT8J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK9V1F5ZZNXE9RW11CZD1A",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests in internal/check warn once for a changed declaration and once for a changed whole file, with Next rhiza anchor refresh <anchor>, find nothing when only bytes outside an anchored declaration change, and keep Report.OK true; check-fingerprint.txtar: after editing an anchored function's body, rhiza check exits 0 with one anchor warn finding naming the anchor and its capability, and make check would still pass",
+          "statement": "rhiza check's anchor rule warns, never fails, when an anchor's path and symbol resolve but the fingerprint of what they name in the working tree differs from the stored one, naming the anchor and the capability it implements, with Next the re-fingerprint command"
+        },
+        "handle": "check-fingerprint-changed",
+        "id": "01M6HKA5CCG3S9EABTJZNAGYBB",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6HKA5CCG3S9EABTJVXVBKHS",
+        "op": "node.create",
+        "parent": "01M5SWT0S5PN1WS8HSXEDY111W"
+      },
+      {
+        "decision": null,
+        "from": "01M6HKA5CCG3S9EABTJVXVBKHS",
+        "id": "01M6HKA7CNHZ3YM2JG9YH41MZ4",
+        "link": "01M6HKA7CNHZ3YM2JG9WYY1FZM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK5TSPZAT4G3YFQ02XQEKK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HKA5CCG3S9EABTJVXVBKHS",
+        "id": "01M6HKA9B1NJW3P0ES8XZRPBVS",
+        "link": "01M6HKA9B1NJW3P0ES8TJ8T6VC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK9YY5HRN9EVKGV95EXMK1",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "anchor-refresh.txtar: after an anchored function changes, rhiza anchor refresh writes a set of the anchor's fingerprint into the current change set (--json and rhiza api call anchor.refresh print the same bytes), and once that lands rhiza check has no anchor finding; refreshing an unchanged anchor writes nothing and says so; refreshing an anchor whose path or symbol is gone is refused with a Next; --dry-run writes nothing; describe-golden.txtar is regenerated",
+          "statement": "rhiza anchor refresh <anchor>, one transport-independent operation in internal/api, re-fingerprints an existing anchor from the working tree into the current change set, the deliberate step after the code change is reviewed"
+        },
+        "handle": "anchor-refresh",
+        "id": "01M6HKABFN71SDK6SXZCSSM3NB",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6HKABFN71SDK6SXZAMPSXVF",
+        "op": "node.create",
+        "parent": "01M5SWT0S5PN1WS8HSXEDY111W"
+      },
+      {
+        "decision": null,
+        "from": "01M6HKABFN71SDK6SXZAMPSXVF",
+        "id": "01M6HKADH5BGMW4T4RJB22QQ2Z",
+        "link": "01M6HKADH5BGMW4T4RJ928JNV4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK5TSPZAT4G3YFQ02XQEKK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HKABFN71SDK6SXZAMPSXVF",
+        "id": "01M6HKAFEMD51W63VQGT3BBEEM",
+        "link": "01M6HKAFEMD51W63VQGPGDKZ9V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK9V1F5ZZNXE9RW11CZD1A",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6HJXAJ6GYA2RTAGVK6JR1N9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HKAJVQVTQG3CVDNDQF0J6Q",
+  "type": "ops",
+  "v": 1
+}

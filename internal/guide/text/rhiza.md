@@ -79,6 +79,12 @@ constraints on it, so you add to the model rather than duplicate it.
   "(Recommended)" pick) is never the owner's words: record it as the agent's wording, accepted
   by the owner.
 - When something is unknown, add a question rather than guess. Park it, don't block on it.
+- To refer to another node inside a statement or other text field, write `@handle` (an ID or
+  an ID prefix of 4+ characters works too). The write stores it by ID, so a rename never breaks
+  the sentence, and refuses one that names no node it may refer to. Write `@@` for a literal `@`,
+  except before `{<full ID>}`, which is refused as it would read back as a reference: write the
+  ID without braces. Emails and `name@host` are not references. `quote`, `quote_where` and
+  `wording` are stored exactly as given.
 - Use `--dry-run` to see the operations a write would make before making it.
 
 ## Recipes
@@ -150,7 +156,8 @@ Topics: `change-sets` (lifecycle, intention vs record, `--record`), `carving` (m
 between change sets), `apply` (the file format), `sources` (recording a conversation),
 `reopening` (writing after a land), `arbiter` (deciding a question in an autonomous run),
 `advisor` (recommending an answer to the owner's question),
-`plan-review` (reviewing a plan), `build` (building or verifying a leaf).
+`plan-review` (reviewing a plan), `build` (building or verifying a leaf),
+`workflows` (writing a custom workflow).
 To turn a raw conversation into a Source, use the rhiza-scrub skill (`rhiza guide scrub`).
 To plan a milestone or a change set's leaves with the owner, use the rhiza-plan skill
 (`rhiza guide plan`).

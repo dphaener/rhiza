@@ -20,6 +20,7 @@ A live run's session whose resolved hook status is working with a last report ol
 
 - decided-by [run-status-stalled-session](../capability/rhiza/workflows/workflow-runs/run-status/run-status-stalled-session.md)
 - decided-by [inbox-stalled-items](../capability/rhiza/orchestration/inbox/inbox-list/inbox-stalled-items.md)
+- supersedes [idle-run-session-stalls](idle-run-session-stalls.md)
 
 ## History
 

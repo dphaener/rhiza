@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-04T17:56:04Z",
+  "body": {
+    "intent": "Inbox and daemon notify are cheap: overlaps and inbox items are computed once per model change, not per call or poll",
+    "kind": "intention",
+    "sources": [],
+    "title": "Cheap inbox"
+  },
+  "change_set": "01M6KV89S5MKWG2DHA762F8WTZ",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6KV89S5MKWG2DHA77ZFPAMA",
+  "type": "open",
+  "v": 2
+}

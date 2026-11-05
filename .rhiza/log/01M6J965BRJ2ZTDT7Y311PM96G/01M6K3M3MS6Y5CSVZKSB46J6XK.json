@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6K3B2YC7KYW9JA0BNE5B0X5"
+  ],
+  "at": "2026-11-04T11:03:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Resolve the internal/api/daemon.go conflict in daemonPoll1 by keeping this branch's daemon.Resumable call (change-set state lookup and planWorkflow, for the landed-past-land exception) under main's renamed guard `!stopped && !paused` (main renamed low to stopped when the usage governor landed); merge origin/main into the branch rather than rebase and re-render",
+          "wording": "the orchestrator's, deciding as the owner's proxy under the owner's standing instruction \"act on my behalf\" (2026-11-03); assumed, not the owner's words"
+        },
+        "handle": "resume-landed-rebase-resolution",
+        "id": "01M6K3KEAXMJ33NJB0XM2YNBAW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6K3KEAXMJ33NJB0XGREM50V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6K3KEAXMJ33NJB0XGREM50V",
+        "id": "01M6K3KMSCDFKKNFJTZDF1BJZ4",
+        "link": "01M6K3KMSCDFKKNFJTZAQK55B8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6K3ACXBM7B6F5Q0EJ9HZP17",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6J965BRJ2ZTDT7Y311PM96G",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6K3M3MS6Y5CSVZKSB46J6XK",
+  "type": "ops",
+  "v": 1
+}

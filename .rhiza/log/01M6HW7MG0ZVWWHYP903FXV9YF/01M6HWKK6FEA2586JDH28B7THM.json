@@ -1,0 +1,33 @@
+{
+  "actor": "01M6HW8B35F5P99KA1SYZP06MV",
+  "after": [
+    "01M6HWGGG6RET6C0NXXK93QQ00"
+  ],
+  "at": "2026-11-03T23:41:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "0e5cfab25c835127a9e23b2cabe41b704d73ffc84907231abfbd87dbb7c093a6",
+          "session": "226cf21d-db5d-4a1f-82be-01a1a3c4134c",
+          "summary": "Autonomous plan run for change set 'Update github runner to'. No owner was present; the planner raised one question (serves, main CI, ci install template, workflow push access) and the arbiter answered with Decision ci-main-and-cancel. Settled: the change set serves milestone-25; ship-change's wait-main stops waiting on GitHub and instead compares the merge commit's tree with the tested PR head's tree locally, failing with a stop: line on a mismatch; the rhiza ci install template gains a per-PR concurrency group with cancel-in-progress but keeps its push-to-main check; agent leaves touch only Go code, and the .github/workflows/ci.yml edit (drop push trigger, add concurrency) is left to the owner to push by hand with a workflow-scoped token after the ship change lands, because the agents' gh token lacks the workflow scope.",
+          "title": "Plan: cancel stale CI runs, stop re-testing on main"
+        },
+        "handle": "plan-ci-runner",
+        "id": "01M6HWK1D2A6GE7ZX1SSV6YRGQ",
+        "key": null,
+        "kind": "source",
+        "node": "01M6HWK1AWW9CKCY5PB01YDASY",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6HW7MG0ZVWWHYP903FXV9YF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HWKK6FEA2586JDH28B7THM",
+  "type": "ops",
+  "v": 1
+}

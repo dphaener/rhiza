@@ -10,7 +10,7 @@ run status and session ls run as read-only apps
 
 ### In
 
-- serves [runs-sessions-apps](../../capability/rhiza/runs-sessions-apps.md)
+- serves runs-sessions-apps (retired)
 
 ## History
 

@@ -1,0 +1,30 @@
+{
+  "actor": "01M6HJXKRYZ1YQA1KG349QVM4D",
+  "after": [
+    "01M6HJXAJ6GYA2RTAGVPAVZ3XB"
+  ],
+  "at": "2026-11-03T20:55:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "298a341f-f050-4419-bc88-01a1a32ec55a",
+          "statement": "Change set 'Code anchors with fingerprints' serves no intent yet. Its leaves are carved out of the accepted Area integrity umbrella (01M5SWT0K9TV1R), which serves the roots anyone-builds and model-tells-truth plus the Areas umbrella. Which landed intent should it serve? / What does an anchor's content fingerprint hash? / How are anchors written and re-fingerprinted? / What does rhiza check resolve anchors against, and how severe are its findings?"
+        },
+        "handle": "question-298a341f-1",
+        "id": "01M6HK396T4W1X8ZFK1PA3C6E1",
+        "key": null,
+        "kind": "question",
+        "node": "01M6HK396T4W1X8ZFK1N68973F",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6HJXAJ6GYA2RTAGVK6JR1N9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HK3AR0K90EH90NBYPVZGH9",
+  "type": "ops",
+  "v": 1
+}

@@ -5,7 +5,9 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"io/fs"
+	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -196,4 +198,15 @@ func takeStats(fsys fs.FS, now time.Time) statPrint {
 	}
 	p.fp = hex.EncodeToString(h.Sum(nil))
 	return p
+}
+
+// LogStamp is the stat fingerprint of the log under root's .rhiza folder:
+// equal stamps mean no change set folder was added, removed or written to
+// in between. It is "" when a stat failed or the file system keeps no
+// times, and racy is true when a folder changed within the file system's
+// clock tick of now, so the stamp cannot yet show a later change: a caller
+// that caches by it must not trust a racy stamp.
+func LogStamp(root string) (fp string, racy bool) {
+	p := takeStats(os.DirFS(filepath.Join(root, store.Dir)), time.Now())
+	return p.fp, p.racy
 }

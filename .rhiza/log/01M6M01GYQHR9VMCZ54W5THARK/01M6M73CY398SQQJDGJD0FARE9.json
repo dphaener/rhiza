@@ -1,0 +1,109 @@
+{
+  "actor": "01M6M6SD7Y4MJDZYC14Z7FAF8D",
+  "after": [
+    "01M6M6QC0BEJKXZ5B3C83ARZCN"
+  ],
+  "at": "2026-11-04T21:23:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 2079b36f: read CLAUDE.md in the built tree; it names go test -trimpath ./internal/<pkg>/..., go test -trimpath ./cmd/rhiza -run TestScripts/<name> and make self-check as the agents' scoped commands, says agents in runs never run make check, make test or a bare go test ./... because GitHub CI runs make check before merge, and keeps make check only for a person outside a run. go test -trimpath -count=1 ./cmd/rhiza -run 'TestClaudeMDScopedTests$' passes."
+        },
+        "handle": "claude-md-scoped-tests-qa-1",
+        "id": "01M6M710NQ172EFNST3HPCDY52",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M710NNSRFDF46EHB3VA70M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M710NNSRFDF46EHB3VA70M",
+        "id": "01M6M718ZD14MSMDHY0SCWJCB1",
+        "link": "01M6M718ZD14MSMDHY0S08RNG1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0FK7XV5HMP0A70DZFF188",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 2079b36f with a binary built from the branch: `rhiza guide build` prints a Tests section (builders and verifiers run only the tests covering what the change touches, never the repo's full suite: the PR's CI runs it) and `rhiza guide review` the same for checks, critics and fixers; neither contains go test, make check, make test or testscript. `rhiza guide install --agent claude` into a scratch HOME writes rhiza-build and rhiza-review SKILL.md files carrying the rule. go test -trimpath -count=1 ./internal/guide/... passes."
+        },
+        "handle": "guides-scoped-tests-qa-1",
+        "id": "01M6M71KBF8N5E0RRZYPE4Q9Q7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M71KBF8N5E0RRZYMR5XNH2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M71KBF8N5E0RRZYMR5XNH2",
+        "id": "01M6M71YFN3XR1WX7EEV1HA91R",
+        "link": "01M6M71YFN3XR1WX7EER20TFP3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0EPMPD72KB5AZWBB9MRGM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 2079b36f with the branch's binary: `rhiza guide plan` tells planners to write each leaf's acceptance as the tests covering that leaf, never the repo's full suite; `rhiza guide plan-review` widens missing-acceptance to an acceptance check that runs the repo's full suite; neither names go test, make check, make test or testscript; the installed rhiza-plan SKILL.md (scratch HOME) carries the rule. go test -trimpath -count=1 ./internal/guide/... passes."
+        },
+        "handle": "plan-acceptance-scoped-qa-1",
+        "id": "01M6M727AH97YN9NWQWVVCSCM1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M727AH97YN9NWQWV7M0FT0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M727AH97YN9NWQWV7M0FT0",
+        "id": "01M6M72GJ9S4GJYJRAPZX2B4YP",
+        "link": "01M6M72GJ9S4GJYJRAPXTARNC7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0F1732EDCT2C312MBA43A",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 2079b36f with the branch's binary: `rhiza workflow describe build --json` shows both prompts (builder, verifier) and `workflow describe review --json` all 8 (five checks, critic, fixer, verifier) carrying 'never the repo's full suite', with none containing go test, make check, make test or testscript; `rhiza workflow check build|review` report valid (builtin layer). go test -trimpath -count=1 ./internal/workflow/... passes, as do the prompt-printing testscripts run by name (autonomous-review, guide, arbiter-agent-tabs, run-agent-done, session-done-captures, session-run-tokens, inbox-advisor)."
+        },
+        "handle": "role-prompts-scoped-tests-qa-1",
+        "id": "01M6M72RJ38B740E394TEBT96A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M72RJ38B740E394RWNN7H0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M72RJ38B740E394RWNN7H0",
+        "id": "01M6M7304XW5M5QRXDA5NPPQ7A",
+        "link": "01M6M7304XW5M5QRXDA21GRSCB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0F9J7KPR4WJWBDMZ4X2WP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M01GYQHR9VMCZ54W5THARK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M73CY398SQQJDGJD0FARE9",
+  "type": "ops",
+  "v": 1
+}

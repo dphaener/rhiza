@@ -1,0 +1,41 @@
+{
+  "actor": "01M6M53PCHMFFSXHNE13PPX9WM",
+  "after": [
+    "01M6M53J2B81MQRF1SKTT92CWX"
+  ],
+  "at": "2026-11-04T20:49:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent asks resume to re-read each in-flight session's recorded status and treat a missing Rex block as exited. In internal/api/run.go AgentStatus judges a session only once rec.Status.Exited(), so a record with a SessionEnd hook but no exit report (the wrapper died in the reboot) polls forever; engine.go agent() rejoins without any liveness check. Checking on rejoin covers the reboot case; also checking the SessionEnd-without-exit mark each poll is a cheap file read that catches a wrapper dying mid-run, while keeping Rex calls to the rejoin path avoids load on every poll. Writing a synthetic exit into the record keeps the existing exit-is-final rule the one source of truth instead of a second judging path. The exit code is unknown, so treating it as a pass would contradict 'pass for exit 0'; but a done-waiting step's until is evidence of the work itself, so it may still pass, mirroring exitedUntil. A transient Rex outage is not evidence of a dead session; judging it ended would fail healthy runs after any daemon/Rex hiccup, so only an explicit not-found counts and the check retries.",
+          "statement": "When: a run checks an in-flight session for having ended unseen once when it rejoins it (a resume), before its first poll, and on each later poll whose record shows the SessionEnd hook mark with no exit report. Only the rejoin check asks Rex whether the session's block still exists; the per-poll check reads the session record alone. A session is found ended unseen when its record has the SessionEnd mark but no exit report, or when Rex answers that its block is not found. How it is judged: the run writes an exit into the session record (state 'lost', detail naming why: SessionEnd without exit report, or Rex block not found), so exit-is-final holds and every reader agrees. As the exit code is unknown it is never an exit 0: the step fails, except that a step with an until that waits for done passes if the agent's done mark is on the record and the until condition holds now, as for an exit 0. The pane, if any, is closed as for any finished session. Rex unreachable: an error that is not a 'not found' answer is no evidence the session ended. The run logs it, does not judge the session, keeps polling the record as now, and retries the Rex block check on later polls until Rex answers; Rex being down never fails or ends a step.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "judge-sessions-ended-unseen",
+        "id": "01M6M55170XRKXHGVJWVC1TN4P",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6M55170XRKXHGVJWQJ9CEAQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M55170XRKXHGVJWQJ9CEAQ",
+        "id": "01M6M5539Y0AYCVEK0BEQEWFVH",
+        "link": "01M6M5539Y0AYCVEK0BAYC3FEY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M53H0WNY6MB88RFDBAYRPE",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6M4YHKJAER13CM0YHZQFKCZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M5569P5R0WPCXAYKMCZDYY",
+  "type": "ops",
+  "v": 1
+}

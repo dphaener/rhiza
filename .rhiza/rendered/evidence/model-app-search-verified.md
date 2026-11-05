@@ -14,7 +14,7 @@ At 7b84b2f8, go test -count=1 ./internal/tui/modelapp passes; TestSlashFiltersWi
 
 ### Out
 
-- verifies [model-app-search](../capability/rhiza/views/text-search/model-app-search.md)
+- verifies model-app-search (retired)
 
 ## History
 

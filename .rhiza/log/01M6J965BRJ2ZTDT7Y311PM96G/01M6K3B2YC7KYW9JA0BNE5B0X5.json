@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6JXQ4Y9Y9Y14NMQJSQJZ11C"
+  ],
+  "at": "2026-11-04T10:58:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/fix-a-run-interrupted-after onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: internal/api/daemon.go?"
+        },
+        "handle": "rebase-conflict-fix-a-run-interrupted-after",
+        "id": "01M6K3ACXBM7B6F5Q0EKVX3JWG",
+        "key": null,
+        "kind": "question",
+        "node": "01M6K3ACXBM7B6F5Q0EJ9HZP17",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6K3ACXBM7B6F5Q0EJ9HZP17",
+        "id": "01M6K3AKNFFTC3T4VXCG73A58H",
+        "link": "01M6K3AKNFFTC3T4VXCFCC4Z7S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J965BRJ2ZTDT7Y311PM96G",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6J965BRJ2ZTDT7Y311PM96G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6K3B2YC7KYW9JA0BNE5B0X5",
+  "type": "ops",
+  "v": 1
+}

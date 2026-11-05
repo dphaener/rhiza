@@ -1,0 +1,43 @@
+{
+  "actor": "01M6HJF0TV30KMJJBDZEW445TQ",
+  "after": [
+    "01M6HJ8ZRTS3R3NGP1M8NBA4KD"
+  ],
+  "at": "2026-11-03T20:44:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test in internal/api's daemon tests with a fake adapter: a run driver's limit hit with a reset 3 hours out is recorded and becomes the session window's learned limit in the daemon's state, one with a reset 4 days out becomes the weekly one, and one with no reset time teaches nothing",
+          "statement": "When a run driver sees its session stop at a usage limit, it records the hit's time and reset time in the git common dir's rhiza state, which the daemon reads at each poll. The hit's window kind comes from its reset time: a reset 5 hours or less after the hit is the session window, a later one the weekly window, and a hit with no reset time teaches nothing. The daemon saves that window's use at the hit as the learned limit for its kind and uses it whenever the setting for that window is unset; a window with neither limit never holds"
+        },
+        "handle": "usage-learned-limit",
+        "id": "01M6HJ0WFSJ9JEM9JEBK3KD62M",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6HJ0WFSJ9JEM9JEBHND0VX9",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api's daemon tests with a fake clock and fake token use show: under the line it starts; one projected run over the line holds picks, resumes, queued work and plans and stops no live run; with no finished runs only use so far counts; the next poll after the reset starts the held change set; a learned limit with no setting holds, a set rhiza.daemon.usage.session wins over a learned session limit, and a window with no setting and no learned limit never holds",
+          "statement": "At each poll the daemon holds everything it would launch (picks, resumes of interrupted runs, queued starts and continues, plan requests) while a window's use so far plus the mean tokens of the last 10 finished runs, once for each live run and once for the next, exceeds its limit minus the reserve. A window's limit is its setting when set, else its learned limit, and a window with neither never holds. Live runs and runs the owner starts directly are untouched, and the hold clears at the first poll after the window resets"
+        },
+        "handle": "usage-hold",
+        "id": "01M6HJ10G74HCGZ37HH810HG46",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      }
+    ]
+  },
+  "change_set": "01M6HHMTEDFK2AWQKX50EB77DD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HJG73NE4T7TPR5WVJSGP5N",
+  "type": "ops",
+  "v": 1
+}

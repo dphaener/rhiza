@@ -1,0 +1,14 @@
+# Setup gives every script 1 TiB of free disk, so the daemon's minFree guard
+# never reads the host's disk. This script sets nothing itself.
+
+env REX_SESSION=
+env REX_SERVER=
+mkdir repo
+cd repo
+exec git init -q -b main
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+exec rhiza health
+stdout '^ok   disk     1.0 TiB free, minimum 10.0 GiB$'

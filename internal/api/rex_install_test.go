@@ -163,7 +163,8 @@ func TestRexInstallScriptEntersTheKeyMode(t *testing.T) {
 	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
 	for _, want := range []string{
 		`launch_key = "ctrl+a>a"`,
-		`local BIN = "/opt/my tools/rhiza"`,
+		`local BIN, BIN_SET = "rhiza", false`,
+		`type(settings.bin) == "string" and settings.bin ~= ""`,
 		`rex.block.call(TERM, "process", { block_id = block_id })`,
 		`rex.bind((settings.launch_key:gsub("%s+", ">")), "client.mode.enter", { name = MODE, once = true })`,
 	} {
@@ -172,20 +173,28 @@ func TestRexInstallScriptEntersTheKeyMode(t *testing.T) {
 		}
 	}
 	// The all-apps picker is gone (decision rex-picker-removed).
+	if strings.Contains(script, "/opt/my tools") {
+		t.Errorf("rhiza.lua bakes the installing machine's path:\n%s", script)
+	}
 	if strings.Contains(script, "rhiza_launch") || strings.Contains(script, `"launch"`) {
 		t.Errorf("rhiza.lua still opens the picker:\n%s", script)
 	}
 
-	// A changed launch key survives a reinstall, and the binary path is
-	// refreshed.
-	writePath(t, filepath.Join(dir, "rhiza.lua"), strings.Replace(script, `"ctrl+a>a"`, `"ctrl+a g"`, 1))
+	// A changed launch key and an owner's bin survive a reinstall byte for
+	// byte, and a second install changes nothing.
+	edited := strings.Replace(script, `"ctrl+a>a"`, `"ctrl+a g"`, 1)
+	edited = strings.Replace(edited, `  -- bin = "rhiza",`, `  bin = "/home/me/go/bin/rhiza",`, 1)
+	writePath(t, filepath.Join(dir, "rhiza.lua"), edited)
 	ctx.Self = "/elsewhere/rhiza"
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
 		t.Fatal(err)
 	}
 	script = readFile(t, filepath.Join(dir, "rhiza.lua"))
-	if !strings.Contains(script, `launch_key = "ctrl+a g"`) || !strings.Contains(script, `local BIN = "/elsewhere/rhiza"`) {
-		t.Errorf("reinstall lost the key or kept the old binary:\n%s", script)
+	if script != edited {
+		t.Errorf("reinstall changed the owner's settings or script:\n%s", script)
+	}
+	if strings.Contains(script, "/elsewhere") {
+		t.Errorf("rhiza.lua bakes ctx.Self:\n%s", script)
 	}
 }
 
@@ -199,7 +208,7 @@ func TestRexInstallRegistersAnActionPerApp(t *testing.T) {
 	for _, want := range []string{
 		`name = "rhiza_app_zz_extra"`,
 		`title = "zz-extra"`,
-		`command = { BIN, "tui", "app", "zz-extra" }`,
+		`local argv = open_argv("zz-extra")`,
 	} {
 		if !strings.Contains(script, want) {
 			t.Errorf("rhiza.lua lacks %s:\n%s", want, script)
@@ -214,40 +223,8 @@ func TestRexInstallRegistersAnActionPerApp(t *testing.T) {
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
 		t.Fatal(err)
 	}
-	if script = readFile(t, filepath.Join(dir, "rhiza.lua")); !strings.Contains(script, `command = { BIN, "tui", "app", "zz-later" }`) {
+	if script = readFile(t, filepath.Join(dir, "rhiza.lua")); !strings.Contains(script, `open_argv("zz-later")`) {
 		t.Errorf("reinstall lacks the new app's action:\n%s", script)
-	}
-}
-
-func TestRexInstallSizesEachAppLayerToItsCells(t *testing.T) {
-	launcher.Register(launcher.App{Name: "zz-sized", Summary: "Sized", Cols: 77, Rows: 21})
-	launcher.Register(launcher.App{Name: "zz-default", Summary: "Default size"})
-	ctx, dir, _ := rexTestCtx(t)
-	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
-		t.Fatal(err)
-	}
-	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
-	action := func(name string) string {
-		i := strings.Index(script, `name = "`+rexActionName(name)+`"`)
-		if i < 0 {
-			t.Fatalf("no action for %s:\n%s", name, script)
-		}
-		end := strings.Index(script[i:], "\n}\n")
-		return script[i : i+end]
-	}
-	sized := action("zz-sized")
-	if !strings.Contains(sized, "bounds = cell_bounds(ctx.block_id, 77, 21)") {
-		t.Errorf("zz-sized is not sized from its own cells:\n%s", sized)
-	}
-	if !strings.Contains(sized, `command = { BIN, "tui", "app", "zz-sized" }`) || strings.Contains(sized, `"launch"`) {
-		t.Errorf("zz-sized does not run its app directly:\n%s", sized)
-	}
-	dc, dr := launcher.App{}.Size()
-	if want := fmt.Sprintf("cell_bounds(ctx.block_id, %d, %d)", dc, dr); !strings.Contains(action("zz-default"), want) {
-		t.Errorf("zz-default lacks %s", want)
-	}
-	if strings.Contains(script, `"launch"`) {
-		t.Errorf("an app action goes through tui launch:\n%s", script)
 	}
 }
 

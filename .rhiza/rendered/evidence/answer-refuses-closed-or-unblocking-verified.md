@@ -14,7 +14,7 @@ At f6a9bd70 I ran go test ./cmd/rhiza -run TestScripts/question-answer -count=1 
 
 ### Out
 
-- verifies [answer-refuses-closed-or-unblocking](../capability/rhiza/roadmap-app-accept-answer/question-answer-op/answer-refuses-closed-or-unblocking.md)
+- verifies [answer-refuses-closed-or-unblocking](../capability/rhiza/change-sets/question-answer-op/answer-refuses-closed-or-unblocking.md)
 
 ## History
 

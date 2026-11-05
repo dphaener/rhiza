@@ -248,7 +248,7 @@ func (r *stepRunner) AddReviewQuestion(text string) (run.Question, error) {
 	if err != nil {
 		return run.Question{}, err
 	}
-	add := AddRequest{Kind: string(op.KindQuestion), Handle: handle, Fields: []string{"statement=" + text}}
+	add := AddRequest{Kind: string(op.KindQuestion), Handle: handle, Fields: []string{"statement=" + text}, lenient: true}
 	items := []applyItem{{op: "add", build: func(b writeBase) (edit, error) { return buildAdd(b, add) }}}
 	e, err := buildApply(ww, target, r.ctx.IDs, items)
 	if err == nil {

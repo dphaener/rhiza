@@ -26,8 +26,8 @@ verified
 
 ### Out
 
-- verifies [inbox-app-list](../capability/rhiza/inbox-app-list.md)
-- verifies [inbox-app-actions](../capability/rhiza/inbox-app-actions.md)
+- verifies inbox-app-list (retired)
+- verifies inbox-app-actions (retired)
 
 ## History
 

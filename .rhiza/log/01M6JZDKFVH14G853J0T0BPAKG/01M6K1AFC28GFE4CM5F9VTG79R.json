@@ -1,0 +1,41 @@
+{
+  "actor": "01M6K182AY98S75TA6D3TS9TR6",
+  "after": [
+    "01M6K17K68J59NMC9F4TPNRPRW"
+  ],
+  "at": "2026-11-04T10:22:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding and the critic agree, and the leaf's own statement says it: the daemon resumes a plan run on a landed change set. 01M6J965's Resumable skips that case on purpose and its test asserts the skip, so this leaf cannot leave that assertion passing; saying 'keep passing' contradicts the leaf's purpose. decision-plan-landed-resumable already settled the behaviour (one rule with run resume and the inbox), so the only fix is the acceptance wording: name the one assertion that flips and keep every other case of those tests as a regression guard. Narrowing the flip to that single case keeps the acceptance checkable and protects the non-plan landed-without-land and withdrawn-plan cases.",
+          "statement": "daemon-resumes-landed-plan-run's acceptance is corrected, not the code: the landed-plan case in TestResumableOnlyAcceptedOrLandedPastLand (internal/daemon/pick_test.go, from 01M6J965) flips from left out to resumed, so that test then expects run-accepted, run-landed-past and the landed plan run; Resumable drops its skip of landed runs with Workflow == plan; the rest of that test and the daemon-resumes-accepted-only, daemon-resume-once and daemon-resumes-landed-past-land tests keep passing unchanged",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "decision-landed-plan-test-flips",
+        "id": "01M6K19WHWHD4FSQ54DAZ2ZPNT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6K19WHWHD4FSQ54D82GD905",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6K19WHWHD4FSQ54D82GD905",
+        "id": "01M6K1A34H2V3RQ6PMGWFVD97Y",
+        "link": "01M6K1A34H2V3RQ6PMGSW543QZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6K16EYDVGEGPKMHZ6VWSPPB",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6JZDKFVH14G853J0T0BPAKG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6K1AFC28GFE4CM5F9VTG79R",
+  "type": "ops",
+  "v": 1
+}

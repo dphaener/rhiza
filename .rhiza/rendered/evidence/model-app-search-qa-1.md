@@ -14,7 +14,7 @@ At 7a46ec69, ran the built rhiza tui app model in a real pty (100x30) on a scrat
 
 ### Out
 
-- verifies [model-app-search](../capability/rhiza/views/text-search/model-app-search.md)
+- verifies model-app-search (retired)
 
 ## History
 

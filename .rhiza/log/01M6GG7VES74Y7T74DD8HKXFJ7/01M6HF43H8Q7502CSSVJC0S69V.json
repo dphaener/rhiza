@@ -1,0 +1,40 @@
+{
+  "actor": "01M6HDWW2RZEGN9EXD4K9KQ9BZ",
+  "after": [
+    "01M6GHDZ9WWBHE8R0KQ6PZ9VJH"
+  ],
+  "at": "2026-11-03T19:45:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 84cb674d: cmd/rhiza/main_test.go setup sets RHIZA_TEST_FREE_BYTES=1099511627776 right after RHIZA_TEST_NOW/SEED. grep finds no script that sets RHIZA_TEST_FREE_BYTES to empty; daemon-picks.txtar:74 now resets it to 1099511627776. go test ./cmd/rhiza -run 'TestScripts/(health|daemon-notify-disk-low|daemon-picks|free-bytes-default)$' -count=1 passes. A temporary copy of free-bytes-default that sets nothing and runs `rhiza health --json` showed part disk with summary \"1.0 TiB free, minimum 10.0 GiB\". With daemon-picks line 74 changed to 1073741824 (under 10G), daemon-picks failed at line 78 (no 'Started a run of'), so the rest of the script reads the variable and not the host disk. Both temporary edits were reverted. Full cmd/rhiza package passes. Two things outside this leaf: make check self-check reports stale .rhiza/rendered for the builder's actor record, and internal/api TestReadBudget (a timing test this diff does not touch) failed on a heavily loaded machine."
+        },
+        "handle": "scripts-free-disk-hermetic-verified",
+        "id": "01M6HF3WF90EMZJJ08GMPP8TR0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6HF3WF90EMZJJ08GHQ41XG4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HF3WF90EMZJJ08GHQ41XG4",
+        "id": "01M6HF3Z3THEBH2A1BSNQ603F0",
+        "link": "01M6HF3Z3THEBH2A1BSM0ZYVN7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GGX8QP23PVT25E5XDZ7X49",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6GG7VES74Y7T74DD8HKXFJ7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HF43H8Q7502CSSVJC0S69V",
+  "type": "ops",
+  "v": 1
+}

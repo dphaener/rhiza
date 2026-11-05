@@ -1,0 +1,53 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MTWCY5D8CNF48S1SCTR04D"
+  ],
+  "at": "2026-11-05T03:59:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "808e2b481fcebea2898e1a9970334fb440c9b883",
+          "pr": "https://github.com/dphaener/rhiza/pull/280",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #280 (https://github.com/dphaener/rhiza/pull/280) passed CI at 808e2b4",
+          "status": "verified"
+        },
+        "handle": "pr-280-ship-change-fixes-red-pr-ci",
+        "id": "01M6MXRQNH1V234M3Z29RNV4EY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MXRQNH1V234M3Z28AHGY3J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MXRQNH1V234M3Z28AHGY3J",
+        "id": "01M6MXRT4RMJ9K22WJQH4YN6BP",
+        "link": "01M6MXRT4RMJ9K22WJQH3RAX7K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MC4GXTJ7SWF8NV4SYXD3F9",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6MXRQNH1V234M3Z28AHGY3J",
+        "id": "01M6MXRW7ZPC9ZD4NYF4A74VFB",
+        "link": "01M6MXRW7ZPC9ZD4NYF4962H9S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MC56XH2VTXCYDT1G5WD55E",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MBPT20RGKTT334GQK997B3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MXS3NKA1BMSES8SN12CJN4",
+  "type": "ops",
+  "v": 1
+}

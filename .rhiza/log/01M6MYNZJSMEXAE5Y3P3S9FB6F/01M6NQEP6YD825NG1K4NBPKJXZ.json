@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6NQE7Y8032M9DA8DVMZD5YM"
+  ],
+  "at": "2026-11-05T11:28:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Review check model still fails after 3 cycles: finding f2 (major at .rhiza/rendered/capability/rhiza/views/paged-lists/roadmap-paged.md:1) on leaf old-apps-deleted: roadmap-paged's acceptance still requires that 'a roadmap of more than 100 change sets is read whole by health's roadmap check and the roadmap app'. Its statem…. Its last cycle: cycle 3: confirmed f1 (major), f2 (major). How should it be fixed, or should leaf old-apps-deleted change?"
+        },
+        "handle": "leaf-failed-01m6njpm-2",
+        "id": "01M6NQEFG7NRPMW3VFK3K39G07",
+        "key": null,
+        "kind": "question",
+        "node": "01M6NQEFG7NRPMW3VFK1QGYF0V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NQEFG7NRPMW3VFK1QGYF0V",
+        "id": "01M6NQEMADSPYV3CR1B61TF4QS",
+        "link": "01M6NQEMADSPYV3CR1B3QM99AZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZD2ER8DDHNYK3W3C04SYB",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NQEP6YD825NG1K4NBPKJXZ",
+  "type": "ops",
+  "v": 1
+}

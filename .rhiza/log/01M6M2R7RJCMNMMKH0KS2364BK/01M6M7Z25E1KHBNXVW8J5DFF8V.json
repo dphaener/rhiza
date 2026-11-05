@@ -1,0 +1,40 @@
+{
+  "actor": "01M6M6W59TJJ65F1EHF6S7470R",
+  "after": [
+    "01M6M7JA9Y8D2D9EXSDBX1ECRD"
+  ],
+  "at": "2026-11-04T21:38:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 02c4a07f, read the diff to recordAgentActor in internal/api/session.go: before writing, it scans the model's live actors (model.Children skips retired nodes) for one whose session field equals the session ID and returns that actor's handle and recording change set without writing anything. Ran go test -count=1 -v -run 'TestRecordAgentActor|TestSession' ./internal/api: TestRecordAgentActorReusesSession PASS. That test calls recordAgentActor twice for one session ID on one workspace, checks the same handle and change set come back with the change set count unchanged, then checks a different session ID gets a new handle and exactly one new change set. go vet ./internal/api clean, gofmt clean, full go test -count=1 ./internal/api ok (451s)."
+        },
+        "handle": "actor-stamp-reuses-session-verified",
+        "id": "01M6M7YVVYCG0G6S101QX5R11C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M7YVVYCG0G6S101MEP5V2H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M7YVVYCG0G6S101MEP5V2H",
+        "id": "01M6M7YY8AAFVMB6HC879SQFPW",
+        "link": "01M6M7YY8AAFVMB6HC85P13MYP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M2ZS1VT4ZWAMBM148Z3RG6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M2R7RJCMNMMKH0KS2364BK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M7Z25E1KHBNXVW8J5DFF8V",
+  "type": "ops",
+  "v": 1
+}

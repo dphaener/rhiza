@@ -14,7 +14,7 @@ At 92739bb (review fix, attempt 2) ran go test ./internal/tui/inboxapp -count=1 
 
 ### Out
 
-- verifies [inbox-app-actions](../capability/rhiza/inbox-app-actions.md)
+- verifies inbox-app-actions (retired)
 
 ## History
 

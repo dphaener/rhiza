@@ -1,0 +1,40 @@
+{
+  "actor": "01M6HWN1QDF7161V2QTATX5DG8",
+  "after": [
+    "01M6HV0R423GGTK7NXYMRNH6S7"
+  ],
+  "at": "2026-11-04T00:45:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at c4ffa768. Ran go test ./cmd/rhiza -run 'TestScripts/(why-paged|describe-golden)$' -count=1: ok. Read why-paged.txtar: cache gets 3 decisions, 2 sources and 2 change sets; walk.sh walks every --json page at --limit 1, 2 and 3, and the concatenated (list, ID) entries cmp equal to --all in order. Every page carries node and view, only the last has no next_cursor, and pages of 2 split decisions/sources and sources/change sets. why --limit 3 --json cmp equals api call why. --limit -1, --limit 1001 and a bad cursor exit 2. describe-golden has limit, cursor, all and next_cursor, and the golden test passes. Read the lineage.go diff: page() counts one sequence across the three lists; the cursor is base64 of 'list offset' and strictly decoded. By hand with a scratch build in a scratch repo (3 decisions, 2 sources, 2 change sets): cursor walks at --limit 1..8 equal --all in order; api call why and why --json print the same bytes; a forged out-of-range cursor exits 2. With RHIZA_* unset, fmt-check, self-check and go vet pass. go test ./... passes except the read-budget timing tests (modelapp TestGeneratedModel, api ready budget) at load average ~20 from other runs; go test ./internal/api -skip Budget: ok. Attempt 1's finding f1 (no in-order compare with --all) is fixed."
+        },
+        "handle": "why-paged-verified",
+        "id": "01M6J07KYTYVRSGCVMQVMNJ322",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6J07KYTYVRSGCVMQS042551",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J07KYTYVRSGCVMQS042551",
+        "id": "01M6J084Q081XW8BR7MGBTZG07",
+        "link": "01M6J084Q081XW8BR7MDC94TQN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H3MJKJC9D134K5JAMQHNSP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6H3A65RDP761HKE82STZSQZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J08X9CJNRY4TXM0B1VTTTJ",
+  "type": "ops",
+  "v": 1
+}

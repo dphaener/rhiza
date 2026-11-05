@@ -14,7 +14,7 @@ QA cycle 2 at 1d0f3f4, built binary in a real 80x24 Rex pane over this repo's 20
 
 ### Out
 
-- verifies [live-app-runs](../capability/rhiza/live-app-runs.md)
+- verifies live-app-runs (retired)
 
 ## History
 

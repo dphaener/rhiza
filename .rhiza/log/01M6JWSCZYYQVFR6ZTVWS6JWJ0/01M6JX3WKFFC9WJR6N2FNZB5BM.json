@@ -1,0 +1,50 @@
+{
+  "actor": "01M6JWSXGBWPDXN3JMHQTT8G7W",
+  "after": [
+    "01M6JX2ZHTJ478WEBDB58HHRHF"
+  ],
+  "at": "2026-11-04T09:09:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Beside run-abandon-unmerged.txtar (no upstream, branch kept), a testscript pushes cs/<slug> to a bare origin with an upstream set, adds a local commit never pushed, abandons the run and asserts 'delete-branch kept: it has commits merged into neither its upstream nor HEAD' and that git log cs/<slug> still shows the commit",
+          "statement": "rhiza run abandon keeps the run's local cs/<slug> branch when it holds commits merged into neither its upstream nor HEAD, reporting delete-branch kept with that reason, whether or not the branch has an upstream"
+        },
+        "handle": "abandon-keeps-unpushed-branch",
+        "id": "01M6JX3902A2MVZQSQQPPADTVS",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6JX3902A2MVZQSQQJVYCGBZ",
+        "op": "node.create",
+        "parent": "01M61R7GG0GGBSVKV2585MNPCW"
+      },
+      {
+        "decision": null,
+        "from": "01M6JX3902A2MVZQSQQJVYCGBZ",
+        "id": "01M6JX3G847873798Z1HWF68DQ",
+        "link": "01M6JX3G847873798Z1G0RX2Y9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JX11AVXF2645G0FEY2CMF4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6JX3902A2MVZQSQQJVYCGBZ",
+        "id": "01M6JX3N69MQSX74938BVRGSD8",
+        "link": "01M6JX3N69MQSX74938B73A48K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JX2TS2RMRND0XD3JTHR6Q9",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6JWSCZYYQVFR6ZTVWS6JWJ0",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JX3WKFFC9WJR6N2FNZB5BM",
+  "type": "ops",
+  "v": 1
+}

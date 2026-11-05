@@ -20,6 +20,9 @@ The model tells the truth about what the product is and why.
 - serves change set `01M5SWTNWB9GEJ5AA8R7K867KB` (Genesis detects conflicting decisions across change sets in flight and surfaces them to the owner.)
 - serves change set `01M5SWTT2A55K0REHQ6JNJQZ6W` (Writes see the accepted, unlanded change sets they depend on, so a sequence of change sets can build on each other. This is the gap behind the built/intended split and milestone 2's most important item.)
 - serves change set `01M5SWTV1D5DNN6E2B7HB1XA9Q` (genesis link checks endpoint kinds when the link is written, not only in genesis check.)
+- serves change set `01M6HJXAJ6GYA2RTAGVK6JR1N9` (Code anchors with fingerprints: an anchor node carries path, optional symbol and a content fingerprint; implements links it to a capability; rhiza check resolves every anchor and warns when the path or symbol is gone or the fingerprint changed (internal/op/fields.go says anchors carry no fields yet). Carve leaves anchors and fingerprints out of umbrella 01M5SWT0K9TV1R (Area integrity) rather than duplicating them)
+- serves change set `01M6HKRVC93TGX0ZC40QZ2GW9J` (Unclaimed changes: rhiza check warns about commits since a configured cutoff that change files outside .rhiza/ with no Change: trailer (internal/check, internal/api/check.go parseTrailerLog). Relates to leaf commit-trailers in umbrella 01M5SWT0K9TV1R (Area integrity); carve it if it still stands there)
+- serves change set `01M6HNNWFR1J2AHQRNKFTPME46` (Text references: references to other nodes inside statement and other text fields are written as @handle, resolved at write time and stored by ID, and shown by current handle in render, show, why and the read apps; rhiza check flags dangling references (internal/op, internal/render, internal/api/write_node.go). Carve leaf text-references out of umbrella 01M5SWSWDVB237 (Area model))
 
 ## History
 

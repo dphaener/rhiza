@@ -18,7 +18,7 @@ The model app's read timing waits until go test runs nothing else before timing,
 
 ### In
 
-- decided-by [modelapp-timing-alone](../capability/rhiza/model-tree-app/modelapp-timing-alone.md)
+- decided-by modelapp-timing-alone (retired)
 
 ## History
 

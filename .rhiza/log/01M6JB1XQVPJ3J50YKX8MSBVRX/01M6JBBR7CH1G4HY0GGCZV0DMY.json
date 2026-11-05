@@ -1,0 +1,41 @@
+{
+  "actor": "01M6JB99314CDRK4K1FQM8KFRM",
+  "after": [
+    "01M6JB91RXYFN8PQWV4ACJ15SS"
+  ],
+  "at": "2026-11-04T03:59:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Rex makes notifications only from bytes written to a terminal, for that terminal's main program's root record (memory rex-notifications-from-program-status; decision rex-notice-by-program-status), and no API sets another block's status. Since #210 daemonDetach unsets REX_BLOCK for drivers (internal/api/daemon.go:886), so runRex has no terminal to write to and the rich notice is lost. The owner ruled out watcher or driver tabs (\"There's nothing actionable for me, the user, to do or see\", 2026-11-03), so the only terminal left that the owner should look at is the agent tab itself, which already runs rhiza session run as a wrapper that follows its own block's rex events (followRex in internal/api/session_run.go) and so already knows when the session blocks and what its question is. Writing there puts the notice exactly where the action is and reuses rexNotice/rexRecord. Whether Rex shows a banner for it is unknown; Claude Code's own report only chimes, and the change set's intent says to fix ours and report what is not. Filing with an outside vendor is outward-facing and touches the network, which an autonomous run must not do, so the run drafts the report and the owner files it.",
+          "statement": "A headless run's blocked notice is written by the agent tab's own wrapper (rhiza session run), to its own terminal: when its session blocks, it writes the same root-record OSC 7501 blocked report rexNotice builds (kind, tab as title, a message naming the change set, step and question), and a working report once the block ends. The driver keeps writing its notice to its own block only when it has one (a --foreground run in Rex); no driver, daemon or watcher tab is opened for it. The Rex upstream report is drafted, not sent: after the fix, check on the Mac whether rhiza's report (with title and msg) gets a banner; if it still only chimes, the builder writes the report (Rex version, the exact OSC 7501 bytes, remote VM host, Mac focus and notification-permission state, chime but no banner) into the change set for the owner to file with Rex, and that leaf is done when the draft is written and the owner is pointed at it in the inbox.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "headless-blocked-notice-in-agent-tab",
+        "id": "01M6JBBD0R8CNZZ5FQ3NER258N",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6JBBD0R8CNZZ5FQ3KA1DNPZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JBBD0R8CNZZ5FQ3KA1DNPZ",
+        "id": "01M6JBBG5DR2Y01DB5G2NMHAE2",
+        "link": "01M6JBBG5DR2Y01DB5FZCMQ5XZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JB9067EQTYHPG8V1N343KW",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6JB1XQVPJ3J50YKX8MSBVRX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JBBR7CH1G4HY0GGCZV0DMY",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6NQ72ND06K1Y8SVPTE14H7F"
+  ],
+  "at": "2026-11-05T11:27:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Review check model still fails after 3 cycles: finding f1 (major at .rhiza/rendered/capability/rhiza/model/text-references/text-ref-display.md:1) on leaf old-apps-deleted: text-ref-display is still live, and its acceptance still requires 'a read app's --once JSON (rhiza tui app <read app> --once) shows @renamed'. Its statement a…. Its last cycle: cycle 3: confirmed f1 (major), f2 (major). How should it be fixed, or should leaf old-apps-deleted change?"
+        },
+        "handle": "leaf-failed-01m6njpm-1",
+        "id": "01M6NQE2PZG8YV8MPE41VK5AG5",
+        "key": null,
+        "kind": "question",
+        "node": "01M6NQE2PZG8YV8MPE3ZKQM3N5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NQE2PZG8YV8MPE3ZKQM3N5",
+        "id": "01M6NQE5R5T400NHZSRC68MK0G",
+        "link": "01M6NQE5R5T400NHZSR8QZYY0G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZD2ER8DDHNYK3W3C04SYB",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NQE7Y8032M9DA8DVMZD5YM",
+  "type": "ops",
+  "v": 1
+}

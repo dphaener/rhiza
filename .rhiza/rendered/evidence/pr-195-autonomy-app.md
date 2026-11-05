@@ -26,8 +26,8 @@ verified
 
 ### Out
 
-- verifies [autonomy-app](../capability/rhiza/orchestration/daemon/daemon-settings/autonomy-app.md)
-- verifies [inbox-nudge-stalled](../capability/rhiza/orchestration/inbox/inbox-list/inbox-stalled-items/inbox-nudge-stalled.md)
+- verifies autonomy-app (retired)
+- verifies inbox-nudge-stalled (retired)
 
 ## History
 

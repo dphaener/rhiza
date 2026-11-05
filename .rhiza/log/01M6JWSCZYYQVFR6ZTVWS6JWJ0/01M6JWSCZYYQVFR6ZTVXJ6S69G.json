@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-04T09:03:39Z",
+  "body": {
+    "intent": "Fix rhiza run abandon keeps a local branch holding commits that were never pushed, instead of force-deleting them (replaces draft change set 01M6B9FCNTTH65, which has no leaves: link the new change set relates-to it and withdraw the draft; serve milestone-25)",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6JWSCZYYQVFR6ZTVWS6JWJ0",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JWSCZYYQVFR6ZTVXJ6S69G",
+  "type": "open",
+  "v": 1
+}

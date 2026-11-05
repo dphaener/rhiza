@@ -1,0 +1,86 @@
+{
+  "actor": "01M6M9X6SYB3ZGWNDBBCYME27P",
+  "after": [
+    "01M6M9VPYNFYV9HP90AGPGJQ8T"
+  ],
+  "at": "2026-11-04T22:15:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a binary built from the branch head (go build ./cmd/rhiza) in scratch repos, a fake claude, and a rex wrapper that sends block inspect to the real Rex on this VM. Started an agent-step run, killed it after its session was recorded, then ran rhiza run resume --foreground. (1) Real Rex answered 'block target ... not found' for the session's block: the record got exit {state: lost, detail: 'Rex block not found'}, the step failed, rhiza run status showed 'lost: Rex block not found', and rex block close was called for the pane. (2) Block present, then a SessionEnd hook (rhiza session hook SessionEnd) delivered 2s into the resume: the next poll wrote a lost exit 'SessionEnd without an exit report' with no block inspect call after the rejoin's, and the step failed. (3) Review run (run-resume-lost-fixer fixtures) killed while its change-set fixer was in flight, resumed with real Rex answering not found: fixer attempt 1 judged 'fail (lost: Rex block not found)', attempt 2 started and committed, check alpha re-ran in cycle 2, run passed (1 of 1 checks)."
+        },
+        "handle": "run-finds-sessions-ended-unseen-qa-1",
+        "id": "01M6MA2PXZJZ9MGVTDWJ92K4ZV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MA2PXZJZ9MGVTDWHH7P6V5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MA2PXZJZ9MGVTDWHH7P6V5",
+        "id": "01M6MA2RSG4ZCYYXSTYWSXMSFN",
+        "link": "01M6MA2RSG4ZCYYXSTYRW2D4XN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M5728P8TFP8BH3N3B7WJ16",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the built binary, resuming a killed run whose session had a SessionEnd hook mark and no exit. Plain agent step: step failed, detail 'lost: SessionEnd without an exit report'. Step with until = 'test -f ok', until_when = 'done', done mark set via rhiza session done: with ok in the run worktree the step passed ('lost: SessionEnd without an exit report and until held', resume exit 0); without it the step failed ('... but until did not hold'). In every case the record's exit has state lost and no code, and rex block close was called for the session's pane."
+        },
+        "handle": "lost-session-judged-qa-1",
+        "id": "01M6MA2TNK59Q1RGGD19WXYT6T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MA2TNK59Q1RGGD168037KQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MA2TNK59Q1RGGD168037KQ",
+        "id": "01M6MA2WKBFZ5EXCTRXQVKY1GW",
+        "link": "01M6MA2WKBFZ5EXCTRXNSJ6TD0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M57611NNTDR13MV8N9Z7GT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the built binary: resumed a killed agent-step run while the rex wrapper failed block inspect with 'connect: connection refused' for 2s, then let the real Rex answer. The run logged 'rejoin session ...: ask Rex whether block ... exists: ... connection refused', wrote no exit, and retried block inspect on each 200ms poll (12 calls); once real Rex answered 'not found' the session got exit {state: lost, detail: 'Rex block not found'}. With Rex answering the block exists (real block inspect of a live pane), the session stayed unjudged and was polled until a later event ended it."
+        },
+        "handle": "rejoin-rex-unreachable-qa-1",
+        "id": "01M6MA2YGWT0KBK2FQYYPXGGSV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MA2YGWT0KBK2FQYXZP3SZK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MA2YGWT0KBK2FQYXZP3SZK",
+        "id": "01M6MA30F24APKGXH12J9FX74W",
+        "link": "01M6MA30F24APKGXH12H97RHA9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M57BMKN39KDPQSDWK8D6M7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M4YHKJAER13CM0YHZQFKCZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MA33MA1BEEPN7BRH2AR2JG",
+  "type": "ops",
+  "v": 1
+}

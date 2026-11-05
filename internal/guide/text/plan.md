@@ -18,6 +18,10 @@ the plan, and tasks belong to the work layer.
      (`"kind":"intent"`, under its parent) into `RHIZA_CHANGE`, with the owner. Then write
      the `serves` link: `rhiza link "$RHIZA_CHANGE" serves <intent> --change "$RHIZA_CHANGE"`.
      Only then write leaves.
+     The daemon builds only a change set that serves a milestone, so the `serves` link must
+     reach one, directly or through an intent under one: the milestone in `RHIZA_MILESTONE`
+     when set, else the open milestone it fits. Never an umbrella or area intent under no
+     milestone.
    - `record`: a draft opened for the plan, so you plan a milestone (see Milestone).
 3. Interview the owner (see Interview) until every leaf has a statement and an acceptance
    check, and every choice is a Decision or a parked question.
@@ -33,8 +37,9 @@ the plan, and tasks belong to the work layer.
   the owner decides.
 - One topic per message: the proposed decisions, a recommendation for each with why, and
   what is left for the owner to decide.
-- Where the options fit, ask through AskUserQuestion. A pick is recorded as the agent's
-  wording accepted by the owner: the Decision's `wording` field, never `quote`.
+- Where the options fit, ask through AskUserQuestion. The run's capture records the owner's
+  picks (see Who records a pick), as the agent's wording accepted by the owner: the
+  Decision's `wording` field, never `quote`. For a plain owner pick you write no Decision.
 - A free answer is quoted as the owner typed it, in `quote`. Only typed words are quoted as
   the owner's; never tidy, merge or paraphrase them.
 - Park what can't be settled now as a question linked `blocks` to what it holds up. Don't
@@ -58,7 +63,9 @@ A leaf is a capability with `statement` (what the product does, one sentence) an
 ]}
 ```
 
-A picked option instead: `"wording=<the option>, the agent's option, picked by the owner"`.
+An answer the capture would word wrongly (see Who records a pick) is written like this, with
+`wording` in place of `quote` and the asked question verbatim in `question`:
+`"wording=<the option>, picked by the orchestrator"`, `"question=<the question as asked>"`.
 
 A question parked during the interview:
 
@@ -70,8 +77,21 @@ A question parked during the interview:
 ]}
 ```
 
+Write each leaf's acceptance as the tests covering that leaf, never the repo's full suite:
+the whole suite runs in CI before merge, so an acceptance check that runs all of it is
+wrong.
+
 A write can only refer to landed nodes and nodes of its own change set. Pass `--change <id>`
 to write into a change set other than `RHIZA_CHANGE`.
+
+## Who records a pick
+
+The run's capture records the owner's AskUserQuestion picks after you exit, so the planner
+writes no Decision for a plain owner pick. Write one yourself only when the capture's wording
+would be wrong: a proxy such as an orchestrator or arbiter answered, or the answer carries a
+ruling the capture cannot word. Give it the proxy's wording and copy the asked question
+verbatim into its `question` field: the capture skips every pick whose question a Decision
+in the change set already records.
 
 ## Decisions and the Source
 

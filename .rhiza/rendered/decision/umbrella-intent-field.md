@@ -20,7 +20,7 @@ A change set serving an intent with a non-empty umbrella field is an umbrella: i
 
 - decided-by [roadmap-umbrella-group](../capability/rhiza/views/roadmap/roadmap-umbrella-group.md)
 - decided-by [umbrella-not-ready](../capability/rhiza/views/ready-next/umbrella-not-ready.md)
-- decided-by [roadmap-app-umbrella-row](../capability/rhiza/roadmap-app-list/roadmap-app-umbrella-row.md)
+- decided-by roadmap-app-umbrella-row (retired)
 
 ## History
 

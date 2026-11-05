@@ -14,7 +14,7 @@ At 6f7c433d ran go test ./internal/tui/inboxapp -count=1 -v: TestAnswerBlockerCa
 
 ### Out
 
-- verifies [inbox-app-answer-question](../capability/rhiza/inbox-app-actions/inbox-app-answer-question.md)
+- verifies inbox-app-answer-question (retired)
 
 ## History
 

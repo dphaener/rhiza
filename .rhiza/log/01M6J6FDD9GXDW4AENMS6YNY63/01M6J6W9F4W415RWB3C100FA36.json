@@ -1,0 +1,30 @@
+{
+  "actor": "01M6J6G8QG3PH8D900KHBX2KWW",
+  "after": [
+    "01M6J6VPPQKP28BM4RND0RHX7G"
+  ],
+  "at": "2026-11-04T02:40:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "384d6bb0-11b5-42bf-a242-01a1a467f521",
+          "statement": "How should session interview/session done tell that an AskUserQuestion answer is already recorded, so it skips it instead of writing a duplicate answer-<sid8>-N Decision? I recommend: skip an answer when a live Decision the change set created (or, when the change set has landed, a landed Decision derived-from this session's Source) has a `question` field equal to the asked question verbatim. It is exact, needs no new link type, and the planner can always copy the question text it asked. The alternative of skipping all capture whenever the planner wrote any Decision linked to the session's Source is coarser: picks the planner did not write would be lost."
+        },
+        "handle": "question-384d6bb0-2",
+        "id": "01M6J6W6Z5N8B4CH9QVRZRA5B6",
+        "key": null,
+        "kind": "question",
+        "node": "01M6J6W6Z5N8B4CH9QVPHPYGFV",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6J6FDD9GXDW4AENMS6YNY63",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J6W9F4W415RWB3C100FA36",
+  "type": "ops",
+  "v": 1
+}

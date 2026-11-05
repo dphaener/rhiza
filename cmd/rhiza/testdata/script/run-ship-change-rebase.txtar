@@ -10,9 +10,11 @@
 # CI on it and merges it.
 #
 # Case 2: main moves while the builder builds, with a commit that adds the
-# same file the builder adds. That conflict is not a rendered one: the
+# same files the builder adds. That conflict is not a rendered one: the
 # rebase is aborted, the step and the run fail, and a question in the
-# change set names the file.
+# change set names the files. One file is named @shipping, so the
+# question's statement refers to the shipping capability: it is stored by
+# ID, and raising the same conflict again still writes nothing.
 #
 # Case 3: the branch already holds a merge of main. The builder merges
 # main, which also added feature.txt, resolving the conflict; main then
@@ -138,11 +140,13 @@ exec git add -A
 exec git commit -qm 'Start shipping'
 exec git push -q -u origin main
 
-# main gets its own feature.txt; the builder pushes it while it builds.
+# main gets its own feature.txt and @shipping; the builder pushes them
+# while it builds.
 exec git clone -q $WORK/origin2.git $WORK/other2
 cd $WORK/other2
 exec sh -c 'echo theirs > feature.txt'
-exec git add feature.txt
+exec sh -c 'echo theirs > @shipping'
+exec git add feature.txt @shipping
 exec git commit -qm 'Add a feature on main'
 cd $WORK/repo2
 
@@ -153,6 +157,7 @@ stdout '^Run \S+ failed$'
 stdout '^- Detail: step "rebase" ended with outcome "fail"$'
 stderr '^Rebasing cs/ship-two onto origin/main at [0-9a-f]{7} conflicts in:$'
 stderr '^- feature\.txt$'
+stderr '^- @shipping$'
 stderr '^Raised question rebase-conflict-ship-two\.$'
 
 exec rhiza run status
@@ -177,7 +182,11 @@ exec rhiza ls --kind question --json
 stdout '"handle": "rebase-conflict-ship-two"'
 exec rhiza show rebase-conflict-ship-two
 stdout 'feature\.txt'
+stdout '@shipping'
+! stdout '@@shipping|@\{'
 stdout 'cs/ship-two onto origin/main'
+exec sh -c 'cat .rhiza/log/*/*.json'
+stdout '"statement": "Rebasing branch cs/ship-two .*@\{[0-9A-Z]{26}\}'
 fold-ok
 
 # The question blocks the change set: the inbox lists it as a blocker.
@@ -388,11 +397,13 @@ echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 #!/bin/sh
 case "$RHIZA_ROLE" in
 builder)
-	echo built > feature.txt
-	git add feature.txt
+	files=feature.txt
+	[ -d "$WORK/other2" ] && files="feature.txt @shipping"
+	for f in $files; do echo built > "$f"; done
+	git add $files
 	git commit -q -m "build $RHIZA_LEAF" -m "Change: $RHIZA_CHANGE
 Actor: $RHIZA_ACTOR
-Leaf: $RHIZA_LEAF" -- feature.txt || exit 1
+Leaf: $RHIZA_LEAF" -- $files || exit 1
 	if [ -f "$WORK/merge-in-build" ]; then
 		git -C "$WORK/other3" push -q origin HEAD:main || exit 1
 		git fetch -q origin || exit 1

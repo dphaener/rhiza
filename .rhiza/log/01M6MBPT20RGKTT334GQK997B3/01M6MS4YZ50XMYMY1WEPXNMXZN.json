@@ -1,0 +1,63 @@
+{
+  "actor": "01M6MRNYBZG0NENFVJH17K4TAW",
+  "after": [
+    "01M6MRK4RWYQ5KNG6A32T347SK"
+  ],
+  "at": "2026-11-05T02:38:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dc3c5d5c with a built binary (go build ./cmd/rhiza) in a scratch repo with a bare origin, an accepted change set, a pushed cs/ship-it branch and a fake gh whose PR has two failing checks (test on run 42, lint on run 43). First rhiza ship check: 'not settled: reran the failed jobs of runs 42, 43', no log read. Second: 'failed: test, lint; failing tests: TestScripts, TestScripts/review-check-worktree, TestFoo' (nested timestamped '--- FAIL:' lines parsed, TestFoo named in both logs listed once), gh ran 'run view 42 --log-failed' and 'run view 43 --log-failed', and --json findings carry no leaf with a reason naming run, check and short head. A new pushed head cleared the old findings on its rerun; an infra log ('Error: setup-go failed') after the rerun gave a plain 'failed: test, lint' with no tests; a green check reported '2 checks passed' and the state file no longer held ci_findings. Also ran go test -trimpath ./internal/api/... -run 'TestShip|TestParseFailed' and go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship|ship-check-ci-test-findings|describe-golden)': ok"
+        },
+        "handle": "ship-check-ci-test-findings-qa-1",
+        "id": "01M6MS3MVG7AC7MZFTN6SDG29Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MS3MVG7AC7MZFTN68MGRY8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MS3MVG7AC7MZFTN68MGRY8",
+        "id": "01M6MS3ZRNZPMXAQ4XEMW35G46",
+        "link": "01M6MS3ZRNZPMXAQ4XEM5S9MQA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MC4GXTJ7SWF8NV4SYXD3F9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dc3c5d5c with a built binary: rhiza workflow check ship-change says valid; rhiza workflow describe ship-change shows pr-green and rebased-green on.fail -> ci-triage, ci-triage (command) on.pass -> ci-fix (agent), and landed-green and rebased-merge-green with no on.fail. In a scratch repo with a fake gh, rhiza ship check --test-failures exited 1 ('no failing test was recorded for the head: an infra or unparsable failure') before any check, after only the rerun, after an infra-only log and after green; it exited 0 after a red check whose log named failing tests, with --json listing tests and no-leaf findings and the same bytes as rhiza api call ship.check '{\"test_failures\":true}'; gh.log shows it ran no gh. --test-failures with --settled is refused with exit 2. go test -trimpath ./internal/workflow/... ok and go test -trimpath ./cmd/rhiza -run 'TestScripts/run-ship' ok (run-ship-ci-fix: fix at pr-green, fix at rebased-green then land, failure after two fixes, infra failure at ci-triage with no ci-fix). The agent step itself ran only against the testscript's fake agent, not a real one"
+        },
+        "handle": "ship-change-ci-fix-step-qa-1",
+        "id": "01M6MS4EEVQ47NDX76231B1KTB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MS4EEVQ47NDX7622XWKK0R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MS4EEVQ47NDX7622XWKK0R",
+        "id": "01M6MS4KQ8D11FFXYTX4GQJ5PV",
+        "link": "01M6MS4KQ8D11FFXYTX2RJ2WS0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MC56XH2VTXCYDT1G5WD55E",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MBPT20RGKTT334GQK997B3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MS4YZ50XMYMY1WEPXNMXZN",
+  "type": "ops",
+  "v": 1
+}

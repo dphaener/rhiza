@@ -41,6 +41,7 @@ type SessionDoneResponse struct {
 	Already   bool     `json:"already,omitempty" desc:"True if the session had already said done; the first mark stands"`
 	DryRun    bool     `json:"dry_run,omitempty" desc:"True if nothing was written"`
 	Decisions []string `json:"decisions,omitempty" desc:"Handles of the Decisions proposed from the questions the owner answered (see session.interview)"`
+	Skipped   []string `json:"skipped,omitempty" desc:"Handles of answers already recorded as Decisions, left alone (see session.interview)"`
 	Warnings  []string `json:"warnings,omitempty" desc:"Answers that could not be captured, or token use that could not be read or recorded, when the session said done; the done mark stands"`
 }
 
@@ -84,7 +85,7 @@ func runSessionDone(ctx *Ctx, req any) (any, error) {
 	if ctx.DryRun {
 		return SessionDoneResponse{Session: rec.ID, At: rfc3339(mark.At), DryRun: true}, nil
 	}
-	handles, warnings := captureAfterRun(ctx, rec, nil)
+	handles, skipped, warnings := captureAfterRun(ctx, rec, nil)
 	if beforeDoneMark != nil {
 		beforeDoneMark(rec)
 	}
@@ -108,7 +109,7 @@ func runSessionDone(ctx *Ctx, req any) (any, error) {
 		return nil, exitedConflict(rec.ID)
 	}
 	resp := SessionDoneResponse{Session: rec.ID, At: rfc3339(updated.Status.Done.At), Already: already,
-		Decisions: handles, Warnings: warnings}
+		Decisions: handles, Skipped: skipped, Warnings: warnings}
 	if !already {
 		if warn := recordTokenUse(ctx, st, updated); warn != "" {
 			resp.Warnings = append(resp.Warnings, warn)
@@ -137,6 +138,9 @@ func (r SessionDoneResponse) Human(w io.Writer) {
 	}
 	for _, h := range r.Decisions {
 		fmt.Fprintf(w, "- Proposed decision %s\n", h)
+	}
+	for _, h := range r.Skipped {
+		fmt.Fprintf(w, "- Skipped %s: already recorded\n", h)
 	}
 	for _, warn := range r.Warnings {
 		fmt.Fprintf(w, "- Warning: %s\n", warn)

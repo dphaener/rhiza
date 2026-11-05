@@ -29,16 +29,66 @@ update: install ## Rebuild into $(PREFIX), then rewrite the Rex script and reloa
 	$(PREFIX)/$(BINARY) rex install
 
 .PHONY: test
-test: ## Run the full test suite and print the read-budget timings
+# The timing budgets measure reads against fixed limits, so they run on
+# their own after the rest of the suite: run beside cmd/rhiza's scripts they
+# measured their neighbours (PR #210 failed twice, then passed, on one SHA).
+BUDGET_TESTS = ^(TestReadBudget|TestBudget|TestGeneratedModel)$$
+BUDGET_PKGS = ./internal/api ./internal/index ./internal/slice
+
+# -trimpath keeps each worktree's absolute path out of the compiled
+# packages and test binaries, so a second worktree at the same code reuses
+# the first one's builds, and a package whose tests read no file in the repo
+# (and not $$PWD) is a test-cache hit there too. Tests that do read repo
+# files (testdata, the corpus, rapid's testdata/rapid lookup) still miss: go
+# keys those results on the files' absolute paths and mtimes.
+TEST_FLAGS = -trimpath -timeout 20m
+
+# cmd/rhiza's scripts run in parallel and keep every core busy, so on one
+# machine only one worktree runs them at a time: concurrent `make test`s
+# (one per Rhiza run worktree) queue on this lock instead of thrashing. The
+# rest of the suite mostly waits on git, fsync and sleeps rather than CPU,
+# so it runs unlocked, beside the scripts. The timing budgets take the lock
+# too, so they never run beside another suite's scripts. flock(1) is
+# util-linux; where it is missing (macOS) nothing is locked. TEST_LOCK=
+# skips the lock.
+TEST_LOCK ?= $(dir $(shell go env GOCACHE))rhiza-test.lock
+
+test: ## Run the full test suite, then the timing budgets alone, and print the read-budget timings
 # TestReadBudget appends its timings to the file named by RHIZA_BUDGET_LOG.
 # They print after the run whether the tests passed or failed, so CI logs
 # (and local runs) always show the numbers. go test's exit status is make's.
-	@log=$$(mktemp); \
-	RHIZA_BUDGET_LOG=$$log go test -timeout 20m ./...; \
+# The packages other than cmd/rhiza run in the background, their output
+# held in a file and printed once cmd/rhiza is done, so the two never
+# interleave. The shell holds the lock on fd 9 (lock, unlock); every go test
+# gets 9>&-, so no process a test leaves behind can keep holding it.
+	@lockfile='$(TEST_LOCK)'; \
+	lock() { \
+		if [ -n "$$lockfile" ] && command -v flock >/dev/null 2>&1 && (: >>"$$lockfile") 2>/dev/null; then \
+			exec 9>>"$$lockfile"; \
+			if ! flock -n 9; then \
+				echo "Waiting for another make test on this machine before running $$1 (lock: $$lockfile)"; \
+				start=$$(date +%s); flock 9; \
+				echo "Got the test lock after $$(( $$(date +%s) - start ))s"; \
+			fi; \
+		fi; \
+	}; \
+	unlock() { exec 9>&-; }; \
+	log=$$(mktemp); rest=$$(mktemp); \
+	go test $(TEST_FLAGS) -skip '$(BUDGET_TESTS)' $$(go list ./... | grep -v '/cmd/rhiza$$') >$$rest 2>&1 9>&- & \
+	pid=$$!; \
+	lock "the cmd/rhiza scripts"; \
+	go test $(TEST_FLAGS) -skip '$(BUDGET_TESTS)' ./cmd/rhiza 9>&-; \
 	status=$$?; \
+	unlock; \
+	wait $$pid || status=1; \
+	cat $$rest; \
+	echo "Timing budgets, run alone after the suite"; \
+	lock "the timing budgets"; \
+	RHIZA_BUDGET_LOG=$$log go test $(TEST_FLAGS) -count=1 -p 1 -run '$(BUDGET_TESTS)' $(BUDGET_PKGS) 9>&- || status=1; \
+	unlock; \
 	echo "Read-budget timings"; \
 	if [ -s "$$log" ]; then cat "$$log"; else echo "(no timings: $$log is missing or empty)"; fi; \
-	rm -f $$log; exit $$status
+	rm -f $$log $$rest; exit $$status
 
 .PHONY: vet
 vet: ## Run go vet

@@ -15,11 +15,14 @@ import (
 	"reflect"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
 	gmodel "github.com/dphaener/rhiza/internal/model"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
@@ -65,18 +68,20 @@ func init() {
 
 // The kinds of an InboxItem.
 const (
-	InboxQuestion  = "question"
-	InboxOpen      = "open"
-	InboxSignoff   = "signoff"
-	InboxFailed    = "failed"
-	InboxGaveUp    = "gave-up"
-	InboxSkipped   = "skipped"
-	InboxBlocker   = "blocker"
-	InboxOverlap   = "overlap"
-	InboxStalled   = "stalled"
-	InboxDiskLow   = "disk-low"
-	InboxMainStale = "main-stale"
-	InboxAccept    = "accept"
+	InboxQuestion     = "question"
+	InboxOpen         = "open"
+	InboxSignoff      = "signoff"
+	InboxFailed       = "failed"
+	InboxGaveUp       = "gave-up"
+	InboxSkipped      = "skipped"
+	InboxBlocker      = "blocker"
+	InboxOverlap      = "overlap"
+	InboxStalled      = "stalled"
+	InboxDiskLow      = "disk-low"
+	InboxUsageReserve = "usage-reserve"
+	InboxMainStale    = "main-stale"
+	InboxAccept       = "accept"
+	InboxInterview    = "interview"
 )
 
 // InboxRequest takes nothing.
@@ -85,17 +90,17 @@ type InboxRequest struct{}
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, main-stale or accept"`
+	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale, accept or interview"`
 	At             string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
 	Change         string `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
 	ChangeTitle    string `json:"change_title,omitempty" desc:"The change set's title; absent when the log has no such change set"`
 	Step           string `json:"step,omitempty" desc:"The step: the asking session's, the sign-off's, the failed step, or where the run was interrupted"`
 	Question       string `json:"question,omitempty" desc:"A question: what the agent asked; a blocker: the question's statement"`
-	Tab            string `json:"tab,omitempty" desc:"A question: the title of the session's tab"`
-	TabBlock       string `json:"tab_block,omitempty" desc:"A question: the Rex block of the session's tab"`
-	TabSession     string `json:"tab_session,omitempty" desc:"A question: the Rex session of the session's tab"`
-	Session        string `json:"session,omitempty" desc:"A question: the asking session; a stalled item: the stalled session"`
+	Tab            string `json:"tab,omitempty" desc:"A question or an interview: the title of the session's tab"`
+	TabBlock       string `json:"tab_block,omitempty" desc:"A question or an interview: the Rex block of the session's tab"`
+	TabSession     string `json:"tab_session,omitempty" desc:"A question or an interview: the Rex session of the session's tab"`
+	Session        string `json:"session,omitempty" desc:"A question: the asking session; an interview: the interview's session; a stalled item: the stalled session"`
 	Recommendation string `json:"recommendation,omitempty" desc:"A question: what the advisor recommends answering; absent while it has not, or when it failed"`
 	Reasons        string `json:"reasons,omitempty" desc:"A question: why the advisor recommends it"`
 	Handle         string `json:"handle,omitempty" desc:"A blocker: the question's handle"`
@@ -135,6 +140,11 @@ func (r InboxResponse) Human(w io.Writer) {
 			fmt.Fprintf(w, "  %s\n", it.Detail)
 			continue
 		}
+		if it.Kind == InboxUsageReserve {
+			fmt.Fprintf(w, "%s usage-reserve\n", it.ID)
+			fmt.Fprintf(w, "  %s\n", it.Detail)
+			continue
+		}
 		if it.Kind == InboxMainStale {
 			fmt.Fprintf(w, "%s main-stale change set %s\n", it.ID, it.Change)
 			fmt.Fprintf(w, "  %s\n", it.Detail)
@@ -155,6 +165,11 @@ func (r InboxResponse) Human(w io.Writer) {
 		}
 		fmt.Fprintln(w)
 		switch it.Kind {
+		case InboxInterview:
+			if it.Tab != "" {
+				fmt.Fprintf(w, "  tab: %s\n", it.Tab)
+			}
+			fmt.Fprintf(w, "  %s\n", it.Detail)
 		case InboxQuestion:
 			if it.Tab != "" {
 				fmt.Fprintf(w, "  tab: %s\n", it.Tab)
@@ -186,14 +201,24 @@ func (r InboxResponse) Human(w io.Writer) {
 // locked reports a run another process holds. changeState gives the state
 // of a change set and whether the log has it at all.
 //
+// tabOf gives the Rex tab of a session, nil for none. A live milestone
+// request's plan run, not autonomous, is an interview item from the
+// interview session's launch until the run ends.
+//
 // stalled gives the stalled session of a run, nil when it has none; a nil
 // stalled lists none. Only a run another process holds can have one.
-func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool), stalled func(st run.State) []RunStalled) []InboxItem {
+func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool), stalled func(st run.State) []RunStalled, tabOf func(sid string) session.Tab) []InboxItem {
 	// gone reports a change set that is landed, withdrawn, rejected or
 	// superseded: a failed or given-up run on one is left out, as its next
 	// command could only fail.
-	gone := func(change string) bool {
-		state, ok := changeState(change)
+	// A landed change set is not gone for a plan run, nor for a non-plan run
+	// that entered its land step: the daemon resumes such a run, so it is
+	// listed like any other run.
+	gone := func(st run.State) bool {
+		state, ok := changeState(st.Change)
+		if ok && state == string(changeset.StateLanded) && (st.Workflow == planWorkflow || st.Visits["land"] > 0) {
+			return false
+		}
 		return ok && changeset.State(state).Terminal()
 	}
 	items := []InboxItem{}
@@ -225,7 +250,7 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 		}
 		switch {
 		case st.Ended:
-			if st.Result != run.Failed || st.Abandoned() || retried || gone(st.Change) {
+			if st.Result != run.Failed || st.Abandoned() || retried || gone(st) {
 				continue
 			}
 			step, _ := st.FailedStep()
@@ -246,7 +271,7 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 			// to abandon it, autonomous or not. A draft or proposed change
 			// set's run (a plan run's) is the owner's to resume by hand.
 			if !live && !st.DaemonResumed && st.Process != nil && st.Liveness(host, alive) == run.LiveInterrupted && len(st.Blocks) == 0 {
-				if state, ok := changeState(st.Change); ok && changeset.State(state).Terminal() {
+				if state, ok := changeState(st.Change); ok && gone(st) {
 					add(InboxSkipped, state, st.ProcessAt, InboxItem{
 						Step:   st.Current,
 						Detail: "interrupted, and not resumed: its change set is " + state,
@@ -263,6 +288,17 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 						Next:   "rhiza session message " + sl.Session + " <text>",
 					})
 				}
+			}
+			if sid := st.Session[milestoneInterviewStep]; live && st.MilestonePlan && !st.Autonomous && sid != "" {
+				it := InboxItem{
+					Step: milestoneInterviewStep, Session: sid,
+					Detail: "the milestone interview waits on you",
+				}
+				if tabOf != nil {
+					t := tabOf(sid)
+					it.Tab, it.TabBlock, it.TabSession = t.Title, t.Block, t.Session
+				}
+				add(InboxInterview, sid, st.StartedAt, it)
 			}
 			// Only questions are the orchestrator's in an autonomous run.
 			if st.Autonomous {
@@ -281,7 +317,7 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 				}
 				add(InboxQuestion, b.Session, b.At, it)
 			}
-			if !live && !gone(st.Change) && st.DaemonResumed && st.ProcessAt.After(st.DaemonResumedAt) && st.Liveness(host, alive) == run.LiveInterrupted && len(st.Blocks) == 0 {
+			if !live && !gone(st) && st.DaemonResumed && st.ProcessAt.After(st.DaemonResumedAt) && st.Liveness(host, alive) == run.LiveInterrupted && len(st.Blocks) == 0 {
 				add(InboxGaveUp, "", st.DaemonResumedAt, InboxItem{
 					Step: st.Current, Detail: "interrupted again after the daemon's one resume",
 					Next: "rhiza run resume " + j.ID,
@@ -310,6 +346,19 @@ func inboxStalledOf(ctx *Ctx, common string) func(st run.State) []RunStalled {
 	return func(st run.State) []RunStalled { return runStalledAll(st, true, sessions, now) }
 }
 
+// inboxTabOf reads a session's Rex tab from its record; the zero tab when
+// there is none.
+func inboxTabOf(ctx *Ctx, common string) func(sid string) session.Tab {
+	sessions := session.NewStore(session.Dir(common))
+	return func(sid string) session.Tab {
+		rec, err := sessions.Read(sid)
+		if err != nil {
+			return session.Tab{}
+		}
+		return rec.Tab
+	}
+}
+
 // failedDetail is why a failed run failed, followed by the detail of the
 // last fail the step ended with when it has more than one line: a command
 // step's exit code and the tail of its output.
@@ -329,20 +378,168 @@ func failedDetail(st run.State, step string) string {
 
 // changeStateOf gives the state of a change set by ID, and whether the log
 // has it: a made-up or unparseable ID, or a workspace that does not open,
-// reports none.
+// reports none. It is for one lookup: the index it opens is closed after.
 func changeStateOf(ctx *Ctx) func(change string) (string, bool) {
-	ws, err := openCtxWorkspace(ctx)
+	f := newInboxFold(ctx)
 	return func(change string) (string, bool) {
-		if err != nil {
-			return "", false
-		}
-		cs, perr := id.Parse(change)
-		if perr != nil {
-			return "", false
-		}
-		c, ok := ws.changeSet(cs)
-		return string(c.State), ok
+		defer f.close()
+		return f.stateOf(change)
 	}
+}
+
+// inboxFold is one read of the change sets, shared by every lookup of one
+// inbox call: a change set's state and title, and the overlaps. Reading the
+// log decodes every entry, so a log read per lookup made rhiza inbox cost
+// seconds. With an index (ctx.IndexPath) the states come from its change
+// set rows and a change set is folded from its own entries only when a
+// lookup needs it; without one the log is read and folded once. Either
+// way nothing is read until the first lookup. close releases the index.
+type inboxFold struct {
+	ctx  *Ctx
+	done bool
+	err  error
+	// x is the index, nil when the log was read instead.
+	x      *index.Index
+	states map[id.ID]changeset.State
+	sets   map[id.ID]changeset.ChangeSet
+	// list is every change set folded, from the log; nil with an index.
+	list []changeset.ChangeSet
+}
+
+// newInboxFold returns the fold of ctx's change sets; nothing is read
+// until a lookup asks.
+func newInboxFold(ctx *Ctx) *inboxFold { return &inboxFold{ctx: ctx} }
+
+// close closes the index, if one was opened.
+func (f *inboxFold) close() {
+	if f.x != nil {
+		f.x.Close()
+		f.x = nil
+	}
+}
+
+// load reads the change sets the first time it is called.
+func (f *inboxFold) load() error {
+	if f.done {
+		return f.err
+	}
+	f.done = true
+	f.sets = map[id.ID]changeset.ChangeSet{}
+	f.states = map[id.ID]changeset.State{}
+	ws, err := openCtxWorkspace(f.ctx)
+	if err != nil {
+		f.err = err
+		return err
+	}
+	if f.ctx.IndexPath != "" && len(ws.pending) == 0 {
+		x, err := index.Open(f.ctx.Root, f.ctx.IndexPath)
+		if err != nil {
+			f.err = Errorf("%s", err.Error())
+			return f.err
+		}
+		f.x = x
+		infos, err := x.ChangeSets()
+		if err != nil {
+			f.err = Errorf("%s", err.Error())
+			return f.err
+		}
+		for _, c := range infos {
+			f.states[c.ID] = c.State
+		}
+		return nil
+	}
+	f.list, _ = changeset.FoldLog(ws.log())
+	for _, c := range f.list {
+		f.sets[c.ID] = c
+		f.states[c.ID] = c.State
+	}
+	return nil
+}
+
+// changeSet is the folded change set of change, false when the ID does not
+// parse, the log has none or the change sets cannot be read.
+func (f *inboxFold) changeSet(change string) (changeset.ChangeSet, bool) {
+	cs, err := id.Parse(change)
+	if err != nil || f.load() != nil {
+		return changeset.ChangeSet{}, false
+	}
+	if c, ok := f.sets[cs]; ok {
+		return c, true
+	}
+	if f.x == nil {
+		return changeset.ChangeSet{}, false
+	}
+	if _, ok := f.states[cs]; !ok {
+		return changeset.ChangeSet{}, false
+	}
+	es, err := f.x.Entries(cs)
+	if err != nil || len(es) == 0 {
+		return changeset.ChangeSet{}, false
+	}
+	c, _ := changeset.Fold(cs, es)
+	f.sets[cs] = c
+	return c, true
+}
+
+// stateOf gives the state of a change set by ID, and whether the log has it.
+func (f *inboxFold) stateOf(change string) (string, bool) {
+	cs, err := id.Parse(change)
+	if err != nil || f.load() != nil {
+		return "", false
+	}
+	st, ok := f.states[cs]
+	return string(st), ok
+}
+
+// titleOf gives the display title of a change set by ID, empty when the log
+// has none or the ID does not parse.
+func (f *inboxFold) titleOf(change string) string {
+	if c, ok := f.changeSet(change); ok {
+		return c.Open.DisplayTitle()
+	}
+	return ""
+}
+
+// overlaps is one overlap item per overlap between in-flight change sets
+// (model.Overlaps), with no run. It began to wait when the later of the
+// two change sets was opened, which its ID dates. With an index only the
+// in-flight change sets are folded, and targets are named from its as-is
+// view, as the landed model names them.
+func (f *inboxFold) overlaps() ([]InboxItem, error) {
+	if err := f.load(); err != nil {
+		return nil, err
+	}
+	if f.x == nil {
+		ovs := gmodel.Overlaps(f.list)
+		if len(ovs) == 0 {
+			return []InboxItem{}, nil
+		}
+		return overlapItems(ovs, newModelSets(f.list, id.ID{})), nil
+	}
+	// EachInFlight calls back from several goroutines at once.
+	var mu sync.Mutex
+	var flight []changeset.ChangeSet
+	if err := f.x.EachInFlight(func(cs id.ID, es []entry.Entry) {
+		c, _ := changeset.Fold(cs, es)
+		mu.Lock()
+		defer mu.Unlock()
+		f.sets[cs] = c
+		flight = append(flight, c)
+	}); err != nil {
+		return nil, Errorf("%s", err.Error())
+	}
+	// In ID order, as the log's fold lists them.
+	slices.SortFunc(flight, func(a, b changeset.ChangeSet) int { return id.Compare(a.ID, b.ID) })
+	ovs := gmodel.Overlaps(flight)
+	if len(ovs) == 0 {
+		return []InboxItem{}, nil
+	}
+	return overlapItemsNamed(ovs, func(t id.ID) string {
+		if n, ok, err := f.x.Node(index.AsIs, t); err == nil && ok {
+			return n.Handle
+		}
+		return ""
+	}), nil
 }
 
 // hasSignoff reports whether the current visit of the current step is
@@ -364,19 +561,20 @@ func runInbox(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("read runs: %v", err)
 	}
 	host, _ := os.Hostname()
-	items := inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx), inboxStalledOf(ctx, common))
+	fold := newInboxFold(ctx)
+	defer fold.close()
+	items := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxTabOf(ctx, common))
 	blockers, err := inboxBlockers(ctx)
 	if err != nil {
 		return nil, err
 	}
-	overlaps, err := inboxOverlaps(ctx)
+	overlaps, err := fold.overlaps()
 	if err != nil {
 		return nil, err
 	}
-	items = sortInboxItems(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxMainStale(ctx)...))
-	title := changeTitleOf(ctx)
+	items = sortInboxItems(append(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...))
 	for i := range items {
-		items[i].ChangeTitle = title(items[i].Change)
+		items[i].ChangeTitle = fold.titleOf(items[i].Change)
 	}
 	return InboxResponse{Items: items}, nil
 }
@@ -459,24 +657,24 @@ func inboxBlockers(ctx *Ctx) ([]InboxItem, error) {
 	return items, nil
 }
 
-// inboxOverlaps is one overlap item per overlap between in-flight change
-// sets (model.Overlaps), with no run. It began to wait when the later of
-// the two change sets was opened, which its ID dates.
-func inboxOverlaps(ctx *Ctx) ([]InboxItem, error) {
-	ws, err := openCtxWorkspace(ctx)
-	if err != nil {
-		return nil, err
-	}
-	ovs := gmodel.Overlaps(ws.changeSets())
-	if len(ovs) == 0 {
-		return []InboxItem{}, nil
-	}
-	m := ws.model(id.ID{})
+// overlapItems are the overlap items of ovs, targets named by m.
+func overlapItems(ovs []gmodel.Overlap, m Model) []InboxItem {
+	return overlapItemsNamed(ovs, func(t id.ID) string {
+		if n, ok := m.Node(t); ok {
+			return n.Handle
+		}
+		return ""
+	})
+}
+
+// overlapItemsNamed are the overlap items of ovs; handle names a target,
+// "" for none, when the target's ID stands in.
+func overlapItemsNamed(ovs []gmodel.Overlap, handle func(id.ID) string) []InboxItem {
 	items := make([]InboxItem, 0, len(ovs))
 	for _, ov := range ovs {
 		target := ov.Target.String()
-		if n, ok := m.Node(ov.Target); ok && n.Handle != "" {
-			target = n.Handle
+		if h := handle(ov.Target); h != "" {
+			target = h
 		}
 		later := max(ulid.ULID(ov.A).Time(), ulid.ULID(ov.B).Time())
 		at := ulid.Time(later).UTC().Format(time.RFC3339)
@@ -488,7 +686,7 @@ func inboxOverlaps(ctx *Ctx) ([]InboxItem, error) {
 			Next:   "rhiza slice --change " + ov.A.String() + " --view what-if",
 		})
 	}
-	return items, nil
+	return items
 }
 
 // inboxDiskLow is one disk-low item while the daemon's last poll found free
@@ -518,6 +716,33 @@ func diskLowItems(low *daemon.DiskLow) []InboxItem {
 	}}
 }
 
+// inboxUsageHold is one usage-reserve item while the daemon's last poll held
+// its launches for usage, and none once a later poll did not.
+func inboxUsageHold(ctx *Ctx) []InboxItem {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil
+	}
+	st, ok := daemon.ReadState(common)
+	if !ok {
+		return nil
+	}
+	return usageHoldItems(st.UsageHold)
+}
+
+// usageHoldItems is one usage-reserve item for h, none when h is nil.
+func usageHoldItems(h *daemon.UsageHold) []InboxItem {
+	if h == nil {
+		return nil
+	}
+	at := h.Since.UTC().Format(time.RFC3339)
+	sum := sha256.Sum256([]byte(strings.Join([]string{InboxUsageReserve, at}, "\x00")))
+	return []InboxItem{{
+		ID: hex.EncodeToString(sum[:])[:7], Kind: InboxUsageReserve, At: at,
+		Detail: usageHoldDetail(*h),
+	}}
+}
+
 // inboxMainStale is one main-stale item while the last ship close-out could
 // not fast-forward the main checkout, and none once a later one did.
 func inboxMainStale(ctx *Ctx) []InboxItem {
@@ -540,25 +765,6 @@ func mainStaleItems(common string) []InboxItem {
 		ID: hex.EncodeToString(sum[:])[:7], Kind: InboxMainStale, At: at, Change: ms.Change,
 		Detail: ms.Detail,
 	}}
-}
-
-// changeTitleOf gives the display title of a change set by ID, empty when
-// the log has none or the ID does not parse.
-func changeTitleOf(ctx *Ctx) func(change string) string {
-	ws, err := openCtxWorkspace(ctx)
-	return func(change string) string {
-		if err != nil {
-			return ""
-		}
-		cs, perr := id.Parse(change)
-		if perr != nil {
-			return ""
-		}
-		if c, ok := ws.changeSet(cs); ok {
-			return c.Open.DisplayTitle()
-		}
-		return ""
-	}
 }
 
 // InboxOpenRequest names the item to open.
@@ -594,7 +800,7 @@ func (r InboxOpenResponse) Human(w io.Writer) {
 // Rex session is empty when the journal has none (one written before it
 // was recorded, or by a process with no REX_SESSION).
 func itemTab(item InboxItem, st run.State) (rexSession, block string) {
-	if item.Kind == InboxQuestion {
+	if item.Kind == InboxQuestion || item.Kind == InboxInterview {
 		return item.TabSession, item.TabBlock
 	}
 	if st.Process != nil {
@@ -617,16 +823,18 @@ func findInboxItem(ctx *Ctx, ref string) (InboxItem, run.State, error) {
 	}
 	host, _ := os.Hostname()
 	var found []InboxItem
-	all := inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx), inboxStalledOf(ctx, common))
+	fold := newInboxFold(ctx)
+	defer fold.close()
+	all := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxTabOf(ctx, common))
 	blockers, err := inboxBlockers(ctx)
 	if err != nil {
 		return InboxItem{}, run.State{}, err
 	}
-	overlaps, err := inboxOverlaps(ctx)
+	overlaps, err := fold.overlaps()
 	if err != nil {
 		return InboxItem{}, run.State{}, err
 	}
-	for _, it := range append(append(append(append(all, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxMainStale(ctx)...) {
+	for _, it := range append(append(append(append(append(all, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...) {
 		if strings.HasPrefix(it.ID, ref) {
 			found = append(found, it)
 		}
@@ -659,6 +867,9 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 	}
 	if item.Kind == InboxDiskLow {
 		return nil, Usagef("item %s is the daemon's low disk space: it has no tab to open", item.ID).WithNext("rhiza daemon status")
+	}
+	if item.Kind == InboxUsageReserve {
+		return nil, Usagef("item %s is the daemon's usage hold: it has no tab to open", item.ID).WithNext("rhiza daemon status")
 	}
 	if item.Kind == InboxMainStale {
 		return nil, Usagef("item %s is the main checkout not being up to date: it has no tab to open", item.ID).WithNext("rhiza health")

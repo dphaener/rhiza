@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MSF7023VXQB1VT8EBKFYZD"
+  ],
+  "at": "2026-11-05T02:48:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/text-references onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: .rhiza/rendered/index.md, cmd/rhiza/testdata/script/describe-golden.txtar, internal/api/check.go, internal/check/check.go, internal/check/check_test.go?"
+        },
+        "handle": "rebase-conflict-text-references",
+        "id": "01M6MSPG3Y1KBCTD94GHSD1NRG",
+        "key": null,
+        "kind": "question",
+        "node": "01M6MSPG3Y1KBCTD94GGCSPTNE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MSPG3Y1KBCTD94GGCSPTNE",
+        "id": "01M6MSPKASSTT248NB97GC44TK",
+        "link": "01M6MSPKASSTT248NB95Z98JY0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNNWFR1J2AHQRNKFTPME46",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MSPQPN6YR132AGM8EXKVSV",
+  "type": "ops",
+  "v": 1
+}

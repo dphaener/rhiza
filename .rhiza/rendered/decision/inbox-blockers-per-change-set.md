@@ -18,9 +18,9 @@ The inbox lists one blocker item per open question and blocked change set, for p
 
 ### In
 
-- decided-by [question-answer-op](../capability/rhiza/roadmap-app-accept-answer/question-answer-op.md)
+- decided-by [question-answer-op](../capability/rhiza/change-sets/question-answer-op.md)
 - decided-by [inbox-blocking-questions](../capability/rhiza/orchestration/inbox/inbox-blocking-questions.md)
-- decided-by [inbox-app-answer-question](../capability/rhiza/inbox-app-actions/inbox-app-answer-question.md)
+- decided-by inbox-app-answer-question (retired)
 
 ## History
 

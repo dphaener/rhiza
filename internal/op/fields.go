@@ -3,8 +3,7 @@ package op
 import "slices"
 
 // knownFields lists, per node kind, every field a node of that kind may
-// carry, sorted. It covers each field in use in the log today. Anchors carry
-// no fields yet.
+// carry, sorted. It covers each field in use in the log today.
 var knownFields = map[Kind][]string{
 	KindIntent:     {"milestone", "statement", "umbrella"},
 	KindCapability: {"acceptance", "built_in", "statement"},
@@ -15,7 +14,7 @@ var knownFields = map[Kind][]string{
 	KindEvidence: {"command", "head", "observed", "pr", "result", "statement", "status", "test", "tests"},
 	KindSource:   {"quotes", "raw_sha256", "session", "summary", "title"},
 	KindActor:    {"agent", "email", "for", "model", "name", "role", "session"},
-	KindAnchor:   {},
+	KindAnchor:   {"fingerprint", "path", "symbol"},
 	KindNote:     {"op", "statement"},
 }
 

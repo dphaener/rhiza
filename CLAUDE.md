@@ -34,7 +34,25 @@ make install    # build into ~/bin (PREFIX=... to override)
 make update     # make install, then rewrite the Rex script and reload Rex
 ```
 
-Run `make check` before calling any change done.
+Agents in runs test only what their change touches, and never run
+`make check`, `make test` or a bare `go test ./...`: the PR's GitHub CI runs
+`make check` before every merge. The scoped commands are:
+
+- `go test -trimpath ./internal/<pkg>/...` for each package you changed;
+- `go test -trimpath ./cmd/rhiza -run TestScripts/<name>` for each affected
+  testscript;
+- `make self-check` for model or `.rhiza/` changes.
+
+Outside a run (a person at a terminal), run `make check` before calling a
+change done.
+
+Outside a run, run the full suite through `make test` (or `make check`), not a bare
+`go test ./...`: it builds with `-trimpath`, so packages another worktree
+already tested at the same code are cache hits, and it runs cmd/rhiza's
+scripts (and the timing budgets) under a machine-wide lock (`flock`,
+Linux), so parallel runs' suites queue for the CPU-heavy part instead of
+thrashing. "Waiting for another make test" means yours is queued. Scope
+ad-hoc runs to the package you changed.
 
 Rhiza keeps its own `.rhiza/` here, and `make check` runs `rhiza check`
 on it. After landing a change set, run `rhiza render` and commit

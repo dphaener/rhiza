@@ -1,0 +1,84 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6HKTEKH6WQTCXRYDNT4M2VH"
+  ],
+  "at": "2026-11-03T21:08:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "25",
+          "statement": "The backlog is empty: every change set planned from the owner's queued requests and the backlog is built and shipped by the daemon on its own, so the owner can start on new things, bugs and polish"
+        },
+        "handle": "milestone-25",
+        "id": "01M6HKVRE1B7RPP12EN99GEPK2",
+        "key": "zzzzzw",
+        "kind": "intent",
+        "node": "01M6HKVRE1B7RPP12EN6J2GGXC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "\"I'd like everything, the daemon included, to be running autonomously all night and to get through as much of the backlog as possible, even things that are not yet accepted. act on my behalf. i want an empty backlog so i can start working on new things and bugs and polish.\" (owner, 2026-11-03)",
+          "statement": "Planned change sets from the plan-request queue serve milestone 25, so the daemon (which builds only change sets serving a milestone) ships them",
+          "wording": "the owner's quote; the milestone and its rule are the orchestrator's, as the owner's proxy"
+        },
+        "handle": "m25-empty-backlog",
+        "id": "01M6HKVV7P523PFJ2CGHDDS9M7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6HKVV7P523PFJ2CGE9EMHV3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HKVRE1B7RPP12EN6J2GGXC",
+        "id": "01M6HKVY3TXQ3ZH50GPVKN55WY",
+        "link": "01M6HKVY3TXQ3ZH50GPQZYB9Q4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HKVV7P523PFJ2CGE9EMHV3",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HKTEKH6WQTCXRYDM9GSASG",
+        "id": "01M6HKW1W3MRRT42JA5BS8M5T3",
+        "link": "01M6HKW1W3MRRT42JA58FDB32F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HKVRE1B7RPP12EN6J2GGXC",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6HHMTEDFK2AWQKX50EB77DD",
+        "id": "01M6HKW55GVQR11ER1GPEX4JYH",
+        "link": "01M6HKW55GVQR11ER1GNZ43R7R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HKVRE1B7RPP12EN6J2GGXC",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6H3A65RDP761HKE82STZSQZ",
+        "id": "01M6HKW7TSYP75YTFKHP6HNWV6",
+        "link": "01M6HKW7TSYP75YTFKHN2WVGW7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HKVRE1B7RPP12EN6J2GGXC",
+        "type": "serves"
+      }
+    ]
+  },
+  "change_set": "01M6HKTEKH6WQTCXRYDM9GSASG",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6HKWB1W6HBBG629HJWNDE5C",
+  "type": "ops",
+  "v": 1
+}

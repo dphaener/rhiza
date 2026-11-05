@@ -395,10 +395,34 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "open-pr", "wait-pr", "pr-green", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "open-pr", "wait-pr", "pr-green", "ci-triage", "ci-fix", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
 		"rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
+	}
+	for _, n := range []string{"pr-green", "rebased-green"} {
+		if got := def.Steps[n].On[OutcomeFail]; got != "ci-triage" {
+			t.Errorf("%s on.fail = %q; want ci-triage", n, got)
+		}
+	}
+	for _, n := range []string{"landed-green", "rebased-merge-green"} {
+		if got, ok := def.Steps[n].On[OutcomeFail]; ok {
+			t.Errorf("%s on.fail = %q; want none", n, got)
+		}
+	}
+	triage := def.Steps["ci-triage"]
+	if triage.Kind != KindCommand || triage.Run != "rhiza ship check --test-failures" || triage.On[OutcomePass] != "ci-fix" || len(triage.On) != 1 {
+		t.Errorf("ci-triage = %+v; want a command step running ship check --test-failures, pass to ci-fix, no on.fail", triage)
+	}
+	fix := def.Steps["ci-fix"]
+	if fix.Kind != KindAgent || fix.On[OutcomePass] != "render-pr" || !strings.Contains(fix.Prompt, "Review: {run}") || !strings.Contains(fix.Prompt, "rhiza ship check --json") {
+		t.Errorf("ci-fix = %+v; want an agent step passing to render-pr, told the Review: trailer and ship check --json", fix)
+	}
+	caps := map[string]int{"ci-fix": 2, "ci-triage": 3, "render-pr": 5, "open-pr": 5, "wait-pr": 5, "pr-green": 5, "signoff": 5, "rebase": 3, "wait-rebased": 3, "rebased-green": 3}
+	for n, c := range caps {
+		if got := def.Steps[n].MaxVisits; got != c {
+			t.Errorf("%s max_visits = %d; want %d", n, got, c)
+		}
 	}
 }
 
@@ -420,7 +444,7 @@ func TestPlanBuiltin(t *testing.T) {
 	if def.Name != "plan" || def.Start != "interview" {
 		t.Errorf("name %q, start %q; want plan, interview", def.Name, def.Start)
 	}
-	want := []string{"interview", "review", "critic", "check", "revise", "gate", "open-pr", "wait-pr", "pr-green", "rebase", "wait-rebased", "rebased-green", "merge", "close-out"}
+	want := []string{"interview", "milestone-check", "review", "critic", "check", "revise", "gate", "open-pr", "wait-pr", "pr-green", "rebase", "wait-rebased", "rebased-green", "merge", "close-out"}
 	if !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
@@ -473,7 +497,9 @@ func TestPlanBuiltin(t *testing.T) {
 		step, outcome, next string
 		end                 End
 	}{
-		{"interview", OutcomePass, "review", EndNone},
+		{"interview", OutcomePass, "milestone-check", EndNone},
+		{"milestone-check", OutcomePass, "review", EndNone},
+		{"milestone-check", OutcomeFail, "", EndFailed},
 		{"interview", OutcomeFail, "", EndFailed},
 		{"review", OutcomePass, "critic", EndNone},
 		{"critic", OutcomePass, "check", EndNone},
@@ -492,6 +518,7 @@ func TestPlanBuiltin(t *testing.T) {
 		{"wait-rebased", OutcomePass, "rebased-green", EndNone},
 		{"rebased-green", OutcomePass, "merge", EndNone},
 		{"merge", OutcomePass, "close-out", EndNone},
+		{"merge", OutcomeFail, "rebase", EndNone},
 		{"close-out", OutcomePass, "", EndSucceeded},
 	}
 	for _, tt := range trans {
@@ -501,7 +528,7 @@ func TestPlanBuiltin(t *testing.T) {
 		}
 	}
 
-	caps := map[string]int{"interview": 1, "review": 3, "critic": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 3}
+	caps := map[string]int{"rebase": 3, "wait-rebased": 3, "rebased-green": 3, "merge": 3, "interview": 1, "review": 3, "critic": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 3}
 	for name, c := range caps {
 		if got := def.Steps[name].Cap(); got != c {
 			t.Errorf("%s cap = %d; want %d", name, got, c)
@@ -1473,5 +1500,46 @@ func TestRenderStepAddsNoCommitWhenClean(t *testing.T) {
 				t.Errorf("render left %q uncommitted", st)
 			}
 		})
+	}
+}
+
+// TestBuiltinRolePromptsScopeTests: every builder, verifier, check, critic
+// and fixer prompt of the build and review workflows tells the agent to
+// run only the tests its change touches, and names no test command.
+func TestBuiltinRolePromptsScopeTests(t *testing.T) {
+	rule := "Run only the tests covering what your change touches, never the repo's full suite"
+	var prompts = map[string]string{}
+	for _, name := range []string{"build", "review"} {
+		data, ok := Builtin(name)
+		if !ok {
+			t.Fatalf("no %s built-in", name)
+		}
+		def, err := Parse(name, data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for sn, st := range def.Steps {
+			for rn, r := range map[string]*Role{"builder": st.Builder, "verifier": st.Verifier, "critic": st.Critic, "fixer": st.Fixer} {
+				if r != nil {
+					prompts[name+"/"+sn+"/"+rn] = r.Prompt
+				}
+			}
+			for _, c := range st.Checks {
+				prompts[name+"/"+sn+"/check "+c.Name] = c.Prompt
+			}
+		}
+	}
+	if len(prompts) < 10 {
+		t.Fatalf("found %d role prompts; want builder, verifiers, 5 checks, critic, fixer", len(prompts))
+	}
+	for where, p := range prompts {
+		if !strings.Contains(p, rule) {
+			t.Errorf("%s prompt lacks the rule: %q", where, p)
+		}
+		for _, bad := range []string{"go test", "make check", "make test", "testscript"} {
+			if strings.Contains(p, bad) {
+				t.Errorf("%s prompt names %q", where, bad)
+			}
+		}
 	}
 }

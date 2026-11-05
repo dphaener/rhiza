@@ -14,7 +14,7 @@ At 125c2c9c, `go test ./internal/guide -run TestPlanText -count=1` passes; its p
 
 ### Out
 
-- verifies [plan-guide-new-change-set](../capability/rhiza/roadmap-app-start-runs/plan-guide-new-change-set.md)
+- verifies [plan-guide-new-change-set](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-guide-new-change-set.md)
 
 ## History
 

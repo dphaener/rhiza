@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NK1N1ZMAECZ1890X5ZAHHH",
+  "after": [
+    "01M6N467BFYE05NSC4FXHX9WC7"
+  ],
+  "at": "2026-11-05T10:12:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b9b5c5ab: go build ./... and go vet ./... pass; internal/tui keeps only autonomyapp, daemonapp, inboxapp, launcher, modalopen, modalshell, requestapp, runsapp, and git grep finds no reference to changesapp, healthapp, modelapp, readapps, roadmapapp or writeapps; the Makefile's BUDGET_PKGS no longer lists internal/tui/modelapp. A scratch build of rhiza tui app roadmap|model|health|changes|show|live --once each printed unknown app and exited 4, and the new tui-old-apps-gone testscript passes. The command testscripts health, health-machine-part, roadmap, roadmap-milestones, roadmap-paged, roadmap-umbrella, show, why, why-paged, slice, slice-budget, slice-change, slice-errors, change, change-title, lifecycle and apply pass and are unchanged in the diff; text-refs-display (moved from tui app show/slice/why to the commands), rex-install, the remaining tui-* scripts, TestMakeTestTimeout and the internal/tui and quiettest packages pass too."
+        },
+        "handle": "old-apps-deleted-verified",
+        "id": "01M6NK4MVVT0J9P01S0ZPKE4BC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NK4MVVT0J9P01S0Z106V2B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NK4MVVT0J9P01S0Z106V2B",
+        "id": "01M6NK4QFN3DC6QFMHX14GQGDF",
+        "link": "01M6NK4QFN3DC6QFMHWXVVZP3H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZD2ER8DDHNYK3W3C04SYB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NK4VT932M01G0G6T3AEREY",
+  "type": "ops",
+  "v": 1
+}

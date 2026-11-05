@@ -18,6 +18,7 @@ Power users and agents first; everyone else later.
 - serves change set `01M5SWTNWB9GEJ5AA8R7K867KB` (Genesis detects conflicting decisions across change sets in flight and surfaces them to the owner.)
 - serves change set `01M5SWTQ11MR7CP75QWPYFBQFQ` (Genesis amends a running step and sends it a message.)
 - serves change set `01M620GA5ZK6Z854D07NH0R8WX` (The inbox: rhiza inbox lists every run's questions, sign-offs, failed runs and runs the daemon gave up on, with a recommendation for each question, opens each in its tab, takes sign-offs, and the daemon sends one Rex notification per new item.)
+- serves change set `01M6HN24SPSS76PKZHZV188JEW` (Workflow authoring: rhiza workflow ls / describe / new <name> [--from <builtin>] (forks a built-in into .rhiza/workflows/<name>.toml) / check <file>, plus a guide topic; no workflow ops exist in the registry today (internal/workflow, internal/api run.go workflowResolver). Carve leaves workflow-authoring and workflow-overrides out of umbrella 01M5SWT91P766X (Area workflows))
 
 ## History
 

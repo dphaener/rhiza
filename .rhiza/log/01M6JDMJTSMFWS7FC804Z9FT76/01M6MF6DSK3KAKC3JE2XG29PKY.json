@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MF2S91V72SQJM0FCNEQFFE",
+  "after": [
+    "01M6JF1BHZERVTRQEAAMRE139R"
+  ],
+  "at": "2026-11-04T23:44:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At dffc827d: go test -trimpath -count=1 -run TestPlan ./internal/guide passes; TestPlanText's new plan-serves-milestone leaf asserts RHIZA_MILESTONE, 'reach one, directly or through an intent under one' and 'umbrella or area intent under no' milestone. A fresh build's `rhiza guide plan` prints the new paragraph in step 2; the rhiza-plan skill is generated from the same embedded plan.md, so the skill copy is in step. make self-check reports no failure except render staleness of actor files and index.md, which rhiza render regenerates after landing; fmt/vet/full suite left to the PR's CI."
+        },
+        "handle": "planner-serves-milestone-verified",
+        "id": "01M6MF63GC42KXENSSNQE7YMN1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MF63GC42KXENSSNP4XYG3V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MF63GC42KXENSSNP4XYG3V",
+        "id": "01M6MF670R0SKETT5TQ8CF0WTR",
+        "link": "01M6MF670R0SKETT5TQ4CWD8MX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JE3KEGWGBYW35XHSH0JJK1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JDMJTSMFWS7FC804Z9FT76",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MF6DSK3KAKC3JE2XG29PKY",
+  "type": "ops",
+  "v": 1
+}

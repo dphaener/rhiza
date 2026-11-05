@@ -1,0 +1,93 @@
+{
+  "actor": "01M6JZE6FRAKZ9HDD1NNNAHQ7G",
+  "after": [
+    "01M6JZMYZ8KJJHQ3ZEFGCAC8TK"
+  ],
+  "at": "2026-11-04T09:54:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6JZJYNR0W6K12FR5VKYQW0X",
+        "id": "01M6JZNDPGGKW38WR0BPMTSJ4N",
+        "link": "01M6JZNDPGGKW38WR0BMVN2NB6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZM374G612880NXAE1GK0T",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A test of daemon.Resumable (internal/daemon/pick.go) and a daemon poll testscript resume an interrupted plan run on a landed record once and journal the resume, and resume neither a plan run on a withdrawn change set nor a build run on a landed one; the existing daemon-resumes-accepted-only and daemon-resume-once tests keep passing",
+          "statement": "The daemon resumes an interrupted plan-workflow run whose change set has landed once, as it does a run on an accepted change set, while it still leaves alone a plan run whose change set is rejected, withdrawn or superseded and every other workflow's run on a change set that is not accepted"
+        },
+        "handle": "daemon-resumes-landed-plan-run",
+        "id": "01M6JZNFW03AN8AXVQSP6NK661",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M6JZNFW03AN8AXVQSKVJ00RG",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6JZNFW03AN8AXVQSKVJ00RG",
+        "id": "01M6JZNJ7AW5RHVJ4WMQ5PCRJA",
+        "link": "01M6JZNJ7AW5RHVJ4WMK90CED7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZJYNR0W6K12FR5VKYQW0X",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6JZNFW03AN8AXVQSKVJ00RG",
+        "id": "01M6JZNN7XYKZTH74RYVEJ946J",
+        "link": "01M6JZNN7XYKZTH74RYRW073A7",
+        "note": "Same exemption as rhiza run resume: plan workflow, landed state only",
+        "op": "link.create",
+        "to": "01M6GD3GB66TDYWWHF23GMTFZE",
+        "type": "relates-to"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with plan runs on a landed record shows no skipped item for an interrupted one, a gave-up item naming rhiza run resume for one interrupted after a daemon resume, and a failed item naming rhiza run resume --retry for a failed one; in the same suite a build run interrupted on a landed change set is still skipped with rhiza run abandon and a plan run on a withdrawn change set is still skipped, and the unaccepted-run-in-inbox tests keep passing",
+          "statement": "rhiza inbox counts a plan-workflow run whose change set has landed as in flight: it never lists it as skipped with rhiza run abandon, lists it as gave-up with rhiza run resume <run> when interrupted again after the daemon's one resume, and as failed with rhiza run resume --retry <run> when it failed, while plan runs on rejected, withdrawn or superseded change sets and other workflows' runs on terminal change sets stay skipped or hidden as before"
+        },
+        "handle": "inbox-landed-plan-run-in-flight",
+        "id": "01M6JZNSXJ5QSSEAJF7SJS0C1A",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6JZNSXJ5QSSEAJF7QWJ62XT",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M6JZNSXJ5QSSEAJF7QWJ62XT",
+        "id": "01M6JZNWK8PGHGGR97NSSEXJCK",
+        "link": "01M6JZNWK8PGHGGR97NRYTTX7F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZJYNR0W6K12FR5VKYQW0X",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6JZNSXJ5QSSEAJF7QWJ62XT",
+        "id": "01M6JZNZCRSVEMCRH173643THD",
+        "link": "01M6JZNZCRSVEMCRH1730KV91G",
+        "note": "Exempts a plan run on a landed record from this skipped item",
+        "op": "link.create",
+        "to": "01M62RH3PBJ12H0CYSMCMV7KAS",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M6JZDKFVH14G853J0T0BPAKG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JZP3Q9HC5P1K1AW0KQHRZQ",
+  "type": "ops",
+  "v": 1
+}

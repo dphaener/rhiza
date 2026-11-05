@@ -10,6 +10,7 @@ Interview answers are recorded as Decisions automatically, a picked option as th
 
 ### In
 
+- serves change set `01M6J6FDD9GXDW4AENMS6YNY63` (Fix Plan interviews duplicate decisions: when the planner already wrote Decisions for the owner's answers, session done still auto-creates answer-<session>-N Decisions from the same AskUserQuestion picks (seen in plan run 01M6FY99J90TC3RGT2ZCDXFNR5: seven duplicates), with default owner wording even when the answers came from a proxy. session done should skip picks a Decision in the change set already answers (or link to it), and the planner guide should say which side records them. Also each rhiza apply write takes ~6 s on the VM (31 writes > 3 min); see the daemon CPU bug)
 - relates-to [m2-interviews-evidence](../../../evidence/m2-interviews-evidence.md) — meets this done point
 
 ## History

@@ -1,0 +1,87 @@
+# feed --follow streams each change set as it lands: from the end of the feed
+# without a cursor or since, from the backlog with one; NDJSON with --json, '- '
+# lines without; --limit stops it; api call prints the same bytes.
+
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec git add -A
+exec git commit -qm 'Init'
+exec git push -q -u origin main
+
+# Three record change sets land, after the actor record of the first, then
+# an intention one.
+env RHIZA_TEST_NOW=2026-10-25T12:00:00Z
+exec rhiza add capability alpha --record --field 'statement=Alpha'
+env RHIZA_TEST_NOW=2026-10-26T12:00:00Z
+exec rhiza add intent beta --record
+env RHIZA_TEST_NOW=2026-10-27T12:00:00Z
+exec rhiza add capability gamma --record --field 'statement=Gamma'
+exec git add -A
+exec git commit -qm 'Land'
+exec git checkout -q -b cs/x
+env RHIZA_TEST_NOW=2026-10-29T12:00:00Z
+exec rhiza change new 'Store things' --json
+exec rhiza add capability store --field 'statement=Stores things'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+exec rhiza render
+exec git add -A
+exec git commit -qm 'Land Store things'
+
+# The backlog from a time, oldest land first, then it exits 0 after three.
+exec rhiza feed --follow --since 2026-10-25T00:00:00Z --limit 3
+stdout -count=3 '^- '
+stdout '(?s)add capability alpha.*add intent beta.*add capability gamma'
+! stdout 'Record actor'
+! stdout 'Nothing landed'
+! stdout 'next:'
+! stdout '^[^-]'
+
+# From a cursor, it picks up after that page.
+exec sh -c 'rhiza feed --since 2026-10-25T00:00:00Z --limit 2 | sed -n "s/^next: .* --cursor //p" > cursor.txt'
+exec sh -c 'rhiza feed --follow --cursor "$(cat cursor.txt)" --limit 1'
+stdout -count=1 '^- '
+stdout 'add capability gamma'
+
+# --all includes the actor record.
+exec rhiza feed --follow --since 2026-10-25T00:00:00Z --limit 1 --all
+stdout 'Record actor'
+
+# --json prints bare FeedItems, one a line, and api call the same bytes.
+exec rhiza feed --follow --json --since 2026-10-25T00:00:00Z --limit 3
+cp stdout follow.json
+! stdout 'next_cursor'
+! stdout 'change_sets'
+exec sh -c 'test $(wc -l < follow.json) -eq 3 && ! grep -v "^{.*}$" follow.json'
+exec rhiza api call feed '{"follow":true,"since":"2026-10-25T00:00:00Z","limit":3}'
+cmp stdout follow.json
+
+# Without a cursor it emits nothing already landed, then each change set as it
+# lands: a record one, the one reopened and landed again, and not the actor
+# record a new person's first write makes.
+exec sh -c 'exec rhiza feed --follow --json > f1.out' &f1&
+exec sleep 3
+env RHIZA_TEST_NOW=2026-10-31T12:00:00Z
+exec rhiza add capability delta --record --field 'statement=Delta'
+exec sh -c 'rhiza reopen --change $(rhiza change ls | sed -n "s/^- \\([0-9A-Z]*\\) landed intention.*/\\1/p")'
+env RHIZA_TEST_NOW=2026-11-01T12:00:00Z
+exec rhiza add capability shelve --field 'statement=Shelves things'
+exec rhiza land
+exec git config user.email bob@example.com
+env RHIZA_TEST_NOW=2026-11-02T12:00:00Z
+exec rhiza add capability epsilon --record --field 'statement=Epsilon'
+exec sh -c 'for i in $(seq 100); do [ "$(grep -c "" f1.out)" -ge 3 ] && exit 0; sleep 0.2; done; exit 1'
+exec sleep 3
+kill -INT f1
+wait f1
+exec cat f1.out
+stdout -count=3 '^\{'
+stdout '(?s)add capability delta.*Store things.*add capability epsilon'
+! stdout 'alpha|beta|gamma'
+! stdout 'Record actor'
+stdout '"landed_at":"2026-11-01T12:00:'

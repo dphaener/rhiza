@@ -14,7 +14,7 @@ At 594c251d, built go build -o $TMPDIR/rhiza-qa2 ./cmd/rhiza (rhiza version ran)
 
 ### Out
 
-- verifies [modelapp-timing-alone](../capability/rhiza/model-tree-app/modelapp-timing-alone.md)
+- verifies modelapp-timing-alone (retired)
 
 ## History
 

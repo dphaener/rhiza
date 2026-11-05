@@ -30,7 +30,7 @@ func TestDaemonPlanRequestsRequeuesUnjournaled(t *testing.T) {
 	poll := func() []string {
 		t.Helper()
 		detached = nil
-		got, err := daemonPlanRequests(f.ctx, rs, nil, 0, 2, "auto")
+		got, err := daemonPlanRequests(f.ctx, rs, nil, 0, 2, "auto", "")
 		if err != nil {
 			t.Fatal(err)
 		}

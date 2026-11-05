@@ -1,0 +1,44 @@
+# The daemon sweeps the Go build cache when it starts: a back-dated cache
+# entry goes, a fresh one stays, and one stderr line says what was freed.
+# With rhiza.daemon.trimGoCache false nothing is touched. The test clock is
+# 2026-10-24T12:00:00Z, so entries are dated against that.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+mkdir ../cache/ab
+mkdir ../tmp
+env GOCACHE=$WORK/cache
+env TMPDIR=$WORK/tmp
+cp ../seed ../cache/ab/stale-a
+cp ../seed ../cache/ab/fresh-a
+chtimes 2026-10-24T06:00:00Z ../cache/ab/stale-a
+chtimes 2026-10-24T12:00:00Z ../cache/ab/fresh-a
+
+# Off: the stale entry stays and nothing is logged.
+exec rhiza daemon set rhiza.daemon.trimGoCache false
+exec rhiza daemon --permission-mode manual --once
+exists ../cache/ab/stale-a
+! stderr 'go build sweep'
+
+# On (the default): the stale entry goes.
+exec rhiza daemon set rhiza.daemon.trimGoCache true
+exec rhiza daemon --permission-mode manual --once
+! exists ../cache/ab/stale-a
+exists ../cache/ab/fresh-a
+stderr -count=1 'go build sweep freed .*: 1 cache entries, 0 temp folders'
+
+# Nothing left to free: no line.
+exec rhiza daemon --permission-mode manual --once
+! stderr 'go build sweep'
+
+# The setting is listed, on by default.
+exec rhiza daemon settings
+stdout 'rhiza.daemon.trimGoCache = true'
+
+-- seed --
+data

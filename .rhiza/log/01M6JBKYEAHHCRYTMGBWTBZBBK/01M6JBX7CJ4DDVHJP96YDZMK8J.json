@@ -1,0 +1,50 @@
+{
+  "actor": "01M6JBMJD43S4X88WH799W357A",
+  "after": [
+    "01M6JBWN2Z1FQKXHTHEEY0Q0YW"
+  ],
+  "at": "2026-11-04T04:08:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6JBT72RR7K9DS2FDF6J2DAG",
+        "id": "01M6JBWV3MEPBDQ8HPPYC45J13",
+        "link": "01M6JBWV3MEPBDQ8HPPVX4CG8X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JBW2RZ1MW47W4GCFCMTNMP",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A test installs with ctx.Self set to an absolute path and finds that path nowhere in rhiza.lua, which reads local BIN = settings.bin or \"rhiza\" with an empty or non-string bin falling back to \"rhiza\"; a reinstall keeps a bin the owner set in the settings block byte for byte, and a second install is byte-identical",
+          "statement": "The app actions rhiza rex install writes run rhiza from the PATH of the host running the pane, or from an optional bin entry in rhiza.lua's settings block, never from a path fixed at install time"
+        },
+        "handle": "rex-actions-rhiza-from-path",
+        "id": "01M6JBWYEG2NS37GRDPPYGS2Y4",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6JBWYEG2NS37GRDPKMSWJ7D",
+        "op": "node.create",
+        "parent": "01M62JP4KDNBZKH1YT5NZRB347"
+      },
+      {
+        "decision": null,
+        "from": "01M6JBWYEG2NS37GRDPKMSWJ7D",
+        "id": "01M6JBX2HZEPYT2QN1KHE0HEJ7",
+        "link": "01M6JBX2HZEPYT2QN1KFTZEV35",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JBT72RR7K9DS2FDF6J2DAG",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6JBKYEAHHCRYTMGBWTBZBBK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JBX7CJ4DDVHJP96YDZMK8J",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,38 @@
+# check reads the unclaimed-changes cutoff from an optional committed
+# .rhiza/check.json, {"unclaimed_since": "<full commit hash>"}. No file or no
+# key turns the rule off: no finding, exit 0 on a clean repo with untrailered
+# commits. A hash that does not resolve to a commit is an error naming the file.
+
+exec git init -q
+exec rhiza init
+cp $WORK/code.go code.go
+exec git add -A
+exec git commit -qm 'untrailered code'
+exec rhiza render
+exec git add -A
+exec git commit -qm 'render'
+
+# No check.json: rule off.
+exec rhiza check --json
+stdout '"ok": true'
+! stdout 'unclaimed'
+
+# check.json without the key: rule off.
+exec sh -c 'echo "{}" > .rhiza/check.json'
+exec rhiza check --json
+stdout '"ok": true'
+! stdout 'unclaimed'
+
+# A hash that resolves: fine.
+exec sh -c 'echo "{\"unclaimed_since\": \"$(git rev-parse HEAD)\"}" > .rhiza/check.json'
+exec rhiza check
+stdout '^ok$'
+
+# A hash that does not resolve: an error naming the file.
+exec sh -c 'echo "{\"unclaimed_since\": \"0123456789012345678901234567890123456789\"}" > .rhiza/check.json'
+! exec rhiza check
+stderr '\.rhiza/check\.json'
+stderr 'unclaimed_since'
+
+-- code.go --
+package code

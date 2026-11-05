@@ -7,6 +7,15 @@ kind = "agent"
 prompt = "/rhiza-plan Plan change set {change} ({title}) with the owner, straight into the model, following the rhiza-plan skill (`rhiza guide plan`). Your very last action, once the plan is written, is to run `rhiza session done`: this run moves on to a fresh review only then, never because you sit idle."
 until = "true"
 until_when = "done"
+on.pass = "milestone-check"
+
+# Every change set the plan makes must serve a milestone, directly or
+# through an intent under one. With no on.fail, a failure ends the run
+# failed with the command's output as the detail, whether or not the
+# interview session exited.
+[step.milestone-check]
+kind = "command"
+run = "rhiza run milestone-check"
 on.pass = "review"
 
 # Each review round: a fresh reviewer told only the change set's ID, a
@@ -83,6 +92,7 @@ on.pass = "rebase"
 [step.rebase]
 kind = "command"
 run = "rhiza ship rebase"
+max_visits = 3
 on.pass = "wait-rebased"
 
 [step.wait-rebased]
@@ -90,17 +100,24 @@ kind = "wait"
 until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
+max_visits = 3
 on.pass = "rebased-green"
 
 [step.rebased-green]
 kind = "command"
 run = "rhiza ship check"
+max_visits = 3
 on.pass = "merge"
 
+# Merges nothing when origin/main moved after the head's checks passed:
+# the step fails and the run rebases and waits on the new head again, up
+# to 3 times.
 [step.merge]
 kind = "command"
 run = "rhiza ship merge"
+max_visits = 3
 on.pass = "close-out"
+on.fail = "rebase"
 
 [step.close-out]
 kind = "command"

@@ -57,9 +57,22 @@ var settingDefs = []settingDef{
 		_, err := daemon.ParseSize(v)
 		return err
 	}},
+	{key: "rhiza.daemon.trimGoCache", def: "true", validate: validateChoice("true", "false")},
 	{key: "rhiza.daemon.permissionMode", def: "", flag: "--permission-mode", validate: func(v string) error {
 		if strings.TrimSpace(v) == "" || strings.ContainsAny(v, " \t\r\n") {
 			return fmt.Errorf("must be one word")
+		}
+		return nil
+	}},
+	// The usage governor's windows: a limit is a token count, unset by
+	// default (a window with no known limit never holds); the reserve is the
+	// percent of a limit kept back.
+	{key: "rhiza.daemon.usage.session", def: "", validate: validateTokenLimit},
+	{key: "rhiza.daemon.usage.weekly", def: "", validate: validateTokenLimit},
+	{key: "rhiza.daemon.usage.reserve", def: "20", validate: func(v string) error {
+		n, err := strconv.Atoi(v)
+		if err != nil || n < 0 || n > 100 {
+			return fmt.Errorf("must be a whole number from 0 to 100")
 		}
 		return nil
 	}},
@@ -69,6 +82,13 @@ var settingDefs = []settingDef{
 	{key: "rhiza.autonomy.accept", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	{key: "rhiza.autonomy.ship", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	{key: "rhiza.autonomy.signoff", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
+}
+
+func validateTokenLimit(v string) error {
+	if n, err := strconv.ParseUint(v, 10, 64); err != nil || n < 1 {
+		return fmt.Errorf("must be a whole number of tokens, at least 1")
+	}
+	return nil
 }
 
 func findSetting(key string) (settingDef, bool) {
@@ -123,12 +143,13 @@ func settingValue(rows []Setting, key string) string {
 
 // daemonConf is the daemon's effective settings for one poll.
 type daemonConf struct {
-	rows       []Setting
-	maxRuns    int
-	minFree    uint64
-	mode       string
-	paused     bool
-	selfUpdate bool
+	rows        []Setting
+	maxRuns     int
+	minFree     uint64
+	mode        string
+	paused      bool
+	selfUpdate  bool
+	trimGoCache bool
 }
 
 // daemonConfOf resolves the settings for a poll: config, then the request's
@@ -156,6 +177,7 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 	c.minFree, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minFree"))
 	c.paused = settingValue(rows, "rhiza.daemon.paused") == "true"
 	c.selfUpdate = settingValue(rows, "rhiza.daemon.selfUpdate") == "true"
+	c.trimGoCache = settingValue(rows, "rhiza.daemon.trimGoCache") != "false"
 	c.mode = settingValue(rows, "rhiza.daemon.permissionMode")
 	return c, nil
 }
@@ -210,8 +232,8 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key   string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree or permissionMode, or rhiza.autonomy.plan, accept, ship or signoff"`
-	Value string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a size, a permission mode, or auto or owner, as the key takes"`
+	Key   string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Value string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, or auto or owner, as the key takes"`
 }
 
 // DaemonSetResponse is the setting written.

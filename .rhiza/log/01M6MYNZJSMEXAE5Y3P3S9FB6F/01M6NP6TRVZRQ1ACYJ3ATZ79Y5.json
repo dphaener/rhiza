@@ -1,0 +1,82 @@
+{
+  "actor": "01M6NP4Y787K042QT2BA7EYHWD",
+  "after": [
+    "01M6NP098RX80P02EQTCMCWQ9D"
+  ],
+  "at": "2026-11-05T11:06:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6CS24JZ06XER4X1ZQB1B76P",
+        "id": "01M6NP65339X85M9A8XGVZC51M",
+        "node": "01M6CS24JZ06XER4X1ZKX4SNPG",
+        "op": "node.retire",
+        "reason": "Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay"
+      },
+      {
+        "base": "01M6FESFPN50CY4ACP8RYDM8W1",
+        "handle": null,
+        "id": "01M6NP69FYB8NYQF98QBBAZR47",
+        "node": "01M6FESFPN50CY4ACP8PEQPKEA",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript: rhiza run start <cs> queues the run and prints that it waits for the daemon; rhiza daemon --once then starts it headless, or leaves it queued while maxRuns runs are live; a run queued on an accepted backlog change set and a plan run queued on a draft change set are both started by rhiza daemon --once; rhiza run start --foreground drives the run in the calling process",
+          "statement": "rhiza run start queues the run for the daemon, which starts it headless within maxRuns, instead of driving it in the caller's tab; a queued run is the owner's start, not a daemon pick, so the daemon starts it on whatever change set rhiza run start accepts (backlog change sets and plan runs on drafts included) without daemon-picks' milestone, state and leaf filters; with no daemon running it says the run waits for one; rhiza run start --foreground drives the run in place, for debugging and as the daemon's own child"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6MZAT3AKM2689MJCSKWEB14",
+        "handle": null,
+        "id": "01M6NP6CS39YS4XN41XQ7YT09G",
+        "node": "01M6D4SYDB1P7NX7DGKT0D19HM",
+        "op": "node.update",
+        "set": {
+          "acceptance": "plan-requests.txtar with a fake rex: request queues an item shown queued by request ls; daemon --once starts run start --workflow plan --new with the request's text (a bug's prefixed \"Fix \", so its title names the bug, a milestone's with --milestone), --autonomous only with plan auto and never for a milestone request, and request ls then shows planning with the run; when the run's journal names the planned change set, request ls shows planned with it; paused starts nothing; describe-golden.txtar is regenerated"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6BQKKV7CTFV9W0T47TFVVZK",
+        "handle": null,
+        "id": "01M6NP6G7D4S41SYGVRCNKPQP0",
+        "node": "01M6BQKKV7CTFV9W0T453F3RSY",
+        "op": "node.update",
+        "set": {
+          "acceptance": "change show on a change set that updates a statement prints a Changes section with the old and new statement",
+          "statement": "rhiza change show ends with a Changes section holding the change set's field-level diff"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6BH9A4779HN5ZTFQJXHYV54",
+        "handle": null,
+        "id": "01M6NP6KJR9D24F3WYZPJGVTXJ",
+        "node": "01M6BH9A4779HN5ZTFQGW718ZT",
+        "op": "node.update",
+        "set": {
+          "acceptance": "feed.txtar: by default an actor-only record is hidden while a planning record and an intention are shown, and with --all all three are shown; with --limit the pages are full and the next-page line carries --all; describe-golden.txtar is regenerated",
+          "statement": "rhiza feed leaves out landed change sets whose ops only create or update actor nodes unless --all is given, filtering before paging so pages stay full and cursors stable"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6HR4C6TN1MN8FF6CAC5KWE5",
+        "handle": null,
+        "id": "01M6NP6PGTNPFRHTAP7A6A92DQ",
+        "node": "01M6HR4C6TN1MN8FF6C71MZ3F2",
+        "op": "node.update",
+        "set": {
+          "acceptance": "make -n test shows go test ./... with -skip of TestReadBudget|TestBudget|TestGeneratedModel, then those tests alone with -p 1 over internal/api, internal/index and internal/slice; the budget phase passes on the loaded VM where it failed beside the suite; CI's make check passes"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NP6TRVZRQ1ACYJ3ATZ79Y5",
+  "type": "ops",
+  "v": 1
+}

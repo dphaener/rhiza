@@ -1,0 +1,195 @@
+# rhiza run send-back sends a run waiting at a signoff step back to a
+# fixer with a note: the note is journalled as the one finding of the next
+# review round, the run's next step is the fixer (then the verifier and
+# the check again), no signoff is journalled as approved, and the run waits
+# at the sign-off again. On a run not waiting at a sign-off step, or with a
+# blank note, it exits 2 and changes nothing.
+#
+# The fakes are those of run-ship-signoff.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+cp $WORK/shiptest.toml .rhiza/workflows/shiptest.toml
+exec rhiza change new 'Sign it' --title 'Sign it'
+exec rhiza add capability thing --field 'statement=A thing'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm init
+exec git push -q -u origin main
+
+exec sh -c 'rhiza run start --foreground --workflow shiptest --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+
+# A blank note is refused and changes nothing.
+exec sh -c 'rhiza run send-back --note "  " --foreground; echo exit=$?'
+stdout '^exit=2$'
+exec rhiza run status
+stdout '^- Current step: signoff$'
+! stdout 'changes asked'
+
+exec sh -c 'rhiza run send-back --note "say more" --foreground; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/claude.log
+stdout '\Arole=check check=alpha cycle=1 leaf=\nrole=fixer check= cycle=2 leaf=\nrole=check check=alpha cycle=2 leaf=\n\z'
+exec rhiza run status
+stdout '^- signoff \(visit 1\): changes, then review/review: changes asked by test: 1 finding$'
+stdout '^  - alpha f1 major at owner: say more$'
+stdout '^- Current step: signoff$'
+! exec cat $WORK/order.log
+
+# Past the sign-off, or on a finished run, it exits 2 and changes nothing.
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
+stdout '^exit=0$'
+exec sh -c 'rhiza run send-back --note again --foreground; echo exit=$?'
+stdout '^exit=2$'
+exec cat $WORK/order.log
+stdout '\Alanded\n\z'
+fold-ok
+
+-- empty-round.json --
+{"findings":[]}
+-- review.toml --
+[step.review]
+kind = "checks"
+interval = "50ms"
+max_visits = 2
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 2
+on.pass = "done"
+on.changes = "review"
+-- shiptest.toml --
+name = "shiptest"
+
+[step.review]
+kind = "workflow"
+workflow = "review"
+skip = ["signoff"]
+on.pass = "render-pr"
+
+[step.render-pr]
+max_visits = 2
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
+  git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+"""
+on.pass = "open-pr"
+
+[step.open-pr]
+max_visits = 2
+kind = "command"
+run = "rhiza ship open-pr"
+on.pass = "wait-pr"
+
+[step.wait-pr]
+max_visits = 2
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "1m"
+interval = "50ms"
+on.pass = "pr-green"
+
+[step.pr-green]
+max_visits = 2
+kind = "command"
+run = "rhiza ship check"
+on.pass = "signoff"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 2
+on.pass = "land"
+on.changes = "review/review"
+
+[step.land]
+kind = "command"
+run = "echo landed >> $WORK/order.log"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+found=
+case "$last" in *"The owner requested these changes on leaf thing:"*"say more"*) found=yes ;; esac
+echo "role=$RHIZA_ROLE check=$RHIZA_CHECK cycle=$RHIZA_CYCLE leaf=$RHIZA_LEAF findings=$found" | sed 's/ findings=$//' >> "$WORK/claude.log"
+case "$RHIZA_ROLE" in
+check)
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+	;;
+fixer)
+	echo more > fix.txt
+	git add fix.txt
+	git commit -q -m "fix" -m "Review: $RHIZA_RUN" -- fix.txt || exit 1
+	;;
+verifier)
+	rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+esac
+exit 0
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3") || [ ! -f "$WORK/pr.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	c=SUCCESS
+	[ -f "$WORK/ci.fail" ] && c=FAILURE
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"%s"}]}\n' "$head" "$c"
+	;;
+"pr create")
+	touch "$WORK/pr.created"
+	;;
+"pr edit")
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

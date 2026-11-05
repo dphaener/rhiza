@@ -14,7 +14,7 @@ Verifier of attempt 2 at 755b161: wrote gen.Default() (the 50,000-node model) to
 
 ### Out
 
-- verifies [model-tree-app](../capability/rhiza/model-tree-app.md)
+- verifies model-tree-app (retired)
 
 ## History
 

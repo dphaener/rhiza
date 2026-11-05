@@ -1,0 +1,41 @@
+{
+  "actor": "01M6MBXDY27GAA0EM5SYE914F7",
+  "after": [
+    "01M6MBX4W027A9MJ0HV2TZ1KYB"
+  ],
+  "at": "2026-11-04T22:48:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the change set's intent, milestone-25 and milestone-24, internal/workflow/builtin/ship-change.toml and review.toml, and the ship-check-reruns-failed-once evidence. The intent is about the daemon finishing runs without the owner after #259 moved the full suite to CI, which is milestone-25's done state; milestone-24 is about the VM host, not run outcomes. Reusing review's fixer prompt, Review: trailer and 2-cycle cap keeps one fix vocabulary across the run, and keeping the existing once-per-head rerun first means flakes never reach a fixer. Only test failures parsed from --log-failed become findings, so infra failures are not 'fixed' by an agent guessing. Routing the fix through render-pr reuses the existing push/edit/wait/check path, which already handles re-entry (open-pr edits instead of creating). pr-green and rebased-green are before land, so that path is safe; landed-green and rebased-merge-green come after rhiza ship land, and sending them back through render-pr would re-run land and touch a landed change set, so they stay failing and are left to a follow-up rather than widened here. The PR #260 case (pr-green failing on TestScripts/review-check-worktree) is covered.",
+          "statement": "(1) Intent: change set 01M6MBPT serves milestone-25 (the daemon empties the backlog on its own); a run that dies on a red PR CI needs the owner, which is what milestone-25 removes. (2) Mechanism: rhiza ship check keeps its one rerun of failed jobs per head for flakes. When the head's checks still fail and the failed Actions job's log (gh run view <run> --log-failed) names failing tests (Go '--- FAIL: TestX[/sub]' lines, testscript names included), ship check reports them as test failures and turns each failing test or script into a finding with no leaf; a failure with no Actions run id, no parsable failing test, or an infra/setup error stays a plain failure that ends the run as today. A new ci-fix step runs one fixer session on the run worktree with those findings appended to the review fixer's prompt, told to re-run only the failing tests/scripts and their packages, making one new commit with a Review: <run> trailer (Change:/Actor: as usual). (3) Stages: pr-green and rebased-green route a test failure to ci-fix (on.fail), and ci-fix goes on pass to render-pr, so the fix is rendered, pushed by open-pr (gh pr edit, no second PR), waited on by wait-pr and checked by pr-green, then signoff again (the autonomous rule passes it; an owner sees the new commit). landed-green and rebased-merge-green keep failing the run as today: they run after rhiza ship land, and re-entering render-pr would land twice; a post-land fix path is a separate change set, not this one. (4) Cap: at most 2 CI-fix cycles per run, counted across pr-green and rebased-green (ci-fix max_visits = 2, matching review's 2 fix cycles); a red CI with test failures after the second fix fails the run, with the parsed failing tests in the step output. Raise max_visits on render-pr, open-pr, wait-pr, pr-green and signoff so 2 CI fixes plus the owner's request-changes still fit.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "ship-change-ci-fix-cycle",
+        "id": "01M6MBZWS89JM6422AY5R1E10H",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MBZWS89JM6422AY2D9Z5CP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MBZWS89JM6422AY2D9Z5CP",
+        "id": "01M6MC01EZ6Q10G6WCXAWQF9H8",
+        "link": "01M6MC01EZ6Q10G6WCX81K2A4X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MBX19VWABE6S2R6FSNR46Q",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6MBPT20RGKTT334GQK997B3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MC08868SDANPA57BWV5Y53",
+  "type": "ops",
+  "v": 1
+}

@@ -14,7 +14,7 @@ Built at 602399e (includes fix 92739bb) with go build outside PATH and drove rhi
 
 ### Out
 
-- verifies [inbox-app-actions](../capability/rhiza/inbox-app-actions.md)
+- verifies inbox-app-actions (retired)
 
 ## History
 

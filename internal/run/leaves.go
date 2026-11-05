@@ -365,7 +365,7 @@ func (r *running) removeExitedCheckouts(lr LeafRunner, step workflow.Step) {
 			if _, judged := l.Judged(s.Role, s.Attempt); judged {
 				continue
 			}
-			if st, err := r.e.Runner.AgentStatus(s.Session); err == nil && st.Done {
+			if st, err := r.agentStatus(s.Session); err == nil && st.Done {
 				r.removeCheckout(lr, step, s.Detail)
 			}
 		}
@@ -497,6 +497,7 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 		}
 		return errResult(fmt.Errorf("leaf %s: start its %s: %v", a.leaf.Handle, a.role, err)), true, nil
 	}
+	r.started(s)
 	if err := r.append(Entry{
 		Type: TypeLeafSession, Step: step.Name, Leaf: a.leaf.ID, Handle: a.leaf.Handle,
 		Role: a.role, Attempt: a.attempt, Cycle: a.cycle, Session: s, Model: spec.Model, Commit: commit, Detail: spec.Dir,
@@ -524,7 +525,7 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 // notified as an agent step's, and in an autonomous run its question goes
 // to the arbiter; a failed verdict ends the step (ended true) with res.
 func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (judged bool, res result, ended bool, err error) {
-	status, err := r.e.Runner.AgentStatus(a.session)
+	status, err := r.agentStatus(a.session)
 	if err != nil {
 		if err := r.unblock(step.Name, a.session); err != nil {
 			return false, result{}, false, err

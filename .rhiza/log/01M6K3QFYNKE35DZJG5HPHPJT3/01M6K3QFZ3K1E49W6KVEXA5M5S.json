@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-04T11:04:58Z",
+  "body": {
+    "intent": "Order the inbox fix after the resume-after-land fix: both rewrite the same resume and inbox nodes",
+    "kind": "intention",
+    "sources": [],
+    "title": "Inbox fix after resume fix"
+  },
+  "change_set": "01M6K3QFYNKE35DZJG5HPHPJT3",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6K3QFZ3K1E49W6KVEXA5M5S",
+  "type": "open",
+  "v": 2
+}

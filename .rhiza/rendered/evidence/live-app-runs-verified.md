@@ -14,7 +14,7 @@ Verifier at e5429a5: go test -count=1 -v ./internal/tui/liveapp passes TestViewS
 
 ### Out
 
-- verifies [live-app-runs](../capability/rhiza/live-app-runs.md)
+- verifies live-app-runs (retired)
 
 ## History
 

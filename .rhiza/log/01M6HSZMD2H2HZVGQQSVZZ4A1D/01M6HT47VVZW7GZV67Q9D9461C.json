@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6HT3XS8M7CR08EW5APZA7N6"
+  ],
+  "at": "2026-11-03T22:57:55Z",
+  "body": {
+    "reason": "Orchestrator hotfix as the owner's proxy, 2026-11-03: the owner's request starved behind ready change sets",
+    "rule": "owner"
+  },
+  "change_set": "01M6HSZMD2H2HZVGQQSVZZ4A1D",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6HT47VVZW7GZV67Q9D9461C",
+  "type": "accept",
+  "v": 1
+}

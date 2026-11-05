@@ -1,0 +1,41 @@
+{
+  "actor": "01M6NEAY9N8EQG3EP31P5Q3K6A",
+  "after": [
+    "01M6NEAMX2D00K10765NK47Y4M"
+  ],
+  "at": "2026-11-05T08:49:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "milestone-25 is where every recent fix and polish change set has gone (Fix Test temp folders leak, Fix Plan runs fail at merge when main moves, Fix Agents in runs hit permission prompts, and the comparable performance fix 'Inbox and daemon notify are cheap'). Its statement covers bugs and polish the daemon builds on its own. m24-on-the-vm held earlier VM fixes such as 'Fix The daemon pins a full CPU core', but milestone 24 is past and newer fixes stopped linking there. milestone-26 is about the TUI apps, which this fix does not touch. So milestone-25 fits the change set's intent and the repo's current practice best.",
+          "statement": "Change set 'Fix Run drivers burn CPU while they wait' serves milestone-25, the backlog intent",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "cpu-drivers-fix-serves-milestone-25",
+        "id": "01M6NECNPGK0JC3C1T1MB98N6Y",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6NECNPGK0JC3C1T1KVV1Q0T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NECNPGK0JC3C1T1KVV1Q0T",
+        "id": "01M6NECTZRC8C0ZGHVFSWY414Y",
+        "link": "01M6NECTZRC8C0ZGHVFQT76PZ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEAK07BMQRE64NCYGHYF5Z",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6NE0XK2H70R52C5JAPWK71M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NED17J6C2E0SN8EGVCGG3W",
+  "type": "ops",
+  "v": 1
+}

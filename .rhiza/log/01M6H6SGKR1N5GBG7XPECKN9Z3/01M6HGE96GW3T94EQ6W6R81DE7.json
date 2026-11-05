@@ -1,0 +1,53 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6HF9K923K1K4GZ3YSWFG0FS"
+  ],
+  "at": "2026-11-03T20:08:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "9f8b2d1a3379b09a18c9b5d271953ec689ce95b7",
+          "pr": "https://github.com/dphaener/rhiza/pull/217",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #217 (https://github.com/dphaener/rhiza/pull/217) passed CI at 9f8b2d1",
+          "status": "verified"
+        },
+        "handle": "pr-217-fix-the-daemon-pins-a-full-cpu",
+        "id": "01M6HGE0QT0YXXJ37RJ602BK92",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6HGE0QT0YXXJ37RJ2541EZM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HGE0QT0YXXJ37RJ2541EZM",
+        "id": "01M6HGE35NQYXNSM6C6VPWBB7C",
+        "link": "01M6HGE35NQYXNSM6C6RYM30R2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H72FY8WGHYD44YXB23B2ZA",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6HGE0QT0YXXJ37RJ2541EZM",
+        "id": "01M6HGE5K58GQ2FS5DSQN7WJQN",
+        "link": "01M6HGE5K58GQ2FS5DSM0TE8CJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H72NZ2CZJTC8B1VGB4HAH0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6H6SGKR1N5GBG7XPECKN9Z3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HGE96GW3T94EQ6W6R81DE7",
+  "type": "ops",
+  "v": 1
+}

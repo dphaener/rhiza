@@ -14,7 +14,7 @@ Ran the built binary's rhiza tui app roadmap in a real Rex pane on a scratch rep
 
 ### Out
 
-- verifies [roadmap-new-work-requests](../capability/rhiza/orchestration/daemon/plan-requests/roadmap-new-work-requests.md)
+- verifies roadmap-new-work-requests (retired)
 
 ## History
 

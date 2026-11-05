@@ -1,0 +1,40 @@
+{
+  "actor": "01M6JB7SGG079TJCE0MEYW9DA8",
+  "after": [
+    "01M6JAFR46SS2DPS3G4WSAR78C"
+  ],
+  "at": "2026-11-04T04:31:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified attempt 2 at fc05f9e7. The fix commit adds anchor (between evidence-actor and render) to CheckFinding.Rule's enum and the Findings desc in internal/api/check.go, and regenerates describe-golden.txtar to match (lines 1492, 1534, 10636, 10678), so the quality finding f1 is fixed. Re-ran the acceptance: check.Input has Tree fs.FS, filled with os.DirFS(ctx.Root) in internal/api/check.go:130, and check.Run reads only its Input. go test ./internal/check -run TestAnchor -v passes: fstest.MapFS cases give one fail finding each for a missing path and a missing symbol, naming 'anchor pin' and 'implements thing', with Report.OK false; a resolving anchor and a retired one give none. TestScripts/check-anchors and TestScripts/describe-golden pass: deleting the function gives 'fail anchor pkg/p.go: anchor pin (implements thing): symbol Keep of pkg/p.go is gone' with a non-zero exit, and deleting the file gives the path finding. The check package doc lists anchor after evidence-actor, in report order. gofmt -l is clean and go vet passes. go test passes for internal/check, internal/anchor and cmd/rhiza, and for internal/api with TestReadBudget skipped. The only failures were timing budgets under load (TestReadBudget, internal/slice timing, modelapp TestGeneratedModel), none in code this leaf touches. make self-check fails only on stale .rhiza/rendered actor files from the run's own chore commits, not on this leaf."
+        },
+        "handle": "check-anchors-resolve-verified-2",
+        "id": "01M6JD6AH24SZ3KEEZ781VTN16",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JD6AH24SZ3KEEZ76JVZYQH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JD6AH24SZ3KEEZ76JVZYQH",
+        "id": "01M6JD6CRT26ZT5F6SSP4C9256",
+        "link": "01M6JD6CRT26ZT5F6SSK3Y9D16",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK9YY5HRN9EVKGV95EXMK1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HJXAJ6GYA2RTAGVK6JR1N9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JD6G34GJ573Q6JZPM8V552",
+  "type": "ops",
+  "v": 1
+}

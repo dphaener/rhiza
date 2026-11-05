@@ -18,6 +18,7 @@ A plan run whose gate finds open questions does not end succeeded and opens no P
 
 ### In
 
+- depends-on [plan-run-resumes-landed-record](plan-run-resumes-landed-record.md)
 - verifies [plan-run-stops-open-verified](../../../../../../evidence/plan-run-stops-open-verified.md)
 - verifies [plan-run-stops-open-qa-1](../../../../../../evidence/plan-run-stops-open-qa-1.md)
 - verifies [plan-run-stops-open-verified-3](../../../../../../evidence/plan-run-stops-open-verified-3.md)

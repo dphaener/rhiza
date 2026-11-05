@@ -1,0 +1,30 @@
+{
+  "actor": "01M6MZ0VQ33D7F7QV9EK5FD6PE",
+  "after": [
+    "01M6MYT969YCFCBHBW7VK91BPJ"
+  ],
+  "at": "2026-11-05T04:21:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A new testscript cmd/rhiza/testdata/script/plan-milestone-interview-waiting.txtar runs a non-autonomous milestone plan run with fake rex and fake claude: the interview tab's output carries a blocked OSC 7501 report naming the milestone interview before the agent asks anything, and a feature plan run's interview tab carries none at launch; a new unit test TestProgramStatusMilestoneInterview in internal/api/run_status_test.go checks the launch report's encoding (blocked, naming the milestone interview) and that a feature plan run and an autonomous run get none; go test -trimpath ./cmd/rhiza -run TestScripts/plan-milestone-interview-waiting and go test -trimpath ./internal/api -run TestProgramStatusMilestoneInterview pass",
+          "statement": "When a milestone plan run's interview session launches in its Rex tab, rhiza reports that tab's status as blocked, waiting on the owner (OSC 7501), at launch rather than at the agent's first question, so Rex notifies the owner that the interview waits on them; other plan runs and autonomous runs report as before"
+        },
+        "handle": "milestone-interview-waiting-at-launch",
+        "id": "01M6MYSV344P11Y2K056J0DZ2J",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6MYSV344P11Y2K0555WP96J",
+        "op": "node.create",
+        "parent": "01M5SWTCGG54JMNZNRSYQ2WAHH"
+      }
+    ]
+  },
+  "change_set": "01M6MYFH4QYGSKDATBH509SEJF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MZ2AXKBJYFW8T7VW1JA86A",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,29 @@
+{
+  "actor": "01M6NQKF6BH0VQFNGD3S8244KX",
+  "after": [
+    "01M6NQJX21NB9YYS1XBRBAVQD7"
+  ],
+  "at": "2026-11-05T11:33:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6HP0SAAHDCRXKDTXSZBZB1A",
+        "handle": null,
+        "id": "01M6NQS1SBH7JH3W2FSJMX4R82",
+        "node": "01M6HP0SAAHDCRXKDTXRXZF7BT",
+        "op": "node.update",
+        "set": {
+          "acceptance": "text-refs-display.txtar: after a node's statement refers to @other and other is renamed to renamed, rhiza show, why, slice, ls, tree, search, inbox, feed, roadmap, change show and change diff print @renamed wherever they print that statement, in markdown and in --json fields; rhiza search '@renamed' finds the node; rhiza render writes @renamed into the rendered page; a reference to a node not in the view shows @{<full ID>}; after other is retired the reference shows @{<other's full ID>} and writing the shown statement back with rhiza set stores the same text; a log entry written by hand before the feature with '@word' and '@{ID}' in a statement shows '@@word' and '@@{ID}', and writing that back stores the same literal text; a statement written with '@@word' stores a literal @word and is shown as @@word; copying the shown text into rhiza set stores the same text (same IDs, literal @ kept literal)",
+          "statement": "Every read operation that prints a node's text fields (render, show, why, slice, ls, tree, search, inbox, feed, roadmap, change show and change diff, the last two in the change set's view), in text and --json alike, show each stored @{<26-character ID>} as @<the node's current handle> in that view when it names a live node, and as @{<full ID>} when it names a retired node or does not resolve there; search matches its query against this shown text; and show a stored literal @ that would start a reference as @@"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NQS574HMTPEJJ50FZYDBSH",
+  "type": "ops",
+  "v": 1
+}

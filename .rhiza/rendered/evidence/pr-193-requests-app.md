@@ -26,7 +26,7 @@ verified
 
 ### Out
 
-- verifies [requests-app](../capability/rhiza/orchestration/daemon/plan-requests/requests-app.md)
+- verifies requests-app (retired)
 
 ## History
 

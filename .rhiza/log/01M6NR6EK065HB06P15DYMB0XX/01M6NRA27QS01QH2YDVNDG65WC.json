@@ -1,0 +1,30 @@
+{
+  "actor": "01M6NR6XRSHXMQTKQDG5WV9SVD",
+  "after": [
+    "01M6NR6EK065HB06P15F4W9BAV"
+  ],
+  "at": "2026-11-05T11:43:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "4c7d9954-929b-4ec4-9dc0-01a1ab8367a9",
+          "statement": "Which intent should change set 01M6NR6E (the daemon trims the Go build cache and stale go-build* temp folders) serve? I recommend milestone-25 (the backlog), because the matching test-temp-folders-swept fix served it. milestone-12 (\"The night runs clean\", which holds the disk guard) is the alternative. / When should the daemon sweep? I recommend once when it starts, then hourly, and also at once when free space drops under 2×rhiza.daemon.minFree (no more than once every 10 minutes). Each sweep removes Go cache entries untouched for over 3 hours (Go refreshes an entry's mtime only when it is over an hour old) and go-build* folders in TMPDIR older than 2 hours. / How should the daemon find the cache, and can the sweep be turned off? I recommend: the cache is $GOCACHE, or os.UserCacheDir()/go-build when that is unset (no exec of go env), and GOCACHE=off skips it. Temp folders are go-build* directly under os.TempDir(). A new setting, rhiza.daemon.trimGoCache (default on), turns the sweep off. One stderr log line reports what was freed, only when something was."
+        },
+        "handle": "question-4c7d9954-1",
+        "id": "01M6NRA08PHMC1XWSWFVKKPJX2",
+        "key": null,
+        "kind": "question",
+        "node": "01M6NRA08PHMC1XWSWFS5MEZX9",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6NR6EK065HB06P15DYMB0XX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NRA27QS01QH2YDVNDG65WC",
+  "type": "ops",
+  "v": 1
+}

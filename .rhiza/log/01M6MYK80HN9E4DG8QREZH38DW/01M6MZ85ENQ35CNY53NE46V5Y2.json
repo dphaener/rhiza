@@ -1,0 +1,770 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MYKQT8QJDBY7ZDBWC2W5GZ"
+  ],
+  "at": "2026-11-05T04:25:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6J2ZX06VD6WG8FTQS69KVA7",
+        "handle": "milestone-27",
+        "id": "01M6MYZXF8JM3JQKSGKJC207SJ",
+        "node": "01M6J2ZX06VD6WG8FTQRQ6Q78G",
+        "op": "node.update",
+        "set": {
+          "milestone": "27"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6J3002BS70XYBPYWHR2253C",
+        "handle": "m27-nebari-imported",
+        "id": "01M6MYZZKMRVGY34AVNP9AKX3P",
+        "node": "01M6J3002BS70XYBPYWH0K2G2C",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      },
+      {
+        "base": "01M6J303FW4PYT5E5CE4T07WY9",
+        "handle": "m27-nebari-on-rhiza",
+        "id": "01M6MZ026H6CSH160GH5EX9MMY",
+        "node": "01M6J303FW4PYT5E5CE39QNHJ8",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      },
+      {
+        "base": "01M6J30701CYWB5SN4WFTR8EH9",
+        "handle": "m27-import-repeatable",
+        "id": "01M6MZ04JZPMEKGC74DM6E4TZM",
+        "node": "01M6J30701CYWB5SN4WEJ82KTA",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      },
+      {
+        "base": "01M6J30EPBBKNJFCZY2VG8NP0R",
+        "handle": "m27-still-healthy",
+        "id": "01M6MZ06YZAM7NMYF8B6EJ0JFF",
+        "node": "01M6J30EPBBKNJFCZY2RF320G5",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      },
+      {
+        "fields": {
+          "milestone": "26",
+          "statement": "Rhiza runs are fully managed from five small single-purpose Rex apps built on rexuikit (Inbox, Request, Runs, Daemon and Autonomy), each a small modal that opens over the current pane, does one job and closes; every other app is gone and the CLI keeps every command."
+        },
+        "handle": "milestone-26",
+        "id": "01M6MZ09HMFH6H2KZF6ENFM4H8",
+        "key": "zzzzzz",
+        "kind": "intent",
+        "node": "01M6MZ09HMFH6H2KZF6C8EH8RH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "From the Inbox app the owner picks an inbox item and does its one action (answers a question or gate, signs off a run, retries or abandons a failed run), and the app closes."
+        },
+        "handle": "m26-inbox-app",
+        "id": "01M6MZ0BVXSHHDCB4GXX0BYJQN",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M6MZ0BVXSHHDCB4GXVABYTKE",
+        "op": "node.create",
+        "parent": "01M6MZ09HMFH6H2KZF6C8EH8RH"
+      },
+      {
+        "fields": {
+          "statement": "From the Request app the owner files a feature, bug or milestone request, and the app closes."
+        },
+        "handle": "m26-request-app",
+        "id": "01M6MZ0E4REGE7QMJCS0TXWCYJ",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M6MZ0E4REGE7QMJCRZS0AY7P",
+        "op": "node.create",
+        "parent": "01M6MZ09HMFH6H2KZF6C8EH8RH"
+      },
+      {
+        "fields": {
+          "statement": "The Runs app gives the owner a read-only glance at the live runs and their current steps."
+        },
+        "handle": "m26-runs-app",
+        "id": "01M6MZ0GJQ56K6S9Q835D0C170",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M6MZ0GJQ56K6S9Q831YAY0ZM",
+        "op": "node.create",
+        "parent": "01M6MZ09HMFH6H2KZF6C8EH8RH"
+      },
+      {
+        "fields": {
+          "statement": "From the Daemon app the owner pauses or resumes the daemon and sets its run limit."
+        },
+        "handle": "m26-daemon-app",
+        "id": "01M6MZ0JVVCZQWVQ63C8KK8SV8",
+        "key": "y",
+        "kind": "intent",
+        "node": "01M6MZ0JVVCZQWVQ63C5GP43HN",
+        "op": "node.create",
+        "parent": "01M6MZ09HMFH6H2KZF6C8EH8RH"
+      },
+      {
+        "fields": {
+          "statement": "From the Autonomy app the owner sets the plan, accept, ship and sign-off autonomy toggles."
+        },
+        "handle": "m26-autonomy-app",
+        "id": "01M6MZ0PBMY8G0703MPX33VQ0D",
+        "key": "z",
+        "kind": "intent",
+        "node": "01M6MZ0PBMY8G0703MPV9NHCSG",
+        "op": "node.create",
+        "parent": "01M6MZ09HMFH6H2KZF6C8EH8RH"
+      },
+      {
+        "fields": {
+          "statement": "The old apps are gone: only the five apps have code, Rex actions and keys, rhiza rex install registers exactly those five, and the CLI keeps every command."
+        },
+        "handle": "m26-old-apps-gone",
+        "id": "01M6MZ0SBT16J3MXBJ9GK8EJZA",
+        "key": "zi",
+        "kind": "intent",
+        "node": "01M6MZ0SBT16J3MXBJ9GG6MBYK",
+        "op": "node.create",
+        "parent": "01M6MZ09HMFH6H2KZF6C8EH8RH"
+      },
+      {
+        "fields": {
+          "quote": "multiple small apps. single purpose. i don't want the tui to dominate the terminal. think in and out. the proposed actions seem good.",
+          "quote_where": "tui-small-apps-interview, typed answer 2, on the shape of the apps",
+          "statement": "The TUI is multiple small single-purpose apps that never dominate the terminal: each opens, does its one job and closes (in and out). This supersedes tui-many-mini-apps: fewer apps, each with a single purpose, instead of many mini apps."
+        },
+        "handle": "tui-single-purpose-apps",
+        "id": "01M6MZ0X6DM64J9PW5HW32TA9F",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MZ0X6DM64J9PW5HW14SHM7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ0X6DM64J9PW5HW14SHM7",
+        "id": "01M6MZ11Z7W6PDHC0W9TWYXJAM",
+        "link": "01M6MZ11Z7W6PDHC0W9S3MSQKB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYKNE2EZ4DA6RS0B5XEGHQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "multiple small apps. single purpose. i don't want the tui to dominate the terminal. think in and out. the proposed actions seem good.",
+          "quote_where": "tui-small-apps-interview, typed answer 2: \"the proposed actions seem good\" approves these actions",
+          "statement": "The TUI covers the actions that manage Rhiza runs, the ones the orchestrator did by hand on 2026-11-05: act on the inbox (answer questions and gates, sign off, retry or abandon failed runs), watch live runs, file a request, and steer the daemon (pause, run limit, autonomy toggles)."
+        },
+        "handle": "tui-run-actions",
+        "id": "01M6MZ14X9EF04PYGTWQ2XYVXV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MZ14X9EF04PYGTWN0F671A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ14X9EF04PYGTWN0F671A",
+        "id": "01M6MZ1809KW6SC7NTFDH2AE0R",
+        "link": "01M6MZ1809KW6SC7NTFC5B8GRN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYKNE2EZ4DA6RS0B5XEGHQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "1. there are too many. i won't use most of them\n2. they aren't using any of the form elements from rexuikit. they don't look great\n3. i want to refine what we do keep to ensure i can fully manage rhiza runs with as little tui surface as possible.",
+          "quote_where": "tui-small-apps-interview, typed answer 1, on what is wrong with the apps",
+          "statement": "The TUI is overhauled because there are too many apps and the owner won't use most of them, they don't use rexuikit's form elements and don't look great, and the owner wants to fully manage Rhiza runs with as little TUI surface as possible."
+        },
+        "handle": "tui-overhaul-why",
+        "id": "01M6MZ1B28KXXGPP63WK2SXPPM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MZ1B28KXXGPP63WFJ1QYP2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ1B28KXXGPP63WFJ1QYP2",
+        "id": "01M6MZ1D6ETPZV3VE8DBZEJZ3D",
+        "link": "01M6MZ1D6ETPZV3VE8DA01Z2KB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYKNE2EZ4DA6RS0B5XEGHQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "2. they aren't using any of the form elements from rexuikit. they don't look great",
+          "quote_where": "tui-small-apps-interview, typed answer 1, point 2",
+          "statement": "Every app draws its UI with rexuikit's ui components (Form with its Text, TextArea, Select and Confirm fields, List, Dialog, InfoPanel, Card) and its ui/theme tokens, not UI of its own."
+        },
+        "handle": "tui-rexuikit-components",
+        "id": "01M6MZ1FTNR106GCV6NVPBXQEA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MZ1FTNR106GCV6NS1KEDMW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ1FTNR106GCV6NS1KEDMW",
+        "id": "01M6MZ1HZSTPGD3JBTC7ZX9FN6",
+        "link": "01M6MZ1HZSTPGD3JBTC7E340NQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYKNE2EZ4DA6RS0B5XEGHQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The TUI is five apps: Inbox (pick an item and do its one action: answer a question or gate, sign off a run, retry or abandon a failed run, then close), Request (file a feature, bug or milestone), Runs (a read-only glance at live runs and their current steps), Daemon (pause or resume, and the run limit) and Autonomy (the plan, accept, ship and sign-off toggles).",
+          "wording": "Inbox: pick an item and do its one action (answer a question or gate, sign off a run, retry or abandon a failed run), then close. Request: file a feature, bug or milestone. Runs: a read-only glance at live runs and their current steps. Daemon: pause or resume, and the run limit. Autonomy: the plan, accept, ship and sign-off toggles, the agent's option, picked by the owner"
+        },
+        "handle": "tui-five-apps",
+        "id": "01M6MZ1M8T2A92HB1Q7BN06T58",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "id": "01M6MZ1PH7Q793XJ6VS1SDAM61",
+        "link": "01M6MZ1PH7Q793XJ6VRYBNESCG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYKNE2EZ4DA6RS0B5XEGHQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Every app not in the five-app set is deleted: its code and its Rex action go; the CLI keeps every command.",
+          "wording": "Delete them: remove the code and Rex actions of every app not in the new set; the CLI keeps every command, the agent's option, picked by the owner"
+        },
+        "handle": "tui-delete-old-apps",
+        "id": "01M6MZ1RKJQB246AKPE46JKH72",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MZ1RKJQB246AKPE3WEH15W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ1RKJQB246AKPE3WEH15W",
+        "id": "01M6MZ1V2V7XNTCGTPKKB4F619",
+        "link": "01M6MZ1V2V7XNTCGTPKJANVHS0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYKNE2EZ4DA6RS0B5XEGHQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Each app opens as a rexuikit Modal sized to its content (Form, List or Dialog) over the current pane, and closes on Esc or when its job is done; no app is ever full-screen.",
+          "wording": "Small modal: each app opens as a rexuikit Modal sized to its content (Form, List or Dialog) over the current pane, and closes on Esc or when its job is done; never full-screen, the agent's option, picked by the owner"
+        },
+        "handle": "tui-small-modal",
+        "id": "01M6MZ1Y00QBPXD7CD7CSPQW1W",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MZ1Y00QBPXD7CD7958XT18",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ1Y00QBPXD7CD7958XT18",
+        "id": "01M6MZ20H6CXR1TA2PKS4SZTR1",
+        "link": "01M6MZ20H6CXR1TA2PKRFGVZ72",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYKNE2EZ4DA6RS0B5XEGHQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The TUI milestone comes first: it is milestone 26, and the Nebari import milestone moves to 27.",
+          "wording": "TUI first: the TUI milestone is 26, Nebari moves to 27, the agent's option, picked by the owner"
+        },
+        "handle": "tui-milestone-first",
+        "id": "01M6MZ2423Y4HZN2JD2GMY56C9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MZ2423Y4HZN2JD2EZ0TM0H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ2423Y4HZN2JD2EZ0TM0H",
+        "id": "01M6MZ270MGH4AP9QNRW5QA0TX",
+        "link": "01M6MZ270MGH4AP9QNRV7VMNYN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYKNE2EZ4DA6RS0B5XEGHQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "All seven change sets of milestone 26 are planned now, leaves included: the modal shell, the five apps and deleting the old apps.",
+          "wording": "Plan all 7 change sets now, the agent's option, picked by the owner"
+        },
+        "handle": "tui-plan-all-now",
+        "id": "01M6MZ2ATW4K49M4XMHJH57JK1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MZ2ATW4K49M4XMHF2HTC0S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ2ATW4K49M4XMHF2HTC0S",
+        "id": "01M6MZ2F7BNC3XJBSKJGEPTCKV",
+        "link": "01M6MZ2F7BNC3XJBSKJGED08RZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYKNE2EZ4DA6RS0B5XEGHQ",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ0X6DM64J9PW5HW14SHM7",
+        "id": "01M6MZ2KD9C3XWKQ2SMQG8WK0V",
+        "link": "01M6MZ2KD9C3XWKQ2SMQEX8ESF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JMM4GYAAGBWRJGMP7X19P",
+        "type": "supersedes"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ09HMFH6H2KZF6C8EH8RH",
+        "id": "01M6MZ2PD9TK63X6VY2BY6NT62",
+        "link": "01M6MZ2PD9TK63X6VY2AYD47V9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1B28KXXGPP63WFJ1QYP2",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ09HMFH6H2KZF6C8EH8RH",
+        "id": "01M6MZ2RXZW0XN16VF5S2A8AQ0",
+        "link": "01M6MZ2RXZW0XN16VF5Q885SMH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ0X6DM64J9PW5HW14SHM7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ09HMFH6H2KZF6C8EH8RH",
+        "id": "01M6MZ2WJTBJ0DHWTCCM7VX898",
+        "link": "01M6MZ2WJTBJ0DHWTCCGJFD6VN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1Y00QBPXD7CD7958XT18",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ09HMFH6H2KZF6C8EH8RH",
+        "id": "01M6MZ3096FFPXS1AEW62C950K",
+        "link": "01M6MZ3096FFPXS1AEW3TZ0ZT5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1FTNR106GCV6NS1KEDMW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ09HMFH6H2KZF6C8EH8RH",
+        "id": "01M6MZ3411SKBG1CK3CMD78ATY",
+        "link": "01M6MZ3411SKBG1CK3CK18EPM6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ2423Y4HZN2JD2EZ0TM0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ09HMFH6H2KZF6C8EH8RH",
+        "id": "01M6MZ39G72JERYATT3Q1YZTYP",
+        "link": "01M6MZ39G72JERYATT3NJMKYE0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ2ATW4K49M4XMHF2HTC0S",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ0BVXSHHDCB4GXVABYTKE",
+        "id": "01M6MZ3DW5D4SQRTXXZCMAR78C",
+        "link": "01M6MZ3DW5D4SQRTXXZ9XN1PK9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ0BVXSHHDCB4GXVABYTKE",
+        "id": "01M6MZ3GC47PTKM1A81QJ0E9AR",
+        "link": "01M6MZ3GC47PTKM1A81M64WRG9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ14X9EF04PYGTWN0F671A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ0E4REGE7QMJCRZS0AY7P",
+        "id": "01M6MZ3KY7V2Q4WXP1T0VZ508Q",
+        "link": "01M6MZ3KY7V2Q4WXP1SY3AC7DM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ0E4REGE7QMJCRZS0AY7P",
+        "id": "01M6MZ3QJDN9T6W5KRT9G9N4ET",
+        "link": "01M6MZ3QJDN9T6W5KRT96KA2PE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ14X9EF04PYGTWN0F671A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ0GJQ56K6S9Q831YAY0ZM",
+        "id": "01M6MZ3TZFPX95EMTNT8KX52PK",
+        "link": "01M6MZ3TZFPX95EMTNT72J5DHV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ0GJQ56K6S9Q831YAY0ZM",
+        "id": "01M6MZ3XQMCGP6FC027CZHAF4M",
+        "link": "01M6MZ3XQMCGP6FC0279JHN2GF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ14X9EF04PYGTWN0F671A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ0JVVCZQWVQ63C5GP43HN",
+        "id": "01M6MZ408YF2E1P5FAPEP25GNA",
+        "link": "01M6MZ408YF2E1P5FAPEDMWQPD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ0JVVCZQWVQ63C5GP43HN",
+        "id": "01M6MZ42ZJ520QACJ79B7PWPSA",
+        "link": "01M6MZ42ZJ520QACJ79AJFXA13",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ14X9EF04PYGTWN0F671A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ0PBMY8G0703MPV9NHCSG",
+        "id": "01M6MZ45GGG3VSG9362D3KZ7V6",
+        "link": "01M6MZ45GGG3VSG9362BZ39YTD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1M8T2A92HB1Q7BGG19MM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ0PBMY8G0703MPV9NHCSG",
+        "id": "01M6MZ48TAT7YE93QFZCD8K0N3",
+        "link": "01M6MZ48TAT7YE93QFZB0H2PER",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ14X9EF04PYGTWN0F671A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MZ0SBT16J3MXBJ9GG6MBYK",
+        "id": "01M6MZ4DEHQJBCSMRV5M8BAS3A",
+        "link": "01M6MZ4DEHQJBCSMRV5JHV8CKS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ1RKJQB246AKPE3WEH15W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYM5GB3Q8DBZST8V5AG6RQ",
+        "id": "01M6MZ4HEAVF6XM4500HSVGVPM",
+        "link": "01M6MZ4HEAVF6XM4500ESZ86RV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ09HMFH6H2KZF6C8EH8RH",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYN9GRWHRJSHA31D9S838H",
+        "id": "01M6MZ4MV5GJPWABW5V75TYH4X",
+        "link": "01M6MZ4MV5GJPWABW5V3BNTY5M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ09HMFH6H2KZF6C8EH8RH",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNDJ4HAJF028CEAE7SYQN",
+        "id": "01M6MZ4S8F26ZZFSP7J5RK4VQN",
+        "link": "01M6MZ4S8F26ZZFSP7J4PKMWVZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ09HMFH6H2KZF6C8EH8RH",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNJGY6Q735KB2ERT3V4R5",
+        "id": "01M6MZ4Y8SVGJ6T80AGW8C8CMF",
+        "link": "01M6MZ4Y8SVGJ6T80AGTMNDWQT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ09HMFH6H2KZF6C8EH8RH",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNQTAMMV8YEZHDS1G5HMD",
+        "id": "01M6MZ524TD340B2PZ3P2GJNJZ",
+        "link": "01M6MZ524TD340B2PZ3JBHBJCZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ09HMFH6H2KZF6C8EH8RH",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYPA335J1S3952RJAGZJN9",
+        "id": "01M6MZ56Y8QEAP7W3VZZQBFTF2",
+        "link": "01M6MZ56Y8QEAP7W3VZWZN272T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ09HMFH6H2KZF6C8EH8RH",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+        "id": "01M6MZ5B8AHM87T443ATS74QNN",
+        "link": "01M6MZ5B8AHM87T443ASW84WDR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ09HMFH6H2KZF6C8EH8RH",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYN9GRWHRJSHA31D9S838H",
+        "id": "01M6MZ5F219C0RJQQVXCSCCKCX",
+        "link": "01M6MZ5F219C0RJQQVXAZHMHBJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ0BVXSHHDCB4GXVABYTKE",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNDJ4HAJF028CEAE7SYQN",
+        "id": "01M6MZ5JDFC2RGP4J8YJ70MD4E",
+        "link": "01M6MZ5JDFC2RGP4J8YGEAH52B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ0E4REGE7QMJCRZS0AY7P",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNJGY6Q735KB2ERT3V4R5",
+        "id": "01M6MZ5PF88W5F972GPZ5RRFJG",
+        "link": "01M6MZ5PF88W5F972GPY9YD24W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ0GJQ56K6S9Q831YAY0ZM",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNQTAMMV8YEZHDS1G5HMD",
+        "id": "01M6MZ5STDJXZP547EZV3KYH6Q",
+        "link": "01M6MZ5STDJXZP547EZR48KKFA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ0JVVCZQWVQ63C5GP43HN",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYPA335J1S3952RJAGZJN9",
+        "id": "01M6MZ5WW7RQDM6FSEET6KQCE1",
+        "link": "01M6MZ5WW7RQDM6FSEESZ37ZWM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ0PBMY8G0703MPV9NHCSG",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+        "id": "01M6MZ6072WGFW3ZYG1H2X0855",
+        "link": "01M6MZ6072WGFW3ZYG1FB4FKQ6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ0SBT16J3MXBJ9GG6MBYK",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYN9GRWHRJSHA31D9S838H",
+        "id": "01M6MZ689QXF8WN6RBS5HJ0746",
+        "link": "01M6MZ689QXF8WN6RBS1J2TTHR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYM5GB3Q8DBZST8V5AG6RQ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+        "id": "01M6MZ6DBARCEM2WQMN0WMH8RQ",
+        "link": "01M6MZ6DBARCEM2WQMN0HZVP0X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYN9GRWHRJSHA31D9S838H",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNDJ4HAJF028CEAE7SYQN",
+        "id": "01M6MZ6K72RBJAQSJ528Y3SVP1",
+        "link": "01M6MZ6K72RBJAQSJ52853VAP8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYM5GB3Q8DBZST8V5AG6RQ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+        "id": "01M6MZ6S1DPQY00A2R06S46C1K",
+        "link": "01M6MZ6S1DPQY00A2R04RDZ9QH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYNDJ4HAJF028CEAE7SYQN",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNJGY6Q735KB2ERT3V4R5",
+        "id": "01M6MZ7183HYZWTEF0J8RVBB4R",
+        "link": "01M6MZ7183HYZWTEF0J7YP2BM1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYM5GB3Q8DBZST8V5AG6RQ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+        "id": "01M6MZ788T1KQG0CFDYG8Y8ZXN",
+        "link": "01M6MZ788T1KQG0CFDYEYEE31C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYNJGY6Q735KB2ERT3V4R5",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNQTAMMV8YEZHDS1G5HMD",
+        "id": "01M6MZ7EHJXNMY41HXR4V0EW1F",
+        "link": "01M6MZ7EHJXNMY41HXR3MRPD97",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYM5GB3Q8DBZST8V5AG6RQ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+        "id": "01M6MZ7MEK43EAEAPGB4BDAZT1",
+        "link": "01M6MZ7MEK43EAEAPGB14A2RME",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYNQTAMMV8YEZHDS1G5HMD",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYPA335J1S3952RJAGZJN9",
+        "id": "01M6MZ7S6K9RV4WRCXJ8T1PCR7",
+        "link": "01M6MZ7S6K9RV4WRCXJ4VBNK1C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYM5GB3Q8DBZST8V5AG6RQ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+        "id": "01M6MZ7ZJEC229QATSGZJY22SA",
+        "link": "01M6MZ7ZJEC229QATSGYMVE9W0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYPA335J1S3952RJAGZJN9",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6MYK80HN9E4DG8QREZH38DW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MZ85ENQ35CNY53NE46V5Y2",
+  "type": "ops",
+  "v": 1
+}

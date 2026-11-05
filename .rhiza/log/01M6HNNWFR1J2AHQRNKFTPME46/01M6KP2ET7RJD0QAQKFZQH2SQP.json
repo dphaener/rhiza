@@ -1,0 +1,30 @@
+{
+  "actor": "01M6KN94DNG39J0N4JB68R9S79",
+  "after": [
+    "01M6KP17XEXXY9YWRTDPX4T9T3"
+  ],
+  "at": "2026-11-04T16:25:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA cycle 1 at 0e9f6a6e, scratch build in a scratch repo: a hand-forged @{01ZZ…(26 chars)} in a log entry made rhiza check exit 1 with 'fail text-ref ... legacy field statement holds @{01ZZ...}, which names no node' (and rule text-ref in --json); a reference to a retired node gave a warn while check stayed ok; text-ref appears in describe --json; go test ./internal/check passes. FAIL: rhiza check on this repo at the branch head (make self-check) fails with 'fail text-ref change set 01M6HNNWFR1J2AHQRNKFTPME46: text-ref-check-verified field statement holds @{01ZZ…(26 chars)}, which names no node'; in a scratch repo, rhiza add with 'a forged @@{01ZZ…(26 chars)} here' succeeds and then rhiza check fails the same way."
+        },
+        "handle": "text-ref-check-qa-1",
+        "id": "01M6KP0VJMY5BBP7XE2Y6XKHCC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KP0VJMY5BBP7XE2TJCC6XG",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KP2ET7RJD0QAQKFZQH2SQP",
+  "type": "ops",
+  "v": 1
+}

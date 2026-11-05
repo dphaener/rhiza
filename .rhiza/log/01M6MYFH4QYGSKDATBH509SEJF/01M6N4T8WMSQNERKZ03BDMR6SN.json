@@ -1,0 +1,40 @@
+{
+  "actor": "01M6N3RRCP56HE76Z0GZJGG35Q",
+  "after": [
+    "01M6N3QBMTRW63XB5FMY9J9ZHB"
+  ],
+  "at": "2026-11-05T06:02:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-095db8db at c58c8ead (attempt 2): go test -trimpath -count=1 ./cmd/rhiza -run TestScripts/plan-milestone-interview-waiting passed: inside a fake rex (REX_BLOCK set) with fake claude, the non-autonomous milestone run's stderr carries exactly one state=blocked:kind=question:app=rhiza report whose msg decodes to 'interview waits on you in tab ...: the milestone interview waits on you', ordered working, blocked, done (before the fake agent asks anything), while the feature plan run and the autonomous milestone run carry no state=blocked. go test -trimpath -count=1 ./internal/api -run TestProgramStatusMilestoneInterview passed: milestoneInterviewLaunch is true only for a non-autonomous milestone plan's interview step, and launchBlocked encodes a blocked question naming the milestone interview, cleared by the next step's status. Read both leaf commits' diffs (4805285b, c58c8ead): the report is written only through ctx.Rex (driver inside Rex), matching the narrowed statement. go test ./internal/run and ./internal/api (skipping the TestReadBudget timing budget, which failed only on what-if latency under contention) pass; go vet and gofmt clean."
+        },
+        "handle": "milestone-interview-waiting-at-launch-verified-2",
+        "id": "01M6N4T20VWNNSX89RVW4FSRGT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N4T20VWNNSX89RVTPC0V6R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N4T20VWNNSX89RVTPC0V6R",
+        "id": "01M6N4T4NYY1C5QVA0F27927Q0",
+        "link": "01M6N4T4NYY1C5QVA0F1P0AFDD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYSV344P11Y2K0555WP96J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYFH4QYGSKDATBH509SEJF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N4T8WMSQNERKZ03BDMR6SN",
+  "type": "ops",
+  "v": 1
+}

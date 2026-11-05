@@ -11,6 +11,9 @@ Review the diff from the merge-base with the default branch
 ## Checks
 
 Every check except `qa` tests runs with fakes only, never real Rex, agents or `gh`.
+Checks, critics and fixers run only the tests covering what the change touches, with the
+repo's own scoped commands (its contributor guide names them), never the repo's full
+suite: the PR's CI runs it before merge.
 
 - `compliance`: each leaf's `acceptance`, met as written.
 - `quality`: correctness, tests, the repo's conventions.
@@ -31,10 +34,12 @@ Every check except `qa` tests runs with fakes only, never real Rex, agents or `g
   draft change set.
 
 Record one round, `{"findings":[]}` when clean (a check with no round fails), with
-`rhiza run findings --check "$RHIZA_CHECK" <file>`:
+a heredoc on stdin, no temp file:
 
 ```
+rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'
 {"findings":[{"severity":"major","leaf":"<leaf>","place":"path:line","reason":"<why>"}]}
+EOF
 ```
 
 `leaf` is optional. Severities: `blocker` (wrong or broken; cannot ship), `major` (must be
@@ -43,11 +48,12 @@ fixed), `minor` and `nit` (reported, never fixed). Schema: `rhiza describe run.f
 ## Critic
 
 Read the check's latest round in `rhiza run status --json`. Confirm or drop each blocker
-and major against the code. Never add a finding. Record with
-`rhiza run verdict --check "$RHIZA_CHECK" <file>`:
+and major against the code. Never add a finding. Record with a heredoc on stdin:
 
 ```
+rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'
 {"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"<why>"}]}
+EOF
 ```
 
 `verdict` is `confirmed` or `dropped`. Dropped findings stay in the run journal; no Decision

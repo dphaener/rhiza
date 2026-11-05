@@ -1,0 +1,50 @@
+{
+  "actor": "01M6H73XVRV103PNYQ7PGNY47D",
+  "after": [
+    "01M6H6JDCXBJGBJ2KN1FEEFFHK"
+  ],
+  "at": "2026-11-03T17:26:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M630888B1MSV76XYN9M47J4Y",
+        "handle": null,
+        "id": "01M6H7517SHAN1QQRB8GA70S06",
+        "node": "01M5TYGK7EFHKPB9JG3A2MH2G2",
+        "op": "node.update",
+        "set": {
+          "statement": "`genesis run resume <run>` continues a stopped run from its journal without a daemon, never redoing a finished step; it refuses an interrupted run whose change set has landed, been rejected, withdrawn or superseded, except that a plan-workflow run whose change set has landed is resumed (plan-run-resumes-landed-record)."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M62RH4605WT6153H4B34GBNB",
+        "handle": null,
+        "id": "01M6H754MQM6TSH1PJX13RGTH9",
+        "node": "01M62RH4605WT6153H4AZSRG87",
+        "op": "node.update",
+        "set": {
+          "statement": "rhiza run resume refuses an interrupted run whose change set is no longer accepted, naming the state and rhiza run abandon; a plan-workflow run whose change set has landed is the exception (plan-run-resumes-landed-record)"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M62RH2N6XDVSJV0K32X9BM6G",
+        "handle": null,
+        "id": "01M6H757P8JHY1K2W7NAMHWXW4",
+        "node": "01M62RH2N6XDVSJV0K31Z999SJ",
+        "op": "node.update",
+        "set": {
+          "statement": "rhiza run resume refuses a run whose change set is no longer accepted, as the daemon does, except a plan-workflow run whose change set has landed (Decision plan-resume-landed-record-milestone-6)"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6GCQACNNTMW5B57HW8N7K50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6H75BNKRNQRERBGHVMARRG2",
+  "type": "ops",
+  "v": 1
+}

@@ -385,6 +385,35 @@ func TestSet(t *testing.T) {
 		}
 	})
 
+	t.Run("RebaseMovesStaleUpdate", func(t *testing.T) {
+		ctx, cs := writeCtx(t)
+		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
+		v1 := nodeAt(t, ctx, "store").Version
+		mustWrite(t, ctx, "set", `{"ref":"store","fields":["statement=mine","built_in=2"]}`)
+		if o := onlyOp(t, opsOf(t, ctx, cs)); o.Base != v1 {
+			t.Fatalf("pending base = %s, want %s", o.Base, v1)
+		}
+		// Landed work moves the node on: the pending update's base goes stale.
+		recordWrite(t, ctx, "set", `{"ref":"store","fields":["statement=theirs","acceptance=a"]}`)
+		v2 := nodeAt(t, ctx, "store").Version
+		if v2 == v1 {
+			t.Fatalf("landed version did not move")
+		}
+		// Without --rebase the update keeps its stale base.
+		mustWrite(t, ctx, "set", `{"ref":"store","fields":["statement=merged"]}`)
+		if o := onlyOp(t, opsOf(t, ctx, cs)); o.Base != v1 {
+			t.Fatalf("plain set moved the base to %s", o.Base)
+		}
+		// --rebase must restate every field the update writes.
+		_, err := callOp(t, ctx, "set", `{"ref":"store","fields":["statement=merged"],"rebase":true}`)
+		wantExit(t, err, 2)
+		mustWrite(t, ctx, "set", `{"ref":"store","fields":["statement=merged","built_in=2"],"rebase":true}`)
+		o := onlyOp(t, opsOf(t, ctx, cs))
+		if o.Base != v2 || string(o.Set["statement"]) != `"merged"` {
+			t.Fatalf("rebased = %+v, want base %s", o, v2)
+		}
+	})
+
 	t.Run("Rename", func(t *testing.T) {
 		ctx, _ := writeCtx(t)
 		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)

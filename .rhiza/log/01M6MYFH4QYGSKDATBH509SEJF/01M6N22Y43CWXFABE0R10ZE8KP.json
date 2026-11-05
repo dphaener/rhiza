@@ -1,0 +1,40 @@
+{
+  "actor": "01M6N1H46S4DMGA080F9RKXDXH",
+  "after": [
+    "01M6N1CTPJ8DYYBCNK419DD77N"
+  ],
+  "at": "2026-11-05T05:14:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At commit 4805285b, verifier claude-code-4ebb2878 ran go test -trimpath ./cmd/rhiza -run TestScripts/plan-milestone-interview-waiting (pass): with fake rex and fake claude (which only exits), the non-autonomous milestone plan run's interview tab output carries exactly one state=blocked:kind=question:app=rhiza OSC 7501 report whose decoded msg names 'the milestone interview waits on you', ordered working, blocked, done; the feature plan run and the autonomous milestone run carry no blocked report. Ran go test -trimpath ./internal/api -run TestProgramStatusMilestoneInterview -v (PASS): it checks the launch decision (milestone yes; feature, autonomous flag, autonomous journal and other step no) and the report's encoding (blocked, question, app rhiza, msg naming the milestone interview), cleared by the next step's status. Also, as regression checks: the whole internal/api and internal/run packages, the plan/rex testscripts, gofmt and go vet all pass. Read the diff: a MilestonePlan flag on the run's Started journal entry, set from the request's --milestone; stepRunner.StartAgent calls a launched hook for the interview step only when the run is not autonomous; runRex.launchBlocked writes the blocked notice, and the next non-interview status drops it."
+        },
+        "handle": "milestone-interview-waiting-at-launch-verified",
+        "id": "01M6N22HM1YWBQDYJE98CKB1KW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N22HM1YWBQDYJE97EF1VR6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N22HM1YWBQDYJE97EF1VR6",
+        "id": "01M6N22QG2ZRA1SGBQ6R670SW9",
+        "link": "01M6N22QG2ZRA1SGBQ6QENDKTC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYSV344P11Y2K0555WP96J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYFH4QYGSKDATBH509SEJF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N22Y43CWXFABE0R10ZE8KP",
+  "type": "ops",
+  "v": 1
+}

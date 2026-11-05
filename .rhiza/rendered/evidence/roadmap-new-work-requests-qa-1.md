@@ -14,7 +14,7 @@ QA at 9127ca1a: built go build -o $TMPDIR/rhiza-qa ./cmd/rhiza, ran `rhiza-qa tu
 
 ### Out
 
-- verifies [roadmap-new-work-requests](../capability/rhiza/orchestration/daemon/plan-requests/roadmap-new-work-requests.md)
+- verifies roadmap-new-work-requests (retired)
 
 ## History
 

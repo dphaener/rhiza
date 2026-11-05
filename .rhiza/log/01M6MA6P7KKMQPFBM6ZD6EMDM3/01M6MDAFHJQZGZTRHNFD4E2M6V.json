@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MCG26VV8Z19DDJ74TYCR0X",
+  "after": [
+    "01M6MBXCC6DWKCZMDG43R1TWVR"
+  ],
+  "at": "2026-11-04T23:11:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7f5581c4, verifier claude-code-2a4a1ece read the diff to internal/api/ci.go workflowTemplate and to cmd/rhiza/testdata/script/ci-install.txtar, then parsed the expected rhiza.yml with PyYAML. It still has the push (branches: [main]) and pull_request triggers and their check steps: --base origin/${{ github.base_ref }}, --base ${{ github.event.before }}, and the first-push check. It adds workflow_dispatch with inputs.sha required: true, and checkout ref ${{ inputs.sha || github.sha }} (fetch-depth 0). run-name is 'Rhiza ${{ inputs.sha || github.event.pull_request.title || github.sha }}'. The concurrency group is rhiza-${{ github.event.pull_request.number || inputs.sha || github.sha }}, with cancel-in-progress ${{ github.event_name == 'pull_request' }}. A step with if github.event_name == 'workflow_dispatch' runs rhiza check --base HEAD~1. go test -trimpath ./cmd/rhiza -run TestScripts/ci-install$ passed: the installed file cmp-matches the expected workflow. go test -trimpath ./internal/api with RHIZA_ROOT/CHANGE/RUN unset passed (TestCIInstall* included). A first internal/api run with the run's RHIZA_* env inherited had failed, which comes from that environment and not from this change."
+        },
+        "handle": "ci-install-dispatchable-verified",
+        "id": "01M6MDA8QF6PRS1DAMRESS79HB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MDA8QF6PRS1DAMRE4TB7K7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MDA8QF6PRS1DAMRE4TB7K7",
+        "id": "01M6MDAB59HSS3353B5J4RFRVA",
+        "link": "01M6MDAB59HSS3353B5EJMHB4C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MAKF848SVSTKWG667GY87T",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MA6P7KKMQPFBM6ZD6EMDM3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MDAFHJQZGZTRHNFD4E2M6V",
+  "type": "ops",
+  "v": 1
+}

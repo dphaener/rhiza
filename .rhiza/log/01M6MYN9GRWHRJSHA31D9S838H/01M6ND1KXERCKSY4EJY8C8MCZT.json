@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NCZZWP5Z8GMY4X2T3EB3HM",
+  "after": [
+    "01M6NCZXCYH8F7MRPXTAE42N6Y"
+  ],
+  "at": "2026-11-05T08:26:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-d362bf4b at 8c79369c: go test -trimpath -count=1 ./internal/tui/inboxapp/... -v passes all 26 tests, go vet and gofmt clean. With a fake runner, TestAnswerQuestionSendsSessionMessage types 'Use sqlite' through the real rexuikit Form TextArea and sees session.message [S1, Use sqlite], then tea.Quit; TestAnswerBlockerCallsQuestionAnswer sees question.answer [which-db, C5, sqlite], then Quit; TestAnswerEscAndEmptyCallNothing sees an empty Enter and a cancel make no call past the inbox load. The attempt-2 fix (send() reopens a fresh answer form via answerForm on an empty answer or a failed send, since a submitted Form drops keys) is covered: TestAnswerEmptyThenAnswerSends shows the refusal 'an answer needs words' with no call, then typing into the new form sends and quits; TestAnswerSendFailureReopensForm shows 'send failed: no session', and a retry in the reopened form sends session.message [S1, Use pg] and quits. Read the diff: it touches only send/openAnswer in internal/tui/inboxapp."
+        },
+        "handle": "inbox-app-answer-verified-2",
+        "id": "01M6ND1CR58DKM18GMWN6MAGEY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ND1CR45ENQSSNDS6CJ0C65",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ND1CR45ENQSSNDS6CJ0C65",
+        "id": "01M6ND1FC13Q3GNXG4CBVEPFGM",
+        "link": "01M6ND1FC13Q3GNXG4CBABHMY0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZA0N04GRKJ6486V5XRAX9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYN9GRWHRJSHA31D9S838H",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ND1KXERCKSY4EJY8C8MCZT",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,29 @@
+{
+  "actor": "01M6NBNW1MVEZQY8KHNKQHTSM1",
+  "after": [
+    "01M6NBKGE80C8NPN0VQA028F1C"
+  ],
+  "at": "2026-11-05T08:03:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6FESK5TDQ0J8S077W6WM0AS",
+        "handle": null,
+        "id": "01M6NBQ9BPMFA3Y1PE3VW0XBZP",
+        "node": "01M6FESK5TDQ0J8S077V8BCZ12",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript: rhiza run log <run> prints the run's log file a page at a time with the paging flags ls takes, and exits 2 for a run with no log",
+          "statement": "rhiza run log <run> pages a headless run's driver log"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6MYNJGY6Q735KB2ERT3V4R5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NBQM325AVVJNAF3W0K9Z9N",
+  "type": "ops",
+  "v": 1
+}

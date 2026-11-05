@@ -28,12 +28,12 @@ func TestReviewText(t *testing.T) {
 		},
 		"severities": {"`blocker`", "`major`", "`minor`", "`nit`"},
 		"findings": {
-			`rhiza run findings --check "$RHIZA_CHECK" <file>`,
+			`rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'`, "\nEOF\n",
 			`{"findings":[{"severity":"major","leaf":"<leaf>","place":"path:line","reason":`,
 			`{"findings":[]}`, "rhiza describe run.findings",
 		},
 		"verdict": {
-			`rhiza run verdict --check "$RHIZA_CHECK" <file>`,
+			`rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'`, "\nEOF\n",
 			`{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":`,
 			"`confirmed` or `dropped`",
 		},
@@ -51,7 +51,17 @@ func TestReviewText(t *testing.T) {
 			"missing constraints",
 		},
 		"done": {"rhiza session done"},
+		"scoped-tests": {
+			"Checks, critics and fixers run only the tests covering what the change touches",
+			"scoped commands", "never the repo's full\nsuite",
+			"the PR's CI runs it before merge",
+		},
 	})
+	for _, banned := range []string{"go test", "make check", "make test", "testscript"} {
+		if strings.Contains(review.Body, banned) {
+			t.Errorf("review names %q", banned)
+		}
+	}
 	// Constraint agents-named-only-in-adapters: no agent product by name.
 	if strings.Contains(review.Body+review.Description, "Claude") {
 		t.Errorf("review names an agent product")

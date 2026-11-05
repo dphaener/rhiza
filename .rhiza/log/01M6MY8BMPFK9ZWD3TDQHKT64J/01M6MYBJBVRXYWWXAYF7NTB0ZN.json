@@ -1,0 +1,30 @@
+{
+  "actor": "01M6MY8M2C9XGH1FKJ6GHRTCB2",
+  "after": [
+    "01M6MY8BMPFK9ZWD3TDQN02XNQ"
+  ],
+  "at": "2026-11-05T04:09:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "58fb9cbb-b516-4d6f-a418-01a1a9e44747",
+          "statement": "Change set 'Milestone planning always' serves no intent yet. Which landed intent should it serve? (Recent fix change sets like 01M6MT67 serve milestone-25, the open milestone; milestone-22 is the one about switching stages between autonomous and owner-driven.) / How should Rhiza make sure a milestone plan run (a record change set, or a request of kind milestone) never runs autonomously?"
+        },
+        "handle": "question-58fb9cbb-1",
+        "id": "01M6MYBH597QRAM0PS1NM3X12G",
+        "key": null,
+        "kind": "question",
+        "node": "01M6MYBH597QRAM0PS1MTJFMEP",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6MY8BMPFK9ZWD3TDQHKT64J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MYBJBVRXYWWXAYF7NTB0ZN",
+  "type": "ops",
+  "v": 1
+}

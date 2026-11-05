@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NMJ45J9JJ3D8K9W7J0EBPF",
+  "after": [
+    "01M6NME4AQ7JDBQECC7SDN7FA5"
+  ],
+  "at": "2026-11-05T10:59:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier attempt 3 at e0077afc: go build ./... and go vet ./... pass; internal/tui keeps only autonomyapp, daemonapp, inboxapp, launcher, modalopen, modalshell, requestapp, runsapp (changesapp, healthapp, modelapp, readapps, roadmapapp, writeapps deleted with their tests), cmd/rhiza/tui.go has no branches for them, and the Makefile's BUDGET_PKGS drops ./internal/tui/modelapp. A scratch build run as `rhiza tui app <name> --once` exits 4 with 'unknown app' for roadmap, model, health, changes, show, live (and read, write, requests). go test ./cmd/rhiza -run TestScripts passes tui-old-apps-gone, rex-install, text-refs-display and the unchanged roadmap*, show, why*, slice*, health*, change scripts (the diff touches none of the wrapped commands' scripts). go test ./internal/tui/... and ./internal/quiettest pass; ./internal/api passes with the timing budgets skipped (TestReadBudget missed its what-if medians under CPU contention from parallel runs; make test runs it alone under lock)."
+        },
+        "handle": "old-apps-deleted-verified-3",
+        "id": "01M6NNTCGCAEE8BWEPF92F8VRP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NNTCGCAEE8BWEPF5NZ7MP9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NNTCGCAEE8BWEPF5NZ7MP9",
+        "id": "01M6NNTFGQD8X1YCP6KR90EAY9",
+        "link": "01M6NNTFGQD8X1YCP6KPQM4RVT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZD2ER8DDHNYK3W3C04SYB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NNTNX781WCT67JF02Q3N36",
+  "type": "ops",
+  "v": 1
+}

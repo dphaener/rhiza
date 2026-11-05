@@ -1,0 +1,30 @@
+{
+  "actor": "01M6JB2BA91XQKMXEFXVMD500X",
+  "after": [
+    "01M6JB1XQVPJ3J50YKX8Z6PZWX"
+  ],
+  "at": "2026-11-04T03:57:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "b5fe1d11-4e23-4674-ae5d-01a1a4b11ff3",
+          "statement": "Since #210 run drivers are headless (no REX_BLOCK), so rhiza's own blocked-run notice (title = tab, msg naming change set, step and question) is never written; the only status Rex sees is Claude Code's native OSC 7501 report in the agent tab, which chimes but shows no banner. Where should a headless run's blocked notice be written? / The missing banner (chime heard, no macOS banner) is Rex's presentation choice, which its docs leave undocumented. How should the Rex upstream report be handled?"
+        },
+        "handle": "question-b5fe1d11-1",
+        "id": "01M6JB9067EQTYHPG8V1RCCGS2",
+        "key": null,
+        "kind": "question",
+        "node": "01M6JB9067EQTYHPG8V1N343KW",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6JB1XQVPJ3J50YKX8MSBVRX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JB91RXYFN8PQWV4ACJ15SS",
+  "type": "ops",
+  "v": 1
+}

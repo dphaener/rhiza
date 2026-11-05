@@ -29,6 +29,23 @@ stderr 'needs its text'
 ! exec rhiza request 'Add exports' --kind chore
 stderr 'one of feature, bug, milestone'
 
+# --milestone names a live milestone intent; anything else is a usage error
+# and queues nothing.
+exec rhiza add intent ms --field milestone=1 --record
+exec rhiza add intent area --record
+! exec rhiza request 'Bad one' --milestone area
+stderr 'not a live milestone intent'
+! exec rhiza request 'Bad two' --milestone nonesuch
+stderr 'no such node'
+exec rhiza request ls
+stdout '^No plan requests$'
+exec rhiza request 'Add paging' --milestone ms
+exec rhiza request ls --json
+stdout '"milestone": "[0-9A-Z]{26}"'
+exec rhiza request ls
+stdout 'Add paging'
+exec rm .git/rhiza/requests.json
+
 # Queue a feature, a bug and a milestone.
 exec rhiza request 'Add exports'
 stdout '^Queued feature request [0-9A-Z]{26}: Add exports$'
@@ -54,28 +71,37 @@ exec rhiza daemon --permission-mode manual --once
 exec rhiza request ls --json
 stdout -count=3 '"state": "queued"'
 
-# Unpaused, one slot: the oldest request's plan run starts, not autonomous.
+# Unpaused, one slot: the milestone request's plan run starts first, not
+# autonomous, whatever the queue order.
 exec rhiza daemon set rhiza.daemon.paused false
 exec rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout -count=1 '^Started the plan run of request '
 exec cat $WORK/detach.log
 stdout -count=1 '^REX_SESSION=.* rhiza '
-stdout 'run start --foreground --workflow plan --new Add exports --request [0-9A-Z]{26} --permission-mode manual$'
+stdout 'run start --foreground --workflow plan --new Ship v2 --request [0-9A-Z]{26} --permission-mode manual --milestone$'
 exec rhiza request ls
-stdout 'feature planning: Add exports \(run [0-9A-Z]{26}\)$'
+stdout 'milestone planning: Ship v2'
+stdout 'feature queued: Add exports$'
 stdout 'bug queued: Login fails$'
 
-# Plan autonomy auto, three slots: the first start, not journaled yet, holds
-# one; the bug and the milestone start, autonomous.
+# A second feature request, queued after the first pass started.
+exec rhiza request 'Add search'
+
+# Plan autonomy auto, four slots: the milestone's start, not journaled yet,
+# holds one; the feature, the bug and the new feature start autonomous. The
+# milestone (always the owner's) never does.
 exec rhiza daemon set rhiza.autonomy.plan auto
-exec rhiza daemon --permission-mode manual --max-runs 3 --once
-stdout -count=2 '^Started the plan run of request '
+exec rhiza daemon --permission-mode manual --max-runs 4 --once
+stdout -count=3 '^Started the plan run of request '
 exec cat $WORK/detach.log
-stdout -count=3 '^REX_SESSION=.* rhiza '
+stdout -count=4 '^REX_SESSION=.* rhiza '
+stdout 'run start --foreground --workflow plan --new Add exports --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
 stdout 'run start --foreground --workflow plan --new Fix Login fails --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
-stdout 'run start --foreground --workflow plan --new Ship v2 --request [0-9A-Z]{26} --permission-mode manual --milestone --autonomous$'
+stdout 'run start --foreground --workflow plan --new Add search --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
+stdout 'run start --foreground --workflow plan --new Ship v2 --request [0-9A-Z]{26} --permission-mode manual --milestone$'
+! stdout 'Ship v2.*--autonomous'
 exec rhiza request ls --json
-stdout -count=3 '"state": "planning"'
+stdout -count=4 '"state": "planning"'
 
 # The first request's tab runs its plan run: it takes the request's run ID,
 # and once it succeeds request ls shows the change set it planned.
@@ -102,6 +128,14 @@ stdout 'feature planned: Add exports \(run [0-9A-Z]{26}, change set [0-9A-Z]{26}
 exec sh -c 'rhiza run start --foreground --workflow plan --new "Add exports" --request $(cat $WORK/req1) --permission-mode manual 2>&1; echo exit=$?'
 stdout 'already has run'
 stdout '^exit=2$'
+
+# The milestone request's tab starts its run as the daemon said, with no
+# --autonomous: its journal is not autonomous (the journal exists: it has a
+# started entry).
+exec sh -c 'rhiza request ls --json | sed -n "s/^      \"id\": \"\(.*\)\",$/\1/p" | sed -n 3p | tr -d "\n" > $WORK/req3'
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Ship v2" --request $(cat $WORK/req3) --permission-mode manual --milestone --no-wait --json'
+exec sh -c 'run=$(rhiza request ls --json | grep -A6 "$(cat $WORK/req3)" | sed -n "s/^ *\"run\": \"\(.*\)\",$/\1/p"); grep -c "\"autonomous\":true" .git/rhiza/runs/$run.jsonl || true'
+stdout '^0$'
 
 fold-ok
 

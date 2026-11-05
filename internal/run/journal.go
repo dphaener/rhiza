@@ -206,6 +206,12 @@ type Started struct {
 	// the owner's gates and questions, recording each. It never changes
 	// an agent's permissions.
 	Autonomous bool `json:"autonomous,omitempty"`
+	// Milestone is the ID of the milestone intent a plan run's request
+	// names, handed to the planner as RHIZA_MILESTONE; empty for none.
+	Milestone string `json:"milestone,omitempty"`
+	// MilestonePlan is true for the plan run of a milestone request: its
+	// interview session waits on the owner from launch.
+	MilestonePlan bool `json:"milestone_plan,omitempty"`
 }
 
 // Block is what a blocked agent step waits on: the kind of block and the
@@ -1015,6 +1021,10 @@ type State struct {
 	// Autonomous is the started entry's Autonomous: the run goes on
 	// without the owner, and every agent it launches is told so.
 	Autonomous bool
+	// Milestone is the started entry's Milestone.
+	Milestone string
+	// MilestonePlan is the started entry's MilestonePlan.
+	MilestonePlan bool
 	// Current is the step entered and not ended, or the next step to
 	// enter. Empty when the run is finished.
 	Current      string
@@ -1299,6 +1309,8 @@ func (j Journal) State() State {
 				st.Definition = s.Definition
 				st.Includes = s.Includes
 				st.Autonomous = s.Autonomous
+				st.Milestone = s.Milestone
+				st.MilestonePlan = s.MilestonePlan
 			}
 		case TypeProcess:
 			if e.Process != nil {

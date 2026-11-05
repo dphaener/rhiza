@@ -1,0 +1,86 @@
+{
+  "actor": "01M6KZZGRMS9819321A42GRP0X",
+  "after": [
+    "01M6KZY264KWTMQJ7XKCAFJSKX"
+  ],
+  "at": "2026-11-04T19:21:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 83445164 I built rhiza (go build ./cmd/rhiza) and ran rhiza init then rhiza ci install in a fresh scratch git repo: it wrote .github/workflows/rhiza.yml, which PyYAML parses to on {push: {branches: [main]}, pull_request}, concurrency group 'rhiza-${{ github.event.pull_request.number || github.ref }}' with cancel-in-progress \"${{ github.event_name == 'pull_request' }}\", and keeps the steps Check against the base branch, Check against the commit before the push and Check a first push. go test -trimpath ./cmd/rhiza -run TestScripts/ci-install -count=1 passed."
+        },
+        "handle": "ci-install-cancels-stale-qa-1",
+        "id": "01M6M04BERDRJGC1Y1TVH5800N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M04BERDRJGC1Y1TRBYERZS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M04BERDRJGC1Y1TRBYERZS",
+        "id": "01M6M04GE1ND98ME3MM6M9GSCD",
+        "link": "01M6M04GE1ND98ME3MM2MRFWFY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HWZ4ZMHV1Q7BYEZF4MPFP7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 83445164 I parsed .github/workflows/ci.yml with PyYAML: on holds only pull_request (branches [main]), no push; concurrency group 'ci-${{ github.event.pull_request.number }}' with cancel-in-progress true; the job still runs make check. go test -trimpath ./internal/ciworkflow -count=1 -v ran TestCIRunsOnPullRequestsOnly and TestCICancelsStaleRuns, both PASS; the package is under ./... so make test runs it."
+        },
+        "handle": "ci-yml-cancels-stale-qa-1",
+        "id": "01M6M04Q83K5ACAA368AG6S0CN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M04Q83K5ACAA3688Q6W2CR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M04Q83K5ACAA3688Q6W2CR",
+        "id": "01M6M04WH2W5VSXH6KZP0JYRY0",
+        "link": "01M6M04WH2W5VSXH6KZJM6V1YW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HX48DQR5E1PQ4JM4QN5H0C",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 83445164, with the built binary in a scratch repo with a bare local origin, real git and a logging fake gh, and a hand-written .git/rhiza/ship state: rhiza ship check --main --settled on a squash merge commit whose tree equals the recorded head's printed 'main at <sha>: the merge commit's tree is the tested head's' and exited 0; with a merge commit of a different tree it printed 'stop: merge commit 7cf4b0b has tree b9f5290, but the tested head 5b43c36 has tree 8e3bca3; main is not what the checks passed on' and exited 75; with no head recorded it exited 2 naming rhiza ship check. The fake gh logged no call for any --main check. rhiza ship merge with origin/main moved past the head printed 'Not merged: origin/main has moved past PR #7's checked head 5b43c36; rebase and check again.', exited 1, made no gh call and recorded no merge commit; with a head holding origin/main it called gh pr merge 7 --squash --match-head-commit <head> and exited 0. go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship-change|run-ship-merge-main-moved|run-ship-merge-tree-differs)$' passed (the full ship-change run back through rebase-merge on a moved main, and the stop on a differing tree)."
+        },
+        "handle": "ship-main-tree-check-qa-1",
+        "id": "01M6M052CN10V9Z15F5PAX53R2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M052CN10V9Z15F5JJAQJ99",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M052CN10V9Z15F5JJAQJ99",
+        "id": "01M6M057AJYCRYPB9N15HVKCGD",
+        "link": "01M6M057AJYCRYPB9N15879BVC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HWX807SBGNFEPCEAHVK0QM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HW7MG0ZVWWHYP903FXV9YF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M05DXWBWH28446EDR346XB",
+  "type": "ops",
+  "v": 1
+}

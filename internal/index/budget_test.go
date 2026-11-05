@@ -13,6 +13,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/gen"
 	"github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/tmpsweep"
 )
 
 // budget is the most the fresh-read path's median may take: milestone 1's
@@ -44,6 +45,8 @@ var (
 )
 
 func TestMain(m *testing.M) {
+	// A run killed by a go test timeout never reached the RemoveAll below.
+	tmpsweep.StaleTemp("rhiza-index-budget-")
 	code := m.Run()
 	if genDir != "" {
 		os.RemoveAll(genDir)

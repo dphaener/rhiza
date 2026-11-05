@@ -1,0 +1,30 @@
+{
+  "actor": "01M6J6G8QG3PH8D900KHBX2KWW",
+  "after": [
+    "01M6J6FDD9GXDW4AENMT3R6JRH"
+  ],
+  "at": "2026-11-04T02:37:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "384d6bb0-11b5-42bf-a242-01a1a467f521",
+          "statement": "Change set 'Fix Plan interviews duplicate' serves no intent yet. Which intent should it serve? I recommend the landed done point m2-interviews-recorded ('Interview answers are recorded as Decisions automatically, a picked option as the agent's wording accepted by the owner…'): the duplicate answer-<sid>-N Decisions and the wrong owner wording for proxy answers are failures of exactly that promise, and its lineage leaf done-captures-answers is the code being fixed."
+        },
+        "handle": "question-384d6bb0-1",
+        "id": "01M6J6Q2REYYQEFTH48S7A0HZ3",
+        "key": null,
+        "kind": "question",
+        "node": "01M6J6Q2REYYQEFTH48R7FCN3H",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6J6FDD9GXDW4AENMS6YNY63",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J6Q4XHQY607NP26Y7TERWN",
+  "type": "ops",
+  "v": 1
+}

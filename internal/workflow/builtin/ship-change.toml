@@ -30,13 +30,13 @@ git add -A -- .rhiza/rendered .rhiza/log &&
 { git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
   git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
 """
-max_visits = 3
+max_visits = 5
 on.pass = "open-pr"
 
 [step.open-pr]
 kind = "command"
 run = "rhiza ship open-pr"
-max_visits = 3
+max_visits = 5
 on.pass = "wait-pr"
 
 [step.wait-pr]
@@ -44,24 +44,46 @@ kind = "wait"
 until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
-max_visits = 3
+max_visits = 5
 on.pass = "pr-green"
 
 [step.pr-green]
 kind = "command"
 run = "rhiza ship check"
-max_visits = 3
+max_visits = 5
 on.pass = "signoff"
+on.fail = "ci-triage"
+
+# A red PR whose CI logs named failing tests goes to one fixer on the run
+# worktree, then back through render-pr, the push and CI. ci-triage passes
+# only when the head's latest ship check recorded a failing test; an infra
+# or unparsable failure has no on.fail and ends the run there. ci-fix runs
+# at most twice, so a third red head with failing tests fails the run, and
+# ci-triage's output names the failing tests.
+[step.ci-triage]
+kind = "command"
+run = "rhiza ship check --test-failures"
+max_visits = 3
+on.pass = "ci-fix"
+
+[step.ci-fix]
+kind = "agent"
+prompt = "/rhiza-review Fix the failing CI tests of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. Read the failing tests from `rhiza ship check --json` (its tests, and its findings, which name no leaf). Re-run only those tests or scripts and their packages, never the repo's full suite: the PR's CI runs it again after your push. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
+until = "true"
+until_when = "done"
+max_visits = 2
+on.pass = "render-pr"
 
 [step.signoff]
 kind = "signoff"
-max_visits = 3
+max_visits = 5
 on.pass = "rebase"
 on.changes = "review/review"
 
 [step.rebase]
 kind = "command"
 run = "rhiza ship rebase"
+max_visits = 3
 on.pass = "wait-rebased"
 
 [step.wait-rebased]
@@ -69,12 +91,15 @@ kind = "wait"
 until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
+max_visits = 3
 on.pass = "rebased-green"
 
 [step.rebased-green]
 kind = "command"
 run = "rhiza ship check"
+max_visits = 3
 on.pass = "land"
+on.fail = "ci-triage"
 
 [step.land]
 kind = "command"
@@ -96,6 +121,7 @@ on.pass = "rebase-merge"
 [step.rebase-merge]
 kind = "command"
 run = "rhiza ship rebase"
+max_visits = 3
 on.pass = "wait-rebased-merge"
 
 [step.wait-rebased-merge]
@@ -103,18 +129,29 @@ kind = "wait"
 until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
+max_visits = 3
 on.pass = "rebased-merge-green"
 
 [step.rebased-merge-green]
 kind = "command"
 run = "rhiza ship check"
+max_visits = 3
 on.pass = "merge"
 
+# Merges nothing when origin/main moved after the head's checks passed:
+# the step fails and the run rebases and waits on the new head again.
 [step.merge]
 kind = "command"
 run = "rhiza ship merge"
+max_visits = 3
 on.pass = "wait-main"
+on.fail = "rebase-merge"
 
+# Main is confirmed locally with git, not by waiting for CI on it, when the
+# merge commit's tree equals the tested head's: the wait passes at its first
+# check. When main moved between the checks and the merge the trees differ,
+# and the wait dispatches CI on the merge commit (once) and waits for it;
+# main-green then stops, with a stop: line, if it failed after a rerun.
 [step.wait-main]
 kind = "wait"
 until = "rhiza ship check --main --settled"

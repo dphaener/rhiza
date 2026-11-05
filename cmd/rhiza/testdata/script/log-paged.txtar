@@ -1,0 +1,60 @@
+# log pages its change sets in apply order, as ls does.
+
+exec rhiza init
+exec rhiza change new One
+exec rhiza add capability store
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+exec rhiza change new Two
+exec rhiza set store --field 'statement=Two'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+exec rhiza change new Three
+exec rhiza set store --field 'statement=Three'
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# Two of three, a cursor, and the next: line.
+exec rhiza log store --limit 2
+stdout -count=2 '^## [0-9A-Z]{26} '
+stdout '^# Log store$'
+stdout '^next: rhiza log store --limit 2 --cursor [A-Za-z0-9_-]+$'
+exec rhiza log store --limit 2 --json
+stdout '"next_cursor": "[A-Za-z0-9_-]+"'
+stdout '"target"'
+stdout '"view"'
+cp stdout page1.json
+
+# log --json and api call log print the same bytes.
+exec rhiza api call log '{"ref":"store","limit":2}'
+cmp stdout page1.json
+
+# That cursor's page holds the third change set and no next_cursor.
+exec sh -c 'rhiza log store --limit 2 | sed -n "s/^next: .* --cursor //p" > cursor.txt'
+exec sh -c 'rhiza log store --limit 2 --cursor "$(cat cursor.txt)"'
+stdout -count=1 '^## [0-9A-Z]{26} '
+stdout '^## [0-9A-Z]{26} accepted intention: Three$'
+! stdout 'next:'
+exec sh -c 'rhiza log store --limit 2 --cursor "$(cat cursor.txt)" --json'
+stdout '"target"'
+stdout '"view"'
+! stdout 'next_cursor'
+
+# --all gives all three; --limit 0 is the default page.
+exec rhiza log store --all
+stdout -count=3 '^## [0-9A-Z]{26} '
+exec rhiza log store --limit 0
+stdout -count=3 '^## [0-9A-Z]{26} '
+! stdout 'next:'
+
+# Usage errors, exit 2.
+! exec rhiza log store --limit -1
+! exec rhiza log store --limit 1001
+! exec rhiza log store --cursor '!!'
+stderr '^rhiza: bad cursor'
+exec sh -c 'rhiza log store --limit 1001 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+exec sh -c 'rhiza log store --cursor "!!" 2>/dev/null; echo exit $?'
+stdout '^exit 2$'

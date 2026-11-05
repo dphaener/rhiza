@@ -14,7 +14,7 @@ At 0bb2f0a6 I ran go test ./cmd/rhiza -run 'TestScripts/(run-start-new|describe-
 
 ### Out
 
-- verifies [run-start-new-intent](../capability/rhiza/roadmap-app-start-runs/run-start-new-intent.md)
+- verifies [run-start-new-intent](../capability/rhiza/workflows/workflow-runs/run-start/run-start-new-intent.md)
 
 ## History
 

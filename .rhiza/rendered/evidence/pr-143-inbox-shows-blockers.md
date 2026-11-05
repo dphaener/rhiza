@@ -26,9 +26,9 @@ verified
 
 ### Out
 
-- verifies [question-answer-op](../capability/rhiza/roadmap-app-accept-answer/question-answer-op.md)
+- verifies [question-answer-op](../capability/rhiza/change-sets/question-answer-op.md)
 - verifies [inbox-blocking-questions](../capability/rhiza/orchestration/inbox/inbox-blocking-questions.md)
-- verifies [inbox-app-answer-question](../capability/rhiza/inbox-app-actions/inbox-app-answer-question.md)
+- verifies inbox-app-answer-question (retired)
 
 ## History
 

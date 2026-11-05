@@ -1,0 +1,40 @@
+{
+  "actor": "01M6J2716N3WH6C0HVQ5KEMMQA",
+  "after": [
+    "01M6J27M4CW1D647VRP1YXSN9P"
+  ],
+  "at": "2026-11-04T01:30:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2f765569 ran go test ./internal/api -run 'TestLimitHitsBecomeLearnedLimits|TestSessionRunRecordsLimitHit' -count=1 -v: both PASS. With a fake adapter (usageFake) and fake token records, a limit hit with no reset time records nothing and teaches nothing; a hit resetting 3h out is recorded and learnLimits (the function the daemon poll calls before saving state) puts the session window's use at the hit (350) into daemon.State.Learned as kind session; a hit resetting 4 days out becomes the weekly learned limit (1349); a set setting wins over a learned limit and a window with neither has none. TestSessionRunRecordsLimitHit shows session.run (the run driver) appends the hit to the git common dir's usage.limits.jsonl. Read the diff: learnLimits is called each poll in runDaemon and Learned survives a restart via daemonStartState; KindOf maps reset <=5h to session, later to weekly, zero reset to nothing. go test ./internal/api (full, re-run), ./internal/usage and ./internal/daemon pass; go vet and gofmt -l clean. One earlier full internal/api run failed on a timing budget test under load and passed on re-run."
+        },
+        "handle": "usage-learned-limit-verified",
+        "id": "01M6J2TSSXR960K9K6DK7ZVPC2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6J2TSSXR960K9K6DH9EG6B1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J2TSSXR960K9K6DH9EG6B1",
+        "id": "01M6J2V09RJ2AC4P46TEA08T37",
+        "link": "01M6J2V09RJ2AC4P46TC28E37F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0WFSJ9JEM9JEBHND0VX9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HHMTEDFK2AWQKX50EB77DD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J2V64HA5YVKJ4QAAJXCEFW",
+  "type": "ops",
+  "v": 1
+}

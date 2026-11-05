@@ -14,7 +14,7 @@ At 2254fea, go test -count=1 -v ./internal/tui/liveapp passed all 8 tests (also 
 
 ### Out
 
-- verifies [live-app-runs](../capability/rhiza/live-app-runs.md)
+- verifies live-app-runs (retired)
 
 ## History
 

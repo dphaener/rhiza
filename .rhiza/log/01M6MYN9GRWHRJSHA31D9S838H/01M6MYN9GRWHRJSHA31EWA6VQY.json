@@ -1,0 +1,18 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-05T04:14:50Z",
+  "body": {
+    "intent": "Inbox app: pick an inbox item and do its one action (answer a question or gate, sign off a run, retry or abandon a failed run), then close; rebuilt on the modal shell over the inbox, question.answer, run.approve, run.resume and run.abandon operations, replacing internal/tui/inboxapp and retiring the capabilities of the old inbox app it replaces",
+    "kind": "intention",
+    "sources": [
+      "01M6MYKNE2EZ4DA6RS0B5XEGHQ"
+    ],
+    "title": "Inbox app on the modal shell"
+  },
+  "change_set": "01M6MYN9GRWHRJSHA31D9S838H",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MYN9GRWHRJSHA31EWA6VQY",
+  "type": "open",
+  "v": 2
+}

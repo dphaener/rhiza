@@ -14,7 +14,7 @@ At 302d9b36, with the built binary in a scratch repo: rhiza question answer stor
 
 ### Out
 
-- verifies [question-answer-op](../capability/rhiza/roadmap-app-accept-answer/question-answer-op.md)
+- verifies [question-answer-op](../capability/rhiza/change-sets/question-answer-op.md)
 
 ## History
 

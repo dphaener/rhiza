@@ -1,0 +1,40 @@
+{
+  "actor": "01M6HF60FE7MV8JVPS0ZXGN36F",
+  "after": [
+    "01M6HF43H8Q7502CSSVJC0S69V"
+  ],
+  "at": "2026-11-03T20:03:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 on the Ubuntu VM. Built the binary (go build -o $TMPDIR/rhiza-x ./cmd/rhiza); in a scratch repo, rhiza health shows the host's 63.2 GiB disk, 1.0 TiB with RHIZA_TEST_NOW+RHIZA_TEST_FREE_BYTES=1099511627776, bad at 1.0 GiB, and the host figure when RHIZA_TEST_NOW is unset. Ran go test -count=1 ./cmd/rhiza with TMPDIR on a 3.7G tmpfs (/dev/shm): at the merge-base 15 scripts fail (daemon-picks, daemon-status, daemon-pause, run-start-queue, stage-autonomy and others); at HEAD the whole package passes (ok, 474s). Pointed daemon-picks' reset line at 1073741824: it fails at line 78 (no 'Started a run of'); reverted, daemon-picks, health, daemon-notify-disk-low and free-bytes-default pass. No script sets RHIZA_TEST_FREE_BYTES to empty."
+        },
+        "handle": "scripts-free-disk-hermetic-qa-1",
+        "id": "01M6HG54WRM33GW9KRZNW36X7H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6HG54WRM33GW9KRZKV0EEJK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HG54WRM33GW9KRZKV0EEJK",
+        "id": "01M6HG57JVDVGX9ME7EP1GQZYQ",
+        "link": "01M6HG57JVDVGX9ME7EKV3ECM6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GGX8QP23PVT25E5XDZ7X49",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6GG7VES74Y7T74DD8HKXFJ7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HG5B6HP25TYX8CCMCK9XPH",
+  "type": "ops",
+  "v": 1
+}

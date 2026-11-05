@@ -1,0 +1,40 @@
+{
+  "actor": "01M6N24MACYVXZ5Q1QR0ZFJJCG",
+  "after": [
+    "01M6N2BD331TADHMGNEJR8YVZ3"
+  ],
+  "at": "2026-11-05T05:33:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c9abeb84 ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-milestone-request|plan-requests)$' -count=1: ok. daemon-milestone-request.txtar (fake rex, --max-runs 1, one ship run already started) queues a feature then a milestone request; daemon --once starts only the milestone request (detach log shows run start --foreground --workflow plan --new First milestone ... --milestone), request ls shows the feature still queued, and a second milestone request queued while the first's run is in flight stays queued on the next --once. Mutations in a scratch copy: an extra --once with only the feature queued starts nothing (the started run really holds the one slot); restoring HEAD~1's internal/api/daemon.go and request.go makes the script fail at line 79 (no plan run started). The diff starts milestone requests first via daemonPlanRequests(onlyKind=milestone) ignoring slots, stops at one, skips while a milestone request's run is live or unjournaled, and counts it in kept/running for later picks. Also ran TestScripts/(daemon|usage|plan-req|request): ok; go test -trimpath ./internal/api/: ok twice, after one earlier FAIL in a run that shared the CPU with the testscripts, not reproduced."
+        },
+        "handle": "milestone-request-starts-at-once-verified",
+        "id": "01M6N360MDXBQCD3P0V8KAWV0S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N360MDXBQCD3P0V73WT42M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N360MDXBQCD3P0V73WT42M",
+        "id": "01M6N362WCB2B8YJASHBNJTW7J",
+        "link": "01M6N362WCB2B8YJASHA445PS5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYSEB8N545M8M9APZTBXYS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYFH4QYGSKDATBH509SEJF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N366B0T3T8SX8WWP889JJK",
+  "type": "ops",
+  "v": 1
+}

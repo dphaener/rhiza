@@ -1,0 +1,33 @@
+# workflow ls shows each name once with its winning layer and path, and
+# the layers it shadows. --json is the bytes of api call workflow.ls.
+
+env XDG_CONFIG_HOME=$WORK/xdg
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/w.toml .rhiza/workflows/build.toml
+cp $WORK/w.toml .rhiza/workflows/mine.toml
+mkdir $WORK/xdg/rhiza/workflows
+cp $WORK/w.toml $WORK/xdg/rhiza/workflows/build.toml
+cp $WORK/w.toml $WORK/xdg/rhiza/workflows/solo.toml
+
+exec rhiza workflow ls
+stdout '^build personal '$WORK'/xdg/rhiza/workflows/build.toml$'
+stdout '^  shadows repo '$WORK'/repo/.rhiza/workflows/build.toml$'
+stdout '^  shadows builtin builtin:build$'
+stdout '^mine repo '$WORK'/repo/.rhiza/workflows/mine.toml$'
+stdout '^plan builtin builtin:plan$'
+stdout '^solo personal '
+stdout '^ship-change builtin builtin:ship-change$'
+! stdout 'shadows.*plan'
+
+exec rhiza workflow ls --json
+cp stdout ls.json
+exec rhiza api call workflow.ls
+cmp stdout ls.json
+stdout '"layer": "personal"'
+
+-- w.toml --
+name = "x"

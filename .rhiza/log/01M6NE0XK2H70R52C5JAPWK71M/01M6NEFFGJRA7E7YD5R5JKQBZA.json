@@ -1,0 +1,30 @@
+{
+  "actor": "01M6NE20AB8JW4PDEKF18EP281",
+  "after": [
+    "01M6NEDXDNWXCVPWPD8Z7FXHQP"
+  ],
+  "at": "2026-11-05T08:51:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "a750dc81-b9fe-4c2e-904f-01a1aae0d697",
+          "statement": "Profiling 'rhiza change show' on this repo (2,539 log entries) shows ~5 s of CPU spent reading the log (each entry decoded and re-canonicalized) and ~1.5 s folding it, every time. Drivers run in-process polls plus a 'rhiza ship check --settled' subprocess every 10 s, and 'rhiza apply' pays the full read per call. How should model reads be made cheap?"
+        },
+        "handle": "question-a750dc81-2",
+        "id": "01M6NEFDS6ZHEKC2RFKB846V4E",
+        "key": null,
+        "kind": "question",
+        "node": "01M6NEFDS6ZHEKC2RFK7QRFPEE",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6NE0XK2H70R52C5JAPWK71M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NEFFGJRA7E7YD5R5JKQBZA",
+  "type": "ops",
+  "v": 1
+}

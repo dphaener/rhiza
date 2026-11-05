@@ -14,7 +14,7 @@ At 4457f88, attempt 2: go test ./cmd/rhiza -run TestScripts/tui-read-apps -count
 
 ### Out
 
-- verifies [read-apps-match-cli](../capability/rhiza/read-apps-match-cli.md)
+- verifies read-apps-match-cli (retired)
 
 ## History
 

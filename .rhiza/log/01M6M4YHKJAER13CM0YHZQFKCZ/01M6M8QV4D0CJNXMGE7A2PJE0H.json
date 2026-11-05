@@ -1,0 +1,40 @@
+{
+  "actor": "01M6M7JBBC3ECDNPS8JST2BXKE",
+  "after": [
+    "01M6M5GKQM1SMG1S47KHFCBYBE"
+  ],
+  "at": "2026-11-04T21:51:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at d08e4ee5. I read the diffs of 7fd9c685 and d08e4ee5. `go test ./cmd/rhiza -run TestScripts/run-resume-lost -count=1` passes. run-resume-lost-fixer.txtar resumes a review run (a checks step with a change-set fixer) whose fixer session ended unseen. It has two cases. In the hook case the record has a SessionEnd hook report and no exit. The record gets state lost with the detail 'SessionEnd without an exit report', and no rex block inspect is made. In the block case the fake rex answers 'block not found'. The record gets state lost with the detail 'Rex block not found', and exactly one block inspect is made. In both cases review-fix-judged attempt 1 is outcome fail with detail 'lost: ...', fixer attempt 2 passes with a commit, check alpha re-runs in cycle 2, and the run succeeds. internal/api TestPollHookEndedIsLostWithoutRex passes: a record that gains the SessionEnd mark mid-run is judged Lost/fail on the next AgentStatus poll, with no rex call. Rejoin/Lost tests for unreachable-Rex retry and exit-is-final also pass. The engine tests TestAgentRejoinOnResumeOnly and TestAgentLostSession pass. make fmt-check, vet and the full make test pass (a second full run hit a TestReadBudget timing miss under machine load; the diff does not touch the read path, and the test passed when re-run alone). make self-check fails only on stale .rhiza/rendered files from the builders' actor records, which close-out's rhiza render regenerates."
+        },
+        "handle": "run-finds-sessions-ended-unseen-verified",
+        "id": "01M6M8QMZWGPTKNC3CXC8W83AZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M8QMZWGPTKNC3CX998BWJR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M8QMZWGPTKNC3CX998BWJR",
+        "id": "01M6M8QQBPJCDF31FD5202QZWF",
+        "link": "01M6M8QQBPJCDF31FD4ZRFPGFR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M5728P8TFP8BH3N3B7WJ16",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M4YHKJAER13CM0YHZQFKCZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M8QV4D0CJNXMGE7A2PJE0H",
+  "type": "ops",
+  "v": 1
+}

@@ -85,6 +85,10 @@ type AddRequest struct {
 	// handleFor, when set, names the node from its new ID in place of
 	// Handle: note add's automatic note-<short id>.
 	handleFor func(id.ID) string
+	// lenient is set by the engine's own writes of free text (asks, notes,
+	// answers): an unresolvable reference is stored as a literal @ instead
+	// of refusing the write.
+	lenient bool
 }
 
 // SetRequest changes a node's handle or fields.
@@ -94,6 +98,10 @@ type SetRequest struct {
 	Fields     []string `json:"fields,omitempty" flag:"field" desc:"Set a text field, name=text"`
 	JSONFields []string `json:"json_fields,omitempty" flag:"json-field" desc:"Set a JSON field, name=<json>"`
 	Unset      []string `json:"unset,omitempty" desc:"Remove a field by name"`
+	Rebase     bool     `json:"rebase,omitempty" desc:"When the change set already updates the node, move that update onto the node's landed version; refused unless this call sets or unsets every field the update writes"`
+
+	// lenient is as on AddRequest.
+	lenient bool
 }
 
 // MvRequest moves a node in its tree.
@@ -119,12 +127,21 @@ func buildAdd(b writeBase, r AddRequest) (edit, error) {
 	if !slices.Contains(op.Kinds(), kind) {
 		return edit{}, Usagef("unknown kind %q: want one of %s", r.Kind, joinKinds()).WithNext("rhiza describe add")
 	}
-	fields, err := parseFields(r.Fields, r.JSONFields)
+	texts, err := resolveFieldTexts(b, kind, r.Fields, nil, r.lenient)
+	if err != nil {
+		return edit{}, err
+	}
+	fields, err := parseFields(texts, r.JSONFields)
 	if err != nil {
 		return edit{}, err
 	}
 	if err := knownFieldsOnly("add", kind, fields); err != nil {
 		return edit{}, err
+	}
+	if kind == op.KindAnchor {
+		if fields, _, err = anchorFingerprint(b.root, fields, fields, nil, false); err != nil {
+			return edit{}, err
+		}
 	}
 	var parent id.ID
 	var k string
@@ -176,7 +193,11 @@ func buildSet(b writeBase, r SetRequest) (edit, error) {
 	if err != nil {
 		return edit{}, err
 	}
-	set, err := parseFields(r.Fields, r.JSONFields)
+	texts, err := resolveFieldTexts(b, n.Kind, r.Fields, n.Fields, r.lenient)
+	if err != nil {
+		return edit{}, err
+	}
+	set, err := parseFields(texts, r.JSONFields)
 	if err != nil {
 		return edit{}, err
 	}
@@ -204,6 +225,16 @@ func buildSet(b writeBase, r SetRequest) (edit, error) {
 		handle = r.Handle
 	}
 
+	if n.Kind == op.KindAnchor {
+		var drop bool
+		if set, drop, err = anchorFingerprint(b.root, mergeFields(n.Fields, set, unset), set, unset, true); err != nil {
+			return edit{}, err
+		}
+		if drop && !slices.Contains(unset, "fingerprint") {
+			unset = slices.Sorted(slices.Values(append(unset, "fingerprint")))
+		}
+	}
+
 	var o op.Op
 	if c, ok := b.pendingOp(n.Pending, op.TypeNodeCreate); ok {
 		o = c
@@ -213,6 +244,22 @@ func buildSet(b writeBase, r SetRequest) (edit, error) {
 		o.Fields = mergeFields(c.Fields, set, unset)
 	} else if u, ok := b.pendingOp(n.Pending, op.TypeNodeUpdate); ok {
 		o = u
+		if r.Rebase {
+			// Moving the update onto the landed version clears a stale
+			// base, but only safely when this call restates everything the
+			// update writes: a field it left alone would silently replace
+			// landed work.
+			for _, name := range append(slices.Collect(maps.Keys(u.Set)), u.Unset...) {
+				_, isSet := set[name]
+				if !isSet && !slices.Contains(unset, name) {
+					return edit{}, Usagef("--rebase needs every field the pending update writes; set or unset %q too", name)
+				}
+			}
+			if n.Version.IsZero() {
+				return edit{}, Errorf("node %s has no landed version to rebase onto", n.ID)
+			}
+			o.Base = n.Version
+		}
 		if r.Handle != "" {
 			o.Handle = r.Handle
 		}

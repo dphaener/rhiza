@@ -1,0 +1,40 @@
+{
+  "actor": "01M6M9GTNAKAT72VSWF2D2BSZ9",
+  "after": [
+    "01M6M858809DTFQ0ZZABMJ3907"
+  ],
+  "at": "2026-11-04T22:07:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e7e52b13 ran go test -trimpath -count=1 ./cmd/rhiza -run TestScripts/build-verifier-checkout: PASS. The fake verifier runs in its own detached checkout; diff -r of the session's actor record change set between RHIZA_ROOT and the checkout shows no difference, rhiza show <actor> resolves there and rhiza add actor <actor> --record is refused (captured in a scratch copy of the script: 'handle \"claude-code-a6fe1895-2\" is taken by node ...'). The checkout commits its copy on branch checkout-copy, the script commits the build worktree's log, merges both in a fresh worktree with a clean status, and rhiza render + rhiza check print ok, with rhiza ls --kind actor --json counting exactly one node for the handle; fold-ok passes. Read the diffs of 920738fb (session start copies the actor record change set into r.dir via copyChangeSetLog, same files and IDs) and e7e52b13 (the merge step that closes review finding f1). make check: fmt, vet and all go tests pass; self-check fails only on stale rendered actor files from the run's own chore record commits, not from this leaf."
+        },
+        "handle": "actor-record-in-checkout-verified-2",
+        "id": "01M6M9MCP3KDDY6BZQBRQBZBN3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M9MCP3KDDY6BZQBPFRDMS3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M9MCP3KDDY6BZQBPFRDMS3",
+        "id": "01M6M9MFXQR04J9PZDD5MFYB3E",
+        "link": "01M6M9MFXQR04J9PZDD1NHDCYF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M2ZMM64QSSKQTP1FKH76NJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M2R7RJCMNMMKH0KS2364BK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M9MMX3AWSGXQT4S8QG6VEA",
+  "type": "ops",
+  "v": 1
+}

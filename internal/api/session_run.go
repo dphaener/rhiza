@@ -54,6 +54,8 @@ const (
 	envRun    = "RHIZA_RUN"
 	// envAutonomous is set to 1 for an agent an autonomous run launched.
 	envAutonomous = "RHIZA_AUTONOMOUS"
+	// envMilestone is the milestone a plan run's request names.
+	envMilestone = "RHIZA_MILESTONE"
 	// envLeaf, envAttempt, envRole and envCommit are a leaf session's leaf
 	// handle, attempt, role and, for a verifier, the commit it checks.
 	envLeaf    = run.EnvLeaf
@@ -91,6 +93,7 @@ type SessionRunResponse struct {
 	Env       []string    `json:"env" desc:"The variables set over this terminal's environment for the agent"`
 	Code      int         `json:"code" desc:"The agent's exit code, which is also this command's; 128 plus the signal number if a signal ended it"`
 	Decisions []string    `json:"decisions,omitempty" desc:"Handles of the Decisions proposed from the questions the owner answered (see session.interview)"`
+	Skipped   []string    `json:"skipped,omitempty" desc:"Handles of answers already recorded as Decisions, left alone (see session.interview)"`
 	Warnings  []string    `json:"warnings,omitempty" desc:"Status reports that could not be copied while the agent ran, token use that could not be recorded, and a failed capture of the owner's answers"`
 	DryRun    bool        `json:"dry_run,omitempty" desc:"True if nothing was started or written"`
 }
@@ -185,7 +188,7 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("cannot run session %s: this caller starts no programs", rec.ID)
 	}
 
-	follow := followRex(ctx, st, rec.ID)
+	follow := followRex(ctx, st, rec)
 	var code int
 	var paused []string
 	for pause := 0; ; pause++ {
@@ -207,10 +210,11 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 			resp.Warnings = follow.stop()
 			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("wait for %s: %v", a.Name(), err))
 		}
-		wait, limited := limitWait(ctx, a, rec.ID)
+		wait, hit, limited := limitWait(ctx, a, rec.ID)
 		if !limited {
 			break
 		}
+		recordLimitHit(ctx, a, hit)
 		if pause >= maxUsageLimitPauses {
 			resp.Warnings = follow.stop()
 			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("%s is still stopped at its usage limit after %d pauses: gave up instead of pausing again", a.Name(), maxUsageLimitPauses))
@@ -244,8 +248,12 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	}
 	resp.Warnings = append(follow.stop(), paused...)
 	resp.Code = code
+	// An exit already recorded (a run that judged the session lost) is
+	// final: the run has acted on it, so the record keeps it.
 	updated, err := st.Update(rec.ID, func(r *session.Record) {
-		r.Status.Exit = &session.Report{State: session.StateExited, Code: &code, At: ctx.Now().UTC()}
+		if !r.Status.Exited() {
+			r.Status.Exit = &session.Report{State: session.StateExited, Code: &code, At: ctx.Now().UTC()}
+		}
 	})
 	if err != nil {
 		resp.Warnings = append(resp.Warnings, fmt.Sprintf("record the exit: %v", err))
@@ -258,7 +266,7 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		rec = updated
 	}
 	resp.Session = sessionInfo(rec)
-	resp.Decisions, resp.Warnings = captureAfterRun(ctx, rec, resp.Warnings)
+	resp.Decisions, resp.Skipped, resp.Warnings = captureAfterRun(ctx, rec, resp.Warnings)
 	return resp, nil
 }
 
@@ -329,22 +337,22 @@ func watchLimit(ctx *Ctx, a adapter.Adapter, sid string, base int, p Process) (s
 // limit and how long to wait before resuming it: until the reset time the
 // agent gave, else usageLimitWait. A transcript that cannot be read is no
 // limit.
-func limitWait(ctx *Ctx, a adapter.Adapter, sid string) (time.Duration, bool) {
+func limitWait(ctx *Ctx, a adapter.Adapter, sid string) (time.Duration, adapter.UsageLimit, bool) {
 	if ctx.Home == "" && ctx.Getenv == nil {
-		return 0, false
+		return 0, adapter.UsageLimit{}, false
 	}
 	transcript, err := readTranscript(ctx, a, sid)
 	if err != nil {
-		return 0, false
+		return 0, adapter.UsageLimit{}, false
 	}
 	l, ok := a.UsageLimit(transcript)
 	if !ok {
-		return 0, false
+		return 0, adapter.UsageLimit{}, false
 	}
 	if l.ResetAt.IsZero() {
-		return usageLimitWait, true
+		return usageLimitWait, l, true
 	}
-	return max(0, l.ResetAt.Sub(ctx.Now())), true
+	return max(0, l.ResetAt.Sub(ctx.Now())), l, true
 }
 
 // recordLimitPause records a working report with detail as the session's
@@ -447,12 +455,12 @@ func runTokenUse(u session.TokenUse) run.TokenUse {
 }
 
 // captureAfterRun proposes the session's answered questions as Decisions
-// once its agent has exited, and returns their handles and warnings with a
-// failure appended. A caller that gives neither a home folder nor an
+// once its agent has exited, and returns their handles, the handles of the
+// answers skipped as already recorded, and warnings with a failure appended. A caller that gives neither a home folder nor an
 // environment has no transcript to find, so nothing is captured.
-func captureAfterRun(ctx *Ctx, rec session.Record, warnings []string) ([]string, []string) {
+func captureAfterRun(ctx *Ctx, rec session.Record, warnings []string) (proposed, skipped, _ []string) {
 	if ctx.Home == "" && ctx.Getenv == nil {
-		return nil, warnings
+		return nil, nil, warnings
 	}
 	got, err := captureInterview(ctx, rec)
 	if err != nil {
@@ -461,13 +469,15 @@ func captureAfterRun(ctx *Ctx, rec session.Record, warnings []string) ([]string,
 		if e.Next != "" {
 			msg += " (next: " + e.Next + ")"
 		}
-		return nil, append(warnings, msg)
+		return nil, nil, append(warnings, msg)
 	}
-	var handles []string
 	for _, p := range got.Proposed {
-		handles = append(handles, p.Handle)
+		proposed = append(proposed, p.Handle)
 	}
-	return handles, warnings
+	if len(got.Skipped) > 0 {
+		skipped = got.Skipped
+	}
+	return proposed, skipped, warnings
 }
 
 // launchEnv is what the agent's environment gets over the terminal's: the
@@ -497,6 +507,11 @@ func launchEnv(rec session.Record) (set, unset []string) {
 		set = append(set, envAutonomous+"=1")
 	} else {
 		unset = append(unset, envAutonomous)
+	}
+	if rec.Milestone != "" {
+		set = append(set, envMilestone+"="+rec.Milestone)
+	} else {
+		unset = append(unset, envMilestone)
 	}
 	if rec.Leaf != "" {
 		set = append(set, envLeaf+"="+rec.Leaf, envAttempt+"="+strconv.Itoa(rec.Attempt))
@@ -563,7 +578,8 @@ type rexFollower struct {
 // followRex starts `rex events` for the caller's Rex session and copies
 // every status report of the caller's block into the record's rex source.
 // Outside Rex, or when Rex cannot be started, it follows nothing.
-func followRex(ctx *Ctx, st *session.Store, sid string) *rexFollower {
+func followRex(ctx *Ctx, st *session.Store, rec session.Record) *rexFollower {
+	sid := rec.ID
 	f := &rexFollower{}
 	if ctx.RexBlock == "" || ctx.RexSession == "" || ctx.Start == nil {
 		return f
@@ -574,12 +590,14 @@ func followRex(ctx *Ctx, st *session.Store, sid string) *rexFollower {
 		return f
 	}
 	f.p, f.done = p, make(chan struct{})
+	wrote := &blockedNotice{}
 	go func() {
 		defer close(f.done)
 		rd := bufio.NewReader(p.Output())
 		for {
 			line, err := rd.ReadBytes('\n')
-			if rep, exited, ok := rexStatus(line, ctx.RexBlock); ok {
+			if rep, exited, ok := rexStatus(line, ctx.RexBlock); ok && !wrote.echoes(rep) {
+				wrote.notify(ctx, rec, rep)
 				rep.At = ctx.Now().UTC()
 				if _, uerr := st.Update(sid, func(r *session.Record) { recordRex(r, rep, exited) }); uerr != nil {
 					f.warnings = append(f.warnings, fmt.Sprintf("record rex status %s: %v", rep.State, uerr))
@@ -768,7 +786,7 @@ func recordHook(ctx *Ctx, st *session.Store, rec session.Record, a adapter.Adapt
 	// An agent stopped at its usage limit goes idle at its prompt and stays
 	// there; it is paused, not ready, until session.run stops and resumes it.
 	if report.State == session.StateIdle {
-		if _, limited := limitWait(ctx, a, rec.ID); limited {
+		if _, _, limited := limitWait(ctx, a, rec.ID); limited {
 			report.State, report.Detail = session.StateWorking, limitPausedDetail
 		}
 	}
@@ -925,6 +943,9 @@ func (r SessionRunResponse) Human(w io.Writer) {
 	for _, h := range r.Decisions {
 		fmt.Fprintf(w, "- Proposed decision %s\n", h)
 	}
+	for _, h := range r.Skipped {
+		fmt.Fprintf(w, "- Skipped %s: already recorded\n", h)
+	}
 	for _, warn := range r.Warnings {
 		fmt.Fprintf(w, "- Warning: %s\n", warn)
 	}
@@ -994,4 +1015,45 @@ func trustFolders(ctx *Ctx, a adapter.Adapter, rec session.Record) string {
 		return warn(werr)
 	}
 	return ""
+}
+
+// blockedNotice is the blocked report a session's wrapper wrote to its own
+// tab, so a headless run's block reaches Rex with no driver: rexStatus has
+// no app filter, so the echo of the report must not become the record's Rex
+// status.
+type blockedNotice struct {
+	state, kind, msg string
+	set              bool
+}
+
+// echoes reports whether rep is the echo of the report written last.
+func (b *blockedNotice) echoes(rep session.Report) bool {
+	return b.set && rep.State == b.state && rep.Kind == b.kind && rep.Detail == b.msg
+}
+
+// notify writes rhiza's root-record blocked report for an agent's blocked
+// rep to the tab, once per block. It writes nothing for a question the
+// run's arbiter answers (an autonomous run's), outside a run, or when the
+// block ends: the agent's next report replaces the notice.
+func (b *blockedNotice) notify(ctx *Ctx, rec session.Record, rep session.Report) {
+	if rep.State != session.StateBlocked {
+		b.set = false
+		return
+	}
+	if ctx.Rex == nil || rec.Run == "" || (rec.Autonomous && rep.Kind == session.KindQuestion) {
+		return
+	}
+	n := run.Notice{
+		Change: rec.Change, Title: rec.Title, Step: rec.Step, Session: rec.ID, Blocked: true,
+		Block: &run.Block{Kind: rep.Kind, Question: rep.Detail, TabTitle: rec.Tab.Title},
+	}
+	ctx.Rex.Write(rexNotice(n))
+	// The echo carries the report as rexRecord encodes it: the kind only
+	// when Rex knows it, the message sanitized and capped by rexField.
+	kind := ""
+	switch rep.Kind {
+	case session.KindPermission, session.KindQuestion, session.KindAuth:
+		kind = rep.Kind
+	}
+	b.state, b.kind, b.msg, b.set = session.StateBlocked, kind, rexField(rexNoticeMsg(n), rexMsgMax), true
 }

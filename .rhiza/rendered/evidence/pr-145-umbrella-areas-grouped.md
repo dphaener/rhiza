@@ -28,7 +28,7 @@ verified
 
 - verifies [roadmap-umbrella-group](../capability/rhiza/views/roadmap/roadmap-umbrella-group.md)
 - verifies [umbrella-not-ready](../capability/rhiza/views/ready-next/umbrella-not-ready.md)
-- verifies [roadmap-app-umbrella-row](../capability/rhiza/roadmap-app-list/roadmap-app-umbrella-row.md)
+- verifies roadmap-app-umbrella-row (retired)
 
 ## History
 

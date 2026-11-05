@@ -327,9 +327,46 @@ func (r SearchResponse) Human(w io.Writer) {
 }
 
 // Search returns the live nodes that may match terms (lower-case words),
-// of kinds when given, sorted by ID. The stored views read the FTS table;
-// what-if reads the overlay.
+// of kinds when given, sorted by ID, with their texts shown. The stored
+// views read the FTS table; what-if reads the overlay. The tables hold the
+// stored text, where a reference is an ID, so the candidates of each term
+// also include the nodes that refer to a node the term finds: the caller
+// matches the shown text.
 func (r *reader) Search(terms []string, kinds []op.Kind) ([]gmodel.Node, error) {
+	byID := map[id.ID]gmodel.Node{}
+	add := func(ns []gmodel.Node) {
+		for _, n := range ns {
+			byID[n.ID] = n
+		}
+	}
+	for _, t := range terms {
+		ns, err := r.searchStored([]string{t}, nil)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range ns {
+			if len(kinds) == 0 || slices.Contains(kinds, n.Kind) {
+				byID[n.ID] = n
+			}
+			if !slices.ContainsFunc(index.Tokens(n.Handle), func(w string) bool { return strings.HasPrefix(w, t) }) {
+				continue
+			}
+			ref, err := r.searchStored([]string{strings.ToLower(n.ID.String())}, kinds)
+			if err != nil {
+				return nil, err
+			}
+			add(ref)
+		}
+	}
+	out := make([]gmodel.Node, 0, len(byID))
+	for _, n := range byID {
+		out = append(out, r.shown(n))
+	}
+	slices.SortFunc(out, func(a, b gmodel.Node) int { return id.Compare(a.ID, b.ID) })
+	return out, nil
+}
+
+func (r *reader) searchStored(terms []string, kinds []op.Kind) ([]gmodel.Node, error) {
 	if r.ov != nil {
 		ns, err := r.ov.Search(terms, kinds)
 		return ns, readError(err)

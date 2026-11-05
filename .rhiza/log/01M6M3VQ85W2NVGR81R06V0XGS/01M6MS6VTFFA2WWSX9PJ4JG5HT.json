@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MS30ZZYY1EMF21WN0W6V85",
+  "after": [
+    "01M6MS0SZ0V4DCFG3HNRBB8SE2"
+  ],
+  "at": "2026-11-05T02:39:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from the branch head and drove it by hand in a scratch git repo (fake rex on PATH, detach recorded via RHIZA_TEST_DETACH_LOG): three change sets queued with rhiza run start --workflow plan. With no request, daemon --once --max-runs 3 started all three. With request 'Add exports' queued, daemon --once --max-runs 3 started two queued runs plus the request's plan run, leaving one start in starts.json; the next poll started it. With --max-runs 1 and a queued request, the queued start took the slot and the request stayed queued. Also ran TestScripts/daemon-queued-start-slot and daemon-request-slot: ok."
+        },
+        "handle": "queued-start-request-slot-kept-qa-1",
+        "id": "01M6MS6BS7NH93VFNAAX8BVRGX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MS6BS7NH93VFNAASP280EZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MS6BS7NH93VFNAASP280EZ",
+        "id": "01M6MS6GWF4QQAW3AR0DS72341",
+        "link": "01M6MS6GWF4QQAW3AR0D0YRMNQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M438EJP4VAN9P056CW2BNA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M3VQ85W2NVGR81R06V0XGS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MS6VTFFA2WWSX9PJ4JG5HT",
+  "type": "ops",
+  "v": 1
+}

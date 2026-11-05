@@ -1,0 +1,40 @@
+{
+  "actor": "01M6K77VSPQ9RY0NBXRJKA1SJM",
+  "after": [
+    "01M6K6NXKK71YKBFEQAAJWTKBM"
+  ],
+  "at": "2026-11-04T12:20:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-09d03f6f at f65c3f54: go test ./cmd/rhiza -run 'TestScripts/(text-refs|describe-golden)' passes (text-refs-write.txtar, text-refs-engine-writes.txtar, describe-golden unchanged since lenient is unexported). make check passed fmt-check, vet and test, then self-check failed only on stale .rhiza/rendered files (no render before landing, as expected). Ran a scratch repo by hand with a fresh build under env -i. @<16-char ID prefix> stores @{full ID}. An add with @nosuch in statement and @nope2 in acceptance exits 4 naming both refs with their fields and next 'fix the handle, or write @@ for a literal @', and nothing is written. --json gives code not_found. A source's summary/title keep @nosuch/@other verbatim. After gone is retired: set holder statement=@{gone ID} where statement already held it succeeds and stores it; the same ref in holder's acceptance field and in a new node exits 4. Read the diff: resolution is in buildAdd/buildSet with strict/lenient modes. Engine writes (notes, question answer, run/check/leaf/review/interview/rebase questions, ship evidence) are lenient per text-ref-engine-writes. The rebase dedupe compares against the leniently resolved statement. The guide tells agents to write @handle."
+        },
+        "handle": "text-ref-write-verified",
+        "id": "01M6K80PZDBN9YKGVKMTRZZHX4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6K80PZDBN9YKGVKMQJG9AB7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6K80PZDBN9YKGVKMQJG9AB7",
+        "id": "01M6K818PQ1DXJSN6XHNM5KEWK",
+        "link": "01M6K818PQ1DXJSN6XHJZ7E5RR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0GQ76PY04WKDAPVY30Q6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6K81W5SG8Z9J5Z2R9G9MG0Q",
+  "type": "ops",
+  "v": 1
+}

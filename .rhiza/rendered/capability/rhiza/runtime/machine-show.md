@@ -20,10 +20,12 @@ rhiza machine show (and its API op) prints the machine's trust and the config fi
 
 ### In
 
+- constrains [machine-trust-never-written](../../../constraint/machine-trust-never-written.md)
 - verifies [machine-show-verified](../../../evidence/machine-show-verified.md)
 - verifies [machine-show-qa-1](../../../evidence/machine-show-qa-1.md)
 - verifies [machine-show-qa-2](../../../evidence/machine-show-qa-2.md)
 - verifies [pr-212-machine-trust](../../../evidence/pr-212-machine-trust.md)
+- verifies [machine-show-trust-unwritten-qa-1](../../../evidence/machine-show-trust-unwritten-qa-1.md)
 
 ## History
 

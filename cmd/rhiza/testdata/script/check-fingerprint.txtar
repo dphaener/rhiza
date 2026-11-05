@@ -1,0 +1,41 @@
+# check warns, never fails, when an anchored declaration changed since it
+# was fingerprinted, naming the anchor and its capability.
+
+exec rhiza init
+exec rhiza add capability thing --field 'statement=Does the thing' --record
+exec rhiza add anchor pin --field path=pkg/p.go --field symbol=Keep --record
+exec rhiza link pin implements thing --record
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+! stdout 'anchor'
+
+# Bytes outside the anchored function change: nothing to say.
+cp pkg/more.go.txt pkg/p.go
+exec rhiza check
+stdout '^ok$'
+! stdout 'anchor'
+
+# The anchored function's body changes: one warning, still exit 0.
+cp pkg/edit.go.txt pkg/p.go
+exec rhiza check
+stdout '^warn anchor pkg/p.go: anchor pin \(implements thing\): symbol Keep of pkg/p.go changed'
+stdout 'rhiza anchor refresh pin'
+stdout '^ok$'
+exec rhiza check --json
+stdout '"ok": true'
+
+-- pkg/p.go --
+package p
+
+func Keep() int { return 1 }
+-- pkg/more.go.txt --
+package p
+
+func Keep() int { return 1 }
+
+func More() int { return 3 }
+-- pkg/edit.go.txt --
+package p
+
+func Keep() int { return 2 }

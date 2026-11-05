@@ -1,0 +1,41 @@
+{
+  "actor": "01M6HKY7DZWBB4TQB2N4NXKXMF",
+  "after": [
+    "01M6HKY2MBTAKK0TCNSYNPZT8M"
+  ],
+  "at": "2026-11-03T21:10:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Location: store.Open rejects any repo.json that is not exactly canonical format 1 ({format,id,remotes}). A new key there would need a format bump, or would make every older rhiza binary fail to open the repo, including the shared ~/bin slot and other worktrees. A separate optional file keeps it committed (CI sees it), and older binaries just skip the warn-only rule. Claimed: the change-trailers decision says commits carry Change: <id> and a missing trailer flags an unclaimed change, so the Change: trailer is what claims a commit. Requiring the ID to resolve catches typos at no cost, because squash merges on main carry their run's Change: in the trailing trailer paragraph that parseTrailerLog reads. Merge commits (origin/main merged into PR branches, the usual way to resolve conflicts here) carry no trailer and add no unclaimed work of their own, so counting them would only add noise. Turn on here: the recent main history I checked (2449d7a3, 5542390b, bb443656, ff72e605, 6391d25a, 585ecf3a, 0a46afe2, 7faa706f) carries Change: trailers on every commit, so pinning the cutoff to the branch's main base raises no warnings today. The exact squash commit the change set lands as cannot be known before merge. Any main commits that land in between already carry trailers, so the base commit is a safe stand-in.",
+          "statement": "(1) The cutoff lives in a new committed file .rhiza/check.json, {\"unclaimed_since\": \"<full commit hash>\"}; repo.json stays the strict format-1 file, untouched. No file, or no key, means the unclaimed-changes rule is off; a hash that does not resolve is a check error naming the file. (2) The rule looks at the commits in <cutoff>..HEAD that change a file outside .rhiza/ (the same pathspec the evidence-actor rule uses), skipping merge commits (--no-merges: their content arrives through commits that are checked themselves). Such a commit is claimed when at least one of its Change: trailers, read by parseTrailerLog, names a change set in the log; Actor:, Leaf: or Review: trailers alone do not claim it. Each unclaimed commit gets one warning (severity warn, not error), and the message says whether the trailer is missing or names an unknown change set. (3) Yes: this change set turns the rule on for this repo by committing .rhiza/check.json, with the cutoff set to the origin/main commit the branch is built on when the file is written.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "unclaimed-changes-cutoff",
+        "id": "01M6HM078ED04YAZ7XDDJ1RPRB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6HM078ED04YAZ7XD9WRQZ15",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HM078ED04YAZ7XD9WRQZ15",
+        "id": "01M6HM099H4ZSW332GF2F003RP",
+        "link": "01M6HM099H4ZSW332GEZNVZRGX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HKY1F0HDWE1BP7DSZVM3MF",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6HKRVC93TGX0ZC40QZ2GW9J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HM0DCXB9VE6AQKRV59EQTK",
+  "type": "ops",
+  "v": 1
+}

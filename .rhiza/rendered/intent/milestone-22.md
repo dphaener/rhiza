@@ -24,6 +24,7 @@ Run Rhiza from Rex: from the TUI apps alone the owner sees the whole system's he
 - serves change set `01M6CRZSRFQ94MAJ8CRTEE44P2` (rhiza health and a health app show the whole system's state on one screen)
 - serves change set `01M6CRZTNDTPF1SD2WGBY4835Y` (An autonomy app edits every setting, starts or stops the daemon, and the inbox nudges stalled sessions)
 - serves change set `01M6D4SB0D8F9SPGK471DF9RV6` (The request queue and the daemon turning requests into plan runs, as a leaf of plan requests)
+- serves change set `01M6MY8BMPFK9ZWD3TDQHKT64J` (Milestone planning always needs a human: a plan run for a milestone (a record change set, or a request of kind milestone) never runs autonomously, even when the daemon or run is autonomous (rhiza.autonomy.plan=auto); it waits for the owner's interview instead of the arbiter answering. Owner, 2026-11-05: "milestone planning should never be autonomous even in autonomous mode. that always requires a human.")
 
 ## History
 

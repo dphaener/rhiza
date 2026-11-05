@@ -1,0 +1,41 @@
+{
+  "actor": "01M6JY6G1M0HJCTF1RK0350JX4",
+  "after": [
+    "01M6JY68WMB6QMBXE0P9QTJDMS"
+  ],
+  "at": "2026-11-04T09:29:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "I read the question, the change set's slice and intent, and internal/api/daemon_service.go and daemon_startstop.go. daemonArgs [daemon --autonomous] already feeds both ExecStart and the tab (since #200), and both scripts grep for it, so building the title as worded would be an empty change. The intent is that choosing service or tab never changes whether runs go on without the owner. serviceUnit writes only WorkingDirectory, ExecStart and Restart, so a fresh install runs under systemd's bare PATH, where agents cannot find claude, go, gh or make, and runs then fail without the owner. That is the one real way service and tab differ today, and the VM only works because of a hand-written env.conf drop-in. Capturing the installing shell's PATH and TMPDIR is the smallest change that closes it, matches what the tab inherits, and is testable in testscript without systemd. Leaving the existing drop-in alone is safe: systemd drop-ins override the unit's Environment= lines.",
+          "statement": "The change set's leaves cover the environment, not the arguments, which already match. rhiza daemon install writes the PATH and TMPDIR of the shell that runs it into the unit as Environment= lines, quoted like ExecStart, so the systemd service starts agents with the same tools on PATH and the same temp dir as the Rex tab and a fresh install needs no hand-written drop-in. daemon-install.txtar checks the unit carries both lines next to ExecStart with 'daemon --autonomous'. The shared daemonArgs and its existing greps stay as they are and get no leaf of their own.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "daemon-service-env-matches-tab",
+        "id": "01M6JY7KFRW3AH998GNASYDHGB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6JY7KFRW3AH998GN8GP7AEF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JY7KFRW3AH998GN8GP7AEF",
+        "id": "01M6JY7Q497FDV9B7R2Z15KQCD",
+        "link": "01M6JY7Q497FDV9B7R2Y2PS3KN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JY66RRW4DKBTT4X2AFA68A",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6JY2NZESHV22Y931D7XMBEE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JY800CMP5VQFYYKDFRF2F1",
+  "type": "ops",
+  "v": 1
+}

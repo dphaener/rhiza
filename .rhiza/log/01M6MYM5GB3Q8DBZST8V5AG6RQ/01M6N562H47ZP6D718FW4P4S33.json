@@ -1,0 +1,40 @@
+{
+  "actor": "01M6N546NMRYZAJRP6ER1J2MEG",
+  "after": [
+    "01M6N4500RGQ8QPKD4NE0VNKHC"
+  ],
+  "at": "2026-11-05T06:08:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f107f1de ran go test -trimpath -count=1 -v ./internal/tui/modalshell/... (no Rex, no socket): TestRendersComponent passes for Form, List, Dialog and InfoPanel hosted via modalshell.Form/List/Dialog/Info (Shell.View is tea.NewView of the component's own Render); TestThemeFromBackground sends white then black tea.BackgroundColorMsg and gets theme.Light then theme.Dark for each; TestProgramIsSurfaceModel asserts Shell.Program() is a surface/program.Model that unwraps to the shell with focus reporting on; TestCloses/TestResult also pass. go test ./cmd/rhiza -run TestScripts/tui-launch-usage passes; go vet and gofmt clean. Read the diff: every tea.NewProgram in cmd/rhiza/tui.go now goes through modalshell.Run, which wraps the app in program.Wrap."
+        },
+        "handle": "modal-shell-hosts-component-verified",
+        "id": "01M6N55PE9MTTCMR9TRP28TSM7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N55PE9MTTCMR9TRMMNKJN8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N55PE9MTTCMR9TRMMNKJN8",
+        "id": "01M6N55T5BWN12C8YRNT5ZMZRC",
+        "link": "01M6N55T5BWN12C8YRNRE1B74N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ8VSGET61TPSYJQ4AQCX1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYM5GB3Q8DBZST8V5AG6RQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N562H47ZP6D718FW4P4S33",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6N192C7C4ERX2MN4Z9N0KFR",
+  "after": [
+    "01M6MZGCGW51BY4PSM5YTFJCBB"
+  ],
+  "at": "2026-11-05T05:02:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 01f5053a: go test -trimpath ./cmd/rhiza -run TestScripts/daemon-milestone-request -count=1 -v passes; the new script queues a feature then a milestone request with a Claude transcript filling the 1000-token session limit: with rhiza.daemon.paused true and with RHIZA_TEST_FREE_BYTES at 1GiB (disk-low) daemon --once starts nothing (no detach.log), and under the usage hold it starts only the milestone request's plan run while 'Add exports' stays queued (oldest-first order makes this discriminating). go test -trimpath ./internal/api -run Usage passes (incl. TestUsageHoldStopsLaunches and TestUsageHoldStopsEveryLaunch, which still holds a feature request), as do TestScripts/usage-hold and TestDaemonPlanRequests*. Diff read: daemonPoll1 now returns early only on paused||low; under a hold it skips resumes, ship picks, queued continues and queued starts, and calls daemonPlanRequests with onlyKind=milestone, which skips other kinds."
+        },
+        "handle": "milestone-request-past-usage-hold-verified",
+        "id": "01M6N1CMY65VR6XSFSBS63XZ4K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N1CMY65VR6XSFSBPERZ222",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N1CMY65VR6XSFSBPERZ222",
+        "id": "01M6N1CQ7QDF8ZZ1BJM0FSBN30",
+        "link": "01M6N1CQ7QDF8ZZ1BJM0CKZCD3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYSMGQFQDM84ANE2GRY4M9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYFH4QYGSKDATBH509SEJF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N1CTPJ8DYYBCNK419DD77N",
+  "type": "ops",
+  "v": 1
+}

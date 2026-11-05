@@ -1,0 +1,29 @@
+{
+  "actor": "01M6NQKF6BH0VQFNGD3S8244KX",
+  "after": [
+    "01M6NQSE7VMSTTWQQTG6CPATA3"
+  ],
+  "at": "2026-11-05T11:34:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6ATBX8NH5KPKEAY7QZNBAKT",
+        "handle": null,
+        "id": "01M6NQSPJB49V3S7DGP7AKKABC",
+        "node": "01M6ATBX8NH5KPKEAY7MMZ7JBC",
+        "op": "node.update",
+        "set": {
+          "acceptance": "run-status.txtar with a journal where a check's cycle 1 failed and cycle 2 is open prints 'open in cycle 2 (cycle 1 failed)' and --json has an empty outcome for it; a run summary test heads it open",
+          "statement": "A review check whose latest cycle is open reads as open, not as its previous cycle's outcome: run status text says 'open in cycle N (cycle N-1 failed)', its JSON outcome is empty and run summary heads it open"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NQST1PQTWG25N2D4ZBXYBT",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,48 @@
+{
+  "actor": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "after": [
+    "01M6J2RTBPHTT1VFJYW52VBSQH"
+  ],
+  "at": "2026-11-04T01:29:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "we're setting up for development only",
+              "where": "during the Nebari dev setup"
+            },
+            {
+              "by": "owner",
+              "text": "this will be the first import into rhiza so we may want to coordinate and help to model an import functionality",
+              "where": "after confirming the guess that Nebari comes into Rhiza next"
+            },
+            {
+              "by": "owner",
+              "text": "you're the planner. it's all agent written, it was done autonomously. the existing tooling can all go away we'll use rhiza workflows but the shipit and afk folders have written plans that may be valuable during import, as well as zap.",
+              "where": "answer to who plans, how much of decisions.md is the owner's, and what happens to afk, shipit and zap"
+            }
+          ],
+          "raw_sha256": "ae50fa34693ee1386a492090d17ce9b36ed9da685d6e79eb8c7d23ee44c93a26",
+          "summary": "A planning session with the owner in a Claude Code session on the Rhiza server. It began by cloning the owner's private Nebari repo (a multi-user Rails app for bonsai collections) to ~/code/nebari and setting it up for development only: Ruby 4.0.7 through mise, PostgreSQL 18, libvips, bundle install and db:prepare (60 tables, 267 seeded species). The assistant guessed from the server that Nebari would come into Rhiza next, and the owner confirmed. The owner said this is the first import into Rhiza and that the import should be modelled as Rhiza functionality, made this session the planner, and said Nebari's docs/decisions.md is entirely agent-written and made autonomously, that Nebari's own tooling (afk, shipit, zap) goes away in favour of Rhiza workflows, and that the written plans in .shipit, afk and .zap may be valuable during the import.\n\nFacts the assistant looked up: Rhiza's own import (decision import-shape) was greenfield, a plan with no code. Nebari is brownfield: about 11 milestones (M0 to M11, 69 tasks) of built code in docs/PLAN.md, 423 agent-written entries in docs/decisions.md, 23 per-task plans in .shipit/plans, a bug diagnosis in .zap, 16 per-area references in docs/reference, a design system and ops and deploy docs. The only owner-typed words in Nebari are the original request quoted in PLAN.md section 1. Anchors are not built yet (code anchors serve milestone 25). The built-in ship-change workflow has no deploy check, while afk's ship waited on Nebari's health URL after merge. A daemon builds only its own repo, and cross-repo changes are not built.\n\nThe owner picked from the assistant's options (the assistant's wording, picked by the owner): a milestone, Nebari first, importing Nebari by following a written import procedure, recording every friction point, then building rhiza import from what was learned; record built capabilities now with anchors later; import only the load-bearing decisions, each worded as the agent's and marked as made autonomously and not confirmed by the owner, the rest summarised in the decisions.md Source; retire PLAN.md, decisions.md, todo.md, .shipit/plans, afk.toml and .zap into Sources and delete them, keeping docs/reference, design-system.md and the ops and deploy docs as working docs; plan all four change sets now (the import procedure, importing Nebari, a deploy check on ship, the rhiza import command); the daemon runs the Nebari import autonomously; the Nebari import lives in Nebari's own model, run by Nebari's own daemon, with Rhiza's milestone tracking it by Evidence; rhiza import is a command that starts a built-in import workflow; the deploy check reads its health URL and timeout from daemon settings.\n\nThe assistant noted while writing the plan that the Nebari import cannot have its leaves planned ahead: what it records is what the survey of Nebari finds, so it is a done point of this milestone and a change set in Nebari's model, opened once the import procedure lands.",
+          "title": "Milestone 26 interview: importing Nebari, the first brownfield repo"
+        },
+        "handle": "milestone-26-interview",
+        "id": "01M6J2SH85C5EBP2AVCEBWVEVN",
+        "key": null,
+        "kind": "source",
+        "node": "01M6J2SH85C5EBP2AVCB1V85YN",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6J2RTBPHTT1VFJYW2ZA5FRC",
+  "for": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "id": "01M6J2SMTF9N527ZSTHB4T8DBY",
+  "type": "ops",
+  "v": 1
+}

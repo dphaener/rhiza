@@ -1,0 +1,16 @@
+{
+  "actor": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "after": [],
+  "at": "2026-11-04T01:36:49Z",
+  "body": {
+    "intent": "Deploy check on ship: ship-change waits on a repo's deploy health URL after merge, from daemon settings, so Nebari can ship through Rhiza",
+    "kind": "intention",
+    "sources": [],
+    "title": "Deploy check on ship"
+  },
+  "change_set": "01M6J375CH04RMRS4NN372NCN2",
+  "for": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "id": "01M6J375CJSFGDC1V9DHGRGW5A",
+  "type": "open",
+  "v": 2
+}

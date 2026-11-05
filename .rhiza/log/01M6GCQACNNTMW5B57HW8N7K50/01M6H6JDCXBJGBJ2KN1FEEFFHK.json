@@ -1,0 +1,40 @@
+{
+  "actor": "01M6H5Q39V0Y0NKGJ48RY3KP27",
+  "after": [
+    "01M6H5NB8XKZZFKEWWT5MAR6TN"
+  ],
+  "at": "2026-11-03T17:16:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA by hand with this branch built to a scratch binary, in a fresh git repo with RHIZA_* env cleared: a plan workflow (one wait step on ../go) started with run start --foreground --no-wait stopped at step one; rhiza land landed its record change set (state landed); after touching ../go, rhiza run resume --foreground <run> continued visit 1, passed, and ended succeeded with exit 0 (run status --json state succeeded). In the same repo a hand-written ship-change journal on the landed change set was refused with exit 3, \"is landed, no longer accepted\" and next: rhiza run abandon BUILDLAND01, journal byte-identical; a plan journal on a rejected change set was refused with exit 3, \"is rejected, no longer accepted\", next: rhiza run abandon PLANREJ01, journal unchanged. As a control, the merge-base binary run through the same script refused the landed plan run (exit 3, run stayed stopped)."
+        },
+        "handle": "plan-run-resumes-landed-record-qa-1",
+        "id": "01M6H6HW88ZY4X60T96R1RD9F6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6H6HW88ZY4X60T96Q58NCSX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6H6HW88ZY4X60T96Q58NCSX",
+        "id": "01M6H6J22ECBQJA16RDF9XSTF7",
+        "link": "01M6H6J22ECBQJA16RDEH6WFC4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GD3GB66TDYWWHF23GMTFZE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6GCQACNNTMW5B57HW8N7K50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6H6JDCXBJGBJ2KN1FEEFFHK",
+  "type": "ops",
+  "v": 1
+}

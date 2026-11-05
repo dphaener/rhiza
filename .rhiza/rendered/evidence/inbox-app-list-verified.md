@@ -14,7 +14,7 @@ At d29e512 I read the diff and ran go test ./internal/tui/... ./internal/api/...
 
 ### Out
 
-- verifies [inbox-app-list](../capability/rhiza/inbox-app-list.md)
+- verifies inbox-app-list (retired)
 
 ## History
 

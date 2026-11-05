@@ -60,6 +60,10 @@ func TestPlanText(t *testing.T) {
 			`rhiza link "$RHIZA_CHANGE" serves <intent>`, "before any leaf",
 			"`\"serves\": []` in `rhiza change show --json`", "own serves links",
 		},
+		"plan-serves-milestone": {
+			"RHIZA_MILESTONE", "reach one, directly or through an intent under one",
+			"umbrella or area intent under no", "milestone",
+		},
 		"plan-interview": {
 			"rhiza slice", "rhiza why", "Never ask a fact", "One topic per message",
 			"recommendation", "AskUserQuestion", "Only typed words are quoted",
@@ -84,16 +88,56 @@ func TestPlanText(t *testing.T) {
 	})
 }
 
+func TestPlanWhoRecords(t *testing.T) {
+	checkPhrases(t, "plan", map[string][]string{
+		"plan-guide-who-records": {
+			"The run's capture records the owner's AskUserQuestion picks",
+			"writes no Decision for a plain owner pick",
+			"a proxy such as an orchestrator or arbiter answered",
+			"the proxy's wording",
+			"copy the asked question\nverbatim into its `question` field",
+		},
+	})
+	tx, _ := Lookup("plan")
+	for _, line := range strings.Split(tx.Body, "\n") {
+		l := strings.ToLower(line)
+		if strings.Contains(l, "plain") && strings.Contains(l, "write a decision") {
+			t.Errorf("plan tells the planner to write a Decision for a plain pick: %q", line)
+		}
+	}
+}
+
 func TestPlanReviewText(t *testing.T) {
 	checkPhrases(t, "plan-review", map[string][]string{
 		"plan-review-guide": {
 			"missing-acceptance", "missing-provenance", "unreal-depends-on",
 			"outside-intent", "contradiction",
 			"rhiza overlaps --change <cs> --json", "naming the other change set",
-			"rhiza run findings", `{"findings":[{"node":"`, `"kind":`, `"reason":`, `{"findings":[]}`,
-			"rhiza run verdict", `{"verdicts":[{"finding":"f1","verdict":`, "`confirmed` or `dropped`",
+			"rhiza run findings - --json <<'EOF'", "\nEOF\n", `{"findings":[{"node":"`, `"kind":`, `"reason":`, `{"findings":[]}`,
+			"rhiza run verdict - --json <<'EOF'", `{"verdicts":[{"finding":"f1","verdict":`, "`confirmed` or `dropped`",
 			"serving an intent it adds", "rhiza change show", "rhiza slice", "rhiza why",
 			"Never add a finding", "confirmed finding", "--record", "rhiza session done",
 		},
 	})
+}
+
+func TestPlanAcceptanceScoped(t *testing.T) {
+	checkPhrases(t, "plan", map[string][]string{
+		"plan-acceptance-scoped": {
+			"the tests covering that leaf, never the repo's full suite",
+		},
+	})
+	checkPhrases(t, "plan-review", map[string][]string{
+		"plan-review-acceptance-scoped": {
+			"runs the repo's full suite", "tests covering that leaf",
+		},
+	})
+	for _, name := range []string{"plan", "plan-review"} {
+		tx, _ := Lookup(name)
+		for _, bad := range []string{"go test", "make check", "make test", "testscript"} {
+			if strings.Contains(tx.Body, bad) {
+				t.Errorf("%s names %q", name, bad)
+			}
+		}
+	}
 }

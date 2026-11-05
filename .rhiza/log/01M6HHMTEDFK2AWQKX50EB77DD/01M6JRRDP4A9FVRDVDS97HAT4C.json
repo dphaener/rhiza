@@ -1,0 +1,63 @@
+{
+  "actor": "01M6JR27HMJERSJBWJR54Z9E9W",
+  "after": [
+    "01M6JR12ZSBPN25FDZRY75QDYG"
+  ],
+  "at": "2026-11-04T07:53:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3, binary built at 1f1a3b35 in a scratch repo on the VM with the real ~/.claude transcripts (Rex faked, RHIZA_TEST_NOW at the wall clock, load ~24): with usage.session 1000, daemon --once saved usage_hold (session, 4583485 used, limit 1000, 20% reserve) and the windows with their used. rhiza health showed warn usage with that detail and inbox one usage-reserve item; health took 0.6 s real / 0.1 s user, and strace -e openat of it opened no ~/.claude/projects file. After raising the limit, the next poll cleared the hold and opened a new session window after the reset; health (text and --json) showed 'ok usage session 1721 of 1000000000000; weekly 18945650 of 1000000000000', exactly the used the poll saved, in under 1 s, and the inbox said Nothing waits on you. With the saved session window's reset edited into the past, health showed session 0."
+        },
+        "handle": "usage-hold-reported-qa-3",
+        "id": "01M6JRP2M9S7NXN2DXNZTJX3GN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JRP2M9S7NXN2DXNX5NQ846",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JRP2M9S7NXN2DXNX5NQ846",
+        "id": "01M6JRPPXB11S6R4769DDE0MCE",
+        "link": "01M6JRPPXB11S6R4769B2AMMCT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ14J13C9N67W124QEQME1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3, binary built at 1f1a3b35 in a scratch repo on the VM with the real ~/.claude transcripts (Rex faked, RHIZA_TEST_NOW at the wall clock, load ~24): daemon --once with usage.session 1000 over a session window of 4583485 tokens held (usage_hold saved, no start in the detach log); with usage.session and .weekly set to 1e12 the next poll, after the window's reset at 07:44:29Z, cleared the hold and saved a new session window starting at the first record after the reset (07:44:48Z). go test ./internal/api -run 'TestUsage|TestHealth' and the usage-* scripts pass."
+        },
+        "handle": "usage-hold-qa-3",
+        "id": "01M6JRQ66TEA81CNCQCWNVT96D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JRQ66TEA81CNCQCS1G10WF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JRQ66TEA81CNCQCS1G10WF",
+        "id": "01M6JRQGX2B289M5H5JY6KA4J5",
+        "link": "01M6JRQGX2B289M5H5JXT14669",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HHMTEDFK2AWQKX50EB77DD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JRRDP4A9FVRDVDS97HAT4C",
+  "type": "ops",
+  "v": 1
+}

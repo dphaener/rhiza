@@ -1,0 +1,15 @@
+{
+  "actor": "01M6H5R22CB67T5DQYR100AVTY",
+  "after": [],
+  "at": "2026-11-03T17:03:44Z",
+  "body": {
+    "intent": "Inbox and daemon treat an interrupted plan run whose record landed as resumable: rhiza inbox no longer lists it as skipped with 'rhiza run abandon' (internal/api/inbox.go ~249, unaccepted-run-in-inbox), since rhiza run resume now continues it (plan-run-resumes-landed-record)",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6H5VQ231Z8V5APXEMRFE81M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6H5VQ24291912X7EVQZKQ7X",
+  "type": "open",
+  "v": 1
+}

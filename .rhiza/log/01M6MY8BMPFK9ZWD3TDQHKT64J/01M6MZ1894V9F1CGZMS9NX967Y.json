@@ -1,0 +1,41 @@
+{
+  "actor": "01M6MYYYNMDV5HTJSA6VC35TEQ",
+  "after": [
+    "01M6MYRV5R679A5BA6T7PKQA99"
+  ],
+  "at": "2026-11-05T04:21:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Testscripts: run start --workflow plan --new <intent> --milestone --autonomous, and run start --workflow plan --autonomous on a record change set, each exit with a usage error naming the rule and write no journal and no draft; the same starts without --autonomous run, and run start --workflow plan --new <intent> --autonomous (an intention) still runs autonomous; run resume of a plan run on a record change set whose started entry is autonomous exits with the same usage error. plan-workflow-autonomous.txtar and plan-workflow-autonomous-left.txtar, which today start an autonomous plan run on a record change set, instead start it on an intention change set (its planner adds an intent without milestone=1, served by the draft it writes, and the -left script's landed-record Decision is one landed before the run), and still check what they check now: the arbiter answering the planner's question, review rounds, the check's questions answered where they live, and the gate accepting with rule autonomous; so plan-autonomous-interview, plan-review-arbitrated and plan-gate stay verified by them",
+          "statement": "rhiza run start refuses --autonomous on a plan run that plans a milestone (with --milestone, for a request of kind milestone, or on an existing record change set) with a usage error naming the rule that milestone planning needs the owner, and run resume refuses to continue such a run journaled autonomous, so no milestone plan run's agent gets RHIZA_AUTONOMOUS=1"
+        },
+        "handle": "milestone-plan-refuses-autonomous",
+        "id": "01M6MYGJT14RGWC73S0VWHD448",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6MYGJT14RGWC73S0V3A5YEB",
+        "op": "node.create",
+        "parent": "01M5WRHD790X47F8VK7RQEHEHX"
+      },
+      {
+        "base": "01M5WSGDEE854PFE4BXM02S0H1",
+        "handle": null,
+        "id": "01M6MZ13G4N5S3DY9ZQFY1XSVA",
+        "node": "01M5WSGDEE854PFE4BXJM13CWS",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript ends a plan run whose change set adds an intent served by two draft change sets: normal (a record change set, landed after the interview), both are proposed, none accepted, the landed record is left as it is, and run status --json names rhiza accept --rule owner; autonomous (an intention change set, since a milestone plan never runs autonomous) with a passing review, both are accepted with rule autonomous and reasons naming the run; autonomous with a question left by the review, none is accepted and the command exits non-zero naming the question; once the arbiter's Decision answers it, both are accepted. A run on an intention change set that serves an existing intent proposes that change set itself."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6MY8BMPFK9ZWD3TDQHKT64J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MZ1894V9F1CGZMS9NX967Y",
+  "type": "ops",
+  "v": 1
+}

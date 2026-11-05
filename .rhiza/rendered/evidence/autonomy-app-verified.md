@@ -14,7 +14,7 @@ At 7f3cf020: go test ./cmd/rhiza -run 'TestScripts/(tui-autonomy-app|rex-install
 
 ### Out
 
-- verifies [autonomy-app](../capability/rhiza/orchestration/daemon/daemon-settings/autonomy-app.md)
+- verifies autonomy-app (retired)
 
 ## History
 

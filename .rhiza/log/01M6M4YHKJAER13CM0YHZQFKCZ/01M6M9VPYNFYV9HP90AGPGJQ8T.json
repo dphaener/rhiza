@@ -1,0 +1,40 @@
+{
+  "actor": "01M6M8VRHRVG7HZTDS5763GBAY",
+  "after": [
+    "01M6M9TCZSNA8K65FYWMZE4T2P"
+  ],
+  "at": "2026-11-04T22:11:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c8f16230 (diff: new engine test only, over run_lost.go from 7fd9c685) ran go test ./internal/run -run TestAgentRejoinRexUnreachable: a rejoin whose Rejoin fails with 'connection refused' is logged as 'rejoin session S-earlier: ... connection refused', rejoined once, polled 3 times, and the step fails only on the later poll's lost exit ('lost: Rex block not found') - PASS. Ran go test ./internal/api -run 'TestRejoin|TestPoll|TestLost': TestRejoinRexUnreachableRetried (fake rex errors 'connection refused': Rejoin returns the error, poll not done, no exit written; then fake rex 'block not found': next poll is Done+Lost with exit detail 'Rex block not found') and TestRejoinBlockExists (block exists: polled as before, no further rex calls) - all PASS. Read run_lost.go: non-'not found' errors keep blockPending and retryBlock re-asks on each poll, logging and judging nothing. make test passed (exit 0) on rerun; a first run failed only in the timing-budget phase with no test FAIL. make check's fmt/vet/test pass; self-check fails only on stale rendered actor files of this run, to be rendered at land."
+        },
+        "handle": "rejoin-rex-unreachable-verified",
+        "id": "01M6M9VJ0X7MA2W8Q54Y3JF2WW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M9VJ0X7MA2W8Q54V8SZ8Z6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M9VJ0X7MA2W8Q54V8SZ8Z6",
+        "id": "01M6M9VKZ2RE50KN0K7YFB63XJ",
+        "link": "01M6M9VKZ2RE50KN0K7X0HFZA2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M57BMKN39KDPQSDWK8D6M7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M4YHKJAER13CM0YHZQFKCZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M9VPYNFYV9HP90AGPGJQ8T",
+  "type": "ops",
+  "v": 1
+}

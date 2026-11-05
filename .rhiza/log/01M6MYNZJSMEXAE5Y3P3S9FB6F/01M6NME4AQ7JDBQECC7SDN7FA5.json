@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NM7FFZ3ERXB7ZANHCRNKR7",
+  "after": [
+    "01M6NM5X6Q0HAQ0C65KSSZYK7X"
+  ],
+  "at": "2026-11-05T10:35:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "claude-code-8ceedb43 re-verified rex-install-five-apps at 96460ee5 (fix commit after d370f954). go test -trimpath -count=1 ./internal/api -run TestRexInstall: TestRexInstallRegistersExactlyFiveApps passes; it counts exactly five rex.action calls named rhiza_app_inbox, _request, _runs, _daemon and _autonomy, each with its key (i, q, v, d, y) in the rhiza key mode. go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/rex-install$' passes; the script uses a fake rex, greps the five action names and open_argv lines, and checks grep -count=5 for rex.action and for rhiza_app_ names. Diff read: daemonapp registers in the launcher with key d, and rhiza tui app daemon opens it. The fix commit only records rex-app-actions' acceptance for the five apps; make self-check at a clean checkout of 96460ee5 prints ok."
+        },
+        "handle": "rex-install-five-apps-verified-2",
+        "id": "01M6NMDT6CNZ9ADESVNRAVDYPF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NMDT6CNZ9ADESVNP5BNGKK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NMDT6CNZ9ADESVNP5BNGKK",
+        "id": "01M6NMDYV8VR1D4V45P2R0Y1ET",
+        "link": "01M6NMDYV8VR1D4V45NZGX8ZED",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZD7XSJD2ENEG7W98BKDJV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NME4AQ7JDBQECC7SDN7FA5",
+  "type": "ops",
+  "v": 1
+}

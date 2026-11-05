@@ -1,0 +1,50 @@
+{
+  "actor": "01M6MM41Z0FYZWF10F9A9V5P9G",
+  "after": [
+    "01M6MM9WVKHA0S9N3ZNWB9PEFR"
+  ],
+  "at": "2026-11-05T01:14:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6MM7RZ3R95169W99F1C8BZ7",
+        "id": "01M6MMABDNX31A7D0G036TXV2N",
+        "link": "01M6MMABDNX31A7D0G0260VEBM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MM9QTBY8HKPWN25PCBEKDE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/guide (build_test.go, review_test.go, plan_test.go) assert each of the three guides shows the `- <<'EOF'` form for every rhiza run findings and rhiza run verdict it names and that no `<file>` form of either command remains in them; go test -trimpath ./internal/guide/... passes",
+          "statement": "The build, review and plan-review guides show rhiza run findings and rhiza run verdict fed from stdin by a heredoc (`- <<'EOF'` ... `EOF`), with their existing flags (--leaf, --check, --json) and JSON shapes, so an agent records findings and verdicts without a temp file or compound shell command"
+        },
+        "handle": "guides-stdin-findings",
+        "id": "01M6MMAF8Z4XWD1JD9WHF6TTT5",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6MMAF8Z4XWD1JD9WG5PRYBR",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "decision": null,
+        "from": "01M6MMAF8Z4XWD1JD9WG5PRYBR",
+        "id": "01M6MMAJPYR6HNGP6B0VZVMX9M",
+        "link": "01M6MMAJPYR6HNGP6B0VTDEZ9K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MM7RZ3R95169W99F1C8BZ7",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6MM3MAXFA2ARM9GAF4RV1ZW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MMARM2ECAM5M9N837AMMGY",
+  "type": "ops",
+  "v": 1
+}

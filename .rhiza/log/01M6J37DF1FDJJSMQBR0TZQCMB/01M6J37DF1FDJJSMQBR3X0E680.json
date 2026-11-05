@@ -1,0 +1,16 @@
+{
+  "actor": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "after": [],
+  "at": "2026-11-04T01:36:57Z",
+  "body": {
+    "intent": "rhiza import: a command that starts a built-in import workflow on an existing repo, shaped by what the Nebari import taught",
+    "kind": "intention",
+    "sources": [],
+    "title": "rhiza import command"
+  },
+  "change_set": "01M6J37DF1FDJJSMQBR0TZQCMB",
+  "for": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "id": "01M6J37DF1FDJJSMQBR3X0E680",
+  "type": "open",
+  "v": 2
+}

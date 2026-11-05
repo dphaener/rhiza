@@ -66,6 +66,10 @@ type State struct {
 	// that still wait. It is apart from Notified so the hook runs with or
 	// without Rex.
 	Hooked []string `json:"hooked,omitempty"`
+	// Nudged are the stalls the daemon sent a message for and that still
+	// last, each as session@report-time, so a session still stalled at the
+	// same report is nudged once; a new report is a new stall.
+	Nudged []string `json:"nudged,omitempty"`
 	// Events are the IDs of the lifecycle moves the event command has been
 	// handled for, run or seeded; EventsSeeded says the first run recorded
 	// every move then in the log, so history is not replayed.
@@ -74,6 +78,17 @@ type State struct {
 	// DiskLow is set while the last poll found free space under the
 	// daemon's minimum, and absent once a poll finds enough.
 	DiskLow *DiskLow `json:"disk_low,omitempty"`
+	// UsageHold is set while the last poll held the daemon's launches for
+	// usage, and absent once a poll no longer does.
+	UsageHold *UsageHold `json:"usage_hold,omitempty"`
+	// UsageWindows are the usage windows the last poll found, one per kind:
+	// the next poll, and health, build each window from its saved start (or
+	// from its reset once it has passed), not from wherever a lookback
+	// happens to fall, so a window does not re-anchor as time goes on.
+	UsageWindows []UsageWindow `json:"usage_windows,omitempty"`
+	// Learned are the window limits the daemon learned from usage-limit
+	// hits, one per window kind, the latest hit's.
+	Learned []LearnedLimit `json:"learned,omitempty"`
 	// Hooks are the notify and event commands the daemon took at start,
 	// each with where it came from (flag, git config or unset).
 	Hooks []HookValue `json:"hooks,omitempty"`
@@ -93,6 +108,29 @@ type DiskLow struct {
 	// Free and Min are the free bytes and the minimum, as the last poll saw.
 	Free uint64 `json:"free"`
 	Min  uint64 `json:"min"`
+}
+
+// UsageHold is a usage-reserve hold found by a poll.
+type UsageHold struct {
+	// Since is the first of the polls in a row that held.
+	Since time.Time `json:"since"`
+	// Window is the held window's kind (5h or 7d).
+	Window    string    `json:"window"`
+	Used      int64     `json:"used"`
+	Projected int64     `json:"projected"`
+	Limit     int64     `json:"limit"`
+	Reserve   int       `json:"reserve"`
+	Reset     time.Time `json:"reset"`
+}
+
+// UsageWindow is the span of one usage window a poll found.
+type UsageWindow struct {
+	Kind  string    `json:"kind"`
+	Start time.Time `json:"start"`
+	Reset time.Time `json:"reset"`
+	// Used is the window's tokens as that poll counted them; health reports
+	// it rather than reading every transcript again.
+	Used int64 `json:"used,omitempty"`
 }
 
 // WriteState replaces the state file, whole.

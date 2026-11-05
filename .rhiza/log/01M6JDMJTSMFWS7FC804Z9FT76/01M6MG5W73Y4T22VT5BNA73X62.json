@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MEZRC5QCE32PHQYX9H3Y93",
+  "after": [
+    "01M6MG0EK77SJD48H2CMY51A1K"
+  ],
+  "at": "2026-11-05T00:01:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3acfa0b0 ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(plan-requests|describe-golden)$': ok. plan-requests queues 'Add paging' --milestone ms (an intent with milestone=1) and request ls --json shows a 26-char milestone ID; --milestone area (intent with no milestone field) and --milestone nonesuch exit with usage errors ('not a live milestone intent', 'no such node') and request ls then shows No plan requests. By hand in a scratch repo with a hermetic HOME and a scratch build: the --milestone area request exited 2 and queued nothing, and request ls --json's milestone equalled rhiza show ms's node ID exactly (01M6MF5HYZVK4ZV6831VKC3PP1). go test ./internal/daemon ok; go test ./internal/api -skip TestReadBudget ok. TestReadBudget failed only on roadmap/ready what-if medians over 50ms at load average 14; the diff does not touch those read paths. The diff checks Retired, Kind==intent and the milestone field, and stores the ID in daemon.Request.Milestone and RequestInfo; describe-golden was regenerated. Note: the plain-text request ls does not print the milestone, only --json does, which the acceptance asks for."
+        },
+        "handle": "request-names-milestone-verified",
+        "id": "01M6MG5Q7HD9T2KEMDZ4CA957F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MG5Q7HD9T2KEMDZ23AYBVQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MG5Q7HD9T2KEMDZ23AYBVQ",
+        "id": "01M6MG5S2RB81WEVBEESQY4NB3",
+        "link": "01M6MG5S2RB81WEVBEERWJ8VN8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JE32Q9Y16GT0CG6254C38Y",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JDMJTSMFWS7FC804Z9FT76",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MG5W73Y4T22VT5BNA73X62",
+  "type": "ops",
+  "v": 1
+}

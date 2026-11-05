@@ -47,7 +47,8 @@ exec rhiza run status --json
 stdout '"workflow": "plan"'
 stdout '"state": "succeeded"'
 exec rhiza run status
-stdout '^- interview \(visit 1\): pass, then review, '
+stdout '^- interview \(visit 1\): pass, then milestone-check, '
+stdout '^- milestone-check \(visit 1\): pass, then review: exit 0$'
 stdout '^- review \(visit 1\): pass, then critic, '
 stdout '^- critic \(visit 1\): pass, then check, '
 stdout '^- check \(visit 1\): fail, then revise: exit 1$'
@@ -103,7 +104,7 @@ fold-ok
 {"title":"Planning interview","summary":"The owner planned the reports milestone.","quotes":[{"text":"Stream it, reports get huge","by":"owner"}]}
 -- record.json --
 {"writes":[
-  {"op":"add","kind":"intent","handle":"reports","fields":["statement=Users take their reports out of the product"]},
+  {"op":"add","kind":"intent","handle":"reports","fields":["statement=Users take their reports out of the product","milestone=1"]},
   {"op":"add","kind":"decision","handle":"csv-streaming","fields":[
     "statement=Stream CSV rows instead of building the file in memory",
     "quote=Stream it, reports get huge"]},
@@ -129,7 +130,7 @@ fold-ok
 -- bin/rex --
 #!/bin/sh
 case "$1 $2" in
-window\ close)
+window\ close | block\ close)
 	echo "$*" >> "$WORK/rex.log"
 	exit 0
 	;;

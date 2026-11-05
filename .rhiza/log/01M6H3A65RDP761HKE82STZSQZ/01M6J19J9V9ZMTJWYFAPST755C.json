@@ -1,0 +1,86 @@
+{
+  "actor": "01M6J0E80JPS1PB90RVKJK1S7R",
+  "after": [
+    "01M6J0B1HK1BKDZ17J6C0B0H40"
+  ],
+  "at": "2026-11-04T01:03:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b63f7c18 I built rhiza to a scratch path and ran it by hand on this repo's .rhiza. log 01M5TYGK7EFHKPB9JG3A2MH2G2 (three change sets) --limit 2 printed two change sets and 'next: rhiza log 01M5TYGK7EFHKPB9JG3A2MH2G2 --limit 2 --cursor <c>'; that cursor's page held the third with no next_cursor and the same target and view; the two pages concatenated equal --all. --limit 0 gave the default page; --limit -1, --limit 1001, --cursor zz and --cursor !!! exited 2 with 'next: rhiza describe log'. log --json and api call log printed the same bytes. go test of log-paged and describe-golden scripts: ok."
+        },
+        "handle": "log-paged-qa-1",
+        "id": "01M6J177KMYD0283YE3R9MSBWG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6J177KMYD0283YE3PM2ZR8E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J177KMYD0283YE3PM2ZR8E",
+        "id": "01M6J17GYA9P7ATPG08A8ZSF10",
+        "link": "01M6J17GYA9P7ATPG0870NMAFD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H3M6MXZQMD7EMF9FPNGPE0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b63f7c18 with a scratch build on this repo (4 groups, 18 change sets): paging roadmap with --limit 1, 4, 5 and 7 to the end gave exactly the (group kind, intent, change set) entries of --all, in order, each once. --limit 3 split milestone-25 and page 2 repeated its '## milestone-25' heading before Backlog. --limit 0 equals the default; --limit -1, --limit 1001 and --cursor zz exited 2 ('bad cursor \"zz\": give a next_cursor from roadmap'). roadmap --json and api call roadmap printed the same bytes. TestRoadmapOverAPageIsReadWhole (health), TestReadsARoadmapOverAPageWhole (roadmap app), TestRoadmapTabReadsARoadmapOverAPageWhole (model app) and roadmap-paged.txtar pass."
+        },
+        "handle": "roadmap-paged-qa-1",
+        "id": "01M6J17XEPDH05Z04N7X6AV369",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6J17XEPDH05Z04N7SM1ZDM8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J17XEPDH05Z04N7SM1ZDM8",
+        "id": "01M6J18642HR2Y0Z35G25CNXSZ",
+        "link": "01M6J18642HR2Y0Z35FYY8MYPJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H3MCPWZBAV528M4JYX6AA8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b63f7c18 with a scratch build on this repo, why 01M5SWRSPVMK689DD23KH7KP0Z (43 decisions, 5 sources, 1 change set) paged with --limit 1, 7, 42, 44 and 48 (splitting at and across list boundaries): every page carried the --all node and view, the concatenated decisions, sources and change sets equal --all in order, and the last page had no next_cursor. --limit 0 equals the default; --all ignores --limit; --limit -1, --limit 1001 and --cursor zz exited 2. why --json and api call why printed the same bytes. why-paged.txtar passes."
+        },
+        "handle": "why-paged-qa-1",
+        "id": "01M6J18FSSEMEZWZMM5ZFENCNE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6J18FSSEMEZWZMM5WCXMWP9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J18FSSEMEZWZMM5WCXMWP9",
+        "id": "01M6J18T9CXAAMTB1QJ7NZVVRV",
+        "link": "01M6J18T9CXAAMTB1QJ5NSD3YQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H3MJKJC9D134K5JAMQHNSP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6H3A65RDP761HKE82STZSQZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J19J9V9ZMTJWYFAPST755C",
+  "type": "ops",
+  "v": 1
+}
