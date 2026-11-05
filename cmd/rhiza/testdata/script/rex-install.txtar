@@ -18,29 +18,28 @@ grep '^-- mine$' conf/init.lua
 grep -count=1 '^config reload$' rex.log
 
 # Every registered app is a Rex action of its own, titled with its name and
-# running `rhiza tui app <name>`: read, write and model apps alike.
+# starting `rhiza tui open <name>`: read, write and model apps alike.
 grep 'name = "rhiza_app_roadmap"' conf/rhiza.lua
 grep 'title = "roadmap"' conf/rhiza.lua
-grep '"tui", "app", "roadmap"' conf/rhiza.lua
+grep 'open_argv\("roadmap"\)' conf/rhiza.lua
 grep 'title = "session-ls"' conf/rhiza.lua
 grep 'name = "rhiza_app_inbox"' conf/rhiza.lua
-grep '"tui", "app", "inbox"' conf/rhiza.lua
+grep 'open_argv\("inbox"\)' conf/rhiza.lua
 grep 'name = "rhiza_app_session_ls"' conf/rhiza.lua
 ! grep 'name = "rhiza_app_[a-z0-9_]*[^a-z0-9_"]' conf/rhiza.lua
-grep '"tui", "app", "model"' conf/rhiza.lua
+grep 'open_argv\("model"\)' conf/rhiza.lua
 grep 'title = "model"' conf/rhiza.lua
 grep 'title = "accept"' conf/rhiza.lua
-grep 'bounds = cell_bounds\(ctx.block_id, 100, 30\)' conf/rhiza.lua
-grep 'window_id = block_window\(ctx.block_id\),' conf/rhiza.lua
-# No app opens full-screen: every action sizes its layer with cell_bounds
-# to the cells of its app's component NaturalSize, centred. No registered
-# app hosts a component yet, so every action asks for the default 100x30:
-# no bounds line is anything but that call. internal/api's
-# TestRexInstallOpensEveryAppAsACentredModalSizedToItsComponent runs the
-# actions with sizes taken from a Form's, a List's and a Dialog's NaturalSize.
-! grep 'bounds = LAYER_BOUNDS' conf/rhiza.lua
-! grep '^      bounds = ([^c]|c[^e])' conf/rhiza.lua
-! grep 'bounds = cell_bounds\(ctx\.block_id, ([^1]|1[^0]|10[^0]|100[^,]|100, ([^3]|3[^0]|30[^)]))' conf/rhiza.lua
+# No action opens a layer itself: each starts `rhiza tui open <app>`
+# detached, which opens the app as a centred rexuikit Modal sized to its
+# content over Rex's control connection and resizes it as the content
+# changes (internal/tui/modalopen's tests). internal/api's
+# TestRexInstallActionsStartTheModalOpener runs the actions.
+grep 'return rex.exec\(argv, \{ detach = true, cwd = block_cwd\(ctx.block_id\) \}\)' conf/rhiza.lua
+grep '"tui", "open", app' conf/rhiza.lua
+! grep 'new_layer' conf/rhiza.lua
+! grep 'bounds' conf/rhiza.lua
+! grep '"tui", "app"' conf/rhiza.lua
 
 # The launch key enters the rhiza key mode, which binds one key per app to
 # that app's action.
@@ -48,14 +47,14 @@ grep 'client.mode.enter", \{ name = MODE' conf/rhiza.lua
 grep '^  \["roadmap"\] = "[a-z0-9]",$' conf/rhiza.lua
 grep '^  \["model"\] = "[a-z0-9]",$' conf/rhiza.lua
 grep 'name = "rhiza_app_changes"' conf/rhiza.lua
-grep '"tui", "app", "changes"' conf/rhiza.lua
+grep 'open_argv\("changes"\)' conf/rhiza.lua
 grep '^  \["changes"\] = "g",$' conf/rhiza.lua
 # The other apps keep the keys they had before the changes app.
 grep '^  \["show"\] = "h",$' conf/rhiza.lua
 grep '^  \["change-show"\] = "c",$' conf/rhiza.lua
 # The health app is on t, which no app had: no other key moved.
 grep 'name = "rhiza_app_health"' conf/rhiza.lua
-grep '"tui", "app", "health"' conf/rhiza.lua
+grep 'open_argv\("health"\)' conf/rhiza.lua
 grep '^  \["health"\] = "t",$' conf/rhiza.lua
 grep '^  \["accept"\] = "a",$' conf/rhiza.lua
 grep '^  \["inbox"\] = "i",$' conf/rhiza.lua
@@ -80,7 +79,7 @@ grep 'rex.bind\(MODE .. "/" .. k, APP_ACTIONS\[app\]\)' conf/rhiza.lua
 # The requests app has an action on a key no other app had; no existing key
 # moved.
 grep 'name = "rhiza_app_requests"' conf/rhiza.lua
-grep '"tui", "app", "requests"' conf/rhiza.lua
+grep 'open_argv\("requests"\)' conf/rhiza.lua
 grep '^  \["requests"\] = "q",$' conf/rhiza.lua
 grep '^  \["roadmap"\] = "b",$' conf/rhiza.lua
 grep '^  \["ready"\] = "r",$' conf/rhiza.lua
@@ -90,7 +89,7 @@ grep '^  \["inbox"\] = "i",$' conf/rhiza.lua
 # The autonomy app has an action on key y, which no app had; no existing key
 # moved.
 grep 'name = "rhiza_app_autonomy"' conf/rhiza.lua
-grep '"tui", "app", "autonomy"' conf/rhiza.lua
+grep 'open_argv\("autonomy"\)' conf/rhiza.lua
 grep '^  \["autonomy"\] = "y",$' conf/rhiza.lua
 grep '^  \["requests"\] = "q",$' conf/rhiza.lua
 grep '^  \["health"\] = "t",$' conf/rhiza.lua

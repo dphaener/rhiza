@@ -98,7 +98,8 @@ func (s *Shell) Program() program.Model {
 
 // Run runs s in a bubbletea program and returns its result.
 func (s *Shell) Run(opts ...tea.ProgramOption) ([]byte, error) {
-	if _, err := tea.NewProgram(s.Program(), opts...).Run(); err != nil {
+	p := program.Wrap(sized(s), program.Options{Blur: surface.StayOpen})
+	if _, err := tea.NewProgram(p, opts...).Run(); err != nil {
 		return nil, err
 	}
 	return s.Result()
@@ -148,8 +149,9 @@ func (c dialogComponent) Render() string { return c.Dialog.View() }
 
 // Run runs a model that is not yet a hosted component (an app awaiting its
 // move to one) through the same surface/program wrapper, so every app has
-// the same focus handling.
+// the same focus handling. Like Shell.Run, it reports the model's
+// NaturalSize, when it has one, to the file ReportSizeTo named.
 func Run(m tea.Model, opts ...tea.ProgramOption) error {
-	_, err := tea.NewProgram(program.Wrap(m, program.Options{Blur: surface.StayOpen}), opts...).Run()
+	_, err := tea.NewProgram(program.Wrap(sized(m), program.Options{Blur: surface.StayOpen}), opts...).Run()
 	return err
 }

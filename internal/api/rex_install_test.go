@@ -9,12 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/charmbracelet/colorprofile"
-	"github.com/dphaener/rexuikit/ui"
-	"github.com/dphaener/rexuikit/ui/theme"
-
 	"github.com/dphaener/rhiza/internal/tui/launcher"
-	"github.com/dphaener/rhiza/internal/tui/modalshell"
 )
 
 // rexTestCtx is a ctx with a fake Rex config folder and a fake rex that
@@ -168,7 +163,7 @@ func TestRexInstallScriptEntersTheKeyMode(t *testing.T) {
 	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
 	for _, want := range []string{
 		`launch_key = "ctrl+a>a"`,
-		`local BIN = "rhiza"`,
+		`local BIN, BIN_SET = "rhiza", false`,
 		`type(settings.bin) == "string" and settings.bin ~= ""`,
 		`rex.block.call(TERM, "process", { block_id = block_id })`,
 		`rex.bind((settings.launch_key:gsub("%s+", ">")), "client.mode.enter", { name = MODE, once = true })`,
@@ -213,7 +208,7 @@ func TestRexInstallRegistersAnActionPerApp(t *testing.T) {
 	for _, want := range []string{
 		`name = "rhiza_app_zz_extra"`,
 		`title = "zz-extra"`,
-		`command = { BIN, "tui", "app", "zz-extra" }`,
+		`local argv = open_argv("zz-extra")`,
 	} {
 		if !strings.Contains(script, want) {
 			t.Errorf("rhiza.lua lacks %s:\n%s", want, script)
@@ -228,42 +223,8 @@ func TestRexInstallRegistersAnActionPerApp(t *testing.T) {
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
 		t.Fatal(err)
 	}
-	if script = readFile(t, filepath.Join(dir, "rhiza.lua")); !strings.Contains(script, `command = { BIN, "tui", "app", "zz-later" }`) {
+	if script = readFile(t, filepath.Join(dir, "rhiza.lua")); !strings.Contains(script, `open_argv("zz-later")`) {
 		t.Errorf("reinstall lacks the new app's action:\n%s", script)
-	}
-}
-
-func TestRexInstallSizesEachAppLayerToItsCells(t *testing.T) {
-	sized := modalshell.Dialog(ui.NewDialog(theme.Dark(), colorprofile.TrueColor, "Sized", []string{"a body line"}))
-	launcher.Register(launcher.App{Name: "zz-sized", Summary: "Sized", Component: func() modalshell.Component { return sized }})
-	launcher.Register(launcher.App{Name: "zz-default", Summary: "Default size"})
-	ctx, dir, _ := rexTestCtx(t)
-	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
-		t.Fatal(err)
-	}
-	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
-	action := func(name string) string {
-		i := strings.Index(script, `name = "`+rexActionName(name)+`"`)
-		if i < 0 {
-			t.Fatalf("no action for %s:\n%s", name, script)
-		}
-		end := strings.Index(script[i:], "\n}\n")
-		return script[i : i+end]
-	}
-	sc, sr := sized.NaturalSize()
-	act := action("zz-sized")
-	if want := fmt.Sprintf("bounds = cell_bounds(ctx.block_id, %d, %d)", sc, sr); !strings.Contains(act, want) {
-		t.Errorf("zz-sized is not sized from its component's NaturalSize (%s):\n%s", want, act)
-	}
-	if !strings.Contains(act, `command = { BIN, "tui", "app", "zz-sized" }`) || strings.Contains(act, `"launch"`) {
-		t.Errorf("zz-sized does not run its app directly:\n%s", act)
-	}
-	dc, dr := launcher.App{}.Size()
-	if want := fmt.Sprintf("cell_bounds(ctx.block_id, %d, %d)", dc, dr); !strings.Contains(action("zz-default"), want) {
-		t.Errorf("zz-default lacks %s", want)
-	}
-	if strings.Contains(script, `"launch"`) {
-		t.Errorf("an app action goes through tui launch:\n%s", script)
 	}
 }
 
