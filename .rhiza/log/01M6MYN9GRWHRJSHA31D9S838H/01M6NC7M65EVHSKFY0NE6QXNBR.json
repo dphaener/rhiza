@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NBSGZ3FM89S67N8KDD0AGQ",
+  "after": [
+    "01M6NB5A7J2CHEEPWBDPQ8H1NE"
+  ],
+  "at": "2026-11-05T08:12:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 4221f8bf: go test -trimpath ./cmd/rhiza -run TestScripts/(run-send-back|describe-golden|inbox-signoff|review-signoff.*|run-ship-signoff|tui-changes-app) passes, as do go test ./internal/api/... and ./internal/tui/inboxapp/... run-send-back.txtar drives a shiptest run with fake claude/gh/rex to signoff_waiting, refuses a blank note with exit 2 (status still at signoff, no changes asked), then send-back --note 'say more' exits 0: the fake claude log shows fixer cycle 2 then check cycle 2, status shows 'signoff (visit 1): changes ... 1 finding' and the run back at signoff, and land never ran (no order.log). Re-running the script with -testwork and rhiza run status on its repo showed the note as a finding ('alpha f1 major at owner: say more') under Sign-offs. After approve, send-back on the finished run exits 2 and land ran once only. Diff read: run.send-back op in internal/api/run_signoff.go journals an owner changes sign-off with the note as one finding and returns to the on.changes checks step, sharing the max_visits guard with request-changes; describe golden regenerated."
+        },
+        "handle": "run-send-back-verified",
+        "id": "01M6NC7DRW1YEH5QD62KDPS4N0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NC7DRW1YEH5QD62GEM81FC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NC7DRW1YEH5QD62GEM81FC",
+        "id": "01M6NC7G60JV4HEDZHND7WXD6Y",
+        "link": "01M6NC7G60JV4HEDZHNCH1W7WH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N099H464KP7VPM9TVD8RAZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYN9GRWHRJSHA31D9S838H",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NC7M65EVHSKFY0NE6QXNBR",
+  "type": "ops",
+  "v": 1
+}
