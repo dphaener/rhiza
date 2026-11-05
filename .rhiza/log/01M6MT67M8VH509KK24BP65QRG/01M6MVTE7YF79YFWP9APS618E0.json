@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MVK8KPY6YV2D0S5RYTST5B",
+  "after": [
+    "01M6MVHT7FM4HRXVS1RHA8P4DV"
+  ],
+  "at": "2026-11-05T03:25:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from the branch head (go build -trimpath) and ran rhiza run start --foreground --workflow plan by hand in a scratch repo with a bare origin and fake rex/claude/gh (plan-workflow-merge-main-moved.txtar's). With origin/main moved once after rebased-green: merge (visit 1) failed with 'Not merged: origin/main has moved past PR #7's checked head', went to rebase; rebase (visit 2) pushed a head on the new main, merge (visit 2) made the only gh pr merge call, pinned with --match-head-commit to that head (which contains the other commit), close-out passed and the run succeeded. With origin/main moving on every check: merge failed at visits 1-3 with no gh pr merge call, and the run ended failed with 'step \"rebase\" went over max_visits 3'. rhiza workflow describe plan shows merge on.fail -> rebase. TestPlanBuiltin and the plan-workflow-merge-main-moved, plan-workflow-pr and run-ship-merge-main-moved scripts pass. The rendered-only conflict path of ship rebase was not exercised."
+        },
+        "handle": "plan-run-merge-rebases-qa-1",
+        "id": "01M6MVT8ZMFCTDPC3EVHQXQSM7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MVT8ZMFCTDPC3EVGGBKW9S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MVT8ZMFCTDPC3EVGGBKW9S",
+        "id": "01M6MVTAX8QNC4C1P4HG8H8SH2",
+        "link": "01M6MVTAX8QNC4C1P4HE9CRNZA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MTA2NY5E0GWS0NDWVNEA6D",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MT67M8VH509KK24BP65QRG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MVTE7YF79YFWP9APS618E0",
+  "type": "ops",
+  "v": 1
+}
