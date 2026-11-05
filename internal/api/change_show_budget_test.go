@@ -7,26 +7,16 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/id"
-	"github.com/dphaener/rhiza/internal/quiettest"
 )
 
-// TestChangeShowBudget times rhiza change show of the in-flight change sets
-// of the 50,000-node model under the read budget, with the index fresh and
-// after one entry is appended to an unrelated change set. It runs after
-// TestReadBudget (file order) because it appends to the shared model.
-func TestChangeShowBudget(t *testing.T) {
-	if testing.Short() {
-		t.Skip("the read budget generates the 50,000-node model; skipped under -short")
-	}
-	q := quiettest.Wait(t)
-	budgetLock(t)
-	timingLog := openTimingLog(t, q.String())
-	g := defaultModel(t)
+// changeShowBudget times rhiza change show of the in-flight change sets of
+// g, the 50,000-node model, under the read budget, with the index fresh and
+// after one entry is appended to an unrelated change set, logging each
+// attempt through log. TestReadBudget runs it last, since it appends to
+// the shared model.
+func changeShowBudget(t *testing.T, g generated, log func(string)) {
+	t.Helper()
 	s := g.summary
-	log := func(line string) {
-		t.Log(line)
-		timingLog(line)
-	}
 	timeShow := func(label string, cs id.ID) {
 		t.Helper()
 		ok, err := timeWithinBudget(label, func() (readTiming, error) {

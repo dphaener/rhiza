@@ -8,6 +8,7 @@ package api
 import (
 	"cmp"
 	"encoding/json"
+	"maps"
 	"slices"
 	"strings"
 
@@ -242,15 +243,23 @@ func runChangeShowIndexed(ctx *Ctx, w *workspace, r ChangeShowRequest) (any, err
 		return nil, NotFoundf("no change set %s", cs).WithNext(changeLsNext)
 	}
 	c, problems := changeset.Fold(cs, es)
+	// The diff's landed change sets do not depend on the view, so they
+	// load while the view is built.
+	landed := prefetchLanded(x, c)
 	m, err := newIndexModel(x, cs, c.State)
 	if err != nil {
+		<-landed
 		return nil, err
 	}
 	serves := []id.ID{}
 	for _, l := range m.LinksFrom(cs, op.LinkServes) {
 		serves = append(serves, l.To)
 	}
-	diff, err := indexedDiff(x, m, c)
+	pre := <-landed
+	if pre.err != nil {
+		return nil, Errorf("%s", pre.err.Error())
+	}
+	diff, err := indexedDiff(x, m, c, pre.sets)
 	if err != nil {
 		return nil, err
 	}
@@ -333,15 +342,64 @@ func stateOf(infos []index.ChangeSetInfo, cs id.ID) changeset.State {
 	return ""
 }
 
+// landedSets is what prefetchLanded loads: folded change sets by ID.
+type landedSets struct {
+	sets map[id.ID]changeset.ChangeSet
+	err  error
+}
+
+// prefetchLanded loads, in the background, the change sets that the as-is
+// history of the nodes and links mine's operations write or link to names:
+// most of what indexedDiff reads, found without mine's own view. The
+// channel yields once.
+func prefetchLanded(x *index.Index, mine changeset.ChangeSet) <-chan landedSets {
+	out := make(chan landedSets, 1)
+	go func() {
+		want := map[id.ID]bool{}
+		for _, o := range mine.Ops {
+			for _, i := range []id.ID{o.Target(), o.From, o.To} {
+				if i.IsZero() {
+					continue
+				}
+				var hist []gmodel.Ref
+				if n, ok, err := x.Node(index.AsIs, i); err != nil {
+					out <- landedSets{err: err}
+					return
+				} else if ok {
+					hist = n.History
+				} else if l, ok, err := x.Link(index.AsIs, i); err != nil {
+					out <- landedSets{err: err}
+					return
+				} else if ok {
+					hist = l.History
+				}
+				for _, h := range hist {
+					if h.ChangeSet != mine.ID {
+						want[h.ChangeSet] = true
+					}
+				}
+			}
+		}
+		if len(want) == 0 {
+			out <- landedSets{}
+			return
+		}
+		got, err := x.FoldedOf(slices.Collect(maps.Keys(want)))
+		out <- landedSets{sets: got, err: err}
+	}()
+	return out
+}
+
 // indexedDiff is changeset.BuildDiff for change set mine, over the change
 // sets that can bear on it: those that wrote a node or link it writes or
 // links to, found by the history the index keeps of each in mine's view
 // (landed change sets and the in-flight ones it depends on). A change set
 // the history does not name wrote nothing mine builds on, since a diff
 // follows only the ops that lead to the ones mine is based on, so the diff
-// is BuildDiff's over all of them. A landed operation that never applied
-// has no history, so it is not found.
-func indexedDiff(x *index.Index, m *indexModel, mine changeset.ChangeSet) (changeset.Diff, error) {
+// is BuildDiff's over all of them; loaded holds change sets already
+// loaded, and one of them that wrote none of those is left out. A landed
+// operation that never applied has no history, so it is not found.
+func indexedDiff(x *index.Index, m *indexModel, mine changeset.ChangeSet, loaded map[id.ID]changeset.ChangeSet) (changeset.Diff, error) {
 	want := map[id.ID]bool{}
 	have := map[id.ID]changeset.ChangeSet{}
 	seen := map[id.ID]bool{}
@@ -367,9 +425,14 @@ func indexedDiff(x *index.Index, m *indexModel, mine changeset.ChangeSet) (chang
 	load := func() {
 		var need []id.ID
 		for cs := range want {
-			if _, ok := have[cs]; !ok {
-				need = append(need, cs)
+			if _, ok := have[cs]; ok {
+				continue
 			}
+			if c, ok := loaded[cs]; ok {
+				have[cs] = c
+				continue
+			}
+			need = append(need, cs)
 		}
 		if len(need) == 0 || fail != nil {
 			return

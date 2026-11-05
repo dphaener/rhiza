@@ -334,6 +334,11 @@ func TestReadBudget(t *testing.T) {
 		t.Log(late)
 		timingLog(late)
 	}
+	// Last: it appends an entry to the shared model.
+	changeShowBudget(t, g, func(line string) {
+		t.Log(line)
+		timingLog(line)
+	})
 }
 
 // landedChangeSet returns a landed change set of g's index.

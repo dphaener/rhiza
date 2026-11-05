@@ -352,8 +352,8 @@ func whatIfSets(tx *sql.Tx, cs id.ID, over *changeset.ChangeSet) ([]changeset.Ch
 		if st, ok := state(cs); !ok || !inFlightState(st) {
 			break
 		}
-		sets := build()
-		want := slices.Concat([]id.ID{cs}, changeset.Closure(sets, cs), changeset.Dependencies(sets, cs))
+		a := changeset.Analyze(build())
+		want := slices.Concat([]id.ID{cs}, a.Closure(cs), a.Dependencies(cs))
 		var need []id.ID
 		for _, w := range want {
 			if _, ok := full[w]; !ok && !slices.Contains(need, w) {
