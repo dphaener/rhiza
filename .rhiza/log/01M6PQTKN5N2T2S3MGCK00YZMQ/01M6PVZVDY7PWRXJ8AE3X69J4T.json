@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PVAYVARSRKYPF3XJ3FET4D",
+  "after": [
+    "01M6PRB955VN7FEV5W5Z703R9C"
+  ],
+  "at": "2026-11-05T22:06:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b14779d5 ran go test -trimpath -count=1 -v ./cmd/rhiza -run 'TestScripts/(autonomy-accept-rule|autonomous-gate-rule|owner-run-gate-accept|stage-autonomy|run-gate)$': all PASS. autonomy-accept-rule.txtar shows rhiza accept --rule autonomy with rhiza.autonomy.accept=owner refused as usage (code usage, exit 2, change set stays proposed), rule autonomous in the non-autonomous run still refused ('is not autonomous', exit 2), and with accept=auto the accept succeeds and change show records rule autonomy; fold-ok passes. Also ran go test -trimpath -count=1 ./internal/api -run 'TestLifecycle|...|Autonomy': ok. Read the diff: checkAutonomousRule in internal/api/lifecycle.go refuses rule autonomy via Usagef unless autonomyStage(accept) is auto, before the RHIZA_RUN check; rule autonomous is unchanged."
+        },
+        "handle": "autonomy-accept-rule-verified",
+        "id": "01M6PVZVASM6TKS5CPR3D9SZM2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PVZVASM6TKS5CPQZGCV5B6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PVZVASM6TKS5CPQZGCV5B6",
+        "id": "01M6PVZVCDF0TD7VC2SHV6DW8Z",
+        "link": "01M6PVZVCDF0TD7VC2SH31XG5D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PR135E00DF7NHH46BYZF87",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PQTKN5N2T2S3MGCK00YZMQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PVZVDY7PWRXJ8AE3X69J4T",
+  "type": "ops",
+  "v": 1
+}
