@@ -20,6 +20,7 @@ import (
 	"github.com/dphaener/rhiza/internal/tui/healthapp"
 	"github.com/dphaener/rhiza/internal/tui/inboxapp"
 	"github.com/dphaener/rhiza/internal/tui/liveapp"
+	"github.com/dphaener/rhiza/internal/tui/modalshell"
 	"github.com/dphaener/rhiza/internal/tui/modelapp"
 	"github.com/dphaener/rhiza/internal/tui/readapps"
 	"github.com/dphaener/rhiza/internal/tui/requestsapp"
@@ -185,7 +186,7 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		stdout.Write(out)
 		return 0
 	}
-	if _, err := tea.NewProgram(m).Run(); err != nil {
+	if err := modalshell.Run(m); err != nil {
 		return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
 	}
 	return 0
@@ -238,7 +239,7 @@ func tuiModel(g globals, args []string, stdout, stderr io.Writer, getenv func(st
 		io.WriteString(stdout, m.Text("tree")+"\n"+m.Text("roadmap"))
 		return 0
 	}
-	if _, err := tea.NewProgram(m).Run(); err != nil {
+	if err := modalshell.Run(m); err != nil {
 		return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
 	}
 	return 0
@@ -318,7 +319,7 @@ func tuiChanges(g globals, args []string, stdout, stderr io.Writer, getenv func(
 	if err := m.MarkSeen(); err != nil {
 		return writeError(stdout, stderr, err, false)
 	}
-	if _, err := tea.NewProgram(m).Run(); err != nil {
+	if err := modalshell.Run(m); err != nil {
 		return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
 	}
 	return 0
