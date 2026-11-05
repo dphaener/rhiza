@@ -11,16 +11,17 @@ package inboxapp
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/colorprofile"
 
 	"github.com/dphaener/rexuikit/ui"
 	"github.com/dphaener/rexuikit/ui/theme"
 
 	"github.com/dphaener/rhiza/internal/api"
-	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/tui/launcher"
 )
 
@@ -101,7 +102,7 @@ type Model struct {
 	// "gate" while a gate's answer form is up, "accept" while the accept
 	// confirm is up.
 	stage  string
-	gateQs []string // the gate's open questions, by handle, in form order
+	gateQs []api.InboxGateQuestion // the gate's open questions, in form order
 }
 
 // NewModel returns the model over run, loaded once.
@@ -227,8 +228,8 @@ func (m *Model) choose(i int) tea.Cmd {
 		return m.openResolve(it)
 	}
 	if it.Kind == api.InboxOpen {
-		if qs := gateQuestions(it.Detail); len(qs) > 0 {
-			return m.openGate(it, qs, "")
+		if len(it.Questions) > 0 {
+			return m.openGate(it, it.Questions, "")
 		}
 	}
 	if p.Action == ActionAccept {
@@ -250,41 +251,30 @@ func (m *Model) show(it api.InboxItem) tea.Cmd {
 
 // panel shows item it's detail with the current note, opening nothing.
 func (m *Model) panel(it api.InboxItem) tea.Cmd {
-	m.cur = ui.NewInfoPanel(theme.Dark(), colorprofile.TrueColor, title(it), func(int) []string {
-		return detail(it, m.note)
+	m.cur = ui.NewInfoPanel(theme.Dark(), colorprofile.TrueColor, title(it), func(width int) []string {
+		return detail(it, m.note, max(width-2*qvPad, 1))
 	})
 	return m.cur.(*ui.InfoPanel).Init()
 }
 
-// gateQuestions are the handles of the open questions a gate stopped on,
-// from the stop detail "open questions: a, b; answer each ...".
-func gateQuestions(detail string) []string {
-	rest, ok := strings.CutPrefix(detail, run.OpenStop)
-	if !ok {
-		return nil
-	}
-	rest, _, _ = strings.Cut(rest, ";")
-	var qs []string
-	for _, q := range strings.Split(rest, ",") {
-		if q = strings.TrimSpace(q); q != "" {
-			qs = append(qs, q)
-		}
-	}
-	return qs
-}
-
-// openGate shows a form with one TextArea per open question of the gate.
-func (m *Model) openGate(it api.InboxItem, qs []string, msg string) tea.Cmd {
+// openGate shows the gate's questions in full, then one TextArea per open
+// question.
+func (m *Model) openGate(it api.InboxItem, qs []api.InboxGateQuestion, msg string) tea.Cmd {
 	fields := make([]ui.Field, len(qs))
-	for i, q := range qs {
-		fields[i] = ui.NewTextArea(fmt.Sprintf("q%d", i), q)
+	for i := range qs {
+		label := "Your answer"
+		if len(qs) > 1 {
+			label = fmt.Sprintf("Your answer to question %d of %d", i+1, len(qs))
+		}
+		fields[i] = ui.NewTextArea(fmt.Sprintf("q%d", i), label)
 	}
 	sub := title(it) + " · answer each, then the run resumes"
 	if msg != "" {
 		sub = title(it) + " · " + msg
 	}
 	f := ui.NewForm(theme.Dark(), colorprofile.TrueColor, fields...).WithSubtitle(sub)
-	m.form, m.asked, m.stage, m.gateQs, m.cur = f, &it, "gate", qs, f
+	m.form, m.asked, m.stage, m.gateQs = f, &it, "gate", qs
+	m.cur = &questionView{form: f, text: func(w int) []string { return askLines(it, qs, w) }}
 	return f.Init()
 }
 
@@ -303,7 +293,7 @@ func (m *Model) answerGate(v ui.Values) tea.Cmd {
 		}
 	}
 	for i, q := range qs {
-		if _, err := m.run("question.answer", []string{q, texts[i], "--run", it.Run}); err != nil {
+		if _, err := m.run("question.answer", []string{q.Handle, texts[i], "--run", it.Run}); err != nil {
 			return m.openGate(it, qs[i:], "answer failed: "+err.Error())
 		}
 	}
@@ -350,7 +340,7 @@ func (m *Model) answerForm(it api.InboxItem, msg string) tea.Cmd {
 	f := ui.NewForm(theme.Dark(), colorprofile.TrueColor,
 		ui.NewTextArea("answer", "Your answer")).WithSubtitle(title(it) + " · " + msg)
 	m.form, m.asked = f, &it
-	m.cur = f
+	m.cur = &questionView{form: f, text: func(w int) []string { return askLines(it, nil, w) }}
 	return f.Init()
 }
 
@@ -366,7 +356,7 @@ func (d dialogView) Theme() theme.Theme      { return d.m.dlg.Theme() }
 
 // openSignoff shows the dialog naming the run and what it waits for.
 func (m *Model) openSignoff(it api.InboxItem) tea.Cmd {
-	body := []string{"run: " + it.Run, "waits for: " + waits(it)}
+	body := []string{"waits for: " + waits(it)}
 	m.asked = &it
 	m.dlg = ui.NewDialog(theme.Dark(), colorprofile.TrueColor, "Sign off · "+title(it), body).
 		WithHint("a approve · s send back · esc close")
@@ -377,7 +367,7 @@ func (m *Model) openSignoff(it api.InboxItem) tea.Cmd {
 // approve signs the run off through run.approve and quits.
 func (m *Model) approve() tea.Cmd {
 	if _, err := m.run("run.approve", []string{m.asked.Run}); err != nil {
-		m.dlg.SetBody([]string{"run: " + m.asked.Run, "approve failed: " + err.Error()})
+		m.dlg.SetBody([]string{"approve failed: " + err.Error()})
 		return nil
 	}
 	return tea.Quit
@@ -429,7 +419,7 @@ func (m *Model) chosen(choice string) tea.Cmd {
 	it := *m.asked
 	if choice == "abandon" {
 		f := ui.NewForm(theme.Dark(), colorprofile.TrueColor,
-			ui.NewConfirm("confirm", "Abandon this run?")).WithSubtitle(title(it) + " · " + it.Run)
+			ui.NewConfirm("confirm", "Abandon this run?")).WithSubtitle(title(it))
 		m.form, m.stage, m.cur = f, "confirm", f
 		return f.Init()
 	}
@@ -503,20 +493,138 @@ func title(it api.InboxItem) string {
 	if it.ChangeTitle != "" {
 		return it.ChangeTitle
 	}
-	return it.Change
+	return "A change set"
 }
 
-// waits is what the item waits for.
+// scrub drops the item's own handle and IDs from text written for the
+// agents, so no surface shows one.
+func scrub(it api.InboxItem, s string) string {
+	ids := []string{it.ID, it.Run, it.Change, it.Session, it.Handle, it.Other, it.Target, it.Tab, it.TabBlock, it.TabSession}
+	if it.Blocks != "this change set" {
+		ids = append(ids, it.Blocks)
+	}
+	for _, q := range it.Questions {
+		ids = append(ids, q.Handle)
+	}
+	slices.SortFunc(ids, func(a, b string) int { return len(b) - len(a) })
+	for _, x := range ids {
+		if x != "" {
+			s = strings.ReplaceAll(s, x, "…")
+		}
+	}
+	return s
+}
+
+// asked is what a gate question asks: the advisor's plain-words
+// restatement, else the full statement.
+func asked(q api.InboxGateQuestion) string {
+	if q.Restatement != "" {
+		return q.Restatement
+	}
+	return q.Statement
+}
+
+// waits is what the item waits for, on one line.
 func waits(it api.InboxItem) string {
 	switch it.Kind {
 	case api.InboxQuestion, api.InboxBlocker:
 		if it.Question != "" {
-			return it.Question
+			return scrub(it, it.Question)
 		}
+	case api.InboxOpen:
+		if len(it.Questions) > 0 {
+			s := asked(it.Questions[0])
+			if n := len(it.Questions); n > 1 {
+				s += fmt.Sprintf(" (+%d more)", n-1)
+			}
+			return s
+		}
+		return "questions the run stopped on"
 	case api.InboxOverlap:
-		return strings.TrimSpace("with " + it.Other + " · " + it.Target + " " + it.Detail)
+		return "two change sets write the same part of the plan"
 	}
-	return it.Detail
+	return scrub(it, it.Detail)
+}
+
+// blocksOf is what a blocker blocks, by name.
+func blocksOf(it api.InboxItem) string {
+	switch {
+	case it.BlocksTitle != "":
+		return it.BlocksTitle
+	case it.Blocks == "this change set":
+		return title(it)
+	case it.Blocks != "":
+		return "another part of the plan"
+	}
+	return ""
+}
+
+// askLines are the lines of text above an answer form at width: every
+// question in full and wrapped, what each blocks and the advisor's
+// recommendation.
+func askLines(it api.InboxItem, qs []api.InboxGateQuestion, width int) []string {
+	var out []string
+	add := func(prefix, s string) {
+		if s != "" {
+			out = append(out, wrap(prefix+scrub(it, s), width)...)
+		}
+	}
+	if len(qs) == 0 {
+		add("", it.Question)
+		add("Blocks: ", blocksOf(it))
+		add("Recommended: ", it.Recommendation)
+		add("Why: ", it.Reasons)
+		return out
+	}
+	for i, q := range qs {
+		if i > 0 {
+			out = append(out, "")
+		}
+		head := ""
+		if len(qs) > 1 {
+			head = fmt.Sprintf("%d of %d: ", i+1, len(qs))
+		}
+		add(head, asked(q))
+		add("Blocks: ", q.Blocks)
+		add("Recommended: ", q.Recommendation)
+		add("Why: ", q.Reasons)
+	}
+	return out
+}
+
+// wrap breaks s into lines of at most width cells at word boundaries; a
+// word longer than width is broken.
+func wrap(s string, width int) []string {
+	width = max(width, 1)
+	var out []string
+	for _, para := range strings.Split(s, "\n") {
+		line := ""
+		flush := func() {
+			if line != "" {
+				out = append(out, line)
+				line = ""
+			}
+		}
+		for _, w := range strings.Fields(para) {
+			for lipgloss.Width(w) > width {
+				flush()
+				r := []rune(w)
+				n := min(width, len(r))
+				out, w = append(out, string(r[:n])), string(r[n:])
+			}
+			switch {
+			case line == "":
+				line = w
+			case lipgloss.Width(line)+1+lipgloss.Width(w) <= width:
+				line += " " + w
+			default:
+				flush()
+				line = w
+			}
+		}
+		flush()
+	}
+	return out
 }
 
 // row is one item: its kind and change set title, then what it waits for.
@@ -525,22 +633,89 @@ func row(it api.InboxItem) ui.Row {
 	if it.Step != "" {
 		label += " · " + it.Step
 	}
-	return ui.Row{Label: label, Detail: waits(it)}
+	return ui.Row{Label: label, Detail: strings.Join(strings.Fields(waits(it)), " ")}
 }
 
-// detail is the lines of an item's detail panel.
-func detail(it api.InboxItem, note string) []string {
+// detail is the lines of an item's detail panel, wrapped at width.
+func detail(it api.InboxItem, note string, width int) []string {
 	lines := []string{it.Kind + " · " + title(it)}
 	add := func(k, v string) {
 		if v != "" {
-			lines = append(lines, k+": "+v)
+			if k != "" {
+				v = k + ": " + v
+			}
+			lines = append(lines, wrap(v, width)...)
 		}
 	}
 	add("step", it.Step)
 	add("since", it.At)
-	add("run", it.Run)
-	add("waits for", waits(it))
-	add("next", it.Next)
+	if it.Kind == api.InboxOpen && len(it.Questions) > 0 {
+		lines = append(lines, askLines(it, it.Questions, width)...)
+	} else {
+		add("waits for", waits(it))
+	}
+	add("next", scrub(it, it.Next))
 	add("", note)
 	return lines
+}
+
+// questionView is an answer form under the text of what is asked, which a
+// Form's one-line subtitle and label cannot hold.
+type questionView struct {
+	form *ui.Form
+	text func(width int) []string
+	w, h int
+}
+
+const qvMinWidth, qvPad = 64, 2
+
+func (q *questionView) lines(width int) []string {
+	return wrap2(q.text(max(width-2*qvPad, 1)))
+}
+
+// wrap2 appends the blank line that separates the text from the form.
+func wrap2(l []string) []string {
+	if len(l) == 0 {
+		return nil
+	}
+	return append(l, "")
+}
+
+func (q *questionView) Init() tea.Cmd { return q.form.Init() }
+
+func (q *questionView) Theme() theme.Theme { return q.form.Theme() }
+
+func (q *questionView) NaturalSize() (int, int) {
+	fw, fh := q.form.NaturalSize()
+	w := max(fw, qvMinWidth)
+	return w, fh + len(q.lines(w))
+}
+
+func (q *questionView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if ws, ok := msg.(tea.WindowSizeMsg); ok {
+		q.w, q.h = ws.Width, ws.Height
+		_, cmd := q.form.Update(tea.WindowSizeMsg{Width: ws.Width, Height: max(ws.Height-len(q.lines(ws.Width)), 1)})
+		return q, cmd
+	}
+	_, cmd := q.form.Update(msg)
+	return q, cmd
+}
+
+func (q *questionView) View() tea.View {
+	w := q.w
+	if w <= 0 {
+		w, _ = q.NaturalSize()
+		_, fh := q.form.NaturalSize()
+		q.form.Update(tea.WindowSizeMsg{Width: w, Height: fh})
+	}
+	t := q.form.Theme()
+	st := t.On(t.Text, t.Surface)
+	pad := st.Render(strings.Repeat(" ", qvPad))
+	var out []string
+	for _, l := range q.lines(w) {
+		fill := max(w-2*qvPad-lipgloss.Width(l), 0)
+		out = append(out, pad+st.Render(l+strings.Repeat(" ", fill))+pad)
+	}
+	out = append(out, q.form.Render())
+	return tea.NewView(strings.Join(out, "\n"))
 }

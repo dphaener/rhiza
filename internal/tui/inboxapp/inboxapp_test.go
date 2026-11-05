@@ -1,12 +1,15 @@
 package inboxapp
 
 import (
+	"encoding/json"
 	"errors"
 	"slices"
 	"strings"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 
 	"github.com/dphaener/rexuikit/ui"
 
@@ -18,7 +21,7 @@ const full = `{"items":[
 {"id":"e5","kind":"question","change":"C1","change_title":"One","step":"build","run":"R1","session":"S1","question":"Which db?"},
 {"id":"d4","kind":"signoff","change":"C2","change_title":"Two","step":"signoff","run":"R2","detail":"signoff-wait"},
 {"id":"c3","kind":"failed","change":"C3","change_title":"Three","step":"verify","run":"R3","detail":"boom"},
-{"id":"h8","kind":"stalled","change":"C9","change_title":"Nine","step":"build","run":"R9","session":"S1","detail":"session S1 is silent"},
+{"id":"h8","kind":"stalled","change":"C9","change_title":"Nine","step":"build","run":"R9","session":"S1","detail":"the session is silent"},
 {"id":"i9","kind":"disk-low","detail":"1.0 GiB free"},
 {"id":"j1","kind":"accept","change":"C7","change_title":"Seven","detail":"ready to accept"}
 ]}`
@@ -87,7 +90,7 @@ func TestRowPerItemInOrder(t *testing.T) {
 }
 
 func TestEnterOpensActionPerKind(t *testing.T) {
-	gate := `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","detail":"open questions: which-db, how-many; answer each with a Decision, then rhiza run resume R4"}]}`
+	gate := `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","questions":[{"handle":"which-db","statement":"Which db?"},{"handle":"how-many","statement":"How many?"}]}]}`
 	for _, c := range []struct {
 		name, out string
 		downs     int
@@ -97,7 +100,7 @@ func TestEnterOpensActionPerKind(t *testing.T) {
 		{"signoff", full, 1, []string{"Sign off", "a approve"}},
 		{"failed", full, 2, []string{"Retry", "Abandon"}},
 		{"accept", full, 5, []string{"Accept this change set?", "Seven"}},
-		{"open", gate, 0, []string{"which-db", "how-many", "Four"}},
+		{"open", gate, 0, []string{"Which db?", "How many?", "Four"}},
 	} {
 		var calls []call
 		m := NewModel(fake(c.out, &calls))
@@ -151,7 +154,7 @@ func TestAcceptDeclinedCallsNothing(t *testing.T) {
 
 func TestGateAnswersEachThenResumes(t *testing.T) {
 	var calls []call
-	gate := `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","detail":"open questions: which-db, how-many; answer each with a Decision, then rhiza run resume R4"}]}`
+	gate := `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","questions":[{"handle":"which-db","statement":"Which db?"},{"handle":"how-many","statement":"How many?"}]}]}`
 	m := NewModel(fake(gate, &calls))
 	enter(m)
 	if isQuit(typeAndSubmit(m, "sqlite")) {
@@ -178,7 +181,7 @@ func TestGateAnswersEachThenResumes(t *testing.T) {
 
 func TestGateResumeFailureShowsNote(t *testing.T) {
 	var calls []call
-	gate := `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","detail":"open questions: which-db; answer each with a Decision, then rhiza run resume R4"}]}`
+	gate := `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","questions":[{"handle":"which-db","statement":"Which db?"}]}]}`
 	run := fake(gate, &calls)
 	m := NewModel(func(op string, args []string) ([]byte, error) {
 		if op == "run.resume" {
@@ -201,7 +204,7 @@ func TestGateResumeFailureShowsNote(t *testing.T) {
 
 func TestGateBlankAnswerSendsNothing(t *testing.T) {
 	var calls []call
-	gate := `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","detail":"open questions: which-db; answer each with a Decision, then rhiza run resume R4"}]}`
+	gate := `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","questions":[{"handle":"which-db","statement":"Which db?"}]}]}`
 	m := NewModel(fake(gate, &calls))
 	enter(m)
 	if isQuit(typeAndSubmit(m, "")) || len(calls) != 1 {
@@ -235,7 +238,7 @@ func TestOtherKindShowsDetailAndOpensTab(t *testing.T) {
 		t.Fatalf("calls: %+v", calls)
 	}
 	v := m.View().Content
-	for _, w := range []string{"stalled", "Nine", "session S1 is silent"} {
+	for _, w := range []string{"stalled", "Nine", "the session is silent"} {
 		if !strings.Contains(v, w) {
 			t.Errorf("detail lacks %q:\n%s", w, v)
 		}
@@ -434,7 +437,7 @@ func TestSignoffDialogApprove(t *testing.T) {
 	var calls []call
 	m := signoffModel(&calls)
 	v := m.View().Content
-	for _, w := range []string{"Two", "R2", "signoff-wait"} {
+	for _, w := range []string{"Two", "signoff-wait"} {
 		if !strings.Contains(v, w) {
 			t.Errorf("dialog lacks %q:\n%s", w, v)
 		}
@@ -559,4 +562,109 @@ func TestResolveOnlyForFailedKinds(t *testing.T) {
 			t.Errorf("%s does not offer retry/abandon", k)
 		}
 	}
+}
+
+const longText = "Should the web UI keep the Operation.Write method on the shared registry, or move writes behind a separate interface so read-only callers can never reach them, given that the review found three callers that already depend on it and the daemon will need a stricter surface later when the owner turns autonomy on for the first time? Answer yes to keep it, no to split it, or say what you would rather do instead."
+
+// words are the words of s.
+func words(s string) []string { return strings.Fields(s) }
+
+func TestBlockerShowsEveryWordWrapped(t *testing.T) {
+	if len(longText) < 300 {
+		t.Fatalf("fixture is %d chars", len(longText))
+	}
+	out := `{"items":[{"id":"b1","kind":"blocker","change":"C1","change_title":"Web UI","question":` + quote(longText) + `,"handle":"web-ui-write","blocks":"this change set"}]}`
+	m := NewModel(fake(out, new([]call)))
+	enter(m)
+	m.Update(tea.WindowSizeMsg{Width: 70, Height: 30})
+	v := plain(m.View().Content)
+	for _, w := range words(longText) {
+		if !strings.Contains(v, w) {
+			t.Fatalf("view lacks %q:\n%s", w, v)
+		}
+	}
+	for _, l := range strings.Split(v, "\n") {
+		if lipgloss.Width(l) > 70 {
+			t.Errorf("line wider than the modal: %q", l)
+		}
+	}
+	for _, w := range []string{"Blocks: Web UI", "Your answer"} {
+		if !strings.Contains(v, w) {
+			t.Errorf("view lacks %q:\n%s", w, v)
+		}
+	}
+}
+
+func quote(s string) string { b, _ := json.Marshal(s); return string(b) }
+
+func plain(s string) string { return ansi.Strip(s) }
+
+func TestGateRowShowsQuestionsAndWhatTheyBlock(t *testing.T) {
+	out := `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","detail":"open questions: which-db; answer each",` +
+		`"questions":[{"handle":"which-db","statement":"Which db, formally?","restatement":"Which database should we use?","blocks":"Pick storage","recommendation":"SQLite","reasons":"Single file"},` +
+		`{"handle":"how-many","statement":"How many replicas?","blocks":"Scale out"}]}]}`
+	m := NewModel(fake(out, new([]call)))
+	if r := m.Rows()[0]; !strings.Contains(r, "Which database should we use?") || strings.Contains(r, "formally") {
+		t.Errorf("row = %q", r)
+	}
+	enter(m)
+	m.Update(tea.WindowSizeMsg{Width: 70, Height: 30})
+	v := plain(m.View().Content)
+	for _, w := range []string{"Which database should we use?", "Blocks: Pick storage", "Recommended: SQLite", "Why: Single file", "How many replicas?", "Blocks: Scale out", "Your answer to question 2 of 2"} {
+		if !strings.Contains(v, w) {
+			t.Errorf("view lacks %q:\n%s", w, v)
+		}
+	}
+	if strings.Contains(v, "formally") {
+		t.Errorf("view shows the statement beside its restatement:\n%s", v)
+	}
+}
+
+// idsIn are the handles and IDs the items carry.
+var idsIn = []string{"01M6PF30ABCDEFGHJKMNPQRSTV", "review-01m6pf30-r3-f1", "RUN01M6PF30", "SES01M6PF30", "i7x9k2f", "gate-q-handle", "01M6PN1SW"}
+
+const everyKind = `{"items":[
+{"id":"i7x9k2f","kind":"question","change":"01M6PF30ABCDEFGHJKMNPQRSTV","change_title":"One","step":"build","run":"RUN01M6PF30","session":"SES01M6PF30","question":"Which db?","tab_block":"01M6PN1SW","recommendation":"SQLite","reasons":"Simple"},
+{"id":"i7x9k2f","kind":"blocker","change":"01M6PF30ABCDEFGHJKMNPQRSTV","question":"Keep it?","handle":"review-01m6pf30-r3-f1","blocks":"review-01m6pf30-r3-f1"},
+{"id":"i7x9k2f","kind":"open","change":"01M6PF30ABCDEFGHJKMNPQRSTV","change_title":"Gate","run":"RUN01M6PF30","detail":"open questions: gate-q-handle; answer each","questions":[{"handle":"gate-q-handle","statement":"Keep it?","blocks":"The plan"}]},
+{"id":"i7x9k2f","kind":"open","change":"01M6PF30ABCDEFGHJKMNPQRSTV","change_title":"Gate no worktree","run":"RUN01M6PF30","detail":"open questions: gate-q-handle; answer each"},
+{"id":"i7x9k2f","kind":"signoff","change":"01M6PF30ABCDEFGHJKMNPQRSTV","change_title":"Two","run":"RUN01M6PF30","step":"signoff","detail":"waits on RUN01M6PF30"},
+{"id":"i7x9k2f","kind":"failed","change":"01M6PF30ABCDEFGHJKMNPQRSTV","run":"RUN01M6PF30","step":"verify","detail":"boom in 01M6PF30ABCDEFGHJKMNPQRSTV"},
+{"id":"i7x9k2f","kind":"stalled","change":"01M6PF30ABCDEFGHJKMNPQRSTV","run":"RUN01M6PF30","session":"SES01M6PF30","detail":"session SES01M6PF30 is silent"},
+{"id":"i7x9k2f","kind":"overlap","change":"01M6PF30ABCDEFGHJKMNPQRSTV","other":"01M6PN1SW","target":"gate-q-handle"},
+{"id":"i7x9k2f","kind":"accept","change":"01M6PF30ABCDEFGHJKMNPQRSTV","change_title":"Seven","detail":"ready"}
+]}`
+
+func TestNoSurfaceShowsAnIDOrHandle(t *testing.T) {
+	check := func(what, v string) {
+		v = plain(v)
+		for _, id := range idsIn {
+			if strings.Contains(v, id) {
+				t.Errorf("%s shows %q:\n%s", what, id, v)
+			}
+		}
+	}
+	n := len(NewModel(fake(everyKind, new([]call))).Items())
+	for i := range n {
+		m := NewModel(fake(everyKind, new([]call)))
+		check("rows", strings.Join(m.Rows(), "\n"))
+		for range i {
+			press(m, "down")
+		}
+		enter(m)
+		m.Update(tea.WindowSizeMsg{Width: 80, Height: 30})
+		check("view of item "+m.items[i].Kind, m.View().Content)
+		if m.dlg != nil {
+			key(m, "s")
+			check("send-back form", m.View().Content)
+		}
+	}
+	// the retry/abandon confirm
+	m := NewModel(fake(everyKind, new([]call)))
+	for range 5 {
+		press(m, "down")
+	}
+	enter(m)
+	m.Update(tea.WindowSizeMsg{Width: 80, Height: 30})
+	check("resolve form", m.View().Content)
 }
