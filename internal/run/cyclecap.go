@@ -140,6 +140,9 @@ func (r *running) capped(cr CheckRunner, step workflow.Step, a checkAction, leav
 			return result{}, false, err
 		}
 		r.log("step %s: %s: question %s (%s)", step.Name, it.name(), q.Handle, q.ID)
+		if err := r.adviseQuestion(step, q, text); err != nil {
+			return result{}, false, err
+		}
 		st = r.j.State()
 	}
 	qs := st.ReviewQuestionsFor(step.Name, cur.Cycle)

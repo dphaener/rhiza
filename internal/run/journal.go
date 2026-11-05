@@ -252,7 +252,8 @@ type Block struct {
 //	           Asker, a session of agent step Step, blocked on the owner)
 //	recommended: Step, Session, Asker, Text, Detail (advisor session Session
 //	           recommended Text to the question Asker asked, for the reasons
-//	           in Detail; it answers nothing)
+//	           in Detail, restating it as Restated when it has; it answers
+//	           nothing)
 //	message:   Step, Session, Actor (the sender), To, Text, Summary, Structured (a session sent another a message)
 //	tokens:    Step, Session, Tokens (a reading of the session's token use; the latest counts)
 //	fresh-session: Step, Session, Detail (the session's transcript was gone
@@ -349,7 +350,11 @@ type Entry struct {
 	Decision string `json:"decision,omitempty"`
 	// Handle is an asked entry's question node handle.
 	Handle string `json:"handle,omitempty"`
-	// Asker is an advisor or recommended entry's asking session.
+	// Restated is a recommended entry's plain-language restatement of the
+	// question.
+	Restated string `json:"restated,omitempty"`
+	// Asker is an advisor or recommended entry's asking session, or the
+	// question node's ID when the engine raised the question itself.
 	Asker      string    `json:"asker,omitempty"`
 	To         string    `json:"to,omitempty"`
 	Text       string    `json:"text,omitempty"`
@@ -1630,6 +1635,7 @@ type Advice struct {
 	Asker          string
 	Recommendation string
 	Reasons        string
+	Restatement    string
 	At             time.Time
 }
 
@@ -1639,7 +1645,7 @@ type Advice struct {
 func (st *State) recommended(e Entry) {
 	for i := len(st.Advice) - 1; i >= 0; i-- {
 		if a := &st.Advice[i]; a.Advisor == e.Session && a.Asker == e.Asker {
-			a.Recommendation, a.Reasons = e.Text, e.Detail
+			a.Recommendation, a.Reasons, a.Restatement = e.Text, e.Detail, e.Restated
 			return
 		}
 	}

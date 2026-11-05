@@ -46,6 +46,8 @@ type fakeRunner struct {
 	arbiters   []string          // "<step> <question>" per StartArbiter call
 	asked      []string          // "<session> <text>" per AddQuestion call
 	askErr     error             // AddQuestion's error, when set
+	advisors   []string          // "<asker> <text>" per StartAdvisor call that succeeded
+	advisorOK  bool              // StartAdvisor launches an advisor instead of failing
 	delivered  []string          // "<session> <question> <decision> <statement>" per Deliver call
 	deliverErr error             // Deliver's error, when set
 	ended      []string          // "step:session" per AgentEnded call, in order
@@ -203,7 +205,11 @@ func (f *fakeRunner) StartArbiter(step workflow.Step, question string, env []str
 }
 
 func (f *fakeRunner) StartAdvisor(step workflow.Step, asker, text string, env []string) (string, error) {
-	return "", fmt.Errorf("no advisor here")
+	if !f.advisorOK {
+		return "", fmt.Errorf("no advisor here")
+	}
+	f.advisors = append(f.advisors, asker+" "+text)
+	return "ADV-" + asker, nil
 }
 
 func (f *fakeRunner) AddQuestion(session, text string) (Question, error) {

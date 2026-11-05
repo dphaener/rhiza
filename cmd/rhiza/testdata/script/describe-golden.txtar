@@ -2785,6 +2785,10 @@ cmp stdout describe.golden.json
                         "description": "What the advisor recommends answering; absent until it has written one",
                         "type": "string"
                       },
+                      "restatement": {
+                        "description": "What is asked in plain words, as the advisor restated it; absent until it has",
+                        "type": "string"
+                      },
                       "statement": {
                         "description": "The question's full statement",
                         "type": "string"
@@ -11414,6 +11418,10 @@ cmp stdout describe.golden.json
           },
           "recommendation": {
             "description": "What to answer, in one or two sentences",
+            "type": "string"
+          },
+          "restatement": {
+            "description": "What is asked, in plain words with no handles, IDs or finding IDs; for a question a run raised from a template",
             "type": "string"
           },
           "session": {

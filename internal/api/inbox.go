@@ -121,6 +121,7 @@ type InboxGateQuestion struct {
 	Blocks         string `json:"blocks,omitempty" desc:"What it blocks by name: the node's statement or the change set's title; absent when it blocks nothing"`
 	Recommendation string `json:"recommendation,omitempty" desc:"What the advisor recommends answering; absent until it has written one"`
 	Reasons        string `json:"reasons,omitempty" desc:"Why the advisor recommends it"`
+	Restatement    string `json:"restatement,omitempty" desc:"What is asked in plain words, as the advisor restated it; absent until it has"`
 }
 
 // InboxResponse is the inbox.
@@ -191,6 +192,9 @@ func (r InboxResponse) Human(w io.Writer) {
 			fmt.Fprintf(w, "  %s\n", first)
 			for _, q := range it.Questions {
 				fmt.Fprintf(w, "  question: %s (%s)\n", q.Statement, q.Handle)
+				if q.Restatement != "" {
+					fmt.Fprintf(w, "    in plain words: %s\n", q.Restatement)
+				}
 				if q.Blocks != "" {
 					fmt.Fprintf(w, "    blocks: %s\n", q.Blocks)
 				}
@@ -1058,7 +1062,7 @@ func inboxGateQuestions(ctx *Ctx, st run.State) []InboxGateQuestion {
 		}
 		for i := len(st.Advice) - 1; i >= 0; i-- {
 			if a := st.Advice[i]; (a.Asker == h || a.Asker == asker) && a.Recommendation != "" {
-				q.Recommendation, q.Reasons = a.Recommendation, a.Reasons
+				q.Recommendation, q.Reasons, q.Restatement = a.Recommendation, a.Reasons, a.Restatement
 				break
 			}
 		}

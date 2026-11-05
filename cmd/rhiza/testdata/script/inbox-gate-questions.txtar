@@ -55,13 +55,15 @@ exec sh -c 'cat ../advice.jsonl >> .git/rhiza/runs/PLANRUN00001.jsonl'
 exec rhiza inbox
 stdout 'recommendation: Use the ssd'
 stdout 'reasons: It is the fast one'
+stdout 'in plain words: Choose where exports are stored'
 exec rhiza inbox --json
 stdout '"recommendation": "Use the ssd"'
 stdout '"reasons": "It is the fast one"'
+stdout '"restatement": "Choose where exports are stored"'
 -- plan.jsonl --
 {"type":"started","at":"2026-01-01T00:00:00Z","step":"gate","started":{"workflow":"plan","definition":"","change":"CSID","worktree":"WORKTREE"}}
 {"type":"entered","at":"2026-01-01T00:00:01Z","step":"gate","visit":1}
 {"type":"stopped","at":"2026-01-01T01:00:00Z","step":"gate","detail":"open questions: park-disk, park-format; answer each with a Decision, then rhiza run resume PLANRUN00001"}
 -- advice.jsonl --
 {"type":"advisor","at":"2026-01-01T01:01:00Z","step":"gate","session":"ADV1","asker":"park-disk"}
-{"type":"recommended","at":"2026-01-01T01:02:00Z","step":"gate","session":"ADV1","asker":"park-disk","text":"Use the ssd","detail":"It is the fast one"}
+{"type":"recommended","at":"2026-01-01T01:02:00Z","step":"gate","session":"ADV1","asker":"park-disk","text":"Use the ssd","detail":"It is the fast one","restated":"Choose where exports are stored"}

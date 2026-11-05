@@ -244,7 +244,7 @@ func TestRunRecommendClosesAdvisorPane(t *testing.T) {
 		journalledAtClose = append(journalledAtClose, slices.ContainsFunc(j.Entries, func(e run.Entry) bool { return e.Type == run.TypeRecommended }))
 		return f.rex.run(name, args, dir, env)
 	}
-	body := `{"session":"S-advisor","recommendation":"Use blue","reasons":"Brand"}`
+	body := `{"session":"S-advisor","recommendation":"Use blue","reasons":"Brand","restatement":"Pick a colour"}`
 	f.ctx.DryRun = true
 	if _, err := callOp(t, f.ctx, "run.recommend", body); err != nil {
 		t.Fatal(err)
@@ -262,7 +262,7 @@ func TestRunRecommendClosesAdvisorPane(t *testing.T) {
 	}
 	var journalled bool
 	for _, e := range j.Entries {
-		journalled = journalled || e.Type == run.TypeRecommended
+		journalled = journalled || (e.Type == run.TypeRecommended && e.Restated == "Pick a colour")
 	}
 	if !journalled {
 		t.Error("recommendation not journalled")

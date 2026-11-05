@@ -1034,6 +1034,31 @@ func (r *running) advise(step, session string, b *Block) error {
 	return nil
 }
 
+// adviseQuestion launches the advisor on question node q, which the
+// engine raised from a template (a failed leaf, a review cycle cap) for
+// the owner, and journals an advisor entry whose Asker is the node's ID.
+// The advisor restates the question in plain words and recommends; the
+// node's statement stays the engineering record. An autonomous run's
+// arbiter answers such questions, so it gets no advisor. An advisor that
+// cannot be launched is only logged. The error return is for journal
+// failures.
+func (r *running) adviseQuestion(step workflow.Step, q Question, text string) error {
+	st := r.j.State()
+	if st.Autonomous || q.ID == "" {
+		return nil
+	}
+	s, err := r.e.Runner.StartAdvisor(r.def.Arbiter(), q.ID, text, r.stepEnv(workflow.ArbiterName, st.Change))
+	if err != nil {
+		r.log("step %s: no advisor on question %s: %v", step.Name, q.Handle, err)
+		return nil
+	}
+	if err := r.append(Entry{Type: TypeAdvisor, Step: step.Name, Session: s, Asker: q.ID}); err != nil {
+		return err
+	}
+	r.log("step %s: advisor session %s on question %s", step.Name, s, q.Handle)
+	return nil
+}
+
 // unblock journals the end of session's block and notifies, when the
 // journal shows it blocked; otherwise it does nothing.
 func (r *running) unblock(step, session string) error {

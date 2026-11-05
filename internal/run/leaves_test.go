@@ -1231,6 +1231,19 @@ func leafOutcomes(st State) []string {
 	return out
 }
 
+// A failed leaf's question gets one advisor, asked by the question node.
+func TestLeafFailureStartsAdvisor(t *testing.T) {
+	e, r, _, _ := setup(t, leafFailsWF)
+	r.advisorOK = true
+	st := leafFailsRun(t, e, r, 0)
+	if len(r.advisors) != 1 || !strings.HasPrefix(r.advisors[0], "QL1 Leaf leaf-a failed all 3 attempts") {
+		t.Fatalf("advisors = %q", r.advisors)
+	}
+	if len(st.Advice) != 1 || st.Advice[0].Asker != "QL1" {
+		t.Errorf("advice = %+v", st.Advice)
+	}
+}
+
 // A leaf that fails all its attempts raises one question linked to it,
 // journalled on its leaf entry; its dependent is skipped, the independent
 // leaf is built and verified, and the run ends failed.
