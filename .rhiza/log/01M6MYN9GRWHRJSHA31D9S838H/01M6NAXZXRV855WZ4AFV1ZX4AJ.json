@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NAJGTHVVDZD0JKDG05Y8X1",
+  "after": [
+    "01M6NANAQRXGCDVXF3TDASBCB3"
+  ],
+  "at": "2026-11-05T07:49:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cd07943e ran go test -trimpath -count=1 -v ./internal/tui/inboxapp/...: all 15 tests PASS. With the fake runner, TestSignoffDialogApprove shows the dialog naming the run (R2) and its wait, and a calls run.approve [R2] and quits; TestSignoffSendBackNote: s opens the note form, an empty note makes no call and does not quit, then 'fix the tests' calls run.send-back [R2, fix the tests] and quits; TestSignoffEscCallsNothing: esc quits with only the initial inbox load called. Diff read: openSignoff builds a ui.Dialog with the run and waits-for, approve/sendBack call the named ops and return tea.Quit, sendBack trims and refuses an empty note."
+        },
+        "handle": "inbox-app-signoff-verified",
+        "id": "01M6NATQ2BGC00QDK3DNFCW3TF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NATQ2BGC00QDK3DJ6Y7MNP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NATQ2BGC00QDK3DJ6Y7MNP",
+        "id": "01M6NAW46GVS1CZ119YKAHZKZA",
+        "link": "01M6NAW46GVS1CZ119YHS6FN6X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZA8WT3TB8HWR4D33QMMQ5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYN9GRWHRJSHA31D9S838H",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NAXZXRV855WZ4AFV1ZX4AJ",
+  "type": "ops",
+  "v": 1
+}
