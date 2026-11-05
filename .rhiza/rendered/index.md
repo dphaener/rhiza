@@ -216,6 +216,7 @@
       - [run-one-live](capability/rhiza/workflows/workflow-runs/run-one-live.md)
       - [run-abandon](capability/rhiza/workflows/workflow-runs/run-abandon.md)
         - [abandon-clears-worktree](capability/rhiza/workflows/workflow-runs/run-abandon/abandon-clears-worktree.md)
+        - [abandon-keeps-unpushed-branch](capability/rhiza/workflows/workflow-runs/run-abandon/abandon-keeps-unpushed-branch.md)
       - [run-process-record](capability/rhiza/workflows/workflow-runs/run-process-record.md)
       - [abandon-failed-run](capability/rhiza/workflows/workflow-runs/abandon-failed-run.md)
       - [run-ls](capability/rhiza/workflows/workflow-runs/run-ls.md)
@@ -516,6 +517,7 @@
 ## Decisions
 
 - [abandon-removes-clean-worktree](decision/abandon-removes-clean-worktree.md)
+- [abandon-unpushed-branch-scope](decision/abandon-unpushed-branch-scope.md)
 - [actionable-roadmap-rebase-resolution](decision/actionable-roadmap-rebase-resolution.md)
 - [actor-on-every-entry](decision/actor-on-every-entry.md)
 - [actor-record-once-per-run](decision/actor-record-once-per-run.md)
@@ -1273,6 +1275,7 @@
 - [question-af1aebc5-1](question/question-af1aebc5-1.md)
 - [question-b5fe1d11-1](question/question-b5fe1d11-1.md)
 - [question-b693317e-1](question/question-b693317e-1.md)
+- [question-b947d57e-1](question/question-b947d57e-1.md)
 - [question-c2063c96-1](question/question-c2063c96-1.md)
 - [question-c315a867-1](question/question-c315a867-1.md)
 - [question-ec5a304e-1](question/question-ec5a304e-1.md)
@@ -1323,6 +1326,8 @@
 - [abandon-failed-run-qa-1](evidence/abandon-failed-run-qa-1.md)
 - [abandon-failed-run-verified](evidence/abandon-failed-run-verified.md)
 - [abandon-failed-run-verified-2](evidence/abandon-failed-run-verified-2.md)
+- [abandon-keeps-unpushed-branch-qa-1](evidence/abandon-keeps-unpushed-branch-qa-1.md)
+- [abandon-keeps-unpushed-branch-verified](evidence/abandon-keeps-unpushed-branch-verified.md)
 - [accept-policy-qa-1](evidence/accept-policy-qa-1.md)
 - [accept-policy-qa-3](evidence/accept-policy-qa-3.md)
 - [actor-record-in-checkout-qa-1](evidence/actor-record-in-checkout-qa-1.md)
@@ -1829,6 +1834,7 @@
 - [pr-263-fix-a-run-resumed-after-a](evidence/pr-263-fix-a-run-resumed-after-a.md)
 - [pr-265-fix-ship-s-new-main-tree-check](evidence/pr-265-fix-ship-s-new-main-tree-check.md)
 - [pr-266-fix-rhiza-rex-install-bakes](evidence/pr-266-fix-rhiza-rex-install-bakes.md)
+- [pr-267-fix-rhiza-run-abandon-keeps-a](evidence/pr-267-fix-rhiza-run-abandon-keeps-a.md)
 - [pr-35-reopening-a-change-set](evidence/pr-35-reopening-a-change-set.md)
 - [pr-36-leaf-dependencies-and](evidence/pr-36-leaf-dependencies-and.md)
 - [pr-38-session-messages-and-token-use](evidence/pr-38-session-messages-and-token-use.md)
@@ -2185,6 +2191,7 @@
 
 ## Sources
 
+- [abandon-unpushed-plan](source/abandon-unpushed-plan.md)
 - [actor-once-per-run-plan](source/actor-once-per-run-plan.md)
 - [agents-never-start-runs-plan](source/agents-never-start-runs-plan.md)
 - [anchors-plan-session](source/anchors-plan-session.md)
