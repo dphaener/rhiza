@@ -112,6 +112,7 @@ type InboxItem struct {
 	Other          string              `json:"other,omitempty" desc:"An overlap: the second change set (B)"`
 	OtherTitle     string              `json:"other_title,omitempty" desc:"An overlap: the second change set's title; absent when the log has no such change set"`
 	Target         string              `json:"target,omitempty" desc:"An overlap: the node or link both change sets write, its handle when it has one"`
+	TargetTitle    string              `json:"target_title,omitempty" desc:"An overlap: the target node's statement; absent when it has none"`
 	Detail         string              `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for"`
 	Next           string              `json:"next,omitempty" desc:"The command that clears it, when one does"`
 }
@@ -577,11 +578,11 @@ func (f *inboxFold) overlaps() ([]InboxItem, error) {
 	if len(ovs) == 0 {
 		return []InboxItem{}, nil
 	}
-	return overlapItemsNamed(ovs, func(t id.ID) string {
+	return overlapItemsNamed(ovs, func(t id.ID) (string, string) {
 		if n, ok, err := f.x.Node(index.AsIs, t); err == nil && ok {
-			return n.Handle
+			return n.Handle, fieldStatement(n.Fields)
 		}
-		return ""
+		return "", ""
 	}), nil
 }
 
@@ -744,21 +745,30 @@ func questionAdvice(runs []run.Journal) map[string]run.Advice {
 
 // overlapItems are the overlap items of ovs, targets named by m.
 func overlapItems(ovs []gmodel.Overlap, m Model) []InboxItem {
-	return overlapItemsNamed(ovs, func(t id.ID) string {
+	return overlapItemsNamed(ovs, func(t id.ID) (string, string) {
 		if n, ok := m.Node(t); ok {
-			return n.Handle
+			return n.Handle, fieldStatement(n.Fields)
 		}
-		return ""
+		return "", ""
 	})
 }
 
-// overlapItemsNamed are the overlap items of ovs; handle names a target,
-// "" for none, when the target's ID stands in.
-func overlapItemsNamed(ovs []gmodel.Overlap, handle func(id.ID) string) []InboxItem {
+// fieldStatement is the statement field of a node's fields, "" for none.
+func fieldStatement(fs map[string]json.RawMessage) string {
+	var st string
+	_ = json.Unmarshal(fs["statement"], &st)
+	return st
+}
+
+// overlapItemsNamed are the overlap items of ovs; name gives a target's
+// handle and statement, "" for none: the target's ID stands in for no
+// handle.
+func overlapItemsNamed(ovs []gmodel.Overlap, name func(id.ID) (string, string)) []InboxItem {
 	items := make([]InboxItem, 0, len(ovs))
 	for _, ov := range ovs {
 		target := ov.Target.String()
-		if h := handle(ov.Target); h != "" {
+		h, statement := name(ov.Target)
+		if h != "" {
 			target = h
 		}
 		later := max(ulid.ULID(ov.A).Time(), ulid.ULID(ov.B).Time())
@@ -766,7 +776,7 @@ func overlapItemsNamed(ovs []gmodel.Overlap, handle func(id.ID) string) []InboxI
 		sum := sha256.Sum256([]byte(strings.Join([]string{InboxOverlap, ov.A.String(), ov.B.String(), ov.Target.String()}, "\x00")))
 		items = append(items, InboxItem{
 			ID: hex.EncodeToString(sum[:])[:7], Kind: InboxOverlap, At: at,
-			Change: ov.A.String(), Other: ov.B.String(), Target: target,
+			Change: ov.A.String(), Other: ov.B.String(), Target: target, TargetTitle: statement,
 			Detail: "both write " + strings.Join(ov.Aspects, ", "),
 			Next:   "rhiza slice --change " + ov.A.String() + " --view what-if",
 		})

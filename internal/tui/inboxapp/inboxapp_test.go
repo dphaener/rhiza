@@ -640,6 +640,33 @@ func TestBlockerShowsAdvisorRestatement(t *testing.T) {
 	}
 }
 
+func TestScrubKeepsWordsAndDropsOnlyWholeIDs(t *testing.T) {
+	out := `{"items":[{"id":"b3","kind":"blocker","change":"C6","change_title":"Six","handle":"disk-q",` +
+		`"question":"Which disk should hold the store when the machine sleeps (see disk-q, not disk-qs)?","blocks":"store","blocks_title":"Kept store reachable"}]}`
+	m := NewModel(fake(out, new([]call)))
+	if r := m.Rows()[0]; !strings.Contains(r, "hold the store when") || strings.Contains(r, "disk-q,") {
+		t.Errorf("row = %q", r)
+	}
+	enter(m)
+	m.Update(tea.WindowSizeMsg{Width: 120, Height: 30})
+	v := plain(m.View().Content)
+	for _, w := range []string{"hold the store when", "(see …, not disk-qs)?", "Blocks: Kept store reachable"} {
+		if !strings.Contains(v, w) {
+			t.Errorf("view lacks %q:\n%s", w, v)
+		}
+	}
+}
+
+func TestOverlapRowNamesBothChangeSetsAndTarget(t *testing.T) {
+	out := `{"items":[{"id":"o1","kind":"overlap","change":"01M6PF30ABCDEFGHJKMNPQRSTV","change_title":"Web UI","other":"01M6PN1SW","other_title":"Exports",` +
+		`"target":"export-path","target_title":"Nightly exports go to one folder"}]}`
+	m := NewModel(fake(out, new([]call)))
+	want := "overlap · Web UI  writes the same part of the plan as Exports: Nightly exports go to one folder"
+	if r := m.Rows()[0]; r != want {
+		t.Errorf("row = %q, want %q", r, want)
+	}
+}
+
 // idsIn are the handles and IDs the items carry.
 var idsIn = []string{"01M6PF30ABCDEFGHJKMNPQRSTV", "review-01m6pf30-r3-f1", "RUN01M6PF30", "SES01M6PF30", "i7x9k2f", "gate-q-handle", "01M6PN1SW"}
 

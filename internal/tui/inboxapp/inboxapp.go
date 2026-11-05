@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -496,8 +498,11 @@ func title(it api.InboxItem) string {
 	return "A change set"
 }
 
-// scrub drops the item's own handle and IDs from text written for the
-// agents, so no surface shows one.
+// scrub drops the item's own handles and IDs from text written for the
+// agents, so no surface shows one. It drops only whole tokens, and only
+// ones that cannot be a word of prose (they hold a digit, '-', '_' or
+// '.'): a one-word handle such as "store" stays, since the prose may use
+// the word itself.
 func scrub(it api.InboxItem, s string) string {
 	ids := []string{it.ID, it.Run, it.Change, it.Session, it.Handle, it.Other, it.Target, it.Tab, it.TabBlock, it.TabSession}
 	if it.Blocks != "this change set" {
@@ -508,11 +513,47 @@ func scrub(it api.InboxItem, s string) string {
 	}
 	slices.SortFunc(ids, func(a, b string) int { return len(b) - len(a) })
 	for _, x := range ids {
-		if x != "" {
-			s = strings.ReplaceAll(s, x, "…")
+		if idLike(x) {
+			s = replaceToken(s, x, "…")
 		}
 	}
 	return s
+}
+
+// idLike reports whether x is a handle or ID no word of prose can be: it
+// holds a digit, '-', '_' or '.'.
+func idLike(x string) bool {
+	return x != "" && strings.ContainsFunc(x, func(r rune) bool {
+		return unicode.IsDigit(r) || r == '-' || r == '_' || r == '.'
+	})
+}
+
+// replaceToken replaces each x in s that stands as a whole token, with no
+// letter, digit, '-' or '_' right before or after it, by with.
+func replaceToken(s, x, with string) string {
+	var b strings.Builder
+	for {
+		i := strings.Index(s, x)
+		if i < 0 {
+			b.WriteString(s)
+			return b.String()
+		}
+		j := i + len(x)
+		before, _ := utf8.DecodeLastRuneInString(s[:i])
+		after, _ := utf8.DecodeRuneInString(s[j:])
+		b.WriteString(s[:i])
+		if (i > 0 && tokenRune(before)) || (j < len(s) && tokenRune(after)) {
+			b.WriteString(x)
+		} else {
+			b.WriteString(with)
+		}
+		s = s[j:]
+	}
+}
+
+// tokenRune reports whether r continues a handle or ID token.
+func tokenRune(r rune) bool {
+	return unicode.IsLetter(r) || unicode.IsDigit(r) || r == '-' || r == '_'
 }
 
 // asked is what a gate question asks: the advisor's plain-words
@@ -545,7 +586,15 @@ func waits(it api.InboxItem) string {
 		}
 		return "questions the run stopped on"
 	case api.InboxOverlap:
-		return "two change sets write the same part of the plan"
+		other := it.OtherTitle
+		if other == "" {
+			other = "another change set"
+		}
+		s := "writes the same part of the plan as " + other
+		if it.TargetTitle != "" {
+			s += ": " + it.TargetTitle
+		}
+		return s
 	}
 	return scrub(it, it.Detail)
 }

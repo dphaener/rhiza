@@ -2845,6 +2845,10 @@ cmp stdout describe.golden.json
                 "target": {
                   "description": "An overlap: the node or link both change sets write, its handle when it has one",
                   "type": "string"
+                },
+                "target_title": {
+                  "description": "An overlap: the target node's statement; absent when it has none",
+                  "type": "string"
                 }
               },
               "required": [
