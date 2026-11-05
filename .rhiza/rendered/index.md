@@ -2294,6 +2294,7 @@
 - [ship-step-interview](source/ship-step-interview.md)
 - [task-interviews](source/task-interviews.md)
 - [test-temp-cleanup-plan](source/test-temp-cleanup-plan.md)
+- [timing-budgets-already-done](source/timing-budgets-already-done.md)
 - [trust-fix-plan](source/trust-fix-plan.md)
 - [tui-planning-conversation](source/tui-planning-conversation.md)
 - [usage-limit-pause-interview](source/usage-limit-pause-interview.md)
