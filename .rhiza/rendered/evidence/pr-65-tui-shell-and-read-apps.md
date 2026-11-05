@@ -28,7 +28,7 @@ verified
 
 - verifies [rex-install-command](../capability/rhiza/rex-install-command.md)
 - verifies quick-launch-layer (retired)
-- verifies [read-apps-match-cli](../capability/rhiza/read-apps-match-cli.md)
+- verifies read-apps-match-cli (retired)
 
 ## History
 

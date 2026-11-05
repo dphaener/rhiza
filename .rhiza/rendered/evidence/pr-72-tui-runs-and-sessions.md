@@ -26,7 +26,7 @@ verified
 
 ### Out
 
-- verifies [runs-sessions-apps](../capability/rhiza/runs-sessions-apps.md)
+- verifies runs-sessions-apps (retired)
 
 ## History
 

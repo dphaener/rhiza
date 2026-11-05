@@ -18,7 +18,7 @@ A plan run started from the roadmap app is interactive, since the owner is at th
 
 ### In
 
-- decided-by [roadmap-app-start-runs](../capability/rhiza/roadmap-app-start-runs.md)
+- decided-by roadmap-app-start-runs (retired)
 
 ## History
 

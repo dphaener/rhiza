@@ -28,7 +28,7 @@ the implementing agent's choice, made in an autonomous run under the owner's sta
 
 ### In
 
-- decided-by [health-app](../capability/rhiza/orchestration/daemon/daemon-status/health-command/health-app.md)
+- decided-by health-app (retired)
 
 ## History
 

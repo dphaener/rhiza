@@ -14,7 +14,7 @@ Verifier, attempt 2, at da7a266c. Read the diff: TestGeneratedModel (internal/tu
 
 ### Out
 
-- verifies [modelapp-timing-alone](../capability/rhiza/model-tree-app/modelapp-timing-alone.md)
+- verifies modelapp-timing-alone (retired)
 
 ## History
 

@@ -14,7 +14,7 @@ At 438da7f (attempt 2) I ran go test -count=1 ./internal/tui/roadmapapp -run 'Pl
 
 ### Out
 
-- verifies [roadmap-app-start-runs](../capability/rhiza/roadmap-app-start-runs.md)
+- verifies roadmap-app-start-runs (retired)
 
 ## History
 

@@ -14,7 +14,7 @@ At 8fce720 (attempt 2, fix for review finding f1) ran go test ./internal/tui/roa
 
 ### Out
 
-- verifies [roadmap-app-start-runs](../capability/rhiza/roadmap-app-start-runs.md)
+- verifies roadmap-app-start-runs (retired)
 
 ## History
 

@@ -14,7 +14,7 @@ QA cycle 2 at 0184e67 with a scratch build of this branch, on gen.Default() (50,
 
 ### Out
 
-- verifies [model-tree-app](../capability/rhiza/model-tree-app.md)
+- verifies model-tree-app (retired)
 
 ## History
 

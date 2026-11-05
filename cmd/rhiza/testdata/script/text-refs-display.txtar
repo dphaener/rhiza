@@ -75,11 +75,11 @@ exec rhiza change diff
 stdout 'statement: Builds on @renamed'
 exec rhiza change diff --json
 stdout 'Builds on @renamed'
-exec rhiza tui app show mine --once
+exec rhiza show mine
 stdout '@renamed'
-exec rhiza tui app slice --once
+exec rhiza slice
 stdout '@renamed'
-exec rhiza tui app why mine --once
+exec rhiza why mine
 stdout '@renamed'
 
 # A reference to a node not in the view shows @{<full ID>}. Writes refuse

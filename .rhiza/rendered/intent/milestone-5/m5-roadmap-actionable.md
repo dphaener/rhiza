@@ -14,10 +14,10 @@ From the roadmap app the owner opens a change set's detail, plans it, ships it, 
 
 ### In
 
-- serves [roadmap-app-list](../../capability/rhiza/roadmap-app-list.md)
-- serves [roadmap-app-detail](../../capability/rhiza/roadmap-app-detail.md)
-- serves [roadmap-app-start-runs](../../capability/rhiza/roadmap-app-start-runs.md)
-- serves [roadmap-app-accept-answer](../../capability/rhiza/roadmap-app-accept-answer.md)
+- serves roadmap-app-list (retired)
+- serves roadmap-app-detail (retired)
+- serves roadmap-app-start-runs (retired)
+- serves roadmap-app-accept-answer (retired)
 
 ## History
 

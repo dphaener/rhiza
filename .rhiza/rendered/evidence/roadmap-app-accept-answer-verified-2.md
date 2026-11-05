@@ -14,7 +14,7 @@ At 5909fc2 (attempt 2, fix for review finding f2) ran go test ./cmd/rhiza -run T
 
 ### Out
 
-- verifies [roadmap-app-accept-answer](../capability/rhiza/roadmap-app-accept-answer.md)
+- verifies roadmap-app-accept-answer (retired)
 
 ## History
 

@@ -29,7 +29,7 @@ verified
 - verifies [run-ls](../capability/rhiza/workflows/workflow-runs/run-ls.md)
 - verifies live-app-runs (retired)
 - verifies live-app-focus (retired)
-- verifies [roadmap-detail-run-tick](../capability/rhiza/roadmap-detail-run-tick.md)
+- verifies roadmap-detail-run-tick (retired)
 
 ## History
 

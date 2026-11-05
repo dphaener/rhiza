@@ -28,7 +28,7 @@ verified
 
 - verifies [tui-launch-usage](../capability/rhiza/rex-app-actions/tui-launch-usage.md)
 - verifies [rex-install-app-actions-wording](../capability/rhiza/rex-install-command/rex-install-app-actions-wording.md)
-- verifies [read-apps-match-cli](../capability/rhiza/read-apps-match-cli.md)
+- verifies read-apps-match-cli (retired)
 
 ## History
 

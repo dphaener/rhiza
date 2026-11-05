@@ -14,7 +14,7 @@ Verifier, attempt 2 at 7214f794. Ran go test ./cmd/rhiza -run TestScripts/questi
 
 ### Out
 
-- verifies [answer-refuses-closed-or-unblocking](../capability/rhiza/roadmap-app-accept-answer/question-answer-op/answer-refuses-closed-or-unblocking.md)
+- verifies [answer-refuses-closed-or-unblocking](../capability/rhiza/change-sets/question-answer-op/answer-refuses-closed-or-unblocking.md)
 
 ## History
 

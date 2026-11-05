@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-05T11:12:24Z",
+  "body": {
+    "intent": "Record agent actor claude-code-baba1e9f for session baba1e9f-f72d-469d-b34e-01a1ab68e2b2",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6NPHW2TQYXBDVWHV7Q6734N",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NPHW2TQYXBDVWHV8HXPPP3",
+  "type": "open",
+  "v": 1
+}

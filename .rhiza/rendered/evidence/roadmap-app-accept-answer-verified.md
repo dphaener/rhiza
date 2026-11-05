@@ -14,7 +14,7 @@ At 270574d: go test ./cmd/rhiza -run TestRoadmapApp -count=1 -v passes both test
 
 ### Out
 
-- verifies [roadmap-app-accept-answer](../capability/rhiza/roadmap-app-accept-answer.md)
+- verifies roadmap-app-accept-answer (retired)
 
 ## History
 

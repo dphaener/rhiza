@@ -14,7 +14,7 @@ QA at cafec91c with a scratch build of ./cmd/rhiza in a scratch git repo (real g
 
 ### Out
 
-- verifies [run-start-new-intent](../capability/rhiza/roadmap-app-start-runs/run-start-new-intent.md)
+- verifies [run-start-new-intent](../capability/rhiza/workflows/workflow-runs/run-start/run-start-new-intent.md)
 
 ## History
 

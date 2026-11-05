@@ -14,7 +14,7 @@ At bf9829b4 (attempt 2): go test ./cmd/rhiza -run 'TestScripts/(question-answer|
 
 ### Out
 
-- verifies [question-answer-op](../capability/rhiza/roadmap-app-accept-answer/question-answer-op.md)
+- verifies [question-answer-op](../capability/rhiza/change-sets/question-answer-op.md)
 
 ## History
 

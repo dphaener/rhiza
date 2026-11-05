@@ -18,7 +18,7 @@ question.answer refuses, as a usage error, a question that already has a live an
 
 ### In
 
-- decided-by [answer-refuses-closed-or-unblocking](../capability/rhiza/roadmap-app-accept-answer/question-answer-op/answer-refuses-closed-or-unblocking.md)
+- decided-by [answer-refuses-closed-or-unblocking](../capability/rhiza/change-sets/question-answer-op/answer-refuses-closed-or-unblocking.md)
 
 ## History
 

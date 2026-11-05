@@ -27,7 +27,7 @@ verified
 ### Out
 
 - verifies [plan-requests](../capability/rhiza/orchestration/daemon/plan-requests.md)
-- verifies [roadmap-new-work-requests](../capability/rhiza/orchestration/daemon/plan-requests/roadmap-new-work-requests.md)
+- verifies roadmap-new-work-requests (retired)
 
 ## History
 

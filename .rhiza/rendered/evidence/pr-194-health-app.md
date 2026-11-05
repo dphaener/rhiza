@@ -28,7 +28,7 @@ verified
 
 - verifies [health-command](../capability/rhiza/orchestration/daemon/daemon-status/health-command.md)
 - verifies [close-out-pull-recorded](../capability/rhiza/orchestration/daemon/daemon-status/health-command/close-out-pull-recorded.md)
-- verifies [health-app](../capability/rhiza/orchestration/daemon/daemon-status/health-command/health-app.md)
+- verifies health-app (retired)
 - verifies [health-report](../capability/rhiza/orchestration/daemon/daemon-status/health-command/health-report.md)
 
 ## History

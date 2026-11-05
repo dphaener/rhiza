@@ -10,7 +10,7 @@ The health app shows the report that rhiza health prints (its --once prints the 
 
 ### Out
 
-- blocks [health-app](../capability/rhiza/orchestration/daemon/daemon-status/health-command/health-app.md)
+- blocks health-app (retired)
 
 ### In
 

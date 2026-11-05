@@ -14,7 +14,7 @@ Verifier at ce64162f: go test ./cmd/rhiza -run 'TestScripts/(tui-changes-app|rex
 
 ### Out
 
-- verifies [changes-app](../capability/rhiza/views/change-feed/changes-app.md)
+- verifies changes-app (retired)
 
 ## History
 

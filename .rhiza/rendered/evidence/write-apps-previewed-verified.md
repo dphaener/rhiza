@@ -14,7 +14,7 @@ At 74a4128 I ran go test ./cmd/rhiza -run TestScripts/tui-write-apps -count=1: P
 
 ### Out
 
-- verifies [write-apps-previewed](../capability/rhiza/write-apps-previewed.md)
+- verifies write-apps-previewed (retired)
 
 ## History
 

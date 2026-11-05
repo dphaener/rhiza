@@ -1,0 +1,41 @@
+{
+  "actor": "01M6NQH3QZP34CSY571YXAZGJV",
+  "after": [
+    "01M6NQGMWQP6EREKMM80TGSCQV"
+  ],
+  "at": "2026-11-05T11:30:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent deletes roadmapapp and modelapp and retires their capabilities, so any capability that still names them as readers is stale and the model check is right to flag it. The rest of roadmap-paged still holds: internal/api/health.go keeps healthRoadmap, and internal/api/roadmap_paged_test.go TestRoadmapOverAPageIsReadWhole already checks that a roadmap of more than 100 change sets is read whole by --all and health's roadmap check. Removing the deleted apps from roadmap-paged's statement and acceptance is the same kind of edit as commit 6d230ba2, which dropped deleted apps from other acceptances. It is within the intent and needs no code change. Changing the leaf instead would mean keeping apps the intent says to delete.",
+          "statement": "Fix the model, not the leaf: within this change set, revise roadmap-paged so it names only readers that still exist. Its acceptance clause becomes 'a roadmap of more than 100 change sets is read whole by health's roadmap check' (drop 'and the roadmap app'), and its statement ends 'and health's roadmap check reads it with all' (drop 'the roadmap TUI app and the model app's roadmap tab'). Leaf old-apps-deleted stays as planned.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "roadmap-paged-drop-deleted-app-readers",
+        "id": "01M6NQJEKEHG4QZACJ4TDWZK29",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6NQJEKEHG4QZACJ4Q774G1B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NQJEKEHG4QZACJ4Q774G1B",
+        "id": "01M6NQJMD84A27A54YMYT6223V",
+        "link": "01M6NQJMD84A27A54YMWR9YDJH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NQEFG7NRPMW3VFK1QGYF0V",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NQJX21NB9YYS1XBRBAVQD7",
+  "type": "ops",
+  "v": 1
+}

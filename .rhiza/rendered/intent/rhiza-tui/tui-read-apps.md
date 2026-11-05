@@ -10,7 +10,7 @@ ready, show, why and slice run as apps and show the same result as the matching 
 
 ### In
 
-- serves [read-apps-match-cli](../../capability/rhiza/read-apps-match-cli.md)
+- serves read-apps-match-cli (retired)
 
 ## History
 

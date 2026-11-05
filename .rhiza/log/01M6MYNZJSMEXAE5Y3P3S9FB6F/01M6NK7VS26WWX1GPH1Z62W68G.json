@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NK5WDWVGTBS5KDBJ1H1AJ8",
+  "after": [
+    "01M6NK4VT932M01G0G6T3AEREY"
+  ],
+  "at": "2026-11-05T10:14:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d370f954, go test -trimpath -count=1 ./internal/api -run TestRexInstall passed, including the new TestRexInstallRegistersExactlyFiveApps, which runs rex.install with the five apps linked and asserts exactly five rex.action entries named rhiza_app_inbox, rhiza_app_request, rhiza_app_runs, rhiza_app_daemon and rhiza_app_autonomy, each with its key (i, q, v, d, y) in the key mode. go test -trimpath ./cmd/rhiza -run TestScripts/rex-install passed: with a fake rex it greps the five action names and open_argv lines, grep -count=5 for rex.action and for rhiza_app_ names, and each key line incl. daemon = d. Read the diff: daemonapp registers with the launcher (key d) and rhiza tui app daemon opens it; daemonapp and launcher tests pass, vet and gofmt clean."
+        },
+        "handle": "rex-install-five-apps-verified",
+        "id": "01M6NK7KNAR9991W5SW5W824MY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NK7KNAR9991W5SW5CVG5W7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NK7KNAR9991W5SW5CVG5W7",
+        "id": "01M6NK7PQGFJSYTSCWQYVANF7M",
+        "link": "01M6NK7PQGFJSYTSCWQWRKTEJM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZD7XSJD2ENEG7W98BKDJV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NK7VS26WWX1GPH1Z62W68G",
+  "type": "ops",
+  "v": 1
+}

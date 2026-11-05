@@ -1,0 +1,28 @@
+{
+  "actor": "01M6NQKF6BH0VQFNGD3S8244KX",
+  "after": [
+    "01M6NQST1PQTWG25N2D4ZBXYBT"
+  ],
+  "at": "2026-11-05T11:34:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6G0G7HP57PFFNW4WJK5BR59",
+        "handle": null,
+        "id": "01M6NQSY8G509TAH6GB304AMSY",
+        "node": "01M6G0G7HP57PFFNW4WHZQJAA5",
+        "op": "node.update",
+        "set": {
+          "statement": "rhiza health shows a machine part: ok with the trust and its file, or daily with no machine config, and warn naming the file when the machine config cannot be read"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NQT14KYP4G1BMKT070966P",
+  "type": "ops",
+  "v": 1
+}

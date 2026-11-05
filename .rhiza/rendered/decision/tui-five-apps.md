@@ -32,6 +32,7 @@ Inbox: pick an item and do its one action (answer a question or gate, sign off a
 - decided-by [daemon-app-pause](../capability/rhiza/daemon-app-pause.md)
 - decided-by [daemon-app-run-limit](../capability/rhiza/daemon-app-run-limit.md)
 - decided-by [autonomy-app-toggles](../capability/rhiza/autonomy-app-toggles.md)
+- decided-by [rex-install-five-apps](../capability/rhiza/rex-install-five-apps.md)
 
 ## History
 

@@ -26,7 +26,7 @@ verified
 
 ### Out
 
-- verifies [model-tree-app](../capability/rhiza/model-tree-app.md)
+- verifies model-tree-app (retired)
 
 ## History
 

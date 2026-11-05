@@ -14,7 +14,7 @@ Verifier at 9f5ffb2: go test ./cmd/rhiza -run TestScripts/tui-runs-sessions-apps
 
 ### Out
 
-- verifies [runs-sessions-apps](../capability/rhiza/runs-sessions-apps.md)
+- verifies runs-sessions-apps (retired)
 
 ## History
 

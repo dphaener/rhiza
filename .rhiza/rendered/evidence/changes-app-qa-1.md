@@ -14,7 +14,7 @@ QA at 52027dba with a binary built from HEAD, in a scratch clone of this repo: t
 
 ### Out
 
-- verifies [changes-app](../capability/rhiza/views/change-feed/changes-app.md)
+- verifies changes-app (retired)
 
 ## History
 

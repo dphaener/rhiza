@@ -18,18 +18,22 @@ grep '^-- mine$' conf/init.lua
 grep -count=1 '^config reload$' rex.log
 
 # Every registered app is a Rex action of its own, titled with its name and
-# starting `rhiza tui open <name>`: read, write and model apps alike.
-grep 'name = "rhiza_app_roadmap"' conf/rhiza.lua
-grep 'title = "roadmap"' conf/rhiza.lua
-grep 'open_argv\("roadmap"\)' conf/rhiza.lua
-grep 'title = "session-ls"' conf/rhiza.lua
+# starting `rhiza tui open <name>`: exactly the apps inbox, request, runs, daemon
+# and autonomy, and none of the old ones.
 grep 'name = "rhiza_app_inbox"' conf/rhiza.lua
 grep 'open_argv\("inbox"\)' conf/rhiza.lua
-grep 'name = "rhiza_app_session_ls"' conf/rhiza.lua
+grep 'name = "rhiza_app_request"' conf/rhiza.lua
+grep 'open_argv\("request"\)' conf/rhiza.lua
+grep 'name = "rhiza_app_runs"' conf/rhiza.lua
+grep 'open_argv\("runs"\)' conf/rhiza.lua
+grep 'name = "rhiza_app_daemon"' conf/rhiza.lua
+grep 'open_argv\("daemon"\)' conf/rhiza.lua
+grep 'name = "rhiza_app_autonomy"' conf/rhiza.lua
+grep 'open_argv\("autonomy"\)' conf/rhiza.lua
+grep -count=5 'rex\.action' conf/rhiza.lua
+grep -count=5 'name = "rhiza_app_' conf/rhiza.lua
+! grep 'rhiza_app_(roadmap|model|health|changes|show|why|slice|ready|live|session_ls|run_status|accept|land|propose|record|change_show)' conf/rhiza.lua
 ! grep 'name = "rhiza_app_[a-z0-9_]*[^a-z0-9_"]' conf/rhiza.lua
-grep 'open_argv\("model"\)' conf/rhiza.lua
-grep 'title = "model"' conf/rhiza.lua
-grep 'title = "accept"' conf/rhiza.lua
 # No action opens a layer itself: each starts `rhiza tui open <app>`
 # detached, which opens the app as a centred rexuikit Modal sized to its
 # content over Rex's control connection and resizes it as the content
@@ -42,59 +46,15 @@ grep '"tui", "open", app' conf/rhiza.lua
 ! grep '"tui", "app"' conf/rhiza.lua
 
 # The launch key enters the rhiza key mode, which binds one key per app to
-# that app's action.
+# that app's action; the keys did not move.
 grep 'client.mode.enter", \{ name = MODE' conf/rhiza.lua
-grep '^  \["roadmap"\] = "[a-z0-9]",$' conf/rhiza.lua
-grep '^  \["model"\] = "[a-z0-9]",$' conf/rhiza.lua
-grep 'name = "rhiza_app_changes"' conf/rhiza.lua
-grep 'open_argv\("changes"\)' conf/rhiza.lua
-grep '^  \["changes"\] = "g",$' conf/rhiza.lua
-# The other apps keep the keys they had before the changes app.
-grep '^  \["show"\] = "h",$' conf/rhiza.lua
-grep '^  \["change-show"\] = "c",$' conf/rhiza.lua
-# The health app is on t, which no app had: no other key moved.
-grep 'name = "rhiza_app_health"' conf/rhiza.lua
-grep 'open_argv\("health"\)' conf/rhiza.lua
-grep '^  \["health"\] = "t",$' conf/rhiza.lua
-grep '^  \["accept"\] = "a",$' conf/rhiza.lua
-grep '^  \["inbox"\] = "i",$' conf/rhiza.lua
-grep '^  \["land"\] = "l",$' conf/rhiza.lua
-grep '^  \["runs"\] = "v",$' conf/rhiza.lua
-grep '^  \["model"\] = "m",$' conf/rhiza.lua
-grep '^  \["propose"\] = "p",$' conf/rhiza.lua
-grep '^  \["ready"\] = "r",$' conf/rhiza.lua
-grep '^  \["record-add"\] = "e",$' conf/rhiza.lua
-grep '^  \["record-link"\] = "o",$' conf/rhiza.lua
-grep '^  \["record-retire"\] = "d",$' conf/rhiza.lua
-grep '^  \["record-set"\] = "s",$' conf/rhiza.lua
-grep '^  \["roadmap"\] = "b",$' conf/rhiza.lua
-grep '^  \["run-status"\] = "u",$' conf/rhiza.lua
-grep '^  \["session-ls"\] = "n",$' conf/rhiza.lua
-grep '^  \["slice"\] = "f",$' conf/rhiza.lua
-grep '^  \["why"\] = "w",$' conf/rhiza.lua
-grep 'keys = \{\},' conf/rhiza.lua
-grep '^  \["session-ls"\] = "rhiza_app_session_ls",$' conf/rhiza.lua
-grep 'rex.bind\(MODE .. "/" .. k, APP_ACTIONS\[app\]\)' conf/rhiza.lua
-
-# The request app has an action on a key no other app had; no existing key
-# moved.
-grep 'name = "rhiza_app_request"' conf/rhiza.lua
-grep 'open_argv\("request"\)' conf/rhiza.lua
-grep '^  \["request"\] = "q",$' conf/rhiza.lua
-grep '^  \["roadmap"\] = "b",$' conf/rhiza.lua
-grep '^  \["ready"\] = "r",$' conf/rhiza.lua
-grep '^  \["runs"\] = "v",$' conf/rhiza.lua
-grep '^  \["inbox"\] = "i",$' conf/rhiza.lua
-
-# The autonomy app has an action on key y, which no app had; no existing key
-# moved.
-grep 'name = "rhiza_app_autonomy"' conf/rhiza.lua
-grep 'open_argv\("autonomy"\)' conf/rhiza.lua
 grep '^  \["autonomy"\] = "y",$' conf/rhiza.lua
-grep '^  \["request"\] = "q",$' conf/rhiza.lua
-grep '^  \["health"\] = "t",$' conf/rhiza.lua
-grep '^  \["roadmap"\] = "b",$' conf/rhiza.lua
+grep '^  \["daemon"\] = "d",$' conf/rhiza.lua
 grep '^  \["inbox"\] = "i",$' conf/rhiza.lua
+grep '^  \["request"\] = "q",$' conf/rhiza.lua
+grep '^  \["runs"\] = "v",$' conf/rhiza.lua
+grep 'keys = \{\},' conf/rhiza.lua
+grep 'rex.bind\(MODE .. "/" .. k, APP_ACTIONS\[app\]\)' conf/rhiza.lua
 
 # A second install changes neither file, and keeps an edited setting: the
 # owner edits launch_key, and a reinstall leaves that line byte for byte.

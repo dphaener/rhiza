@@ -26,7 +26,7 @@ verified
 
 ### Out
 
-- verifies [write-apps-previewed](../capability/rhiza/write-apps-previewed.md)
+- verifies write-apps-previewed (retired)
 
 ## History
 

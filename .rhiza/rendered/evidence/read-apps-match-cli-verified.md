@@ -14,7 +14,7 @@ At 608a5c3 ran go test ./cmd/rhiza -run TestScripts/tui-read-apps -count=1 -v: P
 
 ### Out
 
-- verifies [read-apps-match-cli](../capability/rhiza/read-apps-match-cli.md)
+- verifies read-apps-match-cli (retired)
 
 ## History
 

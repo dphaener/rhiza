@@ -14,7 +14,7 @@ At 34037ad2 (cycle 3 fix: waiter dir and lock named by the go test parent pid, s
 
 ### Out
 
-- verifies [modelapp-timing-alone](../capability/rhiza/model-tree-app/modelapp-timing-alone.md)
+- verifies modelapp-timing-alone (retired)
 
 ## History
 

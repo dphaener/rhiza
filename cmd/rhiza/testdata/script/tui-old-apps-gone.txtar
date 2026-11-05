@@ -1,0 +1,15 @@
+# The old apps are gone: each is an unknown app, exit 4. The commands they
+# wrapped stay (their own scripts cover them).
+
+! exec rhiza tui app roadmap --once
+stderr 'unknown app'
+! exec rhiza tui app model --once
+stderr 'unknown app'
+! exec rhiza tui app health --once
+stderr 'unknown app'
+! exec rhiza tui app changes --once
+stderr 'unknown app'
+! exec rhiza tui app show --once
+stderr 'unknown app'
+! exec rhiza tui app live --once
+stderr 'unknown app'

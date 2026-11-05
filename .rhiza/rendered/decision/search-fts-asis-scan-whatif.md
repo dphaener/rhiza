@@ -19,7 +19,7 @@ rhiza search matches live nodes' handles and field text, ranked; as-is and to-be
 ### In
 
 - decided-by [search-command](../capability/rhiza/views/text-search/search-command.md)
-- decided-by [model-app-search](../capability/rhiza/views/text-search/model-app-search.md)
+- decided-by model-app-search (retired)
 
 ## History
 
