@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NANXZ5YQK0MZ24P0BPT709",
+  "after": [
+    "01M6NAFVRRCQMTMJW426PFZSCX"
+  ],
+  "at": "2026-11-05T07:56:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3a81c930, built rhiza with go build and ran it by hand against this repo's real runs (6 live, several finished). rhiza tui app runs --once was byte-identical (cmp) to rhiza run ls --json, and rhiza tui app live now exits 4 with unknown app \"live\". Interactive in tmux (120x30): an InfoPanel titled Runs listed exactly the 6 live runs, one line each with change set title, current step (review/review, build/build, wait-pr) and elapsed time; finished runs were not listed. Five seconds later the elapsed times had advanced with no key pressed, so it refreshes on its own. Arrow keys scrolled; q closed with exit 0. From tui app health, enter on the daemon row opened the Runs panel. Minor: there the health report's top three lines stayed drawn above the panel, which the old live app did not do."
+        },
+        "handle": "runs-app-glance-qa-1",
+        "id": "01M6NBA10AKQ71B21M9BHG1A0X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NBA10AKQ71B21M9B6HFZGT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NBA10AKQ71B21M9B6HFZGT",
+        "id": "01M6NBA41EEDPQRSH8MHRWHY97",
+        "link": "01M6NBA41EEDPQRSH8MESY250P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZBJWTAMCNY0T5ZBANQJNN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNJGY6Q735KB2ERT3V4R5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NBAC2H8DWGGRATR926RG0T",
+  "type": "ops",
+  "v": 1
+}
