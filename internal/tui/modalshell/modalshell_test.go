@@ -132,3 +132,18 @@ func TestProgramIsSurfaceModel(t *testing.T) {
 		t.Errorf("focus reporting is off")
 	}
 }
+
+// Every hosted component closes the same way, whatever it is.
+func TestClosesEveryHost(t *testing.T) {
+	for name, mk := range hosts() {
+		t.Run(name, func(t *testing.T) {
+			s := New(mk())
+			if _, cmd := s.Update(tea.KeyPressMsg{Code: 'a', Text: "a"}); isQuit(cmd) || s.Closed() {
+				t.Fatal("a plain key closed the shell")
+			}
+			if _, cmd := s.Update(tea.KeyPressMsg{Code: tea.KeyEscape}); !isQuit(cmd) || !s.Closed() {
+				t.Fatal("esc did not close the shell")
+			}
+		})
+	}
+}
