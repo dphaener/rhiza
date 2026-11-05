@@ -29,17 +29,14 @@ exec git add -A
 exec git commit -qm init
 exec git push -q -u origin main
 
-exec rhiza change new 'Plan exports' --kind record --title 'Plan exports' --json
-stdout '"change_set": "(01[0-9A-Z]{24})"'
-exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rec'
+exec rhiza add intent ms --field milestone=1 --record
 exec git add -A
-exec git commit -qm 'Plan exports'
+exec git commit -qm 'Add milestone'
 exec git push -q origin main
 
 env REX_BLOCK=block:root
 env REX_SESSION=session:s1
-
-exec sh -c 'rhiza run start --foreground $(cat $WORK/rec) --workflow plan --permission-mode manual --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Plan exports" --permission-mode manual --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
 stdout '^exit=0$'
 exec cat $WORK/out
 stdout '^Run [0-9A-Z]{26} succeeded$'
@@ -84,19 +81,18 @@ stdout -count=1 'as the reviewer'
 stdout -count=1 'as the critic'
 ! stdout 'as the reviser'
 
-# The gate accepted the plan's draft with rule autonomous; the record
-# landed with the answering Decision.
+# The gate accepted the run's intention change set with rule autonomous;
+# the answering Decision is in it.
 cd $WORK/repo
-exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
+exec sh -c 'rhiza change show $(cat $WORK/rec) --json'
+stdout '"kind": "intention"'
 stdout '"state": "accepted"'
 stdout '"rule": "autonomous"'
-exec sh -c 'rhiza change show $(cat $WORK/rec) --json'
-stdout '"state": "landed"'
-exec rhiza show assume-streaming --json
+exec sh -c 'rhiza show assume-streaming --change $(cat $WORK/rec) --json'
 stdout '"wording": "\(assumed, would have escalated\)"'
 stdout '"type": "answers"'
 exec sh -c 'rhiza show export-csv --change $(cat $WORK/cs) --json'
-stdout '"type": "decided-by"'
+stdout '"handle": "export-csv"'
 
 # The run rendered and committed its branch: nothing is left over, and
 # the last commit is the render commit.
@@ -128,14 +124,13 @@ window close
 {"title":"Planning interview","summary":"An autonomous planner planned the exports milestone; the arbiter settled its one question.","quotes":[]}
 -- record.json --
 {"writes":[
-  {"op":"add","kind":"intent","handle":"exports","fields":["statement=Users take their reports out of the product","milestone=1"]}
+  {"op":"add","kind":"intent","handle":"exports","fields":["statement=Users take their reports out of the product"],"parent":"ms"}
 ]}
 -- leaf.json --
 {"writes":[
   {"op":"add","kind":"capability","handle":"export-csv","fields":[
     "statement=Users export any report as CSV",
-    "acceptance=A test exports a 100k-row report with flat memory use"]},
-  {"op":"link","from":"export-csv","type":"decided-by","to":"assume-streaming"}
+    "acceptance=A test exports a 100k-row report with flat memory use"]}
 ]}
 -- clean.json --
 {"findings":[]}
@@ -226,11 +221,12 @@ case "$last" in
 	echo "got $msg" >> "$WORK/asker.log"
 	cat "$msg" >> "$WORK/asker.log"
 	rhiza source add plan-interview "$WORK/source.json" --raw-session "$RHIZA_SESSION" --json >> "$WORK/agent.out" || exit 3
-	rhiza apply "$WORK/record.json" --json >> "$WORK/agent.out" || exit 4
+	echo "$rec" > "$WORK/rec"
 	rhiza change new 'Export reports' --json > "$WORK/new.out" || exit 5
 	sed -n 's/.*"change_set": "\([0-9A-Z]*\)".*/\1/p' "$WORK/new.out" > "$WORK/cs"
-	rhiza link "$(cat "$WORK/cs")" serves exports --change "$rec" >> "$WORK/agent.out" || exit 6
-	rhiza land --json >> "$WORK/agent.out" || exit 7
+	rhiza apply "$WORK/record.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || exit 4
+	rhiza link "$rec" serves ms --change "$rec" >> "$WORK/agent.out" || exit 11
+	rhiza link "$(cat "$WORK/cs")" serves exports --change "$(cat "$WORK/cs")" >> "$WORK/agent.out" || exit 6
 	rhiza apply "$WORK/leaf.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || exit 8
 	rhiza session done >> "$WORK/done.out" || exit 10
 	exit 0

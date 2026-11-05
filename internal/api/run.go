@@ -540,6 +540,9 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	if r.Autonomous && def.Name == planWorkflow && r.Milestone {
+		return nil, milestoneNeedsOwner(runStartNext)
+	}
 	if err := checkAgentSteps(ctx, def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
 		return nil, err
 	}
@@ -563,6 +566,9 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	}
 	if err != nil {
 		return nil, err
+	}
+	if r.Autonomous && def.Name == planWorkflow && planIsMilestone(ctx, t.cs.String()) {
+		return nil, milestoneNeedsOwner(runStartNext)
 	}
 	if def.Name == shipChangeWorkflow {
 		if err := checkShipLeaves(t); err != nil {
@@ -611,6 +617,22 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, started.Autonomous, r.NoWait)
+}
+
+// milestoneNeedsOwner is the usage error for an autonomous plan run that
+// plans a milestone: milestone planning always needs the owner.
+func milestoneNeedsOwner(next string) error {
+	return Usagef("--autonomous is refused on a plan run that plans a milestone: milestone planning needs the owner, even in autonomous mode").
+		WithNext(next)
+}
+
+// planIsMilestone reports whether the change set is a record change set,
+// which is where a plan run plans a milestone.
+func planIsMilestone(ctx *Ctx, change string) bool {
+	f := newInboxFold(ctx)
+	defer f.close()
+	c, ok := f.changeSet(change)
+	return ok && c.Open.Kind == changeset.KindRecord
 }
 
 // queueRunStart queues the run for the daemon, which starts it headless
@@ -811,6 +833,9 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	if st.Abandoned() {
 		return nil, Usagef("run %s was abandoned: %s", j.ID, st.Detail).
 			WithNext("rhiza run start " + st.Change)
+	}
+	if st.Autonomous && st.Workflow == planWorkflow && planIsMilestone(ctx, st.Change) {
+		return nil, milestoneNeedsOwner("rhiza run status " + j.ID)
 	}
 	retryStep := ""
 	switch {
