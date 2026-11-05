@@ -52,29 +52,26 @@ func runRunMilestoneCheck(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, Errorf("%s: %v", cmd, err).WithNext("rhiza run status " + rr.id)
 	}
-	res, in, _, err := planRead(ctx, cmd, "")
+	res, _, _, err := planRead(ctx, cmd, "")
 	if err != nil {
 		return nil, err
 	}
-	in.intentPath = planAncestorPaths(in.intentPath)
-	serves := map[id.ID]*planChangeSet{}
+	inFlight := map[id.ID]bool{}
 	for _, p := range res.order {
-		serves[p.info.ID] = p
+		inFlight[p.info.ID] = true
 	}
 	resp := RunMilestoneCheckResponse{Run: rr.id, ChangeSets: []string{}}
 	var bad []string
 	for _, c := range plan {
-		p, ok := serves[c.ID]
-		if !ok {
+		if !inFlight[c.ID] {
 			continue // landed already: it is in no roadmap
 		}
 		resp.ChangeSets = append(resp.ChangeSets, c.ID.String())
-		found := false
-		for _, i := range p.serves {
-			if _, ok := planMilestoneOf(i, in); ok {
-				found = true
-				break
-			}
+		// Each change set's served intents resolve in its own what-if view,
+		// so an intent the plan wrote into it under a milestone counts.
+		found, err := milestoneServed(ctx, cmd, c.ID)
+		if err != nil {
+			return nil, err
 		}
 		if !found {
 			bad = append(bad, fmt.Sprintf("- %s (%s)", c.ID, c.Open.DisplayTitle()))
@@ -86,4 +83,25 @@ func runRunMilestoneCheck(ctx *Ctx, _ any) (any, error) {
 			cmd, len(bad), rr.id, strings.Join(bad, "\n")).WithNext("rhiza run status " + rr.id)
 	}
 	return resp, nil
+}
+
+// milestoneServed reports whether change set cs, in its what-if view,
+// serves a milestone directly or through an intent under one.
+func milestoneServed(ctx *Ctx, cmd string, cs id.ID) (bool, error) {
+	res, in, _, err := planRead(ctx, cmd, viewWhatIfPref+cs.String())
+	if err != nil {
+		return false, err
+	}
+	in.intentPath = planAncestorPaths(in.intentPath)
+	for _, p := range res.order {
+		if p.info.ID != cs {
+			continue
+		}
+		for _, i := range p.serves {
+			if _, ok := planMilestoneOf(i, in); ok {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }

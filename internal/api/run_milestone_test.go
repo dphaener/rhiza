@@ -87,4 +87,18 @@ func TestRunMilestoneCheck(t *testing.T) {
 	wantFail("a second change set serving nothing")
 	call("link", `{"from":"`+cs+`","type":"serves","to":"m1"}`)
 	wantPass("serving a milestone directly")
+
+	// A third, serving an intent it adds itself under the milestone: the
+	// intent is not landed, so only the change set's what-if view has it.
+	cs = newChange(t, ctx, `{"intent":"Plan sub","title":"Plan sub"}`).ChangeSet.String()
+	if err := store.Create("R4", run.Entry{
+		Type: run.TypeStarted, Step: "milestone-check", At: time.Date(2026, 10, 24, 12, 0, 0, 0, time.UTC),
+		Started: &run.Started{Workflow: "plan", Change: cs, Title: "Plan sub"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	runID = "R4"
+	call("add", `{"kind":"intent","handle":"sub","parent":"m1","fields":["statement=A new done point"]}`)
+	call("link", `{"from":"`+cs+`","type":"serves","to":"sub"}`)
+	wantPass("serving an unlanded intent of its own under a milestone")
 }
