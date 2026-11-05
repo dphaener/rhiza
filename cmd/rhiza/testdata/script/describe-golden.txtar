@@ -2740,7 +2740,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale or accept",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale, accept or interview",
                   "type": "string"
                 },
                 "next": {
@@ -2768,7 +2768,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "session": {
-                  "description": "A question: the asking session; a stalled item: the stalled session",
+                  "description": "A question: the asking session; an interview: the interview's session; a stalled item: the stalled session",
                   "type": "string"
                 },
                 "step": {
@@ -2776,15 +2776,15 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "tab": {
-                  "description": "A question: the title of the session's tab",
+                  "description": "A question or an interview: the title of the session's tab",
                   "type": "string"
                 },
                 "tab_block": {
-                  "description": "A question: the Rex block of the session's tab",
+                  "description": "A question or an interview: the Rex block of the session's tab",
                   "type": "string"
                 },
                 "tab_session": {
-                  "description": "A question: the Rex session of the session's tab",
+                  "description": "A question or an interview: the Rex session of the session's tab",
                   "type": "string"
                 },
                 "target": {

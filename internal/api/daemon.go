@@ -328,7 +328,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	if fold, err := daemonFoldOf(ctx); err == nil {
 		stateOf, overlaps = fold.stateOf, fold.overlaps
 	}
-	items := inboxItems(runs, host, nil, rs.Live, stateOf, nil)
+	items := inboxItems(runs, host, nil, rs.Live, stateOf, nil, nil)
 	items = append(items, overlaps...)
 	// This poll's disk-low state, not the one saved after the last poll.
 	items = append(items, diskLowItems(state.DiskLow)...)
@@ -373,6 +373,8 @@ func inboxNotice(what string, it InboxItem) string {
 			msg += ": " + q
 		}
 		return msg
+	case InboxInterview:
+		return what + ": a milestone interview waits on you"
 	case InboxSignoff:
 		return what + ": a sign-off waits on you"
 	case InboxOpen:
