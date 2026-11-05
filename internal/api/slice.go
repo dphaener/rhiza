@@ -90,6 +90,7 @@ type SliceResponse struct {
 func init() {
 	register(Operation{
 		Name:     "slice",
+		ReadOnly: true,
 		Summary:  "Print the composed context for a node or a change set",
 		Request:  reflect.TypeFor[SliceRequest](),
 		Response: reflect.TypeFor[SliceResponse](),

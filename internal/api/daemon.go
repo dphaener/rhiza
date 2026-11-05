@@ -151,7 +151,10 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	// poll (--once) and a test run (RHIZA_TEST_NOW) bind nothing.
 	var webUI *web.Manager
 	if !r.Once && ctxGetenv(ctx)("RHIZA_TEST_NOW") == "" {
-		webUI = &web.Manager{Factory: webFactory}
+		// The handler gets its own copy of ctx: the poll goes on changing
+		// ctx while requests run.
+		snap := *ctx
+		webUI = &web.Manager{Factory: webFactory, Handler: web.Handler(ReadOnlyHandler(&snap))}
 		defer webUI.Close()
 	}
 	var sweep daemon.SweepSchedule
@@ -1152,6 +1155,7 @@ func daemonResume(ctx *Ctx, id string) error {
 func init() {
 	register(Operation{
 		Name:     "daemon.status",
+		ReadOnly: true,
 		Summary:  "Show the daemon of this repository: whether it runs, its settings, its live runs and what it last started or resumed",
 		Request:  reflect.TypeFor[DaemonStatusRequest](),
 		Response: reflect.TypeFor[DaemonStatusResponse](),

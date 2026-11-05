@@ -33,6 +33,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "inbox",
+		ReadOnly: true,
 		Summary:  "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted and stalled sessions of live runs, and the daemon's low disk space, oldest first",
 		Request:  reflect.TypeFor[InboxRequest](),
 		Response: reflect.TypeFor[InboxResponse](),

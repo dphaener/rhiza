@@ -24,6 +24,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "status",
+		ReadOnly: true,
 		Summary:  "Show the current change set, what is in flight and the installed guide",
 		Request:  reflect.TypeFor[StatusRequest](),
 		Response: reflect.TypeFor[StatusResponse](),

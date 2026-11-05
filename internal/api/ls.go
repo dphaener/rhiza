@@ -21,6 +21,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "ls",
+		ReadOnly: true,
 		Summary:  "List nodes, filtered by kind and parent, a page at a time",
 		Request:  reflect.TypeFor[LsRequest](),
 		Response: reflect.TypeFor[LsResponse](),

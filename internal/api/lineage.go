@@ -56,6 +56,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "why",
+		ReadOnly: true,
 		Summary:  "Walk back through the decisions, sources and change sets that shaped a node",
 		Request:  reflect.TypeFor[WhyRequest](),
 		Response: reflect.TypeFor[WhyResponse](),
@@ -63,6 +64,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "log",
+		ReadOnly: true,
 		Summary:  "List every change set that touched a node or link, in order",
 		Request:  reflect.TypeFor[LogRequest](),
 		Response: reflect.TypeFor[LogResponse](),

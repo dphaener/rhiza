@@ -194,6 +194,7 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 func init() {
 	register(Operation{
 		Name:     "daemon.settings",
+		ReadOnly: true,
 		Summary:  "List the daemon's settings, each with its value and where it comes from",
 		Request:  reflect.TypeFor[DaemonSettingsRequest](),
 		Response: reflect.TypeFor[DaemonSettingsResponse](),

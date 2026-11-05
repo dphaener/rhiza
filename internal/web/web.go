@@ -50,8 +50,13 @@ func Addr(v string) (string, error) {
 var assets embed.FS
 
 // Handler serves the UI's embedded assets, read-only: GET and HEAD only.
-func Handler() http.Handler {
+// api, if not nil, serves /api/ (see api.ReadOnlyHandler); without it
+// /api/ is not found.
+func Handler(api http.Handler) http.Handler {
 	mux := http.NewServeMux()
+	if api != nil {
+		mux.Handle("/api/", api)
+	}
 	static, _ := fs.Sub(assets, "static")
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static)))
 	mux.HandleFunc("GET /site.webmanifest", func(w http.ResponseWriter, r *http.Request) {
@@ -109,7 +114,7 @@ func (m *Manager) Apply(v string) error {
 	}
 	h := m.Handler
 	if h == nil {
-		h = Handler()
+		h = Handler(nil)
 	}
 	l, err := m.Factory(want, h)
 	if err != nil {

@@ -16,6 +16,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "overlaps",
+		ReadOnly: true,
 		Summary:  "List the overlaps between in-flight change sets",
 		Request:  reflect.TypeFor[OverlapsRequest](),
 		Response: reflect.TypeFor[OverlapsResponse](),

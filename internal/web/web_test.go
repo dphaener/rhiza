@@ -33,7 +33,7 @@ func TestAddrIsAlwaysLoopback(t *testing.T) {
 }
 
 func TestHandlerServesReadOnly(t *testing.T) {
-	h := Handler()
+	h := Handler(nil)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequest("GET", "/site.webmanifest", nil))
 	if rec.Code != 200 {
