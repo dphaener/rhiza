@@ -1,0 +1,39 @@
+{
+  "actor": "01M6PMSZR4V7YT92QGA1ADVHVV",
+  "after": [
+    "01M6PN01697Z4X31C1K3WVB4A6"
+  ],
+  "at": "2026-11-05T20:04:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "The full text would have been more helpful than the internal handle. No need to ever show the internal handle, it's nonsense to a user.",
+              "where": "message to the plan session, 2026-11-05"
+            }
+          ],
+          "raw_sha256": "91c179fd238a5afa5422f89c28fab2d5aa79ab71bc5d666c3d52b077ccd56eaf",
+          "session": "4dd18cc3-6192-406a-b78d-01a1ad4cf530",
+          "summary": "Autonomous plan run on change set 'Fix The Inbox app's question'. Code reading found the gate form labels each answer box with the open question's handle (gateQuestions parses handles from the stop detail), blocker items name what they block by handle, the detail panel shows the run ID, and an overlap notice names the other change set by ID. The three Go-templated owner questions (plan review, leaf failed, review cycle cap) carry handles and finding IDs and no recommendation. The owner sent a message making it a rule that no owner-facing surface shows a handle or ID. The arbiter ruled that the run's existing advisor writes a plain-language restatement and recommendation for every templated question, and that the CLI's human text keeps handles and IDs but prints the full statement too. The change set serves the milestone-26 Inbox app intent.",
+          "title": "Plan of the Inbox question fix, autonomous run with the arbiter"
+        },
+        "handle": "inbox-question-fix-plan",
+        "id": "01M6PN0RAQYP12ANPT87SV1BDR",
+        "key": null,
+        "kind": "source",
+        "node": "01M6PN0RAQYP12ANPT84MWSMVN",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6PMSN1PKES7GJYAEXNZSN13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PN0RB25YB8RTT2FAA6D62H",
+  "type": "ops",
+  "v": 1
+}
