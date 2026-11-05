@@ -49,9 +49,12 @@ exec rhiza inbox --json
 stdout '"kind": "open"'
 stdout 'open questions: park-disk'
 stdout '"next": "rhiza run resume '
+# The review round was clean and rhiza.autonomy.accept defaults to auto,
+# so the gate accepted the planned change set under rule autonomy.
 cd $WORK/repo.plan-reports
 exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
-stdout '"state": "proposed"'
+stdout '"state": "accepted"'
+stdout '"rule": "autonomy"'
 
 # From the main checkout, as the inbox app does, the owner answers it at
 # the gate: question answer --run writes the Decision in the run's
