@@ -194,6 +194,10 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		defer webUI.Close()
 	}
 	var sweep daemon.SweepSchedule
+	// lastTurn is the project that took the last run slot: the next poll's
+	// round-robin starts after it, so turns rotate across polls instead of
+	// restarting at the home project.
+	lastTurn := ""
 	// atHome is told the home project's settings at each poll: the root-wide
 	// parts of the daemon follow them.
 	atHome := func(conf daemonConf) {
@@ -268,7 +272,9 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			running += turns[i].pick.Running
 		}
 		share := map[string]int{}
-		for _, pk := range daemon.RoundRobin(picks, running, maxRuns) {
+		picked := daemon.RoundRobin(picks, running, maxRuns, lastTurn)
+		lastTurn = daemon.LastTurn(picked, lastTurn)
+		for _, pk := range picked {
 			share[pk.Project]++
 		}
 		for i, name := range polled {
