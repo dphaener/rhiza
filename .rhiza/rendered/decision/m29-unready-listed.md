@@ -24,6 +24,7 @@ Listed, not built. The assistant's option, picked by the owner.
 
 - decided-by [m29-root-registry](../intent/milestone-29/m29-root-registry.md)
 - decided-by [m29-one-daemon](../intent/milestone-29/m29-one-daemon.md)
+- decided-by [project-ls-rm](../capability/rhiza/runtime/project-ls-rm.md)
 
 ## History
 

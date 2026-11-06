@@ -23,6 +23,10 @@ Registered under root. The assistant's option, picked by the owner.
 ### In
 
 - decided-by [m29-root-registry](../intent/milestone-29/m29-root-registry.md)
+- decided-by [root-init](../capability/rhiza/runtime/root-init.md)
+- decided-by [root-show](../capability/rhiza/runtime/root-show.md)
+- decided-by [project-add-path](../capability/rhiza/runtime/project-add-path.md)
+- decided-by [project-add-url](../capability/rhiza/runtime/project-add-url.md)
 
 ## History
 
