@@ -1069,6 +1069,17 @@ func inboxGateQuestions(ctx *Ctx, st run.State) []InboxGateQuestion {
 	if err != nil {
 		return nil
 	}
+	// The worktree's own index answers the reads, so the full disk log is
+	// never decoded; the memo folds each change set's model once. Without
+	// a usable index the log is read, as before.
+	if p, err := index.DefaultPath(st.Worktree); err == nil {
+		c.IndexPath = p
+		if ix, err := openWriteIndex(&c); err == nil {
+			defer ix.close()
+			ix.models = map[id.ID]Model{}
+			w.ix = ix
+		}
+	}
 	own, err := id.Parse(st.Change)
 	if err != nil {
 		return nil
@@ -1091,12 +1102,21 @@ func inboxGateQuestions(ctx *Ctx, st run.State) []InboxGateQuestion {
 		}
 		return ""
 	}
+	models := map[id.ID]Model{}
+	modelOf := func(n id.ID) Model {
+		m, ok := models[n]
+		if !ok {
+			m = w.model(n)
+			models[n] = m
+		}
+		return m
+	}
 	out := make([]InboxGateQuestion, 0, len(handles))
 	for _, h := range handles {
 		q := InboxGateQuestion{Handle: h}
 		asker := h
 		for _, cs := range plan {
-			m := w.model(cs.ID)
+			m := modelOf(cs.ID)
 			n, err := m.Resolve(h)
 			if err != nil || n.Kind != op.KindQuestion {
 				continue
