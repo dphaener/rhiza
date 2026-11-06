@@ -5,3 +5,4 @@ exec git init -q
 exec sh -c 'rhiza daemon --permission-mode manual --once 2>err; echo exit=$?; cat err'
 stdout '^exit=2$'
 stdout 'not inside a Rhiza root'
+stdout '^next: rhiza root init$'
