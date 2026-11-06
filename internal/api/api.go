@@ -164,6 +164,10 @@ type Ctx struct {
 	// does not wait for it. Nil means no program can be detached: the
 	// daemon cannot start a run.
 	Detach func(p Program, logPath string) error
+	// Reap waits, without blocking, on the detached children of the repo
+	// whose git common dir is common that have exited and that this process
+	// still parents, so none stays a zombie. Nil means nothing to reap.
+	Reap func(common string)
 	// RexSession is the Rex session the caller runs in (the CLI's
 	// REX_SESSION), empty if none: session.start opens its tab there
 	// unless the request names another.

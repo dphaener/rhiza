@@ -1,0 +1,40 @@
+{
+  "actor": "01M6QAH7EXSKAMRG741RPG6E1M",
+  "after": [
+    "01M6QAFPGMA3VVEMD0FVEA3C7T"
+  ],
+  "at": "2026-11-06T02:22:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 32103a7d on Linux, built the binary (go build -trimpath) and ran it as a real daemon in a scratch git repo after rhiza init, with a scratch HOME. sh started four 'sleep 3' children and wrote .git/rhiza/drivers with three lines: A recorded under its own pid and its /proc start time (field 22), B recorded under its own pid with the wrong start time '1', and D as a bare legacy pid. C was left off the list. sh then exec'd into 'rhiza daemon --min-free 0 --permission-mode acceptEdits', keeping the pid and start time, as a re-exec in place does. The reap at daemon start dropped B and D from the list without waiting on them and kept A, which was still running. By t=5 s A had been reaped (gone from ps), and the list file was removed. B, C and D stayed zombies whose ppid was the daemon, so entries from another daemon identity are never waited on and unlisted children are untouched. They disappeared once the daemon was stopped with SIGINT. go test -trimpath -count=1 -v ./cmd/rhiza -run TestReap passes TestReap and TestReapStale. GOOS=darwin go vet ./cmd/rhiza is clean. Not exercised: a driver started through the daemon's own detachProgram (a real run start), which TestReap covers through addDriver."
+        },
+        "handle": "daemon-reaps-drivers-qa-2",
+        "id": "01M6QAMEHF00N059R0B6ZSYKX2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QAMEHF00N059R0B5NJMYTF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QAMEHF00N059R0B5NJMYTF",
+        "id": "01M6QAMEJZHQJJ4ZN9ZP29MJAH",
+        "link": "01M6QAMEJZHQJJ4ZN9ZM4BS35D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q43V93A114TYBBXS89ZV6Z",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6Q3X16PDW20R7N57BJ5JK6G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QAMEMFQHATSHVF58AGFJ56",
+  "type": "ops",
+  "v": 1
+}

@@ -90,6 +90,67 @@ test: ## Run the full test suite, then the timing budgets alone, and print the r
 	if [ -s "$$log" ]; then cat "$$log"; else echo "(no timings: $$log is missing or empty)"; fi; \
 	rm -f $$log $$rest; exit $$status
 
+# One target per CI job, so the jobs run in parallel and each is a slice of
+# what `make test` runs. Together test-scripts over every shard, test-api
+# over every shard, test-rest and test-budgets cover the same tests as
+# `make test`.
+#
+# SHARD is "i/n" (1-based). GO_TEST is the go test command; the tests
+# replace it to see the arguments a target would pass.
+SHARD ?= 1/1
+GO_TEST ?= go test
+SKIP_BUDGETS = $(BUDGET_TESTS)
+
+# LOCK_SH defines lock and unlock, as in test: the machine-wide lock on fd 9.
+LOCK_SH = lockfile='$(TEST_LOCK)'; \
+	lock() { \
+		if [ -n "$$lockfile" ] && command -v flock >/dev/null 2>&1 && (: >>"$$lockfile") 2>/dev/null; then \
+			exec 9>>"$$lockfile"; \
+			if ! flock -n 9; then \
+				echo "Waiting for another make test on this machine before running $$1 (lock: $$lockfile)"; \
+				start=$$(date +%s); flock 9; \
+				echo "Got the test lock after $$(( $$(date +%s) - start ))s"; \
+			fi; \
+		fi; \
+	}; \
+	unlock() { exec 9>&-; }
+
+.PHONY: test-scripts
+test-scripts: ## Run shard SHARD=i/n of cmd/rhiza's scripts, timing budgets skipped
+	@$(LOCK_SH); \
+	lock "the cmd/rhiza scripts"; \
+	RHIZA_TEST_SHARD='$(SHARD)' $(GO_TEST) $(TEST_FLAGS) -run '^TestScripts$$' -skip '$(SKIP_BUDGETS)' ./cmd/rhiza 9>&-; \
+	status=$$?; unlock; exit $$status
+
+.PHONY: test-api
+test-api: ## Run shard SHARD=i/n of internal/api's top-level tests, timing budgets excluded
+# The tests come from go test -list, budgets dropped, and the shard takes
+# every n-th of them (round-robin) as an anchored -run regex.
+	@i='$(SHARD)'; n=$${i#*/}; i=$${i%/*}; \
+	case "$$i$$n" in *[!0-9]*|'') echo "SHARD=$(SHARD): want i/n with 1 <= i <= n" >&2; exit 1;; esac; \
+	if [ "$$i" -lt 1 ] || [ "$$i" -gt "$$n" ]; then echo "SHARD=$(SHARD): want i/n with 1 <= i <= n" >&2; exit 1; fi; \
+	names=$$(go test -trimpath -list '^Test' ./internal/api | grep '^Test' | grep -Ev '$(SKIP_BUDGETS)' | LC_ALL=C sort) || exit 1; \
+	re=$$(printf '%s\n' "$$names" | awk -v i="$$i" -v n="$$n" 'NR % n == i % n { printf "%s%s", sep, $$0; sep = "|" }'); \
+	if [ -z "$$re" ]; then echo "shard $(SHARD) of internal/api has no tests"; exit 0; fi; \
+	$(GO_TEST) $(TEST_FLAGS) -run "^($$re)\$$" ./internal/api
+
+.PHONY: test-rest
+test-rest: ## Run every package but internal/api, timing budgets skipped
+	$(GO_TEST) $(TEST_FLAGS) -skip '$(BUDGET_TESTS)|^TestScripts$$' $$(go list ./... | grep -v '/internal/api$$')
+
+.PHONY: test-budgets
+test-budgets: ## Run the timing budgets alone, and print the read-budget timings
+	@log=$$(mktemp); $(LOCK_SH); \
+	lock "the timing budgets"; \
+	RHIZA_BUDGET_LOG=$$log $(GO_TEST) $(TEST_FLAGS) -count=1 -p 1 -run '$(SKIP_BUDGETS)' $(BUDGET_PKGS) 9>&-; \
+	status=$$?; unlock; \
+	echo "Read-budget timings"; \
+	if [ -s "$$log" ]; then cat "$$log"; else echo "(no timings: $$log is missing or empty)"; fi; \
+	rm -f $$log; exit $$status
+
+.PHONY: lint
+lint: fmt-check vet self-check ## Run fmt-check, vet and self-check
+
 .PHONY: vet
 vet: ## Run go vet
 	go vet ./...

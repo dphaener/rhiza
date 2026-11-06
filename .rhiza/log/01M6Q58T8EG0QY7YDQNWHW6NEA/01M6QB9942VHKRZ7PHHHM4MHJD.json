@@ -1,0 +1,40 @@
+{
+  "actor": "01M6QB6EB1ZV7DX2SB2WYKDXVX",
+  "after": [
+    "01M6QB4WYQX9JAK9JMPF3CD0A1"
+  ],
+  "at": "2026-11-06T02:33:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified attempt 2 (fixer commit 948ae1e1) against model finding f1. rhiza show t1-d12-ci-one-job shows a live 'superseded by ci-speed-shape' link, created by the op in log entry 01M6QB4WYQX9JAK9JMPF3CD0A1 (change set 01M6Q58T8EG0QY7YDQNWHW6NEA), so the one-job CI decision is retired and no longer contradicts the parallel-jobs shape. In a clean detached worktree at 948ae1e1, make self-check printed ok (exit 0): the model folds and rendered files are current. go test -trimpath -count=1 ./internal/ciworkflow/... passes (ok), so the leaf's ci.yml jobs, matrices, fail-fast, setup-go cache and aggregate check assertions still hold. The commit touches only .rhiza/ files. The PR CI duration point is read later from the ship run's PR CI, as the compliance check noted."
+        },
+        "handle": "ci-yml-parallel-jobs-fix-2-verified",
+        "id": "01M6QB992KMBZWY458KMNCVZ15",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QB992KMBZWY458KMMMRC1P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QB992KMBZWY458KMMMRC1P",
+        "id": "01M6QB993CGATK7NQYMDEFEQ9M",
+        "link": "01M6QB993CGATK7NQYMB47GCPJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHWA4TNKZ9TB3ZEGH7JR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6Q58T8EG0QY7YDQNWHW6NEA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QB9942VHKRZ7PHHHM4MHJD",
+  "type": "ops",
+  "v": 1
+}

@@ -299,6 +299,9 @@ func daemonStartState(common string, self daemon.Holder, version, commit string,
 // with the error when it could not take the lock back after an exec.
 func daemonLoop(ctx *Ctx, common string, lock *daemon.Lock, poll func() error, pending func() int, reexec *daemon.Reexec, selfUpdate func(), ticks <-chan time.Time, interrupted <-chan struct{}) (*daemon.Lock, error) {
 	for {
+		if ctx.Reap != nil {
+			ctx.Reap(common)
+		}
 		if err := poll(); err != nil && ctx.Stderr != nil {
 			fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", err)
 		}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q8PPHG6E1T5481DYZKM2SQ",
+  "after": [
+    "01M6Q5P3GVZPMAGPG3605MZD28"
+  ],
+  "at": "2026-11-06T01:52:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 662fcadb, go test -trimpath ./cmd/rhiza -run TestScriptShard -v -count=1 passed: for n=4 each shard's entries equal the round-robin picks over the sorted 271 testdata/script names, the shards are disjoint and cover all names, unset returns nil (testscript runs every script), and 0/4, 5/4, x, 1/0, 1/, /4, 1/4x, -1/4 are rejected. End to end: RHIZA_TEST_SHARD=x fails TestScripts with 'RHIZA_TEST_SHARD=\"x\": want i/n with 1 <= i <= n'; with -run TestScripts/describe-golden$ (sorted index 65), shard 2/4 runs and passes it while 1/4, 3/4, 4/4 run nothing, and unset runs it. Diff read: Files passed with Dir cleared only when a shard is set; gofmt and go vet clean."
+        },
+        "handle": "test-scripts-sharded-verified",
+        "id": "01M6Q8XWSKGVJVCWJDSSEBCJRD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q8XWSKGVJVCWJDSR1P8E15",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q8XWSKGVJVCWJDSR1P8E15",
+        "id": "01M6Q8XWXJNQNBKEZ9EY9X7AB8",
+        "link": "01M6Q8XWXJNQNBKEZ9EVJ47KKF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHTX26CPP16DNNEK7T80",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6Q58T8EG0QY7YDQNWHW6NEA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q8XX0H85D0QG3MQNG1NAZT",
+  "type": "ops",
+  "v": 1
+}

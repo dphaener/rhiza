@@ -8,3 +8,6 @@ import "errors"
 func detachProgram(p apiProgram, logPath string) error {
 	return errors.New("detached runs need a unix system")
 }
+
+// reapDrivers is api.Ctx.Reap; there is nothing to reap.
+func reapDrivers(common string) {}

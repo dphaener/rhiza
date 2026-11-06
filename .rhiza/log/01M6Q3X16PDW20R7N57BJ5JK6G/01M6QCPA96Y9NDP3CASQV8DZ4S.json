@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6QAMEMFQHATSHVF58AGFJ56"
+  ],
+  "at": "2026-11-06T02:58:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "819c74a4a33e7fbb9f643c8524ede9194740a27a",
+          "pr": "https://github.com/dphaener/rhiza/pull/321",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #321 (https://github.com/dphaener/rhiza/pull/321) passed CI at 819c74a",
+          "status": "verified"
+        },
+        "handle": "pr-321-fix-the-daemon-never-reaps-its",
+        "id": "01M6QCPA5TW2X385TXN0XRTMHJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QCPA5TW2X385TXMYHKNYX1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QCPA5TW2X385TXMYHKNYX1",
+        "id": "01M6QCPA6NACZYWV28N9H082EB",
+        "link": "01M6QCPA6NACZYWV28N658EZ9T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q43V93A114TYBBXS89ZV6Z",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6Q3X16PDW20R7N57BJ5JK6G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QCPA96Y9NDP3CASQV8DZ4S",
+  "type": "ops",
+  "v": 1
+}
