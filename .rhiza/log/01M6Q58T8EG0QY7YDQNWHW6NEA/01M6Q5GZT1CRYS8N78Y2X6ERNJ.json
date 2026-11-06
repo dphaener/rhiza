@@ -1,0 +1,33 @@
+{
+  "actor": "01M6Q594HCQFMD1V5XNDFM2KSA",
+  "after": [
+    "01M6Q5FFHMPV50DX54CB99A9Z3"
+  ],
+  "at": "2026-11-06T00:53:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "c35bf3b3aea59477fa04b560ecbf4339d602aefcb2024a51f6304145df9090d1",
+          "session": "c92d1843-be8e-4e19-a590-01a1ae548813",
+          "summary": "Autonomous plan run for change set 01M6Q58 (CI takes 11-18 minutes per PR). The planner read ci.yml, the Makefile's test target, cmd/rhiza's TestScripts, the budget tests and ship check's rollup parsing, and raised four choices as one question: the intent to serve, how to shard the testscripts, what to do with internal/api once it becomes the critical path, and how the PR keeps one verdict. The arbiter answered with Decision ci-speed-shape: serve milestone-25; shard TestScripts round-robin by RHIZA_TEST_SHARD=i/n over the sorted script names; shard internal/api's top-level tests into 2 jobs by an anchored -run regex; a rest job, a budgets job and a lint job; Makefile targets per job so CI calls make; one workflow with fail-fast false, setup-go caching keyed on go.sum, and an aggregate job named check under if: always() that fails unless every job succeeded; ship check unchanged unless a test shows otherwise. No owner words were typed in this run.",
+          "title": "CI speed plan, autonomous interview with the arbiter"
+        },
+        "handle": "ci-speed-plan-interview",
+        "id": "01M6Q5GZSKS19EP83EA3SMPGNP",
+        "key": null,
+        "kind": "source",
+        "node": "01M6Q5GZSKS19EP83EA3PDTN5S",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6Q58T8EG0QY7YDQNWHW6NEA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q5GZT1CRYS8N78Y2X6ERNJ",
+  "type": "ops",
+  "v": 1
+}

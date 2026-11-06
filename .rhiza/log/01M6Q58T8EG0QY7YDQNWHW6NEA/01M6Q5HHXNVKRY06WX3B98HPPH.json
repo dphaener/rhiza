@@ -1,0 +1,119 @@
+{
+  "actor": "01M6Q594HCQFMD1V5XNDFM2KSA",
+  "after": [
+    "01M6Q5HHMK8580Q8KY24D28CJG"
+  ],
+  "at": "2026-11-06T00:53:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6Q5FFGR7Q2E5A4YRAJF88P1",
+        "id": "01M6Q5HHTHDR6P9GE019DBS5Q6",
+        "link": "01M6Q5HHTHDR6P9GE015JJ277G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5GZSKS19EP83EA3PDTN5S",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in cmd/rhiza (go test -trimpath ./cmd/rhiza -run TestScriptShard) asserts that for n=4 the four shards are disjoint, together cover every script in testdata/script, and are round-robin over the sorted names; that unset selects all scripts; and that a malformed value (0/4, 5/4, x) fails with a clear error.",
+          "statement": "TestScripts runs one shard of cmd/rhiza's scripts when RHIZA_TEST_SHARD=i/n is set (1-based): the sorted testdata/script/*.txtar names whose index mod n is i-1, passed as testscript Files; unset, it runs every script as before."
+        },
+        "handle": "test-scripts-sharded",
+        "id": "01M6Q5HHTX26CPP16DNQDCX3TR",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6Q5HHTX26CPP16DNNEK7T80",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6Q5HHTX26CPP16DNNEK7T80",
+        "id": "01M6Q5HHV93YN2TMPA6ZWSBC91",
+        "link": "01M6Q5HHV93YN2TMPA6YGC00HB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5FFGR7Q2E5A4YRAJF88P1",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test beside TestMakeTestTimeout in cmd/rhiza/makeupdate_test.go (go test -trimpath ./cmd/rhiza -run 'TestMake') runs make -n on each new target and asserts its go test line carries -trimpath and the budget skip or run regex, that test-api's shards for n=2 partition internal/api's listed tests with no budget test among them, and that test-budgets prints the timings; TestMakeTestTimeout still passes unchanged for make test.",
+          "statement": "The Makefile has one target per CI job: test-scripts SHARD=i/n (cmd/rhiza's scripts, budgets skipped), test-api SHARD=i/n (internal/api's top-level tests from go test -list, budgets excluded, split round-robin into an anchored -run regex), test-rest (every other package, budgets skipped), test-budgets (the timing budgets alone, -count=1 -p 1, printing the read-budget timings) and lint (fmt-check, vet, self-check); make test and make check still run the full suite."
+        },
+        "handle": "make-test-shard-targets",
+        "id": "01M6Q5HHVN71122BKP92YBQ687",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6Q5HHVN71122BKP8ZG1DQPR",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6Q5HHVN71122BKP8ZG1DQPR",
+        "id": "01M6Q5HHVZHHYYDW2EER4JHYR4",
+        "link": "01M6Q5HHVZHHYYDW2EEMP29B6G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5FFGR7Q2E5A4YRAJF88P1",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/ciworkflow (go test -trimpath ./internal/ciworkflow/...) parses .github/workflows/ci.yml and asserts the jobs and matrices above, strategy.fail-fast false on each matrix, setup-go with cache on and cache-dependency-path go.sum in every job, each job's run step calling make, and a job named check with needs on every other job, if: always() and a step failing unless every needed result is success; the existing ci-yml triggers and concurrency checks still pass. The change set's own PR CI run completes in about 5 minutes or less, read from gh run view.",
+          "statement": "CI runs the suite as parallel jobs of one workflow: lint, a matrix of 4 script shards, a matrix of 2 internal/api shards, rest and budgets, each calling its make target with fail-fast off and actions/setup-go caching modules and the build cache keyed on go.sum, and an aggregate job named check that needs every other job, runs if: always() and fails unless each succeeded; a PR's CI gives its verdict in about 5 minutes."
+        },
+        "handle": "ci-yml-parallel-jobs",
+        "id": "01M6Q5HHWA4TNKZ9TB41JZW8B5",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6Q5HHWA4TNKZ9TB3ZEGH7JR",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6Q5HHWA4TNKZ9TB3ZEGH7JR",
+        "id": "01M6Q5HHWMWV70THV4WZN2CB5Y",
+        "link": "01M6Q5HHWMWV70THV4WWVMTB5H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5FFGR7Q2E5A4YRAJF88P1",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests in internal/api (go test -trimpath ./internal/api -run 'TestParsePRView|TestChecksVerdict') feed a statusCheckRollup of the lint, shard, rest, budgets and check jobs of one run with one failed script shard and a cancelled or failed aggregate, and assert the verdict is settled and not green, failed names that shard and the aggregate, and every check carries the same RunID; a rollup where all jobs succeeded is green; one still in progress is not settled.",
+          "statement": "ship check gives one verdict over a PR whose CI is several jobs of one run: green only when every job and the aggregate check completed and passed, and a failed shard is named with the run ID its log is read from."
+        },
+        "handle": "ship-check-multi-job-verdict",
+        "id": "01M6Q5HHWYFNJV9D7A7N8B9WRJ",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6Q5HHWYFNJV9D7A7KNYSZGH",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6Q5HHWYFNJV9D7A7KNYSZGH",
+        "id": "01M6Q5HHXCT1JPKTZVYDSAEPQ6",
+        "link": "01M6Q5HHXCT1JPKTZVYB3N2517",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5FFGR7Q2E5A4YRAJF88P1",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6Q58T8EG0QY7YDQNWHW6NEA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q5HHXNVKRY06WX3B98HPPH",
+  "type": "ops",
+  "v": 1
+}
