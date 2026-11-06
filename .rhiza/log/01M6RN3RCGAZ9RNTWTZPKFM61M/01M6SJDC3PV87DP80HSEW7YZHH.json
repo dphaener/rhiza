@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SJAXVXXR0M7F5MKKYJ7FYT",
+  "after": [
+    "01M6SFB3YY39DG9H5Q40PM1167"
+  ],
+  "at": "2026-11-06T23:16:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 4eb72fe5 (attempt 2). go test -trimpath ./cmd/rhiza -run TestScripts/(daemon-install|daemon-start-stop|daemon-projects|daemon-status|root-init) all PASS: daemon-install, with fake systemctl/loginctl on PATH, runs daemon install from a subfolder of a project and finds one unit rhiza-root.service with WorkingDirectory=$WORK (the root, not the repo), then daemon start/stop from the root call systemctl --user start/stop rhiza-root.service and uninstall calls disable --now plus daemon-reload (cmp against want logs). The fix commit makes daemon status resolve the root (rootcfg.Find) and read the root lock plus the home project's state recorded in .rhiza-root/daemon.home; daemon-projects now checks status from the root, outside any checkout, and from a non-home project gives the same JSON, and a live root daemon reports running from both. By hand with a scratch build: rhiza root init . then rhiza daemon status at the fresh root printed 'Daemon not running' and exited 0 (earlier QA failure was exit 1 'sessions need a git repository'). go test ./internal/daemon/... ok; go vet and gofmt clean on internal/api and internal/daemon."
+        },
+        "handle": "root-daemon-service-verified-2",
+        "id": "01M6SJDC20HD578TBM5WT2073F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SJDC20HD578TBM5TGAD5EX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SJDC20HD578TBM5TGAD5EX",
+        "id": "01M6SJDC2SDMQ675M1P26FX1PK",
+        "link": "01M6SJDC2SDMQ675M1P1HE4XFN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85E14DDFJGJ96GKN7ZGE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SJDC3PV87DP80HSEW7YZHH",
+  "type": "ops",
+  "v": 1
+}
