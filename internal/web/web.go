@@ -58,6 +58,7 @@ var templateFS embed.FS
 // own "content". They are parsed once, from the binary.
 var pages = map[string]*template.Template{
 	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/overview.html")),
+	"runs":     template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/runs.html")),
 }
 
 // page is what a template is rendered with.
@@ -65,6 +66,8 @@ type page struct {
 	Title, Nav string
 	// Daemon is the header's daemon pill; empty Text leaves it out.
 	Daemon Pill
+	// Data is what the page's content is rendered with.
+	Data any
 }
 
 func render(w http.ResponseWriter, name string, p page) {
@@ -91,6 +94,9 @@ func Handler(api http.Handler, events ...http.Handler) http.Handler {
 		mux.Handle("/api/", api)
 	}
 	mux.HandleFunc("GET "+FragmentPrefix+"{name}", serveFragment)
+	mux.HandleFunc("GET /runs", func(w http.ResponseWriter, r *http.Request) {
+		render(w, "runs", page{Title: "Runs", Nav: "runs", Data: runsData(r)})
+	})
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		render(w, "overview", page{Title: "Overview", Nav: "overview"})
 	})
@@ -101,7 +107,7 @@ func Handler(api http.Handler, events ...http.Handler) http.Handler {
 		w.Header().Set("Content-Type", "application/manifest+json")
 		w.Write(b)
 	})
-	return mux
+	return withAPI(api, mux)
 }
 
 // Listener is a running listener, which can be stopped.

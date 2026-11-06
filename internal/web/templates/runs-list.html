@@ -1,0 +1,3 @@
+{{define "runs-list"}}{{if .Empty}}{{template "empty" .Empty}}{{else}}{{if .Live}}<p class="rz-rows-group">Live</p>
+{{template "rows" .Live}}{{end}}{{if .Recent}}<p class="rz-rows-group">Recent</p>
+{{template "rows" .Recent}}{{end}}{{end}}{{end}}
