@@ -1,0 +1,96 @@
+{
+  "actor": "01M6S9F15CRS578NYVXDR1SNV8",
+  "after": [
+    "01M6S9A3YBJ8TSVDKS2EGYC5X4"
+  ],
+  "at": "2026-11-06T20:41:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question names the import-procedure change set's targets, milestone-27 and m27-nebari-imported; milestone-27's statement says what the Nebari import teaches becomes rhiza import, and this change set's intent comes straight from Nebari's import, so those are the fitting landed intents. The existing leaf import-autonomous-decisions specifies only the agent-made form and its testscript; a sibling leaf keeps that leaf's acceptance true and gives the new form its own check, rather than rewriting a built leaf. grep finds no check code reading a decision's wording except the arbiter-answer check in internal/api/run.go, so both forms already pass rhiza check; adding validation the intent did not ask for would be scope creep, and the intent's 'must accept' is satisfied by proving acceptance in a testscript, which also guards against a future check rejecting either form.",
+          "statement": "The change set serves milestone-27 and m27-nebari-imported, as the import-procedure change set that built rhiza guide import did: this fixes a gap the Nebari import (nebari#66) exposed, the milestone's own aim of learning from Nebari's import. It is built as one new childless leaf beside import-autonomous-decisions under rhiza/guide (e.g. import-owner-credited-decisions): step 4 of internal/guide/text/import.md gives two wording forms, the existing agent-made one for a document that does not attribute the decision to the owner, and '<decided>, made by the owner as recorded in <document>' for one whose document records the owner making or confirming it; both with no quote field and a derived-from link to the document's Source. import-autonomous-decisions keeps its built agent-made form and testscript, its statement narrowed to decisions the document does not attribute to the owner, and import-load-bearing-decisions is superseded by import-load-bearing-decisions-owner-credited, which states both forms. 'rhiza check must accept both forms' means no new check code: the acceptance is a testscript (extending or beside import-autonomous-decisions.txtar) where rhiza guide import prints both forms, and a repo holding one decision of each form, each derived-from its Source, lands and passes rhiza check (fold-ok), with rhiza why showing each wording and no quote.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "import-owner-credited-wording-shape",
+        "id": "01M6S997MWKCBVRJ9EQQDXRQG6",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6S997MWKCBVRJ9EQMA5G2RB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "base": "01M6J3CF3E8B054GW137R8PPMT",
+        "handle": null,
+        "id": "01M6S9G6RB283XZ3QMF2E1W49C",
+        "node": "01M6J3CF3E8B054GW1370AQN2G",
+        "op": "node.update",
+        "set": {
+          "statement": "The import procedure brings in only decisions that shape a capability or constraint, and an imported decision with no owner words, whose document does not attribute it to the owner, has no quote, a wording naming it as the agent's made autonomously and not confirmed by the owner, and a derived-from link to the Source of the document it came from."
+        },
+        "unset": []
+      },
+      {
+        "fields": {
+          "reasoning": "The change set's intent records the owner's pick, credit the owner, for decisions a document attributes to the owner (Nebari's import, nebari#66, had 26). import-load-bearing-decisions worded every imported decision as the agent's and autonomous, which that pick replaces for the owner-attributed ones; the load-bearing rule and the summary of the rest are kept.",
+          "statement": "An import brings in as Decision nodes only the decisions that shape a capability or constraint; each one its document records the owner making or confirming is worded '<decided>, made by the owner as recorded in <document>', every other one is worded as the agent's and marked as made autonomously and not confirmed by the owner; none has a quote, each is derived-from its document's Source, and the rest are summarised in the Source of the decisions document.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "import-load-bearing-decisions-owner-credited",
+        "id": "01M6S9G6RVCZZSNXBFMMC3R5SW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6S9G6RVCZZSNXBFMMAVMEV7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S9G6RVCZZSNXBFMMAVMEV7",
+        "id": "01M6S9G6SD6PQ3W6AZQTNHGEZN",
+        "link": "01M6S9G6SD6PQ3W6AZQSR5CGWX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J313V9MH773WZ8KJJWH7AJ",
+        "type": "supersedes"
+      },
+      {
+        "decision": null,
+        "from": "01M6S9G6RVCZZSNXBFMMAVMEV7",
+        "id": "01M6S9G6SV97EKEP9HHAW68SZW",
+        "link": "01M6S9G6SV97EKEP9HH8SHHZ3A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6S9A3Q9XJA62WFXNJA71HGA",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3CF3E8B054GW1370AQN2G",
+        "id": "01M6S9G6TEHYAGDKE2TD5P6YTK",
+        "link": "01M6S9G6TEHYAGDKE2T9SZYATM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6S9G6RVCZZSNXBFMMAVMEV7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6S9A3X180Y1D4QEHZ8AKDD9",
+        "id": "01M6S9G6V1DWWY2FGT9SZT41NH",
+        "link": "01M6S9G6V1DWWY2FGT9PX0GTNT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6S9G6RVCZZSNXBFMMAVMEV7",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6S95EWGHBTY9RSY63NX75AE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S9G6VTQAGS2ZWCEHNV9HR0",
+  "type": "ops",
+  "v": 1
+}
