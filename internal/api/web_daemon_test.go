@@ -53,6 +53,10 @@ func TestWebDaemonHealthCachedInBackground(t *testing.T) {
 		go func() { defer wg.Done(); get("/fragments/daemon") }()
 	}
 	wg.Wait()
+	// The refresh runs on its own goroutine, so wait for it to start, then
+	// check after a pause that no second one followed.
+	waitFor(t, func() bool { return started.Load() >= 1 })
+	time.Sleep(50 * time.Millisecond)
 	if n := started.Load(); n != 1 {
 		t.Fatalf("%d refreshes started, want 1", n)
 	}
