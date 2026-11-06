@@ -53,6 +53,11 @@ func newSessionFixture(t *testing.T, slug string) *sessionFixture {
 	if err := os.MkdirAll(root, 0o755); err != nil {
 		t.Fatal(err)
 	}
+	// tmp is a Rhiza root registering repo, as the testscript Setup does,
+	// so runs and plan requests (which need a registered project) start.
+	if err := os.WriteFile(filepath.Join(tmp, "rhiza.toml"), []byte("[projects.repo]\npath = \"repo\"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	ctx := testCtx(root)
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
 		t.Fatal(err)
