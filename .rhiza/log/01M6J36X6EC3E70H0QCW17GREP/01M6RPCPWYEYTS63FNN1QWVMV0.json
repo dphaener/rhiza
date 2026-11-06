@@ -1,0 +1,40 @@
+{
+  "actor": "01M6RPAT7JHSGM8EDN71RXSGEV",
+  "after": [
+    "01M6RNM0D1BKYXQDBH6PR5JBGZ"
+  ],
+  "at": "2026-11-06T15:07:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At de15d37c, go test -trimpath -count=1 ./cmd/rhiza -run TestScripts/import- passes (import-retires-docs included). Read the diff: rhiza guide import section 5 names retired documents (built or overtaken PLAN, roadmap, TODO, design note: added as a Source with rhiza source add <handle> <file> --raw <document> plus git rm, in the same change set; scrubbed summary and the owner's typed words verbatim) and kept ones (reference, design and operations documents that capabilities link to stay in git); the script asserts those lines. import-retires-docs.txtar commits a fixture PLAN.md, runs rhiza source add plan-md source.json --raw PLAN.md and git rm PLAN.md, commits once, and checks git show --name-status HEAD has both D PLAN.md and A .rhiza/log records, .rhiza/log is clean, the Source carries a sha256, and after propose/accept/land/render rhiza check prints ok and fold-ok passes. This addresses attempt 1's finding f1."
+        },
+        "handle": "import-retires-docs-verified",
+        "id": "01M6RPCPS1Q423ZYN3269WKG1G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6RPCPS1Q423ZYN3232QRVAP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RPCPS1Q423ZYN3232QRVAP",
+        "id": "01M6RPCPVFQE3XVC5CRY5TZ4YF",
+        "link": "01M6RPCPVFQE3XVC5CRVHFZN0C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3CQTM8JJ1FG394JB40RHN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J36X6EC3E70H0QCW17GREP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RPCPWYEYTS63FNN1QWVMV0",
+  "type": "ops",
+  "v": 1
+}
