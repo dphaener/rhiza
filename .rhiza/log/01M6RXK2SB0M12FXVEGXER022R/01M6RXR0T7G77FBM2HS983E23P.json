@@ -1,0 +1,30 @@
+{
+  "actor": "01M6RXKP8VR5P06WN3EZH4D2CG",
+  "after": [
+    "01M6RXK2SB0M12FXVEGYTJFXZ7"
+  ],
+  "at": "2026-11-06T17:15:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "fa508624-2462-49e9-98cd-01a1b1d9c450",
+          "statement": "Change set 01M6RXK2 (inbox takes 30-40 s at a gate; Inbox app can't act on the gate item) serves no intent yet. Which intent should it serve? / How should the inbox read a gate's open questions cheaply (today inboxGateQuestions opens the run worktree with no index, decoding the full 11,400-entry log, and folds a model per question × per planned change set)? / What proves the inbox stays fast at a gate? / In the Inbox app, what should a gate ('open') item do when picked?"
+        },
+        "handle": "question-fa508624-1",
+        "id": "01M6RXQVR420SBRR5BACMWFYNJ",
+        "key": null,
+        "kind": "question",
+        "node": "01M6RXQVR420SBRR5BA8PYARFG",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6RXK2SB0M12FXVEGXER022R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RXR0T7G77FBM2HS983E23P",
+  "type": "ops",
+  "v": 1
+}

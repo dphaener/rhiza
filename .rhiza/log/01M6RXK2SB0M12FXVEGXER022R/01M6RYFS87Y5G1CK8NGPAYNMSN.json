@@ -1,0 +1,44 @@
+{
+  "actor": "01M6RYE1S4FD6Q9KKRX2MJE9QN",
+  "after": [
+    "01M6RY6MTCXCQRSCTBJFJH7JTH"
+  ],
+  "at": "2026-11-06T17:28:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question has four parts. Milestone-26's Inbox app change set (01M6MYN9) names 'answer a question or gate' as the app's job, so this fix finishes that promise; milestone-28 (web UI) only gains speed from the same shared read. internal/api/inbox.go:1067 sets c.IndexPath = \"\" and then calls w.model(cs.ID) inside the per-handle loop over plan, which matches the profile (ReadLog 13.5 s, 80% in inboxGateQuestions). internal/api/run_model_cache.go shows the run worktree already has its own index at index.DefaultPath(root), kept current by the driver, so reusing it is the smallest fix that fits milestone-18/20's 'reads stay fast' and adds no new cache. The app already has openGate/answerGate, but it falls back to show() (a non-scrollable InfoPanel with no action) whenever Questions comes back empty. That happens when inboxGateQuestions swallows an error and returns nil, which explains the owner's 'couldn't scroll it and couldn't really take any action'. So the fix also guarantees that questions are returned from the stop detail and that the views scroll. A test counting decoded entries and folds is a sturdier proof than wall-clock time alone on a busy CI runner.",
+          "statement": "(1) Intent: change set 01M6RXK2 serves milestone-26 (01M6MZ09, five small Rex apps), whose Inbox app change set already promises 'answer a question or gate'; the web UI's speed is fixed by the same shared read, so no second intent is linked. (2) Cheap read: inboxGateQuestions stops clearing IndexPath. It opens the run worktree's own index (index.DefaultPath of the worktree root, the index the run driver already keeps caught up, as stepRunner.catchUpModel does), so no read decodes the whole disk log. It also inverts the loop: each planned change set's model is folded at most once per call and every open handle is resolved against it, never question × change set. If the worktree's model can't be read, it still returns one InboxGateQuestion per handle from the stop detail (statement empty), so the item never loses its questions or its action. (3) Proof: an internal/api budget test over the large generated log with an index, as the existing read-budget tests have, puts a plan run at its gate with several open questions spread over several planned change sets. It asserts that inbox returns every question with its statement, decodes no full log (the catch-up decodes 0 entries when fresh), folds each planned change set at most once, and answers within the read budget, well under 1 s. The daemon poll's gate-question fill (daemon.go) goes through the same path and is covered by the same test. (4) Inbox app: picking a gate ('open') item always opens the gate answer form: the full question text, with advisor recommendations, scrolls (arrow and page keys and the mouse wheel within the modal's height), with one TextArea per open question. Submitting runs question.answer <handle> <text> --run <run> for each question (a Decision each), then run.resume, then closes, as answerGate does today. A blank answer asks again. A failed answer reopens the form on the questions not yet answered with the error, as answerGate does today, so the owner can retry; only a failed resume shows a scrollable detail with the error. A question with an empty statement shows 'This question's text could not be read.' with its position among the gate's questions ('question 2 of 4'), never its handle (owner-surfaces-no-ids). The plain detail panel of every other item kind scrolls too.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "inbox-gate-questions-cheap",
+        "id": "01M6RXVTQJ0T8RYE8JS5HDA50D",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RXVTQJ0T8RYE8JS3P2MQC9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/tui/inboxapp with a fake runner: a gate item with four long questions in a short window shows the form, and page-down and the mouse wheel reveal the last question's text while the TextAreas stay reachable; a gate item whose questions have empty statements still opens the form, showing 'This question's text could not be read.' with its position ('question 2 of 4') above each TextArea, and no handle anywhere in the view; submitting calls question.answer --run per question then run.resume and quits; a blank answer calls nothing; a failed question.answer reopens the form on the remaining questions with 'answer failed: <error>' and calls no run.resume; a failed resume shows a detail panel that scrolls; a long detail of another item kind scrolls (go test -trimpath ./internal/tui/inboxapp/...).",
+          "statement": "In the Inbox app, picking a gate (open) item always opens the gate answer form: the full text of every open question with the advisor's recommendation scrolls (arrow and page keys and the mouse wheel) within the modal's height above one TextArea per question; submitting runs question.answer <handle> <text> --run <run> for each, then run.resume, then closes; a blank answer asks again; a failed answer reopens the form on the questions not yet answered with 'answer failed: <error>' so the owner can retry, as answerGate does today, and only a failed resume shows a scrollable detail with the error; a question whose statement is empty (inbox-gate-questions-kept's fallback) is shown above its TextArea as 'This question's text could not be read.' with its position among the gate's questions ('question 2 of 4') and never its handle, so inbox-app-answer-shows-question and owner-surfaces-no-ids still hold; and the detail panel of every other item kind scrolls too."
+        },
+        "handle": "inbox-app-gate-scroll",
+        "id": "01M6RXXHH0SGR3DGTJTF6YJQYP",
+        "key": "zzzzzzzz",
+        "kind": "capability",
+        "node": "01M6RXXHH0SGR3DGTJTD37G584",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      }
+    ]
+  },
+  "change_set": "01M6RXK2SB0M12FXVEGXER022R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RYFS87Y5G1CK8NGPAYNMSN",
+  "type": "ops",
+  "v": 1
+}

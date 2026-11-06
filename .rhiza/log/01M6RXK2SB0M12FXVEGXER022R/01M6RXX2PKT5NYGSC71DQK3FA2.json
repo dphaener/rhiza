@@ -1,0 +1,33 @@
+{
+  "actor": "01M6RXKP8VR5P06WN3EZH4D2CG",
+  "after": [
+    "01M6RXWV5PEY14GK7NKJF6QBS9"
+  ],
+  "at": "2026-11-06T17:18:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "af2dccc5ba5503240c22ff4c6e573d88871f54b1cfe8057170a25f4a013ad756",
+          "session": "fa508624-2462-49e9-98cd-01a1b1d9c450",
+          "summary": "Autonomous plan run for change set 01M6RXK2 (the inbox takes 30-40 s when a plan run is stopped at its gate; the Inbox app cannot scroll or act on that gate item). The planner read internal/api/inbox.go (inboxGateQuestions clears IndexPath and folds a model per question times per planned change set), question.go (gateAnswerCtx) and internal/tui/inboxapp (openGate/answerGate exist but are skipped when an item's Questions is empty, falling back to a non-scrollable detail panel). It raised four choices to the arbiter: the intent, the cheap read, the proof, and the app's action. The arbiter's Decision inbox-gate-questions-cheap settled them: serve milestone-26; read gate questions through the run worktree's own index with each planned change set folded at most once; always return one gate question per stop-detail handle even when the worktree's model can't be read; prove it with an internal/api budget test over the large generated log (no full-log decode, one fold per planned change set, within the read budget); in the Inbox app a gate item always opens the answer form, whose text scrolls, and every detail panel scrolls. No owner answered, so no owner words are quoted.",
+          "title": "Plan of the slow inbox at a gate, autonomous run with the arbiter"
+        },
+        "handle": "plan-inbox-gate-fast",
+        "id": "01M6RXX2NGGACDHQPP1YB199TT",
+        "key": null,
+        "kind": "source",
+        "node": "01M6RXX2NGGACDHQPP1TDAE3PW",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6RXK2SB0M12FXVEGXER022R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RXX2PKT5NYGSC71DQK3FA2",
+  "type": "ops",
+  "v": 1
+}
