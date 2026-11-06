@@ -52,6 +52,43 @@ func TestReap(t *testing.T) {
 	}
 }
 
+// TestReapStale: an entry another daemon recorded, whose pid is now a live
+// child of this process that nothing has waited on yet, is dropped without
+// being reaped, so the child's own Wait still gets its exit status.
+func TestReapStale(t *testing.T) {
+	common := t.TempDir()
+	list := filepath.Join(common, "rhiza", "drivers")
+
+	child := exec.Command("sh", "-c", "exit 5")
+	if err := child.Start(); err != nil {
+		t.Fatal(err)
+	}
+	pid := child.Process.Pid
+	self := selfID()
+	addEntry(list, driverEntry{Pid: pid, By: daemonID{Pid: self.Pid, Start: "1"}})
+	addEntry(list, driverEntry{Pid: pid, By: daemonID{Pid: self.Pid + 1, Start: self.Start}})
+
+	deadline := time.Now().Add(5 * time.Second)
+	for !isZombie(pid) && time.Now().Before(deadline) {
+		time.Sleep(10 * time.Millisecond)
+	}
+	if !isZombie(pid) {
+		t.Fatal("child did not become a zombie")
+	}
+	reapDrivers(common)
+	if !isZombie(pid) {
+		t.Errorf("pid %d was reaped from a stale entry", pid)
+	}
+	if got := readDrivers(list); len(got) != 0 {
+		t.Errorf("driver list = %v, want empty", got)
+	}
+	err := child.Wait()
+	ee, ok := err.(*exec.ExitError)
+	if !ok || ee.ExitCode() != 5 {
+		t.Errorf("child Wait = %v, want exit status 5", err)
+	}
+}
+
 func isZombie(pid int) bool {
 	b, err := os.ReadFile("/proc/" + itoa(pid) + "/stat")
 	if err != nil {

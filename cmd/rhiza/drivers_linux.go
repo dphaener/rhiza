@@ -9,37 +9,55 @@ import (
 	"syscall"
 )
 
-// isChildOf reports from /proc whether pid's parent is ppid.
-func isChildOf(pid, ppid int) bool {
+// statFields returns /proc/<pid>/stat's fields after the command name,
+// starting with field 3 (state).
+func statFields(pid int) []string {
 	b, err := os.ReadFile("/proc/" + strconv.Itoa(pid) + "/stat")
 	if err != nil {
-		return false
+		return nil
 	}
 	s := string(b)
 	i := strings.LastIndexByte(s, ')')
 	if i < 0 {
-		return false
+		return nil
 	}
-	f := strings.Fields(s[i+1:]) // state, ppid, ...
+	return strings.Fields(s[i+1:])
+}
+
+// procStart is pid's start time, field 22 of /proc/<pid>/stat, or "".
+func procStart(pid int) string {
+	f := statFields(pid)
+	if len(f) < 20 {
+		return ""
+	}
+	return f[19]
+}
+
+// isChildOf reports from /proc whether pid's parent is ppid.
+func isChildOf(pid, ppid int) bool {
+	f := statFields(pid) // state, ppid, ...
 	return len(f) > 1 && f[1] == strconv.Itoa(ppid)
 }
 
-// reapList waits without blocking, by pid, on each listed pid that is still
-// a child of parent, and drops from the list each pid that is reaped or no
-// longer a child. It never waits on a pid that is not listed.
-func reapList(list string, parent int) {
+// reapList waits without blocking, by pid, on each listed pid that the
+// running daemon self recorded and that is still its child. It drops each
+// entry that is reaped or no longer a child, and every entry another daemon
+// recorded, without waiting on it: init reaps those drivers, and the pid may
+// now belong to one of self's own children that something else waits on.
+// It never waits on a pid that is not listed.
+func reapList(list string, self daemonID) {
 	driverMu.Lock()
 	defer driverMu.Unlock()
-	var drop []int
-	for _, pid := range readDrivers(list) {
-		if !isChildOf(pid, parent) {
-			drop = append(drop, pid)
+	var drop []driverEntry
+	for _, e := range readDrivers(list) {
+		if e.By != self || self.Start == "" || !isChildOf(e.Pid, self.Pid) {
+			drop = append(drop, e)
 			continue
 		}
 		var ws syscall.WaitStatus
-		p, err := syscall.Wait4(pid, &ws, syscall.WNOHANG, nil)
-		if p == pid || err == syscall.ECHILD {
-			drop = append(drop, pid)
+		p, err := syscall.Wait4(e.Pid, &ws, syscall.WNOHANG, nil)
+		if p == e.Pid || err == syscall.ECHILD {
+			drop = append(drop, e)
 		}
 	}
 	if len(drop) > 0 {
