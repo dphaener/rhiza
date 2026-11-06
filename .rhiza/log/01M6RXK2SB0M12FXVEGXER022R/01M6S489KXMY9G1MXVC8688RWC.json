@@ -1,0 +1,40 @@
+{
+  "actor": "01M6S45DBTAN5RK38DBQSJB0B6",
+  "after": [
+    "01M6S44KAS6X0BKSHF5QB7XBJ5"
+  ],
+  "at": "2026-11-06T19:09:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 968be804 (attempt 2): `go test -trimpath ./internal/api -run TestInboxGateQuestions -count=1 -v` passes TestInboxGateQuestionsKept (case a: worktree with no .rhiza, stop detail 'kept-a, kept-b' -> both handles listed in order, statements empty) and TestInboxGateQuestionsUnresolved (case b: readable worktree, a proposed change set serving the plan's intent holds question kept-resolved; stop detail 'kept-resolved, kept-nowhere' -> both handles listed, kept-resolved with 'Statement of kept-resolved', kept-nowhere empty), plus TestInboxGateQuestionsBudget. `go test -trimpath ./cmd/rhiza -run TestScripts/inbox-gate-questions -count=1` passes. Read the diff: test-only, and inboxGateQuestions in internal/api/inbox.go seeds one entry per stop-detail handle before the worktree read, so either fallback keeps every handle."
+        },
+        "handle": "inbox-gate-questions-kept-verified-2",
+        "id": "01M6S489G2HYBEP6NYVKN3RFMV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S489G2HYBEP6NYVHNRJ3WA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S489G2HYBEP6NYVHNRJ3WA",
+        "id": "01M6S489HY5F126XSETAPX4CAH",
+        "link": "01M6S489HY5F126XSET9EMEKKJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXXHCHHB08YWNFGY67DT82",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RXK2SB0M12FXVEGXER022R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S489KXMY9G1MXVC8688RWC",
+  "type": "ops",
+  "v": 1
+}
