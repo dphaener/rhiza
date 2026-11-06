@@ -2069,6 +2069,32 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "skipped_projects": {
+            "description": "The registered projects the root daemon did not work at its last poll, each with its reason",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "detail": {
+                  "description": "The error behind the reason, when it has one",
+                  "type": "string"
+                },
+                "project": {
+                  "description": "The project's name in the root",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "Why it was not worked: not initialised, not a git checkout or held by another daemon",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "project",
+                "reason"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "started": {
             "description": "When the daemon started, RFC 3339 UTC",
             "type": "string"
@@ -2119,6 +2145,7 @@ cmp stdout describe.golden.json
           "runs",
           "settings",
           "skipped",
+          "skipped_projects",
           "unjournaled"
         ],
         "type": "object"

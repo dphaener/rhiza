@@ -25,7 +25,6 @@ import (
 	"github.com/dphaener/rhiza/internal/gosweep"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
-	"github.com/dphaener/rhiza/internal/usage"
 	"github.com/dphaener/rhiza/internal/web"
 )
 
@@ -76,9 +75,14 @@ func (r DaemonResponse) Human(w io.Writer) {
 	fmt.Fprintf(w, "Daemon %s stopped\n", r.Process)
 }
 
-// runDaemon takes the repository's daemon lock and keeps it until the
-// caller interrupts (Ctx.Interrupt). A second daemon exits with a usage
-// error naming the holder.
+// runDaemon takes the root's daemon lock and keeps it until the caller
+// interrupts (Ctx.Interrupt). A second daemon exits with a usage error
+// naming the holder. Each poll reads every project registered in the
+// root's rhiza.toml and works the initialised ones as the per-repo daemon
+// did, in the project's own checkout and journal; the others are skipped
+// and status says so. The project the daemon was started in (else the first
+// initialised one) is its home: its git common dir holds the per-repo lock,
+// the daemon's state, the re-exec and the web UI.
 func runDaemon(ctx *Ctx, req any) (any, error) {
 	if ctx.DryRun {
 		return nil, Usagef("daemon runs in the foreground and has no dry run")
@@ -91,20 +95,28 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if r.MaxRuns < 0 {
 		return nil, Usagef("--max-runs must be at least 1")
 	}
-	conf, err := daemonConfOf(ctx, r)
+	reg, err := rootcfg.Load(root)
+	if err != nil {
+		return nil, err
+	}
+	homeName, homeCtx, ok := daemonHome(ctx, root, reg)
+	if !ok {
+		return nil, Usagef("%s has no registered, initialised project for the daemon to work", root).WithNext("rhiza project add")
+	}
+	conf, err := daemonConfOf(homeCtx, r)
 	if err != nil {
 		return nil, err
 	}
 	// Every run the daemon starts is a ship-change run with this mode: one
 	// that run start would refuse is refused here, before any tab opens.
-	_, def, _, err := resolveWorkflow(ctx.Root, "")
+	_, def, _, err := resolveWorkflow(homeCtx.Root, "")
 	if err != nil {
 		return nil, err
 	}
-	if err := checkAgentSteps(ctx, def, conf.mode, "", r.Autonomous, "rhiza describe daemon"); err != nil {
+	if err := checkAgentSteps(homeCtx, def, conf.mode, "", r.Autonomous, "rhiza describe daemon"); err != nil {
 		return nil, err
 	}
-	common, err := gitCommonDir(ctx)
+	common, err := gitCommonDir(homeCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -136,28 +148,33 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if ctx.Stderr != nil {
 		fmt.Fprintf(ctx.Stderr, "rhiza: daemon running, process %s\n", self)
 	}
-	hooks := resolveHooks(ctx, r.NotifyCommand, r.EventCommand)
-	notifyCmd, eventCmd := hookCommand(hooks, HookNotify), hookCommand(hooks, HookEvent)
-	rs := run.NewStore(run.Dir(common))
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}, Planned: []string{}}
-	pending := map[string]daemonPending{}
-	state, unjournaled := daemonStartState(common, self, ctx.Version, ctx.Commit, conf.maxRuns, r.Autonomous)
-	state.Settings = conf.stateRows()
-	state.Hooks = hooks
-	// Write it before the first poll, so status matches the lock holder
-	// at once, through a re-exec.
-	daemon.WriteState(common, state)
-	saveState := func() {
-		state.LastPoll = ctx.Now().UTC()
-		if runs, err := rs.List(); err == nil {
-			host, _ := os.Hostname()
-			state.Runs = daemon.LiveRuns(runs, host, nil)
+	projs := map[string]*daemonProj{}
+	// project is the daemon's working state for a registered project,
+	// made when it first sees it initialised and kept from poll to poll.
+	project := func(name, dir string) (*daemonProj, error) {
+		if p, ok := projs[name]; ok && p.dir == dir {
+			return p, nil
 		}
-		daemon.WriteState(common, state)
+		pctx, startConf := homeCtx, &conf
+		if name != homeName {
+			pctx, startConf = projectCtx(ctx, dir), nil
+		}
+		p, err := newDaemonProj(pctx, name, dir, self, name == homeName, r, startConf)
+		if err != nil {
+			return nil, err
+		}
+		projs[name] = p
+		return p, nil
+	}
+	_, err = project(homeName, homeCtx.Root)
+	if err != nil {
+		return nil, err
 	}
 	defer func() {
-		state.Stopped = ctx.Now().UTC()
-		daemon.WriteState(common, state)
+		for _, p := range projs {
+			p.stop()
+		}
 	}()
 	selfUpdateOn := false
 	// The web UI listener follows rhiza.web.host and rhiza.web.port from poll to poll. A single
@@ -166,20 +183,15 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if !r.Once && ctxGetenv(ctx)("RHIZA_TEST_NOW") == "" {
 		// The handler gets its own copy of ctx: the poll goes on changing
 		// ctx while requests run.
-		snap := *ctx
+		snap := *homeCtx
 		health := NewWebHealth(&snap)
 		webUI = &web.Manager{Factory: webFactory, Handler: web.HandlerWithMilestones(WebDaemonSource(&snap, health), WebRunsSource(&snap), WebInboxSource(&snap), WebMilestonesSource(&snap), ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap, health), web.PollEvery))}
 		defer webUI.Close()
 	}
 	var sweep daemon.SweepSchedule
-	poll := func() error {
-		var skips []daemon.Skip
-		conf, err := daemonConfOf(ctx, r)
-		if err != nil {
-			saveState()
-			return err
-		}
-		minFree := conf.minFree
+	// atHome is told the home project's settings at each poll: the root-wide
+	// parts of the daemon follow them.
+	atHome := func(conf daemonConf) {
 		if webUI != nil {
 			if werr := webUI.Apply(conf.webHost, conf.webPort); werr != nil && ctx.Stderr != nil {
 				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", werr)
@@ -187,57 +199,63 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 		selfUpdateOn = conf.selfUpdate
 		if conf.trimGoCache {
-			daemonSweepGoCache(ctx, &sweep, minFree)
+			daemonSweepGoCache(homeCtx, &sweep, conf.minFree)
 		}
-		state.MaxRuns, state.Settings = conf.maxRuns, conf.stateRows()
-		learnLimits(ctx, common, &state)
-		var hold *usageHold
-		if runs, lerr := rs.List(); lerr == nil {
-			host, _ := os.Hostname()
-			var windows map[usage.Kind]usage.Window
-			windows, state.UsageWindows = usageWindowsNow(ctx, common, state.UsageWindows)
-			hold = usageHoldOf(conf.rows, state.Learned, runs, host, windows)
+	}
+	poll := func() error {
+		reg, err := rootcfg.Load(root)
+		if err != nil {
+			return err
 		}
-		if hold == nil {
-			hold = governorHold(ctx, common)
-		}
-		started, resumed, planned, err := daemonPoll1(ctx, rs, pending, unjournaled, conf.maxRuns, minFree, r.Autonomous, conf.mode, conf.paused, hold, &skips)
-		resp.Planned = append(resp.Planned, planned...)
-		if err == nil {
-			state.Skips = skips
-			state.UsageHold = usageHoldState(hold, state.UsageHold, ctx.Now())
-			if low, free := daemonDiskLow(ctx, minFree); !low {
-				state.DiskLow = nil
-			} else if state.DiskLow == nil {
-				state.DiskLow = &daemon.DiskLow{Since: ctx.Now().UTC(), Free: free, Min: minFree}
-			} else {
-				state.DiskLow.Free, state.DiskLow.Min = free, minFree
+		var firstErr error
+		var skipped []daemon.ProjectSkip
+		var polled []string
+		// The home project goes first: it holds the daemon's state.
+		names := append([]string{homeName}, slices.DeleteFunc(reg.Names(), func(n string) bool { return n == homeName })...)
+		for _, name := range names {
+			if _, ok := reg.Projects[name]; !ok {
+				continue
+			}
+			dir := reg.Dir(root, name)
+			if name == homeName {
+				dir = homeCtx.Root
+			}
+			if !projectInitialised(dir) {
+				skipped = append(skipped, daemon.ProjectSkip{Project: name, Reason: daemon.ProjectNotInitialised})
+				continue
+			}
+			p, err := project(name, dir)
+			if err != nil {
+				var held *daemon.Held
+				if errors.As(err, &held) {
+					skipped = append(skipped, daemon.ProjectSkip{Project: name, Reason: daemon.ProjectHeld, Detail: err.Error()})
+				} else {
+					skipped = append(skipped, daemon.ProjectSkip{Project: name, Reason: daemon.ProjectNoGit, Detail: err.Error()})
+				}
+				continue
+			}
+			polled = append(polled, name)
+			var onConf func(daemonConf)
+			if name == homeName {
+				onConf = atHome
+			}
+			if err := p.poll(r, &resp, onConf); err != nil && firstErr == nil {
+				firstErr = err
 			}
 		}
-		resp.Started = append(resp.Started, started...)
-		resp.Resumed = append(resp.Resumed, resumed...)
-		if len(started) > 0 {
-			state.LastStarted = &daemon.Event{Change: started[len(started)-1], At: ctx.Now().UTC()}
+		// A project dropped from the registry stops being polled.
+		for name, p := range projs {
+			if !slices.Contains(polled, name) {
+				p.stop()
+				delete(projs, name)
+			}
 		}
-		if len(resumed) > 0 {
-			state.LastResumed = &daemon.Event{Run: resumed[len(resumed)-1], At: ctx.Now().UTC()}
+		// Every project's state says which of the others were skipped.
+		for _, p := range projs {
+			p.state.ProjectSkips = skipped
+			p.saveState()
 		}
-		state.Unjournaled = []daemon.Event{}
-		for cs, p := range unjournaled {
-			state.Unjournaled = append(state.Unjournaled, daemon.Event{Change: cs, At: p.at.UTC(), Runs: p.runs})
-		}
-		slices.SortFunc(state.Unjournaled, func(a, b daemon.Event) int { return strings.Compare(a.Change, b.Change) })
-		if nerr := daemonNotify(ctx, rs, &state, notifyCmd); err == nil {
-			err = nerr
-		}
-		if nerr := daemonNudge(ctx, rs, &state); err == nil {
-			err = nerr
-		}
-		if eerr := daemonEvents(ctx, &state, eventCmd); err == nil {
-			err = eerr
-		}
-		saveState()
-		return err
+		return firstErr
 	}
 	if r.Once {
 		return resp, poll()
@@ -248,7 +266,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		if !selfUpdateOn || ctx.Exec == nil || ctx.Git == nil {
 			return
 		}
-		out, err := ctx.Git("worktree", "list", "--porcelain")
+		out, err := homeCtx.Git("worktree", "list", "--porcelain")
 		if err != nil {
 			return
 		}
@@ -271,7 +289,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	}
 	ticks, stopTicks := daemonTicker()
 	defer stopTicks()
-	l, err := daemonLoop(ctx, common, lock, poll, func() int { return len(pending) }, reexec, selfUpdate, ticks, interrupted)
+	pendingAll := func() int {
+		n := 0
+		for _, p := range projs {
+			n += len(p.pending)
+		}
+		return n
+	}
+	l, err := daemonLoop(ctx, common, lock, poll, pendingAll, reexec, selfUpdate, ticks, interrupted)
 	if l != nil {
 		lock = l
 	}
@@ -1226,27 +1251,36 @@ var skipText = map[string]string{
 	daemon.SkipShipOwner:    "ship is set to owner: only the owner starts its run",
 }
 
+// DaemonProjectSkip is a registered project the root daemon did not work at
+// its last poll.
+type DaemonProjectSkip struct {
+	Project string `json:"project" desc:"The project's name in the root"`
+	Reason  string `json:"reason" desc:"Why it was not worked: not initialised, not a git checkout or held by another daemon"`
+	Detail  string `json:"detail,omitempty" desc:"The error behind the reason, when it has one"`
+}
+
 // DaemonStatusResponse is the daemon's state. While no daemon holds the
 // lock, Running is false and the rest, if any, is what the last daemon left.
 type DaemonStatusResponse struct {
-	Mode        string        `json:"mode" enum:"service,tab" desc:"How this installation runs the daemon: service when daemon install wrote a systemd unit, else tab (the Rex tab 'rhiza daemon')"`
-	Running     bool          `json:"running" desc:"True while a live daemon holds the repository's lock"`
-	Process     string        `json:"process,omitempty" desc:"The daemon's process, as host:pid; absent when none ever ran"`
-	Version     string        `json:"version,omitempty" desc:"The version of the binary the daemon runs, as recorded when it started"`
-	Commit      string        `json:"commit,omitempty" desc:"The git commit the daemon's binary was built from, as recorded when it started; absent when the build carried none"`
-	Started     string        `json:"started,omitempty" desc:"When the daemon started, RFC 3339 UTC"`
-	LastPoll    string        `json:"last_poll,omitempty" desc:"When it last polled, RFC 3339 UTC"`
-	Stopped     string        `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
-	MaxRuns     int           `json:"max_runs,omitempty" desc:"How many runs it keeps running at once"`
-	Autonomous  bool          `json:"autonomous" desc:"True when it starts each run with --autonomous"`
-	Web         string        `json:"web,omitempty" desc:"The web UI as the daemon's last poll recorded it from rhiza.web.port: its URL (http://127.0.0.1:<port>), or off; it is the recorded setting, the listener is not probed; absent when none was recorded"`
-	Settings    []Setting     `json:"settings" desc:"The settings as its last poll read them, each with its source: default, git config or flag"`
-	Runs        []DaemonRun   `json:"runs" desc:"The live runs (running or interrupted) as of its last poll"`
-	LastStarted *DaemonEvent  `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
-	LastResumed *DaemonEvent  `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
-	Skipped     []DaemonSkip  `json:"skipped" desc:"The accepted change sets it did not start at its last poll, each with its reason"`
-	Hooks       []HookRow     `json:"hooks" desc:"The notify and event commands the daemon took at start, each with its source: daemon flag, git config or unset"`
-	Unjournaled []DaemonEvent `json:"unjournaled" desc:"The runs it started that never wrote a journal, by change set and when; it starts these again 15 minutes after the start, or sooner when a run of the change set journals"`
+	Mode            string              `json:"mode" enum:"service,tab" desc:"How this installation runs the daemon: service when daemon install wrote a systemd unit, else tab (the Rex tab 'rhiza daemon')"`
+	Running         bool                `json:"running" desc:"True while a live daemon holds the repository's lock"`
+	Process         string              `json:"process,omitempty" desc:"The daemon's process, as host:pid; absent when none ever ran"`
+	Version         string              `json:"version,omitempty" desc:"The version of the binary the daemon runs, as recorded when it started"`
+	Commit          string              `json:"commit,omitempty" desc:"The git commit the daemon's binary was built from, as recorded when it started; absent when the build carried none"`
+	Started         string              `json:"started,omitempty" desc:"When the daemon started, RFC 3339 UTC"`
+	LastPoll        string              `json:"last_poll,omitempty" desc:"When it last polled, RFC 3339 UTC"`
+	Stopped         string              `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
+	MaxRuns         int                 `json:"max_runs,omitempty" desc:"How many runs it keeps running at once"`
+	Autonomous      bool                `json:"autonomous" desc:"True when it starts each run with --autonomous"`
+	Web             string              `json:"web,omitempty" desc:"The web UI as the daemon's last poll recorded it from rhiza.web.port: its URL (http://127.0.0.1:<port>), or off; it is the recorded setting, the listener is not probed; absent when none was recorded"`
+	Settings        []Setting           `json:"settings" desc:"The settings as its last poll read them, each with its source: default, git config or flag"`
+	Runs            []DaemonRun         `json:"runs" desc:"The live runs (running or interrupted) as of its last poll"`
+	LastStarted     *DaemonEvent        `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
+	LastResumed     *DaemonEvent        `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
+	Skipped         []DaemonSkip        `json:"skipped" desc:"The accepted change sets it did not start at its last poll, each with its reason"`
+	SkippedProjects []DaemonProjectSkip `json:"skipped_projects" desc:"The registered projects the root daemon did not work at its last poll, each with its reason"`
+	Hooks           []HookRow           `json:"hooks" desc:"The notify and event commands the daemon took at start, each with its source: daemon flag, git config or unset"`
+	Unjournaled     []DaemonEvent       `json:"unjournaled" desc:"The runs it started that never wrote a journal, by change set and when; it starts these again 15 minutes after the start, or sooner when a run of the change set journals"`
 }
 
 // Human writes the status as text.
@@ -1307,6 +1341,13 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 		}
 		fmt.Fprintln(w)
 	}
+	for _, k := range r.SkippedProjects {
+		fmt.Fprintf(w, "Skipped project: %s: %s", k.Project, k.Reason)
+		if k.Detail != "" {
+			fmt.Fprintf(w, " (%s)", k.Detail)
+		}
+		fmt.Fprintln(w)
+	}
 	for _, e := range r.Unjournaled {
 		fmt.Fprintf(w, "Not journaled: the run of %s started at %s wrote no journal; retried at %s, or sooner when a run of it journals\n", e.Change, e.At, daemonRetryAt(e.At))
 	}
@@ -1329,7 +1370,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp := DaemonStatusResponse{Settings: []Setting{}, Runs: []DaemonRun{}, Skipped: []DaemonSkip{}, Hooks: []HookRow{}, Unjournaled: []DaemonEvent{}}
+	resp := DaemonStatusResponse{Settings: []Setting{}, Runs: []DaemonRun{}, Skipped: []DaemonSkip{}, SkippedProjects: []DaemonProjectSkip{}, Hooks: []HookRow{}, Unjournaled: []DaemonEvent{}}
 	resp.Mode, _ = daemonMode(ctx)
 	_, resp.Running = daemon.Running(common)
 	st, ok := daemon.ReadState(common)
@@ -1364,6 +1405,9 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	resp.LastResumed = daemonEvent(st.LastResumed)
 	for _, k := range st.Skips {
 		resp.Skipped = append(resp.Skipped, DaemonSkip{Change: k.Change, Title: k.Title, Reason: k.Reason, Detail: append([]string{}, k.Detail...)})
+	}
+	for _, k := range st.ProjectSkips {
+		resp.SkippedProjects = append(resp.SkippedProjects, DaemonProjectSkip{Project: k.Project, Reason: k.Reason, Detail: k.Detail})
 	}
 	for _, e := range st.Unjournaled {
 		resp.Unjournaled = append(resp.Unjournaled, *daemonEvent(&e))

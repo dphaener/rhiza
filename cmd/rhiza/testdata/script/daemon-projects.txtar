@@ -1,0 +1,61 @@
+# One poll of the root daemon reads every registered, initialised project
+# and starts a ready change set in each, in that project's own checkout
+# and journal. A registered checkout that is not initialised is skipped,
+# and daemon status says so. Rex is faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+
+# Two initialised projects, each with a ready milestone change set, and one
+# bare checkout.
+exec sh -c 'printf "[projects.repo]\npath = \"repo\"\n[projects.second]\npath = \"second\"\n[projects.bare]\npath = \"bare\"\n" > $WORK/rhiza.toml'
+mkdir bare
+cd bare
+exec git init -q
+cd $WORK
+mkdir repo second
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+exec rhiza change new Built --title Built
+exec rhiza add capability built-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+cd $WORK/second
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+exec rhiza change new Other --title Other
+exec rhiza add capability other-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# From the root, one poll starts a run in each initialised project.
+cd $WORK
+exec rhiza daemon --permission-mode manual --once
+stdout -count=2 '^Started a run of '
+exec sh -c 'ls repo/.git/rhiza/logs | grep -c "start-1.log"'
+stdout '^1$'
+exec sh -c 'ls second/.git/rhiza/logs | grep -c "start-1.log"'
+stdout '^1$'
+! exists bare/.git/rhiza
+
+# Status, from a project, names the one it skipped and why.
+cd repo
+exec rhiza daemon status
+stdout 'Skipped project: bare: not initialised'
+exec rhiza daemon status --json
+stdout '"project": "bare"'
+stdout '"reason": "not initialised"'
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
