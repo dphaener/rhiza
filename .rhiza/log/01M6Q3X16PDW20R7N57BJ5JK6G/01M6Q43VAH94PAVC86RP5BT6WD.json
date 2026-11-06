@@ -1,0 +1,50 @@
+{
+  "actor": "01M6Q3XHFJD18BCNM2P39V08HT",
+  "after": [
+    "01M6Q43V34CDESA18YX6DS9Y6G"
+  ],
+  "at": "2026-11-06T00:28:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6Q4344CFT9EQRX2FK909RX3",
+        "id": "01M6Q43V836VWQYQ7ZDRSDXH8G",
+        "link": "01M6Q43V836VWQYQ7ZDQM6NAPW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q43TY2EPDME3KRYNNZ66MQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test (Linux) starts a Setsid child that nothing waits on, lets it exit, runs the reaper, and finds the pid gone with no zombie left, while a plain os/exec child running at the same time still gets its own exit status from Wait; the reaper runs at daemon start and on each tick, and does nothing off Linux",
+          "statement": "The daemon reaps its finished run drivers, including those started by an image before a re-exec, so none stays a zombie: at start and on a timer it waits by pid, without blocking, on each child of its own that leads its own session, and never on the git, make or hook children os/exec waits on"
+        },
+        "handle": "daemon-reaps-drivers",
+        "id": "01M6Q43V93A114TYBBXWDA7XCQ",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M6Q43V93A114TYBBXS89ZV6Z",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6Q43V93A114TYBBXS89ZV6Z",
+        "id": "01M6Q43V9ZBGR5C8YYPX4X4G84",
+        "link": "01M6Q43V9ZBGR5C8YYPX4AK9Q1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q4344CFT9EQRX2FK909RX3",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6Q3X16PDW20R7N57BJ5JK6G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q43VAH94PAVC86RP5BT6WD",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,33 @@
+{
+  "actor": "01M6Q3XHFJD18BCNM2P39V08HT",
+  "after": [
+    "01M6Q43456MTEAZJ649PXM94GQ"
+  ],
+  "at": "2026-11-06T00:28:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "52e4a8637950c6bb72c01ae92930108b811801d1a4739204473603168b973a64",
+          "session": "ab537112-dbb7-4d84-807c-01a1ae3eb5c1",
+          "summary": "Autonomous plan of the fix for the daemon leaving zombie run drivers. The code already reaps each detached driver with go cmd.Wait(), so the zombies come from in-place re-execs, after which the new image does not know its children. The planner raised that the intent's wait4(-1, WNOHANG) would also reap the git, make and hook children os/exec is waiting on (some from concurrent web UI requests). The arbiter decided the daemon reaps only its own children that lead their own session (detached drivers), at start and on a timer, by pid, on Linux via /proc. One leaf under daemon, served by milestone 25 like the other fixes.",
+          "title": "Daemon reaping its run drivers, autonomous plan"
+        },
+        "handle": "daemon-reaper-plan",
+        "id": "01M6Q43TY3P60H8GFBR5H5573R",
+        "key": null,
+        "kind": "source",
+        "node": "01M6Q43TY2EPDME3KRYNNZ66MQ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6Q3X16PDW20R7N57BJ5JK6G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q43TYCT33YFGXECYW2S1BK",
+  "type": "ops",
+  "v": 1
+}
