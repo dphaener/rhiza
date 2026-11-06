@@ -1,0 +1,132 @@
+{
+  "actor": "01M6QBYDXG8K8YTFFR0Y0Z4KGM",
+  "after": [
+    "01M6QBX11STVX7ZKHS82KSZYV8"
+  ],
+  "at": "2026-11-06T02:49:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8166e669 built rhiza (go build -trimpath) to a scratch binary, cloned the branch to a scratch repo with a copy of the real .git/rhiza/runs journals, set rhiza.daemon.paused=true, maxRuns=3, rhiza.web.port=18766 and ran the real rhiza daemon --permission-mode acceptEdits. curl / showed the Daemon panel 'Paused, 0 of 3 slots in use' (State Paused, Run slots 0/3) and one health pill per part (daemon, autonomy, machine, disk, usage, main, inbox, requests, roadmap ok/warn, check bad) with state classes and summaries as titles; /fragments/daemon served the panel alone."
+        },
+        "handle": "web-overview-daemon-qa-2",
+        "id": "01M6QC68HX0MAR66QGDXKR1C9P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QC68HX0MAR66QGDX3SZ79N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QC68HX0MAR66QGDX3SZ79N",
+        "id": "01M6QC68JGCK9D00RWKK7YF36F",
+        "link": "01M6QC68JF80M860JT3AQDYQG4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX06P8P1JQS8RKY327J2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8166e669 built rhiza (go build -trimpath) to a scratch binary, cloned the branch to a scratch repo with a copy of the real .git/rhiza/runs journals, set rhiza.daemon.paused=true, maxRuns=3, rhiza.web.port=18766 and ran the real rhiza daemon --permission-mode acceptEdits. With only accept items the Inbox showed 'Nothing waits on you'. After adding an open-question stop and a failed open-pr run journal, /fragments/inbox listed '2 waiting on you' in the waiting accent, oldest first: 'Web UI Overview page — open questions wait on your answers' and 'Web UI Roadmap pages — the run failed at its open-pr step', each linking to /runs/<id>; no run ID, question handle, rhiza command or Rex window in any row's text (rhiza inbox's details carried all of them). A later sign-off stop showed 'waiting for your sign-off'."
+        },
+        "handle": "web-overview-inbox-qa-2",
+        "id": "01M6QC68K1XX0BGBT3DCNPMKBP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QC68K1XX0BGBT3DB5Z074E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QC68K1XX0BGBT3DB5Z074E",
+        "id": "01M6QC68KKSDK9TRJTWMMXQJRF",
+        "link": "01M6QC68KKSDK9TRJTWJM19V9X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX24XAF6CBGRW7W837AV",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8166e669 built rhiza (go build -trimpath) to a scratch binary, cloned the branch to a scratch repo with a copy of the real .git/rhiza/runs journals, set rhiza.daemon.paused=true, maxRuns=3, rhiza.web.port=18766 and ran the real rhiza daemon --permission-mode acceptEdits. / declares four live sections: daemon (run daemon), inbox (inbox run change), runs, milestones (change), each with its /fragments/<name> URL, all four 200 alone. With curl -N /events open, writing a new stopped run journal emitted event: run, event: inbox and event: daemon, and the re-fetched inbox fragment then showed the new sign-off row."
+        },
+        "handle": "web-overview-live-qa-2",
+        "id": "01M6QC68M8G2RWS162JYQ9B49P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QC68M8G2RWS162JXANE6XX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QC68M8G2RWS162JXANE6XX",
+        "id": "01M6QC68MVCXZ98D2MWZ45GQQM",
+        "link": "01M6QC68MVCXZ98D2MWX4P09KG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX4SRG58AJJWHZYKN4DK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8166e669 built rhiza (go build -trimpath) to a scratch binary, cloned the branch to a scratch repo with a copy of the real .git/rhiza/runs journals, set rhiza.daemon.paused=true, maxRuns=3, rhiza.web.port=18766 and ran the real rhiza daemon --permission-mode acceptEdits. The Milestones panel showed '2 open' with a Roadmap link, each milestone now named by its full intent statement (the Nebari import milestone with '2 change sets proposed', the web UI milestone with '3 change sets accepted'), no longer the bare 'Milestone' of cycle 1's finding. go test ./internal/api -run 'TestWeb|Roadmap|Plan' and TestScripts/roadmap-statement pass."
+        },
+        "handle": "web-overview-milestone-qa-2",
+        "id": "01M6QC68NWF6HGH0K9YCCBMHJ9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QC68NWF6HGH0K9Y8QT027V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QC68NWF6HGH0K9Y8QT027V",
+        "id": "01M6QC68PKBMTTQQCSVKGZ70ZX",
+        "link": "01M6QC68PKBMTTQQCSVJJ12WTN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX3BQYXMYH08ZAQN0ER8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8166e669 built rhiza (go build -trimpath) to a scratch binary, cloned the branch to a scratch repo with a copy of the real .git/rhiza/runs journals, set rhiza.daemon.paused=true, maxRuns=3, rhiza.web.port=18766 and ran the real rhiza daemon --permission-mode acceptEdits. The Live runs panel listed the live and waiting runs from the real journals (e.g. 'Web UI Overview page', ship-change, review/review; 'Let the web UI listen on all', plan, interview), each with title, workflow, current step and a /runs/<id> link and an All runs link; succeeded and failed runs, including a crafted failed run, were not listed. go test ./internal/web passes, incl. the new journal-based overview runs test."
+        },
+        "handle": "web-overview-runs-qa-2",
+        "id": "01M6QC68QFGQ7BYS5G4X4DWRBE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QC68QFGQ7BYS5G4WJP2E47",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QC68QFGQ7BYS5G4WJP2E47",
+        "id": "01M6QC68R6N1M1ZXAADBWKE37Z",
+        "link": "01M6QC68R6N1M1ZXAAD9JBGTC3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX11CXNAKJWHMY772YAF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QC68S1QWX02YP9R7859PQZ",
+  "type": "ops",
+  "v": 1
+}
