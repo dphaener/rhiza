@@ -1,0 +1,86 @@
+{
+  "actor": "01M6Q9KKJV3M7E32330G04C6C9",
+  "after": [
+    "01M6Q9GCDVF2SGSX1AD048PQ19"
+  ],
+  "at": "2026-11-06T02:29:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 2f747105: ran make test-scripts SHARD=2/4 for real (go test -count=1 -v): 68 of the 271 scripts ran (271 round-robin over 4), all passed, ok cmd/rhiza in 124 s, 2m12s wall on a loaded VM. go test -trimpath -count=1 ./cmd/rhiza -run 'TestScriptShard|TestMake' passed."
+        },
+        "handle": "test-scripts-sharded-qa-1",
+        "id": "01M6QB1P3PMAFGE33M7GBA0ZZJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QB1P3PMAFGE33M7D9212F9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QB1P3PMAFGE33M7D9212F9",
+        "id": "01M6QB1P4MDCP596BGA2HB07CA",
+        "link": "01M6QB1P4MDCP596BGA25QTD9K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHTX26CPP16DNNEK7T80",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 2f747105: go test -trimpath -count=1 ./internal/api -run 'TestParsePRView|TestChecksVerdict' passed; ship.go is unchanged in the diff, so the new tests pin the existing verdict over a multi-job rollup. Not exercised against a real PR: none exists yet."
+        },
+        "handle": "ship-check-multi-job-verdict-qa-1",
+        "id": "01M6QB1P5Q902WD3NT5FZCRTJR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QB1P5Q902WD3NT5EXY907R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QB1P5Q902WD3NT5EXY907R",
+        "id": "01M6QB1P6QHHZWZCY01V8727CJ",
+        "link": "01M6QB1P6QHHZWZCY01RXQZC5T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHWYFNJV9D7A7KNYSZGH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 2f747105: go test -trimpath -count=1 ./internal/ciworkflow/... passed. Read ci.yml: lint, scripts [1/4..4/4], api [1/2,2/2], rest, budgets, fail-fast false, setup-go cache on go.sum, and a check job (needs all five, if: always(), exits 1 on any non-success). Each make target it calls exists and ran or expanded locally (make -n lint, make -n test-rest). The about-5-minutes PR CI point is not observable yet: no PR or Actions run exists for the change set, so it falls to the ship run's CI."
+        },
+        "handle": "ci-yml-parallel-jobs-qa-1",
+        "id": "01M6QB1P7M9GG7A21T35Y8JG8B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QB1P7M9GG7A21T35EV5EFJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QB1P7M9GG7A21T35EV5EFJ",
+        "id": "01M6QB1P8NBJM95YM1DWV9Z48K",
+        "link": "01M6QB1P8NBJM95YM1DT44WMH6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHWA4TNKZ9TB3ZEGH7JR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6Q58T8EG0QY7YDQNWHW6NEA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QB1PA6GSK7KZ2MEZ1SXNQC",
+  "type": "ops",
+  "v": 1
+}
