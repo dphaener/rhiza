@@ -18956,6 +18956,47 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "run.tail",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "description": "The most lines to return, 1 to 1000; default 100",
+            "type": "integer"
+          },
+          "run": {
+            "description": "The run: a full ID or a unique prefix of 4+ characters; default the latest run",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "lines": {
+            "description": "The last lines of the log, oldest first",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "run": {
+            "description": "The run ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lines",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Print the last lines of a headless run's driver log; exits 2 for a run with no log",
+      "write": false
+    },
+    {
       "input": {
         "additionalProperties": false,
         "properties": {

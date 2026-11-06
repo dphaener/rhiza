@@ -3,57 +3,103 @@ package web
 import (
 	"html/template"
 	"net/http"
+	"strconv"
+	"time"
 )
 
-// RunView is one live run on the Overview: its change set's title, its
-// workflow and the step it is at. ID only builds the link; it is never shown
-// (constraint owner-surfaces-no-ids).
-type RunView struct {
-	ID, Title, Workflow, Step string
-	// State is running, waiting or stopped.
-	State string
-	// Started is when the run started, RFC 3339; empty if unknown.
-	Started string
+// The Runs page, /runs: the live runs first, then the recent ones, newest
+// first. It reads run.ls through the API handler the page is served with,
+// and its list is a live section that re-renders when a run's journal moves.
+
+// The most runs read from run.ls, and the most recent (not live) ones shown.
+const (
+	runsRead   = 200
+	runsRecent = 50
+)
+
+// runItem is the part of a run.ls item the page uses.
+type runItem struct {
+	ID        string `json:"id"`
+	Title     string `json:"title"`
+	State     string `json:"state"`
+	Current   string `json:"current"`
+	StartedAt string `json:"started_at"`
+	Live      bool   `json:"live"`
+	Workflow  string `json:"workflow"`
 }
 
-// RunsSource reads the live runs as they are now: those not finished.
-type RunsSource func() []RunView
+// runsView is what the runs list section is rendered with.
+type runsView struct {
+	Live, Recent []Row
+	Empty        *Empty
+}
 
-// runRows is the runs as dense rows, each linking to its run page.
-func runRows(runs []RunView) []Row {
-	rows := make([]Row, 0, len(runs))
-	for _, r := range runs {
-		text := r.State
-		if r.State == "waiting" {
-			text = "waiting on you"
+// runPill maps a run's state to its pill.
+func runPill(state string) Pill {
+	switch state {
+	case "running":
+		return Pill{"running", "running"}
+	case "blocked":
+		return Pill{"waiting", "waiting on you"}
+	case "stopped":
+		return Pill{"interrupted", "interrupted"}
+	case "succeeded":
+		return Pill{"done", "done"}
+	case "failed":
+		return Pill{"failed", "failed"}
+	}
+	return Pill{"interrupted", state}
+}
+
+// runRow is a run's dense row. It links to the run's page and shows no ID.
+func runRow(it runItem) Row {
+	row := Row{
+		Href: "/runs/" + it.ID, Title: it.Title, Sub: it.Workflow,
+		Pill: runPill(it.State), Step: it.Current, Live: it.State == "running",
+	}
+	if row.Title == "" {
+		row.Title = "Untitled change set"
+	}
+	if t, err := time.Parse(time.RFC3339, it.StartedAt); err == nil {
+		row.Datetime = it.StartedAt
+		row.Time = t.UTC().Format("Jan 2 15:04")
+	}
+	return row
+}
+
+// buildRuns splits runs (newest first) into the live ones and the recent
+// ones, keeping their order. A run is live while a process holds it or it
+// waits on the owner.
+func buildRuns(items []runItem) runsView {
+	var v runsView
+	for _, it := range items {
+		if it.Live || it.State == "blocked" {
+			v.Live = append(v.Live, runRow(it))
+		} else if len(v.Recent) < runsRecent {
+			v.Recent = append(v.Recent, runRow(it))
 		}
-		rows = append(rows, Row{
-			Href: "/runs/" + r.ID, Title: r.Title, Sub: r.Workflow,
-			Pill: Pill{State: r.State, Text: text}, Step: r.Step, Live: r.State == "running",
-			Datetime: r.Started,
-		})
 	}
-	return rows
+	return v
 }
 
-// RunsPanel is what the live runs section renders.
-type RunsPanel struct {
-	Rows []Row
-}
-
-type runsKey struct{}
-
-func runsOf(r *http.Request) RunsPanel {
-	if src, _ := r.Context().Value(runsKey{}).(RunsSource); src != nil {
-		return RunsPanel{Rows: runRows(src())}
+func runsData(r *http.Request) any {
+	var resp struct {
+		Runs []runItem `json:"runs"`
 	}
-	return RunsPanel{}
+	if err := apiGet(r, "/api/run.ls?limit="+strconv.Itoa(runsRead), &resp); err != nil {
+		return runsView{Empty: &Empty{Title: "Runs are unavailable", Text: err.Error()}}
+	}
+	v := buildRuns(resp.Runs)
+	if len(v.Live)+len(v.Recent) == 0 {
+		v.Empty = &Empty{Title: "No runs yet", Text: "Runs appear here when one starts."}
+	}
+	return v
 }
 
 func init() {
 	RegisterFragment("runs", &Fragment{
-		Events:   []string{EventRun, EventDaemon},
-		Template: template.Must(template.New("runs").ParseFS(templateFS, "templates/partials.html", "templates/runs.html")).Lookup("runs"),
-		Data:     func(r *http.Request) any { return runsOf(r) },
+		Events:   []string{EventRun},
+		Template: template.Must(template.New("runs").ParseFS(templateFS, "templates/partials.html", "templates/runs-list.html")).Lookup("runs-list"),
+		Data:     runsData,
 	})
 }

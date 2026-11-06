@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q5YZ877MFYRH61BWRJS7JZ",
+  "after": [
+    "01M6PQSCDT4MA1TK05BW7Z87PD"
+  ],
+  "at": "2026-11-06T01:03:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-080b4504 at b457b744: go test -trimpath -count=1 ./internal/web/... passes; TestRunsPageOrderFieldsAndLinks renders /runs over a run.ls fixture with running, blocked, succeeded and failed runs and asserts live-first-then-recent order, Live/Recent groups, title, workflow, state pill, current step, start time, /runs/<id> links and IDs only in links (owner-surfaces-no-ids, which is why no short ID is shown); TestRunsFragmentMatchesSection asserts the section declares exactly EventRun (data-rz-events=\"run\") and the page embeds /fragments/runs. A scratch test in a copy (not committed) over real run journals via run.Store and api.ReadOnlyHandler (one locked live, one finished failed, one finished succeeded) rendered the live run under Live, then failed (newer) before done (older) under Recent, with correct pills, workflows and links. gofmt and go vet clean."
+        },
+        "handle": "web-runs-list-verified",
+        "id": "01M6Q633Q56M1B1N33T96YN0F1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q633Q56M1B1N33T89G59ME",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q633Q56M1B1N33T89G59ME",
+        "id": "01M6Q633RPQA52Q5PWKYVX93QS",
+        "link": "01M6Q633RPQA52Q5PWKVHCQC2F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAD5JGK5R4PD07FT82DE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFH1X52KNK0C5ZCDYEEF64",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q633TYY7Z9EY6HW5929Y98",
+  "type": "ops",
+  "v": 1
+}

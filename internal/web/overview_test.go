@@ -64,7 +64,7 @@ func TestOverviewListsLiveRuns(t *testing.T) {
 			{ID: "01RUN2", Title: "Idempotency keys", Workflow: "plan", Step: "gate", State: "waiting"},
 		}
 	}
-	for _, path := range []string{"/", FragmentURL("runs")} {
+	for _, path := range []string{"/", FragmentURL("live-runs")} {
 		rec := httptest.NewRecorder()
 		HandlerWithRuns(nil, src, nil).ServeHTTP(rec, httptest.NewRequest("GET", path, nil))
 		body := rec.Body.String()
@@ -79,7 +79,7 @@ func TestOverviewListsLiveRuns(t *testing.T) {
 	}
 	rec := httptest.NewRecorder()
 	HandlerWithRuns(nil, func() []RunView { return nil }, nil).ServeHTTP(rec, httptest.NewRequest("GET", "/", nil))
-	if b := rec.Body.String(); !strings.Contains(b, "No live runs") || !strings.Contains(b, `data-rz-fragment="/fragments/runs"`) {
+	if b := rec.Body.String(); !strings.Contains(b, "No live runs") || !strings.Contains(b, `data-rz-fragment="/fragments/live-runs"`) {
 		t.Errorf("empty: %s", b)
 	}
 }
