@@ -126,6 +126,7 @@ rm $WORK/pr.created
 cd $WORK
 exec git init -q --bare origin2.git
 mkdir repo2
+exec sh -c 'printf "[projects.repo2]\npath = \"repo2\"\n" >> $WORK/rhiza.toml'
 cd repo2
 exec git init -q
 exec git remote add origin $WORK/origin2.git
@@ -238,6 +239,7 @@ rm $WORK/merge.sha
 cd $WORK
 exec git init -q --bare origin3.git
 mkdir repo3
+exec sh -c 'printf "[projects.repo3]\npath = \"repo3\"\n" >> $WORK/rhiza.toml'
 cd repo3
 exec git init -q
 exec git remote add origin $WORK/origin3.git
@@ -307,6 +309,7 @@ rm $WORK/builder-merge.sha
 cd $WORK
 exec git init -q --bare origin4.git
 mkdir repo4
+exec sh -c 'printf "[projects.repo4]\npath = \"repo4\"\n" >> $WORK/rhiza.toml'
 cd repo4
 exec git init -q
 exec git remote add origin $WORK/origin4.git

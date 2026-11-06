@@ -108,3 +108,26 @@ func runRootShow(ctx *Ctx, req any) (any, error) {
 	project, _ := cfg.ProjectOf(root, ctx.Wd)
 	return RootShowResponse{Root: root, Config: filepath.Join(root, rootcfg.File), Project: project}, nil
 }
+
+// requireProject refuses unless the project the operation works on is
+// registered in a Rhiza root: runs and plan requests need one, while the
+// model commands work in any repo with a .rhiza folder. The error is a
+// usage error whose next names rhiza root init or rhiza project add.
+func requireProject(ctx *Ctx) error {
+	dir := ctx.Root
+	if dir == "" {
+		dir = ctx.Wd
+	}
+	root, ok := rootcfg.Find(dir)
+	if !ok {
+		return Usagef("%s is not inside a Rhiza root", dir).WithNext("rhiza root init")
+	}
+	cfg, err := rootcfg.Load(root)
+	if err != nil {
+		return err
+	}
+	if _, ok := cfg.ProjectOf(root, dir); !ok {
+		return Usagef("%s is not a project registered in the Rhiza root %s", dir, root).WithNext("rhiza project add " + dir)
+	}
+	return nil
+}

@@ -37,7 +37,7 @@ stdout '"root": ".*/top"'
 stdout '"project": "app"'
 
 # Outside any root: exit 2 with a next.
-cd $WORK
+cd $NOROOT
 mkdir outside
 cd outside
 ! exec rhiza root show
@@ -60,7 +60,7 @@ exec rhiza root show --json
 stdout '"project": ""'
 
 # Outside a root the exit code is 2 and --json carries the next.
-cd $WORK/outside
+cd $NOROOT/outside
 exec sh -c 'rhiza root show >/dev/null 2>&1; echo exit=$?'
 stdout '^exit=2$'
 ! exec rhiza root show --json

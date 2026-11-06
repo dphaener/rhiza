@@ -24,6 +24,7 @@ env PATH=$WORK/bin:$PATH
 
 # --- hook: the record has the SessionEnd mark and no exit ---
 mkdir hook
+exec sh -c 'printf "[projects.hook]\npath = \"hook\"\n" >> $WORK/rhiza.toml'
 cd hook
 exec git init -q
 exec rhiza init
@@ -73,6 +74,7 @@ cd ..
 
 # --- block: Rex answers the fixer's block is not found ---
 mkdir block
+exec sh -c 'printf "[projects.block]\npath = \"block\"\n" >> $WORK/rhiza.toml'
 cd block
 exec git init -q
 exec rhiza init
