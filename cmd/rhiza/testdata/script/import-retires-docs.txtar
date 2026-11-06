@@ -1,0 +1,29 @@
+# The import topic names which documents are retired and which are kept;
+# retiring a fixture PLAN.md adds it as a Source with --raw and deletes it,
+# and rhiza check passes.
+
+exec rhiza guide import
+stdout 'rhiza source add <handle> <file> --raw <document>'
+stdout 'Keep reference, design and operations documents'
+stdout 'delete it in the same change set'
+
+exec rhiza init
+exec rhiza change new 'Retire the plan'
+exec rhiza source add plan-md source.json --raw PLAN.md
+rm PLAN.md
+! exists PLAN.md
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+exec rhiza show plan-md --json
+stdout 'sha256'
+fold-ok
+
+-- PLAN.md --
+# Plan
+Build the store.
+-- source.json --
+{"title":"PLAN.md","summary":"The store plan, built.","quotes":[]}
