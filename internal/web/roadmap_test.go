@@ -97,7 +97,7 @@ func TestRoadmapPageMatchesTheOperation(t *testing.T) {
 	}
 	for _, g := range rm.Groups {
 		for _, c := range g.ChangeSets {
-			link := `href="/cs/` + c.ID + `"`
+			link := `href="/changes/` + c.ID + `"`
 			if !strings.Contains(body, link) || !strings.Contains(body, "rz-pill--"+c.State) {
 				t.Errorf("%s (%s): no %s or state pill", c.Intent, c.State, link)
 			}

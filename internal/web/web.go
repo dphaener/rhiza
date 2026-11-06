@@ -58,7 +58,11 @@ var templateFS embed.FS
 // own "content". They are parsed once, from the binary.
 var pages = map[string]*template.Template{
 	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/overview.html")),
-	"roadmap":  template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/roadmap.html")),
+	"change": template.Must(template.New("").Funcs(template.FuncMap{
+		"Glyph": func(k string) Glyph { return Glyph{Kind: k} },
+		"Empty": func(t, x string) Empty { return Empty{t, x} },
+	}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/change.html")),
+	"roadmap": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/roadmap.html")),
 }
 
 // page is what a template is rendered with.
@@ -94,6 +98,7 @@ func Handler(api http.Handler, events ...http.Handler) http.Handler {
 		mux.Handle("/api/", api)
 	}
 	mux.HandleFunc("GET /roadmap", serveRoadmap)
+	mux.HandleFunc("GET /changes/{id}", serveChange)
 	mux.HandleFunc("GET "+FragmentPrefix+"{name}", serveFragment)
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		render(w, "overview", page{Title: "Overview", Nav: "overview"})

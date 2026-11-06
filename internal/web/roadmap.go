@@ -28,10 +28,18 @@ func apiGet(r *http.Request, path string, v any) error {
 	rec := httptest.NewRecorder()
 	api.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, nil))
 	if rec.Code != http.StatusOK {
+		if rec.Code == http.StatusNotFound || rec.Code == http.StatusBadRequest {
+			return &notFoundError{path}
+		}
 		return fmt.Errorf("GET %s: %d %s", path, rec.Code, strings.TrimSpace(rec.Body.String()))
 	}
 	return json.Unmarshal(rec.Body.Bytes(), v)
 }
+
+// notFoundError is an API read that found nothing, or took no such ref.
+type notFoundError struct{ path string }
+
+func (e *notFoundError) Error() string { return "not found: " + e.path }
 
 // The roadmap operation's response, as far as the page reads it.
 type roadmapJSON struct {
@@ -119,7 +127,7 @@ func loadRoadmap(r *http.Request) (*RoadmapView, error) {
 			if n := len(c.DependsOn); n > 0 {
 				sub = "depends on " + plural(n, "change set")
 			}
-			out.Rows = append(out.Rows, Row{Href: "/cs/" + c.ID, Title: c.Intent, Sub: sub,
+			out.Rows = append(out.Rows, Row{Href: "/changes/" + c.ID, Title: c.Intent, Sub: sub,
 				Pill: Pill{State: c.State, Text: c.State}, Step: step})
 			count[c.State]++
 			v.Total++
