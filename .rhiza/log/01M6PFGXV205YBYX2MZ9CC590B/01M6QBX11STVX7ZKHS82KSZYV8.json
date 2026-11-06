@@ -1,0 +1,40 @@
+{
+  "actor": "01M6QBCVDK2HSB6D3QMPQP16NP",
+  "after": [
+    "01M6QB6VQ82C1M5ETKCWX1D79Y"
+  ],
+  "at": "2026-11-06T02:44:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e4520d10 (attempt 2): go test -trimpath ./internal/web/... passes, including TestOverviewShowsMilestoneProgress, which renders / and /fragments/milestones over two milestones with change sets in accepted and proposed states and asserts the per-state pills and counts (3, 2), the change set totals and href=/roadmap, plus the empty state. The fix for the QA finding (statement lost through lightNode) passes: TestWebMilestonesSourceNamesByStatement names two milestones by statement over a repo, the new roadmap-statement testscript and describe-golden pass, and go test ./internal/api/... passes. Hands-on, a scratch build's roadmap --all --json on this repo now gives milestone-27 and milestone-28 their statements."
+        },
+        "handle": "web-overview-milestone-verified-2",
+        "id": "01M6QBX106H5KRC4J24V5ZYV6X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QBX106H5KRC4J24RJ9JNQH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QBX106H5KRC4J24RJ9JNQH",
+        "id": "01M6QBX110JQMD54CNP7Y06KTT",
+        "link": "01M6QBX110JQMD54CNP4R494HN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX3BQYXMYH08ZAQN0ER8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QBX11STVX7ZKHS82KSZYV8",
+  "type": "ops",
+  "v": 1
+}
