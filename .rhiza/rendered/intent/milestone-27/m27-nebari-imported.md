@@ -18,6 +18,7 @@ Nebari has its own Rhiza model: its built capabilities recorded area by area, it
 ### In
 
 - serves change set `01M6J36X6EC3E70H0QCW17GREP` (Import procedure: rhiza guide import teaches agents to bring an existing repo with built code into Rhiza, the steps Nebari's import follows)
+- relates-to [nebari-imported-e95ab100](../../evidence/nebari-imported-e95ab100.md) — Evidence that the Nebari import is done, as m27-nebari-imported asks (decision nebari-import-in-nebari-model: Rhiza tracks it by Evidence)
 
 ## History
 
