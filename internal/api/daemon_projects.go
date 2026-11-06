@@ -36,6 +36,7 @@ func projectCtx(ctx *Ctx, dir string) *Ctx {
 	c.ChangeRef, c.ActorRef, c.ForRef = "", "", ""
 	c.daemonFold, c.readLog, c.builtModel, c.repoSession = nil, nil, nil, false
 	c.RexBlock = ""
+	c.ProjectName = ""
 	c.IndexPath = ""
 	if p, err := index.DefaultPath(dir); err == nil {
 		c.IndexPath = p
@@ -115,6 +116,7 @@ func newDaemonProj(pctx *Ctx, name, dir string, self daemon.Holder, home bool, r
 		}
 		conf = &c
 	}
+	pctx.ProjectName = name
 	p := &daemonProj{name: name, dir: dir, common: common, ctx: pctx}
 	if !home {
 		if p.lock, err = daemon.TryLock(common, pctx.Now()); err != nil {

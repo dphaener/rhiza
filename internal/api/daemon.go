@@ -1435,9 +1435,21 @@ func daemonEvent(e *daemon.Event) *DaemonEvent {
 	return &DaemonEvent{Change: e.Change, Run: e.Run, At: e.At.UTC().Format(time.RFC3339)}
 }
 
-// repoSessionName is rhiza-<repo>, <repo> being the main checkout's folder
-// name: the Rex session every tab of this repository's daemon opens in.
+// repoSessionName is rhiza-<project>, <project> being the name the project
+// is registered under in the root's rhiza.toml (its folder, or project add
+// --name): the Rex session every tab of this project's runs opens in. Outside
+// a root it is the main checkout's folder name.
 func repoSessionName(ctx *Ctx) (string, error) {
+	if ctx.ProjectName != "" {
+		return "rhiza-" + ctx.ProjectName, nil
+	}
+	if root, ok := rootcfg.Find(ctx.Root); ok {
+		if reg, err := rootcfg.Load(root); err == nil {
+			if name, ok := reg.ProjectOf(root, ctx.Root); ok {
+				return "rhiza-" + name, nil
+			}
+		}
+	}
 	if ctx.Git == nil {
 		return "", Errorf("daemon needs git: its Rex session is named after the main checkout")
 	}

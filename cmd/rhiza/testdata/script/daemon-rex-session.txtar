@@ -1,0 +1,64 @@
+# The root daemon opens each project's tabs in the Rex session rhiza-<name>,
+# <name> being the name the project is registered under in rhiza.toml, not
+# its folder. It creates a missing session once, creates none when present,
+# and hands each run driver REX_SESSION=rhiza-<name>. Rex is faked.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+env REX_SESSION=
+exec sh -c 'printf "[projects.alpha]\npath = \"alpha\"\n[projects.other]\npath = \"folder\"\n" > $WORK/rhiza.toml'
+mkdir alpha folder
+cd alpha
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+exec rhiza change new Built --title Built
+exec rhiza add capability built-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+cd $WORK/folder
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+exec rhiza change new Other --title Other
+exec rhiza add capability other-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# Both missing: each created once, under the registered name.
+cd $WORK
+exec rhiza daemon --permission-mode manual --once
+exec sh -c 'grep -c "^rex session new rhiza-alpha " $WORK/rex.log'
+stdout '^1$'
+exec sh -c 'grep -c "^rex session new rhiza-other " $WORK/rex.log'
+stdout '^1$'
+exec sh -c 'grep -c "rhiza-folder" $WORK/rex.log $WORK/detach.log || true'
+! stdout ':[1-9]'
+exec sh -c 'grep -Ec "^REX_SESSION=rhiza-other RHIZA_RUN_LOG=[0-9A-Z]{26}\.start-1\.log rhiza run start " $WORK/detach.log'
+stdout '^1$'
+exec sh -c 'grep -Ec "^REX_SESSION=rhiza-alpha RHIZA_RUN_LOG=[0-9A-Z]{26}\.start-1\.log rhiza run start " $WORK/detach.log'
+stdout '^1$'
+
+# Present: none created.
+cp $WORK/present.json $WORK/sessions.json
+rm $WORK/rex.log $WORK/detach.log
+exec rhiza daemon --permission-mode manual --once
+exec sh -c 'grep -c "^rex session new" $WORK/rex.log || true'
+stdout '^0$'
+-- present.json --
+{"sessions":[{"session_id":"session:1","label":"rhiza-alpha"},{"session_id":"session:2","label":"rhiza-other"}]}
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+if [ "$1 $2" = "session ls" ]; then
+  if [ -f "$WORK/sessions.json" ]; then cat "$WORK/sessions.json"; else echo '{"sessions":[]}'; fi
+  exit 0
+fi
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

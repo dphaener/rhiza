@@ -110,6 +110,9 @@ func runRunOpen(ctx *Ctx, req any) (any, error) {
 		resp.TabGone = true
 		return resp, nil
 	}
+	if session == "" {
+		session, _ = repoSessionName(ctx)
+	}
 	scope := []string{}
 	if session != "" {
 		scope = []string{"-s", session}
