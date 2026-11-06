@@ -141,6 +141,11 @@
 .rz-row:hover { background: var(--panel-hover); }
 .rz-row .rz-id::after { content: ""; position: absolute; inset: 0; } /* whole row follows the ID link */
 .rz-row-title { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Partial rows: no ID column; the title is the link the whole row follows. */
+.rz-rows--titled.rz-rows-head, .rz-rows--titled > .rz-row { grid-template-columns: minmax(0, 1fr) 128px 120px 72px; }
+a.rz-row-title { text-decoration: none; }
+a.rz-row-title:hover { color: var(--teal); }
+.rz-row > a.rz-row-title::after { content: ""; position: absolute; inset: 0; }
 .rz-row-title small { display: block; font-size: 12.5px; line-height: 18px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; }
 .rz-row-step { display: flex; align-items: center; gap: 6px; font: 400 12.5px/20px var(--font-mono); color: var(--ink-2); }
 .rz-row-step.is-live { color: var(--gold); }
@@ -181,6 +186,9 @@
 .rz-session:first-child { border-top: 0; }
 .rz-session-who { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rz-session-who b { font-weight: 500; color: var(--ink); }
+.rz-session--titled { grid-template-columns: minmax(0,1fr) auto; }
+a.rz-session-who { text-decoration: none; }
+a.rz-session-who:hover b { color: var(--teal); }
 .rz-session .rz-num { font-size: 12px; color: var(--ink-3); }
 
 /* ── 7. terminal ────────────────────────────────────── */
@@ -340,11 +348,14 @@
   .rz-row > .rz-pill-cell { grid-area: pill; }
   .rz-row > .rz-row-step { grid-area: step; }
   .rz-row > .rz-row-time { grid-area: time; }
+  .rz-rows--titled > .rz-row { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "title title title" "pill step time"; }
   .rz-rows-group, .rz-inbox li, .rz-ms-head, .rz-ms-bar { padding-left: var(--space-4); padding-right: var(--space-4); }
   .rz-ms-head .rz-legend { margin-left: 0; width: 100%; }
   .rz-daemon { grid-template-columns: 1fr 1fr; }
   .rz-session { grid-template-columns: auto minmax(0,1fr); }
   .rz-session .rz-num { grid-column: 2; }
+  .rz-session--titled { grid-template-columns: minmax(0,1fr); }
+  .rz-session--titled .rz-num { grid-column: 1; }
   .rz-dl { grid-template-columns: minmax(0,1fr); gap: 2px 0; }
   .rz-dl dd { margin-bottom: 10px; }
   .rz-finding { grid-template-columns: 1fr; }

@@ -24,11 +24,12 @@ type Glyph struct {
 	Small bool
 }
 
-// Row is a dense row: a teal short ID linking to Href, a title with an
-// optional sub line, a status pill, the current step and when it changed.
-// Datetime, if set, makes Time a live relative-time element.
+// Row is a dense row: a title linking to Href (the whole row follows it),
+// an optional sub line, a status pill, the current step and when it changed.
+// It shows no ID (constraint owner-surfaces-no-ids): Href may carry one, the
+// text never does. Datetime, if set, makes Time a live relative-time element.
 type Row struct {
-	ID, Href, Title, Sub string
+	Href, Title, Sub string
 	Pill                 Pill
 	Step                 string
 	Live                 bool
@@ -45,8 +46,9 @@ type Step struct {
 	Sessions    []Session
 }
 
-// Session is an agent session under a step.
-type Session struct{ ID, Href, Who, Model, Usage string }
+// Session is an agent session under a step, linked by who ran it, never
+// by its ID (constraint owner-surfaces-no-ids).
+type Session struct{ Href, Who, Model, Usage string }
 
 // Term is the always-dark terminal block. Live adds the cursor and the live
 // dot.

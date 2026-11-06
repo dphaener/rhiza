@@ -70,13 +70,13 @@ func TestPartialsGolden(t *testing.T) {
 	golden(t, "glyphs", glyphs.String())
 
 	rows := []Row{
-		{ID: "01M6PF31", Href: "/runs/01M6PF31", Title: "Retry <webhook> delivery", Sub: "cs 01M6NZ8K", Pill: Pill{"running", "running"}, Step: "build · 6m", Live: true, Time: "4s ago", Datetime: "2026-11-05T10:42:44Z"},
-		{ID: "01M6PE7Q", Href: "/runs/01M6PE7Q", Title: "Idempotency keys", Pill: Pill{"waiting", "waiting on you"}, Step: "gate", Time: "12m ago"},
+		{Href: "/runs/01M6PF31", Title: "Retry <webhook> delivery", Sub: "Webhook retries · M3", Pill: Pill{"running", "running"}, Step: "build · 6m", Live: true, Time: "4s ago", Datetime: "2026-11-05T10:42:44Z"},
+		{Href: "/runs/01M6PE7Q", Title: "Idempotency keys", Pill: Pill{"waiting", "waiting on you"}, Step: "gate", Time: "12m ago"},
 	}
 	golden(t, "rows", renderPartial(t, "rows", rows))
 
 	golden(t, "steps", renderPartial(t, "steps", []Step{
-		{Name: "Plan", State: "done", Pill: Pill{"done", "planned"}, Duration: "2m 41s", Note: "3 leaves.", Sessions: []Session{{"01M6PF3A", "/sessions/01M6PF3A", "planner", "opus", "41k tok · 2m 38s"}}},
+		{Name: "Plan", State: "done", Pill: Pill{"done", "planned"}, Duration: "2m 41s", Note: "3 leaves.", Sessions: []Session{{"/sessions/01M6PF3A", "planner", "opus", "41k tok · 2m 38s"}}},
 		{Name: "Build", State: "running", Pill: Pill{"running", "running"}, Duration: "6m 12s"},
 		{Name: "Review", State: "pending"},
 	}))
