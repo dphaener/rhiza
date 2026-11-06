@@ -1,0 +1,40 @@
+{
+  "actor": "01M6RNJB5MQ0QHRAZD514X6GSA",
+  "after": [
+    "01M6RMQ7RK21BS9YSV42VM9F35"
+  ],
+  "at": "2026-11-06T14:53:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 554595ee: read the diff (internal/guide/text/import.md step 6 now says to add the planning document as a Source, open a draft change set per unbuilt piece with rhiza change new \"<intent>\" --source <source>, leave it in draft since accepting is the owner's, and write each open question as a question node via rhiza add question). Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|import)' and go test -trimpath ./internal/guide/...: all PASS, including the new import-unbuilt-as-drafts.txtar, which imports a fixture PLAN.md with one TODO and one TBD and ends with one draft intention change set whose Sources names the plan Source, one question node export-format, no accepted change set, and fold-ok. Reproduced by hand with a scratch build in a temp repo: change show reported State: draft, Sources: <source id>; change ls listed only landed/draft change sets."
+        },
+        "handle": "import-unbuilt-as-drafts-verified",
+        "id": "01M6RNM0BV5KFGHV73V1DA9H8R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6RNM0BV5KFGHV73TYYV8ZAD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RNM0BV5KFGHV73TYYV8ZAD",
+        "id": "01M6RNM0CE1F8ZY41VMT6226SD",
+        "link": "01M6RNM0CE1F8ZY41VMRAJTNPN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3CYX8HF2YW4P6G75KEQ3J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J36X6EC3E70H0QCW17GREP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RNM0D1BKYXQDBH6PR5JBGZ",
+  "type": "ops",
+  "v": 1
+}
