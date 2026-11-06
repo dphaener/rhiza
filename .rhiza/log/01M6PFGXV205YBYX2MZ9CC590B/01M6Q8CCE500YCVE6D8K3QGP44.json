@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q84RPGF5JMPZWPBE68EDK3",
+  "after": [
+    "01M6Q7DBRA2YQ4B5TTK1VT7KCB"
+  ],
+  "at": "2026-11-06T01:43:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e7511d72, go test -trimpath ./internal/web/... -count=1 passes. TestOverviewSectionsAreLive (internal/web/overview_live_test.go) renders / and parses each section's data-rz-fragment and data-rz-events attributes, checks runs/inbox/milestones/daemon declare run/inbox/change/daemon as event tokens, then GETs each fragment URL and asserts it returns 200 with only its own distinctive marker (incl. 'Paused, 1 of 3 slots in use' for daemon), no <html> or rz-section wrapper, and no other section's marker. Mutation in a scratch copy: dropping the required event from runs.go, inbox.go, milestones.go and daemon.go each makes the test FAIL with '<section> declares events [...], lacks \"<event>\"', so attempt 1's findings f1 and f2 are fixed."
+        },
+        "handle": "web-overview-live-verified",
+        "id": "01M6Q8CC4F68RP44P0PA1H61HN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q8CC4F68RP44P0P9B7N2A1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q8CC4F68RP44P0P9B7N2A1",
+        "id": "01M6Q8CCB1QBK63M11REX0XSYM",
+        "link": "01M6Q8CCB1QBK63M11RBNWHE4E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX4SRG58AJJWHZYKN4DK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q8CCE500YCVE6D8K3QGP44",
+  "type": "ops",
+  "v": 1
+}
