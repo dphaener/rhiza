@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6QWXBBXSBY3W9N015MMQ2XW"
+  ],
+  "at": "2026-11-06T07:50:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "74c084b9547dbfa04ad65e23c35073e440165c43",
+          "pr": "https://github.com/dphaener/rhiza/pull/327",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #327 (https://github.com/dphaener/rhiza/pull/327) passed CI at 74c084b",
+          "status": "verified"
+        },
+        "handle": "pr-327-fix-the-web-ui-s-overview-page",
+        "id": "01M6QXC20M1Q4SBFBB88D6CWHS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QXC20M1Q4SBFBB84K7MMEA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QXC20M1Q4SBFBB84K7MMEA",
+        "id": "01M6QXC216W2T5VT1GTEMNDSZC",
+        "link": "01M6QXC216W2T5VT1GTE39YG4W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QSR4PW1N772QAPCE2E9N9W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6QSJHF5WH4SZKCTTYD0W0SS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QXC237XPBY5AN4S855TX1Z",
+  "type": "ops",
+  "v": 1
+}

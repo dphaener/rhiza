@@ -1,0 +1,40 @@
+{
+  "actor": "01M6QWFS35W2JKEWPBRZ20277W",
+  "after": [
+    "01M6QW6MFX41C37H9GGN6QNG5P"
+  ],
+  "at": "2026-11-06T07:42:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 22615c6c (attempt 2) I read the diff of internal/api/web_daemon.go, web_events.go and daemon.go and ran go test -race -count=5 -run TestWebDaemonHealth ./internal/api plus go test -count=1 ./internal/api/... ./internal/web/... and go vet: all pass. TestWebDaemonHealthCachedInBackground serves / and /fragments/daemon with a health read that blocks until released and asserts each answers under 400 ms, the first answer shows the Checking… pending pill and no report pills, 20 concurrent requests start exactly one refresh, the landed report replaces pending, and a report a minute old is served unchanged while exactly one new refresh starts and then shows. The attempt-1 confirmed quality finding is fixed: daemon.go builds one NewWebHealth shared by WebDaemonSource and WebEventSources, the daemon event fingerprint carries the held report, and TestWebDaemonHealthLandingSendsDaemonEvent shows no daemon event before the report lands, one when it lands (the re-fetched panel shows model: ok, not pending), and none for an identical refresh. Running, paused and slots are still read from the state file per request."
+        },
+        "handle": "web-overview-fast-verified-2",
+        "id": "01M6QWXBAVCTQXKKX4JW7E119Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QWXBAVCTQXKKX4JV2VQRH5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QWXBAVCTQXKKX4JV2VQRH5",
+        "id": "01M6QWXBBFC1Q6SFT7AKTQW3X0",
+        "link": "01M6QWXBBFC1Q6SFT7AK0Q7J9D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QSR4PW1N772QAPCE2E9N9W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6QSJHF5WH4SZKCTTYD0W0SS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QWXBBXSBY3W9N015MMQ2XW",
+  "type": "ops",
+  "v": 1
+}

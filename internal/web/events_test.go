@@ -56,7 +56,7 @@ func TestEventsNameWhatChanged(t *testing.T) {
 		t.Fatal(err)
 	}
 	common := filepath.Join(ctx.Root, strings.TrimSpace(out))
-	h := web.Handler(nil, web.Events(api.WebEventSources(ctx), 10*time.Millisecond))
+	h := web.Handler(nil, web.Events(api.WebEventSources(ctx, nil), 10*time.Millisecond))
 
 	rc, stop := context.WithCancel(context.Background())
 	defer stop()
@@ -184,7 +184,7 @@ func TestRunLogTailFollowsDriverLog(t *testing.T) {
 	if err := run.NewStore(run.Dir(common)).Create("run1", run.Entry{Type: run.TypeStarted, At: time.Now(), Started: &run.Started{Workflow: "build"}}); err != nil {
 		t.Fatal(err)
 	}
-	h := web.Handler(api.ReadOnlyHandler(ctx), web.Events(api.WebEventSources(ctx), 10*time.Millisecond))
+	h := web.Handler(api.ReadOnlyHandler(ctx), web.Events(api.WebEventSources(ctx, nil), 10*time.Millisecond))
 	frag := func() string { return serve(h, "GET", "/fragments/run-log?run=run1").Body.String() }
 
 	if body := frag(); !strings.Contains(body, "No log") || strings.Contains(body, "rz-term") {

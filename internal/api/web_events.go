@@ -20,8 +20,9 @@ const inboxEvery = 5 * time.Second
 // WebEventSources are the sources of the web UI's /events stream, read from
 // the repository base works in: the change-set log, the runs' journals and
 // driver logs, the inbox and the daemon's state file. Each looks at the
-// files as they are when called.
-func WebEventSources(base *Ctx) web.Sources {
+// files as they are when called. With health, the daemon event also moves
+// when a new health report lands.
+func WebEventSources(base *Ctx, health *WebHealth) web.Sources {
 	common := func() string {
 		c := *base
 		d, err := gitCommonDir(&c)
@@ -75,13 +76,18 @@ func WebEventSources(base *Ctx) web.Sources {
 			return got
 		},
 		web.EventDaemon: func() map[string]string {
+			got := map[string]string{}
+			if health != nil {
+				got["health"] = health.cache.fingerprint()
+			}
 			c := common()
 			if c == "" {
-				return nil
+				return got
 			}
 			s, ok := daemon.ReadState(c)
 			if !ok {
-				return map[string]string{"daemon": "none"}
+				got["daemon"] = "none"
+				return got
 			}
 			var runs []string
 			for _, r := range s.Runs {
@@ -93,8 +99,9 @@ func WebEventSources(base *Ctx) web.Sources {
 					paused = v.Value
 				}
 			}
-			return map[string]string{"daemon": fmt.Sprintf("%s|%v|paused=%s|max=%d|runs=%s|disk=%v|usage=%v|stopped=%v|skips=%d",
-				s.Process, s.Autonomous, paused, s.MaxRuns, strings.Join(runs, ","), s.DiskLow != nil, s.UsageHold != nil, !s.Stopped.IsZero(), len(s.Skips))}
+			got["daemon"] = fmt.Sprintf("%s|%v|paused=%s|max=%d|runs=%s|disk=%v|usage=%v|stopped=%v|skips=%d",
+				s.Process, s.Autonomous, paused, s.MaxRuns, strings.Join(runs, ","), s.DiskLow != nil, s.UsageHold != nil, !s.Stopped.IsZero(), len(s.Skips))
+			return got
 		},
 	}
 	return sources

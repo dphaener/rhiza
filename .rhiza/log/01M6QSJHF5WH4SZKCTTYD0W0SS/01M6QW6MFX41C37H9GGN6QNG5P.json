@@ -1,0 +1,40 @@
+{
+  "actor": "01M6QVYSTB9XKN3QMYG5FYQWS2",
+  "after": [
+    "01M6QVXAAJ9DJBVFS4C0XKJ2GR"
+  ],
+  "at": "2026-11-06T07:29:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e8d75459 with the built binary (go build -trimpath ./cmd/rhiza), in a scratch clone of this repo whose own `rhiza health` takes 11.9 s. Ran `rhiza daemon --max-runs 1 --permission-mode plan` with rhiza.daemon.paused=true and rhiza.web.port=17891, then curl'd the real listener. Right after start: / answered 200 in 0.27 s and 0.14 s, /fragments/daemon in 0.019 s and 0.008 s, each with one 'Checking…' rz-pill--pending pill and no failed pills; 30 concurrent /fragments/daemon requests all answered under 0.1 s. About 10 s after start the report landed: / 0.16-0.17 s and /fragments/daemon 0.008-0.011 s showing 10 health pills (7 ok, 3 warn, e.g. 'daemon: ok · running…', 'autonomy: warn · daemon paused…'), live daemon status in them. Polling /fragments/daemon once a second for 45 s across the 30 s staleness mark: max 0.014 s, never pending again. Daemon CPU time: 40 s with no requests rose 1.0 s (poll loop only, no health run); one request on the stale report answered in 0.17 s and the next 15 s added 8.0 s CPU (one background health run), then 10 s idle added 0.3 s. `go test -trimpath -count=1 -run TestWebDaemon ./internal/api/` and `go test -trimpath ./internal/web/...` pass."
+        },
+        "handle": "web-overview-fast-qa-1",
+        "id": "01M6QW6MEN1FKVSVMKYW9423AE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QW6MEN1FKVSVMKYTY9DDV9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QW6MEN1FKVSVMKYTY9DDV9",
+        "id": "01M6QW6MFAXC8C027XNZV4X7PE",
+        "link": "01M6QW6MFAXC8C027XNW40G0RZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QSR4PW1N772QAPCE2E9N9W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6QSJHF5WH4SZKCTTYD0W0SS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QW6MFX41C37H9GGN6QNG5P",
+  "type": "ops",
+  "v": 1
+}
