@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q9F144K6Z6WTZ03M7H543M",
+  "after": [
+    "01M6Q9BBSH3Q5JAVEJPBNREVKT"
+  ],
+  "at": "2026-11-06T02:02:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8c0b44ac, go test -trimpath -count=1 -v ./internal/ciworkflow/... passed all 5 tests: the existing triggers, checkout/run-name and concurrency checks plus new TestCIJobsAndMatrices and TestCICheckAggregatesEveryJob. Reading ci.yml and the diff: jobs lint, scripts (matrix shard [1/4..4/4]), api (matrix [1/2, 2/2]), rest, budgets, each with fail-fast false on its matrix, actions/setup-go with cache: true and cache-dependency-path: go.sum, and a run step calling make lint / make test-scripts SHARD / make test-api SHARD / make test-rest / make test-budgets (all exist in the Makefile; make -n test-scripts SHARD=1/4 and test-rest expand as expected); check needs all five, if: always(), and exits 1 unless every needs.*.result is success. PyYAML parses the file to those six jobs. The PR CI duration (about 5 minutes via gh run view) is not observable here: no PR exists for the change set yet, so that point is left to the ship run's CI."
+        },
+        "handle": "ci-yml-parallel-jobs-verified",
+        "id": "01M6Q9GC9N5MDP1MPZJSAYJFGA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q9GC9N5MDP1MPZJNR9A60T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q9GC9N5MDP1MPZJNR9A60T",
+        "id": "01M6Q9GCBM3TCBKHXXD12CN8D1",
+        "link": "01M6Q9GCBM3TCBKHXXCYDA05SC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHWA4TNKZ9TB3ZEGH7JR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6Q58T8EG0QY7YDQNWHW6NEA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q9GCDVF2SGSX1AD048PQ19",
+  "type": "ops",
+  "v": 1
+}

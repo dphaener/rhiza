@@ -118,3 +118,97 @@ func TestCICancelsStaleRuns(t *testing.T) {
 		t.Errorf("cancel-in-progress = %q; want true", v)
 	}
 }
+
+// jobBlock returns the lines under the job named name.
+func jobBlock(t *testing.T, name string) []line {
+	t.Helper()
+	jobs := block(parse(t), 0, "jobs")
+	j := block(jobs, 2, name)
+	if j == nil {
+		t.Fatalf("ci.yml has no job %q", name)
+	}
+	return j
+}
+
+func has(lines []line, text string) bool {
+	for _, l := range lines {
+		if l.text == text {
+			return true
+		}
+	}
+	return false
+}
+
+func TestCIJobsAndMatrices(t *testing.T) {
+	jobs := block(parse(t), 0, "jobs")
+	var names []string
+	for _, l := range jobs {
+		if l.indent == 2 {
+			names = append(names, strings.TrimSuffix(l.text, ":"))
+		}
+	}
+	want := []string{"lint", "scripts", "api", "rest", "budgets", "check"}
+	if strings.Join(names, ",") != strings.Join(want, ",") {
+		t.Fatalf("ci.yml jobs = %v; want %v", names, want)
+	}
+	targets := map[string]string{
+		"lint": "make lint", "scripts": "make test-scripts SHARD=${{ matrix.shard }}",
+		"api": "make test-api SHARD=${{ matrix.shard }}", "rest": "make test-rest",
+		"budgets": "make test-budgets",
+	}
+	shards := map[string]string{
+		"scripts": "[1/4, 2/4, 3/4, 4/4]", "api": "[1/2, 2/2]",
+	}
+	for name, run := range targets {
+		j := jobBlock(t, name)
+		if v, _ := value(j, 4, "run"); !strings.Contains(strings.Join(texts(j), "\n"), "run: "+run) {
+			t.Errorf("job %s: no step running %q (%q)", name, run, v)
+		}
+		if !has(j, "cache: true") || !has(j, "cache-dependency-path: go.sum") {
+			t.Errorf("job %s: setup-go must set cache: true and cache-dependency-path: go.sum", name)
+		}
+		if shard, ok := shards[name]; ok {
+			s := block(j, 4, "strategy")
+			if !has(s, "fail-fast: false") {
+				t.Errorf("job %s: strategy.fail-fast must be false", name)
+			}
+			if !has(s, "shard: "+shard) {
+				t.Errorf("job %s: matrix shard want %s", name, shard)
+			}
+		} else if block(j, 4, "strategy") != nil {
+			t.Errorf("job %s: unexpected matrix", name)
+		}
+	}
+}
+
+func texts(ls []line) []string {
+	var out []string
+	for _, l := range ls {
+		out = append(out, l.text)
+	}
+	return out
+}
+
+func TestCICheckAggregatesEveryJob(t *testing.T) {
+	j := jobBlock(t, "check")
+	needs, _ := value(j, 4, "needs")
+	got := map[string]bool{}
+	for _, n := range strings.Split(strings.Trim(needs, "[]"), ",") {
+		got[strings.TrimSpace(n)] = true
+	}
+	for _, n := range []string{"lint", "scripts", "api", "rest", "budgets"} {
+		if !got[n] {
+			t.Errorf("check does not need %s (needs: %q)", n, needs)
+		}
+	}
+	if len(got) != 5 {
+		t.Errorf("check needs %q; want exactly the five other jobs", needs)
+	}
+	if v, _ := value(j, 4, "if"); v != "always()" {
+		t.Errorf("check if = %q; want always()", v)
+	}
+	body := strings.Join(texts(j), "\n")
+	if !strings.Contains(body, "needs.*.result") || !strings.Contains(body, `!= success`) || !strings.Contains(body, "exit 1") {
+		t.Error("check must fail unless every needed result is success")
+	}
+}

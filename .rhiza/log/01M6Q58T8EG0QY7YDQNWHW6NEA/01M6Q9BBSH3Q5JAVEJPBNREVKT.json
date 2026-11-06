@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q99EMM4BDJTZB4MM9PJJV7",
+  "after": [
+    "01M6Q8Z1CZGXHF8R8ABBMXWAYC"
+  ],
+  "at": "2026-11-06T02:00:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 559ffa93: go test -trimpath -count=1 ./cmd/rhiza -run 'TestMake' -v passed TestMakeUpdateDryRun, TestMakeTestTimeout (its code untouched: the diff to makeupdate_test.go only adds lines) and the new TestMakeTestShardTargets, which runs make -n on test-scripts, test-rest, test-budgets and lint and asserts -trimpath plus the budget -skip or -run regex, checks test-api's SHARD=1/2 and 2/2 regexes (via GO_TEST=echo) cover go test -list's internal/api tests exactly once with no budget test, and checks test-budgets prints a fake go's RHIZA_BUDGET_LOG under 'Read-budget timings'. By hand: make test-api SHARD=1/2 GO_TEST=echo prints an anchored ^(...)$ -run with -trimpath; SHARD=3/2 exits non-zero with a usage error; make -n lint runs gofmt -l, go vet and the self-check build; the test target is unchanged. Read the diff: test-rest skips budgets and TestScripts across every package but internal/api, so the four test targets cover make test's tests. Note: in test-api, go test -list's failure is masked by the pipe to sort (no pipefail), so a compile error in internal/api makes a test-api shard report 'no tests' and pass; test-budgets and lint (vet) still fail CI on it."
+        },
+        "handle": "make-test-shard-targets-verified",
+        "id": "01M6Q9BBP1J2GJZR42MWG5VSJC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q9BBP1J2GJZR42MWE2H6J4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q9BBP1J2GJZR42MWE2H6J4",
+        "id": "01M6Q9BBQR0TM042D3HHX4Q25V",
+        "link": "01M6Q9BBQR0TM042D3HF3FYWW8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHVN71122BKP8ZG1DQPR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6Q58T8EG0QY7YDQNWHW6NEA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q9BBSH3Q5JAVEJPBNREVKT",
+  "type": "ops",
+  "v": 1
+}
