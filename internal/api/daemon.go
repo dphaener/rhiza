@@ -185,6 +185,9 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			windows, state.UsageWindows = usageWindowsNow(ctx, common, state.UsageWindows)
 			hold = usageHoldOf(conf.rows, state.Learned, runs, host, windows)
 		}
+		if hold == nil {
+			hold = governorHold(ctx, common)
+		}
 		started, resumed, planned, err := daemonPoll1(ctx, rs, pending, unjournaled, conf.maxRuns, minFree, r.Autonomous, conf.mode, conf.paused, hold, &skips)
 		resp.Planned = append(resp.Planned, planned...)
 		if err == nil {

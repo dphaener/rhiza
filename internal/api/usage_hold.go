@@ -132,7 +132,7 @@ func usageRecordsFor(ctx *Ctx, from, to time.Time) []adapter.UsageRecord {
 func usageWindowsNow(ctx *Ctx, common string, saved []daemon.UsageWindow) (map[usage.Kind]usage.Window, []daemon.UsageWindow) {
 	now := ctx.Now()
 	var hits []usage.Limit
-	for _, h := range daemon.ReadLimitHits(common) {
+	for _, h := range daemon.ReadLimitHitsIn(limitsDir(ctx, common)) {
 		hits = append(hits, usage.Limit{HitAt: h.HitAt, ResetAt: h.ResetAt})
 	}
 	prev := map[usage.Kind]*daemon.UsageWindow{}
@@ -208,4 +208,16 @@ func usageHoldOf(rows []Setting, learned []daemon.LearnedLimit, runs []run.Journ
 		}
 	}
 	return nil
+}
+
+// governorHold is the machine-wide hold from a limit hit any project's
+// driver recorded: it stops new launches until the hit's reset time. nil
+// when no hit holds.
+func governorHold(ctx *Ctx, common string) *usageHold {
+	h, ok := daemon.ActiveHold(limitsDir(ctx, common), ctx.Now())
+	if !ok {
+		return nil
+	}
+	kind, _ := usage.KindOf(usage.Limit{HitAt: h.HitAt, ResetAt: h.ResetAt})
+	return &usageHold{Kind: kind, Reset: h.ResetAt}
 }
