@@ -353,6 +353,7 @@
       - [usage-hold](capability/rhiza/orchestration/usage-governor/usage-hold.md)
       - [usage-hold-reported](capability/rhiza/orchestration/usage-governor/usage-hold-reported.md)
       - [milestone-request-past-usage-hold](capability/rhiza/orchestration/usage-governor/milestone-request-past-usage-hold.md)
+      - [root-daemon-usage-governor](capability/rhiza/orchestration/usage-governor/root-daemon-usage-governor.md)
     - [shipping](capability/rhiza/orchestration/shipping.md)
       - [wait-green-pr](capability/rhiza/orchestration/shipping/wait-green-pr.md)
         - [follow-moved-pr-head](capability/rhiza/orchestration/shipping/wait-green-pr/follow-moved-pr-head.md)
@@ -381,7 +382,6 @@
     - [accept-policy](capability/rhiza/orchestration/accept-policy.md)
       - [stage-autonomy](capability/rhiza/orchestration/accept-policy/stage-autonomy.md)
     - [daemon](capability/rhiza/orchestration/daemon.md)
-      - [daemon-lock](capability/rhiza/orchestration/daemon/daemon-lock.md)
       - [daemon-picks](capability/rhiza/orchestration/daemon/daemon-picks.md)
         - [daemon-skip-reasons](capability/rhiza/orchestration/daemon/daemon-picks/daemon-skip-reasons.md)
           - [shipped-skip-reason](capability/rhiza/orchestration/daemon/daemon-picks/daemon-skip-reasons/shipped-skip-reason.md)
@@ -413,9 +413,6 @@
         - [planner-serves-milestone](capability/rhiza/orchestration/daemon/plan-requests/planner-serves-milestone.md)
         - [plan-step-milestone-check](capability/rhiza/orchestration/daemon/plan-requests/plan-step-milestone-check.md)
         - [milestone-request-starts-at-once](capability/rhiza/orchestration/daemon/plan-requests/milestone-request-starts-at-once.md)
-      - [daemon-service-install](capability/rhiza/orchestration/daemon/daemon-service-install.md)
-      - [daemon-self-update](capability/rhiza/orchestration/daemon/daemon-self-update.md)
-      - [daemon-repo-session](capability/rhiza/orchestration/daemon/daemon-repo-session.md)
       - [daemon-version-in-health](capability/rhiza/orchestration/daemon/daemon-version-in-health.md)
       - [daemon-start-stop](capability/rhiza/orchestration/daemon/daemon-start-stop.md)
       - [daemon-headless-run-drivers](capability/rhiza/orchestration/daemon/daemon-headless-run-drivers.md)
@@ -433,6 +430,13 @@
       - [go-build-cache-sweep](capability/rhiza/orchestration/daemon/go-build-cache-sweep.md)
       - [daemon-trims-go-cache](capability/rhiza/orchestration/daemon/daemon-trims-go-cache.md)
       - [daemon-reaps-drivers](capability/rhiza/orchestration/daemon/daemon-reaps-drivers.md)
+      - [root-daemon-lock](capability/rhiza/orchestration/daemon/root-daemon-lock.md)
+      - [root-daemon-polls-projects](capability/rhiza/orchestration/daemon/root-daemon-polls-projects.md)
+      - [root-daemon-round-robin](capability/rhiza/orchestration/daemon/root-daemon-round-robin.md)
+      - [root-daemon-settings-scope](capability/rhiza/orchestration/daemon/root-daemon-settings-scope.md)
+      - [root-daemon-service](capability/rhiza/orchestration/daemon/root-daemon-service.md)
+      - [root-daemon-self-update](capability/rhiza/orchestration/daemon/root-daemon-self-update.md)
+      - [root-daemon-rex-session](capability/rhiza/orchestration/daemon/root-daemon-rex-session.md)
     - [inbox](capability/rhiza/orchestration/inbox.md)
       - [inbox-list](capability/rhiza/orchestration/inbox/inbox-list.md)
         - [inbox-failed-step-output](capability/rhiza/orchestration/inbox/inbox-list/inbox-failed-step-output.md)
@@ -959,6 +963,7 @@
 - [m29-test-root-per-script](decision/m29-test-root-per-script.md)
 - [m29-tui-current-project](decision/m29-tui-current-project.md)
 - [m29-unready-listed](decision/m29-unready-listed.md)
+- [m29-update-usage-settings-script](decision/m29-update-usage-settings-script.md)
 - [m29-web-all-projects](decision/m29-web-all-projects.md)
 - [m29-worktrees-siblings](decision/m29-worktrees-siblings.md)
 - [m2cs2-done-points-count](decision/m2cs2-done-points-count.md)
@@ -1774,7 +1779,9 @@
 - [daemon-pause-qa-1](evidence/daemon-pause-qa-1.md)
 - [daemon-pause-verified](evidence/daemon-pause-verified.md)
 - [daemon-picks-qa-1](evidence/daemon-picks-qa-1.md)
+- [daemon-picks-qa-2](evidence/daemon-picks-qa-2.md)
 - [daemon-picks-qa-3](evidence/daemon-picks-qa-3.md)
+- [daemon-picks-root-qa-1](evidence/daemon-picks-root-qa-1.md)
 - [daemon-picks-verified](evidence/daemon-picks-verified.md)
 - [daemon-picks-verified-3](evidence/daemon-picks-verified-3.md)
 - [daemon-poll-cache-invalidates-qa-1](evidence/daemon-poll-cache-invalidates-qa-1.md)
@@ -2286,6 +2293,7 @@
 - [pr-333-fix-the-inbox-takes-30-40-s](evidence/pr-333-fix-the-inbox-takes-30-40-s.md)
 - [pr-334-fix-accepting-a-change-set](evidence/pr-334-fix-accepting-a-change-set.md)
 - [pr-335-root-and-registry](evidence/pr-335-root-and-registry.md)
+- [pr-338-root-daemon](evidence/pr-338-root-daemon.md)
 - [pr-35-reopening-a-change-set](evidence/pr-35-reopening-a-change-set.md)
 - [pr-36-leaf-dependencies-and](evidence/pr-36-leaf-dependencies-and.md)
 - [pr-38-session-messages-and-token-use](evidence/pr-38-session-messages-and-token-use.md)
@@ -2455,6 +2463,30 @@
 - [roadmap-umbrella-group-verified](evidence/roadmap-umbrella-group-verified.md)
 - [role-prompts-scoped-tests-qa-1](evidence/role-prompts-scoped-tests-qa-1.md)
 - [role-prompts-scoped-tests-verified](evidence/role-prompts-scoped-tests-verified.md)
+- [root-daemon-lock-qa-1](evidence/root-daemon-lock-qa-1.md)
+- [root-daemon-lock-qa-2](evidence/root-daemon-lock-qa-2.md)
+- [root-daemon-lock-verified](evidence/root-daemon-lock-verified.md)
+- [root-daemon-polls-projects-qa-1](evidence/root-daemon-polls-projects-qa-1.md)
+- [root-daemon-polls-projects-qa-2](evidence/root-daemon-polls-projects-qa-2.md)
+- [root-daemon-polls-projects-verified](evidence/root-daemon-polls-projects-verified.md)
+- [root-daemon-rex-session-qa-1](evidence/root-daemon-rex-session-qa-1.md)
+- [root-daemon-rex-session-qa-2](evidence/root-daemon-rex-session-qa-2.md)
+- [root-daemon-rex-session-verified](evidence/root-daemon-rex-session-verified.md)
+- [root-daemon-round-robin-qa-1](evidence/root-daemon-round-robin-qa-1.md)
+- [root-daemon-round-robin-qa-2](evidence/root-daemon-round-robin-qa-2.md)
+- [root-daemon-round-robin-verified](evidence/root-daemon-round-robin-verified.md)
+- [root-daemon-round-robin-verified-2](evidence/root-daemon-round-robin-verified-2.md)
+- [root-daemon-round-robin-verified-3](evidence/root-daemon-round-robin-verified-3.md)
+- [root-daemon-self-update-qa-2](evidence/root-daemon-self-update-qa-2.md)
+- [root-daemon-self-update-verified](evidence/root-daemon-self-update-verified.md)
+- [root-daemon-service-qa-1](evidence/root-daemon-service-qa-1.md)
+- [root-daemon-service-qa-2](evidence/root-daemon-service-qa-2.md)
+- [root-daemon-service-verified](evidence/root-daemon-service-verified.md)
+- [root-daemon-service-verified-2](evidence/root-daemon-service-verified-2.md)
+- [root-daemon-settings-scope-qa-1](evidence/root-daemon-settings-scope-qa-1.md)
+- [root-daemon-settings-scope-verified](evidence/root-daemon-settings-scope-verified.md)
+- [root-daemon-settings-scope-verified-5](evidence/root-daemon-settings-scope-verified-5.md)
+- [root-daemon-usage-governor-verified](evidence/root-daemon-usage-governor-verified.md)
 - [root-init-qa-1](evidence/root-init-qa-1.md)
 - [root-init-qa-2](evidence/root-init-qa-2.md)
 - [root-init-verified](evidence/root-init-verified.md)
@@ -5872,6 +5904,7 @@
 
 - capability shipit-agent-step `01M5TYKPAXPA4NBWNPH5WENFNK` — ship-change no longer has an agent step running shipit: it runs Rhiza's own build and review workflows (answer-cb8bd934-5, Replace it)
 - capability build-panes `01M5YX3GT71M5KWXZYCZA684DF` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
+- capability daemon-lock `01M61R7J7KWQ20F4X22KTJ924R` — Superseded by root-daemon-lock: the daemon runs on the root with one lock in <root>/.rhiza-root/, never one per repo (m29-one-root-daemon).
 - capability daemon-run-tabs `01M61R7M41QVVEDQ5GWRXE7D7M` — Replaced by daemon-headless-run-drivers: the daemon no longer opens a Rex tab for a run's driver (m24-only-agent-tabs).
 - capability quick-launch-layer `01M62JP7BKA4N9W2HCFTP0CMQ4` — Decision rex-picker-removed: the all-apps picker (rhiza tui launch and the rhiza_launch action) is removed; each app opens from its own action or its key in the rhiza key mode.
 - capability read-apps-match-cli `01M62JP9RTA2QHK5B6A53852M8` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
@@ -5903,6 +5936,9 @@
 - capability health-app `01M6CS2EDTXKNNH3BNJBX81ZZ6` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
 - capability autonomy-app `01M6CS2HRAWMCTPDHFXBHFCX1C` — Replaced by autonomy-app-toggles: the autonomy app is now one form of the plan, accept, ship and sign-off toggles; it no longer lists daemon settings, toggles paused, edits numbers or starts/stops the daemon
 - capability inbox-nudge-stalled `01M6CS2KAT7R41TVN9WFDEFBRF` — The rebuilt inbox app has no n nudge: a stalled item shows its detail and opens its run's tab (inbox-app-pick-list)
+- capability daemon-service-install `01M6FES1Z3GF9HJGVS4Y1S687B` — Superseded by root-daemon-service: one rhiza-root.service unit for the root replaces the per-repo unit run in a main checkout (m29-one-root-daemon).
+- capability daemon-repo-session `01M6FES3PKQCSNG9SEECK4G1R7` — Superseded by root-daemon-rex-session: the session is named after the project's registered name, rhiza-<project>, not the main checkout's folder, and the root daemon creates and passes one per project (m29-rex-session-per-project).
+- capability daemon-self-update `01M6FES89JR3Z5XA751AGCD3RV` — Superseded by root-daemon-self-update: the root daemon self-updates from the project rhiza.toml names as self_update_project, with selfUpdate a machine setting in rhiza.toml (m29-settings-split).
 - capability requests-app-milestone `01M6JE40PG6Z1ZG27N7DMFH3FF` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): the old requests app and its milestone field are deleted; the new request form has no milestone field
 - actor claude-code-a463ece8 `01M6HYXRR6ZXYF68BAC8X0KEEQ` — Duplicate of actor claude-code-a463ece8 (node 01M6HV8Y05D3EMPSARA4H5VJ15) that landed on main from another branch while this run was building; the same session recorded itself twice
 - actor claude-code-83858632 `01M6KFM58RDZ5KSG59GP1005QZ` — Duplicate actor record: session claude-code-83858632 recorded itself in a verifier checkout (change set 01M6KFMJ) after already recording in the run worktree (01M6KE23); keep the first

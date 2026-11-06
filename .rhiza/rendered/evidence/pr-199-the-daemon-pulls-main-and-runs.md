@@ -26,7 +26,7 @@ verified
 
 ### Out
 
-- verifies [daemon-self-update](../capability/rhiza/orchestration/daemon/daemon-self-update.md)
+- verifies daemon-self-update (retired)
 - verifies [daemon-version-in-health](../capability/rhiza/orchestration/daemon/daemon-version-in-health.md)
 
 ## History

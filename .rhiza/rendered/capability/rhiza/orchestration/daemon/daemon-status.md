@@ -14,7 +14,7 @@ The daemon keeps a state file under the git common dir (its process, start time,
 
 ### Out
 
-- depends-on [daemon-lock](daemon-lock.md)
+- depends-on daemon-lock (retired)
 - depends-on [daemon-picks](daemon-picks.md)
 - depends-on daemon-run-tabs (retired)
 - decided-by [answer-8cd68bc7-14](../../../../decision/answer-8cd68bc7-14.md)

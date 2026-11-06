@@ -23,6 +23,7 @@ One per project. The assistant's option, picked by the owner.
 ### In
 
 - decided-by [m29-one-daemon](../intent/milestone-29/m29-one-daemon.md)
+- decided-by [root-daemon-rex-session](../capability/rhiza/orchestration/daemon/root-daemon-rex-session.md)
 
 ## History
 

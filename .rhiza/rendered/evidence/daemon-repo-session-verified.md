@@ -14,7 +14,7 @@ Verifier at 6f0d4416: go test ./cmd/rhiza -run TestScripts/daemon -count=1 passe
 
 ### Out
 
-- verifies [daemon-repo-session](../capability/rhiza/orchestration/daemon/daemon-repo-session.md)
+- verifies daemon-repo-session (retired)
 
 ## History
 

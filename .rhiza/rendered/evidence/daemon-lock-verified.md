@@ -14,7 +14,7 @@ At 2ad530b: go test -count=1 ./cmd/rhiza -run 'TestScripts/daemon-lock$' -v pass
 
 ### Out
 
-- verifies [daemon-lock](../capability/rhiza/orchestration/daemon/daemon-lock.md)
+- verifies daemon-lock (retired)
 
 ## History
 

@@ -23,6 +23,7 @@ Round-robin. The assistant's option, picked by the owner.
 ### In
 
 - decided-by [m29-one-daemon](../intent/milestone-29/m29-one-daemon.md)
+- decided-by [root-daemon-round-robin](../capability/rhiza/orchestration/daemon/root-daemon-round-robin.md)
 
 ## History
 

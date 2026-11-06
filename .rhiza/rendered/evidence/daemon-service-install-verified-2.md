@@ -14,7 +14,7 @@ At f01bef3c (attempt 2), go test ./cmd/rhiza -run TestScripts/daemon -count=1 pa
 
 ### Out
 
-- verifies [daemon-service-install](../capability/rhiza/orchestration/daemon/daemon-service-install.md)
+- verifies daemon-service-install (retired)
 
 ## History
 

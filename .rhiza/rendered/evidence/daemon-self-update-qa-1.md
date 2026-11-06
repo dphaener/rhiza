@@ -14,7 +14,7 @@ At f5fda44d I ran the built binary as a real daemon (paused, selfUpdate set with
 
 ### Out
 
-- verifies [daemon-self-update](../capability/rhiza/orchestration/daemon/daemon-self-update.md)
+- verifies daemon-self-update (retired)
 
 ## History
 

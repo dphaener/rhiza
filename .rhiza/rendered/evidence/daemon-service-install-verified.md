@@ -14,7 +14,7 @@ Verified at 0afdeea5. cmd/rhiza/testdata/script/daemon-install.txtar puts fake s
 
 ### Out
 
-- verifies [daemon-service-install](../capability/rhiza/orchestration/daemon/daemon-service-install.md)
+- verifies daemon-service-install (retired)
 
 ## History
 

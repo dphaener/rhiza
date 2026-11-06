@@ -8,7 +8,7 @@ go test ./internal/web/... and go test ./internal/api -run TestDaemonWeb (the li
 
 ## statement
 
-The rhiza.web.host setting names the address the daemon serves the web UI on, 127.0.0.1 by default; rhiza daemon set accepts it only as a literal IPv4 or IPv6 address checked with net.ParseIP (such as 127.0.0.1, 0.0.0.0, ::1 or ::) and rejects an empty value, hostnames including localhost and anything with a port, with an error naming the key; the listen address is net.JoinHostPort(host, port), and a running daemon moves the listener at its next poll when only the host changes.
+The rhiza.web.host machine setting, kept in the root's rhiza.toml, names the address the daemon serves the web UI on, 127.0.0.1 by default; rhiza daemon set accepts it only as a literal IPv4 or IPv6 address checked with net.ParseIP (such as 127.0.0.1, 0.0.0.0, ::1 or ::) and rejects an empty value, hostnames including localhost and anything with a port, with an error naming the key; the listen address is net.JoinHostPort(host, port), and a running daemon moves the listener at its next poll when only the host changes.
 
 ## Links
 
@@ -23,7 +23,9 @@ The rhiza.web.host setting names the address the daemon serves the web UI on, 12
 - verifies [web-serve-host-verified](../../../../evidence/web-serve-host-verified.md)
 - verifies [web-serve-host-qa-1](../../../../evidence/web-serve-host-qa-1.md)
 - verifies [pr-325-let-the-web-ui-listen-on-all](../../../../evidence/pr-325-let-the-web-ui-listen-on-all.md)
+- verifies [pr-338-root-daemon](../../../../evidence/pr-338-root-daemon.md)
 
 ## History
 
 - `01M6QBSDK2D7SYV177YBJCAM2A` Let the web UI listen on all interfaces so a Caddy reverse proxy on another host can reach it. Owner, verbatim: "in order to proxy the web ui via caddy we need to bind to all hosts and not just local host." This supersedes the localhost part of decision web-ui-in-daemon-read-only. Add a rhiza.web.host setting (default 127.0.0.1; 0.0.0.0 binds all interfaces) beside rhiza.web.port, settable with rhiza daemon set and followed live like the port; daemon status shows the bound address. The UI stays read-only.
+- `01M6RN3RCGAZ9RNTWTZPKFM61M` Root daemon: one daemon on the root builds every registered project round-robin under one machine-wide run cap and usage governor, with machine settings in the root config and project settings in each repo, under one service
