@@ -396,7 +396,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 		t.Error("review's signoff step is not skipped")
 	}
 	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "open-pr", "wait-pr", "pr-green", "ci-triage", "ci-fix", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
-		"rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship"}
+		"rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
 	}

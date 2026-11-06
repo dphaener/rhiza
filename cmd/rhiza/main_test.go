@@ -3,10 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -40,7 +44,7 @@ func TestScripts(t *testing.T) {
 		Dir:           dir,
 		Files:         files,
 		Setup:         setup,
-		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "chtimes": chtimes},
+		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "chtimes": chtimes, "health-server": healthServer},
 		UpdateScripts: *update,
 	})
 }
@@ -122,6 +126,42 @@ func chtimes(ts *testscript.TestScript, neg bool, args []string) {
 	for _, f := range args[1:] {
 		ts.Check(os.Chtimes(ts.MkAbs(f), t, t))
 	}
+}
+
+// healthServer is the script command `health-server <var> <log> <status>...`:
+// it starts a fake deploy health server on loopback, in the test process, so
+// it outlives each rhiza the script runs, and sets <var> to its URL. The
+// server answers the statuses in order, the last one from then on, and
+// appends each status it answers to <log>, one per line. It closes when the
+// script ends.
+func healthServer(ts *testscript.TestScript, neg bool, args []string) {
+	if neg || len(args) < 3 {
+		ts.Fatalf("usage: health-server var log status...")
+	}
+	var statuses []int
+	for _, a := range args[2:] {
+		n, err := strconv.Atoi(a)
+		if err != nil {
+			ts.Fatalf("health-server: status %q: %v", a, err)
+		}
+		statuses = append(statuses, n)
+	}
+	log := ts.MkAbs(args[1])
+	var mu sync.Mutex
+	hits := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		code := statuses[min(hits, len(statuses)-1)]
+		hits++
+		if f, err := os.OpenFile(log, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644); err == nil {
+			fmt.Fprintln(f, code)
+			f.Close()
+		}
+		mu.Unlock()
+		w.WriteHeader(code)
+	}))
+	ts.Defer(srv.Close)
+	ts.Setenv(args[0], srv.URL+"/health")
 }
 
 func foldOK(ts *testscript.TestScript, neg bool, args []string) {

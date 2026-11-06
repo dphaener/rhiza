@@ -1,0 +1,40 @@
+{
+  "actor": "01M6RZ20D6ETSE38Q58YSQJEGD",
+  "after": [
+    "01M6RZ2DC6V2GKV0HFPFMRZKDE"
+  ],
+  "at": "2026-11-06T18:09:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 4b577a66: read the leaf diff (0423ce6f: rhiza.ship.deployUrl and rhiza.ship.deployTimeout in internal/api/daemon_settings.go, default 15m, unset URL means no check, bad values return Usagef WithNext). gofmt -l internal cmd lists nothing (attempt 1's finding is fixed). go test -trimpath ./cmd/rhiza -run 'TestScripts/(ship-deploy-settings|describe-golden)$' passes: the script sets both keys, sees them in daemon settings --json with source \"git config\", and rejects ftp://, a schemeless URL and 'soon' with a next. go test -short -run 'Setting|Daemon' ./internal/api passes. On a scratch build in a hermetic repo: set deployUrl http://localhost:8080/up and deployTimeout 90s exit 0 and show source git config in settings --json; ftp://x and 'soon' each exit 2 printing 'next: rhiza daemon settings'. The full internal/api package ran past its timeout here only because the machine was under load (TestReadBudget waits for a quiet machine); CI runs the full package."
+        },
+        "handle": "ship-deploy-settings-verified",
+        "id": "01M6S0T40C8M7C7VK184BBP6GH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S0T40B90X4SE2EFYX41KX6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S0T40B90X4SE2EFYX41KX6",
+        "id": "01M6S0T41MNFRE1NBR5413JMPD",
+        "link": "01M6S0T41MNFRE1NBR51M2WY4S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3F8SSE7GHCRS47KVY29CZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J375CH04RMRS4NN372NCN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S0T42J2Y2MGWBG16PMCHJ7",
+  "type": "ops",
+  "v": 1
+}

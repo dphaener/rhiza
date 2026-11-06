@@ -1,0 +1,54 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6RX8TWRJ01N52JWK7CQAZQR",
+    "01M6S15KHB4R1B0B5G1RZKRJ4J"
+  ],
+  "at": "2026-11-06T18:29:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "3e0d68d1897a9b91fcb6ef9a211a427035ecdb10",
+          "pr": "https://github.com/dphaener/rhiza/pull/332",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #332 (https://github.com/dphaener/rhiza/pull/332) passed CI at 3e0d68d",
+          "status": "verified"
+        },
+        "handle": "pr-332-deploy-check-on-ship",
+        "id": "01M6S1YQVKV4K13E9P1ES6XRN3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S1YQVKV4K13E9P1CHPY0TH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S1YQVKV4K13E9P1CHPY0TH",
+        "id": "01M6S1YQWBB6BZY1Q9EPN8N3Y9",
+        "link": "01M6S1YQWBB6BZY1Q9EKV9BKA4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3F8SSE7GHCRS47KVY29CZ",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6S1YQVKV4K13E9P1CHPY0TH",
+        "id": "01M6S1YQXXQPZXQ3EFJHNEMMK3",
+        "link": "01M6S1YQXXQPZXQ3EFJHG3YXF5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3FFWKR8A3D1ZRM6APR30A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J375CH04RMRS4NN372NCN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S1YR0VM7DXW5JC8QMPJM61",
+  "type": "ops",
+  "v": 1
+}

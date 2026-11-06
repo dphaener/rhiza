@@ -8,9 +8,11 @@ package api
 import (
 	"fmt"
 	"io"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/web"
@@ -87,6 +89,10 @@ var settingDefs = []settingDef{
 		_, err := web.ParsePort(v)
 		return err
 	}},
+	// The ship deploy check: the health URL ship-change waits on after a
+	// merge (unset means no deploy check) and how long it waits.
+	{key: DeployURLKey, def: "", validate: validateDeployURL},
+	{key: DeployTimeoutKey, def: DefaultDeployTimeout, validate: validateDeployTimeout},
 	{key: "rhiza.autonomy.plan", def: AutonomyOwner, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	// accept governs every plan run's gate, autonomous or owner-run, which
 	// accepts once the review passed unless it is owner; other change sets
@@ -94,6 +100,29 @@ var settingDefs = []settingDef{
 	{key: "rhiza.autonomy.accept", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	{key: "rhiza.autonomy.ship", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	{key: "rhiza.autonomy.signoff", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
+}
+
+// The ship deploy check's keys and the timeout's default.
+const (
+	DeployURLKey         = "rhiza.ship.deployUrl"
+	DeployTimeoutKey     = "rhiza.ship.deployTimeout"
+	DefaultDeployTimeout = "15m"
+)
+
+func validateDeployURL(v string) error {
+	u, err := url.Parse(v)
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		return fmt.Errorf("must be an http or https URL")
+	}
+	return nil
+}
+
+func validateDeployTimeout(v string) error {
+	d, err := time.ParseDuration(v)
+	if err != nil || d <= 0 {
+		return fmt.Errorf("must be a positive duration such as 15m")
+	}
+	return nil
 }
 
 func validateTokenLimit(v string) error {
@@ -249,8 +278,8 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key   string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.web.host, rhiza.web.port, or rhiza.autonomy.plan, accept, ship or signoff"`
-	Value string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, or auto or owner, as the key takes"`
+	Key   string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl or deployTimeout, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Value string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes"`
 }
 
 // DaemonSetResponse is the setting written.
@@ -276,7 +305,7 @@ func runDaemonSet(ctx *Ctx, req any) (any, error) {
 	}
 	v := strings.TrimSpace(r.Value)
 	if err := d.validate(v); err != nil {
-		return nil, Usagef("%s: %q %v", d.key, r.Value, err)
+		return nil, Usagef("%s: %q %v", d.key, r.Value, err).WithNext("rhiza daemon settings")
 	}
 	if ctx.DryRun {
 		return DaemonSetResponse{Key: d.key, Value: v}, nil

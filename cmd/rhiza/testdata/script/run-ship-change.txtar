@@ -10,7 +10,7 @@
 # waits for CI on that head, finds main still has not moved, squash merges
 # pinned to it, waits for main to go green, closes out (worktree, branch
 # and origin branch gone, main pulled) and then runs the repo's own ship
-# command.
+# command. No deploy health URL is set, so the deploy check skips.
 #
 # Nothing here reaches GitHub, Rex or Claude Code. origin is a bare repo in
 # $WORK. The fake rex runs the tab's command synchronously in the window's
@@ -107,6 +107,10 @@ exec sh -c 'rhiza run approve --foreground; echo exit=$?'
 cd $WORK/repo
 stdout '^exit=0$'
 stdout '^Run \S+ succeeded$'
+# No deploy health URL is set, so the deploy check skipped without polling.
+stderr '^No deploy health URL set \(rhiza\.ship\.deployUrl\): skipping the deploy check\.$'
+! stderr '^deploy check [0-9]+:'
+! stderr '^Deploy '
 
 # The run was the built-in ship-change, every step passing in order.
 exec rhiza run status --json
@@ -127,7 +131,10 @@ stdout '^- merge \(visit 1\): pass, then wait-main: exit 0$'
 stdout '^- wait-main \(visit 1\): pass, then main-green: held after [0-9]+ checks?$'
 stdout '^- main-green \(visit 1\): pass, then close-out: exit 0$'
 stdout '^- close-out \(visit 1\): pass, then ship: exit 0$'
-stdout '^- ship \(visit 1\): pass, then end: exit 0$'
+stdout '^- ship \(visit 1\): pass, then deploy-check: exit 0$'
+stdout '^- deploy-check \(visit 1\): pass, then end: exit 0$'
+exec rhiza daemon settings
+stdout 'rhiza.ship.deployUrl = "" \(default\)'
 
 # The merge was a squash pinned to the head whose checks passed: the land
 # commit the run pushed, which is the branch's last head on origin.
