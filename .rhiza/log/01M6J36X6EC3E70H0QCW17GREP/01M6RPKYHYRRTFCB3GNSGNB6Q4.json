@@ -1,0 +1,40 @@
+{
+  "actor": "01M6RPJKDMKGHM1QPJYR6B4929",
+  "after": [
+    "01M6RPCPWYEYTS63FNN1QWVMV0"
+  ],
+  "at": "2026-11-06T15:11:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At eb79786e, internal/guide/text/import.md has a '## Record friction' section stating the rule (record every step you could not follow, or had to work around, as a question naming the step, so the import can improve; never work around one silently) and the question form `rhiza add question <handle> --field 'statement=Import step 3 (record built capabilities): <what, and how>'`. cmd/rhiza/testdata/script/import-friction-recorded.txtar checks that the form's example appears in `rhiza guide import` output, and runs the form in a fresh repo (fold-ok). Ran go test -trimpath -count=1 ./internal/guide/... (PASS: TestCaps now passes, so the attempt-1 finding about the 800-token cap is fixed) and go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(import-.*|guide)$' (PASS: import-friction-recorded, import-records-built, import-autonomous-decisions, import-retires-docs, import-unbuilt-as-drafts and guide). Reading the diff, the tightening keeps the other import steps' rules intact."
+        },
+        "handle": "import-friction-recorded-verified",
+        "id": "01M6RPKYFCN474STBPZGMBXSRK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6RPKYFCN474STBPZDKAF559",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RPKYFCN474STBPZDKAF559",
+        "id": "01M6RPKYGH1RD25KKDD7ZM0H24",
+        "link": "01M6RPKYGH1RD25KKDD6ZA5GE9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3DADVWGVDPK1M6E7PFZ1X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J36X6EC3E70H0QCW17GREP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RPKYHYRRTFCB3GNSGNB6Q4",
+  "type": "ops",
+  "v": 1
+}
