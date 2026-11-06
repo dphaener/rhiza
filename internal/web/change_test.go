@@ -79,6 +79,17 @@ func TestChangeSetPage(t *testing.T) {
 	if strings.Contains(body, ">"+cs) {
 		t.Error("the page shows the change set's ID")
 	}
+	// A landed change set's page reads the model as it is.
+	rec = serve(h, "GET", "/changes/"+base)
+	if rec.Code != 200 {
+		t.Fatalf("/changes/%s: %d %s", base, rec.Code, rec.Body)
+	}
+	body = rec.Body.String()
+	for _, s := range []string{"Base work", "landed", "Base capability", "Base check", "1 leaf, 0 with evidence"} {
+		if !strings.Contains(body, s) {
+			t.Errorf("landed page: missing %q in:\n%s", s, body)
+		}
+	}
 	for _, target := range []string{"/changes/01ZZZZZZZZZZZZZZZZZZZZZZZZ", "/changes/nope"} {
 		if rec := serve(h, "GET", target); rec.Code != 404 {
 			t.Errorf("%s: %d", target, rec.Code)

@@ -109,11 +109,19 @@ var runStatePill = map[string]Pill{
 	"failed":    {"failed", "failed"},
 }
 
+// inFlight is the change set states that have a what-if view.
+var inFlight = map[string]bool{"draft": true, "proposed": true, "accepted": true}
+
 // showRef reads a node as the change set sees it, whatever change set the
-// daemon's repo has current.
-func showRef(r *http.Request, cs, ref string) (*showJSON, error) {
+// daemon's repo has current: its what-if view while it is in flight, and
+// the as-is model once it has landed (or will never land).
+func showRef(r *http.Request, cs *changeJSON, ref string) (*showJSON, error) {
+	view := "as-is"
+	if inFlight[cs.State] {
+		view = "what-if:" + cs.ID
+	}
 	var s showJSON
-	return &s, apiGet(r, "/api/show?ref="+url.QueryEscape(ref)+"&view="+url.QueryEscape("what-if:"+cs), &s)
+	return &s, apiGet(r, "/api/show?ref="+url.QueryEscape(ref)+"&view="+url.QueryEscape(view), &s)
 }
 
 // dependsOn is the change sets the model says cs depends on, whichever
@@ -146,7 +154,7 @@ func loadChange(r *http.Request, ref string) (*ChangeView, error) {
 	}
 
 	for _, id := range cs.Serves {
-		if s, err := showRef(r, cs.ID, id); err == nil {
+		if s, err := showRef(r, &cs, id); err == nil {
 			if t := s.field("statement"); t != "" {
 				v.Serves = append(v.Serves, Rel{Href: "/roadmap", Text: t})
 			}
@@ -179,13 +187,13 @@ func loadChange(r *http.Request, ref string) (*ChangeView, error) {
 		}
 	}
 	for _, lf := range cs.Leaves {
-		s, err := showRef(r, cs.ID, lf.ID)
+		s, err := showRef(r, &cs, lf.ID)
 		if err != nil {
 			continue
 		}
 		lv := LeafView{Statement: s.field("statement"), Acceptance: s.field("acceptance")}
 		for _, e := range s.liveIn("verifies") {
-			if en, err := showRef(r, cs.ID, e); err == nil && !en.Node.Retired {
+			if en, err := showRef(r, &cs, e); err == nil && !en.Node.Retired {
 				lv.Evidence = true
 			}
 		}
@@ -203,7 +211,7 @@ func loadChange(r *http.Request, ref string) (*ChangeView, error) {
 		}
 	}
 	for _, id := range qorder {
-		q, err := showRef(r, cs.ID, id)
+		q, err := showRef(r, &cs, id)
 		if err != nil || q.Node.Retired || len(q.liveIn("answers")) > 0 {
 			continue
 		}
