@@ -1,0 +1,4 @@
+{{define "inbox"}}<section class="rz-panel rz-panel--flush{{if .Rows}} rz-panel--waiting{{end}}">
+  <div class="rz-panel-head"><div><p class="rz-kicker">Inbox</p><h2>{{if .Rows}}{{len .Rows}} waiting on you{{else}}Nothing waits on you{{end}}</h2></div></div>
+  {{if .Rows}}{{template "rows" .Rows}}{{else}}<div class="rz-empty"><p class="rz-empty-title">Nothing waits on you</p><p>Questions, sign-offs and failed runs show here.</p></div>{{end}}
+</section>{{end}}

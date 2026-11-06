@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q6MGQTQPMAG5EGG74W5N1M",
+  "after": [
+    "01M6PQS389QC3WZ86DSWN3DBVA"
+  ],
+  "at": "2026-11-06T01:15:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At bf956078 ran go test -trimpath -count=1 ./internal/web/... (ok) and go test -trimpath -count=1 ./internal/api -run 'TestWebRuns|TestWeb|Daemon' (ok); go vet and gofmt -l clean. TestOverviewListsLiveRuns renders / and /fragments/runs and asserts each live run's title, workflow (<small>build</small>, <small>plan</small>), current step (leaves, gate) and link href=/runs/<id>, the waiting pill, and the No live runs empty state. TestWebRunsSourceListsLiveRuns builds real run journals with run.Store (one entered at step leaves, one finished) and asserts the Overview source returns only the unfinished run with its change set title, workflow and step. The finished-run filter lives in api.WebRunsSource (web has no internal deps), and daemon.go wires that source into web.HandlerWithRuns, so the rendered / lists only unfinished runs; the acceptance is covered across the two tests rather than one web-package test over journals. Diff read: IDs only build links, never shown; layout goldens updated."
+        },
+        "handle": "web-overview-runs-verified",
+        "id": "01M6Q6SJ19YDZAQ40A2RQG2R9S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q6SJ19YDZAQ40A2Q47D76J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q6SJ19YDZAQ40A2Q47D76J",
+        "id": "01M6Q6SJ3BXW2Y1B1NTE1GT2R0",
+        "link": "01M6Q6SJ3BXW2Y1B1NTD1XN07Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX11CXNAKJWHMY772YAF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q6SJ52672T5NPNGAQXRBAZ",
+  "type": "ops",
+  "v": 1
+}

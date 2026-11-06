@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q6SHZ7SZJSC14ZW51TM1SF",
+  "after": [
+    "01M6Q6SJ52672T5NPNGAQXRBAZ"
+  ],
+  "at": "2026-11-06T01:17:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a57e0b4d ran go test -trimpath -count=1 -v -run TestOverview ./internal/web/ (all 4 pass, incl. TestOverviewReadsDaemonFromRepo) plus go vet and gofmt on internal/web (clean). Read the diff: the new web_test test builds a fixture git repo (fixtureCtx), holds the daemon lock and writes a daemon state with maxRuns 4, rhiza.daemon.paused=true and 2 of 3 runs running, then serves / through web.HandlerWith(api.WebDaemonSource(ctx), nil). It asserts the Paused stat, the slots 2/4 and slot dots, and one pill per part of the repo's health report with that part's state, counting pills to match. This fixes attempt 1's finding f1 (no fixture-repo test of WebDaemonSource)."
+        },
+        "handle": "web-overview-daemon-verified",
+        "id": "01M6Q6WG2E5B74JQ7S4G9630W5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q6WG2E5B74JQ7S4D1K14K5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q6WG2E5B74JQ7S4D1K14K5",
+        "id": "01M6Q6WG3PG98VHAH5BEVCA88F",
+        "link": "01M6Q6WG3PG98VHAH5BCDGJCF5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX06P8P1JQS8RKY327J2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q6WG4WGKGBYFPQ2202Q6JP",
+  "type": "ops",
+  "v": 1
+}

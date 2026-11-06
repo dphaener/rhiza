@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q9CDMMNSFVF2GZGH13QP2M",
+  "after": [
+    "01M6Q95MYY0565BZDTSW6AM36J"
+  ],
+  "at": "2026-11-06T02:03:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At dde95161 ran go test -trimpath -count=1 -run TestOverview -v ./internal/web/: all pass, including TestOverviewListsLiveRunsFromJournals (internal/web/overview_runs_test.go). It writes a running journal (build, step leaves) and a finished journal with run.Store in a fixture repo, serves / through web.HandlerWithRuns over api.WebRunsSource, and asserts the live run's title, <small>build</small> workflow, leaves step and href=/runs/01LIVE link, and that the finished run's ID and title are absent. Read the diff and WebRunsSource: succeeded/failed runs are skipped, so the absence comes from the finished filter. This answers compliance finding f1."
+        },
+        "handle": "web-overview-runs-verified-2",
+        "id": "01M6Q9J4M6ET7VDKR0ZEMWTTZA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q9J4M57QSXW96GS21G8BQC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q9J4M57QSXW96GS21G8BQC",
+        "id": "01M6Q9J4S1DFJ75ANN5RWEEC5F",
+        "link": "01M6Q9J4S1DFJ75ANN5RN3QXXD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX11CXNAKJWHMY772YAF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q9J4TRNTRZ16DQMYD12HC4",
+  "type": "ops",
+  "v": 1
+}

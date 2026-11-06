@@ -1,0 +1,15 @@
+{
+  "actor": "01M6Q8Q5XT36TWBQ2ZT6FYT44C",
+  "after": [],
+  "at": "2026-11-06T01:51:30Z",
+  "body": {
+    "intent": "Owner-facing surfaces show no agent session ID: widen owner-surfaces-no-ids to session IDs and drop the session ID from the web Overview's stalled inbox row (it shows 'session <id> has not reported since ...')",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6Q8VCYG8NKGAYMF89BMEJ34",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q8VCYSSDK41PK4WP39JSQX",
+  "type": "open",
+  "v": 1
+}

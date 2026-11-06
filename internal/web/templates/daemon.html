@@ -1,0 +1,11 @@
+{{define "daemon"}}<section class="rz-panel">
+  <div class="rz-panel-head"><div><p class="rz-kicker">Daemon</p><h2>{{.Heading}}</h2></div></div>
+  <div class="rz-daemon">
+    <div class="rz-stat"><p class="rz-kicker">State</p><div class="rz-stat-val">{{if and .Running (not .Paused)}}<span class="rz-live-dot" aria-hidden="true"></span>{{end}}{{.State}}</div></div>
+    <div class="rz-stat"><p class="rz-kicker">Run slots</p><div class="rz-stat-val">{{.Slots}}<small>/ {{.Limit}}</small></div><div class="rz-slots" aria-hidden="true">{{range .SlotCells}}<i{{if .}} class="on"{{end}}></i>{{end}}</div></div>
+  </div>
+  <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <p class="rz-kicker" style="margin-right:4px">Health</p>
+    <span class="rz-health">{{range .Health}}<span class="rz-pill rz-pill--health rz-pill--{{.State}}" title="{{.Part}}: {{.State}}{{if .Summary}} · {{.Summary}}{{end}}">{{if eq .State "ok"}}<svg viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="2.6" fill="currentColor"/></svg>{{else if eq .State "warn"}}<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 2.4v3.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="5" cy="7.6" r=".95" fill="currentColor"/></svg>{{else}}<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2.9 2.9 7.1 7.1M7.1 2.9 2.9 7.1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>{{end}}{{.Part}}</span>{{end}}</span>
+  </div>
+</section>{{end}}

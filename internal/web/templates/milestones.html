@@ -1,0 +1,6 @@
+{{define "milestones"}}<section class="rz-panel rz-panel--flush">
+  <div class="rz-panel-head"><div><p class="rz-kicker">Milestones</p><h2>{{if .Milestones}}{{len .Milestones}} open{{else}}No open milestones{{end}}</h2></div><a class="rz-aside" style="color:var(--teal)" href="/roadmap">Roadmap →</a></div>
+  {{if .Milestones}}<ul class="rz-rows">{{range .Milestones}}
+  <li class="rz-row"><a class="rz-row-title" href="/roadmap">{{.Name}}<small>{{.Total}} change {{if eq .Total 1}}set{{else}}sets{{end}}</small></a>{{range .Counts}}<span class="rz-pill-cell">{{template "pill" .Pill}} <span class="rz-num">{{.Count}}</span></span>{{end}}</li>{{end}}
+  </ul>{{else}}<div class="rz-empty"><p class="rz-empty-title">No open milestones</p><p>Milestones with change sets in flight show here.</p></div>{{end}}
+</section>{{end}}

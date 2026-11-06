@@ -5,6 +5,7 @@ package web
 
 import (
 	"bytes"
+	"context"
 	"embed"
 	"fmt"
 	"html/template"
@@ -57,7 +58,7 @@ var templateFS embed.FS
 // pages holds each page's template set: the shared layout plus the page's
 // own "content". They are parsed once, from the binary.
 var pages = map[string]*template.Template{
-	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/overview.html")),
+	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/overview.html", "templates/daemon.html", "templates/live-runs.html", "templates/inbox.html", "templates/milestones.html")),
 	"run":      template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/run.html")),
 	"runs":     template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/runs.html")),
 	"change": template.Must(template.New("").Funcs(template.FuncMap{
@@ -72,6 +73,14 @@ type page struct {
 	Title, Nav string
 	// Daemon is the header's daemon pill; empty Text leaves it out.
 	Daemon Pill
+	// DaemonView is the Overview's daemon panel.
+	DaemonView DaemonView
+	// Runs is the Overview's live runs panel.
+	Runs RunsPanel
+	// Inbox is the Overview's inbox panel.
+	Inbox InboxPanel
+	// Milestones is the Overview's milestone progress panel.
+	Milestones MilestonesPanel
 	// Data is what the page's own content renders.
 	Data any
 }
@@ -90,6 +99,30 @@ func render(w http.ResponseWriter, name string, p page) {
 // api, if not nil, serves /api/ (see api.ReadOnlyHandler); without it
 // /api/ is not found. events, if given, serves /events (see Events).
 func Handler(api http.Handler, events ...http.Handler) http.Handler {
+	return HandlerWith(nil, api, events...)
+}
+
+// HandlerWith is Handler with the source of the daemon the Overview shows;
+// nil shows a daemon that is not running.
+func HandlerWith(daemon DaemonSource, api http.Handler, events ...http.Handler) http.Handler {
+	return HandlerWithRuns(daemon, nil, api, events...)
+}
+
+// HandlerWithRuns is HandlerWith with the source of the live runs the
+// Overview lists; nil lists none.
+func HandlerWithRuns(daemon DaemonSource, runs RunsSource, api http.Handler, events ...http.Handler) http.Handler {
+	return HandlerWithInbox(daemon, runs, nil, api, events...)
+}
+
+// HandlerWithInbox is HandlerWithRuns with the source of the inbox the
+// Overview lists; nil lists nothing.
+func HandlerWithInbox(daemon DaemonSource, runs RunsSource, inbox InboxSource, api http.Handler, events ...http.Handler) http.Handler {
+	return HandlerWithMilestones(daemon, runs, inbox, nil, api, events...)
+}
+
+// HandlerWithMilestones is HandlerWithInbox with the source of the open
+// milestones the Overview shows the progress of; nil shows none.
+func HandlerWithMilestones(daemon DaemonSource, runs RunsSource, inbox InboxSource, milestones MilestonesSource, api http.Handler, events ...http.Handler) http.Handler {
 	mux := http.NewServeMux()
 	for _, e := range events {
 		if e != nil {
@@ -107,7 +140,8 @@ func Handler(api http.Handler, events ...http.Handler) http.Handler {
 		render(w, "runs", page{Title: "Runs", Nav: "runs", Data: runsData(r)})
 	})
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		render(w, "overview", page{Title: "Overview", Nav: "overview"})
+		d := daemonOf(r)
+		render(w, "overview", page{Title: "Overview", Nav: "overview", DaemonView: d, Daemon: d.Pill(), Runs: runsOf(r), Inbox: inboxOf(r), Milestones: milestonesOf(r)})
 	})
 	static, _ := fs.Sub(assets, "static")
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static)))
@@ -117,6 +151,18 @@ func Handler(api http.Handler, events ...http.Handler) http.Handler {
 		w.Write(b)
 	})
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if daemon != nil {
+			r = r.WithContext(context.WithValue(r.Context(), daemonKey{}, daemon))
+		}
+		if runs != nil {
+			r = r.WithContext(context.WithValue(r.Context(), runsKey{}, runs))
+		}
+		if inbox != nil {
+			r = r.WithContext(context.WithValue(r.Context(), inboxKey{}, inbox))
+		}
+		if milestones != nil {
+			r = r.WithContext(context.WithValue(r.Context(), milestonesKey{}, milestones))
+		}
 		mux.ServeHTTP(w, withAPI(r, api))
 	})
 }

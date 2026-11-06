@@ -1,0 +1,40 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6QC7AH62YNRB2KJVXZEZF84"
+  ],
+  "at": "2026-11-06T02:55:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Resolve the conflict with main in internal/web/web.go by keeping the Overview's panel fields on page and its daemon, runs, inbox and milestones context values, together with main's change and roadmap pages, page.Data and the API context (withAPI) from the Roadmap pages.",
+          "wording": "Stated by the orchestrator acting as arbiter: the resolution above, merged as f2690c0f"
+        },
+        "handle": "web-overview-rebase-resolution",
+        "id": "01M6QCGPVKR76XC0BCQ7QXECQ1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6QCGPVKR76XC0BCQ5ZEYC14",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QCGPVKR76XC0BCQ5ZEYC14",
+        "id": "01M6QCGPX53BK4CMB7V2JGRQRM",
+        "link": "01M6QCGPX53BK4CMB7V009SG2K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QC7ADB7PQG89K392NME1CG",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QCGQ10R0ZJYHECCTZ4SHWP",
+  "type": "ops",
+  "v": 1
+}

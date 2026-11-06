@@ -1,0 +1,40 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6QE3E53S4VBDD6X17EZSQCY"
+  ],
+  "at": "2026-11-06T03:25:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Resolve the conflict with the Runs pages by renaming the Overview's live runs panel to the live-runs fragment (internal/web/liveruns.go, templates/live-runs.html); main keeps the runs fragment, runs.go and runs.html for the Runs page's list, and web.go keeps both branches' pages and routes.",
+          "wording": "Stated by the orchestrator acting as arbiter: the resolution above, merged as 6e85b189"
+        },
+        "handle": "web-overview-live-runs-rename",
+        "id": "01M6QE7GDZR07718V461DJ0NV1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6QE7GDYD10R6HS7XBHGTRG9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QE7GDYD10R6HS7XBHGTRG9",
+        "id": "01M6QE7GF13JTV8JWR1EE2SJDN",
+        "link": "01M6QE7GF13JTV8JWR1AN9X8X8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QE3E27FPHXNNS5H15DZD3T",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QE7GHDQ4BMH5PNQZXBXKC7",
+  "type": "ops",
+  "v": 1
+}
