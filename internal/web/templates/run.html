@@ -1,4 +1,8 @@
 {{define "content"}}<div class="rz-pagehead"><div><p class="rz-kicker">{{.Data.Kicker}}</p><h1>{{.Data.Title}}</h1></div></div>
 <section class="rz-panel" style="padding-top:16px">
 {{section .Data.Frag .Data.View}}
-</section>{{end}}
+</section>
+{{if .Data.LogFrag}}<section class="rz-panel" style="padding-top:16px">
+<h2 class="rz-rows-group">Log</h2>
+{{section .Data.LogFrag .Data.Log}}
+</section>{{end}}{{end}}

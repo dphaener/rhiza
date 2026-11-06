@@ -13,7 +13,7 @@ import (
 // each step's outcome and time, the agent sessions of each step, and for a
 // review run its checks' findings. The body is a live section that
 // re-renders when a run's journal moves. The headless driver log (run.log)
-// is not a read-only operation, so the page shows no log tail.
+// is shown as a log tail beneath (runlog.go).
 
 type runStepItem struct {
 	Step    string `json:"step"`
@@ -70,8 +70,9 @@ type runDetailView struct {
 }
 
 type runPageData struct {
-	Kicker, Title, Frag string
-	View                runDetailView
+	Kicker, Title, Frag, LogFrag string
+	View                         runDetailView
+	Log                          runLogView
 }
 
 func stepPill(state string) Pill {
@@ -191,7 +192,7 @@ func runDetail(r *http.Request, id string) (runPageData, int) {
 	}
 	return runPageData{
 		Kicker: "Run", Title: title,
-		Frag: "run-detail?run=" + url.QueryEscape(id),
+		Frag: "run-detail?run=" + url.QueryEscape(id), LogFrag: "run-log?run=" + url.QueryEscape(id),
 		View: buildRunDetail(ri, "/runs/"+id),
 	}, http.StatusOK
 }
@@ -202,8 +203,12 @@ func servRun(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	if d.LogFrag != "" {
+		d.Log = runLogData(r, r.PathValue("id"))
+	}
 	if d.Frag == "" {
 		d.Frag = "run-detail?run=" + url.QueryEscape(r.PathValue("id"))
+		d.LogFrag = "run-log?run=" + url.QueryEscape(r.PathValue("id"))
 	}
 	render(w, "run", page{Title: d.Title, Nav: "runs", Data: d})
 }

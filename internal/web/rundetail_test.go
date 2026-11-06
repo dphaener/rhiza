@@ -89,3 +89,42 @@ func TestRunPageUnknownIs404(t *testing.T) {
 		t.Errorf("unknown run: %d", rec.Code)
 	}
 }
+
+func tailAPI(logs map[string]string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/run.tail":
+			l, ok := logs[r.URL.Query().Get("run")]
+			if !ok {
+				http.NotFound(w, r)
+				return
+			}
+			w.Write([]byte(l))
+		default:
+			runAPI().ServeHTTP(w, r)
+		}
+	})
+}
+
+func TestRunPageLogTail(t *testing.T) {
+	h := Handler(tailAPI(map[string]string{"PLAN": `{"run":"PLAN","lines":["step one","<b>two</b>","last line"]}`}))
+	body := get(h, "/runs/PLAN").Body.String()
+	inOrder(t, body, "rz-term", "log · tail", "step one", "&lt;b&gt;two&lt;/b&gt;", "last line", "rz-cursor")
+	if !strings.Contains(body, `data-rz-fragment="/fragments/run-log?run=PLAN"`) || !strings.Contains(body, `data-rz-events="log"`) {
+		t.Error("log section is not live on log events")
+	}
+	frag := get(h, "/fragments/run-log?run=PLAN").Body.String()
+	if !strings.Contains(frag, "last line") || strings.Contains(frag, "<html") {
+		t.Errorf("fragment: %s", frag)
+	}
+}
+
+func TestRunPageNoLog(t *testing.T) {
+	h := Handler(tailAPI(nil))
+	for _, u := range []string{"/runs/PLAN", "/fragments/run-log?run=PLAN"} {
+		body := get(h, u).Body.String()
+		if !strings.Contains(body, "No log") || strings.Contains(body, "rz-term") {
+			t.Errorf("%s: no-log state missing: %s", u, body)
+		}
+	}
+}
