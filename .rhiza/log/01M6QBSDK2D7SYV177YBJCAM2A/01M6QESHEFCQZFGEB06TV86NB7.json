@@ -1,0 +1,40 @@
+{
+  "actor": "01M6QERJJASK6SSFYPG03K1RB5",
+  "after": [
+    "01M6QEPPWZ8XX49M5M6D16D6QB"
+  ],
+  "at": "2026-11-06T03:35:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At edc98e1b ran go test -trimpath ./cmd/rhiza -run 'TestScripts/^daemon-status$' -count=1: PASS. The script, after rhiza daemon --once, asserts 'Web UI: http://127.0.0.1:7787' in text and \"web\": \"http://127.0.0.1:7787\" in --json; after daemon set rhiza.web.host 0.0.0.0 and another --once, http://0.0.0.0:7787 in both; after daemon set rhiza.web.host ::1 and another --once, http://[::1]:7787 in both. Read the code: webStatus in internal/api/daemon.go builds the URL from the recorded host and port settings via web.Addr, which uses net.JoinHostPort, so IPv6 hosts are bracketed and an empty host defaults to 127.0.0.1."
+        },
+        "handle": "web-status-shows-host-verified",
+        "id": "01M6QESHD0C6CESJTCT6K0DVZV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QESHD0C6CESJTCT67076ZT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QESHD0C6CESJTCT67076ZT",
+        "id": "01M6QESHDMJ8V3JV2DSG07VAQA",
+        "link": "01M6QESHDMJ8V3JV2DSD3VDK22",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QC3F6QYZ63H13RNGX78808",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6QBSDK2D7SYV177YBJCAM2A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QESHEFCQZFGEB06TV86NB7",
+  "type": "ops",
+  "v": 1
+}
