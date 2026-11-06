@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-06T14:35:22Z",
+  "body": {
+    "intent": "Rhiza can manage and build multiple projects on a single machine, from a single root directory.",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6RMJ858AVSV2VA3K0TTV352",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RMJ858AVSV2VA3K3JG7DDT",
+  "type": "open",
+  "v": 1
+}

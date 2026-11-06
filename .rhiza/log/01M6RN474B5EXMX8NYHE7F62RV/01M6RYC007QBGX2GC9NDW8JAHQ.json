@@ -1,0 +1,40 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6RP6KEWPR4T8KDQXHHQN90Z"
+  ],
+  "at": "2026-11-06T17:26:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "vm-second-project-ships waits for Nebari's real import (milestone 27's import procedure run on Nebari) and then ships a real Nebari change set through the root daemon; it does not use a Nebari given only rhiza init.",
+          "wording": "Wait for the import: the check waits until Nebari has been imported into Rhiza, then ships a real change set; the agent's option, picked by the owner"
+        },
+        "handle": "m29-nebari-ships-after-import",
+        "id": "01M6RYBZEMWR88WVV3WBR8KH70",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RYBZEMWR88WVV3WB1PPJJ5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RYBZEMWR88WVV3WB1PPJJ5",
+        "id": "01M6RYBZJ727HSJRKEWSTDKMTE",
+        "link": "01M6RYBZJ727HSJRKEWNTHQ30F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN8H49BT22F2AJRTVM9XG7",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RYC007QBGX2GC9NDW8JAHQ",
+  "type": "ops",
+  "v": 1
+}

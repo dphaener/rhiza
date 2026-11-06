@@ -1,0 +1,529 @@
+{
+  "actor": "01M6RMJPZ0SQNRSBZ4VV3NYDV6",
+  "after": [
+    "01M6RN31JTXFV1XXK1F5ZHS6Y0"
+  ],
+  "at": "2026-11-06T14:44:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "29",
+          "statement": "Rhiza manages and builds several projects on one machine from one root directory: projects are registered under the root, one root daemon builds them all under one run cap and one usage budget, the CLI, web UI and TUI apps show every project and each on its own, and this VM runs rhiza and nebari that way."
+        },
+        "handle": "milestone-29",
+        "id": "01M6RN3786W5DAVS69HR4TZB2H",
+        "key": "zzzzzzr",
+        "kind": "intent",
+        "node": "01M6RN3786W5DAVS69HMZ28RD9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "A machine has one root directory whose config registers its projects, each added by path or git URL, and every Rhiza command inside a project knows its root and project."
+        },
+        "handle": "m29-root-registry",
+        "id": "01M6RN378KG7NSXMFC93VTGWDG",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M6RN378KG7NSXMFC90YZ5QFW",
+        "op": "node.create",
+        "parent": "01M6RN3786W5DAVS69HMZ28RD9"
+      },
+      {
+        "fields": {
+          "statement": "One root daemon builds every registered project's ready change sets, sharing run slots round-robin under one machine-wide cap and one usage governor, with machine settings in the root and project settings in each repo."
+        },
+        "handle": "m29-one-daemon",
+        "id": "01M6RN37911APKX6WN4FJCW2WB",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M6RN37911APKX6WN4EB1CGR7",
+        "op": "node.create",
+        "parent": "01M6RN3786W5DAVS69HMZ28RD9"
+      },
+      {
+        "fields": {
+          "statement": "The CLI, the web UI and the Rex TUI apps show every project at once, with a merged inbox, and each project on its own."
+        },
+        "handle": "m29-surfaces-across-projects",
+        "id": "01M6RN379J7YGMNFSCC3TEFY0C",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M6RN379J7YGMNFSCC3MZ2RGV",
+        "op": "node.create",
+        "parent": "01M6RN3786W5DAVS69HMZ28RD9"
+      },
+      {
+        "fields": {
+          "statement": "This VM runs rhiza and nebari from one root under one root daemon service, with the per-repo daemon service gone."
+        },
+        "handle": "m29-vm-on-root",
+        "id": "01M6RN379XJQ4JQJYK4WRXR078",
+        "key": "y",
+        "kind": "intent",
+        "node": "01M6RN379XJQ4JQJYK4S1HXEFY",
+        "op": "node.create",
+        "parent": "01M6RN3786W5DAVS69HMZ28RD9"
+      },
+      {
+        "fields": {
+          "statement": "make check is green, rhiza check included, read commands stay within their budget, and the default test run binds no socket."
+        },
+        "handle": "m29-still-healthy",
+        "id": "01M6RN37A82JPZ6VS3WSTKWPFC",
+        "key": "z",
+        "kind": "intent",
+        "node": "01M6RN37A82JPZ6VS3WSHXCR5A",
+        "op": "node.create",
+        "parent": "01M6RN3786W5DAVS69HMZ28RD9"
+      },
+      {
+        "fields": {
+          "question": "How should one machine run several projects? Today each repo has its own daemon, web UI port, usage governor and run cap.",
+          "statement": "One rhiza daemon per machine runs on the root and drives every project's runs under one usage governor and one machine-wide run cap, serving one web UI for all projects.",
+          "wording": "One root daemon. The assistant's option, picked by the owner."
+        },
+        "handle": "m29-one-root-daemon",
+        "id": "01M6RN37AH4PP5N792VYSPK7J5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RN37AH4PP5N792VVNZF0S5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37AH4PP5N792VVNZF0S5",
+        "id": "01M6RN37B2AEVKDBK5XBYFDB15",
+        "link": "01M6RN37B2AEVKDBK5XAZ3HSK0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN1GT6AJ10J39S4RTN28YS",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN3786W5DAVS69HMZ28RD9",
+        "id": "01M6RN37BC0G98N0WH1X42210A",
+        "link": "01M6RN37BC0G98N0WH1TH4DWDA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37AH4PP5N792VVNZF0S5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37911APKX6WN4EB1CGR7",
+        "id": "01M6RN37BWQXP41VKQ5K42DQ93",
+        "link": "01M6RN37BWQXP41VKQ5FFS6PXH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37AH4PP5N792VVNZF0S5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "What is the root directory, and how do projects get into it?",
+          "statement": "Projects are registered explicitly in the root's config with rhiza project add (a path, or a git URL to clone under the root); a clone that is not registered is never built.",
+          "wording": "Registered under root. The assistant's option, picked by the owner."
+        },
+        "handle": "m29-registered-projects",
+        "id": "01M6RN37C81BAPQKZZKXENQ0PF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RN37C81BAPQKZZKWSEEK3W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37C81BAPQKZZKWSEEK3W",
+        "id": "01M6RN37CQ5M8AD5SRJK0PXYWN",
+        "link": "01M6RN37CQ5M8AD5SRJJ08DTQB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN1GT6AJ10J39S4RTN28YS",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN378KG7NSXMFC90YZ5QFW",
+        "id": "01M6RN37D4M5CM5NR7RJP1Z312",
+        "link": "01M6RN37D4M5CM5NR7RH2W9MBX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37C81BAPQKZZKWSEEK3W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "When projects compete for the root daemon's run slots, how are slots shared?",
+          "statement": "Run slots are shared round-robin across projects under one machine-wide maxRuns, each project's next ready change set taken in its own roadmap order, with an optional per-project max.",
+          "wording": "Round-robin. The assistant's option, picked by the owner."
+        },
+        "handle": "m29-round-robin-slots",
+        "id": "01M6RN37DJY5DVAKMTKBKBSM5F",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RN37DJY5DVAKMTK7R1PWX0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37DJY5DVAKMTK7R1PWX0",
+        "id": "01M6RN37E699Z36GRF2C9ADAJ6",
+        "link": "01M6RN37E699Z36GRF29PPT737",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN1GT6AJ10J39S4RTN28YS",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37911APKX6WN4EB1CGR7",
+        "id": "01M6RN37EZYCYJPFECQBH8Z9GW",
+        "link": "01M6RN37EZYCYJPFECQASMM2WP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37DJY5DVAKMTK7R1PWX0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "Where do the daemon's settings live once there is one root daemon?",
+          "statement": "Machine-wide daemon settings (maxRuns, usage budget and reserve, minFree, web host and port, selfUpdate, permissionMode, a global pause) live in the root config; per-project settings (autonomy per stage, project pause, per-project max, deploy check) stay in each repo's git config; rhiza daemon set writes to the scope the key belongs to.",
+          "wording": "Split machine/project. The assistant's option, picked by the owner."
+        },
+        "handle": "m29-settings-split",
+        "id": "01M6RN37FV21SYDTNZM18MSXA9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RN37FV21SYDTNZKY4VP4AM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37FV21SYDTNZKY4VP4AM",
+        "id": "01M6RN37GCCXH7MJ46H79HY56H",
+        "link": "01M6RN37GCCXH7MJ46H4M6GETJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN1GT6AJ10J39S4RTN28YS",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37911APKX6WN4EB1CGR7",
+        "id": "01M6RN37GY0BVTP2E6PX095HSF",
+        "link": "01M6RN37GY0BVTP2E6PT04YYT8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37FV21SYDTNZKY4VP4AM",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "What do the surfaces show once one daemon drives several projects?",
+          "statement": "The web UI has an all-projects home (each project's live runs, inbox count and health) and a merged inbox tagging each item with its project, and every existing page is scoped to one project through a switcher.",
+          "wording": "All-projects + per project. The assistant's option, picked by the owner."
+        },
+        "handle": "m29-web-all-projects",
+        "id": "01M6RN37HBF87AAE32A1F8CTBC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RN37HBF87AAE32A0XDWR37",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37HBF87AAE32A0XDWR37",
+        "id": "01M6RN37J8VA8KY2MH1KZFEHTV",
+        "link": "01M6RN37J8VA8KY2MH1JG04ZRB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN1GT6AJ10J39S4RTN28YS",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN379J7YGMNFSCC3MZ2RGV",
+        "id": "01M6RN37JYMVXMZQWWSRG6Z5MX",
+        "link": "01M6RN37JX7GFDQRJG84JPGCNZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37HBF87AAE32A0XDWR37",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "Do the Rex TUI apps and the CLI go multi-project in this milestone?",
+          "statement": "Both the CLI (daemon, inbox, roadmap, health) and the Rex TUI apps go multi-project in this milestone, rather than leaving the TUI apps to the later app overhaul.",
+          "wording": "CLI and TUI apps now. The assistant's option, picked by the owner."
+        },
+        "handle": "m29-cli-and-tui-now",
+        "id": "01M6RN37KKNTFNTJD7YSXYQD8C",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RN37KKNTFNTJD7YSSZ52SH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37KKNTFNTJD7YSSZ52SH",
+        "id": "01M6RN37M9HE9VXZ1PH6B4YV6W",
+        "link": "01M6RN37M9HE9VXZ1PH58WK4EQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN1GT6AJ10J39S4RTN28YS",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN379J7YGMNFSCC3MZ2RGV",
+        "id": "01M6RN37MS0CHJSFWECJ0KFW2A",
+        "link": "01M6RN37MS0CHJSFWECHEP592P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37KKNTFNTJD7YSSZ52SH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "I'd split the milestone into six change sets: (1) root and registry, (2) root daemon, (3) cross-project CLI, (4) web UI, (5) TUI apps, (6) VM migration, with 2 depending on 1 and 3–6 depending on 2. Which get leaves now? The rest keep only their intent.",
+          "statement": "All six change sets of milestone 29 (root and registry, root daemon, cross-project CLI, web UI, TUI apps, VM migration) get leaves now.",
+          "wording": "1 Root and registry, 2 Root daemon, 3+4+5 Surfaces, 6 VM migration. The assistant's option, picked by the owner."
+        },
+        "handle": "m29-plan-all-now",
+        "id": "01M6RN37NDZ2HZ4NFHW6PJ3ADF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RN37NDZ2HZ4NFHW49N565V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37NDZ2HZ4NFHW49N565V",
+        "id": "01M6RN37NVKW0PVTMHBAK53408",
+        "link": "01M6RN37NVKW0PVTMHB7K1760R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN1GT6AJ10J39S4RTN28YS",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN3786W5DAVS69HMZ28RD9",
+        "id": "01M6RN37P6K5BRX6DB0ZWTV6YN",
+        "link": "01M6RN37P6K5BRX6DB0X13AT19",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37NDZ2HZ4NFHW49N565V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "Where do run worktrees live under the root?",
+          "statement": "Run worktrees stay siblings of their project under the root, <root>/<project>.<slug>, as today.",
+          "wording": "<root>/<project>.<cs>. The assistant's option, picked by the owner."
+        },
+        "handle": "m29-worktrees-siblings",
+        "id": "01M6RN37PNRBSA5QJXGBGR4S1P",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RN37PNRBSA5QJXG9VD5EBB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37PNRBSA5QJXG9VD5EBB",
+        "id": "01M6RN37Q7W9E9XFFSANA67C6R",
+        "link": "01M6RN37Q7W9E9XFFSAHRX8T0A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN1GT6AJ10J39S4RTN28YS",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN378KG7NSXMFC90YZ5QFW",
+        "id": "01M6RN37QWXR9JBGDBC6YFHQH3",
+        "link": "01M6RN37QWXR9JBGDBC50T595Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37PNRBSA5QJXG9VD5EBB",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "What happens to a repo that isn't under any root?",
+          "quote": "There isn't anything existing so root can be required from the start",
+          "quote_where": "milestone-29-interview, typed answer on a repo under no root",
+          "statement": "A root is required from the start: the daemon and runs work only on a registered project under a root, and no per-repo daemon mode is kept."
+        },
+        "handle": "m29-root-required",
+        "id": "01M6RN37RJHQ058KK9BTC8D3FM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RN37RJHQ058KK9BPVW4VY8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37RJHQ058KK9BPVW4VY8",
+        "id": "01M6RN37S3P14GFB4S2X1R72KH",
+        "link": "01M6RN37S3P14GFB4S2T8QCB93",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN1GT6AJ10J39S4RTN28YS",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN378KG7NSXMFC90YZ5QFW",
+        "id": "01M6RN37SKSPXNNRCS3CPS83PB",
+        "link": "01M6RN37SKSPXNNRCS39CN7F8S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37RJHQ058KK9BPVW4VY8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37911APKX6WN4EB1CGR7",
+        "id": "01M6RN37T7K5Q5KNB80HEE3WZE",
+        "link": "01M6RN37T7K5Q5KNB80ERXR2YZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37RJHQ058KK9BPVW4VY8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "How does the root daemon treat a registered project that has no .rhiza/ yet (like Nebari before its import)?",
+          "statement": "A registered project with no .rhiza/ yet is listed as not initialised (in rhiza project ls, the web home and health) and the daemon starts no runs there until it has a model.",
+          "wording": "Listed, not built. The assistant's option, picked by the owner."
+        },
+        "handle": "m29-unready-listed",
+        "id": "01M6RN37TYJ2EFRNWHT87MJMPQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RN37TYJ2EFRNWHT4PYK7JE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37TYJ2EFRNWHT4PYK7JE",
+        "id": "01M6RN37VNH8739Q0CXCB8KJHK",
+        "link": "01M6RN37VNH8739Q0CX96FSBF4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN1GT6AJ10J39S4RTN28YS",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN378KG7NSXMFC90YZ5QFW",
+        "id": "01M6RN37W8EV1EAPB769P7QJ4C",
+        "link": "01M6RN37W8EV1EAPB767M5B3DH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37TYJ2EFRNWHT4PYK7JE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37911APKX6WN4EB1CGR7",
+        "id": "01M6RN37WR0F6FY9R61Y747S5K",
+        "link": "01M6RN37WR0F6FY9R61VCZJ8F3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37TYJ2EFRNWHT4PYK7JE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "Rex sessions for runs under the root daemon?",
+          "statement": "Each project keeps its own fixed Rex session (rhiza-<project>) for its runs under the root daemon.",
+          "wording": "One per project. The assistant's option, picked by the owner."
+        },
+        "handle": "m29-rex-session-per-project",
+        "id": "01M6RN37XM4RQP3FHM9SX5MT1E",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RN37XM4RQP3FHM9QGKQKMV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37XM4RQP3FHM9QGKQKMV",
+        "id": "01M6RN37YHVN8KPG5XBPTKG2RQ",
+        "link": "01M6RN37YHVN8KPG5XBK577SFD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN1GT6AJ10J39S4RTN28YS",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN37911APKX6WN4EB1CGR7",
+        "id": "01M6RN37ZB4A5ZZRW0HNK1ESRE",
+        "link": "01M6RN37ZB4A5ZZRW0HJQ3YGQA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37XM4RQP3FHM9QGKQKMV",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "The TUI needs to become project aware, so when I'm starting a new milestone/changeset or whatever, it needs to know which project I am currently in the context of.",
+          "quote_where": "milestone-29-interview, owner message during the interview",
+          "statement": "The TUI knows the project the owner is currently in, and everything started from it (a milestone, a change set, a plan or a request) is started in that project."
+        },
+        "handle": "m29-tui-current-project",
+        "id": "01M6RN3801PSKKGRP9AWJZYXJJ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RN3801PSKKGRP9ATFYVDMD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN3801PSKKGRP9ATFYVDMD",
+        "id": "01M6RN380J6YS36Q4GPDCFFWXZ",
+        "link": "01M6RN380J6YS36Q4GPBX3ZZBS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN1GT6AJ10J39S4RTN28YS",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN379J7YGMNFSCC3MZ2RGV",
+        "id": "01M6RN381B06PZ855A5CG004ES",
+        "link": "01M6RN381B06PZ855A59B6R2NB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN3801PSKKGRP9ATFYVDMD",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6RMJ858AVSV2VA3K0TTV352",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RN381TDBSWBAJV6CRSX235",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M6RMJPZ0SQNRSBZ4VV3NYDV6",
+  "after": [],
+  "at": "2026-11-06T14:45:08Z",
+  "body": {
+    "intent": "Project-aware TUI apps: the Rex apps know the current project, start milestones, change sets, plans and requests in it, switch project, and show a merged inbox",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6RN441P2Z865ZVKAS7X7GMG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RN441P2Z865ZVKAV2V0HV1",
+  "type": "open",
+  "v": 1
+}

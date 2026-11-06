@@ -1,0 +1,15 @@
+{
+  "actor": "01M6RMJPZ0SQNRSBZ4VV3NYDV6",
+  "after": [],
+  "at": "2026-11-06T14:45:11Z",
+  "body": {
+    "intent": "This VM on one root: rhiza and nebari registered under one root run by one root daemon service, replacing rhiza-rhiza.service",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RN474B5EXMX8NYHEEC2Q17",
+  "type": "open",
+  "v": 1
+}

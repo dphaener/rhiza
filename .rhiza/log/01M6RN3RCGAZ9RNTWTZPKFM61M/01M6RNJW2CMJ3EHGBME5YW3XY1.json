@@ -1,0 +1,114 @@
+{
+  "actor": "01M6RNGXR0QF31H3EY94RZ7A1G",
+  "after": [
+    "01M6RN85H3097SFCB2CX1EAGA2"
+  ],
+  "at": "2026-11-06T14:53:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6RN858XDJS5W8FZ3QZ8P2PF",
+        "id": "01M6RNJVVGRY1356MS6H2A4S2K",
+        "link": "01M6RNJVVGRY1356MS6FEFQ0FG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7J7KWQ20F4X22KTJ924R",
+        "type": "supersedes"
+      },
+      {
+        "base": "01M61R7J7KWQ20F4X22KXX097T",
+        "id": "01M6RNJVW1EACY82N21X3XP508",
+        "node": "01M61R7J7KWQ20F4X22KTJ924R",
+        "op": "node.retire",
+        "reason": "Superseded by root-daemon-lock: the daemon runs on the root with one lock in <root>/.rhiza-root/, never one per repo (m29-one-root-daemon)."
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85E14DDFJGJ96GKN7ZGE",
+        "id": "01M6RNJVWVM3W95N50Q8SAWVZ4",
+        "link": "01M6RNJVWVM3W95N50Q52S5B8T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FES1Z3GF9HJGVS4Y1S687B",
+        "type": "supersedes"
+      },
+      {
+        "base": "01M6FES1Z3GF9HJGVS502Q1W5Z",
+        "id": "01M6RNJVXHVDZE63ZVDTBBNMEV",
+        "node": "01M6FES1Z3GF9HJGVS4Y1S687B",
+        "op": "node.retire",
+        "reason": "Superseded by root-daemon-service: one rhiza-root.service unit for the root replaces the per-repo unit run in a main checkout (m29-one-root-daemon)."
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85F2T3NMVDRKV706VSZB",
+        "id": "01M6RNJVY525KGG76ZXBTNWER0",
+        "link": "01M6RNJVY525KGG76ZX8D9RGT2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FES89JR3Z5XA751AGCD3RV",
+        "type": "supersedes"
+      },
+      {
+        "base": "01M6FES89JR3Z5XA751BMMA8T4",
+        "id": "01M6RNJVYXHJY8C2X4AKTM316J",
+        "node": "01M6FES89JR3Z5XA751AGCD3RV",
+        "op": "node.retire",
+        "reason": "Superseded by root-daemon-self-update: the root daemon self-updates from the project rhiza.toml names as self_update_project, with selfUpdate a machine setting in rhiza.toml (m29-settings-split)."
+      },
+      {
+        "base": "01M6CS1WF6WPPJTPC8X4J66CF7",
+        "handle": null,
+        "id": "01M6RNJVZWY3RDP6PT8MXN2R79",
+        "node": "01M6CS1WF6WPPJTPC8X1DHYGD8",
+        "op": "node.update",
+        "set": {
+          "acceptance": "daemon-settings.txtar: daemon settings lists every key with its default, scope and source default; daemon set rhiza.daemon.maxRuns 1 then settings shows 1 from rhiza.toml; an unknown key or bad value exits 2 writing nothing; with maxRuns set to 1 between two daemon --once polls, the second starts at most one run; a --max-runs flag wins over config and settings shows source flag in daemon status; describe-golden.txtar is regenerated",
+          "statement": "The daemon reads its settings every poll, the machine ones (paused, max runs, minimum free disk, permission mode) from the root's rhiza.toml and the project ones (plan, accept, ship and signoff autonomy) from each project's git config, as root-daemon-settings-scope splits them, a command-line flag winning for that run; rhiza daemon settings lists each with value, scope and source and rhiza daemon set validates and writes one to its scope"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6HJ0R8X5Q00XXMB8ETAEPM9",
+        "handle": null,
+        "id": "01M6RNJW0G9NZVQKR20AJP9Q48",
+        "node": "01M6HJ0R8X5Q00XXMB8CRVN89Q",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A new usage-settings.txtar shows the three keys with their defaults and machine scope in rhiza daemon settings --json, sets each with rhiza daemon set and finds it in rhiza.toml, rejects a reserve outside 0 to 100 and a non-number limit with exit 2, and describe-golden.txtar is regenerated",
+          "statement": "Machine settings rhiza.daemon.usage.session and rhiza.daemon.usage.weekly in the root's rhiza.toml set each window's token limit (unset by default) and rhiza.daemon.usage.reserve sets the reserve as a percent of the limit (default 20), shown by rhiza daemon settings and written by rhiza daemon set"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6QC3F43SZJGVMFP625Z3863",
+        "handle": null,
+        "id": "01M6RNJW1A9WAZS8HSH3WM6YKC",
+        "node": "01M6QC3F43SZJGVMFP61832VJW",
+        "op": "node.update",
+        "set": {
+          "statement": "The rhiza.web.host machine setting, kept in the root's rhiza.toml, names the address the daemon serves the web UI on, 127.0.0.1 by default; rhiza daemon set accepts it only as a literal IPv4 or IPv6 address checked with net.ParseIP (such as 127.0.0.1, 0.0.0.0, ::1 or ::) and rejects an empty value, hostnames including localhost and anything with a port, with an error naming the key; the listen address is net.JoinHostPort(host, port), and a running daemon moves the listener at its next poll when only the host changes."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6FF59TD3CH32FQJCZYJJG65",
+        "handle": null,
+        "id": "01M6RNJW1SR1KMZHG5CQ34D137",
+        "node": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "op": "node.update",
+        "set": {
+          "statement": "Each poll, the daemon picks, in each project, the accepted change sets that rhiza ready says can start, that serve a milestone intent, have at least one leaf, have no live run (running or interrupted, as run-one-live counts it) and whose latest run is not a failed run still in the inbox (as inbox-list keeps it: not abandoned, not retried, no newer run), in that project's roadmap order, and starts them, round-robin across projects as root-daemon-round-robin sets out, until its running runs (live runs whose process is running) reach the machine-wide maxRuns (default 2), so an interrupted run keeps its change set from being picked but takes no slot and a failed run's change set is never started again by the daemon until the owner clears that item; it never picks a backlog, draft, proposed or leafless change set on its own. Runs the owner queued (run-start-through-daemon) are not picks: they skip these filters and only share the maxRuns slots."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RNJW2CMJ3EHGBME5YW3XY1",
+  "type": "ops",
+  "v": 1
+}

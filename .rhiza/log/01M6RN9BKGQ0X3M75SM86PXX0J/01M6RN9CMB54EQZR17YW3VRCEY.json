@@ -1,0 +1,48 @@
+{
+  "actor": "01M6RMJPZ0SQNRSBZ4VV3NYDV6",
+  "after": [
+    "01M6RN9BKGQ0X3M75SMAYC99T3"
+  ],
+  "at": "2026-11-06T14:48:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "Pane's project, else pick (Recommended)",
+            "A sticky current project",
+            "Pane's project, else sticky"
+          ],
+          "picked": "Pane's project, else pick (Recommended)",
+          "question": "Rex apps open in the focused pane's working directory. When you start a milestone, change set, plan or request from a TUI app, which project is 'the one you're in'?",
+          "session": "05fe56c8-8c19-4241-83c6-01a1b1494bc7",
+          "statement": "Rex apps open in the focused pane's working directory. When you start a milestone, change set, plan or request from a TUI app, which project is 'the one you're in'? — Pane's project, else pick (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 05fe56c8-8c19-4241-83c6-01a1b1494bc7"
+        },
+        "handle": "answer-05fe56c8-12",
+        "id": "01M6RN96MYB0CS9Y0XPZEDG0X4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RN96MYB0CS9Y0XPVPVRYKQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN96MYB0CS9Y0XPVPVRYKQ",
+        "id": "01M6RN9A5DY8HW5TGPD11X002M",
+        "link": "01M6RN9A5DY8HW5TGPCX3Q3EKS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN1GT6AJ10J39S4RTN28YS",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6RN9BKGQ0X3M75SM86PXX0J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RN9CMB54EQZR17YW3VRCEY",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6RP63XQZZ62N9W913GP1HTC"
+  ],
+  "at": "2026-11-06T17:27:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The usage-settings acceptance updates the existing cmd/rhiza/testdata/script/usage-settings.txtar instead of adding a new one: it shows the three keys with defaults and machine scope, sets each and finds it in the root's rhiza.toml rather than git config, still rejects a reserve outside 0-100 and a non-number limit with exit 2, and regenerates describe-golden.txtar.",
+          "wording": "Update the existing usage-settings.txtar to cover the settings moving to the machine-wide rhiza.toml; the agent's option, picked by the owner"
+        },
+        "handle": "m29-update-usage-settings-script",
+        "id": "01M6RYCYBEGVT9KQV150DE9AQ6",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RYCYBEGVT9KQV14WX4Y7DT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RYCYBEGVT9KQV14WX4Y7DT",
+        "id": "01M6RYCYG194JMQCE4G824EDA2",
+        "link": "01M6RYCYG194JMQCE4G5QBZJCW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RP4X9AKMA32RTMDSK9VRTQ",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RYCYYZ8DA4Z0V0RXVBHZ2Z",
+  "type": "ops",
+  "v": 1
+}

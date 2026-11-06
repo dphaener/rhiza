@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6RP5ZGY7W6AFWYBS51TV283"
+  ],
+  "at": "2026-11-06T17:26:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The testscript Setup makes each script's $WORK its own Rhiza root and writes $WORK/rhiza.toml registering a project named repo at $WORK/repo (directly, not through rhiza project add), so the existing scripts stay unedited; the acceptance checks that rhiza root show in $WORK/repo sees project repo, and $NOROOT stays for the outside-a-root cases.",
+          "wording": "Register work/repo: make each script's working folder its own root and register the repo folder inside it as a project named repo, keeping the existing scripts unedited; the agent's option, picked by the owner"
+        },
+        "handle": "m29-test-root-per-script",
+        "id": "01M6RYBXCQP43M8JDBSDXK4MW1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RYBXCNTMF66Z597WTFMN7R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RYBXCNTMF66Z597WTFMN7R",
+        "id": "01M6RYBXFBBANHJWN5YFXPX38V",
+        "link": "01M6RYBXFBBANHJWN5YC59BHJQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RP4X0H7YY4B9HFEGFYBBFY",
+        "type": "answers"
+      },
+      {
+        "fields": {
+          "statement": "daemon-repo-session.txtar leaves the pass-unedited lists of testscripts-run-under-root and root-daemon-lock; root-daemon-rex-session's leaf owns rewriting it to assert rhiza-<registered name>, keeping its case that another REX_SESSION does not move the tabs.",
+          "wording": "Rewrite that script: take daemon-repo-session out of the pass-unedited lists and let the project-named session leaf own rewriting it, keeping the foreign-session case; the agent's option, picked by the owner"
+        },
+        "handle": "m29-rewrite-daemon-repo-session",
+        "id": "01M6RYBXJ6HAKW7YJSBMTQ8B82",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RYBXJ6HAKW7YJSBKVFAS5Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RYBXJ6HAKW7YJSBKVFAS5Z",
+        "id": "01M6RYBXNSRZG33FQRS6QGD2SS",
+        "link": "01M6RYBXNSRZG33FQRS5RN0Q0R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RP4X21TN1QGFWBWR8P2WJZ",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6RN3M8EC8FEDEJ8X6YVCPZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RYBXRN5SSCTMG64JZK335E",
+  "type": "ops",
+  "v": 1
+}

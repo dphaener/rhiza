@@ -1,0 +1,149 @@
+{
+  "actor": "01M6RMJPZ0SQNRSBZ4VV3NYDV6",
+  "after": [
+    "01M6RN3VGZ7D1JK4FRPRSRENP9"
+  ],
+  "at": "2026-11-06T14:47:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript with a root of two projects gets from rhiza inbox --json at the root the merged list with a project field on every item, and inbox approve/open act on an item from the other project, and only one project's part with --project and from inside that project.",
+          "statement": "rhiza inbox run at the root (or with --all) covers every registered project, each item tagged with its project; run inside a project or with --project <name> it covers only that project."
+        },
+        "handle": "inbox-across-projects",
+        "id": "01M6RN85P5RQ03S1THJ11DGJM4",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6RN85P5RQ03S1THHX2PE816",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85P5RQ03S1THHX2PE816",
+        "id": "01M6RN85PGH2D1PHYYF05AGQ9S",
+        "link": "01M6RN85PGH2D1PHYYEWCC22J5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37KKNTFNTJD7YSSZ52SH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85P5RQ03S1THHX2PE816",
+        "id": "01M6RN85PYP52698AZXCW4KAFD",
+        "link": "01M6RN85PYP52698AZXBVARZ3J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37AH4PP5N792VVNZF0S5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a root of two projects gets from rhiza roadmap --json at the root each project's milestone groups and backlog under its project name, and only one project's part with --project and from inside that project.",
+          "statement": "rhiza roadmap run at the root (or with --all) covers every registered project, each item tagged with its project; run inside a project or with --project <name> it covers only that project."
+        },
+        "handle": "roadmap-across-projects",
+        "id": "01M6RN85QCT4TJYR8BAVFY2GAA",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6RN85QCT4TJYR8BAR6KZ499",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85QCT4TJYR8BAR6KZ499",
+        "id": "01M6RN85QTEFZ6BA6826Q6ZACG",
+        "link": "01M6RN85QTEFZ6BA6823PVVEFX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37KKNTFNTJD7YSSZ52SH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85QCT4TJYR8BAR6KZ499",
+        "id": "01M6RN85RCJGM18V4Z75Q4HR7H",
+        "link": "01M6RN85RCJGM18V4Z73XJBVSM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37AH4PP5N792VVNZF0S5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a root of two projects gets from rhiza health --json at the root one block per project plus the machine parts (daemon, disk, usage hold, machine trust) once, exiting 1 when any project's part is bad, and only one project's part with --project and from inside that project.",
+          "statement": "rhiza health run at the root (or with --all) covers every registered project, each item tagged with its project; run inside a project or with --project <name> it covers only that project."
+        },
+        "handle": "health-across-projects",
+        "id": "01M6RN85RW7YTX1MJ53X91N8VQ",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6RN85RW7YTX1MJ53SF5RB1J",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85RW7YTX1MJ53SF5RB1J",
+        "id": "01M6RN85SG3FNW9E2V1WSK3C1Z",
+        "link": "01M6RN85SG3FNW9E2V1SBD0B6H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37KKNTFNTJD7YSSZ52SH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85RW7YTX1MJ53SF5RB1J",
+        "id": "01M6RN85TCM563EQCSN2QEP8X2",
+        "link": "01M6RN85TCM563EQCSN26NAWKE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37AH4PP5N792VVNZF0S5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a root of two projects gets from rhiza daemon status --json at the root the root daemon once with each project's live runs, last starts and skip reasons, not initialised included, and only one project's part with --project and from inside that project.",
+          "statement": "rhiza daemon status run at the root (or with --all) covers every registered project, each item tagged with its project; run inside a project or with --project <name> it covers only that project."
+        },
+        "handle": "daemon-status-across-projects",
+        "id": "01M6RN85TXNPGZEANC6SWYY0JY",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6RN85TXNPGZEANC6R3HFM27",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85TXNPGZEANC6R3HFM27",
+        "id": "01M6RN85VE56ADR32Q7M7EYEA5",
+        "link": "01M6RN85VE56ADR32Q7G9K14FJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37KKNTFNTJD7YSSZ52SH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85TXNPGZEANC6R3HFM27",
+        "id": "01M6RN85W4PPYYPYJJ8FQ0T1S4",
+        "link": "01M6RN85W4PPYYPYJJ8CGBR39P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37AH4PP5N792VVNZF0S5",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6RN3VGZ7D1JK4FRPNX21WHX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RN85WWE414MCGXF9EY7NXP",
+  "type": "ops",
+  "v": 1
+}

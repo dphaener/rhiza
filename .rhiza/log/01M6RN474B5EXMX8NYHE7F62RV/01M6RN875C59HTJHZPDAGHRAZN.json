@@ -1,0 +1,83 @@
+{
+  "actor": "01M6RMJPZ0SQNRSBZ4VV3NYDV6",
+  "after": [
+    "01M6RN474B5EXMX8NYHEEC2Q17"
+  ],
+  "at": "2026-11-06T14:47:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "On the VM: rhiza project ls shows rhiza and nebari with nebari's initialised state as it is, systemctl --user shows rhiza-root.service active and no rhiza-rhiza.service, and rhiza health exits 0; the steps and their output are recorded as Evidence.",
+          "statement": "On this VM ~/code is the root with rhiza and nebari registered (rhiza as self_update_project), rhiza-root.service runs the root daemon, rhiza-rhiza.service is uninstalled, and the rhiza project's machine settings moved from its git config into rhiza.toml."
+        },
+        "handle": "vm-root-installed",
+        "id": "01M6RN871GNRWZ6FJQACFF0MVE",
+        "key": "zzzzzz",
+        "kind": "capability",
+        "node": "01M6RN871GNRWZ6FJQAAHWT4PY",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN871GNRWZ6FJQAAHWT4PY",
+        "id": "01M6RN8721QHQY5YGTRFG39KK4",
+        "link": "01M6RN8721QHQY5YGTRES0FN85",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37AH4PP5N792VVNZF0S5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN871GNRWZ6FJQAAHWT4PY",
+        "id": "01M6RN872P6EPMN09Z7HQ7GT7N",
+        "link": "01M6RN872P6EPMN09Z7F2VEXN0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37C81BAPQKZZKWSEEK3W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Evidence from the VM: rhiza daemon status at the root shows a nebari run and a rhiza run live under the same root daemon, and the nebari change set's PR merges.",
+          "statement": "Once nebari has a model, the root daemon ships a nebari change set while it runs rhiza's, under the one run cap."
+        },
+        "handle": "vm-second-project-ships",
+        "id": "01M6RN873HV3NYMXTSJ37KYM83",
+        "key": "zzzzzzi",
+        "kind": "capability",
+        "node": "01M6RN873HV3NYMXTSJ13CXZJF",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN873HV3NYMXTSJ13CXZJF",
+        "id": "01M6RN874HTK2SJ38YQDC1E6N4",
+        "link": "01M6RN874HTK2SJ38YQCHGD8SA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37DJY5DVAKMTK7R1PWX0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN873HV3NYMXTSJ13CXZJF",
+        "id": "01M6RN8751CK7JMTMEWPXNKGHT",
+        "link": "01M6RN8751CK7JMTMEWPJ4E4Z9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37AH4PP5N792VVNZF0S5",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RN875C59HTJHZPDAGHRAZN",
+  "type": "ops",
+  "v": 1
+}
