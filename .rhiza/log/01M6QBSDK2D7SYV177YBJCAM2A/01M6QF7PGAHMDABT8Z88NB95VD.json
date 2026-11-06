@@ -1,0 +1,27 @@
+{
+  "actor": "01M6QF6QM9TKR0HJ08D6MSA9RQ",
+  "after": [
+    "01M6QF760R897K32CPPBDJNQ5Y"
+  ],
+  "at": "2026-11-06T03:42:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6QBXQ8SJ1HGA3RBETE3S7X4",
+        "id": "01M6QF7PFRYAKBXTAH5M8XPY9P",
+        "link": "01M6QF7PFRYAKBXTAH5J703YXY",
+        "note": "Amends only the 'served on localhost' clause: the UI binds to the address rhiza.web.host names (127.0.0.1 by default). The daemon-served, read-only, monitoring-only parts of web-ui-in-daemon-read-only still hold. (derived-from was ruled in web-host-amends-not-supersedes, but derived-from only targets Sources; relates-to carries the same amendment note.)",
+        "op": "link.create",
+        "to": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M6QBSDK2D7SYV177YBJCAM2A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QF7PGAHMDABT8Z88NB95VD",
+  "type": "ops",
+  "v": 1
+}
