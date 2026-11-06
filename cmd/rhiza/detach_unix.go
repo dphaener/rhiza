@@ -50,6 +50,14 @@ func detachProgram(p apiProgram, logPath string) error {
 	// Reap the child when it exits: Setsid does not reparent it, so without
 	// a Wait an exited driver stays a zombie of a long-lived daemon, and a
 	// zombie still answers kill(pid, 0), so its run would look live.
-	go cmd.Wait()
+	// The pid also goes on the driver list, which outlives a re-exec of this
+	// process: the new image reaps what the old one's goroutines no longer can.
+	list := driverListPath(logPath)
+	pid := cmd.Process.Pid
+	addDriver(list, pid)
+	go func() {
+		cmd.Wait()
+		dropDrivers(list, pid)
+	}()
 	return nil
 }

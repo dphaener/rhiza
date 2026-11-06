@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q8V03BRB7Q4ZR82KQC22NE",
+  "after": [
+    "01M6Q8ERSTWEM1834SF15M8G9W"
+  ],
+  "at": "2026-11-06T02:19:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 92ec88e8 on Linux, go test -trimpath -count=1 -v ./cmd/rhiza -run TestReap passes TestReap and TestReapStale. TestReap starts a Setsid true child, records it with addDriver, waits until it is a zombie, runs reapDrivers, then finds /proc/<pid> gone and the list empty, while a concurrent plain os/exec child running sh with Setsid still gets exit status 3 from Wait. TestReapStale records a live, unwaited child under a wrong daemon start time and under a wrong daemon pid. After reapDrivers the child is still a zombie (not reaped), the list is empty (dropped), and its Wait returns exit 5. This covers decision reap-only-own-image-entries. In the diff, entries are '<driver pid> <daemon pid> <daemon start>' with start from field 22 of /proc/<pid>/stat. reapList calls wait4(pid, WNOHANG) only when the entry's daemonID matches selfID, start is non-empty and ppid is self, under driverMu, and treats ECHILD as dropped. internal/api daemonLoop calls ctx.Reap before each poll, so at start and on each tick. Off Linux, drivers_other.go (unix, not linux) and detach_other.go have no-op reapers, and GOOS=darwin go vet ./cmd/rhiza is clean. go vet ./cmd/rhiza is clean, and internal/daemon tests pass. internal/api passes with TestReadBudget skipped. TestReadBudget, a load-sensitive timing test that does not touch Reap, hung under load average ~21."
+        },
+        "handle": "daemon-reaps-drivers-verified-2",
+        "id": "01M6QAFPEXBCDAPPM9V9NEJAS4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QAFPEXBCDAPPM9V9CQKQJ1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QAFPEXBCDAPPM9V9CQKQJ1",
+        "id": "01M6QAFPFWF3G4T5NZ5NVDMTBS",
+        "link": "01M6QAFPFWF3G4T5NZ5MKVJBN9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q43V93A114TYBBXS89ZV6Z",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6Q3X16PDW20R7N57BJ5JK6G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QAFPGMA3VVEMD0FVEA3C7T",
+  "type": "ops",
+  "v": 1
+}

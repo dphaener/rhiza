@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q6VGKPBE2SMH8FKZZ4A8H9",
+  "after": [
+    "01M6Q4PP6FKBJ85PCF2RNNM6YF"
+  ],
+  "at": "2026-11-06T01:29:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fd4fdfe0 on Linux, ran go test -trimpath -count=1 -v ./cmd/rhiza -run TestReap: PASS. It was stable with -count=3. The test starts a Setsid child put on the driver list with addDriver that nothing waits on, waits until /proc shows it as a zombie, runs reapDrivers(common), and finds /proc/<pid> gone and the list empty. A concurrent unlisted os/exec child with Setsid still gets exit status 3 from Wait. Read the diff. detachProgram adds each driver pid to <common>/rhiza/drivers, which is beside rhiza/logs and the same path that reapDrivers reads. reapList calls Wait4(pid, WNOHANG) only on listed pids whose /proc ppid is the daemon, and drops pids that are reaped or not its children, so unlisted git, make or hook children are never touched. daemonLoop calls ctx.Reap(common) at the top of each iteration: once at start and once after each tick. newCtx wires Reap to reapDrivers. Off Linux, reapList and reapDrivers are no-ops. go vet passed, GOOS=darwin and GOOS=windows builds passed, and go test ./internal/api -run Daemon passed."
+        },
+        "handle": "daemon-reaps-drivers-verified",
+        "id": "01M6Q7KXW0XK641JFN4QMKQW4Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q7KXVZKE0CQKD7YCRJECZT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q7KXVZKE0CQKD7YCRJECZT",
+        "id": "01M6Q7KXX704536XZ8FFHJ6BAA",
+        "link": "01M6Q7KXX704536XZ8FET6FXMV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q43V93A114TYBBXS89ZV6Z",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6Q3X16PDW20R7N57BJ5JK6G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q7KXZKNNYAVXJAN50T6J5N",
+  "type": "ops",
+  "v": 1
+}
