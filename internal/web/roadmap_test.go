@@ -58,11 +58,13 @@ func TestRoadmapPageMatchesTheOperation(t *testing.T) {
 	newChange(t, ctx, "Milestones", "record")
 	callJSON(t, ctx, "add", `{"kind":"intent","handle":"alpha","fields":["statement=Alpha milestone","milestone=1"]}`)
 	callJSON(t, ctx, "add", `{"kind":"intent","handle":"beta","fields":["statement=Beta milestone","milestone=2"]}`)
+	callJSON(t, ctx, "add", `{"kind":"intent","handle":"areas","fields":["statement=Product areas","umbrella=yes"]}`)
 	callJSON(t, ctx, "land", `{}`)
 	plan(t, ctx, "Alpha first", "alpha", true)
 	plan(t, ctx, "Alpha second", "alpha", false)
 	plan(t, ctx, "Beta only", "beta", false)
 	plan(t, ctx, "Loose work", "", true)
+	plan(t, ctx, "Area upkeep", "areas", false)
 
 	h := web.Handler(api.ReadOnlyHandler(ctx))
 	var rm struct {
@@ -77,7 +79,7 @@ func TestRoadmapPageMatchesTheOperation(t *testing.T) {
 	if err := json.Unmarshal([]byte(want(t, ctx, "roadmap", `{"all":true}`)), &rm); err != nil {
 		t.Fatal(err)
 	}
-	if len(rm.Groups) != 3 || rm.Groups[0].Kind != "milestone" || rm.Groups[2].Kind != "backlog" {
+	if len(rm.Groups) != 4 || rm.Groups[0].Kind != "milestone" || rm.Groups[2].Kind != "backlog" || rm.Groups[3].Kind != "umbrella" {
 		t.Fatalf("fixture roadmap: %+v", rm.Groups)
 	}
 	page := serve(h, "GET", "/roadmap")
@@ -87,7 +89,7 @@ func TestRoadmapPageMatchesTheOperation(t *testing.T) {
 	body := page.Body.String()
 	// The titles, in the operation's order: milestone titles and change sets.
 	pos := -1
-	order := []string{"Alpha milestone", "Alpha first", "Alpha second", "Beta milestone", "Beta only", "Not in a milestone", "Loose work"}
+	order := []string{"Alpha milestone", "Alpha first", "Alpha second", "Beta milestone", "Beta only", "Not in a milestone", "Loose work", "Umbrella", "Product areas", "Area upkeep"}
 	for _, s := range order {
 		i := strings.Index(body[pos+1:], s)
 		if i < 0 {
@@ -106,7 +108,11 @@ func TestRoadmapPageMatchesTheOperation(t *testing.T) {
 			}
 		}
 	}
-	for _, h := range []string{"alpha", "beta"} {
+	// The umbrella is not counted as a milestone.
+	if !strings.Contains(body, "2 milestones · 5 change sets · 1 in backlog") {
+		t.Errorf("kicker miscounts the groups:\n%s", body)
+	}
+	for _, h := range []string{"alpha", "beta", "areas"} {
 		if strings.Contains(body, ">"+h+"<") {
 			t.Errorf("handle %s shown", h)
 		}

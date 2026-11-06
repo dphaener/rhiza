@@ -64,27 +64,33 @@ type Seg struct {
 	N     int
 }
 
-// RoadmapGroup is a milestone, or the backlog: its title, a bar of its change
-// sets by state and a row for each.
+// RoadmapGroup is a milestone, the backlog or an umbrella, as the roadmap
+// operation's group kind says: its title, a bar of its change sets by state
+// and a row for each.
 type RoadmapGroup struct {
 	Kind, Title string
 	Segs        []Seg
 	Rows        []Row
 }
 
-// RoadmapView is what the roadmap page and its live section render.
+// RoadmapView is what the roadmap page and its live section render: the
+// operation's groups, in its order.
 type RoadmapView struct {
-	Milestones []RoadmapGroup
-	Backlog    *RoadmapGroup
-	Total      int
+	Groups []RoadmapGroup
+	Total  int
 }
 
 func (v *RoadmapView) Kicker() string {
-	b := 0
-	if v.Backlog != nil {
-		b = len(v.Backlog.Rows)
+	m, b := 0, 0
+	for _, g := range v.Groups {
+		switch g.Kind {
+		case "milestone":
+			m++
+		case "backlog":
+			b += len(g.Rows)
+		}
 	}
-	return fmt.Sprintf("%s · %s · %d in backlog", plural(len(v.Milestones), "milestone"), plural(v.Total, "change set"), b)
+	return fmt.Sprintf("%s · %s · %d in backlog", plural(m, "milestone"), plural(v.Total, "change set"), b)
 }
 
 func plural(n int, w string) string {
@@ -95,7 +101,8 @@ func plural(n int, w string) string {
 }
 
 // loadRoadmap reads the roadmap operation, whole, and shapes it into groups.
-// Milestones are named by their intent's statement, never by handle or ID.
+// Milestones and umbrellas are named by their intent's statement, never by
+// handle or ID; each row shows the change set's intent and state.
 func loadRoadmap(r *http.Request) (*RoadmapView, error) {
 	var rm roadmapJSON
 	if err := apiGet(r, "/api/roadmap?all=true", &rm); err != nil {
@@ -107,6 +114,9 @@ func loadRoadmap(r *http.Request) (*RoadmapView, error) {
 		out := RoadmapGroup{Kind: g.Kind, Title: "Not in a milestone"}
 		if g.Kind != "backlog" {
 			out.Title = "Milestone"
+			if g.Kind == "umbrella" {
+				out.Title = "Umbrella"
+			}
 			var s struct {
 				Node struct {
 					Fields map[string]string `json:"fields"`
@@ -137,11 +147,7 @@ func loadRoadmap(r *http.Request) (*RoadmapView, error) {
 				out.Segs = append(out.Segs, Seg{s, count[s]})
 			}
 		}
-		if g.Kind == "backlog" {
-			v.Backlog = &out
-		} else {
-			v.Milestones = append(v.Milestones, out)
-		}
+		v.Groups = append(v.Groups, out)
 	}
 	return v, nil
 }
