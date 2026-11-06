@@ -57,11 +57,15 @@ var templateFS embed.FS
 // pages holds each page's template set: the shared layout plus the page's
 // own "content". They are parsed once, from the binary.
 var pages = map[string]*template.Template{
-	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/overview.html")),
+	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/overview.html")),
 }
 
 // page is what a template is rendered with.
-type page struct{ Title, Nav string }
+type page struct {
+	Title, Nav string
+	// Daemon is the header's daemon pill; empty Text leaves it out.
+	Daemon Pill
+}
 
 func render(w http.ResponseWriter, name string, p page) {
 	var buf bytes.Buffer

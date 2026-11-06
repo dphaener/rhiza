@@ -1,0 +1,86 @@
+{
+  "actor": "01M6Q390W69MY39SK43PS0YEGQ",
+  "after": [
+    "01M6Q37C0VZ2CHYA3G0BPKFRVQ"
+  ],
+  "at": "2026-11-06T00:15:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At de99be4e built rhiza with go build -trimpath, ran 'rhiza daemon --max-runs 0' in a scratch repo with rhiza.web.port=47913 and fetched the live web UI with curl. GET /static/css/rhiza-tokens.css served 200 text/css: dark soil tokens under :root/[data-theme=dark] (gold #e8d49a, teal #86c9b7, rose #d9a48f), light under @media (prefers-color-scheme: light), radius-md 12px, radius-lg 16px, @font-face for Petrona, Instrument Sans, JetBrains Mono; neither served stylesheet contains a gradient or an http(s) URL."
+        },
+        "handle": "web-design-tokens-qa-1",
+        "id": "01M6Q3CJS1S7GS2TBF0R0VWRGG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q3CJS06QHP2WC8GC6RPVK1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q3CJS06QHP2WC8GC6RPVK1",
+        "id": "01M6Q3CJT0GVJ321ZBPVSNEP4J",
+        "link": "01M6Q3CJT0GVJ321ZBPTVQ4K35",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJWQ0ZX6WPEX4S94N8ZNW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At de99be4e built rhiza with go build -trimpath, ran 'rhiza daemon --max-runs 0' in a scratch repo with rhiza.web.port=47913 and fetched the live web UI with curl. /static/fonts/{Petrona,InstrumentSans,JetBrainsMono}-Variable.woff2 each served 200 font/woff2 with wOF2 magic (86400, 89136, 71628 bytes); each OFL-*.txt served with 'SIL OPEN FONT LICENSE'; the served / page references only /-rooted src/href paths (css, app.js, icons, manifest), all of which returned 200."
+        },
+        "handle": "web-fonts-embedded-qa-1",
+        "id": "01M6Q3CJTF8W8RJE1KGNHM69AF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q3CJTF8W8RJE1KGKHVF1NA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q3CJTF8W8RJE1KGKHVF1NA",
+        "id": "01M6Q3CJV2Y676MYVSY7JPYCR1",
+        "link": "01M6Q3CJV2Y676MYVSY4T1WASE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJWR6X3ZNEVCZ118QA4SX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At de99be4e built rhiza with go build -trimpath, ran 'rhiza daemon --max-runs 0' in a scratch repo with rhiza.web.port=47913 and fetched the live web UI with curl. GET / served the layout: rz-header with nav Overview (aria-current=page), Runs, Roadmap, the rz-header-end live indicator and the stale partial with its warning glyph; the daemon pill is omitted on the live page because the overview handler passes no Daemon pill (the golden test covers it). go test -trimpath -count=1 ./internal/web/... passes; every rz-* class in layout.html and partials.html is defined in static/css/rhiza.css."
+        },
+        "handle": "web-design-components-qa-1",
+        "id": "01M6Q3CJVQRE9NE73P2J1SEWAY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q3CJVQRE9NE73P2HFEEKG0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q3CJVQRE9NE73P2HFEEKG0",
+        "id": "01M6Q3CJWFVQS2GN02Y2EVCRGD",
+        "link": "01M6Q3CJWFVQS2GN02Y20QTXS7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJWRXY4PRZ989CC6WM3ZK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFFFZNADHH2WGMB5MES8QT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q3CJX2AVREZ4QZ2GCHTH0X",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q3ST3Y1VHDCZ7KGW8CG640",
+  "after": [
+    "01M6Q3MG2TQ9F00DB1F40XPJG5"
+  ],
+  "at": "2026-11-06T00:23:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 17d502d1 (attempt 5, gofmt fix): gofmt -l internal/web is clean, go vet passes, go test -trimpath -count=1 ./internal/web/... passes. TestLayoutGolden renders the layout (header with daemon pill and live indicator, nav to Overview/Runs/Roadmap with aria-current) for two fixtures, and TestPartialsGolden renders the pill for all 5 run and 5 change-set states, glyphs for every node kind, dense rows (title is the link, escaped, no visible ID), step timeline with sessions named by who/model (no ID), always-dark term block, empty, stale and panel with kicker, each compared with testdata/*.golden.html. Running with -update rewrote nothing (git status clean), so the goldens match regeneration."
+        },
+        "handle": "web-design-components-verified-5",
+        "id": "01M6Q3VA4T3R4ZHHZDFFJG638Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q3VA4T3R4ZHHZDFDSCKW2T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q3VA4T3R4ZHHZDFDSCKW2T",
+        "id": "01M6Q3VA5R6KJC41FY41VZER1W",
+        "link": "01M6Q3VA5R6KJC41FY413QT5TH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJWRXY4PRZ989CC6WM3ZK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFFFZNADHH2WGMB5MES8QT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q3VA74JSHX3ZY6B5Q8P6EK",
+  "type": "ops",
+  "v": 1
+}

@@ -19,6 +19,8 @@ The web UI's design comes first: the agent writes a prompt, the owner feeds it t
 ### In
 
 - decided-by [milestone-28](../intent/milestone-28.md)
+- decided-by [web-design-tokens](../capability/rhiza/web-monitor/web-design-tokens.md)
+- decided-by [web-design-components](../capability/rhiza/web-monitor/web-design-components.md)
 
 ## History
 

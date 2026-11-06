@@ -72,6 +72,7 @@ Milestone 28 planning: the first read-only web UI, with the owner
 - derived-from [answer-ea442c0d-8](../decision/answer-ea442c0d-8.md)
 - derived-from [answer-ea442c0d-9](../decision/answer-ea442c0d-9.md)
 - derived-from [web-api-read-only-marker](../decision/web-api-read-only-marker.md)
+- derived-from [web-design-system-in-internal-web](../decision/web-design-system-in-internal-web.md)
 
 ## History
 

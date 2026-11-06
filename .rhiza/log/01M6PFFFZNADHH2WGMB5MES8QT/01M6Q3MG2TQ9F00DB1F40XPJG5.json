@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q3JVRFV0NT61TKC6J5Y5JK",
+  "after": [
+    "01M6Q3HAGWGJMJMHX74N7CVS4M"
+  ],
+  "at": "2026-11-06T00:20:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2, at 1ef23973 in a detached checkout: go build ./... and go vet ./internal/web pass; go test -trimpath -count=1 -v ./internal/web/ passes all 16 tests, including TestLayoutGolden (layout-overview, layout-runs: header with daemon pill and live indicator, nav to Overview, Runs and Roadmap) and TestPartialsGolden (panel with kicker, pills per state, glyphs, rows, steps, term, empty, stale). Running the test with -update rewrote the golden files with no diff (git status was clean), so the goldens match the -update output. Read the fix diff: Row and Session lose their ID fields; the row partial makes the title the link (the whole row follows it through ::after) and drops the ID column; the steps partial links each session by who ran it and the model; ID strings remain only in href attributes of rows.golden and steps.golden. This answers the quality and model findings under owner-surfaces-no-ids. The CSS adds titled grid columns for desktop and mobile. internal/web/pages/*.html still show IDs, but they are the delivered design reference: they are not embedded or served (go:embed covers only templates, static and the manifest). Note: the term fixture's path text reads 'session 01M6PG2C'. That is caller-supplied fixture data, not something the partial adds."
+        },
+        "handle": "web-design-components-verified-2",
+        "id": "01M6Q3MG1D78WNAC10X5B6TH0P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q3MG1D78WNAC10X4550DDZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q3MG1D78WNAC10X4550DDZ",
+        "id": "01M6Q3MG23CJ8DGWS2Y3BBWFTE",
+        "link": "01M6Q3MG23CJ8DGWS2Y1KECNQF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJWRXY4PRZ989CC6WM3ZK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFFFZNADHH2WGMB5MES8QT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q3MG2TQ9F00DB1F40XPJG5",
+  "type": "ops",
+  "v": 1
+}
