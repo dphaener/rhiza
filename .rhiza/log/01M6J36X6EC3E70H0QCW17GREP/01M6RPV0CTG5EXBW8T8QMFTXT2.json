@@ -1,0 +1,155 @@
+{
+  "actor": "01M6RPPF5D2T1JSKQJZWXF79ST",
+  "after": [
+    "01M6RPKYHYRRTFCB3GNSGNB6Q4"
+  ],
+  "at": "2026-11-06T15:15:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a909311c, built ./cmd/rhiza to a scratch binary and imported a fixture Go repo (store/, api/ with tests, PLAN.md, DECISIONS.md) by hand, following rhiza guide import. rhiza guide ls lists '- import topic 791 tokens'; rhiza guide import prints steps 1. Init through 7. Verify in order, and each step's commands worked as written (init, apply --record, add decision/link derived-from, source add --raw, change new --source, check, render). go test ./internal/guide/... (TestCaps) and TestScripts/guide pass."
+        },
+        "handle": "import-guide-topic-qa-1",
+        "id": "01M6RPTZX7EKDYE4S6FJ3AQJ6D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6RPTZX7EKDYE4S6FG39T2WX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RPTZX7EKDYE4S6FG39T2WX",
+        "id": "01M6RPTZYJF0NACWPQXXKQ6F9F",
+        "link": "01M6RPTZYJF0NACWPQXWQMPJT8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3C0FB34V314WHDWESKQ1Q",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a909311c, built ./cmd/rhiza to a scratch binary and imported a fixture Go repo (store/, api/ with tests, PLAN.md, DECISIONS.md) by hand, following rhiza guide import. rhiza apply <file> --record --json per area gave two landed record change sets (store, api), each capability with a statement and acceptance naming its test file; a follow-up change set added anchors store-go/api-go linked implements, proposed/accepted/landed, and rhiza check printed ok. Moving store/store.go made rhiza check fail on anchor store-go, as the topic says."
+        },
+        "handle": "import-records-built-qa-1",
+        "id": "01M6RPTZZJZR05T8PGNRDYZV31",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6RPTZZJZR05T8PGNQF9AM12",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RPTZZJZR05T8PGNQF9AM12",
+        "id": "01M6RPV00T62JKX88F2NAXMZAR",
+        "link": "01M6RPV00T62JKX88F2HFN6EPT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3C5Q7TJ7HR8GP6PD4JW1B",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a909311c, built ./cmd/rhiza to a scratch binary and imported a fixture Go repo (store/, api/ with tests, PLAN.md, DECISIONS.md) by hand, following rhiza guide import. Wrote keep-in-ram by the topic's form (no quote, wording '..., made autonomously by the agent and not confirmed by the owner', derived-from decisions-md); rhiza why keep-in-ram shows the wording and '- keep-in-ram derived from decisions-md'; show --json fields hold only statement and wording. The non-load-bearing tabs decision was left out."
+        },
+        "handle": "import-autonomous-decisions-qa-1",
+        "id": "01M6RPV01QNSQQPQ87S39SYR82",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6RPV01QNSQQPQ87S1R51N55",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RPV01QNSQQPQ87S1R51N55",
+        "id": "01M6RPV02RF9SBX6KGN4R2HNCM",
+        "link": "01M6RPV02RF9SBX6KGN3XHBJGX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3CF3E8B054GW1370AQN2G",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a909311c, built ./cmd/rhiza to a scratch binary and imported a fixture Go repo (store/, api/ with tests, PLAN.md, DECISIONS.md) by hand, following rhiza guide import. rhiza source add decisions-md/plan-md <file> --raw <doc> succeeded with raw_sha256 shown by rhiza why; git rm of DECISIONS.md and PLAN.md went in the same commit as the Source's log records; the change set landed and rhiza check printed ok."
+        },
+        "handle": "import-retires-docs-qa-1",
+        "id": "01M6RPV03WWCFE5SM1BJDCYK10",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6RPV03WWCFE5SM1BJBAJCVX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RPV03WWCFE5SM1BJBAJCVX",
+        "id": "01M6RPV04F94BNAVP76A3PVTM8",
+        "link": "01M6RPV04F94BNAVP767KCDVJD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3CQTM8JJ1FG394JB40RHN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a909311c, built ./cmd/rhiza to a scratch binary and imported a fixture Go repo (store/, api/ with tests, PLAN.md, DECISIONS.md) by hand, following rhiza guide import. rhiza change new 'Add an export command' --source plan-md left a draft intention change set whose show lists the PLAN.md Source; the TBD became question export-format; nothing was accepted by the import step, and change ls still shows it draft after check."
+        },
+        "handle": "import-unbuilt-as-drafts-qa-1",
+        "id": "01M6RPV06FRVFEED44H9BP0T0Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6RPV06FRVFEED44H77EC5SP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RPV06FRVFEED44H77EC5SP",
+        "id": "01M6RPV08KA3XP64KCE6A1XSHV",
+        "link": "01M6RPV08KA3XP64KCE4GN0A9X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3CYX8HF2YW4P6G75KEQ3J",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a909311c, built ./cmd/rhiza to a scratch binary and imported a fixture Go repo (store/, api/ with tests, PLAN.md, DECISIONS.md) by hand, following rhiza guide import. The topic's '## Record friction' form worked: rhiza add question with 'statement=Import step 4 (bring in load-bearing decisions): ...' recorded the one real friction I hit (the decided-by direction) as a question node; TestScripts/import-friction-recorded passes."
+        },
+        "handle": "import-friction-recorded-qa-1",
+        "id": "01M6RPV0A1CVYS9BXG0MS6E57E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6RPV0A1CVYS9BXG0JK4V077",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RPV0A1CVYS9BXG0JK4V077",
+        "id": "01M6RPV0AS3BAJB2ZPYTY20QS2",
+        "link": "01M6RPV0AS3BAJB2ZPYSMTZ3H4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3DADVWGVDPK1M6E7PFZ1X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J36X6EC3E70H0QCW17GREP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RPV0CTG5EXBW8T8QMFTXT2",
+  "type": "ops",
+  "v": 1
+}
