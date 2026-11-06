@@ -154,7 +154,7 @@ or explains the problem. `rhiza describe <command> --json` gives any command's a
 `rhiza guide <topic>` prints a topic; `rhiza guide ls` lists them.
 Topics: `change-sets` (lifecycle, intention vs record, `--record`), `carving` (moving nodes
 between change sets), `apply` (the file format), `sources` (recording a conversation),
-`reopening` (writing after a land), `arbiter` (deciding a question in an autonomous run),
+`reopening` (writing after a land), `import` (bringing an existing repo in), `arbiter` (deciding a question in an autonomous run),
 `advisor` (recommending an answer to the owner's question),
 `plan-review` (reviewing a plan), `build` (building or verifying a leaf),
 `workflows` (writing a custom workflow).

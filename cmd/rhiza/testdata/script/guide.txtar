@@ -75,6 +75,9 @@ exec rhiza guide change-sets
 stdout '^# Change sets$'
 stdout '^## Lifecycle$'
 stdout 'landed --reopen--> accepted'
+exec rhiza guide import
+stdout '^# Import$'
+stdout '(?s)## 1\. Init.*## 2\. Survey.*## 3\. Record built.*## 4\. Bring in.*## 5\. Retire.*## 6\. Write unbuilt.*## 7\. Verify'
 exec rhiza guide plan-review
 stdout '^# Plan review$'
 stdout '^## Critic$'
@@ -98,9 +101,9 @@ exec rhiza guide sources
 stdout '^# Sources$'
 stdout '^## Stored fields$'
 
-# guide ls lists all thirteen texts with their kinds and sizes.
+# guide ls lists all fifteen texts with their kinds and sizes.
 exec rhiza guide ls
-stdout -count=14 '^- '
+stdout -count=15 '^- '
 stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
 stdout '^- scrub +skill +[0-9]+ tokens  '
 stdout '^- plan +skill +[0-9]+ tokens  Plan with the owner'
@@ -110,6 +113,7 @@ stdout '^- arbiter +topic +[0-9]+ tokens  '
 stdout '^- build +topic +[0-9]+ tokens  Building a change set.s leaves'
 stdout '^- carving +topic +[0-9]+ tokens  '
 stdout '^- change-sets +topic +[0-9]+ tokens  '
+stdout '^- import +topic +[0-9]+ tokens  '
 stdout '^- plan-review +topic +[0-9]+ tokens  Plan review'
 stdout '^- reopening +topic +[0-9]+ tokens  '
 stdout '^- review +topic +[0-9]+ tokens  Reviewing a built change set'
