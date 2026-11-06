@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
+	runpkg "github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
 	"github.com/rogpeppe/go-internal/testscript"
 )
@@ -44,7 +45,7 @@ func TestScripts(t *testing.T) {
 		Dir:           dir,
 		Files:         files,
 		Setup:         setup,
-		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "chtimes": chtimes, "health-server": healthServer},
+		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "chtimes": chtimes, "health-server": healthServer, "run-lock": runLock},
 		UpdateScripts: *update,
 	})
 }
@@ -140,6 +141,20 @@ func chtimes(ts *testscript.TestScript, neg bool, args []string) {
 	for _, f := range args[1:] {
 		ts.Check(os.Chtimes(ts.MkAbs(f), t, t))
 	}
+}
+
+// runLock is the script command `run-lock dir id`: it holds the run lock of
+// run id in the runs directory dir until the script ends, so a fixture
+// journal there counts as a live run.
+func runLock(ts *testscript.TestScript, neg bool, args []string) {
+	if neg || len(args) != 2 {
+		ts.Fatalf("usage: run-lock dir id")
+	}
+	unlock, ok, err := runpkg.NewStore(ts.MkAbs(args[0])).TryLock(args[1])
+	if err != nil || !ok {
+		ts.Fatalf("run-lock %s: held=%v err=%v", args[1], !ok, err)
+	}
+	ts.Defer(unlock)
 }
 
 // healthServer is the script command `health-server <var> <log> <status>...`:
