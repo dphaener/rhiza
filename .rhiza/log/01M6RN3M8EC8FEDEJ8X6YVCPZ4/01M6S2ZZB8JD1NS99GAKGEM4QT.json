@@ -1,0 +1,40 @@
+{
+  "actor": "01M6S2XAPV233M5K6EPRPKQ658",
+  "after": [
+    "01M6S2ZBH03ZHQCBWVJXXREZEK"
+  ],
+  "at": "2026-11-06T18:47:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1648261d, go test -trimpath ./cmd/rhiza -run 'TestScripts/^(run-start|run-start-queue|daemon-settings|daemon-pause|daemon-event-hook|daemon-repo-session|stage-autonomy|testscript-root|runs-need-root)$' passed every script. git diff 85470cb5^..1648261d shows those seven scripts unedited, while runs-need-root (85470cb5) is in force. The Setup in cmd/rhiza/main_test.go writes $WORK/rhiza.toml registering project repo at $WORK/repo and sets $NOROOT to a temp folder outside any root, per decision m29-test-root-per-script. In the new testscript-root.txtar, rhiza root show in $WORK/repo prints root: and project: repo; in $NOROOT it exits non-zero with 'not inside a Rhiza root' and next: rhiza root init. root-daemon-lock belongs to change set 01M6RN3RCGAZ9RNTWTZPKFM61M and is not built at this commit, so the daemon scripts were checked under the root without it."
+        },
+        "handle": "testscripts-run-under-root-verified",
+        "id": "01M6S2ZZ688KHE398WAJMF0EFD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S2ZZ688KHE398WAH6TGFZZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S2ZZ688KHE398WAH6TGFZZ",
+        "id": "01M6S2ZZ8YPKXNT9Z6JXYMAB9Y",
+        "link": "01M6S2ZZ8YPKXNT9Z6JVC00K3P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RNXQCZZ7E21TJ70B4RCRWW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3M8EC8FEDEJ8X6YVCPZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S2ZZB8JD1NS99GAKGEM4QT",
+  "type": "ops",
+  "v": 1
+}
