@@ -1,0 +1,40 @@
+{
+  "actor": "01M6S4TCHXVJ37KAP0FKW49CB7",
+  "after": [
+    "01M6S489KXMY9G1MXVC8688RWC"
+  ],
+  "at": "2026-11-06T19:26:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 3c0b06a0 (fixer attempt 2, qa f1). Read the diff: gateAnswerCtx now opens the run worktree's own index (index.DefaultPath + openWriteIndex, memoised models) for the gate's reads and keeps c.IndexPath for the answer's write, falling back to the log when no index opens, as inboxGateRead does. go test -trimpath ./internal/tui/inboxapp/... passed, incl. TestGateFormScrollsLongQuestions, TestGateUnreadableQuestionShowsPositionNotHandle, TestGateAnswersEachThenResumes, TestGateBlankAnswerSendsNothing, TestGateAnswerFailureReopensOnRemaining, TestGateResumeFailureDetailScrolls, TestDetailPanelScrolls. go test -trimpath ./internal/api -run 'Gate' passed (TestGateAnswerUsesWorktreeIndex, TestInboxGateQuestions{Budget,Kept,Unresolved}). In a scratch worktree with question.go reverted to 3c0b06a0~1, TestGateAnswerUsesWorktreeIndex fails ('decoded the full log 16 times'), so the test guards the fix."
+        },
+        "handle": "inbox-app-gate-scroll-verified-2",
+        "id": "01M6S56G9Z9G1H2X40Z5E42CGG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S56G9Y3DAN3T5N68SFGV0S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S56G9Y3DAN3T5N68SFGV0S",
+        "id": "01M6S56GD61HGPPAHENMTET8WZ",
+        "link": "01M6S56GD61HGPPAHENKQY5ZVY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXXHH0SGR3DGTJTD37G584",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RXK2SB0M12FXVEGXER022R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S56GJRH6B19J2Z3GVKTA4S",
+  "type": "ops",
+  "v": 1
+}

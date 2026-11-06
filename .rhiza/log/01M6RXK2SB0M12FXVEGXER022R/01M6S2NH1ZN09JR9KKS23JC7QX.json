@@ -1,0 +1,40 @@
+{
+  "actor": "01M6S2GNPWR3MRXNBWT75ZG1ED",
+  "after": [
+    "01M6RYNY64BBVYKBNGKWDQ52B4"
+  ],
+  "at": "2026-11-06T18:41:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code at 6d9163c7: read the diff (inboxGateQuestions now seeds one question per stop-detail handle, statement empty, and only replaces them when inboxGateRead reads the worktree; advice matching moved after, by handle or resolved ID). Ran go test -trimpath ./internal/api -run TestInboxGateQuestions -count=1 -v: TestInboxGateQuestionsKept (worktree with no .rhiza, stop on kept-a, kept-b -> both handles, statements empty) PASS, TestInboxGateQuestionsBudget PASS. Ran go test -trimpath ./cmd/rhiza -run TestScripts/inbox-gate-questions -count=1: PASS. Also checked end to end with a scratch build in a hermetic repo: a plan run stopped on 'park-disk, nowhere-q' (nowhere-q resolves in no planned change set) shows the open item with 'question: Which-disk (park-disk)' and 'question:  (nowhere-q)'; with the run worktree pointed at /nonexistent, inbox --json lists both handles with statement empty. Note: the Go test covers the unreadable worktree via inboxGateQuestions (the function that fills open items, inbox.go:634, daemon.go:403); I checked the unresolved-handle case by hand only, because no Go test covers it."
+        },
+        "handle": "inbox-gate-questions-kept-verified",
+        "id": "01M6S2NGYHZF19GEFQJC42Y1AM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S2NGYHZF19GEFQJAFA04C7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S2NGYHZF19GEFQJAFA04C7",
+        "id": "01M6S2NH0DT8GPCNEEK27X12E8",
+        "link": "01M6S2NH0DT8GPCNEEJZD69KEJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXXHCHHB08YWNFGY67DT82",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RXK2SB0M12FXVEGXER022R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S2NH1ZN09JR9KKS23JC7QX",
+  "type": "ops",
+  "v": 1
+}

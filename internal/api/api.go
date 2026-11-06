@@ -133,6 +133,10 @@ type Ctx struct {
 	// readLog, when set, replaces the store's log read; tests count folds
 	// with it.
 	readLog func() store.Log
+	// builtModel, when set, is told each change set whose model an index
+	// read builds (memo misses only); tests count folds per change set
+	// with it.
+	builtModel func(cs id.ID)
 	// daemonFold is the daemon's fold cache; the first poll creates it.
 	daemonFold *daemonFoldCache
 	// GitConfig returns the value of a git config key such as

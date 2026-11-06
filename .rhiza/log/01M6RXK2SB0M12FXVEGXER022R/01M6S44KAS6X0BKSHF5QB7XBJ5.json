@@ -1,0 +1,30 @@
+{
+  "actor": "01M6S42D70MS6TAJ224BYJ1T1Z",
+  "after": [
+    "01M6S3X8RW1X1TSXSW642CBTA4"
+  ],
+  "at": "2026-11-06T19:07:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Two Go tests in internal/api (decision inbox-gate-questions-two-cases): (a) a plan run stopped at its gate on two questions whose run worktree does not read gets an inbox open item listing both stop-detail handles, each with an empty statement; (b) a plan run stopped at its gate on two questions whose worktree reads, where one handle resolves in no planned change set, lists both handles, the unresolved one with an empty statement and the resolved one with its full statement. The existing testscript inbox-gate-questions still passes (go test -trimpath ./cmd/rhiza -run TestScripts/inbox-gate-questions).",
+          "statement": "A gate (open) inbox item always carries its questions: when the run worktree's model can't be read or a handle doesn't resolve, the inbox still lists one gate question per handle of the stop detail, with its statement empty, so the item never loses its questions or its answer action."
+        },
+        "handle": "inbox-gate-questions-kept",
+        "id": "01M6RXXHCHHB08YWNFGYRTRXHR",
+        "key": "zzzzzzzy",
+        "kind": "capability",
+        "node": "01M6RXXHCHHB08YWNFGY67DT82",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      }
+    ]
+  },
+  "change_set": "01M6RXK2SB0M12FXVEGXER022R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S44KAS6X0BKSHF5QB7XBJ5",
+  "type": "ops",
+  "v": 1
+}

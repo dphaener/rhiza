@@ -1057,26 +1057,65 @@ func runInboxRequestChanges(ctx *Ctx, req any) (any, error) {
 // reads them (gateAnswerCtx): each question's full statement and what it
 // blocks by name, with the advisor's recommendation once it has
 // recommended on the question by handle or ID. It is nil when the run is
-// not stopped at its gate, has no worktree, or the worktree does not read.
+// not stopped at its gate. It never loses a question: when the worktree
+// does not read, or a handle resolves in no planned change set, the
+// question is still listed by its handle with an empty statement.
 func inboxGateQuestions(ctx *Ctx, st run.State) []InboxGateQuestion {
 	handles := gateStopQuestions(st.Stopped)
-	if len(handles) == 0 || st.Worktree == "" {
+	if len(handles) == 0 {
 		return nil
 	}
+	out := make([]InboxGateQuestion, len(handles))
+	for i, h := range handles {
+		out[i].Handle = h
+	}
+	askers := handles
+	if st.Worktree != "" {
+		if read, as := inboxGateRead(ctx, st, handles); read != nil {
+			out, askers = read, as
+		}
+	}
+	for i := range out {
+		h, asker := out[i].Handle, askers[i]
+		for j := len(st.Advice) - 1; j >= 0; j-- {
+			if a := st.Advice[j]; (a.Asker == h || a.Asker == asker) && a.Recommendation != "" {
+				out[i].Recommendation, out[i].Reasons, out[i].Restatement = a.Recommendation, a.Reasons, a.Restatement
+				break
+			}
+		}
+	}
+	return out
+}
+
+// inboxGateRead reads the questions' statements and blockers from the run's
+// worktree, with each question's asker (its node ID once resolved, else its
+// handle); nil when the worktree does not read.
+func inboxGateRead(ctx *Ctx, st run.State, handles []string) ([]InboxGateQuestion, []string) {
 	c := *ctx
 	c.Root, c.IndexPath = st.Worktree, ""
 	w, err := openCtxWorkspace(&c)
 	if err != nil {
-		return nil
+		return nil, nil
+	}
+	// The worktree's own index answers the reads, so the full disk log is
+	// never decoded; the memo folds each change set's model once. Without
+	// a usable index the log is read, as before.
+	if p, err := index.DefaultPath(st.Worktree); err == nil {
+		c.IndexPath = p
+		if ix, err := openWriteIndex(&c); err == nil {
+			defer ix.close()
+			ix.models = map[id.ID]Model{}
+			w.ix = ix
+		}
 	}
 	own, err := id.Parse(st.Change)
 	if err != nil {
-		return nil
+		return nil, nil
 	}
 	sets := w.changeSets()
 	plan, err := planChangeSets(sets, w.model(own), own)
 	if err != nil {
-		return nil
+		return nil, nil
 	}
 	text := func(m Model, n id.ID) string {
 		if x, ok := m.Node(n); ok {
@@ -1091,12 +1130,22 @@ func inboxGateQuestions(ctx *Ctx, st run.State) []InboxGateQuestion {
 		}
 		return ""
 	}
+	models := map[id.ID]Model{}
+	modelOf := func(n id.ID) Model {
+		m, ok := models[n]
+		if !ok {
+			m = w.model(n)
+			models[n] = m
+		}
+		return m
+	}
 	out := make([]InboxGateQuestion, 0, len(handles))
+	askers := make([]string, 0, len(handles))
 	for _, h := range handles {
 		q := InboxGateQuestion{Handle: h}
 		asker := h
 		for _, cs := range plan {
-			m := w.model(cs.ID)
+			m := modelOf(cs.ID)
 			n, err := m.Resolve(h)
 			if err != nil || n.Kind != op.KindQuestion {
 				continue
@@ -1108,13 +1157,8 @@ func inboxGateQuestions(ctx *Ctx, st run.State) []InboxGateQuestion {
 			}
 			break
 		}
-		for i := len(st.Advice) - 1; i >= 0; i-- {
-			if a := st.Advice[i]; (a.Asker == h || a.Asker == asker) && a.Recommendation != "" {
-				q.Recommendation, q.Reasons, q.Restatement = a.Recommendation, a.Reasons, a.Restatement
-				break
-			}
-		}
 		out = append(out, q)
+		askers = append(askers, asker)
 	}
-	return out
+	return out, askers
 }

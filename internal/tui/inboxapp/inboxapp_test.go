@@ -799,3 +799,156 @@ func TestGateFormShowsEachQuestionNoHandleAndAnswersRightOne(t *testing.T) {
 		t.Errorf("answers = %v", got)
 	}
 }
+
+func longGate(n int, statement func(i int) string) string {
+	var qs []string
+	for i := 1; i <= n; i++ {
+		qs = append(qs, `{"handle":"q-handle-`+string(rune('a'+i))+`","statement":`+quote(statement(i))+`}`)
+	}
+	return `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","questions":[` + strings.Join(qs, ",") + `]}]}`
+}
+
+func scrollText(i int) string {
+	return strings.Repeat("word"+string(rune('0'+i))+" ", 80) + "END" + string(rune('0'+i))
+}
+
+func TestGateFormScrollsLongQuestions(t *testing.T) {
+	var calls []call
+	m := NewModel(fake(longGate(4, scrollText), &calls))
+	m.Update(tea.WindowSizeMsg{Width: 70, Height: 30})
+	enter(m)
+	v := plain(m.View().Content)
+	if strings.Contains(v, "END4") || !strings.Contains(v, "Your answer to question 1 of 4") {
+		t.Fatalf("first view:\n%s", v)
+	}
+	if got := lipgloss.Height(m.View().Content); got > 30 {
+		t.Fatalf("view is %d rows in a 30-row window", got)
+	}
+	for range 40 {
+		m.Update(tea.KeyPressMsg{Code: tea.KeyPgDown})
+	}
+	v = plain(m.View().Content)
+	if !strings.Contains(v, "END4") || !strings.Contains(v, "Your answer to question 1 of 4") {
+		t.Fatalf("after page-down:\n%s", v)
+	}
+	for range 40 {
+		m.Update(tea.MouseWheelMsg{Button: tea.MouseWheelUp})
+	}
+	if v = plain(m.View().Content); strings.Contains(v, "END4") || !strings.Contains(v, "1-") {
+		t.Fatalf("after wheel up:\n%s", v)
+	}
+	for range 40 {
+		m.Update(tea.MouseWheelMsg{Button: tea.MouseWheelDown})
+	}
+	if v = plain(m.View().Content); !strings.Contains(v, "END4") {
+		t.Fatalf("after wheel down:\n%s", v)
+	}
+	if m.View().MouseMode == tea.MouseModeNone {
+		t.Error("mouse is off, so the wheel never arrives")
+	}
+	// the TextAreas still take the keys: four answers submit
+	for _, a := range []string{"a", "b", "c"} {
+		if isQuit(typeAndSubmit(m, a)) {
+			t.Fatal("quit early")
+		}
+	}
+	if !isQuit(typeAndSubmit(m, "d")) {
+		t.Fatalf("no quit; calls: %+v", calls)
+	}
+	if n := len(calls); n != 1+4+1 || calls[n-1].op != "run.resume" {
+		t.Fatalf("calls: %+v", calls)
+	}
+}
+
+func TestGateUnreadableQuestionShowsPositionNotHandle(t *testing.T) {
+	var calls []call
+	gate := longGate(4, func(i int) string {
+		if i == 2 {
+			return ""
+		}
+		return "Question text " + string(rune('0'+i)) + "?"
+	})
+	m := NewModel(fake(gate, &calls))
+	m.Update(tea.WindowSizeMsg{Width: 80, Height: 40})
+	enter(m)
+	v := plain(m.View().Content)
+	for _, w := range []string{"question 2 of 4", "This question's text could not be read.", "Your answer to question 2 of 4"} {
+		if !strings.Contains(v, w) {
+			t.Errorf("view lacks %q:\n%s", w, v)
+		}
+	}
+	if strings.Contains(v, "q-handle") {
+		t.Errorf("view shows a handle:\n%s", v)
+	}
+}
+
+func TestGateAnswerFailureReopensOnRemaining(t *testing.T) {
+	var calls []call
+	run := fake(longGate(3, func(i int) string { return "Q" + string(rune('0'+i)) + "?" }), &calls)
+	m := NewModel(func(op string, args []string) ([]byte, error) {
+		if op == "question.answer" && args[1] == "two" {
+			calls = append(calls, call{op, args})
+			return nil, errors.New("disk full")
+		}
+		return run(op, args)
+	})
+	enter(m)
+	typeAndSubmit(m, "one")
+	if isQuit(typeAndSubmit(m, "two")) {
+		t.Fatal("quit")
+	}
+	typeAndSubmit(m, "three")
+	v := plain(m.View().Content)
+	if !strings.Contains(v, "answer failed: disk full") || strings.Contains(v, "Q1?") {
+		t.Fatalf("view:\n%s", v)
+	}
+	for _, c := range calls {
+		if c.op == "run.resume" {
+			t.Fatalf("resumed: %+v", calls)
+		}
+	}
+}
+
+func TestDetailPanelScrolls(t *testing.T) {
+	var calls []call
+	out := `{"items":[{"id":"h8","kind":"stalled","change":"C9","change_title":"Nine","run":"R9","detail":` + quote(strings.Repeat("filler ", 400)+"LASTWORD") + `}]}`
+	m := NewModel(fake(out, &calls))
+	m.Update(tea.WindowSizeMsg{Width: 70, Height: 20})
+	enter(m)
+	if v := plain(m.View().Content); strings.Contains(v, "LASTWORD") {
+		t.Fatalf("detail not clipped to the window:\n%s", v)
+	}
+	for range 30 {
+		m.Update(tea.KeyPressMsg{Code: tea.KeyPgDown})
+	}
+	if v := plain(m.View().Content); !strings.Contains(v, "LASTWORD") {
+		t.Fatalf("page-down did not reach the end:\n%s", v)
+	}
+	for range 30 {
+		m.Update(tea.MouseWheelMsg{Button: tea.MouseWheelUp})
+	}
+	if v := plain(m.View().Content); strings.Contains(v, "LASTWORD") {
+		t.Fatalf("wheel up did not scroll back:\n%s", v)
+	}
+}
+
+func TestGateResumeFailureDetailScrolls(t *testing.T) {
+	var calls []call
+	gate := longGate(1, func(int) string { return "Q?" })
+	run := fake(gate, &calls)
+	m := NewModel(func(op string, args []string) ([]byte, error) {
+		if op == "run.resume" {
+			return nil, errors.New("busy")
+		}
+		return run(op, args)
+	})
+	m.Update(tea.WindowSizeMsg{Width: 70, Height: 12})
+	enter(m)
+	typeAndSubmit(m, "x")
+	if v := plain(m.View().Content); !strings.Contains(v, "resume failed: busy") {
+		t.Fatalf("view:\n%s", v)
+	}
+	if _, ok := m.cur.(*ui.InfoPanel); !ok {
+		t.Fatalf("not a scrolling panel: %T", m.cur)
+	}
+}

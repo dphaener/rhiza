@@ -1,0 +1,40 @@
+{
+  "actor": "01M6S3371KXY34G3W1Q216051T",
+  "after": [
+    "01M6S31QKGY02Q9K1T7MNVK0A9"
+  ],
+  "at": "2026-11-06T18:50:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 63456160 ran go test -trimpath -count=1 ./internal/tui/inboxapp/... (ok, fake runner only; vet and gofmt clean) and read the diff. TestGateFormScrollsLongQuestions: four ~400-char questions in a 70x30 window show the form within 30 rows with END4 hidden; page-down and then the mouse wheel (MouseMode on) reveal END4 while 'Your answer to question 1 of 4' stays visible; four answers then submit 1+4+1 calls ending in run.resume and quit. TestGateUnreadableQuestionShowsPositionNotHandle: an empty statement shows 'question 2 of 4: This question's text could not be read.' and 'Your answer to question 2 of 4', with no q-handle anywhere. TestGateAnswersEachThenResumes checks question.answer <handle> <text> --run R4 per question then run.resume; TestGateBlankAnswerSendsNothing: blank calls nothing. TestGateAnswerFailureReopensOnRemaining: a failed answer reopens on the remaining questions with 'answer failed: disk full' and no run.resume. TestGateResumeFailureDetailScrolls: a failed resume shows 'resume failed: busy' in a ui.InfoPanel sized to the window (wheel-scrolled by Model.Update). TestDetailPanelScrolls: a long stalled-item detail is clipped, page-down reaches LASTWORD, wheel-up scrolls back."
+        },
+        "handle": "inbox-app-gate-scroll-verified",
+        "id": "01M6S35P1XTAMF8ZYJ69E73760",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S35P1XTAMF8ZYJ65JGWNRM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S35P1XTAMF8ZYJ65JGWNRM",
+        "id": "01M6S35P6SNXQEPXWR31NAGVRC",
+        "link": "01M6S35P6SNXQEPXWR2ZY9ZKFW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXXHH0SGR3DGTJTD37G584",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RXK2SB0M12FXVEGXER022R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S35P9MSFP1VA7BP190Q6YX",
+  "type": "ops",
+  "v": 1
+}

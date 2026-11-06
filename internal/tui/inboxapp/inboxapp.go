@@ -199,6 +199,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.sendBack(msg.Values.String("note"))
 		}
 		return m, m.send(msg.Values.String("answer"))
+	case tea.MouseWheelMsg:
+		if p, ok := m.cur.(*ui.InfoPanel); ok {
+			code := tea.KeyUp
+			if msg.Button == tea.MouseWheelDown {
+				code = tea.KeyDown
+			}
+			for range wheelStep {
+				p.Update(tea.KeyPressMsg{Code: code})
+			}
+			return m, nil
+		}
 	case tea.KeyPressMsg:
 		if m.dlg != nil && m.cur == component(dialogView{m}) {
 			switch msg.String() {
@@ -260,7 +271,12 @@ func (m *Model) panel(it api.InboxItem) tea.Cmd {
 	m.cur = ui.NewInfoPanel(theme.Dark(), colorprofile.TrueColor, title(it), func(width int) []string {
 		return detail(it, m.note, max(width-2*qvPad, 1))
 	})
-	return m.cur.(*ui.InfoPanel).Init()
+	cmd := m.cur.(*ui.InfoPanel).Init()
+	if m.w > 0 {
+		_, c := m.cur.Update(tea.WindowSizeMsg{Width: m.w, Height: m.h})
+		cmd = tea.Batch(cmd, c)
+	}
+	return cmd
 }
 
 // openGate shows the gate's questions in full, then one TextArea per open
@@ -494,7 +510,9 @@ func (m *Model) View() tea.View {
 	if len(m.items) == 0 {
 		return tea.NewView(emptyLine + "\n")
 	}
-	return m.cur.View()
+	v := m.cur.View()
+	v.MouseMode = tea.MouseModeCellMotion // the wheel scrolls the detail
+	return v
 }
 
 // title is the change set's title, or what the item is about when it has
@@ -572,13 +590,19 @@ func tokenRune(r rune) bool {
 	return unicode.IsLetter(r) || unicode.IsDigit(r) || r == '-' || r == '_'
 }
 
+// unreadable is what a gate question shows when its text could not be read.
+const unreadable = "This question's text could not be read."
+
 // asked is what a gate question asks: the advisor's plain-words
-// restatement, else the full statement.
+// restatement, else the full statement, else unreadable.
 func asked(q api.InboxGateQuestion) string {
-	if q.Restatement != "" {
+	switch {
+	case q.Restatement != "":
 		return q.Restatement
+	case q.Statement != "":
+		return q.Statement
 	}
-	return q.Statement
+	return unreadable
 }
 
 // waits is what the item waits for, on one line: for a question or a
@@ -655,7 +679,9 @@ func askLines(it api.InboxItem, qs []api.InboxGateQuestion, width int) []string 
 			out = append(out, "")
 		}
 		head := ""
-		if len(qs) > 1 {
+		if q.Restatement == "" && q.Statement == "" {
+			head = fmt.Sprintf("question %d of %d: ", i+1, len(qs))
+		} else if len(qs) > 1 {
 			head = fmt.Sprintf("%d of %d: ", i+1, len(qs))
 		}
 		add(head, asked(q))
@@ -734,14 +760,22 @@ func detail(it api.InboxItem, note string, width int) []string {
 }
 
 // questionView is an answer form under the text of what is asked, which a
-// Form's one-line subtitle and label cannot hold.
+// Form's one-line subtitle and label cannot hold. The text scrolls within
+// the window's height (page keys and the wheel) above the form, which keeps
+// its own height and the keys.
 type questionView struct {
 	form *ui.Form
 	text func(width int) []string
 	w, h int
+	off  int // first text line shown
 }
 
-const qvMinWidth, qvPad = 64, 2
+const (
+	qvMinWidth, qvPad = 64, 2
+	qvMaxText         = 12 // text rows in the natural size
+	qvMinText         = 4  // text rows kept however short the window
+	wheelStep         = 3  // lines a wheel notch scrolls
+)
 
 func (q *questionView) lines(width int) []string {
 	return wrap2(q.text(max(width-2*qvPad, 1)))
@@ -755,6 +789,41 @@ func wrap2(l []string) []string {
 	return append(l, "")
 }
 
+// layout is the rows the text block takes at window height h (0: natural)
+// and whether it scrolls; a scrolling block spends its last row on the
+// position line.
+func (q *questionView) layout(n, h int) (rows int, scrolls bool) {
+	if h <= 0 {
+		rows = min(n, qvMaxText)
+	} else {
+		_, fh := q.form.NaturalSize()
+		rows = min(n, max(h-fh, qvMinText))
+	}
+	return rows, rows < n
+}
+
+// page is how many text lines show at once.
+func (q *questionView) page() int {
+	rows, scrolls := q.layout(len(q.lines(q.width())), q.h)
+	if scrolls {
+		rows--
+	}
+	return max(rows, 1)
+}
+
+func (q *questionView) width() int {
+	if q.w > 0 {
+		return q.w
+	}
+	w, _ := q.NaturalSize()
+	return w
+}
+
+func (q *questionView) scroll(delta int) {
+	n := len(q.lines(q.width()))
+	q.off = min(max(q.off+delta, 0), max(n-q.page(), 0))
+}
+
 func (q *questionView) Init() tea.Cmd { return q.form.Init() }
 
 func (q *questionView) Theme() theme.Theme { return q.form.Theme() }
@@ -764,14 +833,35 @@ func (q *questionView) Theme() theme.Theme { return q.form.Theme() }
 func (q *questionView) NaturalSize() (int, int) {
 	_, fh := q.form.NaturalSize()
 	w := qvMinWidth
-	return w, fh + len(q.lines(w))
+	rows, _ := q.layout(len(q.lines(w)), 0)
+	return w, fh + rows
 }
 
 func (q *questionView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if ws, ok := msg.(tea.WindowSizeMsg); ok {
-		q.w, q.h = ws.Width, ws.Height
-		_, cmd := q.form.Update(tea.WindowSizeMsg{Width: ws.Width, Height: max(ws.Height-len(q.lines(ws.Width)), 1)})
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		q.w, q.h = msg.Width, msg.Height
+		rows, _ := q.layout(len(q.lines(msg.Width)), msg.Height)
+		q.scroll(0)
+		_, cmd := q.form.Update(tea.WindowSizeMsg{Width: msg.Width, Height: max(msg.Height-rows, 1)})
 		return q, cmd
+	case tea.MouseWheelMsg:
+		switch msg.Button {
+		case tea.MouseWheelUp:
+			q.scroll(-wheelStep)
+		case tea.MouseWheelDown:
+			q.scroll(wheelStep)
+		}
+		return q, nil
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "pgup":
+			q.scroll(-q.page())
+			return q, nil
+		case "pgdown":
+			q.scroll(q.page())
+			return q, nil
+		}
 	}
 	_, cmd := q.form.Update(msg)
 	return q, cmd
@@ -787,8 +877,18 @@ func (q *questionView) View() tea.View {
 	t := q.form.Theme()
 	st := t.On(t.Text, t.Surface)
 	pad := st.Render(strings.Repeat(" ", qvPad))
+	all := q.lines(w)
+	shown := all
+	var bar string
+	if rows, scrolls := q.layout(len(all), q.h); scrolls {
+		q.scroll(0)
+		end := min(q.off+rows-1, len(all))
+		shown = all[q.off:end]
+		bar = fmt.Sprintf("pgup/pgdn or wheel scroll · %d-%d/%d", q.off+1, end, len(all))
+		shown = append(slices.Clone(shown), bar)
+	}
 	var out []string
-	for _, l := range q.lines(w) {
+	for _, l := range shown {
 		fill := max(w-2*qvPad-lipgloss.Width(l), 0)
 		out = append(out, pad+st.Render(l+strings.Repeat(" ", fill))+pad)
 	}
