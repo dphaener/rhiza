@@ -120,3 +120,22 @@ func TestInboxGateQuestionsBudget(t *testing.T) {
 		t.Errorf("index catch-up after the read: %+v, want none decoded", c)
 	}
 }
+
+// TestInboxGateQuestionsKept stops a plan run at its gate on two questions
+// whose worktree does not read, and on one whose handle resolves nowhere:
+// the inbox still lists every handle, statements empty.
+func TestInboxGateQuestionsKept(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
+	root := t.TempDir() // no .rhiza: the worktree does not read
+	ctx := testCtx(root)
+	st := run.State{Change: "01M6RXK2SB0M12FXVEGXER022R", Worktree: root, Stopped: run.OpenStop + "kept-a, kept-b"}
+	got := inboxGateQuestions(ctx, st)
+	if len(got) != 2 || got[0].Handle != "kept-a" || got[1].Handle != "kept-b" {
+		t.Fatalf("got %+v, want kept-a and kept-b", got)
+	}
+	for _, g := range got {
+		if g.Statement != "" {
+			t.Errorf("%s: statement %q, want empty", g.Handle, g.Statement)
+		}
+	}
+}
