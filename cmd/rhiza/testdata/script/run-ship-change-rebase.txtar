@@ -93,7 +93,8 @@ stdout '^- rebase-merge \(visit 1\): pass, then wait-rebased-merge: exit 0$'
 stdout '^- wait-rebased-merge \(visit 1\): pass, then rebased-merge-green: held after [0-9]+ checks?$'
 stdout '^- rebased-merge-green \(visit 1\): pass, then merge: exit 0$'
 stdout '^- merge \(visit 1\): pass, then wait-main: exit 0$'
-stdout '^- ship \(visit 1\): pass, then end: exit 0$'
+stdout '^- ship \(visit 1\): pass, then deploy-check: exit 0$'
+stdout '^- deploy-check \(visit 1\): pass, then end: exit 0$'
 
 # The merge was pinned to the rebased head, which holds the other change
 # set's commit and is not the land head CI first passed.

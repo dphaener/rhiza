@@ -172,3 +172,12 @@ on.pass = "ship"
 [step.ship]
 kind = "command"
 run = "rhiza ship command"
+on.pass = "deploy-check"
+
+# After the ship command: polls the repo's deploy health URL (daemon
+# setting rhiza.ship.deployUrl) until it answers 200 or rhiza.ship.deployTimeout
+# passes, and fails the run with the last status it saw. With no URL set the
+# step passes at once.
+[step.deploy-check]
+kind = "command"
+run = "rhiza ship deploy"

@@ -21352,6 +21352,52 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "ship.deploy",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "healthy": {
+            "description": "True once the URL answered 200",
+            "type": "boolean"
+          },
+          "last": {
+            "description": "The last status it saw: an HTTP status or an error",
+            "type": "string"
+          },
+          "polls": {
+            "description": "How many times the URL was asked",
+            "type": "integer"
+          },
+          "skipped": {
+            "description": "True if no deploy health URL is set",
+            "type": "boolean"
+          },
+          "timeout": {
+            "description": "The deploy timeout in force",
+            "type": "string"
+          },
+          "url": {
+            "description": "The health URL; empty if none is set, which skips the check",
+            "type": "string"
+          }
+        },
+        "required": [
+          "healthy",
+          "polls",
+          "skipped"
+        ],
+        "type": "object"
+      },
+      "summary": "After the merge and the ship command, poll the repo's deploy health URL (rhiza.ship.deployUrl) until it answers 200 or rhiza.ship.deployTimeout passes; with no URL set, do nothing",
+      "write": false
+    },
+    {
       "name": "ship.land",
       "request": {
         "additionalProperties": false,

@@ -127,7 +127,8 @@ stdout '^- merge \(visit 1\): pass, then wait-main: exit 0$'
 stdout '^- wait-main \(visit 1\): pass, then main-green: held after [0-9]+ checks?$'
 stdout '^- main-green \(visit 1\): pass, then close-out: exit 0$'
 stdout '^- close-out \(visit 1\): pass, then ship: exit 0$'
-stdout '^- ship \(visit 1\): pass, then end: exit 0$'
+stdout '^- ship \(visit 1\): pass, then deploy-check: exit 0$'
+stdout '^- deploy-check \(visit 1\): pass, then end: exit 0$'
 
 # The merge was a squash pinned to the head whose checks passed: the land
 # commit the run pushed, which is the branch's last head on origin.
