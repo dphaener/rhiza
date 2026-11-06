@@ -1,0 +1,30 @@
+{
+  "actor": "01M6QBT28AY99BYPJSYVPY1X13",
+  "after": [
+    "01M6QBZ9480BGS55AHK4KZC8SM"
+  ],
+  "at": "2026-11-06T02:46:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "b6e0da8b-7ea6-46cb-ad32-01a1aebcef62",
+          "statement": "Change set 01M6QBS: per Decision web-host-setting-shape I amended the landed leaves web-serve-loopback and web-url-in-daemon-status in place. But build runs only build capabilities a change set creates (changeLeaves in internal/api/change.go:404, used by run_build.go:113 and daemon_fold.go:147), so the change set now has zero leaves and nothing would be built. How should the build work be carried?"
+        },
+        "handle": "question-b6e0da8b-2",
+        "id": "01M6QC10Y9XWAETNDVS6R546TV",
+        "key": null,
+        "kind": "question",
+        "node": "01M6QC10Y9XWAETNDVS3HXEHTX",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6QBSDK2D7SYV177YBJCAM2A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QC12A9AY0TC1QMZM2TFW7W",
+  "type": "ops",
+  "v": 1
+}

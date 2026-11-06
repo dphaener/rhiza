@@ -1,0 +1,39 @@
+{
+  "actor": "01M6QBT28AY99BYPJSYVPY1X13",
+  "after": [
+    "01M6QBXQ9VY5Z9HXAMWRWY9WM2"
+  ],
+  "at": "2026-11-06T02:45:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "in order to proxy the web ui via caddy we need to bind to all hosts and not just local host.",
+              "where": "the change set's intent, as filed"
+            }
+          ],
+          "raw_sha256": "4b0363e14c1654d912b9eb2833ce43ff8847b743bec5cb1e5c5e2f2a76fc07c3",
+          "session": "b6e0da8b-7ea6-46cb-ad32-01a1aebcef62",
+          "summary": "Autonomous plan run (2026-11-06) for change set 01M6QBS, letting the daemon's web UI listen on all interfaces so a Caddy reverse proxy on another host can reach it. No owner took part; the change set's intent carries the owner's filed words. The agent raised three questions in one message to the arbiter: which intent the change set serves and what becomes of milestone 28's done point m28-read-only ('binds only to 127.0.0.1'); which values rhiza.web.host accepts; and whether the landed leaves web-serve-loopback and web-url-in-daemon-status are amended or replaced. The arbiter ruled in Decision web-host-setting-shape: serve milestone-28 and amend m28-read-only in place; accept only literal IPv4 or IPv6 addresses checked with net.ParseIP, rejecting empty values, hostnames including localhost, and values with a port; amend both leaves in place, with status showing http://<host>:<port>, IPv6 bracketed. The UI stays read-only.",
+          "title": "Plan of change set 01M6QBS: the web UI host setting (autonomous)"
+        },
+        "handle": "web-host-plan-interview",
+        "id": "01M6QBYTXHWV9TMPD41PRHAR09",
+        "key": null,
+        "kind": "source",
+        "node": "01M6QBYTXHWV9TMPD41M8RN16S",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6QBSDK2D7SYV177YBJCAM2A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QBYTXVMDSE87WST6XPJ9WQ",
+  "type": "ops",
+  "v": 1
+}

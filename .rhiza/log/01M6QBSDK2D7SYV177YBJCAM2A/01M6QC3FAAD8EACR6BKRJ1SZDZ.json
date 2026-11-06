@@ -1,0 +1,103 @@
+{
+  "actor": "01M6QBT28AY99BYPJSYVPY1X13",
+  "after": [
+    "01M6QC2N3CW6B61A5M7NGB9CQV"
+  ],
+  "at": "2026-11-06T02:48:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test ./internal/web/... and ./internal/daemon/... cover the computed address for the default host (127.0.0.1:7787), 0.0.0.0 (0.0.0.0:7787) and ::1 ([::1]:7787), and reject localhost, abc, an empty value and 127.0.0.1:80 with no socket bound; the fake-listener poll sequence includes a poll where only rhiza.web.host changes, to 0.0.0.0, and checks the listener moves to 0.0.0.0:<port>. The daemon-settings testscript lists rhiza.web.host with its default 127.0.0.1, accepts rhiza daemon set rhiza.web.host 0.0.0.0 and ::1, and rejects localhost, abc and an empty value with an error naming the key.",
+          "statement": "The rhiza.web.host setting names the address the daemon serves the web UI on, 127.0.0.1 by default; rhiza daemon set accepts it only as a literal IPv4 or IPv6 address checked with net.ParseIP (such as 127.0.0.1, 0.0.0.0, ::1 or ::) and rejects an empty value, hostnames including localhost and anything with a port, with an error naming the key; the listen address is net.JoinHostPort(host, port), and a running daemon moves the listener at its next poll when only the host changes."
+        },
+        "handle": "web-serve-host",
+        "id": "01M6QC3F43SZJGVMFP625Z3863",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6QC3F43SZJGVMFP61832VJW",
+        "op": "node.create",
+        "parent": "01M6PFJ960GFE6G98GN9GVTABG"
+      },
+      {
+        "decision": null,
+        "from": "01M6QC3F43SZJGVMFP61832VJW",
+        "id": "01M6QC3F4QDKSRM6S1Q3VWQ062",
+        "link": "01M6QC3F4QDKSRM6S1Q1SEWHY5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QBXQ8SJ1HGA3RBETE3S7X4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6QC3F43SZJGVMFP61832VJW",
+        "id": "01M6QC3F5V3FK447QJ5J16KWQF",
+        "link": "01M6QC3F5V3FK447QJ5E7VGVNR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QC2N0XFHEYM6VQ8TQKCM0B",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "The daemon-status testscript, after rhiza daemon --once, shows http://127.0.0.1:7787 in text and --json; after rhiza daemon set rhiza.web.host 0.0.0.0 and another --once, it shows http://0.0.0.0:7787; after rhiza daemon set rhiza.web.host ::1 and another --once, it shows http://[::1]:7787.",
+          "statement": "rhiza daemon status shows the web UI's URL with the effective rhiza.web.host the daemon's last poll recorded, as http://<host>:<port> with an IPv6 host bracketed, so the default still reads http://127.0.0.1:7787."
+        },
+        "handle": "web-status-shows-host",
+        "id": "01M6QC3F6QYZ63H13RNHKES6Z3",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6QC3F6QYZ63H13RNGX78808",
+        "op": "node.create",
+        "parent": "01M6PFJ9CD8XKQZK2PNA3B6973"
+      },
+      {
+        "decision": null,
+        "from": "01M6QC3F6QYZ63H13RNGX78808",
+        "id": "01M6QC3F773RF51SWC4F9E3PK9",
+        "link": "01M6QC3F773RF51SWC4DACX3BZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QBXQ8SJ1HGA3RBETE3S7X4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6QC3F6QYZ63H13RNGX78808",
+        "id": "01M6QC3F7YRD14N1QGDFQFYG4R",
+        "link": "01M6QC3F7YRD14N1QGDE3GR1GT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QC2N0XFHEYM6VQ8TQKCM0B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6QC3F6QYZ63H13RNGX78808",
+        "id": "01M6QC3F8FF84JYVYSXXGM8MEH",
+        "link": "01M6QC3F8FF84JYVYSXWTWF74B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QC3F43SZJGVMFP61832VJW",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6QC2N0XFHEYM6VQ8TQKCM0B",
+        "id": "01M6QC3F988BCK5XZV50AQW5XA",
+        "link": "01M6QC3F988BCK5XZV4YEW9RKJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QBYTXHWV9TMPD41M8RN16S",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6QBSDK2D7SYV177YBJCAM2A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QC3FAAD8EACR6BKRJ1SZDZ",
+  "type": "ops",
+  "v": 1
+}

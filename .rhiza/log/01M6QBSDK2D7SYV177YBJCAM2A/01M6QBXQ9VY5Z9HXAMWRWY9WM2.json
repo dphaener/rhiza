@@ -1,0 +1,41 @@
+{
+  "actor": "01M6QBWE80B49BQNVJ21TF3FSM",
+  "after": [
+    "01M6QBW78DC6DX7524K57GRPEQ"
+  ],
+  "at": "2026-11-06T02:45:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent quotes the owner ('we need to bind to all hosts and not just local host') and says it supersedes the localhost part of web-ui-in-daemon-read-only, so the work belongs to the same milestone (milestone-28, whose web server change set introduced rhiza.web.port) and the conflicting clause of m28-read-only should be corrected, not left contradicting the model; the read-only and off parts of that done point are untouched because the intent says the UI stays read-only. For values, the intent names only 127.0.0.1 and 0.0.0.0; literal IPs cover those plus IPv6 with no DNS lookup at bind time and mirror the strict, error-naming validation ParsePort already applies to rhiza.web.port in internal/web/web.go, while hostnames would add resolution ambiguity the Caddy use case does not need. For the leaves, web-serve-loopback and web-url-in-daemon-status already own binding and the status URL and are childless leaves, so amending them keeps one capability per behaviour and makes a build run rebuild exactly those; adding new leaves would leave the old ones asserting 'always 127.0.0.1', contradicting the new setting. Showing the bound address as recorded matches the intent's 'daemon status shows the bound address' and keeps the default output unchanged.",
+          "statement": "Change set 01M6QBS serves milestone-28 (the web UI milestone), and amends its done point m28-read-only in place: the UI binds to the address rhiza.web.host names, 127.0.0.1 by default, instead of 'only to 127.0.0.1'; the allowlisted read-only operations and 'rhiza.web.port off leaves the daemon as it was' stay unchanged. rhiza daemon set rhiza.web.host accepts only a literal IP address (IPv4 or IPv6, e.g. 127.0.0.1, 0.0.0.0, ::1, ::), checked with net.ParseIP; it rejects an empty value, hostnames (including localhost) and anything with a port, with an error naming the key; the listen address is net.JoinHostPort(host, port). The landed leaves are amended in this change set rather than shadowed by new ones: web-serve-loopback's statement and acceptance become 'serves on the address rhiza.web.host names (default 127.0.0.1) at rhiza.web.port', its tests cover the default 127.0.0.1, a changed host, IPv6, and the listener manager moving the listener when only the host changes, and the daemon-settings testscript lists rhiza.web.host with its default, accepts 0.0.0.0 and ::1 and rejects localhost, abc and an empty value; web-url-in-daemon-status shows the recorded bound address as http://<host>:<port> (IPv6 bracketed), so the default still reads http://127.0.0.1:7787 and 0.0.0.0 reads http://0.0.0.0:7787.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "web-host-setting-shape",
+        "id": "01M6QBXQ8SJ1HGA3RBEVJ1XTEX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6QBXQ8SJ1HGA3RBETE3S7X4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QBXQ8SJ1HGA3RBETE3S7X4",
+        "id": "01M6QBXQ9AV0F28HH4B186VXC0",
+        "link": "01M6QBXQ9AV0F28HH4AXP6CW13",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QBW5TMT8B4DASNECB5AGGW",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6QBSDK2D7SYV177YBJCAM2A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QBXQ9VY5Z9HXAMWRWY9WM2",
+  "type": "ops",
+  "v": 1
+}

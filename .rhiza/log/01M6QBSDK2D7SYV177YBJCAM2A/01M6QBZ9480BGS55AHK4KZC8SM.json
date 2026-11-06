@@ -1,0 +1,102 @@
+{
+  "actor": "01M6QBT28AY99BYPJSYVPY1X13",
+  "after": [
+    "01M6QBZ8VK6QNBT6M04Y6ARTYP"
+  ],
+  "at": "2026-11-06T02:45:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6PFEK8PKRGYC4C6X0H9BMYB",
+        "handle": null,
+        "id": "01M6QBZ90VBF512S1MKCZ6TC3Y",
+        "node": "01M6PFEK8PKRGYC4C6WZS9BY5Y",
+        "op": "node.update",
+        "set": {
+          "statement": "Nothing the web UI serves writes: only allowlisted read operations of internal/api are reachable, it binds to the address rhiza.web.host names (127.0.0.1 by default), and turning it off (rhiza.web.port off) leaves the daemon as it was."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6PFEK8PKRGYC4C6WZS9BY5Y",
+        "id": "01M6QBZ9183ED5WVXTF2RFMCSV",
+        "link": "01M6QBZ9183ED5WVXTEYRQ60YW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QBXQ8SJ1HGA3RBETE3S7X4",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M6PFJ960GFE6G98GNDA10V1P",
+        "handle": null,
+        "id": "01M6QBZ91MXB1AT1C7WPZWRC7P",
+        "node": "01M6PFJ960GFE6G98GN9GVTABG",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test ./internal/web/... and ./internal/daemon/... cover the default 127.0.0.1:7787, a changed port, a changed host (0.0.0.0), an IPv6 host (::1, giving [::1]:7787), off, and rejected hosts (localhost, abc, empty, 127.0.0.1:80), through the handler and the computed address with no socket bound; a test drives the listener manager through successive polls with a fake listener factory: port 7787, then 8080, then host 0.0.0.0 with the port unchanged, then off, then 7787 again, and checks it starts, moves (including when only the host changes), stops and restarts the listener at each poll, and that --once and a set RHIZA_TEST_NOW open no listener. The daemon-settings testscript lists rhiza.web.port and rhiza.web.host with their defaults, accepts rhiza daemon set rhiza.web.port 8080 and off and rhiza.web.host 0.0.0.0 and ::1, and rejects port 0, 70000 and abc and host localhost, abc and an empty value with an error naming the key.",
+          "statement": "The long-running daemon serves the web UI over HTTP on the address rhiza.web.host names, 127.0.0.1 by default, at the port rhiza.web.port names, 7787 by default, listening on net.JoinHostPort(host, port), and serves nothing when rhiza.web.port is off; rhiza daemon --once never serves, and the daemon binds no listener when RHIZA_TEST_NOW is set, so the default test run binds no socket and parallel testscripts never race for the port. rhiza daemon set accepts rhiza.web.port only as a port number from 1 to 65535 or off, and rhiza.web.host only as a literal IPv4 or IPv6 address (such as 127.0.0.1, 0.0.0.0, ::1 or ::), rejecting an empty value, hostnames including localhost and anything with a port, with an error naming the key; a running daemon picks up a change to either at its next poll: it starts, moves or stops the listener to match. The UI stays read-only."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJ960GFE6G98GN9GVTABG",
+        "id": "01M6QBZ91Z192J6SEECA9C4JS6",
+        "link": "01M6QBZ91Z192J6SEEC91P77GB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QBXQ8SJ1HGA3RBETE3S7X4",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M6PFJ9CD8XKQZK2PNDXW02PE",
+        "handle": null,
+        "id": "01M6QBZ92CBHYG034NF79KQ205",
+        "node": "01M6PFJ9CD8XKQZK2PNA3B6973",
+        "op": "node.update",
+        "set": {
+          "acceptance": "The daemon-status testscript runs rhiza daemon --once, then rhiza daemon status shows http://127.0.0.1:7787 in text and --json; after rhiza daemon set rhiza.web.host 0.0.0.0 and another rhiza daemon --once, status shows http://0.0.0.0:7787; after rhiza daemon set rhiza.web.host ::1 and another --once, it shows http://[::1]:7787; after rhiza daemon set rhiza.web.port off and another --once, status shows the web UI off.",
+          "statement": "rhiza daemon status shows the web UI as the daemon's state file recorded it from the last poll's effective rhiza.web.host and rhiza.web.port: its URL http://<host>:<port> (an IPv6 host bracketed) for a port, or that the web UI is off; it reads the recorded settings and does not probe the listener."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJ9CD8XKQZK2PNA3B6973",
+        "id": "01M6QBZ92P3712T11AMQ02EEZJ",
+        "link": "01M6QBZ92P3712T11AMNFDEWW7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QBXQ8SJ1HGA3RBETE3S7X4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6PFJ9CD8XKQZK2PNA3B6973",
+        "id": "01M6QBZ935J0WREKTB33JXNN0R",
+        "link": "01M6QBZ935J0WREKTB31RQR17P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ960GFE6G98GN9GVTABG",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6QBXQ8SJ1HGA3RBETE3S7X4",
+        "id": "01M6QBZ93MPBFZEN1VT68R721A",
+        "link": "01M6QBZ93MPBFZEN1VT58KZC86",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QBYTXHWV9TMPD41M8RN16S",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6QBSDK2D7SYV177YBJCAM2A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QBZ9480BGS55AHK4KZC8SM",
+  "type": "ops",
+  "v": 1
+}
