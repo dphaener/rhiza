@@ -1,0 +1,86 @@
+{
+  "actor": "01M6S39CSTMAVS18QT1TE9D71D",
+  "after": [
+    "01M6S35P9MSFP1VA7BP190Q6YX"
+  ],
+  "at": "2026-11-06T19:03:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at ed87c504, built binary (go build -trimpath), scratch clone of this repo (11,596 log entries, worktree index present), a draft plan change set with four open questions and a hand-written plan run journal stopped at its gate on them, worktree = the clone. rhiza inbox listed all four questions with full statements: new binary 1.1-1.7 s wall (load average 11-17 on 4 cores; 0.4-0.75 s with no gated run), merge-base binary 26 s with the same output. CPU profile: inboxGateRead 0.15 s, no store.ReadLog; the rest of its cost is writeIndex.changeSets decoding every folded change set (~0.76 s CPU over goroutines)."
+        },
+        "handle": "inbox-gate-read-fast-qa-1",
+        "id": "01M6S3X8CD44KNTX9A96V8PCSY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S3X8CD44KNTX9A966BYQ9K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S3X8CD44KNTX9A966BYQ9K",
+        "id": "01M6S3X8E9ZMFP6DHHVXAZYGFY",
+        "link": "01M6S3X8E9ZMFP6DHHVXA6T9EQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXXHAXYY47KE0DZ80E9B1X",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at ed87c504 with the built binary in the same scratch clone: the gated plan run's journal pointed at worktree /nonexistent-qa; rhiza inbox still lists the open item with one 'question:  (qa-qN)' line per handle, statements empty, and next: rhiza run resume. The merge-base binary showed no question lines for that case. In the Inbox app (rhiza tui app inbox under tmux, 90x30) that item opened the gate answer form."
+        },
+        "handle": "inbox-gate-questions-kept-qa-1",
+        "id": "01M6S3X8H632BMG26DT3SAA59D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S3X8H632BMG26DT3C8BY1T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S3X8H632BMG26DT3C8BY1T",
+        "id": "01M6S3X8MZQ42W6KZHN4ZCD2YW",
+        "link": "01M6S3X8MZQ42W6KZHN3Q87QFJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXXHCHHB08YWNFGY67DT82",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at ed87c504: rhiza tui app inbox (built binary) under tmux at 90x30 in the scratch clone. Picking the gate item opened the form: four ~300-char questions in a 5-row text block with 'pgup/pgdn or wheel scroll · 1-4/20' above four TextAreas; PageDown moved through 5-8, 9-12, 13-16, 17-20/20 to END4 with the TextAreas still on screen. Typed four answers and submitted: four Decisions written in the plan change set (question.answer --run), then run.resume failed (journal has no workflow definition) and the app showed 'answered; resume failed: ...' in a detail panel that scrolled with arrows and PageDown (1-10/25 to 16-25/25 at 90x15). Blank answers re-asked with 'answer each question'. With the worktree unreadable the form shows 'question 1 of 4: This question's text could not be read.' and no handle on screen. Arrow keys go to the TextArea and do not scroll the question text. Mouse wheel not exercised by hand (Go test only)."
+        },
+        "handle": "inbox-app-gate-scroll-qa-1",
+        "id": "01M6S3X8PM1W21EGTCPGETAGGS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S3X8PM1W21EGTCPF3K99A1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S3X8PM1W21EGTCPF3K99A1",
+        "id": "01M6S3X8R0KXFB3FBMS8R5PK51",
+        "link": "01M6S3X8R0KXFB3FBMS8061AMB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXXHH0SGR3DGTJTD37G584",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RXK2SB0M12FXVEGXER022R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S3X8RW1X1TSXSW642CBTA4",
+  "type": "ops",
+  "v": 1
+}
