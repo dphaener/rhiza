@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q8AEFBNQWKH6GZ1SGAPCM5",
+  "after": [
+    "01M6Q8856QYEFGJMYGP97J23N2"
+  ],
+  "at": "2026-11-06T02:01:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ea99839d, go test -trimpath -count=1 -run 'TestRunPage' ./internal/web/ passes: TestRunPagePlanRun renders /runs/<id> for a fixture plan run and asserts steps in order (interview, draft, gate) with done/failed/running outcomes, durations and times, and the sessions with status ('finished · 1115 tokens', now counting cache_creation and cache_read, and 'running'); TestRunPageReviewRun asserts the review summary's check, findings and severities in order (blocker Nil dereference a.go:3, nit Spelling); TestRunPageUnknownIs404 gets 404 for an unknown run; TestRunPageThroughReadOnlyAPI serves a real run journal through api.ReadOnlyHandler and gets 200 with the title on /runs/run1 and a rendered fragment. TestReadOnlyMarker and TestRunStatusAndResumeRefusals in internal/api pass, and runRunStatus only reads the journal, session store and ship state, so its ReadOnly mark is sound. The diff's token struct tags match api.SessionTokens' json names. The full internal/api package timed out under machine load (load avg 12-19) on the unrelated TestChangeShowIndexedMatchesFoldGenerated; that is left to CI."
+        },
+        "handle": "web-run-detail-verified-2",
+        "id": "01M6Q9D45Y1WE4JM0BEY75BVVN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q9D45Y1WE4JM0BEWTTRREQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q9D45Y1WE4JM0BEWTTRREQ",
+        "id": "01M6Q9D4E29F863SA1YPSMM0SZ",
+        "link": "01M6Q9D4E29F863SA1YN3HVAMP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAE3P8MJB7E7CJ4FCWHB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFH1X52KNK0C5ZCDYEEF64",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q9D4K9JNAMVZ3S2C9TED9T",
+  "type": "ops",
+  "v": 1
+}
