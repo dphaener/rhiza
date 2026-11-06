@@ -1,0 +1,39 @@
+{
+  "actor": "01M6QSJWH9PN864PK241N4F078",
+  "after": [
+    "01M6QSQ4HAX102J4GDKS2NZNPN"
+  ],
+  "at": "2026-11-06T06:46:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "agent (recommended; the arbiter decided it as overview-health-cached-background)",
+              "text": "Web-side background cache: the daemon's web server computes health in the background, single-flight, pages render the last result and never wait for it; before the first result the panel shows health as checking.",
+              "where": "interview question 1"
+            }
+          ],
+          "raw_sha256": "490d16aba5b367866820c2252a2be72d8308658fd7bc6dcfb715a58cb4289ec4",
+          "session": "168498bf-491f-475d-a975-01a1af9967ce",
+          "summary": "Autonomous plan run for the slow Overview page (/ and /fragments/daemon about 5 s, because WebDaemonSource runs the full health report with rhiza check on every render). The daemon keeps no health result to reuse today. One question was raised: how the Overview gets health without running it per request. The arbiter decided on an in-memory health report in WebDaemonSource, refreshed in the background (single flight, about 30 s staleness), pills shown as pending before the first report, daemon status read live, no change to the daemon poll or its state file. Planned one leaf under web-monitor, serving m28-browser-monitor. Nothing left open.",
+          "title": "Fast web UI Overview, autonomous plan"
+        },
+        "handle": "overview-fast-plan",
+        "id": "01M6QSQXRECHN4S57CG5MTRZPD",
+        "key": null,
+        "kind": "source",
+        "node": "01M6QSQXRDHBMB5YX5DPN0AZ26",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6QSJHF5WH4SZKCTTYD0W0SS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QSQXRW5WGRAME88KRCWS4G",
+  "type": "ops",
+  "v": 1
+}

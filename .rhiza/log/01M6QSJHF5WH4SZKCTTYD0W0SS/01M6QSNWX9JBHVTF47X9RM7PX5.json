@@ -1,0 +1,30 @@
+{
+  "actor": "01M6QSJWH9PN864PK241N4F078",
+  "after": [
+    "01M6QSJHF5WH4SZKCTTYT8ADRW"
+  ],
+  "at": "2026-11-06T06:45:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "168498bf-491f-475d-a975-01a1af9967ce",
+          "statement": "Fix for the slow web UI Overview (WebDaemonSource runs the full health report, rhiza check included, about 5 s, on every render of / and /fragments/daemon). The daemon keeps no health result today, so there is nothing to reuse yet. How should the Overview get health without running it on each request?"
+        },
+        "handle": "question-168498bf-1",
+        "id": "01M6QSNV3XH5D44ES3Y2M4N1AQ",
+        "key": null,
+        "kind": "question",
+        "node": "01M6QSNV3XH5D44ES3Y10TG239",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6QSJHF5WH4SZKCTTYD0W0SS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QSNWX9JBHVTF47X9RM7PX5",
+  "type": "ops",
+  "v": 1
+}

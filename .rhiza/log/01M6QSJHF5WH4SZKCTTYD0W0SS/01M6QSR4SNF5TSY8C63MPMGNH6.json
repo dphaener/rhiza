@@ -1,0 +1,60 @@
+{
+  "actor": "01M6QSJWH9PN864PK241N4F078",
+  "after": [
+    "01M6QSQXY6FMF8RBZW6363YVRC"
+  ],
+  "at": "2026-11-06T06:46:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6QSQ4GJQ8QRYX9JND6PMSRQ",
+        "id": "01M6QSR4P58S7S7HM2XEQ0EP3G",
+        "link": "01M6QSR4P58S7S7HM2XBXPQEVE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QSQXRDHBMB5YX5DPN0AZ26",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A test serves / and /fragments/daemon with a health source that blocks for seconds and asserts each answers well under 0.5 s; that the first answer shows the pills pending, not failed; that many concurrent requests start one refresh; that once the report lands the pills show it; and that a report older than the interval starts one new refresh while requests keep getting the old one",
+          "statement": "The Overview page at / and its daemon fragment answer at once from the last health report the web UI holds in memory, refreshed in the background no more than one at a time and when older than about 30 s, with the health pills shown as pending until the first report lands, while running, paused and slots stay a live read"
+        },
+        "handle": "web-overview-fast",
+        "id": "01M6QSR4PW1N772QAPCHV7ZD21",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M6QSR4PW1N772QAPCE2E9N9W",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M6QSR4PW1N772QAPCE2E9N9W",
+        "id": "01M6QSR4QRYYXESP5TRBGM3Z7Q",
+        "link": "01M6QSR4QRYYXESP5TR9RE5ZSW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QSQ4GJQ8QRYX9JND6PMSRQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6QSR4PW1N772QAPCE2E9N9W",
+        "id": "01M6QSR4REAQMNKM4PE7A56JAW",
+        "link": "01M6QSR4REAQMNKM4PE6R3G0E2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QSQXRDHBMB5YX5DPN0AZ26",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6QSJHF5WH4SZKCTTYD0W0SS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QSR4SNF5TSY8C63MPMGNH6",
+  "type": "ops",
+  "v": 1
+}
