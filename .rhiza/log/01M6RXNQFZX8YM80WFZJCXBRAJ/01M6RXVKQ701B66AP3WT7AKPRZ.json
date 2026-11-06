@@ -1,0 +1,30 @@
+{
+  "actor": "01M6RXPDSS96KX44B64EJ3S9QP",
+  "after": [
+    "01M6RXNQFZX8YM80WFZJZARQJ4"
+  ],
+  "at": "2026-11-06T17:17:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "0ed25417-24bb-4e97-bfea-01a1b1db21df",
+          "statement": "How should an accept made in the main clone (Inbox app or rhiza accept) reach the ship-change run's branch? Today the run's worktree copies a change set's main-clone log entries only when the worktree lacks the change set entirely, so a committed proposed change set never gets its untracked accept entry. / This change set serves no intent yet. Which should it serve? Earlier daemon fixes (zombie drivers, owner-run gate accept, driver CPU) serve milestone-25 (backlog emptied by the daemon on its own); Inbox app fixes served m26-inbox-app."
+        },
+        "handle": "question-0ed25417-1",
+        "id": "01M6RXVG3ECF82FS75GD5MCJ4Q",
+        "key": null,
+        "kind": "question",
+        "node": "01M6RXVG3ECF82FS75G9HGYMPP",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6RXNQFZX8YM80WFZJCXBRAJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RXVKQ701B66AP3WT7AKPRZ",
+  "type": "ops",
+  "v": 1
+}

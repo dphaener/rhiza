@@ -1,0 +1,50 @@
+{
+  "actor": "01M6RXPDSS96KX44B64EJ3S9QP",
+  "after": [
+    "01M6RXYG69TEA5QE8ZKZKS5NXE"
+  ],
+  "at": "2026-11-06T17:19:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6RXXPWWKZCVSTCWT9NB149S",
+        "id": "01M6RXZ1V9PWD62CZY1BKN94KK",
+        "link": "01M6RXZ1V9PWD62CZY19F92QG5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXYFVTNNZRZF7SS7TQD7PH",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A new testscript (go test -trimpath ./cmd/rhiza -run TestScripts/run-worktree-carries-accept) commits a proposed change set with leaves, accepts it in the main clone so the accept entry stays untracked, then starts a run on it (a new worktree, and again with the worktree already existing on its branch) and shows change show in the worktree reports accepted and the accept entry file is there; rhiza ship land in that worktree commits the accept entry on the branch. go test -trimpath ./internal/api/... passes.",
+          "statement": "When a run or session sets up its worktree for a change set, every log entry of that change set the main clone has and the worktree lacks is copied in, even when the worktree already has the change set, so an accept made in the main clone (Inbox app or rhiza accept, never pushed) reaches the run and ship land commits it on the run's branch."
+        },
+        "handle": "run-worktree-carries-accept",
+        "id": "01M6RXZ1WMDHH9H5ZH8T8REZ7X",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6RXZ1WMDHH9H5ZH8T7G0VR2",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M6RXZ1WMDHH9H5ZH8T7G0VR2",
+        "id": "01M6RXZ1X88G6KPPDWRFKAPCBS",
+        "link": "01M6RXZ1X88G6KPPDWRDT0KRKD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXXPWWKZCVSTCWT9NB149S",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6RXNQFZX8YM80WFZJCXBRAJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RXZ1Y9S6RJQZXYJZP55QF6",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,33 @@
+{
+  "actor": "01M6RXPDSS96KX44B64EJ3S9QP",
+  "after": [
+    "01M6RXXPYXPYCX5NCFK0AC594S"
+  ],
+  "at": "2026-11-06T17:19:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "5ccd78e643c68537d5bcc01a8a7a32a379c28a8132846b04898f521af451d198",
+          "session": "0ed25417-24bb-4e97-bfea-01a1b1db21df",
+          "summary": "Autonomous plan run, no owner. The planner traced the bug: a run's worktree branches from the main clone's HEAD, and worktreeWorkspace copies the change set's main-clone log entries only when the worktree lacks the change set, so a committed proposed change set never gets its untracked accept entry and ship land fails with 'it is proposed, not accepted'. Two questions went to the arbiter: how the accept reaches the run (the run carries it, or accept pushes to main) and which intent the change set serves. The arbiter ruled the run carries it (worktree setup copies every entry of the change set the worktree lacks, committed on the run branch; accept never pushes to main) and that it serves milestone-25.",
+          "title": "Plan interview: Fix Accepting a change set (autonomous)"
+        },
+        "handle": "plan-fix-accept-reaches-run",
+        "id": "01M6RXYFVTNNZRZF7SS88V7YGP",
+        "key": null,
+        "kind": "source",
+        "node": "01M6RXYFVTNNZRZF7SS7TQD7PH",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6RXNQFZX8YM80WFZJCXBRAJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RXYFWCVQA9BSMP9GQCZERE",
+  "type": "ops",
+  "v": 1
+}
