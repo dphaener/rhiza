@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q9NZBKS3X6SM4E3CQPZ2EV",
+  "after": [
+    "01M6Q9J4TRNTRZ16DQMYD12HC4"
+  ],
+  "at": "2026-11-06T02:32:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2 at 2c8d7ef9: go test -trimpath -count=1 ./internal/web -run TestOverview passes. TestOverviewListsInbox renders / and /fragments/inbox over a fixture inbox with a question, a sign-off and a failed run, asserts all three oldest first (question 07:00, sign-off 08:00, failed 09:00) in the waiting accent with no ID shown, and asserts the empty state 'Nothing waits on you' without the waiting accent. The fix commit's TestWebInboxViewsOwnerWording and TestWebInboxViewsOpenWithoutQuestions pass (go test ./internal/api -run TestWebInbox). They fold run journals into open, sign-off, failed and stalled inbox items and assert that no row's title or detail carries a run or session ID, a question handle, a rhiza command or a Rex window, and that an open item becomes one row per question, by its statement. That resolves the quality finding about passing the CLI detail straight through. Read the diff: webInboxViews maps each kind to owner wording, and Blocks is the blocked node's name (inbox.go:125), not a handle. go vet and gofmt are clean, and internal/web passes in full. The full internal/api run failed only TestReadBudget (roadmap what-if median over 50ms at a load average of about 17), a timing budget on roadmap reads that this diff does not touch."
+        },
+        "handle": "web-overview-inbox-verified-2",
+        "id": "01M6QB6VNNFCAKZCMKSDNH1BS8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QB6VNNFCAKZCMKSCPN0KYA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QB6VNNFCAKZCMKSCPN0KYA",
+        "id": "01M6QB6VPFD8SKH4BXF8GD6Y82",
+        "link": "01M6QB6VPFD8SKH4BXF6VS5RC2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX24XAF6CBGRW7W837AV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QB6VQ82C1M5ETKCWX1D79Y",
+  "type": "ops",
+  "v": 1
+}
