@@ -221,6 +221,13 @@ func TestRunLogTailFollowsDriverLog(t *testing.T) {
 			t.Errorf("tail lacks %q:\n%s", want, body)
 		}
 	}
+	// The run page itself shows the tail, read through the read-only API.
+	page := serve(h, "GET", "/runs/run1")
+	for _, want := range []string{"rz-term", "first line", `data-rz-fragment="/fragments/run-log?run=run1"`} {
+		if page.Code != 200 || !strings.Contains(page.Body.String(), want) {
+			t.Errorf("run page lacks %q: %d\n%s", want, page.Code, page.Body)
+		}
+	}
 	n := strings.Count(l.body(), "event: log")
 	appendLines("third line\n")
 	for end := time.Now().Add(10 * time.Second); strings.Count(l.body(), "event: log") == n; time.Sleep(5 * time.Millisecond) {
