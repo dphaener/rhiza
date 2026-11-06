@@ -71,6 +71,7 @@
 .rz-pill--withdrawn { color: var(--ink-3); text-decoration: line-through; text-decoration-thickness: 1px; }
 /* health parts */
 .rz-health { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.rz-pill--pending { color: var(--ink-3); border-style: dashed; }
 .rz-pill--ok   { color: var(--teal); border-color: transparent; background: var(--teal-soft); }
 .rz-pill--warn { color: var(--rose); border-color: var(--rose); }
 .rz-pill--bad  { color: var(--on-solid); background: var(--rose); border-color: var(--rose); }

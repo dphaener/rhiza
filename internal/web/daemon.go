@@ -14,6 +14,8 @@ type DaemonView struct {
 	// Slots is how many runs hold a slot, of Limit.
 	Slots, Limit int
 	Health       []HealthPill
+	// HealthPending is set until the first health report has landed.
+	HealthPending bool
 }
 
 // HealthPill is one part of the health report with its state: ok, warn or

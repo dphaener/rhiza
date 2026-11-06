@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/daemon"
@@ -46,7 +47,12 @@ func TestOverviewReadsDaemonFromRepo(t *testing.T) {
 		t.Fatal("health has no parts")
 	}
 
-	body := serve(web.HandlerWith(api.WebDaemonSource(ctx), nil), "GET", "/").Body.String()
+	h := web.HandlerWith(api.WebDaemonSource(ctx), nil)
+	body := serve(h, "GET", "/").Body.String()
+	for end := time.Now().Add(30 * time.Second); strings.Contains(body, "rz-pill--pending") && time.Now().Before(end); {
+		time.Sleep(50 * time.Millisecond)
+		body = serve(h, "GET", "/").Body.String()
+	}
 	wants := []string{
 		"Paused, 2 of 4 slots in use",
 		`<div class="rz-stat-val">Paused</div>`,
