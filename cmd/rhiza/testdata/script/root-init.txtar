@@ -1,0 +1,45 @@
+# rhiza root init makes a directory a root with a rhiza.toml, and root show
+# finds the same root from the root, from a registered project and from a
+# <project>.<slug> sibling worktree.
+mkdir top
+exec rhiza root init top
+stdout '^Initialised a Rhiza root in .*top\.$'
+stdout '^next: rhiza root show$'
+exists top/rhiza.toml
+
+# A second init on the same directory is a usage error with a next.
+! exec rhiza root init top
+stderr '^rhiza: .*top is already a Rhiza root$'
+stderr '^next: rhiza root show$'
+! stdout .
+! exec rhiza root init top --json
+stdout '"code": "usage"'
+stdout '"next": "rhiza root show"'
+
+# Register a project by hand (rhiza project add is another command).
+cp top/rhiza.toml $WORK/orig.toml
+exec sh -c 'printf "[projects.app]\npath = \"app\"\n" >> top/rhiza.toml'
+mkdir top/app
+mkdir top/app.feature-x/sub
+
+cd top
+exec rhiza root show --json
+stdout '"root": ".*/top"'
+stdout '"config": ".*/top/rhiza.toml"'
+stdout '"project": ""'
+cd app
+exec rhiza root show --json
+stdout '"root": ".*/top"'
+stdout '"project": "app"'
+cd ../app.feature-x/sub
+exec rhiza root show --json
+stdout '"root": ".*/top"'
+stdout '"project": "app"'
+
+# Outside any root: exit 2 with a next.
+cd $WORK
+mkdir outside
+cd outside
+! exec rhiza root show
+stderr 'not inside a Rhiza root'
+stderr '^next: rhiza root init$'

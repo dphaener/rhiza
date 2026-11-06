@@ -7635,6 +7635,74 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "root.init",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "dir": {
+            "description": "The directory to make a root; created if missing (default: the working directory)",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "config": {
+            "description": "The root's config file",
+            "type": "string"
+          },
+          "root": {
+            "description": "The root directory",
+            "type": "string"
+          }
+        },
+        "required": [
+          "config",
+          "root"
+        ],
+        "type": "object"
+      },
+      "summary": "Make a directory a Rhiza root by writing its rhiza.toml",
+      "write": false
+    },
+    {
+      "name": "root.show",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "config": {
+            "description": "The root's config file",
+            "type": "string"
+          },
+          "project": {
+            "description": "The registered project the working directory belongs to, by its folder or a <project>.<slug> sibling worktree; empty at the root itself",
+            "type": "string"
+          },
+          "root": {
+            "description": "The root directory: the nearest ancestor holding a rhiza.toml",
+            "type": "string"
+          }
+        },
+        "required": [
+          "config",
+          "project",
+          "root"
+        ],
+        "type": "object"
+      },
+      "summary": "Show the Rhiza root, its config file and the project the working directory belongs to",
+      "write": false
+    },
+    {
       "name": "run.abandon",
       "request": {
         "additionalProperties": false,

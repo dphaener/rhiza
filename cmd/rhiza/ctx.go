@@ -54,6 +54,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 	}
 	ctx := &api.Ctx{
 		Root:      root,
+		Wd:        wd,
 		ChangeRef: pick(g.change, g.changeSet, getenv("RHIZA_CHANGE")),
 		ActorRef:  pick(g.actor, g.actorSet, getenv("RHIZA_ACTOR")),
 		ForRef:    pick(g.forRef, g.forSet, getenv("RHIZA_FOR")),
