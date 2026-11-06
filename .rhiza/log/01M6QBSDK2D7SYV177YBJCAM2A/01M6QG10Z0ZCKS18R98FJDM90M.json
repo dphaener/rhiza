@@ -1,0 +1,73 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6QF7PGAHMDABT8Z88NB95VD"
+  ],
+  "at": "2026-11-06T03:56:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "fa72fba2226ce311695bb953ed3c2db7075c709e",
+          "pr": "https://github.com/dphaener/rhiza/pull/325",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #325 (https://github.com/dphaener/rhiza/pull/325) passed CI at fa72fba",
+          "status": "verified"
+        },
+        "handle": "pr-325-let-the-web-ui-listen-on-all",
+        "id": "01M6QG10TDK1Q805YK2B3RNC1K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QG10TCB9D8KG7MTJGV5EVX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QG10TCB9D8KG7MTJGV5EVX",
+        "id": "01M6QG10V9TKBYXNN4PKBCRJR5",
+        "link": "01M6QG10V9TKBYXNN4PJZ0Y1J8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ960GFE6G98GN9GVTABG",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6QG10TCB9D8KG7MTJGV5EVX",
+        "id": "01M6QG10VZW8K23AYN0RQQ8VJE",
+        "link": "01M6QG10VZW8K23AYN0NNZZ8YK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ9CD8XKQZK2PNA3B6973",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6QG10TCB9D8KG7MTJGV5EVX",
+        "id": "01M6QG10WKJ0WAHSS8FJY8ZNME",
+        "link": "01M6QG10WKJ0WAHSS8FFKR7C2B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QC3F43SZJGVMFP61832VJW",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6QG10TCB9D8KG7MTJGV5EVX",
+        "id": "01M6QG10X8BGPK1VCFBTZFMVBD",
+        "link": "01M6QG10X8BGPK1VCFBRAP6932",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QC3F6QYZ63H13RNGX78808",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6QBSDK2D7SYV177YBJCAM2A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QG10Z0ZCKS18R98FJDM90M",
+  "type": "ops",
+  "v": 1
+}
