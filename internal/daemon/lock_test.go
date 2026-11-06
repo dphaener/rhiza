@@ -56,3 +56,25 @@ func TestStaleLockFileIsTakenOver(t *testing.T) {
 		t.Errorf("holder = %+v, want this process started %v", h, t0)
 	}
 }
+
+func TestRootLockIsOnePerRoot(t *testing.T) {
+	root := t.TempDir()
+	l, err := TryLockRoot(root, t0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = TryLockRoot(root, t0)
+	var h *Held
+	if !errors.As(err, &h) || h.Holder.Pid != os.Getpid() {
+		t.Fatalf("second TryLockRoot = %v, want *Held naming this process", err)
+	}
+	if _, err := os.Stat(filepath.Join(root, ".rhiza-root", File)); err != nil {
+		t.Errorf("lock file not in the root's state folder: %v", err)
+	}
+	l.Unlock()
+	l2, err := TryLockRoot(root, t0)
+	if err != nil {
+		t.Fatalf("after Unlock: %v", err)
+	}
+	l2.Unlock()
+}

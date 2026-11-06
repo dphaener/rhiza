@@ -124,3 +124,13 @@ func TestInit(t *testing.T) {
 		}
 	})
 }
+
+// underRoot makes ctx's repo folder a Rhiza root too (a rhiza.toml beside
+// its .rhiza) and sets its working directory there, as the daemon needs.
+func underRoot(t *testing.T, ctx *Ctx) {
+	t.Helper()
+	if err := os.WriteFile(filepath.Join(ctx.Root, "rhiza.toml"), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	ctx.Wd = ctx.Root
+}

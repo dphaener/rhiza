@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/dphaener/rhiza/internal/rootcfg"
 	"io"
 	"io/fs"
 	"os"
@@ -83,6 +84,10 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		return nil, Usagef("daemon runs in the foreground and has no dry run")
 	}
 	r := req.(DaemonRequest)
+	root, ok := rootcfg.Find(ctx.Wd)
+	if !ok {
+		return nil, Usagef("%s is not inside a Rhiza root: the daemon runs on the root", ctx.Wd).WithNext("rhiza root init")
+	}
 	if r.MaxRuns < 0 {
 		return nil, Usagef("--max-runs must be at least 1")
 	}
@@ -111,6 +116,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		interrupted, stop = ctx.Interrupts()
 		defer stop()
 	}
+	rootLock, err := daemon.TryLockRoot(root, ctx.Now())
+	if err != nil {
+		if h, ok := err.(*daemon.Held); ok {
+			return nil, Usagef("%s", h.Error()).WithNext("rhiza daemon status")
+		}
+		return nil, err
+	}
+	defer rootLock.Unlock()
 	lock, err := daemon.TryLock(common, ctx.Now())
 	if err != nil {
 		if h, ok := err.(*daemon.Held); ok {
