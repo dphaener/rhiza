@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SCMN19P86J8DYTAK6K3Y5H",
+  "after": [
+    "01M6SD901JXSSCGRT1ACQ1SPG3"
+  ],
+  "at": "2026-11-06T21:55:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at a67915229a: go test -trimpath -count=1 ./cmd/rhiza -run TestScripts/(daemon-settings-scope|daemon-settings|usage-settings|describe-golden|run-ship-change|ship-deploy-settings|stage-autonomy) all PASS. daemon-settings-scope.txtar sets rhiza.daemon.maxRuns (found in $WORK/rhiza.toml, absent from git config) and rhiza.autonomy.ship (found in project a's git config), sees both in daemon settings with (rhiza.toml, machine)/(git config, project) and in --json with scope and source, sees rhiza.daemon.trimGoCache with machine scope, and fails a project key set at the root without --project; with two projects each with its own rhiza.eventCommand, one daemon --once poll writes A's two moves only to out-a and B's only to out-b. By hand with a scratch build and root: daemon set rhiza.autonomy.ship owner at the root exits 2 naming --project; daemon settings --project a --json lists trimGoCache scope machine. internal/rootcfg tests pass; internal/api TestDaemon*, TestShipDeploy*, TestStatusHook*, daemon_projects_test and usage_hold_test (27 tests) pass. The full internal/api package timed out on this loaded host (load 8 on 4 cores) in the read-path budget tests (TestReadBudget, TestInboxGateQuestionsBudget), which this diff does not touch; CI runs those. Diff read: settingDefs gain a project flag, machine keys read/write rhiza.toml [daemon] via rootcfg.SetDaemon, project keys git config via scopeCtx/projectCtx, hooks resolved per project in daemon_projects.go."
+        },
+        "handle": "root-daemon-settings-scope-verified",
+        "id": "01M6SDRNE2M388Z9JGMNP2ZV7V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SDRNE2M388Z9JGMMVYZ8JE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SDRNE2M388Z9JGMMVYZ8JE",
+        "id": "01M6SDRNEY0KN6BBNZSWQKMMYK",
+        "link": "01M6SDRNEY0KN6BBNZSVNRXMBM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85C17S5VE1A6SNZAXK89",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SDRNFZ1SKWHK3VM9B3SKK3",
+  "type": "ops",
+  "v": 1
+}
