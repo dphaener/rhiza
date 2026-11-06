@@ -83,3 +83,38 @@ func TestOverviewListsLiveRuns(t *testing.T) {
 		t.Errorf("empty: %s", b)
 	}
 }
+
+func TestOverviewListsInbox(t *testing.T) {
+	src := func() []InboxItemView {
+		return []InboxItemView{
+			{Kind: "failed", Title: "Idempotency keys", Detail: "build failed at leaves", Run: "01RUN3", Step: "leaves", At: "2026-11-06T09:00:00Z"},
+			{Kind: "question", Title: "Which queue should retries use?", Detail: "Retry webhook delivery", Run: "01RUN1", At: "2026-11-06T07:00:00Z"},
+			{Kind: "signoff", Title: "Rate limits", Run: "01RUN2", Step: "signoff", At: "2026-11-06T08:00:00Z"},
+		}
+	}
+	for _, path := range []string{"/", FragmentURL("inbox")} {
+		rec := httptest.NewRecorder()
+		HandlerWithInbox(nil, nil, src, nil).ServeHTTP(rec, httptest.NewRequest("GET", path, nil))
+		body := rec.Body.String()
+		q, s, f := strings.Index(body, "Which queue should retries use?"), strings.Index(body, "Rate limits"), strings.Index(body, "Idempotency keys")
+		if q < 0 || s < 0 || f < 0 || !(q < s && s < f) {
+			t.Errorf("%s: items missing or not oldest first (%d %d %d):\n%s", path, q, s, f, body)
+		}
+		for _, want := range []string{
+			"3 waiting on you", "rz-panel--waiting", `href="/runs/01RUN2"`,
+			"rz-pill--waiting", ">question</span>", "sign-off</span>", "failed</span>",
+		} {
+			if !strings.Contains(body, want) {
+				t.Errorf("%s lacks %q:\n%s", path, want, body)
+			}
+		}
+		if strings.Contains(body, "01RUN2</") {
+			t.Errorf("%s shows an ID", path)
+		}
+	}
+	rec := httptest.NewRecorder()
+	HandlerWithInbox(nil, nil, func() []InboxItemView { return nil }, nil).ServeHTTP(rec, httptest.NewRequest("GET", "/", nil))
+	if b := rec.Body.String(); !strings.Contains(b, "Nothing waits on you") || strings.Contains(b, "rz-panel--waiting") || !strings.Contains(b, `data-rz-fragment="/fragments/inbox"`) {
+		t.Errorf("empty: %s", b)
+	}
+}
