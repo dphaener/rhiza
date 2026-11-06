@@ -48,13 +48,25 @@ exec sh -c 'ls second/.git/rhiza/logs | grep -c "start-1.log"'
 stdout '^1$'
 ! exists bare/.git/rhiza
 
+# Each start runs in its own project's session, and none in the bare one.
+exec cat $WORK/detach.log
+stdout -count=1 '^REX_SESSION=rhiza-repo .*rhiza run start --foreground '
+stdout -count=1 '^REX_SESSION=rhiza-second .*rhiza run start --foreground '
+! stdout 'rhiza-bare'
+
+# Each project's own daemon state records the start the poll made in it.
+cd $WORK/second
+exec rhiza daemon status --json
+stdout '"last_started": \{'
+
 # Status, from a project, names the one it skipped and why.
-cd repo
+cd $WORK/repo
 exec rhiza daemon status
 stdout 'Skipped project: bare: not initialised'
 exec rhiza daemon status --json
 stdout '"project": "bare"'
 stdout '"reason": "not initialised"'
+stdout '"last_started": \{'
 -- bin/rex --
 #!/bin/sh
 echo "rex $*" >> "$WORK/rex.log"
