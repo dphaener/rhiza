@@ -6785,6 +6785,101 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "project.add",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "The project's name (default: the folder's name)",
+            "type": "string"
+          },
+          "path": {
+            "description": "The git checkout to register: a folder directly under the root",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "The project's name",
+            "type": "string"
+          },
+          "path": {
+            "description": "The project's folder, relative to the root",
+            "type": "string"
+          },
+          "repo": {
+            "description": "The project's repo ID; empty when it has no .rhiza/",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "path"
+        ],
+        "type": "object"
+      },
+      "summary": "Register an existing git checkout directly under the root as a project",
+      "write": false
+    },
+    {
+      "name": "project.ls",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "projects": {
+            "description": "The registered projects, by name",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "initialised": {
+                  "description": "Whether the project's folder holds .rhiza/",
+                  "type": "boolean"
+                },
+                "name": {
+                  "description": "The project's name",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "The project's folder, relative to the root",
+                  "type": "string"
+                },
+                "repo": {
+                  "description": "The project's repo ID; empty when it has no .rhiza/",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "initialised",
+                "name",
+                "path"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "projects"
+        ],
+        "type": "object"
+      },
+      "summary": "List the projects registered in the root",
+      "write": false
+    },
+    {
       "name": "propose",
       "request": {
         "additionalProperties": false,

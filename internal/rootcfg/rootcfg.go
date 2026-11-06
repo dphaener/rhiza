@@ -150,3 +150,34 @@ func within(parent, d string) bool {
 	rel, err := filepath.Rel(parent, d)
 	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
 }
+
+// ErrTaken is returned by Add when the name is already registered.
+var ErrTaken = errors.New("project name already registered")
+
+// Add registers project name at path (relative to root) in root's
+// rhiza.toml, keeping the other projects. The file is rewritten whole, so
+// comments in it are not kept except the header.
+func Add(root, name string, p Project) error {
+	c, err := Load(root)
+	if err != nil {
+		return err
+	}
+	if _, ok := c.Projects[name]; ok {
+		return ErrTaken
+	}
+	if c.Projects == nil {
+		c.Projects = map[string]Project{}
+	}
+	c.Projects[name] = p
+	var b strings.Builder
+	b.WriteString("# The Rhiza root: its projects and machine-wide settings.\n")
+	if err := toml.NewEncoder(&b).Encode(c); err != nil {
+		return err
+	}
+	path := filepath.Join(root, File)
+	tmp := path + ".tmp"
+	if err := os.WriteFile(tmp, []byte(b.String()), 0o644); err != nil {
+		return err
+	}
+	return os.Rename(tmp, path)
+}

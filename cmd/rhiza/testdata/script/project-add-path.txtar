@@ -1,0 +1,45 @@
+# rhiza project add <path> registers a checkout directly under the root.
+mkdir top
+exec rhiza root init top
+cd top
+mkdir app
+exec git -C app init -q
+exec rhiza project add app
+stdout '^Registered project app at app\.$'
+grep 'projects.app' rhiza.toml
+exec rhiza project ls --json
+stdout '"name": "app"'
+stdout '"path": "app"'
+stdout '"initialised": false'
+
+# --name picks another name; the repo ID is recorded when there is .rhiza/.
+mkdir other
+exec git -C other init -q
+cd other
+exec rhiza init
+cd ..
+exec rhiza project add other --name second --json
+stdout '"name": "second"'
+stdout '"repo": "[0-9A-Z]{26}"'
+grep 'repo = "[0-9A-Z]{26}"' rhiza.toml
+grep 'projects.app' rhiza.toml
+
+# Refusals exit 2 with a next.
+mkdir $WORK/elsewhere
+exec git -C $WORK/elsewhere init -q
+! exec rhiza project add $WORK/elsewhere
+stderr 'outside the root'
+stderr '^next: '
+mkdir deep/nest
+exec git -C deep/nest init -q
+! exec rhiza project add deep/nest
+stderr 'nested'
+mkdir plain
+! exec rhiza project add plain
+stderr 'not a git checkout'
+stderr '^next: '
+! exec rhiza project add app
+stderr 'already registered'
+stderr '^next: '
+exec sh -c 'rhiza project add app >/dev/null 2>&1; echo exit=$?'
+stdout '^exit=2$'
