@@ -1,0 +1,187 @@
+# A built-in ship-change run, with the repo's deploy health URL set, polls
+# it after the ship command until it answers 200: a fake health server on
+# loopback answers 503, 503, then 200, and the run ends done.
+#
+# The fakes are run-ship-change.txtar's, with one leaf, and the run is
+# autonomous, so it does not wait at its sign-off. Nothing reaches the
+# network beyond loopback, GitHub, Rex or Claude Code.
+
+health-server HEALTH_URL $WORK/health.log 503 503 200
+env RHIZA_DEPLOY_INTERVAL=10ms
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/ship.sh .rhiza/workflows/ship.sh
+cp $WORK/review.toml .rhiza/workflows/review.toml
+
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability first --field 'statement=Does first'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+
+exec rhiza daemon set rhiza.ship.deployUrl $HEALTH_URL
+exec rhiza daemon set rhiza.ship.deployTimeout 1m
+
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --autonomous; echo exit=$?'
+stdout '^Run \S+ succeeded$'
+stdout '^exit=0$'
+stderr '^deploy check 1: HTTP 503$'
+stderr '^deploy check 2: HTTP 503$'
+stderr '^Deploy healthy: http://127\.0\.0\.1:[0-9]+/health answered 200 after 3 polls\.$'
+
+# The deploy check ran last, after the ship command, and passed.
+exec rhiza run status --json
+stdout '"workflow": "ship-change"'
+stdout '"state": "succeeded"'
+exec rhiza run status
+stdout '^- ship \(visit 1\): pass, then deploy-check: exit 0$'
+stdout '^- deploy-check \(visit 1\): pass, then end: exit 0$'
+exec cat $WORK/ship.log
+stdout -count=1 '^shipped$'
+cmp $WORK/health.log $WORK/want.health
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: landed'
+
+# Nothing waits on the owner.
+exec rhiza inbox
+! stdout 'failed'
+
+-- want.health --
+503
+503
+200
+-- review.toml --
+# The repo's own review, as the built-in one but with two fake checks.
+# Its code step runs rhiza check, which passes only because ship-change
+# rendered and committed what build's sessions wrote.
+[step.code]
+kind = "command"
+run = "rhiza run code-check"
+on.pass = "review"
+
+[step.review]
+kind = "checks"
+interval = "50ms"
+max_visits = 3
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "beta"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 3
+on.pass = "done"
+on.changes = "review"
+-- ship.sh --
+#!/bin/sh
+echo shipped >> "$WORK/ship.log"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+echo "role=$RHIZA_ROLE leaf=$RHIZA_LEAF" >> "$WORK/claude.log"
+case "$RHIZA_ROLE" in
+builder)
+	echo "$RHIZA_LEAF" > "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt"
+	git commit -q -m "build $RHIZA_LEAF" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
+	;;
+verifier)
+	rhiza add evidence "$RHIZA_LEAF-verified" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-verified" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+check)
+	echo '{"findings":[]}' > "$WORK/empty-round.json"
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+	;;
+esac
+exit 0
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ "$3" = 7 ]; then
+		printf '{"mergeCommit":{"oid":"%s"},"state":"MERGED"}\n' "$(cat "$WORK/merge.sha")"
+		exit 0
+	fi
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	if [ ! -f "$WORK/pr.created" ]; then
+		printf '{"number":3,"url":"https://github.test/o/r/pull/3","state":"MERGED","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
+		exit 0
+	fi
+	echo "$head" > "$WORK/landed.sha"
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"},{"context":"lint","state":"SUCCESS"}]}\n' "$head"
+	;;
+"pr create")
+	while [ $# -gt 0 ]; do
+		if [ "$1" = --body-file ]; then
+			cp "$2" "$WORK/pr-body.md"
+		fi
+		shift
+	done
+	touch "$WORK/pr.created"
+	;;
+"pr edit")
+	;;
+"pr merge")
+	head=$(git -C "$o" rev-parse refs/heads/cs/ship-it)
+	if [ "$6" != "$head" ]; then
+		echo "head branch was modified" >&2
+		exit 1
+	fi
+	sha=$(git -C "$o" commit-tree "$head^{tree}" -p refs/heads/main -m 'Ship it (#7)')
+	git -C "$o" update-ref refs/heads/main "$sha"
+	echo "$sha" > "$WORK/merge.sha"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac
