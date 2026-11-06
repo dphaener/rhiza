@@ -28,6 +28,7 @@ agent of milestone-1 task 1 (shipit plan), accepted by the owner
 ### In
 
 - decided-by [self-check](../capability/rhiza/integrity/self-check.md)
+- supersedes [ci-speed-shape](ci-speed-shape.md)
 
 ## History
 

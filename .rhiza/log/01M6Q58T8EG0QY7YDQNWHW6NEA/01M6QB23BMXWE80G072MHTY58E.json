@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q9KKJV3M7E32330G04C6C9",
+  "after": [
+    "01M6QB1PA6GSK7KZ2MEZ1SXNQC"
+  ],
+  "at": "2026-11-06T02:30:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 2f747105, real runs on the VM: make test-scripts SHARD=2/4 passed (68 scripts); make test-api SHARD=2/2 passed (ok internal/api 267 s on a loaded machine); make test-budgets passed for internal/api, index and slice and printed the Read-budget timings block; make test-api SHARD=0/4, 5/4, x and 1/0 each exit 1 with 'SHARD=...: want i/n with 1 <= i <= n'. With GO_TEST=echo, shards 1/2 and 2/2 list 229 and 228 tests, disjoint, covering all 460 top-level internal/api tests except the 3 budget tests. go test -trimpath -count=1 ./cmd/rhiza -run 'TestScriptShard|TestMake' passed; the test target is unchanged in the diff."
+        },
+        "handle": "make-test-shard-targets-qa-1",
+        "id": "01M6QB237C6PKPWK5RH386VRWZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QB237C6PKPWK5RH1YKF014",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QB237C6PKPWK5RH1YKF014",
+        "id": "01M6QB2395PC1HAWQAF65XCQNQ",
+        "link": "01M6QB2395PC1HAWQAF5H3BXS8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHVN71122BKP8ZG1DQPR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6Q58T8EG0QY7YDQNWHW6NEA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QB23BMXWE80G072MHTY58E",
+  "type": "ops",
+  "v": 1
+}

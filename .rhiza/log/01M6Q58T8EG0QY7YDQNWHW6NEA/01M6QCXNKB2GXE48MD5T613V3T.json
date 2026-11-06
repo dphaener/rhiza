@@ -1,0 +1,73 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6QB9942VHKRZ7PHHHM4MHJD"
+  ],
+  "at": "2026-11-06T03:02:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "d70eef3935a109f65b94c7f9aacdaefe0070e458",
+          "pr": "https://github.com/dphaener/rhiza/pull/322",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #322 (https://github.com/dphaener/rhiza/pull/322) passed CI at d70eef3",
+          "status": "verified"
+        },
+        "handle": "pr-322-ci-takes-11-18-minutes-per-pr",
+        "id": "01M6QCXNEGJHW4VX4H86S63VCF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QCXNEGJHW4VX4H83NY8XX8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QCXNEGJHW4VX4H83NY8XX8",
+        "id": "01M6QCXNF2D909ASH0WF2PV7SR",
+        "link": "01M6QCXNF2D909ASH0WCKTGYWN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHTX26CPP16DNNEK7T80",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6QCXNEGJHW4VX4H83NY8XX8",
+        "id": "01M6QCXNFWYFJ8BNXYJHQFSTHF",
+        "link": "01M6QCXNFWYFJ8BNXYJEPN3GZM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHVN71122BKP8ZG1DQPR",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6QCXNEGJHW4VX4H83NY8XX8",
+        "id": "01M6QCXNGBBPSHY6V3FY927YQD",
+        "link": "01M6QCXNGBBPSHY6V3FVFKMFGG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHWA4TNKZ9TB3ZEGH7JR",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6QCXNEGJHW4VX4H83NY8XX8",
+        "id": "01M6QCXNHC9RX8191VVHPP6S72",
+        "link": "01M6QCXNHC9RX8191VVGDVEAGD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHWYFNJV9D7A7KNYSZGH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6Q58T8EG0QY7YDQNWHW6NEA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QCXNKB2GXE48MD5T613V3T",
+  "type": "ops",
+  "v": 1
+}

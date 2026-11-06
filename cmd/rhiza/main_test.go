@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"testing"
 	"time"
 
@@ -26,12 +27,58 @@ func TestMain(m *testing.M) {
 var update = flag.Bool("update", false, "rewrite the archive files that cmp compares against")
 
 func TestScripts(t *testing.T) {
+	dir := "testdata/script"
+	files, err := shardFiles(dir, os.Getenv("RHIZA_TEST_SHARD"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// testscript reads Files only when Dir is empty.
+	if files != nil {
+		dir = ""
+	}
 	testscript.Run(t, testscript.Params{
-		Dir:           "testdata/script",
+		Dir:           dir,
+		Files:         files,
 		Setup:         setup,
 		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "chtimes": chtimes},
 		UpdateScripts: *update,
 	})
+}
+
+// shardFiles lists the scripts in dir that shard (RHIZA_TEST_SHARD, "i/n",
+// 1-based) selects, as paths for testscript's Files. An empty shard returns
+// nil, and testscript then runs every script in Dir.
+func shardFiles(dir, shard string) ([]string, error) {
+	if shard == "" {
+		return nil, nil
+	}
+	names, err := filepath.Glob(filepath.Join(dir, "*.txtar"))
+	if err != nil {
+		return nil, err
+	}
+	return shardNames(names, shard)
+}
+
+// shardNames returns the names whose index in the sorted list, mod n, is
+// i-1, for shard "i/n": round-robin, so the shards are disjoint and together
+// cover every name.
+func shardNames(names []string, shard string) ([]string, error) {
+	var i, n int
+	var rest string
+	k, err := fmt.Sscanf(shard, "%d/%d%s", &i, &n, &rest)
+	_ = err
+	if k != 2 || n < 1 || i < 1 || i > n {
+		return nil, fmt.Errorf("RHIZA_TEST_SHARD=%q: want i/n with 1 <= i <= n", shard)
+	}
+	sorted := append([]string(nil), names...)
+	sort.Strings(sorted)
+	out := []string{}
+	for idx, name := range sorted {
+		if idx%n == i-1 {
+			out = append(out, name)
+		}
+	}
+	return out, nil
 }
 
 // Every script starts with a fixed clock and ID seed, so its output bytes

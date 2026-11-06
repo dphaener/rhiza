@@ -20,13 +20,13 @@ concurrency:
   group: ci-${{ github.event.pull_request.number || inputs.sha }}
   cancel-in-progress: true
 
+# Each job is one slice of `make check`, run in parallel; `check` aggregates
+# them into the single verdict Ship and branch protection read.
 jobs:
-  check:
+  lint:
     runs-on: ubuntu-26.04
 
     steps:
-    # Full history: `rhiza check` compares against origin/main by default,
-    # which a shallow pull-request checkout does not have.
     - uses: actions/checkout@v7
       with:
         ref: ${{ inputs.sha || github.sha }}
@@ -36,8 +36,110 @@ jobs:
       uses: actions/setup-go@v7
       with:
         go-version-file: go.mod
+        cache: true
+        cache-dependency-path: go.sum
 
-    # `make check` is the single entry point (gofmt, vet, tests), so local and
-    # CI runs cannot drift apart.
-    - name: Run checks
-      run: make check
+    - name: Run lint
+      run: make lint
+
+  scripts:
+    runs-on: ubuntu-26.04
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1/4, 2/4, 3/4, 4/4]
+
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.sha || github.sha }}
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v7
+      with:
+        go-version-file: go.mod
+        cache: true
+        cache-dependency-path: go.sum
+
+    - name: Run scripts
+      run: make test-scripts SHARD=${{ matrix.shard }}
+
+  api:
+    runs-on: ubuntu-26.04
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1/2, 2/2]
+
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.sha || github.sha }}
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v7
+      with:
+        go-version-file: go.mod
+        cache: true
+        cache-dependency-path: go.sum
+
+    - name: Run api
+      run: make test-api SHARD=${{ matrix.shard }}
+
+  rest:
+    runs-on: ubuntu-26.04
+
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.sha || github.sha }}
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v7
+      with:
+        go-version-file: go.mod
+        cache: true
+        cache-dependency-path: go.sum
+
+    - name: Run rest
+      run: make test-rest
+
+  budgets:
+    runs-on: ubuntu-26.04
+
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.sha || github.sha }}
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v7
+      with:
+        go-version-file: go.mod
+        cache: true
+        cache-dependency-path: go.sum
+
+    - name: Run budgets
+      run: make test-budgets
+
+  check:
+    needs: [lint, scripts, api, rest, budgets]
+    if: always()
+    runs-on: ubuntu-26.04
+
+    steps:
+    - name: Require every job to have succeeded
+      env:
+        RESULTS: ${{ join(needs.*.result, ' ') }}
+      run: |
+        echo "needed job results: $RESULTS"
+        for r in $RESULTS; do
+          if [ "$r" != success ]; then
+            echo "a needed job did not succeed" >&2
+            exit 1
+          fi
+        done
