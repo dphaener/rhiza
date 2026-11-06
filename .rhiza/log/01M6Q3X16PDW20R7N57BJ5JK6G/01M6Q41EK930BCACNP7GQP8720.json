@@ -1,0 +1,30 @@
+{
+  "actor": "01M6Q3XHFJD18BCNM2P39V08HT",
+  "after": [
+    "01M6Q3X16PDW20R7N57CN296E5"
+  ],
+  "at": "2026-11-06T00:27:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "ab537112-dbb7-4d84-807c-01a1ae3eb5c1",
+          "statement": "How should the daemon reap its finished run drivers? (Fix The daemon never reaps its, 01M6Q3X1.) The intent proposes a periodic wait4(-1, WNOHANG), but the daemon also runs git, make and hook commands through os/exec, some concurrently from web UI request goroutines; wait4(-1) can reap one of those first, so its cmd.Wait/Output fails with 'no child processes'. Detached drivers are the only children started with Setsid, so they lead their own session."
+        },
+        "handle": "question-ab537112-1",
+        "id": "01M6Q41DABCQW2A1P9TRSTQ1G6",
+        "key": null,
+        "kind": "question",
+        "node": "01M6Q41DABCQW2A1P9TRH1Y2E6",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6Q3X16PDW20R7N57BJ5JK6G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q41EK930BCACNP7GQP8720",
+  "type": "ops",
+  "v": 1
+}

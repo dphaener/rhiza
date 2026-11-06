@@ -1,0 +1,30 @@
+{
+  "actor": "01M6Q594HCQFMD1V5XNDFM2KSA",
+  "after": [
+    "01M6Q58T8FZZ4Q0R8ANXNJJERV"
+  ],
+  "at": "2026-11-06T00:50:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "c92d1843-be8e-4e19-a590-01a1ae548813",
+          "statement": "CI-speed change set 01M6Q58 serves no intent yet; the daemon builds only change sets under a milestone. Which intent should it serve? / How should the 271 cmd/rhiza testscripts be split across 4 CI jobs? / After sharding, internal/api (280 s) becomes the critical path, above the ~5 min goal once setup is added. What should CI do with it? / How should the PR keep one verdict for ship-change's pr-green and ci-fix logic?"
+        },
+        "handle": "question-c92d1843-1",
+        "id": "01M6Q5C2MZF47PAR2KARWDSW8H",
+        "key": null,
+        "kind": "question",
+        "node": "01M6Q5C2MZF47PAR2KANSXX3WZ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6Q58T8EG0QY7YDQNWHW6NEA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q5C3X7TY890EV40J4VBDHV",
+  "type": "ops",
+  "v": 1
+}
