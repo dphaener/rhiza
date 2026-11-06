@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q7MHKT2YMVVXGWZPSW1EZ0",
+  "after": [
+    "01M6Q8CCE500YCVE6D8K3QGP44"
+  ],
+  "at": "2026-11-06T01:45:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b0e3fa7f, TestOverviewShowsMilestoneProgress in internal/web renders / (and /fragments/milestones) through HandlerWithMilestones over a fixture milestone with 5 change sets (3 accepted, 2 proposed) plus a one-change-set milestone. It asserts the rz-pill--accepted and rz-pill--proposed pills with counts 3 and 2, the totals ('5 change sets', '1 change set'), '2 open' and href=\"/roadmap\", plus the empty state. go test -trimpath ./internal/web/ passed (overview, layout and partials goldens). go test ./internal/api -run 'Roadmap|Web|Plan|Daemon' passed, and so did cmd/rhiza TestScripts/describe-golden, which carries the new RoadmapIntent.statement. From the diff: the daemon feeds the panel from runRoadmap (All) milestone groups, named by statement with no IDs."
+        },
+        "handle": "web-overview-milestone-verified",
+        "id": "01M6Q8H2K3XRYXE66J8MTB0E7B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q8H2K3XRYXE66J8MB8TKBF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q8H2K3XRYXE66J8MB8TKBF",
+        "id": "01M6Q8H2P8CM703J15894SQDBP",
+        "link": "01M6Q8H2P8CM703J15887RPKBY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX3BQYXMYH08ZAQN0ER8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q8H2S79ZYDCDKEKV23V4NY",
+  "type": "ops",
+  "v": 1
+}
