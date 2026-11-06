@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SDDGKA9CGCV19YFCD2J326",
+  "after": [
+    "01M6SDRNFZ1SKWHK3VM9B3SKK3"
+  ],
+  "at": "2026-11-06T22:10:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-1b977378 at 6c4b2376: go test -trimpath -count=1 ./internal/daemon/... ./internal/rootcfg/... pass; TestSelfUpdateProjectChoosesCheckout passes: with self_update_project=rhiza (path code/rhiza) every fake git call and the final fake make run in /r/code/rhiza, and with it unset ForCheckout reports false and neither git nor make runs. internal/api TestDaemonSelfUpdateSetting passes: selfUpdate=true with no project named runs nothing, with the project named git and make run in that project's folder; -run 'Daemon|SelfUpdate|Root' ./internal/api ok. gofmt and go vet clean. Diff read: runDaemon now resolves the checkout via daemon.SelfUpdateCheckout(root, rootcfg.Load(root)) instead of the home project's first worktree. The full internal/api package timed out at 9m under load average 10 on 4 cores, inside TestLinkEndpointKinds, which this change does not touch."
+        },
+        "handle": "root-daemon-self-update-verified",
+        "id": "01M6SEM243RK33PZQQWC8AGB81",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SEM241QYW1GCHR2PE9P1Z1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SEM241QYW1GCHR2PE9P1Z1",
+        "id": "01M6SEM25W2F9EZ2EJKEX0XQ8Z",
+        "link": "01M6SEM25W2F9EZ2EJKE4VVQ8H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85F2T3NMVDRKV706VSZB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SEM274X2HGT1MTS9FB848B",
+  "type": "ops",
+  "v": 1
+}
