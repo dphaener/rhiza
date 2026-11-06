@@ -1,0 +1,50 @@
+{
+  "actor": "01M6S95W6KBDSQ09YMYB5DKW8B",
+  "after": [
+    "01M6S9A3QKP3K13K7QWE6XJQDJ"
+  ],
+  "at": "2026-11-06T20:37:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "In a testscript (beside or extending import-autonomous-decisions.txtar), rhiza guide import prints both wording forms and when each applies; a repo holding one decision of each form, each derived-from its Source and with no quote field, lands and passes rhiza check (fold-ok), and rhiza why shows each decision's wording and its Source.",
+          "statement": "The import procedure's step 4 gives a second wording form for a decision its document records the owner making or confirming, '<decided>, made by the owner as recorded in <document>', with no quote field and a derived-from link to the document's Source, beside the agent-made form for every other imported decision."
+        },
+        "handle": "import-owner-credited-decisions",
+        "id": "01M6S9A3X180Y1D4QEJ2SBQZHQ",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6S9A3X180Y1D4QEHZ8AKDD9",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "decision": null,
+        "from": "01M6S9A3X180Y1D4QEHZ8AKDD9",
+        "id": "01M6S9A3XDPXRQR1C8NMZKBVC1",
+        "link": "01M6S9A3XDPXRQR1C8NKJWQY3R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6S997MWKCBVRJ9EQMA5G2RB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6S997MWKCBVRJ9EQMA5G2RB",
+        "id": "01M6S9A3XRBS92X85VBF7DC4GA",
+        "link": "01M6S9A3XRBS92X85VBESJD21N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6S9A3Q9XJA62WFXNJA71HGA",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6S95EWGHBTY9RSY63NX75AE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S9A3YBJ8TSVDKS2EGYC5X4",
+  "type": "ops",
+  "v": 1
+}

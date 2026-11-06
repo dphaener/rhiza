@@ -1,0 +1,30 @@
+{
+  "actor": "01M6S95W6KBDSQ09YMYB5DKW8B",
+  "after": [
+    "01M6S95EWGHBTY9RSY64GV50S2"
+  ],
+  "at": "2026-11-06T20:36:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "c7c3877a-453a-4754-9cde-01a1b292e12c",
+          "statement": "Change set 'The import guide's decision' serves no intent yet. Which landed intent should it serve? (The import-procedure change set that built rhiza guide import served milestone-27 and m27-nebari-imported.) / How should the leaf be shaped for the owner-credited wording form in rhiza guide import step 4? / rhiza check today validates no wording form on imported decisions (no check code reads it), so both forms already pass. What should 'rhiza check must accept both forms' mean for the acceptance?"
+        },
+        "handle": "question-c7c3877a-1",
+        "id": "01M6S97XRGV8H0Y7ZHX46T19QH",
+        "key": null,
+        "kind": "question",
+        "node": "01M6S97XRGV8H0Y7ZHX2QS1H7H",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6S95EWGHBTY9RSY63NX75AE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S97Z5NG620BGQ12RBWD5S2",
+  "type": "ops",
+  "v": 1
+}

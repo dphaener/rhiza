@@ -1,0 +1,33 @@
+{
+  "actor": "01M6S95W6KBDSQ09YMYB5DKW8B",
+  "after": [
+    "01M6S99V78PZV4M825C0RZ22NN"
+  ],
+  "at": "2026-11-06T20:37:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "945ba7e9bd9b287cac03201f5f4f3658b3d66c0057239e1a5f6c889edfa8bab8",
+          "session": "c7c3877a-453a-4754-9cde-01a1b292e12c",
+          "summary": "Autonomous plan run for change set 'The import guide's decision' (no owner present). The planner read rhiza guide import step 4 (internal/guide/text/import.md), the import-autonomous-decisions leaf and its testscript, and found no rhiza check code that reads an imported decision's wording. It raised one question covering three choices: which intent the change set serves, the leaf shape, and what 'rhiza check must accept both forms' means. The arbiter decided (import-owner-credited-wording-shape, assumed, would have escalated): serve milestone-27 and m27-nebari-imported; add one new childless leaf beside import-autonomous-decisions under rhiza/guide, giving step 4 a second wording form '<decided>, made by the owner as recorded in <document>' for decisions a document attributes to the owner, both forms with no quote and a derived-from link to the Source; no new check code, the acceptance being a testscript in which both forms land and pass rhiza check. Nothing is left open.",
+          "title": "Plan of the import guide's decision wording, autonomous"
+        },
+        "handle": "import-guide-decision-plan",
+        "id": "01M6S9A3Q9XJA62WFXNJC8NGMF",
+        "key": null,
+        "kind": "source",
+        "node": "01M6S9A3Q9XJA62WFXNJA71HGA",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6S95EWGHBTY9RSY63NX75AE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S9A3QKP3K13K7QWE6XJQDJ",
+  "type": "ops",
+  "v": 1
+}
