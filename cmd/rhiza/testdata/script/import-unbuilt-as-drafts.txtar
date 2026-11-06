@@ -1,0 +1,31 @@
+# The import topic states the rule; importing a fixture with one unbuilt task
+# and one open question ends with one draft change set naming the Source and
+# one open question, and accepts nothing.
+
+exec rhiza guide import
+stdout 'rhiza change new "<intent>" --source <source>'
+stdout 'Leave it in .draft.'
+stdout 'accepting it is the'
+stdout 'rhiza add question <handle>'
+
+exec rhiza init
+exec rhiza change new 'Record the plan' --kind record
+exec rhiza source add plan-md source.json --raw PLAN.md
+exec rhiza change new 'Build the export' --source plan-md
+exec rhiza add question export-format --field 'statement=Which format do exports take?'
+exec rhiza change show
+stdout 'Sources: 01'
+exec rhiza change ls
+stdout 'Build the export'
+stdout 'draft'
+! stdout 'accepted'
+exec rhiza show export-format --json
+stdout 'Which format'
+fold-ok
+
+-- PLAN.md --
+# Plan
+- TODO: build the export.
+- TBD: which format do exports take?
+-- source.json --
+{"title":"PLAN.md","summary":"An export is planned; its format is open.","quotes":[]}

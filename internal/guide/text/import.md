@@ -1,6 +1,6 @@
 # Import
 
-Bring an existing repo with built code into Rhiza. Seven steps, in this order.
+Bring an existing repo into Rhiza. Seven steps, in order.
 
 ## 1. Init
 
@@ -8,35 +8,34 @@ Bring an existing repo with built code into Rhiza. Seven steps, in this order.
 rhiza init
 ```
 
-Run it at the repo root; commit `.rhiza/` on its own first.
+Run it at the root; commit `.rhiza/` first.
 
 ## 2. Survey
 
 Read the code, tests and documents (READMEs, ADRs, plans, TODOs). Note what is built,
-decided and only planned. Write nothing yet.
+decided and planned. Write nothing yet.
 
 ## 3. Record built capabilities, area by area
 
 Take one area at a time (a package, feature or command group). Write the capabilities its
-code and tests already deliver, under a parent capability for the area:
+code and tests deliver, under a parent capability:
 
 ```
 rhiza apply <file> --record --json
 ```
 
 One `--record` change set per area keeps each reviewable: one record per area, never one for
-the whole repo. Describe what the code does today.
+the whole repo.
 
 - Statement: one user-visible behaviour per capability, in the present tense.
-- Acceptance: the repo's existing tests that prove it, named by test file (and test name where
-  there is one). A capability no test proves gets a statement and a question asking for
+- Acceptance: the repo's existing tests that prove it, named by test file (and test name). A capability no test proves gets a statement and a question asking for
   the test; never an invented acceptance.
 - Link a capability to its tests as evidence.
 
 ## 4. Bring in load-bearing decisions
 
-Record the decisions the code depends on (ADRs, comments, history), each hung off what it
-decides with `decided-by`. Never invent reasons: where the why is unknown, raise a question.
+Record the decisions the code depends on (ADRs, comments, history), each `decided-by`
+its capability. Never invent reasons: raise a question.
 
 The load-bearing rule: bring in only a decision that shapes a capability or constraint;
 leave the rest in the document.
@@ -66,11 +65,21 @@ Link what came from it with `derived-from`.
 
 Keep reference, design and operations documents that capabilities link to: they stay in git.
 
-## 6. Write unbuilt work as draft change sets
+## 6. Write unbuilt work as drafts
 
-Planned work the code lacks is not recorded as built. Open a draft change set per piece
-(`rhiza change new "<intent>" --json`), write its intent and capabilities there, and leave
-it in `draft` for the owner to propose.
+Planned work the code lacks is not built. Add its document as a Source, then open a draft
+change set per piece, naming it:
+
+```
+rhiza change new "<intent>" --source <source> --json
+```
+
+Leave it in `draft`: accepting it is the owner's, never the import's. Write each open
+question (a "TBD") as a question node, never a guess:
+
+```
+rhiza add question <handle> --field 'statement=<question>'
+```
 
 ## 7. Verify
 
@@ -79,8 +88,8 @@ rhiza check
 rhiza render
 ```
 
-Fix what `check` reports, commit `.rhiza/rendered/`, and spot-check a few capabilities
-against the code and `rhiza why`.
+Fix what `check` reports, commit `.rhiza/rendered/`, spot-check a few capabilities
+against the code.
 
 ## Follow-up: anchors
 
