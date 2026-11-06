@@ -56,3 +56,30 @@ func TestOverviewDaemonRunningAndStopped(t *testing.T) {
 		t.Errorf("stopped: %s", off)
 	}
 }
+
+func TestOverviewListsLiveRuns(t *testing.T) {
+	src := func() []RunView {
+		return []RunView{
+			{ID: "01RUN1", Title: "Retry webhook delivery", Workflow: "build", Step: "leaves", State: "running", Started: "2026-11-06T10:00:00Z"},
+			{ID: "01RUN2", Title: "Idempotency keys", Workflow: "plan", Step: "gate", State: "waiting"},
+		}
+	}
+	for _, path := range []string{"/", FragmentURL("runs")} {
+		rec := httptest.NewRecorder()
+		HandlerWithRuns(nil, src, nil).ServeHTTP(rec, httptest.NewRequest("GET", path, nil))
+		body := rec.Body.String()
+		for _, want := range []string{
+			`href="/runs/01RUN1"`, "Retry webhook delivery", "<small>build</small>", ">leaves</span>",
+			`href="/runs/01RUN2"`, "Idempotency keys", "<small>plan</small>", ">gate</span>", "waiting on you",
+		} {
+			if !strings.Contains(body, want) {
+				t.Errorf("%s lacks %q:\n%s", path, want, body)
+			}
+		}
+	}
+	rec := httptest.NewRecorder()
+	HandlerWithRuns(nil, func() []RunView { return nil }, nil).ServeHTTP(rec, httptest.NewRequest("GET", "/", nil))
+	if b := rec.Body.String(); !strings.Contains(b, "No live runs") || !strings.Contains(b, `data-rz-fragment="/fragments/runs"`) {
+		t.Errorf("empty: %s", b)
+	}
+}

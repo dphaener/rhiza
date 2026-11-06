@@ -1,0 +1,4 @@
+{{define "runs"}}<section class="rz-panel rz-panel--flush">
+  <div class="rz-panel-head"><div><p class="rz-kicker">Live runs</p><h2>{{if .Rows}}{{len .Rows}} live{{else}}No live runs{{end}}</h2></div><a class="rz-aside" style="color:var(--teal)" href="/runs">All runs →</a></div>
+  {{if .Rows}}{{template "rows" .Rows}}{{else}}<div class="rz-empty"><p class="rz-empty-title">No live runs</p><p>Runs that are going or waiting show here.</p></div>{{end}}
+</section>{{end}}

@@ -58,7 +58,7 @@ var templateFS embed.FS
 // pages holds each page's template set: the shared layout plus the page's
 // own "content". They are parsed once, from the binary.
 var pages = map[string]*template.Template{
-	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/overview.html", "templates/daemon.html")),
+	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/overview.html", "templates/daemon.html", "templates/runs.html")),
 }
 
 // page is what a template is rendered with.
@@ -68,6 +68,8 @@ type page struct {
 	Daemon Pill
 	// DaemonView is the Overview's daemon panel.
 	DaemonView DaemonView
+	// Runs is the Overview's live runs panel.
+	Runs RunsPanel
 }
 
 func render(w http.ResponseWriter, name string, p page) {
@@ -90,6 +92,12 @@ func Handler(api http.Handler, events ...http.Handler) http.Handler {
 // HandlerWith is Handler with the source of the daemon the Overview shows;
 // nil shows a daemon that is not running.
 func HandlerWith(daemon DaemonSource, api http.Handler, events ...http.Handler) http.Handler {
+	return HandlerWithRuns(daemon, nil, api, events...)
+}
+
+// HandlerWithRuns is HandlerWith with the source of the live runs the
+// Overview lists; nil lists none.
+func HandlerWithRuns(daemon DaemonSource, runs RunsSource, api http.Handler, events ...http.Handler) http.Handler {
 	mux := http.NewServeMux()
 	for _, e := range events {
 		if e != nil {
@@ -102,7 +110,7 @@ func HandlerWith(daemon DaemonSource, api http.Handler, events ...http.Handler) 
 	mux.HandleFunc("GET "+FragmentPrefix+"{name}", serveFragment)
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		d := daemonOf(r)
-		render(w, "overview", page{Title: "Overview", Nav: "overview", DaemonView: d, Daemon: d.Pill()})
+		render(w, "overview", page{Title: "Overview", Nav: "overview", DaemonView: d, Daemon: d.Pill(), Runs: runsOf(r)})
 	})
 	static, _ := fs.Sub(assets, "static")
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static)))
@@ -114,6 +122,9 @@ func HandlerWith(daemon DaemonSource, api http.Handler, events ...http.Handler) 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if daemon != nil {
 			r = r.WithContext(context.WithValue(r.Context(), daemonKey{}, daemon))
+		}
+		if runs != nil {
+			r = r.WithContext(context.WithValue(r.Context(), runsKey{}, runs))
 		}
 		mux.ServeHTTP(w, r)
 	})
