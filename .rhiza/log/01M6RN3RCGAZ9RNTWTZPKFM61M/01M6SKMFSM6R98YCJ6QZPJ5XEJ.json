@@ -1,0 +1,178 @@
+{
+  "actor": "01M6SK982BAG2G9P137J6YY4BH",
+  "after": [
+    "01M6SK7NYCRQ1GQWWRP8VA902M"
+  ],
+  "at": "2026-11-06T23:38:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at b8630e96 with a scratch build (go build -trimpath ./cmd/rhiza) on scratch roots (rhiza root init) holding projects alpha and folder registered with project add --name other (each with three accepted change sets serving a milestone, one leaf each) and a bare uninitialised checkout, scratch HOME, fake rex/systemctl/make on PATH: with rhiza.daemon.maxRuns = 3 in rhiza.toml one daemon --once started exactly three runs (cycle 1 started six); a second --once started none, skipping alpha cs1/cs2 'has a live run' and alpha cs3 'waiting for a slot'; bare listed 'not initialised'."
+        },
+        "handle": "daemon-picks-qa-2",
+        "id": "01M6SKMF5NBWBQJ113WK58SXCJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SKMF5NBWBQJ113WGY3HF22",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SKMF5NBWBQJ113WGY3HF22",
+        "id": "01M6SKMF81QKZ0GRYX2FF95Q7F",
+        "link": "01M6SKMF81QKZ0GRYX2CK9MX6Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at b8630e96 with a scratch build (go build -trimpath ./cmd/rhiza) on scratch roots (rhiza root init) holding projects alpha and folder registered with project add --name other (each with three accepted change sets serving a milestone, one leaf each) and a bare uninitialised checkout, scratch HOME, fake rex/systemctl/make on PATH: maxRuns 3 over alpha(3) and other(3) started alpha cs1, other cs1, alpha cs2 (two in alpha, one in other, alternating), and alpha cs3 waited for a slot; on a fresh root with maxRuns 4 and rhiza.project.maxRuns 1 set in alpha, one poll started four runs: alpha cs1 only, and other cs1, cs2, cs3."
+        },
+        "handle": "root-daemon-round-robin-qa-2",
+        "id": "01M6SKMFA3D4ZWFR96T4JEXAXV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SKMFA3D4ZWFR96T2EYM1S7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SKMFA3D4ZWFR96T2EYM1S7",
+        "id": "01M6SKMFD8V08AB5J8Y9W6R7KD",
+        "link": "01M6SKMFD8V08AB5J8Y8ARWCJM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85B7BAZEZNH96W1P6D3A",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at b8630e96 with a scratch build (go build -trimpath ./cmd/rhiza) on scratch roots (rhiza root init) holding projects alpha and folder registered with project add --name other (each with three accepted change sets serving a milestone, one leaf each) and a bare uninitialised checkout, scratch HOME, fake rex/systemctl/make on PATH: daemon install from alpha/sub wrote one rhiza-root.service with WorkingDirectory=<root> and ExecStart .../rhiza daemon --autonomous, running systemctl --user daemon-reload and enable --now rhiza-root.service; daemon status at the root and from folder both printed 'Daemon not running / Mode: service' and exited 0 (cycle 1 failed with 'sessions need a git repository'); stop and start at the root, stop from folder and uninstall called systemctl --user stop/start/stop/disable --now rhiza-root.service plus daemon-reload and removed the unit. With a tab-mode daemon running from the root, status at the root and from folder both said 'Daemon running, process rhiza:<pid>'."
+        },
+        "handle": "root-daemon-service-qa-2",
+        "id": "01M6SKMFEYYVGYDB1QYKCKZSFP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SKMFEYYVGYDB1QYHCKMWRM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SKMFEYYVGYDB1QYHCKMWRM",
+        "id": "01M6SKMFG3YCP9E7DC38JHY8K7",
+        "link": "01M6SKMFG3YCP9E7DC36AKSRZ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85E14DDFJGJ96GKN7ZGE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at b8630e96 with a scratch build (go build -trimpath ./cmd/rhiza) on scratch roots (rhiza root init) holding projects alpha and folder registered with project add --name other (each with three accepted change sets serving a milestone, one leaf each) and a bare uninitialised checkout, scratch HOME, fake rex/systemctl/make on PATH: with rhiza.daemon.selfUpdate true and folder's origin one commit ahead, a foreground daemon with no self_update_project ran no make and left folder at init; with self_update_project = \"other\" it logged 'self-update: updated to 8b71fbf78', fast-forwarded folder to the newer commit, ran make update with cwd folder, and left alpha untouched."
+        },
+        "handle": "root-daemon-self-update-qa-2",
+        "id": "01M6SKMFHFHY6G4QJMYEWQ4GTV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SKMFHFHY6G4QJMYEGTQVQ1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SKMFHFHY6G4QJMYEGTQVQ1",
+        "id": "01M6SKMFJBNS6XC9ZWZTTB9658",
+        "link": "01M6SKMFJBNS6XC9ZWZTMP57B0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85F2T3NMVDRKV706VSZB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at b8630e96 with a scratch build (go build -trimpath ./cmd/rhiza) on scratch roots (rhiza root init) holding projects alpha and folder registered with project add --name other (each with three accepted change sets serving a milestone, one leaf each) and a bare uninitialised checkout, scratch HOME, fake rex/systemctl/make on PATH: with a daemon running in the background from the root, daemon --permission-mode manual --once from folder exited 2 with 'another daemon holds the lock: process rhiza:<pid>' and next: rhiza daemon status; daemon --once in a dir outside any root exited 2 with 'not inside a Rhiza root' and next: rhiza root init."
+        },
+        "handle": "root-daemon-lock-qa-2",
+        "id": "01M6SKMFK9N9M7H3QVPSV9VECX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SKMFK9N9M7H3QVPRH8HZBR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SKMFK9N9M7H3QVPRH8HZBR",
+        "id": "01M6SKMFMES25JC5ECJW58SVZQ",
+        "link": "01M6SKMFMES25JC5ECJTKPQQ6S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN858XDJS5W8FZ3QZ8P2PF",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at b8630e96 with a scratch build (go build -trimpath ./cmd/rhiza) on scratch roots (rhiza root init) holding projects alpha and folder registered with project add --name other (each with three accepted change sets serving a milestone, one leaf each) and a bare uninitialised checkout, scratch HOME, fake rex/systemctl/make on PATH: one daemon --once from the root started runs in both alpha and folder (run logs in each project's own .git/rhiza/logs) and daemon status listed 'Skipped project: bare: not initialised'."
+        },
+        "handle": "root-daemon-polls-projects-qa-2",
+        "id": "01M6SKMFNHGWYF1Q062HZAJ3HJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SKMFNHGWYF1Q062F2JFRDH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SKMFNHGWYF1Q062F2JFRDH",
+        "id": "01M6SKMFPHMBR00CJC6AX8PKBP",
+        "link": "01M6SKMFPHMBR00CJC6877GNEC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85A2G5E84BYYP5201P8A",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at b8630e96 with a scratch build (go build -trimpath ./cmd/rhiza) on scratch roots (rhiza root init) holding projects alpha and folder registered with project add --name other (each with three accepted change sets serving a milestone, one leaf each) and a bare uninitialised checkout, scratch HOME, fake rex/systemctl/make on PATH: with REX_SESSION unset and rex session ls empty, one poll ran rex session new rhiza-alpha (-c alpha) and rhiza-other (-c folder) once each and opened alpha's builder windows with -s rhiza-alpha and folder's with -s rhiza-other; rex.log never names rhiza-folder."
+        },
+        "handle": "root-daemon-rex-session-qa-2",
+        "id": "01M6SKMFQHMV4VH84YST88A0QN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SKMFQHMV4VH84YSR1HRSZN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SKMFQHMV4VH84YSR1HRSZN",
+        "id": "01M6SKMFRQPBX1ZCRH9SCSWQ18",
+        "link": "01M6SKMFRQPBX1ZCRH9Q4670SA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85G5TY8WJ23TXEGTZFGV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SKMFSM6R98YCJ6QZPJ5XEJ",
+  "type": "ops",
+  "v": 1
+}
