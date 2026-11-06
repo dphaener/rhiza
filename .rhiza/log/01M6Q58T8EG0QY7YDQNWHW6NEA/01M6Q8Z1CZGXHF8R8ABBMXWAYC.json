@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q8WFDZH7ZWV4PF40JCYRDF",
+  "after": [
+    "01M6Q8XX0H85D0QG3MQNG1NAZT"
+  ],
+  "at": "2026-11-06T01:53:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-43f7013f at 04879199: ran go test -trimpath -count=1 -v ./internal/api -run 'TestParsePRView|TestChecksVerdict'; all PASS incl. new TestParsePRViewMultiJob. Read the diff (internal/api/ship_test.go plus the builder's actor record only): it feeds parsePRView a statusCheckRollup of lint, scripts (1/4) FAILURE, scripts (2/4), rest, budgets and check CANCELLED, all with detailsUrl under actions/runs/4242, and asserts settled, not green, failed == [scripts (1/4), check], and every check's RunID == 4242; an all-SUCCESS rollup is settled and green with no failures; a rollup with IN_PROGRESS/QUEUED jobs is neither settled nor green. Matches checksVerdict and actionsRunID in internal/api/ship.go."
+        },
+        "handle": "ship-check-multi-job-verdict-verified",
+        "id": "01M6Q8Z192G8ENXPBKQ57X4RKF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q8Z192G8ENXPBKQ46CH0HC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q8Z192G8ENXPBKQ46CH0HC",
+        "id": "01M6Q8Z1AFBHMRYZX8PKAVXKFX",
+        "link": "01M6Q8Z1AFBHMRYZX8PFNEG1AJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHWYFNJV9D7A7KNYSZGH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6Q58T8EG0QY7YDQNWHW6NEA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q8Z1CZGXHF8R8ABBMXWAYC",
+  "type": "ops",
+  "v": 1
+}
