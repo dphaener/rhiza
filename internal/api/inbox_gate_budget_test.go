@@ -145,8 +145,8 @@ func TestInboxGateQuestionsBudget(t *testing.T) {
 }
 
 // TestInboxGateQuestionsKept stops a plan run at its gate on two questions
-// whose worktree does not read, and on one whose handle resolves nowhere:
-// the inbox still lists every handle, statements empty.
+// whose worktree does not read: the inbox still lists both handles,
+// statements empty.
 func TestInboxGateQuestionsKept(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 	root := t.TempDir() // no .rhiza: the worktree does not read
@@ -160,5 +160,42 @@ func TestInboxGateQuestionsKept(t *testing.T) {
 		if g.Statement != "" {
 			t.Errorf("%s: statement %q, want empty", g.Handle, g.Statement)
 		}
+	}
+}
+
+// TestInboxGateQuestionsUnresolved stops a plan run at its gate on two
+// questions whose worktree reads, one of whose handles resolves in no
+// planned change set: the inbox lists both handles, the unresolved one with
+// an empty statement and the resolved one with its full statement.
+func TestInboxGateQuestionsUnresolved(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
+	ctx := initCtx(t)
+	call := func(name, req string) any {
+		t.Helper()
+		resp, err := callOp(t, ctx, name, req)
+		if err != nil {
+			t.Fatalf("%s %s: %v", name, req, err)
+		}
+		return resp
+	}
+	own := call("change.new", `{"intent":"Plan"}`).(ChangeNewResponse).ChangeSet
+	call("add", `{"kind":"intent","handle":"kept-plan-intent"}`)
+	call("propose", `{}`)
+	call("accept", `{"reason":"ok"}`)
+	call("land", `{}`)
+	cs := call("change.new", `{"intent":"Planned"}`).(ChangeNewResponse).ChangeSet
+	call("link", fmt.Sprintf(`{"from":%q,"type":"serves","to":"kept-plan-intent"}`, cs.String()))
+	call("add", `{"kind":"question","handle":"kept-resolved","fields":["statement=Statement of kept-resolved"]}`)
+	call("propose", `{}`)
+	st := run.State{Change: own.String(), Worktree: ctx.Root, Stopped: run.OpenStop + "kept-resolved, kept-nowhere"}
+	got := inboxGateQuestions(ctx, st)
+	if len(got) != 2 || got[0].Handle != "kept-resolved" || got[1].Handle != "kept-nowhere" {
+		t.Fatalf("got %+v, want kept-resolved and kept-nowhere", got)
+	}
+	if want := "Statement of kept-resolved"; got[0].Statement != want {
+		t.Errorf("kept-resolved: statement %q, want %q", got[0].Statement, want)
+	}
+	if got[1].Statement != "" {
+		t.Errorf("kept-nowhere: statement %q, want empty", got[1].Statement)
 	}
 }
