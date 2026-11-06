@@ -19,6 +19,8 @@ The design system starts from the owner's basics: dark-first 'bioluminescent soi
 ### In
 
 - decided-by [m28-designed](../intent/milestone-28/m28-designed.md)
+- decided-by [web-design-tokens](../capability/rhiza/web-monitor/web-design-tokens.md)
+- decided-by [web-fonts-embedded](../capability/rhiza/web-monitor/web-fonts-embedded.md)
 
 ## History
 
