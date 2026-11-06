@@ -8,18 +8,17 @@ Bring an existing repo with built code into Rhiza. Seven steps, in this order.
 rhiza init
 ```
 
-Run it at the repo root. It creates `.rhiza/`. Commit that on its own before anything else.
+Run it at the repo root. It creates `.rhiza/`. Commit that on its own first.
 
 ## 2. Survey
 
-Read before you write. List the repo's code (packages, entry points), its tests and its
-documents (READMEs, ADRs, design notes, plans, TODOs). Note what is built, what is decided
-and what is only planned. Write nothing yet.
+Read before you write: the repo's code, tests and documents (READMEs, ADRs, design notes,
+plans, TODOs). Note what is built, decided and only planned. Write nothing yet.
 
 ## 3. Record built capabilities, area by area
 
-Take one area at a time (a package, a feature, a command group). For each, write the
-capabilities its code and tests already deliver, under a parent capability for the area:
+Take one area at a time (a package, a feature, a command group). Write the capabilities
+its code and tests already deliver, under a parent capability for the area:
 
 ```
 rhiza apply <file> --record --json
@@ -37,8 +36,20 @@ the whole repo. Describe what the code does today, not what it should do.
 ## 4. Bring in load-bearing decisions
 
 Record the decisions the code depends on (from ADRs, comments, history) as decisions, each
-hung off what it decides with `decided-by`. Quote the document's own words. Never invent
-reasons: where the why is unknown, raise a question instead.
+hung off what it decides with `decided-by`. Never invent reasons: where the why is unknown,
+raise a question instead.
+
+The load-bearing rule: bring in only a decision that shapes a capability or constraint;
+leave the rest in the document.
+
+A document's words are not the owner's. A decision with no owner words (an agent wrote the
+document) gets no `quote` field, this wording form, and a link to the Source of its document:
+
+```
+rhiza add decision <handle> --field 'statement=<decided>' \
+  --field 'wording=<as the document states it>, made autonomously by the agent and not confirmed by the owner'
+rhiza link <handle> derived-from <source>
+```
 
 ## 5. Retire planning documents into Sources
 
@@ -59,8 +70,8 @@ rhiza check
 rhiza render
 ```
 
-Fix what `check` reports, commit `.rhiza/rendered/`, and spot-check: pick a few capabilities
-and confirm the code does what they say, and that `rhiza why` shows their decisions.
+Fix what `check` reports, commit `.rhiza/rendered/`, and spot-check a few capabilities: the
+code does what they say, and `rhiza why` shows their decisions.
 
 ## Follow-up: anchors
 
