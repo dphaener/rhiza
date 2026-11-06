@@ -22,7 +22,7 @@ exec rhiza daemon settings --json
 cp stdout ../want-set.json
 exec rhiza tui app autonomy --once
 cmp stdout ../want-set.json
-stdout '"source": "git config"'
+stdout '"source": "rhiza.toml"'
 
 exec find $WORK -type s
 ! stdout .
