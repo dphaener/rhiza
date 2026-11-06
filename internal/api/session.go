@@ -610,18 +610,30 @@ func addWorktree(ctx *Ctx, prefix, path, branch string) error {
 // out. Entry files are immutable and named by ID, so a copy is the same
 // file a later merge brings.
 func worktreeWorkspace(ctx *Ctx, w *workspace, root string, cs id.ID) (*workspace, error) {
-	ww, err := openWorkspace(root, ctx.Now, ctx.IDs, false)
-	if err != nil {
-		if e := AsError(err); e != nil && e.Code == CodeNotFound {
-			return nil, Conflictf("the worktree has no Rhiza repository at %s", root).WithNext("git worktree list")
+	open := func() (*workspace, error) {
+		ww, err := openWorkspace(root, ctx.Now, ctx.IDs, false)
+		if err != nil {
+			if e := AsError(err); e != nil && e.Code == CodeNotFound {
+				return nil, Conflictf("the worktree has no Rhiza repository at %s", root).WithNext("git worktree list")
+			}
+			return nil, err
 		}
-		return nil, err
-	}
-	if _, ok := ww.changeSet(cs); ok {
 		return ww, nil
 	}
-	if err := copyChangeSetLog(w.root, root, cs); err != nil {
+	ww, err := open()
+	if err != nil {
 		return nil, err
+	}
+	_, had := ww.changeSet(cs)
+	// Even when the worktree has the change set, the main clone may hold
+	// entries it lacks (an accept made there and never pushed).
+	if _, serr := os.Stat(filepath.Join(w.root, store.Dir, store.LogDir, cs.String())); serr == nil || !had {
+		if err := copyChangeSetLog(w.root, root, cs); err != nil {
+			return nil, err
+		}
+		if ww, err = open(); err != nil {
+			return nil, err
+		}
 	}
 	if _, ok := ww.changeSet(cs); !ok {
 		return nil, Errorf("change set %s is not in the worktree's log at %s after copying it", cs, root)

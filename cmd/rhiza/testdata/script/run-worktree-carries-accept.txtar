@@ -1,0 +1,57 @@
+# A session's worktree gets every log entry of its change set the main
+# clone has and the worktree lacks, even when the worktree already has the
+# change set: an accept made in the main clone and never committed (the
+# Inbox app, rhiza accept) reaches the worktree, where ship land's
+# `git add .rhiza` commits it on the branch.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza change new 'Carry the accept' --title 'Carry accept' --json
+exec rhiza add capability carried --field 'statement=Carried'
+exec rhiza propose
+exec git add -A
+exec git commit -qm init
+
+# Accepted in the main clone only: the entry stays untracked.
+exec rhiza accept --reason ok
+exec git status --porcelain
+stdout '^\?\? \.rhiza/log/'
+
+# A new worktree is set up with the accept.
+exec rhiza session start --permission-mode manual --json
+cd $WORK/repo.carry-accept
+exec rhiza change show
+stdout '^- State: accepted'
+exec git status --porcelain
+stdout '^\?\? \.rhiza/log/'
+fold-ok $WORK/repo.carry-accept/.rhiza
+
+# A worktree that already has the change set (set up while proposed) gets
+# the accept made in the main clone afterwards.
+cd $WORK/repo
+exec rhiza change new 'Carry again' --title 'Carry again' --json
+exec rhiza add capability carried-again --field 'statement=Again'
+exec rhiza propose
+exec git add -A
+exec git commit -qm second
+exec rhiza session start --permission-mode manual --json
+cd $WORK/repo.carry-again
+exec rhiza change show
+stdout '^- State: proposed'
+cd $WORK/repo
+exec rhiza accept --reason ok
+exec rhiza session start --permission-mode manual --json
+stdout '"worktree_reused": true'
+cd $WORK/repo.carry-again
+exec rhiza change show
+stdout '^- State: accepted'
+fold-ok $WORK/repo.carry-again/.rhiza
+
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
