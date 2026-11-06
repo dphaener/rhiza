@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6RYC007QBGX2GC9NDW8JAHQ"
+  ],
+  "at": "2026-11-06T17:29:02Z",
+  "body": {
+    "reason": "rhiza.autonomy.accept is auto, run 01M6RMJ6P7EG0VXT1752W0H8NY",
+    "rule": "autonomy"
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RYG71HP2KMN9WHNEK7H4MT",
+  "type": "accept",
+  "v": 1
+}
