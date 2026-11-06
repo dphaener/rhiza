@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/gen"
+	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/quiettest"
 	"github.com/dphaener/rhiza/internal/run"
@@ -61,9 +62,11 @@ func TestInboxGateQuestionsBudget(t *testing.T) {
 	call("accept", `{"reason":"ok"}`)
 	call("land", `{}`)
 	var handles []string
+	var planIDs []id.ID
 	var stopped string
 	for c := range 3 {
 		cs := call("change.new", fmt.Sprintf(`{"intent":"Planned %d"}`, c)).(ChangeNewResponse).ChangeSet
+		planIDs = append(planIDs, cs)
 		call("link", fmt.Sprintf(`{"from":%q,"type":"serves","to":"gate-plan-intent"}`, cs.String()))
 		for k := range 2 {
 			h := fmt.Sprintf("gate-q-%d-%d", c, k)
@@ -88,7 +91,14 @@ func TestInboxGateQuestionsBudget(t *testing.T) {
 	x.Close()
 
 	reads := countingCtx(ctx)
+	var builds map[id.ID]int
+	ctx.builtModel = func(cs id.ID) { builds[cs]++ }
+	planned := map[id.ID]bool{own: true}
+	for _, c := range planIDs {
+		planned[c] = true
+	}
 	for attempt := 1; ; attempt++ {
+		builds = map[id.ID]int{}
 		start := time.Now()
 		got := inboxGateQuestions(ctx, st)
 		d := time.Since(start)
@@ -102,6 +112,19 @@ func TestInboxGateQuestionsBudget(t *testing.T) {
 		}
 		if *reads != 0 {
 			t.Fatalf("the gate read decoded the full log %d times", *reads)
+		}
+		// Each change set's model is folded at most once per call, and
+		// every planned change set (the plan's own and the three it
+		// plans) is read.
+		for cs, n := range builds {
+			if n > 1 {
+				t.Errorf("the gate read folded change set %s's model %d times, want at most once", cs, n)
+			}
+		}
+		for cs := range planned {
+			if builds[cs] != 1 {
+				t.Errorf("the gate read folded planned change set %s's model %d times, want once", cs, builds[cs])
+			}
 		}
 		if d < inboxGateBudget {
 			break

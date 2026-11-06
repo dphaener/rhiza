@@ -162,6 +162,9 @@ func (ix *writeIndex) model(w *workspace, current id.ID) Model {
 
 // buildModel is model without the memo.
 func (ix *writeIndex) buildModel(w *workspace, current id.ID) Model {
+	if ix.ctx != nil && ix.ctx.builtModel != nil {
+		ix.ctx.builtModel(current)
+	}
 	m := &writeModel{ix: ix, cs: current}
 	var over *changeset.ChangeSet
 	if !current.IsZero() {
