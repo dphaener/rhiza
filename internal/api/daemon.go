@@ -1392,7 +1392,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	}
 	resp.MaxRuns, resp.Autonomous = st.MaxRuns, st.Autonomous
 	for _, v := range st.Settings {
-		resp.Settings = append(resp.Settings, Setting{Key: v.Key, Value: v.Value, Source: v.Source, Default: settingDefault(v.Key)})
+		resp.Settings = append(resp.Settings, Setting{Key: v.Key, Value: v.Value, Source: v.Source, Default: settingDefault(v.Key), Scope: settingScope(v.Key)})
 	}
 	resp.Web = webStatus(resp.Settings)
 	for _, h := range st.Hooks {

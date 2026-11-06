@@ -85,7 +85,7 @@ stdout 'waiting for acceptance'
 # accepts, as it shows.
 exec git config --unset rhiza.autonomy.accept
 exec rhiza daemon settings
-stdout 'rhiza.autonomy.accept = auto \(default\)'
+stdout 'rhiza.autonomy.accept = auto \(default, project\)'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run gate --json; echo exit=$?'
 stdout '^exit=0$'
 exec sh -c 'rhiza change show $(cat $WORK/b1) --json'

@@ -7,8 +7,8 @@ exec git init -q
 exec rhiza init
 
 exec rhiza daemon settings
-stdout 'rhiza.ship.deployUrl = "" \(default\)'
-stdout 'rhiza.ship.deployTimeout = 15m \(default\)'
+stdout 'rhiza.ship.deployUrl = "" \(default, project\)'
+stdout 'rhiza.ship.deployTimeout = 15m \(default, project\)'
 
 exec rhiza daemon set rhiza.ship.deployUrl https://example.com/health
 exec rhiza daemon set rhiza.ship.deployTimeout 30m
@@ -18,8 +18,8 @@ stdout '"value": "https://example.com/health"'
 stdout '"value": "30m"'
 stdout '"source": "git config"'
 exec rhiza daemon settings
-stdout 'rhiza.ship.deployUrl = https://example.com/health \(git config\)'
-stdout 'rhiza.ship.deployTimeout = 30m \(git config\)'
+stdout 'rhiza.ship.deployUrl = https://example.com/health \(git config, project\)'
+stdout 'rhiza.ship.deployTimeout = 30m \(git config, project\)'
 
 # Bad values exit 2 with a next and write nothing.
 ! exec rhiza daemon set rhiza.ship.deployUrl ftp://example.com/health

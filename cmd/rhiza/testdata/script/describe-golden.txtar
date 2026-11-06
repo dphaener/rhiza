@@ -1744,6 +1744,10 @@ cmp stdout describe.golden.json
             "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl or deployTimeout, or rhiza.autonomy.plan, accept, ship or signoff",
             "type": "string"
           },
+          "project": {
+            "description": "The registered project a project setting is written to; default the current project",
+            "type": "string"
+          },
           "value": {
             "description": "The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes",
             "type": "string"
@@ -1762,6 +1766,10 @@ cmp stdout describe.golden.json
             "description": "The setting",
             "type": "string"
           },
+          "scope": {
+            "description": "Where it was written: machine (rhiza.toml) or project (git config)",
+            "type": "string"
+          },
           "value": {
             "description": "The value written",
             "type": "string"
@@ -1769,6 +1777,7 @@ cmp stdout describe.golden.json
         },
         "required": [
           "key",
+          "scope",
           "value"
         ],
         "type": "object"
@@ -1780,7 +1789,12 @@ cmp stdout describe.golden.json
       "name": "daemon.settings",
       "request": {
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "project": {
+            "description": "The registered project whose project settings to list; default the current project",
+            "type": "string"
+          }
+        },
         "required": [],
         "type": "object"
       },
@@ -1800,8 +1814,12 @@ cmp stdout describe.golden.json
                   "description": "The git config key",
                   "type": "string"
                 },
+                "scope": {
+                  "description": "machine (kept in the root's rhiza.toml) or project (kept in the project's git config)",
+                  "type": "string"
+                },
                 "source": {
-                  "description": "Where the value comes from: default, git config or flag",
+                  "description": "Where the value comes from: default, rhiza.toml, git config or flag",
                   "type": "string"
                 },
                 "value": {
@@ -1812,6 +1830,7 @@ cmp stdout describe.golden.json
               "required": [
                 "default",
                 "key",
+                "scope",
                 "source",
                 "value"
               ],
@@ -2015,8 +2034,12 @@ cmp stdout describe.golden.json
                   "description": "The git config key",
                   "type": "string"
                 },
+                "scope": {
+                  "description": "machine (kept in the root's rhiza.toml) or project (kept in the project's git config)",
+                  "type": "string"
+                },
                 "source": {
-                  "description": "Where the value comes from: default, git config or flag",
+                  "description": "Where the value comes from: default, rhiza.toml, git config or flag",
                   "type": "string"
                 },
                 "value": {
@@ -2027,6 +2050,7 @@ cmp stdout describe.golden.json
               "required": [
                 "default",
                 "key",
+                "scope",
                 "source",
                 "value"
               ],

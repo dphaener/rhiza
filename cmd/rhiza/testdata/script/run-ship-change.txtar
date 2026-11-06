@@ -134,7 +134,7 @@ stdout '^- close-out \(visit 1\): pass, then ship: exit 0$'
 stdout '^- ship \(visit 1\): pass, then deploy-check: exit 0$'
 stdout '^- deploy-check \(visit 1\): pass, then end: exit 0$'
 exec rhiza daemon settings
-stdout 'rhiza.ship.deployUrl = "" \(default\)'
+stdout 'rhiza.ship.deployUrl = "" \(default, project\)'
 
 # The merge was a squash pinned to the head whose checks passed: the land
 # commit the run pushed, which is the branch's last head on origin.

@@ -1,0 +1,84 @@
+# Machine settings live in the root's rhiza.toml, project settings in each
+# repo's git config. settings lists both with scope and source; a project key
+# at the root needs --project. A project's hook commands run only for that
+# project's moves.
+
+chmod 755 bin/rex
+chmod 755 hook-a.sh
+chmod 755 hook-b.sh
+env PATH=$WORK/bin:$PATH
+exec sh -c 'printf "[projects.a]\npath = \"a\"\n[projects.b]\npath = \"b\"\n" > $WORK/rhiza.toml'
+mkdir a b
+cd a
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+cd $WORK/b
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+# A machine key goes to rhiza.toml, a project key to the project's git config.
+cd $WORK/a
+exec rhiza daemon set rhiza.daemon.maxRuns 3
+exec rhiza daemon set rhiza.autonomy.ship owner
+exec grep 'rhiza.daemon.maxRuns' $WORK/rhiza.toml
+exec git config --get rhiza.autonomy.ship
+stdout '^owner$'
+! exec git config --get rhiza.daemon.maxRuns
+exec rhiza daemon settings
+stdout 'rhiza.daemon.maxRuns = 3 \(rhiza.toml, machine\)'
+stdout 'rhiza.autonomy.ship = owner \(git config, project\)'
+stdout 'rhiza.daemon.trimGoCache = true \(default, machine\)'
+exec rhiza daemon settings --json
+stdout '"scope": "machine"'
+stdout '"scope": "project"'
+stdout '"source": "rhiza.toml"'
+
+# The other project does not see a's project key.
+exec rhiza daemon settings --project b
+stdout 'rhiza.autonomy.ship = auto \(default, project\)'
+stdout 'rhiza.daemon.maxRuns = 3 \(rhiza.toml, machine\)'
+
+# At the root a project key needs --project.
+cd $WORK
+! exec rhiza daemon set rhiza.autonomy.ship owner
+stderr '--project'
+exec rhiza daemon set --project b rhiza.autonomy.ship owner
+exec git -C b config --get rhiza.autonomy.ship
+stdout '^owner$'
+exec rhiza daemon set rhiza.daemon.maxRuns 2
+
+# Each project's event command runs only for its own moves.
+env OUT=$WORK/out
+exec git -C a config rhiza.eventCommand $WORK/hook-a.sh
+exec git -C b config rhiza.eventCommand $WORK/hook-b.sh
+exec rhiza daemon --permission-mode manual --once
+cd $WORK/a
+exec rhiza change new A --title A
+exec rhiza propose
+exec rhiza accept
+cd $WORK/b
+exec rhiza change new B --title B
+exec rhiza propose
+exec rhiza accept
+cd $WORK
+exec rhiza daemon --permission-mode manual --once
+exec grep -c ':A$' out-a
+stdout '^2$'
+! exec grep ':B$' out-a
+exec grep -c ':B$' out-b
+stdout '^2$'
+! exec grep ':A$' out-b
+
+-- bin/rex --
+#!/bin/sh
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- hook-a.sh --
+#!/bin/sh
+echo "$RHIZA_EVENT:$RHIZA_EVENT_TITLE" >> "$OUT-a"
+-- hook-b.sh --
+#!/bin/sh
+echo "$RHIZA_EVENT:$RHIZA_EVENT_TITLE" >> "$OUT-b"
