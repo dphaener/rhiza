@@ -1,0 +1,30 @@
+{
+  "actor": "01M6Q7T9GYQVE78VXA79NCF40P",
+  "after": [
+    "01M6Q7JY4KX9H0PJCXJ7PQDDQ3"
+  ],
+  "at": "2026-11-06T01:34:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A web package test renders /runs over fixture journals with live, done and failed runs and asserts their order, fields and links, and that the list section declares the run events.",
+          "statement": "The Runs page at /runs lists live runs first, then recent ones newest first, each named by its change set title, with its workflow, state, current step and start time, linking to its run page; the list re-renders live on run journal moves."
+        },
+        "handle": "web-runs-list",
+        "id": "01M6PFKAD643RMG5EKFCW00WWC",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6PFKAD5JGK5R4PD07FT82DE",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      }
+    ]
+  },
+  "change_set": "01M6PFH1X52KNK0C5ZCDYEEF64",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q7WMW6CX1N9JPVBSF9K0JT",
+  "type": "ops",
+  "v": 1
+}

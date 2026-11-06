@@ -1,0 +1,15 @@
+{
+  "actor": "01M6Q65MXN2QEGG2KGM34QH8BP",
+  "after": [],
+  "at": "2026-11-06T01:07:25Z",
+  "body": {
+    "intent": "Mark run.status read-only so the web run page can read it: GET /api/run.status answers 404 in the daemon, so /runs/<id> is always 404",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6Q6AT38TAA7V2R1G816FB7Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q6AT38TAA7V2R1G9JDE4N2",
+  "type": "open",
+  "v": 1
+}

@@ -1,0 +1,86 @@
+{
+  "actor": "01M6Q9XD4M4T373PBHSZZAHF0M",
+  "after": [
+    "01M6Q9VW1NSQ1WS14RBX8JG6CB"
+  ],
+  "at": "2026-11-06T02:17:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 73d2ed3f built rhiza (go build -trimpath) and ran its real daemon (paused, rhiza.web.port 18779) in a scratch clone holding copies of this repo's 101 run journals and 93 driver logs. GET /runs/<id> answered 200 for a ship-change run with a review step, a plan run and a succeeded ship-change run, and 404 for an unknown run. The ship-change page shows its steps in order (build/build, build/render, build/check, review/code, review/review) with done pills, durations, times and details (3 of 3 leaves passed, exit 0), each step's sessions (Session 1 finished · 1141274 tokens, matching input+output+cache_creation+cache_read from /api/run.status), and a Review section per check (compliance passed, quality open, qa open, scope passed) with each finding's severity, reason, place and confirmed verdict; no node, run or finding ID in the visible text. The plan run shows interview through close-out in order. The detail section declares data-rz-events=run and /fragments/run-detail?run=<id> (200); appending a line to the run's journal emitted event: run with its id on /events."
+        },
+        "handle": "web-run-detail-qa-2",
+        "id": "01M6QAB22YPEFF5W0J4CZ3SBYV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QAB22YPEFF5W0J4AHGKP3E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QAB22YPEFF5W0J4AHGKP3E",
+        "id": "01M6QAB25DABCFCMRTGXD0GKCY",
+        "link": "01M6QAB25DABCFCMRTGX9Q39FD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAE3P8MJB7E7CJ4FCWHB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 73d2ed3f with the same built daemon web UI: /runs/<plan run> (200) shows a Log section with the driver log's last lines in the rz-term block (log · tail, live dot) wired to /fragments/run-log?run=<id> and data-rz-events=log; appending two lines to that run's driver log emitted event: log with the run's id on /events and the fragment then ended with both new lines; /runs/<run without a log> shows No log / Only a run the daemon started headless has a driver log."
+        },
+        "handle": "web-run-log-tail-qa-2",
+        "id": "01M6QAB278FMQ2RW3AFBD352C4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QAB278FMQ2RW3AF8KP9XDE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QAB278FMQ2RW3AF8KP9XDE",
+        "id": "01M6QAB29812JDXFGF0V79KEFQ",
+        "link": "01M6QAB29812JDXFGF0QFYBK17",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAF52MNXBPR8STKSW15M",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 73d2ed3f with the same built daemon web UI over 101 copied run journals: GET /runs answered 200 and /api/run.ls listed the runs; the cycle-2 fixes touched run.status and the run page only, and the list still serves."
+        },
+        "handle": "web-runs-list-qa-2",
+        "id": "01M6QAB2AZNGK8J7CM4BZNZ39J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QAB2AZNGK8J7CM4BMQFA8F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QAB2AZNGK8J7CM4BMQFA8F",
+        "id": "01M6QAB2D2GEG205X97J8S4XJ5",
+        "link": "01M6QAB2D2GEG205X97H8GKPR0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAD5JGK5R4PD07FT82DE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFH1X52KNK0C5ZCDYEEF64",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QAB2ER7QMJMHFENKRC5YS2",
+  "type": "ops",
+  "v": 1
+}

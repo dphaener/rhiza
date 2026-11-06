@@ -1,0 +1,40 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6QBSSVN8QXTS9ME144F99ZG"
+  ],
+  "at": "2026-11-06T02:53:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Resolve the conflict with main in internal/web/web.go by keeping both branches' pages (run, runs, change, roadmap) and main's API context helpers (apiKey, withAPI(r, api), apiGet with notFoundError) from the Roadmap pages; the Runs pages drop their own copies, and run detail and the log tail tell a missing run by notFoundError. The read-only marker test lists both branches' operations.",
+          "wording": "Stated by the orchestrator acting as arbiter: the resolution above, merged as 4b34dcb2"
+        },
+        "handle": "web-runs-rebase-resolution",
+        "id": "01M6QCDPT27EPXFR1CDKSBGMSX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6QCDPT27EPXFR1CDGYCEM15",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QCDPT27EPXFR1CDGYCEM15",
+        "id": "01M6QCDPVH8W9E6QFASHXQVCHX",
+        "link": "01M6QCDPVH8W9E6QFASHTMY7AA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QBSSKA82XZRSDA0B08X3QH",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6PFH1X52KNK0C5ZCDYEEF64",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QCDPXMR657HFZ7W04ATXBP",
+  "type": "ops",
+  "v": 1
+}

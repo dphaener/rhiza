@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q8ET6R1GA190TFC5B974AX",
+  "after": [
+    "01M6Q9D4K9JNAMVZ3S2C9TED9T"
+  ],
+  "at": "2026-11-06T02:09:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at d5ceb505 (attempt 2). Read the diff: run.status is now ReadOnly (internal/api/run.go:58) and listed in TestReadOnlyMarker, so the run page no longer 404s through the daemon's read-only API; TestRunLogTailFollowsDriverLog now also GETs /runs/run1 through api.ReadOnlyHandler and asserts the page shows the tail (rz-term, 'first line') and the run-log fragment. Ran go test -trimpath -count=1 ./internal/web/ : ok, with TestRunPageLogTail (fixture tail rendered in order with cursor, live on log events), TestRunPageNoLog (No log state on page and fragment), TestRunPageThroughReadOnlyAPI and TestRunLogTailFollowsDriverLog (lines appended to the driver log raise the stream's log event and show in the tail fragment; no-log before) all PASS. go test ./internal/api -run 'TestReadOnlyMarker|Web|Tail|RunLog' PASS; go test ./cmd/rhiza -run 'TestScripts/(run-tail|describe-golden|web)' PASS (run tail --limit 2 keeps only the last lines; no log exits 2). The full internal/api package timed out in TestReadBudget/TestInboxReadsChangeSetsOnce under load avg 12-20, unrelated to this leaf."
+        },
+        "handle": "web-run-log-tail-verified-2",
+        "id": "01M6Q9VVY2GYFXZCK67MY4XDDD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q9VVY2GYFXZCK67KTVVQ8Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q9VVY2GYFXZCK67KTVVQ8Z",
+        "id": "01M6Q9VVZD9K7ZGXFSQE9J8F28",
+        "link": "01M6Q9VVZD9K7ZGXFSQAFK50RX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAF52MNXBPR8STKSW15M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFH1X52KNK0C5ZCDYEEF64",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q9VW1NSQ1WS14RBX8JG6CB",
+  "type": "ops",
+  "v": 1
+}

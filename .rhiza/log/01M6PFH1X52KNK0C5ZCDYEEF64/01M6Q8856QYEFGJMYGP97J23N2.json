@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q81G40WRCDANG1WAV8YRYG",
+  "after": [
+    "01M6Q7WMW6CX1N9JPVBSF9K0JT"
+  ],
+  "at": "2026-11-06T01:40:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e2d82132 (fix attempt 2), rhiza show web-runs-list gives the amended statement with no short ID, which matches runRow in internal/web/runs.go (title, workflow, state pill, current step, start time, link to /runs/<id>, no ID text) and constraint owner-surfaces-no-ids. go test -trimpath -count=1 ./internal/web/... passed; TestRunsPageOrderFieldsAndLinks, TestRunsFragmentMatchesSection and TestRunsPageEmptyAndUnavailable pass and assert live-then-recent order, fields, links, IDs only in links, and that the runs section declares the run event. make self-check reports only stale-render failures, expected before landing, and no fold problems."
+        },
+        "handle": "web-runs-list-verified-2",
+        "id": "01M6Q8850E8342DM5HZT2ZD3WR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q8850E8342DM5HZP66D94C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q8850E8342DM5HZP66D94C",
+        "id": "01M6Q8854ABXK0GFEA6C5R71SF",
+        "link": "01M6Q8854ABXK0GFEA68RRV8A5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAD5JGK5R4PD07FT82DE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFH1X52KNK0C5ZCDYEEF64",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q8856QYEFGJMYGP97J23N2",
+  "type": "ops",
+  "v": 1
+}

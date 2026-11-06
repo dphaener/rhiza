@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q6CQBQ74KAXXD9FHQ1ZDT5",
+  "after": [
+    "01M6Q67DZE6BC2RT05BE0DH04B"
+  ],
+  "at": "2026-11-06T01:19:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b30eaa9b, as verifier claude-code-b98edd62: go test -trimpath -count=1 ./internal/web -run 'TestRunLogTailFollowsDriverLog|TestRunPageLogTail|TestRunPageNoLog' -v all PASS, and the whole internal/web package passes. TestRunPageLogTail renders a fixture run's page with its last lines (HTML-escaped) in the rz-term block with the live cursor, live on log events; TestRunLogTailFollowsDriverLog (real read-only API over fixtureCtx) asserts the no-log state, appends lines to the run's driver log, waits for the stream's 'event: log' with the run id, and reads them through /fragments/run-log, then again for a further appended line; TestRunPageNoLog asserts 'No log' on page and fragment. Also passed: internal/api TestReadOnlyMarker (run.tail is ReadOnly) and cmd/rhiza TestScripts/run-tail and describe-golden. Read the diff: run.tail reads a bounded window of the log, 404 maps to the no-log Empty state. Note: a full internal/api run hit the 600s go test timeout on a machine at load ~20; the scoped api test passes."
+        },
+        "handle": "web-run-log-tail-verified",
+        "id": "01M6Q71NW00SGZ3YPVD349V43Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q71NVZQ2A3H8AAHB87EWTZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q71NVZQ2A3H8AAHB87EWTZ",
+        "id": "01M6Q71NZBQ212DRQV536H3RJ8",
+        "link": "01M6Q71NZBQ212DRQV525GW4S3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAF52MNXBPR8STKSW15M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFH1X52KNK0C5ZCDYEEF64",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q71P11VREQX5M8K5XPMQEY",
+  "type": "ops",
+  "v": 1
+}
