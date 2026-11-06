@@ -1,0 +1,40 @@
+{
+  "actor": "01M6S3M4K1JPXHV4XQ08Q3F5JG",
+  "after": [
+    "01M6RY7DAGSVQ7WKPQQ9BA5QN0"
+  ],
+  "at": "2026-11-06T19:39:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 1df154a8. `go test -trimpath -count=1 ./cmd/rhiza -run TestScripts/run-worktree-carries-accept` passes. The script commits a proposed change set with leaves, accepts it in the main clone (entry untracked), starts `rhiza run start --foreground` in a new worktree, then a second change set with its worktree reused on its branch, accepted between runs. In each, `change show` reports accepted, the accept entry is present and untracked, `rhiza ship land` lands with a clean tree, and the accept entry file is in the pushed branch's tree on the bare origin. With internal/api/session.go reverted to 5ca57f63, the script fails at line 39 (worktree reports proposed), so it covers the fix. Diff read: worktreeWorkspace now copies the main clone's change set entries whenever the main clone has that change set's log, never overwriting (copyNewFile), then reopens. `go test -trimpath -count=1 ./internal/api/... -skip TestReadBudget` passes. TestReadBudget failed timing budgets (different reads each run) at 1df154a8 and equally at the base 5ca57f63 under load average 6-14; it times read paths this change does not touch, so the failure was there before this change and comes from machine load."
+        },
+        "handle": "run-worktree-carries-accept-verified",
+        "id": "01M6S5ZX4QY790PCGW1EPMQZ5K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S5ZX4QY790PCGW1CVAM66V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S5ZX4QY790PCGW1CVAM66V",
+        "id": "01M6S5ZX5FRCTA4WZC7MCBB1QE",
+        "link": "01M6S5ZX5FRCTA4WZC7GD19DPJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXZ1WMDHH9H5ZH8T7G0VR2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RXNQFZX8YM80WFZJCXBRAJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S5ZX72XVXF121KKTZAZWC4",
+  "type": "ops",
+  "v": 1
+}

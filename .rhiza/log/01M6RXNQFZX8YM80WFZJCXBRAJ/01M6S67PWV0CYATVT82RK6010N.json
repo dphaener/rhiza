@@ -1,0 +1,40 @@
+{
+  "actor": "01M6S62Y607AQSAZFDTBQBX0Y6",
+  "after": [
+    "01M6S5ZX72XVXF121KKTZAZWC4"
+  ],
+  "at": "2026-11-06T19:44:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 90090bb2, hands-on with the built binary (go build -trimpath) in a scratch repo with a bare origin and a fake gh only for pr view, RHIZA_* env unset. Committed a proposed change set, ran rhiza accept in the main clone (entry left untracked), then rhiza run start --foreground: the new worktree showed State: accepted with the accept entry untracked; rhiza ship check passed and rhiza ship land committed and pushed, leaving a clean tree, and the accept entry file was in the pushed branch's tree on origin. For a second change set, a first run set up the worktree while it was proposed, then rhiza accept in the main clone and a second run on the existing worktree showed State: accepted and ship land landed it with the accept on the branch. A third run on the landed worktree copied nothing (clean porcelain, still landed). The same script with a binary built at the merge-base reproduced the bug: the worktree stayed proposed and ship land failed with 'cannot ship change set ...: it is proposed, not accepted'. go test -trimpath ./cmd/rhiza -run TestScripts/run-worktree-carries-accept passes."
+        },
+        "handle": "run-worktree-carries-accept-qa-1",
+        "id": "01M6S67PR1TKHB502BJ8H244T4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S67PR1TKHB502BJ74ZC97A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S67PR1TKHB502BJ74ZC97A",
+        "id": "01M6S67PTHPXSE40JSSF00F9XK",
+        "link": "01M6S67PTHPXSE40JSSE25QY4Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXZ1WMDHH9H5ZH8T7G0VR2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RXNQFZX8YM80WFZJCXBRAJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S67PWV0CYATVT82RK6010N",
+  "type": "ops",
+  "v": 1
+}

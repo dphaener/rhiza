@@ -1,0 +1,137 @@
+# A run's worktree gets every log entry of its change set the main clone
+# has and the worktree lacks, even when the worktree already has the
+# change set: an accept made in the main clone and never committed (the
+# Inbox app, rhiza accept) reaches the worktree, where ship land's
+# `git add .rhiza` commits it on the branch.
+#
+# The fake gh answers pr view from the bare origin: PR #7 open with every
+# check passed at the branch's head on origin.
+
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+env ORIGIN=$WORK/origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/one.toml .rhiza/workflows/one.toml
+exec rhiza change new 'Carry the accept' --title 'Carry accept' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability carried --field 'statement=Carried'
+exec rhiza propose
+exec git add -A
+exec git commit -qm init
+exec git push -q -u origin main
+
+# Accepted in the main clone only: the entry stays untracked.
+exec rhiza accept --reason ok
+exec git status --porcelain
+stdout '^\?\? \.rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/'
+
+# A run's new worktree is set up with the accept.
+exec rhiza run start --foreground --workflow one --change 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout ' succeeded$'
+cd $WORK/repo.carry-accept
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: accepted'
+exec git status --porcelain
+stdout '^\?\? \.rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/'
+fold-ok $WORK/repo.carry-accept/.rhiza
+
+# ship land in the worktree commits the accept entry on the run's branch.
+exec git branch --show-current
+stdout '^cs/carry-accept$'
+cp $WORK/feature.txt feature.txt
+exec git add feature.txt
+exec git commit -qm 'Build the feature'
+exec git push -q -u origin cs/carry-accept
+exec rhiza ship check --change 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout passed
+exec rhiza ship land --change 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^Landed change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
+exec git status --porcelain
+! stdout .
+# The accept entry, still untracked in the main clone, is in the pushed
+# branch's tree.
+exec git -C $WORK/repo ls-files --others --exclude-standard .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N
+stdout -count=1 '^\.rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/[0-9A-Z]{26}\.json$'
+exec sh -c 'for f in $(git -C "$WORK/repo" ls-files --others --exclude-standard .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N); do git -C "$ORIGIN" cat-file -e "cs/carry-accept:$f" || exit 1; echo "tracked $f"; done'
+stdout -count=1 '^tracked '
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: landed'
+fold-ok $WORK/repo.carry-accept/.rhiza
+
+# A worktree that already has the change set (set up by a run while
+# proposed) gets the accept made in the main clone afterwards, when a run
+# starts on it again.
+cd $WORK/repo
+exec rhiza change new 'Carry again' --title 'Carry again' --json
+stdout '"change_set": "01M5PWGNA0MVZ1H5AXG5VQ0BY9"'
+exec rhiza add capability carried-again --field 'statement=Again'
+exec rhiza propose
+exec git add -A
+exec git commit -qm second
+exec git push -q origin main
+exec rhiza run start --foreground --workflow one
+stdout ' succeeded$'
+cd $WORK/repo.carry-again
+exec rhiza change show
+stdout '^- State: proposed'
+cd $WORK/repo
+exec rhiza accept --reason ok
+exec rhiza run start --foreground --workflow one
+stdout ' succeeded$'
+cd $WORK/repo.carry-again
+exec rhiza change show
+stdout '^- State: accepted'
+exec git status --porcelain
+stdout '^\?\? \.rhiza/log/'
+fold-ok $WORK/repo.carry-again/.rhiza
+
+# ship land in the reused worktree commits that accept on its branch too.
+cp $WORK/feature.txt again.txt
+exec git add again.txt
+exec git commit -qm 'Build again'
+exec git push -q -u origin cs/carry-again
+exec rhiza ship check
+stdout passed
+exec rhiza ship land
+stdout '^Landed change set 01M5PWGNA0MVZ1H5AXG5VQ0BY9\.$'
+exec git status --porcelain
+! stdout .
+exec git -C $WORK/repo ls-files --others --exclude-standard .rhiza/log/01M5PWGNA0MVZ1H5AXG5VQ0BY9
+stdout -count=1 '^\.rhiza/log/01M5PWGNA0MVZ1H5AXG5VQ0BY9/[0-9A-Z]{26}\.json$'
+exec sh -c 'for f in $(git -C "$WORK/repo" ls-files --others --exclude-standard .rhiza/log/01M5PWGNA0MVZ1H5AXG5VQ0BY9); do git -C "$ORIGIN" cat-file -e "cs/carry-again:$f" || exit 1; echo "tracked $f"; done'
+stdout -count=1 '^tracked '
+exec rhiza change show 01M5PWGNA0MVZ1H5AXG5VQ0BY9
+stdout '^- State: landed'
+fold-ok $WORK/repo.carry-again/.rhiza
+
+-- one.toml --
+name = "one"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- feature.txt --
+built
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+case "$1 $2" in
+"pr view")
+	if ! head=$(git -C "$ORIGIN" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac
