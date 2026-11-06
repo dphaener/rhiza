@@ -18,9 +18,10 @@
 <header class="rz-header">
   <a class="rz-wordmark" href="/"><b>Rhiza</b><span>monitor</span></a>
   <nav class="rz-nav" aria-label="Pages"><a href="/"{{if eq .Nav "overview"}} aria-current="page"{{end}}>Overview</a><a href="/runs"{{if eq .Nav "runs"}} aria-current="page"{{end}}>Runs</a><a href="/roadmap"{{if eq .Nav "roadmap"}} aria-current="page"{{end}}>Roadmap</a></nav>
+  <div class="rz-header-end">{{if .Daemon.Text}}{{template "pill" .Daemon}}{{end}}<span class="rz-live" title="Live stream connected"><span class="rz-live-dot" aria-hidden="true"></span>live</span></div>
 </header>
 <main class="rz-main">
-<div class="rz-stale" id="rz-stale" role="status" hidden><span><b>Live stream dropped.</b> Showing what was true <span id="rz-stale-since">a moment ago</span>.</span><span class="rz-meta">retrying</span></div>
+{{template "stale"}}
 {{template "content" .}}
 </main>
 </div>

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview · Rhiza</title>
+<link rel="icon" href="/static/icons/favicon.ico" sizes="48x48">
+<link rel="icon" href="/static/icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#0D0C09" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2EEE4" media="(prefers-color-scheme: light)">
+<link rel="stylesheet" href="/static/css/rhiza-tokens.css">
+<link rel="stylesheet" href="/static/css/rhiza.css">
+</head>
+<body class="rz">
+<div class="rz-app">
+<header class="rz-header">
+  <a class="rz-wordmark" href="/"><b>Rhiza</b><span>monitor</span></a>
+  <nav class="rz-nav" aria-label="Pages"><a href="/" aria-current="page">Overview</a><a href="/runs">Runs</a><a href="/roadmap">Roadmap</a></nav>
+  <div class="rz-header-end"><span class="rz-pill rz-pill--running"><span class="rz-live-dot" aria-hidden="true"></span>daemon · 2/4</span><span class="rz-live" title="Live stream connected"><span class="rz-live-dot" aria-hidden="true"></span>live</span></div>
+</header>
+<main class="rz-main">
+<div class="rz-stale" id="rz-stale" role="status" hidden><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.6 13 12.2H1Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7 5.6v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="10.3" r=".8" fill="currentColor"/></svg><span><b>Live stream dropped.</b> Showing what was true <span id="rz-stale-since">a moment ago</span>.</span><span class="rz-meta">retrying</span></div>
+<div class="rz-pagehead"><div><p class="rz-kicker">Overview</p><h1>Overview</h1></div></div>
+</main>
+</div>
+<script src="/static/app.js" defer></script>
+</body>
+</html>
