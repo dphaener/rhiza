@@ -67,6 +67,40 @@ exec rhiza daemon status --json
 stdout '"project": "bare"'
 stdout '"reason": "not initialised"'
 stdout '"last_started": \{'
+
+# Status acts on the root's daemon from anywhere under the root: from the
+# root itself, outside any checkout, and from a project that is not the
+# daemon's home, it reads the home's state.
+exec rhiza daemon status --json
+cp stdout $WORK/home-status.json
+cd $WORK
+exec rhiza daemon status --json
+cmp stdout $WORK/home-status.json
+exec rhiza daemon status
+stdout '^Daemon not running$'
+stdout 'Skipped project: bare: not initialised'
+cd $WORK/second
+exec rhiza daemon status --json
+cmp stdout $WORK/home-status.json
+
+# A live daemon started from the root: a second one is refused, and the
+# status its refusal names says it runs, from the root and from a project.
+cd $WORK
+exec rhiza daemon --permission-mode manual &live&
+exec sh -c 'for i in $(seq 100); do grep -q pid .rhiza-root/daemon.lock && exit 0; sleep 0.1; done; exit 1'
+! exec rhiza daemon --permission-mode manual
+stderr 'another daemon holds the lock'
+stderr 'rhiza daemon status'
+exec rhiza daemon status
+stdout '^Daemon running, process .*:[0-9]+$'
+cd $WORK/second
+exec rhiza daemon status
+stdout '^Daemon running, process .*:[0-9]+$'
+cd $WORK
+kill -INT live
+wait live
+exec rhiza daemon status
+stdout '^Daemon not running$'
 -- bin/rex --
 #!/bin/sh
 echo "rex $*" >> "$WORK/rex.log"

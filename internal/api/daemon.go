@@ -136,6 +136,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	defer rootLock.Unlock()
+	// Status from anywhere under the root reads the state in the home's
+	// git common dir: say which project that is.
+	if err := daemon.WriteHome(root, homeName); err != nil {
+		return nil, err
+	}
 	lock, err := daemon.TryLock(common, ctx.Now())
 	if err != nil {
 		if h, ok := err.(*daemon.Held); ok {
@@ -1410,13 +1415,29 @@ func daemonRetryAt(at string) string {
 // daemon holding the lock it says not running, and shows the state file's
 // last daemon, if one left it.
 func runDaemonStatus(ctx *Ctx, req any) (any, error) {
-	common, err := gitCommonDir(ctx)
+	resp := DaemonStatusResponse{Settings: []Setting{}, Runs: []DaemonRun{}, Skipped: []DaemonSkip{}, SkippedProjects: []DaemonProjectSkip{}, Hooks: []HookRow{}, Unjournaled: []DaemonEvent{}}
+	resp.Mode, _ = daemonMode(ctx)
+	common, rooted, err := daemonStatusDir(ctx)
 	if err != nil {
 		return nil, err
 	}
-	resp := DaemonStatusResponse{Settings: []Setting{}, Runs: []DaemonRun{}, Skipped: []DaemonSkip{}, SkippedProjects: []DaemonProjectSkip{}, Hooks: []HookRow{}, Unjournaled: []DaemonEvent{}}
-	resp.Mode, _ = daemonMode(ctx)
-	_, resp.Running = daemon.Running(common)
+	if rooted != "" {
+		// The root's lock says whether its daemon runs, wherever under the
+		// root status is asked; the home's own lock says so too.
+		var h daemon.Holder
+		h, resp.Running = daemon.RunningRoot(rooted)
+		if common == "" {
+			if resp.Running {
+				resp.Process = h.String()
+			}
+			return resp, nil
+		}
+		if !resp.Running {
+			_, resp.Running = daemon.Running(common)
+		}
+	} else {
+		_, resp.Running = daemon.Running(common)
+	}
 	st, ok := daemon.ReadState(common)
 	if !ok || (resp.Running && st.Process != daemon.ReadHolder(common)) {
 		// A live daemon that has not written its state yet, or a lock
@@ -1457,6 +1478,33 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 		resp.Unjournaled = append(resp.Unjournaled, *daemonEvent(&e))
 	}
 	return resp, nil
+}
+
+// daemonStatusDir is the git common dir that holds the state status reads.
+// Under a Rhiza root it is the root daemon's home project's (the one the
+// daemon recorded, else the one daemon would pick from here), and root is
+// the root; common is "" when the root has no initialised project. Outside
+// a root it is this repo's, and root is "".
+func daemonStatusDir(ctx *Ctx) (common, root string, err error) {
+	root, ok := rootcfg.Find(ctx.Wd)
+	if !ok {
+		common, err = gitCommonDir(ctx)
+		return common, "", err
+	}
+	reg, err := rootcfg.Load(root)
+	if err != nil {
+		return "", "", err
+	}
+	var home *Ctx
+	if name := daemon.ReadHome(root); name != "" && slices.Contains(reg.Names(), name) && projectInitialised(reg.Dir(root, name)) {
+		home = projectCtx(ctx, reg.Dir(root, name))
+	} else if _, c, ok := daemonHome(ctx, root, reg); ok {
+		home = c
+	} else {
+		return "", root, nil
+	}
+	common, err = gitCommonDir(home)
+	return common, root, err
 }
 
 // webStatus is the web UI line for the recorded settings: its URL, off, or

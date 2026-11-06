@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -121,14 +122,42 @@ func readHolderIn(dir string) Holder {
 
 // Running reports whether a daemon holds the lock now, and who its lock
 // file names. It takes the lock and drops it again to find out.
-func Running(common string) (Holder, bool) {
-	if err := os.MkdirAll(Dir(common), 0o755); err != nil {
+func Running(common string) (Holder, bool) { return runningIn(Dir(common)) }
+
+// RunningRoot is Running for the root's one daemon lock, in RootStateDir.
+func RunningRoot(root string) (Holder, bool) { return runningIn(RootStateDir(root)) }
+
+func runningIn(dir string) (Holder, bool) {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return Holder{}, false
 	}
-	_, unlock, err := open(filepath.Join(Dir(common), File))
+	_, unlock, err := open(filepath.Join(dir, File))
 	if err == nil {
 		unlock()
 		return Holder{}, false
 	}
-	return ReadHolder(common), true
+	return readHolderIn(dir), true
+}
+
+// HomeFile names, in RootStateDir, the registered project that is the root
+// daemon's home: the one whose git common dir holds its state.
+const HomeFile = "daemon.home"
+
+// WriteHome records the root daemon's home project. The file outlives the
+// daemon, so status after a stop still finds the state it left.
+func WriteHome(root, project string) error {
+	dir := RootStateDir(root)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(dir, HomeFile), []byte(project+"\n"), 0o644)
+}
+
+// ReadHome is the home project WriteHome last recorded, "" if none.
+func ReadHome(root string) string {
+	b, err := os.ReadFile(filepath.Join(RootStateDir(root), HomeFile))
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(b))
 }
