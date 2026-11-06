@@ -28,8 +28,16 @@ func TestChangeSetPage(t *testing.T) {
 	callJSON(t, ctx, "link", `{"from":"retry-a-ok","type":"verifies","to":"retry-a"}`)
 	callJSON(t, ctx, "add", `{"kind":"question","handle":"gone-q","fields":["statement=Should a 410 stop retries at once?"]}`)
 	callJSON(t, ctx, "link", `{"from":"gone-q","type":"blocks","to":"retry-b"}`)
+	callJSON(t, ctx, "propose", `{}`)
+
+	// The dependency comes from another change set, as a landed plan's does.
+	newChange(t, ctx, "Plan the order", "intention")
 	callJSON(t, ctx, "link", `{"from":"`+cs+`","type":"depends-on","to":"`+base+`"}`)
 	callJSON(t, ctx, "propose", `{}`)
+	callJSON(t, ctx, "accept", `{}`)
+	callJSON(t, ctx, "land", `{}`)
+	// The page reads the change set whatever is current: here, nothing.
+	callJSON(t, ctx, "change.use", `{"none":true}`)
 
 	// A run on it.
 	var common string
@@ -57,7 +65,7 @@ func TestChangeSetPage(t *testing.T) {
 		"A failed delivery is retried", "Run the backoff test", "A 429 waits for Retry-After", "Run the header test",
 		"has evidence", "no evidence yet", "2 leaves, 1 with evidence",
 		"Should a 410 stop retries at once?", "Base work", `href="/changes/` + base + `"`, "landed",
-		`href="/runs/runone"`, "build run", "Proposed",
+		`href="/runs/runone"`, "build run", "2026-10-24 11:00", "Proposed",
 	} {
 		if !strings.Contains(body, s) {
 			t.Errorf("missing %q in:\n%s", s, body)

@@ -31,12 +31,6 @@ type changeJSON struct {
 			Kind   string `json:"kind"`
 			Action string `json:"action"`
 		} `json:"nodes"`
-		Links []struct {
-			Action string `json:"action"`
-			Type   string `json:"type"`
-			From   string `json:"from"`
-			To     string `json:"to"`
-		} `json:"links"`
 	} `json:"changes"`
 }
 
@@ -115,9 +109,28 @@ var runStatePill = map[string]Pill{
 	"failed":    {"failed", "failed"},
 }
 
-func showRef(r *http.Request, ref string) (*showJSON, error) {
+// showRef reads a node as the change set sees it, whatever change set the
+// daemon's repo has current.
+func showRef(r *http.Request, cs, ref string) (*showJSON, error) {
 	var s showJSON
-	return &s, apiGet(r, "/api/show?ref="+url.QueryEscape(ref), &s)
+	return &s, apiGet(r, "/api/show?ref="+url.QueryEscape(ref)+"&view="+url.QueryEscape("what-if:"+cs), &s)
+}
+
+// dependsOn is the change sets the model says cs depends on, whichever
+// change set added the links: the roadmap operation's depends_on.
+func dependsOn(r *http.Request, cs string) []string {
+	var rm roadmapJSON
+	if err := apiGet(r, "/api/roadmap?all=true", &rm); err != nil {
+		return nil
+	}
+	for _, g := range rm.Groups {
+		for _, c := range g.ChangeSets {
+			if c.ID == cs {
+				return c.DependsOn
+			}
+		}
+	}
+	return nil
 }
 
 // loadChange reads a change set through the operations and shapes it. No IDs
@@ -133,7 +146,7 @@ func loadChange(r *http.Request, ref string) (*ChangeView, error) {
 	}
 
 	for _, id := range cs.Serves {
-		if s, err := showRef(r, id); err == nil {
+		if s, err := showRef(r, cs.ID, id); err == nil {
 			if t := s.field("statement"); t != "" {
 				v.Serves = append(v.Serves, Rel{Href: "/roadmap", Text: t})
 			}
@@ -141,13 +154,13 @@ func loadChange(r *http.Request, ref string) (*ChangeView, error) {
 	}
 
 	seen := map[string]bool{}
-	for _, l := range cs.Changes.Links {
-		if l.Action != "added" || l.Type != "depends-on" || l.From != cs.ID || seen[l.To] {
+	for _, to := range dependsOn(r, cs.ID) {
+		if seen[to] {
 			continue
 		}
-		seen[l.To] = true
+		seen[to] = true
 		var d changeJSON
-		if err := apiGet(r, "/api/change.show?ref="+url.QueryEscape(l.To), &d); err != nil {
+		if err := apiGet(r, "/api/change.show?ref="+url.QueryEscape(to), &d); err != nil {
 			continue
 		}
 		t := d.Title
@@ -166,13 +179,13 @@ func loadChange(r *http.Request, ref string) (*ChangeView, error) {
 		}
 	}
 	for _, lf := range cs.Leaves {
-		s, err := showRef(r, lf.ID)
+		s, err := showRef(r, cs.ID, lf.ID)
 		if err != nil {
 			continue
 		}
 		lv := LeafView{Statement: s.field("statement"), Acceptance: s.field("acceptance")}
 		for _, e := range s.liveIn("verifies") {
-			if en, err := showRef(r, e); err == nil && !en.Node.Retired {
+			if en, err := showRef(r, cs.ID, e); err == nil && !en.Node.Retired {
 				lv.Evidence = true
 			}
 		}
@@ -190,7 +203,7 @@ func loadChange(r *http.Request, ref string) (*ChangeView, error) {
 		}
 	}
 	for _, id := range qorder {
-		q, err := showRef(r, id)
+		q, err := showRef(r, cs.ID, id)
 		if err != nil || q.Node.Retired || len(q.liveIn("answers")) > 0 {
 			continue
 		}
@@ -201,8 +214,13 @@ func loadChange(r *http.Request, ref string) (*ChangeView, error) {
 
 	var runs struct {
 		Runs []struct {
-			ID, Change, State, Current, Workflow, StartedAt string
-			Live                                            bool
+			ID        string `json:"id"`
+			Change    string `json:"change"`
+			State     string `json:"state"`
+			Current   string `json:"current"`
+			Workflow  string `json:"workflow"`
+			StartedAt string `json:"started_at"`
+			Live      bool   `json:"live"`
 		} `json:"runs"`
 	}
 	if err := apiGet(r, "/api/run.ls?limit=1000", &runs); err == nil {
