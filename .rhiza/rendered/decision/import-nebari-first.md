@@ -19,6 +19,8 @@ Milestone, Nebari first: import Nebari by hand with agents following a written i
 ### In
 
 - decided-by [milestone-27](../intent/milestone-27.md)
+- decided-by [import-guide-topic](../capability/rhiza/guide/import-guide-topic.md)
+- decided-by [import-friction-recorded](../capability/rhiza/guide/import-friction-recorded.md)
 
 ## History
 

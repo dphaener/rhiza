@@ -1,0 +1,40 @@
+{
+  "actor": "01M6RMJT0A6089273DKG2KMCMP",
+  "after": [
+    "01M6RMJ5JZEJ1PQ06EED39YP2Y"
+  ],
+  "at": "2026-11-06T14:36:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 53bbe72e: read the diff. internal/guide/text/import.md step 3 now states one record per area (never one for the whole repo), Statement: one user-visible behaviour per capability, Acceptance: the repo's existing tests named by test file (a question instead of an invented acceptance), and a new 'Follow-up: anchors' section with rhiza add anchor and link implements, then rhiza check. Ran go test -trimpath ./cmd/rhiza -run TestScripts/import-records-built -count=1 -v: PASS. The script greps those rules from rhiza guide import, records two areas on a fixture repo with Go tests (change ls shows 2 'landed record: add capability'), each capability's acceptance naming its _test.go file, then a follow-up change set adding anchors store-go/api-go linked implements, lands it, renders, and rhiza check prints ok; fold-ok passes. Also go test ./internal/guide/... and ./internal/api -run Guide pass."
+        },
+        "handle": "import-records-built-verified",
+        "id": "01M6RMMC7HVN7QVQ47FEJN4E7K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6RMMC7HVN7QVQ47FD8NDKCM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RMMC7HVN7QVQ47FD8NDKCM",
+        "id": "01M6RMMC81DGPG0DDB7NW7G10W",
+        "link": "01M6RMMC81DGPG0DDB7N12DEJ7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3C5Q7TJ7HR8GP6PD4JW1B",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J36X6EC3E70H0QCW17GREP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RMMC9P5Y5FKYMGG2TR99SK",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,47 @@
+# The import topic names which documents are retired and which are kept;
+# retiring a fixture PLAN.md adds it as a Source with --raw and deletes it
+# in the same commit, and rhiza check passes.
+
+exec rhiza guide import
+stdout 'rhiza source add <handle> <file> --raw <document>'
+stdout 'Keep reference, design and operations documents'
+stdout 'delete it in the same change set'
+
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec git ls-files PLAN.md
+stdout '^PLAN.md$'
+
+exec rhiza change new 'Retire the plan'
+exec rhiza source add plan-md source.json --raw PLAN.md
+exec git rm -q PLAN.md
+! exists PLAN.md
+exec git add .rhiza
+exec git commit -qm 'Retire PLAN.md'
+
+# One commit both deletes PLAN.md and adds the Source's log records.
+exec git show --name-status --format= HEAD
+stdout '^D\tPLAN.md$'
+stdout '^A\t\.rhiza/log/.*\.json$'
+exec rhiza show plan-md --json
+stdout 'sha256'
+exec git status --porcelain .rhiza/log
+! stdout .
+
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+exec rhiza show plan-md --json
+stdout 'sha256'
+fold-ok
+
+-- PLAN.md --
+# Plan
+Build the store.
+-- source.json --
+{"title":"PLAN.md","summary":"The store plan, built.","quotes":[]}

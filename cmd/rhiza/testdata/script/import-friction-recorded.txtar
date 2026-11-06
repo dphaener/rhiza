@@ -1,0 +1,15 @@
+# The import topic states the friction rule and the question form; the
+# form's example works as written in a fresh repo.
+
+exec rhiza guide import
+stdout 'Record friction'
+stdout 'every step you could not follow, or had to work around'
+stdout 'rhiza add question <handle> --field ''statement=Import step 3 \(record built capabilities\): '
+
+exec git init -q
+exec rhiza init
+exec rhiza change new 'Import friction'
+exec rhiza add question step3-no-tests --field 'statement=Import step 3 (record built capabilities): no test proves the parser, so acceptance was left empty'
+exec rhiza show step3-no-tests --json
+stdout 'Import step 3'
+fold-ok

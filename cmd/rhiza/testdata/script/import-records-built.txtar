@@ -1,0 +1,55 @@
+# The import topic states the record rules; following them on a small repo
+# with tests gives one landed record change set per area, capabilities with a
+# statement and an acceptance naming a test file, then a follow-up change set
+# anchoring them with implements links.
+
+exec rhiza guide import
+stdout 'one record per area'
+stdout 'Statement: one user-visible behaviour'
+stdout 'Acceptance: the repo.s existing tests'
+stdout '(?s)## Follow-up: anchors.*rhiza add anchor.*implements'
+
+exec rhiza init
+
+# One record change set per area.
+exec rhiza add capability store --field 'statement=Keeps entries' --field 'acceptance=store/store_test.go TestKeep passes' --record
+exec rhiza add capability api --field 'statement=Serves entries' --field 'acceptance=api/api_test.go TestServe passes' --record
+exec rhiza change ls
+stdout -count=2 'landed record: add capability'
+
+# Follow-up change set with anchors.
+exec rhiza change new 'Anchor the imported capabilities'
+exec rhiza add anchor store-go --field path=store/store.go --field symbol=Keep
+exec rhiza add anchor api-go --field path=api/api.go --field symbol=Serve
+exec rhiza link store-go implements store
+exec rhiza link api-go implements api
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+exec sh -c 'rhiza show store --json | grep -q "store_test.go"'
+exec sh -c 'rhiza show api --json | grep -q "api_test.go"'
+fold-ok
+
+-- store/store.go --
+package store
+
+func Keep() int { return 1 }
+-- store/store_test.go --
+package store
+
+import "testing"
+
+func TestKeep(t *testing.T) { _ = Keep() }
+-- api/api.go --
+package api
+
+func Serve() int { return 1 }
+-- api/api_test.go --
+package api
+
+import "testing"
+
+func TestServe(t *testing.T) { _ = Serve() }
