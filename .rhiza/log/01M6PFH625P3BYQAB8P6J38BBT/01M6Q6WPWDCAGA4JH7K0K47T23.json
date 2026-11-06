@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q67FR9HDGXSTZB91G269YE",
+  "after": [
+    "01M6Q62B1S4HAZT2SHXGSP4K0Q"
+  ],
+  "at": "2026-11-06T01:17:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f309922d I ran go test -trimpath -count=1 ./internal/web/... (ok; TestChangeSetPage PASS). It serves /changes/<id> through api.ReadOnlyHandler for a fixture proposed change set with two leaves (one verified by Evidence), a question blocking a leaf, a depends-on link to a landed change set, and a build run. It asserts the title, kind, state, each leaf's statement and acceptance, has evidence / no evidence yet, the 2 leaves, 1 with evidence count, the open question, the dependency's text, href=/changes/<base> and landed pill, href=/runs/runone, build run, and the Proposed history entry. It also checks that no handle or ID is shown, that an unknown ULID and a bad ref both return 404, and that POST returns 405. go test ./internal/api -run 'TestReadOnlyMarker|ChangeShow' passed, so change.show is now ReadOnly. go vet and gofmt are clean on both packages. I read the diff: the roadmap rows' links moved from /cs/ to /changes/, and roadmap_test was updated to match. A whole-package internal/api run hit the 10m go test timeout while several other worktrees' api.test processes ran on the machine; CI runs the full suite."
+        },
+        "handle": "web-change-set-page-verified",
+        "id": "01M6Q6WPSWYYW9B7A1JFMS5M79",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q6WPSWYYW9B7A1JEAYXWMC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q6WPSWYYW9B7A1JEAYXWMC",
+        "id": "01M6Q6WPVD3G44BYPXM2MDYV3X",
+        "link": "01M6Q6WPVD3G44BYPXM28WHDMM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKANQ23RTM5QSR6H1CGBX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFH625P3BYQAB8P6J38BBT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q6WPWDCAGA4JH7K0K47T23",
+  "type": "ops",
+  "v": 1
+}

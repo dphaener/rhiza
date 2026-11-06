@@ -1,0 +1,63 @@
+{
+  "actor": "01M6Q9CWMSE2FA1KCMB8B72WKC",
+  "after": [
+    "01M6Q9AZHQQ0XHPWYRHNAVBRA9"
+  ],
+  "at": "2026-11-06T02:07:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e54ae787 I built rhiza (go build -trimpath), cloned this repo to a scratch dir and ran rhiza daemon --max-runs 0, paused, with rhiza.web.port 18943 and no current change set, then fetched pages with curl. GET /changes/01M6PFH625P3BYQAB8P6J38BBT (accepted) shows its title, intent, kind, state, both leaves with statement, acceptance and 'has evidence' ('2 leaves, 2 with evidence'), what it serves, Depends on 'Web UI server' and 'Web UI design system' (landed, linking to /changes/<id>), and its Proposed and Accepted history; after copying this run's journal into the clone, Runs lists the ship-change run linking to /runs/<id> with time 2026-11-06 00:57. Cycle 2's finding is fixed: the landed change sets 01M6J965 and 01M6FENG now show 3 leaves, 3 with evidence and 1 leaf, 1 with evidence, with statements, acceptance and Serves, matching change.show, and their Landed history. In the clone I drafted a change set with a capability and a question blocking it: its page shows the leaf with 'no evidence yet' and the question under Open questions; after rhiza withdraw it shows 0 leaves, as change.show does, and a Withdrawn entry. Unknown ULID and non-ID refs return 404, POST returns 405. go test -trimpath -count=1 ./internal/web/... is ok."
+        },
+        "handle": "web-change-set-page-qa-3",
+        "id": "01M6Q9SDTW8TAFDPWTJHB039NX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q9SDTW8TAFDPWTJF5RK9HF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q9SDTW8TAFDPWTJF5RK9HF",
+        "id": "01M6Q9SE0K16MVSYJ0S03WEMCG",
+        "link": "01M6Q9SE0K16MVSYJ0RY5S8W6W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKANQ23RTM5QSR6H1CGBX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e54ae787, on the same scratch daemon (port 18943, no current change set), GET /roadmap returned 200 and links each of its 16 change sets to /changes/<full id>; following those links for an accepted, a draft, a withdrawn and two landed change sets gave their pages with 200, so the roadmap's links now land on working change set pages. The group order and umbrella labelling were checked in cycle 2 and this cycle's fix does not touch internal/web/roadmap.go."
+        },
+        "handle": "web-roadmap-page-qa-3",
+        "id": "01M6Q9SE74H84SDA3D7ZC4RWXW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q9SE74H84SDA3D7XMMYCGE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q9SE74H84SDA3D7XMMYCGE",
+        "id": "01M6Q9SEF9S0ZS97E4RGHR564A",
+        "link": "01M6Q9SEF9S0ZS97E4RECGKM5N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAN1436CCE15SQMFT2B9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFH625P3BYQAB8P6J38BBT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q9SENR68BZC3BHMKSZ955E",
+  "type": "ops",
+  "v": 1
+}
