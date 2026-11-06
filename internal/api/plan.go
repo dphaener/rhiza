@@ -141,9 +141,11 @@ type RoadmapGroup struct {
 
 // RoadmapIntent names a group's intent.
 type RoadmapIntent struct {
-	ID     id.ID    `json:"id" desc:"The intent's ID"`
-	Handle string   `json:"handle" desc:"Its handle; empty if the view does not have it"`
-	Path   []string `json:"path" desc:"The handles of its ancestors in the intent tree, the root first"`
+	ID     id.ID  `json:"id" desc:"The intent's ID"`
+	Handle string `json:"handle" desc:"Its handle; empty if the view does not have it"`
+	// Statement is for owner-facing surfaces, which name a node by it.
+	Statement string   `json:"statement,omitempty" desc:"Its statement; empty if the view does not have it"`
+	Path      []string `json:"path" desc:"The handles of its ancestors in the intent tree, the root first"`
 }
 
 // RoadmapChangeSet is one change set in a group.
@@ -1526,7 +1528,7 @@ func runRoadmap(ctx *Ctx, req any) (any, error) {
 			if g.umbrella {
 				rg.Kind = "umbrella"
 			}
-			rg.Intent = RoadmapIntent{ID: g.intent, Handle: in.nodes[g.intent].Handle, Path: []string{}}
+			rg.Intent = RoadmapIntent{ID: g.intent, Handle: in.nodes[g.intent].Handle, Statement: fieldStatement(in.nodes[g.intent].Fields), Path: []string{}}
 			for _, a := range paths[g.intent] {
 				rg.Intent.Path = append(rg.Intent.Path, planHandle(a, in.nodes))
 			}

@@ -118,3 +118,31 @@ func TestOverviewListsInbox(t *testing.T) {
 		t.Errorf("empty: %s", b)
 	}
 }
+
+func TestOverviewShowsMilestoneProgress(t *testing.T) {
+	src := func() []MilestoneView {
+		return []MilestoneView{
+			{Name: "Durable delivery", Total: 5, Counts: map[string]int{"accepted": 3, "proposed": 2}},
+			{Name: "Single change set", Total: 1, Counts: map[string]int{"proposed": 1}},
+		}
+	}
+	for _, path := range []string{"/", FragmentURL("milestones")} {
+		rec := httptest.NewRecorder()
+		HandlerWithMilestones(nil, nil, nil, src, nil).ServeHTTP(rec, httptest.NewRequest("GET", path, nil))
+		body := rec.Body.String()
+		for _, want := range []string{
+			"2 open", "Durable delivery", "<small>5 change sets</small>", "<small>1 change set</small>",
+			"rz-pill--accepted", "rz-pill--proposed", `<span class="rz-num">3</span>`, `<span class="rz-num">2</span>`,
+			`href="/roadmap"`,
+		} {
+			if !strings.Contains(body, want) {
+				t.Errorf("%s lacks %q:\n%s", path, want, body)
+			}
+		}
+	}
+	rec := httptest.NewRecorder()
+	HandlerWithMilestones(nil, nil, nil, func() []MilestoneView { return nil }, nil).ServeHTTP(rec, httptest.NewRequest("GET", "/", nil))
+	if b := rec.Body.String(); !strings.Contains(b, "No open milestones") || !strings.Contains(b, `data-rz-fragment="/fragments/milestones"`) {
+		t.Errorf("empty: %s", b)
+	}
+}

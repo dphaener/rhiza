@@ -58,7 +58,7 @@ var templateFS embed.FS
 // pages holds each page's template set: the shared layout plus the page's
 // own "content". They are parsed once, from the binary.
 var pages = map[string]*template.Template{
-	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/overview.html", "templates/daemon.html", "templates/runs.html", "templates/inbox.html")),
+	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/overview.html", "templates/daemon.html", "templates/runs.html", "templates/inbox.html", "templates/milestones.html")),
 }
 
 // page is what a template is rendered with.
@@ -72,6 +72,8 @@ type page struct {
 	Runs RunsPanel
 	// Inbox is the Overview's inbox panel.
 	Inbox InboxPanel
+	// Milestones is the Overview's milestone progress panel.
+	Milestones MilestonesPanel
 }
 
 func render(w http.ResponseWriter, name string, p page) {
@@ -106,6 +108,12 @@ func HandlerWithRuns(daemon DaemonSource, runs RunsSource, api http.Handler, eve
 // HandlerWithInbox is HandlerWithRuns with the source of the inbox the
 // Overview lists; nil lists nothing.
 func HandlerWithInbox(daemon DaemonSource, runs RunsSource, inbox InboxSource, api http.Handler, events ...http.Handler) http.Handler {
+	return HandlerWithMilestones(daemon, runs, inbox, nil, api, events...)
+}
+
+// HandlerWithMilestones is HandlerWithInbox with the source of the open
+// milestones the Overview shows the progress of; nil shows none.
+func HandlerWithMilestones(daemon DaemonSource, runs RunsSource, inbox InboxSource, milestones MilestonesSource, api http.Handler, events ...http.Handler) http.Handler {
 	mux := http.NewServeMux()
 	for _, e := range events {
 		if e != nil {
@@ -118,7 +126,7 @@ func HandlerWithInbox(daemon DaemonSource, runs RunsSource, inbox InboxSource, a
 	mux.HandleFunc("GET "+FragmentPrefix+"{name}", serveFragment)
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		d := daemonOf(r)
-		render(w, "overview", page{Title: "Overview", Nav: "overview", DaemonView: d, Daemon: d.Pill(), Runs: runsOf(r), Inbox: inboxOf(r)})
+		render(w, "overview", page{Title: "Overview", Nav: "overview", DaemonView: d, Daemon: d.Pill(), Runs: runsOf(r), Inbox: inboxOf(r), Milestones: milestonesOf(r)})
 	})
 	static, _ := fs.Sub(assets, "static")
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static)))
@@ -136,6 +144,9 @@ func HandlerWithInbox(daemon DaemonSource, runs RunsSource, inbox InboxSource, a
 		}
 		if inbox != nil {
 			r = r.WithContext(context.WithValue(r.Context(), inboxKey{}, inbox))
+		}
+		if milestones != nil {
+			r = r.WithContext(context.WithValue(r.Context(), milestonesKey{}, milestones))
 		}
 		mux.ServeHTTP(w, r)
 	})

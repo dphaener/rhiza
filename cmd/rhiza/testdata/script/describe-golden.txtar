@@ -7590,6 +7590,10 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "type": "array"
+                    },
+                    "statement": {
+                      "description": "Its statement; empty if the view does not have it",
+                      "type": "string"
                     }
                   },
                   "required": [

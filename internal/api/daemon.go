@@ -154,7 +154,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		// The handler gets its own copy of ctx: the poll goes on changing
 		// ctx while requests run.
 		snap := *ctx
-		webUI = &web.Manager{Factory: webFactory, Handler: web.HandlerWithInbox(WebDaemonSource(&snap), WebRunsSource(&snap), WebInboxSource(&snap), ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap), web.PollEvery))}
+		webUI = &web.Manager{Factory: webFactory, Handler: web.HandlerWithMilestones(WebDaemonSource(&snap), WebRunsSource(&snap), WebInboxSource(&snap), WebMilestonesSource(&snap), ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap), web.PollEvery))}
 		defer webUI.Close()
 	}
 	var sweep daemon.SweepSchedule
