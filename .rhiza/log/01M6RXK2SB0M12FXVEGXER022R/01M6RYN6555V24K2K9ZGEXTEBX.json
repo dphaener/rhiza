@@ -1,0 +1,41 @@
+{
+  "actor": "01M6RYM8VCRNZMR67JME8TNPTF",
+  "after": [
+    "01M6RYKX9YQ6QY4Y8HBK7W5H56"
+  ],
+  "at": "2026-11-06T17:31:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The review finding and critic agree the acceptance as written cannot be set up: in inboxGateQuestions (internal/api/inbox.go) a worktree that does not open returns before any handle is resolved, so 'worktree does not read' and 'a handle resolves in no planned change set' are mutually exclusive in one run, and 'three questions' vs 'both handles' does not add up. The leaf's statement names exactly these two fallbacks (unreadable model; unresolved handle), each a different code path, so each needs its own runnable case. Two questions per case keeps 'both handles' consistent and, in case (b), proves the unresolved fallback does not wipe the resolved question's statement. This is the split the finding proposed; it keeps the leaf's intent and adds no scope.",
+          "statement": "inbox-gate-questions-kept is accepted by two separate Go test cases in internal/api, not one combined setup: (a) a plan run stopped at its gate on two questions whose run worktree does not read gets an inbox open item listing both stop-detail handles, each with an empty statement, and its answer action; (b) a plan run stopped at its gate on two questions whose worktree reads, where one handle resolves in no planned change set, gets an inbox open item listing both handles: the unresolved one with an empty statement, the resolved one with its full statement. The existing testscript inbox-gate-questions still passes (go test -trimpath ./cmd/rhiza -run TestScripts/inbox-gate-questions).",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "inbox-gate-questions-two-cases",
+        "id": "01M6RYN60X4SHND9CNN67YN2D9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RYN60X4SHND9CNN5WRWA16",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RYN60X4SHND9CNN5WRWA16",
+        "id": "01M6RYN62GY45PNS9P80FTHKJH",
+        "link": "01M6RYN62GY45PNS9P7ZF952CQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RYKX4E14KYYST0X8X5AJMP",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6RXK2SB0M12FXVEGXER022R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RYN6555V24K2K9ZGEXTEBX",
+  "type": "ops",
+  "v": 1
+}

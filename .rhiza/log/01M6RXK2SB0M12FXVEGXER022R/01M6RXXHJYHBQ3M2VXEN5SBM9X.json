@@ -1,0 +1,96 @@
+{
+  "actor": "01M6RXKP8VR5P06WN3EZH4D2CG",
+  "after": [
+    "01M6RXX2PKT5NYGSC71DQK3FA2"
+  ],
+  "at": "2026-11-06T17:18:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6RXVTQJ0T8RYE8JS3P2MQC9",
+        "id": "01M6RXXHA2BJHFVVG9ZV7G6154",
+        "link": "01M6RXXHA2BJHFVVG9ZQJA03BA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXX2NGGACDHQPP1TDAE3PW",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A new budget test in internal/api over the large generated log with an index puts a plan run at its gate with several open questions spread over several planned change sets and asserts that inbox returns every question with its statement, decodes no full log (the worktree index catch-up decodes 0 entries when fresh), folds each planned change set at most once, and answers within the read budget; run with go test -trimpath ./internal/api -run <that test> plus the existing inbox tests in internal/api.",
+          "statement": "The inbox reads a plan run's gate questions cheaply: inboxGateQuestions opens the run worktree's model through its own index (index.DefaultPath of the worktree root) instead of decoding the full disk log, and folds each planned change set's model at most once per call, resolving every open handle against it; rhiza inbox, the daemon poll's gate-question fill, the Inbox app and the web UI's Overview and inbox fragment all go through this read and stay well under 1 s at a gate."
+        },
+        "handle": "inbox-gate-read-fast",
+        "id": "01M6RXXHAXYY47KE0DZ9JH60Z4",
+        "key": "zzzzzzzw",
+        "kind": "capability",
+        "node": "01M6RXXHAXYY47KE0DZ80E9B1X",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6RXXHAXYY47KE0DZ80E9B1X",
+        "id": "01M6RXXHBFGHY6FT2XF3P24XSP",
+        "link": "01M6RXXHBFGHY6FT2XEZWS2RYP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXVTQJ0T8RYE8JS3P2MQC9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api: a plan run stopped at its gate on two questions whose worktree does not read (and one whose handle resolves in no planned change set) gets an inbox open item listing both handles, statements empty; the existing testscript inbox-gate-questions still passes (go test -trimpath ./cmd/rhiza -run TestScripts/inbox-gate-questions).",
+          "statement": "A gate (open) inbox item always carries its questions: when the run worktree's model can't be read or a handle doesn't resolve, the inbox still lists one gate question per handle of the stop detail, with its statement empty, so the item never loses its questions or its answer action."
+        },
+        "handle": "inbox-gate-questions-kept",
+        "id": "01M6RXXHCHHB08YWNFGYRTRXHR",
+        "key": "zzzzzzzy",
+        "kind": "capability",
+        "node": "01M6RXXHCHHB08YWNFGY67DT82",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6RXXHCHHB08YWNFGY67DT82",
+        "id": "01M6RXXHE8GWZGR1RRMCM442M6",
+        "link": "01M6RXXHE8GWZGR1RRMB16VD3E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXVTQJ0T8RYE8JS3P2MQC9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/tui/inboxapp with a fake runner: a gate item with four long questions in a short window shows the form, and page-down and the mouse wheel reveal the last question's text while the TextAreas stay reachable; a gate item whose questions have empty statements still opens the form by handle; submitting calls question.answer --run per question then run.resume and quits; a blank answer calls nothing; a failed resume shows a detail panel that scrolls; a long detail of another item kind scrolls (go test -trimpath ./internal/tui/inboxapp/...).",
+          "statement": "In the Inbox app, picking a gate (open) item always opens the gate answer form: the full text of every open question with the advisor's recommendation scrolls (arrow and page keys and the mouse wheel) within the modal's height above one TextArea per question; submitting runs question.answer <handle> <text> --run <run> for each, then run.resume, then closes; a blank answer asks again; a failed answer or resume shows a scrollable detail with the error; and the detail panel of every other item kind scrolls too."
+        },
+        "handle": "inbox-app-gate-scroll",
+        "id": "01M6RXXHH0SGR3DGTJTF6YJQYP",
+        "key": "zzzzzzzz",
+        "kind": "capability",
+        "node": "01M6RXXHH0SGR3DGTJTD37G584",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6RXXHH0SGR3DGTJTD37G584",
+        "id": "01M6RXXHJ4A0B8X6G9QAXY8ZHV",
+        "link": "01M6RXXHJ4A0B8X6G9QAAN3FQ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXVTQJ0T8RYE8JS3P2MQC9",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6RXK2SB0M12FXVEGXER022R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RXXHJYHBQ3M2VXEN5SBM9X",
+  "type": "ops",
+  "v": 1
+}
