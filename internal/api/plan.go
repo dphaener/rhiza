@@ -213,6 +213,9 @@ type planInputs struct {
 	milestoneNums map[id.ID]float64
 	// umbrellas is the intents whose umbrella field is non-empty.
 	umbrellas map[id.ID]bool
+	// statements is the statement of each gathered intent that has one;
+	// nodes keeps no fields, so planGather notes them here.
+	statements map[id.ID]string
 }
 
 // planChangeSet is the core's verdict on one in-flight change set.
@@ -730,7 +733,7 @@ const planCycleReason = "depends-on cycle"
 // third connection is opened.
 func planGather(r *reader) (planInputs, error) {
 	in := planInputs{ops: map[id.ID][]op.Op{}, nodes: map[id.ID]gmodel.Node{},
-		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}, milestoneNums: map[id.ID]float64{}, umbrellas: map[id.ID]bool{}}
+		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}, milestoneNums: map[id.ID]float64{}, umbrellas: map[id.ID]bool{}, statements: map[id.ID]string{}}
 	w := newPlanWalk(r)
 	// flown is the in-flight change sets folded, keyed by ID: their entries
 	// are read and folded on another connection while the change sets are
@@ -932,6 +935,9 @@ func planGather(r *reader) (planInputs, error) {
 	}
 	for _, n := range ns {
 		in.nodes[n.ID] = lightNode(n)
+		if n.Kind == op.KindIntent {
+			planNoteStatement(in, n.ID, n.Fields)
+		}
 		if n.Kind == op.KindIntent && planMilestoneField(n.Fields) {
 			in.milestones[n.ID] = true
 			planNoteMilestoneNum(in, n.ID, n.Fields)
@@ -1462,6 +1468,9 @@ func planCreatedNode(i id.ID, in planInputs) {
 		for _, o := range in.ops[c.ID] {
 			if o.Type == op.TypeNodeCreate && o.Node == i {
 				in.nodes[i] = gmodel.Node{ID: i, Kind: o.Kind, Handle: o.Handle, Parent: o.Parent, Key: o.Key}
+				if o.Kind == op.KindIntent {
+					planNoteStatement(in, i, o.Fields)
+				}
 				if o.Kind == op.KindIntent && planMilestoneField(o.Fields) {
 					in.milestones[i] = true
 					planNoteMilestoneNum(in, i, o.Fields)
@@ -1472,6 +1481,14 @@ func planCreatedNode(i id.ID, in planInputs) {
 				return
 			}
 		}
+	}
+}
+
+// planNoteStatement notes intent i's statement from its fields, if it has
+// one.
+func planNoteStatement(in planInputs, i id.ID, fs map[string]json.RawMessage) {
+	if st := fieldStatement(fs); st != "" {
+		in.statements[i] = st
 	}
 }
 
@@ -1528,7 +1545,7 @@ func runRoadmap(ctx *Ctx, req any) (any, error) {
 			if g.umbrella {
 				rg.Kind = "umbrella"
 			}
-			rg.Intent = RoadmapIntent{ID: g.intent, Handle: in.nodes[g.intent].Handle, Statement: fieldStatement(in.nodes[g.intent].Fields), Path: []string{}}
+			rg.Intent = RoadmapIntent{ID: g.intent, Handle: in.nodes[g.intent].Handle, Statement: in.statements[g.intent], Path: []string{}}
 			for _, a := range paths[g.intent] {
 				rg.Intent.Path = append(rg.Intent.Path, planHandle(a, in.nodes))
 			}

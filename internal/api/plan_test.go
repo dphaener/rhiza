@@ -37,7 +37,7 @@ type planFix struct {
 
 func newPlanFix() *planFix {
 	return &planFix{in: planInputs{ops: map[id.ID][]op.Op{}, nodes: map[id.ID]gmodel.Node{},
-		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}, umbrellas: map[id.ID]bool{}},
+		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}, umbrellas: map[id.ID]bool{}, statements: map[id.ID]string{}},
 		history: map[id.ID][]changeset.Revision{}}
 }
 

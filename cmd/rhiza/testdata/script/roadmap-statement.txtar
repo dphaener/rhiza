@@ -1,0 +1,22 @@
+# roadmap names each milestone group's intent by its statement too, so an
+# owner-facing surface can tell milestones apart.
+
+exec rhiza init
+exec rhiza add intent m1 --field milestone=1 '--field' 'statement=Ship the web overview' --record
+exec rhiza add intent m2 --field milestone=2 '--field' 'statement=Run on the VM' --record
+
+# E serves m1, and F serves m2.
+exec rhiza change new E
+stdout 'change set 01M5PWGQ8GB4618G4RH2TV0ZAH '
+exec rhiza link 01M5PWGQ8GB4618G4RH2TV0ZAH serves m1
+exec rhiza propose
+
+exec rhiza change new F
+stdout 'change set 01M5PWGT68X5XKB54XFQMHKA0A '
+exec rhiza link 01M5PWGT68X5XKB54XFQMHKA0A serves m2
+exec rhiza propose
+fold-ok
+
+exec rhiza roadmap --json
+stdout '"handle": "m1",\n *"id": "[0-9A-Z]+",\n *"path": \[\],\n *"statement": "Ship the web overview"'
+stdout '"handle": "m2",\n *"id": "[0-9A-Z]+",\n *"path": \[\],\n *"statement": "Run on the VM"'
