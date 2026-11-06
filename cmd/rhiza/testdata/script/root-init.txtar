@@ -43,3 +43,26 @@ cd outside
 ! exec rhiza root show
 stderr 'not inside a Rhiza root'
 stderr '^next: rhiza root init$'
+
+# Human text names the root, config and project; at the root itself the
+# project is none; a folder that merely shares a prefix is no worktree.
+cd $WORK/top/app
+exec rhiza root show
+stdout '^root: .*/top$'
+stdout '^config: .*/top/rhiza\.toml$'
+stdout '^project: app$'
+cd $WORK/top
+exec rhiza root show
+stdout '^project: none$'
+mkdir apple
+cd apple
+exec rhiza root show --json
+stdout '"project": ""'
+
+# Outside a root the exit code is 2 and --json carries the next.
+cd $WORK/outside
+exec sh -c 'rhiza root show >/dev/null 2>&1; echo exit=$?'
+stdout '^exit=2$'
+! exec rhiza root show --json
+stdout '"code": "usage"'
+stdout '"next": "rhiza root init"'
