@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6QAB2ER7QMJMHFENKRC5YS2"
+  ],
+  "at": "2026-11-06T02:42:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/web-ui-runs-pages onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: internal/web/web.go?"
+        },
+        "handle": "rebase-conflict-web-ui-runs-pages",
+        "id": "01M6QBSSKA82XZRSDA0CQ8PYJ0",
+        "key": null,
+        "kind": "question",
+        "node": "01M6QBSSKA82XZRSDA0B08X3QH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QBSSKA82XZRSDA0B08X3QH",
+        "id": "01M6QBSSPWK44342WQ2A1JP1ZY",
+        "link": "01M6QBSSPWK44342WQ2704TA1V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFH1X52KNK0C5ZCDYEEF64",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6PFH1X52KNK0C5ZCDYEEF64",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QBSSVN8QXTS9ME144F99ZG",
+  "type": "ops",
+  "v": 1
+}
