@@ -14,7 +14,7 @@ Verified at 08293d6a (attempt 2). Read the diff: SelfUpdate now fetches at most 
 
 ### Out
 
-- verifies [daemon-self-update](../capability/rhiza/orchestration/daemon/daemon-self-update.md)
+- verifies daemon-self-update (retired)
 
 ## History
 

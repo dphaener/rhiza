@@ -7,9 +7,9 @@ exec git init -q
 exec rhiza init
 
 exec rhiza daemon settings
-stdout 'rhiza.daemon.usage.session = "" \(default\)'
-stdout 'rhiza.daemon.usage.weekly = "" \(default\)'
-stdout 'rhiza.daemon.usage.reserve = 20 \(default\)'
+stdout 'rhiza.daemon.usage.session = "" \(default, machine\)'
+stdout 'rhiza.daemon.usage.weekly = "" \(default, machine\)'
+stdout 'rhiza.daemon.usage.reserve = 20 \(default, machine\)'
 exec rhiza daemon settings --json
 stdout '"key": "rhiza.daemon.usage.reserve"'
 
@@ -17,9 +17,9 @@ exec rhiza daemon set rhiza.daemon.usage.session 5000000
 exec rhiza daemon set rhiza.daemon.usage.weekly 90000000
 exec rhiza daemon set rhiza.daemon.usage.reserve 35
 exec rhiza daemon settings
-stdout 'rhiza.daemon.usage.session = 5000000 \(git config\)'
-stdout 'rhiza.daemon.usage.weekly = 90000000 \(git config\)'
-stdout 'rhiza.daemon.usage.reserve = 35 \(git config\)'
+stdout 'rhiza.daemon.usage.session = 5000000 \(rhiza.toml, machine\)'
+stdout 'rhiza.daemon.usage.weekly = 90000000 \(rhiza.toml, machine\)'
+stdout 'rhiza.daemon.usage.reserve = 35 \(rhiza.toml, machine\)'
 exec rhiza daemon set rhiza.daemon.usage.reserve 0
 exec rhiza daemon set rhiza.daemon.usage.reserve 100
 
@@ -31,9 +31,9 @@ stderr 'from 0 to 100'
 ! exec rhiza daemon set rhiza.daemon.usage.session many
 stderr 'whole number of tokens'
 ! exec rhiza daemon set rhiza.daemon.usage.weekly 1.5
-exec git config --get rhiza.daemon.usage.reserve
-stdout '^100$'
-exec git config --get rhiza.daemon.usage.session
-stdout '^5000000$'
+exec grep '"rhiza.daemon.usage.reserve" = ' $WORK/rhiza.toml
+stdout '= "100"'
+exec grep '"rhiza.daemon.usage.session" = ' $WORK/rhiza.toml
+stdout '= "5000000"'
 
 fold-ok

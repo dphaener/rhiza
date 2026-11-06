@@ -96,6 +96,10 @@ mkdir order
 cd order
 exec git init -q
 exec rhiza init
+cd $WORK
+exec rhiza project rm repo
+exec rhiza project add order
+cd order
 exec rhiza add intent ten --field milestone=10 --record
 exec rhiza add intent nine --field milestone=9 --record
 exec git add -A

@@ -11,6 +11,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/rootcfg"
 	"github.com/dphaener/rhiza/internal/usage"
 )
 
@@ -25,14 +26,24 @@ func recordLimitHit(ctx *Ctx, a adapter.Adapter, l adapter.UsageLimit) {
 	if err != nil {
 		return
 	}
-	daemon.RecordLimitHit(common, daemon.LimitHit{HitAt: ctx.Now().UTC(), ResetAt: l.ResetAt.UTC(), Agent: a.Name()})
+	daemon.RecordLimitHitIn(limitsDir(ctx, common), daemon.LimitHit{HitAt: ctx.Now().UTC(), ResetAt: l.ResetAt.UTC(), Agent: a.Name()})
+}
+
+// limitsDir is where usage-limit hits are kept: the root's state folder
+// when the working directory is under a root, so every project's drivers
+// feed the one governor, else the repo's own folder under its common dir.
+func limitsDir(ctx *Ctx, common string) string {
+	if root, ok := rootcfg.Find(ctx.Wd); ok {
+		return daemon.RootStateDir(root)
+	}
+	return daemon.Dir(common)
 }
 
 // learnLimits folds the recorded hits into state's learned limits: for each
 // window kind the latest hit wins, with the window's use at that hit. A hit
 // whose use cannot be read teaches nothing yet and is tried again next poll.
 func learnLimits(ctx *Ctx, common string, state *daemon.State) {
-	hits := daemon.ReadLimitHits(common)
+	hits := daemon.ReadLimitHitsIn(limitsDir(ctx, common))
 	if len(hits) == 0 {
 		return
 	}

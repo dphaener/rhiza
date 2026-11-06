@@ -182,6 +182,9 @@ type Ctx struct {
 	// repoSession is set once the daemon has made sure its Rex session
 	// rhiza-<repo> exists and made it RexSession.
 	repoSession bool
+	// ProjectName is the name the project is registered under in the
+	// root's rhiza.toml, set by the root daemon; empty elsewhere.
+	ProjectName string
 	// RexBlock is the Rex block the caller runs in (the CLI's REX_BLOCK),
 	// empty if none: session.run copies that block's status reports.
 	RexBlock string

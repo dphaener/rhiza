@@ -14,7 +14,7 @@ QA at 78a3b478 with a binary built from the branch on macOS, in a scratch repo q
 
 ### Out
 
-- verifies [daemon-service-install](../capability/rhiza/orchestration/daemon/daemon-service-install.md)
+- verifies daemon-service-install (retired)
 
 ## History
 

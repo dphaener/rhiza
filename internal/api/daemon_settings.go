@@ -15,13 +15,22 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/rootcfg"
 	"github.com/dphaener/rhiza/internal/web"
+)
+
+// The scopes of a setting: a machine setting lives in the root's rhiza.toml,
+// a project setting in that project's git config.
+const (
+	ScopeMachine = "machine"
+	ScopeProject = "project"
 )
 
 // The sources of a setting's value.
 const (
 	SettingDefault = "default"
 	SettingConfig  = "git config"
+	SettingRoot    = "rhiza.toml"
 	SettingFlag    = "flag"
 )
 
@@ -33,6 +42,8 @@ type settingDef struct {
 	validate func(v string) error
 	// flag names the daemon flag that overrides the key, if any.
 	flag string
+	// project marks a project setting; the rest are machine settings.
+	project bool
 }
 
 func validateChoice(opts ...string) func(string) error {
@@ -48,6 +59,19 @@ func validateChoice(opts ...string) func(string) error {
 
 var settingDefs = []settingDef{
 	{key: "rhiza.daemon.paused", def: "false", validate: validateChoice("true", "false")},
+	// The project's own pause and run cap: the project is not worked while
+	// either pause holds, and runs at most this many at once.
+	{project: true, key: "rhiza.project.paused", def: "false", validate: validateChoice("true", "false")},
+	{project: true, key: "rhiza.project.maxRuns", def: "", validate: func(v string) error {
+		n, err := strconv.Atoi(v)
+		if err != nil || n < 1 {
+			return fmt.Errorf("must be a whole number of at least 1")
+		}
+		return nil
+	}},
+	// The hook commands run through sh -c, per project.
+	{project: true, key: "rhiza.eventCommand", def: "", validate: validateCommand},
+	{project: true, key: "rhiza.notifyCommand", def: "", validate: validateCommand},
 	{key: "rhiza.daemon.selfUpdate", def: "false", validate: validateChoice("true", "false")},
 	{key: "rhiza.daemon.maxRuns", def: strconv.Itoa(daemon.DefaultMaxRuns), flag: "--max-runs", validate: func(v string) error {
 		n, err := strconv.Atoi(v)
@@ -91,15 +115,15 @@ var settingDefs = []settingDef{
 	}},
 	// The ship deploy check: the health URL ship-change waits on after a
 	// merge (unset means no deploy check) and how long it waits.
-	{key: DeployURLKey, def: "", validate: validateDeployURL},
-	{key: DeployTimeoutKey, def: DefaultDeployTimeout, validate: validateDeployTimeout},
-	{key: "rhiza.autonomy.plan", def: AutonomyOwner, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
+	{project: true, key: DeployURLKey, def: "", validate: validateDeployURL},
+	{project: true, key: DeployTimeoutKey, def: DefaultDeployTimeout, validate: validateDeployTimeout},
+	{project: true, key: "rhiza.autonomy.plan", def: AutonomyOwner, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	// accept governs every plan run's gate, autonomous or owner-run, which
 	// accepts once the review passed unless it is owner; other change sets
 	// always wait for the owner.
-	{key: "rhiza.autonomy.accept", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
-	{key: "rhiza.autonomy.ship", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
-	{key: "rhiza.autonomy.signoff", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
+	{project: true, key: "rhiza.autonomy.accept", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
+	{project: true, key: "rhiza.autonomy.ship", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
+	{project: true, key: "rhiza.autonomy.signoff", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 }
 
 // The ship deploy check's keys and the timeout's default.
@@ -108,6 +132,13 @@ const (
 	DeployTimeoutKey     = "rhiza.ship.deployTimeout"
 	DefaultDeployTimeout = "15m"
 )
+
+func validateCommand(v string) error {
+	if strings.TrimSpace(v) == "" {
+		return fmt.Errorf("must not be empty")
+	}
+	return nil
+}
 
 func validateDeployURL(v string) error {
 	u, err := url.Parse(v)
@@ -146,16 +177,51 @@ type Setting struct {
 	Key     string `json:"key" desc:"The git config key"`
 	Value   string `json:"value" desc:"The effective value"`
 	Default string `json:"default" desc:"The value when nothing sets it"`
-	Source  string `json:"source" desc:"Where the value comes from: default, git config or flag"`
+	Source  string `json:"source" desc:"Where the value comes from: default, rhiza.toml, git config or flag"`
+	Scope   string `json:"scope" desc:"machine (kept in the root's rhiza.toml) or project (kept in the project's git config)"`
+}
+
+func (d settingDef) scope() string {
+	if d.project {
+		return ScopeProject
+	}
+	return ScopeMachine
+}
+
+// rootOf finds the Rhiza root that ctx works under and loads its config.
+func rootOf(ctx *Ctx) (string, rootcfg.Config, bool) {
+	if ctx.Wd == "" {
+		return "", rootcfg.Config{}, false
+	}
+	root, ok := rootcfg.Find(ctx.Wd)
+	if !ok {
+		return "", rootcfg.Config{}, false
+	}
+	c, err := rootcfg.Load(root)
+	if err != nil {
+		return "", rootcfg.Config{}, false
+	}
+	return root, c, true
 }
 
 // settingsOf reads every setting from git config, a flag in flags (key to
 // value) winning. A bad value in config is a usage error naming the key.
 func settingsOf(ctx *Ctx, flags map[string]string) ([]Setting, error) {
 	var out []Setting
+	_, cfg, haveRoot := rootOf(ctx)
 	for _, d := range settingDefs {
-		s := Setting{Key: d.key, Value: d.def, Default: d.def, Source: SettingDefault}
-		if ctx.Git != nil {
+		s := Setting{Key: d.key, Value: d.def, Default: d.def, Source: SettingDefault, Scope: d.scope()}
+		if !d.project && haveRoot {
+			if v := strings.TrimSpace(cfg.Daemon[d.key]); v != "" {
+				if err := d.validate(v); err != nil {
+					return nil, Usagef("rhiza.toml %s is %q: %v", d.key, v, err)
+				}
+				s.Value, s.Source = v, SettingRoot
+			}
+		}
+		// A machine key not in rhiza.toml still reads an older git config
+		// value; a project key reads only git config.
+		if s.Source == SettingDefault && ctx.Git != nil {
 			if v, err := ctx.Git("config", "--get", d.key); err == nil {
 				if v = strings.TrimSpace(v); v != "" {
 					if err := d.validate(v); err != nil {
@@ -184,8 +250,11 @@ func settingValue(rows []Setting, key string) string {
 
 // daemonConf is the daemon's effective settings for one poll.
 type daemonConf struct {
-	rows        []Setting
-	maxRuns     int
+	rows    []Setting
+	maxRuns int
+	// projectMax is the project's own cap on its running runs within the
+	// machine-wide maxRuns, 0 for none.
+	projectMax  int
 	minFree     uint64
 	mode        string
 	paused      bool
@@ -218,7 +287,8 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 	c := daemonConf{rows: rows}
 	c.maxRuns, _ = strconv.Atoi(settingValue(rows, "rhiza.daemon.maxRuns"))
 	c.minFree, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minFree"))
-	c.paused = settingValue(rows, "rhiza.daemon.paused") == "true"
+	c.paused = settingValue(rows, "rhiza.daemon.paused") == "true" || settingValue(rows, "rhiza.project.paused") == "true"
+	c.projectMax, _ = strconv.Atoi(settingValue(rows, "rhiza.project.maxRuns"))
 	c.selfUpdate = settingValue(rows, "rhiza.daemon.selfUpdate") == "true"
 	c.trimGoCache = settingValue(rows, "rhiza.daemon.trimGoCache") != "false"
 	c.mode = settingValue(rows, "rhiza.daemon.permissionMode")
@@ -245,8 +315,10 @@ func init() {
 	})
 }
 
-// DaemonSettingsRequest takes nothing.
-type DaemonSettingsRequest struct{}
+// DaemonSettingsRequest names the project whose settings to list.
+type DaemonSettingsRequest struct {
+	Project string `json:"project,omitempty" flag:"project" desc:"The registered project whose project settings to list; default the current project"`
+}
 
 // DaemonSettingsResponse lists the settings.
 type DaemonSettingsResponse struct {
@@ -264,12 +336,39 @@ func writeSettings(w io.Writer, rows []Setting) {
 		if v == "" {
 			v = `""`
 		}
-		fmt.Fprintf(w, "%s = %s (%s)\n", s.Key, v, s.Source)
+		fmt.Fprintf(w, "%s = %s (%s, %s)\n", s.Key, v, s.Source, s.Scope)
 	}
 }
 
+// scopeCtx is the context a setting's scope is read or written in: the
+// named project's for a project key given --project, else ctx itself. At
+// the root with no project, a project key is a usage error.
+func scopeCtx(ctx *Ctx, project string, needProject bool) (*Ctx, error) {
+	root, cfg, ok := rootOf(ctx)
+	if project != "" {
+		if !ok {
+			return nil, Usagef("--project needs a Rhiza root").WithNext("rhiza root init")
+		}
+		if _, reg := cfg.Projects[project]; !reg {
+			return nil, Usagef("project %q is not registered", project).WithNext("rhiza project ls")
+		}
+		return projectCtx(ctx, cfg.Dir(root, project)), nil
+	}
+	if needProject && ok {
+		if name, in := cfg.ProjectOf(root, ctx.Wd); !in {
+			_ = name
+			return nil, Usagef("%s is not inside a project: name one with --project", ctx.Wd).WithNext("rhiza daemon set --project <name> <key> <value>")
+		}
+	}
+	return ctx, nil
+}
+
 func runDaemonSettings(ctx *Ctx, req any) (any, error) {
-	rows, err := settingsOf(ctx, nil)
+	pc, err := scopeCtx(ctx, req.(DaemonSettingsRequest).Project, false)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := settingsOf(pc, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -278,14 +377,16 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key   string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl or deployTimeout, or rhiza.autonomy.plan, accept, ship or signoff"`
-	Value string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes"`
+	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl or deployTimeout, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Project string `json:"project,omitempty" flag:"project" desc:"The registered project a project setting is written to; default the current project"`
+	Value   string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes"`
 }
 
 // DaemonSetResponse is the setting written.
 type DaemonSetResponse struct {
 	Key   string `json:"key" desc:"The setting"`
 	Value string `json:"value" desc:"The value written"`
+	Scope string `json:"scope" desc:"Where it was written: machine (rhiza.toml) or project (git config)"`
 }
 
 // Human writes the response as text.
@@ -307,16 +408,34 @@ func runDaemonSet(ctx *Ctx, req any) (any, error) {
 	if err := d.validate(v); err != nil {
 		return nil, Usagef("%s: %q %v", d.key, r.Value, err).WithNext("rhiza daemon settings")
 	}
-	if ctx.DryRun {
-		return DaemonSetResponse{Key: d.key, Value: v}, nil
+	if !d.project {
+		if root, _, ok := rootOf(ctx); ok {
+			if ctx.DryRun {
+				return DaemonSetResponse{Key: d.key, Value: v, Scope: ScopeMachine}, nil
+			}
+			if err := rootcfg.SetDaemon(root, d.key, v); err != nil {
+				return nil, Errorf("write %s: %v", d.key, err)
+			}
+			return DaemonSetResponse{Key: d.key, Value: v, Scope: ScopeMachine}, nil
+		}
 	}
-	if ctx.Git == nil {
+	wc := ctx
+	if d.project {
+		var err error
+		if wc, err = scopeCtx(ctx, r.Project, true); err != nil {
+			return nil, err
+		}
+	}
+	if ctx.DryRun {
+		return DaemonSetResponse{Key: d.key, Value: v, Scope: d.scope()}, nil
+	}
+	if wc.Git == nil {
 		return nil, Errorf("no git to write %s", d.key)
 	}
-	if _, err := ctx.Git("config", d.key, v); err != nil {
+	if _, err := wc.Git("config", d.key, v); err != nil {
 		return nil, Errorf("write %s: %v", d.key, err)
 	}
-	return DaemonSetResponse{Key: d.key, Value: v}, nil
+	return DaemonSetResponse{Key: d.key, Value: v, Scope: d.scope()}, nil
 }
 
 func (c daemonConf) stateRows() []daemon.SettingValue {
@@ -330,4 +449,9 @@ func (c daemonConf) stateRows() []daemon.SettingValue {
 func settingDefault(key string) string {
 	d, _ := findSetting(key)
 	return d.def
+}
+
+func settingScope(key string) string {
+	d, _ := findSetting(key)
+	return d.scope()
 }

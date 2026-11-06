@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SCT17VR5EJHSRQ6SMT1JA1",
+  "after": [
+    "01M6SBY859ZJVR1V7JHNDKP42B"
+  ],
+  "at": "2026-11-06T21:41:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d01fe217, go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-projects|daemon-picks|describe-golden|daemon-settings|daemon-pause|daemon-repo-session|daemon-no-root)$' passes (-v shows daemon-projects and daemon-picks ran). daemon-projects.txtar builds a root registering two initialised projects (repo, second), each with an accepted ready change set, and a bare git checkout; one `rhiza daemon --once` from the root prints two 'Started a run of', writes a start-1.log in each project's own .git/rhiza/logs, runs each start in its own Rex session (rhiza-repo, rhiza-second, none for bare), records last_started in each project's own daemon state, and leaves bare/.git/rhiza absent; daemon status prints 'Skipped project: bare: not initialised' and the JSON has project bare with reason 'not initialised'. go test ./internal/daemon/... and go test ./internal/api -run 'Daemon|Init' (incl. TestDaemonHomePrefersWorkingProject) pass. Read the diff: runDaemon loops over registered projects, skips uninitialised ones with daemon.ProjectNotInitialised, and polls each other one through daemonProj.poll with a projectCtx bound to that checkout."
+        },
+        "handle": "root-daemon-polls-projects-verified",
+        "id": "01M6SCXYRMMTVG7TD0RDAG1DA1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SCXYRJSD6F1J1WT0XCP4EM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SCXYRJSD6F1J1WT0XCP4EM",
+        "id": "01M6SCXYT12PCJ1N1RB9JJ8YJT",
+        "link": "01M6SCXYT12PCJ1N1RB8TWWJ25",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85A2G5E84BYYP5201P8A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SCXYW8PBEJT5QN3R8R9HPJ",
+  "type": "ops",
+  "v": 1
+}

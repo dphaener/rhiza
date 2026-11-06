@@ -14,7 +14,7 @@ Built rhiza at f087c0e into $TMPDIR/rhiza-qa and drove it by hand in a scratch r
 
 ### Out
 
-- verifies [daemon-lock](../capability/rhiza/orchestration/daemon/daemon-lock.md)
+- verifies daemon-lock (retired)
 
 ## History
 

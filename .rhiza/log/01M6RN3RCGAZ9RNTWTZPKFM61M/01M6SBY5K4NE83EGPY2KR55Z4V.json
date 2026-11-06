@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SBX1E1AZMZ44NMJP4PSET8",
+  "after": [
+    "01M6SA0BZVWFRK4JA6N0W9ABKW"
+  ],
+  "at": "2026-11-06T21:23:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-347ccaf4 at 158ebf7c ran go test -trimpath -count=1 -v -run RoundRobin ./internal/daemon/ (both PASS) plus the whole internal/daemon package, go vet and gofmt (clean). Read the diff: RoundRobin(projects, running, maxRuns) gives one turn per project in order, each taking that project's next Ready change set in its roadmap order, skipping a project with nothing left or at Running+taken >= its Max (0 = no cap), stopping when slots are full or no progress. Tests assert maxRuns 3 over A(3), B(2), C(1) picks A1,B1,C1; A max 1 with maxRuns 4 picks A1,B1,C1,B2 (A one slot, rest to B and C); also maxRuns 6, already-running slots and A already at its max."
+        },
+        "handle": "root-daemon-round-robin-verified",
+        "id": "01M6SBY5H79TCP8PVKDK7ZG743",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SBY5H79TCP8PVKDH1B8TSR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SBY5H79TCP8PVKDH1B8TSR",
+        "id": "01M6SBY5J6V5TTTQK0YY7BS0M4",
+        "link": "01M6SBY5J6V5TTTQK0YX7MYNJA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85B7BAZEZNH96W1P6D3A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SBY5K4NE83EGPY2KR55Z4V",
+  "type": "ops",
+  "v": 1
+}

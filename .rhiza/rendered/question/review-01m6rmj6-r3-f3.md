@@ -12,6 +12,10 @@ Plan review round 3 left finding f3 (contradiction on usage-settings): The updat
 
 - blocks [usage-settings](../capability/rhiza/orchestration/usage-governor/usage-settings.md)
 
+### In
+
+- answers [m29-update-usage-settings-script](../decision/m29-update-usage-settings-script.md)
+
 ## History
 
 - `01M6RP4XBJW9MQ8KZNRY8ZFAY8` Leave the questions of plan review round 3 of run 01M6RMJ6P7EG0VXT1752W0H8NY

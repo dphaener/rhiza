@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SD3B5A4VYFDJX6189RRX7B",
+  "after": [
+    "01M6SCXYW8PBEJT5QN3R8R9HPJ"
+  ],
+  "at": "2026-11-06T21:47:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 29051fdd: ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-install|daemon-start-stop|describe-golden)$' -count=1 -v; all three PASS. daemon-install.txtar puts fake systemctl/loginctl on PATH, runs rhiza daemon install from repo/sub (inside a project under the root $WORK, which holds rhiza.toml), and checks the one unit rhiza-root.service has WorkingDirectory=$WORK (not .../repo), ExecStart ... daemon --autonomous, Restart=always, After=rex.service, and that systemctl --user enable --now rhiza-root.service ran; then from $WORK itself (no git checkout) rhiza daemon start and stop log systemctl --user start/stop rhiza-root.service, and uninstall logs systemctl --user disable --now rhiza-root.service plus daemon-reload and removes the unit. Diff read: serviceSetup resolves the root with rootcfg.Find (usage error with next rhiza root init outside a root) instead of git worktree list; daemonMode keys on the fixed unit name; start/stop in service mode no longer require git."
+        },
+        "handle": "root-daemon-service-verified",
+        "id": "01M6SD8ZTCNX3VGC5PRV7585DJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SD8ZTCNX3VGC5PRSS02905",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SD8ZTCNX3VGC5PRSS02905",
+        "id": "01M6SD8ZYHPFGMN92KNEK1V0ZX",
+        "link": "01M6SD8ZYHPFGMN92KNBP4DT43",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85E14DDFJGJ96GKN7ZGE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SD901JXSSCGRT1ACQ1SPG3",
+  "type": "ops",
+  "v": 1
+}

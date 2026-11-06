@@ -14,7 +14,7 @@ At c0f1981c I ran go test -count=1 ./internal/daemon ./internal/api -run 'SelfUp
 
 ### Out
 
-- verifies [daemon-self-update](../capability/rhiza/orchestration/daemon/daemon-self-update.md)
+- verifies daemon-self-update (retired)
 
 ## History
 

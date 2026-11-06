@@ -26,8 +26,8 @@ verified
 
 ### Out
 
-- verifies [daemon-service-install](../capability/rhiza/orchestration/daemon/daemon-service-install.md)
-- verifies [daemon-repo-session](../capability/rhiza/orchestration/daemon/daemon-repo-session.md)
+- verifies daemon-service-install (retired)
+- verifies daemon-repo-session (retired)
 - verifies [daemon-start-stop](../capability/rhiza/orchestration/daemon/daemon-start-stop.md)
 - verifies autonomy-app (retired)
 

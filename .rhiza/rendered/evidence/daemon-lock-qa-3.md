@@ -14,7 +14,7 @@ QA cycle 3 with the built binary (359e3c1) in a scratch repo, with a fake rex th
 
 ### Out
 
-- verifies [daemon-lock](../capability/rhiza/orchestration/daemon/daemon-lock.md)
+- verifies daemon-lock (retired)
 
 ## History
 

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SBTPKK8XS0M1GYF34H142S",
+  "after": [
+    "01M6SBY5K4NE83EGPY2KR55Z4V"
+  ],
+  "at": "2026-11-06T21:23:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At dac8ca29 (attempt 2) I read the diffs of 0497b08d and dac8ca29. runDaemon resolves the root with rootcfg.Find(ctx.Wd), exits as a usage error with next 'rhiza root init' outside a root, and takes daemon.TryLockRoot(root) in <root>/.rhiza-root before the per-repo lock. go test -trimpath -count=1 ./internal/daemon passes, including TestRootLockIsOnePerRoot and TestRootLockFromProjectAndRootAlike. The second test locks from the root and then from <root>/app/sub, resolved through rootcfg.Find, and also in the reverse order. Each time the second lock gets a *Held naming this process, and there is one lock file in <root>/.rhiza-root. Both attempt-1 findings are addressed. The testscripts daemon-no-root, daemon-settings, daemon-pause, daemon-event-hook, daemon-repo-session and stage-autonomy pass. daemon-no-root asserts exit=2, 'not inside a Rhiza root' and '^next: rhiza root init$' in $NOROOT. git diff 0497b08d~1..HEAD shows the five existing daemon scripts unedited. go test ./internal/api -run Daemon also passes."
+        },
+        "handle": "root-daemon-lock-verified",
+        "id": "01M6SBY83D6CRJV1FQ4GY262RX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SBY83C3XNW2ZQ8CNAH43S7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SBY83C3XNW2ZQ8CNAH43S7",
+        "id": "01M6SBY845A00VBTV0VZW76QNH",
+        "link": "01M6SBY845A00VBTV0VW2THE40",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN858XDJS5W8FZ3QZ8P2PF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SBY859ZJVR1V7JHNDKP42B",
+  "type": "ops",
+  "v": 1
+}

@@ -93,6 +93,7 @@ func daemonRepo(t *testing.T) (*Ctx, string) {
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
 		t.Fatal(err)
 	}
+	underRoot(t, ctx)
 	common := t.TempDir()
 	ctx.Git = func(args ...string) (string, error) {
 		if len(args) == 2 && args[0] == "rev-parse" && args[1] == "--git-common-dir" {

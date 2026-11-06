@@ -1,0 +1,178 @@
+{
+  "actor": "01M6SF3BB862X4GV89YC8HPKX2",
+  "after": [
+    "01M6SF1F7NBGMD15DKF3ZK2GYJ"
+  ],
+  "at": "2026-11-06T22:23:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 912172a0 with a scratch build (go build ./cmd/rhiza) on a scratch root (rhiza root init) holding projects alpha, folder registered with project add --name other (each with three accepted milestone change sets with a leaf) and a bare uninitialised checkout, scratch HOME, fake rex/systemctl/loginctl on PATH, web port moved to 17787: daemon --once in an empty dir outside the root exits 2 with 'not inside a Rhiza root' and next: rhiza root init. With one daemon running in the background from the root, a second daemon --once from alpha/sub and from the root each exit 2 with 'another daemon holds the lock: process rhiza:<pid>'; the root's .rhiza-root/ holds daemon.lock."
+        },
+        "handle": "root-daemon-lock-qa-1",
+        "id": "01M6SFB3FYJ5RY1A2FRQCHPNN3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SFB3FYJ5RY1A2FRP629V2D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SFB3FYJ5RY1A2FRP629V2D",
+        "id": "01M6SFB3GVAW9RK2KB3TED9P60",
+        "link": "01M6SFB3GVAW9RK2KB3QET66Q7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN858XDJS5W8FZ3QZ8P2PF",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 912172a0 with a scratch build (go build ./cmd/rhiza) on a scratch root (rhiza root init) holding projects alpha, folder registered with project add --name other (each with three accepted milestone change sets with a leaf) and a bare uninitialised checkout, scratch HOME, fake rex/systemctl/loginctl on PATH, web port moved to 17787: one daemon --once from the root started runs in both alpha and other (run logs in each project's own .git/rhiza/logs), daemon status in alpha lists 'Skipped project: bare: not initialised', and bare/.git/rhiza was never created."
+        },
+        "handle": "root-daemon-polls-projects-qa-1",
+        "id": "01M6SFB3HJEH92KQP21BTNEX0D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SFB3HJEH92KQP217WDN9JC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SFB3HJEH92KQP217WDN9JC",
+        "id": "01M6SFB3JEJGB9MM0FFKW04CPZ",
+        "link": "01M6SFB3JEJGB9MM0FFK01GE11",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85A2G5E84BYYP5201P8A",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 912172a0 with a scratch build (go build ./cmd/rhiza) on a scratch root (rhiza root init) holding projects alpha, folder registered with project add --name other (each with three accepted milestone change sets with a leaf) and a bare uninitialised checkout, scratch HOME, fake rex/systemctl/loginctl on PATH, web port moved to 17787: with REX_SESSION unset and rex session ls empty, daemon --once ran rex session new rhiza-alpha and rex session new rhiza-other (cwd each project) once each, opened alpha's builder windows with -s rhiza-alpha and other's with -s rhiza-other, and rex.log never names rhiza-folder."
+        },
+        "handle": "root-daemon-rex-session-qa-1",
+        "id": "01M6SFB3KN8QMR4WJE238YWC6D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SFB3KN8QMR4WJE216HSRA4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SFB3KN8QMR4WJE216HSRA4",
+        "id": "01M6SFB3MF4PJQGWWD1C769FYR",
+        "link": "01M6SFB3MF4PJQGWWD1BV506Y7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85G5TY8WJ23TXEGTZFGV",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 912172a0 with a scratch build (go build ./cmd/rhiza) on a scratch root (rhiza root init) holding projects alpha, folder registered with project add --name other (each with three accepted milestone change sets with a leaf) and a bare uninitialised checkout, scratch HOME, fake rex/systemctl/loginctl on PATH, web port moved to 17787: daemon set rhiza.daemon.maxRuns 3 (also from inside alpha) lands in rhiza.toml [daemon]; daemon set rhiza.autonomy.ship owner inside alpha and --project other rhiza.autonomy.plan auto at the root land in that repo's git config only; a project key at the root without --project exits 2 naming --project; a bad maxRuns exits 2; daemon settings and settings --project other --json list each key with scope machine/project and its source, trimGoCache machine."
+        },
+        "handle": "root-daemon-settings-scope-qa-1",
+        "id": "01M6SFB3NBS0XEF9CSGXBGSJWC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SFB3NBS0XEF9CSGVKDA6ED",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SFB3NBS0XEF9CSGVKDA6ED",
+        "id": "01M6SFB3P52DYAV9031XDWZWHV",
+        "link": "01M6SFB3P52DYAV9031WV8PFAZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85C17S5VE1A6SNZAXK89",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at 912172a0 with a scratch build (go build ./cmd/rhiza) on a scratch root (rhiza root init) holding projects alpha, folder registered with project add --name other (each with three accepted milestone change sets with a leaf) and a bare uninitialised checkout, scratch HOME, fake rex/systemctl/loginctl on PATH, web port moved to 17787: daemon install from alpha/sub writes one rhiza-root.service with WorkingDirectory=<root> and ExecStart ... daemon --autonomous and runs systemctl --user enable --now rhiza-root.service; daemon stop, start and uninstall at the root call systemctl --user stop/start/disable --now rhiza-root.service and remove the unit. But rhiza daemon status at the root (service mode and tab mode alike) fails with 'sessions need a git repository: git rev-parse --git-common-dir: fatal: not a git repository'; it works only inside a project."
+        },
+        "handle": "root-daemon-service-qa-1",
+        "id": "01M6SFB3Q04Z0T6GGHJB23ERCX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SFB3Q04Z0T6GGHJ9PMY43Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SFB3Q04Z0T6GGHJ9PMY43Z",
+        "id": "01M6SFB3RATCT06RDD1BKJBF8M",
+        "link": "01M6SFB3RATCT06RDD1AP55CCP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85E14DDFJGJ96GKN7ZGE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at 912172a0 with a scratch build (go build ./cmd/rhiza) on a scratch root (rhiza root init) holding projects alpha, folder registered with project add --name other (each with three accepted milestone change sets with a leaf) and a bare uninitialised checkout, scratch HOME, fake rex/systemctl/loginctl on PATH, web port moved to 17787: with rhiza.daemon.maxRuns = 3 in rhiza.toml (daemon status shows Max runs: 3), one daemon --once started six runs: all three of alpha's, then all three of other's. The machine-wide cap is applied per project and the picks are not round-robin; daemon.RoundRobin has no caller outside tests."
+        },
+        "handle": "root-daemon-round-robin-qa-1",
+        "id": "01M6SFB3S9PTJT9BH0SXH1WE8A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SFB3S9PTJT9BH0STQ81FPN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SFB3S9PTJT9BH0STQ81FPN",
+        "id": "01M6SFB3TCQ6QS69E6FR3MQDBP",
+        "link": "01M6SFB3TCQ6QS69E6FQ8ZFYVD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85B7BAZEZNH96W1P6D3A",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at 912172a0 with a scratch build (go build ./cmd/rhiza) on a scratch root (rhiza root init) holding projects alpha, folder registered with project add --name other (each with three accepted milestone change sets with a leaf) and a bare uninitialised checkout, scratch HOME, fake rex/systemctl/loginctl on PATH, web port moved to 17787: with machine maxRuns 3, one poll started six runs (three per project): the daemon does not stop when its running runs reach the machine-wide maxRuns. The milestone filter held: change sets serving no milestone were skipped with 'serves no milestone'."
+        },
+        "handle": "daemon-picks-root-qa-1",
+        "id": "01M6SFB3V942SCFZ80EZ8SYNGK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SFB3V942SCFZ80EVQBEGQ7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SFB3V942SCFZ80EVQBEGQ7",
+        "id": "01M6SFB3X5NMVPKFSF4HRV112P",
+        "link": "01M6SFB3X5NMVPKFSF4EF10H8W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SFB3YY39DG9H5Q40PM1167",
+  "type": "ops",
+  "v": 1
+}

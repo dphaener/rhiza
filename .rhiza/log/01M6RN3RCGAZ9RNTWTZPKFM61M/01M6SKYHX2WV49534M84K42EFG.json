@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SKWCB7ERPB8TYZ9159G2P2",
+  "after": [
+    "01M6SKMFSM6R98YCJ6QZPJ5XEJ"
+  ],
+  "at": "2026-11-06T23:43:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 9e1350f3 (attempt 5, fixer commit updating tui-autonomy-app to expect source rhiza.toml): go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-settings-scope|tui-autonomy-app|daemon-settings|daemon-event-hook)$' passes, so the quality blocker (tui-autonomy-app:25 expecting git config) is fixed. daemon-settings-scope sets rhiza.daemon.maxRuns (found in the root's rhiza.toml, absent from git config) and rhiza.autonomy.ship (in project a's git config only), lists both with source and scope, lists rhiza.daemon.trimGoCache as (default, machine), refuses a project key at the root without --project, and with two projects each with its own rhiza.eventCommand runs each hook only for its own project's moves. By hand with a scratch build under a scratch root: daemon set rhiza.autonomy.ship at the root exits 2 with a --project next line; settings --json shows rhiza.daemon.maxRuns scope machine source rhiza.toml, rhiza.autonomy.ship scope project source git config, trimGoCache scope machine. Diff read: one-line expectation change, no code change."
+        },
+        "handle": "root-daemon-settings-scope-verified-5",
+        "id": "01M6SKYHT2E6ES8HVY33P2AG8B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SKYHT2E6ES8HVY33N28G29",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SKYHT2E6ES8HVY33N28G29",
+        "id": "01M6SKYHVE15HXYGRM3EP9N0GJ",
+        "link": "01M6SKYHVE15HXYGRM3DZCXZ86",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85C17S5VE1A6SNZAXK89",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SKYHX2WV49534M84K42EFG",
+  "type": "ops",
+  "v": 1
+}

@@ -24,6 +24,11 @@ One root daemon. The assistant's option, picked by the owner.
 
 - decided-by [milestone-29](../intent/milestone-29.md)
 - decided-by [m29-one-daemon](../intent/milestone-29/m29-one-daemon.md)
+- decided-by [root-daemon-lock](../capability/rhiza/orchestration/daemon/root-daemon-lock.md)
+- decided-by [root-daemon-polls-projects](../capability/rhiza/orchestration/daemon/root-daemon-polls-projects.md)
+- decided-by [root-daemon-usage-governor](../capability/rhiza/orchestration/usage-governor/root-daemon-usage-governor.md)
+- decided-by [root-daemon-service](../capability/rhiza/orchestration/daemon/root-daemon-service.md)
+- decided-by [root-daemon-self-update](../capability/rhiza/orchestration/daemon/root-daemon-self-update.md)
 
 ## History
 

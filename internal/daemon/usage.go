@@ -30,16 +30,29 @@ type LearnedLimit struct {
 	HitAt  time.Time `json:"hit_at"`
 }
 
-// RecordLimitHit appends a hit to the limits file.
-func RecordLimitHit(common string, h LimitHit) error {
-	if err := os.MkdirAll(Dir(common), 0o755); err != nil {
+// RootStateDir is the root's state folder, <root>/.rhiza-root: what every
+// project's drivers and the one root daemon share.
+func RootStateDir(root string) string { return filepath.Join(root, ".rhiza-root") }
+
+// RecordLimitHit appends a hit to the limits file under a repo's git common
+// dir.
+func RecordLimitHit(common string, h LimitHit) error { return RecordLimitHitIn(Dir(common), h) }
+
+// ReadLimitHits returns every hit recorded under a repo's git common dir.
+func ReadLimitHits(common string) []LimitHit { return ReadLimitHitsIn(Dir(common)) }
+
+// RecordLimitHitIn appends a hit to the limits file in dir. The usage
+// governor of the root daemon keeps it in RootStateDir, so the hits of every
+// project's drivers land in one file.
+func RecordLimitHitIn(dir string, h LimitHit) error {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
 	b, err := json.Marshal(h)
 	if err != nil {
 		return err
 	}
-	f, err := os.OpenFile(filepath.Join(Dir(common), LimitsFile), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	f, err := os.OpenFile(filepath.Join(dir, LimitsFile), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		return err
 	}
@@ -51,10 +64,10 @@ func RecordLimitHit(common string, h LimitHit) error {
 	return err
 }
 
-// ReadLimitHits returns every recorded hit, oldest first as written.
-// Lines that do not parse are skipped.
-func ReadLimitHits(common string) []LimitHit {
-	f, err := os.Open(filepath.Join(Dir(common), LimitsFile))
+// ReadLimitHitsIn returns every hit recorded in dir, oldest first as
+// written. Lines that do not parse are skipped.
+func ReadLimitHitsIn(dir string) []LimitHit {
+	f, err := os.Open(filepath.Join(dir, LimitsFile))
 	if err != nil {
 		return nil
 	}
@@ -68,4 +81,22 @@ func ReadLimitHits(common string) []LimitHit {
 		}
 	}
 	return out
+}
+
+// ActiveHold is the machine-wide hold the governor keeps from the hits
+// recorded in dir: the hit with the latest reset time that has been seen
+// and not yet reset at now. It reports false when no hit holds, which is
+// the case from a hit's reset time on, for every project at once.
+func ActiveHold(dir string, now time.Time) (LimitHit, bool) {
+	var best LimitHit
+	found := false
+	for _, h := range ReadLimitHitsIn(dir) {
+		if h.ResetAt.IsZero() || h.HitAt.After(now) || !now.Before(h.ResetAt) {
+			continue
+		}
+		if !found || h.ResetAt.After(best.ResetAt) {
+			best, found = h, true
+		}
+	}
+	return best, found
 }

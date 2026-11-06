@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SKTT6MYKXXYN5DAM04QC8R",
+  "after": [
+    "01M6SKYHX2WV49534M84K42EFG"
+  ],
+  "at": "2026-11-06T23:44:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 279833cc (attempt 5): go test -trimpath -run RoundRobin -v ./internal/daemon passes TestRoundRobinAcrossProjects (maxRuns 3 over A(3)/B(2)/C(1) picks A1,B1,C1), TestRoundRobinPerProjectMax (A max 1, maxRuns 4 picks A1,B1,C1,B2: A one slot, rest to B and C) and the new TestRoundRobinRotatesAcrossPolls (one slot per poll goes A,B,C,A,B). Read the diff: runDaemon keeps lastTurn across polls and passes it to daemon.RoundRobin, which starts after that project, so turns no longer restart at the home project (quality f2). Also passed: go test ./internal/daemon, go vet ./internal/api ./internal/daemon, TestScripts/daemon* (incl. daemon-round-robin) and go test ./internal/api -run Daemon."
+        },
+        "handle": "root-daemon-round-robin-verified-3",
+        "id": "01M6SKZK0FN3N182WWS942QR67",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SKZK0FN3N182WWS6VSY5V0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SKZK0FN3N182WWS6VSY5V0",
+        "id": "01M6SKZK1M72MV2M290BWS6T6G",
+        "link": "01M6SKZK1M72MV2M290BE1ADY9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85B7BAZEZNH96W1P6D3A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SKZK34PKR1TWSQWR183MT8",
+  "type": "ops",
+  "v": 1
+}

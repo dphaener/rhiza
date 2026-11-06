@@ -32,7 +32,7 @@ verified
 - verifies [run-log](../capability/rhiza/orchestration/daemon/run-log.md)
 - verifies [daemon-picks](../capability/rhiza/orchestration/daemon/daemon-picks.md)
 - verifies [run-continue-through-daemon](../capability/rhiza/orchestration/daemon/run-continue-through-daemon.md)
-- verifies [daemon-repo-session](../capability/rhiza/orchestration/daemon/daemon-repo-session.md)
+- verifies daemon-repo-session (retired)
 - verifies [daemon-resume-once](../capability/rhiza/orchestration/daemon/daemon-resume-once.md)
 - verifies roadmap-app-start-runs (retired)
 - verifies inbox-app-actions (retired)

@@ -14,7 +14,7 @@ QA at 78a3b478 with a binary built from the branch, in a scratch repo qarepo wit
 
 ### Out
 
-- verifies [daemon-repo-session](../capability/rhiza/orchestration/daemon/daemon-repo-session.md)
+- verifies daemon-repo-session (retired)
 
 ## History
 

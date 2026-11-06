@@ -32,7 +32,14 @@ type Project struct {
 
 // Config is the content of a root's rhiza.toml.
 type Config struct {
-	Projects map[string]Project `toml:"projects"`
+	// SelfUpdateProject names the registered project whose main checkout
+	// the daemon keeps itself current from (self_update_project). Empty
+	// means the daemon never self-updates.
+	SelfUpdateProject string             `toml:"self_update_project,omitempty"`
+	Projects          map[string]Project `toml:"projects"`
+	// Daemon holds the machine-wide daemon settings, by their full key
+	// (rhiza.daemon.maxRuns), each a string as rhiza daemon set takes it.
+	Daemon map[string]string `toml:"daemon,omitempty"`
 }
 
 // Find walks up from dir to the nearest folder holding a rhiza.toml and
@@ -186,6 +193,20 @@ func Remove(root, name string) error {
 		return ErrNotRegistered
 	}
 	delete(c.Projects, name)
+	return write(root, c)
+}
+
+// SetDaemon writes the machine setting key = value in root's rhiza.toml,
+// keeping the rest.
+func SetDaemon(root, key, value string) error {
+	c, err := Load(root)
+	if err != nil {
+		return err
+	}
+	if c.Daemon == nil {
+		c.Daemon = map[string]string{}
+	}
+	c.Daemon[key] = value
 	return write(root, c)
 }
 

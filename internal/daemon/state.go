@@ -58,6 +58,9 @@ type State struct {
 	// Skips are the accepted change sets the last poll did not start, each
 	// with its reason, in the order the poll worked them out.
 	Skips []Skip `json:"skips,omitempty"`
+	// ProjectSkips are the registered projects the last poll did not work,
+	// each with why, in the root's order.
+	ProjectSkips []ProjectSkip `json:"project_skips,omitempty"`
 	// Notified are the IDs of the inbox items the daemon sent a Rex
 	// notification for and that still wait, so a later poll, or a later
 	// daemon, sends none again while they stay.
@@ -163,4 +166,19 @@ type SettingValue struct {
 	Key    string `json:"key"`
 	Value  string `json:"value"`
 	Source string `json:"source"`
+}
+
+// Project skip reasons, fixed: the state file and its readers match on them.
+const (
+	ProjectNotInitialised = "not initialised"
+	ProjectNoGit          = "not a git checkout"
+	ProjectHeld           = "held by another daemon"
+)
+
+// ProjectSkip is a registered project the daemon does not work, and why.
+type ProjectSkip struct {
+	Project string `json:"project"`
+	Reason  string `json:"reason"`
+	// Detail is the error behind a reason that has one.
+	Detail string `json:"detail,omitempty"`
 }
