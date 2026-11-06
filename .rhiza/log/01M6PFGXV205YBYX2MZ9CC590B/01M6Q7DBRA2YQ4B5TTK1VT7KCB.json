@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q7719XDSPSEA3P0P52KDG8",
+  "after": [
+    "01M6Q6WG4WGKGBYFPQ2202Q6JP"
+  ],
+  "at": "2026-11-06T01:26:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 44e59aa3 ran go test -trimpath -count=1 ./internal/web/... (ok) and -run TestOverviewListsInbox -v (PASS, plus TestLayoutGolden and TestPartialsGolden PASS); go test -run 'Web|Inbox|Daemon' ./internal/api/... ok. Read the diff: TestOverviewListsInbox serves / and /fragments/inbox via HandlerWithInbox over a fixture inbox fed out of order (failed 09:00, question 07:00, signoff 08:00) and asserts all three appear oldest first (question < sign-off < failed), with the count heading, rz-panel--waiting and rz-pill--waiting warning accent, run links, and no IDs shown; with an empty inbox it asserts the 'Nothing waits on you' empty state and no waiting accent. The daemon wires WebInboxSource, which reads runInbox (the rhiza inbox read) filtered to question, open, signoff, failed, gave-up and stalled."
+        },
+        "handle": "web-overview-inbox-verified",
+        "id": "01M6Q7DBH4HQGEX1M3ZTTTX6VH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q7DBH4HQGEX1M3ZRGGS1ZY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q7DBH4HQGEX1M3ZRGGS1ZY",
+        "id": "01M6Q7DBMJ2R3BGZH5FKPH6QYA",
+        "link": "01M6Q7DBMJ2R3BGZH5FJPG7FS1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX24XAF6CBGRW7W837AV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q7DBRA2YQ4B5TTK1VT7KCB",
+  "type": "ops",
+  "v": 1
+}
