@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q656SNGHRDA3CWQZ132FZX",
+  "after": [
+    "01M6Q633TYY7Z9EY6HW5929Y98"
+  ],
+  "at": "2026-11-06T01:05:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c2cb41f9 ran go test -trimpath -count=1 ./internal/web/... (ok), go vet and gofmt -l on internal/web (clean). internal/web/rundetail_test.go renders /runs/PLAN (fixture plan run) and asserts steps interview, draft, gate in order with done/failed/running pills, durations, times and the fail detail, the sessions per step (Session 1, finished · 15 tokens, running) with no session IDs, and the live section wired to the run event and /fragments/run-detail?run=PLAN; renders /runs/REVIEW (fixture review run) and asserts the Review section after the steps with check correctness, its failed pill and findings blocker Nil dereference a.go:3 then nit Spelling; and /runs/NOPE answers 404. Read the diff: runInfo's fields match api.RunInfo, RunSession, RunCheck rounds and RunFinding; the real run.status answers NotFoundf (HTTP 404) for an unknown run, which the page maps to 404. Noted, outside the acceptance: the session token struct has no json tags, so cache_creation and cache_read do not decode and the token sum shows input+output only."
+        },
+        "handle": "web-run-detail-verified",
+        "id": "01M6Q67DVYSWDF5XVQXAZY8AE2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q67DVYSWDF5XVQX9N0T4R7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q67DVYSWDF5XVQX9N0T4R7",
+        "id": "01M6Q67DXFMCRGBGKM9ZK3TXH6",
+        "link": "01M6Q67DXFMCRGBGKM9X19KYTR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAE3P8MJB7E7CJ4FCWHB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFH1X52KNK0C5ZCDYEEF64",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q67DZE6BC2RT05BE0DH04B",
+  "type": "ops",
+  "v": 1
+}
