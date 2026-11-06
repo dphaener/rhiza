@@ -23,6 +23,7 @@ Nebari's own tooling (afk, shipit, zap) goes away in favour of Rhiza workflows, 
 ### In
 
 - decided-by [m27-nebari-on-rhiza](../intent/milestone-27/m27-nebari-on-rhiza.md)
+- decided-by [ship-deploy-check](../capability/rhiza/orchestration/shipping/ship-deploy-check.md)
 
 ## History
 
