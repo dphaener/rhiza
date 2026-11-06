@@ -1,0 +1,132 @@
+{
+  "actor": "01M6Q8N7RH2Y11ZA9WD9M2ESKD",
+  "after": [
+    "01M6Q8H2S79ZYDCDKEKV23V4NY"
+  ],
+  "at": "2026-11-06T01:57:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cc2679f4 built rhiza, cloned the repo to a scratch dir, set rhiza.daemon.paused=true, rhiza.daemon.maxRuns=3, rhiza.web.port=18765 and ran the real rhiza daemon. curl http://127.0.0.1:18765/ showed the Daemon panel 'Paused, 0 of 3 slots in use' with State Paused, Run slots 0/3 and three slot dots, and one health pill per part (daemon ok, autonomy warn, machine ok, disk ok, usage ok, main warn, inbox warn, requests ok, roadmap ok, check warn) with the part's state and summary as title. After a poll counted the clone's lock-held runs the heading moved to running slots of 3."
+        },
+        "handle": "web-overview-daemon-qa-1",
+        "id": "01M6Q95MANY14Y3VYMQQ3XG4C4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q95MANY14Y3VYMQNDXVRGG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q95MANY14Y3VYMQNDXVRGG",
+        "id": "01M6Q95MCCZA9JXE6BKAKAF5ZP",
+        "link": "01M6Q95MCCZA9JXE6BK9ZMSWSW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX06P8P1JQS8RKY327J2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Same live daemon: with copied real journals plus hand-written ones, / and /fragments/runs listed every unfinished run (7 live) newest first, each with its title, workflow under it, current step and an href to /runs/<run>; a hand-written failed run was left out. Holding the run's .lock with flock turned its pill to running; the stopped ones read 'waiting on you'. Appending an entered entry to a run's journal sent 'event: run' on /events and the fragment then showed the new step."
+        },
+        "handle": "web-overview-runs-qa-1",
+        "id": "01M6Q95MDC44WWBM5BXN7B0FZY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q95MDC44WWBM5BXHDSNNN8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q95MDC44WWBM5BXHDSNNN8",
+        "id": "01M6Q95METTTG5EK2JXKAMB2MJ",
+        "link": "01M6Q95METTTG5EK2JXGYD31PD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX11CXNAKJWHMY772YAF",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Same live daemon over hand-written journals: a question block (02:05), a sign-off stop (02:12) and a failed build run (02:35). The Inbox panel, rz-panel--waiting, headed '3 waiting on you', listed them oldest first: the question's full text with the change set title, the sign-off, the failed run, each with an rz-pill--waiting pill (question, sign-off, failed), the step and a run link, no IDs in text. rhiza inbox's two accept items are left out, as the leaf's kinds say."
+        },
+        "handle": "web-overview-inbox-qa-1",
+        "id": "01M6Q95MGVD14WJB164SZDX4RF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q95MGVD14WJB164PW042KW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q95MGVD14WJB164PW042KW",
+        "id": "01M6Q95MK1KM747FH86N4N8K9A",
+        "link": "01M6Q95MK1KM747FH86JTC449E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX24XAF6CBGRW7W837AV",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Same live daemon: / carries data-rz-fragment and data-rz-events on each section (daemon: daemon inbox change; inbox: inbox run change; runs: run daemon; milestones: change). GET /fragments/daemon, /runs, /inbox and /milestones each returned 200 with only that section's panel, no <html> and no rz-section wrapper. /events sent ': ready' and keep-alives, and 'event: run' with the run's id when its journal grew; the runs fragment then showed the new step."
+        },
+        "handle": "web-overview-live-qa-1",
+        "id": "01M6Q95MP300MR4P9E8NZVM6YW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q95MP300MR4P9E8K0FCBHP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q95MP300MR4P9E8K0FCBHP",
+        "id": "01M6Q95MSVKWZDK8XTAKWEWDZP",
+        "link": "01M6Q95MSVKWZDK8XTAJFYP3M8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX4SRG58AJJWHZYKN4DK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "Same live daemon over this repo's real model: the Milestones panel showed '2 open' with Roadmap link /roadmap and per-milestone counts by state (proposed 2 of 2; accepted 3 of 3), but both rows were named just 'Milestone': rhiza roadmap --all --json gives milestone-27 and milestone-28 no statement, though rhiza show milestone-28 has one. planRead keeps the intents through lightNode, which drops Fields, so RoadmapIntent.Statement is always empty from a real repo."
+        },
+        "handle": "web-overview-milestone-qa-1",
+        "id": "01M6Q95MV2RAA1X98FGQ3SRYW2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q95MV2RAA1X98FGN8REX7N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q95MV2RAA1X98FGN8REX7N",
+        "id": "01M6Q95MX54P9NWCW1JKXQ0MVP",
+        "link": "01M6Q95MX54P9NWCW1JJ8ER5XY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJX3BQYXMYH08ZAQN0ER8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFGXV205YBYX2MZ9CC590B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q95MYY0565BZDTSW6AM36J",
+  "type": "ops",
+  "v": 1
+}
