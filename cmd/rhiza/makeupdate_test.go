@@ -159,7 +159,9 @@ func TestMakeTestShardTargets(t *testing.T) {
 	}
 	make := func(args ...string) string {
 		t.Helper()
-		cmd := exec.Command("make", args...)
+		// --no-print-directory: under a parent make (CI runs make
+		// test-rest) the child would add Entering/Leaving directory lines.
+		cmd := exec.Command("make", append([]string{"--no-print-directory"}, args...)...)
 		cmd.Dir = "../.."
 		out, err := cmd.CombinedOutput()
 		if err != nil {
