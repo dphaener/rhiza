@@ -18,6 +18,7 @@ The first web UI is served by the daemon process on localhost, read-only and for
 
 ### In
 
+- relates-to [web-host-setting-shape](web-host-setting-shape.md) — Amends only the 'served on localhost' clause: the UI binds to the address rhiza.web.host names (127.0.0.1 by default). The daemon-served, read-only, monitoring-only parts of web-ui-in-daemon-read-only still hold. (derived-from was ruled in web-host-amends-not-supersedes, but derived-from only targets Sources; relates-to carries the same amendment note.)
 - decided-by [milestone-28](../intent/milestone-28.md)
 - decided-by [web-monitor](../capability/rhiza/web-monitor.md)
 - decided-by [web-serve-loopback](../capability/rhiza/web-monitor/web-serve-loopback.md)

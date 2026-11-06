@@ -1,0 +1,40 @@
+{
+  "actor": "01M6QEMVMVRQEGDD5RZ6W24X7Q",
+  "after": [
+    "01M6QCQCRJ4E7CJKQM2TS8VBEX"
+  ],
+  "at": "2026-11-06T03:33:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 8f05e3ec: go test -trimpath -count=1 ./internal/web/... passed (TestAddr: default 127.0.0.1:7787, 0.0.0.0:7787, [::1]:7787, [::]:8080; localhost, abc, 127.0.0.1:80, [::1] rejected by Addr and ParseHost (net.ParseIP); TestManagerFollowsHost moves the listener 127.0.0.1->0.0.0.0:7787 and a bad host binds no socket). go test ./internal/api -run TestDaemonWeb passed, incl. TestDaemonWebListenerFollowsPort whose poll sequence ends with a host-only change to 0.0.0.0 that moves the fake listener to 0.0.0.0:7787. TestScripts/daemon-settings passed: lists rhiza.web.host = 127.0.0.1 (default), accepts 0.0.0.0 and ::1, rejects localhost, abc and '' with stderr naming rhiza.web.host. describe-golden passed; go build ./..., go vet and gofmt clean. Diff read: listen address is net.JoinHostPort(host, port), the daemon passes conf.webHost to Manager.Apply each poll, and daemon status uses the host too."
+        },
+        "handle": "web-serve-host-verified",
+        "id": "01M6QEPPV6S68RFDQZN1ZJ3QG7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QEPPV6S68RFDQZMXZY9VHQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QEPPV6S68RFDQZMXZY9VHQ",
+        "id": "01M6QEPPW3R0NFYXK6X4D12CS8",
+        "link": "01M6QEPPW3R0NFYXK6X2T641JM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QC3F43SZJGVMFP61832VJW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6QBSDK2D7SYV177YBJCAM2A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QEPPWZ8XX49M5M6D16D6QB",
+  "type": "ops",
+  "v": 1
+}

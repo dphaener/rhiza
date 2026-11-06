@@ -24,6 +24,7 @@ The owner monitors Rhiza from a browser: the daemon serves a read-only web UI on
 - serves change set `01M6PFGXV205YBYX2MZ9CC590B` (Web Overview page: the daemon and its health, live runs and their current step, the inbox and the active milestone's progress on one live page)
 - serves change set `01M6PFH1X52KNK0C5ZCDYEEF64` (Web Runs pages: runs live first then recent, and a run's detail with its steps, sessions, review summary and a live log tail)
 - serves change set `01M6PFH625P3BYQAB8P6J38BBT` (Web Roadmap pages: milestone groups and the backlog, and a change set's page with its intent, state, leaves, questions, runs and history)
+- serves change set `01M6QBSDK2D7SYV177YBJCAM2A` (Let the web UI listen on all interfaces so a Caddy reverse proxy on another host can reach it. Owner, verbatim: "in order to proxy the web ui via caddy we need to bind to all hosts and not just local host." This supersedes the localhost part of decision web-ui-in-daemon-read-only. Add a rhiza.web.host setting (default 127.0.0.1; 0.0.0.0 binds all interfaces) beside rhiza.web.port, settable with rhiza daemon set and followed live like the port; daemon status shows the bound address. The UI stays read-only.)
 
 ## History
 

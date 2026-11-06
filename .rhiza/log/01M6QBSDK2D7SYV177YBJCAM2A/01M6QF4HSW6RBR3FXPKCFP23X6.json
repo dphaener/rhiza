@@ -1,0 +1,63 @@
+{
+  "actor": "01M6QEV6HTEEYN03JQ89EP07BC",
+  "after": [
+    "01M6QESHEFCQZFGEB06TV86NB7"
+  ],
+  "at": "2026-11-06T03:41:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 5ad7b858 with the built binary in a scratch repo, live daemon (not --once), rhiza.web.port 17991: rhiza daemon set rhiza.web.host rejected localhost, abc, '' and 127.0.0.1:80 (exit 2, naming rhiza.web.host) and wrote nothing. Default bound 127.0.0.1:17991 only (ss; curl loopback 200, LAN 192.168.1.210 refused). While the daemon ran, set rhiza.web.host 0.0.0.0: the listener moved on a later poll to *:17991 and the UI served 200 over LAN and Tailscale IPs; POST to /, /api/call/change.new and /api/daemon.set from the LAN answered 405 only GET is allowed. Set 192.0.2.7 (not on the host): nothing listened, daemon stderr logged the bind error each poll. Set ::1: bound [::1]:17991 (200 on ::1, LAN refused). Port off: listener closed."
+        },
+        "handle": "web-serve-host-qa-1",
+        "id": "01M6QF4HPXM36YPFZH7R503S49",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QF4HPXM36YPFZH7QHVPD3V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QF4HPXM36YPFZH7QHVPD3V",
+        "id": "01M6QF4HQXJNZT4HN0WYKZMKND",
+        "link": "01M6QF4HQXJNZT4HN0WY6S4S37",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QC3F43SZJGVMFP61832VJW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 5ad7b858 with the built binary and a live daemon in a scratch repo on port 17991: rhiza daemon status showed Web UI: http://127.0.0.1:17991 at the default, http://0.0.0.0:17991 after rhiza daemon set rhiza.web.host 0.0.0.0 and a poll, http://[::1]:17991 (bracketed) after ::1, and Web UI: off after rhiza.web.port off. go test ./cmd/rhiza -run TestScripts/(daemon-settings|daemon-status|describe-golden) passed."
+        },
+        "handle": "web-status-shows-host-qa-1",
+        "id": "01M6QF4HRHB3JND14V9RGHGNMG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6QF4HRHB3JND14V9PBB004J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QF4HRHB3JND14V9PBB004J",
+        "id": "01M6QF4HS4XQGAVRFEVRCR36HC",
+        "link": "01M6QF4HS4XQGAVRFEVN28Q5D3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QC3F6QYZ63H13RNGX78808",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6QBSDK2D7SYV177YBJCAM2A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QF4HSW6RBR3FXPKCFP23X6",
+  "type": "ops",
+  "v": 1
+}
