@@ -10,6 +10,7 @@ import (
 	"github.com/dphaener/rhiza/internal/gen"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/quiettest"
 	"github.com/dphaener/rhiza/internal/run"
 )
@@ -197,5 +198,66 @@ func TestInboxGateQuestionsUnresolved(t *testing.T) {
 	}
 	if got[1].Statement != "" {
 		t.Errorf("kept-nowhere: statement %q, want empty", got[1].Statement)
+	}
+}
+
+// TestGateAnswerUsesWorktreeIndex answers a question at a plan run's gate
+// (question.answer --run, which the Inbox app's gate submit calls once per
+// question): the worktree's own index answers the gate's reads and the
+// answer's write, so the full disk log is never decoded.
+func TestGateAnswerUsesWorktreeIndex(t *testing.T) {
+	cache := t.TempDir()
+	t.Setenv("XDG_CACHE_HOME", cache)
+	t.Setenv("HOME", cache)
+	ctx := initCtx(t)
+	call := func(name, req string) any {
+		t.Helper()
+		resp, err := callOp(t, ctx, name, req)
+		if err != nil {
+			t.Fatalf("%s %s: %v", name, req, err)
+		}
+		return resp
+	}
+	own := call("change.new", `{"intent":"Plan"}`).(ChangeNewResponse).ChangeSet
+	call("add", `{"kind":"intent","handle":"answer-plan-intent"}`)
+	call("propose", `{}`)
+	call("accept", `{"reason":"ok"}`)
+	call("land", `{}`)
+	cs := call("change.new", `{"intent":"Planned"}`).(ChangeNewResponse).ChangeSet
+	call("link", fmt.Sprintf(`{"from":%q,"type":"serves","to":"answer-plan-intent"}`, cs.String()))
+	call("add", `{"kind":"question","handle":"answer-q","fields":["statement=Statement of answer-q"]}`)
+	call("propose", `{}`)
+
+	common := t.TempDir()
+	runs := run.NewStore(run.Dir(common))
+	at := ctx.Now()
+	if err := runs.Create("RGATE", run.Entry{Type: run.TypeStarted, At: at, Started: &run.Started{Workflow: "plan", Change: own.String(), Worktree: ctx.Root}}); err != nil {
+		t.Fatal(err)
+	}
+	if err := runs.Append("RGATE", run.Entry{Type: run.TypeStopped, At: at, Step: "gate", Detail: run.OpenStop + "answer-q; answer each with a Decision, then rhiza run resume RGATE"}); err != nil {
+		t.Fatal(err)
+	}
+	ctx.Git = func(args ...string) (string, error) { return common + "\n", nil }
+	ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		return []byte(common + "\n"), nil
+	}
+	// The worktree's index is current, as the run's own steps leave it.
+	p, err := index.DefaultPath(ctx.Root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	x, err := index.Open(ctx.Root, p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	x.Close()
+
+	reads := countingCtx(ctx)
+	call("question.answer", `{"question":"answer-q","text":"Yes, do it.","run":"RGATE"}`)
+	if *reads != 0 {
+		t.Fatalf("question.answer --run decoded the full log %d times", *reads)
+	}
+	if d, err := ctxWorkspace(t, ctx).model(cs).Resolve("answer-answer-q"); err != nil || d.Kind != op.KindDecision {
+		t.Errorf("no answering Decision in %s: %+v, %v", cs, d, err)
 	}
 }
