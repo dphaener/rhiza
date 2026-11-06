@@ -1,0 +1,40 @@
+{
+  "actor": "01M6S0ZTEHHJTZ7GG2H18NFD0F",
+  "after": [
+    "01M6S22H7MZHHTR7PV4Z82ADCV"
+  ],
+  "at": "2026-11-06T18:47:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-078ababe at c4efeed7: go test -trimpath ./cmd/rhiza -run 'TestScripts/(project-add-url|project-add-path|describe-golden)$' -count=1 passes. project-add-url.txtar creates a local bare repo, runs rhiza project add file://$WORK/remote.git, sees 'Registered project remote at remote.', remote/.git under the root, projects.remote in rhiza.toml and name remote in project ls --json; --name again clones to again/; a taken name is refused; file://$WORK/missing.git exits non-zero with a next: hint, leaves no missing/ folder, and cmp shows rhiza.toml unchanged. Re-ran by hand with a scratch build (no network): clone + register worked, the bad URL exited 2 with git's error, rhiza.toml still listed only r, and project ls showed it. Read the diff: isGitURL/urlName/runProjectClone in internal/api/project.go check name and destination before cloning and remove the partial folder on any failure after clone. go vet and gofmt clean. Unrelated to this leaf: go test -short ./internal/api fails TestReadOnlyMarker because project.ls (6571762e) and root.show (eac8b7d4) are marked ReadOnly but not in the test's web-UI list. This commit touches no ReadOnly mark."
+        },
+        "handle": "project-add-url-verified",
+        "id": "01M6S2ZAZNZBSYAZ78AMM8JF94",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S2ZAZM8WJQSFVE9GGZEQCT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S2ZAZM8WJQSFVE9GGZEQCT",
+        "id": "01M6S2ZB52KCFJ35NT4G34XMG3",
+        "link": "01M6S2ZB52KCFJ35NT4ESTWF6J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN8501TDM99PPTXZCXH3Q1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3M8EC8FEDEJ8X6YVCPZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S2ZBH03ZHQCBWVJXXREZEK",
+  "type": "ops",
+  "v": 1
+}
