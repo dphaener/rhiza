@@ -66,26 +66,17 @@ func init() {
 	})
 }
 
-// daemonMode is service when the main checkout's unit exists and daemon
-// install wrote it, else tab. It also returns the unit's name.
+// daemonMode is service when the root's unit exists and daemon install
+// wrote it, else tab. It also returns the unit's name.
 func daemonMode(ctx *Ctx) (mode, unit string) {
-	if ctx.Home == "" || ctx.Git == nil {
+	if ctx.Home == "" {
 		return DaemonModeTab, ""
 	}
-	out, err := ctx.Git("worktree", "list", "--porcelain")
-	if err != nil {
-		return DaemonModeTab, ""
-	}
-	main, ok := firstWorktree(out)
-	if !ok {
-		return DaemonModeTab, ""
-	}
-	unit = serviceUnitName(main)
-	have, exists, err := readIfExists(filepath.Join(ctx.Home, ".config", "systemd", "user", unit))
+	have, exists, err := readIfExists(filepath.Join(ctx.Home, ".config", "systemd", "user", serviceUnitName))
 	if err != nil || !exists || !bytes.HasPrefix(have, []byte(serviceMarker)) {
 		return DaemonModeTab, ""
 	}
-	return DaemonModeService, unit
+	return DaemonModeService, serviceUnitName
 }
 
 func daemonRunning(ctx *Ctx) (daemon.Holder, bool, error) {
@@ -105,11 +96,20 @@ func runDaemonStart(ctx *Ctx, _ any) (any, error) {
 	if ctx.DryRun {
 		return nil, Usagef("%s does not take --dry-run: it writes no log entry", cmd).WithNext(cmd)
 	}
-	_, running, err := daemonRunning(ctx)
-	if err != nil {
-		return nil, err
-	}
 	mode, unit := daemonMode(ctx)
+	// The service mode acts on the root's unit from anywhere under the
+	// root, a git checkout or not; only the tab mode needs a repo's lock.
+	running := false
+	if mode == DaemonModeService {
+		if _, r, err := daemonRunning(ctx); err == nil {
+			running = r
+		}
+	} else {
+		var err error
+		if _, running, err = daemonRunning(ctx); err != nil {
+			return nil, err
+		}
+	}
 	resp := DaemonStartResponse{Mode: mode, Changed: !running}
 	if ctx.Exec == nil {
 		return nil, Errorf("%s: cannot run programs", cmd)
@@ -142,11 +142,19 @@ func runDaemonStop(ctx *Ctx, _ any) (any, error) {
 	if ctx.DryRun {
 		return nil, Usagef("%s does not take --dry-run: it writes no log entry", cmd).WithNext(cmd)
 	}
-	h, running, err := daemonRunning(ctx)
-	if err != nil {
-		return nil, err
-	}
 	mode, unit := daemonMode(ctx)
+	var h daemon.Holder
+	running := false
+	if mode == DaemonModeService {
+		if _, r, err := daemonRunning(ctx); err == nil {
+			running = r
+		}
+	} else {
+		var err error
+		if h, running, err = daemonRunning(ctx); err != nil {
+			return nil, err
+		}
+	}
 	resp := DaemonStopResponse{Mode: mode, Changed: running}
 	if ctx.Exec == nil {
 		return nil, Errorf("%s: cannot run programs", cmd)

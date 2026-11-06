@@ -1717,7 +1717,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "unit": {
-            "description": "The unit's name, such as rhiza-myrepo.service",
+            "description": "The unit's name, such as rhiza-root.service",
             "type": "string"
           },
           "written": {
@@ -1732,7 +1732,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Run this repo's daemon as a systemd user service: write and enable the unit and turn on lingering",
+      "summary": "Run the root's daemon as a systemd user service: write and enable the unit and turn on lingering",
       "write": false
     },
     {
@@ -2230,7 +2230,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "unit": {
-            "description": "The unit's name, such as rhiza-myrepo.service",
+            "description": "The unit's name, such as rhiza-root.service",
             "type": "string"
           }
         },
@@ -2241,7 +2241,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Stop, disable and remove this repo's systemd user service",
+      "summary": "Stop, disable and remove the root's systemd user service",
       "write": false
     },
     {

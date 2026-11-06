@@ -55,7 +55,7 @@ stdout '"mode": ?"service"'
 # A unit the owner wrote does not count.
 exec rhiza daemon uninstall
 mkdir $WORK/home/.config/systemd/user
-cp $WORK/theirs.service $WORK/home/.config/systemd/user/rhiza-repo.service
+cp $WORK/theirs.service $WORK/home/.config/systemd/user/rhiza-root.service
 exec rhiza daemon status --json
 stdout '"mode": ?"tab"'
 
@@ -81,5 +81,5 @@ echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 -- theirs.service --
 theirs
 -- want-calls.log --
-systemctl --user start rhiza-repo.service
-systemctl --user stop rhiza-repo.service
+systemctl --user start rhiza-root.service
+systemctl --user stop rhiza-root.service

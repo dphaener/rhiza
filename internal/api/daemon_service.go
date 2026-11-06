@@ -1,10 +1,10 @@
 package api
 
 // This file holds the daemon.install and daemon.uninstall operations: they
-// run the repository's daemon as a systemd user service, so a server
+// run the root's daemon as a systemd user service, so a server
 // installation needs no Rex tab for it. The unit lives in
-// $HOME/.config/systemd/user, named for the repository, and runs
-// `rhiza daemon --autonomous` in the main checkout, as the Rex tab does.
+// $HOME/.config/systemd/user as rhiza-root.service and runs
+// `rhiza daemon --autonomous` in the Rhiza root.
 
 import (
 	"bytes"
@@ -14,6 +14,8 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+
+	"github.com/dphaener/rhiza/internal/rootcfg"
 )
 
 // serviceMarker is the first line of a unit daemon.install wrote; a file
@@ -25,7 +27,7 @@ type DaemonInstallRequest struct{}
 
 // DaemonInstallResponse says where the unit is and what changed.
 type DaemonInstallResponse struct {
-	Unit    string `json:"unit" desc:"The unit's name, such as rhiza-myrepo.service"`
+	Unit    string `json:"unit" desc:"The unit's name, such as rhiza-root.service"`
 	Path    string `json:"path" desc:"The unit file, absolute"`
 	Written bool   `json:"written" desc:"Whether the unit file changed; false if it was already current"`
 }
@@ -35,7 +37,7 @@ type DaemonUninstallRequest struct{}
 
 // DaemonUninstallResponse says what uninstall removed.
 type DaemonUninstallResponse struct {
-	Unit    string `json:"unit" desc:"The unit's name, such as rhiza-myrepo.service"`
+	Unit    string `json:"unit" desc:"The unit's name, such as rhiza-root.service"`
 	Path    string `json:"path" desc:"The unit file, absolute"`
 	Removed bool   `json:"removed" desc:"Whether a unit file was removed; false if there was none"`
 }
@@ -43,32 +45,22 @@ type DaemonUninstallResponse struct {
 func init() {
 	register(Operation{
 		Name:     "daemon.install",
-		Summary:  "Run this repo's daemon as a systemd user service: write and enable the unit and turn on lingering",
+		Summary:  "Run the root's daemon as a systemd user service: write and enable the unit and turn on lingering",
 		Request:  reflect.TypeFor[DaemonInstallRequest](),
 		Response: reflect.TypeFor[DaemonInstallResponse](),
 		Run:      runDaemonInstall,
 	})
 	register(Operation{
 		Name:     "daemon.uninstall",
-		Summary:  "Stop, disable and remove this repo's systemd user service",
+		Summary:  "Stop, disable and remove the root's systemd user service",
 		Request:  reflect.TypeFor[DaemonUninstallRequest](),
 		Response: reflect.TypeFor[DaemonUninstallResponse](),
 		Run:      runDaemonUninstall,
 	})
 }
 
-// serviceUnitName is rhiza-<repo>.service, <repo> being the main checkout's
-// folder name with every rune a unit name does not allow turned into '-'.
-func serviceUnitName(main string) string {
-	repo := strings.Map(func(r rune) rune {
-		switch {
-		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9', r == '_', r == '.', r == '-':
-			return r
-		}
-		return '-'
-	}, filepath.Base(main))
-	return "rhiza-" + repo + ".service"
-}
+// serviceUnitName is the one unit of the root's daemon.
+const serviceUnitName = "rhiza-root.service"
 
 // serviceQuote quotes an ExecStart word the way systemd reads one.
 func serviceQuote(s string) string {
@@ -102,15 +94,15 @@ func serviceEnvLines(getenv func(string) string) string {
 	return b.String()
 }
 
-// serviceUnit returns the unit file for the daemon of the repository whose
-// main checkout is main, run by the rhiza at bin, with env lines env.
-func serviceUnit(main, bin, env string) []byte {
+// serviceUnit returns the unit file for the daemon of the Rhiza root root,
+// run by the rhiza at bin, with env lines env.
+func serviceUnit(root, bin, env string) []byte {
 	return []byte(serviceMarker + "\n" +
 		"[Unit]\n" +
-		"Description=Rhiza daemon for " + filepath.Base(main) + "\n" +
+		"Description=Rhiza daemon for " + root + "\n" +
 		"After=rex.service\n\n" +
 		"[Service]\n" +
-		"WorkingDirectory=" + main + "\n" +
+		"WorkingDirectory=" + root + "\n" +
 		env +
 		"ExecStart=" + serviceQuote(bin) + " " + strings.Join(daemonArgs, " ") + "\n" +
 		"Restart=always\n\n" +
@@ -120,8 +112,8 @@ func serviceUnit(main, bin, env string) []byte {
 
 // serviceSetup finds what both operations need: systemd (a usage error
 // naming it when systemctl is missing), the unit's name and file, and the
-// main checkout.
-func serviceSetup(ctx *Ctx, cmd string) (unit, path, main string, err error) {
+// Rhiza root the working directory is under.
+func serviceSetup(ctx *Ctx, cmd string) (unit, path, root string, err error) {
 	if ctx.DryRun {
 		return "", "", "", Usagef("%s does not take --dry-run: it writes no log entry", cmd).WithNext(cmd)
 	}
@@ -139,20 +131,12 @@ func serviceSetup(ctx *Ctx, cmd string) (unit, path, main string, err error) {
 	if ctx.Home == "" {
 		return "", "", "", Usagef("%s: no home directory: set HOME", cmd)
 	}
-	if ctx.Git == nil {
-		return "", "", "", Errorf("%s needs git: the daemon runs in the main checkout", cmd)
-	}
-	out, gerr := ctx.Git("worktree", "list", "--porcelain")
-	if gerr != nil {
-		return "", "", "", Errorf("%s needs a git repository: %v", cmd, gerr)
-	}
-	main, ok := firstWorktree(out)
+	root, ok := rootcfg.Find(ctx.Wd)
 	if !ok {
-		return "", "", "", Errorf("%s: git worktree list names no main checkout", cmd)
+		return "", "", "", Usagef("%s is not inside a Rhiza root: the daemon runs on the root", ctx.Wd).WithNext("rhiza root init")
 	}
-	unit = serviceUnitName(main)
-	path = filepath.Join(ctx.Home, ".config", "systemd", "user", unit)
-	return unit, path, main, nil
+	path = filepath.Join(ctx.Home, ".config", "systemd", "user", serviceUnitName)
+	return serviceUnitName, path, root, nil
 }
 
 func serviceExec(ctx *Ctx, cmd, name string, args ...string) error {
@@ -170,7 +154,7 @@ func serviceExec(ctx *Ctx, cmd, name string, args ...string) error {
 // is finished by the next.
 func runDaemonInstall(ctx *Ctx, _ any) (any, error) {
 	const cmd = "rhiza daemon install"
-	unit, path, main, err := serviceSetup(ctx, cmd)
+	unit, path, root, err := serviceSetup(ctx, cmd)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +162,7 @@ func runDaemonInstall(ctx *Ctx, _ any) (any, error) {
 	if bin == "" {
 		return nil, Errorf("%s: cannot tell where rhiza is installed", cmd)
 	}
-	want := serviceUnit(main, bin, serviceEnvLines(ctxGetenv(ctx)))
+	want := serviceUnit(root, bin, serviceEnvLines(ctxGetenv(ctx)))
 	have, exists, err := readIfExists(path)
 	if err != nil {
 		return nil, Errorf("%s: %v", cmd, err)

@@ -1,5 +1,5 @@
-# daemon install writes a systemd user unit for the repo's daemon (run in the
-# main checkout, Restart=always, after rex.service), reloads systemd, enables
+# daemon install writes one systemd user unit for the root's daemon
+# (rhiza-root.service, run in the root, Restart=always, after rex.service), reloads systemd, enables
 # and starts it and turns on lingering; a second install changes nothing;
 # uninstall disables and removes it. systemctl and loginctl are fakes that
 # only log; with neither on PATH both commands exit 2 naming systemd.
@@ -20,32 +20,33 @@ stderr 'needs systemd: systemctl is not on PATH'
 stderr 'needs systemd: systemctl is not on PATH'
 env PATH=$HOSTPATH
 
-# A worktree installs the unit of the main checkout.
-exec git commit -q --allow-empty -m init
-exec git worktree add -q ../wt
+# From inside a project (a subfolder of it) install writes the one unit of
+# the root.
 chmod 755 $WORK/bin/systemctl
 chmod 755 $WORK/bin/loginctl
 env PATH=$WORK/bin:$PATH
 env 'TMPDIR=$WORK/tmp dir'
-cd ../wt
+mkdir sub
+cd sub
 exec rhiza daemon install
-stdout 'rhiza-repo.service'
-cd ../repo
-grep '^ExecStart=.* daemon --autonomous$' $WORK/home/.config/systemd/user/rhiza-repo.service
-grep '^WorkingDirectory=.*/repo$' $WORK/home/.config/systemd/user/rhiza-repo.service
-grep '^Restart=always$' $WORK/home/.config/systemd/user/rhiza-repo.service
-grep '^After=rex.service$' $WORK/home/.config/systemd/user/rhiza-repo.service
+stdout 'rhiza-root.service'
+cd ..
+grep '^ExecStart=.* daemon --autonomous$' $WORK/home/.config/systemd/user/rhiza-root.service
+grep '^WorkingDirectory='$WORK'$' $WORK/home/.config/systemd/user/rhiza-root.service
+! grep '^WorkingDirectory=.*/repo$' $WORK/home/.config/systemd/user/rhiza-root.service
+grep '^Restart=always$' $WORK/home/.config/systemd/user/rhiza-root.service
+grep '^After=rex.service$' $WORK/home/.config/systemd/user/rhiza-root.service
 cmp $WORK/calls.log $WORK/want-install.log
-grep '^Environment="PATH=' $WORK/home/.config/systemd/user/rhiza-repo.service
-grep '^Environment="TMPDIR=.*/tmp dir"$' $WORK/home/.config/systemd/user/rhiza-repo.service
-grep '^Environment="PATH=.*bin' $WORK/home/.config/systemd/user/rhiza-repo.service
+grep '^Environment="PATH=' $WORK/home/.config/systemd/user/rhiza-root.service
+grep '^Environment="TMPDIR=.*/tmp dir"$' $WORK/home/.config/systemd/user/rhiza-root.service
+grep '^Environment="PATH=.*bin' $WORK/home/.config/systemd/user/rhiza-root.service
 
 # A second install writes nothing and does not reload.
-cp $WORK/home/.config/systemd/user/rhiza-repo.service $WORK/unit.copy
+cp $WORK/home/.config/systemd/user/rhiza-root.service $WORK/unit.copy
 rm $WORK/calls.log
 exec rhiza daemon install
 stdout 'nothing changed'
-cmp $WORK/home/.config/systemd/user/rhiza-repo.service $WORK/unit.copy
+cmp $WORK/home/.config/systemd/user/rhiza-root.service $WORK/unit.copy
 ! grep 'daemon-reload' $WORK/calls.log
 
 # A changed PATH rewrites the unit and reloads systemd.
@@ -53,22 +54,30 @@ rm $WORK/calls.log
 env PATH=$WORK/bin:$WORK/extra:$PATH
 exec rhiza daemon install
 stdout 'Installed'
-grep 'extra' $WORK/home/.config/systemd/user/rhiza-repo.service
+grep 'extra' $WORK/home/.config/systemd/user/rhiza-root.service
 grep 'daemon-reload' $WORK/calls.log
+
+# start and stop act on that unit from the root itself, not a git checkout.
+rm $WORK/calls.log
+cd $WORK
+exec rhiza daemon start
+exec rhiza daemon stop
+cmp $WORK/calls.log $WORK/want-startstop.log
+cd repo
 
 # Uninstall disables, removes the unit and reloads.
 rm $WORK/calls.log
 exec rhiza daemon uninstall
-! exists $WORK/home/.config/systemd/user/rhiza-repo.service
+! exists $WORK/home/.config/systemd/user/rhiza-root.service
 cmp $WORK/calls.log $WORK/want-uninstall.log
 
 # A unit the owner wrote is never touched.
 mkdir $WORK/home/.config/systemd/user
-cp $WORK/theirs.service $WORK/home/.config/systemd/user/rhiza-repo.service
+cp $WORK/theirs.service $WORK/home/.config/systemd/user/rhiza-root.service
 ! exec rhiza daemon install
 stderr 'not written by rhiza daemon install'
 ! exec rhiza daemon uninstall
-grep '^theirs$' $WORK/home/.config/systemd/user/rhiza-repo.service
+grep '^theirs$' $WORK/home/.config/systemd/user/rhiza-root.service
 
 -- bin/systemctl --
 #!/bin/sh
@@ -80,8 +89,11 @@ echo "loginctl $@" >> "$WORK/calls.log"
 theirs
 -- want-install.log --
 systemctl --user daemon-reload
-systemctl --user enable --now rhiza-repo.service
+systemctl --user enable --now rhiza-root.service
 loginctl enable-linger
+-- want-startstop.log --
+systemctl --user start rhiza-root.service
+systemctl --user stop rhiza-root.service
 -- want-uninstall.log --
-systemctl --user disable --now rhiza-repo.service
+systemctl --user disable --now rhiza-root.service
 systemctl --user daemon-reload
