@@ -23,6 +23,19 @@
 <main class="rz-main">
 <div class="rz-stale" id="rz-stale" role="status" hidden><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.6 13 12.2H1Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7 5.6v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="10.3" r=".8" fill="currentColor"/></svg><span><b>Live stream dropped.</b> Showing what was true <span id="rz-stale-since">a moment ago</span>.</span><span class="rz-meta">retrying</span></div>
 <div class="rz-pagehead"><div><p class="rz-kicker">Overview</p><h1>Runs</h1></div></div>
+<div class="rz-grid rz-grid--2">
+  <div class="rz-stack"><div class="rz-section" data-rz-fragment="/fragments/daemon" data-rz-events="daemon inbox change"><section class="rz-panel">
+  <div class="rz-panel-head"><div><p class="rz-kicker">Daemon</p><h2>Not running</h2></div></div>
+  <div class="rz-daemon">
+    <div class="rz-stat"><p class="rz-kicker">State</p><div class="rz-stat-val">Not running</div></div>
+    <div class="rz-stat"><p class="rz-kicker">Run slots</p><div class="rz-stat-val">0<small>/ 0</small></div><div class="rz-slots" aria-hidden="true"></div></div>
+  </div>
+  <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <p class="rz-kicker" style="margin-right:4px">Health</p>
+    <span class="rz-health"></span>
+  </div>
+</section></div></div>
+</div>
 </main>
 </div>
 <script src="/static/app.js" defer></script>
