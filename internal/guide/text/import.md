@@ -17,31 +17,29 @@ decided and planned. Write nothing yet.
 
 ## 3. Record built capabilities, area by area
 
-Take one area at a time (a package, feature or command group). Write the capabilities its
-code and tests deliver, under a parent capability:
+Per area (a package, feature or command group), write the capabilities its code and tests
+deliver under a parent capability:
 
 ```
 rhiza apply <file> --record --json
 ```
 
-One `--record` change set per area keeps each reviewable: one record per area, never one for
-the whole repo.
+Keep one record per area, never one for the whole repo.
 
 - Statement: one user-visible behaviour per capability, in the present tense.
-- Acceptance: the repo's existing tests that prove it, named by test file (and test name). A capability no test proves gets a statement and a question asking for
-  the test; never an invented acceptance.
+- Acceptance: the repo's existing tests that prove it, named by test file (and test name). Untested: a question asking
+  for the test, never an invented acceptance.
 - Link a capability to its tests as evidence.
 
 ## 4. Bring in load-bearing decisions
 
-Record the decisions the code depends on (ADRs, comments, history), each `decided-by`
-its capability. Never invent reasons: raise a question.
+Record decisions the code depends on (ADRs, comments, history), each `decided-by` its
+capability. Never invent reasons: raise a question.
 
-The load-bearing rule: bring in only a decision that shapes a capability or constraint;
-leave the rest in the document.
+Bring in only a decision that shapes a capability or constraint; leave the rest.
 
-A document's words are not the owner's. A decision with no owner words (an agent wrote the
-document) gets no `quote` field, this wording form, and a link to the Source of its document:
+A document's words are not the owner's: such a decision gets no `quote` field, this
+wording form, and a link to its document's Source:
 
 ```
 rhiza add decision <handle> --field 'statement=<decided>' \
@@ -59,16 +57,16 @@ rhiza source add <handle> <file> --raw <document> --json
 git rm <document>
 ```
 
-The `<file>` (`rhiza guide sources`, scrubbed per `rhiza guide scrub`) holds a scrubbed
-summary and the owner's typed words in the document, verbatim; `--raw` hashes the document.
+The `<file>` (`rhiza guide sources`, `rhiza guide scrub`) holds a scrubbed summary and the
+owner's words, verbatim; `--raw` hashes the document.
 Link what came from it with `derived-from`.
 
 Keep reference, design and operations documents that capabilities link to: they stay in git.
 
 ## 6. Write unbuilt work as drafts
 
-Planned work the code lacks is not built. Add its document as a Source, then open a draft
-change set per piece, naming it:
+Planned work the code lacks: add its document as a Source, then a draft change set per
+piece, naming it:
 
 ```
 rhiza change new "<intent>" --source <source> --json
@@ -88,27 +86,25 @@ rhiza check
 rhiza render
 ```
 
-Fix what `check` reports, commit `.rhiza/rendered/`, spot-check a few capabilities
-against the code.
+Fix what `check` reports, commit `.rhiza/rendered/`, spot-check capabilities against the
+code.
 
 ## Record friction
 
-Throughout the import, record every step you could not follow, or had to work around, as a
-question in the importing repo's model, naming the step, so the import can be improved from
-what it found. Never work around a step silently, and never stop the import over one:
+Record every step you could not follow, or had to work around, as a question naming the
+step, so the import can improve. Never work around one silently:
 
 ```
-rhiza add question <handle> --field 'statement=Import step 3 (record built capabilities): <what could not be followed or was worked around, and how>'
+rhiza add question <handle> --field 'statement=Import step 3 (record built capabilities): <what, and how>'
 ```
 
 ## Follow-up: anchors
 
-Once every area is landed, open one follow-up change set and, per capability, add an
-anchor to its code and link it:
+Once every area lands, one follow-up change set anchors each capability to its code:
 
 ```
 rhiza add anchor <handle> --field path=<file> [--field symbol=<name>]
 rhiza link <anchor> implements <capability>
 ```
 
-Then `rhiza check`: it fails when an anchored path or symbol does not resolve.
+`rhiza check` then fails on any anchor that does not resolve.
