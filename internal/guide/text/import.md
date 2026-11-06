@@ -91,6 +91,16 @@ rhiza render
 Fix what `check` reports, commit `.rhiza/rendered/`, spot-check a few capabilities
 against the code.
 
+## Record friction
+
+Throughout the import, record every step you could not follow, or had to work around, as a
+question in the importing repo's model, naming the step, so the import can be improved from
+what it found. Never work around a step silently, and never stop the import over one:
+
+```
+rhiza add question <handle> --field 'statement=Import step 3 (record built capabilities): <what could not be followed or was worked around, and how>'
+```
+
 ## Follow-up: anchors
 
 Once every area is landed, open one follow-up change set and, per capability, add an
