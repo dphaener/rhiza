@@ -43,6 +43,11 @@ type Operation struct {
 	Summary string
 	// Write reports whether the operation appends to the log.
 	Write bool
+	// ReadOnly marks an operation that changes nothing: not the log, the
+	// settings, any file, Rex or GitHub. The web UI's /api/<op> runs only
+	// operations with it. Write does not stand for it, since it only means
+	// appending to the log.
+	ReadOnly bool
 	// Record reports whether the operation takes Ctx.Record. Run refuses
 	// Ctx.Record with a usage error for an operation without it.
 	Record bool

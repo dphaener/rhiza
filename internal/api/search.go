@@ -25,6 +25,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "search",
+		ReadOnly: true,
 		Summary:  "Find live nodes by the text of their handles and fields, ranked",
 		Request:  reflect.TypeFor[SearchRequest](),
 		Response: reflect.TypeFor[SearchResponse](),

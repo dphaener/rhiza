@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PTBEQ6TYWWAY8MZ8VEEZQX",
+  "after": [
+    "01M6PSNTKZAVB509MT9PAW9KVK"
+  ],
+  "at": "2026-11-05T21:39:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at eb7a1c45 (attempt 2). go test -trimpath ./internal/web/... ./internal/daemon/... pass: TestParsePort accepts 1..65535 and off and rejects 0, 70000, abc; TestAddrIsAlwaysLoopback gives 127.0.0.1:7787 by default, 127.0.0.1:8080 when changed, and an empty address for off; TestHandlerServesReadOnly drives the handler through httptest with no socket bound; TestManagerFollowsSetting covers start, unchanged, move, stop, restart and retry after a failed start. go test -trimpath -race -count=10 ./internal/api -run TestDaemonWeb passed all 10 runs with no race reported. TestDaemonWebListenerFollowsPort now feeds each rhiza.web.port read over a channel and checks after the next tick, so polls see default 7787, then 8080, off, 7787 and 7787 again in order; at the off poll it asserts the 8080 fake is closed and nothing is open (attempt 1's findings f1 and f2 are fixed), and it checks no listener is left open after the interrupt. TestDaemonWebNoListenerOnceOrTestNow shows that --once and a set RHIZA_TEST_NOW open no listener. go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-settings|describe-golden)$' passes: rhiza.web.port is listed as 7787 (default), set to 8080 and off is accepted, and 0, 70000 and abc are rejected with stderr naming rhiza.web.port. Read the diff: daemon.go builds the web.Manager only when not --once and RHIZA_TEST_NOW is unset, applies conf.webPort at each poll, and closes the manager on exit."
+        },
+        "handle": "web-serve-loopback-verified",
+        "id": "01M6PTDFXVBXX31Z9YPS4P029Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PTDFXVBXX31Z9YPPK5CF32",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PTDFXVBXX31Z9YPPK5CF32",
+        "id": "01M6PTDFYHFEEQB77ZGS66R1Z5",
+        "link": "01M6PTDFYHFEEQB77ZGNVBQ34S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ960GFE6G98GN9GVTABG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFEXSHWC6TR4F3GFKHV09R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PTDFZNFJN86XT2BF1FX89D",
+  "type": "ops",
+  "v": 1
+}

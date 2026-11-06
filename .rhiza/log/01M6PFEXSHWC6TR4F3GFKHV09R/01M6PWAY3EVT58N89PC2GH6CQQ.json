@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PV20BAJ6X0W349ZVC84031",
+  "after": [
+    "01M6PVXPKYHR45475DVV56HCJY"
+  ],
+  "at": "2026-11-05T22:12:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7ef54661, go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-status|describe-golden)$' -count=1 passes: daemon-status.txtar runs rhiza daemon --once, then rhiza daemon status prints 'Web UI: http://127.0.0.1:7787' and --json has \"web\": \"http://127.0.0.1:7787\"; after rhiza daemon set rhiza.web.port off and another rhiza daemon --once, status prints 'Web UI: off' and --json \"web\": \"off\". The diff (internal/api/daemon.go webStatus) derives the line from the state file's recorded settings via web.Addr on rhiza.web.port and never dials the listener. go test -trimpath -short ./internal/api/ ./internal/web/ pass; gofmt -l and go vet ./internal/api are clean. The unshortened internal/api run timed out in TestReadBudget, which was blocked waiting for the machine-wide budget lock and a quiet machine while other worktrees ran tests (not this diff)."
+        },
+        "handle": "web-url-in-daemon-status-verified",
+        "id": "01M6PWAY0NX0RSJYBD2GE9CP2K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PWAY0NX0RSJYBD2EXW9J5K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PWAY0NX0RSJYBD2EXW9J5K",
+        "id": "01M6PWAY2362YM757HQBA366JX",
+        "link": "01M6PWAY2362YM757HQ7Q2ENZ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ9CD8XKQZK2PNA3B6973",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFEXSHWC6TR4F3GFKHV09R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PWAY3EVT58N89PC2GH6CQQ",
+  "type": "ops",
+  "v": 1
+}

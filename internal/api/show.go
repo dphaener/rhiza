@@ -24,6 +24,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "show",
+		ReadOnly: true,
 		Summary:  "Show a node or a link: its fields, links and children",
 		Request:  reflect.TypeFor[ShowRequest](),
 		Response: reflect.TypeFor[ShowResponse](),

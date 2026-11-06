@@ -17,6 +17,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "run.ls",
+		ReadOnly: true,
 		Summary:  "List the repository's runs newest first, each with its ID, change set, title, state, current step, start time and whether it is live",
 		Request:  reflect.TypeFor[RunLsRequest](),
 		Response: reflect.TypeFor[RunLsResponse](),

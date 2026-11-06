@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PTV09F6EVJEC1A049JT6JP",
+  "after": [
+    "01M6PTSS5BXZARXJX0YXHVVEAP"
+  ],
+  "at": "2026-11-05T21:47:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 74600e5d ran go test -trimpath -count=1 ./internal/web/... (ok) and go vet ./internal/web (clean). TestLiveSectionAndFragment registers a sample section with events run and log, renders it via section() and sees data-rz-fragment=\"/fragments/sample\", data-rz-events=\"run log\" and its content; GET /fragments/sample returns exactly <p>runs: 3</p>, an unknown fragment 404s and POST is 405; GET /static/app.js is served and contains data-rz-fragment, /events and setStale(true). Read the diff: app.js listens for the named SSE kinds (change, run, log, inbox, daemon, matching events.go's event: lines), re-fetches and swaps innerHTML only of sections whose data-rz-events include the event type, re-fetches all after a reconnect, and on stream error toggles is-stale and the stale banner. No browser test was added."
+        },
+        "handle": "web-live-sections-verified",
+        "id": "01M6PTWJZDDCC064TCZRK49VH6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PTWJZDDCC064TCZN8A83TG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PTWJZDDCC064TCZN8A83TG",
+        "id": "01M6PTWK0JEX47TKF3DB7CRHEM",
+        "link": "01M6PTWK0JEX47TKF3D9A6KS89",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ9BEWSJ8QDFFK8NR8N48",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFEXSHWC6TR4F3GFKHV09R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PTWK202YAJ5GVXS32KK7MX",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,29 @@
+{{define "layout"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}} · Rhiza</title>
+<link rel="icon" href="/static/icons/favicon.ico" sizes="48x48">
+<link rel="icon" href="/static/icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#0D0C09" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2EEE4" media="(prefers-color-scheme: light)">
+<link rel="stylesheet" href="/static/css/rhiza-tokens.css">
+<link rel="stylesheet" href="/static/css/rhiza.css">
+</head>
+<body class="rz">
+<div class="rz-app">
+<header class="rz-header">
+  <a class="rz-wordmark" href="/"><b>Rhiza</b><span>monitor</span></a>
+  <nav class="rz-nav" aria-label="Pages"><a href="/"{{if eq .Nav "overview"}} aria-current="page"{{end}}>Overview</a><a href="/runs"{{if eq .Nav "runs"}} aria-current="page"{{end}}>Runs</a><a href="/roadmap"{{if eq .Nav "roadmap"}} aria-current="page"{{end}}>Roadmap</a></nav>
+</header>
+<main class="rz-main">
+<div class="rz-stale" id="rz-stale" role="status" hidden><span><b>Live stream dropped.</b> Showing what was true <span id="rz-stale-since">a moment ago</span>.</span><span class="rz-meta">retrying</span></div>
+{{template "content" .}}
+</main>
+</div>
+<script src="/static/app.js" defer></script>
+</body>
+</html>{{end}}

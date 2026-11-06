@@ -93,6 +93,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "roadmap",
+		ReadOnly: true,
 		Summary:  "Show the proposed and accepted change sets: milestone groups first, then the backlog",
 		Request:  reflect.TypeFor[RoadmapRequest](),
 		Response: reflect.TypeFor[RoadmapResponse](),
@@ -100,6 +101,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "ready",
+		ReadOnly: true,
 		Summary:  "Say which change sets can be worked on now, and why the others can't",
 		Request:  reflect.TypeFor[ReadyRequest](),
 		Response: reflect.TypeFor[ReadyResponse](),

@@ -62,6 +62,7 @@ exec rhiza daemon status
 stdout '^Daemon not running$'
 stdout '^Version: .+$'
 stdout '^Max runs: 3$'
+stdout '^Web UI: http://127.0.0.1:7787$'
 stdout '^Autonomous: true$'
 stdout '^Last started: a run of '
 stdout '^Skipped: 01M5PWGS702G3VYA781BNZ0K7Q Orphan: serves no milestone$'
@@ -71,6 +72,7 @@ stdout '^Skipped: 01M5PWH6WG057XVB12H62KNP5F Shipped: its latest run shipped it$
 exec rhiza daemon status --json
 stdout '"running": false'
 stdout '"max_runs": 3'
+stdout '"web": "http://127.0.0.1:7787"'
 stdout '"autonomous": true'
 stdout '"last_started": \{'
 exec rhiza daemon status --json
@@ -78,6 +80,14 @@ stdout '"reason": "not-ready"'
 stdout '"reason": "shipped"'
 stdout '"title": "Waiting"'
 stdout '"detail": \[\n *"depends on'
+
+# The web UI follows rhiza.web.port: off after it is set to off and polled.
+exec rhiza daemon set rhiza.web.port off
+exec rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
+exec rhiza daemon status
+stdout '^Web UI: off$'
+exec rhiza daemon status --json
+stdout '"web": "off"'
 
 # A start whose run never journaled is reported, with when it is retried.
 exec sh -c 'sed "s/}\$/,\"unjournaled\":[{\"change\":\"CSX\",\"at\":\"2026-01-01T00:00:00Z\"}]}/" .git/rhiza/daemon.state.json > s.tmp && mv s.tmp .git/rhiza/daemon.state.json'

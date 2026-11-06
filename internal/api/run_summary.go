@@ -22,6 +22,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "run.summary",
+		ReadOnly: true,
 		Summary:  "Render a review run's verdicts as markdown from its journal: each check's outcome, its confirmed findings, the findings its critic dropped, the minors and nits, the fix cycles, the code checks and the sign-off",
 		Request:  reflect.TypeFor[RunSummaryRequest](),
 		Response: reflect.TypeFor[RunSummaryResponse](),

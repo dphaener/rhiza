@@ -16,6 +16,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "tree",
+		ReadOnly: true,
 		Summary:  "Show the capability tree, or the subtree under a node",
 		Request:  reflect.TypeFor[TreeRequest](),
 		Response: reflect.TypeFor[TreeResponse](),

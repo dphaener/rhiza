@@ -7,7 +7,7 @@ site.webmanifest
 static/
   css/rhiza-tokens.css   tokens for both themes (theme follows prefers-color-scheme) + @font-face
   css/rhiza.css          every component (.rz-*)
-  js/live.js             SSE live updates, relative times, stale state
+  app.js              SSE live updates, relative times, stale state
   fonts/                 Petrona, Instrument Sans, JetBrains Mono (variable woff2, SIL OFL)
   icons/                 favicon.svg / .ico, PNGs, maskable, head.html
 pages/                   static reference HTML for each page, with sample data
@@ -28,7 +28,7 @@ Serve `static/` at `/static/` and `site.webmanifest` at `/site.webmanifest`. Eve
 <meta name="theme-color" content="#F2EEE4" media="(prefers-color-scheme: light)">
 <link rel="stylesheet" href="/static/css/rhiza-tokens.css">
 <link rel="stylesheet" href="/static/css/rhiza.css">
-<script src="/static/js/live.js" defer></script>
+<script src="/static/app.js" defer></script>
 ```
 
 `<body class="rz">`, then the frame:
@@ -47,7 +47,7 @@ Copy the exact markup from `pages/*.html`. Dark is the default; light follows th
 
 ## Live updates
 
-`live.js` opens an `EventSource` on `/events`. Each message is a JSON array of `{ "target": "#css-selector", "html": "<server-rendered fragment>" }`; each target is replaced in place (`outerHTML`). Give anything that changes an `id` and re-render that fragment on the server.
+`app.js` opens an `EventSource` on `/events`. A live section is an element with `data-rz-fragment` (a URL serving just its content) and `data-rz-events` (event kinds it listens to). When a matching event arrives, only those sections are re-fetched and their content swapped. Pages place one with `{{section "name" .}}` after `RegisterFragment`.
 
 - `<time datetime="…" data-rel>` elements are re-labelled ("4s ago") every 15s.
 - If the stream errors, the page goes stale: `.is-stale` on `.rz-app`, the banner shows, every pulse stops and running states fall back to neutral. It reconnects with backoff (1s → 30s) and clears itself on reconnect.

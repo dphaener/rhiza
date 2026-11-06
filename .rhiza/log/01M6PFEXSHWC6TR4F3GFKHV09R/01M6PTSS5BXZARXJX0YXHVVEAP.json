@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PTQ5V8CR6BABQ1FRKQ0C50",
+  "after": [
+    "01M6PTDFZNFJN86XT2BF1FX89D"
+  ],
+  "at": "2026-11-05T21:45:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-58d0f11f at 3615b0ae: read the diff (internal/web/web.go parses templates/layout.html + templates/overview.html via go:embed html/template; GET /{$} renders the overview page; static/js/live.js renamed to static/app.js and served from the embedded FS under /static/). Ran go test -trimpath -count=1 -v -run TestHandlerRendersPageAndScript ./internal/web/: PASS — GET / returns 200 text/html with the rendered title, stylesheet and script tags; GET /static/app.js returns 200 with a javascript content type and a non-empty body; /nope is 404. Whole ./internal/web/... and the Web/Events tests in ./internal/api pass; go vet and gofmt clean. The commit leaves Makefile and .github/workflows untouched, and grep finds no node/npm/yarn/esbuild/webpack/vite in either; no stale js/live.js references remain."
+        },
+        "handle": "web-templates-embedded-verified",
+        "id": "01M6PTSS0V1CFZQZHMR6NRV7RM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PTSS0V1CFZQZHMR445DRFP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PTSS0V1CFZQZHMR445DRFP",
+        "id": "01M6PTSS32RGQDDK7C8NF2TP77",
+        "link": "01M6PTSS32RGQDDK7C8KZ7CS6Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ9A1H6A1YBM55VS6HDQG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFEXSHWC6TR4F3GFKHV09R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PTSS5BXZARXJX0YXHVVEAP",
+  "type": "ops",
+  "v": 1
+}

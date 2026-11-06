@@ -25,6 +25,7 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/usage"
+	"github.com/dphaener/rhiza/internal/web"
 )
 
 func init() {
@@ -146,6 +147,16 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		daemon.WriteState(common, state)
 	}()
 	selfUpdateOn := false
+	// The web UI listener follows rhiza.web.port from poll to poll. A single
+	// poll (--once) and a test run (RHIZA_TEST_NOW) bind nothing.
+	var webUI *web.Manager
+	if !r.Once && ctxGetenv(ctx)("RHIZA_TEST_NOW") == "" {
+		// The handler gets its own copy of ctx: the poll goes on changing
+		// ctx while requests run.
+		snap := *ctx
+		webUI = &web.Manager{Factory: webFactory, Handler: web.Handler(ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap), web.PollEvery))}
+		defer webUI.Close()
+	}
 	var sweep daemon.SweepSchedule
 	poll := func() error {
 		var skips []daemon.Skip
@@ -155,6 +166,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			return err
 		}
 		minFree := conf.minFree
+		if webUI != nil {
+			if werr := webUI.Apply(conf.webPort); werr != nil && ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", werr)
+			}
+		}
 		selfUpdateOn = conf.selfUpdate
 		if conf.trimGoCache {
 			daemonSweepGoCache(ctx, &sweep, minFree)
@@ -316,6 +332,9 @@ var daemonTicker = func() (<-chan time.Time, func()) {
 	t := time.NewTicker(daemonPoll)
 	return t.C, t.Stop
 }
+
+// webFactory starts the web UI listener; tests replace it.
+var webFactory web.Factory = web.NetFactory
 
 // daemonReexec is how the daemon re-executes itself; tests replace it.
 var daemonReexec = daemon.NewReexec
@@ -1136,6 +1155,7 @@ func daemonResume(ctx *Ctx, id string) error {
 func init() {
 	register(Operation{
 		Name:     "daemon.status",
+		ReadOnly: true,
 		Summary:  "Show the daemon of this repository: whether it runs, its settings, its live runs and what it last started or resumed",
 		Request:  reflect.TypeFor[DaemonStatusRequest](),
 		Response: reflect.TypeFor[DaemonStatusResponse](),
@@ -1199,6 +1219,7 @@ type DaemonStatusResponse struct {
 	Stopped     string        `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
 	MaxRuns     int           `json:"max_runs,omitempty" desc:"How many runs it keeps running at once"`
 	Autonomous  bool          `json:"autonomous" desc:"True when it starts each run with --autonomous"`
+	Web         string        `json:"web,omitempty" desc:"The web UI as the daemon's last poll recorded it from rhiza.web.port: its URL (http://127.0.0.1:<port>), or off; it is the recorded setting, the listener is not probed; absent when none was recorded"`
 	Settings    []Setting     `json:"settings" desc:"The settings as its last poll read them, each with its source: default, git config or flag"`
 	Runs        []DaemonRun   `json:"runs" desc:"The live runs (running or interrupted) as of its last poll"`
 	LastStarted *DaemonEvent  `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
@@ -1228,6 +1249,9 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "Commit: %s\n", r.Commit)
 	}
 	fmt.Fprintf(w, "Started: %s\nLast poll: %s\nMax runs: %d\nAutonomous: %t\n", r.Started, r.LastPoll, r.MaxRuns, r.Autonomous)
+	if r.Web != "" {
+		fmt.Fprintf(w, "Web UI: %s\n", r.Web)
+	}
 	for _, s := range r.Settings {
 		if s.Key == "rhiza.daemon.paused" {
 			fmt.Fprintf(w, "Paused: %s\n", map[bool]string{true: "yes", false: "no"}[s.Value == "true"])
@@ -1309,6 +1333,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	for _, v := range st.Settings {
 		resp.Settings = append(resp.Settings, Setting{Key: v.Key, Value: v.Value, Source: v.Source, Default: settingDefault(v.Key)})
 	}
+	resp.Web = webStatus(resp.Settings)
 	for _, h := range st.Hooks {
 		resp.Hooks = append(resp.Hooks, HookRow{Name: h.Name, Command: h.Command, Source: h.Source})
 	}
@@ -1324,6 +1349,19 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 		resp.Unjournaled = append(resp.Unjournaled, *daemonEvent(&e))
 	}
 	return resp, nil
+}
+
+// webStatus is the web UI line for the recorded settings: its URL, off, or
+// empty when the state recorded no valid web port.
+func webStatus(rows []Setting) string {
+	addr, err := web.Addr(settingValue(rows, web.PortKey))
+	switch {
+	case err != nil || settingValue(rows, web.PortKey) == "":
+		return ""
+	case addr == "":
+		return web.Off
+	}
+	return "http://" + addr
 }
 
 func daemonEvent(e *daemon.Event) *DaemonEvent {
