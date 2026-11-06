@@ -1,0 +1,86 @@
+{
+  "actor": "01M6Q7588QST319J0SGZ1AFJ73",
+  "after": [
+    "01M6Q71P11VREQX5M8K5XPMQEY"
+  ],
+  "at": "2026-11-06T01:29:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6d5ec8e2 built rhiza (go build -trimpath) and ran its real daemon (paused, rhiza.web.port 18777) in a scratch clone holding copies of this repo's 100 run journals. GET /runs answered 200: a Recent group of 50 rows newest first (Fix The daemon never reaps its, Web UI Roadmap pages, ...), each linking to /runs/<id>, with its change set title, workflow (ship-change/plan), state pill, current step (build/build) and start time (Nov 6 01:13), no ID text; the list section declares data-rz-events=run and /fragments/runs. With one older run's lock held by flock, /fragments/runs put it alone under Live (running pill) before Recent. Appending to a journal emitted event: run on /events."
+        },
+        "handle": "web-runs-list-qa-1",
+        "id": "01M6Q7JXJ0HKW0200KG39FQ4CJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q7JXJ0HKW0200KG35D3ZQA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q7JXJ0HKW0200KG35D3ZQA",
+        "id": "01M6Q7JXMH5RK3DP8124DKYNP2",
+        "link": "01M6Q7JXMH5RK3DP8120SP8AG9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAD5JGK5R4PD07FT82DE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "At 6d5ec8e2 with the built rhiza's real daemon web UI over copied real run journals: GET /runs/<id> answered 404 for every run (a ship-change run, a plan run, a succeeded run) as well as for an unknown one, and /fragments/run-detail?run=<id> rendered No such run. GET /api/run.status through the same server answers 404 no read-only operation \"run.status\": run.status (internal/api/run.go:55) is not marked ReadOnly, so ReadOnlyHandler refuses it and runDetail maps the 404 to a page 404. The package tests pass only because they serve run.status from a fake API handler."
+        },
+        "handle": "web-run-detail-qa-1",
+        "id": "01M6Q7JXPWNMJ4XT50XYGSW3MD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q7JXPWNMJ4XT50XW99WGZJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q7JXPWNMJ4XT50XW99WGZJ",
+        "id": "01M6Q7JXS8P8MZVF1677QM33CP",
+        "link": "01M6Q7JXS8P8MZVF1676F8A3V4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAE3P8MJB7E7CJ4FCWHB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "At 6d5ec8e2 with the built rhiza's real daemon web UI: /api/run.tail is served (200); /fragments/run-log?run=<plan run> rendered the driver log's last lines in the rz-term block (Live) matching the file's tail; a run with no log rendered No log / Only a run the daemon started headless has a driver log; appending two lines to the log emitted event: log with the run's id on /events and the fragment then showed both new lines. But the run's page itself (/runs/<id>) answers 404 for every run because run.status is not read-only, so no run page shows the tail."
+        },
+        "handle": "web-run-log-tail-qa-1",
+        "id": "01M6Q7JXVX0088FZ286VJPRB5T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q7JXVX0088FZ286SVQ8YZV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q7JXVX0088FZ286SVQ8YZV",
+        "id": "01M6Q7JXYRV1FZ8C23P0AEE9B3",
+        "link": "01M6Q7JXYRV1FZ8C23NY6SG1V4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAF52MNXBPR8STKSW15M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFH1X52KNK0C5ZCDYEEF64",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q7JY4KX9H0PJCXJ7PQDDQ3",
+  "type": "ops",
+  "v": 1
+}

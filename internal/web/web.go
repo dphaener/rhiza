@@ -58,7 +58,9 @@ var templateFS embed.FS
 // pages holds each page's template set: the shared layout plus the page's
 // own "content". They are parsed once, from the binary.
 var pages = map[string]*template.Template{
-	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/overview.html", "templates/daemon.html", "templates/runs.html", "templates/inbox.html", "templates/milestones.html")),
+	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/overview.html", "templates/daemon.html", "templates/live-runs.html", "templates/inbox.html", "templates/milestones.html")),
+	"run":      template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/run.html")),
+	"runs":     template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/runs.html")),
 	"change": template.Must(template.New("").Funcs(template.FuncMap{
 		"Glyph": func(k string) Glyph { return Glyph{Kind: k} },
 		"Empty": func(t, x string) Empty { return Empty{t, x} },
@@ -133,6 +135,10 @@ func HandlerWithMilestones(daemon DaemonSource, runs RunsSource, inbox InboxSour
 	mux.HandleFunc("GET /roadmap", serveRoadmap)
 	mux.HandleFunc("GET /changes/{id}", serveChange)
 	mux.HandleFunc("GET "+FragmentPrefix+"{name}", serveFragment)
+	mux.HandleFunc("GET /runs/{id}", servRun)
+	mux.HandleFunc("GET /runs", func(w http.ResponseWriter, r *http.Request) {
+		render(w, "runs", page{Title: "Runs", Nav: "runs", Data: runsData(r)})
+	})
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		d := daemonOf(r)
 		render(w, "overview", page{Title: "Overview", Nav: "overview", DaemonView: d, Daemon: d.Pill(), Runs: runsOf(r), Inbox: inboxOf(r), Milestones: milestonesOf(r)})

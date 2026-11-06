@@ -55,6 +55,7 @@ func init() {
 	register(Operation{
 		Name:     "run.status",
 		Summary:  "Show a run's state and the steps it has done, from its journal",
+		ReadOnly: true,
 		Request:  reflect.TypeFor[RunStatusRequest](),
 		Response: reflect.TypeFor[RunInfo](),
 		Run:      runRunStatus,

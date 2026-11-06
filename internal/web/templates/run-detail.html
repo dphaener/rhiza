@@ -1,0 +1,6 @@
+{{define "run-detail"}}{{if .Empty}}{{template "empty" .Empty}}{{else}}<p>{{template "pill" .Pill}}{{if .Workflow}} <small>{{.Workflow}}</small>{{end}}</p>
+{{if .Steps}}<h2 class="rz-rows-group">Steps</h2>
+{{template "steps" .Steps}}{{else}}{{template "empty" .NoSteps}}{{end}}
+{{if .Review}}<h2 class="rz-rows-group">Review</h2>
+{{range .Review}}<h3>{{.Check}} {{template "pill" .Pill}}</h3>
+{{if .Findings}}<ul class="rz-findings">{{range .Findings}}<li><b class="rz-sev rz-sev--{{.Severity}}">{{.Severity}}</b> {{.Reason}}{{if .Place}} <small>{{.Place}}</small>{{end}}{{if .Verdict}} <small>{{.Verdict}}</small>{{end}}</li>{{end}}</ul>{{else}}<p>No findings.</p>{{end}}{{end}}{{end}}{{end}}{{end}}

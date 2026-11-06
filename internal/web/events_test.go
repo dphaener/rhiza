@@ -14,6 +14,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/web"
 )
 
@@ -147,4 +148,96 @@ func TestEventsRefuseWrites(t *testing.T) {
 			t.Errorf("%s /events: %d", m, rec.Code)
 		}
 	}
+}
+
+// The run page reads run.status through the daemon's read-only API, so a
+// real run journal shows on /runs/<id> and its fragment.
+func TestRunPageThroughReadOnlyAPI(t *testing.T) {
+	ctx := fixtureCtx(t)
+	out, err := ctx.Git("rev-parse", "--git-common-dir")
+	if err != nil {
+		t.Fatal(err)
+	}
+	common := filepath.Join(ctx.Root, strings.TrimSpace(out))
+	if err := run.NewStore(run.Dir(common)).Create("run1", run.Entry{Type: run.TypeStarted, At: time.Now(), Started: &run.Started{Workflow: "build", Title: "Build the thing"}}); err != nil {
+		t.Fatal(err)
+	}
+	h := web.Handler(api.ReadOnlyHandler(ctx))
+	if rec := serve(h, "GET", "/runs/run1"); rec.Code != 200 || !strings.Contains(rec.Body.String(), "Build the thing") {
+		t.Errorf("page: %d\n%s", rec.Code, rec.Body)
+	}
+	if body := serve(h, "GET", "/fragments/run-detail?run=run1").Body.String(); strings.Contains(body, "No such run") {
+		t.Errorf("fragment:\n%s", body)
+	}
+}
+
+// A run's log tail follows the driver log: lines appended to it move the
+// stream's log event and show in the tail fragment; a run without a log
+// reads as such.
+func TestRunLogTailFollowsDriverLog(t *testing.T) {
+	ctx := fixtureCtx(t)
+	out, err := ctx.Git("rev-parse", "--git-common-dir")
+	if err != nil {
+		t.Fatal(err)
+	}
+	common := filepath.Join(ctx.Root, strings.TrimSpace(out))
+	if err := run.NewStore(run.Dir(common)).Create("run1", run.Entry{Type: run.TypeStarted, At: time.Now(), Started: &run.Started{Workflow: "build"}}); err != nil {
+		t.Fatal(err)
+	}
+	h := web.Handler(api.ReadOnlyHandler(ctx), web.Events(api.WebEventSources(ctx), 10*time.Millisecond))
+	frag := func() string { return serve(h, "GET", "/fragments/run-log?run=run1").Body.String() }
+
+	if body := frag(); !strings.Contains(body, "No log") || strings.Contains(body, "rz-term") {
+		t.Errorf("run without a log:\n%s", body)
+	}
+
+	rc, stop := context.WithCancel(context.Background())
+	defer stop()
+	l := &lockedRecorder{rec: httptest.NewRecorder()}
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		h.ServeHTTP(l, httptest.NewRequest("GET", "/events", nil).WithContext(rc))
+	}()
+	waitFor(t, l, ": ready")
+
+	logPath := filepath.Join(common, "rhiza", "logs", "run1.log")
+	if err := os.MkdirAll(filepath.Dir(logPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	appendLines := func(s string) {
+		f, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+		f.WriteString(s)
+	}
+	appendLines("first line\nsecond <line>\n")
+	waitFor(t, l, "event: log\ndata: {\"id\":\"run1\"}\n\n")
+	body := frag()
+	for _, want := range []string{"rz-term", "first line", "second &lt;line&gt;", "rz-cursor"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("tail lacks %q:\n%s", want, body)
+		}
+	}
+	// The run page itself shows the tail, read through the read-only API.
+	page := serve(h, "GET", "/runs/run1")
+	for _, want := range []string{"rz-term", "first line", `data-rz-fragment="/fragments/run-log?run=run1"`} {
+		if page.Code != 200 || !strings.Contains(page.Body.String(), want) {
+			t.Errorf("run page lacks %q: %d\n%s", want, page.Code, page.Body)
+		}
+	}
+	n := strings.Count(l.body(), "event: log")
+	appendLines("third line\n")
+	for end := time.Now().Add(10 * time.Second); strings.Count(l.body(), "event: log") == n; time.Sleep(5 * time.Millisecond) {
+		if time.Now().After(end) {
+			t.Fatal("no log event for appended lines")
+		}
+	}
+	if body := frag(); !strings.Contains(body, "third line") {
+		t.Errorf("tail lacks the appended line:\n%s", body)
+	}
+	stop()
+	<-done
 }

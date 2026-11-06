@@ -47,7 +47,9 @@ func renderFragment(f *Fragment, data any) ([]byte, error) {
 // section renders a page's live section: a wrapper that declares its events
 // and fragment URL as data attributes, around its content.
 func section(name string, data any) (template.HTML, error) {
-	f, ok := fragments[name]
+	// A section may carry a query (name?run=...) that its fragment reads.
+	base, _, _ := strings.Cut(name, "?")
+	f, ok := fragments[base]
 	if !ok {
 		return "", &unknownSection{name}
 	}

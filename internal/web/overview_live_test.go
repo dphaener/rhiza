@@ -20,7 +20,7 @@ func TestOverviewSectionsAreLive(t *testing.T) {
 		events []string // the events the section must declare
 		marker string   // what only this section's fragment renders
 	}{
-		{"runs", []string{EventRun}, "No live runs"},
+		{"live-runs", []string{EventRun}, "No live runs"},
 		{"inbox", []string{EventInbox}, "Nothing waits on you"},
 		{"milestones", []string{EventChange}, "No open milestones"},
 		{"daemon", []string{EventDaemon}, "Paused, 1 of 3 slots in use"},
