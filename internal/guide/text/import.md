@@ -25,8 +25,14 @@ capabilities its code and tests already deliver, under a parent capability for t
 rhiza apply <file> --record --json
 ```
 
-One `--record` change set per area keeps each reviewable. Describe what the code does today,
-not what it should do. Link a capability to its tests as evidence where they prove it.
+One `--record` change set per area keeps each reviewable: one record per area, never one for
+the whole repo. Describe what the code does today, not what it should do.
+
+- Statement: one user-visible behaviour per capability, in the present tense.
+- Acceptance: the repo's existing tests that prove it, named by test file (and test name where
+  there is one). A capability no existing test proves gets a statement, and a question asking
+  for the test; never an invented acceptance.
+- Link a capability to its tests as evidence where they prove it.
 
 ## 4. Bring in load-bearing decisions
 
@@ -55,3 +61,16 @@ rhiza render
 
 Fix what `check` reports, commit `.rhiza/rendered/`, and spot-check: pick a few capabilities
 and confirm the code does what they say, and that `rhiza why` shows their decisions.
+
+## Follow-up: anchors
+
+Record the capabilities first and anchor them after. Once every area is landed, open one
+follow-up change set and, for each capability, add an anchor to the code that implements it
+and link it:
+
+```
+rhiza add anchor <handle> --field path=<file> [--field symbol=<name>]
+rhiza link <anchor> implements <capability>
+```
+
+Then `rhiza check` again: it fails when an anchored path or symbol does not resolve.
