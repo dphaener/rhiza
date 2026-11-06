@@ -1,0 +1,221 @@
+{
+  "actor": "01M6RMJPZ0SQNRSBZ4VV3NYDV6",
+  "after": [
+    "01M6RN3RCGAZ9RNTWTZTDDYNEA"
+  ],
+  "at": "2026-11-06T14:47:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "internal/daemon lock tests: a second lock on the same root fails, from a project dir and from the root alike; a testscript gets exit 2 with the next from rhiza daemon outside any root.",
+          "statement": "rhiza daemon runs on the root, never on a single repo: run anywhere under the root it resolves the root and holds one lock in the root's state folder (<root>/.rhiza-root/), so a second daemon on the same root refuses to start, and outside a root it exits 2 with next rhiza root init."
+        },
+        "handle": "root-daemon-lock",
+        "id": "01M6RN858YN51QWMJQ606YHV4G",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M6RN858XDJS5W8FZ3QZ8P2PF",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN858XDJS5W8FZ3QZ8P2PF",
+        "id": "01M6RN859AWY5Y7DKPSQ0DF7B7",
+        "link": "01M6RN859AWY5Y7DKPSK28DZJW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37AH4PP5N792VVNZF0S5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN858XDJS5W8FZ3QZ8P2PF",
+        "id": "01M6RN859N4EAVA0179E0RT9W1",
+        "link": "01M6RN859N4EAVA0179DG200XA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37RJHQ058KK9BPVW4VY8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Daemon tests with a root of two initialised projects and one bare checkout start a ready change set in each initialised project and record the bare one as skipped, not initialised.",
+          "statement": "Each poll of the root daemon reads every registered, initialised project and starts its ship-change runs, plan requests and resumes as the per-repo daemon did, in that project's own checkout and journal; a project that is not initialised is skipped and daemon status says so."
+        },
+        "handle": "root-daemon-polls-projects",
+        "id": "01M6RN85A2G5E84BYYP8DYS34Y",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M6RN85A2G5E84BYYP5201P8A",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85A2G5E84BYYP5201P8A",
+        "id": "01M6RN85ADYE18N387KTXQFV0B",
+        "link": "01M6RN85ADYE18N387KR2KGG09",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37AH4PP5N792VVNZF0S5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85A2G5E84BYYP5201P8A",
+        "id": "01M6RN85AVE9TRY6S31VE3EGM3",
+        "link": "01M6RN85AVE9TRY6S31QNKWCJV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37TYJ2EFRNWHT4PYK7JE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/daemon pick tests: with maxRuns 3 and projects A (3 ready), B (2 ready) and C (1 ready), the picks are A1, B1, C1; with A's per-project max 1 and maxRuns 4, A gets one slot and the rest go to B and C.",
+          "statement": "The root daemon fills the machine-wide maxRuns round-robin across projects, each turn taking that project's next ready change set in its own roadmap order, and never runs more of a project's change sets at once than its optional per-project max."
+        },
+        "handle": "root-daemon-round-robin",
+        "id": "01M6RN85B7BAZEZNH96YATH066",
+        "key": "zzzzz",
+        "kind": "capability",
+        "node": "01M6RN85B7BAZEZNH96W1P6D3A",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85B7BAZEZNH96W1P6D3A",
+        "id": "01M6RN85BKP12WC68RDXDK705F",
+        "link": "01M6RN85BKP12WC68RDV6WFT5B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37DJY5DVAKMTK7R1PWX0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript sets a machine key and a project key, finds the first in rhiza.toml and the second in that repo's git config, sees both in daemon settings --json with their scope and source, and gets exit 2 for a project key set at the root with no --project.",
+          "statement": "rhiza daemon settings lists every setting with its scope, machine (from rhiza.toml: maxRuns, usage budget and reserve, minFree, web host and port, selfUpdate, permissionMode, paused) or project (from that repo's git config: autonomy per stage, project paused, per-project maxRuns, deploy check), and rhiza daemon set writes each key to its scope, taking --project or the current project for project keys."
+        },
+        "handle": "root-daemon-settings-scope",
+        "id": "01M6RN85C17S5VE1A6SQVD7WE1",
+        "key": "zzzzzi",
+        "kind": "capability",
+        "node": "01M6RN85C17S5VE1A6SNZAXK89",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85C17S5VE1A6SNZAXK89",
+        "id": "01M6RN85CH3F9XEBVWAMQWGRT2",
+        "link": "01M6RN85CH3F9XEBVWAKVQCBEE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37FV21SYDTNZKY4VP4AM",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/daemon usage tests: a limit hit recorded by one project's driver holds starts in a second project, and the hold lifts for both at the reset time.",
+          "statement": "The root daemon keeps one usage governor for the machine: run drivers of every project record usage-limit hits in the root's state folder, and the governor's hold stops new runs in all projects at once."
+        },
+        "handle": "root-daemon-usage-governor",
+        "id": "01M6RN85CZGYA2FJCNC5PCJ2K2",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6RN85CZGYA2FJCNC52YWNAZ",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85CZGYA2FJCNC52YWNAZ",
+        "id": "01M6RN85DF3M1483TTYZ9A8J1P",
+        "link": "01M6RN85DF3M1483TTYWYEPE6Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37AH4PP5N792VVNZF0S5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake systemctl on PATH runs daemon install from inside a project and finds one unit whose WorkingDirectory is the root, then start, stop and uninstall call systemctl on that unit.",
+          "statement": "rhiza daemon install writes and enables one systemd user unit for the root (rhiza-root.service, working directory the root), and rhiza daemon start, stop, status and uninstall act on the root's daemon from anywhere under the root."
+        },
+        "handle": "root-daemon-service",
+        "id": "01M6RN85E14DDFJGJ96M42FSPN",
+        "key": "zzzzzr",
+        "kind": "capability",
+        "node": "01M6RN85E14DDFJGJ96GKN7ZGE",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85E14DDFJGJ96GKN7ZGE",
+        "id": "01M6RN85EH2VRCPQF80NM6WAYA",
+        "link": "01M6RN85EH2VRCPQF80KVSB4ES",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37AH4PP5N792VVNZF0S5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/daemon selfupdate tests: with self_update_project set, the fake git and make run in that project's checkout; unset, neither runs.",
+          "statement": "With selfUpdate on, the root daemon keeps itself current from the project rhiza.toml names as self_update_project: it fast-forwards that project's main checkout and runs make update there when origin/main moves, as today's self-update does; with none named it never self-updates."
+        },
+        "handle": "root-daemon-self-update",
+        "id": "01M6RN85F2T3NMVDRKV934GX4E",
+        "key": "zzzzzw",
+        "kind": "capability",
+        "node": "01M6RN85F2T3NMVDRKV706VSZB",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85F2T3NMVDRKV706VSZB",
+        "id": "01M6RN85FG726AZTJ3JY3GF7MV",
+        "link": "01M6RN85FG726AZTJ3JXZ9QXYS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37AH4PP5N792VVNZF0S5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A daemon or run test with two projects and a fake rex records window new calls with -s rhiza-<project> for each project's run.",
+          "statement": "Every Rex tab the root daemon's runs open opens in its project's fixed session, rhiza-<project>, so each project's agent panes stay together and rhiza inbox open and run open keep finding them."
+        },
+        "handle": "root-daemon-rex-session",
+        "id": "01M6RN85G5TY8WJ23TXES4AY8M",
+        "key": "zzzzzy",
+        "kind": "capability",
+        "node": "01M6RN85G5TY8WJ23TXEGTZFGV",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85G5TY8WJ23TXEGTZFGV",
+        "id": "01M6RN85GM23P9CWHPNGVQVAEE",
+        "link": "01M6RN85GM23P9CWHPNDZQE1QD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37XM4RQP3FHM9QGKQKMV",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RN85H3097SFCB2CX1EAGA2",
+  "type": "ops",
+  "v": 1
+}

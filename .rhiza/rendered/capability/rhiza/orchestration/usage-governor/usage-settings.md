@@ -19,6 +19,7 @@ Daemon settings rhiza.daemon.usage.session and rhiza.daemon.usage.weekly set eac
 ### In
 
 - depends-on [usage-hold](usage-hold.md)
+- blocks [review-01m6rmj6-r3-f3](../../../../question/review-01m6rmj6-r3-f3.md)
 - verifies [usage-settings-verified](../../../../evidence/usage-settings-verified.md)
 - verifies [usage-settings-qa-1](../../../../evidence/usage-settings-qa-1.md)
 - verifies [usage-settings-qa-2](../../../../evidence/usage-settings-qa-2.md)

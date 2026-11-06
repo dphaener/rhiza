@@ -1,0 +1,39 @@
+{
+  "actor": "01M6RMJPZ0SQNRSBZ4VV3NYDV6",
+  "after": [
+    "01M6RN875C59HTJHZPDAGHRAZN"
+  ],
+  "at": "2026-11-06T14:47:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The nebari ship check needs nebari to have a model: does vm-second-project-ships wait for milestone 27's nebari import, or ship a change set in a nebari given only rhiza init?"
+        },
+        "handle": "m29-nebari-model-first",
+        "id": "01M6RN8H4A34Z2590ST8H35WQW",
+        "key": null,
+        "kind": "question",
+        "node": "01M6RN8H49BT22F2AJRTVM9XG7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN8H49BT22F2AJRTVM9XG7",
+        "id": "01M6RN8H4ZYTB1PB7GG1AXGYZ7",
+        "link": "01M6RN8H4ZYTB1PB7GG0AXN1BN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN873HV3NYMXTSJ13CXZJF",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RN8H5RMMW4P1TF6MTX1GSX",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M6RMJPZ0SQNRSBZ4VV3NYDV6",
+  "after": [],
+  "at": "2026-11-06T14:44:56Z",
+  "body": {
+    "intent": "Root daemon: one daemon on the root builds every registered project round-robin under one machine-wide run cap and usage governor, with machine settings in the root config and project settings in each repo, under one service",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RN3RCGAZ9RNTWTZTDDYNEA",
+  "type": "open",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M6RMJPZ0SQNRSBZ4VV3NYDV6",
+  "after": [],
+  "at": "2026-11-06T14:48:00Z",
+  "body": {
+    "intent": "Record the answers of session 05fe56c8-8c19-4241-83c6-01a1b1494bc7, whose change set 01M6RMJ858AVSV2VA3K0TTV352 has landed",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6RN9BKGQ0X3M75SM86PXX0J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RN9BKGQ0X3M75SMAYC99T3",
+  "type": "open",
+  "v": 1
+}

@@ -1,0 +1,53 @@
+{
+  "actor": "01M6RNTY2EKATW33ZVZB9XWXN8",
+  "after": [
+    "01M6RN853AMKPMPT7BJMWZCM27"
+  ],
+  "at": "2026-11-06T14:59:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript gets exit 2 with the next from rhiza request in an unregistered repo and in a repo under no root ($NOROOT, from testscripts-run-under-root), and runs rhiza check there successfully; the existing run start and request scripts pass under the Setup root.",
+          "statement": "Starting a run or queuing a request (rhiza run start, rhiza request) needs a registered project under a root and otherwise exits 2 with a next naming rhiza root init or rhiza project add; model commands (show, apply, check, render, land) keep working in any repo with .rhiza/, so CI needs no root."
+        },
+        "handle": "runs-need-root",
+        "id": "01M6RN852FN56HV9AVYVF28DZ0",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M6RN852FN56HV9AVYTX5N843",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run 'TestScripts/^(run-start|run-start-queue|daemon-settings|daemon-pause|daemon-event-hook|daemon-repo-session|stage-autonomy)$' passes with runs-need-root and root-daemon-lock in force and those scripts unedited; a script running rhiza root show in $WORK sees its own project, and in $NOROOT gets exit 2 naming rhiza root init.",
+          "statement": "The testscript Setup in cmd/rhiza/main_test.go puts every script under a Rhiza root: before the scripts run it writes a rhiza.toml in the scripts' shared work root registering each script's $WORK folder as a project, so the existing scripts that start runs, queue requests or run the daemon in a bare $WORK repo keep passing unchanged, and it gives scripts a folder outside any root ($NOROOT) for the outside-a-root cases."
+        },
+        "handle": "testscripts-run-under-root",
+        "id": "01M6RNXQCZZ7E21TJ70DSNMTKC",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M6RNXQCZZ7E21TJ70B4RCRWW",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M6RNXQCZZ7E21TJ70B4RCRWW",
+        "id": "01M6RNXQDD6MTXNHVT6DPA4XF8",
+        "link": "01M6RNXQDD6MTXNHVT6D51Y5BX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37RJHQ058KK9BPVW4VY8",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6RN3M8EC8FEDEJ8X6YVCPZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RNXQEASFR09Y63D1MXMDTW",
+  "type": "ops",
+  "v": 1
+}

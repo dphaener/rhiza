@@ -1,0 +1,175 @@
+{
+  "actor": "01M6RMJPZ0SQNRSBZ4VV3NYDV6",
+  "after": [
+    "01M6RN3M8EC8FEDEJ8X8DBZ355"
+  ],
+  "at": "2026-11-06T14:47:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript runs rhiza root init, then rhiza root show --json from the root, from a registered project and from a <project>.<slug> sibling worktree, and gets the same root each time; a second root init on the same directory exits 2 with a next.",
+          "statement": "rhiza root init [dir] makes a directory a Rhiza root by writing <dir>/rhiza.toml (its projects and machine-wide settings), and every rhiza command finds its root by walking up from the working directory to the nearest rhiza.toml."
+        },
+        "handle": "root-init",
+        "id": "01M6RN84TZ5W0WZ9Z08ZZCD7E2",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M6RN84TZ5W0WZ9Z08W2HSFMX",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN84TZ5W0WZ9Z08W2HSFMX",
+        "id": "01M6RN84VFPDE9716PZJ0KJ9PM",
+        "link": "01M6RN84VFPDE9716PZG6FNK0T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37C81BAPQKZZKWSEEK3W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscript cases in the root-init script cover the root, a project, a sibling worktree, the root itself (no project) and a directory outside any root (exit 2, next names root init).",
+          "statement": "rhiza root show [--json] prints the root, its config file and the project the working directory belongs to (by its folder or a <project>.<slug> sibling worktree), or none at the root itself; outside any root it exits 2 with next rhiza root init."
+        },
+        "handle": "root-show",
+        "id": "01M6RN84VVBPTANB7RAYR8BQ6V",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M6RN84VVBPTANB7RAV73FSNX",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN84VVBPTANB7RAV73FSNX",
+        "id": "01M6RN84WWMK54H5S7KWB6GDMG",
+        "link": "01M6RN84WWMK54H5S7KTSR613S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37C81BAPQKZZKWSEEK3W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN84VVBPTANB7RAV73FSNX",
+        "id": "01M6RN84XKXASWW26666AT48P8",
+        "link": "01M6RN84XKXASWW26662T4KJD4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37PNRBSA5QJXG9VD5EBB",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript adds a checkout and sees it in rhiza.toml and in rhiza project ls --json, and gets exit 2 for a path outside the root, a nested path, a non-git folder and a duplicate name.",
+          "statement": "rhiza project add <path> registers an existing git checkout that sits directly under the root, named by its folder (or --name), recording its repo ID when it has .rhiza/; a path outside the root or nested deeper, a non-git folder and a taken name are refused with exit 2 and a next."
+        },
+        "handle": "project-add-path",
+        "id": "01M6RN84Y388QM22T4H2BZF6E5",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M6RN84Y388QM22T4H109V2ZJ",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN84Y388QM22T4H109V2ZJ",
+        "id": "01M6RN84YZEWBX6V8MJ1AGMX8P",
+        "link": "01M6RN84YZEWBX6V8MJ03CY7DY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37C81BAPQKZZKWSEEK3W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN84Y388QM22T4H109V2ZJ",
+        "id": "01M6RN84ZGPAYX3QEHTFNMYS1N",
+        "link": "01M6RN84ZGPAYX3QEHTF7GCG7P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37PNRBSA5QJXG9VD5EBB",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript adds a local bare repo by its file:// URL (no network) and finds the clone under the root and in project ls; a bad URL exits non-zero and leaves rhiza.toml unchanged.",
+          "statement": "rhiza project add <git URL> clones the repo into <root>/<name> (name from the URL or --name) and registers it as project add <path> does; a failed clone registers nothing."
+        },
+        "handle": "project-add-url",
+        "id": "01M6RN8501TDM99PPTY1PAFQP2",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M6RN8501TDM99PPTXZCXH3Q1",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN8501TDM99PPTXZCXH3Q1",
+        "id": "01M6RN850H63KBYWMRK2DQPJNH",
+        "link": "01M6RN850H63KBYWMRJZDVVF4F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37C81BAPQKZZKWSEEK3W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript registers one initialised and one bare git checkout, sees initialised and not initialised in project ls --json, removes one with project rm and finds its folder still on disk.",
+          "statement": "rhiza project ls [--json] lists each registered project with its name, path, repo ID and whether it is initialised (has .rhiza/) or not initialised; rhiza project rm <name> unregisters a project without touching its files."
+        },
+        "handle": "project-ls-rm",
+        "id": "01M6RN85109TG2YXD5Z9SZT1EA",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M6RN85109TG2YXD5Z6VNQ6DF",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85109TG2YXD5Z6VNQ6DF",
+        "id": "01M6RN851HQJ4C1JTEWQ24WP5A",
+        "link": "01M6RN851HQJ4C1JTEWM82HJYK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37TYJ2EFRNWHT4PYK7JE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript gets exit 2 with the next from rhiza request in an unregistered repo and in a repo under no root, and runs rhiza check there successfully.",
+          "statement": "Starting a run or queuing a request (rhiza run start, rhiza request) needs a registered project under a root and otherwise exits 2 with a next naming rhiza root init or rhiza project add; model commands (show, apply, check, render, land) keep working in any repo with .rhiza/, so CI needs no root."
+        },
+        "handle": "runs-need-root",
+        "id": "01M6RN852FN56HV9AVYVF28DZ0",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M6RN852FN56HV9AVYTX5N843",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN852FN56HV9AVYTX5N843",
+        "id": "01M6RN8531ER7RPRNZD5630QP1",
+        "link": "01M6RN8531ER7RPRNZD2FF4C5K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37RJHQ058KK9BPVW4VY8",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6RN3M8EC8FEDEJ8X6YVCPZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RN853AMKPMPT7BJMWZCM27",
+  "type": "ops",
+  "v": 1
+}

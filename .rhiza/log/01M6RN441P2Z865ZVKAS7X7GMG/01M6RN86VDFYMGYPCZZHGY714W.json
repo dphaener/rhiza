@@ -1,0 +1,206 @@
+{
+  "actor": "01M6RMJPZ0SQNRSBZ4VV3NYDV6",
+  "after": [
+    "01M6RN441P2Z865ZVKAV2V0HV1"
+  ],
+  "at": "2026-11-06T14:47:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "question": "Rex apps open in the focused pane's working directory. When you start a milestone, change set, plan or request from a TUI app, which project is 'the one you're in'?",
+          "statement": "A TUI app's current project is the project whose folder or <project>.<slug> worktree holds the focused pane's directory; at the root or outside any project the app asks for the project from a picker before it starts anything; the header names the project and a key switches it for that app.",
+          "wording": "Pane's project, else pick. The assistant's option, picked by the owner."
+        },
+        "handle": "m29-tui-project-from-pane",
+        "id": "01M6RN86FMBJD985517BMFNR5R",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RN86FMBJD9855179NK12TF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RN86FMBJD9855179NK12TF",
+        "id": "01M6RN86G2RKTTSHV1W08ZQZK7",
+        "link": "01M6RN86G2RKTTSHV1W04HHSCY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN1GT6AJ10J39S4RTN28YS",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "TUI app tests opened in a project folder, in a sibling worktree and at the root check the header names the project, the project and no project.",
+          "statement": "Each Rhiza TUI app knows its current project, the project whose folder or <project>.<slug> worktree holds the directory it was opened in, and names it in its header."
+        },
+        "handle": "tui-current-project",
+        "id": "01M6RN86H70DC8GP65XMDJARPV",
+        "key": "zzzzzzzw",
+        "kind": "capability",
+        "node": "01M6RN86H70DC8GP65XJEDD2FN",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN86H70DC8GP65XJEDD2FN",
+        "id": "01M6RN86HRZ978SB5VWNBX8R8H",
+        "link": "01M6RN86HRZ978SB5VWJ8NW5DF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN3801PSKKGRP9ATFYVDMD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN86H70DC8GP65XJEDD2FN",
+        "id": "01M6RN86JE1RM92069CWYCF2SF",
+        "link": "01M6RN86JE1RM92069CTYY2YHA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN86FMBJD9855179NK12TF",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "TUI tests submit the Request app in project B's folder and find the request queued in B; at the root the app shows the picker, Esc starts nothing, and picking A queues it in A.",
+          "statement": "Everything a TUI app starts (a milestone, a change set, a plan or a request) is started in the app's current project, and opened with no current project the app asks for one from a picker first, starting nothing until one is picked."
+        },
+        "handle": "tui-starts-in-project",
+        "id": "01M6RN86K392PSD63NH2CSAMBM",
+        "key": "zzzzzzzy",
+        "kind": "capability",
+        "node": "01M6RN86K392PSD63NH20X4D85",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN86K392PSD63NH20X4D85",
+        "id": "01M6RN86KP14M71KJ6X4BQW6KF",
+        "link": "01M6RN86KP14M71KJ6X2W7Q3NS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN3801PSKKGRP9ATFYVDMD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN86K392PSD63NH20X4D85",
+        "id": "01M6RN86M4EXMBTAJ4VTT9V06K",
+        "link": "01M6RN86M4EXMBTAJ4VPXEA83P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN86FMBJD9855179NK12TF",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "TUI tests open an app in project A, switch to B through the picker, and see the header and the listed data change to B's.",
+          "statement": "In every TUI app one key opens a project picker of the registered projects that switches the app's current project, and the app reloads its view for the picked project."
+        },
+        "handle": "tui-project-switch",
+        "id": "01M6RN86NDXBMPTCAW1WHSTTH3",
+        "key": "zzzzzzzz",
+        "kind": "capability",
+        "node": "01M6RN86NDXBMPTCAW1V6MX121",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN86NDXBMPTCAW1V6MX121",
+        "id": "01M6RN86NT9E1KPN14MF6JB0XR",
+        "link": "01M6RN86NT9E1KPN14MCTBF4T6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN86FMBJD9855179NK12TF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN86NDXBMPTCAW1V6MX121",
+        "id": "01M6RN86PFMQCPS00DKEDAX4WF",
+        "link": "01M6RN86PFMQCPS00DKCT67EE3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37KKNTFNTJD7YSSZ52SH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Inbox app tests with two projects' items check the project tag on each row and that answering an item from project B writes into B, opened from project A.",
+          "statement": "The Inbox app lists every project's inbox items, each row tagged with its project, and answering, approving, retrying or abandoning an item acts in that item's project."
+        },
+        "handle": "tui-merged-inbox",
+        "id": "01M6RN86Q8DXQ5T5PCRHGF9J6N",
+        "key": "zzzzzzzzi",
+        "kind": "capability",
+        "node": "01M6RN86Q8DXQ5T5PCRHDSBRMM",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN86Q8DXQ5T5PCRHDSBRMM",
+        "id": "01M6RN86QZ40AQFCMGKGT794GP",
+        "link": "01M6RN86QZ40AQFCMGKD3CZPN3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37KKNTFNTJD7YSSZ52SH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN86Q8DXQ5T5PCRHDSBRMM",
+        "id": "01M6RN86RWX04H4ZSZNM973GWK",
+        "link": "01M6RN86RWX04H4ZSZNHZRX85S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN3801PSKKGRP9ATFYVDMD",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "TUI tests with two projects check the Runs app's project tags, and that toggling an autonomy stage in the Autonomy app writes the current project's git config and setting max runs writes rhiza.toml.",
+          "statement": "The Runs app shows every project's live runs tagged by project, and the Daemon and Autonomy apps show the machine settings once and the current project's settings, writing each to its scope."
+        },
+        "handle": "tui-runs-daemon-across-projects",
+        "id": "01M6RN86SPHVRJW809SSFDCT12",
+        "key": "zzzzzzzzr",
+        "kind": "capability",
+        "node": "01M6RN86SPHVRJW809SPKT0ASP",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN86SPHVRJW809SPKT0ASP",
+        "id": "01M6RN86TCGMQ5B1QQWA1WGX8K",
+        "link": "01M6RN86TCGMQ5B1QQW6TK8TWF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37KKNTFNTJD7YSSZ52SH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN86SPHVRJW809SPKT0ASP",
+        "id": "01M6RN86TYD90G8Z31FTNSQBDA",
+        "link": "01M6RN86TYD90G8Z31FPQ9JP6Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37FV21SYDTNZKY4VP4AM",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6RN441P2Z865ZVKAS7X7GMG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RN86VDFYMGYPCZZHGY714W",
+  "type": "ops",
+  "v": 1
+}

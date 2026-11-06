@@ -1,0 +1,129 @@
+{
+  "actor": "01M6RMJPZ0SQNRSBZ4VV3NYDV6",
+  "after": [
+    "01M6RN3ZBGYDW6KPBSEV5P3HXZ"
+  ],
+  "at": "2026-11-06T14:47:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "internal/web and api tests: a root daemon of two projects opens one listener, and the per-project pages answer for both projects through it.",
+          "statement": "The root daemon serves one web UI for the machine on the machine-wide web host and port, with every project's data behind it."
+        },
+        "handle": "web-root-listener",
+        "id": "01M6RN862M5W8HPN62BYX0472M",
+        "key": "zzzzzzzw",
+        "kind": "capability",
+        "node": "01M6RN862M5W8HPN62BWDYC124",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN862M5W8HPN62BWDYC124",
+        "id": "01M6RN86310JXH2F8NCQJR9EXJ",
+        "link": "01M6RN86310JXH2F8NCQGTWCF6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37AH4PP5N792VVNZF0S5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN862M5W8HPN62BWDYC124",
+        "id": "01M6RN863JGJHABQ2YEDG2X2JF",
+        "link": "01M6RN863JGJHABQ2YEA7ANW5N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37HBF87AAE32A0XDWR37",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/web tests render the home page for a root of two initialised projects and one bare one, and check each project's run count, inbox count, health and link, and the not initialised mark.",
+          "statement": "The web UI's home page lists every registered project with its live runs, inbox count and health, a not initialised project marked so, each linking to that project's overview."
+        },
+        "handle": "web-projects-home",
+        "id": "01M6RN864EGF59H96RE2K9DT0S",
+        "key": "zzzzzzzy",
+        "kind": "capability",
+        "node": "01M6RN864EGF59H96RE13VRMX7",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN864EGF59H96RE13VRMX7",
+        "id": "01M6RN8651C39V9TRYV3M47RDF",
+        "link": "01M6RN8651C39V9TRYV1S0YE55",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37HBF87AAE32A0XDWR37",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN864EGF59H96RE13VRMX7",
+        "id": "01M6RN865J8KB8CP1NFJGZS3S0",
+        "link": "01M6RN865J8KB8CP1NFG8CSWBR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37TYJ2EFRNWHT4PYK7JE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/web inbox tests with two projects' items check the merged order, the project tag and the link of each item.",
+          "statement": "The web UI's inbox page merges every project's inbox, oldest first, each item tagged with its project and linking into that project's pages."
+        },
+        "handle": "web-merged-inbox",
+        "id": "01M6RN866N4BCG43KR22WEEQAT",
+        "key": "zzzzzzzz",
+        "kind": "capability",
+        "node": "01M6RN866N4BCG43KR20K6EFC3",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN866N4BCG43KR20K6EFC3",
+        "id": "01M6RN86793KMK7PKPDQ6Q0ZX4",
+        "link": "01M6RN86793KMK7PKPDN51H26C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37HBF87AAE32A0XDWR37",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/web tests fetch each page kind under /p/<a>/ and /p/<b>/ and see only that project's data, a switcher link to the other project's same page, and a 404 for an unknown project.",
+          "statement": "Every existing web page (overview, roadmap, runs, run detail, change set) is scoped to one project under /p/<project>/, with a project switcher in the header that keeps the page kind, and the live event stream is scoped to the same project."
+        },
+        "handle": "web-project-switcher",
+        "id": "01M6RN8687F2WDVVXSSVY3HAV9",
+        "key": "zzzzzzzzi",
+        "kind": "capability",
+        "node": "01M6RN8687F2WDVVXSSTW5W65A",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6RN8687F2WDVVXSSTW5W65A",
+        "id": "01M6RN8691QC0VGP1Z8N7QWXFB",
+        "link": "01M6RN8691QC0VGP1Z8N4CH7T7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN37HBF87AAE32A0XDWR37",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6RN3ZBGYDW6KPBSES9A5JXS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RN86A5PVTF74FREP5AERQX",
+  "type": "ops",
+  "v": 1
+}

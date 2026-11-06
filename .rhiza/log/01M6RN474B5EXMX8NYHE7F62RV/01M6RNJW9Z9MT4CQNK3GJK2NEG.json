@@ -1,0 +1,28 @@
+{
+  "actor": "01M6RNGXR0QF31H3EY94RZ7A1G",
+  "after": [
+    "01M6RN8H5RMMW4P1TF6MTX1GSX"
+  ],
+  "at": "2026-11-06T14:53:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6FESPV5PW1DHSM7HR15SF9W",
+        "handle": null,
+        "id": "01M6RNJW9BVP6MSWVWZT1F9VX6",
+        "node": "01M6FESPV5PW1DHSM7HQC0F4CP",
+        "op": "node.update",
+        "set": {
+          "statement": "The root daemon runs as a service (rhiza-root.service, on the root ~/code where this repo is registered) on the VM and ships a change set end to end with no orchestrator session, worked from the Mac's Rex app connected to the VM host, while the Mac runs no daemon"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RNJW9Z9MT4CQNK3GJK2NEG",
+  "type": "ops",
+  "v": 1
+}

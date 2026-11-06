@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6RP4XBJW9MQ8KZNRYYKJDX5"
+  ],
+  "at": "2026-11-06T15:03:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f3 (contradiction on usage-settings): The updated acceptance calls for 'A new usage-settings.txtar', but cmd/rhiza/testdata/script/usage-settings.txtar already exists. The check should say to update that script to cover machine scope and rhiza.toml. The critic confirmed it: cmd/rhiza/testdata/script/usage-settings.txtar already exists; the updated usage-settings acceptance says 'A new usage-settings.txtar', which contradicts the code. How should it be settled?"
+        },
+        "handle": "review-01m6rmj6-r3-f3",
+        "id": "01M6RP4X9AKMA32RTMDT5234JM",
+        "key": null,
+        "kind": "question",
+        "node": "01M6RP4X9AKMA32RTMDSK9VRTQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RP4X9AKMA32RTMDSK9VRTQ",
+        "id": "01M6RP4X9XFCPVQRSER70AD9D7",
+        "link": "01M6RP4X9XFCPVQRSER3CVKE5V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0R8X5Q00XXMB8CRVN89Q",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6RP4XBJW9MQ8KZNRY8ZFAY8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RP4XBXRQ4E4JYVEZCG4JYK",
+  "type": "ops",
+  "v": 1
+}

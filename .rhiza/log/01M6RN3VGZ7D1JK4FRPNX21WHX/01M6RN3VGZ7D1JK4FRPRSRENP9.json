@@ -1,0 +1,15 @@
+{
+  "actor": "01M6RMJPZ0SQNRSBZ4VV3NYDV6",
+  "after": [],
+  "at": "2026-11-06T14:44:59Z",
+  "body": {
+    "intent": "Cross-project CLI: at the root or with --project, rhiza daemon status, inbox, roadmap and health cover every project or one",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6RN3VGZ7D1JK4FRPNX21WHX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RN3VGZ7D1JK4FRPRSRENP9",
+  "type": "open",
+  "v": 1
+}

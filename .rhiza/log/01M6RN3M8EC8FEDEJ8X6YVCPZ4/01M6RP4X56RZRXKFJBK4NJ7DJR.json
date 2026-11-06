@@ -1,0 +1,61 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6RNXQEASFR09Y63D1MXMDTW"
+  ],
+  "at": "2026-11-06T15:03:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on testscripts-run-under-root): The leaf registers each script's $WORK folder as a project, but the scripts it must keep passing unedited (run-start, run-start-queue, daemon-repo-session, daemon-event-hook, ...) do `mkdir repo; cd repo; git init` and work in $WORK/repo. $WORK is not a git checkout, and $WORK/repo sits two levels under the root, so project-add-path refuses both (non-git folder; nested path). The repos those scripts use would not be registered projects, so runs-need-root and root-daemon-lock would exit 2 there. The leaf has to register the repo folder the script actually uses, or let the scripts change. The critic confirmed it: run-start, run-start-queue, daemon-settings, daemon-pause, daemon-event-hook, daemon-repo-session and stage-autonomy all do mkdir repo; cd repo; git init and work in $WORK/repo. testscripts-run-under-root registers $WORK (not a git checkout, and the repo sits a level below it), which project-add-path says is refused (non-git folder, nested deeper). The repos these scripts use would not be registered projects, so runs-need-root/root-daemon-lock would exit 2 and the 'unedited' acceptance cannot hold. How should it be settled?"
+        },
+        "handle": "review-01m6rmj6-r3-f1",
+        "id": "01M6RP4X0H7YY4B9HFEMEHCP0N",
+        "key": null,
+        "kind": "question",
+        "node": "01M6RP4X0H7YY4B9HFEGFYBBFY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RP4X0H7YY4B9HFEGFYBBFY",
+        "id": "01M6RP4X1G93MQ00BYR5VRWDV2",
+        "link": "01M6RP4X1G93MQ00BYR41WAPJV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RNXQCZZ7E21TJ70B4RCRWW",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on testscripts-run-under-root): Its acceptance, and root-daemon-lock's, require daemon-repo-session.txtar to pass unedited. That script asserts the Rex session rhiza-repo, named after the checkout's folder. This change set retires daemon-repo-session and replaces it with root-daemon-rex-session, which names the session after the project's registered name (the $WORK folder, script-daemon-repo-session, under this Setup). The script tests a retired capability and would see a different session, so it cannot pass unedited. The critic confirmed it: daemon-repo-session.txtar asserts 'rex session new rhiza-repo' (folder-named). Change set 01M6RN3RCGAZ9RNTWTZPKFM61M retires 01M6FES3PKQCSNG9SEECK4G1R7 as superseded by root-daemon-rex-session (rhiza-<project>, the registered name). Yet testscripts-run-under-root and root-daemon-lock require that script to pass unedited, testing a retired capability. How should it be settled?"
+        },
+        "handle": "review-01m6rmj6-r3-f2",
+        "id": "01M6RP4X21TN1QGFWBWS3RGTVW",
+        "key": null,
+        "kind": "question",
+        "node": "01M6RP4X21TN1QGFWBWR8P2WJZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RP4X21TN1QGFWBWR8P2WJZ",
+        "id": "01M6RP4X32JXFXP4WE3RHF7Z7Y",
+        "link": "01M6RP4X32JXFXP4WE3QNBGT9B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RNXQCZZ7E21TJ70B4RCRWW",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6RN3M8EC8FEDEJ8X6YVCPZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RP4X56RZRXKFJBK4NJ7DJR",
+  "type": "ops",
+  "v": 1
+}

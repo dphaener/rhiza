@@ -1,0 +1,85 @@
+{
+  "actor": "01M6RNTY2EKATW33ZVZB9XWXN8",
+  "after": [
+    "01M6RNJW2CMJ3EHGBME5YW3XY1"
+  ],
+  "at": "2026-11-06T14:59:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "internal/daemon lock tests: a second lock on the same root fails, from a project dir and from the root alike; a testscript gets exit 2 with the next from rhiza daemon in $NOROOT, outside any root; the existing daemon scripts (daemon-settings, daemon-pause, daemon-event-hook, daemon-repo-session, stage-autonomy) pass unedited under the root testscripts-run-under-root gives them.",
+          "statement": "rhiza daemon runs on the root, never on a single repo: run anywhere under the root it resolves the root and holds one lock in the root's state folder (<root>/.rhiza-root/), so a second daemon on the same root refuses to start, and outside a root it exits 2 with next rhiza root init."
+        },
+        "handle": "root-daemon-lock",
+        "id": "01M6RN858YN51QWMJQ606YHV4G",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M6RN858XDJS5W8FZ3QZ8P2PF",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript sets a machine key and a project key, finds the first in rhiza.toml and the second in that repo's git config, sees both in daemon settings --json with their scope and source, sees rhiza.daemon.trimGoCache listed with machine scope, and gets exit 2 for a project key set at the root with no --project; a daemon test with two projects, each with its own rhiza.eventCommand, runs each project's command only for that project's moves.",
+          "statement": "rhiza daemon settings lists every setting with its scope, machine (from rhiza.toml: maxRuns, usage budget and reserve, minFree, trimGoCache, web host and port, selfUpdate, permissionMode, paused) or project (from that repo's git config: autonomy per stage, project paused, per-project maxRuns, deploy check), and rhiza daemon set writes each key to its scope, taking --project or the current project for project keys. The hook commands rhiza.eventCommand and rhiza.notifyCommand are project settings: the root daemon runs a project's event command for that project's lifecycle moves and its notify command for that project's inbox, each read from that project's git config."
+        },
+        "handle": "root-daemon-settings-scope",
+        "id": "01M6RN85C17S5VE1A6SQVD7WE1",
+        "key": "zzzzzi",
+        "kind": "capability",
+        "node": "01M6RN85C17S5VE1A6SNZAXK89",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs rhiza daemon --once on a root with two projects, one added with --name other than its folder, against a fake Rex with REX_SESSION unset: it creates rhiza-<name> once for each project missing from rex session ls, each run driver it starts carries REX_SESSION=rhiza-<registered name>, with the sessions present it creates none, and rhiza run open for the renamed project's run targets rhiza-<registered name>.",
+          "statement": "Every Rex tab the root daemon's runs open (agent tabs; plan-request runs and run drivers start headless) opens in its project's fixed Rex session, rhiza-<project>, where <project> is the name the project is registered under in rhiza.toml (its folder, or project add --name), not the checkout's folder; the daemon creates each session on its Rex server when missing and passes it as REX_SESSION to every run driver it starts for that project, and rhiza inbox open and run open use the same registered name to find a run's panes."
+        },
+        "handle": "root-daemon-rex-session",
+        "id": "01M6RN85G5TY8WJ23TXES4AY8M",
+        "key": "zzzzzy",
+        "kind": "capability",
+        "node": "01M6RN85G5TY8WJ23TXEGTZFGV",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "base": "01M6CS1WF6WPPJTPC8X4J66CF7",
+        "handle": null,
+        "id": "01M6RNJVZWY3RDP6PT8MXN2R79",
+        "node": "01M6CS1WF6WPPJTPC8X1DHYGD8",
+        "op": "node.update",
+        "set": {
+          "acceptance": "daemon-settings.txtar: daemon settings lists every key with its default, scope and source default; daemon set rhiza.daemon.maxRuns 1 then settings shows 1 from rhiza.toml; an unknown key or bad value exits 2 writing nothing; with maxRuns set to 1 between two daemon --once polls, the second starts at most one run; a --max-runs flag wins over config and settings shows source flag in daemon status; describe-golden.txtar is regenerated",
+          "statement": "The daemon reads its settings every poll, the machine ones (paused, max runs, minimum free disk, Go cache trimming, permission mode) from the root's rhiza.toml and the project ones (plan, accept, ship and signoff autonomy) from each project's git config, as root-daemon-settings-scope splits them, a command-line flag winning for that run; rhiza daemon settings lists each with value, scope and source and rhiza daemon set validates and writes one to its scope"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85G5TY8WJ23TXEGTZFGV",
+        "id": "01M6RNY48EJZZ6YZSZ2FJWSCY7",
+        "link": "01M6RNY48EJZZ6YZSZ2C8JPKGM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FES3PKQCSNG9SEECK4G1R7",
+        "type": "supersedes"
+      },
+      {
+        "base": "01M6GBJTY543QVR43VSZP992DE",
+        "id": "01M6RNY49QC0WG1M9QWM03RXHA",
+        "node": "01M6FES3PKQCSNG9SEECK4G1R7",
+        "op": "node.retire",
+        "reason": "Superseded by root-daemon-rex-session: the session is named after the project's registered name, rhiza-<project>, not the main checkout's folder, and the root daemon creates and passes one per project (m29-rex-session-per-project)."
+      }
+    ]
+  },
+  "change_set": "01M6RN3RCGAZ9RNTWTZPKFM61M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RNY4ADSB7JJKX506PN42ZC",
+  "type": "ops",
+  "v": 1
+}
