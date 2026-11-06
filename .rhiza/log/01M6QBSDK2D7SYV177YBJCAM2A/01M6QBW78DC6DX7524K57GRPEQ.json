@@ -1,0 +1,30 @@
+{
+  "actor": "01M6QBT28AY99BYPJSYVPY1X13",
+  "after": [
+    "01M6QBSDK2D7SYV177YCK68D5F"
+  ],
+  "at": "2026-11-06T02:44:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "b6e0da8b-7ea6-46cb-ad32-01a1aebcef62",
+          "statement": "Change set 01M6QBS (web UI host setting) serves no intent yet, and milestone 28's done point m28-read-only says the UI 'binds only to 127.0.0.1', which this change contradicts. What should it serve, and what happens to that done point? / Which values should rhiza daemon set rhiza.web.host accept? / How should the existing landed leaves web-serve-loopback (asserts always 127.0.0.1) and web-url-in-daemon-status (shows http://127.0.0.1:<port>) be handled?"
+        },
+        "handle": "question-b6e0da8b-1",
+        "id": "01M6QBW5TMT8B4DASNEE5QMH5B",
+        "key": null,
+        "kind": "question",
+        "node": "01M6QBW5TMT8B4DASNECB5AGGW",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6QBSDK2D7SYV177YBJCAM2A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QBW78DC6DX7524K57GRPEQ",
+  "type": "ops",
+  "v": 1
+}

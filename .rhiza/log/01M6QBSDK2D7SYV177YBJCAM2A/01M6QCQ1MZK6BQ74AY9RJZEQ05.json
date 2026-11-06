@@ -1,0 +1,41 @@
+{
+  "actor": "01M6QCP50VFRYNGKVPHWEY3C80",
+  "after": [
+    "01M6QCP0A362A5BXBN9KZWXCXN"
+  ],
+  "at": "2026-11-06T02:58:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The critic confirmed that internal/slice/rules.go:203 drops any decision with a live incoming supersedes link and ignores the link note, so the current link removes the owner-quoted read-only, monitoring-only decision from the slices of milestone-28, web-monitor, web-api-read-only, web-events-stream, web-templates-embedded, web-live-sections, web-roadmap-page and web-change-set-page, which contradicts the intent ('The UI stays read-only'). Of the two fixes the finding offers, dropping the link and amending is smaller and safer: it keeps the owner's exact words on the original decision instead of restating them in an agent-written successor (the model forbids paraphrasing owner decisions), needs no re-linking of eight-plus capabilities, and web-host-setting-shape already decides the leaves whose behaviour changes. The intent's 'supersedes the localhost part' is a partial change, which the model has no partial-supersede for; derived-from with a note expresses it without hiding the rest. A stale 'localhost' word in the original decision is acceptable because the newer decision on the binding leaves is explicit and linked to it.",
+          "statement": "Drop the supersedes link 01M6QCGW5VASCCZX5JR0XDBW7V from web-host-setting-shape to web-ui-in-daemon-read-only; web-ui-in-daemon-read-only stays current, owner quote and all, for every capability it decides. The localhost change is recorded as an amendment: web-host-setting-shape links to web-ui-in-daemon-read-only with derived-from, noting that it amends only the 'served on localhost' clause (the UI binds to the address rhiza.web.host names, 127.0.0.1 by default) while the daemon-served, read-only, monitoring-only parts still hold. Its existing decided-by links on m28-read-only, web-serve-loopback, web-url-in-daemon-status and web-serve-host carry the new binding behaviour where it applies. Do not write a narrower superseding decision.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "web-host-amends-not-supersedes",
+        "id": "01M6QCQ1JH13B6BXCXJA34SRKD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6QCQ1JH13B6BXCXJ999GJT0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6QCQ1JH13B6BXCXJ999GJT0",
+        "id": "01M6QCQ1KMCTKDN72WV5SHNKG7",
+        "link": "01M6QCQ1KKJSP6NKCRS6MZ8VS8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6QCP08T8040EJGG2MS0V4T7",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6QBSDK2D7SYV177YBJCAM2A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QCQ1MZK6BQ74AY9RJZEQ05",
+  "type": "ops",
+  "v": 1
+}

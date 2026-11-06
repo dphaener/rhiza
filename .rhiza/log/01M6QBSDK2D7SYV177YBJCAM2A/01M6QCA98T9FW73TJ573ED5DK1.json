@@ -1,0 +1,46 @@
+{
+  "actor": "01M6QC9D452SDMQBNW3R5C6R4E",
+  "after": [
+    "01M6QC3FAAD8EACR6BKRJ1SZDZ"
+  ],
+  "at": "2026-11-06T02:51:58Z",
+  "body": {
+    "drop": [
+      "01M6QBZ935J0WREKTB33JXNN0R"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "changeLeaves (internal/api/change.go:440) only counts capabilities a change set's ops create that are live and have no live child, and run_build.go:113 and run_review.go build and review from that list, so amending landed leaves in place yields nothing to build. Changing changeLeaves to also count amended capabilities is a tool change outside this change set's intent and an arbiter writes no code. Retiring the two verified leaves and recreating them would drop their links to existing Evidence (web-serve-loopback-verified, web-serve-loopback-qa-1, pr-314-web-ui-server) and contradict Decision web-host-setting-shape, which chose amending over shadowing so one capability owns each behaviour. Adding sibling leaves would make two capabilities claim binding and the status URL. New children under the amended capabilities keep the parents as the full, already-amended description with their evidence, make the parents non-leaves (runs build only childless leaves), and give the build run two leaves scoped to the host delta whose acceptance is lifted from the amended parents, so the work, tests and review match what web-host-setting-shape decided. web-status-shows-host depends-on web-serve-host, since status records the host the listener uses; no depends-on is needed between the amended parents, which are not built.",
+          "statement": "Change set 01M6QBS carries its build work on two new childless capabilities it creates, one under each amended landed leaf, so changeLeaves finds them and a build run builds exactly the host delta: web-serve-host (child of web-serve-loopback) owns the rhiza.web.host setting: its default 127.0.0.1, rhiza daemon set validation (literal IPv4/IPv6 via net.ParseIP; empty, hostnames including localhost and values with a port rejected with an error naming the key), the listen address net.JoinHostPort(host, port), and the listener manager moving the listener when only the host changes; its acceptance is the host part of web-serve-loopback's amended acceptance (unit tests for default, 0.0.0.0, ::1 giving [::1]:7787, the rejected values, the host-only move in the fake-listener poll sequence, and the daemon-settings testscript listing rhiza.web.host and accepting 0.0.0.0 and ::1 and rejecting localhost, abc and empty). web-status-shows-host (child of web-url-in-daemon-status, depends-on web-serve-host) owns status recording and showing the effective host as http://<host>:<port>, IPv6 bracketed; its acceptance is the daemon-status testscript steps for 0.0.0.0 and ::1 while the default still reads http://127.0.0.1:7787. The amended parents keep their statements, acceptance and evidence as the whole behaviour and become non-leaf capabilities; no code change to changeLeaves and no retiring of the landed leaves.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "web-host-build-leaves",
+        "id": "01M6QC2N0XFHEYM6VQ8XNA3H7Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6QC2N0XFHEYM6VQ8TQKCM0B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test ./internal/web/... and go test ./internal/api -run TestDaemonWeb (the listener manager and its fake-listener poll test TestDaemonWebListenerFollowsPort, plus the rhiza.web.* validation in internal/api/daemon_settings.go) cover the computed address for the default host (127.0.0.1:7787), 0.0.0.0 (0.0.0.0:7787) and ::1 ([::1]:7787), and reject localhost, abc, an empty value and 127.0.0.1:80 with no socket bound; the fake-listener poll sequence includes a poll where only rhiza.web.host changes, to 0.0.0.0, and checks the listener moves to 0.0.0.0:<port>. The daemon-settings testscript lists rhiza.web.host with its default 127.0.0.1, accepts rhiza daemon set rhiza.web.host 0.0.0.0 and ::1, and rejects localhost, abc and an empty value with an error naming the key.",
+          "statement": "The rhiza.web.host setting names the address the daemon serves the web UI on, 127.0.0.1 by default; rhiza daemon set accepts it only as a literal IPv4 or IPv6 address checked with net.ParseIP (such as 127.0.0.1, 0.0.0.0, ::1 or ::) and rejects an empty value, hostnames including localhost and anything with a port, with an error naming the key; the listen address is net.JoinHostPort(host, port), and a running daemon moves the listener at its next poll when only the host changes."
+        },
+        "handle": "web-serve-host",
+        "id": "01M6QC3F43SZJGVMFP625Z3863",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6QC3F43SZJGVMFP61832VJW",
+        "op": "node.create",
+        "parent": "01M6PFJ960GFE6G98GN9GVTABG"
+      }
+    ]
+  },
+  "change_set": "01M6QBSDK2D7SYV177YBJCAM2A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QCA98T9FW73TJ573ED5DK1",
+  "type": "ops",
+  "v": 1
+}
