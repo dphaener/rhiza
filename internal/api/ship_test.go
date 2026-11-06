@@ -1553,3 +1553,61 @@ func TestShipCheckTestFailures(t *testing.T) {
 		t.Error("--test-failures with --settled was accepted")
 	}
 }
+
+// TestParsePRViewMultiJob feeds the rollup of one Actions run split into
+// lint, script shards, rest, budgets and the aggregate check job.
+func TestParsePRViewMultiJob(t *testing.T) {
+	job := func(name, status, conclusion string) string {
+		return `{"__typename":"CheckRun","name":"` + name + `","status":"` + status + `","conclusion":"` + conclusion +
+			`","detailsUrl":"https://github.com/o/r/actions/runs/4242/job/` + name + `"}`
+	}
+	rollup := func(jobs ...string) []byte {
+		return []byte(`{"number":9,"state":"OPEN","headRefOid":"abc","statusCheckRollup":[` + strings.Join(jobs, ",") + `]}`)
+	}
+	verdict := func(b []byte) (v prView, settled, green bool, failed []string) {
+		t.Helper()
+		v, err := parsePRView(b)
+		if err != nil {
+			t.Fatal(err)
+		}
+		settled, green, failed = checksVerdict(v.Checks)
+		return
+	}
+
+	v, settled, green, failed := verdict(rollup(
+		job("lint", "COMPLETED", "SUCCESS"),
+		job("scripts (1/4)", "COMPLETED", "FAILURE"),
+		job("scripts (2/4)", "COMPLETED", "SUCCESS"),
+		job("rest", "COMPLETED", "SUCCESS"),
+		job("budgets", "COMPLETED", "SUCCESS"),
+		job("check", "COMPLETED", "CANCELLED"),
+	))
+	if !settled || green || !slices.Equal(failed, []string{"scripts (1/4)", "check"}) {
+		t.Errorf("failed shard: settled=%v green=%v failed=%v", settled, green, failed)
+	}
+	for _, c := range v.Checks {
+		if c.RunID != "4242" {
+			t.Errorf("check %q RunID = %q, want 4242", c.Name, c.RunID)
+		}
+	}
+
+	_, settled, green, failed = verdict(rollup(
+		job("lint", "COMPLETED", "SUCCESS"),
+		job("scripts (1/4)", "COMPLETED", "SUCCESS"),
+		job("rest", "COMPLETED", "SUCCESS"),
+		job("budgets", "COMPLETED", "SUCCESS"),
+		job("check", "COMPLETED", "SUCCESS"),
+	))
+	if !settled || !green || len(failed) != 0 {
+		t.Errorf("all passed: settled=%v green=%v failed=%v", settled, green, failed)
+	}
+
+	_, settled, green, _ = verdict(rollup(
+		job("lint", "COMPLETED", "SUCCESS"),
+		job("scripts (1/4)", "IN_PROGRESS", ""),
+		job("check", "QUEUED", ""),
+	))
+	if settled || green {
+		t.Errorf("in progress: settled=%v green=%v", settled, green)
+	}
+}
