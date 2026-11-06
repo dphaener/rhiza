@@ -81,6 +81,21 @@ stdout '"reason": "shipped"'
 stdout '"title": "Waiting"'
 stdout '"detail": \[\n *"depends on'
 
+# The web UI follows rhiza.web.host: its address reads in the URL.
+exec rhiza daemon set rhiza.web.host 0.0.0.0
+exec rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
+exec rhiza daemon status
+stdout '^Web UI: http://0.0.0.0:7787$'
+exec rhiza daemon status --json
+stdout '"web": "http://0.0.0.0:7787"'
+exec rhiza daemon set rhiza.web.host ::1
+exec rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
+exec rhiza daemon status
+stdout '^Web UI: http://\[::1\]:7787$'
+exec rhiza daemon status --json
+stdout '"web": "http://\[::1\]:7787"'
+exec rhiza daemon set rhiza.web.host 127.0.0.1
+
 # The web UI follows rhiza.web.port: off after it is set to off and polled.
 exec rhiza daemon set rhiza.web.port off
 exec rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
