@@ -39,6 +39,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "change.show",
+		ReadOnly: true,
 		Summary:  "Show a change set: its intent, state, operations and decision",
 		Request:  reflect.TypeFor[ChangeShowRequest](),
 		Response: reflect.TypeFor[ChangeShowResponse](),

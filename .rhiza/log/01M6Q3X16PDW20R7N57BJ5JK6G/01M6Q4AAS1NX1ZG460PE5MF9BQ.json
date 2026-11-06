@@ -1,0 +1,44 @@
+{
+  "actor": "01M6Q48M2T9B1B9QRCHCWPSXKB",
+  "after": [
+    "01M6Q43VAH94PAVC86RP5BT6WD"
+  ],
+  "at": "2026-11-06T00:32:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "cmd/rhiza/detach_unix.go already reaps each driver with go cmd.Wait() (since #210). So the 50 zombies come from the daemon re-exec'ing itself in place (internal/daemon/reexec_unix.go, syscall.Exec): the waiting goroutines die and the new image does not know the children it had. The intent's wait4(-1, WNOHANG) would cover those, but the question is right that it would also reap git/make/hook children that os/exec goroutines (some from web UI requests) are waiting on, and their Wait would fail with 'no child processes'. That is a new bug in normal operation. Telling drivers apart by getsid(pid) == pid is not enough: internal/api/daemon_hook.go runs the owner's hooks through sh -c with no SysProcAttr, so a hook like 'setsid foo' makes the daemon's direct child a session leader (plan review round 1, f1). A pid list on disk names exactly the children the daemon detached, survives a re-exec because it lives in the git common dir, and a recorded pid that is still a zombie cannot be reused, so waiting on listed pids only never reaps a child os/exec waits on. Running it at startup plus on a timer means a re-exec'd daemon clears its leftovers right away. The daemon runs on the Linux VM, so reading /proc is enough.",
+          "statement": "The daemon never calls wait4(-1), and it does not pick drivers by session leadership: a hook or other os/exec child that runs setsid(1) calls setsid() in place and leads its own session too. Instead each detached driver's pid is recorded: detachProgram, after cmd.Start, appends the pid to a driver list under <git common dir>/rhiza/ (beside the run logs), which outlives a re-exec of the daemon. It keeps its go cmd.Wait() for drivers started by the running image, and drops the pid from the list once that Wait returns. A reaper runs once when the daemon starts (so after every re-exec) and then on a timer: for each pid on the list that is still a child of the daemon (on Linux from /proc: ppid equal to the daemon's pid) it calls wait4(pid, WNOHANG), and drops from the list each pid it reaps or that is no longer its child. Children run through os/exec for git, make and hooks are never on the list, so their cmd.Wait/Output keeps working, whatever they do with sessions. ECHILD from a reaper/goroutine race on the same driver is ignored. The one limit left is pid reuse in the instant between a goroutine's Wait reaping a driver and it dropping the pid from the list, which would need a new direct child of the daemon to draw that very pid; list writes and the reaper's scan share a lock to keep that window to the Wait itself. Off Linux the reaper does nothing, like detach_other. The test starts a Setsid child recorded on the list that is not waited on, lets it exit, runs the reaper, and checks the pid is gone (no zombie) and off the list, and that a plain os/exec child that calls setsid() itself, running at the same time, still gets its own exit status from Wait.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "reap-own-session-children",
+        "id": "01M6Q4344CFT9EQRX2FMGZCKZ2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6Q4344CFT9EQRX2FK909RX3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run 'TestReap' on Linux: a test starts a Setsid child recorded on the driver list that nothing waits on, lets it exit, runs the reaper, and finds the pid gone with no zombie left and off the list, while a plain os/exec child that calls setsid() itself, running at the same time, still gets its own exit status from Wait; the reaper runs at daemon start and on each tick, and does nothing off Linux",
+          "statement": "The daemon reaps its finished run drivers, including those started by an image before a re-exec, so none stays a zombie: each detached driver's pid goes on a driver list under the git common dir, and at start and on a timer the daemon waits by pid, without blocking, only on listed pids that are still its children, so the git, make or hook children os/exec waits on are never reaped by it, even one that calls setsid itself"
+        },
+        "handle": "daemon-reaps-drivers",
+        "id": "01M6Q43V93A114TYBBXWDA7XCQ",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M6Q43V93A114TYBBXS89ZV6Z",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      }
+    ]
+  },
+  "change_set": "01M6Q3X16PDW20R7N57BJ5JK6G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q4AAS1NX1ZG460PE5MF9BQ",
+  "type": "ops",
+  "v": 1
+}

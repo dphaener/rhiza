@@ -1,0 +1,63 @@
+{
+  "actor": "01M6Q6ZQ9RJC5SDCM2ZHYD0K26",
+  "after": [
+    "01M6Q6WPWDCAGA4JH7K0K47T23"
+  ],
+  "at": "2026-11-06T01:28:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "At 75d6f69b I built rhiza (go build -trimpath) and ran rhiza daemon --max-runs 0, paused, with rhiza.web.port 18917, in a scratch clone of this repo, and fetched pages with curl. GET /roadmap returned 200 with each change set's title, state pill and href=/changes/<full id>, no handle or ID in the text, milestones titled by their intent's statement, and data-rz-fragment=/fragments/roadmap. Accepting a change set in the clone sent event: change on /events, and /fragments/roadmap then showed it, so the page is live. But /api/roadmap?all=true returns milestone-27, milestone-28, backlog, then the umbrella group 'areas'. The page counts that umbrella as a milestone ('3 milestones · 16 change sets · 1 in backlog') and moves it ahead of the backlog, so the page does not group them the way rhiza roadmap does. The backlog aside says '1 change sets'."
+        },
+        "handle": "web-roadmap-page-qa-1",
+        "id": "01M6Q7HG5P1DBQPKHE6036FEWD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q7HG5P1DBQPKHE5YCYY46W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q7HG5P1DBQPKHE5YCYY46W",
+        "id": "01M6Q7HG8S9KCZZWMAYR5T4BFC",
+        "link": "01M6Q7HG8S9KCZZWMAYQSGKABW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAN1436CCE15SQMFT2B9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "At 75d6f69b, on the same running daemon, GET /changes/01M6PFH625P3BYQAB8P6J38BBT (this change set) returned 200 with its title, intent, kind, accepted pill, what it serves and a Proposed/Accepted history, but with '0 leaves, 0 with evidence' and 'Depends on —'. Its change.show lists two leaves, and the roadmap gives it two depends_on. /api/show?ref=<leaf> with no view came back 404 in the as-is view, because the clone had no current change set. Once a change set was current, the default view became to-be and the same page showed 2 leaves, 2 with evidence. Depends on stayed empty for every change set I opened, because the page reads only depends-on links that the change set's own ops add, and here the milestone plan added them. After I copied this run's journal into the clone, Runs showed the ship-change run linking to /runs/<id>, with a blank time. Unknown ULID and non-ID refs gave 404."
+        },
+        "handle": "web-change-set-page-qa-1",
+        "id": "01M6Q7HGF2KTHCVZ9EVRFV7MRH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q7HGF2KTHCVZ9EVNG8Z9PY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q7HGF2KTHCVZ9EVNG8Z9PY",
+        "id": "01M6Q7HGM5F1R9C37D97SKEZ0Y",
+        "link": "01M6Q7HGM5F1R9C37D95KT5NXW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKANQ23RTM5QSR6H1CGBX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFH625P3BYQAB8P6J38BBT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q7HGNX5DPTR26RG7413F74",
+  "type": "ops",
+  "v": 1
+}
