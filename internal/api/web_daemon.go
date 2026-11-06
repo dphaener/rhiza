@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -37,6 +38,15 @@ func (h *healthCache) get() (pills []web.HealthPill, have bool) {
 	return h.pills, h.have
 }
 
+// fingerprint is the held report as the /events stream compares it: it
+// moves when a report lands that differs from the one held, so an open page
+// re-fetches its daemon section. Like get, it starts a refresh when the
+// report is missing or old, so an open stream keeps the report fresh.
+func (h *healthCache) fingerprint() string {
+	pills, have := h.get()
+	return fmt.Sprintf("%v|%v", have, pills)
+}
+
 func (h *healthCache) refresh() {
 	pills := h.read()
 	h.mu.Lock()
@@ -44,16 +54,25 @@ func (h *healthCache) refresh() {
 	h.mu.Unlock()
 }
 
-// WebDaemonSource reads the daemon and its health for the web UI's Overview,
-// from the repository base works in. Running, paused and slots are read as the
-// files are; health is the last report held in memory, refreshed in the
-// background.
-func WebDaemonSource(base *Ctx) web.DaemonSource {
-	return webDaemonSource(base, func() []web.HealthPill { return readHealthPills(base) }, healthRefreshEvery, time.Now)
+// WebHealth is the web UI's health report, held in memory and refreshed in
+// the background. The Overview's daemon section reads it, and the /events
+// stream's daemon event moves when a new report lands.
+type WebHealth struct{ cache *healthCache }
+
+// NewWebHealth holds the health report of the repository base works in.
+func NewWebHealth(base *Ctx) *WebHealth {
+	return newWebHealth(func() []web.HealthPill { return readHealthPills(base) }, healthRefreshEvery, time.Now)
 }
 
-func webDaemonSource(base *Ctx, read func() []web.HealthPill, every time.Duration, now func() time.Time) web.DaemonSource {
-	cache := &healthCache{read: read, every: every, now: now}
+func newWebHealth(read func() []web.HealthPill, every time.Duration, now func() time.Time) *WebHealth {
+	return &WebHealth{cache: &healthCache{read: read, every: every, now: now}}
+}
+
+// WebDaemonSource reads the daemon and its health for the web UI's Overview,
+// from the repository base works in. Running, paused and slots are read as the
+// files are; health is the last report health holds.
+func WebDaemonSource(base *Ctx, health *WebHealth) web.DaemonSource {
+	cache := health.cache
 	return func() web.DaemonView {
 		c := quietCtx(base)
 		var v web.DaemonView

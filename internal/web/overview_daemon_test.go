@@ -47,7 +47,7 @@ func TestOverviewReadsDaemonFromRepo(t *testing.T) {
 		t.Fatal("health has no parts")
 	}
 
-	h := web.HandlerWith(api.WebDaemonSource(ctx), nil)
+	h := web.HandlerWith(api.WebDaemonSource(ctx, api.NewWebHealth(ctx)), nil)
 	body := serve(h, "GET", "/").Body.String()
 	for end := time.Now().Add(30 * time.Second); strings.Contains(body, "rz-pill--pending") && time.Now().Before(end); {
 		time.Sleep(50 * time.Millisecond)
