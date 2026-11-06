@@ -1,0 +1,37 @@
+# rhiza project ls shows each project's state; project rm unregisters only.
+mkdir top
+exec rhiza root init top
+cd top
+exec rhiza project ls
+stdout '^no projects$'
+mkdir bare
+exec git -C bare init -q
+mkdir ready
+exec git -C ready init -q
+cd ready
+exec rhiza init
+cd ..
+exec rhiza project add bare
+exec rhiza project add ready
+exec rhiza project ls
+stdout '^bare\tbare\tnot initialised$'
+stdout '^ready\tready\tinitialised$'
+exec rhiza project ls --json
+stdout '"name": "bare"'
+stdout '"initialised": false'
+stdout '"initialised": true'
+
+# rm unregisters and leaves the folder.
+exec rhiza project rm bare
+stdout '^Unregistered project bare'
+exists bare/.git
+! grep 'projects.bare' rhiza.toml
+grep 'projects.ready' rhiza.toml
+exec rhiza project ls --json
+! stdout '"name": "bare"'
+stdout '"name": "ready"'
+
+# An unknown name is refused with a next.
+! exec rhiza project rm bare
+stderr 'no project named bare'
+stderr '^next: '

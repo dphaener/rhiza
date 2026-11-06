@@ -6880,6 +6880,42 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "project.rm",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "The registered project's name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "The project's name",
+            "type": "string"
+          },
+          "path": {
+            "description": "The project's folder, relative to the root; left on disk",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "path"
+        ],
+        "type": "object"
+      },
+      "summary": "Unregister a project from the root; its files stay on disk",
+      "write": false
+    },
+    {
       "name": "propose",
       "request": {
         "additionalProperties": false,

@@ -169,6 +169,27 @@ func Add(root, name string, p Project) error {
 		c.Projects = map[string]Project{}
 	}
 	c.Projects[name] = p
+	return write(root, c)
+}
+
+// ErrNotRegistered is returned by Remove when the name is not registered.
+var ErrNotRegistered = errors.New("project not registered")
+
+// Remove unregisters project name from root's rhiza.toml, keeping the other
+// projects. It never touches the project's files.
+func Remove(root, name string) error {
+	c, err := Load(root)
+	if err != nil {
+		return err
+	}
+	if _, ok := c.Projects[name]; !ok {
+		return ErrNotRegistered
+	}
+	delete(c.Projects, name)
+	return write(root, c)
+}
+
+func write(root string, c Config) error {
 	var b strings.Builder
 	b.WriteString("# The Rhiza root: its projects and machine-wide settings.\n")
 	if err := toml.NewEncoder(&b).Encode(c); err != nil {

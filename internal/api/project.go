@@ -19,6 +19,13 @@ import (
 
 func init() {
 	register(Operation{
+		Name:     "project.rm",
+		Summary:  "Unregister a project from the root; its files stay on disk",
+		Request:  reflect.TypeFor[ProjectRmRequest](),
+		Response: reflect.TypeFor[ProjectRmResponse](),
+		Run:      runProjectRm,
+	})
+	register(Operation{
 		Name:     "project.add",
 		Summary:  "Register a git checkout directly under the root as a project, or clone a git URL there",
 		Request:  reflect.TypeFor[ProjectAddRequest](),
@@ -243,4 +250,48 @@ func runProjectClone(ctx *Ctx, root string, r ProjectAddRequest) (any, error) {
 		return nil, err
 	}
 	return ProjectAddResponse{Name: name, Path: p.Path, Repo: p.Repo}, nil
+}
+
+// ProjectRmRequest names the project.
+type ProjectRmRequest struct {
+	Name string `json:"name" arg:"0" desc:"The registered project's name"`
+}
+
+// ProjectRmResponse reports the unregistered project.
+type ProjectRmResponse struct {
+	Name string `json:"name" desc:"The project's name"`
+	Path string `json:"path" desc:"The project's folder, relative to the root; left on disk"`
+}
+
+// Human writes the result as text.
+func (r ProjectRmResponse) Human(w io.Writer) {
+	fmt.Fprintf(w, "Unregistered project %s; %s is left on disk.\nnext: rhiza project ls\n", r.Name, r.Path)
+}
+
+func runProjectRm(ctx *Ctx, req any) (any, error) {
+	r := req.(ProjectRmRequest)
+	root, ok := rootcfg.Find(ctx.Wd)
+	if !ok {
+		return nil, Usagef("%s is not inside a Rhiza root", ctx.Wd).WithNext("rhiza root init")
+	}
+	if r.Name == "" {
+		return nil, Usagef("no project name").WithNext("rhiza project rm <name>")
+	}
+	cfg, err := rootcfg.Load(root)
+	if err != nil {
+		return nil, err
+	}
+	p, ok := cfg.Projects[r.Name]
+	if !ok {
+		return nil, Usagef("no project named %s is registered", r.Name).WithNext("rhiza project ls")
+	}
+	if !ctx.DryRun {
+		if err := rootcfg.Remove(root, r.Name); err != nil {
+			if errors.Is(err, rootcfg.ErrNotRegistered) {
+				return nil, Usagef("no project named %s is registered", r.Name).WithNext("rhiza project ls")
+			}
+			return nil, err
+		}
+	}
+	return ProjectRmResponse{Name: r.Name, Path: p.Path}, nil
 }
