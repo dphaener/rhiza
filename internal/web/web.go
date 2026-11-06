@@ -21,9 +21,21 @@ const (
 	PortKey     = "rhiza.web.port"
 	DefaultPort = "7787"
 	Off         = "off"
-	// Host is the only address the UI is ever served on.
-	Host = "127.0.0.1"
+	// HostKey names the address the UI is served on, DefaultHost by default.
+	HostKey     = "rhiza.web.host"
+	DefaultHost = "127.0.0.1"
 )
+
+// ParseHost checks a rhiza.web.host value: a literal IPv4 or IPv6 address,
+// such as 127.0.0.1, 0.0.0.0, ::1 or ::. Hostnames (localhost too) and
+// anything with a port are rejected.
+func ParseHost(v string) (string, error) {
+	v = strings.TrimSpace(v)
+	if net.ParseIP(v) == nil {
+		return "", fmt.Errorf("must be a literal IPv4 or IPv6 address, such as 127.0.0.1, 0.0.0.0 or ::1")
+	}
+	return v, nil
+}
 
 // ParsePort checks a rhiza.web.port value: a port number from 1 to 65535, or
 // off. It returns the port, 0 for off.
@@ -39,14 +51,21 @@ func ParsePort(v string) (int, error) {
 	return n, nil
 }
 
-// Addr is the address to listen on for a setting value: always on 127.0.0.1,
-// and empty when the setting is off.
-func Addr(v string) (string, error) {
-	n, err := ParsePort(v)
+// Addr is the address to listen on for the host and port setting values:
+// empty when the port is off. An empty host is the default.
+func Addr(host, port string) (string, error) {
+	if strings.TrimSpace(host) == "" {
+		host = DefaultHost
+	}
+	h, err := ParseHost(host)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", HostKey, err)
+	}
+	n, err := ParsePort(port)
 	if err != nil || n == 0 {
 		return "", err
 	}
-	return net.JoinHostPort(Host, strconv.Itoa(n)), nil
+	return net.JoinHostPort(h, strconv.Itoa(n)), nil
 }
 
 //go:embed site.webmanifest static
@@ -197,13 +216,13 @@ type Manager struct {
 // Addr is the address now served, empty when none.
 func (m *Manager) Addr() string { return m.addr }
 
-// Apply makes the listener match the setting value: it starts one, moves it
-// to a new port, stops it on off, and leaves a matching one alone. A start
+// Apply makes the listener match the host and port setting values: it starts
+// one, moves it to a new host or port, stops it on off, and leaves a matching one alone. A start
 // that fails leaves nothing listening and is tried again at the next call.
-func (m *Manager) Apply(v string) error {
-	want, err := Addr(v)
+func (m *Manager) Apply(host, port string) error {
+	want, err := Addr(host, port)
 	if err != nil {
-		return fmt.Errorf("%s: %w", PortKey, err)
+		return err
 	}
 	if want == m.addr && (m.l != nil || want == "") {
 		return nil

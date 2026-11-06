@@ -147,7 +147,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		daemon.WriteState(common, state)
 	}()
 	selfUpdateOn := false
-	// The web UI listener follows rhiza.web.port from poll to poll. A single
+	// The web UI listener follows rhiza.web.host and rhiza.web.port from poll to poll. A single
 	// poll (--once) and a test run (RHIZA_TEST_NOW) bind nothing.
 	var webUI *web.Manager
 	if !r.Once && ctxGetenv(ctx)("RHIZA_TEST_NOW") == "" {
@@ -167,7 +167,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 		minFree := conf.minFree
 		if webUI != nil {
-			if werr := webUI.Apply(conf.webPort); werr != nil && ctx.Stderr != nil {
+			if werr := webUI.Apply(conf.webHost, conf.webPort); werr != nil && ctx.Stderr != nil {
 				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", werr)
 			}
 		}
@@ -1357,7 +1357,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 // webStatus is the web UI line for the recorded settings: its URL, off, or
 // empty when the state recorded no valid web port.
 func webStatus(rows []Setting) string {
-	addr, err := web.Addr(settingValue(rows, web.PortKey))
+	addr, err := web.Addr(settingValue(rows, web.HostKey), settingValue(rows, web.PortKey))
 	switch {
 	case err != nil || settingValue(rows, web.PortKey) == "":
 		return ""

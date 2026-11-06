@@ -36,9 +36,15 @@ func TestDaemonWebListenerFollowsPort(t *testing.T) {
 
 	ctx, common := daemonRepo(t)
 	ports := make(chan string)
+	hosts := make(chan string)
 	ctx.Git = func(args ...string) (string, error) {
 		if len(args) == 2 && args[0] == "rev-parse" {
 			return common + "\n", nil
+		}
+		if len(args) == 3 && args[0] == "config" && args[2] == web.HostKey {
+			if h := <-hosts; h != "" {
+				return h + "\n", nil
+			}
 		}
 		if len(args) == 3 && args[0] == "config" && args[2] == web.PortKey {
 			if p := <-ports; p != "" {
@@ -59,8 +65,15 @@ func TestDaemonWebListenerFollowsPort(t *testing.T) {
 		_, err := callOp(t, ctx, "daemon", `{"permission_mode":"manual"}`)
 		done <- err
 	}()
-	feed := func(port string) {
+	feed := func(host, port string) {
 		t.Helper()
+		select {
+		case hosts <- host:
+		case err := <-done:
+			t.Fatalf("daemon stopped: %v", err)
+		case <-time.After(10 * time.Second):
+			t.Fatal("daemon never read rhiza.web.host")
+		}
 		select {
 		case ports <- port:
 		case err := <-done:
@@ -89,20 +102,22 @@ func TestDaemonWebListenerFollowsPort(t *testing.T) {
 		return out
 	}
 
-	feed("") // the settings the daemon reads before its first poll
+	feed("", "") // the settings the daemon reads before its first poll
 	steps := []struct {
+		host   string
 		port   string
 		starts int
 		open   []string
 	}{
-		{"", 1, []string{"127.0.0.1:7787"}},     // default: started
-		{"8080", 2, []string{"127.0.0.1:8080"}}, // moved
-		{"off", 2, nil},                         // stopped
-		{"7787", 3, []string{"127.0.0.1:7787"}}, // restarted
-		{"7787", 3, []string{"127.0.0.1:7787"}}, // unchanged: left alone
+		{"", "", 1, []string{"127.0.0.1:7787"}},          // default: started
+		{"", "8080", 2, []string{"127.0.0.1:8080"}},      // moved
+		{"", "off", 2, nil},                              // stopped
+		{"", "7787", 3, []string{"127.0.0.1:7787"}},      // restarted
+		{"", "7787", 3, []string{"127.0.0.1:7787"}},      // unchanged: left alone
+		{"0.0.0.0", "7787", 4, []string{"0.0.0.0:7787"}}, // only the host changed: moved
 	}
 	for i, s := range steps {
-		feed(s.port)
+		feed(s.host, s.port)
 		// The daemon takes the next tick only once this poll is over.
 		tick()
 		if len(fakes) != s.starts || !slices.Equal(open(), s.open) {
@@ -116,7 +131,7 @@ func TestDaemonWebListenerFollowsPort(t *testing.T) {
 			continue
 		}
 		// That tick started one more poll: let it read the same port, then stop.
-		feed(s.port)
+		feed(s.host, s.port)
 	}
 	close(stop)
 	select {
