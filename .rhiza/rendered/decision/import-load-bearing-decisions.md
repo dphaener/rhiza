@@ -16,6 +16,10 @@ Load-bearing ones only: import as Decision nodes only the decisions that shape a
 
 - derived-from [milestone-26-interview](../source/milestone-26-interview.md)
 
+### In
+
+- decided-by [import-autonomous-decisions](../capability/rhiza/guide/import-autonomous-decisions.md)
+
 ## History
 
 - `01M6J2RTBPHTT1VFJYW2ZA5FRC` Milestone 26: an existing repo with built code comes into Rhiza, Nebari first, and its work then runs on Rhiza workflows
