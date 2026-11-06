@@ -1,0 +1,41 @@
+{
+  "actor": "01M6RXW4FBK3PR7KX9QDYPZ12R",
+  "after": [
+    "01M6RXVKQ701B66AP3WT7AKPRZ"
+  ],
+  "at": "2026-11-06T17:18:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "internal/api/session.go worktreeWorkspace returns early when the worktree has the change set at all, so a committed proposed change set never picks up the untracked accept entry; dropping that early return is a small fix in code that already exists, and copyChangeSetLog is idempotent because entries are immutable files named by ID. Carrying the entry on the run branch is what the orchestrator did by hand to merge #328, and ship_close.go dropIncomingLogCopies already removes untracked main-clone log files that origin/main then holds byte for byte, so the close-out pull still works. Committing and pushing to main from the Inbox app or rhiza accept would make an app write to origin's main outside a run's PR and CI, and it would dirty or race the main clone that close-out pulls into. For the intent: the failure stopped the daemon from shipping an accepted change set on its own, which is milestone-25's promise, like the earlier daemon fixes (owner-run gate accept, zombie drivers, driver CPU); the Inbox app only wrote the entry correctly, so m26-inbox-app does not fit.",
+          "statement": "The run carries the accept: when a run's worktree is set up for change set cs, worktreeWorkspace copies every entry of cs that the main clone's log has and the worktree's lacks, even when the worktree already has the change set (copyChangeSetLog already skips files that exist), and the run commits those entries on its branch so the land sees the change set as accepted. Accepting in the Inbox app or with rhiza accept does not commit or push to main. This change set serves milestone-25.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "decision-run-carries-accept",
+        "id": "01M6RXXPWWKZCVSTCWTA9QYG1J",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6RXXPWWKZCVSTCWT9NB149S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6RXXPWWKZCVSTCWT9NB149S",
+        "id": "01M6RXXPXSYRHG9E68YRNABE87",
+        "link": "01M6RXXPXSYRHG9E68YNGJ3K65",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXVG3ECF82FS75G9HGYMPP",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6RXNQFZX8YM80WFZJCXBRAJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6RXXPYXPYCX5NCFK0AC594S",
+  "type": "ops",
+  "v": 1
+}
