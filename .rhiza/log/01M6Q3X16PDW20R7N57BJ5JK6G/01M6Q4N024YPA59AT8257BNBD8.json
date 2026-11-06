@@ -1,0 +1,29 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6Q4GPFAMW3SAA6SQ1G7QS56"
+  ],
+  "at": "2026-11-06T00:38:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on reap-own-session-children): The decision says the only limit left is pid reuse in the instant between a goroutine's Wait and dropping the pid, and that os/exec children (git, make, hooks) are never on the list. But the list lives under the git common dir and outlives not only a re-exec but a full daemon restart (stop/start, crash, systemd restart) with a new pid. Drivers of the old daemon are then reparented and reaped by init, yet their pids stay on the list; the new daemon only drops an entry once it scans it and sees ppid != its own pid. If any listed pid has meanwhile been reused by a git/make/hook child of the new daemon (ppid == new daemon), the reaper's wait4(pid, WNOHANG) can reap it and that cmd.Wait fails with 'no child processes': the very race the decision rules out. 'Runs once when the daemon starts' does not say it runs before the daemon starts any child, so the startup scan does not close it. Fix: record the daemon's pid with each entry (a re-exec keeps the pid) and reap only entries recorded by the running pid, dropping the rest; or clear the list on a fresh (non-re-exec) start before any child is started; and cover the stale-entry case in the leaf's test. The critic confirmed it: reap-own-session-children keeps the driver list under the git common dir and drops an entry only when a scan finds its ppid is not the daemon's pid. A fresh daemon start (crash, stop/start; internal/daemon/lock.go lets a new holder take over with a new pid, unlike reexec_unix.go's same-pid syscall.Exec) leaves the old daemon's driver pids on the list after init reaps them. Neither the decision nor the daemon-reaps-drivers leaf says the startup scan runs before the daemon starts any child, and the timer scan does not care which image wrote an entry. So a git/make/hook child of the new daemon that draws a stale listed pid gets ppid == daemon and is reaped by wait4(pid, WNOHANG), and its cmd.Wait fails with ECHILD. That contradicts the decision's claim that the only limit left is the Wait-to-drop instant, and the leaf's acceptance check does not cover stale entries. Fix: tag each entry with the recording daemon's pid (a re-exec keeps it) and reap only entries matching the running pid, or clear the list on a non-re-exec start before any child starts; add the stale-entry case to the test. How should it be settled?"
+        },
+        "handle": "review-01m6q3wz-r3-f1",
+        "id": "01M6Q4N00EHQZ53Z49E6X8HZP1",
+        "key": null,
+        "kind": "question",
+        "node": "01M6Q4N00EHQZ53Z49E4AGMB9J",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6Q3X16PDW20R7N57BJ5JK6G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q4N024YPA59AT8257BNBD8",
+  "type": "ops",
+  "v": 1
+}
