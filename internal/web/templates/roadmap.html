@@ -1,0 +1,17 @@
+{{define "content"}}<div class="rz-pagehead"><div><p class="rz-kicker">Milestones and backlog</p><h1>Roadmap</h1></div></div>
+{{section "roadmap" .Data}}{{end}}
+
+{{define "roadmap-body"}}{{if .Groups}}<p class="rz-meta">{{.Kicker}}</p>
+<div class="rz-stack">
+{{range .Groups}}{{if eq .Kind "backlog"}}<section class="rz-panel rz-panel--flush">
+  <div class="rz-panel-head"><div><p class="rz-kicker">Backlog</p><h2>{{.Title}}</h2></div><span class="rz-aside">{{len .Rows}} change sets</span></div>
+  {{template "rows" .Rows}}
+</section>
+{{else}}<section class="rz-panel rz-panel--flush">
+<div class="rz-ms">
+  <div class="rz-ms-head">{{if eq .Kind "umbrella"}}<p class="rz-kicker">Umbrella</p>{{end}}<h3>{{.Title}}</h3><div class="rz-legend">{{range .Segs}}<span><i style="{{if eq .State "accepted"}}background:var(--teal);opacity:.42{{else}}background:var(--ink-3);opacity:.55{{end}}"></i><b>{{.N}}</b> {{.State}}</span>{{end}}</div></div>
+  <div class="rz-ms-bar"><div class="rz-bar" role="img" aria-label="{{range $i, $s := .Segs}}{{if $i}}, {{end}}{{$s.N}} {{$s.State}}{{end}}">{{range .Segs}}<i class="{{.State}}" style="flex:{{.N}}"></i>{{end}}</div></div>
+  {{template "rows" .Rows}}
+</div>
+</section>
+{{end}}{{end}}</div>{{else}}<div class="rz-empty"><p class="rz-empty-title">Nothing is planned</p><p>No change set is proposed or accepted.</p></div>{{end}}{{end}}

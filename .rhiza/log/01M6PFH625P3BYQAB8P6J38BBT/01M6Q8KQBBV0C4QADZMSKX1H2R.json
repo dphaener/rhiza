@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Q8E0CSZ68GHJKH1APAXVX8",
+  "after": [
+    "01M6Q8FC65RPTNH05PRCWMFW5E"
+  ],
+  "at": "2026-11-06T01:47:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ef7293b5 ran go test -trimpath ./internal/web/... (ok), go vet and gofmt -l on internal/web (clean). TestChangeSetPage renders /changes/<id> for a fixture change set with two leaves (one with Evidence: 'has evidence' / 'no evidence yet', '2 leaves, 1 with evidence'), statements and acceptance, a blocking open question, a dependency from a landed plan linking to /changes/<base> with its landed state, and a run linking to /runs/runone with its time 2026-10-24 11:00, read with no current change set; unknown IDs return 404 and POST 405. Read the diff: run.ls fields now carry json tags incl. started_at (quality f1), the test asserts the run time (f2). In a scratch copy, dropping the started_at tag makes the test fail with the run row's time empty, so the fix is covered."
+        },
+        "handle": "web-change-set-page-verified-2",
+        "id": "01M6Q8KQ5K0ABKW9DAJ8KJP9CA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q8KQ5K0ABKW9DAJ6FQJ3GZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q8KQ5K0ABKW9DAJ6FQJ3GZ",
+        "id": "01M6Q8KQ877CFGT93MX2W81Y9D",
+        "link": "01M6Q8KQ877CFGT93MX00VGRM5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKANQ23RTM5QSR6H1CGBX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFH625P3BYQAB8P6J38BBT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q8KQBBV0C4QADZMSKX1H2R",
+  "type": "ops",
+  "v": 1
+}

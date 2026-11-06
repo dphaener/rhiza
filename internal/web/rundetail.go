@@ -186,7 +186,7 @@ func buildRunDetail(ri runInfo, href string) runDetailView {
 func runDetail(r *http.Request, id string) (runPageData, int) {
 	var ri runInfo
 	if err := apiGet(r, "/api/run.status?run="+url.QueryEscape(id), &ri); err != nil {
-		if e, ok := err.(*apiError); ok && e.code == http.StatusNotFound && e != errNoAPI {
+		if _, ok := err.(*notFoundError); ok {
 			return runPageData{}, http.StatusNotFound
 		}
 		return runPageData{Kicker: "Run", Title: "Run", View: runDetailView{Empty: &Empty{Title: "This run is unavailable", Text: err.Error()}}}, http.StatusOK

@@ -1,0 +1,63 @@
+{
+  "actor": "01M6Q8NZ5VTZ6NG5RWW4HJW2AF",
+  "after": [
+    "01M6Q8KQBBV0C4QADZMSKX1H2R"
+  ],
+  "at": "2026-11-06T01:54:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1394f316 I built rhiza (go build -trimpath), cloned this repo to a scratch dir and ran rhiza daemon --max-runs 0, paused, with rhiza.web.port 18931 and no current change set, then fetched pages with curl. /api/roadmap?all=true returns milestone, milestone, backlog, umbrella. GET /roadmap shows them in that order: both milestones titled by their intents' statements, then the Backlog, then the umbrella labelled Umbrella with its 10 Area change sets after the backlog. The kicker reads '2 milestones · 16 change sets · 1 in backlog', so the umbrella is no longer counted as a milestone. Every change set row shows its intent and a state pill, links to /changes/<full id>, and shows no handle or ID. The cycle-1 finding is fixed. One nit remains: the backlog aside still says '1 change sets'."
+        },
+        "handle": "web-roadmap-page-qa-2",
+        "id": "01M6Q91VK2M9QV1MEMZ7WX6Z8R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q91VK2M9QV1MEMZ75AGTK2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q91VK2M9QV1MEMZ75AGTK2",
+        "id": "01M6Q91VKT9JY6MDWMY572W2YF",
+        "link": "01M6Q91VKT9JY6MDWMY4Z25Z8D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAN1436CCE15SQMFT2B9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "At 1394f316, on the same daemon with no current change set (rhiza show <leaf> in the clone returns not_found), GET /changes/01M6PFH625P3BYQAB8P6J38BBT returned 200. It showed the title, intent, kind, accepted pill and what the set serves; both leaves with statement, acceptance and 'has evidence' ('2 leaves, 2 with evidence'); Depends on 'Web UI server' and 'Web UI design system', both landed and linking to /changes/<id>; the ship-change run linking to /runs/<id> with time 2026-11-06 00:57; and the Proposed and Accepted history. I added a question blocking web-roadmap-page with --change, still with no current change set, and the page listed it under Open questions. Unknown ULID and non-ID refs return 404, and POST returns 405. So cycle 1's f1, f2 and f4 are fixed for unlanded change sets. But on landed change sets, for example 01M6J965 (change.show lists 3 leaves and 6 created questions) and 01M6FENG (1 leaf), the page shows '0 leaves, 0 with evidence', Serves —, and no questions. /api/show?view=what-if:<landed> answers 409 'is landed ... so it has no what-if view', while the default view finds the leaf."
+        },
+        "handle": "web-change-set-page-qa-2",
+        "id": "01M6Q91VN2VZ65B931R8FMCVCP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Q91VN2VZ65B931R6VSXKET",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Q91VN2VZ65B931R6VSXKET",
+        "id": "01M6Q91VP42CG4WR3H2T4WTMMR",
+        "link": "01M6Q91VP42CG4WR3H2S4EWP37",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKANQ23RTM5QSR6H1CGBX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFH625P3BYQAB8P6J38BBT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q91VQEYH0M19Y7R9H1ZWMB",
+  "type": "ops",
+  "v": 1
+}

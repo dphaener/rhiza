@@ -24,7 +24,7 @@ func runLogData(r *http.Request, id string) runLogView {
 		Lines []string `json:"lines"`
 	}
 	if err := apiGet(r, "/api/run.tail?limit="+strconv.Itoa(logTailLines)+"&run="+url.QueryEscape(id), &resp); err != nil {
-		if e, ok := err.(*apiError); ok && e.code == http.StatusNotFound && e != errNoAPI {
+		if _, ok := err.(*notFoundError); ok {
 			return runLogView{Empty: &Empty{Title: "No log", Text: "Only a run the daemon started headless has a driver log."}}
 		}
 		return runLogView{Empty: &Empty{Title: "The log is unavailable", Text: err.Error()}}

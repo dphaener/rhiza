@@ -1,11 +1,8 @@
 package web
 
 import (
-	"context"
-	"encoding/json"
 	"html/template"
 	"net/http"
-	"net/http/httptest"
 	"strconv"
 	"time"
 )
@@ -36,40 +33,6 @@ type runsView struct {
 	Live, Recent []Row
 	Empty        *Empty
 }
-
-type apiKey struct{}
-
-// withAPI makes the API handler reachable from a request's context, for the
-// pages that read it.
-func withAPI(api http.Handler, h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		h.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), apiKey{}, api)))
-	})
-}
-
-// apiGet reads one API operation's JSON into v.
-func apiGet(r *http.Request, target string, v any) error {
-	api, _ := r.Context().Value(apiKey{}).(http.Handler)
-	if api == nil {
-		return errNoAPI
-	}
-	rec := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, target, nil).WithContext(r.Context())
-	api.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK {
-		return &apiError{target, rec.Code}
-	}
-	return json.Unmarshal(rec.Body.Bytes(), v)
-}
-
-type apiError struct {
-	target string
-	code   int
-}
-
-func (e *apiError) Error() string { return "GET " + e.target + ": " + http.StatusText(e.code) }
-
-var errNoAPI = &apiError{"/api/", http.StatusNotFound}
 
 // runPill maps a run's state to its pill.
 func runPill(state string) Pill {
