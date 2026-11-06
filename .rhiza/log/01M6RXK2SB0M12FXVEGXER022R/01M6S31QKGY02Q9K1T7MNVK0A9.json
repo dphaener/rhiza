@@ -1,0 +1,40 @@
+{
+  "actor": "01M6S2TCHWEDS987R4XV2VRX1J",
+  "after": [
+    "01M6S2NH1ZN09JR9KKS23JC7QX"
+  ],
+  "at": "2026-11-06T18:48:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c30d3cb2 ran `go test -trimpath -count=1 ./internal/api -run Inbox -v`: all seven inbox tests PASS, including TestInboxGateQuestionsBudget (generated 3000-node log with an index; plan run at its gate with six open questions over three planned change sets). It asserts every question's statement, zero full-log decodes (countingCtx), each change set's model built at most once and every planned one (own plus three) exactly once via the builtModel hook in writeIndex.buildModel, no index catch-up decode after the read (LastCatchUp Decoded 0, not rebuilt), and the 1 s budget. Read the diff: inboxGateRead opens the worktree's index (index.DefaultPath) with an ix.models memo plus a local per-call modelOf memo. Mutation check in a scratch copy with both memos removed: the budget test FAILS with planned change sets folded 2-7 times, so the attempt 1 finding (no fold-count assertion) is fixed."
+        },
+        "handle": "inbox-gate-read-fast-verified",
+        "id": "01M6S31QDYHZ52GP9GKWPVEX2Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S31QDYHZ52GP9GKTHZA15H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S31QDYHZ52GP9GKTHZA15H",
+        "id": "01M6S31QG6ECAZXYCS6H9479VM",
+        "link": "01M6S31QG6ECAZXYCS6FN5D6ZN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RXXHAXYY47KE0DZ80E9B1X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RXK2SB0M12FXVEGXER022R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S31QKGY02Q9K1T7MNVK0A9",
+  "type": "ops",
+  "v": 1
+}
