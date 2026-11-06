@@ -23,7 +23,6 @@ func init() {
 	})
 	register(Operation{
 		Name:     "root.show",
-		ReadOnly: true,
 		Summary:  "Show the Rhiza root, its config file and the project the working directory belongs to",
 		Request:  reflect.TypeFor[RootShowRequest](),
 		Response: reflect.TypeFor[RootShowResponse](),

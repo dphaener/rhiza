@@ -34,7 +34,6 @@ func init() {
 	})
 	register(Operation{
 		Name:     "project.ls",
-		ReadOnly: true,
 		Summary:  "List the projects registered in the root",
 		Request:  reflect.TypeFor[ProjectLsRequest](),
 		Response: reflect.TypeFor[ProjectLsResponse](),
