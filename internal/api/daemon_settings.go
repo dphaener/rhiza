@@ -250,8 +250,11 @@ func settingValue(rows []Setting, key string) string {
 
 // daemonConf is the daemon's effective settings for one poll.
 type daemonConf struct {
-	rows        []Setting
-	maxRuns     int
+	rows    []Setting
+	maxRuns int
+	// projectMax is the project's own cap on its running runs within the
+	// machine-wide maxRuns, 0 for none.
+	projectMax  int
 	minFree     uint64
 	mode        string
 	paused      bool
@@ -285,9 +288,7 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 	c.maxRuns, _ = strconv.Atoi(settingValue(rows, "rhiza.daemon.maxRuns"))
 	c.minFree, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minFree"))
 	c.paused = settingValue(rows, "rhiza.daemon.paused") == "true" || settingValue(rows, "rhiza.project.paused") == "true"
-	if n, err := strconv.Atoi(settingValue(rows, "rhiza.project.maxRuns")); err == nil && n < c.maxRuns {
-		c.maxRuns = n
-	}
+	c.projectMax, _ = strconv.Atoi(settingValue(rows, "rhiza.project.maxRuns"))
 	c.selfUpdate = settingValue(rows, "rhiza.daemon.selfUpdate") == "true"
 	c.trimGoCache = settingValue(rows, "rhiza.daemon.trimGoCache") != "false"
 	c.mode = settingValue(rows, "rhiza.daemon.permissionMode")

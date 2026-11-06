@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
@@ -154,10 +155,19 @@ func (p *daemonProj) stop() {
 	p.lock.Unlock()
 }
 
-// poll is one poll of the project: what the per-repo daemon did at each
-// tick. onConf, when set, is told the project's settings first. What the
-// poll started is appended to resp.
-func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, onConf func(daemonConf)) error {
+// daemonTurn is a project's part of a poll as read before any project
+// starts anything: its settings, its usage hold and what it could start,
+// for the machine-wide round-robin. err is a failure to read its settings.
+type daemonTurn struct {
+	conf daemonConf
+	hold *usageHold
+	pick daemon.ProjectPick
+	err  error
+}
+
+// prepare reads the project's part of a poll (see daemonTurn). onConf,
+// when set, is told the project's settings first.
+func (p *daemonProj) prepare(r DaemonRequest, onConf func(daemonConf)) daemonTurn {
 	ctx, state := p.ctx, &p.state
 	if ctx.Reap != nil {
 		ctx.Reap(p.common)
@@ -165,13 +175,12 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, onConf func(dae
 	conf, err := daemonConfOf(ctx, r)
 	if err != nil {
 		p.saveState()
-		return err
+		return daemonTurn{err: err}
 	}
 	if onConf != nil {
 		onConf(conf)
 	}
-	minFree := conf.minFree
-	state.MaxRuns, state.Settings = conf.maxRuns, conf.stateRows()
+	state.Settings = conf.stateRows()
 	learnLimits(ctx, p.common, state)
 	var hold *usageHold
 	if runs, lerr := p.rs.List(); lerr == nil {
@@ -183,8 +192,97 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, onConf func(dae
 	if hold == nil {
 		hold = governorHold(ctx, p.common)
 	}
+	ready, running := daemonDemand(ctx, p.rs, p.pending, p.unjournaled, conf, hold)
+	return daemonTurn{conf: conf, hold: hold, pick: daemon.ProjectPick{Project: p.name, Ready: ready, Running: running, Max: conf.projectMax}}
+}
+
+// daemonDemand is what the project of ctx could start now, in the order
+// its own poll starts them, and how many run slots its runs hold. The
+// owner's queued work comes first, a placeholder each (a continuation that
+// could start, a queued start, a plan request that could start), then its ready
+// change sets in roadmap order. A paused or held project, or one on a
+// disk low on space, could start nothing. A slot is held by a running run,
+// by a start not yet journaled, as daemon.Pick counts them, and by a plan
+// request's start not yet journaled, as daemonPlanRequests counts them.
+func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemonPending, conf daemonConf, hold *usageHold) ([]string, int) {
+	runs, err := rs.List()
+	if err != nil {
+		return nil, 0
+	}
+	host, _ := os.Hostname()
+	fold, ferr := daemonFoldOf(ctx)
+	accepted := func(change string) bool {
+		if ferr != nil {
+			return false
+		}
+		st, ok := fold.stateOf(change)
+		return ok && st == string(changeset.StateAccepted)
+	}
+	held := daemonHeld(pending, unjournaled, runs, accepted, ctx.Now())
+	running := 0
+	live := map[string]bool{}
+	for _, j := range runs {
+		st := j.State()
+		switch st.Liveness(host, nil) {
+		case run.LiveRunning:
+			live[st.Change] = true
+			running++
+		case run.LiveInterrupted:
+			live[st.Change] = true
+		}
+	}
+	for _, cs := range held {
+		if !live[cs] {
+			running++
+		}
+	}
+	running += daemonRequestsStarting(ctx, rs, runs)
+	if conf.paused || hold != nil || ferr != nil {
+		return nil, running
+	}
+	if low, _ := daemonDiskLow(ctx, conf.minFree); low {
+		return nil, running
+	}
+	var ready []string
+	for range daemonContinuesWaiting(ctx, rs, runs) {
+		ready = append(ready, "continue")
+	}
+	if common, err := gitCommonDir(ctx); err == nil {
+		if starts, err := daemon.ReadStarts(common); err == nil {
+			for _, s := range starts {
+				if _, ok := pending[s.Change]; !ok && !live[s.Change] {
+					ready = append(ready, "start")
+				}
+			}
+		}
+	}
+	for range daemonRequestsWaiting(ctx) {
+		ready = append(ready, "plan request")
+	}
+	if mode, err := autonomyStage(ctx, "ship"); err == nil && mode != AutonomyOwner {
+		cands := slices.DeleteFunc(slices.Clone(fold.cands), func(cs string) bool {
+			_, ok := unjournaled[cs]
+			return ok
+		})
+		ready = append(ready, daemon.Pick(cands, runs, held, host, nil, running+len(cands), daemonShipOf(fold))...)
+	}
+	return ready, running
+}
+
+// poll is the rest of the project's poll, after prepare read t: what the
+// per-repo daemon did at each tick, with share the run slots the
+// machine-wide round-robin gave it. What the poll started is appended to
+// resp.
+func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, maxRuns, share int) error {
+	ctx, state := p.ctx, &p.state
+	if t.err != nil {
+		return t.err
+	}
+	conf, hold := t.conf, t.hold
+	minFree := conf.minFree
+	state.MaxRuns = maxRuns
 	var skips []daemon.Skip
-	started, resumed, planned, err := daemonPoll1(ctx, p.rs, p.pending, p.unjournaled, conf.maxRuns, minFree, r.Autonomous, conf.mode, conf.paused, hold, &skips)
+	started, resumed, planned, err := daemonPoll1(ctx, p.rs, p.pending, p.unjournaled, t.pick.Running+share, minFree, r.Autonomous, conf.mode, conf.paused, hold, &skips)
 	resp.Planned = append(resp.Planned, planned...)
 	if err == nil {
 		state.Skips = skips
@@ -221,4 +319,32 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, onConf func(dae
 	}
 	p.saveState()
 	return err
+}
+
+// daemonRequestsStarting counts the plan requests whose start has not
+// journaled yet and is still within daemonStartGrace: each holds a slot
+// (see daemonPlanRequests). An unreadable queue counts none.
+func daemonRequestsStarting(ctx *Ctx, rs *run.Store, runs []run.Journal) int {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return 0
+	}
+	reqs, err := daemon.ReadRequests(common)
+	if err != nil {
+		return 0
+	}
+	n := 0
+	for _, q := range reqs {
+		if q.Run == "" || ctx.Now().Sub(q.StartedAt) >= daemonStartGrace {
+			continue
+		}
+		if slices.ContainsFunc(runs, func(j run.Journal) bool { return j.ID == q.Run }) {
+			continue
+		}
+		if _, err := rs.Read(q.Run); err == nil {
+			continue
+		}
+		n++
+	}
+	return n
 }

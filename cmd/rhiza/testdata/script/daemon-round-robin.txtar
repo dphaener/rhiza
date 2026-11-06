@@ -1,0 +1,77 @@
+# The root daemon's run slots are machine-wide: one poll fills
+# rhiza.daemon.maxRuns round-robin across the projects, not maxRuns in
+# each, and a project's rhiza.project.maxRuns caps its own share. Rex is
+# faked and only logs; no started run journals, so each --once below
+# starts afresh.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+
+# Two projects, each with two ready milestone change sets.
+exec sh -c 'printf "[projects.repo]\npath = \"repo\"\n[projects.second]\npath = \"second\"\n" > $WORK/rhiza.toml'
+mkdir repo second
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+exec rhiza change new One --title One
+exec rhiza add capability one-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza change new Two --title Two
+exec rhiza add capability two-leaf
+exec rhiza link 01M5PWGS702G3VYA781BNZ0K7Q serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+cd $WORK/second
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+exec rhiza change new Three --title Three
+exec rhiza add capability three-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza change new Four --title Four
+exec rhiza add capability four-leaf
+exec rhiza link 01M5PWGS702G3VYA781BNZ0K7Q serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# One slot on the machine: one run starts, in the first project.
+cd $WORK
+exec rhiza daemon --permission-mode manual --max-runs 1 --once
+stdout -count=1 '^Started a run of '
+exec cat $WORK/detach.log
+stdout -count=1 '^REX_SESSION=rhiza-repo '
+! stdout 'rhiza-second'
+rm $WORK/detach.log
+
+# Three slots: the turns alternate, two in the first project, one in the
+# second; not three, or four, in one.
+exec rhiza daemon --permission-mode manual --max-runs 3 --once
+stdout -count=3 '^Started a run of '
+exec cat $WORK/detach.log
+stdout -count=2 '^REX_SESSION=rhiza-repo '
+stdout -count=1 '^REX_SESSION=rhiza-second '
+rm $WORK/detach.log
+
+# The first project capped at one run: its other slot goes to the second.
+cd $WORK/repo
+exec rhiza daemon set rhiza.project.maxRuns 1
+cd $WORK
+exec rhiza daemon --permission-mode manual --max-runs 3 --once
+stdout -count=3 '^Started a run of '
+exec cat $WORK/detach.log
+stdout -count=1 '^REX_SESSION=rhiza-repo '
+stdout -count=2 '^REX_SESSION=rhiza-second '
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

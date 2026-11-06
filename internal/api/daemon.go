@@ -224,7 +224,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 				skipped = append(skipped, daemon.ProjectSkip{Project: name, Reason: daemon.ProjectNotInitialised})
 				continue
 			}
-			p, err := project(name, dir)
+			_, err := project(name, dir)
 			if err != nil {
 				var held *daemon.Held
 				if errors.As(err, &held) {
@@ -235,11 +235,39 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 				continue
 			}
 			polled = append(polled, name)
+		}
+		// Every project's demand is read before any starts: the run slots
+		// are machine-wide, filled round-robin across the projects (see
+		// daemon.RoundRobin), each under its own rhiza.project.maxRuns.
+		// The home project's settings give the machine-wide maxRuns.
+		maxRuns := daemon.DefaultMaxRuns
+		if r.MaxRuns > 0 {
+			maxRuns = r.MaxRuns
+		}
+		turns := make([]daemonTurn, len(polled))
+		var picks []daemon.ProjectPick
+		running := 0
+		for i, name := range polled {
 			var onConf func(daemonConf)
 			if name == homeName {
 				onConf = atHome
 			}
-			if err := p.poll(r, &resp, onConf); err != nil && firstErr == nil {
+			turns[i] = projs[name].prepare(r, onConf)
+			if turns[i].err != nil {
+				continue
+			}
+			if name == homeName {
+				maxRuns = turns[i].conf.maxRuns
+			}
+			picks = append(picks, turns[i].pick)
+			running += turns[i].pick.Running
+		}
+		share := map[string]int{}
+		for _, pk := range daemon.RoundRobin(picks, running, maxRuns) {
+			share[pk.Project]++
+		}
+		for i, name := range polled {
+			if err := projs[name].poll(r, &resp, turns[i], maxRuns, share[name]); err != nil && firstErr == nil {
 				firstErr = err
 			}
 		}
@@ -684,18 +712,44 @@ func daemonContinuesWaiting(ctx *Ctx, rs *run.Store, runs []run.Journal) int {
 // daemonPlanRequests picks them. A milestone request starts without a slot,
 // so it never counts. An unreadable queue reports false.
 func daemonRequestWaits(ctx *Ctx) bool {
+	return daemonRequestsWaiting(ctx) > 0
+}
+
+// daemonRequestsWaiting counts the queued feature and bug plan requests
+// that could start now (see daemonRequestWaits).
+func daemonRequestsWaiting(ctx *Ctx) int {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
-		return false
+		return 0
 	}
 	reqs, err := daemon.ReadRequests(common)
 	if err != nil {
-		return false
+		return 0
 	}
 	now := ctx.Now()
-	return slices.ContainsFunc(reqs, func(q daemon.Request) bool {
-		return q.Kind != daemon.KindMilestone && q.Run == "" && !now.Before(q.RetryAt)
-	})
+	n := 0
+	for _, q := range reqs {
+		if q.Kind != daemon.KindMilestone && q.Run == "" && !now.Before(q.RetryAt) {
+			n++
+		}
+	}
+	return n
+}
+
+// daemonShipOf is what says which of fold's change sets have shipped (see
+// daemon.Ship).
+func daemonShipOf(fold *daemonFolded) daemon.Ship {
+	return daemon.Ship{Workflow: shipChangeWorkflow, Since: func(change string) time.Time {
+		cs, err := id.Parse(change)
+		if err != nil {
+			return time.Time{}
+		}
+		c, ok := fold.changeSet(cs)
+		if !ok {
+			return time.Time{}
+		}
+		return acceptedSince(c)
+	}}
 }
 
 // daemonPoll1 picks and starts runs once: resumes, then ship-change runs,
@@ -763,17 +817,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		return ok
 	})
-	ship := daemon.Ship{Workflow: shipChangeWorkflow, Since: func(change string) time.Time {
-		cs, err := id.Parse(change)
-		if err != nil {
-			return time.Time{}
-		}
-		c, ok := fold.changeSet(cs)
-		if !ok {
-			return time.Time{}
-		}
-		return acceptedSince(c)
-	}}
+	ship := daemonShipOf(fold)
 	shipMode, err := autonomyStage(ctx, "ship")
 	if err != nil {
 		return nil, resumed, nil, err

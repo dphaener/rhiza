@@ -50,13 +50,14 @@ stdout '^0$'
 # slot: in a second repo with --max-runs 1 and one run already started, a
 # feature then a milestone request are queued; a poll starts only the
 # milestone request. A second milestone request waits while the first's run
-# is live.
+# is live. The second repo is in a root of its own: run slots are
+# machine-wide, and the first repo's milestone start still holds one.
 cd ..
 env RHIZA_TEST_DETACH_LOG=$WORK/detach2.log
 env CLAUDE_CONFIG_DIR=$WORK/none
-mkdir repo2
-exec sh -c 'printf "[projects.repo2]\npath = \"repo2\"\n" >> rhiza.toml'
-cd repo2
+mkdir root2/repo2
+exec sh -c 'printf "[projects.repo2]\npath = \"repo2\"\n" > root2/rhiza.toml'
+cd root2/repo2
 exec git init -q
 exec rhiza init
 exec rhiza add intent m --field milestone=1 --record
