@@ -32,7 +32,11 @@ type Project struct {
 
 // Config is the content of a root's rhiza.toml.
 type Config struct {
-	Projects map[string]Project `toml:"projects"`
+	// SelfUpdateProject names the registered project whose main checkout
+	// the daemon keeps itself current from (self_update_project). Empty
+	// means the daemon never self-updates.
+	SelfUpdateProject string             `toml:"self_update_project,omitempty"`
+	Projects          map[string]Project `toml:"projects"`
 	// Daemon holds the machine-wide daemon settings, by their full key
 	// (rhiza.daemon.maxRuns), each a string as rhiza daemon set takes it.
 	Daemon map[string]string `toml:"daemon,omitempty"`

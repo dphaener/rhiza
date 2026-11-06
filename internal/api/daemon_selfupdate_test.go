@@ -3,6 +3,8 @@ package api
 import (
 	"errors"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -52,9 +54,15 @@ func TestDaemonLoopSelfUpdateWaitsForPending(t *testing.T) {
 // rhiza.daemon.selfUpdate to value ("" for unset), whose main checkout is
 // /main, and whose origin/main has moved past it. It records every git and
 // make run in the main checkout.
-func selfUpdateRepo(t *testing.T, value string) (*Ctx, func() []string) {
+func selfUpdateRepo(t *testing.T, value string, named bool) (*Ctx, func() []string) {
 	t.Helper()
 	ctx, common := daemonRepo(t)
+	if named {
+		toml := "self_update_project = \"repo\"\n\n[projects.repo]\npath = \".\"\n"
+		if err := os.WriteFile(filepath.Join(ctx.Root, "rhiza.toml"), []byte(toml), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
 	var mu sync.Mutex
 	var ran []string
 	record := func(s string) {
@@ -68,14 +76,11 @@ func selfUpdateRepo(t *testing.T, value string) (*Ctx, func() []string) {
 			return common + "\n", nil
 		case len(args) == 3 && args[0] == "config" && args[2] == "rhiza.daemon.selfUpdate" && value != "":
 			return value + "\n", nil
-		case len(args) >= 2 && args[0] == "worktree" && args[1] == "list":
-			record("git " + strings.Join(args, " "))
-			return "worktree /main\nHEAD aaa\nbranch refs/heads/main\n", nil
 		}
 		return "", errors.New("unexpected git " + strings.Join(args, " "))
 	}
 	ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
-		if dir != "/main" {
+		if dir != ctx.Root {
 			return nil, errors.New("unexpected " + name)
 		}
 		record(name + " " + strings.Join(args, " "))
@@ -112,7 +117,7 @@ func TestDaemonSelfUpdateSetting(t *testing.T) {
 	daemonReexec = func() *daemon.Reexec { return (&reexecFake{img: start}).reexec(start) }
 
 	for _, value := range []string{"", "false"} {
-		ctx, ran := selfUpdateRepo(t, value)
+		ctx, ran := selfUpdateRepo(t, value, true)
 		if err := runDaemonTicks(t, ctx, 2, nil); err != nil {
 			t.Fatal(err)
 		}
@@ -121,7 +126,16 @@ func TestDaemonSelfUpdateSetting(t *testing.T) {
 		}
 	}
 
-	ctx, ran := selfUpdateRepo(t, "true")
+	// selfUpdate on but no project named: nothing runs.
+	ctx, ran := selfUpdateRepo(t, "true", false)
+	if err := runDaemonTicks(t, ctx, 2, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := ran(); len(got) != 0 {
+		t.Fatalf("no self_update_project: ran %q, want nothing", got)
+	}
+
+	ctx, ran = selfUpdateRepo(t, "true", true)
 	if err := runDaemonTicks(t, ctx, 2, nil); err != nil {
 		t.Fatal(err)
 	}

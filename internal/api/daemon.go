@@ -266,11 +266,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		if !selfUpdateOn || ctx.Exec == nil || ctx.Git == nil {
 			return
 		}
-		out, err := homeCtx.Git("worktree", "list", "--porcelain")
+		reg, err := rootcfg.Load(root)
 		if err != nil {
 			return
 		}
-		main, ok := firstWorktree(out)
+		main, ok := daemon.SelfUpdateCheckout(root, reg)
 		if !ok {
 			return
 		}

@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"fmt"
+	"github.com/dphaener/rhiza/internal/rootcfg"
 	"strings"
 	"time"
 )
@@ -137,4 +138,32 @@ func short(sha string) string {
 		return sha[:9]
 	}
 	return sha
+}
+
+// SelfUpdateCheckout is the main checkout the daemon updates itself from:
+// the folder of the project the root's rhiza.toml names as
+// self_update_project. It reports false when none is named or the name is
+// not a registered project, and the daemon then never self-updates.
+func SelfUpdateCheckout(root string, reg rootcfg.Config) (string, bool) {
+	name := reg.SelfUpdateProject
+	if name == "" {
+		return "", false
+	}
+	if _, ok := reg.Projects[name]; !ok {
+		return "", false
+	}
+	return reg.Dir(root, name), true
+}
+
+// ForCheckout points u at the root's self-update checkout, with git and
+// make run in that folder through the given runners. It reports false, and
+// leaves u alone, when the root names no such project.
+func (u *SelfUpdate) ForCheckout(root string, reg rootcfg.Config, git func(dir string, args ...string) (string, error), make func(dir string, args ...string) error) bool {
+	dir, ok := SelfUpdateCheckout(root, reg)
+	if !ok {
+		return false
+	}
+	u.Git = func(args ...string) (string, error) { return git(dir, args...) }
+	u.Make = func(args ...string) error { return make(dir, args...) }
+	return true
 }
