@@ -1,0 +1,38 @@
+# The ship deploy check's two per-repo settings: a health URL (unset means no
+# deploy check) and a timeout (a duration, 15m by default).
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+
+exec rhiza daemon settings
+stdout 'rhiza.ship.deployUrl = "" \(default\)'
+stdout 'rhiza.ship.deployTimeout = 15m \(default\)'
+
+exec rhiza daemon set rhiza.ship.deployUrl https://example.com/health
+exec rhiza daemon set rhiza.ship.deployTimeout 30m
+exec rhiza daemon settings --json
+stdout '"key": "rhiza.ship.deployUrl"'
+stdout '"value": "https://example.com/health"'
+stdout '"value": "30m"'
+stdout '"source": "git config"'
+exec rhiza daemon settings
+stdout 'rhiza.ship.deployUrl = https://example.com/health \(git config\)'
+stdout 'rhiza.ship.deployTimeout = 30m \(git config\)'
+
+# Bad values exit 2 with a next and write nothing.
+! exec rhiza daemon set rhiza.ship.deployUrl ftp://example.com/health
+stderr 'http or https'
+stderr 'next: rhiza daemon settings'
+! exec rhiza daemon set rhiza.ship.deployUrl example.com
+stderr 'http or https'
+! exec rhiza daemon set rhiza.ship.deployTimeout soon
+stderr 'duration'
+stderr 'next: rhiza daemon settings'
+exec git config --get rhiza.ship.deployUrl
+stdout '^https://example.com/health$'
+exec git config --get rhiza.ship.deployTimeout
+stdout '^30m$'
+
+fold-ok
