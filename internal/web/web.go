@@ -60,6 +60,11 @@ var pages = map[string]*template.Template{
 	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/overview.html")),
 	"run":      template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/run.html")),
 	"runs":     template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/runs.html")),
+	"change": template.Must(template.New("").Funcs(template.FuncMap{
+		"Glyph": func(k string) Glyph { return Glyph{Kind: k} },
+		"Empty": func(t, x string) Empty { return Empty{t, x} },
+	}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/change.html")),
+	"roadmap": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/roadmap.html")),
 }
 
 // page is what a template is rendered with.
@@ -67,7 +72,7 @@ type page struct {
 	Title, Nav string
 	// Daemon is the header's daemon pill; empty Text leaves it out.
 	Daemon Pill
-	// Data is what the page's content is rendered with.
+	// Data is what the page's own content renders.
 	Data any
 }
 
@@ -94,6 +99,8 @@ func Handler(api http.Handler, events ...http.Handler) http.Handler {
 	if api != nil {
 		mux.Handle("/api/", api)
 	}
+	mux.HandleFunc("GET /roadmap", serveRoadmap)
+	mux.HandleFunc("GET /changes/{id}", serveChange)
 	mux.HandleFunc("GET "+FragmentPrefix+"{name}", serveFragment)
 	mux.HandleFunc("GET /runs/{id}", servRun)
 	mux.HandleFunc("GET /runs", func(w http.ResponseWriter, r *http.Request) {
@@ -109,7 +116,9 @@ func Handler(api http.Handler, events ...http.Handler) http.Handler {
 		w.Header().Set("Content-Type", "application/manifest+json")
 		w.Write(b)
 	})
-	return withAPI(api, mux)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mux.ServeHTTP(w, withAPI(r, api))
+	})
 }
 
 // Listener is a running listener, which can be stopped.

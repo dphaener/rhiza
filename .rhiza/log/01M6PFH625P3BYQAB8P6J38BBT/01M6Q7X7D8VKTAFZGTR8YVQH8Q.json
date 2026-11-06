@@ -1,0 +1,30 @@
+{
+  "actor": "01M6Q7R67DWG3ZMKXRWEK4D6VB",
+  "after": [
+    "01M6Q7HGNX5DPTR26RG7413F74"
+  ],
+  "at": "2026-11-06T01:34:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A web package test renders /roadmap over a fixture with two milestones and a backlog and asserts the same groups and order as the roadmap operation, each change set's state and link.",
+          "statement": "The Roadmap page at /roadmap shows the groups in the order rhiza roadmap gives them (each milestone, then the backlog, then each umbrella, labelled as such), each change set with its intent and state, linking to its change set page; it re-renders live when a change set moves."
+        },
+        "handle": "web-roadmap-page",
+        "id": "01M6PFKAN1436CCE15ST7N4A05",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6PFKAN1436CCE15SQMFT2B9",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      }
+    ]
+  },
+  "change_set": "01M6PFH625P3BYQAB8P6J38BBT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Q7X7D8VKTAFZGTR8YVQH8Q",
+  "type": "ops",
+  "v": 1
+}

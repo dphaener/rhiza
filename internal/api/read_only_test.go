@@ -8,7 +8,7 @@ import (
 // The operations the web UI uses are marked ReadOnly, and nothing that
 // writes the log, settings, files, Rex or GitHub is.
 func TestReadOnlyMarker(t *testing.T) {
-	uses := []string{"run.ls", "run.summary", "roadmap", "ready", "show", "ls", "tree", "slice",
+	uses := []string{"run.ls", "run.summary", "roadmap", "ready", "show", "change.show", "ls", "tree", "slice",
 		"why", "log", "overlaps", "inbox", "daemon.settings", "daemon.status", "status", "search", "run.tail", "run.status"}
 	for _, n := range uses {
 		if o, ok := Lookup(n); !ok || !o.ReadOnly {

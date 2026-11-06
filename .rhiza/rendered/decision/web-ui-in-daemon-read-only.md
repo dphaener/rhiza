@@ -26,6 +26,8 @@ The first web UI is served by the daemon process on localhost, read-only and for
 - decided-by [web-templates-embedded](../capability/rhiza/web-monitor/web-templates-embedded.md)
 - decided-by [web-live-sections](../capability/rhiza/web-monitor/web-live-sections.md)
 - decided-by [web-url-in-daemon-status](../capability/rhiza/web-monitor/web-url-in-daemon-status.md)
+- decided-by [web-roadmap-page](../capability/rhiza/web-monitor/web-roadmap-page.md)
+- decided-by [web-change-set-page](../capability/rhiza/web-monitor/web-change-set-page.md)
 
 ## History
 
