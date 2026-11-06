@@ -531,6 +531,9 @@ func (r RunResponse) ExitCode() int {
 // journal and runs it in the foreground. A dry run writes and runs nothing.
 func runRunStart(ctx *Ctx, req any) (any, error) {
 	r := req.(RunStartRequest)
+	if err := requireProject(ctx); err != nil {
+		return nil, err
+	}
 	if r.Milestone && strings.TrimSpace(r.New) == "" {
 		return nil, Usagef("--milestone goes with --new").WithNext(runStartNext)
 	}

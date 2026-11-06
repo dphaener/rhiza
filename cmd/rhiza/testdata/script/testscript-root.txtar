@@ -1,0 +1,14 @@
+# Every script's $WORK is a Rhiza root registering the project repo; $NOROOT
+# is outside any root.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza root show
+stdout '^root: '
+stdout '^project: repo$'
+
+cd $NOROOT
+! exec rhiza root show
+stderr 'not inside a Rhiza root'
+stderr '^next: rhiza root init$'

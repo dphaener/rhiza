@@ -93,6 +93,9 @@ type Input struct {
 // a programmatic caller, such as a server with no current anything, may set
 // the IDs instead.
 type Ctx struct {
+	// Wd is the caller's working directory, absolute; empty if unknown.
+	// rhiza root init and root show start from it.
+	Wd string
 	// Root is the project root: the folder holding .rhiza.
 	Root string
 	// Home is the user's home directory, given by the caller (the API reads

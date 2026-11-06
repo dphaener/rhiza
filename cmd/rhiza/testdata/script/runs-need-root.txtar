@@ -1,0 +1,26 @@
+# Runs and plan requests need a registered project under a root; model
+# commands work anywhere with a .rhiza folder.
+
+# In an unregistered repo under the root.
+mkdir other
+cd other
+exec git init -q
+exec rhiza init
+! exec rhiza request 'Dark mode'
+stderr 'not a project registered'
+stderr '^next: rhiza project add '
+! exec rhiza run start --workflow plan
+stderr '^next: rhiza project add '
+exec rhiza render
+exec rhiza check
+
+# In a repo under no root.
+cd $NOROOT
+exec git init -q
+exec rhiza init
+! exec rhiza request 'Dark mode'
+stderr '^next: rhiza root init$'
+! exec rhiza run start --workflow plan
+stderr '^next: rhiza root init$'
+exec rhiza render
+exec rhiza check

@@ -107,6 +107,20 @@ func setup(env *testscript.Env) error {
 	if bin, err := exec.LookPath("rhiza"); err == nil {
 		env.Setenv("RHIZA_TEST_BIN", filepath.Dir(bin))
 	}
+	// Every script's $WORK is its own Rhiza root with a project named repo
+	// at $WORK/repo (written directly, not through rhiza project add).
+	// $NOROOT is a folder outside any root, for the outside-a-root cases.
+	err := os.WriteFile(filepath.Join(env.WorkDir, "rhiza.toml"),
+		[]byte("[projects.repo]\npath = \"repo\"\n"), 0o644)
+	if err != nil {
+		return err
+	}
+	noroot, err := os.MkdirTemp("", "rhiza-noroot-")
+	if err != nil {
+		return err
+	}
+	env.Defer(func() { os.RemoveAll(noroot) })
+	env.Setenv("NOROOT", noroot)
 	return hermeticGit(env)
 }
 

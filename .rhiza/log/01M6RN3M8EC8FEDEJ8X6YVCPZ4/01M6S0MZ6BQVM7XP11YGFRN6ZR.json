@@ -1,0 +1,40 @@
+{
+  "actor": "01M6S00QDDB77T9HGX3QA4PJFJ",
+  "after": [
+    "01M6RYF4B47N7K06MSJJ7TX8KV"
+  ],
+  "at": "2026-11-06T18:06:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At eac8b7d4, go test -trimpath ./cmd/rhiza -run 'TestScripts/(root-init|describe-golden)$' -count=1 passes: root-init.txtar runs rhiza root init top, then rhiza root show --json from top, from the registered project top/app and from the sibling worktree top/app.feature-x/sub, matching root .*/top each time (project \"\" then \"app\" twice), and a second root init exits non-zero with 'already a Rhiza root' and 'next: rhiza root show' (code usage under --json). By hand with a scratch build in a fresh dir: the second init exited 2 with that next, and root show --json printed the identical absolute root and config from top, top/app and top/app.wt/sub. go test ./internal/rootcfg passes (Find, Init ErrExists, ProjectOf rejects apple and app.), and the internal/api registry, describe, schema and humaner tests pass with root.init/root.show registered. Diff read: rootcfg walks up to the nearest rhiza.toml; Init uses O_EXCL so it writes nothing on a second call."
+        },
+        "handle": "root-init-verified",
+        "id": "01M6S0MZ4236FB1WR65QK5XX1T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S0MZ41VPJ4MSB19NCDPXTM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S0MZ41VPJ4MSB19NCDPXTM",
+        "id": "01M6S0MZ5GYHCNR2H90DPWEV96",
+        "link": "01M6S0MZ5GYHCNR2H90C3XWYR4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN84TZ5W0WZ9Z08W2HSFMX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3M8EC8FEDEJ8X6YVCPZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S0MZ6BQVM7XP11YGFRN6ZR",
+  "type": "ops",
+  "v": 1
+}

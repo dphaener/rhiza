@@ -1,0 +1,40 @@
+{
+  "actor": "01M6S3QFXPZCC12KRK7HJ00DGG",
+  "after": [
+    "01M6S38DAFEH1JDJDRB63D5BF1"
+  ],
+  "at": "2026-11-06T19:11:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3b87a097 (attempt 2): the fix commit drops ReadOnly from project.ls and root.show, and `go test -trimpath -short -count=1 -run TestReadOnlyMarker ./internal/api/` passes, which clears attempt 1's finding. `go test -trimpath ./cmd/rhiza -run 'TestScripts/(project-add-path|describe-golden|root-init)$'` and `go test -trimpath ./internal/rootcfg/...` pass. The project-add-path testscript adds a checkout and finds it in rhiza.toml and in project ls --json, records the repo ID with --name when .rhiza/ exists, and refuses an outside path, a nested path, a non-git folder and a duplicate name. By hand with a scratch build, each of the four refusals exits 2 with a next: line, and rhiza.toml lists [projects.app] path = \"app\". Separate from this leaf: TestRunStartQueuesForTheDaemon in internal/api fails ('repo is not inside a Rhiza root'). It passes at 85470cb5^ and fails at 85470cb5, so the runs-need-root leaf introduced it, and it will fail CI's make check."
+        },
+        "handle": "project-add-path-verified",
+        "id": "01M6S4B1BNR2CZ9QJGDJH7PK8D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S4B1BNR2CZ9QJGDF4M57BQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S4B1BNR2CZ9QJGDF4M57BQ",
+        "id": "01M6S4B1EFGPASR0NX76HMV00T",
+        "link": "01M6S4B1EFGPASR0NX72VRP3FZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN84Y388QM22T4H109V2ZJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3M8EC8FEDEJ8X6YVCPZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S4B1J5G51RASR224JXFG4A",
+  "type": "ops",
+  "v": 1
+}

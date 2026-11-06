@@ -28,6 +28,8 @@ A root is required from the start: the daemon and runs work only on a registered
 
 - decided-by [m29-root-registry](../intent/milestone-29/m29-root-registry.md)
 - decided-by [m29-one-daemon](../intent/milestone-29/m29-one-daemon.md)
+- decided-by [runs-need-root](../capability/rhiza/runtime/runs-need-root.md)
+- decided-by [testscripts-run-under-root](../capability/rhiza/runtime/testscripts-run-under-root.md)
 
 ## History
 

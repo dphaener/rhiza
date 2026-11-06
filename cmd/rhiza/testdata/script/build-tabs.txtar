@@ -55,6 +55,7 @@ fold-ok
 cd $WORK
 rm $WORK/rex.log $WORK/rex.n
 mkdir repo3
+exec sh -c 'printf "[projects.repo3]\npath = \"repo3\"\n" >> $WORK/rhiza.toml'
 cd repo3
 exec git init -q
 exec rhiza init

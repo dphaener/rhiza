@@ -1,0 +1,30 @@
+# rhiza project add <git URL> clones under the root and registers the clone.
+mkdir top
+exec rhiza root init top
+exec git init -q --bare $WORK/remote.git
+exec git clone -q file://$WORK/remote.git $WORK/seed
+exec git -C $WORK/seed commit -q --allow-empty -m seed
+exec git -C $WORK/seed push -q origin HEAD
+cd top
+exec rhiza project add file://$WORK/remote.git
+stdout '^Registered project remote at remote\.$'
+exists remote/.git
+grep 'projects.remote' rhiza.toml
+exec rhiza project ls --json
+stdout '"name": "remote"'
+
+# --name picks the folder.
+exec rhiza project add file://$WORK/remote.git --name again
+exists again/.git
+grep 'projects.again' rhiza.toml
+
+# A taken name is refused before cloning.
+! exec rhiza project add file://$WORK/remote.git
+stderr 'already registered'
+
+# A bad URL exits non-zero and leaves rhiza.toml unchanged.
+cp rhiza.toml before.toml
+! exec rhiza project add file://$WORK/missing.git
+stderr '^next: '
+! exists missing
+cmp rhiza.toml before.toml

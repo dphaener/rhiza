@@ -1,0 +1,53 @@
+{
+  "actor": "01M6S7F1RVFD86WK0CJ6HYPX1N",
+  "after": [
+    "01M6S53R4DTJ7CWFJVQ8RSW1EW"
+  ],
+  "at": "2026-11-06T20:06:10Z",
+  "body": {
+    "drop": [
+      "01M6RP4X1G93MQ00BYR5VRWDV2",
+      "01M6RP4X32JXFXP4WE3RHF7Z7Y"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run 'TestScripts/^(run-start|run-start-queue|daemon-settings|daemon-pause|daemon-event-hook|stage-autonomy)$' passes with runs-need-root and root-daemon-lock in force and those scripts unedited (daemon-repo-session is rewritten by root-daemon-rex-session's leaf); a script running rhiza root show in $WORK/repo sees project repo, and in $NOROOT gets exit 2 naming rhiza root init.",
+          "statement": "The testscript Setup in cmd/rhiza/main_test.go puts every script under a Rhiza root: it makes each script's $WORK its own root, writing $WORK/rhiza.toml that registers a project named repo at $WORK/repo directly (not through rhiza project add), so the existing scripts that start runs, queue requests or run the daemon in the $WORK/repo repo keep passing unedited, and it gives scripts a folder outside any root ($NOROOT) for the outside-a-root cases."
+        },
+        "handle": "testscripts-run-under-root",
+        "id": "01M6RNXQCZZ7E21TJ70DSNMTKC",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M6RNXQCZZ7E21TJ70B4RCRWW",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M6RNXQCZZ7E21TJ70B4RCRWW",
+        "id": "01M6S7FZKA8Q2CV28H2SJ87NZ6",
+        "link": "01M6S7FZKA8Q2CV28H2QX104DD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RYBXCNTMF66Z597WTFMN7R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6RNXQCZZ7E21TJ70B4RCRWW",
+        "id": "01M6S7FZMAM31877SZVVACWXXP",
+        "link": "01M6S7FZMAM31877SZVV6THS2J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RYBXJ6HAKW7YJSBKVFAS5Z",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6RN3M8EC8FEDEJ8X6YVCPZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S7FZQ03BNZ0N03CQ3V3KEW",
+  "type": "ops",
+  "v": 1
+}

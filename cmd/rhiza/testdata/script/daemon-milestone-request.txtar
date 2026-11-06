@@ -55,6 +55,7 @@ cd ..
 env RHIZA_TEST_DETACH_LOG=$WORK/detach2.log
 env CLAUDE_CONFIG_DIR=$WORK/none
 mkdir repo2
+exec sh -c 'printf "[projects.repo2]\npath = \"repo2\"\n" >> rhiza.toml'
 cd repo2
 exec git init -q
 exec rhiza init

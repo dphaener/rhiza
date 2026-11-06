@@ -100,6 +100,9 @@ var requestKinds = []string{daemon.KindFeature, daemon.KindBug, daemon.KindMiles
 
 func runRequest(ctx *Ctx, req any) (any, error) {
 	r := req.(RequestRequest)
+	if err := requireProject(ctx); err != nil {
+		return nil, err
+	}
 	text := strings.Join(strings.Fields(r.Text), " ")
 	if text == "" {
 		return nil, Usagef("a request needs its text").WithNext(`rhiza request "<what to plan>"`)

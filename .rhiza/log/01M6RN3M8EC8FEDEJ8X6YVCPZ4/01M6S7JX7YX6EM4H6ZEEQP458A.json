@@ -1,0 +1,40 @@
+{
+  "actor": "01M6S7GMMM7KCAFPCVQQVEC07P",
+  "after": [
+    "01M6S7FZQ03BNZ0N03CQ3V3KEW"
+  ],
+  "at": "2026-11-06T20:07:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 30479135, go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/^(run-start|run-start-queue|daemon-settings|daemon-pause|daemon-event-hook|stage-autonomy|testscript-root)$' passed all seven. git log main..HEAD shows none of the six listed scripts changed. runs-need-root is in force: requireProject is at internal/api/run.go:534 and request.go:103. root-daemon-lock belongs to another change set and is not built at this commit, so only runs-need-root could be checked as in force. Setup in cmd/rhiza/main_test.go writes $WORK/rhiza.toml ([projects.repo] path=\"repo\") directly and sets $NOROOT to a temp dir outside any root. testscript-root.txtar asserts that root show in $WORK/repo prints project: repo, and that root show in $NOROOT fails with 'not inside a Rhiza root' and next: rhiza root init. A scratch build run in a folder outside any root exited with code 2 and the same message."
+        },
+        "handle": "testscripts-run-under-root-verified-2",
+        "id": "01M6S7JX515WS8RBYM17BDED7F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S7JX515WS8RBYM14RH9896",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S7JX515WS8RBYM14RH9896",
+        "id": "01M6S7JX6JW0SE38KJTDXX3QRH",
+        "link": "01M6S7JX6JW0SE38KJTDS2ASS6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RNXQCZZ7E21TJ70B4RCRWW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3M8EC8FEDEJ8X6YVCPZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S7JX7YX6EM4H6ZEEQP458A",
+  "type": "ops",
+  "v": 1
+}

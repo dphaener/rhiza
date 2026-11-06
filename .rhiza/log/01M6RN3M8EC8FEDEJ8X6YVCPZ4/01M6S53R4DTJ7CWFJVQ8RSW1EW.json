@@ -1,0 +1,155 @@
+{
+  "actor": "01M6S4DS88KE3AYM392YCE1M0Y",
+  "after": [
+    "01M6S4B1J5G51RASR224JXFG4A"
+  ],
+  "at": "2026-11-06T19:24:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, hands-on with a scratch build of 9402a003 in a scratch root (RHIZA_ROOT etc. unset): rhiza root init root wrote root/rhiza.toml (exit 0); a second root init on it exited 2 with next: rhiza root show; root show --json gave the same root from the root, from a registered project's subfolder app/sub and from a git worktree sibling app.feature-x."
+        },
+        "handle": "root-init-qa-1",
+        "id": "01M6S53PVJ4HF32THHA4A5X9TF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S53PVJ4HF32THHA3M6YJ0Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S53PVJ4HF32THHA3M6YJ0Y",
+        "id": "01M6S53Q1EPVAGBT6Q4TS2BR13",
+        "link": "01M6S53Q1EPVAGBT6Q4RGV78XX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN84TZ5W0WZ9Z08W2HSFMX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, hands-on with a scratch build of 9402a003 in a scratch root (RHIZA_ROOT etc. unset): rhiza root show --json gave project \"\" at the root itself, project app in app/sub and in the app.feature-x sibling worktree, project \"\" in an unregistered folder under the root, and outside any root exited 2 with next: rhiza root init."
+        },
+        "handle": "root-show-qa-1",
+        "id": "01M6S53Q3T3G1182ZWSTJ3JTNZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S53Q3T3G1182ZWSSQYQ4ZK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S53Q3T3G1182ZWSSQYQ4ZK",
+        "id": "01M6S53Q567CW7G0T5W0J4SSWS",
+        "link": "01M6S53Q567CW7G0T5W0CSPEJK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN84VVBPTANB7RAV73FSNX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, hands-on with a scratch build of 9402a003 in a scratch root (RHIZA_ROOT etc. unset): rhiza project add app registered app with its repo ID (app had .rhiza/); project add bare --name plain registered plain without a repo; rhiza.toml listed both; an outside path, nested/deep, a non-git folder and a duplicate name each exited 2 with a next."
+        },
+        "handle": "project-add-path-qa-1",
+        "id": "01M6S53Q8AKS6BRQ7JKX5BTE7G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S53Q8AKS6BRQ7JKWWY7FMA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S53Q8AKS6BRQ7JKWWY7FMA",
+        "id": "01M6S53Q9G2T5D5RKHQ2PMSJF9",
+        "link": "01M6S53Q9G2T5D5RKHQ0B594C3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN84Y388QM22T4H109V2ZJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, hands-on with a scratch build of 9402a003 in a scratch root (RHIZA_ROOT etc. unset): rhiza project add file://<bare>.git cloned into <root>/src and registered it (project ls shows it); a bad file:// URL exited 2 with the git error and a next and left rhiza.toml byte-identical; cloning into an existing folder (--name notgit) exited 2 with a next."
+        },
+        "handle": "project-add-url-qa-1",
+        "id": "01M6S53QBJ8VJJW0GN1X65RYXH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S53QBJ8VJJW0GN1TN1A8SC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S53QBJ8VJJW0GN1TN1A8SC",
+        "id": "01M6S53QEAE6RPCXT719BYC1ZB",
+        "link": "01M6S53QEAE6RPCXT7188D2Q6K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN8501TDM99PPTXZCXH3Q1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, hands-on with a scratch build of 9402a003 in a scratch root (RHIZA_ROOT etc. unset): rhiza project ls (text and --json) listed app initialised with its repo ID and plain not initialised; project rm src2 unregistered it and left src2/ on disk; project rm ghost exited 2 with next: rhiza project ls."
+        },
+        "handle": "project-ls-rm-qa-1",
+        "id": "01M6S53QHFNHK3H3GYVKP92QNT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S53QHFNHK3H3GYVGRM8CPB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S53QHFNHK3H3GYVGRM8CPB",
+        "id": "01M6S53QPA32DM7KV474M2BW0P",
+        "link": "01M6S53QPA32DM7KV473EPTJ59",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85109TG2YXD5Z6VNQ6DF",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, hands-on with a scratch build of 9402a003 in a scratch root (RHIZA_ROOT etc. unset): In an unregistered repo under the root, rhiza request and run start --dry-run exited 2 with next: rhiza project add <path>; in a repo under no root, rhiza request exited 2 with next: rhiza root init; rhiza check (after render) passed in both; rhiza request in registered project app queued a feature request."
+        },
+        "handle": "runs-need-root-qa-1",
+        "id": "01M6S53QVFPY4Z5SCN2KDFKFF7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S53QVFPY4Z5SCN2K76F3DQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S53QVFPY4Z5SCN2K76F3DQ",
+        "id": "01M6S53R0JQVVWDF555E7KVQN9",
+        "link": "01M6S53R0JQVVWDF555DZ50NMA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN852FN56HV9AVYTX5N843",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3M8EC8FEDEJ8X6YVCPZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S53R4DTJ7CWFJVQ8RSW1EW",
+  "type": "ops",
+  "v": 1
+}

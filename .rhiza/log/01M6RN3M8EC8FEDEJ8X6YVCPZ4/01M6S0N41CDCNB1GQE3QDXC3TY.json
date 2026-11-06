@@ -1,0 +1,40 @@
+{
+  "actor": "01M6S039TRW1RHS4HK0QAMM0PJ",
+  "after": [
+    "01M6S0MZ6BQVM7XP11YGFRN6ZR"
+  ],
+  "at": "2026-11-06T18:06:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cba75664 ran go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(root-init|describe-golden)$': PASS (root-init ran, --- PASS). Read the diff and the script: it runs rhiza root show from the root itself (JSON project \"\" and human 'project: none'), from registered project app (project app, human root:/config:/project: lines), from the sibling worktree app.feature-x/sub (project app), from a lookalike folder apple (project \"\"), and from a directory outside any root (exit=2, stderr 'not inside a Rhiza root' and 'next: rhiza root init', --json code usage with next 'rhiza root init'). Implementation in internal/api/root.go runRootShow and internal/rootcfg Find/ProjectOf matches the statement."
+        },
+        "handle": "root-show-verified",
+        "id": "01M6S0N3X0MG6CZE007K88C8PW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6S0N3X0MG6CZE007G5NRKXX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6S0N3X0MG6CZE007G5NRKXX",
+        "id": "01M6S0N3YDM54BYTMST8M703KX",
+        "link": "01M6S0N3YDM54BYTMST878EWK6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN84VVBPTANB7RAV73FSNX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3M8EC8FEDEJ8X6YVCPZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6S0N41CDCNB1GQE3QDXC3TY",
+  "type": "ops",
+  "v": 1
+}
