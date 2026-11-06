@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-06T02:42:46Z",
+  "body": {
+    "intent": "Let the web UI listen on all interfaces so a Caddy reverse proxy on another host can reach it. Owner, verbatim: \"in order to proxy the web ui via caddy we need to bind to all hosts and not just local host.\" This supersedes the localhost part of decision web-ui-in-daemon-read-only. Add a rhiza.web.host setting (default 127.0.0.1; 0.0.0.0 binds all interfaces) beside rhiza.web.port, settable with rhiza daemon set and followed live like the port; daemon status shows the bound address. The UI stays read-only.",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6QBSDK2D7SYV177YBJCAM2A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6QBSDK2D7SYV177YCK68D5F",
+  "type": "open",
+  "v": 1
+}
