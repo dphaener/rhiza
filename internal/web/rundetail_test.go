@@ -10,7 +10,7 @@ const fixturePlanRun = `{"title":"Plan the thing","workflow":"plan","state":"run
 "steps":[
 {"step":"interview","outcome":"pass","at":"2026-10-24T10:05:00Z"},
 {"step":"draft","outcome":"fail","detail":"exit 2","at":"2026-10-24T10:06:30Z"}],
-"sessions":[{"step":"interview","session":"01SESSIONA","tokens":{"session":{"input":10,"output":5}}},{"step":"gate","session":"01SESSIONB","no_tokens":"still running"}]}`
+"sessions":[{"step":"interview","session":"01SESSIONA","tokens":{"session":{"input":10,"output":5,"cache_creation":100,"cache_read":1000}}},{"step":"gate","session":"01SESSIONB","no_tokens":"still running"}]}`
 
 const fixtureReviewRun = `{"title":"Review the thing","workflow":"review","state":"succeeded","started_at":"2026-10-24T10:00:00Z",
 "steps":[{"step":"checks","outcome":"pass","at":"2026-10-24T10:20:00Z"}],
@@ -60,7 +60,7 @@ func TestRunPagePlanRun(t *testing.T) {
 	inOrder(t, body, "Plan the thing", ">interview<", ">draft<", ">gate<")
 	for _, want := range []string{
 		"rz-pill--done", "rz-pill--failed", "5m 0s", "1m 30s", "exit 2", "Oct 24 10:05",
-		"rz-pill--running", "Session 1", "finished · 15 tokens", "running",
+		"rz-pill--running", "Session 1", "finished · 1115 tokens", "running",
 		`data-rz-fragment="/fragments/run-detail?run=PLAN"`, `data-rz-events="run"`,
 	} {
 		if !strings.Contains(body, want) {

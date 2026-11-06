@@ -150,6 +150,27 @@ func TestEventsRefuseWrites(t *testing.T) {
 	}
 }
 
+// The run page reads run.status through the daemon's read-only API, so a
+// real run journal shows on /runs/<id> and its fragment.
+func TestRunPageThroughReadOnlyAPI(t *testing.T) {
+	ctx := fixtureCtx(t)
+	out, err := ctx.Git("rev-parse", "--git-common-dir")
+	if err != nil {
+		t.Fatal(err)
+	}
+	common := filepath.Join(ctx.Root, strings.TrimSpace(out))
+	if err := run.NewStore(run.Dir(common)).Create("run1", run.Entry{Type: run.TypeStarted, At: time.Now(), Started: &run.Started{Workflow: "build", Title: "Build the thing"}}); err != nil {
+		t.Fatal(err)
+	}
+	h := web.Handler(api.ReadOnlyHandler(ctx))
+	if rec := serve(h, "GET", "/runs/run1"); rec.Code != 200 || !strings.Contains(rec.Body.String(), "Build the thing") {
+		t.Errorf("page: %d\n%s", rec.Code, rec.Body)
+	}
+	if body := serve(h, "GET", "/fragments/run-detail?run=run1").Body.String(); strings.Contains(body, "No such run") {
+		t.Errorf("fragment:\n%s", body)
+	}
+}
+
 // A run's log tail follows the driver log: lines appended to it move the
 // stream's log event and show in the tail fragment; a run without a log
 // reads as such.

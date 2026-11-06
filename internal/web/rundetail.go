@@ -42,7 +42,12 @@ type runInfo struct {
 		Step     string `json:"step"`
 		NoTokens string `json:"no_tokens"`
 		Tokens   *struct {
-			Session struct{ Input, Output, CacheCreation, CacheRead int64 } `json:"session"`
+			Session struct {
+				Input         int64 `json:"input"`
+				Output        int64 `json:"output"`
+				CacheCreation int64 `json:"cache_creation"`
+				CacheRead     int64 `json:"cache_read"`
+			} `json:"session"`
 		} `json:"tokens"`
 	} `json:"sessions"`
 	Checks []struct {
