@@ -8,8 +8,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
+	"strings"
 
 	"github.com/dphaener/rhiza/internal/rootcfg"
 	"github.com/dphaener/rhiza/internal/store"
@@ -18,7 +20,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "project.add",
-		Summary:  "Register an existing git checkout directly under the root as a project",
+		Summary:  "Register a git checkout directly under the root as a project, or clone a git URL there",
 		Request:  reflect.TypeFor[ProjectAddRequest](),
 		Response: reflect.TypeFor[ProjectAddResponse](),
 		Run:      runProjectAdd,
@@ -35,8 +37,8 @@ func init() {
 
 // ProjectAddRequest names the checkout.
 type ProjectAddRequest struct {
-	Path string `json:"path" arg:"0" desc:"The git checkout to register: a folder directly under the root"`
-	Name string `json:"name,omitempty" flag:"name" desc:"The project's name (default: the folder's name)"`
+	Path string `json:"path" arg:"0" desc:"The git checkout to register (a folder directly under the root), or a git URL to clone under the root"`
+	Name string `json:"name,omitempty" flag:"name" desc:"The project's name (default: the folder's name, or the URL's last part)"`
 }
 
 // ProjectAddResponse reports the registered project.
@@ -59,6 +61,9 @@ func runProjectAdd(ctx *Ctx, req any) (any, error) {
 	}
 	if r.Path == "" {
 		return nil, Usagef("no path to register").WithNext("rhiza project add <path>")
+	}
+	if isGitURL(r.Path) {
+		return runProjectClone(ctx, root, r)
 	}
 	abs := r.Path
 	if !filepath.IsAbs(abs) {
@@ -166,4 +171,76 @@ func runProjectLs(ctx *Ctx, req any) (any, error) {
 		out.Projects = append(out.Projects, ProjectInfo{Name: n, Path: p.Path, Repo: p.Repo, Initialised: serr == nil})
 	}
 	return out, nil
+}
+
+// isGitURL reports whether s is a git URL (scheme://... or user@host:path)
+// rather than a folder.
+func isGitURL(s string) bool {
+	if strings.Contains(s, "://") {
+		return true
+	}
+	at, colon := strings.Index(s, "@"), strings.Index(s, ":")
+	return at > 0 && colon > at && !strings.Contains(s[:at], "/")
+}
+
+// urlName derives a project name from a git URL: its last path part without
+// a .git suffix.
+func urlName(u string) string {
+	u = strings.TrimRight(u, "/")
+	if i := strings.LastIndexAny(u, "/:"); i >= 0 {
+		u = u[i+1:]
+	}
+	return strings.TrimSuffix(u, ".git")
+}
+
+// runProjectClone clones a git URL to <root>/<name> and registers it. A
+// failed clone leaves no folder behind and rhiza.toml unchanged.
+func runProjectClone(ctx *Ctx, root string, r ProjectAddRequest) (any, error) {
+	name := r.Name
+	if name == "" {
+		name = urlName(r.Path)
+	}
+	if name == "" || name != filepath.Base(name) || name == "." || name == ".." {
+		return nil, Usagef("%q is not a usable project name", name).WithNext("rhiza project add " + r.Path + " --name <name>")
+	}
+	cfg, err := rootcfg.Load(root)
+	if err != nil {
+		return nil, err
+	}
+	if _, ok := cfg.Projects[name]; ok {
+		return nil, Usagef("a project named %s is already registered", name).
+			WithNext("rhiza project add " + r.Path + " --name <other name>")
+	}
+	dest := filepath.Join(root, name)
+	if _, err := os.Lstat(dest); err == nil {
+		return nil, Usagef("%s already exists", dest).
+			WithNext("rhiza project add " + r.Path + " --name <other name>")
+	}
+	if ctx.DryRun {
+		return ProjectAddResponse{Name: name, Path: name}, nil
+	}
+	cmd := exec.Command("git", "clone", "--quiet", "--", r.Path, dest)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		os.RemoveAll(dest)
+		return nil, Usagef("cannot clone %s: %s", r.Path, strings.TrimSpace(string(out))).
+			WithNext("check the URL, then rhiza project add " + r.Path)
+	}
+	p := rootcfg.Project{Path: name}
+	switch s, err := store.Open(dest); {
+	case err == nil:
+		p.Repo = s.Repo().ID.String()
+	case errors.Is(err, store.ErrNotFound):
+	default:
+		os.RemoveAll(dest)
+		return nil, err
+	}
+	if err := rootcfg.Add(root, name, p); err != nil {
+		os.RemoveAll(dest)
+		if errors.Is(err, rootcfg.ErrTaken) {
+			return nil, Usagef("a project named %s is already registered", name).
+				WithNext("rhiza project add " + r.Path + " --name <other name>")
+		}
+		return nil, err
+	}
+	return ProjectAddResponse{Name: name, Path: p.Path, Repo: p.Repo}, nil
 }

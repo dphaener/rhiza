@@ -6790,11 +6790,11 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "name": {
-            "description": "The project's name (default: the folder's name)",
+            "description": "The project's name (default: the folder's name, or the URL's last part)",
             "type": "string"
           },
           "path": {
-            "description": "The git checkout to register: a folder directly under the root",
+            "description": "The git checkout to register (a folder directly under the root), or a git URL to clone under the root",
             "type": "string"
           }
         },
@@ -6825,7 +6825,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Register an existing git checkout directly under the root as a project",
+      "summary": "Register a git checkout directly under the root as a project, or clone a git URL there",
       "write": false
     },
     {
