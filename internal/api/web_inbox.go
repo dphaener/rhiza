@@ -23,23 +23,63 @@ func WebInboxSource(base *Ctx) web.InboxSource {
 		if err != nil {
 			return nil
 		}
-		var items []web.InboxItemView
-		for _, it := range out.(InboxResponse).Items {
-			if !webInboxKinds[it.Kind] {
-				continue
-			}
-			title, detail := it.ChangeTitle, it.Detail
-			if it.Kind == InboxQuestion && it.Question != "" {
-				title, detail = it.Question, it.ChangeTitle
+		return webInboxViews(out.(InboxResponse).Items)
+	}
+}
+
+// webInboxViews are the inbox items in the owner's words: a question by its
+// full text, the rest by their change set's title with why each waits. The
+// CLI's details name handles, session and run IDs and commands; none of
+// them reaches the page (constraint owner-surfaces-no-ids). An open item is
+// one row per question it stopped on, each by its statement.
+func webInboxViews(items []InboxItem) []web.InboxItemView {
+	var views []web.InboxItemView
+	for _, it := range items {
+		if !webInboxKinds[it.Kind] {
+			continue
+		}
+		view := func(title, detail string) web.InboxItemView {
+			if title == "" {
+				title = it.ChangeTitle
 			}
 			if title == "" {
-				title = it.Kind
+				title = "a change set"
 			}
-			items = append(items, web.InboxItemView{
-				Kind: it.Kind, Title: title, Detail: oneLine(detail),
+			return web.InboxItemView{
+				Kind: it.Kind, Title: oneLine(title), Detail: oneLine(detail),
 				Run: it.Run, Change: it.Change, Step: it.Step, At: it.At,
-			})
+			}
 		}
-		return items
+		switch it.Kind {
+		case InboxQuestion:
+			views = append(views, view(it.Question, it.ChangeTitle))
+		case InboxOpen:
+			if len(it.Questions) == 0 {
+				views = append(views, view("", "open questions wait on your answers"))
+				continue
+			}
+			for _, q := range it.Questions {
+				detail := it.ChangeTitle
+				if q.Blocks != "" {
+					detail = "blocks " + q.Blocks
+				}
+				views = append(views, view(q.Statement, detail))
+			}
+		case InboxSignoff:
+			views = append(views, view("", "waiting for your sign-off"))
+		case InboxFailed:
+			// The failure's output names Rex windows, commits and paths:
+			// the page says where it failed, and the run's page has the rest.
+			detail := "the run failed"
+			if it.Step != "" {
+				detail = "the run failed at its " + it.Step + " step"
+			}
+			views = append(views, view("", detail))
+		case InboxGaveUp:
+			views = append(views, view("", "interrupted again after the daemon resumed it once"))
+		case InboxStalled:
+			views = append(views, view("", "its session has stopped reporting"))
+		}
 	}
+	return views
 }
