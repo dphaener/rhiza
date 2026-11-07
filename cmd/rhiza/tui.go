@@ -9,8 +9,8 @@ import (
 	"io"
 	"os"
 
-	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/colorprofile"
+	"github.com/dphaener/rexuikit/ui"
 	"github.com/dphaener/rexuikit/ui/theme"
 
 	"github.com/dphaener/rhiza/internal/api"
@@ -121,75 +121,21 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 			return call(op, false, false, args)
 		})
 	}
-	// Every app names its current project in a header: the project holding
-	// the directory it was opened in.
-	header := ""
-	if wd, err := os.Getwd(); err == nil && !once {
-		header = projectctx.Header(wd)
-	} else if !once {
-		header = projectctx.NoProject
+	if !once {
+		return runSwitching(isInbox, isRuns, isRequests, isAutonomy, isDaemon, call, inboxModel, runsModel, autonomyModel, stdout, stderr)
 	}
-	var m tea.Model
 	var result func() ([]byte, error)
 	switch {
 	case isAutonomy:
-		am := autonomyModel()
-		result = am.Result
-		if once {
-			break
-		}
-		sh := am.Shell().WithHeader(header)
-		if _, err := sh.Run(); err != nil {
-			return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
-		}
-		if _, err := sh.Result(); err != nil {
-			return writeError(stdout, stderr, err, false)
-		}
-		return 0
+		result = autonomyModel().Result
 	case isDaemon:
-		if once {
-			return writeError(stdout, stderr, api.Usagef("tui app daemon has no --once: it writes the daemon settings from its form"), false)
-		}
-		da, err := daemonapp.New(func(op string, args []string) ([]byte, error) {
-			return call(op, false, false, args)
-		}, theme.Dark(), colorprofile.Detect(os.Stdout, os.Environ()))
-		if err != nil {
-			return writeError(stdout, stderr, err, false)
-		}
-		out, err := modalshell.New(da).WithHeader(header).Run()
-		if err != nil {
-			return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
-		}
-		stdout.Write(out)
-		return 0
+		return writeError(stdout, stderr, api.Usagef("tui app daemon has no --once: it writes the daemon settings from its form"), false)
 	case isInbox:
-		im := inboxModel()
-		m, result = im, im.Result
+		result = inboxModel().Result
 	case isRuns:
-		rm := runsModel()
-		m, result = modalshell.New(rm), rm.Result
+		result = runsModel().Result
 	case isRequests:
-		if once {
-			return writeError(stdout, stderr, api.Usagef("tui app request has no --once: it files a request from its form"), false)
-		}
-		// A request is queued in the app's current project: the one holding
-		// the pane's directory, or the one picked first.
-		wd, _ := os.Getwd()
-		current, _ := projectctx.Current(wd)
-		names, folder := projectctx.Folders(wd)
-		out, err := modalshell.New(requestapp.NewIn(func(project, op string, args []string) ([]byte, error) {
-			if project != "" && folder != nil {
-				if err := os.Chdir(folder(project)); err != nil {
-					return nil, err
-				}
-			}
-			return call(op, false, false, args)
-		}, colorprofile.Detect(os.Stdout, os.Environ()), current, names)).WithHeader(header).Run()
-		if err != nil {
-			return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
-		}
-		stdout.Write(out)
-		return 0
+		return writeError(stdout, stderr, api.Usagef("tui app request has no --once: it files a request from its form"), false)
 	}
 	if once {
 		out, err := result()
@@ -199,8 +145,86 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		stdout.Write(out)
 		return 0
 	}
-	if err := modalshell.RunHeaded(m, header); err != nil {
+	return 0
+}
+
+// runSwitching runs an app in a terminal pane. Every app names its current
+// project in a header, and one key (modalshell.SwitchKey) opens a picker of
+// the registered projects: picking one moves the app there and builds it
+// anew, so its view is the picked project's.
+func runSwitching(isInbox, isRuns, isRequests, isAutonomy, isDaemon bool,
+	call func(op string, record, dry bool, args []string) ([]byte, error),
+	inboxModel func() *inboxapp.Model, runsModel func() *runsapp.Model, autonomyModel func() *autonomyapp.Model,
+	stdout, stderr io.Writer) int {
+	wd, _ := os.Getwd()
+	names, folder := projectctx.Folders(wd)
+	sw := modalshell.Switching{
+		Projects: names,
+		Folder:   folder,
+		Header: func() string {
+			if wd, err := os.Getwd(); err == nil {
+				return projectctx.Header(wd)
+			}
+			return projectctx.NoProject
+		},
+	}
+	var daemonErr error
+	sw.Build = func() modalshell.Built {
+		switch {
+		case isAutonomy:
+			am := autonomyModel()
+			sh := am.Shell()
+			return modalshell.Built{Model: sh, Result: sh.Result}
+		case isDaemon:
+			da, err := daemonapp.New(func(op string, args []string) ([]byte, error) {
+				return call(op, false, false, args)
+			}, theme.Dark(), colorprofile.Detect(os.Stdout, os.Environ()))
+			if err != nil {
+				daemonErr = err
+				return modalshell.Built{Model: modalshell.New(modalshell.Dialog(ui.NewDialog(theme.Dark(), colorprofile.Detect(os.Stdout, os.Environ()), "Daemon", []string{err.Error()})))}
+			}
+			sh := modalshell.New(da)
+			return modalshell.Built{Model: sh, Result: sh.Result}
+		case isInbox:
+			im := inboxModel()
+			return modalshell.Built{Model: im, Result: im.Result}
+		case isRuns:
+			rm := runsModel()
+			sh := modalshell.New(rm)
+			return modalshell.Built{Model: sh, Result: rm.Result}
+		default:
+			_ = isRequests
+			wd, _ := os.Getwd()
+			current, _ := projectctx.Current(wd)
+			names, folder := projectctx.Folders(wd)
+			sh := modalshell.New(requestapp.NewIn(func(project, op string, args []string) ([]byte, error) {
+				if project != "" && folder != nil {
+					if err := os.Chdir(folder(project)); err != nil {
+						return nil, err
+					}
+				}
+				return call(op, false, false, args)
+			}, colorprofile.Detect(os.Stdout, os.Environ()), current, names))
+			return modalshell.Built{Model: sh, Result: sh.Result}
+		}
+	}
+	if isDaemon {
+		// Fail before opening a pane when the daemon form cannot be built.
+		sw.Build()
+		if daemonErr != nil {
+			return writeError(stdout, stderr, daemonErr, false)
+		}
+	}
+	s := modalshell.NewSwitcher(sw)
+	if err := modalshell.Run(s); err != nil {
 		return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
+	}
+	out, err := s.Result()
+	if err != nil {
+		return writeError(stdout, stderr, err, false)
+	}
+	if isRequests || isDaemon {
+		stdout.Write(out)
 	}
 	return 0
 }
