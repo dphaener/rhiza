@@ -1471,6 +1471,7 @@
 - [work-state-outside-log](decision/work-state-outside-log.md)
 - [workflow-authoring-shape](decision/workflow-authoring-shape.md)
 - [workflow-writing-tools](decision/workflow-writing-tools.md)
+- [workflows-are-the-rules](decision/workflows-are-the-rules.md)
 - [writes-see-dependencies](decision/writes-see-dependencies.md)
 
 ## Questions

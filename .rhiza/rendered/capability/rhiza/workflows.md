@@ -14,6 +14,7 @@ Genesis carries out work: workflow definitions, runs, the built-in workflows, an
 - decided-by [work-contract](../../decision/work-contract.md)
 - decided-by [work-state-outside-log](../../decision/work-state-outside-log.md)
 - decided-by [engine-orchestrates](../../decision/engine-orchestrates.md)
+- decided-by [workflows-are-the-rules](../../decision/workflows-are-the-rules.md)
 
 ## History
 
