@@ -139,6 +139,7 @@ func (c writeClock) Sleep(time.Duration) {
 func limitFixture(t *testing.T) (*sessionFixture, SessionInfo, string) {
 	t.Helper()
 	f, s, _ := interviewFixture(t)
+	f.ctx.Wd = t.TempDir() // outside any root, so hits stay in this repo
 	limitRegister.Do(func() { adapter.Register(limitAdapter{}) })
 	limitLaunches = nil
 	if _, err := session.NewStore(session.Dir(f.common)).Update(s.ID, func(r *session.Record) {

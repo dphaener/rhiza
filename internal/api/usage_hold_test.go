@@ -44,6 +44,15 @@ var holdFakeOnce = func() func() {
 }()
 
 // finishedRun is a finished run that burned tokens counted tokens.
+// usageFix is a daemon fold fixture whose Wd is outside any Rhiza root, so
+// limit hits and live snapshots stay in this repo, never the real root's.
+func usageFix(t *testing.T) *daemonFoldFix {
+	t.Helper()
+	f := newDaemonFoldFix(t)
+	f.ctx.Wd = f.ctx.Root
+	return f
+}
+
 func finishedRun(n int, tokens int64, at time.Time) run.Journal {
 	j := pickJournal(fmt.Sprintf("cs%d", n),
 		run.Entry{Type: run.TypeTokens, At: at, Session: "s", Tokens: &run.TokenUse{Session: run.TokenCounts{Output: tokens, CacheRead: 1 << 30}}},
@@ -54,7 +63,7 @@ func finishedRun(n int, tokens int64, at time.Time) run.Journal {
 
 func TestUsageHoldProjection(t *testing.T) {
 	holdFakeOnce()
-	f := newDaemonFoldFix(t)
+	f := usageFix(t)
 	f.ctx.Getenv = func(string) string { return "" }
 	now := f.clock
 	f.ctx.Now = func() time.Time { return now }
@@ -148,7 +157,7 @@ func TestUsageHoldProjection(t *testing.T) {
 // weekly window alone, and a weekly hit leaves the session window alone.
 func TestUsageWindowsHitKinds(t *testing.T) {
 	holdFakeOnce()
-	f := newDaemonFoldFix(t)
+	f := usageFix(t)
 	f.ctx.Getenv = func(string) string { return "" }
 	t0 := f.clock
 	common, err := gitCommonDir(f.ctx)
@@ -193,7 +202,7 @@ func TestUsageWindowsHitKinds(t *testing.T) {
 // it, not from wherever the lookback falls.
 func TestUsageWindowsAnchored(t *testing.T) {
 	holdFakeOnce()
-	f := newDaemonFoldFix(t)
+	f := usageFix(t)
 	f.ctx.Getenv = func(string) string { return "" }
 	b := f.clock
 	common, err := gitCommonDir(f.ctx)
@@ -246,7 +255,7 @@ func TestUsageWindowsAnchored(t *testing.T) {
 // A hold stops picks, resumes, queued starts and plans, and the next poll
 // after it clears starts the held change set.
 func TestUsageHoldStopsLaunches(t *testing.T) {
-	f := newDaemonFoldFix(t)
+	f := usageFix(t)
 	hold := &usageHold{Kind: "session", Used: 900, Projected: 900, Limit: 1000, Reserve: 20, Reset: f.clock.Add(time.Hour)}
 	var skips []daemon.Skip
 	started, resumed, planned, err := daemonPoll1(f.ctx, f.rs, f.pending, f.unj, 4, 0, false, "", false, hold, &skips)
@@ -281,7 +290,7 @@ func TestUsageHoldStopsLaunches(t *testing.T) {
 // leaves the queues as they were and a live run running. The poll after
 // the hold clears launches each of them.
 func TestUsageHoldStopsEveryLaunch(t *testing.T) {
-	f := newDaemonFoldFix(t)
+	f := usageFix(t)
 	var detached [][]string
 	f.ctx.Detach = func(p Program, _ string) error {
 		detached = append(detached, p.Args)
@@ -386,7 +395,7 @@ func TestUsageHoldStopsEveryLaunch(t *testing.T) {
 // last finished runs less its own tokens so far, never below zero.
 func TestUsageHoldLiveRunRemaining(t *testing.T) {
 	holdFakeOnce()
-	f := newDaemonFoldFix(t)
+	f := usageFix(t)
 	f.ctx.Getenv = func(string) string { return "" }
 	now := f.clock
 	f.ctx.Now = func() time.Time { return now }
@@ -446,9 +455,8 @@ func TestUsageHoldLiveRunRemaining(t *testing.T) {
 
 func TestUsageLiveLimit(t *testing.T) {
 	holdFakeOnce()
-	f := newDaemonFoldFix(t)
+	f := usageFix(t)
 	f.ctx.Getenv = func(string) string { return "" }
-	f.ctx.Wd = f.ctx.Root // not under a rhiza root: keep state out of the real one
 	now := f.clock
 	f.ctx.Now = func() time.Time { return now }
 	common, err := gitCommonDir(f.ctx)
@@ -524,9 +532,8 @@ func TestUsageLiveLimit(t *testing.T) {
 
 func TestHealthUsageLiveLimit(t *testing.T) {
 	holdFakeOnce()
-	f := newDaemonFoldFix(t)
+	f := usageFix(t)
 	f.ctx.Getenv = func(string) string { return "" }
-	f.ctx.Wd = f.ctx.Root
 	now := f.clock
 	f.ctx.Now = func() time.Time { return now }
 	holdFakeRecords = []adapter.UsageRecord{{At: now.Add(-time.Hour), Tokens: 500}}
