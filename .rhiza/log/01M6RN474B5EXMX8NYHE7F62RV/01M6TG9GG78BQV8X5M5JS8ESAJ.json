@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6SPZS5QXN12F35GAFDASP3C"
+  ],
+  "at": "2026-11-07T07:59:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Orchestrator, 2026-11-07: both halves happened, at different times. (1) At 04:32:31Z rhiza daemon status at the root (~/code, root daemon pid rhiza:3484327, rhiza-root.service) listed nebari run 01M6T4EHEM1TBM0CET0SCBKHHG (change set 01M6S6R84W, Disabled button contrast) live beside rhiza runs 01M6T36NJ2YFVFPT8MS9YK8TDW and 01M6T3HSJVBP341H5C7V78K2T4; the full output is in ~/orchestrator/vm-root-migration.log on the VM. (2) That nebari change set's PR dphaener/nebari#72 merged at 2026-11-07T07:39:35Z, merge commit 1689c77, landed by that root-daemon run (it succeeded). A verifier now sees no nebari run live, because it finished; read the log for the concurrent snapshot."
+        },
+        "handle": "note-01m6tg9g93887x",
+        "id": "01M6TG9G93887XS5F7S2YPCZZS",
+        "key": null,
+        "kind": "note",
+        "node": "01M6TG9G93887XS5F7RZ4409Z6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TG9G93887XS5F7RZ4409Z6",
+        "id": "01M6TG9GAXGQ1Y3RJ7H251ZXAE",
+        "link": "01M6TG9GAXGQ1Y3RJ7GZYZB368",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN873HV3NYMXTSJ13CXZJF",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TG9GG78BQV8X5M5JS8ESAJ",
+  "type": "ops",
+  "v": 1
+}
