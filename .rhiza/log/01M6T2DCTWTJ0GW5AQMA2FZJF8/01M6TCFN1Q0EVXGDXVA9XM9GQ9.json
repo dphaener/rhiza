@@ -1,0 +1,40 @@
+{
+  "actor": "01M6TCEN4DH6W6WG9Q6WBNPMGX",
+  "after": [
+    "01M6TCC2AE5GWSNAYS942VFXDZ"
+  ],
+  "at": "2026-11-07T06:52:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 82b33999 ran go test -trimpath -count=1 ./internal/adapter/... (ok) and TestLiveSnapshots -v (PASS); go vet and gofmt -l clean. The test writes a fake state folder's usage.live.json and reads it back through claudecode.Adapter.LiveSnapshots as one snapshot per kind (session, weekly, sorted) carrying used_percentage, resets_at and captured_at; an absent file and a corrupt file each return nil with no error (the method has no error return, so a poll cannot be stopped). Read the diff: adapter.LiveUsageReader is an optional interface with a compile-time assertion for Adapter, and the reader's file name and JSON tags match daemon.LiveFile and daemon.RecordLive's array output."
+        },
+        "handle": "usage-live-snapshot-read-verified",
+        "id": "01M6TCFMXT80ZDEGP0C3FCBMXB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TCFMXNPRPVY23N05V8TCM5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TCFMXNPRPVY23N05V8TCM5",
+        "id": "01M6TCFMZT38H11YRXD01EJPDY",
+        "link": "01M6TCFMZT38H11YRXCXV5S6AH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2P2P020GWJEF7T5JE0FTY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6T2DCTWTJ0GW5AQMA2FZJF8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TCFN1Q0EVXGDXVA9XM9GQ9",
+  "type": "ops",
+  "v": 1
+}
