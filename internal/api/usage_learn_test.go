@@ -118,3 +118,41 @@ func TestSessionRunRecordsLimitHit(t *testing.T) {
 		t.Errorf("hits %+v: want one at %s resetting 3h later", hits, hit)
 	}
 }
+
+// A hit teaches only the window kind its reset time gives: a session-kind hit
+// leaves a learned weekly limit as it was, and a weekly-kind hit leaves a
+// learned session limit as it was.
+func TestLimitHitTeachesOnlyItsKind(t *testing.T) {
+	usageFakeOnce()
+	hit := time.Date(2026, 11, 4, 10, 45, 0, 0, time.UTC)
+	earlier := hit.Add(-24 * time.Hour)
+	cases := []struct {
+		name, hitKind, other string
+		reset                time.Time
+		hitTokens            int64
+	}{
+		{"session hit over weekly", "session", "weekly", hit.Add(3 * time.Hour), 350},
+		{"weekly hit over session", "weekly", "session", hit.Add(4 * 24 * time.Hour), 1349},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			f, _, _ := limitFixture(t)
+			f.ctx.Getenv = func(string) string { return "" }
+			f.ctx.Wd = t.TempDir() // outside any root, so hits stay in this repo
+			f.ctx.Now = func() time.Time { return hit }
+			state := daemon.State{Learned: []daemon.LearnedLimit{{Kind: c.other, Tokens: 77, HitAt: earlier}}}
+			recordLimitHit(f.ctx, usageFake{}, adapter.UsageLimit{ResetAt: c.reset})
+			learnLimits(f.ctx, f.common, &state)
+			got := map[string]daemon.LearnedLimit{}
+			for _, l := range state.Learned {
+				got[l.Kind] = l
+			}
+			if o := got[c.other]; o.Tokens != 77 || !o.HitAt.Equal(earlier) {
+				t.Errorf("the %s limit changed to %+v", c.other, o)
+			}
+			if h := got[c.hitKind]; h.Tokens != c.hitTokens || !h.HitAt.Equal(hit) {
+				t.Errorf("the %s limit is %+v: want %d at the hit", c.hitKind, h, c.hitTokens)
+			}
+		})
+	}
+}
