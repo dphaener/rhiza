@@ -80,6 +80,20 @@ cp stdout sid
 stderr 'run SIGNOFFRUN01: its workflow no longer parses'
 ! exec sh -c 'rhiza inbox approve "$(cat qid)"'
 stderr 'works on a sign-off item'
+
+# A root that holds a model of its own is read as that one project, as
+# roadmap, health and daemon status read it: its own (empty) inbox, and
+# open finds no item of the registered projects; --all still covers them.
+exec git init -q
+exec rhiza init
+exec rhiza inbox --json
+! stdout '"project"'
+! stdout '"kind": "question"'
+! exec sh -c 'rhiza inbox open "$(cat qid)"'
+stderr 'no inbox item'
+exec rhiza inbox --all --json
+stdout '"project": "alpha"'
+stdout '"project": "beta"'
 -- question.jsonl --
 {"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSQUESTION"}}
 {"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}

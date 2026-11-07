@@ -621,7 +621,9 @@ type inboxScope struct {
 // inboxScopes is the projects an inbox call covers. --project names one;
 // --all, or a working directory at the root and in no project, covers every
 // registered, initialised project; otherwise the project the caller is in.
-// merged says the items carry their project's name.
+// A root folder that holds a model of its own is read as that one project,
+// as roadmap, health and daemon status read it, unless --project or --all
+// says otherwise. merged says the items carry their project's name.
 func inboxScopes(ctx *Ctx, project string, all bool) (scopes []inboxScope, merged bool, err error) {
 	root, cfg, ok := rootOf(ctx)
 	if project != "" && all {
@@ -643,7 +645,7 @@ func inboxScopes(ctx *Ctx, project string, all bool) (scopes []inboxScope, merge
 	if all && !ok {
 		return nil, false, Usagef("--all needs a Rhiza root").WithNext("rhiza root init")
 	}
-	if !all && (!ok || inProject) {
+	if !all && (!ok || inProject || projectInitialised(ctx.Wd)) {
 		return []inboxScope{{"", ctx}}, false, nil
 	}
 	for _, n := range cfg.Names() {
