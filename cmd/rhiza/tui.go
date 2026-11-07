@@ -19,6 +19,7 @@ import (
 	"github.com/dphaener/rhiza/internal/tui/daemonapp"
 	"github.com/dphaener/rhiza/internal/tui/inboxapp"
 	"github.com/dphaener/rhiza/internal/tui/modalshell"
+	"github.com/dphaener/rhiza/internal/tui/projectctx"
 	"github.com/dphaener/rhiza/internal/tui/requestapp"
 	"github.com/dphaener/rhiza/internal/tui/runsapp"
 )
@@ -120,6 +121,14 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 			return call(op, false, false, args)
 		})
 	}
+	// Every app names its current project in a header: the project holding
+	// the directory it was opened in.
+	header := ""
+	if wd, err := os.Getwd(); err == nil && !once {
+		header = projectctx.Header(wd)
+	} else if !once {
+		header = projectctx.NoProject
+	}
 	var m tea.Model
 	var result func() ([]byte, error)
 	switch {
@@ -129,7 +138,7 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		if once {
 			break
 		}
-		sh := am.Shell()
+		sh := am.Shell().WithHeader(header)
 		if _, err := sh.Run(); err != nil {
 			return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
 		}
@@ -147,7 +156,7 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		if err != nil {
 			return writeError(stdout, stderr, err, false)
 		}
-		out, err := modalshell.New(da).Run()
+		out, err := modalshell.New(da).WithHeader(header).Run()
 		if err != nil {
 			return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
 		}
@@ -165,7 +174,7 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		}
 		out, err := modalshell.New(requestapp.New(func(op string, args []string) ([]byte, error) {
 			return call(op, false, false, args)
-		}, colorprofile.Detect(os.Stdout, os.Environ()))).Run()
+		}, colorprofile.Detect(os.Stdout, os.Environ()))).WithHeader(header).Run()
 		if err != nil {
 			return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
 		}
@@ -180,7 +189,7 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		stdout.Write(out)
 		return 0
 	}
-	if err := modalshell.Run(m); err != nil {
+	if err := modalshell.RunHeaded(m, header); err != nil {
 		return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
 	}
 	return 0

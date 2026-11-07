@@ -7,6 +7,8 @@
 package modalshell
 
 import (
+	"unicode/utf8"
+
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/dphaener/rexuikit/surface"
@@ -41,6 +43,7 @@ type Component interface {
 // Shell hosts one Component. It is a tea.Model.
 type Shell struct {
 	c      Component
+	header string
 	result []byte
 	err    error
 	done   bool
@@ -49,6 +52,15 @@ type Shell struct {
 // New returns a shell hosting c.
 func New(c Component) *Shell { return &Shell{c: c} }
 
+// WithHeader shows line above the hosted component, one row of its own.
+func (s *Shell) WithHeader(line string) *Shell {
+	s.header = line
+	return s
+}
+
+// Header is the line shown above the component, empty for none.
+func (s *Shell) Header() string { return s.header }
+
 // Component is the hosted component.
 func (s *Shell) Component() Component { return s.c }
 
@@ -56,7 +68,9 @@ func (s *Shell) Component() Component { return s.c }
 func (s *Shell) Theme() theme.Theme { return s.c.Theme() }
 
 // NaturalSize is the hosted component's size in cells.
-func (s *Shell) NaturalSize() (cols, rows int) { return s.c.NaturalSize() }
+func (s *Shell) NaturalSize() (cols, rows int) {
+	return headedSize(s.header, s.c.NaturalSize)
+}
 
 // Result is what the app set when it reported done, or the error it did.
 func (s *Shell) Result() ([]byte, error) { return s.result, s.err }
@@ -88,7 +102,44 @@ func (s *Shell) quit() (tea.Model, tea.Cmd) {
 	return s, tea.Quit
 }
 
-func (s *Shell) View() tea.View { return tea.NewView(s.c.Render()) }
+func (s *Shell) View() tea.View { return tea.NewView(withHeader(s.header, s.c.Render())) }
+
+// withHeader puts line, when there is one, above content.
+func withHeader(line, content string) string {
+	if line == "" {
+		return content
+	}
+	return line + "\n" + content
+}
+
+// headedSize is size with room for the header line.
+func headedSize(line string, size func() (int, int)) (cols, rows int) {
+	cols, rows = size()
+	if line == "" {
+		return cols, rows
+	}
+	return max(cols, utf8.RuneCountInString(line)), rows + 1
+}
+
+// headed is a model with a header line above its view.
+type headed struct {
+	model
+	line string
+}
+
+func (h headed) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	m, cmd := h.model.Update(msg)
+	h.model = m.(model)
+	return h, cmd
+}
+
+func (h headed) View() tea.View {
+	v := h.model.View()
+	v.Content = withHeader(h.line, v.Content)
+	return v
+}
+
+func (h headed) NaturalSize() (int, int) { return headedSize(h.line, h.model.NaturalSize) }
 
 // Program is the shell wrapped for focus: what tea.NewProgram runs. A
 // Modal stays open on blur.
@@ -152,6 +203,15 @@ func (c dialogComponent) Render() string { return c.Dialog.View() }
 // the same focus handling. Like Shell.Run, it reports the model's
 // NaturalSize, when it has one, to the file ReportSizeTo named.
 func Run(m tea.Model, opts ...tea.ProgramOption) error {
+	return RunHeaded(m, "", opts...)
+}
+
+// RunHeaded is Run with line shown above the model's view. The model must
+// have NaturalSize and Theme, as the shell's models do, when line is set.
+func RunHeaded(m tea.Model, line string, opts ...tea.ProgramOption) error {
+	if hm, ok := m.(model); ok && line != "" {
+		m = headed{model: hm, line: line}
+	}
 	_, err := tea.NewProgram(program.Wrap(sized(m), program.Options{Blur: surface.StayOpen}), opts...).Run()
 	return err
 }

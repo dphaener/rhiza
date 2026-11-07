@@ -147,3 +147,31 @@ func TestClosesEveryHost(t *testing.T) {
 		})
 	}
 }
+
+func TestShellHeader(t *testing.T) {
+	for name, mk := range hosts() {
+		plain := New(mk())
+		s := New(mk()).WithHeader("Project: alpha")
+		if got := s.View().Content; !strings.HasPrefix(got, "Project: alpha\n") {
+			t.Errorf("%s: view %q lacks the header", name, got)
+		}
+		if strings.Contains(plain.View().Content, "Project:") {
+			t.Errorf("%s: a shell without a header shows one", name)
+		}
+		c0, r0 := plain.NaturalSize()
+		if c, r := s.NaturalSize(); r != r0+1 || c < c0 {
+			t.Errorf("%s: size %dx%d, want one more row than %dx%d", name, c, r, c0, r0)
+		}
+	}
+}
+
+func TestRunHeadedWrapsModel(t *testing.T) {
+	m := headed{model: New(hosts()["list"]()), line: "No project"}
+	if got := m.View().Content; !strings.HasPrefix(got, "No project\n") {
+		t.Errorf("view %q lacks the header", got)
+	}
+	next, _ := m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	if _, ok := next.(headed); !ok {
+		t.Errorf("update lost the header: %T", next)
+	}
+}
