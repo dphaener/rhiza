@@ -50,9 +50,18 @@ const PausedKey = "rhiza.daemon.paused"
 // MaxRunsKey is the setting the run-limit field writes.
 const MaxRunsKey = "rhiza.daemon.maxRuns"
 
+// ProjectPausedKey and ProjectMaxRunsKey are the current project's own
+// pause and run cap, written to its git config.
+const (
+	ProjectPausedKey  = "rhiza.project.paused"
+	ProjectMaxRunsKey = "rhiza.project.maxRuns"
+)
+
 const (
 	pausedField  = "paused"
 	maxRunsField = "maxRuns"
+	projPaused   = "projectPaused"
+	projMaxRuns  = "projectMaxRuns"
 )
 
 // Runner runs an api operation and returns its result as
@@ -65,6 +74,11 @@ type App struct {
 	run     Runner
 	paused  bool
 	maxRuns string
+	// project is the current project's name, empty when there is none; its
+	// own pause and run cap are then fields too.
+	project  string
+	pPaused  bool
+	pMaxRuns string
 }
 
 // validateMaxRuns accepts a whole number of at least 1.
@@ -79,6 +93,13 @@ func validateMaxRuns(v string) error {
 // New reads daemon.settings through run and returns the app with the
 // Confirm prefilled from rhiza.daemon.paused.
 func New(run Runner, t theme.Theme, profile colorprofile.Profile) (*App, error) {
+	return NewIn(run, t, profile, "")
+}
+
+// NewIn is New for the app opened in project: the machine settings show
+// once, and the project's own pause and run cap follow, written to its
+// git config. An empty project shows the machine settings only.
+func NewIn(run Runner, t theme.Theme, profile colorprofile.Profile, project string) (*App, error) {
 	out, err := run("daemon.settings", nil)
 	if err != nil {
 		return nil, err
@@ -88,21 +109,37 @@ func New(run Runner, t theme.Theme, profile colorprofile.Profile) (*App, error) 
 		return nil, err
 	}
 	paused := false
-	maxRuns := ""
+	maxRuns, pMax, pPause := "", "", false
 	for _, row := range s.Settings {
 		switch row.Key {
 		case PausedKey:
 			paused = row.Value == "true"
 		case MaxRunsKey:
 			maxRuns = row.Value
+		case ProjectPausedKey:
+			pPause = row.Value == "true"
+		case ProjectMaxRunsKey:
+			pMax = row.Value
 		}
 	}
 	confirm := ui.NewConfirm(pausedField, "Pause the daemon?").Default(paused)
 	limit := ui.NewText(maxRunsField, "Run limit").Default(maxRuns).Validator(validateMaxRuns)
-	form := ui.NewForm(t, profile, confirm, limit).
+	fields := []ui.Field{confirm, limit}
+	if project != "" {
+		fields = append(fields,
+			ui.NewConfirm(projPaused, "Pause project "+project+"?").Default(pPause),
+			ui.NewText(projMaxRuns, "Project run limit").Default(pMax).Validator(func(v string) error {
+				if v == "" {
+					return nil
+				}
+				return validateMaxRuns(v)
+			}))
+	}
+	form := ui.NewForm(t, profile, fields...).
 		WithSubtitle("Daemon").
 		WithThemeFunc(func(color.Color) theme.Theme { return t })
-	return &App{Component: modalshell.Form(form), run: run, paused: paused, maxRuns: maxRuns}, nil
+	return &App{Component: modalshell.Form(form), run: run, paused: paused, maxRuns: maxRuns,
+		project: project, pPaused: pPause, pMaxRuns: pMax}, nil
 }
 
 // Paused is the value the app opened with.
@@ -129,6 +166,20 @@ func (a *App) Update(msg tea.Msg) tea.Cmd {
 		var err error
 		if out, err = a.run("daemon.set", []string{"--", MaxRunsKey, v}); err != nil {
 			return modalshell.Done(out, err)
+		}
+	}
+	if a.project != "" {
+		if v := sub.Values.Bool(projPaused); v != a.pPaused {
+			var err error
+			if out, err = a.run("daemon.set", []string{"--", ProjectPausedKey, fmt.Sprint(v)}); err != nil {
+				return modalshell.Done(out, err)
+			}
+		}
+		if v := sub.Values.String(projMaxRuns); v != a.pMaxRuns && v != "" {
+			var err error
+			if out, err = a.run("daemon.set", []string{"--", ProjectMaxRunsKey, v}); err != nil {
+				return modalshell.Done(out, err)
+			}
 		}
 	}
 	return modalshell.Done(out, nil)

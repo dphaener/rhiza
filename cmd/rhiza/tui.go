@@ -103,7 +103,9 @@ type tuiModels struct {
 	// mergedInbox is the inbox over every registered project.
 	mergedInbox func(projects []string, folder func(string) string) *inboxapp.Model
 	runs        func() *runsapp.Model
-	autonomy    func() *autonomyapp.Model
+	// mergedRuns is the runs app over every registered project.
+	mergedRuns func(projects []string, folder func(string) string) *runsapp.Model
+	autonomy   func() *autonomyapp.Model
 }
 
 func newTUIModels(g globals, getenv func(string) string) tuiModels {
@@ -162,7 +164,19 @@ func newTUIModels(g globals, getenv func(string) string) tuiModels {
 			return call(op, false, false, args)
 		})
 	}
-	return tuiModels{call: call, inbox: inboxModel, mergedInbox: mergedInbox, runs: runsModel, autonomy: autonomyModel}
+	mergedRuns := func(projects []string, folder func(string) string) *runsapp.Model {
+		in := func(project, op string, args []string) ([]byte, error) {
+			if wd, err := os.Getwd(); err == nil {
+				defer os.Chdir(wd)
+			}
+			if err := os.Chdir(folder(project)); err != nil {
+				return nil, err
+			}
+			return call(op, false, false, args)
+		}
+		return runsapp.NewMergedModel(in, projects, nil)
+	}
+	return tuiModels{call: call, inbox: inboxModel, mergedInbox: mergedInbox, mergedRuns: mergedRuns, runs: runsModel, autonomy: autonomyModel}
 }
 
 // inboxRun runs one of the inbox app's operations. The app passes
@@ -230,9 +244,10 @@ func appSwitcher(name string, apps tuiModels) (*modalshell.Switcher, error) {
 			sh := apps.autonomy().Shell()
 			return modalshell.Built{Model: sh, Result: sh.Result}
 		case daemonapp.Name:
-			da, err := daemonapp.New(func(op string, args []string) ([]byte, error) {
+			cur, _ := projectctx.Current(wdNow())
+			da, err := daemonapp.NewIn(func(op string, args []string) ([]byte, error) {
 				return call(op, false, false, args)
-			}, theme.Dark(), colorprofile.Detect(os.Stdout, os.Environ()))
+			}, theme.Dark(), colorprofile.Detect(os.Stdout, os.Environ()), cur)
 			if err != nil {
 				daemonErr = err
 				return modalshell.Built{Model: modalshell.New(modalshell.Dialog(ui.NewDialog(theme.Dark(), colorprofile.Detect(os.Stdout, os.Environ()), "Daemon", []string{err.Error()})))}
@@ -247,6 +262,9 @@ func appSwitcher(name string, apps tuiModels) (*modalshell.Switcher, error) {
 			return modalshell.Built{Model: im, Result: im.Result}
 		case runsapp.Name:
 			rm := apps.runs()
+			if names, folder := projectctx.Folders(wdNow()); len(names) > 0 && apps.mergedRuns != nil {
+				rm = apps.mergedRuns(names, folder)
+			}
 			sh := modalshell.New(rm)
 			return modalshell.Built{Model: sh, Result: rm.Result}
 		default:

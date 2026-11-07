@@ -7,7 +7,10 @@ package runsapp
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"slices"
+	"strings"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -41,6 +44,9 @@ func init() {
 // `rhiza <op> --json` prints it.
 type Runner func(op string, args []string) ([]byte, error)
 
+// ProjectRunner runs an api operation in the named project.
+type ProjectRunner func(project, op string, args []string) ([]byte, error)
+
 // Clock tells the time; tests inject one.
 type Clock func() time.Time
 
@@ -50,6 +56,9 @@ type TickMsg struct{}
 // Model is the app: a modalshell.Component over an InfoPanel.
 type Model struct {
 	run   Runner
+	runIn ProjectRunner // set for a merged model: every project's runs
+	projs []string
+	tags  []string // the project of each row, parallel to rows
 	now   Clock
 	panel *ui.InfoPanel
 	out   []byte
@@ -72,8 +81,63 @@ func NewModel(run Runner, now Clock) *Model {
 	return m
 }
 
+// NewMergedModel returns the model over every one of projects' live runs,
+// each row tagged with its project, newest started first. A project whose
+// runs cannot be read is skipped; the error shows only when none can.
+func NewMergedModel(run ProjectRunner, projects []string, now Clock) *Model {
+	if now == nil {
+		now = time.Now
+	}
+	m := &Model{runIn: run, projs: projects, now: now}
+	m.load()
+	m.panel = ui.NewInfoPanel(theme.Dark(), colorprofile.TrueColor, "Runs", m.body).
+		WithHint("↑↓ scroll · q close")
+	return m
+}
+
+func (m *Model) loadMerged() {
+	var errs []error
+	var all []api.RunLsItem
+	var tags []string
+	for _, p := range m.projs {
+		out, err := m.runIn(p, readOp, nil)
+		var ls api.RunLsResponse
+		if err == nil {
+			err = json.Unmarshal(out, &ls)
+		}
+		if err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", p, err))
+			continue
+		}
+		for _, it := range ls.Runs {
+			if it.Live {
+				all = append(all, it)
+				tags = append(tags, p)
+			}
+		}
+	}
+	idx := make([]int, len(all))
+	for i := range idx {
+		idx[i] = i
+	}
+	slices.SortStableFunc(idx, func(a, b int) int { return strings.Compare(all[b].StartedAt, all[a].StartedAt) })
+	m.rows, m.tags = m.rows[:0], m.tags[:0]
+	for _, i := range idx {
+		m.rows, m.tags = append(m.rows, all[i]), append(m.tags, tags[i])
+	}
+	m.err = nil
+	if len(errs) > 0 && len(errs) == len(m.projs) {
+		m.err = errors.Join(errs...)
+	}
+	m.out, _ = json.Marshal(api.RunLsResponse{Runs: m.rows})
+}
+
 // load runs run.ls and keeps the live runs.
 func (m *Model) load() {
+	if m.runIn != nil {
+		m.loadMerged()
+		return
+	}
 	out, err := m.run(readOp, nil)
 	m.out, m.err = out, err
 	if err != nil {
@@ -104,7 +168,7 @@ func (m *Model) body(int) []string {
 		}
 		return lines
 	}
-	for _, r := range m.rows {
+	for i, r := range m.rows {
 		title := r.Title
 		if title == "" {
 			title = r.Change
@@ -112,6 +176,9 @@ func (m *Model) body(int) []string {
 		step := r.Current
 		if step == "" {
 			step = "-"
+		}
+		if m.runIn != nil {
+			title = m.tags[i] + " · " + title
 		}
 		lines = append(lines, fmt.Sprintf("%s · %s · %s", title, step, m.elapsed(r.StartedAt)))
 	}
