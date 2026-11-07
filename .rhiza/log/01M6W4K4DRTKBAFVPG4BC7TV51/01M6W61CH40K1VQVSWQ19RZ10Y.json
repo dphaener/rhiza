@@ -1,0 +1,61 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6W5PHZR6A7JP2YXQTXK3X9V"
+  ],
+  "at": "2026-11-07T23:38:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on request-exposed-workflows): The leaf, and Decision risk-warnings-shape point (2) it follows, flag the request workflow (plan) only when rhiza.autonomy.plan is auto, on the premise that with plan owner 'a person reads the plan before anything runs'. The code contradicts that. daemonPlanRequests (internal/api/request.go:308-336) starts the plan run from every queued request whatever the plan stage is. planRunArgs (request.go:387-402) always passes --permission-mode <rhiza.daemon.permissionMode> and the request's --ref, and only adds or omits --autonomous. So with plan owner the interview agent still starts at once in bypass mode, with the request text as its title and the ref in the change set, before any person has read it. The plan workflow's review, critic and reviser agents then read it too. As planned, a repo with plan owner and permissionMode bypassPermissions, which is exactly the outside-text exposure, gets no warning. The exposure test should not depend on rhiza.autonomy.plan for the request workflow, or the decision should say why an interactive plan run counts as gated even though its agent acts before the owner joins. The critic confirmed it: internal/api/request.go:336 starts a plan run for every queued request whatever rhiza.autonomy.plan is, and planRunArgs (request.go:387-402) always passes --permission-mode <rhiza.daemon.permissionMode> and --ref; plan owner only omits --autonomous. The plan workflow's interview step (internal/workflow/builtin/plan.toml) starts an agent at once whose prompt carries {title}, the request text, so under a bypass mode that agent acts on outside text before any person joins. The leaf's 'plan owner flags nothing' case and decision risk-warnings-shape point 2's premise are wrong: the request workflow's exposure must not hinge on rhiza.autonomy.plan alone (or the decision must justify why an interactive plan run counts as gated). How should it be settled?"
+        },
+        "handle": "review-01m6w4k1-r3-f1",
+        "id": "01M6W61C8JAH7D9G6J8JEFHFBX",
+        "key": null,
+        "kind": "question",
+        "node": "01M6W61C8JAH7D9G6J8G7HN3Z4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W61C8JAH7D9G6J8G7HN3Z4",
+        "id": "01M6W61C901TJX8XPCPN6H1AAQ",
+        "link": "01M6W61C901TJX8XPCPKXHDAT7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZMW57BSXGYJYXV6XPWP2",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on workflows-guide-outside-input): It lists 'a person gates intake (rhiza.autonomy.plan owner)' as a mitigation. In the code, plan owner only drops --autonomous from the plan run the daemon starts for each queued request (internal/api/request.go:336, 387-402). The planner agent still starts right away with the request text and --ref, under rhiza.daemon.permissionMode. Plan owner gates the gate (the owner accepts the plan), not intake, so the guide would tell owners that a setting stops outside text from reaching bypass-mode agents when it does not. The critic confirmed it: Same code path: rhiza.autonomy.plan owner does not gate intake; the daemon still starts the plan run (request.go:336) with the request text and --ref under rhiza.daemon.permissionMode, and only the gate waits for the owner's acceptance (run_review.go runRunGate). Listing 'a person gates intake (rhiza.autonomy.plan owner)' as a mitigation would tell owners a setting keeps outside text from bypass-mode agents when it does not; the guide should name what actually helps (a narrower permission_mode for the plan workflow's steps or the daemon, owner acceptance for what runs after the plan). How should it be settled?"
+        },
+        "handle": "review-01m6w4k1-r3-f2",
+        "id": "01M6W61C9M95QBDME0DHX232YW",
+        "key": null,
+        "kind": "question",
+        "node": "01M6W61C9M95QBDME0DENYA5VE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W61C9M95QBDME0DENYA5VE",
+        "id": "01M6W61CAXTQZ8JZ1A92B77WQR",
+        "link": "01M6W61CAXTQZ8JZ1A8YWNFVBB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZN88P5XT2RXYH35YRVMZ",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6W4K4DRTKBAFVPG4BC7TV51",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W61CH40K1VQVSWQ19RZ10Y",
+  "type": "ops",
+  "v": 1
+}
