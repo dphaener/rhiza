@@ -8,7 +8,7 @@ Evidence from the VM: rhiza daemon status --json shows mode service; rhiza run l
 
 ## statement
 
-This repo's daemon runs as a service on the VM and ships a change set end to end with no orchestrator session, worked from the Mac's Rex app connected to the VM host, while the Mac runs no daemon
+The root daemon runs as a service (rhiza-root.service, on the root ~/code where this repo is registered) on the VM and ships a change set end to end with no orchestrator session, worked from the Mac's Rex app connected to the VM host, while the Mac runs no daemon
 
 ## Links
 
@@ -21,7 +21,9 @@ This repo's daemon runs as a service on the VM and ships a change set end to end
 - verifies [rhiza-on-vm-verified](../../../../evidence/rhiza-on-vm-verified.md)
 - verifies [rhiza-on-vm-qa-1](../../../../evidence/rhiza-on-vm-qa-1.md)
 - verifies [pr-307-move-this-repo-s-rhiza](../../../../evidence/pr-307-move-this-repo-s-rhiza.md)
+- verifies [pr-351-this-vm-on-one-root](../../../../evidence/pr-351-this-vm-on-one-root.md)
 
 ## History
 
 - `01M6FENG43982SZMA5Q9VBGEVZ` Move this repo's Rhiza installation to a dedicated Ubuntu VM on Proxmox, by an HTML runbook
+- `01M6RN474B5EXMX8NYHE7F62RV` This VM on one root: rhiza and nebari registered under one root run by one root daemon service, replacing rhiza-rhiza.service
