@@ -49,7 +49,21 @@ rhiza workflow check mine
 rhiza run start --workflow mine --dry-run
 ```
 
-`ls` shows each layer and what it shadows. `new` forks a workflow into
-`.rhiza/workflows/mine.toml` (without `--from`, a skeleton) and never overwrites. `describe`
-shows the steps as the run resolves them. `check` reports every problem with the step it is in.
-`--dry-run` starts nothing. Edit the file, check, repeat.
+`new` forks into `.rhiza/workflows/mine.toml` (without `--from`, a skeleton), never
+overwriting. `check` reports every problem with its step. `--dry-run` starts nothing.
+
+## Dispatch
+
+`.rhiza/dispatch.toml` maps a kind (`feature`, `bug`, `milestone`) to a bare workflow name in
+`[request]` (a queued request's plan run) and `[ready]` (an accepted change set's run), e.g.
+`[ready]` then `bug = "bugfix"`. Any other table, key or value is an error naming it. Unset
+kinds, or no file: `plan` and `ship-change`. No kind is `feature`.
+
+`rhiza request --workflow <name>` is recorded, with the kind, on the change set the request
+opens,.
+
+A ready change set's run takes, in order: `run start --workflow`, the workflow its request
+named, the `[ready]` rule, `ship-change`. A request's plan run takes the `[request]` rule.
+
+A name that does not resolve never falls back: no run starts, and a `workflow-unresolved`
+skip in `rhiza daemon status` and the inbox names the workflow and the rule or flag behind it.
