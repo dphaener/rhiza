@@ -745,7 +745,8 @@ func newPlanChange(ctx *Ctx, r RunStartRequest, def *workflow.Definition) (chang
 		t = changeWorktree{w: w, cs: cs, title: open.DisplayTitle(), common: common, prefix: strings.TrimSpace(prefix)}
 		mainRoot := filepath.Dir(common)
 		t.repo = filepath.Base(mainRoot)
-		slug := session.Slug(t.title)
+		slug := session.ChangeSetSlug(w.changeSets(), cs)
+		t.slug = slug
 		t.branch = session.Branch(slug)
 		t.worktree = session.Worktree(mainRoot, t.repo, slug)
 		return t, nil
@@ -1050,6 +1051,19 @@ func worktreeDirty(porcelain, worktree, main string) bool {
 	return false
 }
 
+// runChangeSlug is the unique slug of the change set the run st works on.
+func runChangeSlug(ctx *Ctx, st run.State) (string, bool) {
+	cs, err := id.Parse(st.Change)
+	if err != nil {
+		return "", false
+	}
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return "", false
+	}
+	return session.ChangeSetSlug(w.changeSets(), cs), true
+}
+
 // abandonCleanup removes the abandoned run's worktree without force and
 // deletes its local cs/<slug> branch, keeping both when the worktree is
 // dirty or another run still uses them, and the branch when it holds
@@ -1064,7 +1078,11 @@ func abandonCleanup(ctx *Ctx, common string, rs *run.Store, id string, st run.St
 	if samePath(st.Worktree, main) {
 		return nil
 	}
-	branch := session.Branch(session.Slug(st.Title))
+	slug, ok := runChangeSlug(ctx, st)
+	if !ok {
+		return nil
+	}
+	branch := session.Branch(slug)
 	git := func(args ...string) ([]byte, error) {
 		return ctx.Exec("git", append([]string{"-C", main}, args...), main, nil)
 	}
@@ -1783,7 +1801,7 @@ func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (s
 		return "", err
 	}
 	req.Prompt = step.RenderPrompt(workflow.PromptVars{
-		Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: step.Name,
+		Change: t.cs.String(), Slug: t.slug, Title: t.title, Run: r.run, Step: step.Name,
 	})
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {

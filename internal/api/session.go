@@ -348,6 +348,7 @@ type changeWorktree struct {
 	w        *workspace
 	cs       id.ID
 	title    string
+	slug     string // the unique slug: branch cs/<slug>, worktree <repo>.<slug>
 	common   string // the absolute git common dir
 	prefix   string // Root's folder within the git repository, "" or ending in "/"
 	repo     string // the main checkout's folder name
@@ -393,7 +394,8 @@ func resolveChangeWorktree(ctx *Ctx, ref, refusal string) (changeWorktree, error
 	t = changeWorktree{w: w, cs: cs, title: c.Open.DisplayTitle(), common: common, prefix: strings.TrimSpace(prefix)}
 	mainRoot := filepath.Dir(common)
 	t.repo = filepath.Base(mainRoot)
-	slug := session.Slug(t.title)
+	slug := session.ChangeSetSlug(w.changeSets(), cs)
+	t.slug = slug
 	t.branch = session.Branch(slug)
 	t.worktree = session.Worktree(mainRoot, t.repo, slug)
 	if t.reuse, err = worktreeReuse(ctx, t.worktree, t.branch); err != nil {

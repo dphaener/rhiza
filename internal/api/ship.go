@@ -175,12 +175,14 @@ func findShipTarget(ctx *Ctx) (shipTarget, error) {
 	}
 	var cs id.ID
 	var c changeset.ChangeSet
+	var sets []changeset.ChangeSet
 	if len(w.pending) == 0 && ctx.IndexPath != "" {
-		cs, c, err = indexedShipChangeSet(ctx, w)
+		cs, c, sets, err = indexedShipChangeSet(ctx, w)
 	} else {
 		cs, err = w.effectiveChangeSet(ctx)
 		if err == nil && !cs.IsZero() {
 			c, _ = w.changeSet(cs)
+			sets = w.changeSets()
 		}
 	}
 	if err != nil {
@@ -202,7 +204,7 @@ func findShipTarget(ctx *Ctx) (shipTarget, error) {
 		return t, Errorf("git worktree list names no main checkout")
 	}
 	t = shipTarget{cs: cs, title: c.Open.DisplayTitle(), main: main, common: common}
-	t.slug = session.Slug(t.title)
+	t.slug = session.ChangeSetSlug(sets, cs)
 	t.branch = session.Branch(t.slug)
 	mainRoot := filepath.Dir(common)
 	t.worktree = session.Worktree(mainRoot, filepath.Base(mainRoot), t.slug)
@@ -210,30 +212,43 @@ func findShipTarget(ctx *Ctx) (shipTarget, error) {
 }
 
 // indexedShipChangeSet is the effective change set and its fold, from the
-// index's stored change sets: the log is not read.
-func indexedShipChangeSet(ctx *Ctx, w *workspace) (id.ID, changeset.ChangeSet, error) {
+// index's stored change sets: the log is not read. sets are the folded
+// change sets up to it, which name its unique slug.
+func indexedShipChangeSet(ctx *Ctx, w *workspace) (id.ID, changeset.ChangeSet, []changeset.ChangeSet, error) {
 	x, err := index.Open(ctx.Root, ctx.IndexPath)
 	if err != nil {
-		return id.ID{}, changeset.ChangeSet{}, Errorf("%s", err.Error())
+		return id.ID{}, changeset.ChangeSet{}, nil, Errorf("%s", err.Error())
 	}
 	defer x.Close()
 	current, err := w.current()
 	if err != nil {
-		return id.ID{}, changeset.ChangeSet{}, err
+		return id.ID{}, changeset.ChangeSet{}, nil, err
 	}
 	infos, err := x.ChangeSets()
 	if err != nil {
-		return id.ID{}, changeset.ChangeSet{}, Errorf("%s", err.Error())
+		return id.ID{}, changeset.ChangeSet{}, nil, Errorf("%s", err.Error())
 	}
 	cs, err := indexedEffective(ctx, current, infos)
 	if err != nil || cs.IsZero() {
-		return cs, changeset.ChangeSet{}, err
+		return cs, changeset.ChangeSet{}, nil, err
 	}
-	got, err := x.FoldedOf([]id.ID{cs})
+	var ids []id.ID
+	for _, in := range infos {
+		if id.Compare(in.ID, cs) <= 0 {
+			ids = append(ids, in.ID)
+		}
+	}
+	got, err := x.FoldedOf(ids)
 	if err != nil {
-		return id.ID{}, changeset.ChangeSet{}, Errorf("%s", err.Error())
+		return id.ID{}, changeset.ChangeSet{}, nil, Errorf("%s", err.Error())
 	}
-	return cs, got[cs], nil
+	var sets []changeset.ChangeSet
+	for _, i := range ids {
+		if c, ok := got[i]; ok {
+			sets = append(sets, c)
+		}
+	}
+	return cs, got[cs], sets, nil
 }
 
 // firstWorktree is the path of the first entry of `git worktree list

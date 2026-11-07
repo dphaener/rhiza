@@ -17,7 +17,6 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
-	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/store"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
@@ -55,7 +54,7 @@ func (r *stepRunner) StartCheck(spec run.CheckSpec) (string, error) {
 	}
 	req.Prompt = role.RenderCheckPrompt(workflow.CheckVars{
 		PromptVars: workflow.PromptVars{
-			Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: spec.Step.Name,
+			Change: t.cs.String(), Slug: t.slug, Title: t.title, Run: r.run, Step: spec.Step.Name,
 		},
 		Check: spec.Check.Name, Cycle: spec.Cycle,
 	})
@@ -85,7 +84,7 @@ func (r *stepRunner) StartFix(spec run.FixSpec) (string, error) {
 		return "", err
 	}
 	req.Prompt = changeSetFixerPrompt(*role, spec, workflow.PromptVars{
-		Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: spec.Step.Name,
+		Change: t.cs.String(), Slug: t.slug, Title: t.title, Run: r.run, Step: spec.Step.Name,
 	})
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {

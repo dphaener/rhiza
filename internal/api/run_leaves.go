@@ -22,7 +22,6 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
-	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/store"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
@@ -107,7 +106,7 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}
 	req.Prompt = leafPrompt(*role, spec, workflow.PromptVars{
-		Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: spec.Step.Name,
+		Change: t.cs.String(), Slug: t.slug, Title: t.title, Run: r.run, Step: spec.Step.Name,
 	})
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
