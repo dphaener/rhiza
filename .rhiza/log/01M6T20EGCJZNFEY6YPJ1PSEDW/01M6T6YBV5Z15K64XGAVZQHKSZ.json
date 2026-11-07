@@ -1,0 +1,63 @@
+{
+  "actor": "01M6T65SQB798RG6347RE3SGC0",
+  "after": [
+    "01M6T62WEAH2MFABPD33APH8QE"
+  ],
+  "at": "2026-11-07T05:15:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e6c86be2 with a built binary (go build ./cmd/rhiza): from a subfolder of a scratch dir outside any root, rhiza root show exits 2 'not inside a Rhiza root'; after rhiza root init on the parent, root show from the subfolder (text and --json) names the parent as root; from this checkout it names /home/rhiza/code, project rhiza: the CLI still resolves the root from its absolute cwd. go test -trimpath ./internal/rootcfg/... and ./internal/api/... -run Usage pass (TestFindEmptyDirFindsNoRoot, TestUsageLearnEmptyWdStaysInRepoFolder). In a git-archive copy under a scratch root with rootcfg.go reverted to 2a7a01a1^, the usage tests fail and a fake hit (hit_at 2026-11-04T10:45Z) lands in the scratch root's .rhiza-root/usage.limits.jsonl; with the fix restored they pass and no .rhiza-root is created."
+        },
+        "handle": "empty-dir-finds-no-root-qa-1",
+        "id": "01M6T6YBQA3Y8624FY1RE95GQ4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6T6YBQA3Y8624FY1QWNKFFM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T6YBQA3Y8624FY1QWNKFFM",
+        "id": "01M6T6YBR0BJ3A5GYJ9BGT9AZP",
+        "link": "01M6T6YBR0BJ3A5GYJ99Z9YNX9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T26X1CPJA6YNWN7KQTP4C5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e6c86be2: go test -trimpath ./internal/rootguard/... passes. From this checkout under the real root ~/code, ./internal/api/... -run Usage, the full ./internal/api/... and ./cmd/rhiza -run TestScripts/usage ran with a before/after snapshot of ~/code/.rhiza-root (file list, sizes, mtimes, limits file hash): identical, nothing written. Negative check: in a copy under a scratch root with the rootcfg fix reverted, rootguard.Main in api's TestMain failed the run with '.rhiza-root/usage.limits.jsonl: line 1 appended with hit_at 2026-11-04T10:45:00Z, outside the test run'. The full api run had one unrelated failure, TestWebRootHandlerServesEveryProject's TempDir cleanup ('directory not empty'), which passes 3/3 alone and is in code this change does not touch."
+        },
+        "handle": "tests-leave-root-state-alone-qa-1",
+        "id": "01M6T6YBS2HXNPQB1WENTWY0AH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6T6YBS2HXNPQB1WEKHDYBMX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T6YBS2HXNPQB1WEKHDYBMX",
+        "id": "01M6T6YBT519S7PBYSNQ99CKV2",
+        "link": "01M6T6YBT519S7PBYSNPV9RTFQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T26X2D1D7TTAJ0MMF0X9FN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6T20EGCJZNFEY6YPJ1PSEDW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T6YBV5Z15K64XGAVZQHKSZ",
+  "type": "ops",
+  "v": 1
+}
