@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SPNPW8RZV32FWQV15G2H60",
+  "after": [
+    "01M6SPJATH42TEJ3H7KJ3B74SS"
+  ],
+  "at": "2026-11-07T00:32:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cbe88beb (verifier, attempt 2) I read the diff and ran `go test -trimpath ./cmd/rhiza -run TestTUIAppHeaders -v`. It opens all five apps (inbox, runs, autonomy, daemon, request) through appSwitcher, the path `rhiza tui app` uses, in a registered project's folder (alpha), its sibling worktree (alpha.feature) and the root. All 15 subtests PASS. The header and the first view line are 'Project: alpha', 'Project: alpha' and 'No project', and the view fits a 30-line window. `go test -trimpath ./internal/tui/modalshell/... ./internal/tui/projectctx/...` PASS. Within those, TestHeaderFitsWindow checks that a headed shell, a headed model and the switcher each render exactly the WindowSizeMsg height, because underHeader takes the header row off the content's height. go vet and gofmt are clean. Both attempt-1 findings (header overflowing by one row, no app-level test) are fixed."
+        },
+        "handle": "tui-current-project-verified",
+        "id": "01M6SPR05826WAWHJ5SPRGSPRE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SPR05826WAWHJ5SM48X00C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SPR05826WAWHJ5SM48X00C",
+        "id": "01M6SPR07XY12YKQMJTK95SCM5",
+        "link": "01M6SPR07XY12YKQMJTFSMHX65",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN86H70DC8GP65XJEDD2FN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN441P2Z865ZVKAS7X7GMG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SPR0BZHBS8PCAV8AAV591X",
+  "type": "ops",
+  "v": 1
+}
