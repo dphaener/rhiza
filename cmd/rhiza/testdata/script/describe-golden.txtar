@@ -2562,7 +2562,16 @@ cmp stdout describe.golden.json
       "name": "health",
       "request": {
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "all": {
+            "description": "Cover every registered project, from anywhere under a Rhiza root; the default at the root itself",
+            "type": "boolean"
+          },
+          "project": {
+            "description": "Only this registered project's parts; default the current project, or every project at the root",
+            "type": "string"
+          }
+        },
         "required": [],
         "type": "object"
       },
@@ -2570,7 +2579,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "parts": {
-            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, usage, main, inbox, requests, roadmap, check",
+            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, usage, then main, inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -2599,6 +2608,10 @@ cmp stdout describe.golden.json
                     "roadmap",
                     "check"
                   ],
+                  "type": "string"
+                },
+                "project": {
+                  "description": "The registered project the part belongs to, on a report that covers every project; absent on the machine's parts and on a single project's report",
                   "type": "string"
                 },
                 "state": {

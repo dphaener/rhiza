@@ -49,11 +49,15 @@ const (
 	HealthCheck    = "check"
 )
 
-// HealthRequest takes nothing.
-type HealthRequest struct{}
+// HealthRequest picks the projects the report covers.
+type HealthRequest struct {
+	All     bool   `json:"all,omitempty" flag:"all" desc:"Cover every registered project, from anywhere under a Rhiza root; the default at the root itself"`
+	Project string `json:"project,omitempty" flag:"project" desc:"Only this registered project's parts; default the current project, or every project at the root"`
+}
 
 // HealthPart is one part of the system and its state.
 type HealthPart struct {
+	Project string   `json:"project,omitempty" desc:"The registered project the part belongs to, on a report that covers every project; absent on the machine's parts and on a single project's report"`
 	Part    string   `json:"part" enum:"daemon,autonomy,machine,disk,usage,main,inbox,requests,roadmap,check" desc:"The part"`
 	State   string   `json:"state" enum:"ok,warn,bad" desc:"ok, warn (worth a look) or bad (rhiza health exits 1)"`
 	Summary string   `json:"summary" desc:"One line on the part's state"`
@@ -64,7 +68,7 @@ type HealthPart struct {
 // HealthResponse is the report.
 type HealthResponse struct {
 	State string       `json:"state" enum:"ok,warn,bad" desc:"The worst state of any part"`
-	Parts []HealthPart `json:"parts" desc:"Every part, in a fixed order: daemon, autonomy, machine, disk, usage, main, inbox, requests, roadmap, check"`
+	Parts []HealthPart `json:"parts" desc:"Every part, in a fixed order: daemon, autonomy, machine, disk, usage, then main, inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project"`
 }
 
 // ExitCode is 1 when a part is bad, else 0.
@@ -79,7 +83,11 @@ func (r HealthResponse) ExitCode() int {
 // next command indented.
 func (r HealthResponse) Human(w io.Writer) {
 	for _, p := range r.Parts {
-		fmt.Fprintf(w, "%-4s %-8s %s\n", p.State, p.Part, p.Summary)
+		sum := p.Summary
+		if p.Project != "" {
+			sum = p.Project + ": " + sum
+		}
+		fmt.Fprintf(w, "%-4s %-8s %s\n", p.State, p.Part, sum)
 		for _, d := range p.Detail {
 			fmt.Fprintf(w, "     %s\n", d)
 		}
@@ -100,22 +108,64 @@ func healthRank(s string) int {
 	return 0
 }
 
-func runHealth(ctx *Ctx, _ any) (any, error) {
-	if ctx.DryRun {
-		return nil, Usagef("health does not take --dry-run: it writes nothing").WithNext("rhiza health")
-	}
-	settings, serr := settingsOf(ctx, nil)
-	parts := []HealthPart{
-		healthDaemon(ctx),
-		healthAutonomy(settings, serr),
-		healthMachine(ctx),
-		healthDisk(ctx, settings, serr),
-		healthUsage(ctx, settings, serr),
+// healthProjectParts are the parts that belong to one project.
+func healthProjectParts(ctx *Ctx) []HealthPart {
+	return []HealthPart{
 		healthMain(ctx),
 		healthInbox(ctx),
 		healthRequests(ctx),
 		healthRoadmap(ctx),
 		healthCheck(ctx),
+	}
+}
+
+// runHealth answers health over the one project ctx works in, or, at the
+// root or with --all, over every registered project: the machine's parts
+// (daemon, autonomy, machine trust, disk, usage hold) once, the project's
+// parts once for each project, tagged with its name. A caller passing no
+// request (the web UI) reads the one project.
+func runHealth(ctx *Ctx, req any) (any, error) {
+	if ctx.DryRun {
+		return nil, Usagef("health does not take --dry-run: it writes nothing").WithNext("rhiza health")
+	}
+	r, typed := req.(HealthRequest)
+	scopes, merged := []inboxScope{{"", ctx}}, false
+	// A root folder that holds a model of its own is read as that one
+	// project, unless --project names a registered one.
+	own := false
+	if root, cfg, ok := rootOf(ctx); ok && r.Project == "" && projectInitialised(ctx.Wd) {
+		_, inProject := cfg.ProjectOf(root, ctx.Wd)
+		own = !inProject
+	}
+	if typed && !own {
+		_, _, haveRoot := rootOf(ctx)
+		var err error
+		if scopes, merged, err = inboxScopes(ctx, r.Project, r.All && haveRoot); err != nil {
+			return nil, err
+		}
+	}
+	// The machine's parts read through a project's checkout (its git
+	// config, the daemon's state in its git directory); with no project
+	// the root's own context is all there is.
+	mctx := ctx
+	if merged && len(scopes) > 0 {
+		mctx = scopes[0].ctx
+	}
+	settings, serr := settingsOf(mctx, nil)
+	parts := []HealthPart{
+		healthDaemon(mctx),
+		healthAutonomy(settings, serr),
+		healthMachine(mctx),
+		healthDisk(mctx, settings, serr),
+		healthUsage(mctx, settings, serr),
+	}
+	for _, sc := range scopes {
+		for _, p := range healthProjectParts(sc.ctx) {
+			if merged {
+				p.Project = sc.name
+			}
+			parts = append(parts, p)
+		}
 	}
 	resp := HealthResponse{State: HealthOK, Parts: parts}
 	for i := range resp.Parts {
