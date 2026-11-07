@@ -1,0 +1,106 @@
+{
+  "actor": "01M6T2DX6ZF81TQHFNF9JCM9ZM",
+  "after": [
+    "01M6T2NE36S90T608E7BFAXH3M"
+  ],
+  "at": "2026-11-07T04:01:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "internal/adapter/claudecode tests show Settings carries a statusLine command alongside the hooks; a new usage-live-record.txtar pipes status line JSON with five_hour and seven_day rate_limits into the command and finds one latest snapshot per kind in the root's state folder (and the repo's daemon dir outside a root), a second input replaces the first, and input without rate_limits or malformed JSON exits 0 and records nothing",
+          "statement": "Every Claude Code session Rhiza launches runs a rhiza statusLine command (added to the adapter's --settings JSON) that reads the status line JSON on stdin and records each rate_limits window it carries (five_hour as session, seven_day as weekly: used_percentage, resets_at and the capture time) to a live-usage file in the same state folder as the usage-limit hits, keeping the latest snapshot per window kind; input with no rate_limits records nothing, and the command never fails the session"
+        },
+        "handle": "usage-live-snapshot-record",
+        "id": "01M6T2P2NB2AXZ8SE7K9JK35QW",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6T2P2NB2AXZ8SE7K6XJMK1C",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/adapter/claudecode tests read a fake state folder's live-usage file back as the latest snapshot per kind with used_percentage, resets_at and capture time, and an absent or corrupt file gives no snapshots and no error that stops a poll",
+          "statement": "An adapter that reports live usage implements an optional interface, like UsageReader, that returns the latest recorded snapshot per window kind; the Claude Code adapter reads the live-usage file, and an adapter without it reports none"
+        },
+        "handle": "usage-live-snapshot-read",
+        "id": "01M6T2P2P020GWJEF7T6822M36",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6T2P2P020GWJEF7T5JE0FTY",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests in internal/usage derive window and limit from a snapshot (49% of a 7-day window's counted tokens gives tokens/0.49), give no limit under 1% or with no tokens, and treat a snapshot past its resets_at as not live; internal/api usage_hold tests with a fake clock and fake adapter show a live limit wins over a set rhiza.daemon.usage.weekly and a learned limit, an expired snapshot falls back to the setting and then the learned limit, a raised live limit lifts a hold the old setting caused, and a recorded limit hit still holds regardless",
+          "statement": "At each poll a window kind with a live snapshot (its resets_at after now) takes its window from it, Reset = resets_at and Start = resets_at minus the kind's length, and its limit from it, the window's counted tokens over [Start, capture time) divided by used_percentage/100; a snapshot under 1% used or with no tokens in its window gives no limit. Each kind's limit is the live one, else the rhiza.daemon.usage.<kind> setting, else the learned limit, and with none the kind never holds; Used is still counted fresh up to now, and the machine-wide hold from a recorded limit hit is unchanged"
+        },
+        "handle": "usage-live-limit",
+        "id": "01M6T2P2PWNPYM6T54QBRSQ68N",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6T2P2PWNPYM6T54QB5Q08K6",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "decision": null,
+        "from": "01M6T2P2NB2AXZ8SE7K6XJMK1C",
+        "id": "01M6T2P2QHVAVH4BY40W8GJ969",
+        "link": "01M6T2P2QHVAVH4BY40V5E6R7F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2M4HFGZH5WZ0Z731RPDVS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6T2P2P020GWJEF7T5JE0FTY",
+        "id": "01M6T2P2RGG8Q1DK5ST6CXVX3A",
+        "link": "01M6T2P2RGG8Q1DK5ST5J500YW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2M4HFGZH5WZ0Z731RPDVS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6T2P2PWNPYM6T54QB5Q08K6",
+        "id": "01M6T2P2SHS7XWYXASVQD1G7CX",
+        "link": "01M6T2P2SHS7XWYXASVQ3Z9A06",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2M4HFGZH5WZ0Z731RPDVS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6T2P2P020GWJEF7T5JE0FTY",
+        "id": "01M6T2P2T26V67PJ5N9ZE6M8T7",
+        "link": "01M6T2P2T26V67PJ5N9XA85DR4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2P2NB2AXZ8SE7K6XJMK1C",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6T2P2PWNPYM6T54QB5Q08K6",
+        "id": "01M6T2P2V2KW3XSGWJRZ582Y4C",
+        "link": "01M6T2P2V2KW3XSGWJRYFGJQBF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2P2P020GWJEF7T5JE0FTY",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6T2DCTWTJ0GW5AQMA2FZJF8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T2P2WV9ATV21347KBTSKAV",
+  "type": "ops",
+  "v": 1
+}

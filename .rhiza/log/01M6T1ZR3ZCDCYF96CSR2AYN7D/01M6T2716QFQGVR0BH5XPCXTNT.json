@@ -1,0 +1,30 @@
+{
+  "actor": "01M6T209RBJ677HGVNWX7VDTHJ",
+  "after": [
+    "01M6T1ZR3ZCDCYF96CSTQN7JTJ"
+  ],
+  "at": "2026-11-07T03:53:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "99b69f45-64e6-43c7-ad0a-01a1b4201735",
+          "statement": "Which intent should change set 01M6T1ZR (Fix the usage governor's limits) serve? milestone-29 is the only open milestone; its done point m29-one-daemon names 'one usage governor' for the root daemon. / The intent says one 10:45Z hit taught both the session and weekly limits. The code already teaches only the kind KindOf gives (reset ≤5h = session); the live hits file shows that weekly limit came from a leaked fake test hit with a 4-day reset, which change set 01M6T20E fixes. What does 01M6T1ZR do about that point? / How should a learned usage limit move up when a window's use passes it with no limit hit in that window (e.g. after the owner's upgrade to Max 20x)? / usageHoldOf adds the mean run tokens for each live run, though those runs' tokens so far are already in the window's use. How should a live run count in the projection?"
+        },
+        "handle": "question-99b69f45-1",
+        "id": "01M6T26ZFS8SVCP4E0K2H19H3S",
+        "key": null,
+        "kind": "question",
+        "node": "01M6T26ZFS8SVCP4E0JZ00RYPX",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6T1ZR3ZCDCYF96CSR2AYN7D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T2716QFQGVR0BH5XPCXTNT",
+  "type": "ops",
+  "v": 1
+}

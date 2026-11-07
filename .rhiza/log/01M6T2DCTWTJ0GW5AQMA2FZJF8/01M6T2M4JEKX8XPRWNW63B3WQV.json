@@ -1,0 +1,41 @@
+{
+  "actor": "01M6T2J6D7P994064FT44G0RYR",
+  "after": [
+    "01M6T2HXEAT4YQERV325CFC7MG"
+  ],
+  "at": "2026-11-07T04:00:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The intent names the status line's rate_limits (used_percentage, resets_at per window) as the source and says to derive limit and reset at every poll and fall back to settings only when no live figure exists, so live must outrank the setting (today setting outranks learned; learned stays last). Rhiza already launches every run's claude with its own --settings JSON (internal/adapter/claudecode Settings), so a statusLine command is the cheapest reliable capture and keeps the adapter boundary: daemon code never parses Claude formats directly. The 'equivalent API' would need network and OAuth credentials, which the tests forbid and the adapter's file-only UsageReader contract avoids. The governor counts tokens (internal/usage windows over transcript records), so a percentage converts to a token limit as used/percentage, using resets_at to pin the window, which also fixes window boundaries the record chain only guesses. Low percentages make that ratio unstable, hence the 1% floor. Validity tied to resets_at is deterministic and testable with RHIZA_TEST_NOW, and needs no arbitrary staleness timer since the limit is a plan property within a window. Draft 01M6T1ZR edits the same usage_hold.go and usage_learn.go functions (KindOf use in learnLimits, the live-run term in usageHoldOf); sequencing after it avoids conflicting edits and lets this change set rely on a hit teaching only its kind.",
+          "statement": "(1) Source: Claude Code's status line input. The claudecode adapter's --settings JSON (which Rhiza already writes for every run's session) gains a statusLine command, a rhiza subcommand, that reads the status line JSON on stdin and records its rate_limits (per window: used_percentage, resets_at, plus the capture time) to a live-usage file in the same state folder as the limit hits (the root's .rhiza-root when under a root, else the repo's daemon dir), latest snapshot per window kind (five_hour = session, seven_day = weekly). Reading it stays behind an optional adapter interface, like UsageReader; no network API call, no credential reads. (2) Derivation: a snapshot fixes its window exactly: Reset = resets_at, Start = resets_at minus the kind's length (replacing the inferred chain for that kind). The limit is the window's tokens from the transcript records over [Start, capture time) divided by used_percentage/100. A snapshot below 1% used, or with no tokens in its window, yields no limit (too noisy). At each poll the window's Used is still counted fresh from the records up to now and compared against that derived limit with the reserve, as today. (3) Use and fallback: a snapshot is live while its resets_at is after now; the latest live snapshot of a kind is used at every poll. Order per kind: live snapshot, then the rhiza.daemon.usage.<kind> setting, then the learned limit; with none the kind never holds. The machine-wide hold from a recorded limit hit stays as it is, independent of all three. (4) Yes: this change set lands after draft 01M6T1ZR. It fixes which kind a hit teaches and the live-run double count in the same usageHoldOf/learnLimits code; this one builds the live-snapshot path on top of that corrected code rather than racing it.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "live-usage-source",
+        "id": "01M6T2M4HFGZH5WZ0Z76ZSVATE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6T2M4HFGZH5WZ0Z731RPDVS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T2M4HFGZH5WZ0Z731RPDVS",
+        "id": "01M6T2M4HZZ7X5BDNFWZEWR4XQ",
+        "link": "01M6T2M4HZZ7X5BDNFWVPGH1J9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2HVHW6XPG83DM2D1102ST",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6T2DCTWTJ0GW5AQMA2FZJF8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T2M4JEKX8XPRWNW63B3WQV",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,39 @@
+{
+  "actor": "01M6T2J7F32JA6GT6YQNSKS8X5",
+  "after": [
+    "01M6T2AQY7351T8Y3RA9W85E59"
+  ],
+  "at": "2026-11-07T03:59:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6MZB4PBMM55M7GD27848410",
+        "handle": null,
+        "id": "01M6T2K944VMQ2D1266S6FGJ2X",
+        "node": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "op": "node.update",
+        "set": {
+          "acceptance": "Tests in internal/api's daemon tests with a fake clock and fake token use show: under the line it starts; one projected run over the line holds picks, resumes, queued work and plans and stops no live run; with no finished runs only use so far counts; a live run adds only the mean less its tokens so far, never below zero; the next poll after the reset starts the held change set; a learned limit with no setting holds, a set rhiza.daemon.usage.session wins over a learned session limit, and a window with no setting and no learned limit never holds (go test -trimpath ./internal/api -run 'TestUsageHold')",
+          "statement": "At each poll the daemon holds everything it would launch (picks, resumes of interrupted runs, queued starts and continues, feature and bug plan requests) while a window's projected use exceeds its limit minus the reserve. Projected use is the window's use so far, plus for each live run what it is still expected to burn (the mean tokens of the last 10 finished runs less that run's tokens so far, never below zero; usage-live-run-remaining), plus one full mean for the next. A window's limit is its setting when set, else its learned limit, and a window with neither never holds. Live runs, runs the owner starts directly and milestone requests' plan runs (milestone-request-past-usage-hold) are untouched, and the hold clears at the first poll after the window resets"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "id": "01M6T2K95JZH67WPEX50Q2PR8Z",
+        "link": "01M6T2K95JZH67WPEX4YZ5BAP7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T298K6HQ3H61GT3Y0EACCE",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6T1ZR3ZCDCYF96CSR2AYN7D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T2K9779TZWR74RKJBNW1XY",
+  "type": "ops",
+  "v": 1
+}
