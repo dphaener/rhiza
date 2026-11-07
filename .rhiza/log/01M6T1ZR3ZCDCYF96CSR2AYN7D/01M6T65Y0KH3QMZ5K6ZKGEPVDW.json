@@ -1,0 +1,109 @@
+{
+  "actor": "01M6T5X8M8PRE7T1QK4HY3ZJ13",
+  "after": [
+    "01M6T5V57QQ1S5MA9639SHBTV5"
+  ],
+  "at": "2026-11-07T05:02:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Hands-on with a binary built at dcb78b71, in a scratch root (one project, isolated HOME and CLAUDE_CONFIG_DIR, fake Claude transcripts with 5000 then 2000 counted tokens): daemon state learned session 1000 and weekly 2000 (hit 3 days ago), one session-kind hit recorded in .rhiza-root/usage.limits.jsonl 30 min ago with reset 150 min out. After rhiza daemon --once the session limit was taught at the hit (5000, new hit time) while the weekly learned limit kept its old hit time and was not taught from the hit (it only ratcheted to its window use 7000)."
+        },
+        "handle": "usage-hit-teaches-its-kind-qa-1",
+        "id": "01M6T65XKNP98TD08XF5B29HZ7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6T65XKNP98TD08XF2855SFZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T65XKNP98TD08XF2855SFZ",
+        "id": "01M6T65XNNAVE5079M6BS5E577",
+        "link": "01M6T65XNNAVE5079M6BDCNWKP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2AQQYD3ESRA7NZAQW22KT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Hands-on with a binary built at dcb78b71, scratch root and fake Claude transcripts: learned session 1000 and weekly 2000 with no hit and window use 5000; one rhiza daemon --once saved both learned limits as 5000 in daemon.state.json, each keeping its hit_at. With a session hit inside the window (use at hit 5000, window use 7000) the session limit stayed 5000, not raised past the hit's use, while weekly rose to 7000."
+        },
+        "handle": "usage-learned-limit-ratchets-qa-1",
+        "id": "01M6T65XT5J9JJZA883H0Z4JBB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6T65XT5J9JJZA883FZKRDS0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T65XT5J9JJZA883FZKRDS0",
+        "id": "01M6T65XVD1DWKSNRCG1739AME",
+        "link": "01M6T65XVD1DWKSNRCFZPWJDGA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2AQSEY1KKA7VTESYMXWD8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Hands-on with a binary built at dcb78b71, scratch root, fake transcript use 5000, three finished run journals of 1000 tokens and one live run journal (process on another host), rhiza.daemon.usage.session set in git config, default 20% reserve, then rhiza daemon --once: live run at 600 with limit 7000 held at projected 6400 (5000+400+1000); live run at 1500 with limit 7000 held at projected 6000 (adds 0); live run at 1500 with limit 8000 (line 6400) did not hold, where the old count of a mean per live run (7000) would have."
+        },
+        "handle": "usage-live-run-remaining-qa-1",
+        "id": "01M6T65XW5QW7GW1JWVNCJ5X3D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6T65XW5QW7GW1JWVK4CRERV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T65XW5QW7GW1JWVK4CRERV",
+        "id": "01M6T65XXA0T4P5NT5VWG0EB18",
+        "link": "01M6T65XXA0T4P5NT5VSHWAMBT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2AQV83TNHDJ565NSM1TXG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Hands-on with a binary built at dcb78b71 in a scratch root: rhiza daemon --once wrote usage_hold with window, used, projected (window use + remaining live-run tokens + one mean), limit and reserve; with no setting a learned limit held, a git-config rhiza.daemon.usage.session was used as the limit, and rhiza health showed warn usage plus a usage-reserve inbox item while held. Scoped go test ./internal/api -run 'TestLimitHit|TestLearnedLimit|TestUsageHold' passes."
+        },
+        "handle": "usage-hold-01m6t1-qa-1",
+        "id": "01M6T65XYGNYV0K2HF2A85VSN8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6T65XYGNYV0K2HF26JEDHAF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T65XYGNYV0K2HF26JEDHAF",
+        "id": "01M6T65XZKPA9TYFEXWTQF35S8",
+        "link": "01M6T65XZKPA9TYFEXWSXW3GG1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6T1ZR3ZCDCYF96CSR2AYN7D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T65Y0KH3QMZ5K6ZKGEPVDW",
+  "type": "ops",
+  "v": 1
+}
