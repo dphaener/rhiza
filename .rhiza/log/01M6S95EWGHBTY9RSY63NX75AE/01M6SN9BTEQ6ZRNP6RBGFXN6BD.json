@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SN63AM7KG8EYBC0F3E05EJ",
+  "after": [
+    "01M6S9KNBQ60CDXMYPBS8ANJ18"
+  ],
+  "at": "2026-11-07T00:07:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-b6a5ba09 at e4b5d855: read the diff; internal/guide/text/import.md step 4 now gives both wording forms, '<decided>, made by the owner as recorded in <document>' when the document records the owner making or confirming the decision, else the agent-made autonomous form, both with no quote field and a derived-from link to the document's Source (other lines trimmed to stay under the topic token cap). Ran go test -trimpath ./internal/guide/... (ok) and go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|import-.*)$': all 7 pass, including the new import-owner-credited-decisions.txtar, where rhiza guide import prints both forms and when each applies, a repo with one decision of each form, each derived-from its Source and with no quote, lands, passes fold-ok, and rhiza why shows each wording and the Source decisions-md. A fresh checkout's rhiza check fails only on a stale render (index.md plus the builder's committed actor record), which the run's close-out render fixes."
+        },
+        "handle": "import-owner-credited-decisions-verified",
+        "id": "01M6SN9BRTTPEJ7FPFQ4080R55",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SN9BRTTPEJ7FPFQ20GSN1X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SN9BRTTPEJ7FPFQ20GSN1X",
+        "id": "01M6SN9BSK6K3P74HF5A95XQFM",
+        "link": "01M6SN9BSK6K3P74HF59EZSJ8D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6S9A3X180Y1D4QEHZ8AKDD9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6S95EWGHBTY9RSY63NX75AE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SN9BTEQ6ZRNP6RBGFXN6BD",
+  "type": "ops",
+  "v": 1
+}

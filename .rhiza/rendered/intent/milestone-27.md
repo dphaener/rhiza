@@ -23,6 +23,7 @@ An existing repo with built code comes into Rhiza: Nebari is imported first, by 
 - serves change set `01M6J36X6EC3E70H0QCW17GREP` (Import procedure: rhiza guide import teaches agents to bring an existing repo with built code into Rhiza, the steps Nebari's import follows)
 - serves change set `01M6J375CH04RMRS4NN372NCN2` (Deploy check on ship: ship-change waits on a repo's deploy health URL after merge, from daemon settings, so Nebari can ship through Rhiza)
 - serves change set `01M6J37DF1FDJJSMQBR0TZQCMB` (rhiza import: a command that starts a built-in import workflow on an existing repo, shaped by what the Nebari import taught)
+- serves change set `01M6S95EWGHBTY9RSY63NX75AE` (The import guide's decision wording is wrong when a document records the owner making or confirming a decision. Step 4 of rhiza guide import forces 'made autonomously by the agent and not confirmed by the owner' for every decision taken from a document; Nebari's import (nebari#66) had 26 decisions its documents attribute to the owner. Owner's pick: credit the owner. The guide must give a second wording form for that case, crediting the owner as the document records it (e.g. '<decided>, made by the owner as recorded in <document>'), still with no quote (they are not the owner's typed words) and a derived-from link to the document's Source; rhiza check must accept both forms.)
 
 ## History
 

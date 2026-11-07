@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SNB68E3V518151HHM6Q277",
+  "after": [
+    "01M6SN9BTEQ6ZRNP6RBGFXN6BD"
+  ],
+  "at": "2026-11-07T00:09:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at the branch head: built rhiza with go build -trimpath; rhiza guide import step 4 prints both wording forms ('<decided>, made by the owner as recorded in <document>' when the document records the owner making or confirming it, else the agent-made autonomous form), both with no quote field and a derived-from link to the Source. In a fresh scratch git repo, following the guide by hand, added a capability, a decisions-md Source and one decision of each form, each decided-by the capability and derived-from the Source; proposed, accepted, landed and rendered. rhiza check printed ok (exit 0); rhiza why on the capability and on each decision showed each wording and the Source decisions-md; rhiza show --json of each decision had no quote. go test ./internal/guide/... and TestScripts/(guide|import-.*) pass."
+        },
+        "handle": "import-owner-credited-decisions-qa-1",
+        "id": "01M6SND2371ZKM1BJFZND9MHM5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SND2371ZKM1BJFZMG85C1X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SND2371ZKM1BJFZMG85C1X",
+        "id": "01M6SND23SKXZSFV5DZH0M1FC7",
+        "link": "01M6SND23SKXZSFV5DZEE5FBCG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6S9A3X180Y1D4QEHZ8AKDD9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6S95EWGHBTY9RSY63NX75AE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SND2467KRATD8G1ED4AQ1W",
+  "type": "ops",
+  "v": 1
+}
