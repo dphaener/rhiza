@@ -44,3 +44,23 @@ func TestInitFindProjectOf(t *testing.T) {
 		}
 	}
 }
+
+// An empty dir is no directory, not the process's cwd: Find reports no root
+// even when the cwd sits under a folder holding rhiza.toml.
+func TestFindEmptyDirFindsNoRoot(t *testing.T) {
+	top := t.TempDir()
+	if _, err := Init(top); err != nil {
+		t.Fatal(err)
+	}
+	sub := filepath.Join(top, "sub")
+	if err := os.MkdirAll(sub, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Chdir(sub)
+	if root, ok := Find(""); ok {
+		t.Fatalf("Find(\"\") = %q, true: want no root", root)
+	}
+	if root, ok := Find("."); !ok || root != top {
+		t.Fatalf("Find(\".\") = %q, %v: want %q", root, ok, top)
+	}
+}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/rootcfg"
 	"github.com/dphaener/rhiza/internal/session"
 )
 
@@ -116,5 +117,34 @@ func TestSessionRunRecordsLimitHit(t *testing.T) {
 	hits := daemon.ReadLimitHits(f.common)
 	if len(hits) != 1 || !hits[0].HitAt.Equal(hit) || !hits[0].ResetAt.Equal(hit.Add(3*time.Hour)) {
 		t.Errorf("hits %+v: want one at %s resetting 3h later", hits, hit)
+	}
+}
+
+// A Ctx with an empty Wd is outside any root even when the process cwd sits
+// under one: the hit lands in the repo's own daemon folder and nothing is
+// written under the enclosing root.
+func TestUsageLearnEmptyWdStaysInRepoFolder(t *testing.T) {
+	usageFakeOnce()
+	f, _, _ := limitFixture(t)
+	f.ctx.Getenv = func(string) string { return "" }
+	hit := time.Date(2026, 11, 4, 10, 45, 0, 0, time.UTC)
+	f.ctx.Now = func() time.Time { return hit }
+	f.ctx.Wd = ""
+
+	top := t.TempDir()
+	if _, err := rootcfg.Init(top); err != nil {
+		t.Fatal(err)
+	}
+	t.Chdir(top)
+
+	recordLimitHit(f.ctx, usageFake{}, adapter.UsageLimit{ResetAt: hit.Add(3 * time.Hour)})
+	if n := len(daemon.ReadLimitHits(f.common)); n != 1 {
+		t.Fatalf("%d hits in the repo's daemon folder, want 1", n)
+	}
+	if n := len(daemon.ReadLimitHitsIn(daemon.RootStateDir(top))); n != 0 {
+		t.Fatalf("%d hits under the enclosing root, want none", n)
+	}
+	if _, err := os.Stat(daemon.RootStateDir(top)); !os.IsNotExist(err) {
+		t.Fatalf("root state dir was created: %v", err)
 	}
 }
