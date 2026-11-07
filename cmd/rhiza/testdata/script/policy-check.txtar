@@ -18,13 +18,14 @@ stdout '^ok$'
 # A bad value fails.
 cp bad.toml .rhiza/policy.toml
 ! exec rhiza check
-stdout '^fail policy \.rhiza/policy\.toml: .*policy\.toml: schedule\.backlog "sometimes" is not one of'
+stdout '^fail policy \.rhiza/policy\.toml: schedule\.backlog "sometimes" is not one of "after", "before" or "skip"$'
 stdout '^failed$'
 
 # A file that does not parse fails.
 cp broken.toml .rhiza/policy.toml
 ! exec rhiza check
-stdout '^fail policy \.rhiza/policy\.toml: '
+stdout '^fail policy \.rhiza/policy\.toml: toml: '
+stdout '^failed$'
 
 # Skip passes.
 cp ok-skip.toml .rhiza/policy.toml
