@@ -377,8 +377,17 @@ func newRequestRunID(ctx *Ctx, rs *run.Store, reqs []daemon.Request) (string, er
 // for a milestone, and --request so the run takes the ID the request names.
 // A milestone request never gets --autonomous. Its log is that run's, <run>.log, as run log reads it.
 func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) error {
+	return daemonDetach(ctx, "the plan run of request "+q.ID, q.Run, nil, planRunArgs(q, autonomous, mode))
+}
+
+// planRunArgs is the run start arguments daemonStartPlan detaches for
+// request q: --ref <ref> passes the request's ref on, and a request
+// without one passes none.
+func planRunArgs(q daemon.Request, autonomous bool, mode string) []string {
 	args := []string{"run", "start", "--foreground", "--workflow", planWorkflow, "--new", q.Intent(), "--request", q.ID, "--permission-mode", mode}
-	args = append(args, planRefArgs(q)...)
+	if q.Ref != "" {
+		args = append(args, "--ref", q.Ref)
+	}
 	if q.Kind == daemon.KindMilestone {
 		args = append(args, "--milestone")
 		// Planning a milestone always needs the owner: the run waits on the
@@ -388,16 +397,7 @@ func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) e
 	if autonomous {
 		args = append(args, "--autonomous")
 	}
-	return daemonDetach(ctx, "the plan run of request "+q.ID, q.Run, nil, args)
-}
-
-// planRefArgs is the run start arguments that pass the request's ref on:
-// --ref <ref> for a request with one, none otherwise.
-func planRefArgs(q daemon.Request) []string {
-	if q.Ref == "" {
-		return nil
-	}
-	return []string{"--ref", q.Ref}
+	return args
 }
 
 // requestRun is the request run start --request <id> names, whose Run is

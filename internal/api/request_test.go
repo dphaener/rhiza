@@ -1,6 +1,7 @@
 package api
 
 import (
+	"slices"
 	"testing"
 	"time"
 
@@ -76,11 +77,22 @@ func TestDaemonPlanRequestsRequeuesUnjournaled(t *testing.T) {
 }
 
 func TestRequestPlanRunArgsPassRef(t *testing.T) {
-	with := planRefArgs(daemon.Request{ID: "r1", Ref: "https://example.com/issues/7"})
-	if len(with) != 2 || with[0] != "--ref" || with[1] != "https://example.com/issues/7" {
-		t.Fatalf("with a ref: %q", with)
+	with := planRunArgs(daemon.Request{ID: "r1", Ref: "https://example.com/issues/7"}, false, "manual")
+	if got := refArg(with); got != "https://example.com/issues/7" {
+		t.Fatalf("with a ref: --ref %q in %q", got, with)
 	}
-	if without := planRefArgs(daemon.Request{ID: "r2"}); len(without) != 0 {
+	without := planRunArgs(daemon.Request{ID: "r2"}, false, "manual")
+	if slices.Contains(without, "--ref") {
 		t.Fatalf("without a ref: %q", without)
 	}
+}
+
+// refArg is the value after --ref in args, or "" with none.
+func refArg(args []string) string {
+	for i, a := range args {
+		if a == "--ref" && i+1 < len(args) {
+			return args[i+1]
+		}
+	}
+	return ""
 }
