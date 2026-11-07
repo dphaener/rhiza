@@ -63,7 +63,7 @@ type ChangeNewRequest struct {
 	Kind    string   `json:"kind,omitempty" enum:"intention,record" desc:"intention (reviewed before it lands) or record (lands as is); default intention"`
 	Sources []string `json:"sources,omitempty" flag:"source" desc:"A source node the change set comes from: an ID, ID prefix or handle"`
 	Title   string   `json:"title,omitempty" desc:"A short name for the change set, one line of at most 30 characters; default the intent's first clause"`
-	Ref     string   `json:"ref,omitempty" desc:"An opaque external reference, such as an issue URL, at most 2048 bytes; Rhiza never interprets it"`
+	Ref     string   `json:"ref,omitempty" desc:"An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none"`
 }
 
 // ChangeNewResponse names the new change set and its open entry.
@@ -115,7 +115,7 @@ func runChangeNew(ctx *Ctx, req any) (any, error) {
 	}
 	slices.SortFunc(sources, id.Compare)
 	sources = slices.Compact(sources)
-	open := changeset.Open{Kind: kind, Intent: r.Intent, Sources: sources, Title: r.Title, Ref: r.Ref}
+	open := changeset.Open{Kind: kind, Intent: r.Intent, Sources: sources, Title: r.Title, Ref: strings.TrimSpace(r.Ref)}
 	if err := open.Validate(); err != nil {
 		return nil, Usagef("%s", err.Error()).WithNext("rhiza describe change.new")
 	}

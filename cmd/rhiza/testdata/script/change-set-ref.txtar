@@ -29,6 +29,19 @@ exec rhiza change show
 exec grep -rl '"v": 4' .rhiza/log
 stdout -count=2 '\.json$'
 
+# Surrounding whitespace is trimmed, and a blank ref means none.
+exec rhiza change new Padded --ref '  https://example.com/issues/8  ' --json
+stdout '"ref": "https://example.com/issues/8"'
+exec rhiza change show --json
+stdout '"ref": "https://example.com/issues/8"'
+exec rhiza change new Blank --ref '   ' --json
+! stdout '"ref"'
+exec rhiza change show --json
+! stdout '"ref"'
+exec grep -rl '"v": 4' .rhiza/log
+stdout -count=3 '\.json$'
+fold-ok
+
 # Over 2048 bytes is a usage error and writes nothing.
 exec ls -R .rhiza/log
 cp stdout before.txt

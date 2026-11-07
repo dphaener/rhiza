@@ -964,7 +964,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "ref": {
-            "description": "An opaque external reference, such as an issue URL, at most 2048 bytes; Rhiza never interprets it",
+            "description": "An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none",
             "type": "string"
           },
           "sources": {

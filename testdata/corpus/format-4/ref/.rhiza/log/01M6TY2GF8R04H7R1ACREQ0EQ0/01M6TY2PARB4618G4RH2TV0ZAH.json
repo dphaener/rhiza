@@ -1,0 +1,16 @@
+{
+  "actor": "01M6TY2GF8R04H7R1ACFJCYMSD",
+  "after": [
+    "01M6TY2NBGGD3JXPKEPHTS0TQE"
+  ],
+  "at": "2026-11-07T12:00:07Z",
+  "body": {
+    "reason": "Tagging is wanted.",
+    "rule": "owner"
+  },
+  "change_set": "01M6TY2GF8R04H7R1ACREQ0EQ0",
+  "for": "01M6TY2GF8R04H7R1ACFJCYMSD",
+  "id": "01M6TY2PARB4618G4RH2TV0ZAH",
+  "type": "accept",
+  "v": 1
+}
