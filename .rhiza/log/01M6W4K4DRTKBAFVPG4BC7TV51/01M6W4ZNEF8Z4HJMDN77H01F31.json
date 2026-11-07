@@ -1,0 +1,172 @@
+{
+  "actor": "01M6W4M4C6QMV4MM2JDF1GV6RF",
+  "after": [
+    "01M6W4ZM5V4EJVFAFZ6B0RNA7V"
+  ],
+  "at": "2026-11-07T23:20:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6W4X6742B6C7HXEKS1W4PPT",
+        "id": "01M6W4ZMTJN8AQ72R4A4GCGQ2F",
+        "link": "01M6W4ZMTJN8AQ72R4A4BGYRX6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4YYQA62MHZR7NMMC0MHG7",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests in internal/api (go test -trimpath ./internal/api -run TestRequestExposedWorkflows) cover: plan auto with rhiza.daemon.permissionMode bypassPermissions flags plan only; plan and ship auto flags plan and ship-change; plan owner flags nothing even with ship auto; a step permission_mode acceptEdits under a bypass daemon mode is not flagged and a step permission_mode bypassPermissions with no daemon mode is; check and arbiter steps are counted; each entry names the workflow, its trigger (request or ready) and the bypassing steps; and, when dispatch.toml support exists, a workflow named by a [request] or [ready] rule is flagged",
+          "statement": "One function in internal/api lists the workflows the daemon would run from a queued request with no person in between, each with its trigger and the agent, check or arbiter steps whose effective mode (the step's permission_mode, else the repo's rhiza.daemon.permissionMode) the step's adapter reports as a bypass mode: the request workflow (plan) when rhiza.autonomy.plan is auto, and the ready workflow (ship-change) when rhiza.autonomy.plan and rhiza.autonomy.ship are both auto; where .rhiza/dispatch.toml exists in the code it builds on (Workflow dispatch landed first), it reads every [request] and [ready] rule plus the built-in defaults instead of the fixed picks"
+        },
+        "handle": "request-exposed-workflows",
+        "id": "01M6W4ZMW57BSXGYJYXVVFQ4GP",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6W4ZMW57BSXGYJYXV6XPWP2",
+        "op": "node.create",
+        "parent": "01M5WRHD790X47F8VK7RQEHEHX"
+      },
+      {
+        "decision": null,
+        "from": "01M6W4ZMW57BSXGYJYXV6XPWP2",
+        "id": "01M6W4ZMX5VJC3WZSG12FQ2W1C",
+        "link": "01M6W4ZMX5VJC3WZSG0Z2W8KVG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4X6742B6C7HXEKS1W4PPT",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScripts/workflow-check-risk passes: with git config rhiza.autonomy.plan auto and rhiza.daemon.permissionMode bypassPermissions, workflow check plan exits 0 with valid true and a warning (JSON warnings field and human line) naming plan, the request trigger and its steps; with rhiza.autonomy.plan owner it prints no warning; describe-golden is regenerated for the new response field",
+          "statement": "rhiza workflow check <name> reports, beside its problems, a warning when the named workflow is one the request-exposed list flags, naming the trigger and the bypassing steps and saying outside text reaches agents with no permission checks; valid and the exit code are unchanged by it"
+        },
+        "handle": "workflow-check-risk-warning",
+        "id": "01M6W4ZMYKAC3V8D3C5H2P6D0H",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6W4ZMYKAC3V8D3C5E539YHV",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      },
+      {
+        "decision": null,
+        "from": "01M6W4ZMYKAC3V8D3C5E539YHV",
+        "id": "01M6W4ZN10NFW02N90DS6K75JG",
+        "link": "01M6W4ZN10NFW02N90DPXV20SE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4X6742B6C7HXEKS1W4PPT",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api for the autonomy part cover a flagged plan (warn, summary phrase, one detail line naming plan, request and its steps, Next rhiza guide workflows), nothing flagged (ok, unchanged), and flagged while paused (warn, paused Next kept); go test -trimpath ./cmd/rhiza -run TestScripts/health-risk-warning shows rhiza health exiting 0 with the autonomy part warn",
+          "statement": "When any workflow is on the request-exposed list, rhiza health's autonomy part is warn (never bad), its summary gains 'outside text reaches agents with no permission checks', it has one detail line per flagged workflow naming it, its trigger and its bypassing steps, and its Next is rhiza guide workflows unless the daemon is paused, which keeps the paused Next"
+        },
+        "handle": "health-autonomy-risk",
+        "id": "01M6W4ZN34KQZG9YEWQ3HVW7PY",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6W4ZN34KQZG9YEWQ1TKCXM3",
+        "op": "node.create",
+        "parent": "01M6CS2B9S9YVY1WBBVAHWZFR9"
+      },
+      {
+        "decision": null,
+        "from": "01M6W4ZN34KQZG9YEWQ1TKCXM3",
+        "id": "01M6W4ZN4QRHRP3RWH16QMBED5",
+        "link": "01M6W4ZN4QRHRP3RWH15PKA0HS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4X6742B6C7HXEKS1W4PPT",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScripts/request-ref-risk-note passes: with rhiza.autonomy.plan auto and rhiza.daemon.permissionMode bypassPermissions, request --ref queues the request (request ls shows it) and prints exactly one note line naming plan; the same request without --ref, and with rhiza.autonomy.plan owner, prints no note; describe-golden is regenerated",
+          "statement": "rhiza request --ref queues the request as before and, when the request-exposed list is not empty, its response carries a one-line note naming the flagged workflows and saying outside text reaches agents with no permission checks, printed as one line in human output; a request without --ref gets no note"
+        },
+        "handle": "request-ref-risk-note",
+        "id": "01M6W4ZN5TXW2QGS4G42A3D8X5",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M6W4ZN5TXW2QGS4G4047F38A",
+        "op": "node.create",
+        "parent": "01M6CS230463DT24PWBJCPWD9Q"
+      },
+      {
+        "decision": null,
+        "from": "01M6W4ZN5TXW2QGS4G4047F38A",
+        "id": "01M6W4ZN75VDJDC5HXNDRYQR12",
+        "link": "01M6W4ZN75VDJDC5HXNBRVD2GF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4X6742B6C7HXEKS1W4PPT",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/guide (go test -trimpath ./internal/guide) checks the workflows topic has the Outside input section naming bypassPermissions, rhiza.autonomy.plan, rhiza request, the schedule caveat, permission_mode and rhiza.autonomy.signoff, and the guide's existing size checks still pass",
+          "statement": "The workflows guide topic has an Outside input section: what the risk warning means (a request's text and --ref reach autonomous agents running in a bypass mode), that every queued request counts and Rhiza cannot see what a scheduled command running rhiza request does, and the usual mitigations: a person gates intake (rhiza.autonomy.plan owner), a narrower permission_mode, owner sign-off (rhiza.autonomy.signoff owner); nothing is refused"
+        },
+        "handle": "workflows-guide-outside-input",
+        "id": "01M6W4ZN88P5XT2RXYH68QPFPW",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6W4ZN88P5XT2RXYH35YRVMZ",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      },
+      {
+        "decision": null,
+        "from": "01M6W4ZN88P5XT2RXYH35YRVMZ",
+        "id": "01M6W4ZN9H6V9N257J5D5MG3XQ",
+        "link": "01M6W4ZN9H6V9N257J5BAJG9SM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4X6742B6C7HXEKS1W4PPT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W4ZMYKAC3V8D3C5E539YHV",
+        "id": "01M6W4ZNAR90M85XMEA0TECR0X",
+        "link": "01M6W4ZNAR90M85XME9YKPHWHW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZMW57BSXGYJYXV6XPWP2",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6W4ZN34KQZG9YEWQ1TKCXM3",
+        "id": "01M6W4ZNC0HQT5ETY0S35N5RXC",
+        "link": "01M6W4ZNC0HQT5ETY0RZ7W4CDK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZMW57BSXGYJYXV6XPWP2",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6W4ZN5TXW2QGS4G4047F38A",
+        "id": "01M6W4ZND7PD6S46KFSF0MHBW4",
+        "link": "01M6W4ZND7PD6S46KFSEQWJDZ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZMW57BSXGYJYXV6XPWP2",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6W4K4DRTKBAFVPG4BC7TV51",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W4ZNEF8Z4HJMDN77H01F31",
+  "type": "ops",
+  "v": 1
+}

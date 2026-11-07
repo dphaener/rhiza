@@ -1,0 +1,30 @@
+{
+  "actor": "01M6W4M4C6QMV4MM2JDF1GV6RF",
+  "after": [
+    "01M6W4K4DRTKBAFVPG4CRYA39H"
+  ],
+  "at": "2026-11-07T23:17:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "0381a0e6-2443-4fec-a3aa-01a1b849f614",
+          "statement": "Risk warnings change set (01M6W4K4) serves no intent yet. Which should it serve? Its sibling Workflow dispatch (also from PR #353) serves milestone-25 (backlog: requests and polish ship on their own); milestone-29 (several projects under one root) is the other open one. / Rhiza has no schedule trigger of its own (a cron job would just run `rhiza request`), and autonomy is repo-wide (git config rhiza.autonomy.plan/ship), not per workflow. Which workflows should rhiza health and rhiza workflow check flag as 'outside text reaches agents with no permission checks'? / Where does the risk warning appear in rhiza health's report? / Workflow dispatch (01M6VY7G, accepted, not built) adds .rhiza/dispatch.toml rules that change which workflow a request or ready change set runs. Should Risk warnings wait for it?"
+        },
+        "handle": "question-0381a0e6-1",
+        "id": "01M6W4T069NY96AK9BGQRA6483",
+        "key": null,
+        "kind": "question",
+        "node": "01M6W4T069NY96AK9BGPRVHDEZ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6W4K4DRTKBAFVPG4BC7TV51",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W4T2VCSS8FTN3QKDPWKAVJ",
+  "type": "ops",
+  "v": 1
+}
