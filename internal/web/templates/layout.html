@@ -17,7 +17,7 @@
 <div class="rz-app">
 <header class="rz-header">
   <a class="rz-wordmark" href="/"><b>Rhiza</b><span>monitor</span></a>
-{{if .Switcher}}{{template "switcher" .Switcher}}{{end}}  <nav class="rz-nav" aria-label="Pages">{{if eq .Nav "projects"}}<a href="/projects" aria-current="page">Projects</a>{{end}}{{if eq .Nav "inbox"}}<a href="/inbox" aria-current="page">Inbox</a>{{end}}<a href="/"{{if eq .Nav "overview"}} aria-current="page"{{end}}>Overview</a><a href="/runs"{{if eq .Nav "runs"}} aria-current="page"{{end}}>Runs</a><a href="/roadmap"{{if eq .Nav "roadmap"}} aria-current="page"{{end}}>Roadmap</a></nav>
+{{if .Switcher}}{{template "switcher" .Switcher}}{{end}}  <nav class="rz-nav" aria-label="Pages"><a href="/projects"{{if eq .Nav "projects"}} aria-current="page"{{end}}>Projects</a><a href="/inbox"{{if eq .Nav "inbox"}} aria-current="page"{{end}}>Inbox</a><a href="/"{{if eq .Nav "overview"}} aria-current="page"{{end}}>Overview</a><a href="/runs"{{if eq .Nav "runs"}} aria-current="page"{{end}}>Runs</a><a href="/roadmap"{{if eq .Nav "roadmap"}} aria-current="page"{{end}}>Roadmap</a></nav>
   <div class="rz-header-end">{{if .Daemon.Text}}{{template "pill" .Daemon}}{{end}}<span class="rz-live" title="Live stream connected"><span class="rz-live-dot" aria-hidden="true"></span>live</span></div>
 </header>
 <main class="rz-main">

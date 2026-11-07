@@ -1,38 +1,175 @@
 package web_test
 
 import (
-	"net/http"
+	"errors"
+	"math/rand"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/dphaener/rhiza/internal/api"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/web"
 )
 
-func TestProjectsHomeListsEveryProject(t *testing.T) {
-	src := func() []web.ProjectView {
-		return []web.ProjectView{
-			{Name: "alpha", Initialised: true, Running: 2, Waiting: 1, Inbox: 3, Health: []web.HealthPill{{Part: "git", State: "ok"}}},
-			{Name: "beta", Initialised: true, Inbox: 0, Health: []web.HealthPill{{Part: "git", State: "ok"}, {Part: "disk", State: "bad"}}},
-			{Name: "gamma"},
+// rootCtx is a context in dir that reaches git only, through Exec, so the
+// root's per-project contexts each run git in their own checkout. Anything
+// else it is asked to run fails.
+func rootCtx(t *testing.T, dir string) *api.Ctx {
+	t.Helper()
+	now := time.Date(2026, 10, 24, 12, 0, 0, 0, time.UTC)
+	clock := func() time.Time { return now }
+	ctx := &api.Ctx{
+		Root: dir,
+		Wd:   dir,
+		Now:  clock,
+		IDs:  id.NewGenerator(clock, rand.New(rand.NewSource(3))),
+		Exec: func(name string, args []string, d string, env []string) ([]byte, error) {
+			if name != "git" {
+				return nil, errors.New("not run in tests: " + name)
+			}
+			c := exec.Command("git", args...)
+			c.Dir = d
+			return c.Output()
+		},
+		IndexPath: filepath.Join(t.TempDir(), "index.db"),
+		GitConfig: func(k string) (string, error) {
+			if k == "user.email" {
+				return "test@example.com", nil
+			}
+			return "", errors.New("unset")
+		},
+	}
+	ctx.Git = func(args ...string) (string, error) {
+		out, err := ctx.Exec("git", args, dir, nil)
+		return string(out), err
+	}
+	return ctx
+}
+
+// The all-projects home reads a real root: two initialised projects show
+// their live runs, inbox count and health, a bare one (no .rhiza/) is
+// marked not initialised, and each links to its overview. Every page links
+// to the home.
+func TestProjectsHomeReadsTheRoot(t *testing.T) {
+	cache := t.TempDir()
+	t.Setenv("XDG_CACHE_HOME", cache)
+	t.Setenv("HOME", cache)
+	root := t.TempDir()
+	ctxs := map[string]*api.Ctx{}
+	for _, name := range []string{"alpha", "beta", "bare"} {
+		dir := filepath.Join(root, name)
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if out, err := exec.Command("git", "-C", dir, "init", "-q").CombinedOutput(); err != nil {
+			t.Skipf("git init: %v %s", err, out)
+		}
+		if name == "bare" {
+			continue
+		}
+		c := rootCtx(t, dir)
+		callJSON(t, c, "init", `{}`)
+		callJSON(t, c, "change.new", `{"intent":"Work in `+name+`"}`)
+		ctxs[name] = c
+	}
+	if err := os.WriteFile(filepath.Join(root, "rhiza.toml"), []byte("[projects.alpha]\npath = \"alpha\"\n[projects.beta]\npath = \"beta\"\n[projects.bare]\npath = \"bare\"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// alpha: one run going, one stopped at sign-off (waiting on the owner,
+	// and in the inbox) and one failed (in the inbox, not live).
+	at := time.Date(2026, 10, 24, 11, 0, 0, 0, time.UTC)
+	rs := run.NewStore(run.Dir(filepath.Join(root, "alpha", ".git")))
+	mk := func(rid string, es ...run.Entry) {
+		t.Helper()
+		first := run.Entry{Type: run.TypeStarted, At: at, Started: &run.Started{Workflow: "build", Change: "C-" + rid, Title: "Run " + rid}}
+		if err := rs.Create(rid, first); err != nil {
+			t.Fatal(err)
+		}
+		for _, e := range es {
+			if err := rs.Append(rid, e); err != nil {
+				t.Fatal(err)
+			}
 		}
 	}
-	h := web.RootWithProjects(web.Handler(nil), func(string) http.Handler { return nil }, src)
-	rec := serve(h, "GET", "/projects")
-	if rec.Code != 200 {
-		t.Fatalf("status %d", rec.Code)
+	enter := func(step string) run.Entry {
+		return run.Entry{Type: run.TypeEntered, At: at.Add(time.Second), Step: step, Visit: 1}
 	}
-	body := rec.Body.String()
-	for _, want := range []string{
-		`href="/p/alpha/"`, "2 running, 1 waiting on you · 3 in inbox", "healthy",
-		`href="/p/beta/"`, "none live · 0 in inbox", "unhealthy", "rz-pill--bad",
-		`href="/p/gamma/"`, "not initialised",
+	mk("01LIVE", enter("leaves"))
+	// A run is going while a process holds its lock.
+	unlock, ok, err := rs.TryLock("01LIVE")
+	if err != nil || !ok {
+		t.Fatalf("lock 01LIVE: %v %v", ok, err)
+	}
+	t.Cleanup(unlock)
+	mk("01SIGN", enter("signoff"), run.Entry{Type: run.TypeStopped, At: at.Add(time.Minute), Step: "signoff", Detail: run.SignoffWait})
+	mk("01FAIL", enter("open-pr"),
+		run.Entry{Type: run.TypeEnded, At: at.Add(2 * time.Minute), Step: "open-pr", Visit: 1, Outcome: "fail", Detail: "exit 3"},
+		run.Entry{Type: run.TypeFinished, At: at.Add(2 * time.Minute), Step: "open-pr", Detail: `step "open-pr" ended with outcome "fail"`, End: run.Failed})
+
+	home := ctxs["alpha"]
+	h := api.WebRootHandler(home, root, "alpha", api.WebProjectHandler(home))
+	body := serve(h, "GET", "/projects").Body.String()
+	// Health lands in the background: wait for both projects' reports.
+	for end := time.Now().Add(30 * time.Second); strings.Contains(body, `rz-pill--health rz-pill--"`) && time.Now().Before(end); {
+		time.Sleep(50 * time.Millisecond)
+		body = serve(h, "GET", "/projects").Body.String()
+	}
+	rows := map[string]string{}
+	for _, row := range strings.Split(body, `<li class="rz-row">`)[1:] {
+		for _, name := range []string{"alpha", "beta", "bare"} {
+			if strings.Contains(row, `href="/p/`+name+`/"`) {
+				rows[name] = row
+			}
+		}
+	}
+	if len(rows) != 3 {
+		t.Fatalf("want a row for each of alpha, beta, bare; got %v:\n%s", rows, body)
+	}
+	for name, want := range map[string][]string{
+		"alpha": {">alpha<small>1 running, 1 waiting on you · 2 in inbox</small>", "rz-pill--health rz-pill--"},
+		"beta":  {">beta<small>none live · 0 in inbox</small>", "rz-pill--health rz-pill--"},
+		"bare":  {">bare<small>not initialised</small>", `rz-pill--draft">not initialised`},
 	} {
-		if !strings.Contains(body, want) {
-			t.Errorf("page lacks %q:\n%s", want, body)
+		for _, w := range want {
+			if !strings.Contains(rows[name], w) {
+				t.Errorf("%s row lacks %q:\n%s", name, w, rows[name])
+			}
 		}
 	}
-	if strings.Contains(body, "gamma</a>") && strings.Contains(body, "none live · 0 in inbox</small></a><span class=\"rz-pill-cell\"><span class=\"rz-pill rz-pill--draft\"") {
-		t.Errorf("bare project shown with counts")
+	for _, name := range []string{"alpha", "beta"} {
+		if strings.Contains(rows[name], ">unknown<") || strings.Contains(rows[name], "not initialised") {
+			t.Errorf("%s row has no health or is marked bare:\n%s", name, rows[name])
+		}
+	}
+	if strings.Contains(rows["bare"], "in inbox") || strings.Contains(rows["bare"], "rz-pill--health") {
+		t.Errorf("bare project shown with counts or health:\n%s", rows["bare"])
+	}
+	// Each health pill is the worst part of that project's own report.
+	o, _ := api.Lookup("health")
+	for _, name := range []string{"alpha", "beta"} {
+		out, err := o.Run(ctxs[name], nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if w := `rz-pill--health rz-pill--` + out.(api.HealthResponse).State + `"`; !strings.Contains(rows[name], w) {
+			t.Errorf("%s row lacks %q:\n%s", name, w, rows[name])
+		}
+	}
+
+	// The home is reachable from every page's nav.
+	for _, path := range []string{"/", "/runs", "/roadmap", "/inbox", "/p/beta/", "/p/beta/runs"} {
+		if b := serve(h, "GET", path).Body.String(); !strings.Contains(b, `<nav class="rz-nav" aria-label="Pages"><a href="/projects"`) {
+			t.Errorf("%s does not link the projects home from its nav", path)
+		}
+	}
+	if !strings.Contains(body, `<a href="/projects" aria-current="page">Projects</a>`) {
+		t.Errorf("/projects does not mark its nav link current")
 	}
 }
 
