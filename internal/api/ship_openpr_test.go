@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -76,7 +77,7 @@ func (g *openPRGH) run(name string, args []string, dir string, env []string) ([]
 // openPRFixture is a real git repository on cs/ship-it with a bare origin,
 // a run R1 of the change set whose journal holds the given entries after
 // its start, and a fake gh.
-func openPRFixture(t *testing.T, review bool) (*Ctx, *openPRGH, string, func(...string) string) {
+func openPRFixture(t *testing.T, review bool, ref ...string) (*Ctx, *openPRGH, string, func(...string) string) {
 	t.Helper()
 	tmp := t.TempDir()
 	root := filepath.Join(tmp, "repo")
@@ -106,7 +107,15 @@ func openPRFixture(t *testing.T, review bool) (*Ctx, *openPRGH, string, func(...
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
 		t.Fatal(err)
 	}
-	cs := newChange(t, ctx, `{"intent":"Ship it","title":"Ship it"}`).ChangeSet
+	req := map[string]string{"intent": "Ship it", "title": "Ship it"}
+	if len(ref) > 0 {
+		req["ref"] = ref[0]
+	}
+	reqJSON, err := json.Marshal(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cs := newChange(t, ctx, string(reqJSON)).ChangeSet
 	git("add", "-A")
 	git("commit", "-q", "-m", "model")
 	git("checkout", "-q", "-b", "cs/ship-it")
@@ -339,5 +348,33 @@ func TestShipOpenPRRefusesForeignPR(t *testing.T) {
 				}
 			}
 		}
+	}
+}
+
+// The acceptance of leaf ship-pr-body-ref: a change set's ref is listed in
+// the PR body in one inline code span with its backticks and line breaks
+// escaped, and a change set without a ref gets no ref line.
+func TestShipOpenPRBodyRef(t *testing.T) {
+	ref := "https://x.test/1 `a` @mention\n# heading"
+	ctx, g, _, _ := openPRFixture(t, true, ref)
+	if _, err := callOp(t, ctx, "ship.open-pr", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	want := "Ref: `https://x.test/1 \\x60a\\x60 @mention\\n# heading`\n"
+	if !strings.Contains(g.body, "\n"+want) || strings.Count(g.body, "Ref:") != 1 {
+		t.Errorf("body lacks the escaped ref line %q:\n%s", want, g.body)
+	}
+	for _, l := range strings.Split(g.body, "\n") {
+		if strings.Contains(l, "heading") && !strings.HasPrefix(l, "Ref: `") {
+			t.Errorf("ref text escaped its line: %q", l)
+		}
+	}
+
+	ctx, g, _, _ = openPRFixture(t, true)
+	if _, err := callOp(t, ctx, "ship.open-pr", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(g.body, "Ref:") {
+		t.Errorf("body for a change set without a ref has a ref line:\n%s", g.body)
 	}
 }
