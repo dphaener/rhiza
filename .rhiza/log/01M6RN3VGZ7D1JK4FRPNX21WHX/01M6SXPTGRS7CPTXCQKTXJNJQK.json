@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SXMZZW9HRDQ7YR7JXCJT42",
+  "after": [
+    "01M6SWQHCERSVFB34N1YG75BNE"
+  ],
+  "at": "2026-11-07T02:34:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 7f571ac0 (attempt 2, fixing review finding f1). Read the diff: daemon-status-projects.txtar now gives repo and second each an accepted no-milestone change set (Orphan) and a fixture live-run journal (dead pid, change set the daemon does not resume). Ran go test -trimpath ./cmd/rhiza -run TestScripts/daemon-status -count=1: ok. The script asserts at the root, in --json, each project's part with its runs (LIVEREPO001 / LIVESECOND1 interrupted), skipped (Orphan no-milestone) and last_started (count=2), the bare project's 'not initialised' once, and the same per project in text. Re-ran the built binary by hand in the kept $WORK: root --json shows the daemon fields once, projects[] with repo and second each carrying runs, skipped, last_started, and skipped_projects bare: not initialised; --project repo --json and from inside second give projects: [] with only that project's runs/skipped/last_started at top level (LIVEREPO001 only, LIVESECOND1 only respectively); --project nope fails 'not registered'."
+        },
+        "handle": "daemon-status-across-projects-verified-2",
+        "id": "01M6SXPTEFYA3WANGN83Q7XG4Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SXPTEFYA3WANGN831XZEKK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SXPTEFYA3WANGN831XZEKK",
+        "id": "01M6SXPTFA95WT7QFEYXEY3J2D",
+        "link": "01M6SXPTFA95WT7QFEYTR6FQRM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85TXNPGZEANC6R3HFM27",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3VGZ7D1JK4FRPNX21WHX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SXPTGRS7CPTXCQKTXJNJQK",
+  "type": "ops",
+  "v": 1
+}
