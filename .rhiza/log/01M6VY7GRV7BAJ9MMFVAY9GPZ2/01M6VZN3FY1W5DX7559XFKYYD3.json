@@ -1,0 +1,41 @@
+{
+  "actor": "01M6VZKQCGXQ6GVTKDH3471ZQ6",
+  "after": [
+    "01M6VZK5DC0VM1TJP22852WS5V"
+  ],
+  "at": "2026-11-07T21:46:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Both scripts use their no-milestone change set (Backlog, Orphan) on purpose to test the skip path: daemon-picks.txtar's header says a backlog change set is not started, and its disk-guard and permission-mode checks count exactly one start; daemon-status-projects.txtar (capability daemon-status-across-projects) is about listing each project's skipped change sets with their reason. Setting backlog = \"skip\" keeps what they test meaningful and exercises the skip value end to end in a real repo, matching how daemon-status-skips already settled daemon-status.txtar (a policy.toml with backlog = \"skip\"). Rewriting them to expect the backlog pick would drop their only skip-reason coverage across projects and tangle the disk-guard counts with backlog ordering, which the new testscript already covers. The work belongs on daemon-picks-backlog because that leaf changes the default that breaks them.",
+          "statement": "daemon-picks-backlog also covers the two landed testscripts: cmd/rhiza/testdata/script/daemon-picks.txtar gives its repo a .rhiza/policy.toml with [schedule] backlog = \"skip\", and cmd/rhiza/testdata/script/daemon-status-projects.txtar gives both projects (repo and second) the same file. Their expectations stay as they are: one 'Started a run of' per poll in daemon-picks.txtar, and each project's Orphan skipped with reason no-milestone / 'serves no milestone' in daemon-status-projects.txtar. The default (after) is tested by daemon-picks-backlog's own new testscript and Go test, not by rewriting these two.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "backlog-skip-in-landed-daemon-scripts",
+        "id": "01M6VZN3B2XGXST83BDRMJSA3Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6VZN3B2XGXST83BDNFHY084",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6VZN3B2XGXST83BDNFHY084",
+        "id": "01M6VZN3DDC28F07JH8CXC14TW",
+        "link": "01M6VZN3DDC28F07JH896WA02S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VZK56QGXB742TV3WNV21K6",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6VY7GRV7BAJ9MMFVAY9GPZ2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VZN3FY1W5DX7559XFKYYD3",
+  "type": "ops",
+  "v": 1
+}

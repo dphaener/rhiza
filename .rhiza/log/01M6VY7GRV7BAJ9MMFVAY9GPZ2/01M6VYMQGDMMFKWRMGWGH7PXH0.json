@@ -1,0 +1,83 @@
+{
+  "actor": "01M6VY8QXB33920RKAKYQTCKB8",
+  "after": [
+    "01M6VYK66W3MF1CA05DW8B9S1H"
+  ],
+  "at": "2026-11-07T21:29:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A unit test of rhiza run milestone-check covers: no milestone served and no policy.toml passes; no milestone served with backlog = \"skip\" fails naming the change set; a run with a milestone whose change set serves it directly, or through an intent under it, passes; one serving another milestone or none fails naming it. A testscript runs a plan run with a fake agent (left live after rhiza session done) whose change set serves an intent under no milestone: it enters review with no policy.toml, and ends failed at milestone-check with backlog = \"skip\"",
+          "statement": "rhiza run milestone-check passes a planned change set that serves no milestone, and fails, naming it and the fix, only when the run was started with a milestone (request --milestone, RHIZA_MILESTONE) and the change set does not serve that milestone directly or through an intent under it, or when the repo's .rhiza/policy.toml [schedule] backlog is \"skip\" (with today's message, since that work would never be built)"
+        },
+        "handle": "milestone-check-follows-policy",
+        "id": "01M6VYMQ92BYC34XV88VAM4ZH5",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6VYMQ92BYC34XV88RA2A320",
+        "op": "node.create",
+        "parent": "01M6JE3T47QE8E8YPMBHR38MAE"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYMQ92BYC34XV88RA2A320",
+        "id": "01M6VYMQ9SX5AX8JXKX0KMV2S7",
+        "link": "01M6VYMQ9SX5AX8JXKWX9EE5M2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYH21ZJVTTS56VT3D87NYH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYMQ92BYC34XV88RA2A320",
+        "id": "01M6VYMQASDB2K7MZN76A5NS8T",
+        "link": "01M6VYMQASDB2K7MZN74TX21ZN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYK4NBNG3NG4FKXD1VP896",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/guide plan_test asserts the plan guide names RHIZA_MILESTONE, says a milestone is linked only when RHIZA_MILESTONE is set or one fits, names .rhiza/policy.toml's backlog rule and its \"skip\" exception, and no longer says every change set must serve a milestone; the installed skill copy matches the guide text",
+          "statement": "The plan guide (rhiza guide plan and the rhiza-plan skill) says an intention change set serves the intent it belongs under and links a milestone only when RHIZA_MILESTONE names one (then the serves link must reach it) or an open milestone fits; work no milestone fits is built as backlog by the repo's .rhiza/policy.toml [schedule] backlog rule, unless that rule is \"skip\", when it must serve a milestone as before"
+        },
+        "handle": "plan-guide-milestone-optional",
+        "id": "01M6VYMQBZFQMEAXX3YTD3RFV5",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6VYMQBZFQMEAXX3YSKEYS5J",
+        "op": "node.create",
+        "parent": "01M6JE3KEGWGBYW35XHSH0JJK1"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYMQBZFQMEAXX3YSKEYS5J",
+        "id": "01M6VYMQCXYHC11TF59F3R5FP6",
+        "link": "01M6VYMQCXYHC11TF59C1QN0ZB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYH21ZJVTTS56VT3D87NYH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYK4TRY2VN9XHGKRD9V4XZ",
+        "id": "01M6VYMQEV2BV10CBPYZ1Z9E96",
+        "link": "01M6VYMQEV2BV10CBPYYXRHPHH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYK4NBNG3NG4FKXD1VP896",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6VY7GRV7BAJ9MMFVAY9GPZ2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYMQGDMMFKWRMGWGH7PXH0",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,128 @@
+{
+  "actor": "01M6VY8QXB33920RKAKYQTCKB8",
+  "after": [
+    "01M6VYJBFHY58H6859FNT3D5PG"
+  ],
+  "at": "2026-11-07T21:28:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6VYH21ZJVTTS56VT3D87NYH",
+        "id": "01M6VYK4JHA87DZ2E3D7308JM7",
+        "link": "01M6VYK4JHA87DZ2E3D4VYN45T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYJBF4EMJPMNX947JYGKE1",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go unit test of the policy reader covers a missing file, a missing key, each of after, before and skip, an unknown value and malformed TOML; a testscript (policy-check.txtar) runs rhiza check on a repo with backlog = \"sometimes\" and sees a problem naming .rhiza/policy.toml and the value, and passes once the value is \"skip\"",
+          "statement": "A repo sets its scheduling rule in a checked-in .rhiza/policy.toml, table [schedule], key backlog: \"after\" (the default, also used when the file or key is missing), \"before\" or \"skip\"; rhiza check reports a policy.toml that does not parse, or a backlog value outside those three, as a problem naming the file and the bad value, and repo.json stays identity only"
+        },
+        "handle": "schedule-policy-file",
+        "id": "01M6VYK4NBNG3NG4FKXEPCD1PM",
+        "key": "zzzzzzr",
+        "kind": "capability",
+        "node": "01M6VYK4NBNG3NG4FKXD1VP896",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYK4NBNG3NG4FKXD1VP896",
+        "id": "01M6VYK4RJHHEC7CA0SAGYGDSJ",
+        "link": "01M6VYK4RJHHEC7CA0S7PKEJ3A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYH21ZJVTTS56VT3D87NYH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test of daemonCandidates over a fixture with two milestone change sets and two backlog change sets with leaves, accepted at different times, gives milestone then backlog-oldest-first under after, backlog-oldest-first then milestone under before, only the milestone ones with both backlog ones skipped no-milestone under skip, and under an unknown value the skip with the value in its detail; a testscript runs rhiza daemon --once with a fake Rex on a repo whose only accepted change set serves no milestone, sees it started with no policy.toml, and not started with backlog = \"skip\"",
+          "statement": "The daemon picks accepted, ready change sets with a leaf that serve no milestone by the repo's [schedule] backlog rule: after (the default), after every milestone group's candidates; before, ahead of them; skip, never, skipped as 'serves no milestone' as today. Within the backlog it picks the oldest accepted first (by the time each change set was last accepted or reopened). With an unknown backlog value it skips every backlog change set as 'serves no milestone' and puts the bad value in the skip's detail, so rhiza daemon status shows it"
+        },
+        "handle": "daemon-picks-backlog",
+        "id": "01M6VYK4TRY2VN9XHGKT0WDVTP",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6VYK4TRY2VN9XHGKRD9V4XZ",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYK4TRY2VN9XHGKRD9V4XZ",
+        "id": "01M6VYK4WNRMBPDN5YYY9NV16G",
+        "link": "01M6VYK4WNRMBPDN5YYXP5RDDA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYH21ZJVTTS56VT3D87NYH",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M6RNJW1SR1KMZHG5CQ34D137",
+        "handle": null,
+        "id": "01M6VYK51YPTGWVTFS4M24EH1C",
+        "node": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "op": "node.update",
+        "set": {
+          "statement": "Each poll, the daemon picks, in each project, the accepted change sets that rhiza ready says can start, that serve a milestone intent or, as daemon-picks-backlog sets out by the repo's [schedule] backlog rule, serve none, have at least one leaf, have no live run (running or interrupted, as run-one-live counts it) and whose latest run is not a failed run still in the inbox (as inbox-list keeps it: not abandoned, not retried, no newer run), in that project's roadmap order, and starts them, round-robin across projects as root-daemon-round-robin sets out, until its running runs (live runs whose process is running) reach the machine-wide maxRuns (default 2), so an interrupted run keeps its change set from being picked but takes no slot and a failed run's change set is never started again by the daemon until the owner clears that item; it never picks a draft, proposed or leafless change set on its own. Runs the owner queued (run-start-through-daemon) are not picks: they skip these filters and only share the maxRuns slots."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6JE3T47QE8E8YPMBMNF0ZTH",
+        "handle": null,
+        "id": "01M6VYK53XRGJQAQFFVQARMRPQ",
+        "node": "01M6JE3T47QE8E8YPMBHR38MAE",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A unit test of rhiza run milestone-check covers: serving no milestone with no policy.toml passes; serving no milestone with backlog = \"skip\" fails naming the change set; a run with a milestone whose change set serves that milestone directly, or through an intent under it, passes; one serving another milestone or none fails naming it. A testscript runs a plan run with a fake agent (left live after rhiza session done) whose change set serves an intent under no milestone: it enters review with no policy.toml, and ends failed at milestone-check with backlog = \"skip\"",
+          "statement": "The plan workflow keeps its command step milestone-check between interview and review (no on.fail): `rhiza run milestone-check` passes a planned change set (the intention itself, or each change set serving an intent a record adds) that serves no milestone, except that it fails, printing each offending change set and the fix, when the run was started with a milestone (the request's --milestone, the run's RHIZA_MILESTONE) and the change set does not serve that milestone directly or through an intent under it, or when the repo's [schedule] backlog is \"skip\" and the change set serves no milestone (today's message, since that work would never be built); a failure ends the run failed with the output in the ended entry's detail and the plan never reaches review or the gate. A repo that wants no check drops the step from its own plan workflow"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6JE3T47QE8E8YPMBHR38MAE",
+        "id": "01M6VYK55JNB9F3S1QWX65827G",
+        "link": "01M6VYK55JNB9F3S1QWTNDXHJ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYH21ZJVTTS56VT3D87NYH",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M6JE3KEGWGBYW35XHSPVQCT5",
+        "handle": null,
+        "id": "01M6VYK57JS0HE8AE6TFP77FQ6",
+        "node": "01M6JE3KEGWGBYW35XHSH0JJK1",
+        "op": "node.update",
+        "set": {
+          "acceptance": "internal/guide plan_test asserts the plan guide names RHIZA_MILESTONE, says a milestone is linked only when RHIZA_MILESTONE is set or one fits, names .rhiza/policy.toml's backlog rule and its \"skip\" exception, and no longer says every change set must serve a milestone; the installed skill copy matches the guide text",
+          "statement": "The plan guide (rhiza guide plan and the rhiza-plan skill) tells the planner that an intention change set serves the intent it belongs under, and links a milestone only when the run hands one in RHIZA_MILESTONE (then the serves link must reach that milestone, directly or through an intent under it) or an open milestone fits the work; work no milestone fits serves its intent and is built as backlog by the repo's [schedule] rule, unless that rule is \"skip\", when it must serve a milestone as before"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6JE3KEGWGBYW35XHSH0JJK1",
+        "id": "01M6VYK59NZX981FPHR21H5212",
+        "link": "01M6VYK59NZX981FPHR1FDQZZM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYH21ZJVTTS56VT3D87NYH",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6VY7GRV7BAJ9MMFVAY9GPZ2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYK5AXYVNRTDZEAWDXVRAR",
+  "type": "ops",
+  "v": 1
+}

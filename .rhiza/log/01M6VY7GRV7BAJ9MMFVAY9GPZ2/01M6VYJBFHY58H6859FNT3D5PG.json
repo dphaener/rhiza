@@ -1,0 +1,33 @@
+{
+  "actor": "01M6VY8QXB33920RKAKYQTCKB8",
+  "after": [
+    "01M6VYH23MAAFZF5NDH0X0E043"
+  ],
+  "at": "2026-11-07T21:27:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "b94f0d384cc185b70b3bdfc6542d1af8be180f0772e3424eaef5c212f9d0d26d",
+          "session": "c611d540-dc1b-4255-bc52-01a1b7e438f5",
+          "summary": "Autonomous plan run for change set 01M6VY7 (Scheduling as policy), which follows decision workflows-are-the-rules. No owner took part. The planner read the daemon's candidate selection (daemonCandidates in internal/api/daemon.go skips every accepted change set that serves no milestone as SkipNoMilestone), the plan workflow's milestone-check step (internal/workflow/builtin/plan.toml, internal/api/run_milestone.go), the request --milestone plumbing and the plan guide. It raised four questions in one call: which milestone this change set serves, where the scheduling rule lives, which values it takes, and what milestone-check does once backlog work can ship. The arbiter answered with Decision scheduling-policy-shape. (1) Serve milestone-29 directly, with no new milestone. (2) The rule lives in a new checked-in .rhiza/policy.toml under [schedule], so every daemon reads the same rule, and a missing file or key means the default. (3) backlog = after (default) | before | skip, oldest accepted first inside the backlog; an unknown value is a rhiza check problem, and the daemon then skips backlog work with the bad value in the skip detail. (4) milestone-check stays. It fails only for a run started with --milestone whose change set does not serve that milestone, or when backlog is skip. The planner then wrote four leaves: the policy file and its check, the daemon's backlog picks, the relaxed milestone-check, and the plan guide's milestone wording.",
+          "title": "Scheduling as policy: autonomous plan interview (arbiter answers)"
+        },
+        "handle": "scheduling-as-policy-interview",
+        "id": "01M6VYJBF4EMJPMNX94ATK5AJ2",
+        "key": null,
+        "kind": "source",
+        "node": "01M6VYJBF4EMJPMNX947JYGKE1",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6VY7GRV7BAJ9MMFVAY9GPZ2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYJBFHY58H6859FNT3D5PG",
+  "type": "ops",
+  "v": 1
+}

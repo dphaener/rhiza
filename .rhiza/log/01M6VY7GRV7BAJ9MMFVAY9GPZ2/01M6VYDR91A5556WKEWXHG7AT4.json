@@ -1,0 +1,30 @@
+{
+  "actor": "01M6VY8QXB33920RKAKYQTCKB8",
+  "after": [
+    "01M6VY7GRV7BAJ9MMFVET4BNAP"
+  ],
+  "at": "2026-11-07T21:25:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "c611d540-dc1b-4255-bc52-01a1b7e438f5",
+          "statement": "Change set 01M6VY7 (Scheduling as policy) must serve a milestone today: the plan's milestone-check fails otherwise, and the daemon skips it as 'serves no milestone'. Milestones 26–29 have no open change sets left. Which milestone should 01M6VY7 serve? / Where should the repo's scheduling rule for change sets that serve no milestone live? / Which values should the scheduling rule take, and what is the default? / What should the plan workflow's milestone-check step do once backlog work can ship?"
+        },
+        "handle": "question-c611d540-1",
+        "id": "01M6VYDPA4Y02J9HAVXNV1Z9E8",
+        "key": null,
+        "kind": "question",
+        "node": "01M6VYDPA4Y02J9HAVXJP0Q232",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6VY7GRV7BAJ9MMFVAY9GPZ2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYDR91A5556WKEWXHG7AT4",
+  "type": "ops",
+  "v": 1
+}
