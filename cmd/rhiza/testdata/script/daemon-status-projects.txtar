@@ -8,8 +8,10 @@ chmod 755 bin/rex
 env PATH=$WORK/bin:$PATH
 env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 
-# Two initialised projects, each with a ready milestone change set, and one
-# bare checkout.
+# Two initialised projects, each with a ready milestone change set, an
+# accepted one serving no milestone and a live run (a fixture journal naming
+# a dead process, on a change set the daemon does not resume), and one bare
+# checkout.
 exec sh -c 'printf "[projects.repo]\npath = \"repo\"\n[projects.second]\npath = \"second\"\n[projects.bare]\npath = \"bare\"\n" > $WORK/rhiza.toml'
 mkdir bare
 cd bare
@@ -27,6 +29,12 @@ exec rhiza add capability built-leaf
 exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
 exec rhiza propose
 exec rhiza accept --reason ok
+exec rhiza change new Orphan --title Orphan
+exec rhiza add capability orphan-leaf
+exec rhiza propose
+exec rhiza accept --reason ok
+mkdir .git/rhiza/runs
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"CHANGELIVE\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/LIVEREPO001.jsonl'
 cd $WORK/second
 exec git init -q
 exec rhiza init
@@ -38,6 +46,12 @@ exec rhiza add capability other-leaf
 exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
 exec rhiza propose
 exec rhiza accept --reason ok
+exec rhiza change new Orphan --title Orphan
+exec rhiza add capability orphan-leaf
+exec rhiza propose
+exec rhiza accept --reason ok
+mkdir .git/rhiza/runs
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"CHANGELIVE\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/LIVESECOND1.jsonl'
 
 # From the root, one poll starts a run in each initialised project.
 cd $WORK
@@ -56,12 +70,16 @@ stdout -count=1 '"project": "repo"'
 stdout -count=1 '"project": "second"'
 stdout -count=2 '"last_started": \{'
 stdout -count=1 '"reason": "not initialised"'
+stdout -count=1 '"project": "repo",\n *"runs": \[\n *\{\n *"change": "CHANGELIVE",\n *"id": "LIVEREPO001",\n *"state": "interrupted"\n *\}\n *\],\n *"skipped": \[\n *\{\n *"change": "01M5PWGS702G3VYA781BNZ0K7Q",\n *"detail": \[\],\n *"reason": "no-milestone",\n *"title": "Orphan"'
+stdout -count=1 '"project": "second",\n *"runs": \[\n *\{\n *"change": "CHANGELIVE",\n *"id": "LIVESECOND1",\n *"state": "interrupted"\n *\}\n *\],\n *"skipped": \[\n *\{\n *"change": "01M5PWGS702G3VYA781BNZ0K7Q",\n *"detail": \[\],\n *"reason": "no-milestone",\n *"title": "Orphan"'
 ! stdout '"project": "bare",\n *"runs"'
 exec rhiza daemon status
 stdout '^Daemon not running$'
 stdout -count=1 '^Project repo:$'
 stdout -count=1 '^Project second:$'
 stdout -count=2 '^  Last started: a run of '
+stdout '^Project repo:\n  Live runs:\n  - LIVEREPO001 interrupted \(change set CHANGELIVE\)\n  Last started: a run of .*\n  Skipped: [0-9A-Z]+ Orphan: serves no milestone\n'
+stdout '^Project second:\n  Live runs:\n  - LIVESECOND1 interrupted \(change set CHANGELIVE\)\n  Last started: a run of .*\n  Skipped: [0-9A-Z]+ Orphan: serves no milestone\n'
 stdout 'Skipped project: bare: not initialised'
 exec rhiza api call daemon.status
 stdout -count=1 '"project": "repo"'
