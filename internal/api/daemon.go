@@ -187,10 +187,10 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	var webUI *web.Manager
 	if !r.Once && ctxGetenv(ctx)("RHIZA_TEST_NOW") == "" {
 		// The handler gets its own copy of ctx: the poll goes on changing
-		// ctx while requests run.
-		snap := *homeCtx
-		health := NewWebHealth(&snap)
-		webUI = &web.Manager{Factory: webFactory, Handler: web.HandlerWithMilestones(WebDaemonSource(&snap, health), WebRunsSource(&snap), WebInboxSource(&snap), WebMilestonesSource(&snap), ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap, health), web.PollEvery))}
+		// ctx while requests run. One listener serves every project: the
+		// home project at /, each at /p/<project>/.
+		home := WebProjectHandler(homeCtx)
+		webUI = &web.Manager{Factory: webFactory, Handler: WebRootHandler(ctx, root, homeName, home)}
 		defer webUI.Close()
 	}
 	var sweep daemon.SweepSchedule

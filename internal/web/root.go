@@ -1,0 +1,45 @@
+package web
+
+import (
+	"net/http"
+	"strings"
+)
+
+// ProjectPrefix is where a project's pages live on the root's listener:
+// /p/<project>/ serves that project's UI, so /p/<project>/runs is its Runs.
+const ProjectPrefix = "/p/"
+
+// ProjectResolver gives the handler serving the project name, or nil when no
+// such project is registered and initialised.
+type ProjectResolver func(name string) http.Handler
+
+// Root is the handler of the root daemon's one listener. A request under
+// /p/<project>/ is served by that project's handler with the prefix taken
+// off; an unknown project is not found; everything else is served by home,
+// the handler of the daemon's home project.
+func Root(home http.Handler, project ProjectResolver) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rest, ok := strings.CutPrefix(r.URL.Path, ProjectPrefix)
+		if !ok {
+			home.ServeHTTP(w, r)
+			return
+		}
+		name, tail, _ := strings.Cut(rest, "/")
+		var h http.Handler
+		if name != "" && project != nil {
+			h = project(name)
+		}
+		if h == nil {
+			http.NotFound(w, r)
+			return
+		}
+		if !strings.Contains(rest, "/") {
+			http.Redirect(w, r, ProjectPrefix+name+"/", http.StatusMovedPermanently)
+			return
+		}
+		r2 := r.Clone(r.Context())
+		r2.URL.Path = "/" + tail
+		r2.URL.RawPath = ""
+		h.ServeHTTP(w, r2)
+	})
+}
