@@ -18,10 +18,12 @@ the plan, and tasks belong to the work layer.
      (`"kind":"intent"`, under its parent) into `RHIZA_CHANGE`, with the owner. Then write
      the `serves` link: `rhiza link "$RHIZA_CHANGE" serves <intent> --change "$RHIZA_CHANGE"`.
      Only then write leaves.
-     The daemon builds only a change set that serves a milestone, so the `serves` link must
-     reach one, directly or through an intent under one: the milestone in `RHIZA_MILESTONE`
-     when set, else the open milestone it fits. Never an umbrella or area intent under no
-     milestone.
+     Link a milestone
+     only when `RHIZA_MILESTONE` names one (then the `serves` link must reach it, directly
+     or through an intent under it) or an open milestone fits. Other work is built as
+     backlog by `.rhiza/policy.toml`'s `[schedule]` `backlog` rule, unless it is "skip":
+     then the `serves` link must reach a milestone, never an
+     umbrella or area intent under no milestone.
    - `record`: a draft opened for the plan, so you plan a milestone (see Milestone).
 3. Interview the owner (see Interview) until every leaf has a statement and an acceptance
    check, and every choice is a Decision or a parked question.

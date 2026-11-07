@@ -49,6 +49,13 @@ func TestPlanKinds(t *testing.T) {
 	}
 }
 
+func TestPlanNoMandatoryMilestone(t *testing.T) {
+	tx, _ := Lookup("plan")
+	if strings.Contains(tx.Body, "builds only a change set that serves a milestone") {
+		t.Errorf("plan still says every change set must serve a milestone")
+	}
+}
+
 func TestPlanText(t *testing.T) {
 	checkPhrases(t, "plan", map[string][]string{
 		"plan-guide": {
@@ -61,8 +68,9 @@ func TestPlanText(t *testing.T) {
 			"`\"serves\": []` in `rhiza change show --json`", "own serves links",
 		},
 		"plan-serves-milestone": {
-			"RHIZA_MILESTONE", "reach one, directly or through an intent under one",
-			"umbrella or area intent under no", "milestone",
+			"RHIZA_MILESTONE", "only when `RHIZA_MILESTONE` names one",
+			"or an open milestone fits", ".rhiza/policy.toml", "`backlog` rule",
+			`"skip"`, "umbrella or area intent under no", "milestone",
 		},
 		"plan-interview": {
 			"rhiza slice", "rhiza why", "Never ask a fact", "One topic per message",
