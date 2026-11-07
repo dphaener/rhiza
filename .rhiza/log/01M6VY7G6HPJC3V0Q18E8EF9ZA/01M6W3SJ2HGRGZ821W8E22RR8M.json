@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W3M4QCNCJ7MWRWVJ75E5V4",
+  "after": [
+    "01M6W3GCW7NXPA9WNS3PZ0XHE6"
+  ],
+  "at": "2026-11-07T22:59:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At df9cc6f4, go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(request-workflow-flag|describe-golden)$' passed. request-workflow-flag.txtar shows: request --workflow bugfix (a repo workflow) queued, and request ls --json with \"workflow\": \"bugfix\"; request --workflow nonesuch failing with 'no such workflow' and the queue unchanged ('No plan requests'). describe-golden now has the new workflow field on RequestRequest and RequestInfo. The script's `! exec` does not pin the exit code, so I checked by hand with a scratch build in a registered scratch project: --workflow nonesuch exits 2 with a usage error and queues nothing; --workflow plan (built in) queues, and ls shows [workflow plan]. In the diff, internal/api/request.go checks the name through lookupWorkflow (repo, personal and built-in layers) before queueing and stores it on daemon.Request.Workflow; run start already passes req.Workflow into newPlanChange (internal/api/run.go:569)."
+        },
+        "handle": "request-workflow-flag-verified",
+        "id": "01M6W3SHWY17E5XG68M5X1V0H8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W3SHWY17E5XG68M32XG8TH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W3SHWY17E5XG68M32XG8TH",
+        "id": "01M6W3SHZFHSMA9JQWKQ7SVGKK",
+        "link": "01M6W3SHZFHSMA9JQWKN8GFB56",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAMKNBD6G38RFW88RFB7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W3SJ2HGRGZ821W8E22RR8M",
+  "type": "ops",
+  "v": 1
+}
