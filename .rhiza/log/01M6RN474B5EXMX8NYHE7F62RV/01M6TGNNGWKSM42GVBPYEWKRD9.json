@@ -1,0 +1,63 @@
+{
+  "actor": "01M6TGGFARA3HHGMHG74WFEWBD",
+  "after": [
+    "01M6TGDDGST17AQXGNSWT2XGBB"
+  ],
+  "at": "2026-11-07T08:05:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-1237c200 on VM rhiza, 2026-11-07, with a binary built from the branch head (RHIZA_ROOT/CHANGE/RUN unset): `rhiza project ls` in ~/code prints nebari (initialised) and rhiza (initialised); `systemctl --user is-active rhiza-root.service` prints active and `systemctl --user status rhiza-rhiza.service` says the unit could not be found (only rhiza-root.service is in ~/.config/systemd/user); `rhiza health` in ~/code/rhiza exits 0 (daemon running as rhiza:3484327, warn only for being behind origin/main). ~/code/rhiza.toml sets self_update_project = \"rhiza\" and the daemon keys (maxRuns 5, permissionMode, selfUpdate, usage limits, web host); the rhiza checkout's git config keeps only rhiza.autonomy.plan, and `rhiza daemon status` reports those settings as coming from rhiza.toml."
+        },
+        "handle": "vm-root-installed-qa-1",
+        "id": "01M6TGNN3FVJDS6VY6DTR8D9CT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TGNN3FVJDS6VY6DT7SGVVH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TGNN3FVJDS6VY6DT7SGVVH",
+        "id": "01M6TGNN6PJ9PCC7G50Y93GDHJ",
+        "link": "01M6TGNN6PJ9PCC7G50TTT9T96",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN871GNRWZ6FJQAAHWT4PY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-1237c200 on VM rhiza, 2026-11-07: `rhiza daemon status` in ~/code (root daemon rhiza:3484327, mode service, Max runs 5 from rhiza.toml) lists both Project nebari and Project rhiza under the one daemon, with nebari's last start a run of change set 01M6S6R84W (Disabled button contrast) at 04:32:11Z and four rhiza runs live now. ~/orchestrator/vm-root-migration.log's 2026-11-07T04:32:31Z root daemon status shows nebari run 01M6T4EHEM1TBM0CET0SCBKHHG live beside rhiza runs 01M6T36NJ2YF and 01M6T3HSJVBP. `rhiza run status 01M6T4EHEM1TBM0CET0SCBKHHG` in ~/code/nebari: succeeded, ship-change workflow, autonomous. `gh pr view 72 -R dphaener/nebari`: MERGED at 2026-11-07T07:39:35Z, merge commit 1689c77, head cs/disabled-button-contrast; ~/code/nebari main is at 1689c77 'Disabled button contrast (#72)'. The concurrent live snapshot comes from the log, since the nebari run has finished."
+        },
+        "handle": "vm-second-project-ships-qa-1",
+        "id": "01M6TGNN8XHD6CNJ054C8FKG50",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TGNN8XHD6CNJ054AY50S3V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TGNN8XHD6CNJ054AY50S3V",
+        "id": "01M6TGNNC4KD137BNDTMRW7FH2",
+        "link": "01M6TGNNC4KD137BNDTJ0X1MX9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN873HV3NYMXTSJ13CXZJF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TGNNGWKSM42GVBPYEWKRD9",
+  "type": "ops",
+  "v": 1
+}

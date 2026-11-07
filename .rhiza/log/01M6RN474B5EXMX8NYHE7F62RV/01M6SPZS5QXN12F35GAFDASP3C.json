@@ -1,0 +1,50 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6SPVK8D4XEJCSSCJQE4EA31"
+  ],
+  "at": "2026-11-07T00:36:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "vm-second-project-ships ships Nebari's 'Disabled button contrast' change set through the root daemon, planned by an autonomous plan run on that one change set (Nebari's rhiza.autonomy.plan stays owner)",
+          "wording": "Disabled button contrast, planned by the daemon alone; the agent's options, picked by the owner"
+        },
+        "handle": "m29-nebari-ships-button-contrast",
+        "id": "01M6SPZRTQE401Z3KF0JSCAYW9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6SPZRTQE401Z3KF0FRC2T4A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SPZRTQE401Z3KF0FRC2T4A",
+        "id": "01M6SPZRX9D1HZW13W11VN5WJ2",
+        "link": "01M6SPZRX9D1HZW13W0ZKWWJAD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6SNX8DWNC1C10JHF5N0D1MF",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M6SPZRTQE401Z3KF0FRC2T4A",
+        "id": "01M6SPZRZZC8XP52CCQ2516T5E",
+        "link": "01M6SPZRZZC8XP52CCQ171D7VP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6SPVC5ZPSS6M06SH987RYN7",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SPZS5QXN12F35GAFDASP3C",
+  "type": "ops",
+  "v": 1
+}

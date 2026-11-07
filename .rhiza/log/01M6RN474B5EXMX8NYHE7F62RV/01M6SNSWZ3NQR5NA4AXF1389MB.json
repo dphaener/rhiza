@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SNR9MR483JJ9HD7K3P12FT",
+  "after": [
+    "01M6RYG71HP2KMN9WHNEK7H4MT"
+  ],
+  "at": "2026-11-07T00:16:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "On the VM: `rhiza project ls` in ~/code lists nebari (initialised) and rhiza (initialised). `systemctl --user is-active rhiza-root.service` prints active; rhiza-rhiza.service could not be found (uninstalled). `rhiza health` exits 0 in ~/code/rhiza and shows the daemon running. ~/code/rhiza.toml now sets self_update_project = \"rhiza\" and holds the daemon settings (maxRuns, permissionMode, selfUpdate, web host); those keys were unset from the rhiza checkout's git config, and health still passes with them."
+        },
+        "handle": "vm-root-installed-evidence",
+        "id": "01M6SNSWX0XZXGAJ2307272EQ1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SNSWX0XZXGAJ2303NVGFW3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SNSWX0XZXGAJ2303NVGFW3",
+        "id": "01M6SNSWXT0A1863MB8PC853T4",
+        "link": "01M6SNSWXT0A1863MB8MD41J9K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN871GNRWZ6FJQAAHWT4PY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SNSWZ3NQR5NA4AXF1389MB",
+  "type": "ops",
+  "v": 1
+}

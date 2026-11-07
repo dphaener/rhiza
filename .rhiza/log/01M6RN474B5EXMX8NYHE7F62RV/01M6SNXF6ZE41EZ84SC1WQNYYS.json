@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SNTJG0GHMRP247RX4PVBQV",
+  "after": [
+    "01M6SNX8WR0FZJK5YX3A64MA5W"
+  ],
+  "at": "2026-11-07T00:18:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier re-ran the acceptance on VM rhiza at b8662242 (a model-only commit adding the builder's Evidence). In ~/code `rhiza project ls` exits 0 and lists nebari (initialised) and rhiza (initialised). `systemctl --user is-active rhiza-root.service` prints active; its unit runs `/home/rhiza/bin/rhiza daemon --autonomous` in /home/rhiza/code; `systemctl --user status rhiza-rhiza.service` says the unit could not be found and list-unit-files shows only rhiza-root.service. ~/code/rhiza.toml sets self_update_project = \"rhiza\", registers both projects and holds the [daemon] settings (maxRuns, permissionMode, selfUpdate, web host); `git config --get-regexp '^rhiza\\.(daemon|web)'` in ~/code/rhiza finds none. `rhiza health` in ~/code/rhiza exits 0 with the daemon running (two warns: failed requests and unclaimed commits, unrelated)."
+        },
+        "handle": "vm-root-installed-verified",
+        "id": "01M6SNXF26HRA2ZBSEHNQK9CDB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SNXF26HRA2ZBSEHKCZ32CA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SNXF26HRA2ZBSEHKCZ32CA",
+        "id": "01M6SNXF4DSASYHC38QZD6N1ZD",
+        "link": "01M6SNXF4DSASYHC38QWK8817T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN871GNRWZ6FJQAAHWT4PY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SNXF6ZE41EZ84SC1WQNYYS",
+  "type": "ops",
+  "v": 1
+}

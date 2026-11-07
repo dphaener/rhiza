@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6TGNNGWKSM42GVBPYEWKRD9"
+  ],
+  "at": "2026-11-07T08:13:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "9e3e28f62d1df9cab101cb90312293e1a95b3f89",
+          "pr": "https://github.com/dphaener/rhiza/pull/351",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #351 (https://github.com/dphaener/rhiza/pull/351) passed CI at 9e3e28f",
+          "status": "verified"
+        },
+        "handle": "pr-351-this-vm-on-one-root",
+        "id": "01M6TH484F4CJHM5YWQ0X64N0J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TH484F4CJHM5YWPXYJGDZJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TH484F4CJHM5YWPXYJGDZJ",
+        "id": "01M6TH48592BYCGGEFSVW9RHAJ",
+        "link": "01M6TH48592BYCGGEFSTKVHXTT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN871GNRWZ6FJQAAHWT4PY",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6TH484F4CJHM5YWPXYJGDZJ",
+        "id": "01M6TH4863HXR74QZ8PP3K0W20",
+        "link": "01M6TH4863HXR74QZ8PJRSAVXB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN873HV3NYMXTSJ13CXZJF",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6TH484F4CJHM5YWPXYJGDZJ",
+        "id": "01M6TH4876V430KRRQ2VCZ9Z4D",
+        "link": "01M6TH4876V430KRRQ2RA99J4Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESPV5PW1DHSM7HQC0F4CP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TH489G97XXP48X5DDE0KFM",
+  "type": "ops",
+  "v": 1
+}

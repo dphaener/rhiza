@@ -1,0 +1,39 @@
+{
+  "actor": "01M6SNVG77JGKANBNJY3W4J57J",
+  "after": [
+    "01M6SNSWZ3NQR5NA4AXF1389MB"
+  ],
+  "at": "2026-11-07T00:18:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Which real Nebari change set should the root daemon ship to satisfy vm-second-project-ships? Nebari is imported and registered under the root, but it has no planned, accepted change set to ship, and shipping merges a Nebari PR."
+        },
+        "handle": "m29-which-nebari-change-set",
+        "id": "01M6SNX8DWNC1C10JHF6P3N2CE",
+        "key": null,
+        "kind": "question",
+        "node": "01M6SNX8DWNC1C10JHF5N0D1MF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SNX8DWNC1C10JHF5N0D1MF",
+        "id": "01M6SNX8KCEM763NYMS2VG613Y",
+        "link": "01M6SNX8KCEM763NYMS0RX9VNE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN873HV3NYMXTSJ13CXZJF",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SNX8WR0FZJK5YX3A64MA5W",
+  "type": "ops",
+  "v": 1
+}

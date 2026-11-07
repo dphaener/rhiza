@@ -34,6 +34,8 @@ One root daemon. The assistant's option, picked by the owner.
 - decided-by [health-across-projects](../capability/rhiza/orchestration/health-across-projects.md)
 - decided-by [daemon-status-across-projects](../capability/rhiza/orchestration/daemon-status-across-projects.md)
 - decided-by [web-root-listener](../capability/rhiza/web-root-listener.md)
+- decided-by [vm-root-installed](../capability/rhiza/orchestration/daemon/vm-root-installed.md)
+- decided-by [vm-second-project-ships](../capability/rhiza/orchestration/daemon/vm-second-project-ships.md)
 
 ## History
 

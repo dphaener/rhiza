@@ -1,0 +1,39 @@
+{
+  "actor": "01M6SP6QC8GP2HM0XF61ECEYK2",
+  "after": [
+    "01M6SP353D5GW6DJB9HKFT54K7"
+  ],
+  "at": "2026-11-07T00:24:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Attempt 3 builder, 2026-11-07T00:24Z: still blocked, nothing changed. rhiza daemon status at ~/code: root daemon running (version e1d900cd, max runs 5, rhiza.autonomy.plan = owner), Live runs: none. The question is unanswered and Nebari still has only draft change sets, so no builder can ship one: planning a Nebari change set needs the owner. vm-second-project-ships cannot pass until the owner names (and plans) the Nebari change set to ship."
+        },
+        "handle": "note-01m6sp8efje9xz",
+        "id": "01M6SP8EFJE9XZ6RGSS8ANEFWB",
+        "key": null,
+        "kind": "note",
+        "node": "01M6SP8EFJE9XZ6RGSS4X535EE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SP8EFJE9XZ6RGSS4X535EE",
+        "id": "01M6SP8EGQJP3NFVXB8MVQ278X",
+        "link": "01M6SP8EGQJP3NFVXB8M7NEK1Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6SNX8DWNC1C10JHF5N0D1MF",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SP8EKEC8F7E7N6ZMS4G4C0",
+  "type": "ops",
+  "v": 1
+}
