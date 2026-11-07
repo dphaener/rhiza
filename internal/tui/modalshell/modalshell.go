@@ -94,7 +94,7 @@ func (s *Shell) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return s.quit()
 		}
 	}
-	return s, s.c.Update(msg)
+	return s, s.c.Update(underHeader(s.header, msg))
 }
 
 func (s *Shell) quit() (tea.Model, tea.Cmd) {
@@ -110,6 +110,17 @@ func withHeader(line, content string) string {
 		return content
 	}
 	return line + "\n" + content
+}
+
+// underHeader is msg as the content under line sees it: a window size
+// message loses the header's row, so a component that fills its height
+// still fits the window with the header above it.
+func underHeader(line string, msg tea.Msg) tea.Msg {
+	if ws, ok := msg.(tea.WindowSizeMsg); ok && line != "" {
+		ws.Height = max(ws.Height-1, 0)
+		return ws
+	}
+	return msg
 }
 
 // headedSize is size with room for the header line.
@@ -128,7 +139,7 @@ type headed struct {
 }
 
 func (h headed) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	m, cmd := h.model.Update(msg)
+	m, cmd := h.model.Update(underHeader(h.line, msg))
 	h.model = m.(model)
 	return h, cmd
 }

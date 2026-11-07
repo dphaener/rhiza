@@ -175,3 +175,44 @@ func TestRunHeadedWrapsModel(t *testing.T) {
 		t.Errorf("update lost the header: %T", next)
 	}
 }
+
+// longList is a list with more rows than any window in the tests, so it
+// fills the height it is given.
+func longList() Component {
+	rows := make([]ui.Row, 40)
+	for i := range rows {
+		rows[i] = ui.Row{Label: "row"}
+	}
+	return List(ui.NewList(theme.Dark(), prof, rows))
+}
+
+func TestHeaderFitsWindow(t *testing.T) {
+	size := tea.WindowSizeMsg{Width: 60, Height: 12}
+	views := map[string]func() tea.Model{
+		"shell":  func() tea.Model { return New(longList()).WithHeader("Project: alpha") },
+		"headed": func() tea.Model { return headed{model: New(longList()), line: "Project: alpha"} },
+		"switcher": func() tea.Model {
+			return NewSwitcher(Switching{
+				Header: func() string { return "Project: alpha" },
+				Build: func() Built {
+					sh := New(longList())
+					return Built{Model: sh, Result: sh.Result}
+				},
+			})
+		},
+	}
+	for name, mk := range views {
+		m, _ := mk().Update(size)
+		got := m.View().Content
+		if n := strings.Count(got, "\n") + 1; n != size.Height {
+			t.Errorf("%s: view is %d lines in a %d-line window", name, n, size.Height)
+		}
+		if !strings.HasPrefix(got, "Project: alpha\n") {
+			t.Errorf("%s: view %q lacks the header", name, got)
+		}
+	}
+	plain, _ := New(longList()).Update(size)
+	if n := strings.Count(plain.View().Content, "\n") + 1; n != size.Height {
+		t.Errorf("unheaded shell: view is %d lines, want %d", n, size.Height)
+	}
+}

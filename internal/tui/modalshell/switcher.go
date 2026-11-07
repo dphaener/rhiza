@@ -107,6 +107,7 @@ func (s *Switcher) NaturalSize() (int, int) {
 }
 
 func (s *Switcher) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	msg = underHeader(s.header, msg)
 	if s.picker != nil {
 		return s.updatePicker(msg)
 	}

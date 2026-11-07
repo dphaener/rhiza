@@ -66,6 +66,45 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 			once = true
 		}
 	}
+	apps := newTUIModels(g, getenv)
+	inboxModel, runsModel, autonomyModel := apps.inbox, apps.runs, apps.autonomy
+	if !once {
+		return runSwitching(name, apps, stdout, stderr)
+	}
+	var result func() ([]byte, error)
+	switch {
+	case isAutonomy:
+		result = autonomyModel().Result
+	case isDaemon:
+		return writeError(stdout, stderr, api.Usagef("tui app daemon has no --once: it writes the daemon settings from its form"), false)
+	case isInbox:
+		result = inboxModel().Result
+	case isRuns:
+		result = runsModel().Result
+	case isRequests:
+		return writeError(stdout, stderr, api.Usagef("tui app request has no --once: it files a request from its form"), false)
+	}
+	if once {
+		out, err := result()
+		if err != nil {
+			return writeError(stdout, stderr, err, false)
+		}
+		stdout.Write(out)
+		return 0
+	}
+	return 0
+}
+
+// tuiModels builds the apps' models over the api operations, called
+// in-process with the global flags in g.
+type tuiModels struct {
+	call     func(op string, record, dry bool, args []string) ([]byte, error)
+	inbox    func() *inboxapp.Model
+	runs     func() *runsapp.Model
+	autonomy func() *autonomyapp.Model
+}
+
+func newTUIModels(g globals, getenv func(string) string) tuiModels {
 	callWith := func(g globals, op string, record, dry bool, args []string) ([]byte, error) {
 		o, ok := api.Lookup(op)
 		if !ok {
@@ -121,41 +160,36 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 			return call(op, false, false, args)
 		})
 	}
-	if !once {
-		return runSwitching(isInbox, isRuns, isRequests, isAutonomy, isDaemon, call, inboxModel, runsModel, autonomyModel, stdout, stderr)
+	return tuiModels{call: call, inbox: inboxModel, runs: runsModel, autonomy: autonomyModel}
+}
+
+// runSwitching runs an app in a terminal pane, hosted by appSwitcher.
+func runSwitching(name string, apps tuiModels, stdout, stderr io.Writer) int {
+	s, err := appSwitcher(name, apps)
+	if err != nil {
+		return writeError(stdout, stderr, err, false)
 	}
-	var result func() ([]byte, error)
-	switch {
-	case isAutonomy:
-		result = autonomyModel().Result
-	case isDaemon:
-		return writeError(stdout, stderr, api.Usagef("tui app daemon has no --once: it writes the daemon settings from its form"), false)
-	case isInbox:
-		result = inboxModel().Result
-	case isRuns:
-		result = runsModel().Result
-	case isRequests:
-		return writeError(stdout, stderr, api.Usagef("tui app request has no --once: it files a request from its form"), false)
+	if err := modalshell.Run(s); err != nil {
+		return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
 	}
-	if once {
-		out, err := result()
-		if err != nil {
-			return writeError(stdout, stderr, err, false)
-		}
+	out, err := s.Result()
+	if err != nil {
+		return writeError(stdout, stderr, err, false)
+	}
+	if name == requestapp.Name || name == daemonapp.Name {
 		stdout.Write(out)
-		return 0
 	}
 	return 0
 }
 
-// runSwitching runs an app in a terminal pane. Every app names its current
-// project in a header, and one key (modalshell.SwitchKey) opens a picker of
-// the registered projects: picking one moves the app there and builds it
-// anew, so its view is the picked project's.
-func runSwitching(isInbox, isRuns, isRequests, isAutonomy, isDaemon bool,
-	call func(op string, record, dry bool, args []string) ([]byte, error),
-	inboxModel func() *inboxapp.Model, runsModel func() *runsapp.Model, autonomyModel func() *autonomyapp.Model,
-	stdout, stderr io.Writer) int {
+// appSwitcher is the switcher the named app runs in. Every app names its
+// current project, the one the working directory is in, in a header, and
+// one key (modalshell.SwitchKey) opens a picker of the registered
+// projects: picking one moves the app there and builds it anew, so its
+// view is the picked project's. It fails when the daemon app's form cannot
+// be built, before any pane opens.
+func appSwitcher(name string, apps tuiModels) (*modalshell.Switcher, error) {
+	call := apps.call
 	wd, _ := os.Getwd()
 	names, folder := projectctx.Folders(wd)
 	sw := modalshell.Switching{
@@ -170,12 +204,11 @@ func runSwitching(isInbox, isRuns, isRequests, isAutonomy, isDaemon bool,
 	}
 	var daemonErr error
 	sw.Build = func() modalshell.Built {
-		switch {
-		case isAutonomy:
-			am := autonomyModel()
-			sh := am.Shell()
+		switch name {
+		case autonomyapp.Name:
+			sh := apps.autonomy().Shell()
 			return modalshell.Built{Model: sh, Result: sh.Result}
-		case isDaemon:
+		case daemonapp.Name:
 			da, err := daemonapp.New(func(op string, args []string) ([]byte, error) {
 				return call(op, false, false, args)
 			}, theme.Dark(), colorprofile.Detect(os.Stdout, os.Environ()))
@@ -185,15 +218,14 @@ func runSwitching(isInbox, isRuns, isRequests, isAutonomy, isDaemon bool,
 			}
 			sh := modalshell.New(da)
 			return modalshell.Built{Model: sh, Result: sh.Result}
-		case isInbox:
-			im := inboxModel()
+		case inboxapp.Name:
+			im := apps.inbox()
 			return modalshell.Built{Model: im, Result: im.Result}
-		case isRuns:
-			rm := runsModel()
+		case runsapp.Name:
+			rm := apps.runs()
 			sh := modalshell.New(rm)
 			return modalshell.Built{Model: sh, Result: rm.Result}
 		default:
-			_ = isRequests
 			wd, _ := os.Getwd()
 			current, _ := projectctx.Current(wd)
 			names, folder := projectctx.Folders(wd)
@@ -208,23 +240,12 @@ func runSwitching(isInbox, isRuns, isRequests, isAutonomy, isDaemon bool,
 			return modalshell.Built{Model: sh, Result: sh.Result}
 		}
 	}
-	if isDaemon {
+	if name == daemonapp.Name {
 		// Fail before opening a pane when the daemon form cannot be built.
 		sw.Build()
 		if daemonErr != nil {
-			return writeError(stdout, stderr, daemonErr, false)
+			return nil, daemonErr
 		}
 	}
-	s := modalshell.NewSwitcher(sw)
-	if err := modalshell.Run(s); err != nil {
-		return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
-	}
-	out, err := s.Result()
-	if err != nil {
-		return writeError(stdout, stderr, err, false)
-	}
-	if isRequests || isDaemon {
-		stdout.Write(out)
-	}
-	return 0
+	return modalshell.NewSwitcher(sw), nil
 }
