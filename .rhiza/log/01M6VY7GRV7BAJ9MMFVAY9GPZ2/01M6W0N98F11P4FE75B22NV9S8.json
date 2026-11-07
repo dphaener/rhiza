@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W0KTFP8Q7VY97MVBQE6XVJ",
+  "after": [
+    "01M6VZNWJE93B3G74M08FY92FB"
+  ],
+  "at": "2026-11-07T22:04:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-48e174b7 at 77246b9f: read the diff of internal/guide/text/plan.md and plan_test.go. go test -trimpath ./internal/guide/... passes: TestPlanText's plan-serves-milestone phrases require RHIZA_MILESTONE, 'only when `RHIZA_MILESTONE` names one', 'or an open milestone fits', '.rhiza/policy.toml', '`backlog` rule' and '\"skip\"'; new TestPlanNoMandatoryMilestone asserts the old 'builds only a change set that serves a milestone' sentence is gone, and grep finds no other every-change-set-must-serve-a-milestone wording in plan.md. The installed rhiza-plan SKILL.md is built from the same plan topic body (internal/api/guide_install.go skillFile(\"rhiza-plan\",\"plan\")), so it matches by construction; go test -trimpath ./internal/api -run Guide passes."
+        },
+        "handle": "plan-guide-milestone-optional-verified",
+        "id": "01M6W0N96QNJNXWVY4R61P53JE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W0N96QNJNXWVY4R4GVVMDQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W0N96QNJNXWVY4R4GVVMDQ",
+        "id": "01M6W0N97H5Y75VG6DQ06RH03B",
+        "link": "01M6W0N97H5Y75VG6DPXFP2TD8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMQBZFQMEAXX3YSKEYS5J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7GRV7BAJ9MMFVAY9GPZ2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W0N98F11P4FE75B22NV9S8",
+  "type": "ops",
+  "v": 1
+}
