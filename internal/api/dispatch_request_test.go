@@ -110,3 +110,36 @@ func TestInboxKeepsPlanRunUnderOtherWorkflow(t *testing.T) {
 		t.Errorf("non-plan run under bugfix that never landed: %d items, want 1 skipped", got)
 	}
 }
+
+// run resume lets a request's plan run through when its change set landed
+// early (the interview lands its record), whatever workflow it runs; a run
+// not started for a request, which never reached land, is still refused.
+func TestRunResumeLetsLandedPlanRunUnderOtherWorkflow(t *testing.T) {
+	f := newSessionFixture(t, "landed")
+	cs := newChange(t, f.ctx, `{"intent":"Fix the bug","title":"Fix the bug"}`).ChangeSet
+	for _, s := range []string{"propose", "accept", "land"} {
+		move(t, f.ctx, s, `{}`)
+	}
+	rs := run.NewStore(run.Dir(f.common))
+	create := func(id string, plan bool) {
+		t.Helper()
+		s := run.Started{Workflow: "bugfix", Change: cs.String(), Definition: twoCommands, Plan: plan}
+		if err := rs.Create(id, run.Entry{Type: run.TypeStarted, At: time.Now(), Step: "one", Started: &s}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	f.ctx.DryRun = true
+	create("RPLAN", true)
+	resp, err := callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"RPLAN"}`)
+	if err != nil {
+		t.Fatalf("resume of a plan run under bugfix on a landed change set: %v, want it resumed", err)
+	}
+	if rr := resp.(RunResponse); rr.Run.ID != "RPLAN" || !rr.DryRun {
+		t.Errorf("resume response %+v", rr)
+	}
+	create("ROTHER", false)
+	_, err = callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"ROTHER"}`)
+	if err == nil || !strings.Contains(err.Error(), "no longer accepted") {
+		t.Fatalf("resume of a non-plan run on a landed change set: %v, want it refused", err)
+	}
+}
