@@ -451,7 +451,7 @@ func TestRunOrder(t *testing.T) {
 	a := r.next()
 	r.record("Anchor", anchorOp(r, a, "gone", "gone.go", ""))
 	in.Log = store.ReadLog(r.files)
-	in.Tree = fstest.MapFS{}
+	in.Tree = fstest.MapFS{".rhiza/policy.toml": {Data: []byte("[schedule]\nbacklog = \"sometimes\"\n")}}
 
 	rep := Run(in)
 	var rules []string
@@ -460,7 +460,7 @@ func TestRunOrder(t *testing.T) {
 	}
 	rules = slices.Compact(rules)
 	want := []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleEvidenceActor,
-		RuleUnclaimed, RuleAnchor, RuleTextRef, RuleRender, RuleAppendOnly}
+		RuleUnclaimed, RuleAnchor, RuleTextRef, RuleRender, RulePolicy, RuleAppendOnly}
 	if !reflect.DeepEqual(rules, want) {
 		t.Fatalf("rules %q, want %q\n%+v", rules, want, rep.Findings)
 	}
