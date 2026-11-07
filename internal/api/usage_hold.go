@@ -136,8 +136,9 @@ func usageRecordsFor(ctx *Ctx, from, to time.Time) []adapter.UsageRecord {
 // the window stays where it was found; one with none looks back two window
 // lengths. Only the limit hits of a kind move its windows. The records are
 // read once, for the widest span any kind needs.
-func usageWindowsNow(ctx *Ctx, common string, saved []daemon.UsageWindow) (map[usage.Kind]usage.Window, []daemon.UsageWindow) {
+func usageWindowsNow(ctx *Ctx, common string, saved []daemon.UsageWindow) (map[usage.Kind]usage.Window, []daemon.UsageWindow, map[usage.Kind]int64) {
 	now := ctx.Now()
+	live := liveSnapshots(ctx, common, now)
 	var hits []usage.Limit
 	for _, h := range daemon.ReadLimitHitsIn(limitsDir(ctx, common)) {
 		hits = append(hits, usage.Limit{HitAt: h.HitAt, ResetAt: h.ResetAt})
@@ -156,6 +157,9 @@ func usageWindowsNow(ctx *Ctx, common string, saved []daemon.UsageWindow) (map[u
 				f = p.Start
 			}
 		}
+		if l, ok := live[kind]; ok {
+			f, _, _ = usage.LiveWindow(kind, l.ResetsAt)
+		}
 		from[kind] = f
 		if f.Before(widest) {
 			widest = f
@@ -163,8 +167,18 @@ func usageWindowsNow(ctx *Ctx, common string, saved []daemon.UsageWindow) (map[u
 	}
 	recs := usageRecordsFor(ctx, widest, now.Add(time.Nanosecond))
 	windows := map[usage.Kind]usage.Window{}
+	limits := map[usage.Kind]int64{}
 	var next []daemon.UsageWindow
 	for _, kind := range usage.Kinds {
+		if l, ok := live[kind]; ok {
+			w, limit, has := liveWindow(kind, l, recs, now)
+			windows[kind] = w
+			next = append(next, daemon.UsageWindow{Kind: string(kind), Start: w.Start.UTC(), Reset: w.Reset.UTC(), Used: w.Used})
+			if has {
+				limits[kind] = limit
+			}
+			continue
+		}
 		var kr []adapter.UsageRecord
 		for _, r := range recs {
 			if !r.At.Before(from[kind]) {
@@ -185,13 +199,84 @@ func usageWindowsNow(ctx *Ctx, common string, saved []daemon.UsageWindow) (map[u
 			next = append(next, *p)
 		}
 	}
-	return windows, next
+	return windows, next, limits
+}
+
+// liveSnapshots returns the latest live snapshot of each kind that is still
+// live at now (its reset is ahead), read through every adapter that records
+// them; of two for a kind, the later capture wins.
+func liveSnapshots(ctx *Ctx, common string, now time.Time) map[usage.Kind]adapter.LiveSnapshot {
+	out := map[usage.Kind]adapter.LiveSnapshot{}
+	dir := limitsDir(ctx, common)
+	for _, n := range adapter.Names() {
+		a, _ := adapter.Lookup(n)
+		r, ok := a.(adapter.LiveUsageReader)
+		if !ok {
+			continue
+		}
+		for _, s := range r.LiveSnapshots(dir) {
+			k := usage.Kind(s.Kind)
+			if k.Length() <= 0 || !usage.LiveAt(s.ResetsAt, now) {
+				continue
+			}
+			if p, ok := out[k]; !ok || s.CapturedAt.After(p.CapturedAt) {
+				out[k] = s
+			}
+		}
+	}
+	return out
+}
+
+// liveWindow is the window a live snapshot fixes, with the records inside it
+// counted up to now, and the limit it implies (false when it gives none).
+func liveWindow(kind usage.Kind, s adapter.LiveSnapshot, recs []adapter.UsageRecord, now time.Time) (usage.Window, int64, bool) {
+	start, reset, _ := usage.LiveWindow(kind, s.ResetsAt)
+	w := usage.Window{Kind: kind, Start: start, Reset: reset}
+	var atCapture int64
+	for _, r := range recs {
+		if r.At.Before(start) || !r.At.Before(reset) {
+			continue
+		}
+		if r.At.Before(now.Add(time.Nanosecond)) {
+			w.Used += r.Tokens
+		}
+		if r.At.Before(s.CapturedAt) {
+			atCapture += r.Tokens
+		}
+	}
+	limit, ok := usage.LiveLimit(s.UsedPercentage, atCapture)
+	return w, limit, ok
+}
+
+// usageLiveLimits reads the live limit of each kind with a live snapshot,
+// for callers that do not poll (rhiza health). It counts the tokens of each
+// live window up to its capture.
+func usageLiveLimits(ctx *Ctx, common string) map[usage.Kind]int64 {
+	now := ctx.Now()
+	live := liveSnapshots(ctx, common, now)
+	if len(live) == 0 {
+		return nil
+	}
+	from := now
+	for k, s := range live {
+		if st, _, _ := usage.LiveWindow(k, s.ResetsAt); st.Before(from) {
+			from = st
+		}
+	}
+	recs := usageRecordsFor(ctx, from, now.Add(time.Nanosecond))
+	limits := map[usage.Kind]int64{}
+	for k, s := range live {
+		if _, limit, ok := liveWindow(k, s, recs, now); ok {
+			limits[k] = limit
+		}
+	}
+	return limits
 }
 
 // usageHoldOf returns the first window whose projected use passes its limit
 // less the reserve, nil when none does. A window with no known limit, or no
 // current window (the last one has reset), never holds.
-func usageHoldOf(rows []Setting, learned []daemon.LearnedLimit, runs []run.Journal, host string, windows map[usage.Kind]usage.Window) *usageHold {
+func usageHoldOf(rows []Setting, learned []daemon.LearnedLimit, live map[usage.Kind]int64, runs []run.Journal, host string, windows map[usage.Kind]usage.Window) *usageHold {
 	reserve := usageReserve(rows)
 	mean, _ := usageRunMean(runs)
 	// A live run is still expected to burn the mean less what it has
@@ -205,7 +290,7 @@ func usageHoldOf(rows []Setting, learned []daemon.LearnedLimit, runs []run.Journ
 		}
 	}
 	for _, kind := range usage.Kinds {
-		limit, ok := usageLimit(rows, learned, kind)
+		limit, ok := usageLimit(rows, learned, live, kind)
 		if !ok {
 			continue
 		}

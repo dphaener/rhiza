@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -17,6 +18,9 @@ type holdFake struct{ limitAdapter }
 const holdFakeAgent = "hold-fake"
 
 var holdFakeRecords []adapter.UsageRecord
+var holdFakeLive []adapter.LiveSnapshot
+
+func (holdFake) LiveSnapshots(string) []adapter.LiveSnapshot { return holdFakeLive }
 
 func (holdFake) Name() string { return holdFakeAgent }
 func (holdFake) UsageRecords(_ func(string) string, from, to time.Time) ([]adapter.UsageRecord, error) {
@@ -69,8 +73,8 @@ func TestUsageHoldProjection(t *testing.T) {
 	}
 	var runs []run.Journal
 	hold := func(learned ...daemon.LearnedLimit) *usageHold {
-		windows, _ := usageWindowsNow(f.ctx, common, nil)
-		return usageHoldOf(conf(), learned, runs, "h", windows)
+		windows, _, _ := usageWindowsNow(f.ctx, common, nil)
+		return usageHoldOf(conf(), learned, nil, runs, "h", windows)
 	}
 
 	// A window with no limit never holds.
@@ -163,7 +167,7 @@ func TestUsageWindowsHitKinds(t *testing.T) {
 	}
 	at := func(now time.Time) map[usage.Kind]usage.Window {
 		f.ctx.Now = func() time.Time { return now }
-		w, _ := usageWindowsNow(f.ctx, common, nil)
+		w, _, _ := usageWindowsNow(f.ctx, common, nil)
 		return w
 	}
 	// Before the session reset: the session window ends at its hit's reset,
@@ -202,7 +206,8 @@ func TestUsageWindowsAnchored(t *testing.T) {
 	defer func() { holdFakeRecords = nil }()
 	poll := func(now time.Time, saved []daemon.UsageWindow) (map[usage.Kind]usage.Window, []daemon.UsageWindow) {
 		f.ctx.Now = func() time.Time { return now }
-		return usageWindowsNow(f.ctx, common, saved)
+		w, s, _ := usageWindowsNow(f.ctx, common, saved)
+		return w, s
 	}
 	// At b+9h the session chain is [b, b+5h) then [b+8h, b+13h).
 	w, saved := poll(b.Add(9*time.Hour), nil)
@@ -410,8 +415,8 @@ func TestUsageHoldLiveRunRemaining(t *testing.T) {
 		return j
 	}
 	hold := func(limit string, live ...run.Journal) *usageHold {
-		windows, _ := usageWindowsNow(f.ctx, common, nil)
-		return usageHoldOf(rows(limit), nil, append(append([]run.Journal{}, runs...), live...), "h", windows)
+		windows, _, _ := usageWindowsNow(f.ctx, common, nil)
+		return usageHoldOf(rows(limit), nil, nil, append(append([]run.Journal{}, runs...), live...), "h", windows)
 	}
 
 	// Limit 1000 puts the line at 800, so every case holds and shows its number.
@@ -436,5 +441,104 @@ func TestUsageHoldLiveRunRemaining(t *testing.T) {
 	}
 	if h := hold("1500", liveRun(600)); h == nil || h.Projected != 1500 {
 		t.Errorf("a live run at 600 should hold at 1500: %+v", h)
+	}
+}
+
+func TestUsageLiveLimit(t *testing.T) {
+	holdFakeOnce()
+	f := newDaemonFoldFix(t)
+	f.ctx.Getenv = func(string) string { return "" }
+	f.ctx.Wd = f.ctx.Root // not under a rhiza root: keep state out of the real one
+	now := f.clock
+	f.ctx.Now = func() time.Time { return now }
+	common, err := gitCommonDir(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 1000 counted tokens before the capture, 100 after it.
+	holdFakeRecords = []adapter.UsageRecord{
+		{At: now.Add(-2 * time.Hour), Tokens: 400}, {At: now.Add(-time.Hour), Tokens: 600}, {At: now.Add(-time.Minute), Tokens: 100},
+	}
+	live := func(pct float64, resets time.Time) {
+		holdFakeLive = []adapter.LiveSnapshot{{Kind: "weekly", UsedPercentage: pct, ResetsAt: resets, CapturedAt: now.Add(-10 * time.Minute)}}
+	}
+	defer func() { holdFakeRecords, holdFakeLive = nil, nil }()
+	rows := func(setting string) []Setting {
+		f.config["rhiza.daemon.usage.weekly"] = setting
+		c, err := daemonConfOf(f.ctx, DaemonRequest{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return c.rows
+	}
+	learned := []daemon.LearnedLimit{{Kind: "weekly", Tokens: 900}}
+	hold := func(setting string, learned []daemon.LearnedLimit) *usageHold {
+		windows, _, lim := usageWindowsNow(f.ctx, common, nil)
+		return usageHoldOf(rows(setting), learned, lim, nil, "h", windows)
+	}
+
+	// 50% at capture over 1000 tokens: the live limit is 2000, line 1600; use
+	// is 1100. The setting (1000, line 800) and the learned limit (900) would hold.
+	live(50, now.Add(3*24*time.Hour))
+	if h := hold("1000", learned); h != nil {
+		t.Fatalf("live limit lost to the setting or learned: %+v", h)
+	}
+	_, _, lim := usageWindowsNow(f.ctx, common, nil)
+	if lim[usage.Weekly] != 2000 {
+		t.Fatalf("live limit %v", lim)
+	}
+	// The window comes from the snapshot, use counted to now.
+	w, _, _ := usageWindowsNow(f.ctx, common, nil)
+	if got := w[usage.Weekly]; got.Used != 1100 || !got.Reset.Equal(now.Add(72*time.Hour)) || !got.Start.Equal(now.Add(-96*time.Hour)) {
+		t.Fatalf("window %+v", got)
+	}
+	// A lower live limit holds, and a raised one lifts that hold.
+	live(90, now.Add(3*24*time.Hour)) // 1111, line 888
+	if h := hold("", nil); h == nil || h.Limit != 1111 {
+		t.Fatalf("hold %+v", h)
+	}
+	live(50, now.Add(3*24*time.Hour))
+	if h := hold("", nil); h != nil {
+		t.Fatalf("raised live limit still holds: %+v", h)
+	}
+	// An expired snapshot falls back to the setting, then the learned limit.
+	live(50, now.Add(-time.Hour))
+	if h := hold("1000", learned); h == nil || h.Limit != 1000 {
+		t.Fatalf("setting fallback %+v", h)
+	}
+	if h := hold("", learned); h == nil || h.Limit != 900 {
+		t.Fatalf("learned fallback %+v", h)
+	}
+	// Under 1% gives no live limit.
+	live(0.5, now.Add(time.Hour))
+	if _, _, lim := usageWindowsNow(f.ctx, common, nil); len(lim) != 0 {
+		t.Fatalf("limit under 1%%: %v", lim)
+	}
+	// A recorded limit hit holds regardless of a live limit.
+	live(50, now.Add(3*24*time.Hour))
+	daemon.RecordLimitHitIn(limitsDir(f.ctx, common), daemon.LimitHit{HitAt: now, ResetAt: now.Add(time.Hour), Agent: holdFakeAgent})
+	if h := governorHold(f.ctx, common); h == nil {
+		t.Fatal("a recorded limit hit does not hold")
+	}
+}
+
+func TestHealthUsageLiveLimit(t *testing.T) {
+	holdFakeOnce()
+	f := newDaemonFoldFix(t)
+	f.ctx.Getenv = func(string) string { return "" }
+	f.ctx.Wd = f.ctx.Root
+	now := f.clock
+	f.ctx.Now = func() time.Time { return now }
+	holdFakeRecords = []adapter.UsageRecord{{At: now.Add(-time.Hour), Tokens: 500}}
+	holdFakeLive = []adapter.LiveSnapshot{{Kind: "weekly", UsedPercentage: 25, ResetsAt: now.Add(48 * time.Hour), CapturedAt: now}}
+	defer func() { holdFakeRecords, holdFakeLive = nil, nil }()
+	f.config["rhiza.daemon.usage.weekly"] = "777"
+	c, err := daemonConfOf(f.ctx, DaemonRequest{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := healthUsage(f.ctx, c.rows, nil)
+	if p.State != HealthOK || !strings.Contains(p.Summary, "weekly 0 of 2000") || strings.Contains(p.Summary, "777") {
+		t.Fatalf("%+v", p)
 	}
 }

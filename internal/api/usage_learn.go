@@ -129,9 +129,14 @@ func usageAtHit(ctx *Ctx, agent string, kind usage.Kind, l usage.Limit) (int64, 
 	return usage.UsedAt(kind, recs, l)
 }
 
-// usageLimit is the limit of a window kind: the setting when it is set, else
-// the learned one. A window with neither has no known limit and never holds.
-func usageLimit(rows []Setting, learned []daemon.LearnedLimit, kind usage.Kind) (int64, bool) {
+// usageLimit is the limit of a window kind: the live one when the kind has
+// a live snapshot, else the setting when it is set, else the learned one. A
+// window with none has no known limit and never holds. Every caller that
+// needs a kind's limit goes through here.
+func usageLimit(rows []Setting, learned []daemon.LearnedLimit, live map[usage.Kind]int64, kind usage.Kind) (int64, bool) {
+	if n, ok := live[kind]; ok && n > 0 {
+		return n, true
+	}
 	if v := settingValue(rows, "rhiza.daemon.usage."+string(kind)); v != "" {
 		if n, err := strconv.ParseInt(v, 10, 64); err == nil && n > 0 {
 			return n, true
