@@ -14,7 +14,9 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode/utf8"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
@@ -42,6 +44,7 @@ type RequestRequest struct {
 	Text      string `json:"text" arg:"0" desc:"What to plan, in one line"`
 	Kind      string `json:"kind,omitempty" enum:"feature,bug,milestone" desc:"feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed 'Fix ' (so its title names the bug), a milestone's a record change set"`
 	Milestone string `json:"milestone,omitempty" flag:"milestone" desc:"A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)"`
+	Ref       string `json:"ref,omitempty" flag:"ref" desc:"An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none"`
 }
 
 // RequestInfo is one plan request.
@@ -50,6 +53,7 @@ type RequestInfo struct {
 	Kind      string `json:"kind" desc:"feature, bug or milestone"`
 	Text      string `json:"text" desc:"What to plan"`
 	Milestone string `json:"milestone,omitempty" desc:"The ID of the milestone intent the request names; absent if none"`
+	Ref       string `json:"ref,omitempty" desc:"The request's opaque external reference, if any: untrusted text"`
 	At        string `json:"at" desc:"When it was queued, RFC 3339 UTC"`
 	State     string `json:"state" desc:"queued, planning (its plan run started), planned (its run succeeded) or failed (its run failed)"`
 	Run       string `json:"run,omitempty" desc:"Its plan run; absent while queued"`
@@ -84,6 +88,9 @@ func (r RequestLsResponse) Human(w io.Writer) {
 	}
 	for _, q := range r.Requests {
 		fmt.Fprintf(w, "- %s %s %s: %s", q.ID, q.Kind, q.State, q.Text)
+		if q.Ref != "" {
+			fmt.Fprintf(w, " [ref %q]", q.Ref)
+		}
 		if q.Run != "" {
 			fmt.Fprintf(w, " (run %s", q.Run)
 			if q.Change != "" {
@@ -114,6 +121,13 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 	if !slices.Contains(requestKinds, kind) {
 		return nil, Usagef("--kind %q: one of %s", r.Kind, strings.Join(requestKinds, ", "))
 	}
+	ref := strings.TrimSpace(r.Ref)
+	if len(ref) > changeset.MaxRef {
+		return nil, Usagef("--ref is %d bytes, at most %d", len(ref), changeset.MaxRef)
+	}
+	if !utf8.ValidString(ref) {
+		return nil, Usagef("--ref is not valid UTF-8")
+	}
 	milestone, err := requestMilestone(ctx, r.Milestone)
 	if err != nil {
 		return nil, err
@@ -128,7 +142,7 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		q = daemon.Request{ID: rid, Kind: kind, Text: text, Milestone: milestone, At: ctx.Now().UTC()}
+		q = daemon.Request{ID: rid, Kind: kind, Text: text, Milestone: milestone, Ref: ref, At: ctx.Now().UTC()}
 		return append(reqs, q), nil
 	}
 	if ctx.DryRun {
@@ -218,7 +232,7 @@ func runRequestLs(ctx *Ctx, req any) (any, error) {
 
 func requestInfo(q daemon.Request, runs []run.Journal) RequestInfo {
 	state, change := daemon.RequestState(q, runs)
-	return RequestInfo{ID: q.ID, Kind: q.Kind, Text: q.Text, Milestone: q.Milestone, At: q.At.UTC().Format(time.RFC3339), State: state, Run: q.Run, Change: change}
+	return RequestInfo{ID: q.ID, Kind: q.Kind, Text: q.Text, Milestone: q.Milestone, Ref: q.Ref, At: q.At.UTC().Format(time.RFC3339), State: state, Run: q.Run, Change: change}
 }
 
 // daemonPlanRequests starts a plan run, in a new Rex tab, for each of the
@@ -363,7 +377,18 @@ func newRequestRunID(ctx *Ctx, rs *run.Store, reqs []daemon.Request) (string, er
 // for a milestone, and --request so the run takes the ID the request names.
 // A milestone request never gets --autonomous. Its log is that run's, <run>.log, as run log reads it.
 func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) error {
+	return daemonDetach(ctx, "the plan run of request "+q.ID, q.Run, nil, planRunArgs(q, autonomous, mode))
+}
+
+// planRunArgs is the run start arguments daemonStartPlan detaches for
+// request q: --ref=<ref> passes the request's ref on as one word, so a
+// ref such as --dry-run or --change=<id> is never read as a flag, and a
+// request without one passes none.
+func planRunArgs(q daemon.Request, autonomous bool, mode string) []string {
 	args := []string{"run", "start", "--foreground", "--workflow", planWorkflow, "--new", q.Intent(), "--request", q.ID, "--permission-mode", mode}
+	if q.Ref != "" {
+		args = append(args, "--ref="+q.Ref)
+	}
 	if q.Kind == daemon.KindMilestone {
 		args = append(args, "--milestone")
 		// Planning a milestone always needs the owner: the run waits on the
@@ -373,7 +398,7 @@ func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) e
 	if autonomous {
 		args = append(args, "--autonomous")
 	}
-	return daemonDetach(ctx, "the plan run of request "+q.ID, q.Run, nil, args)
+	return args
 }
 
 // requestRun is the request run start --request <id> names, whose Run is

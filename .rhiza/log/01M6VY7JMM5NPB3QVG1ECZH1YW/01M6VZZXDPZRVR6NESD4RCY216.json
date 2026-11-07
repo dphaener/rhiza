@@ -1,0 +1,40 @@
+{
+  "actor": "01M6VZQD7JP5MDC8DJ7QN5DJ1Q",
+  "after": [
+    "01M6VYTR89D9PQSADG1MVBCR5R"
+  ],
+  "at": "2026-11-07T21:52:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at a671d8aa: ran `go test -trimpath ./internal/api/... -run 'DaemonEvents' -count=1 -v`; TestDaemonEventsRef PASS. The test runs a recording event command (cat >> file) over moves of a change set opened with a ref containing quotes, spaces, & and non-ASCII (proposed, accepted) and one without (proposed); it decodes each payload and checks the first's ref equals the input verbatim and the second's has no ref key, with 2 and 1 payloads respectively. Diff read: lifecycleEvent gains `Ref string json:\"ref,omitempty\"`, set in daemonFold from the folded change set's c.Open.Ref for every lifecycle move in eventNames, so all moves (incl. rejected/withdrawn/superseded/landed/reopened) share the one path. The ref exists only on the open body, so it is the same on every move. gofmt and go vet are clean on internal/api."
+        },
+        "handle": "event-payload-ref-verified",
+        "id": "01M6VZZXBC1QWPFHZ44ATQE2GF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6VZZXBC1QWPFHZ448QE30M2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6VZZXBC1QWPFHZ448QE30M2",
+        "id": "01M6VZZXCR77T9088JNG1B8XS0",
+        "link": "01M6VZZXCR77T9088JNEKFS0Z3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMKEVBTRJ5WA7618HFQF8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7JMM5NPB3QVG1ECZH1YW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VZZXDPZRVR6NESD4RCY216",
+  "type": "ops",
+  "v": 1
+}

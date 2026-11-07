@@ -42,7 +42,7 @@
 // Format 1 cannot spell either: DecodeBody reads them only in an entry of
 // format 2 or later and treats them as unknown fields in a format-1 entry,
 // and EntryVersion tells a writer which format a body needs, so every other
-// entry is still written as format 1. A reopen body needs format 3, the
+// entry is still written as format 1. An open body's ref needs format 4. A reopen body needs format 3, the
 // first with a reopen entry: DecodeBody refuses one in an earlier format.
 package changeset
 
@@ -97,7 +97,14 @@ type Open struct {
 	// one line. It is optional, and needs format 2 when set; DisplayTitle
 	// falls back to the intent's first clause without it.
 	Title string
+	// Ref is an opaque external reference, such as an issue URL, at most
+	// MaxRef bytes of valid UTF-8. Rhiza never interprets it. It is
+	// optional, and needs format 4 when set.
+	Ref string
 }
+
+// MaxRef is the most bytes a ref may have.
+const MaxRef = 2048
 
 // Ops is the body of an ops entry: {ops, drop}, plus {carve} on either side
 // of a carve. At least one of ops and drop is non-empty.
@@ -191,8 +198,8 @@ var shapes = map[entry.Type][]string{
 // exactly one of the last two is present.
 var carveShape = []string{"entry", "from", "to"}
 
-// EntryVersion returns the lowest entry format that can spell b: 3 for a
-// reopen body, 2 for an ops body with a carve or an open body with a title,
+// EntryVersion returns the lowest entry format that can spell b: 4 for an
+// open body with a ref, 3 for a reopen body, 2 for an ops body with a carve or an open body with a title,
 // 1 for every other body. A writer stamps it as the entry's v.
 func EntryVersion(b Body) int {
 	switch b := b.(type) {
@@ -203,6 +210,9 @@ func EntryVersion(b Body) int {
 			return 2
 		}
 	case Open:
+		if b.Ref != "" {
+			return 4
+		}
 		if b.Title != "" {
 			return 2
 		}
@@ -260,7 +270,22 @@ func (o Open) Validate() error {
 	if err := sortedIDs("sources", o.Sources); err != nil {
 		return err
 	}
-	return validTitle(o.Title)
+	if err := validTitle(o.Title); err != nil {
+		return err
+	}
+	return validRef(o.Ref)
+}
+
+// validRef checks an open body's ref: empty (none), or valid UTF-8 of at
+// most MaxRef bytes.
+func validRef(s string) error {
+	if !utf8.ValidString(s) {
+		return invalid("ref", "invalid UTF-8")
+	}
+	if len(s) > MaxRef {
+		return invalid("ref", "%d bytes, at most %d", len(s), MaxRef)
+	}
+	return nil
 }
 
 // Validate reports the first rule o breaks.
@@ -383,6 +408,9 @@ func EncodeBody(b Body) (json.RawMessage, error) {
 		if b.Title != "" {
 			m["title"] = b.Title
 		}
+		if b.Ref != "" {
+			m["ref"] = b.Ref
+		}
 	case Ops:
 		ops := make([]json.RawMessage, 0, len(b.Ops))
 		for i, x := range b.Ops {
@@ -480,6 +508,9 @@ func decodeBody(e entry.Entry, canonical bool) (Body, error) {
 			known = append(slices.Clip(shape), "carve")
 		case entry.TypeOpen:
 			known = append(slices.Clip(shape), "title")
+			if e.V >= 4 {
+				known = append(known, "ref")
+			}
 		}
 	}
 	if name, ok := unknownField(fields, known); ok {
@@ -567,6 +598,17 @@ func decodeOpen(fields map[string]json.RawMessage) (Body, error) {
 		// has one encoding.
 		if b.Title == "" {
 			return nil, invalid("title", "empty: leave it out instead")
+		}
+	}
+	if raw, ok := fields["ref"]; ok {
+		if b.Ref, err = str(raw); err != nil {
+			return nil, invalidWrap("ref", err)
+		}
+		if b.Ref == "" {
+			return nil, invalid("ref", "empty: leave it out instead")
+		}
+		if err := validRef(b.Ref); err != nil {
+			return nil, err
 		}
 	}
 	return b, nil

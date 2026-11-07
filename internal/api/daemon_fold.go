@@ -170,7 +170,7 @@ func daemonFold(ctx *Ctx) (*daemonFolded, error) {
 			}
 			f.moves = append(f.moves, daemonMove{id: mv.Entry, ev: lifecycleEvent{
 				Event: name, Change: c.ID.String(), Entry: mv.Entry.String(),
-				Title: c.Open.DisplayTitle(), At: rfc3339(mv.At), Actor: feedActor(m0, mv.Actor),
+				Title: c.Open.DisplayTitle(), Ref: c.Open.Ref, At: rfc3339(mv.At), Actor: feedActor(m0, mv.Actor),
 			}})
 		}
 	}

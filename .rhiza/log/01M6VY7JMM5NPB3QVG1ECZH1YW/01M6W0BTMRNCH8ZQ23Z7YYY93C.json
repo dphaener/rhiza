@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W09XK0Y5K5YP62G3CYFZ1Z",
+  "after": [
+    "01M6W07K87Q2E1F3YV2Q8960KR"
+  ],
+  "at": "2026-11-07T21:59:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-320da176 at 73898e53: read diffs of ba19dd35 and 73898e53 (RunStartRequest.Ref, --ref requires --new, newPlanChange opens changeset.Open with Ref; daemonStartPlan detaches planRunArgs, which appends --ref <ref> only when the request has one). go test -trimpath ./internal/api/... -run 'Request' -count=1 passed, incl. TestRequestPlanRunArgsPassRef asserting planRunArgs carries --ref with the request's ref and no --ref without one. go test -trimpath ./cmd/rhiza -run TestScripts/request-ref passed, its step running run start --workflow plan --new 'Planned' --ref https://example.com/issues/9 then change show --json showing \"ref\": \"https://example.com/issues/9\". TestScripts/describe-golden passed; gofmt and go vet on internal/api clean."
+        },
+        "handle": "plan-run-carries-ref-verified",
+        "id": "01M6W0BTKD55074SMRGFRYXBQF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W0BTKAYFYJSAEFBF23018N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W0BTKAYFYJSAEFBF23018N",
+        "id": "01M6W0BTM36KZCR6GWNWYKFY26",
+        "link": "01M6W0BTM36KZCR6GWNVW7KDFH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMKDW2EP33TZA6ABET0V8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7JMM5NPB3QVG1ECZH1YW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W0BTMRNCH8ZQ23Z7YYY93C",
+  "type": "ops",
+  "v": 1
+}

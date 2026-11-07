@@ -22,6 +22,8 @@ format-2/
   <case>/        (same layout)
 format-3/
   <case>/        (same layout)
+format-4/
+  <case>/        (same layout)
 ```
 
 ## Rules
@@ -48,6 +50,11 @@ real repository.
 Format 3 adds the reopen entry type, which moves a landed change set back
 to accepted. Only reopen entries are written as v3; the format-3 case lands,
 reopens and lands again, and every other entry in it is v1.
+
+Format 4 adds the optional `ref` field on an open entry: an opaque external
+reference, such as an issue URL. Only an open with a ref is written as v4;
+the format-4 case opens one change set with a ref and lands it, and every
+other entry in it is v1.
 
 `internal/changeset/corpus_test.go` folds every case with
 `changeset.FoldLog`, expects zero problems, and checks each change set's

@@ -1,6 +1,8 @@
 package api
 
 import (
+	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -72,5 +74,18 @@ func TestDaemonPlanRequestsRequeuesUnjournaled(t *testing.T) {
 	}
 	if q := request(); q.Run == "" || q.Run == first.Run || !q.RetryAt.IsZero() {
 		t.Errorf("after the hold: run %q (first %q), retry at %v, want a new run", q.Run, first.Run, q.RetryAt)
+	}
+}
+
+func TestRequestPlanRunArgsPassRef(t *testing.T) {
+	for _, ref := range []string{"https://example.com/issues/7", "--dry-run", "--change=01M6VY7JMM5NPB3QVG1ECZH1YW", "-h"} {
+		with := planRunArgs(daemon.Request{ID: "r1", Ref: ref}, false, "manual")
+		if !slices.Contains(with, "--ref="+ref) || slices.Contains(with, ref) {
+			t.Fatalf("with ref %q: want the one word --ref=%s in %q", ref, ref, with)
+		}
+	}
+	without := planRunArgs(daemon.Request{ID: "r2"}, false, "manual")
+	if slices.ContainsFunc(without, func(a string) bool { return strings.HasPrefix(a, "--ref") }) {
+		t.Fatalf("without a ref: %q", without)
 	}
 }

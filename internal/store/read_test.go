@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"slices"
+	"strconv"
 	"testing"
 	"testing/fstest"
 	"time"
@@ -50,8 +51,9 @@ func TestReadLogProblems(t *testing.T) {
 	other := testEntry(t)
 	other.ID = mustID(t, sOtherID)
 
-	v4 := bytes.Replace(mustEncode(t, other), []byte(`"v": 1`), []byte(`"v": 4`), 1)
-	if bytes.Equal(v4, mustEncode(t, other)) {
+	newerV := []byte(`"v": ` + strconv.Itoa(entry.FormatVersion+1))
+	newer := bytes.Replace(mustEncode(t, other), []byte(`"v": 1`), newerV, 1)
+	if bytes.Equal(newer, mustEncode(t, other)) {
 		t.Fatal(`no "v": 1 in the encoding`)
 	}
 	nonCanon := bytes.TrimSuffix(mustEncode(t, other), []byte("\n"))
@@ -73,7 +75,7 @@ func TestReadLogProblems(t *testing.T) {
 		{"mismatch file name and id", cs + "/01JB000000000000000000000Z.json", file(mustEncode(t, other)), cs + "/01JB000000000000000000000Z.json", ErrMismatch},
 		{"mismatch wrong change set folder", "log/" + sOtherCS + "/" + sOtherID + ".json", file(mustEncode(t, other)), "log/" + sOtherCS + "/" + sOtherID + ".json", ErrMismatch},
 		{"non-canonical file", cs + "/" + sOtherID + ".json", file(nonCanon), cs + "/" + sOtherID + ".json", entry.ErrInvalid},
-		{"newer format file", cs + "/" + sOtherID + ".json", file(v4), cs + "/" + sOtherID + ".json", entry.ErrNewerFormat},
+		{"newer format file", cs + "/" + sOtherID + ".json", file(newer), cs + "/" + sOtherID + ".json", entry.ErrNewerFormat},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

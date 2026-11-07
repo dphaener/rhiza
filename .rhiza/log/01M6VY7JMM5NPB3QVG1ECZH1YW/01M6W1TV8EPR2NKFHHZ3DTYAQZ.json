@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W1RV4SDSD825NDSBWD469V",
+  "after": [
+    "01M6W1QJD1VAYFF6D9HQS012YD"
+  ],
+  "at": "2026-11-07T22:24:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 44e2caf9 (attempt 2, fixing finding f1). `go test -trimpath ./internal/api/... -run Request` passes: TestRequestPlanRunArgsPassRef checks planRunArgs passes the ref as the single word --ref=<ref> for https://example.com/issues/7, --dry-run, --change=<id> and -h, and passes no --ref word without a ref. `go test -trimpath ./cmd/rhiza -run TestScripts/request-ref` passes, including the run start --workflow plan --new 'Planned' --ref step whose change show --json has \"ref\": \"https://example.com/issues/9\". Read cmd/rhiza/argv.go parseGlobals: --ref=... matches no global name and passes through whole. With a scratch build in a scratch repo, `change new A --ref=--dry-run --json` wrote a real change set whose change show --json has \"ref\": \"--dry-run\", so the ref is no longer read as a global flag."
+        },
+        "handle": "plan-run-carries-ref-verified-2",
+        "id": "01M6W1TV6AV4YRRQAE1KSE890C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W1TV6AV4YRRQAE1JHZQ2W4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W1TV6AV4YRRQAE1JHZQ2W4",
+        "id": "01M6W1TV754RT1YG1Z6DZPGC9H",
+        "link": "01M6W1TV754RT1YG1Z6AS5PME0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMKDW2EP33TZA6ABET0V8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7JMM5NPB3QVG1ECZH1YW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W1TV8EPR2NKFHHZ3DTYAQZ",
+  "type": "ops",
+  "v": 1
+}
