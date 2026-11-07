@@ -1,0 +1,73 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6T65Y0KH3QMZ5K6ZKGEPVDW"
+  ],
+  "at": "2026-11-07T05:09:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "720884ebcb884f35aa964ba84e6e9182ee905696",
+          "pr": "https://github.com/dphaener/rhiza/pull/345",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #345 (https://github.com/dphaener/rhiza/pull/345) passed CI at 720884e",
+          "status": "verified"
+        },
+        "handle": "pr-345-fix-the-usage-governor-s",
+        "id": "01M6T6J4W2H8G0T9ACSKR90TPH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6T6J4W2H8G0T9ACSJ7QZ3BJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T6J4W2H8G0T9ACSJ7QZ3BJ",
+        "id": "01M6T6J4XFTZYBPCR94EZX0ZAQ",
+        "link": "01M6T6J4XFTZYBPCR94DWH31EY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2AQQYD3ESRA7NZAQW22KT",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6T6J4W2H8G0T9ACSJ7QZ3BJ",
+        "id": "01M6T6J4YQEPVYH565D9H89M20",
+        "link": "01M6T6J4YQEPVYH565D9E5NNXV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2AQSEY1KKA7VTESYMXWD8",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6T6J4W2H8G0T9ACSJ7QZ3BJ",
+        "id": "01M6T6J50CN0WMDC4HTESTB1TP",
+        "link": "01M6T6J50CN0WMDC4HTCMP408Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2AQV83TNHDJ565NSM1TXG",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6T6J4W2H8G0T9ACSJ7QZ3BJ",
+        "id": "01M6T6J5198WGS7Z1C91WXNF96",
+        "link": "01M6T6J5198WGS7Z1C8Y8NTX3E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6T1ZR3ZCDCYF96CSR2AYN7D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T6J53RD6DKFF7SF1P4J2YQ",
+  "type": "ops",
+  "v": 1
+}

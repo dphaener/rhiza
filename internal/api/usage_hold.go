@@ -66,6 +66,18 @@ func usageReserve(rows []Setting) int {
 	return n
 }
 
+// usageRunTokens is the counted tokens a run has recorded so far: its latest
+// token readings, session and helpers, without cache reads.
+func usageRunTokens(st run.State) int64 {
+	var n int64
+	for _, u := range st.Tokens {
+		for _, c := range []run.TokenCounts{u.Session, u.Helpers} {
+			n += c.Input + c.Output + c.CacheCreation
+		}
+	}
+	return n
+}
+
 // usageRunMean is the mean counted tokens of the latest finished runs that
 // recorded any, and false when there are none.
 func usageRunMean(runs []run.Journal) (int64, bool) {
@@ -79,12 +91,7 @@ func usageRunMean(runs []run.Journal) (int64, bool) {
 		if !st.Ended {
 			continue
 		}
-		var n int64
-		for _, u := range st.Tokens {
-			for _, c := range []run.TokenCounts{u.Session, u.Helpers} {
-				n += c.Input + c.Output + c.CacheCreation
-			}
-		}
+		n := usageRunTokens(st)
 		if n > 0 {
 			done = append(done, fin{st.EndedAt, n})
 		}
@@ -186,13 +193,17 @@ func usageWindowsNow(ctx *Ctx, common string, saved []daemon.UsageWindow) (map[u
 // current window (the last one has reset), never holds.
 func usageHoldOf(rows []Setting, learned []daemon.LearnedLimit, runs []run.Journal, host string, windows map[usage.Kind]usage.Window) *usageHold {
 	reserve := usageReserve(rows)
-	live := int64(0)
+	mean, _ := usageRunMean(runs)
+	// A live run is still expected to burn the mean less what it has
+	// recorded, never below zero; its recorded tokens are already in the
+	// window's use. The next pick adds one full mean.
+	remaining := mean
 	for _, j := range runs {
-		if j.State().Liveness(host, nil) == run.LiveRunning {
-			live++
+		st := j.State()
+		if st.Liveness(host, nil) == run.LiveRunning {
+			remaining += max(mean-usageRunTokens(st), 0)
 		}
 	}
-	mean, _ := usageRunMean(runs)
 	for _, kind := range usage.Kinds {
 		limit, ok := usageLimit(rows, learned, kind)
 		if !ok {
@@ -202,7 +213,7 @@ func usageHoldOf(rows []Setting, learned []daemon.LearnedLimit, runs []run.Journ
 		if !ok {
 			continue
 		}
-		projected := w.Used + mean*(live+1)
+		projected := w.Used + remaining
 		if projected > limit-limit*int64(reserve)/100 {
 			return &usageHold{Kind: kind, Used: w.Used, Projected: projected, Limit: limit, Reserve: reserve, Reset: w.Reset}
 		}

@@ -376,3 +376,65 @@ func TestUsageHoldStopsEveryLaunch(t *testing.T) {
 		t.Fatalf("the live run was touched: %d entries, want %d", len(got), liveBefore)
 	}
 }
+
+// A live run adds only what it is still expected to burn: the mean of the
+// last finished runs less its own tokens so far, never below zero.
+func TestUsageHoldLiveRunRemaining(t *testing.T) {
+	holdFakeOnce()
+	f := newDaemonFoldFix(t)
+	f.ctx.Getenv = func(string) string { return "" }
+	now := f.clock
+	f.ctx.Now = func() time.Time { return now }
+	common, err := gitCommonDir(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	holdFakeRecords = []adapter.UsageRecord{{At: now.Add(-time.Hour), Tokens: 100}}
+	rows := func(limit string) []Setting {
+		f.config["rhiza.daemon.usage.session"] = limit
+		c, err := daemonConfOf(f.ctx, DaemonRequest{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return c.rows
+	}
+	var runs []run.Journal
+	for i := range 3 {
+		runs = append(runs, finishedRun(i, 1000, now.Add(time.Duration(i-20)*time.Minute)))
+	}
+	liveRun := func(tokens int64) run.Journal {
+		j := pickJournal("live",
+			run.Entry{Type: run.TypeProcess, At: now, Process: &run.Process{Host: "elsewhere", Pid: 1}},
+			run.Entry{Type: run.TypeTokens, At: now, Session: "s", Tokens: &run.TokenUse{Session: run.TokenCounts{Output: tokens, CacheRead: 1 << 30}}})
+		j.ID = "live"
+		return j
+	}
+	hold := func(limit string, live ...run.Journal) *usageHold {
+		windows, _ := usageWindowsNow(f.ctx, common, nil)
+		return usageHoldOf(rows(limit), nil, append(append([]run.Journal{}, runs...), live...), "h", windows)
+	}
+
+	// Limit 1000 puts the line at 800, so every case holds and shows its number.
+	for _, c := range []struct {
+		name string
+		live []run.Journal
+		want int64
+	}{
+		{"no live run: the next pick only", nil, 100 + 1000},
+		{"live run at 600 adds 400", []run.Journal{liveRun(600)}, 100 + 400 + 1000},
+		{"live run at 1500 adds nothing", []run.Journal{liveRun(1500)}, 100 + 0 + 1000},
+	} {
+		if h := hold("1000", c.live...); h == nil || h.Projected != c.want {
+			t.Errorf("%s: projected %+v, want %d", c.name, h, c.want)
+		}
+	}
+
+	// Limit 1500 (line 1200): a live run past the mean no longer holds the
+	// window, which the old count of a full mean per live run did (2100).
+	if h := hold("1500", liveRun(1500)); h != nil {
+		t.Errorf("live runs counted twice still hold: %+v", h)
+	}
+	if h := hold("1500", liveRun(600)); h == nil || h.Projected != 1500 {
+		t.Errorf("a live run at 600 should hold at 1500: %+v", h)
+	}
+}

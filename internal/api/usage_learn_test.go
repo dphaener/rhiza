@@ -9,6 +9,7 @@ import (
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/rootcfg"
 	"github.com/dphaener/rhiza/internal/session"
+	"github.com/dphaener/rhiza/internal/usage"
 )
 
 // usageFake is a fake agent that is usage-limited while its transcript says
@@ -147,4 +148,188 @@ func TestUsageLearnEmptyWdStaysInRepoFolder(t *testing.T) {
 	if _, err := os.Stat(daemon.RootStateDir(top)); !os.IsNotExist(err) {
 		t.Fatalf("root state dir was created: %v", err)
 	}
+}
+
+// A hit teaches only the window kind its reset time gives: a session-kind hit
+// leaves a learned weekly limit as it was, and a weekly-kind hit leaves a
+// learned session limit as it was.
+func TestLimitHitTeachesOnlyItsKind(t *testing.T) {
+	usageFakeOnce()
+	hit := time.Date(2026, 11, 4, 10, 45, 0, 0, time.UTC)
+	earlier := hit.Add(-24 * time.Hour)
+	cases := []struct {
+		name, hitKind, other string
+		reset                time.Time
+		hitTokens            int64
+	}{
+		{"session hit over weekly", "session", "weekly", hit.Add(3 * time.Hour), 350},
+		{"weekly hit over session", "weekly", "session", hit.Add(4 * 24 * time.Hour), 1349},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			f, _, _ := limitFixture(t)
+			f.ctx.Getenv = func(string) string { return "" }
+			f.ctx.Wd = t.TempDir() // outside any root, so hits stay in this repo
+			f.ctx.Now = func() time.Time { return hit }
+			state := daemon.State{Learned: []daemon.LearnedLimit{{Kind: c.other, Tokens: 77, HitAt: earlier}}}
+			recordLimitHit(f.ctx, usageFake{}, adapter.UsageLimit{ResetAt: c.reset})
+			learnLimits(f.ctx, f.common, &state)
+			got := map[string]daemon.LearnedLimit{}
+			for _, l := range state.Learned {
+				got[l.Kind] = l
+			}
+			if o := got[c.other]; o.Tokens != 77 || !o.HitAt.Equal(earlier) {
+				t.Errorf("the %s limit changed to %+v", c.other, o)
+			}
+			if h := got[c.hitKind]; h.Tokens != c.hitTokens || !h.HitAt.Equal(hit) {
+				t.Errorf("the %s limit is %+v: want %d at the hit", c.hitKind, h, c.hitTokens)
+			}
+		})
+	}
+}
+
+func TestLearnedLimitRatchets(t *testing.T) {
+	hitAt := time.Date(2026, 11, 1, 10, 0, 0, 0, time.UTC)
+	start := time.Date(2026, 11, 4, 10, 0, 0, 0, time.UTC)
+	reset := start.Add(7 * 24 * time.Hour)
+	win := func(used int64) map[usage.Kind]usage.Window {
+		return map[usage.Kind]usage.Window{usage.Weekly: {Kind: usage.Weekly, Start: start, Reset: reset, Used: used}}
+	}
+	learned := func() *daemon.State {
+		return &daemon.State{Learned: []daemon.LearnedLimit{{Kind: "weekly", Tokens: 1000, HitAt: hitAt}}}
+	}
+
+	// Use past the limit with no hit raises it, keeping the hit time.
+	st := learned()
+	raiseLearned(st, win(1500), nil)
+	if l := st.Learned[0]; l.Tokens != 1500 || !l.HitAt.Equal(hitAt) {
+		t.Errorf("learned %+v: want 1500 at the old hit time", l)
+	}
+
+	// Use under the limit leaves it.
+	st = learned()
+	raiseLearned(st, win(900), nil)
+	if st.Learned[0].Tokens != 1000 {
+		t.Errorf("learned %+v: want 1000 left alone", st.Learned[0])
+	}
+
+	// A hit of the kind inside the window stops the ratchet; one of another
+	// kind, or outside the window, does not.
+	inWin := daemon.LimitHit{HitAt: start.Add(time.Hour), ResetAt: reset}
+	st = learned()
+	raiseLearned(st, win(1500), []daemon.LimitHit{inWin})
+	if st.Learned[0].Tokens != 1000 {
+		t.Errorf("learned %+v: a window holding a hit must not ratchet", st.Learned[0])
+	}
+	other := []daemon.LimitHit{
+		{HitAt: start.Add(time.Hour), ResetAt: start.Add(3 * time.Hour)},
+		{HitAt: hitAt, ResetAt: hitAt.Add(6 * 24 * time.Hour)},
+	}
+	st = learned()
+	raiseLearned(st, win(1500), other)
+	if st.Learned[0].Tokens != 1500 {
+		t.Errorf("learned %+v: hits elsewhere must not stop the ratchet", st.Learned[0])
+	}
+
+	// A setting is still what usageLimit returns.
+	rows := []Setting{{Key: "rhiza.daemon.usage.weekly", Value: "42"}}
+	if n, ok := usageLimit(rows, st.Learned, "weekly"); !ok || n != 42 {
+		t.Errorf("weekly limit = %d, %v: want the setting 42", n, ok)
+	}
+}
+
+// TestLearnedLimitRatchetsAtPoll drives the daemon's poll of a project with a
+// fake clock and fake token records, and reads the learned weekly limit back
+// from the daemon state the poll saves.
+func TestLearnedLimitRatchetsAtPoll(t *testing.T) {
+	holdFakeOnce()
+	usageFakeOnce()
+	t0 := time.Date(2027, 3, 1, 10, 0, 0, 0, time.UTC)
+	old := t0.Add(-30 * 24 * time.Hour)
+	weekly := func(at time.Time) time.Time { return at.Add(6 * 24 * time.Hour) }
+
+	// setup starts the daemon's work in a fresh project whose agent reports
+	// recs and whose learned weekly limit is learned. Its poll runs one poll
+	// at now and returns the learned limits of the state that poll saved.
+	setup := func(t *testing.T, recs []adapter.UsageRecord, learned int64) (*daemonProj, func(now time.Time) map[string]daemon.LearnedLimit) {
+		f, _, _ := limitFixture(t)
+		f.ctx.Getenv = func(string) string { return "" }
+		f.ctx.Wd = t.TempDir() // outside any root, so hits stay in this repo
+		holdFakeRecords = recs
+		t.Cleanup(func() { holdFakeRecords = nil })
+		p, err := newDaemonProj(f.ctx, "p", f.ctx.Root, daemon.Holder{}, true, DaemonRequest{}, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		p.state.Learned = []daemon.LearnedLimit{{Kind: "weekly", Tokens: learned, HitAt: old}}
+		poll := func(now time.Time) map[string]daemon.LearnedLimit {
+			f.ctx.Now = func() time.Time { return now }
+			if turn := p.prepare(DaemonRequest{}, nil); turn.err != nil {
+				t.Fatal(turn.err)
+			}
+			p.saveState()
+			st, ok := daemon.ReadState(p.common)
+			if !ok {
+				t.Fatal("the poll saved no daemon state")
+			}
+			got := map[string]daemon.LearnedLimit{}
+			for _, l := range st.Learned {
+				got[l.Kind] = l
+			}
+			return got
+		}
+		return p, poll
+	}
+	hit := func(p *daemonProj, at time.Time) {
+		daemon.RecordLimitHitIn(limitsDir(p.ctx, p.common), daemon.LimitHit{HitAt: at, ResetAt: weekly(at), Agent: holdFakeAgent})
+	}
+	recs := []adapter.UsageRecord{{At: t0, Tokens: 600}, {At: t0.Add(time.Hour), Tokens: 900}}
+
+	t.Run("use past the limit with no hit raises it", func(t *testing.T) {
+		_, poll := setup(t, recs, 1000)
+		if l := poll(t0.Add(2 * time.Hour))["weekly"]; l.Tokens != 1500 || !l.HitAt.Equal(old) {
+			t.Errorf("saved learned %+v: want 1500 at the old hit time", l)
+		}
+	})
+
+	t.Run("use under the limit leaves it", func(t *testing.T) {
+		_, poll := setup(t, recs, 2000)
+		if l := poll(t0.Add(2 * time.Hour))["weekly"]; l.Tokens != 2000 || !l.HitAt.Equal(old) {
+			t.Errorf("saved learned %+v: want 2000 left alone", l)
+		}
+	})
+
+	t.Run("a window holding a hit keeps the use at the hit", func(t *testing.T) {
+		more := append(append([]adapter.UsageRecord(nil), recs...), adapter.UsageRecord{At: t0.Add(2 * time.Hour), Tokens: 700})
+		p, poll := setup(t, more, 1000)
+		at := t0.Add(90 * time.Minute)
+		hit(p, at)
+		// The window now holds 2200, but the hit saw 1500.
+		if l := poll(t0.Add(3 * time.Hour))["weekly"]; l.Tokens != 1500 || !l.HitAt.Equal(at) {
+			t.Errorf("saved learned %+v: want the 1500 used at the hit, not the 2200 since", l)
+		}
+	})
+
+	t.Run("a later hit with lower use moves a raised limit down", func(t *testing.T) {
+		week2 := t0.Add(8 * 24 * time.Hour)
+		more := append(append([]adapter.UsageRecord(nil), recs...), adapter.UsageRecord{At: week2, Tokens: 1200})
+		p, poll := setup(t, more, 1000)
+		if l := poll(t0.Add(2 * time.Hour))["weekly"]; l.Tokens != 1500 {
+			t.Fatalf("saved learned %+v: want it raised to 1500 first", l)
+		}
+		at := week2.Add(time.Hour)
+		hit(p, at)
+		got := poll(week2.Add(2 * time.Hour))
+		if l := got["weekly"]; l.Tokens != 1200 || !l.HitAt.Equal(at) {
+			t.Errorf("saved learned %+v: want the later hit's 1200 at %s", l, at)
+		}
+		var learned []daemon.LearnedLimit
+		for _, l := range got {
+			learned = append(learned, l)
+		}
+		rows := []Setting{{Key: "rhiza.daemon.usage.weekly", Value: "42"}}
+		if n, ok := usageLimit(rows, learned, "weekly"); !ok || n != 42 {
+			t.Errorf("weekly limit = %d, %v: want the setting 42", n, ok)
+		}
+	})
 }

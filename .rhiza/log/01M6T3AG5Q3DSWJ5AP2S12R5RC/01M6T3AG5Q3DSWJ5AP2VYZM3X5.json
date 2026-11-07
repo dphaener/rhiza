@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-07T04:12:32Z",
+  "body": {
+    "intent": "Record agent actor claude-code-d4908867 for session d4908867-9bd3-4c04-86be-01a1b4352d51",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6T3AG5Q3DSWJ5AP2S12R5RC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T3AG5Q3DSWJ5AP2VYZM3X5",
+  "type": "open",
+  "v": 1
+}
