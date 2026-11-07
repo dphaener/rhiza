@@ -1,0 +1,73 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6SYP72PC5S8BZNZDY73GFF9"
+  ],
+  "at": "2026-11-07T03:16:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "2a850a8922c029ffa546b7957ec8c4b75df533d8",
+          "pr": "https://github.com/dphaener/rhiza/pull/342",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #342 (https://github.com/dphaener/rhiza/pull/342) passed CI at 2a850a8",
+          "status": "verified"
+        },
+        "handle": "pr-342-cross-project-cli",
+        "id": "01M6T04ECQ2Z3YAX5D86NY394J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6T04ECQ2Z3YAX5D83ZSW92K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T04ECQ2Z3YAX5D83ZSW92K",
+        "id": "01M6T04EDHX2DD2A4RVQ75CCBK",
+        "link": "01M6T04EDHX2DD2A4RVNSESC6Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85P5RQ03S1THHX2PE816",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6T04ECQ2Z3YAX5D83ZSW92K",
+        "id": "01M6T04EENSE5PS6PJ8R6BQ17G",
+        "link": "01M6T04EENSE5PS6PJ8Q3WZN20",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85QCT4TJYR8BAR6KZ499",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6T04ECQ2Z3YAX5D83ZSW92K",
+        "id": "01M6T04EFJ6J376C7351XT1K91",
+        "link": "01M6T04EFJ6J376C7350JDA982",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85RW7YTX1MJ53SF5RB1J",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6T04ECQ2Z3YAX5D83ZSW92K",
+        "id": "01M6T04EG6RVT2WSQFKN5P11QS",
+        "link": "01M6T04EG6RVT2WSQFKMVSWWTQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85TXNPGZEANC6R3HFM27",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3VGZ7D1JK4FRPNX21WHX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T04EJ46EDNY5C99E8P9X76",
+  "type": "ops",
+  "v": 1
+}
