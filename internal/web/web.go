@@ -84,7 +84,12 @@ var pages = map[string]*template.Template{
 		"Glyph": func(k string) Glyph { return Glyph{Kind: k} },
 		"Empty": func(t, x string) Empty { return Empty{t, x} },
 	}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/change.html")),
-	"roadmap": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/roadmap.html")),
+	"projects": template.Must(template.New("").Funcs(template.FuncMap{
+		"section": section,
+		"Empty":   func(t, x string) Empty { return Empty{t, x} },
+	}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/projects.html")),
+	"mergedinbox": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/inbox.html", "templates/mergedinbox.html")),
+	"roadmap":     template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/roadmap.html")),
 }
 
 // page is what a template is rendered with.
@@ -100,18 +105,26 @@ type page struct {
 	Inbox InboxPanel
 	// Milestones is the Overview's milestone progress panel.
 	Milestones MilestonesPanel
+	// Base is the project prefix the page is served under, empty at the root.
+	Base string
+	// Switcher is the header's project switcher; nil leaves it out.
+	Switcher *Switcher
 	// Data is what the page's own content renders.
 	Data any
 }
 
-func render(w http.ResponseWriter, name string, p page) {
+func render(w http.ResponseWriter, r *http.Request, name string, p page) {
+	if sc := scopeOf(r); sc != nil {
+		p.Base = sc.Prefix
+		p.Switcher = sc.Switcher()
+	}
 	var buf bytes.Buffer
 	if err := pages[name].ExecuteTemplate(&buf, "layout", p); err != nil {
 		http.Error(w, "render: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write(buf.Bytes())
+	w.Write(scopeOf(r).rewrite(buf.Bytes()))
 }
 
 // Handler serves the UI's embedded assets, read-only: GET and HEAD only.
@@ -156,11 +169,11 @@ func HandlerWithMilestones(daemon DaemonSource, runs RunsSource, inbox InboxSour
 	mux.HandleFunc("GET "+FragmentPrefix+"{name}", serveFragment)
 	mux.HandleFunc("GET /runs/{id}", servRun)
 	mux.HandleFunc("GET /runs", func(w http.ResponseWriter, r *http.Request) {
-		render(w, "runs", page{Title: "Runs", Nav: "runs", Data: runsData(r)})
+		render(w, r, "runs", page{Title: "Runs", Nav: "runs", Data: runsData(r)})
 	})
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		d := daemonOf(r)
-		render(w, "overview", page{Title: "Overview", Nav: "overview", DaemonView: d, Daemon: d.Pill(), Runs: runsOf(r), Inbox: inboxOf(r), Milestones: milestonesOf(r)})
+		render(w, r, "overview", page{Title: "Overview", Nav: "overview", DaemonView: d, Daemon: d.Pill(), Runs: runsOf(r), Inbox: inboxOf(r), Milestones: milestonesOf(r)})
 	})
 	static, _ := fs.Sub(assets, "static")
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static)))

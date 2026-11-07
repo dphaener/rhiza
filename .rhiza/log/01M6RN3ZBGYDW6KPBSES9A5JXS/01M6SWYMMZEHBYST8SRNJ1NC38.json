@@ -1,0 +1,109 @@
+{
+  "actor": "01M6SWKNF8TFEQX5036ANSKZ8E",
+  "after": [
+    "01M6SWJ74AKGWRDAQDPGYMXYHY"
+  ],
+  "at": "2026-11-07T02:21:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-770ebe55 at 3056a0e2, hands-on with the built binary (go build -trimpath into the session scratchpad): a scratch root (rhiza root init) with alpha and beta initialised and bare a plain git checkout, each registered with rhiza project add; a hand-written failed run journal in alpha (ended 01:00) and in beta (ended 02:00); rhiza daemon set rhiza.daemon.paused true, rhiza.web.host 127.0.0.1, rhiza.web.port 18947 (written to the root's rhiza.toml [daemon]); rhiza daemon --permission-mode manual from alpha, then curl against http://127.0.0.1:18947. One listener answered for every project: / and /projects 200, /p/alpha/ and /p/beta/ 200, /p/alpha/runs and /p/beta/roadmap 200, /p/alpha 301 to /p/alpha/, /p/nope/ and /p/bare/ 404, /p/alpha/api/status and /p/beta/api/status 200, /static/ and /site.webmanifest 200 at the root. Running rhiza init in bare with the daemon up made /p/bare/ answer 200 with no restart. 90 concurrent requests to /, /inbox and /p/alpha/ during polls all answered and the daemon logged no error; go test -race over internal/web and the api web tests passed."
+        },
+        "handle": "web-root-listener-qa-2",
+        "id": "01M6SWYM8S1W507FAA9QSY3PPY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SWYM8S1W507FAA9MACS1H9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SWYM8S1W507FAA9MACS1H9",
+        "id": "01M6SWYMA5D7M7F3JH7X56WXZA",
+        "link": "01M6SWYMA5D7M7F3JH7SZ06505",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN862M5W8HPN62BWDYC124",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-770ebe55 at 3056a0e2, hands-on with the built binary (go build -trimpath into the session scratchpad): a scratch root (rhiza root init) with alpha and beta initialised and bare a plain git checkout, each registered with rhiza project add; a hand-written failed run journal in alpha (ended 01:00) and in beta (ended 02:00); rhiza daemon set rhiza.daemon.paused true, rhiza.web.host 127.0.0.1, rhiza.web.port 18947 (written to the root's rhiza.toml [daemon]); rhiza daemon --permission-mode manual from alpha, then curl against http://127.0.0.1:18947. The web UI now opens on the projects home: GET / (and /projects) listed alpha (none live, 1 in inbox, unhealthy), bare (not initialised) and beta (none live, 1 in inbox, unhealthy), linking /p/alpha/, /p/bare/ and /p/beta/. The old unscoped pages redirect into the home project: /runs 302 to /p/alpha/runs, /roadmap to /p/alpha/roadmap, /runs?x=1 keeps its query. After rhiza init in bare, bare showed none live, 0 in inbox."
+        },
+        "handle": "web-projects-home-qa-2",
+        "id": "01M6SWYMBAT1MPWVQ174RA2QHD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SWYMBAT1MPWVQ172EMY76P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SWYMBAT1MPWVQ172EMY76P",
+        "id": "01M6SWYMC89RGB9BW2BMH6S6EQ",
+        "link": "01M6SWYMC89RGB9BW2BKBPWSVE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN864EGF59H96RE13VRMX7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-770ebe55 at 3056a0e2, hands-on with the built binary (go build -trimpath into the session scratchpad): a scratch root (rhiza root init) with alpha and beta initialised and bare a plain git checkout, each registered with rhiza project add; a hand-written failed run journal in alpha (ended 01:00) and in beta (ended 02:00); rhiza daemon set rhiza.daemon.paused true, rhiza.web.host 127.0.0.1, rhiza.web.port 18947 (written to the root's rhiza.toml [daemon]); rhiza daemon --permission-mode manual from alpha, then curl against http://127.0.0.1:18947. GET /inbox showed '2 waiting on you': alpha's failed run (01:00) above beta's (02:00), oldest first, each row tagged alpha or beta and linking /p/alpha/runs/<run> and /p/beta/runs/<run>, both of which answer 200 with that project's run."
+        },
+        "handle": "web-merged-inbox-qa-2",
+        "id": "01M6SWYMDKVS15A38B1TJP0FYV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SWYMDKVS15A38B1T3AYW0J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SWYMDKVS15A38B1T3AYW0J",
+        "id": "01M6SWYMEESDY9K6CKG4G63TNP",
+        "link": "01M6SWYMEESDY9K6CKG2FBHVZ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN866N4BCG43KR20K6EFC3",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-770ebe55 at 3056a0e2, hands-on with the built binary (go build -trimpath into the session scratchpad): a scratch root (rhiza root init) with alpha and beta initialised and bare a plain git checkout, each registered with rhiza project add; a hand-written failed run journal in alpha (ended 01:00) and in beta (ended 02:00); rhiza daemon set rhiza.daemon.paused true, rhiza.web.host 127.0.0.1, rhiza.web.port 18947 (written to the root's rhiza.toml [daemon]); rhiza daemon --permission-mode manual from alpha, then curl against http://127.0.0.1:18947. Every page kind under /p/alpha/ and /p/beta/ (overview, runs, roadmap, run detail, change set) carried data-rz-base=/p/<project> and a switcher of All projects, alpha and beta with its own project aria-current, the other project's link keeping the page kind (runs to runs, roadmap to roadmap, run detail and change set to that project's runs and roadmap). Data stayed scoped: alpha's run is absent from /p/beta/runs and /p/beta/runs/<alpha run> is 404; alpha's change set is 200 under /p/alpha/changes/ and 404 under /p/beta/changes/. /p/alpha/events answered 200 text/event-stream, /p/nope/events 404. The switcher listed bare as soon as it was initialised."
+        },
+        "handle": "web-project-switcher-qa-2",
+        "id": "01M6SWYMGAD8WVAFV5VX5A0P0G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SWYMGAD8WVAFV5VWMX24NK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SWYMGAD8WVAFV5VWMX24NK",
+        "id": "01M6SWYMK55BAWEBDJX4E227M6",
+        "link": "01M6SWYMK55BAWEBDJX0PTKCMG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN8687F2WDVVXSSTW5W65A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3ZBGYDW6KPBSES9A5JXS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SWYMMZEHBYST8SRNJ1NC38",
+  "type": "ops",
+  "v": 1
+}

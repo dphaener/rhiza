@@ -1,0 +1,28 @@
+{
+  "actor": "01M6SVFT0BXZ72SYJ1CFTJP98B",
+  "after": [
+    "01M6SVHTE40FEAFAZ9RHGNQ8TT"
+  ],
+  "at": "2026-11-07T01:58:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6PFJWRXY4PRZ989CCNE9R10",
+        "handle": null,
+        "id": "01M6SVNTV07G6B252HS4SZWFVB",
+        "node": "01M6PFJWRXY4PRZ989CC6WM3ZK",
+        "op": "node.update",
+        "set": {
+          "statement": "The shared layout (header with daemon pill and live indicator; on a project's page a project switcher of All projects plus each initialised project, its own marked; nav to Projects, Inbox, Overview, Runs and Roadmap) and the partials every page uses (panel with kicker, status pill per run and change set state, dense row whose title is its link and which shows no ID, typed node glyph, step timeline whose sessions show no ID, always-dark terminal block, empty and stale states) render from the design system."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6RN3ZBGYDW6KPBSES9A5JXS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SVNTWANCX408N5MDYE7C8E",
+  "type": "ops",
+  "v": 1
+}

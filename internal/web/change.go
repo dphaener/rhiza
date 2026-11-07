@@ -284,5 +284,5 @@ func serveChange(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "change set: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	render(w, "change", page{Title: v.Title, Nav: "roadmap", Data: v})
+	render(w, r, "change", page{Title: v.Title, Nav: "roadmap", Data: v})
 }

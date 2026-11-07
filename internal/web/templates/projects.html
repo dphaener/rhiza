@@ -1,0 +1,5 @@
+{{define "content"}}<div class="rz-pagehead"><div><p class="rz-kicker">Every registered project</p><h1>{{.Title}}</h1></div></div>
+<section class="rz-panel rz-panel--flush" style="padding-top:16px">
+{{if .Data}}<ol class="rz-rows">{{range .Data}}<li class="rz-row"><a class="rz-row-title" href="{{.Href}}">{{.Name}}{{if .Initialised}}<small>{{.Runs}} · {{.Inbox}} in inbox</small>{{else}}<small>not initialised</small>{{end}}</a><span class="rz-pill-cell">{{if .Initialised}}<span class="rz-pill rz-pill--health rz-pill--{{.HealthState}}" title="health: {{.HealthText}}">{{.HealthText}}</span>{{else}}<span class="rz-pill rz-pill--draft">not initialised</span>{{end}}</span></li>{{end}}</ol>
+{{else}}{{template "empty" (Empty "No projects" "Register one with rhiza project add.")}}{{end}}
+</section>{{end}}

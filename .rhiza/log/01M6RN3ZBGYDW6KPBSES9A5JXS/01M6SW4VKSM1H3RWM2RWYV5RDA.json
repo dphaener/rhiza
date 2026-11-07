@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SVF8B9F95RPPZH4HVKN150",
+  "after": [
+    "01M6SVNTWANCX408N5MDYE7C8E"
+  ],
+  "at": "2026-11-07T02:07:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b70cca66 (attempt 2), from a scratch worktree outside ~/code, go test -trimpath -count=1 ./internal/web/... passed. That includes TestProjectsHomeReadsTheRoot: a root of two initialised projects (alpha, beta) and one bare one, rendered on the projects home, checking each row's live-run count, inbox count, health pill (matched against each project's own health report) and /p/<name>/ link, the bare one marked not initialised with no counts, and every page's nav linking to /projects. It also includes the new TestRootRedirectsUnscopedToHome: / serves the projects home, unscoped pages 302 to /p/<home>/..., and /static, /api, /events and the webmanifest stay served by home. go test ./internal/api -run TestWeb passed, including TestWebRootHandlerServesEveryProject, where / lists both projects and /runs redirects to /p/alpha/runs. I read the diff: it makes / the all-projects home, which resolves the attempt-1 compliance finding f1. Inside ~/code, TestOverviewReadsDaemonFromRepo fails only because it sees the live root daemon (a known environment issue); it passes outside ~/code."
+        },
+        "handle": "web-projects-home-verified-2",
+        "id": "01M6SW4VHK3577Y8JAXYGVC398",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SW4VHK3577Y8JAXW8181FQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SW4VHK3577Y8JAXW8181FQ",
+        "id": "01M6SW4VJPJB4GBXJSD97JNJGE",
+        "link": "01M6SW4VJPJB4GBXJSD74ED806",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN864EGF59H96RE13VRMX7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3ZBGYDW6KPBSES9A5JXS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SW4VKSM1H3RWM2RWYV5RDA",
+  "type": "ops",
+  "v": 1
+}

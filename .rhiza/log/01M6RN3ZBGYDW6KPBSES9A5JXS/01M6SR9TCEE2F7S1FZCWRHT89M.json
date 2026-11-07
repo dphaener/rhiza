@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SR4A4NQH041H1Y88G1QV8P",
+  "after": [
+    "01M6SQZSYQEW1A4BKN9DGHS3A3"
+  ],
+  "at": "2026-11-07T00:59:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c4cee9a5 ran go test -trimpath -count=1 ./internal/web/ -run 'EveryPageKind|Switcher|Scoped|EventStream|Project' -v: all pass, incl. TestEveryPageKindIsScopedToItsProject, TestProjectPagesAreScopedWithSwitcher, TestSwitcherKeepsListKindOnDetailPages, TestEventStreamScopedToProject; full ./internal/web/ package passes; go vet and gofmt clean. Read the diff: the new test builds two projects (a, b) each with its own change set and run, fetches overview, roadmap, runs, run detail and change set pages under /p/a/ and /p/b/, asserts each shows its own titles/IDs and none of the other project's, carries a switcher link to the other project's same page kind (detail pages link the list kind) plus its own entry, and that /p/nope/<page> and the other project's run/change set under this project are 404. This closes attempt 1's finding f1."
+        },
+        "handle": "web-project-switcher-verified",
+        "id": "01M6SR9TA4Q9NHE35N3Q697MK4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SR9TA4Q9NHE35N3MTZ996B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SR9TA4Q9NHE35N3MTZ996B",
+        "id": "01M6SR9TBPEN8ZRK72E9917HZ2",
+        "link": "01M6SR9TBPEN8ZRK72E6SV14XT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN8687F2WDVVXSSTW5W65A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3ZBGYDW6KPBSES9A5JXS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SR9TCEE2F7S1FZCWRHT89M",
+  "type": "ops",
+  "v": 1
+}
