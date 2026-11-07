@@ -381,12 +381,13 @@ func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) e
 }
 
 // planRunArgs is the run start arguments daemonStartPlan detaches for
-// request q: --ref <ref> passes the request's ref on, and a request
-// without one passes none.
+// request q: --ref=<ref> passes the request's ref on as one word, so a
+// ref such as --dry-run or --change=<id> is never read as a flag, and a
+// request without one passes none.
 func planRunArgs(q daemon.Request, autonomous bool, mode string) []string {
 	args := []string{"run", "start", "--foreground", "--workflow", planWorkflow, "--new", q.Intent(), "--request", q.ID, "--permission-mode", mode}
 	if q.Ref != "" {
-		args = append(args, "--ref", q.Ref)
+		args = append(args, "--ref="+q.Ref)
 	}
 	if q.Kind == daemon.KindMilestone {
 		args = append(args, "--milestone")

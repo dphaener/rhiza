@@ -2,6 +2,7 @@ package api
 
 import (
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -77,22 +78,14 @@ func TestDaemonPlanRequestsRequeuesUnjournaled(t *testing.T) {
 }
 
 func TestRequestPlanRunArgsPassRef(t *testing.T) {
-	with := planRunArgs(daemon.Request{ID: "r1", Ref: "https://example.com/issues/7"}, false, "manual")
-	if got := refArg(with); got != "https://example.com/issues/7" {
-		t.Fatalf("with a ref: --ref %q in %q", got, with)
-	}
-	without := planRunArgs(daemon.Request{ID: "r2"}, false, "manual")
-	if slices.Contains(without, "--ref") {
-		t.Fatalf("without a ref: %q", without)
-	}
-}
-
-// refArg is the value after --ref in args, or "" with none.
-func refArg(args []string) string {
-	for i, a := range args {
-		if a == "--ref" && i+1 < len(args) {
-			return args[i+1]
+	for _, ref := range []string{"https://example.com/issues/7", "--dry-run", "--change=01M6VY7JMM5NPB3QVG1ECZH1YW", "-h"} {
+		with := planRunArgs(daemon.Request{ID: "r1", Ref: ref}, false, "manual")
+		if !slices.Contains(with, "--ref="+ref) || slices.Contains(with, ref) {
+			t.Fatalf("with ref %q: want the one word --ref=%s in %q", ref, ref, with)
 		}
 	}
-	return ""
+	without := planRunArgs(daemon.Request{ID: "r2"}, false, "manual")
+	if slices.ContainsFunc(without, func(a string) bool { return strings.HasPrefix(a, "--ref") }) {
+		t.Fatalf("without a ref: %q", without)
+	}
 }
