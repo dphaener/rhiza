@@ -1,0 +1,16 @@
+{
+  "actor": "01M6VY8QXK6RWXV77SZ1RDZA25",
+  "after": [],
+  "at": "2026-11-07T21:32:32Z",
+  "body": {
+    "intent": "Fix rhiza change show failing with 'canon: not canonical' on a change set whose op has a text field holding an @-reference together with <, > or &: model.ShowFieldValue (internal/model/textshow.go) re-encodes the shown text with json.Marshal, which HTML-escapes those characters, so op.Encode's canonical check rejects it. Seen on change set 01M6VY7G (Workflow dispatch), whose arbiter Decision workflow-dispatch-shape has '@{...}' and '->' in its statement. Encode the shown text canonically (e.g. canon.Marshal or an encoder with SetEscapeHTML(false)), with a test of a field holding an @-reference and '->'",
+    "kind": "intention",
+    "sources": [],
+    "title": "Fix change show HTML escape"
+  },
+  "change_set": "01M6VYTSJMRPCPT5WAGZRMNNZE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYTSJMRPCPT5WAH1GAJNWK",
+  "type": "open",
+  "v": 2
+}

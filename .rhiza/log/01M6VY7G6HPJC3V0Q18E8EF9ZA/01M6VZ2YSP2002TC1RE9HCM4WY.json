@@ -1,0 +1,59 @@
+{
+  "actor": "01M6VZ1SH9SPAAE1VQ6XCZT1M6",
+  "after": [
+    "01M6VYV7ENR4FGNWEJTBEAE3P7"
+  ],
+  "at": "2026-11-07T21:36:58Z",
+  "body": {
+    "drop": [
+      "01M6VYTAVAXVEVMEJNZEZZ5WCA"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Builds on @{01M6VYH807FA05BQQ196XC8JPN} (rules in a committed .rhiza/ file, built-in defaults, override targets the ship pick). Shape: the intent has exactly two triggers and the request kinds already fixed in internal/api/request.go (enum feature,bug,milestone), so a table per trigger keyed by kind is the smallest file that covers every case; partial files falling back key by key keep 'built-in defaults reproduce today's behaviour'. Bad names: decision workflows-are-the-rules says Rhiza enforces only references between nodes, and a rule naming a missing workflow is exactly a broken reference, so `rhiza check` (run by make check and CI) catches it before it lands; a silent fallback to ship-change would run the wrong workflow on the owner's work, so runtime failures surface as attention instead. Validating --workflow at queue time reuses resolveWorkflow (internal/api/run.go) and fails fast while the owner is still there. Default kind: change sets from milestone plans and `rhiza change new` are new work, which is what feature means and what the default --kind already is (request.go: 'default feature'). Visibility: run journals already carry the workflow name (run.go Workflow field, run_ls.go), so adding the reason there puts it where the owner's Rex apps and `rhiza run ls` already read, without a new surface.",
+          "statement": ".rhiza/dispatch.toml has one table per trigger, [request] (a request is queued) and [ready] (a change set is accepted and ready), and each maps a kind (feature, bug, milestone) to a workflow name, e.g. `[ready] bug = \"bugfix\"`. A key left out falls back to the built-in default (request -> plan, ready -> ship-change); any other table or key is an error. A workflow name no layer (personal, repo, built-in) resolves is a broken reference: `rhiza check` reports it for a rule in .rhiza/dispatch.toml, `rhiza request --workflow` refuses it with a usage error when queued, and if a name stops resolving by the time the daemon dispatches, the daemon starts no run and raises it as attention; it never silently falls back to the default. A change set no request opened (from a milestone plan or `rhiza change new`) has kind feature; one a request's plan run opens records that request's kind. Each run records which workflow dispatch picked and why (the request's override, the rule trigger.kind, or the built-in default), shown in `rhiza run ls` and `rhiza run status` and logged by the daemon; `rhiza change show` shows the change set's recorded kind and workflow.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "workflow-dispatch-rules-file",
+        "id": "01M6VYQWKXT7DC11ET2D05H9D1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6VYQWKXT7DC11ET2AAAER7G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript shows a change set opened by run start --new --request for a queued bug request whose queue entry carries a workflow (the entry written directly into the request queue file by the script, since request --workflow arrives later in request-workflow-flag) recording kind bug and that workflow in change show --json, a change set from rhiza change new showing kind feature and no workflow, and the log still folding with fold-ok",
+          "statement": "A change set records its kind and an optional workflow: the change set a request's plan run opens records that request's kind and the workflow the request named, any other change set (from a milestone plan or rhiza change new) has kind feature and no workflow, and rhiza change show shows both"
+        },
+        "handle": "change-set-records-dispatch",
+        "id": "01M6VYTAJBDW1YH8D7Y4QE9G5E",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6VYTAJBDW1YH8D7Y1XGCK76",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api show a dispatch file mapping [request] bug to a repo workflow making the daemon's start of a bug request run that workflow with --new, a feature request still running plan, and a milestone request mapped to another workflow starting it with --milestone and without --autonomous; tests in internal/daemon and internal/api show a request's run under a workflow not named plan still resumed by daemon.Resumable after its change set lands early, still listed in the inbox, and a milestone request's run under such a workflow still stopped by run resume's owner gate",
+          "statement": "The daemon starts a queued request's plan run with the workflow the [request] rule names for the request's kind (default plan), and run start --new accepts that workflow instead of refusing every workflow but plan; a milestone request still opens a record change set and never runs autonomous, whatever workflow its rule names. Whether a run is a request's plan run is keyed on the run having been started with --new or for a request, not on its workflow being named plan: daemon.Resumable (resuming a run whose change set landed early), the inbox's keeping such runs listed, and run resume's milestone owner gate all use that test"
+        },
+        "handle": "request-trigger-dispatch",
+        "id": "01M6VYTARWAQRW1FDT2CR4N82T",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6VYTARWAQRW1FDT2AKAFZQA",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VZ2YSP2002TC1RE9HCM4WY",
+  "type": "ops",
+  "v": 1
+}

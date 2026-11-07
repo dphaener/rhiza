@@ -1,0 +1,41 @@
+{
+  "actor": "01M6VYNW54RSV9PE35P520DHFP",
+  "after": [
+    "01M6VYNHWPST4V9X7QQ3EZKXS8"
+  ],
+  "at": "2026-11-07T21:30:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Builds on @{01M6VYH807FA05BQQ196XC8JPN} (rules in a committed .rhiza/ file, built-in defaults, override targets the ship pick). Shape: the intent has exactly two triggers and the request kinds already fixed in internal/api/request.go (enum feature,bug,milestone), so a table per trigger keyed by kind is the smallest file that covers every case; partial files falling back key by key keep 'built-in defaults reproduce today's behaviour'. Bad names: decision workflows-are-the-rules says Rhiza enforces only references between nodes, and a rule naming a missing workflow is exactly a broken reference, so `rhiza check` (run by make check and CI) catches it before it lands; a silent fallback to ship-change would run the wrong workflow on the owner's work, so runtime failures surface as attention instead. Validating --workflow at queue time reuses resolveWorkflow (internal/api/run.go) and fails fast while the owner is still there. Default kind: change sets from milestone plans and `rhiza change new` are new work, which is what feature means and what the default --kind already is (request.go: 'default feature'). Visibility: run journals already carry the workflow name (run.go Workflow field, run_ls.go), so adding the reason there puts it where the owner's Rex apps and `rhiza run ls` already read, without a new surface.",
+          "statement": ".rhiza/dispatch.toml has one table per trigger, [request] (a request is queued) and [ready] (a change set is accepted and ready), and each maps a kind (feature, bug, milestone) to a workflow name, e.g. `[ready] bug = \"bugfix\"`. A key left out falls back to the built-in default (request -> plan, ready -> ship-change); any other table or key is an error. A workflow name no layer (personal, repo, built-in) resolves is a broken reference: `rhiza check` reports it for a rule in .rhiza/dispatch.toml, `rhiza request --workflow` refuses it with a usage error when queued, and if a name stops resolving by the time the daemon dispatches, the daemon starts no run and raises it as attention; it never silently falls back to the default. A change set no request opened (from a milestone plan or `rhiza change new`) has kind feature; one a request's plan run opens records that request's kind. Each run records which workflow dispatch picked and why (the request's override, the rule trigger.kind, or the built-in default), shown in `rhiza run ls` and `rhiza run show` and logged by the daemon; `rhiza change show` shows the change set's recorded kind and workflow.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "workflow-dispatch-rules-file",
+        "id": "01M6VYQWKXT7DC11ET2D05H9D1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6VYQWKXT7DC11ET2AAAER7G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6VYQWKXT7DC11ET2AAAER7G",
+        "id": "01M6VYQWMGCSGVHYAT4AX2Y0NH",
+        "link": "01M6VYQWMGCSGVHYAT475CDCBP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYNG696SP9M2NGXG5CEC3R",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYQWPYJSQJ7QBS2XDM508Q",
+  "type": "ops",
+  "v": 1
+}

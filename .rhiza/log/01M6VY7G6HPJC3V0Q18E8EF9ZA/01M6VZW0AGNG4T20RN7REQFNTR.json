@@ -1,0 +1,41 @@
+{
+  "actor": "01M6VZPQB65C4HCTD7YHF95BAY",
+  "after": [
+    "01M6VZP9RMXBA0WGNR70BA7WMS"
+  ],
+  "at": "2026-11-07T21:50:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding is right: changeset.Kind is intention|record (internal/changeset/body.go:66-77), change new --kind takes intention|record, and change show --json already prints \"kind\" from c.Open.Kind, so reusing the name would collide, and a milestone request's change set must be kind record and milestone at once. The two are orthogonal (intention vs record is how a change set lands; feature/bug/milestone is what kind of request it came from), so they need two fields; overloading or replacing kind would break every existing log entry and the --kind flag. request_kind is the clearest name because the values are exactly the request kinds already fixed in internal/api/request.go (enum feature,bug,milestone, daemon.KindFeature/Bug/Milestone), it says where the value comes from, and it is the example name the plan reviewer and critic both proposed. Keeping the default feature for change sets no request opened matches @{01M6VYQWKXT7DC11ET2AAAER7G} and request.go's 'default feature', so the decision's rules are unchanged; only the field name is pinned.",
+          "statement": "The dispatch kind a change set records is a new field named request_kind (feature, bug or milestone), separate from the existing kind (intention or record), which keeps its meaning and values unchanged. The open entry carries request_kind next to the optional workflow; rhiza change show --json prints \"request_kind\" and \"workflow\" beside the existing \"kind\", and the text output labels it 'request kind'. A change set no request opened has request_kind feature, so a milestone request's change set reads kind record with request_kind milestone. @{01M6VYTAJBDW1YH8D7Y1XGCK76}'s statement and acceptance and @{01M6VYQWKXT7DC11ET2AAAER7G}'s wording 'records its kind' / 'kind bug' / 'kind feature' mean request_kind, and dispatch rules key on request_kind.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "dispatch-kind-field-request-kind",
+        "id": "01M6VZW00SD35FTTWT65CXB23N",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6VZW00RN5VJZSHTTRN1Q8A9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6VZW00RN5VJZSHTTRN1Q8A9",
+        "id": "01M6VZW0656XDRNJYVSY14YYDW",
+        "link": "01M6VZW0656XDRNJYVSVBESC4C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VZP9EAZX6GB0QF2R2WHCXP",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VZW0AGNG4T20RN7REQFNTR",
+  "type": "ops",
+  "v": 1
+}

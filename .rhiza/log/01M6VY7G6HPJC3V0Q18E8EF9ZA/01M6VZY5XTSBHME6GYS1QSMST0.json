@@ -1,0 +1,41 @@
+{
+  "actor": "01M6VZWX6QW4M7YQ1D14TP9PMN",
+  "after": [
+    "01M6VZW0AGNG4T20RN7REQFNTR"
+  ],
+  "at": "2026-11-07T21:51:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read internal/api/run.go: run resume exempts a landed change set only when st.Workflow == planWorkflow or the run already visited land; otherwise Terminal() returns a Conflict. The leaf's own statement says every check that asks 'is this a request's plan run' moves off the name plan, and the early-landed record is exactly why plan is exempt here, so this check is the same test and was simply omitted. Leaving it out makes daemon.Resumable pick a run that run resume then refuses, which defeats the leaf's intent (dispatching request kinds to other workflows). The critic confirmed the gap. Extending the list and acceptance stays inside the change set's intent and adds no new mechanism; asserting the resume itself, not just Resumable's pick, is what would have caught it.",
+          "statement": "@{01M6VYTARWAQRW1FDT2AKAFZQA} also rekeys run resume's landed-state check (internal/api/run.go, the `st.Workflow == planWorkflow && StateLanded` exemption beside the visited-land one) on 'is a request's plan run' (started with --new or for a request) rather than the workflow name plan, so a request run under any dispatched workflow whose change set landed early is let through rather than refused as terminal. The leaf's acceptance tests resume such a run end to end through run resume under a workflow not named plan, not only see it in daemon.Resumable's list",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "request-run-landed-resume-check",
+        "id": "01M6VZY5Q97N5MKT6RKQRGJR7P",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6VZY5Q97N5MKT6RKN0W7181",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6VZY5Q97N5MKT6RKN0W7181",
+        "id": "01M6VZY5TZ0C5Z7YJGZCWF7DW0",
+        "link": "01M6VZY5TZ0C5Z7YJGZA15N619",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VZP9FPP58AM3F8KM40FS24",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VZY5XTSBHME6GYS1QSMST0",
+  "type": "ops",
+  "v": 1
+}

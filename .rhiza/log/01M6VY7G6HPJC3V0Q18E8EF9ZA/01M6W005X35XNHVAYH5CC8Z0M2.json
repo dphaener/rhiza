@@ -1,0 +1,41 @@
+{
+  "actor": "01M6VZYX9CAC1YZBCB20CPQ2KC",
+  "after": [
+    "01M6VZY5XTSBHME6GYS1QSMST0"
+  ],
+  "at": "2026-11-07T21:52:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "No change set ever reaches the ready trigger with request_kind milestone: a milestone request's plan run opens a record change set, which lands straight from in-flight and is never accepted-and-ready (changeset fold.go:606, lifecycle.go:160; request-trigger-dispatch keeps that), and change sets a milestone plan or rhiza change new opens get request_kind feature (change-set-records-dispatch, dispatch-kind-field-request-kind). A [ready] milestone rule would pass rhiza check yet never fire, which is the silent no-op the plan otherwise refuses (unknown keys are errors, unresolved workflows are attention). Dropping the key is the smaller change and keeps the file honest; inventing a path that gives a ready change set kind milestone would add lifecycle behaviour the intent never asked for. If such a path is added later, the key can be admitted then.",
+          "statement": "The [ready] table in .rhiza/dispatch.toml accepts only the kinds feature and bug; a milestone key under [ready] is an error naming it, like any other unknown key, and rhiza check reports it. [request] keeps all three kinds (feature, bug, milestone). This narrows workflow-dispatch-rules-file and dispatch-rules-file: 'each maps a kind (feature, bug, milestone)' holds for [request] only, and the ready resolver never looks up a milestone rule.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "dispatch-ready-no-milestone-key",
+        "id": "01M6W005N7EKNHZQB6DAHRQK3K",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W005N7EKNHZQB6D7XNGEZB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W005N7EKNHZQB6D7XNGEZB",
+        "id": "01M6W005QXPVTXYEE2FB5S9YCT",
+        "link": "01M6W005QXPVTXYEE2F8WF813H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VZP9JVHFVPNR4SRSMN2NMT",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W005X35XNHVAYH5CC8Z0M2",
+  "type": "ops",
+  "v": 1
+}
