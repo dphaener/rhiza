@@ -84,6 +84,10 @@ var pages = map[string]*template.Template{
 		"Glyph": func(k string) Glyph { return Glyph{Kind: k} },
 		"Empty": func(t, x string) Empty { return Empty{t, x} },
 	}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/change.html")),
+	"projects": template.Must(template.New("").Funcs(template.FuncMap{
+		"section": section,
+		"Empty":   func(t, x string) Empty { return Empty{t, x} },
+	}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/projects.html")),
 	"roadmap": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/roadmap.html")),
 }
 

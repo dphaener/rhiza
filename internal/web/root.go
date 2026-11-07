@@ -18,7 +18,21 @@ type ProjectResolver func(name string) http.Handler
 // off; an unknown project is not found; everything else is served by home,
 // the handler of the daemon's home project.
 func Root(home http.Handler, project ProjectResolver) http.Handler {
+	return RootWithProjects(home, project, nil)
+}
+
+// ProjectsPath is the all-projects home on the root's listener.
+const ProjectsPath = "/projects"
+
+// RootWithProjects is Root that also serves the all-projects home at
+// /projects, listing what projects reads.
+func RootWithProjects(home http.Handler, project ProjectResolver, projects ProjectsSource) http.Handler {
+	list := ProjectsHome(projects)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == ProjectsPath && (r.Method == "GET" || r.Method == "HEAD") {
+			list.ServeHTTP(w, r)
+			return
+		}
 		rest, ok := strings.CutPrefix(r.URL.Path, ProjectPrefix)
 		if !ok {
 			home.ServeHTTP(w, r)

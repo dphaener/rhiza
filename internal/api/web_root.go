@@ -29,7 +29,7 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 		h   http.Handler
 	}
 	cache := map[string]built{}
-	return web.Root(home, func(name string) http.Handler {
+	return web.RootWithProjects(home, func(name string) http.Handler {
 		reg, err := rootcfg.Load(root)
 		if err != nil {
 			return nil
@@ -52,5 +52,47 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 		h := WebProjectHandler(projectCtx(ctx, dir))
 		cache[name] = built{dir, h}
 		return h
-	})
+	}, WebProjectsSource(ctx, root, homeName))
+}
+
+// WebProjectsSource reads every project registered in the root for the web
+// UI's all-projects home: live runs, inbox count and health of each
+// initialised one, a project with no .rhiza/ yet marked as such. Each
+// project's health report is kept, as WebProjectHandler's is.
+func WebProjectsSource(ctx *Ctx, root, homeName string) web.ProjectsSource {
+	var mu sync.Mutex
+	healths := map[string]*WebHealth{}
+	return func() []web.ProjectView {
+		reg, err := rootcfg.Load(root)
+		if err != nil {
+			return nil
+		}
+		var views []web.ProjectView
+		for _, name := range reg.Names() {
+			v := web.ProjectView{Name: name}
+			dir := reg.Dir(root, name)
+			if projectInitialised(dir) {
+				v.Initialised = true
+				c := projectCtx(ctx, dir)
+				for _, r := range WebRunsSource(c)() {
+					if r.State == "running" {
+						v.Running++
+					} else {
+						v.Waiting++
+					}
+				}
+				v.Inbox = len(WebInboxSource(c)())
+				mu.Lock()
+				h := healths[name]
+				if h == nil {
+					h = NewWebHealth(c)
+					healths[name] = h
+				}
+				mu.Unlock()
+				v.Health = WebDaemonSource(c, h)().Health
+			}
+			views = append(views, v)
+		}
+		return views
+	}
 }
