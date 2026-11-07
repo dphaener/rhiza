@@ -225,6 +225,7 @@ esac
 exit 0
 -- bin/gh --
 #!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
 echo "$@" >> "$WORK/gh.log"
 o="$WORK/origin.git"
 case "$1 $2" in
@@ -238,14 +239,14 @@ case "$1 $2" in
 		exit 1
 	fi
 	if [ ! -f "$WORK/pr.created" ]; then
-		printf '{"number":3,"url":"https://github.test/o/r/pull/3","state":"MERGED","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
+		printf '{"body":"Change set '"$csid"'","number":3,"url":"https://github.test/o/r/pull/3","state":"MERGED","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
 		exit 0
 	fi
 	echo "$head" > "$WORK/landed.sha"
 	have=$(git -C "$o" ls-tree --name-only "$head" | grep -c '^fix-')
 	c=SUCCESS
 	[ "$have" -lt "$(cat "$WORK/need")" ] && c=FAILURE
-	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"%s","detailsUrl":"https://github.test/o/r/actions/runs/42/job/9"},{"context":"lint","state":"SUCCESS"}]}\n' "$head" "$c"
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"%s","detailsUrl":"https://github.test/o/r/actions/runs/42/job/9"},{"context":"lint","state":"SUCCESS"}]}\n' "$head" "$c"
 	;;
 "run rerun")
 	;;

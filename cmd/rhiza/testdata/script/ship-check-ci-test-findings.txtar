@@ -73,13 +73,14 @@ go 1.25
 feature
 -- bin/gh --
 #!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
 echo "$@" >> "$WORK/gh.log"
 case "$1 $2" in
 "pr view")
 	head=$(git -C "$ORIGIN" rev-parse --verify "refs/heads/$3")
 	conclusion=FAILURE
 	[ -f "$WORK/green" ] && conclusion=SUCCESS
-	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"'$conclusion'","detailsUrl":"https://github.test/o/r/actions/runs/42/job/9"}]}\n' "$head"
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"'$conclusion'","detailsUrl":"https://github.test/o/r/actions/runs/42/job/9"}]}\n' "$head"
 	;;
 "run rerun")
 	;;

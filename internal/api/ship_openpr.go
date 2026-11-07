@@ -122,14 +122,14 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 	}
 
 	dir := t.dir()
-	out, err := gh(ctx, dir, "pr", "view", t.branch, "--json", "number,url,state,headRefOid,statusCheckRollup")
+	out, err := gh(ctx, dir, "pr", "view", t.branch, "--json", "number,url,state,headRefOid,body,statusCheckRollup")
 	switch {
 	case noPR(err):
 		if _, err := gh(ctx, dir, "pr", "create", "--base", shipMain, "--head", t.branch, "--title", t.title, "--body-file", body.Name()); err != nil {
 			return nil, Errorf("%v", err)
 		}
 		resp.Created = true
-		if out, err = gh(ctx, dir, "pr", "view", t.branch, "--json", "number,url,state,headRefOid,statusCheckRollup"); err != nil {
+		if out, err = gh(ctx, dir, "pr", "view", t.branch, "--json", "number,url,state,headRefOid,body,statusCheckRollup"); err != nil {
 			return nil, Errorf("%v", err)
 		}
 	case err != nil:
@@ -139,6 +139,11 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, Errorf("%v", err)
 	}
+	if !resp.Created {
+		if err := requirePROwned(t, v); err != nil {
+			return nil, err
+		}
+	}
 	// A branch whose only pull request was merged or closed before this run
 	// (a plan's PR on the change set's branch, say) gets a new one: gh then
 	// names the open one for the branch.
@@ -147,11 +152,14 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 			return nil, Errorf("%v", err)
 		}
 		resp.Created = true
-		if out, err = gh(ctx, dir, "pr", "view", t.branch, "--json", "number,url,state,headRefOid,statusCheckRollup"); err != nil {
+		if out, err = gh(ctx, dir, "pr", "view", t.branch, "--json", "number,url,state,headRefOid,body,statusCheckRollup"); err != nil {
 			return nil, Errorf("%v", err)
 		}
 		if v, err = parsePRView(out); err != nil {
 			return nil, Errorf("%v", err)
+		}
+		if err := requirePROwned(t, v); err != nil {
+			return nil, err
 		}
 	}
 	if !strings.EqualFold(v.State, "OPEN") {

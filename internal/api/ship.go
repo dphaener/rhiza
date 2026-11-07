@@ -356,6 +356,8 @@ type prView struct {
 	URL    string
 	State  string
 	Head   string
+	// Body is the pull request's description.
+	Body string
 	// Mergeable is GitHub's verdict: MERGEABLE, CONFLICTING or UNKNOWN.
 	Mergeable string
 	Checks    []ShipCheck
@@ -371,6 +373,7 @@ func parsePRView(b []byte) (prView, error) {
 		URL        string `json:"url"`
 		State      string `json:"state"`
 		HeadRefOid string `json:"headRefOid"`
+		Body       string `json:"body"`
 		Mergeable  string `json:"mergeable"`
 		Rollup     []struct {
 			Name       string `json:"name"`
@@ -384,7 +387,7 @@ func parsePRView(b []byte) (prView, error) {
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return prView{}, fmt.Errorf("gh pr view: %v", err)
 	}
-	v := prView{Number: raw.Number, URL: raw.URL, State: raw.State, Head: raw.HeadRefOid, Mergeable: raw.Mergeable, Checks: []ShipCheck{}}
+	v := prView{Number: raw.Number, URL: raw.URL, State: raw.State, Head: raw.HeadRefOid, Body: raw.Body, Mergeable: raw.Mergeable, Checks: []ShipCheck{}}
 	for _, r := range raw.Rollup {
 		if r.Context != "" || (r.Status == "" && r.State != "") {
 			c := ShipCheck{Name: r.Context, Status: "COMPLETED", Conclusion: r.State}
@@ -397,6 +400,35 @@ func parsePRView(b []byte) (prView, error) {
 		v.Checks = append(v.Checks, ShipCheck{Name: r.Name, Status: r.Status, Conclusion: r.Conclusion, RunID: actionsRunID(r.DetailsURL)})
 	}
 	return v, nil
+}
+
+// prOwnedBy reports whether the pull request's body has a "Change set <id>"
+// line naming cs: the line open-pr's body opens with.
+func prOwnedBy(body string, cs id.ID) bool {
+	for _, line := range strings.Split(body, "\n") {
+		rest, ok := strings.CutPrefix(strings.TrimSpace(line), "Change set ")
+		if !ok {
+			continue
+		}
+		name := rest
+		if i := strings.IndexAny(rest, ":. \t"); i >= 0 {
+			name = rest[:i]
+		}
+		if name == cs.String() {
+			return true
+		}
+	}
+	return false
+}
+
+// requirePROwned refuses a pull request on the change set's branch whose body
+// does not name the change set: another change set's, or none, so ship never
+// tracks it. Nothing is written.
+func requirePROwned(t shipTarget, v prView) error {
+	if prOwnedBy(v.Body, t.cs) {
+		return nil
+	}
+	return Conflictf("pull request #%d for branch %s (%s) does not name change set %s in its body's 'Change set' line: it is another change set's, so ship does not track it", v.Number, t.branch, strings.ToLower(v.State), t.cs)
 }
 
 // actionsRunRe finds the run ID in an Actions details URL such as
@@ -493,7 +525,7 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		resp.PR, resp.URL, resp.Commit = st.PR, st.URL, st.MergeCommit
 		return shipCheckMainTree(ctx, t, st, resp, path, r.Settled)
 	} else {
-		out, err := gh(ctx, t.dir(), "pr", "view", t.branch, "--json", "number,url,state,headRefOid,mergeable,statusCheckRollup")
+		out, err := gh(ctx, t.dir(), "pr", "view", t.branch, "--json", "number,url,state,headRefOid,body,mergeable,statusCheckRollup")
 		if noPR(err) {
 			resp.Detail = fmt.Sprintf("no open pull request for branch %s", t.branch)
 			return resp, nil
@@ -504,6 +536,9 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		v, err := parsePRView(out)
 		if err != nil {
 			return nil, Errorf("%v", err)
+		}
+		if err := requirePROwned(t, v); err != nil {
+			return nil, err
 		}
 		resp.PR, resp.URL, resp.State, resp.Commit, resp.Checks = v.Number, v.URL, v.State, v.Head, v.Checks
 		if !strings.EqualFold(v.State, "OPEN") {

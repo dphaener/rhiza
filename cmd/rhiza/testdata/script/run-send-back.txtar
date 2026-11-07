@@ -171,6 +171,7 @@ esac
 exit 0
 -- bin/gh --
 #!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
 echo "$@" >> "$WORK/gh.log"
 o="$WORK/origin.git"
 case "$1 $2" in
@@ -181,7 +182,7 @@ case "$1 $2" in
 	fi
 	c=SUCCESS
 	[ -f "$WORK/ci.fail" ] && c=FAILURE
-	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"%s"}]}\n' "$head" "$c"
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"%s"}]}\n' "$head" "$c"
 	;;
 "pr create")
 	touch "$WORK/pr.created"

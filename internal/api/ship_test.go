@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -102,6 +103,9 @@ type fakeGH struct {
 	answers map[string]string
 	calls   []string
 	dirs    []string
+	// body is the pull request body pr view answers carry when they hold
+	// none of their own: the change set's 'Change set' line.
+	body string
 }
 
 func (f *fakeGH) run(name string, args []string, dir string, _ []string) ([]byte, error) {
@@ -120,11 +124,14 @@ func (f *fakeGH) run(name string, args []string, dir string, _ []string) ([]byte
 	if msg, failed := strings.CutPrefix(a, "!"); failed {
 		return nil, errors.New("gh " + k + ": " + msg)
 	}
+	if f.body != "" && strings.HasPrefix(k, "pr view cs/") && strings.HasPrefix(a, "{") && !strings.Contains(a, `"body"`) {
+		a = `{"body":` + strconv.Quote(f.body) + `,` + a[1:]
+	}
 	return []byte(a), nil
 }
 
 const (
-	shipPRView   = "pr view cs/ship-it --json number,url,state,headRefOid,mergeable,statusCheckRollup"
+	shipPRView   = "pr view cs/ship-it --json number,url,state,headRefOid,body,mergeable,statusCheckRollup"
 	shipMergeArg = "pr merge 7 --squash --match-head-commit abc1234def"
 	shipMergedPR = "pr view 7 --json mergeCommit,state"
 
@@ -151,6 +158,7 @@ func shipFixture(t *testing.T) (*sessionFixture, *fakeGH, string) {
 	f := newSessionFixture(t, "ship-it")
 	cs := newChange(t, f.ctx, `{"intent":"Ship it","title":"Ship it"}`).ChangeSet
 	g := &fakeGH{answers: map[string]string{}}
+	g.body = "# Plan\n\nChange set " + cs.String() + ": Ship it. Workflow plan.\n"
 	f.ctx.Exec = g.run
 	return f, g, filepath.Join(f.common, "rhiza", "ship", cs.String()+".json")
 }
@@ -1609,5 +1617,33 @@ func TestParsePRViewMultiJob(t *testing.T) {
 	))
 	if settled || green {
 		t.Errorf("in progress: settled=%v green=%v", settled, green)
+	}
+}
+
+// TestShipCheckRefusesForeignPR: ship check, with and without --settled,
+// refuses a pull request on the branch, open, merged or closed, whose body
+// names another change set or none, naming it, and writes no ship state.
+func TestShipCheckRefusesForeignPR(t *testing.T) {
+	bodies := map[string]string{
+		"another change set": "Change set 01M6T1ZR0000000000000000AB: Other.",
+		"no change set line": "Fixes a bug.",
+		"empty body":         "",
+	}
+	for name, body := range bodies {
+		for _, state := range []string{"OPEN", "MERGED", "CLOSED"} {
+			for _, req := range []string{`{}`, `{"settled":true}`} {
+				f, g, statePath := shipFixture(t)
+				g.answers[shipPRView] = `{"body":` + strconv.Quote(body) + `,"number":345,"url":"https://github.com/o/r/pull/345","state":"` + state + `","headRefOid":"abc1234def","statusCheckRollup":[` + greenRollup + `]}`
+				_, err := callOp(t, f.ctx, "ship.check", req)
+				if err == nil || !strings.Contains(err.Error(), "#345") {
+					t.Errorf("%s, %s, %s: err = %v, want a conflict naming #345", name, state, req, err)
+					continue
+				}
+				wantExit(t, err, 3)
+				if _, serr := os.Stat(statePath); !errors.Is(serr, os.ErrNotExist) {
+					t.Errorf("%s, %s, %s: state file written: %v", name, state, req, serr)
+				}
+			}
+		}
 	}
 }

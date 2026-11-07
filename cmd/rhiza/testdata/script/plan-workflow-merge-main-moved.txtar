@@ -171,6 +171,7 @@ touch "$WORK/ready"
 exit 0
 -- bin/gh --
 #!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
 echo "$@" >> "$WORK/gh.log"
 o="$WORK/origin.git"
 case "$1 $2" in
@@ -208,7 +209,7 @@ case "$1 $2" in
 		echo "$sha" > "$WORK/other.sha"
 		touch "$WORK/moved"
 	fi
-	printf '{"number":%s,"url":"https://github.test/o/r/pull/%s","state":"%s","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$n" "$n" "$state" "$head"
+	printf '{"body":"Change set '"$csid"'","number":%s,"url":"https://github.test/o/r/pull/%s","state":"%s","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$n" "$n" "$state" "$head"
 	;;
 "pr merge")
 	# Squash-free: main on origin takes the branch as it was checked.

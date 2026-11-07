@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -53,7 +54,7 @@ func (g *openPRGH) run(name string, args []string, dir string, env []string) ([]
 		if err != nil {
 			g.t.Fatal(err)
 		}
-		return []byte(`{"number":7,"url":"https://github.com/o/r/pull/7","state":"` + g.state + `","headRefOid":"` + strings.TrimSpace(string(head)) + `","statusCheckRollup":[]}`), nil
+		return []byte(`{"number":7,"url":"https://github.com/o/r/pull/7","state":"` + g.state + `","body":` + strconv.Quote(g.body) + `,"headRefOid":"` + strings.TrimSpace(string(head)) + `","statusCheckRollup":[]}`), nil
 	case strings.HasPrefix(k, "pr create "):
 		if g.exists {
 			g.t.Fatalf("gh %s: a second pull request", k)
@@ -286,5 +287,35 @@ func TestShipOpenPRRefusesPlanWithoutRound(t *testing.T) {
 	}
 	if len(g.calls) != 0 {
 		t.Errorf("gh called: %q", g.calls)
+	}
+}
+
+// TestShipOpenPRRefusesForeignPR: a pull request on the branch whose body
+// names another change set, or none, is refused whatever its state, with a
+// conflict naming it; nothing is edited, created or written to ship state.
+func TestShipOpenPRRefusesForeignPR(t *testing.T) {
+	for _, body := range []string{"# Plan\n\nChange set 01M6T1ZR0000000000000000AB: Other.\n", "Fixes a bug."} {
+		for _, state := range []string{"OPEN", "MERGED", "CLOSED"} {
+			ctx, g, _, _ := openPRFixture(t, true)
+			g.exists, g.state, g.body = true, state, body
+			_, err := callOp(t, ctx, "ship.open-pr", `{}`)
+			if err == nil || !strings.Contains(err.Error(), "#7") {
+				t.Errorf("%q, %s: err = %v, want a conflict naming #7", body, state, err)
+				continue
+			}
+			wantExit(t, err, 3)
+			for _, c := range g.calls {
+				if strings.HasPrefix(c, "pr create") || strings.HasPrefix(c, "pr edit") {
+					t.Errorf("%q, %s: gh %s", body, state, c)
+				}
+			}
+			if g.body != body {
+				t.Errorf("%q, %s: body changed to %q", body, state, g.body)
+			}
+			ents, _ := filepath.Glob(filepath.Join(ctx.Root, ".git", "rhiza", "ship", "*.json"))
+			if len(ents) != 0 {
+				t.Errorf("%q, %s: ship state written: %v", body, state, ents)
+			}
+		}
 	}
 }
