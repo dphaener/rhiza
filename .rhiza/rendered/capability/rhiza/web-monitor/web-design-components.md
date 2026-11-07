@@ -8,7 +8,7 @@ A web package test renders the layout and each partial with fixture data and com
 
 ## statement
 
-The shared layout (header with daemon pill and live indicator, nav to Overview, Runs and Roadmap) and the partials every page uses (panel with kicker, status pill per run and change set state, dense row whose title is its link and which shows no ID, typed node glyph, step timeline whose sessions show no ID, always-dark terminal block, empty and stale states) render from the design system.
+The shared layout (header with daemon pill and live indicator; on a project's page a project switcher of All projects plus each initialised project, its own marked; nav to Projects, Inbox, Overview, Runs and Roadmap) and the partials every page uses (panel with kicker, status pill per run and change set state, dense row whose title is its link and which shows no ID, typed node glyph, step timeline whose sessions show no ID, always-dark terminal block, empty and stale states) render from the design system.
 
 ## Links
 
@@ -24,7 +24,9 @@ The shared layout (header with daemon pill and live indicator, nav to Overview, 
 - verifies [web-design-components-verified-2](../../../evidence/web-design-components-verified-2.md)
 - verifies [web-design-components-verified-5](../../../evidence/web-design-components-verified-5.md)
 - verifies [pr-316-web-ui-design-system](../../../evidence/pr-316-web-ui-design-system.md)
+- verifies [pr-341-web-ui-across-projects](../../../evidence/pr-341-web-ui-across-projects.md)
 
 ## History
 
 - `01M6PFFFZNADHH2WGMB5MES8QT` Web design system: the Claude Design system built from the owner's basics as one embedded stylesheet, embedded fonts and the shared layout and partials every page renders with
+- `01M6RN3ZBGYDW6KPBSES9A5JXS` Web UI across projects: an all-projects home, a merged inbox tagged by project, and every page scoped to one project through a switcher

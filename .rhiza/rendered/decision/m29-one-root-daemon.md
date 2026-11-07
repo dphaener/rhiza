@@ -29,6 +29,7 @@ One root daemon. The assistant's option, picked by the owner.
 - decided-by [root-daemon-usage-governor](../capability/rhiza/orchestration/usage-governor/root-daemon-usage-governor.md)
 - decided-by [root-daemon-service](../capability/rhiza/orchestration/daemon/root-daemon-service.md)
 - decided-by [root-daemon-self-update](../capability/rhiza/orchestration/daemon/root-daemon-self-update.md)
+- decided-by [web-root-listener](../capability/rhiza/web-root-listener.md)
 
 ## History
 
