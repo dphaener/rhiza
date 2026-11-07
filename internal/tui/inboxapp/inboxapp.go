@@ -10,6 +10,7 @@ package inboxapp
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -37,6 +38,10 @@ func init() {
 // Runner runs an operation and returns its result as `rhiza <op> --json`
 // prints it.
 type Runner func(op string, args []string) ([]byte, error)
+
+// ProjectRunner runs an operation in the named project, as Runner does in
+// the current one.
+type ProjectRunner func(project, op string, args []string) ([]byte, error)
 
 // Action is what picking an item offers to do.
 type Action string
@@ -73,6 +78,8 @@ func ActionFor(kind string) Action {
 type Pick struct {
 	Item   api.InboxItem
 	Action Action
+	// Project is the item's project in a merged inbox; empty otherwise.
+	Project string
 }
 
 // emptyLine is the one line an empty inbox shows.
@@ -88,18 +95,25 @@ type component interface {
 
 // Model is the app's bubbletea program. Esc quits.
 type Model struct {
-	run   Runner
-	out   []byte
-	err   error
-	items []api.InboxItem // in the operation's order
-	list  *ui.List
-	cur   component
-	pick  *Pick
-	note  string
-	form  *ui.Form
-	asked *api.InboxItem
-	dlg   *ui.Dialog
-	back  bool // the form asks for a send-back note
+	run Runner
+	// runIn and projects make the inbox merged: every project's items, each
+	// acted on in its own project. runIn is nil for a single-project inbox.
+	runIn    ProjectRunner
+	projects []string
+	proj     []string // the project of each item, parallel to items
+	cur2     string   // the project of the item being acted on
+	failed   []string // projects whose inbox could not be read
+	out      []byte
+	err      error
+	items    []api.InboxItem // in the operation's order
+	list     *ui.List
+	cur      component
+	pick     *Pick
+	note     string
+	form     *ui.Form
+	asked    *api.InboxItem
+	dlg      *ui.Dialog
+	back     bool // the form asks for a send-back note
 	// stage is "choose" or "confirm" while the retry/abandon form is up,
 	// "gate" while a gate's answer form is up, "accept" while the accept
 	// confirm is up.
@@ -114,6 +128,78 @@ func NewModel(run Runner) *Model {
 	m := &Model{run: run}
 	m.load()
 	return m
+}
+
+// NewMergedModel returns the model over every one of projects' inbox, loaded
+// once: each row is tagged with its project, and an item is answered,
+// approved, retried or abandoned in its own project, whichever project the
+// app was opened in. Items are in order of when they began to wait.
+func NewMergedModel(run ProjectRunner, projects []string) *Model {
+	m := &Model{runIn: run, projects: projects}
+	m.loadMerged()
+	return m
+}
+
+// act runs op in the project of the item being acted on.
+func (m *Model) act(op string, args []string) ([]byte, error) {
+	if m.runIn != nil {
+		return m.runIn(m.cur2, op, args)
+	}
+	return m.run(op, args)
+}
+
+// Failed are the projects whose inbox could not be read, in a merged inbox.
+func (m *Model) Failed() []string { return m.failed }
+
+func (m *Model) loadMerged() {
+	var errs []error
+	for _, p := range m.projects {
+		out, err := m.runIn(p, Name, nil)
+		var resp api.InboxResponse
+		if err == nil {
+			err = json.Unmarshal(out, &resp)
+		}
+		if err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", p, err))
+			m.failed = append(m.failed, p)
+			continue
+		}
+		for _, it := range resp.Items {
+			m.items = append(m.items, it)
+			m.proj = append(m.proj, p)
+		}
+	}
+	if len(errs) > 0 && len(errs) == len(m.projects) {
+		m.err = errors.Join(errs...)
+	}
+	idx := make([]int, len(m.items))
+	for i := range idx {
+		idx[i] = i
+	}
+	slices.SortStableFunc(idx, func(a, b int) int { return strings.Compare(m.items[a].At, m.items[b].At) })
+	items, proj := make([]api.InboxItem, len(idx)), make([]string, len(idx))
+	for i, j := range idx {
+		items[i], proj[i] = m.items[j], m.proj[j]
+	}
+	m.items, m.proj = items, proj
+	if m.err == nil {
+		m.out, _ = json.Marshal(api.InboxResponse{Items: m.items})
+	}
+	var rows []ui.Row
+	for i := range m.items {
+		rows = append(rows, m.rowAt(i))
+	}
+	m.list = ui.NewList(theme.Dark(), colorprofile.TrueColor, rows)
+	m.cur = m.list
+}
+
+// rowAt is item i's row, tagged with its project in a merged inbox.
+func (m *Model) rowAt(i int) ui.Row {
+	r := row(m.items[i])
+	if m.runIn != nil {
+		r.Label = m.proj[i] + " · " + r.Label
+	}
+	return r
 }
 
 func (m *Model) load() {
@@ -157,8 +243,8 @@ func (m *Model) Note() string { return m.note }
 // Rows is the text of the rows as the list shows them.
 func (m *Model) Rows() []string {
 	var out []string
-	for _, it := range m.items {
-		r := row(it)
+	for i := range m.items {
+		r := m.rowAt(i)
 		out = append(out, strings.TrimSpace(r.Label+"  "+r.Detail))
 	}
 	return out
@@ -234,6 +320,9 @@ func (m *Model) choose(i int) tea.Cmd {
 	}
 	it := m.items[i]
 	p := Pick{Item: it, Action: ActionFor(it.Kind)}
+	if m.runIn != nil {
+		m.cur2, p.Project = m.proj[i], m.proj[i]
+	}
 	m.pick = &p
 	if it.Kind == api.InboxQuestion || it.Kind == api.InboxBlocker {
 		return m.openAnswer(it)
@@ -259,7 +348,7 @@ func (m *Model) choose(i int) tea.Cmd {
 func (m *Model) show(it api.InboxItem) tea.Cmd {
 	m.note = ""
 	if it.Run != "" {
-		if _, err := m.run(Name+".open", []string{it.ID}); err != nil {
+		if _, err := m.act(Name+".open", []string{it.ID}); err != nil {
 			m.note = fmt.Sprintf("open failed: %v", err)
 		}
 	}
@@ -314,11 +403,11 @@ func (m *Model) answerGate(v ui.Values) tea.Cmd {
 		}
 	}
 	for i, q := range qs {
-		if _, err := m.run("question.answer", []string{q.Handle, texts[i], "--run", it.Run}); err != nil {
+		if _, err := m.act("question.answer", []string{q.Handle, texts[i], "--run", it.Run}); err != nil {
 			return m.openGate(it, qs[i:], "answer failed: "+err.Error())
 		}
 	}
-	if _, err := m.run("run.resume", []string{it.Run}); err != nil {
+	if _, err := m.act("run.resume", []string{it.Run}); err != nil {
 		m.note = "answered; resume failed: " + err.Error()
 		return m.panel(it)
 	}
@@ -340,7 +429,7 @@ func (m *Model) accept(ok bool) tea.Cmd {
 		return tea.Quit
 	}
 	it := *m.asked
-	if _, err := m.run("accept", []string{it.Change}); err != nil {
+	if _, err := m.act("accept", []string{it.Change}); err != nil {
 		f := ui.NewForm(theme.Dark(), colorprofile.TrueColor,
 			ui.NewConfirm("accept", "Accept this change set?")).WithSubtitle(title(it) + " · accept failed: " + err.Error())
 		m.form, m.cur = f, f
@@ -400,7 +489,7 @@ func (m *Model) openSignoff(it api.InboxItem) tea.Cmd {
 
 // approve signs the run off through run.approve and quits.
 func (m *Model) approve() tea.Cmd {
-	if _, err := m.run("run.approve", []string{m.asked.Run}); err != nil {
+	if _, err := m.act("run.approve", []string{m.asked.Run}); err != nil {
 		m.dlg.SetBody([]string{"approve failed: " + err.Error()})
 		return nil
 	}
@@ -422,7 +511,7 @@ func (m *Model) sendBack(note string) tea.Cmd {
 	if note == "" {
 		return m.openNote("a send-back needs a note")
 	}
-	if _, err := m.run("run.send-back", []string{m.asked.Run, "--note", note}); err != nil {
+	if _, err := m.act("run.send-back", []string{m.asked.Run, "--note", note}); err != nil {
 		return m.openNote("send back failed: " + err.Error())
 	}
 	return tea.Quit
@@ -457,7 +546,7 @@ func (m *Model) chosen(choice string) tea.Cmd {
 		m.form, m.stage, m.cur = f, "confirm", f
 		return f.Init()
 	}
-	if _, err := m.run("run.resume", []string{"--retry", it.Run}); err != nil {
+	if _, err := m.act("run.resume", []string{"--retry", it.Run}); err != nil {
 		return m.resolveForm(it, "retry failed: "+err.Error())
 	}
 	return tea.Quit
@@ -470,7 +559,7 @@ func (m *Model) abandon(ok bool) tea.Cmd {
 	if !ok {
 		return m.resolveForm(it, "abandon needs the confirm")
 	}
-	if _, err := m.run("run.abandon", []string{it.Run}); err != nil {
+	if _, err := m.act("run.abandon", []string{it.Run}); err != nil {
 		return m.resolveForm(it, "abandon failed: "+err.Error())
 	}
 	return tea.Quit
@@ -490,11 +579,11 @@ func (m *Model) send(text string) tea.Cmd {
 	}
 	var err error
 	if it.Kind == api.InboxBlocker {
-		_, err = m.run("question.answer", []string{it.Handle, it.Change, text})
+		_, err = m.act("question.answer", []string{it.Handle, it.Change, text})
 	} else if it.Session == "" {
 		err = fmt.Errorf("the question has no session to answer")
 	} else {
-		_, err = m.run("session.message", []string{it.Session, text})
+		_, err = m.act("session.message", []string{it.Session, text})
 	}
 	if err != nil {
 		m.note = fmt.Sprintf("send failed: %v", err)

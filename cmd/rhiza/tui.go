@@ -98,10 +98,12 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 // tuiModels builds the apps' models over the api operations, called
 // in-process with the global flags in g.
 type tuiModels struct {
-	call     func(op string, record, dry bool, args []string) ([]byte, error)
-	inbox    func() *inboxapp.Model
-	runs     func() *runsapp.Model
-	autonomy func() *autonomyapp.Model
+	call  func(op string, record, dry bool, args []string) ([]byte, error)
+	inbox func() *inboxapp.Model
+	// mergedInbox is the inbox over every registered project.
+	mergedInbox func(projects []string, folder func(string) string) *inboxapp.Model
+	runs        func() *runsapp.Model
+	autonomy    func() *autonomyapp.Model
 }
 
 func newTUIModels(g globals, getenv func(string) string) tuiModels {
@@ -131,24 +133,24 @@ func newTUIModels(g globals, getenv func(string) string) tuiModels {
 		return callWith(g, op, record, dry, args)
 	}
 	inboxModel := func() *inboxapp.Model {
-		im := inboxapp.NewModel(func(op string, args []string) ([]byte, error) {
-			if op == "question.answer" && len(args) == 3 {
-				// The app passes question, change set, words; the change set
-				// is the write target, not a request field.
-				gg := g
-				gg.change, gg.changeSet = args[1], true
-				return callWith(gg, op, false, false, []string{args[0], args[2]})
-			}
-			if op == "accept" && len(args) == 1 {
-				// The app passes the change set to accept: the write target,
-				// accepted under the default rule, owner.
-				gg := g
-				gg.change, gg.changeSet = args[0], true
-				return callWith(gg, op, false, false, nil)
-			}
-			return call(op, false, false, args)
+		return inboxapp.NewModel(func(op string, args []string) ([]byte, error) {
+			return inboxRun(g, call, callWith, op, args)
 		})
-		return im
+	}
+	var mergedInbox func(projects []string, folder func(string) string) *inboxapp.Model
+	mergedInbox = func(projects []string, folder func(string) string) *inboxapp.Model {
+		// Each call runs in its project's folder, and the app's own
+		// directory comes back after it.
+		in := func(project, op string, args []string) ([]byte, error) {
+			if wd, err := os.Getwd(); err == nil {
+				defer os.Chdir(wd)
+			}
+			if err := os.Chdir(folder(project)); err != nil {
+				return nil, err
+			}
+			return inboxRun(g, call, callWith, op, args)
+		}
+		return inboxapp.NewMergedModel(in, projects)
 	}
 	runsModel := func() *runsapp.Model {
 		return runsapp.NewModel(func(op string, args []string) ([]byte, error) {
@@ -160,7 +162,26 @@ func newTUIModels(g globals, getenv func(string) string) tuiModels {
 			return call(op, false, false, args)
 		})
 	}
-	return tuiModels{call: call, inbox: inboxModel, runs: runsModel, autonomy: autonomyModel}
+	return tuiModels{call: call, inbox: inboxModel, mergedInbox: mergedInbox, runs: runsModel, autonomy: autonomyModel}
+}
+
+// inboxRun runs one of the inbox app's operations. The app passes
+// question.answer a question, change set and words, and accept a change
+// set: the change set is the write target, not a request field.
+func inboxRun(g globals, call func(op string, record, dry bool, args []string) ([]byte, error),
+	callWith func(g globals, op string, record, dry bool, args []string) ([]byte, error),
+	op string, args []string) ([]byte, error) {
+	if op == "question.answer" && len(args) == 3 {
+		gg := g
+		gg.change, gg.changeSet = args[1], true
+		return callWith(gg, op, false, false, []string{args[0], args[2]})
+	}
+	if op == "accept" && len(args) == 1 {
+		gg := g
+		gg.change, gg.changeSet = args[0], true
+		return callWith(gg, op, false, false, nil)
+	}
+	return call(op, false, false, args)
 }
 
 // runSwitching runs an app in a terminal pane, hosted by appSwitcher.
@@ -220,6 +241,9 @@ func appSwitcher(name string, apps tuiModels) (*modalshell.Switcher, error) {
 			return modalshell.Built{Model: sh, Result: sh.Result}
 		case inboxapp.Name:
 			im := apps.inbox()
+			if names, folder := projectctx.Folders(wdNow()); len(names) > 0 && apps.mergedInbox != nil {
+				im = apps.mergedInbox(names, folder)
+			}
 			return modalshell.Built{Model: im, Result: im.Result}
 		case runsapp.Name:
 			rm := apps.runs()
@@ -249,3 +273,5 @@ func appSwitcher(name string, apps tuiModels) (*modalshell.Switcher, error) {
 	}
 	return modalshell.NewSwitcher(sw), nil
 }
+
+func wdNow() string { wd, _ := os.Getwd(); return wd }
