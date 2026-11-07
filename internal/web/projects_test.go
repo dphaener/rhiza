@@ -56,10 +56,10 @@ func rootCtx(t *testing.T, dir string) *api.Ctx {
 // marked not initialised, and each links to its overview. Every page links
 // to the home.
 func TestProjectsHomeReadsTheRoot(t *testing.T) {
-	cache := t.TempDir()
+	cache := settledDir(t)
 	t.Setenv("XDG_CACHE_HOME", cache)
 	t.Setenv("HOME", cache)
-	root := t.TempDir()
+	root := settledDir(t)
 	ctxs := map[string]*api.Ctx{}
 	for _, name := range []string{"alpha", "beta", "bare"} {
 		dir := filepath.Join(root, name)
@@ -171,6 +171,41 @@ func TestProjectsHomeReadsTheRoot(t *testing.T) {
 	if !strings.Contains(body, `<a href="/projects" aria-current="page">Projects</a>`) {
 		t.Errorf("/projects does not mark its nav link current")
 	}
+}
+
+// settledDir is a temporary directory removed once nothing writes to it
+// any more. Every page served starts health refreshes in the background,
+// which write each project's index under the cache and read its checkout;
+// the test returns with some still running, so a plain t.TempDir's one
+// RemoveAll can race them and fail with "directory not empty", or leave
+// a directory a late write made again.
+func settledDir(t *testing.T) string {
+	t.Helper()
+	dir, err := os.MkdirTemp("", "rhiza-web-projects-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		// Removed, it must stay gone for a second: a late refresh can
+		// write it again.
+		var err error
+		gone := time.Time{}
+		for end := time.Now().Add(time.Minute); time.Now().Before(end); time.Sleep(100 * time.Millisecond) {
+			if _, serr := os.Lstat(dir); serr == nil {
+				gone = time.Time{}
+				if err = os.RemoveAll(dir); err != nil {
+					continue
+				}
+			}
+			if gone.IsZero() {
+				gone = time.Now()
+			} else if time.Since(gone) >= time.Second {
+				return
+			}
+		}
+		t.Errorf("remove %s: %v", dir, err)
+	})
+	return dir
 }
 
 func TestProjectsHomeEmpty(t *testing.T) {
