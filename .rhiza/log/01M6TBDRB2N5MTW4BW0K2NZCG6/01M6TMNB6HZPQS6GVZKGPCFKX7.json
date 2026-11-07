@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6TJZDWD7GJTQB9X7A75G9PR"
+  ],
+  "at": "2026-11-07T09:15:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "a6e219f5a1744016e38bac296515f8c0e2bf19c9",
+          "pr": "https://github.com/dphaener/rhiza/pull/352",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #352 (https://github.com/dphaener/rhiza/pull/352) passed CI at a6e219f",
+          "status": "verified"
+        },
+        "handle": "pr-352-fix-two-change-sets-with-the",
+        "id": "01M6TMNB1YG8HQ2YMZDB03D39J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TMNB1YG8HQ2YMZD8R8JQBG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TMNB1YG8HQ2YMZD8R8JQBG",
+        "id": "01M6TMNB2NGCBD8E8FBNFFDJXZ",
+        "link": "01M6TMNB2NGCBD8E8FBMBCMGHY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBRVYX75117KD157BPHBGB",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6TMNB1YG8HQ2YMZD8R8JQBG",
+        "id": "01M6TMNB39PWY4PZDKFSTGGHFF",
+        "link": "01M6TMNB39PWY4PZDKFQWXD55W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBRVZXT2PN5R0C1X1JC5X1",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6TMNB1YG8HQ2YMZD8R8JQBG",
+        "id": "01M6TMNB43MNF60JZ1W62VMY49",
+        "link": "01M6TMNB43MNF60JZ1W2HQTWQN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBRW1FQSQTEHBGNK10NGSV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6TBDRB2N5MTW4BW0K2NZCG6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TMNB6HZPQS6GVZKGPCFKX7",
+  "type": "ops",
+  "v": 1
+}
