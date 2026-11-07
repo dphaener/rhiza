@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/adapter"
@@ -61,4 +62,44 @@ func (Adapter) UserStatusLine(getenv func(string) string) string {
 		return ""
 	}
 	return s.StatusLine.Command
+}
+
+// liveFile is the file in the usage state folder that the status line
+// recording keeps (daemon.LiveFile): a JSON array of snapshots, one per kind.
+const liveFile = "usage.live.json"
+
+// LiveSnapshots implements adapter.LiveUsageReader by reading the live-usage
+// file in dir. Entries without a kind or a reset time are skipped, and a
+// later entry of a kind replaces an earlier one.
+func (Adapter) LiveSnapshots(dir string) []adapter.LiveSnapshot {
+	b, err := os.ReadFile(filepath.Join(dir, liveFile))
+	if err != nil {
+		return nil
+	}
+	var in []struct {
+		Kind           string    `json:"kind"`
+		UsedPercentage float64   `json:"used_percentage"`
+		ResetsAt       time.Time `json:"resets_at"`
+		CapturedAt     time.Time `json:"captured_at"`
+	}
+	if json.Unmarshal(b, &in) != nil {
+		return nil
+	}
+	byKind := map[string]adapter.LiveSnapshot{}
+	for _, s := range in {
+		if s.Kind == "" || s.ResetsAt.IsZero() {
+			continue
+		}
+		byKind[s.Kind] = adapter.LiveSnapshot{Kind: s.Kind, UsedPercentage: s.UsedPercentage, ResetsAt: s.ResetsAt, CapturedAt: s.CapturedAt}
+	}
+	kinds := make([]string, 0, len(byKind))
+	for k := range byKind {
+		kinds = append(kinds, k)
+	}
+	sort.Strings(kinds)
+	out := make([]adapter.LiveSnapshot, 0, len(kinds))
+	for _, k := range kinds {
+		out = append(out, byKind[k])
+	}
+	return out
 }

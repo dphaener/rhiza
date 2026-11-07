@@ -206,3 +206,33 @@ func TestUsageRecordsReadsOnlyAppended(t *testing.T) {
 	write(lines[2] + "\n")
 	check(-1)
 }
+
+var _ adapter.LiveUsageReader = Adapter{}
+
+func TestLiveSnapshots(t *testing.T) {
+	dir := t.TempDir()
+	if got := (Adapter{}).LiveSnapshots(dir); got != nil {
+		t.Fatalf("absent file: got %v", got)
+	}
+	file := filepath.Join(dir, "usage.live.json")
+	if err := os.WriteFile(file, []byte(`{not json`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if got := (Adapter{}).LiveSnapshots(dir); got != nil {
+		t.Fatalf("corrupt file: got %v", got)
+	}
+	body := `[
+{"kind":"weekly","used_percentage":49.5,"resets_at":"2026-11-10T00:00:00Z","captured_at":"2026-11-07T06:00:00Z","agent":"claude-code"},
+{"kind":"session","used_percentage":12,"resets_at":"2026-11-07T10:00:00Z","captured_at":"2026-11-07T06:00:01Z"},
+{"kind":"","used_percentage":1,"resets_at":"2026-11-07T10:00:00Z","captured_at":"2026-11-07T06:00:01Z"}]`
+	if err := os.WriteFile(file, []byte(body), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	want := []adapter.LiveSnapshot{
+		{Kind: "session", UsedPercentage: 12, ResetsAt: time.Date(2026, 11, 7, 10, 0, 0, 0, time.UTC), CapturedAt: time.Date(2026, 11, 7, 6, 0, 1, 0, time.UTC)},
+		{Kind: "weekly", UsedPercentage: 49.5, ResetsAt: time.Date(2026, 11, 10, 0, 0, 0, 0, time.UTC), CapturedAt: time.Date(2026, 11, 7, 6, 0, 0, 0, time.UTC)},
+	}
+	if got := (Adapter{}).LiveSnapshots(dir); !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v want %v", got, want)
+	}
+}
