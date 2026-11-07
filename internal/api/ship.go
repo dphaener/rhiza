@@ -668,9 +668,11 @@ func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckRespo
 var failLine = regexp.MustCompile(`--- FAIL: (\S+)`)
 
 // Rerun commands that RSpec, Minitest and pytest print for each failing
-// test, matched at the start of a log line's text.
+// test, matched at the start of a log line's text. RSpec names an example
+// by line ('./spec/x_spec.rb:12') or, when a line is ambiguous (shared
+// examples, loops), by its id ('./spec/x_spec.rb[1:1:11]'), matched whole.
 var (
-	rspecLine    = regexp.MustCompile(`^rspec (\./\S+:\d+)`)
+	rspecLine    = regexp.MustCompile(`^rspec (\./\S+?(?::\d+|\[[\d:,]+\]))(?:\s|$)`)
 	minitestLine = regexp.MustCompile(`^((?:bin/)?rails test \S+:\d+)`)
 	pytestLine   = regexp.MustCompile(`^FAILED (\S+::\S+)`)
 	ansiEscape   = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
@@ -692,7 +694,7 @@ func logText(line string) string {
 // first (a failing subtest's parent fails too, but rerunning the parent,
 // TestScripts say, would rerun its whole suite), then the rerun commands
 // RSpec, Minitest and pytest print, as printed and without any trailing
-// comment ('rspec ./spec/x_spec.rb:12', 'bin/rails test test/x_test.rb:12',
+// comment ('rspec ./spec/x_spec.rb:12', 'rspec ./spec/x_spec.rb[1:1:11]', 'bin/rails test test/x_test.rb:12',
 // 'pytest tests/test_x.py::test_y').
 func parseFailedTests(log string) []string {
 	var names []string

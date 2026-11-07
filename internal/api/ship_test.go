@@ -1526,8 +1526,10 @@ test	Run tests	2026-11-04T10:00:00Z FAIL	github.com/dphaener/rhiza/cmd/rhiza	13.
 	rspec := p + "Failed examples:\n" + p + "\n" +
 		p + "rspec ./spec/views/tasks/list_spec.rb:290 # Tasks list shows rows\n" +
 		p + "rspec ./spec/views/tasks/list_spec.rb:290 # Tasks list shows rows\n" +
-		p + "\x1b[31mrspec ./spec/models/x_spec.rb:5\x1b[0m # X works\n"
-	if got, want := parseFailedTests(rspec), []string{"rspec ./spec/views/tasks/list_spec.rb:290", "rspec ./spec/models/x_spec.rb:5"}; !slices.Equal(got, want) {
+		p + "\x1b[31mrspec ./spec/models/x_spec.rb:5\x1b[0m # X works\n" +
+		p + "rspec ./spec/system/garden_location_spec.rb[1:1:11] # Garden location saves\n" +
+		p + "rspec ./spec/models/y_spec.rb[1:2,1:3]\n"
+	if got, want := parseFailedTests(rspec), []string{"rspec ./spec/views/tasks/list_spec.rb:290", "rspec ./spec/models/x_spec.rb:5", "rspec ./spec/system/garden_location_spec.rb[1:1:11]", "rspec ./spec/models/y_spec.rb[1:2,1:3]"}; !slices.Equal(got, want) {
 		t.Errorf("rspec = %v, want %v", got, want)
 	}
 	mini := p + "bin/rails test test/models/x_test.rb:12\n" + p + "rails test test/models/y_test.rb:3\n"
