@@ -3,7 +3,6 @@ package web
 import (
 	"net/http"
 	"net/url"
-	"slices"
 	"strings"
 )
 
@@ -43,13 +42,38 @@ func shared(path string) bool {
 		path == "/events" || path == "/site.webmanifest"
 }
 
+// ProjectNames lists the initialised projects a project page's header
+// switcher offers, by name. It is read only when a page is rendered, never
+// for an asset, fragment or stream, so it should stay cheap: names, not the
+// projects' runs or inboxes.
+type ProjectNames func() []string
+
 // RootWithInbox is RootWithProjects that also serves the merged inbox at
-// /inbox, listing what inbox reads. With homeName set, the web UI opens on
+// /inbox, listing what inbox reads. The switcher's projects are the
+// initialised ones projects reads; RootWithSwitcher takes a cheaper list.
+func RootWithInbox(home http.Handler, homeName string, project ProjectResolver, projects ProjectsSource, inbox MergedInboxSource) http.Handler {
+	var names ProjectNames
+	if projects != nil {
+		names = func() []string {
+			var out []string
+			for _, p := range projects() {
+				if p.Initialised {
+					out = append(out, p.Name)
+				}
+			}
+			return out
+		}
+	}
+	return RootWithSwitcher(home, homeName, project, projects, inbox, names)
+}
+
+// RootWithSwitcher is RootWithInbox with the switcher's projects listed by
+// names, read only when a project page is rendered. With homeName set, the web UI opens on
 // the all-projects home: / serves it, and a page request on any other
 // unscoped path is redirected to that page of the home project, under
 // /p/<homeName>/, so every project page carries its switcher. With no
 // homeName, unscoped paths are served by home as they are.
-func RootWithInbox(home http.Handler, homeName string, project ProjectResolver, projects ProjectsSource, inbox MergedInboxSource) http.Handler {
+func RootWithSwitcher(home http.Handler, homeName string, project ProjectResolver, projects ProjectsSource, inbox MergedInboxSource, names ProjectNames) http.Handler {
 	list := ProjectsHome(projects)
 	merged := MergedInbox(inbox)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -88,18 +112,7 @@ func RootWithInbox(home http.Handler, homeName string, project ProjectResolver, 
 			http.Redirect(w, r, ProjectPrefix+name+"/", http.StatusMovedPermanently)
 			return
 		}
-		sc := &scope{Name: name, Prefix: ProjectPrefix + url.PathEscape(name), Tail: tail, Names: []string{name}}
-		if projects != nil {
-			sc.Names = sc.Names[:0]
-			for _, p := range projects() {
-				if p.Initialised {
-					sc.Names = append(sc.Names, p.Name)
-				}
-			}
-			if !slices.Contains(sc.Names, name) {
-				sc.Names = append(sc.Names, name)
-			}
-		}
+		sc := &scope{Name: name, Prefix: ProjectPrefix + url.PathEscape(name), Tail: tail, names: names}
 		r2 := withScope(r.Clone(r.Context()), sc)
 		r2.URL.Path = "/" + tail
 		r2.URL.RawPath = ""

@@ -82,3 +82,30 @@ func TestEventStreamScopedToProject(t *testing.T) {
 		t.Errorf("project b has no stream, got %d", rec.Code)
 	}
 }
+
+// The switcher reads only project names, and only when a page is rendered:
+// assets and fragments under /p/<project>/ never read the projects home's
+// source nor the names.
+func TestSwitcherNamesReadOnlyForPages(t *testing.T) {
+	a := fixtureCtx(t)
+	hs := map[string]http.Handler{"a": web.Handler(api.ReadOnlyHandler(a))}
+	projects, names := 0, 0
+	list := func() []web.ProjectView { projects++; return []web.ProjectView{{Name: "a", Initialised: true}} }
+	h := web.RootWithSwitcher(web.Handler(nil), "", func(n string) http.Handler { return hs[n] }, list, nil, func() []string {
+		names++
+		return []string{"a", "b"}
+	})
+	for _, target := range []string{"/p/a/static/css/rhiza.css", "/p/a/fragments/runs"} {
+		serve(h, "GET", target)
+	}
+	if projects != 0 || names != 0 {
+		t.Errorf("assets and fragments read projects %d, names %d times, want none", projects, names)
+	}
+	body := serve(h, "GET", "/p/a/runs").Body.String()
+	if names != 1 || projects != 0 {
+		t.Errorf("a page read names %d, projects %d times, want names once", names, projects)
+	}
+	if !strings.Contains(body, `href="/p/b/runs"`) {
+		t.Errorf("switcher lacks b:\n%s", body)
+	}
+}

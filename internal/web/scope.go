@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"strings"
 )
 
@@ -14,7 +15,7 @@ type scope struct {
 	Name   string
 	Prefix string // /p/<project>, no trailing slash
 	Tail   string // the page's path inside the project, without a leading slash
-	Names  []string
+	names  ProjectNames
 }
 
 type scopeKey struct{}
@@ -51,11 +52,24 @@ func pageKind(tail string) string {
 	return "/"
 }
 
+// Names reads the projects the switcher offers, the current one always
+// among them. It reads names only now, when a page is rendered.
+func (s *scope) Names() []string {
+	var names []string
+	if s.names != nil {
+		names = s.names()
+	}
+	if !slices.Contains(names, s.Name) {
+		names = append(names, s.Name)
+	}
+	return names
+}
+
 // Switcher lists the projects with the page kind kept, the current one marked.
 func (s *scope) Switcher() *Switcher {
 	kind := pageKind(s.Tail)
 	sw := &Switcher{}
-	for _, n := range s.Names {
+	for _, n := range s.Names() {
 		sw.Items = append(sw.Items, SwitchItem{Name: n, Href: ProjectPrefix + url.PathEscape(n) + kind, Current: n == s.Name})
 	}
 	return sw

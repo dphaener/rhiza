@@ -35,7 +35,7 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 		h   http.Handler
 	}
 	cache := map[string]built{}
-	return web.RootWithInbox(home, homeName, func(name string) http.Handler {
+	return web.RootWithSwitcher(home, homeName, func(name string) http.Handler {
 		reg, err := rootcfg.Load(root)
 		if err != nil {
 			return nil
@@ -58,7 +58,26 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 		h := WebProjectHandler(projectCtx(ctx, dir))
 		cache[name] = built{dir, h}
 		return h
-	}, WebProjectsSource(ctx, root, homeName), WebMergedInboxSource(ctx, root))
+	}, WebProjectsSource(ctx, root, homeName), WebMergedInboxSource(ctx, root), WebProjectNames(root))
+}
+
+// WebProjectNames lists the initialised projects registered in the root for
+// a project page's switcher: names only, from rhiza.toml and each
+// project's .rhiza/, never its runs, inbox or health.
+func WebProjectNames(root string) web.ProjectNames {
+	return func() []string {
+		reg, err := rootcfg.Load(root)
+		if err != nil {
+			return nil
+		}
+		var names []string
+		for _, name := range reg.Names() {
+			if projectInitialised(reg.Dir(root, name)) {
+				names = append(names, name)
+			}
+		}
+		return names
+	}
 }
 
 // WebProjectsSource reads every project registered in the root for the web
