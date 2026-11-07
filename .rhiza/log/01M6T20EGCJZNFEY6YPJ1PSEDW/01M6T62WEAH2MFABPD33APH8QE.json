@@ -1,0 +1,40 @@
+{
+  "actor": "01M6T4MJMFJ166YE90X7S9HFBF",
+  "after": [
+    "01M6T3YAN8ECEKJC29HAKWHKBK"
+  ],
+  "at": "2026-11-07T05:00:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 86414309 from a checkout under the ~/code root (rhiza.toml at /home/rhiza/code). go test -trimpath -count=1 -v ./internal/rootguard/... passes: TestFileAddedAndChanged (added and changed files reported), TestLimitLineOutsideSpan (appended usage.limits.jsonl line with hit_at outside the span reported), TestUntouched, TestNoRoot, TestDaemonOwnedFiles (all 11 owned files rewritten) and TestLimitLineInsideSpan report nothing, and TestMainFailsOnWrite shows Main turns a stray write into a non-zero exit. go test -trimpath -count=1 ./cmd/rhiza -run TestScripts/usage passes under the new rootguard.Main + testscript.RunMain TestMain (the rhiza command keeps main's profiled/run body). go test -trimpath -count=1 -timeout 30m ./internal/api/... ran with no rootguard report, and a find snapshot of ~/code/.rhiza-root (names, sizes, mtimes) before and after both runs was identical. Its only failure was the CPU timing budget TestReadBudget (roadmap what-if median over 50ms), with load average about 6 on 4 cores and another session's internal/api suite running at the same time. Re-run alone with -p 1, TestReadBudget passed and TestReadBudgetApply hit its 200ms timing budget under the same load. The diff only wraps m.Run in a snapshot and check outside the timed code, so these are load flakes, not regressions. The budget tests run serially under make check in CI. gofmt and go vet are clean on the changed packages."
+        },
+        "handle": "tests-leave-root-state-alone-verified",
+        "id": "01M6T62WCKDD0PWVD62KX31MQH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6T62WCKDD0PWVD62KNX681J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T62WCKDD0PWVD62KNX681J",
+        "id": "01M6T62WDF56C0G4AX17DYSB76",
+        "link": "01M6T62WDF56C0G4AX16E221XB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T26X2D1D7TTAJ0MMF0X9FN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6T20EGCJZNFEY6YPJ1PSEDW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T62WEAH2MFABPD33APH8QE",
+  "type": "ops",
+  "v": 1
+}

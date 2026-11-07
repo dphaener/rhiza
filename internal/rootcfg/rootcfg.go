@@ -43,8 +43,12 @@ type Config struct {
 }
 
 // Find walks up from dir to the nearest folder holding a rhiza.toml and
-// returns that folder. It reports false if no ancestor has one.
+// returns that folder. It reports false if no ancestor has one, and for an
+// empty dir: that is no directory at all, never the process's cwd.
 func Find(dir string) (string, bool) {
+	if dir == "" {
+		return "", false
+	}
 	d, err := filepath.Abs(dir)
 	if err != nil {
 		return "", false
