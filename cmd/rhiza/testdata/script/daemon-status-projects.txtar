@@ -1,0 +1,86 @@
+# At the root, rhiza daemon status covers every registered project: the root
+# daemon once, each initialised project's live runs, last starts and skips
+# under its name, the bare checkout among the skipped projects. With
+# --project, or from inside a project, only that project's part. Rex is
+# faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+
+# Two initialised projects, each with a ready milestone change set, and one
+# bare checkout.
+exec sh -c 'printf "[projects.repo]\npath = \"repo\"\n[projects.second]\npath = \"second\"\n[projects.bare]\npath = \"bare\"\n" > $WORK/rhiza.toml'
+mkdir bare
+cd bare
+exec git init -q
+cd $WORK
+mkdir repo second
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+exec rhiza change new Built --title Built
+exec rhiza add capability built-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+cd $WORK/second
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+exec rhiza change new Other --title Other
+exec rhiza add capability other-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# From the root, one poll starts a run in each initialised project.
+cd $WORK
+exec rhiza daemon --permission-mode manual --once
+stdout -count=2 '^Started a run of '
+exec sh -c 'ls repo/.git/rhiza/logs | grep -c "start-1.log"'
+stdout '^1$'
+exec sh -c 'ls second/.git/rhiza/logs | grep -c "start-1.log"'
+stdout '^1$'
+! exists bare/.git/rhiza
+
+# At the root: the daemon once, a part for each initialised project.
+exec rhiza daemon status --json
+stdout -count=1 '"running": false'
+stdout -count=1 '"project": "repo"'
+stdout -count=1 '"project": "second"'
+stdout -count=2 '"last_started": \{'
+stdout -count=1 '"reason": "not initialised"'
+! stdout '"project": "bare",\n *"runs"'
+exec rhiza daemon status
+stdout '^Daemon not running$'
+stdout -count=1 '^Project repo:$'
+stdout -count=1 '^Project second:$'
+stdout -count=2 '^  Last started: a run of '
+stdout 'Skipped project: bare: not initialised'
+exec rhiza api call daemon.status
+stdout -count=1 '"project": "repo"'
+
+# --project, and a project's own directory, give only that project's part.
+exec rhiza daemon status --project repo --json
+! stdout '"projects": \[\{'
+stdout -count=1 '"last_started": \{'
+cd second
+exec rhiza daemon status --json
+stdout -count=1 '"last_started": \{'
+! stdout '"project": "repo"'
+exec rhiza daemon status --all --json
+stdout -count=1 '"project": "repo"'
+stdout -count=1 '"project": "second"'
+cd $WORK
+! exec rhiza daemon status --project nope
+stderr 'not registered'
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

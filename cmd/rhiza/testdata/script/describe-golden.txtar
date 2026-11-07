@@ -1884,7 +1884,16 @@ cmp stdout describe.golden.json
       "name": "daemon.status",
       "request": {
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "all": {
+            "description": "Cover every registered project, from anywhere under a Rhiza root; the default at the root itself",
+            "type": "boolean"
+          },
+          "project": {
+            "description": "Only this registered project's part of the daemon's state; default the current project, or every project at the root",
+            "type": "string"
+          }
+        },
         "required": [],
         "type": "object"
       },
@@ -1989,6 +1998,157 @@ cmp stdout describe.golden.json
           "process": {
             "description": "The daemon's process, as host:pid; absent when none ever ran",
             "type": "string"
+          },
+          "projects": {
+            "description": "At the root or with --all: each registered, initialised project's runs, last start and resume, skips and unjournaled starts, in name order, the top-level runs, skipped and unjournaled then being empty; empty for one project",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "last_resumed": {
+                  "additionalProperties": false,
+                  "description": "The run the daemon last resumed in the project; absent if none",
+                  "properties": {
+                    "at": {
+                      "description": "When, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "change": {
+                      "description": "The change set whose run was started; absent for a resume",
+                      "type": "string"
+                    },
+                    "run": {
+                      "description": "The run that was resumed; absent for a start",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at"
+                  ],
+                  "type": "object"
+                },
+                "last_started": {
+                  "additionalProperties": false,
+                  "description": "The run the daemon last started in the project; absent if none",
+                  "properties": {
+                    "at": {
+                      "description": "When, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "change": {
+                      "description": "The change set whose run was started; absent for a resume",
+                      "type": "string"
+                    },
+                    "run": {
+                      "description": "The run that was resumed; absent for a start",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at"
+                  ],
+                  "type": "object"
+                },
+                "project": {
+                  "description": "The project's name in the root",
+                  "type": "string"
+                },
+                "runs": {
+                  "description": "The project's live runs (running or interrupted) as of its last poll",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "change": {
+                        "description": "The change set it runs on",
+                        "type": "string"
+                      },
+                      "id": {
+                        "description": "The run ID",
+                        "type": "string"
+                      },
+                      "state": {
+                        "description": "running or interrupted",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "change",
+                      "id",
+                      "state"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "skipped": {
+                  "description": "The project's accepted change sets not started at its last poll, each with its reason",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "change": {
+                        "description": "The change set's ID",
+                        "type": "string"
+                      },
+                      "detail": {
+                        "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; else empty",
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "reason": {
+                        "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve or ship-owner",
+                        "type": "string"
+                      },
+                      "title": {
+                        "description": "The change set's display title",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "change",
+                      "detail",
+                      "reason",
+                      "title"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "unjournaled": {
+                  "description": "The project's runs started that never wrote a journal",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "at": {
+                        "description": "When, RFC 3339 UTC",
+                        "type": "string"
+                      },
+                      "change": {
+                        "description": "The change set whose run was started; absent for a resume",
+                        "type": "string"
+                      },
+                      "run": {
+                        "description": "The run that was resumed; absent for a start",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "at"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "project",
+                "runs",
+                "skipped",
+                "unjournaled"
+              ],
+              "type": "object"
+            },
+            "type": "array"
           },
           "running": {
             "description": "True while a live daemon holds the repository's lock",
@@ -2165,6 +2325,7 @@ cmp stdout describe.golden.json
           "autonomous",
           "hooks",
           "mode",
+          "projects",
           "running",
           "runs",
           "settings",

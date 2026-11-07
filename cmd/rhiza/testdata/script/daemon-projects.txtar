@@ -71,7 +71,7 @@ stdout '"last_started": \{'
 # Status acts on the root's daemon from anywhere under the root: from the
 # root itself, outside any checkout, and from a project that is not the
 # daemon's home, it reads the home's state.
-exec rhiza daemon status --json
+exec rhiza daemon status --all --json
 cp stdout $WORK/home-status.json
 cd $WORK
 exec rhiza daemon status --json
@@ -80,7 +80,7 @@ exec rhiza daemon status
 stdout '^Daemon not running$'
 stdout 'Skipped project: bare: not initialised'
 cd $WORK/second
-exec rhiza daemon status --json
+exec rhiza daemon status --all --json
 cmp stdout $WORK/home-status.json
 
 # A live daemon started from the root: a second one is refused, and the
