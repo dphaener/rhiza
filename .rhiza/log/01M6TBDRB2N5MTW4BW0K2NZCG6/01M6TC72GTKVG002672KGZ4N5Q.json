@@ -1,0 +1,46 @@
+{
+  "actor": "01M6TC68EM0ND7RC4DCKGKMKAX",
+  "after": [
+    "01M6TBZV218T3F1W83VGN6GVTZ"
+  ],
+  "at": "2026-11-07T06:47:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "f42ba751fb2ba7ac99c46faa9a67931d1277d7829fbba3a87f8d782416b9fbfb",
+          "session": "f74b00a7-a63c-4e88-b98a-01a1b4b71fc9",
+          "summary": "Autonomous plan run for change set 01M6TBD; there was no owner. The planner read internal/session/names.go and its callers in internal/api (session.go, run.go, run_leaves.go, run_checks.go, ship.go, ship_openpr.go), where each one re-derives the branch and worktree from session.Slug(title). It asked one question, how to make slugs unique. The arbiter answered with Decision slug-unique-by-earliest-id: a change set whose title slug matches an earlier change set's (lower ID, any state) gets a suffix of the first 12 characters of its ID, lowercased, and one function over the model gives the slug to every caller. The planner settled the PR guard itself: ship tracks only a pull request whose body names this change set, using the 'Change set <id>' line that open-pr already writes, and refuses any other. The change set serves m29-one-daemon, as the sibling governor fixes do.",
+          "title": "Unique change set slugs, autonomous plan"
+        },
+        "handle": "unique-slug-plan-2026-11-07",
+        "id": "01M6TBRAH2H9J5J6KYPJ40J41Z",
+        "key": null,
+        "kind": "source",
+        "node": "01M6TBRAH2H9J5J6KYPHMFX6C8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript opens worktrees for two change sets with the same title and gets two distinct branches cs/<slug> and cs/<slug>-<first 12 characters of the later change set's ID, lowercased> (never its display short ID) and two distinct worktrees; internal/api tests show the ship target and abandon cleanup of the later change set name its suffixed branch; no call to session.Slug(title) remains outside the slug function",
+          "statement": "Every place that names a change set's branch or worktree (change worktree, run start and dry run, run leaves and checks sessions, ship target, abandon cleanup) uses the unique slug, never session.Slug(title) directly"
+        },
+        "handle": "slug-callers-agree",
+        "id": "01M6TBRVZXT2PN5R0C1ZD8D567",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M6TBRVZXT2PN5R0C1X1JC5X1",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      }
+    ]
+  },
+  "change_set": "01M6TBDRB2N5MTW4BW0K2NZCG6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TC72GTKVG002672KGZ4N5Q",
+  "type": "ops",
+  "v": 1
+}

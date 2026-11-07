@@ -1,0 +1,109 @@
+{
+  "actor": "01M6TBEDVZQ5CQNVHDN2DQM0M8",
+  "after": [
+    "01M6TBRAWT5K77YZ2QKTCSQ51G"
+  ],
+  "at": "2026-11-07T06:40:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The intent requires that a run never commit to or track another change set's PR. The body line is already written by planSummary and reviewSummary, so ownership is checkable from gh pr view without new state. Unique slugs stop new collisions, and this guard catches the branches that already collide.",
+          "statement": "Ship tracks a pull request only when its body's 'Change set <id>' line, which open-pr already writes, names the run's change set; any other PR on the branch, open, merged or closed, is refused and never recorded in ship state"
+        },
+        "handle": "ship-pr-owned-by-body",
+        "id": "01M6TBRVXWBXEPRVDGH1JYCDNC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6TBRVXWBXEPRVDGGZ0DRPK4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TBRVXWBXEPRVDGGZ0DRPK4",
+        "id": "01M6TBRVY8ZDEHSRRRN306QQP6",
+        "link": "01M6TBRVY8ZDEHSRRRN0FEJ8GH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBRAH2H9J5J6KYPHMFX6C8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests for the slug function: two change sets with the same title slug give the earlier one the bare slug and the later one '<slug>-<short id>'; an earlier landed or abandoned change set still counts; a change set with no clash keeps its bare slug; the result is the same on repeated calls and after the earlier change set lands",
+          "statement": "A change set's slug is its title slug, plus '-' and its lowercased short ID when an earlier change set (lower ID, any state) has the same title slug, given by one function over the folded model"
+        },
+        "handle": "unique-change-set-slug",
+        "id": "01M6TBRVYX75117KD158AVC02R",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M6TBRVYX75117KD157BPHBGB",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M6TBRVYX75117KD157BPHBGB",
+        "id": "01M6TBRVZCXE4BHPVCH36JBGTV",
+        "link": "01M6TBRVZCXE4BHPVCH0HGNW1J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBQEQ2ANYJFH8AV5EY7FB1",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript opens worktrees for two change sets with the same title and gets two distinct branches cs/<slug> and cs/<slug>-<short id> and two distinct worktrees; internal/api tests show the ship target and abandon cleanup of the later change set name its suffixed branch; no call to session.Slug(title) remains outside the slug function",
+          "statement": "Every place that names a change set's branch or worktree (change worktree, run start and dry run, run leaves and checks sessions, ship target, abandon cleanup) uses the unique slug, never session.Slug(title) directly"
+        },
+        "handle": "slug-callers-agree",
+        "id": "01M6TBRVZXT2PN5R0C1ZD8D567",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M6TBRVZXT2PN5R0C1X1JC5X1",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M6TBRVZXT2PN5R0C1X1JC5X1",
+        "id": "01M6TBRW0M2GSAJ12NKWAJZHDY",
+        "link": "01M6TBRW0M2GSAJ12NKSZEXZNX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBQEQ2ANYJFH8AV5EY7FB1",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/api ship tests with a fake gh: open-pr, check and wait each refuse an open or merged PR whose body names another change set and leave ship state unwritten; a PR whose body names the run's change set is tracked as before",
+          "statement": "Ship open-pr, check and wait refuse a pull request on the change set's branch whose body names another change set, with a conflict naming that PR and change set, and never write it to ship state"
+        },
+        "handle": "ship-tracks-own-pr",
+        "id": "01M6TBRW1FQSQTEHBGNKVSR7VS",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6TBRW1FQSQTEHBGNK10NGSV",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M6TBRW1FQSQTEHBGNK10NGSV",
+        "id": "01M6TBRW34NHBN367C3B967H06",
+        "link": "01M6TBRW34NHBN367C388P6FEP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBRVXWBXEPRVDGGZ0DRPK4",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6TBDRB2N5MTW4BW0K2NZCG6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TBRW3WQ0XFGWNZNJ8CP9PS",
+  "type": "ops",
+  "v": 1
+}
