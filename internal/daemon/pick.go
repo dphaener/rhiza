@@ -41,6 +41,7 @@ const (
 	SkipUsageReserve = "usage-reserve"
 	SkipShipOwner    = "ship-owner"
 	SkipPaused       = "paused"
+	SkipWorkflow     = "workflow-unresolved"
 )
 
 // Ship says which succeeded runs mean a change set has shipped: those of
@@ -70,14 +71,18 @@ func (s Ship) shipped(st run.State) bool {
 
 // Skip is an accepted change set the daemon does not start, and why.
 type Skip struct {
-	Change string `json:"change"`
+	Change string `json:"change,omitempty"`
+	// Request is the queued request a workflow-unresolved skip is about;
+	// then Change is empty and Title is the request's text.
+	Request string `json:"request,omitempty"`
 	// Title is the change set's display title, filled in by the poll.
 	Title string `json:"title,omitempty"`
 	// Reason is one of the Skip constants.
 	Reason string `json:"reason"`
 	// Detail holds the readiness reasons of a not-ready change set, the free
 	// space of a disk-low one, or why a no-slot one waits when a slot is kept
-	// for a queued plan request.
+	// for a queued plan request. A workflow-unresolved skip holds the
+	// workflow's name, where the pick came from and why it does not resolve.
 	Detail []string `json:"detail,omitempty"`
 }
 

@@ -26,6 +26,20 @@ func TestDaemonStartsRequestWithDispatchedWorkflow(t *testing.T) {
 		detached = append(detached, p.Args)
 		return nil
 	}
+	// The workflows the rules name must resolve, or the daemon starts no run.
+	plan, err := os.ReadFile(filepath.Join("..", "workflow", "builtin", "plan.toml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(f.ctx.Root, ".rhiza", "workflows"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"bugfix", "roadmap"} {
+		body := strings.Replace(string(plan), `name = "plan"`, `name = "`+name+`"`, 1)
+		if err := os.WriteFile(filepath.Join(f.ctx.Root, ".rhiza", "workflows", name+".toml"), []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
 	file := filepath.Join(f.ctx.Root, ".rhiza", "dispatch.toml")
 	if err := os.WriteFile(file, []byte("[request]\nbug = \"bugfix\"\nmilestone = \"roadmap\"\n"), 0o644); err != nil {
 		t.Fatal(err)
@@ -37,7 +51,7 @@ func TestDaemonStartsRequestWithDispatchedWorkflow(t *testing.T) {
 			t.Fatal(err)
 		}
 		detached = nil
-		if _, err := daemonPlanRequests(f.ctx, rs, nil, 0, 5, "auto", onlyKind); err != nil {
+		if _, err := daemonPlanRequests(f.ctx, rs, nil, 0, 5, "auto", onlyKind, nil); err != nil {
 			t.Fatal(err)
 		}
 		if len(detached) != 1 {

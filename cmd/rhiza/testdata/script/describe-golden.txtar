@@ -2095,22 +2095,26 @@ cmp stdout describe.golden.json
                     "additionalProperties": false,
                     "properties": {
                       "change": {
-                        "description": "The change set's ID",
+                        "description": "The change set's ID; empty for a queued request that was not started",
                         "type": "string"
                       },
                       "detail": {
-                        "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; else empty",
+                        "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty",
                         "items": {
                           "type": "string"
                         },
                         "type": "array"
                       },
                       "reason": {
-                        "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve or ship-owner",
+                        "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve, ship-owner or workflow-unresolved",
+                        "type": "string"
+                      },
+                      "request": {
+                        "description": "The queued request's ID, when the skip is a request whose workflow does not resolve",
                         "type": "string"
                       },
                       "title": {
-                        "description": "The change set's display title",
+                        "description": "The change set's display title, or the request's text",
                         "type": "string"
                       }
                     },
@@ -2234,22 +2238,26 @@ cmp stdout describe.golden.json
               "additionalProperties": false,
               "properties": {
                 "change": {
-                  "description": "The change set's ID",
+                  "description": "The change set's ID; empty for a queued request that was not started",
                   "type": "string"
                 },
                 "detail": {
-                  "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; else empty",
+                  "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty",
                   "items": {
                     "type": "string"
                   },
                   "type": "array"
                 },
                 "reason": {
-                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve or ship-owner",
+                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve, ship-owner or workflow-unresolved",
+                  "type": "string"
+                },
+                "request": {
+                  "description": "The queued request's ID, when the skip is a request whose workflow does not resolve",
                   "type": "string"
                 },
                 "title": {
-                  "description": "The change set's display title",
+                  "description": "The change set's display title, or the request's text",
                   "type": "string"
                 }
               },
@@ -2997,7 +3005,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale, accept or interview",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale, accept, interview or workflow",
                   "type": "string"
                 },
                 "next": {

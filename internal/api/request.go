@@ -252,7 +252,7 @@ func requestInfo(q daemon.Request, runs []run.Journal) RequestInfo {
 // another milestone request's run is live or unjournaled: the owner's own
 // interactive start. Any other call leaves milestone requests to that one.
 // It returns the requests started.
-func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, max int, mode string, onlyKind string) ([]string, error) {
+func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, max int, mode string, onlyKind string, skips *[]daemon.Skip) ([]string, error) {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return nil, err
@@ -313,11 +313,25 @@ func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, ma
 	}
 	var started []string
 	milestone := onlyKind == daemon.KindMilestone
+	unresolved := map[string]bool{}
+	if queued, err := daemon.ReadRequests(common); err == nil {
+		for _, q := range queued {
+			if q.Run != "" {
+				continue
+			}
+			if sk, bad := requestUnresolved(ctx.Root, q); bad {
+				unresolved[q.ID] = true
+				if skips != nil {
+					addDaemonSkip(skips, sk)
+				}
+			}
+		}
+	}
 	for milestone && !milestoneLive || !milestone && running < max {
 		var q daemon.Request
 		err := daemon.UpdateRequests(common, func(reqs []daemon.Request) ([]daemon.Request, error) {
 			for i := range reqs {
-				if reqs[i].Run != "" || now.Before(reqs[i].RetryAt) || (reqs[i].Kind == daemon.KindMilestone) != milestone {
+				if reqs[i].Run != "" || now.Before(reqs[i].RetryAt) || (reqs[i].Kind == daemon.KindMilestone) != milestone || unresolved[reqs[i].ID] {
 					continue
 				}
 				rid, err := newRequestRunID(ctx, rs, reqs)
@@ -437,4 +451,29 @@ func requestRun(common, reqID string, rs *run.Store) (daemon.Request, error) {
 		return q, nil
 	}
 	return daemon.Request{}, Usagef("no request %s", reqID).WithNext("rhiza request ls")
+}
+
+// requestUnresolved says whether a workflow request q would run does not
+// resolve: the one its [request] rule names for the plan run, or the one it
+// named itself for its change set's ready pick. It returns the skip naming
+// the workflow and where the pick came from. A dispatch file that does not
+// load is not this: the start reports it.
+func requestUnresolved(root string, q daemon.Request) (daemon.Skip, bool) {
+	picks := []struct{ name, source string }{}
+	if wf, err := requestWorkflow(root, q); err == nil {
+		kind := q.Kind
+		if kind != daemon.KindBug && kind != daemon.KindMilestone {
+			kind = dispatch.KindFeature
+		}
+		picks = append(picks, struct{ name, source string }{wf, "the [request] rule for " + kind + " in " + dispatch.File})
+	}
+	if q.Workflow != "" {
+		picks = append(picks, struct{ name, source string }{q.Workflow, "named by the request (--workflow)"})
+	}
+	for _, p := range picks {
+		if _, _, _, err := resolveWorkflow(root, p.name); err != nil {
+			return daemon.Skip{Request: q.ID, Title: q.Text, Reason: daemon.SkipWorkflow, Detail: []string{p.name, p.source, err.Error()}}, true
+		}
+	}
+	return daemon.Skip{}, false
 }
