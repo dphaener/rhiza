@@ -952,3 +952,67 @@ func TestGateResumeFailureDetailScrolls(t *testing.T) {
 		t.Fatalf("not a scrolling panel: %T", m.cur)
 	}
 }
+
+type projCall struct {
+	project, op string
+	args        []string
+}
+
+// mergedFake serves each project's own inbox and records every call.
+func mergedFake(items map[string]string, calls *[]projCall) ProjectRunner {
+	return func(project, op string, args []string) ([]byte, error) {
+		*calls = append(*calls, projCall{project, op, args})
+		if op == Name {
+			return []byte(items[project]), nil
+		}
+		return []byte("{}"), nil
+	}
+}
+
+const projA = `{"items":[{"id":"a1","kind":"question","at":"2026-01-02T00:00:00Z","change":"CA","change_title":"Alpha work","step":"build","run":"RA","session":"SA","question":"Which a?"}]}`
+const projB = `{"items":[{"id":"b1","kind":"failed","at":"2026-01-01T00:00:00Z","change":"CB","change_title":"Beta work","step":"verify","run":"RB","detail":"boom"}]}`
+
+func TestMergedRowsTaggedWithProject(t *testing.T) {
+	var calls []projCall
+	m := NewMergedModel(mergedFake(map[string]string{"alpha": projA, "beta": projB}, &calls), []string{"alpha", "beta"})
+	rows := m.Rows()
+	if len(rows) != 2 {
+		t.Fatalf("rows = %q", rows)
+	}
+	// Oldest first across projects: beta's item began to wait first.
+	if !strings.HasPrefix(rows[0], "beta · failed · Beta work") || !strings.HasPrefix(rows[1], "alpha · question · Alpha work") {
+		t.Fatalf("rows = %q", rows)
+	}
+}
+
+func TestMergedAnswerWritesIntoItemsProject(t *testing.T) {
+	var calls []projCall
+	m := NewMergedModel(mergedFake(map[string]string{"alpha": projA, "beta": projB}, &calls), []string{"alpha", "beta"})
+	// Opened from alpha, the owner picks beta's failed run and retries it.
+	cmd := enter(m)
+	_ = cmd
+	p, ok := m.Picked()
+	if !ok || p.Project != "beta" || p.Item.Run != "RB" {
+		t.Fatalf("pick = %+v", p)
+	}
+	submit(m)
+	last := calls[len(calls)-1]
+	if last.project != "beta" || last.op != "run.resume" || !slices.Equal(last.args, []string{"--retry", "RB"}) {
+		t.Fatalf("last call = %+v", last)
+	}
+}
+
+func TestMergedQuestionAnswerGoesToItsProject(t *testing.T) {
+	var calls []projCall
+	m := NewMergedModel(mergedFake(map[string]string{"alpha": projA, "beta": projB}, &calls), []string{"alpha", "beta"})
+	press(m, "down")
+	enter(m)
+	if p, _ := m.Picked(); p.Project != "alpha" {
+		t.Fatalf("pick = %+v", p)
+	}
+	m.Update(ui.FormSubmittedMsg{Values: ui.Values{"answer": "pg"}})
+	last := calls[len(calls)-1]
+	if last.project != "alpha" || last.op != "session.message" {
+		t.Fatalf("last call = %+v", last)
+	}
+}

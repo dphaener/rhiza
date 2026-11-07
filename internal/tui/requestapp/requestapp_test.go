@@ -137,3 +137,62 @@ func TestRegistered(t *testing.T) {
 	}
 	t.Fatal("request not registered")
 }
+
+type pfake struct{ calls [][]string }
+
+func (f *pfake) run(project, op string, args []string) ([]byte, error) {
+	f.calls = append(f.calls, append([]string{project, op}, args...))
+	return json.Marshal(api.RequestResponse{Request: api.RequestInfo{ID: "R1", Kind: "bug", State: "queued"}})
+}
+
+func TestRequestQueuedInCurrentProject(t *testing.T) {
+	f := &pfake{}
+	s := modalshell.New(NewIn(f.run, colorprofile.TrueColor, "B", []string{"A", "B"}))
+	s.Init()
+	press(s, enter)
+	press(s, typed("fix it")...)
+	if _, closed := press(s, enter); !closed {
+		t.Fatal("app did not quit after submit")
+	}
+	want := "B request --kind feature -- fix it"
+	if len(f.calls) != 1 || strings.Join(f.calls[0], " ") != want {
+		t.Fatalf("calls = %q, want %q", f.calls, want)
+	}
+}
+
+func TestPickerAtRootThenQueuesInPicked(t *testing.T) {
+	f := &pfake{}
+	s := modalshell.New(NewIn(f.run, colorprofile.TrueColor, "", []string{"A", "B"}))
+	s.Init()
+	if !strings.Contains(s.Component().Render(), "Project") {
+		t.Fatal("no project picker shown")
+	}
+	// Enter takes the first project, A; the request form follows.
+	if _, closed := press(s, enter); closed {
+		t.Fatal("picker closed the app")
+	}
+	if len(f.calls) != 0 {
+		t.Fatalf("picking queued something: %q", f.calls)
+	}
+	press(s, enter)
+	press(s, typed("hello")...)
+	if _, closed := press(s, enter); !closed {
+		t.Fatal("app did not quit after submit")
+	}
+	want := "A request --kind feature -- hello"
+	if len(f.calls) != 1 || strings.Join(f.calls[0], " ") != want {
+		t.Fatalf("calls = %q, want %q", f.calls, want)
+	}
+}
+
+func TestPickerEscStartsNothing(t *testing.T) {
+	f := &pfake{}
+	s := modalshell.New(NewIn(f.run, colorprofile.TrueColor, "", []string{"A", "B"}))
+	s.Init()
+	if _, closed := press(s, esc); !closed {
+		t.Fatal("esc did not close")
+	}
+	if len(f.calls) != 0 {
+		t.Fatalf("calls = %q", f.calls)
+	}
+}

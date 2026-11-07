@@ -1,0 +1,132 @@
+{
+  "actor": "01M6SQ3Y7AXXC0SRQ8RDCM4ETJ",
+  "after": [
+    "01M6SQ1FDVYXMSFWTB41B3NJNG"
+  ],
+  "at": "2026-11-07T00:46:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cb21cdf1 I built rhiza with go build -trimpath, made a scratch root (rhiza root init) with projects alpha and beta (rhiza project add) and a sibling worktree alpha.feature, and drove the built binary's rhiza tui app in a tmux pane (100x30). Opened inbox, runs, autonomy, daemon and request in alpha, alpha.feature and at the root: the first line read 'Project: alpha', 'Project: alpha' and 'No project' for every app."
+        },
+        "handle": "tui-current-project-qa-1",
+        "id": "01M6SQHG170YMKF7MEEKB6NEFV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SQHG170YMKF7MEEJKH31FF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SQHG170YMKF7MEEJKH31FF",
+        "id": "01M6SQHG2A1Q4NJ37QDYB9J8HW",
+        "link": "01M6SQHG2A1Q4NJ37QDWY3ZBF3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN86H70DC8GP65XJEDD2FN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cb21cdf1 I built rhiza with go build -trimpath, made a scratch root (rhiza root init) with projects alpha and beta (rhiza project add) and a sibling worktree alpha.feature, and drove the built binary's rhiza tui app in a tmux pane (100x30). In the Autonomy app opened in alpha (Plan: owner), ctrl+o showed a picker of alpha and beta; picking beta changed the header to 'Project: beta' and the form to beta's settings (Plan: auto, set earlier from the app). The Runs and Request apps switched the same way, and a request submitted after switching to beta from alpha was queued in beta (rhiza request ls in beta), not in alpha."
+        },
+        "handle": "tui-project-switch-qa-1",
+        "id": "01M6SQHG33PQA70VCK8NHZYZSY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SQHG33PQA70VCK8NBESV3F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SQHG33PQA70VCK8NBESV3F",
+        "id": "01M6SQHG42E90E14A6ZJ0MDJJQ",
+        "link": "01M6SQHG42E90E14A6ZH0RM00S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN86NDXBMPTCAW1V6MX121",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cb21cdf1 I built rhiza with go build -trimpath, made a scratch root (rhiza root init) with projects alpha and beta (rhiza project add) and a sibling worktree alpha.feature, and drove the built binary's rhiza tui app in a tmux pane (100x30). Submitting the Request app opened in beta queued the request in beta only (rhiza request ls per project). Opened at the root, the app showed a Project picker first; Esc exited with nothing queued in either project; picking alpha then submitting queued the request in alpha only."
+        },
+        "handle": "tui-starts-in-project-qa-1",
+        "id": "01M6SQHG561T92WHCP7EP6DHEK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SQHG561T92WHCP7EDPXYGF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SQHG561T92WHCP7EDPXYGF",
+        "id": "01M6SQHG61FK490R5J5Y6BWH63",
+        "link": "01M6SQHG61FK490R5J5VFSZGA3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN86K392PSD63NH20X4D85",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cb21cdf1 I built rhiza with go build -trimpath, made a scratch root (rhiza root init) with projects alpha and beta (rhiza project add) and a sibling worktree alpha.feature, and drove the built binary's rhiza tui app in a tmux pane (100x30). With a blocker question landed in beta and none in alpha, the Inbox app opened in alpha listed 'beta · blocker · Blocked  Which disk holds beta's store?'. Answering it from alpha wrote Decision answer-store-q into beta, beta's inbox emptied, and alpha got no change set."
+        },
+        "handle": "tui-merged-inbox-qa-1",
+        "id": "01M6SQHG6M8ZARVKKYBYTTMQT8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SQHG6M8ZARVKKYBVG8CBQE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SQHG6M8ZARVKKYBVG8CBQE",
+        "id": "01M6SQHG826EEHMXW14SM483KV",
+        "link": "01M6SQHG826EEHMXW14P11E1YG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN86Q8DXQ5T5PCRHDSBRMM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cb21cdf1 I built rhiza with go build -trimpath, made a scratch root (rhiza root init) with projects alpha and beta (rhiza project add) and a sibling worktree alpha.feature, and drove the built binary's rhiza tui app in a tmux pane (100x30). With a live foreground run (sleep step) in each project, the Runs app in alpha and at the root listed 'alpha · Slow run in alpha' and 'beta · Slow run in beta'. The Daemon app in beta showed Pause the daemon and Run limit once, then Pause project beta and Project run limit; saving Run limit 5 and Project run limit 3 wrote rhiza.daemon.maxRuns=5 to the root's rhiza.toml and rhiza.project.maxruns=3 to beta's git config only. Setting Plan to auto in the Autonomy app (switched to beta) wrote rhiza.autonomy.plan=auto to beta's git config and nothing to alpha's."
+        },
+        "handle": "tui-runs-daemon-across-projects-qa-1",
+        "id": "01M6SQHG95TF25AADVBR4SV74E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SQHG95TF25AADVBMAEK527",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SQHG95TF25AADVBMAEK527",
+        "id": "01M6SQHGADMPT136X6FBTR3MJY",
+        "link": "01M6SQHGADMPT136X6FBQC33FH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN86SPHVRJW809SPKT0ASP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN441P2Z865ZVKAS7X7GMG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SQHGBSC1NQP788FJ9S2XWX",
+  "type": "ops",
+  "v": 1
+}

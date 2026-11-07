@@ -23,6 +23,9 @@ The TUI knows the project the owner is currently in, and everything started from
 ### In
 
 - decided-by [m29-surfaces-across-projects](../intent/milestone-29/m29-surfaces-across-projects.md)
+- decided-by [tui-current-project](../capability/rhiza/tui-current-project.md)
+- decided-by [tui-starts-in-project](../capability/rhiza/tui-starts-in-project.md)
+- decided-by [tui-merged-inbox](../capability/rhiza/tui-merged-inbox.md)
 
 ## History
 

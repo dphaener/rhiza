@@ -147,3 +147,72 @@ func TestClosesEveryHost(t *testing.T) {
 		})
 	}
 }
+
+func TestShellHeader(t *testing.T) {
+	for name, mk := range hosts() {
+		plain := New(mk())
+		s := New(mk()).WithHeader("Project: alpha")
+		if got := s.View().Content; !strings.HasPrefix(got, "Project: alpha\n") {
+			t.Errorf("%s: view %q lacks the header", name, got)
+		}
+		if strings.Contains(plain.View().Content, "Project:") {
+			t.Errorf("%s: a shell without a header shows one", name)
+		}
+		c0, r0 := plain.NaturalSize()
+		if c, r := s.NaturalSize(); r != r0+1 || c < c0 {
+			t.Errorf("%s: size %dx%d, want one more row than %dx%d", name, c, r, c0, r0)
+		}
+	}
+}
+
+func TestRunHeadedWrapsModel(t *testing.T) {
+	m := headed{model: New(hosts()["list"]()), line: "No project"}
+	if got := m.View().Content; !strings.HasPrefix(got, "No project\n") {
+		t.Errorf("view %q lacks the header", got)
+	}
+	next, _ := m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	if _, ok := next.(headed); !ok {
+		t.Errorf("update lost the header: %T", next)
+	}
+}
+
+// longList is a list with more rows than any window in the tests, so it
+// fills the height it is given.
+func longList() Component {
+	rows := make([]ui.Row, 40)
+	for i := range rows {
+		rows[i] = ui.Row{Label: "row"}
+	}
+	return List(ui.NewList(theme.Dark(), prof, rows))
+}
+
+func TestHeaderFitsWindow(t *testing.T) {
+	size := tea.WindowSizeMsg{Width: 60, Height: 12}
+	views := map[string]func() tea.Model{
+		"shell":  func() tea.Model { return New(longList()).WithHeader("Project: alpha") },
+		"headed": func() tea.Model { return headed{model: New(longList()), line: "Project: alpha"} },
+		"switcher": func() tea.Model {
+			return NewSwitcher(Switching{
+				Header: func() string { return "Project: alpha" },
+				Build: func() Built {
+					sh := New(longList())
+					return Built{Model: sh, Result: sh.Result}
+				},
+			})
+		},
+	}
+	for name, mk := range views {
+		m, _ := mk().Update(size)
+		got := m.View().Content
+		if n := strings.Count(got, "\n") + 1; n != size.Height {
+			t.Errorf("%s: view is %d lines in a %d-line window", name, n, size.Height)
+		}
+		if !strings.HasPrefix(got, "Project: alpha\n") {
+			t.Errorf("%s: view %q lacks the header", name, got)
+		}
+	}
+	plain, _ := New(longList()).Update(size)
+	if n := strings.Count(plain.View().Content, "\n") + 1; n != size.Height {
+		t.Errorf("unheaded shell: view is %d lines, want %d", n, size.Height)
+	}
+}
