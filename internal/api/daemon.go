@@ -1592,16 +1592,24 @@ func daemonStatusDir(ctx *Ctx) (common, root string, err error) {
 	if err != nil {
 		return "", "", err
 	}
-	var home *Ctx
-	if name := daemon.ReadHome(root); name != "" && slices.Contains(reg.Names(), name) && projectInitialised(reg.Dir(root, name)) {
-		home = projectCtx(ctx, reg.Dir(root, name))
-	} else if _, c, ok := daemonHome(ctx, root, reg); ok {
-		home = c
-	} else {
+	home, ok := rootDaemonHome(ctx, root, reg)
+	if !ok {
 		return "", root, nil
 	}
 	common, err = gitCommonDir(home)
 	return common, root, err
+}
+
+// rootDaemonHome is the context of the root daemon's home project, whose
+// git directory holds the root daemon's state: the one the daemon
+// recorded, else the one daemon would pick from here; false when the root
+// has no initialised project.
+func rootDaemonHome(ctx *Ctx, root string, reg rootcfg.Config) (*Ctx, bool) {
+	if name := daemon.ReadHome(root); name != "" && slices.Contains(reg.Names(), name) && projectInitialised(reg.Dir(root, name)) {
+		return projectCtx(ctx, reg.Dir(root, name)), true
+	}
+	_, c, ok := daemonHome(ctx, root, reg)
+	return c, ok
 }
 
 // webStatus is the web UI line for the recorded settings: its URL, off, or

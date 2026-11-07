@@ -145,15 +145,22 @@ func runHealth(ctx *Ctx, req any) (any, error) {
 		}
 	}
 	// The machine's parts read through a project's checkout (its git
-	// config, the daemon's state in its git directory); with no project
-	// the root's own context is all there is.
+	// config, the daemon's state in its git directory): over every
+	// project, the root daemon's home project, whose git directory holds
+	// the root daemon's state; with no project the root's own context is
+	// all there is.
 	mctx := ctx
 	if merged && len(scopes) > 0 {
 		mctx = scopes[0].ctx
+		if root, cfg, ok := rootOf(ctx); ok {
+			if home, ok := rootDaemonHome(ctx, root, cfg); ok {
+				mctx = home
+			}
+		}
 	}
 	settings, serr := settingsOf(mctx, nil)
 	parts := []HealthPart{
-		healthDaemon(mctx),
+		healthDaemon(ctx, mctx, merged),
 		healthAutonomy(settings, serr),
 		healthMachine(mctx),
 		healthDisk(mctx, settings, serr),
@@ -184,13 +191,18 @@ func healthFailed(part string, err error) HealthPart {
 	return HealthPart{Part: part, State: HealthWarn, Summary: "could not be read: " + err.Error()}
 }
 
-// healthDaemon is ok while a daemon runs, warn when none does.
-func healthDaemon(ctx *Ctx) HealthPart {
-	out, err := runDaemonStatus(ctx, DaemonStatusRequest{})
+// healthDaemon is ok while a daemon runs, warn when none does. Over every
+// project (all) its live runs are every project's; ctx asks the daemon's
+// status, home is the checkout its build is compared with origin/main in.
+func healthDaemon(ctx, home *Ctx, all bool) HealthPart {
+	out, err := runDaemonStatus(ctx, DaemonStatusRequest{All: all})
 	if err != nil {
 		return healthFailed(HealthDaemon, err)
 	}
 	s := out.(DaemonStatusResponse)
+	for _, p := range s.Projects {
+		s.Runs = append(s.Runs, p.Runs...)
+	}
 	if !s.Running {
 		p := HealthPart{Part: HealthDaemon, State: HealthWarn,
 			Summary: "not running: nothing starts or resumes runs on its own; start it with rhiza daemon",
@@ -204,7 +216,7 @@ func healthDaemon(ctx *Ctx) HealthPart {
 		Summary: fmt.Sprintf("running, process %s, %d live runs", s.Process, len(s.Runs))}
 	if s.Commit != "" {
 		p.Detail = append(p.Detail, "built from "+s.Commit)
-		if origin := healthOriginAhead(ctx, s.Commit); origin != "" {
+		if origin := healthOriginAhead(home, s.Commit); origin != "" {
 			p.State = HealthWarn
 			p.Summary += fmt.Sprintf("; built from %s, origin/main is at %s", shortSHA(s.Commit), shortSHA(origin))
 			p.Next = "make update"

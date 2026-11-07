@@ -60,3 +60,22 @@ stdout -count=5 '"project": "alpha"'
 cd $WORK
 ! exec rhiza health --project nope
 stderr 'not registered'
+
+# The machine's parts read the root daemon: its live runs in every
+# project, and the usage in its home project's state, not the first
+# project's by name.
+mkdir .rhiza-root alpha/.git/rhiza beta/.git/rhiza
+exec sh -c 'echo beta > .rhiza-root/daemon.home'
+root-daemon-lock .
+cp alpha-state.json alpha/.git/rhiza/daemon.state.json
+cp beta-state.json beta/.git/rhiza/daemon.state.json
+exec rhiza daemon status --json
+stdout -count=3 '"id": "RUN'
+exec rhiza health
+stdout '^ok   daemon +running, process .*, 3 live runs$'
+exec rhiza health --json
+stdout '"part": "usage",\n\s*"state": "ok",\n\s*"summary": "session 300, no limit known'
+-- alpha-state.json --
+{"process":{"host":"h","pid":1,"started":"2030-01-01T00:00:00Z"},"last_poll":"2030-01-01T00:10:00Z","max_runs":2,"autonomous":false,"runs":[{"id":"RUNA","change":"CSA","state":"building"}]}
+-- beta-state.json --
+{"process":{"host":"h","pid":1,"started":"2030-01-01T00:00:00Z"},"last_poll":"2030-01-01T00:10:00Z","max_runs":2,"autonomous":false,"runs":[{"id":"RUNB1","change":"CSB","state":"building"},{"id":"RUNB2","change":"CSC","state":"reviewing"}],"usage_windows":[{"kind":"session","start":"2026-10-24T10:00:00Z","reset":"2099-01-01T00:00:00Z","used":300}]}
