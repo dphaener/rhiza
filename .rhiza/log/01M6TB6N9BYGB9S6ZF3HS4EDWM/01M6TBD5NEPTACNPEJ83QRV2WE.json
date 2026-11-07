@@ -1,0 +1,33 @@
+{
+  "actor": "01M6TB73ER4PEA36ADR62K7D4C",
+  "after": [
+    "01M6TBCFTZCMWQVSZVEGX48DNR"
+  ],
+  "at": "2026-11-07T06:33:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "cd4bb96534955463cc8df28f45c99ef72e4c94209f8f8868c61621d144cb442c",
+          "session": "bfd0cb38-b7d7-452d-a819-01a1b4b37d39",
+          "summary": "Autonomous plan run for change set 01M6TB6N: ship check's parseFailedTests reads only Go '--- FAIL:' lines, so nebari#72's RSpec failure ended the run at ci-triage. The planner asked which intent to serve, which runners to parse and how to name a non-Go failing test; the arbiter ruled (decision-ci-triage-runners): serve m27-nebari-on-rhiza; also parse RSpec 'rspec ./path:line', Rails Minitest '(bin/)rails test path:line' and pytest 'FAILED path::test' lines, nothing broader; name each by the runner's rerun command, Go names unchanged. No owner words: the owner did not take part.",
+          "title": "Planning ci-triage runner parsing, autonomous run with the arbiter"
+        },
+        "handle": "ci-triage-runners-plan",
+        "id": "01M6TBD5MW3BKVZJFAGRE593ZV",
+        "key": null,
+        "kind": "source",
+        "node": "01M6TBD5MV606EMNJPGW6R277R",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6TB6N9BYGB9S6ZF3HS4EDWM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TBD5NEPTACNPEJ83QRV2WE",
+  "type": "ops",
+  "v": 1
+}
