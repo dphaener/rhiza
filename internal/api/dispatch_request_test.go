@@ -178,3 +178,57 @@ func TestReadyWorkflowOrder(t *testing.T) {
 		t.Errorf("recorded: %q, want hotfix over the rule", g)
 	}
 }
+
+// An explicit run start --workflow wins over the change set's recorded
+// workflow, the [ready] rule for its kind and the ship-change default.
+func TestStartWorkflowExplicitWins(t *testing.T) {
+	root := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(root, ".rhiza"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, ".rhiza", "dispatch.toml"), []byte("[ready]\nbug = \"bugfix\"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range []struct {
+		name string
+		open changeset.Open
+	}{
+		{"recorded", changeset.Open{Kind: changeset.KindIntention, RequestKind: changeset.RequestBug, Workflow: "hotfix"}},
+		{"rule", changeset.Open{Kind: changeset.KindIntention, RequestKind: changeset.RequestBug}},
+		{"default", changeset.Open{Kind: changeset.KindIntention}},
+	} {
+		got, err := startWorkflow(root, "other", c.open)
+		if err != nil || got != "other" {
+			t.Errorf("%s: %q, %v; want the explicit other", c.name, got, err)
+		}
+		want, _ := readyWorkflow(root, c.open)
+		if got, err := startWorkflow(root, " ", c.open); err != nil || got != want {
+			t.Errorf("%s with no --workflow: %q, %v; want the ready workflow %q", c.name, got, err, want)
+		}
+	}
+}
+
+// run start on an existing change set runs the [ready] rule's workflow with
+// no --workflow, and the explicit --workflow over it.
+func TestRunStartExplicitWorkflowOverRule(t *testing.T) {
+	f := newSessionFixture(t, "explicit")
+	newChange(t, f.ctx, `{"intent":"Plain work","title":"Plain work"}`)
+	writeWorkflow(t, f.ctx.Root, "bugfix", "name = \"bugfix\"\n"+twoCommands)
+	writeWorkflow(t, f.ctx.Root, "other", "name = \"other\"\n"+twoCommands)
+	if err := os.WriteFile(filepath.Join(f.ctx.Root, ".rhiza", "dispatch.toml"), []byte("[ready]\nfeature = \"bugfix\"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	f.ctx.DryRun = true
+	for _, c := range []struct{ req, want string }{
+		{`{"foreground":true}`, "bugfix"},
+		{`{"foreground":true,"workflow":"other"}`, "other"},
+	} {
+		resp, err := callOp(t, f.ctx, "run.start", c.req)
+		if err != nil {
+			t.Fatalf("%s: %v", c.req, err)
+		}
+		if got := resp.(RunResponse).Run.Workflow; got != c.want {
+			t.Errorf("%s: workflow %q, want %q", c.req, got, c.want)
+		}
+	}
+}

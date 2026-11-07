@@ -541,10 +541,10 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if strings.TrimSpace(r.Request) != "" && strings.TrimSpace(r.New) == "" {
 		return nil, Usagef("--request goes with --new").WithNext(runStartNext)
 	}
-	// No --workflow on an existing change set: the one resolver picks it, as
-	// the daemon's ship pick does.
-	if strings.TrimSpace(r.Workflow) == "" && strings.TrimSpace(r.New) == "" {
-		if name, ok := readyWorkflowOfRef(ctx, r.Change); ok {
+	// On an existing change set the one resolver picks the workflow, as the
+	// daemon's ship pick does, unless --workflow names one.
+	if strings.TrimSpace(r.New) == "" {
+		if name, ok := startWorkflowOfRef(ctx, r.Change, r.Workflow); ok {
 			r.Workflow = name
 		}
 	}
@@ -3205,10 +3205,24 @@ func readyWorkflow(root string, o changeset.Open) (string, error) {
 	return rules.ForReady(o.DispatchKind()), nil
 }
 
-// readyWorkflowOfRef resolves the change set ref names (default the current
-// one) and returns its readyWorkflow. It reports false when the change set
-// or the rules cannot be read: the start's own checks then report why.
-func readyWorkflowOfRef(ctx *Ctx, ref string) (string, bool) {
+// startWorkflow is the workflow run start runs on an existing change set
+// whose open record is o: the explicit --workflow over all, else its
+// readyWorkflow.
+func startWorkflow(root, explicit string, o changeset.Open) (string, error) {
+	if explicit = strings.TrimSpace(explicit); explicit != "" {
+		return explicit, nil
+	}
+	return readyWorkflow(root, o)
+}
+
+// startWorkflowOfRef resolves the change set ref names (default the current
+// one) and returns its startWorkflow. With no explicit workflow it reports
+// false when the change set or the rules cannot be read: the start's own
+// checks then report why.
+func startWorkflowOfRef(ctx *Ctx, ref, explicit string) (string, bool) {
+	if strings.TrimSpace(explicit) != "" {
+		return explicit, true
+	}
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
 		return "", false
@@ -3226,6 +3240,6 @@ func readyWorkflowOfRef(ctx *Ctx, ref string) (string, bool) {
 	if !ok {
 		return "", false
 	}
-	name, err := readyWorkflow(ctx.Root, c.Open)
+	name, err := startWorkflow(ctx.Root, explicit, c.Open)
 	return name, err == nil
 }
