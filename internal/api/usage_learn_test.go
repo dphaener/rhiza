@@ -8,6 +8,7 @@ import (
 	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/session"
+	"github.com/dphaener/rhiza/internal/usage"
 )
 
 // usageFake is a fake agent that is usage-limited while its transcript says
@@ -154,5 +155,55 @@ func TestLimitHitTeachesOnlyItsKind(t *testing.T) {
 				t.Errorf("the %s limit is %+v: want %d at the hit", c.hitKind, h, c.hitTokens)
 			}
 		})
+	}
+}
+
+func TestLearnedLimitRatchets(t *testing.T) {
+	hitAt := time.Date(2026, 11, 1, 10, 0, 0, 0, time.UTC)
+	start := time.Date(2026, 11, 4, 10, 0, 0, 0, time.UTC)
+	reset := start.Add(7 * 24 * time.Hour)
+	win := func(used int64) map[usage.Kind]usage.Window {
+		return map[usage.Kind]usage.Window{usage.Weekly: {Kind: usage.Weekly, Start: start, Reset: reset, Used: used}}
+	}
+	learned := func() *daemon.State {
+		return &daemon.State{Learned: []daemon.LearnedLimit{{Kind: "weekly", Tokens: 1000, HitAt: hitAt}}}
+	}
+
+	// Use past the limit with no hit raises it, keeping the hit time.
+	st := learned()
+	raiseLearned(st, win(1500), nil)
+	if l := st.Learned[0]; l.Tokens != 1500 || !l.HitAt.Equal(hitAt) {
+		t.Errorf("learned %+v: want 1500 at the old hit time", l)
+	}
+
+	// Use under the limit leaves it.
+	st = learned()
+	raiseLearned(st, win(900), nil)
+	if st.Learned[0].Tokens != 1000 {
+		t.Errorf("learned %+v: want 1000 left alone", st.Learned[0])
+	}
+
+	// A hit of the kind inside the window stops the ratchet; one of another
+	// kind, or outside the window, does not.
+	inWin := daemon.LimitHit{HitAt: start.Add(time.Hour), ResetAt: reset}
+	st = learned()
+	raiseLearned(st, win(1500), []daemon.LimitHit{inWin})
+	if st.Learned[0].Tokens != 1000 {
+		t.Errorf("learned %+v: a window holding a hit must not ratchet", st.Learned[0])
+	}
+	other := []daemon.LimitHit{
+		{HitAt: start.Add(time.Hour), ResetAt: start.Add(3 * time.Hour)},
+		{HitAt: hitAt, ResetAt: hitAt.Add(6 * 24 * time.Hour)},
+	}
+	st = learned()
+	raiseLearned(st, win(1500), other)
+	if st.Learned[0].Tokens != 1500 {
+		t.Errorf("learned %+v: hits elsewhere must not stop the ratchet", st.Learned[0])
+	}
+
+	// A setting is still what usageLimit returns.
+	rows := []Setting{{Key: "rhiza.daemon.usage.weekly", Value: "42"}}
+	if n, ok := usageLimit(rows, st.Learned, "weekly"); !ok || n != 42 {
+		t.Errorf("weekly limit = %d, %v: want the setting 42", n, ok)
 	}
 }

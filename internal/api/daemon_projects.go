@@ -187,6 +187,7 @@ func (p *daemonProj) prepare(r DaemonRequest, onConf func(daemonConf)) daemonTur
 		host, _ := os.Hostname()
 		var windows map[usage.Kind]usage.Window
 		windows, state.UsageWindows = usageWindowsNow(ctx, p.common, state.UsageWindows)
+		ratchetLimits(ctx, p.common, state, windows)
 		hold = usageHoldOf(conf.rows, state.Learned, runs, host, windows)
 	}
 	if hold == nil {
