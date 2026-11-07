@@ -1,0 +1,41 @@
+{
+  "actor": "01M6T3CZFH6G7ZTNJY4GRDMPQE",
+  "after": [
+    "01M6T3CQGBQ6X2VF2RH66RY36N"
+  ],
+  "at": "2026-11-07T04:14:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the question, usage-governor-hold-rules' current text, usage-live-run-remaining (01M6T2AQ, from accepted draft 01M6T1ZR) and this plan's usage-hold. usage-live-run-remaining and usage-hold both say a live run adds only the mean less its tokens so far, never below zero, plus one full mean for the next pick; the rewritten 01M6HHVZ still counts a full mean per live run. 01M6T1ZR does not touch 01M6HHVZ, so only this change set's rewrite can remove the contradiction. The rewrite already folds in 01M6T1ZR's ratchet (usage-learned-limit-ratchets), so folding in its live-run rule the same way is consistent, keeps the umbrella Decision true to the code 01M6T1ZR builds, and changes no behaviour, only the text. The alternative, leaving 01M6HHVZ stale, would keep a self-contradicting model that rhiza check reviewers flag every round.",
+          "statement": "The plan's rewrite of usage-governor-hold-rules (01M6HHVZ) changes its hold sentence to match usage-live-run-remaining and usage-hold: the daemon holds a new pick when the window's use so far, plus for each live run the mean tokens of the last 10 finished runs less that run's tokens so far (never below zero), plus one full mean for the run it would start, exceeds the limit minus the reserve. With no finished runs to average, only the use so far counts. The rest of the rewritten statement stays as planned.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "usage-hold-rules-live-run-remaining",
+        "id": "01M6T3DYFGRYPHE9GPYW27DGNP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6T3DYFGRYPHE9GPYS6S5YWX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T3DYFGRYPHE9GPYS6S5YWX",
+        "id": "01M6T3DYK2ZGFKG0Y2ZRMXJAW0",
+        "link": "01M6T3DYK2ZGFKG0Y2ZNRG40B3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T3CQEQY8XWPYSVBDCEXDNW",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6T2DCTWTJ0GW5AQMA2FZJF8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T3DYRE59WFCA7SQ8ECPAT2",
+  "type": "ops",
+  "v": 1
+}

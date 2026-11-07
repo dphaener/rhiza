@@ -1,0 +1,40 @@
+{
+  "actor": "01M6T3A4B2Y93WDD6JS8YDK9S7",
+  "after": [
+    "01M6T2RXK8X665D1ZF3J0MGVPZ"
+  ],
+  "at": "2026-11-07T04:12:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At commit 4c1ee4b4 ran go test -trimpath -count=1 ./internal/api -run 'TestLimitHit' -v: TestLimitHitsBecomeLearnedLimits and TestLimitHitTeachesOnlyItsKind (subtests session_hit_over_weekly, weekly_hit_over_session) PASS. Read the diff: the new regression test seeds a learned limit of the other kind (77 tokens, hit a day earlier), records one hit with reset 3h out (session) or 4 days out (weekly) via recordLimitHit, runs learnLimits, and asserts the other kind keeps its tokens and HitAt while the hit kind is learned at the hit (350 session / 1349 weekly). Hits go to a temp Wd so none leak into a root."
+        },
+        "handle": "usage-hit-teaches-its-kind-verified",
+        "id": "01M6T3B520J8HCKDAX5SS8YD70",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6T3B520J8HCKDAX5NST1PC3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T3B520J8HCKDAX5NST1PC3",
+        "id": "01M6T3B52HJSRR3C9E8YCA5B13",
+        "link": "01M6T3B52HJSRR3C9E8YBMH31B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2AQQYD3ESRA7NZAQW22KT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6T1ZR3ZCDCYF96CSR2AYN7D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T3B53DYRZE1PJ07K4BH0SQ",
+  "type": "ops",
+  "v": 1
+}

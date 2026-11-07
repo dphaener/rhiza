@@ -71,6 +71,38 @@ func learnLimits(ctx *Ctx, common string, state *daemon.State) {
 	}
 }
 
+// ratchetLimits raises a learned limit with use between hits: when a current
+// window's use passes its kind's learned limit and no recorded hit of that
+// kind falls inside the window, the use becomes the learned limit, with the
+// hit time it had. A window holding a hit is left to learnLimits, which
+// teaches the use at that hit.
+func ratchetLimits(ctx *Ctx, common string, state *daemon.State, windows map[usage.Kind]usage.Window) {
+	if len(state.Learned) == 0 {
+		return
+	}
+	raiseLearned(state, windows, daemon.ReadLimitHitsIn(limitsDir(ctx, common)))
+}
+
+// raiseLearned is ratchetLimits over the hits already read.
+func raiseLearned(state *daemon.State, windows map[usage.Kind]usage.Window, hits []daemon.LimitHit) {
+	for i, l := range state.Learned {
+		w, ok := windows[usage.Kind(l.Kind)]
+		if !ok || w.Used <= l.Tokens {
+			continue
+		}
+		held := false
+		for _, h := range hits {
+			if k, ok := usage.KindOf(usage.Limit{HitAt: h.HitAt, ResetAt: h.ResetAt}); ok && string(k) == l.Kind && w.Contains(h.HitAt) {
+				held = true
+				break
+			}
+		}
+		if !held {
+			state.Learned[i].Tokens = w.Used
+		}
+	}
+}
+
 // usageAtHit is the kind's window use at the hit, read from the token
 // records of the agent that saw it (else of every agent that reports them).
 func usageAtHit(ctx *Ctx, agent string, kind usage.Kind, l usage.Limit) (int64, bool) {
