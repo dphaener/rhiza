@@ -1,0 +1,30 @@
+{
+  "actor": "01M6T2DX6ZF81TQHFNF9JCM9ZM",
+  "after": [
+    "01M6T2DCTWTJ0GW5AQMAJPR065"
+  ],
+  "at": "2026-11-07T03:59:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "c9536b48-1275-487b-8a2d-01a1b426e138",
+          "statement": "Where should the usage governor read the account's live usage figures from? / How should a window's limit be derived from a live snapshot? / When is a live snapshot used, and what is the fallback order? / Should this change set depend on draft 01M6T1ZR (the other usage-governor fix: a hit teaches only its kind, learned limits ratchet, live runs count only remaining tokens), which edits the same usage_hold.go/usage_learn.go code?"
+        },
+        "handle": "question-c9536b48-1",
+        "id": "01M6T2HVHW6XPG83DM2FAFFSQ8",
+        "key": null,
+        "kind": "question",
+        "node": "01M6T2HVHW6XPG83DM2D1102ST",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6T2DCTWTJ0GW5AQMA2FZJF8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T2HXEAT4YQERV325CFC7MG",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,33 @@
+{
+  "actor": "01M6T209RBJ677HGVNWX7VDTHJ",
+  "after": [
+    "01M6T2A2PBJCSPKCEZ769H5T0V"
+  ],
+  "at": "2026-11-07T03:54:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "d8a7f66cf5b7ad8e6f39d68170328313f1d7a77d30c4d9453726f546b44f0aec",
+          "session": "99b69f45-64e6-43c7-ad0a-01a1b4201735",
+          "summary": "Autonomous plan run for change set 01M6T1ZR, no owner present. The planner read internal/api/usage_learn.go, usage_hold.go, internal/usage and the live daemon state: both learned limits (session 2353388, weekly 21870750) came from usage-fake test hits at 2026-11-04T10:45Z leaked into the root's usage.limits.jsonl, one of them with a 4-day reset, so the code's one-kind-per-hit rule held; the leak is change set 01M6T20E's. The planner asked four questions (which intent to serve, what to do about the both-kinds point, how learned limits relearn, how live runs count); the arbiter answered with Decision usage-governor-limits-fix-scope: serve m29-one-daemon; only a regression test for the both-kinds point; learned limits ratchet up to a window's use when it passes them with no hit in the window, settings never change; each live run adds max(0, run mean - its tokens so far) and the new pick one full mean. Three leaves follow. Nothing is left open.",
+          "title": "Usage governor limits fix, autonomous plan"
+        },
+        "handle": "usage-governor-limits-fix-plan",
+        "id": "01M6T2A9J57GY31J85KPW9FXB6",
+        "key": null,
+        "kind": "source",
+        "node": "01M6T2A9J57GY31J85KJZ2WJ3W",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6T1ZR3ZCDCYF96CSR2AYN7D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T2A9K5MDT5B44H5DSXRHY4",
+  "type": "ops",
+  "v": 1
+}
