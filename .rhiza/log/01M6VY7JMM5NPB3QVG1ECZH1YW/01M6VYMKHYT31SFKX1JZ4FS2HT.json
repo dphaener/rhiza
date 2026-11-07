@@ -1,0 +1,142 @@
+{
+  "actor": "01M6VY8R15AWXJ6W8JD2QW5QMA",
+  "after": [
+    "01M6VYKQNM10JFAQVB8Z9KWKH3"
+  ],
+  "at": "2026-11-07T21:29:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6VYJMHYEJ0FXDWPSR5ZJ27W",
+        "id": "01M6VYMKBF4ZJHKRDXPC6DK6RN",
+        "link": "01M6VYMKBF4ZJHKRDXPB8MDQXX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYKQN0EVFE0E26R3S8630H",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScripts/request-ref passes: a script queues a request with a ref holding a URL, one with an escape sequence and newline (request ls --json returns it verbatim, human request ls prints it quoted with no raw control bytes), one with surrounding spaces (trimmed), one over 2048 bytes (usage error naming 2048, nothing queued); describe-golden is regenerated",
+          "statement": "rhiza request '<text>' --ref <string> stores an opaque external reference on the queued request, trimmed and at most 2048 bytes (a longer one is a usage error naming the limit, an empty one means none), and request ls shows it: as a plain string in JSON, Go-quoted in human output"
+        },
+        "handle": "request-ref",
+        "id": "01M6VYMKBYZQBDVR6490HWQJXF",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6VYMKBYZQBDVR648YSHRVEY",
+        "op": "node.create",
+        "parent": "01M6CS230463DT24PWBJCPWD9Q"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYMKBYZQBDVR648YSHRVEY",
+        "id": "01M6VYMKCF5ZAQQTF87Y3KCW1W",
+        "link": "01M6VYMKCF5ZAQQTF87V0DGA0Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYJMHYEJ0FXDWPSR5ZJ27W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/changeset/... passes with tests that round-trip an open body with and without a ref (no ref leaves the encoding and format unchanged), reject a ref over 2048 bytes, and refuse the ref's format in a reader at the previous version; go test -trimpath ./cmd/rhiza -run TestScripts/change-set-ref passes: change new --ref then change show --json and change show print the ref, quoted with no raw control bytes in human output, and fold-ok holds",
+          "statement": "A change set carries an optional opaque ref on its open entry, set by rhiza change new --ref under the same 2048-byte limit, encoded only when set and stamped with a new entry format version so an older binary refuses it; change show shows it as a plain string in JSON and Go-quoted in human output"
+        },
+        "handle": "change-set-ref",
+        "id": "01M6VYMKCZ09KBA0BHCX562R98",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M6VYMKCZ09KBA0BHCVXF1Y7G",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYMKCZ09KBA0BHCVXF1Y7G",
+        "id": "01M6VYMKDDMG924767KF0XRCBF",
+        "link": "01M6VYMKDDMG924767KCBHCA3B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYJMHYEJ0FXDWPSR5ZJ27W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... -run 'Request' passes with a test that the daemon's run start arguments for a request with a ref pass it on, and one without a ref pass none; go test -trimpath ./cmd/rhiza -run TestScripts/request-ref passes its step showing run start --new with the request's ref opens a change set whose change show --json has the ref",
+          "statement": "When the daemon starts the plan run for a request with a ref, the run opens its change set with that ref, so the planned change set's open entry carries the request's ref"
+        },
+        "handle": "plan-run-carries-ref",
+        "id": "01M6VYMKDW2EP33TZA6C745CKH",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6VYMKDW2EP33TZA6ABET0V8",
+        "op": "node.create",
+        "parent": "01M6CS230463DT24PWBJCPWD9Q"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYMKDW2EP33TZA6ABET0V8",
+        "id": "01M6VYMKEC0W27FYCY8263HX97",
+        "link": "01M6VYMKEC0W27FYCY818R5F8P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYJMHYEJ0FXDWPSR5ZJ27W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... -run 'DaemonEvents' passes with a test that runs a recording event command over moves of a change set with a ref and one without: each payload of the first has the ref verbatim, the second's has no ref key",
+          "statement": "The rhiza.eventCommand JSON payload of every lifecycle move of a change set with a ref (proposed, accepted, rejected, withdrawn, superseded, landed, reopened) carries the ref, read from the folded change set, and omits it when the change set has none"
+        },
+        "handle": "event-payload-ref",
+        "id": "01M6VYMKEVBTRJ5WA7656AHT0H",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6VYMKEVBTRJ5WA7618HFQF8",
+        "op": "node.create",
+        "parent": "01M5SWT5AEW8ZEV2XPHEFJZNRP"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYMKEVBTRJ5WA7618HFQF8",
+        "id": "01M6VYMKFHJ7YY0XF2H0AR3SBD",
+        "link": "01M6VYMKFHJ7YY0XF2GZFPMCE5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYJMHYEJ0FXDWPSR5ZJ27W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... -run 'OpenPR' passes with tests that the body written for a change set with a ref holding backticks, a newline and an @mention shows it in one escaped inline code span, and the body for a change set without a ref has no ref line",
+          "statement": "ship open-pr lists the change set's ref in the PR body, inside an inline code span with backticks and newlines escaped so the untrusted text cannot inject markdown or mentions, and lists nothing when the change set has no ref"
+        },
+        "handle": "ship-pr-body-ref",
+        "id": "01M6VYMKG6TVD7M4Y8QPZWTHP2",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6VYMKG6TVD7M4Y8QM04GP38",
+        "op": "node.create",
+        "parent": "01M5Z8XQC9YFR1TWS0QNGF2HZC"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYMKG6TVD7M4Y8QM04GP38",
+        "id": "01M6VYMKH0QXD1JE7YF0ZXF2JF",
+        "link": "01M6VYMKH0QXD1JE7YEZ47BXT5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYJMHYEJ0FXDWPSR5ZJ27W",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6VY7JMM5NPB3QVG1ECZH1YW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYMKHYT31SFKX1JZ4FS2HT",
+  "type": "ops",
+  "v": 1
+}
