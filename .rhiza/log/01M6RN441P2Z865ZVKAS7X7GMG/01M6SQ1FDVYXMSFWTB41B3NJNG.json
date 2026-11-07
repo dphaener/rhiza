@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SPYZTMR97RE7E42PQGE6D5",
+  "after": [
+    "01M6SPX8WA0QA9TMAQM1T0NPNW"
+  ],
+  "at": "2026-11-07T00:37:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 196c50e2 ran go test -trimpath ./internal/tui/runsapp/... ./internal/tui/daemonapp/... ./internal/tui/autonomyapp/... (ok) and go test -trimpath ./cmd/rhiza -run TestTUI (TestTUIAppHeaders, TestTUISettingsScopes PASS); gofmt and go vet clean. TestMergedTagsRunsByProject runs the Runs app over projects alpha and beta and sees rows tagged 'alpha · Alpha work' and 'beta · Beta work', newest first, finished run dropped. TestTUISettingsScopes registers alpha and beta under a root, opens the Autonomy app in beta and toggles ship to owner: beta's git config gets rhiza.autonomy.ship=owner and alpha's stays unset; the Daemon app's run limit 7 lands in the root's rhiza.toml and not in git config. Read the diff: tui.go wires the merged runs model when projects are registered and daemonapp.NewIn with the current project; daemonapp adds project pause and run-cap fields writing rhiza.project.* keys. Checked by hand with a scratch build in a scratch root (two projects, RHIZA_* unset): daemon set of rhiza.daemon.maxRuns 7 wrote [daemon] in rhiza.toml, rhiza.project.maxRuns and rhiza.autonomy.ship wrote only beta's git config, and daemon settings lists each key once with its scope."
+        },
+        "handle": "tui-runs-daemon-across-projects-verified",
+        "id": "01M6SQ1FATQX53NTQKAVF8D9JE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SQ1FATQX53NTQKAT9PASFQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SQ1FATQX53NTQKAT9PASFQ",
+        "id": "01M6SQ1FC2VNGY7F7A8RHQTFW8",
+        "link": "01M6SQ1FC2VNGY7F7A8RAYSHTQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN86SPHVRJW809SPKT0ASP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN441P2Z865ZVKAS7X7GMG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SQ1FDVYXMSFWTB41B3NJNG",
+  "type": "ops",
+  "v": 1
+}
