@@ -1,0 +1,86 @@
+{
+  "actor": "01M6TJRKN1M0KKBHFEPPZ1HT8X",
+  "after": [
+    "01M6TJQX00HEJW6SDJYPY35DVD"
+  ],
+  "at": "2026-11-07T08:46:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 404f4b15 I built rhiza (go build -trimpath) into a scratch path. In a scratch repo with a bare origin, a fake gh and RHIZA_* unset apart from a planted review run, I gave the later of two same-titled change sets' branch a foreign commit on origin and a local commit. ship open-pr refused with 'pull request #345 ... does not name change set <id> ...' for a body naming the other change set and for a body with no Change set line, in OPEN, MERGED and CLOSED states. Each time gh saw only 'pr view'. HEAD and origin's branch did not move, the foreign commit was never fetched, and no ship state was written. ship check and ship check --settled refused the same six cases the same way. A foreign body arriving after ship state existed left the state file byte-identical (md5). With origin's branch cleared, open-pr with no PR pushed and ran gh pr create. With the PR's body naming the run's change set it ran gh pr edit 345 (created=false) and wrote .git/rhiza/ship/<id>.json with pr 345, the suffixed branch and the pushed head. ship check then tracked it as 'PR #345 at 3619007: not settled'."
+        },
+        "handle": "ship-tracks-own-pr-qa-2",
+        "id": "01M6TJZDR2QV5Z9WXATDQ9JA93",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TJZDR2QV5Z9WXATCBQDKNJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TJZDR2QV5Z9WXATCBQDKNJ",
+        "id": "01M6TJZDRQ2F1PV2HJFPGZDMRW",
+        "link": "01M6TJZDRQ2F1PV2HJFN3NCN7B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBRW1FQSQTEHBGNK10NGSV",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 404f4b15, with the built binary in a scratch Rhiza root and project, two change sets titled \"Fix the usage governor's\" (01M6TJTQRV..., then 01M6TJTQVQ..., sharing an 8-character prefix) got the following from rhiza session start: worktrees repo.fix-the-usage-governor-s and repo.fix-the-usage-governor-s-01m6tjtqvq15, and branches cs/fix-the-usage-governor-s and cs/fix-the-usage-governor-s-01m6tjtqvq15. run start --dry-run on the later one predicted the suffixed worktree. A --new plan dry run with the same title predicted repo.fix-the-usage-governor-s-01m6tjvdcnnk. ship open-pr and ship check on the later one targeted the suffixed branch. rhiza run abandon of a clean run on the later change set removed only the suffixed worktree and deleted only cs/fix-the-usage-governor-s-01m6tjtqvq15; the earlier one's worktree and branch stayed. Scoped go tests for internal/session, internal/api (Ship|Slug|Abandon) and the change-worktree-unique-slug, ship-follows-pr-head and run-ship-change scripts passed."
+        },
+        "handle": "slug-callers-agree-qa-2",
+        "id": "01M6TJZDSDF8JS484R3SWZDPJP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TJZDSDF8JS484R3PRB9CJR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TJZDSDF8JS484R3PRB9CJR",
+        "id": "01M6TJZDT6MHP5V4M5DSQF2D7P",
+        "link": "01M6TJZDT6MHP5V4M5DQ7J3K85",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBRVZXT2PN5R0C1X1JC5X1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 404f4b15 by hand with the built binary: of two same-titled change sets, the earlier (lower ID) kept the bare slug fix-the-usage-governor-s. The later got fix-the-usage-governor-s-01m6tjtqvq15, the first 12 characters of its ID lowercased, not its display short ID. The slug held across session start, run start dry runs, ship and abandon, so it is the same on repeated calls."
+        },
+        "handle": "unique-change-set-slug-qa-2",
+        "id": "01M6TJZDTVM284XENYWR67ND0C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TJZDTVM284XENYWQM18J60",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TJZDTVM284XENYWQM18J60",
+        "id": "01M6TJZDVJJPD6DJ3GFREPG5ZV",
+        "link": "01M6TJZDVJJPD6DJ3GFR2CYB5Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBRVYX75117KD157BPHBGB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6TBDRB2N5MTW4BW0K2NZCG6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TJZDWD7GJTQB9X7A75G9PR",
+  "type": "ops",
+  "v": 1
+}
