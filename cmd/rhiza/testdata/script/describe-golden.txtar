@@ -7589,6 +7589,10 @@ cmp stdout describe.golden.json
             "description": "A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)",
             "type": "string"
           },
+          "ref": {
+            "description": "An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none",
+            "type": "string"
+          },
           "text": {
             "description": "What to plan, in one line",
             "type": "string"
@@ -7628,6 +7632,10 @@ cmp stdout describe.golden.json
               },
               "milestone": {
                 "description": "The ID of the milestone intent the request names; absent if none",
+                "type": "string"
+              },
+              "ref": {
+                "description": "The request's opaque external reference, if any: untrusted text",
                 "type": "string"
               },
               "run": {
@@ -7695,6 +7703,10 @@ cmp stdout describe.golden.json
                 },
                 "milestone": {
                   "description": "The ID of the milestone intent the request names; absent if none",
+                  "type": "string"
+                },
+                "ref": {
+                  "description": "The request's opaque external reference, if any: untrusted text",
                   "type": "string"
                 },
                 "run": {

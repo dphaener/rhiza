@@ -44,6 +44,7 @@ type Request struct {
 	Kind      string    `json:"kind"`
 	Text      string    `json:"text"`
 	Milestone string    `json:"milestone,omitempty"`
+	Ref       string    `json:"ref,omitempty"`
 	At        time.Time `json:"at"`
 	Run       string    `json:"run,omitempty"`
 	StartedAt time.Time `json:"started_at,omitzero"`

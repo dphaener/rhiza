@@ -1,0 +1,35 @@
+# rhiza request --ref stores an opaque, trimmed ref of at most 2048 bytes;
+# request ls shows it as a plain string in JSON and Go-quoted in text.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza request 'Linked' --ref 'https://example.com/issues/7'
+exec rhiza request ls --json
+stdout '"ref": "https://example.com/issues/7"'
+exec rhiza request ls
+stdout '\[ref "https://example.com/issues/7"\]'
+
+# Hostile bytes come back verbatim in JSON, quoted in text.
+exec sh -c 'rhiza request Hostile --ref "$(printf "a\033[31mb\nc")"'
+exec rhiza request ls --json
+stdout 'a\\u001b\[31mb\\nc'
+exec rhiza request ls
+stdout '\[ref "a\\x1b\[31mb\\nc"\]'
+! stdout '\x1b'
+
+# Surrounding spaces are trimmed.
+exec rhiza request Spaced --ref '  padded  '
+exec rhiza request ls --json
+stdout '"ref": "padded"'
+
+# Over 2048 bytes is a usage error naming the limit; nothing is queued.
+exec sh -c 'head -c 2049 /dev/zero | tr "\0" a > long.txt'
+! exec sh -c 'rhiza request TooLong --ref "$(cat long.txt)"'
+stderr '2048'
+exec rhiza request ls
+! stdout 'TooLong'
