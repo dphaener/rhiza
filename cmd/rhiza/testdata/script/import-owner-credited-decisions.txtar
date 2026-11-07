@@ -1,0 +1,39 @@
+# The import topic gives a second wording form for a decision its document
+# records the owner making or confirming; both forms land, pass the check and
+# show their wording and Source in rhiza why, with no quote field.
+
+exec rhiza guide import
+stdout 'made by the owner as recorded in <document>'
+stdout 'made autonomously by the agent and not confirmed by the owner'
+stdout 'document records the owner making or confirming'
+stdout 'gets no `quote` field'
+
+exec rhiza init
+exec rhiza change new 'Import docs'
+exec rhiza add capability store --field 'statement=Keeps entries'
+exec rhiza add source decisions-md --field 'summary=docs/decisions.md, written by an agent.'
+exec rhiza add decision keep-in-ram --field 'statement=Entries stay in memory.' --field 'wording=Entries stay in memory, made by the owner as recorded in docs/decisions.md'
+exec rhiza add decision no-disk --field 'statement=Nothing is written to disk.' --field 'wording=Nothing is written to disk, made autonomously by the agent and not confirmed by the owner'
+exec rhiza link store decided-by keep-in-ram
+exec rhiza link store decided-by no-disk
+exec rhiza link keep-in-ram derived-from decisions-md
+exec rhiza link no-disk derived-from decisions-md
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+
+exec rhiza why store
+stdout 'made by the owner as recorded in docs/decisions.md'
+stdout 'made autonomously by the agent and not confirmed by the owner'
+! stdout 'quote'
+
+exec rhiza why keep-in-ram
+stdout 'decisions-md'
+exec rhiza why no-disk
+stdout 'decisions-md'
+
+exec rhiza show keep-in-ram --json
+! stdout '"quote"'
+exec rhiza show no-disk --json
+! stdout '"quote"'
+fold-ok
