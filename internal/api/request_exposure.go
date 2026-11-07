@@ -8,6 +8,7 @@ package api
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/workflow"
@@ -29,6 +30,16 @@ type ExposedWorkflow struct {
 	Workflow string   `json:"workflow" desc:"The workflow's name"`
 	Trigger  string   `json:"trigger" enum:"request,ready" desc:"What starts it: request (a queued request) or ready (a ready change set)"`
 	Steps    []string `json:"steps" desc:"The steps and roles whose sessions run in a bypass mode, in step order, such as \"interview\" or \"build/build builder\""`
+}
+
+// ExposureDetail names an exposed workflow, what starts it and the steps
+// that bypass permission checks, as one phrase.
+func ExposureDetail(e ExposedWorkflow) string {
+	from := "a queued request"
+	if e.Trigger == TriggerReady {
+		from = "a ready change set"
+	}
+	return fmt.Sprintf("workflow %s runs from %s with bypassed permissions in %s", e.Workflow, from, strings.Join(e.Steps, ", "))
 }
 
 // requestExposedWorkflows lists the workflows the daemon would run from a

@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	_ "github.com/dphaener/rhiza/internal/adapter/claudecode"
@@ -226,4 +227,19 @@ permission_mode = "bypassPermissions"
 
 func sprintfExposure(format, arg string) string {
 	return fmt.Sprintf(format, arg)
+}
+
+func TestExposureWarnings(t *testing.T) {
+	ctx := exposureRepo(t, nil)
+	if got := exposureWarnings(ctx, "plan"); got != nil {
+		t.Errorf("no bypass mode: warnings %v", got)
+	}
+	got := requestExposedWorkflows(ctx, exposureSettings("auto", "owner", "owner", "bypassPermissions"))
+	if len(got) != 1 {
+		t.Fatalf("got %+v", got)
+	}
+	d := ExposureDetail(got[0])
+	if !strings.Contains(d, "workflow plan runs from a queued request") || !strings.Contains(d, "interview") {
+		t.Errorf("detail %q", d)
+	}
 }

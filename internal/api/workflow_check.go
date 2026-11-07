@@ -43,10 +43,16 @@ type WorkflowCheckResponse struct {
 	Path     string            `json:"path" desc:"The file it resolved from, or builtin:<name>"`
 	Valid    bool              `json:"valid" desc:"True when run start would accept the workflow"`
 	Problems []WorkflowProblem `json:"problems" desc:"Every problem found; empty when valid"`
+	Warnings []string          `json:"warnings,omitempty" desc:"Risks worth knowing about that do not make the workflow invalid, such as outside text reaching its agents with no permission checks; never change valid or the exit code"`
 }
 
 // Human writes the verdict as text.
 func (r WorkflowCheckResponse) Human(w io.Writer) {
+	defer func() {
+		for _, warn := range r.Warnings {
+			fmt.Fprintf(w, "  warning: %s\n", warn)
+		}
+	}()
 	if r.Valid {
 		fmt.Fprintf(w, "workflow %s is valid (%s)\n", r.Name, r.Path)
 		return
@@ -115,7 +121,26 @@ func runWorkflowCheck(ctx *Ctx, req any) (any, error) {
 		out.Problems = append(out.Problems, agentProblems(ctx, def)...)
 	}
 	out.Valid = len(out.Problems) == 0
+	if !isWorkflowPath(ref) {
+		out.Warnings = exposureWarnings(ctx, name)
+	}
 	return out, nil
+}
+
+// exposureWarnings is the warning for the workflow called name when the
+// request-exposed list flags it, else none. Settings that cannot be read
+// give none: rhiza health reports them.
+func exposureWarnings(ctx *Ctx, name string) []string {
+	settings, err := settingsOf(ctx, nil)
+	if err != nil {
+		return nil
+	}
+	for _, e := range requestExposedWorkflows(ctx, settings) {
+		if e.Workflow == name {
+			return []string{ExposureDetail(e) + ": outside text reaches agents with no permission checks"}
+		}
+	}
+	return nil
 }
 
 // agentProblems runs run start's adapter and permission mode checks
