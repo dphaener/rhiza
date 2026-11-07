@@ -11825,7 +11825,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "change_sets": {
-            "description": "The plan's change sets checked, by ID, each serving a milestone",
+            "description": "The plan's change sets checked, by ID, checked against the milestone and policy rules",
             "items": {
               "type": "string"
             },
@@ -11842,7 +11842,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Check that each change set the plan of the run RHIZA_RUN names makes serves a milestone, directly or through an intent under one: pass, or fail naming each that does not",
+      "summary": "Check the change sets the plan of the run RHIZA_RUN names makes: each must serve the milestone the run was started with (RHIZA_MILESTONE), directly or through an intent under it, and some milestone when the repo's .rhiza/policy.toml sets backlog = \"skip\"; otherwise pass. Fails naming each that does not",
       "write": false
     },
     {
