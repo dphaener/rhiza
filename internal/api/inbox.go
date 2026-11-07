@@ -87,7 +87,10 @@ const (
 )
 
 // InboxRequest takes nothing.
-type InboxRequest struct{}
+type InboxRequest struct {
+	Project string `json:"project,omitempty" flag:"project" desc:"Only this registered project's inbox; default the current project, or every project at the root"`
+	All     bool   `json:"all,omitempty" flag:"all" desc:"Every registered project's inbox, from anywhere under the root"`
+}
 
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
@@ -116,6 +119,7 @@ type InboxItem struct {
 	TargetTitle    string              `json:"target_title,omitempty" desc:"An overlap: the target node's statement; absent when it has none"`
 	Detail         string              `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for"`
 	Next           string              `json:"next,omitempty" desc:"The command that clears it, when one does"`
+	Project        string              `json:"project,omitempty" desc:"The registered project the item belongs to, on an inbox that covers every project; absent for the daemon's machine-wide items (low disk, usage hold) and on a single project's inbox"`
 }
 
 // InboxGateQuestion is one open question a plan run's gate stopped on.
@@ -142,6 +146,9 @@ func (r InboxResponse) Human(w io.Writer) {
 	for _, it := range r.Items {
 		if it.Kind == InboxBlocker {
 			fmt.Fprintf(w, "%s blocker change set %s\n", it.ID, it.Change)
+			if it.Project != "" {
+				fmt.Fprintf(w, "  project: %s\n", it.Project)
+			}
 			if it.ChangeTitle != "" {
 				fmt.Fprintf(w, "  change set: %s\n", it.ChangeTitle)
 			}
@@ -175,11 +182,17 @@ func (r InboxResponse) Human(w io.Writer) {
 		}
 		if it.Kind == InboxMainStale {
 			fmt.Fprintf(w, "%s main-stale change set %s\n", it.ID, it.Change)
+			if it.Project != "" {
+				fmt.Fprintf(w, "  project: %s\n", it.Project)
+			}
 			fmt.Fprintf(w, "  %s\n", it.Detail)
 			continue
 		}
 		if it.Kind == InboxOverlap {
 			fmt.Fprintf(w, "%s overlap change sets %s and %s\n", it.ID, it.Change, it.Other)
+			if it.Project != "" {
+				fmt.Fprintf(w, "  project: %s\n", it.Project)
+			}
 			fmt.Fprintf(w, "  target: %s\n", it.Target)
 			fmt.Fprintf(w, "  %s\n", it.Detail)
 			if it.Next != "" {
@@ -192,6 +205,9 @@ func (r InboxResponse) Human(w io.Writer) {
 			fmt.Fprintf(w, ", step %s", it.Step)
 		}
 		fmt.Fprintln(w)
+		if it.Project != "" {
+			fmt.Fprintf(w, "  project: %s\n", it.Project)
+		}
 		switch it.Kind {
 		case InboxInterview:
 			if it.Tab != "" {
@@ -594,8 +610,105 @@ func hasSignoff(st run.State) bool {
 	return ok
 }
 
-// runInbox reads every run's journal.
+// inboxScope is one project an inbox covers: its name in the root, empty
+// for the project the caller works in when there is no root, and the
+// context to read it in.
+type inboxScope struct {
+	name string
+	ctx  *Ctx
+}
+
+// inboxScopes is the projects an inbox call covers. --project names one;
+// --all, or a working directory at the root and in no project, covers every
+// registered, initialised project; otherwise the project the caller is in.
+// merged says the items carry their project's name.
+func inboxScopes(ctx *Ctx, project string, all bool) (scopes []inboxScope, merged bool, err error) {
+	root, cfg, ok := rootOf(ctx)
+	if project != "" && all {
+		return nil, false, Usagef("--project and --all exclude each other")
+	}
+	if project != "" {
+		if !ok {
+			return nil, false, Usagef("--project needs a Rhiza root").WithNext("rhiza root init")
+		}
+		if _, reg := cfg.Projects[project]; !reg {
+			return nil, false, Usagef("project %q is not registered", project).WithNext("rhiza project ls")
+		}
+		return []inboxScope{{project, projectCtx(ctx, cfg.Dir(root, project))}}, false, nil
+	}
+	inProject := false
+	if ok {
+		_, inProject = cfg.ProjectOf(root, ctx.Wd)
+	}
+	if all && !ok {
+		return nil, false, Usagef("--all needs a Rhiza root").WithNext("rhiza root init")
+	}
+	if !all && (!ok || inProject) {
+		return []inboxScope{{"", ctx}}, false, nil
+	}
+	for _, n := range cfg.Names() {
+		if dir := cfg.Dir(root, n); projectInitialised(dir) {
+			scopes = append(scopes, inboxScope{n, projectCtx(ctx, dir)})
+		}
+	}
+	return scopes, true, nil
+}
+
+// inboxMachineWide says an item is the daemon's, the same in every
+// project: it is listed once, with no project.
+func inboxMachineWide(kind string) bool {
+	return kind == InboxDiskLow || kind == InboxUsageReserve
+}
+
+// mergeInbox is the items of every scope, tagged with their project and
+// sorted oldest first. A machine-wide item shared by projects is listed once.
+func mergeInbox(scopes []inboxScope, merged bool, of func(*Ctx) ([]InboxItem, error)) ([]InboxItem, error) {
+	all := []InboxItem{}
+	seen := map[string]bool{}
+	for _, sc := range scopes {
+		items, err := of(sc.ctx)
+		if err != nil {
+			if merged {
+				return nil, fmt.Errorf("project %s: %w", sc.name, err)
+			}
+			return nil, err
+		}
+		for _, it := range items {
+			if merged {
+				if inboxMachineWide(it.Kind) {
+					if seen[it.Kind+it.ID] {
+						continue
+					}
+					seen[it.Kind+it.ID] = true
+				} else {
+					it.Project = sc.name
+				}
+			}
+			all = append(all, it)
+		}
+	}
+	if merged {
+		all = sortInboxItems(all)
+	}
+	return all, nil
+}
+
+// runInbox reads every run's journal, in one project or in every one.
 func runInbox(ctx *Ctx, req any) (any, error) {
+	r, _ := req.(InboxRequest)
+	scopes, merged, err := inboxScopes(ctx, r.Project, r.All)
+	if err != nil {
+		return nil, err
+	}
+	items, err := mergeInbox(scopes, merged, inboxOne)
+	if err != nil {
+		return nil, err
+	}
+	return InboxResponse{Items: items}, nil
+}
+
+// inboxOne is the inbox of the one project ctx works in.
+func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return nil, err
@@ -634,7 +747,7 @@ func runInbox(ctx *Ctx, req any) (any, error) {
 			items[i].Questions = inboxGateQuestions(ctx, byRun[items[i].Run])
 		}
 	}
-	return InboxResponse{Items: items}, nil
+	return items, nil
 }
 
 // sortInboxItems orders items oldest first, ties by ID.
@@ -865,7 +978,9 @@ func mainStaleItems(common string) []InboxItem {
 
 // InboxOpenRequest names the item to open.
 type InboxOpenRequest struct {
-	Item string `json:"item" arg:"0" desc:"The inbox item: its short ID from rhiza inbox, or a unique prefix of it"`
+	Item    string `json:"item" arg:"0" desc:"The inbox item: its short ID from rhiza inbox, or a unique prefix of it"`
+	Project string `json:"project,omitempty" flag:"project" desc:"Only look in this registered project; default the current project, or every project at the root"`
+	All     bool   `json:"all,omitempty" flag:"all" desc:"Look in every registered project, from anywhere under the root"`
 }
 
 // InboxOpenResponse says which tab was focused, or that it is gone.
@@ -905,17 +1020,62 @@ func itemTab(item InboxItem, st run.State) (rexSession, block string) {
 	return "", ""
 }
 
-// findInboxItem is the inbox item ref names, with the state of its run: a
-// short ID or a unique prefix of one. No item, or more than one, is usage.
-func findInboxItem(ctx *Ctx, ref string) (InboxItem, run.State, error) {
+// findInboxItem is the inbox item ref names, with the state of its run and
+// the context of its project: a short ID or a unique prefix of one,
+// searched in one project or in every one (see inboxScopes). No item, or
+// more than one, is usage.
+func findInboxItem(ctx *Ctx, ref, project string, all bool) (InboxItem, run.State, *Ctx, error) {
+	scopes, merged, err := inboxScopes(ctx, project, all)
+	if err != nil {
+		return InboxItem{}, run.State{}, nil, err
+	}
+	type hit struct {
+		item InboxItem
+		st   run.State
+		ctx  *Ctx
+	}
+	var found []hit
+	seen := map[string]bool{}
+	for _, sc := range scopes {
+		items, st, err := findInboxItems(sc.ctx, ref)
+		if err != nil {
+			return InboxItem{}, run.State{}, nil, err
+		}
+		for _, it := range items {
+			if merged {
+				if inboxMachineWide(it.Kind) {
+					if seen[it.Kind+it.ID] {
+						continue
+					}
+					seen[it.Kind+it.ID] = true
+				} else {
+					it.Project = sc.name
+				}
+			}
+			found = append(found, hit{it, st[it.Run], sc.ctx})
+		}
+	}
+	switch len(found) {
+	case 0:
+		return InboxItem{}, run.State{}, nil, Usagef("no inbox item %q", ref).WithNext("rhiza inbox")
+	case 1:
+	default:
+		return InboxItem{}, run.State{}, nil, Usagef("%q matches %d inbox items: give more of the ID", ref, len(found)).WithNext("rhiza inbox")
+	}
+	return found[0].item, found[0].st, found[0].ctx, nil
+}
+
+// findInboxItems are the items of the project ctx works in whose ID starts
+// with ref, and the state of each run by ID.
+func findInboxItems(ctx *Ctx, ref string) ([]InboxItem, map[string]run.State, error) {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
-		return InboxItem{}, run.State{}, err
+		return nil, nil, err
 	}
 	rs := run.NewStore(run.Dir(common))
 	runs, err := rs.List()
 	if err != nil {
-		return InboxItem{}, run.State{}, Errorf("read runs: %v", err)
+		return nil, nil, Errorf("read runs: %v", err)
 	}
 	host, _ := os.Hostname()
 	var found []InboxItem
@@ -924,31 +1084,22 @@ func findInboxItem(ctx *Ctx, ref string) (InboxItem, run.State, error) {
 	all := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxTabOf(ctx, common))
 	blockers, err := inboxBlockers(ctx, questionAdvice(runs))
 	if err != nil {
-		return InboxItem{}, run.State{}, err
+		return nil, nil, err
 	}
 	overlaps, err := fold.overlaps()
 	if err != nil {
-		return InboxItem{}, run.State{}, err
+		return nil, nil, err
 	}
 	for _, it := range append(append(append(append(append(all, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...) {
 		if strings.HasPrefix(it.ID, ref) {
 			found = append(found, it)
 		}
 	}
-	switch len(found) {
-	case 0:
-		return InboxItem{}, run.State{}, Usagef("no inbox item %q", ref).WithNext("rhiza inbox")
-	case 1:
-	default:
-		return InboxItem{}, run.State{}, Usagef("%q matches %d inbox items: give more of the ID", ref, len(found)).WithNext("rhiza inbox")
-	}
-	var st run.State
+	st := map[string]run.State{}
 	for _, j := range runs {
-		if j.ID == found[0].Run {
-			st = j.State()
-		}
+		st[j.ID] = j.State()
 	}
-	return found[0], st, nil
+	return found, st, nil
 }
 
 // runInboxOpen focuses the tab of one inbox item.
@@ -957,7 +1108,7 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 	if r.Item == "" {
 		return nil, Usagef("inbox open needs an item: see rhiza inbox").WithNext("rhiza inbox")
 	}
-	item, st, err := findInboxItem(ctx, r.Item)
+	item, st, _, err := findInboxItem(ctx, r.Item, r.Project, r.All)
 	if err != nil {
 		return nil, err
 	}
@@ -999,6 +1150,8 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 type InboxApproveRequest struct {
 	Item       string `json:"item" arg:"0" desc:"The inbox item: its short ID from rhiza inbox, or a unique prefix of it; it must be a sign-off"`
 	Foreground bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
+	Project    string `json:"project,omitempty" flag:"project" desc:"Only look in this registered project; default the current project, or every project at the root"`
+	All        bool   `json:"all,omitempty" flag:"all" desc:"Look in every registered project, from anywhere under the root"`
 }
 
 // InboxRequestChangesRequest names the sign-off item and the file of the
@@ -1007,17 +1160,19 @@ type InboxRequestChangesRequest struct {
 	Item       string `json:"item" arg:"0" desc:"The inbox item: its short ID from rhiza inbox, or a unique prefix of it; it must be a sign-off"`
 	File       string `json:"file" arg:"1" desc:"A JSON file of the owner's findings, or - for stdin (see the input schema)"`
 	Foreground bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
+	Project    string `json:"project,omitempty" flag:"project" desc:"Only look in this registered project; default the current project, or every project at the root"`
+	All        bool   `json:"all,omitempty" flag:"all" desc:"Look in every registered project, from anywhere under the root"`
 }
 
 // signoffItemRun is the run of the sign-off item ref names. Any other
 // kind of item is usage, naming what clears it.
-func signoffItemRun(ctx *Ctx, cmd, ref string) (string, error) {
+func signoffItemRun(ctx *Ctx, cmd, ref, project string, all bool) (string, *Ctx, error) {
 	if strings.TrimSpace(ref) == "" {
-		return "", Usagef("%s needs an item: see rhiza inbox", cmd).WithNext("rhiza inbox")
+		return "", nil, Usagef("%s needs an item: see rhiza inbox", cmd).WithNext("rhiza inbox")
 	}
-	item, _, err := findInboxItem(ctx, ref)
+	item, _, pctx, err := findInboxItem(ctx, ref, project, all)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	if item.Kind != InboxSignoff {
 		e := Usagef("%s works on a sign-off item, and item %s is a %s", cmd, item.ID, item.Kind)
@@ -1026,30 +1181,30 @@ func signoffItemRun(ctx *Ctx, cmd, ref string) (string, error) {
 		} else {
 			e = e.WithNext("rhiza inbox open " + item.ID)
 		}
-		return "", e
+		return "", nil, e
 	}
-	return item.Run, nil
+	return item.Run, pctx, nil
 }
 
 // runInboxApprove approves the run an inbox sign-off item belongs to.
 func runInboxApprove(ctx *Ctx, req any) (any, error) {
 	r := req.(InboxApproveRequest)
-	id, err := signoffItemRun(ctx, "inbox approve", r.Item)
+	id, pctx, err := signoffItemRun(ctx, "inbox approve", r.Item, r.Project, r.All)
 	if err != nil {
 		return nil, err
 	}
-	return runRunApprove(ctx, RunApproveRequest{Run: id, Foreground: r.Foreground})
+	return runRunApprove(pctx, RunApproveRequest{Run: id, Foreground: r.Foreground})
 }
 
 // runInboxRequestChanges asks for changes on the run an inbox sign-off
 // item belongs to.
 func runInboxRequestChanges(ctx *Ctx, req any) (any, error) {
 	r := req.(InboxRequestChangesRequest)
-	id, err := signoffItemRun(ctx, "inbox request-changes", r.Item)
+	id, pctx, err := signoffItemRun(ctx, "inbox request-changes", r.Item, r.Project, r.All)
 	if err != nil {
 		return nil, err
 	}
-	return runRunRequestChanges(ctx, RunRequestChangesRequest{File: r.File, Run: id, Foreground: r.Foreground})
+	return runRunRequestChanges(pctx, RunRequestChangesRequest{File: r.File, Run: id, Foreground: r.Foreground})
 }
 
 // inboxGateQuestions are the open questions a plan run stopped on at its

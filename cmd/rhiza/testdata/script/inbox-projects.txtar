@@ -1,0 +1,97 @@
+# At the root, rhiza inbox covers every registered project, each item
+# tagged with its project; inbox open and approve act on an item of any
+# project; with --project, or from inside a project, only that project's
+# part. The journals are fixtures.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env REX_SESSION=session:owner
+exec sh -c 'printf "[projects.alpha]\npath = \"alpha\"\n[projects.beta]\npath = \"beta\"\n" > $WORK/rhiza.toml'
+
+mkdir alpha beta
+cd alpha
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .git/rhiza/runs
+cp ../question.jsonl .git/rhiza/runs/QUESTIONRUN.jsonl
+cd ../beta
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .git/rhiza/runs
+cp ../signoff.jsonl .git/rhiza/runs/SIGNOFFRUN01.jsonl
+cd $WORK
+
+# At the root: both projects, every item tagged.
+exec rhiza inbox --json
+stdout -count=1 '"project": "alpha"'
+stdout -count=1 '"project": "beta"'
+stdout '"kind": "question"'
+stdout '"kind": "signoff"'
+exec rhiza inbox
+stdout '  project: alpha'
+stdout '  project: beta'
+
+# --all from inside a project is the same; --project and the project's own
+# directory give only that project's.
+cd alpha
+exec rhiza inbox --all --json
+stdout '"project": "beta"'
+exec rhiza inbox --json
+stdout '"kind": "question"'
+! stdout '"kind": "signoff"'
+! stdout '"project"'
+exec rhiza inbox --project beta --json
+stdout '"kind": "signoff"'
+! stdout '"kind": "question"'
+! stdout '"project"'
+cd $WORK
+exec rhiza inbox --project alpha --json
+stdout '"kind": "question"'
+! stdout '"kind": "signoff"'
+! exec rhiza inbox --project nope
+stderr 'not registered'
+! exec rhiza inbox --project alpha --all
+stderr 'exclude each other'
+
+# Open acts on an item of the other project from the root.
+exec sh -c 'rhiza inbox | grep -E "^[0-9a-f]+ question " | cut -d" " -f1'
+cp stdout qid
+exec sh -c 'rhiza inbox open "$(cat qid)"'
+stdout 'Focused block:q1, the tab of question run QUESTIONRUN'
+# From inside beta it is not found, unless --all.
+cd beta
+! exec sh -c 'rhiza inbox open "$(cat ../qid)"'
+stderr 'no inbox item'
+exec sh -c 'rhiza inbox open --all "$(cat ../qid)"'
+stdout 'Focused block:q1'
+cd $WORK
+
+# Approve picks the sign-off in beta from the root; a question in alpha is
+# refused naming what clears it.
+exec sh -c 'rhiza inbox | grep -E "^[0-9a-f]+ signoff " | cut -d" " -f1'
+cp stdout sid
+# (The fixture's workflow has no steps, so approving reaches beta's run and
+# stops there, naming it.)
+! exec sh -c 'rhiza inbox approve --foreground --dry-run "$(cat sid)"'
+stderr 'run SIGNOFFRUN01: its workflow no longer parses'
+! exec sh -c 'rhiza inbox approve "$(cat qid)"'
+stderr 'works on a sign-off item'
+-- question.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSQUESTION"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"blocked","at":"2026-01-01T01:00:00Z","step":"build","session":"S1","block":{"kind":"question","question":"Which store?","tab_session":"session:s1","tab_title":"leaf one","tab_block":"block:q1"}}
+-- signoff.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"signoff","started":{"workflow":"ship-change","definition":"","change":"CSSIGNOFF"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"signoff","visit":1}
+{"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"h","pid":1,"rex_session":"session:run","rex_window":"window:w1","rex_block":"block:r1"}}
+{"type":"stopped","at":"2026-01-01T02:00:00Z","step":"signoff","detail":"waiting for the owner's sign-off: rhiza run approve | rhiza run request-changes <file>; rhiza run summary"}
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+case "$1" in
+block) echo '{"block":{"window_id":"window:w1"}}' ;;
+esac
