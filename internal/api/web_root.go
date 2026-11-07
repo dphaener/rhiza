@@ -17,9 +17,11 @@ func WebProjectHandler(base *Ctx) http.Handler {
 	return web.HandlerWithMilestones(WebDaemonSource(&snap, health), WebRunsSource(&snap), WebInboxSource(&snap), WebMilestonesSource(&snap), ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap, health), web.PollEvery))
 }
 
-// WebRootHandler is the one web UI of the root daemon: home, the home
-// project's UI, at /, and every other registered, initialised project's at
-// /p/<project>/ (the home project also answers there). Projects are read
+// WebRootHandler is the one web UI of the root daemon: the all-projects
+// home at / and /projects, and every registered, initialised project's UI
+// at /p/<project>/. An old unscoped page path redirects to that page of the
+// home project, under /p/<homeName>/; shared assets and streams stay served
+// by home at the root. Projects are read
 // from the root's rhiza.toml on each request, so a newly registered one
 // is served at once; each project's handler is built once and kept. ctx is
 // copied once, here: the poll goes on changing the ctx it came from while
@@ -33,7 +35,7 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 		h   http.Handler
 	}
 	cache := map[string]built{}
-	return web.RootWithInbox(home, func(name string) http.Handler {
+	return web.RootWithInbox(home, homeName, func(name string) http.Handler {
 		reg, err := rootcfg.Load(root)
 		if err != nil {
 			return nil

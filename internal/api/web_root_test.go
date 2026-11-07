@@ -51,8 +51,15 @@ func TestWebRootHandlerServesEveryProject(t *testing.T) {
 			t.Errorf("/p/%s/runs: %d", name, code)
 		}
 	}
-	if code, _ := get("/runs"); code != 200 {
-		t.Errorf("home /runs: %d", code)
+	// The web UI opens on the all-projects home; an old unscoped page
+	// redirects into the home project.
+	if code, body := get("/"); code != 200 || !strings.Contains(body, "/p/alpha/") || !strings.Contains(body, "/p/beta/") {
+		t.Errorf("/: %d, want the projects home listing both:\n%s", code, body)
+	}
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/runs", nil))
+	if rec.Code != http.StatusFound || rec.Header().Get("Location") != "/p/alpha/runs" {
+		t.Errorf("/runs: %d %q, want a redirect to /p/alpha/runs", rec.Code, rec.Header().Get("Location"))
 	}
 	for _, n := range []string{"bare", "nope"} {
 		if code, _ := get("/p/" + n + "/runs"); code != 404 {

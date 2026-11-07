@@ -163,7 +163,7 @@ func TestProjectsHomeReadsTheRoot(t *testing.T) {
 	}
 
 	// The home is reachable from every page's nav.
-	for _, path := range []string{"/", "/runs", "/roadmap", "/inbox", "/p/beta/", "/p/beta/runs"} {
+	for _, path := range []string{"/", "/p/alpha/runs", "/p/alpha/roadmap", "/inbox", "/p/beta/", "/p/beta/runs"} {
 		if b := serve(h, "GET", path).Body.String(); !strings.Contains(b, `<nav class="rz-nav" aria-label="Pages"><a href="/projects"`) {
 			t.Errorf("%s does not link the projects home from its nav", path)
 		}

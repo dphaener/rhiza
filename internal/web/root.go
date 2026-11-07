@@ -32,25 +32,46 @@ const InboxPath = "/inbox"
 // RootWithProjects is Root that also serves the all-projects home at
 // /projects, listing what projects reads.
 func RootWithProjects(home http.Handler, project ProjectResolver, projects ProjectsSource) http.Handler {
-	return RootWithInbox(home, project, projects, nil)
+	return RootWithInbox(home, "", project, projects, nil)
+}
+
+// shared reports whether path is one of the assets or streams every page
+// loads from the root, whichever project it shows: these stay served by
+// home rather than redirected into a project.
+func shared(path string) bool {
+	return strings.HasPrefix(path, "/static/") || strings.HasPrefix(path, "/api/") ||
+		path == "/events" || path == "/site.webmanifest"
 }
 
 // RootWithInbox is RootWithProjects that also serves the merged inbox at
-// /inbox, listing what inbox reads.
-func RootWithInbox(home http.Handler, project ProjectResolver, projects ProjectsSource, inbox MergedInboxSource) http.Handler {
+// /inbox, listing what inbox reads. With homeName set, the web UI opens on
+// the all-projects home: / serves it, and a page request on any other
+// unscoped path is redirected to that page of the home project, under
+// /p/<homeName>/, so every project page carries its switcher. With no
+// homeName, unscoped paths are served by home as they are.
+func RootWithInbox(home http.Handler, homeName string, project ProjectResolver, projects ProjectsSource, inbox MergedInboxSource) http.Handler {
 	list := ProjectsHome(projects)
 	merged := MergedInbox(inbox)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == ProjectsPath && (r.Method == "GET" || r.Method == "HEAD") {
+		get := r.Method == "GET" || r.Method == "HEAD"
+		if get && (r.URL.Path == ProjectsPath || (homeName != "" && r.URL.Path == "/")) {
 			list.ServeHTTP(w, r)
 			return
 		}
-		if r.URL.Path == InboxPath && (r.Method == "GET" || r.Method == "HEAD") {
+		if r.URL.Path == InboxPath && get {
 			merged.ServeHTTP(w, r)
 			return
 		}
 		rest, ok := strings.CutPrefix(r.URL.Path, ProjectPrefix)
 		if !ok {
+			if homeName != "" && get && !shared(r.URL.Path) {
+				to := ProjectPrefix + url.PathEscape(homeName) + r.URL.EscapedPath()
+				if r.URL.RawQuery != "" {
+					to += "?" + r.URL.RawQuery
+				}
+				http.Redirect(w, r, to, http.StatusFound)
+				return
+			}
 			home.ServeHTTP(w, r)
 			return
 		}

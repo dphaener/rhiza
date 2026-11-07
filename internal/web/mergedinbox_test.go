@@ -20,7 +20,7 @@ func TestMergedInboxOrdersTagsAndLinks(t *testing.T) {
 			}},
 		}
 	}
-	h := web.RootWithInbox(web.Handler(nil), func(string) http.Handler { return nil }, nil, src)
+	h := web.RootWithInbox(web.Handler(nil), "", func(string) http.Handler { return nil }, nil, src)
 	rec := serve(h, "GET", "/inbox")
 	if rec.Code != 200 {
 		t.Fatalf("status %d", rec.Code)
@@ -46,7 +46,7 @@ func TestMergedInboxOrdersTagsAndLinks(t *testing.T) {
 }
 
 func TestMergedInboxEmpty(t *testing.T) {
-	rec := serve(web.RootWithInbox(web.Handler(nil), nil, nil, nil), "GET", "/inbox")
+	rec := serve(web.RootWithInbox(web.Handler(nil), "", nil, nil, nil), "GET", "/inbox")
 	if rec.Code != 200 || !strings.Contains(rec.Body.String(), "Nothing waits on you") {
 		t.Errorf("%d %s", rec.Code, rec.Body)
 	}
