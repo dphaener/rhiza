@@ -16642,6 +16642,10 @@ cmp stdout describe.golden.json
             "description": "The permission mode of agent steps that set none; modes that bypass the agent's permission checks are refused",
             "type": "string"
           },
+          "ref": {
+            "description": "With --new: an opaque external reference for the opened change set, such as an issue URL, at most 2048 bytes; Rhiza never interprets it. The daemon passes the request's",
+            "type": "string"
+          },
           "request": {
             "description": "With --new: the plan request this run plans; the run takes the ID the daemon drew for it. The daemon passes it",
             "type": "string"

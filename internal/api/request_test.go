@@ -74,3 +74,13 @@ func TestDaemonPlanRequestsRequeuesUnjournaled(t *testing.T) {
 		t.Errorf("after the hold: run %q (first %q), retry at %v, want a new run", q.Run, first.Run, q.RetryAt)
 	}
 }
+
+func TestRequestPlanRunArgsPassRef(t *testing.T) {
+	with := planRefArgs(daemon.Request{ID: "r1", Ref: "https://example.com/issues/7"})
+	if len(with) != 2 || with[0] != "--ref" || with[1] != "https://example.com/issues/7" {
+		t.Fatalf("with a ref: %q", with)
+	}
+	if without := planRefArgs(daemon.Request{ID: "r2"}); len(without) != 0 {
+		t.Fatalf("without a ref: %q", without)
+	}
+}

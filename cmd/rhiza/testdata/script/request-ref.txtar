@@ -33,3 +33,9 @@ exec sh -c 'head -c 2049 /dev/zero | tr "\0" a > long.txt'
 stderr '2048'
 exec rhiza request ls
 ! stdout 'TooLong'
+
+# run start --new --ref opens the plan run's change set with that ref (the
+# daemon passes the request's); the queued start needs no agent.
+exec rhiza run start --workflow plan --new 'Planned' --ref 'https://example.com/issues/9' --permission-mode manual
+exec rhiza change show --json
+stdout '"ref": "https://example.com/issues/9"'
