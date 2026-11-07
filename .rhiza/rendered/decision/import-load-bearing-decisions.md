@@ -19,6 +19,7 @@ Load-bearing ones only: import as Decision nodes only the decisions that shape a
 ### In
 
 - decided-by [import-autonomous-decisions](../capability/rhiza/guide/import-autonomous-decisions.md)
+- supersedes [import-load-bearing-decisions-owner-credited](import-load-bearing-decisions-owner-credited.md)
 
 ## History
 
