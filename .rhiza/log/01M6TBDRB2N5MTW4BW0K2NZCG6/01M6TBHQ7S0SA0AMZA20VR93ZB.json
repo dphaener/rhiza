@@ -1,0 +1,30 @@
+{
+  "actor": "01M6TBEDVZQ5CQNVHDN2DQM0M8",
+  "after": [
+    "01M6TBDRB2N5MTW4BW0NM91HX5"
+  ],
+  "at": "2026-11-07T06:36:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "f74b00a7-a63c-4e88-b98a-01a1b4b71fc9",
+          "statement": "Change set 01M6TBD fixes two change sets with the same title slug sharing a worktree and branch. How should a change set's slug be made unique? Note that every caller (worktree, branch, ship target, abandon cleanup, run tabs) re-derives the slug from the title today, so the rule must give the same slug every time it runs."
+        },
+        "handle": "question-f74b00a7-1",
+        "id": "01M6TBHMBQ5DZ7XVV6GZAVRTED",
+        "key": null,
+        "kind": "question",
+        "node": "01M6TBHMBQ5DZ7XVV6GW7Q1SWV",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6TBDRB2N5MTW4BW0K2NZCG6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TBHQ7S0SA0AMZA20VR93ZB",
+  "type": "ops",
+  "v": 1
+}

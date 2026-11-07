@@ -1,0 +1,33 @@
+{
+  "actor": "01M6TBEDVZQ5CQNVHDN2DQM0M8",
+  "after": [
+    "01M6TBQEQV83Q2SXWPQKT680JY"
+  ],
+  "at": "2026-11-07T06:39:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "f42ba751fb2ba7ac99c46faa9a67931d1277d7829fbba3a87f8d782416b9fbfb",
+          "session": "f74b00a7-a63c-4e88-b98a-01a1b4b71fc9",
+          "summary": "Autonomous plan run for change set 01M6TBD; there was no owner. The planner read internal/session/names.go and its callers in internal/api (session.go, run.go, run_leaves.go, run_checks.go, ship.go, ship_openpr.go), where each one re-derives the branch and worktree from session.Slug(title). It asked one question, how to make slugs unique. The arbiter answered with Decision slug-unique-by-earliest-id: a change set whose title slug matches an earlier change set's (lower ID, any state) gets a short-ID suffix, and one function over the model gives the slug to every caller. The planner settled the PR guard itself: ship tracks only a pull request whose body names this change set, using the 'Change set <id>' line that open-pr already writes, and refuses any other. The change set serves m29-one-daemon, as the sibling governor fixes do.",
+          "title": "Unique change set slugs, autonomous plan"
+        },
+        "handle": "unique-slug-plan-2026-11-07",
+        "id": "01M6TBRAH2H9J5J6KYPJ40J41Z",
+        "key": null,
+        "kind": "source",
+        "node": "01M6TBRAH2H9J5J6KYPHMFX6C8",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6TBDRB2N5MTW4BW0K2NZCG6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TBRAHGT2HS960AGSR54Q3S",
+  "type": "ops",
+  "v": 1
+}
