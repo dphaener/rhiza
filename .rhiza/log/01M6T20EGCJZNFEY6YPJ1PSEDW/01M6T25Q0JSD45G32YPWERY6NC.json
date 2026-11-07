@@ -1,0 +1,41 @@
+{
+  "actor": "01M6T249HA5DE3M9P8CPV9VK03",
+  "after": [
+    "01M6T24247EK2V8X0H0ZKT1Y78"
+  ],
+  "at": "2026-11-07T03:52:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The leak comes from filepath.Abs(\"\") turning an empty dir into the cwd inside rootcfg.Find; fixing it at Find closes it for every caller, not just limitsDir (daemon.go, project.go, root.go, daemon_service.go, usage_learn.go all call Find(ctx.Wd)). rootOf in daemon_settings.go already treats an empty Wd as no root, so this generalises an existing rule. cmd/rhiza/ctx.go always sets Wd from os.Getwd, and daemon_projects.go sets it explicitly, so no production path relies on the empty-dir fallback. For failing a test run, a sandbox or syscall interception is not portable or cheap in Go; the concrete damage was files appearing under ~/code/.rhiza-root, so a TestMain before/after snapshot of the enclosing root's state dir catches exactly that class in the two packages that reach root state, fails the run loudly, and is a no-op on CI where no root encloses the checkout. Setting Wd in testCtx alone would fix today's test but not stop the next one.",
+          "statement": "An empty directory never resolves a root: rootcfg.Find(\"\") returns not found instead of falling back to the process cwd, so every caller (limitsDir and the other api ops on ctx.Wd) treats an empty Ctx.Wd as outside any root; the CLI keeps passing os.Getwd() explicitly as Ctx.Wd, so real runs are unchanged. A test run fails on writes outside its temp dir through a guard in TestMain of internal/api and cmd/rhiza: before m.Run it snapshots the state dir (.rhiza-root/: names, sizes, mod times) of any root enclosing the package dir, and after m.Run exits non-zero naming each file that appeared or changed. A unit test pins Find(\"\") to not found, and a usage-learn test with an empty Wd asserts nothing is written under the enclosing root.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "empty-wd-finds-no-root",
+        "id": "01M6T25PYG4GAVPAD47AWY79M4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6T25PYG4GAVPAD47AC5R6KN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T25PYG4GAVPAD47AC5R6KN",
+        "id": "01M6T25PZRPG10NWVSNMWRFGZ7",
+        "link": "01M6T25PZRPG10NWVSNMW5PH47",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T240AFNVXCY1N0YG48S78B",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6T20EGCJZNFEY6YPJ1PSEDW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T25Q0JSD45G32YPWERY6NC",
+  "type": "ops",
+  "v": 1
+}

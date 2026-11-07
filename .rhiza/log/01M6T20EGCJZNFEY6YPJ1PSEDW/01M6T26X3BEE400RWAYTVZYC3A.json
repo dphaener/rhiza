@@ -1,0 +1,63 @@
+{
+  "actor": "01M6T2118ZGSWB4XVFC7QPT8EY",
+  "after": [
+    "01M6T26DB1MFH3P8P605GVJE69"
+  ],
+  "at": "2026-11-07T03:53:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/rootcfg/... passes with a test that, from a cwd under a folder holding rhiza.toml, asserts Find(\"\") returns not found; and go test -trimpath ./internal/api/... -run Usage passes with a usage-learn test whose Ctx has an empty Wd under an enclosing root that asserts the hit lands in the repo's own daemon folder and nothing is written under the enclosing root",
+          "statement": "rootcfg.Find(\"\") reports no root instead of resolving the process cwd, so every caller given an empty Ctx.Wd (limitsDir and the api ops that call Find(ctx.Wd)) treats it as outside any root, while the CLI keeps passing its absolute working directory as Ctx.Wd"
+        },
+        "handle": "empty-dir-finds-no-root",
+        "id": "01M6T26X1CPJA6YNWN7P4QJ67X",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M6T26X1CPJA6YNWN7KQTP4C5",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M6T26X1CPJA6YNWN7KQTP4C5",
+        "id": "01M6T26X1QA9HGB3AWGP2CXW75",
+        "link": "01M6T26X1QA9HGB3AWGJV8P47B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T25PYG4GAVPAD47AC5R6KN",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/<helper pkg>/... passes with tests that the helper reports a file added or changed in a temp root's .rhiza-root/ and reports nothing when it is untouched or no root encloses the dir; go test -trimpath ./internal/api/... and go test -trimpath ./cmd/rhiza -run TestScripts/usage pass from a checkout under a root with its .rhiza-root/ unchanged",
+          "statement": "The test runs of internal/api and cmd/rhiza fail when they write into the state folder of a root enclosing the package dir: TestMain snapshots that root's .rhiza-root/ (names, sizes, mod times) before m.Run and, after it, exits non-zero naming each file that appeared or changed, through one shared helper"
+        },
+        "handle": "tests-leave-root-state-alone",
+        "id": "01M6T26X2D1D7TTAJ0MQ8VAY2P",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6T26X2D1D7TTAJ0MMF0X9FN",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6T26X2D1D7TTAJ0MMF0X9FN",
+        "id": "01M6T26X2WJKC43YJZBHH8H284",
+        "link": "01M6T26X2WJKC43YJZBG07SPEG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T25PYG4GAVPAD47AC5R6KN",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6T20EGCJZNFEY6YPJ1PSEDW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T26X3BEE400RWAYTVZYC3A",
+  "type": "ops",
+  "v": 1
+}
