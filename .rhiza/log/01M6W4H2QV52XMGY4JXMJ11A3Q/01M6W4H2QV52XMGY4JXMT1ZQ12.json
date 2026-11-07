@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-07T23:12:06Z",
+  "body": {
+    "intent": "Record the owner's rule: Rhiza warns about risky setups instead of safeguarding, and a schedule can run anything",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6W4H2QV52XMGY4JXMJ11A3Q",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W4H2QV52XMGY4JXMT1ZQ12",
+  "type": "open",
+  "v": 1
+}
