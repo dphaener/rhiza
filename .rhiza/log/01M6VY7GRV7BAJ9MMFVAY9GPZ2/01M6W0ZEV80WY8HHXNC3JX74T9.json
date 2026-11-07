@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W0XK6KWZ9GFVRRTJJN4CER",
+  "after": [
+    "01M6W0N98F11P4FE75B22NV9S8"
+  ],
+  "at": "2026-11-07T22:10:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6986e9a2 I read the diff (internal/policy, internal/check/policy.go, policy-check.txtar; repo.json untouched, toml already in go.mod) and ran go test -trimpath -count=1 ./internal/policy ./internal/check: TestRead passes its 11 cases (missing file, empty file, missing key, other table, after, before, skip, unknown value \"sometimes\" naming .rhiza/policy.toml and the value, empty value, wrong type, malformed TOML) and check's TestRunOrder places the policy rule before append-only. go test -trimpath ./cmd/rhiza -run TestScripts/policy-check passes: rhiza check with backlog = \"sometimes\" prints 'fail policy .rhiza/policy.toml: schedule.backlog \"sometimes\" is not one of \"after\", \"before\" or \"skip\"' and fails, malformed TOML fails naming the file, and backlog = \"skip\" (and before, and a missing key) passes with ok."
+        },
+        "handle": "schedule-policy-file-verified",
+        "id": "01M6W0ZEPGDAP28J5M86X3FKJB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W0ZEPGDAP28J5M854XC8YZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W0ZEPGDAP28J5M854XC8YZ",
+        "id": "01M6W0ZES1C17A24JQGXGKDPX4",
+        "link": "01M6W0ZES1C17A24JQGWSEZ9QN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYK4NBNG3NG4FKXD1VP896",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7GRV7BAJ9MMFVAY9GPZ2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W0ZEV80WY8HHXNC3JX74T9",
+  "type": "ops",
+  "v": 1
+}

@@ -79,6 +79,10 @@
 //   - render fails on each rendered file that differs from what
 //     render.Render writes, is missing or is extra, and on a missing
 //     rendered folder.
+//   - policy fails once when .rhiza/policy.toml (Input.Tree) does not parse
+//     or sets schedule.backlog to anything but "after", "before" or "skip";
+//     the message names the file and the bad value. A missing file or key is
+//     fine, and without a Tree the rule is skipped silently.
 //   - append-only compares log entries by identity, not by path: an entry
 //     is its entry ID (its file name minus .json) and its bytes. It fails on
 //     each entry of the base whose ID is in the current log nowhere (deleted)
@@ -128,13 +132,14 @@ const (
 	RuleAnchor        = "anchor"
 	RuleTextRef       = "text-ref"
 	RuleRender        = "render"
+	RulePolicy        = "policy"
 	RuleAppendOnly    = "append-only"
 )
 
 // Rules returns the rules in report order.
 func Rules() []string {
 	return []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleEvidenceActor, RuleUnclaimed, RuleAnchor,
-		RuleTextRef, RuleRender, RuleAppendOnly}
+		RuleTextRef, RuleRender, RulePolicy, RuleAppendOnly}
 }
 
 // Paths in findings are relative to the project root.
@@ -237,6 +242,7 @@ func Run(in Input) Report {
 	c.anchors(asIs)
 	c.textRefs(asIs, sets)
 	c.render(asIs, sets)
+	c.policy()
 	c.appendOnly()
 
 	rank := map[string]int{}

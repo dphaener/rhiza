@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W187EZDBYJSTGGBP32DE9R",
+  "after": [
+    "01M6W0ZEV80WY8HHXNC3JX74T9"
+  ],
+  "at": "2026-11-07T22:16:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 4aa87845 as the verifier. Read the diff: daemonCandidates takes a daemonSchedule (Backlog, Detail, Since); backlog groups' accepted change sets go after milestone candidates by default, ahead under before, sorted by acceptedSince then ID; under skip or an unknown value (Backlog \"\", policy.Read's error in Detail) they are skipped no-milestone with that detail; daemonFold reads .rhiza/policy.toml and daemonStamp hashes it. Ran go test -trimpath ./internal/api -run 'TestDaemonCandidatesBacklog|TestDaemonPicks$|TestUmbrellaNotReady' -v: all PASS. TestDaemonCandidatesBacklog covers two milestone and two backlog change sets with different accepted times: after gives m1,m2,b2,b1; before gives b2,b1,m1,m2; skip gives m1,m2 with 2 skips; unknown gives m1,m2 with both skips no-milestone, detail carried. TestDaemonPicks now sets backlog skip. go test ./internal/policy PASS (unknown value error names the value). go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-picks-backlog|daemon-picks|daemon-status|daemon-status-projects)$' ok: the new daemon-picks-backlog.txtar starts the only, no-milestone change set with no policy.toml, does not start it under backlog = \"skip\" (status says serves no milestone), and shows 'sometimes' in daemon status --json for an unknown value; the landed daemon scripts set backlog = \"skip\" as review-01m6vy7e-r3-f1's answer settled. The broader api run was flagged only for a write to ~/code/.rhiza-root/usage.live.json, which live Claude Code statusline sessions write, not this change."
+        },
+        "handle": "daemon-picks-backlog-verified",
+        "id": "01M6W1C5S219KHSARHCFGTZ6CW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W1C5S219KHSARHCEEF5A68",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W1C5S219KHSARHCEEF5A68",
+        "id": "01M6W1C5SY8DW367XKBQMSBBX6",
+        "link": "01M6W1C5SY8DW367XKBPKEXJP0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYK4TRY2VN9XHGKRD9V4XZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7GRV7BAJ9MMFVAY9GPZ2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W1C5VEB2DJDKQJF6S5T0EE",
+  "type": "ops",
+  "v": 1
+}

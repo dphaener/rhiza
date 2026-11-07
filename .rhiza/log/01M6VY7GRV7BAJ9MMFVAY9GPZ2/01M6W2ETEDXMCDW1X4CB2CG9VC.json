@@ -1,0 +1,178 @@
+{
+  "actor": "01M6W21TGXQE2Z7JX54NHD3XKT",
+  "after": [
+    "01M6W1YA798A8G05CTHGFBEQ74"
+  ],
+  "at": "2026-11-07T22:35:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the branch build (go build ./cmd/rhiza) in a scratch Rhiza root, fake rex, RHIZA_TEST_DETACH_LOG: one milestone change set and two backlog change sets with leaves. rhiza daemon --once --max-runs=3 with no policy.toml started milestone first then backlog; backlog = \"before\" started backlog first; backlog = \"skip\" started only the milestone one and daemon status listed each backlog one as 'serves no milestone'; backlog = \"x\" did the same with the policy error as the skip detail (text and --json reason no-milestone). Backlog order follows acceptance time, not ID: a change set made first but accepted later started second."
+        },
+        "handle": "daemon-picks-backlog-qa-1",
+        "id": "01M6W2ESRRB9N6A3RWEJVM8JPD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W2ESRRB9N6A3RWEGHSTW8G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W2ESRRB9N6A3RWEGHSTW8G",
+        "id": "01M6W2EST27SDVTACT9J2TFE60",
+        "link": "01M6W2EST27SDVTACT9HDFJD28",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYK4TRY2VN9XHGKRD9V4XZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the branch build: rhiza daemon --once with a fake rex picks the milestone change set with a leaf under every backlog value, and backlog change sets only by the [schedule] backlog rule (after/before/skip/unknown checked by hand), each start logged once as rhiza run start --foreground <cs>."
+        },
+        "handle": "daemon-picks-schedule-qa-1",
+        "id": "01M6W2ESW0KH1ZR3VWTXKA3B7T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W2ESW0KH1ZR3VWTTZ9SXRN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W2ESW0KH1ZR3VWTTZ9SXRN",
+        "id": "01M6W2ESY6R147CS3RXWR0D83D",
+        "link": "01M6W2ESY6R147CS3RXWEZJAQZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the branch build: rhiza check on a scratch repo fails with 'fail policy .rhiza/policy.toml: schedule.backlog \"sometimes\" is not one of \"after\", \"before\" or \"skip\"', fails on malformed TOML with 'fail policy .rhiza/policy.toml: toml: line 2: ...', and reports no policy problem with backlog = \"before\" or no file."
+        },
+        "handle": "schedule-policy-file-qa-1",
+        "id": "01M6W2ET02GC3FKS42100EA8Z0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W2ET02GC3FKS420ZJZGEZG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W2ET02GC3FKS420ZJZGEZG",
+        "id": "01M6W2ET1NYH4PX9SJQX4XFKYR",
+        "link": "01M6W2ET1NYH4PX9SJQW5E0EEQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYK4NBNG3NG4FKXD1VP896",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the branch build as rhiza on PATH, the plan-milestone-check.txtar fixtures (fake claude/rex/gh) run by hand: rhiza run start --workflow plan on a plan serving an intent under no milestone ended failed at milestone-check naming the change set and policy.toml's backlog = \"skip\" when that file was present, and with no policy.toml passed milestone-check, entered review and the run succeeded."
+        },
+        "handle": "milestone-check-follows-policy-qa-1",
+        "id": "01M6W2ET4G4CTN4CW4EDPMZY02",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W2ET4G4CTN4CW4EDDQRKWT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W2ET4G4CTN4CW4EDDQRKWT",
+        "id": "01M6W2ET5JKDZSP05F3N5Y92JV",
+        "link": "01M6W2ET5JKDZSP05F3JSET1KP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMQ92BYC34XV88RA2A320",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the branch build, plan run by hand with fake agents: milestone-check passes a plan serving no milestone with no policy.toml (run goes on to review and succeeds) and fails it, never reaching review, with backlog = \"skip\", printing the change set and the fix."
+        },
+        "handle": "plan-step-milestone-check-policy-qa-1",
+        "id": "01M6W2ET6RAZTCKRA1CX19DF2G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W2ET6RAZTCKRA1CVAEJPNY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W2ET6RAZTCKRA1CVAEJPNY",
+        "id": "01M6W2ET890EYKY72C2YT361NS",
+        "link": "01M6W2ET890EYKY72C2W1GH75C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JE3T47QE8E8YPMBHR38MAE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the branch build: rhiza guide plan says to link a milestone only when RHIZA_MILESTONE names one or an open milestone fits, that other work is built as backlog by .rhiza/policy.toml's [schedule] backlog rule, and that under \"skip\" the serves link must reach a milestone."
+        },
+        "handle": "plan-guide-milestone-optional-qa-1",
+        "id": "01M6W2ET9W6PFXZPX883VK0TWG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W2ET9W6PFXZPX88305S0EV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W2ET9W6PFXZPX88305S0EV",
+        "id": "01M6W2ETB67REQX8T9PC8QKM6G",
+        "link": "01M6W2ETB67REQX8T9PC31W67X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMQBZFQMEAXX3YSKEYS5J",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the branch build: rhiza guide plan names RHIZA_MILESTONE, links a milestone only when set or one fits, names .rhiza/policy.toml's backlog rule and its \"skip\" exception, and no longer says every change set must serve a milestone."
+        },
+        "handle": "planner-serves-milestone-policy-qa-1",
+        "id": "01M6W2ETC6MEBNGSH2WC2M89JB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W2ETC6MEBNGSH2WA6XAMR8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W2ETC6MEBNGSH2WA6XAMR8",
+        "id": "01M6W2ETDJ8DKS2J7JW09KZBPB",
+        "link": "01M6W2ETDJ8DKS2J7JVYH6R900",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JE3KEGWGBYW35XHSH0JJK1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7GRV7BAJ9MMFVAY9GPZ2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W2ETEDXMCDW1X4CB2CG9VC",
+  "type": "ops",
+  "v": 1
+}
