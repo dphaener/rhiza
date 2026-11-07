@@ -27,6 +27,7 @@ Registered under root. The assistant's option, picked by the owner.
 - decided-by [root-show](../capability/rhiza/runtime/root-show.md)
 - decided-by [project-add-path](../capability/rhiza/runtime/project-add-path.md)
 - decided-by [project-add-url](../capability/rhiza/runtime/project-add-url.md)
+- decided-by [vm-root-installed](../capability/rhiza/orchestration/daemon/vm-root-installed.md)
 
 ## History
 

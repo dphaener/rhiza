@@ -320,10 +320,11 @@ func healthUsage(ctx *Ctx, settings []Setting, err error) HealthPart {
 			used[usage.Kind(w.Kind)] = w.Used
 		}
 	}
+	live := usageLiveLimits(ctx, common)
 	var parts []string
 	for _, kind := range usage.Kinds {
 		used := used[kind]
-		if limit, ok := usageLimit(settings, st.Learned, kind); ok {
+		if limit, ok := usageLimit(settings, st.Learned, live, kind); ok {
 			parts = append(parts, fmt.Sprintf("%s %d of %d", kind, used, limit))
 		} else {
 			parts = append(parts, fmt.Sprintf("%s %d, no limit known", kind, used))

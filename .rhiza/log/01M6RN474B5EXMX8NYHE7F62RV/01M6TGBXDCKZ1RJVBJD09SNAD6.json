@@ -1,0 +1,39 @@
+{
+  "actor": "01M6TGAM0R0HXX3W465QS2GAJ9",
+  "after": [
+    "01M6TG9GG78BQV8X5M5JS8ESAJ"
+  ],
+  "at": "2026-11-07T08:00:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Builder attempt 7, per decision m29-nebari-ships-button-contrast: the work is done by the root daemon, not by code. Checked now: dphaener/nebari#72 (Disabled button contrast, change set 01M6S6R84W) is MERGED at 2026-11-07T07:39:35Z, merge commit 1689c77 (gh pr view). The concurrent snapshot is in ~/orchestrator/vm-root-migration.log at 2026-11-07T04:32:31Z: root daemon status lists nebari run 01M6T4EHEM1TBM0CET0SCBKHHG and rhiza runs 01M6T36NJ2YFVFPT8MS9YK8TDW and 01M6T3HSJVBP341H5C7V78K2T4 live together. No nebari run is live now because it finished."
+        },
+        "handle": "note-01m6tgbxbv2zpq",
+        "id": "01M6TGBXBV2ZPQFDJK775C3KFP",
+        "key": null,
+        "kind": "note",
+        "node": "01M6TGBXBV2ZPQFDJK75HW50TH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TGBXBV2ZPQFDJK75HW50TH",
+        "id": "01M6TGBXCJE9JQ6X0QSFBJY6M9",
+        "link": "01M6TGBXCJE9JQ6X0QSEN2Q3W9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN873HV3NYMXTSJ13CXZJF",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TGBXDCKZ1RJVBJD09SNAD6",
+  "type": "ops",
+  "v": 1
+}

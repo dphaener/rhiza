@@ -1,0 +1,40 @@
+{
+  "actor": "01M6TGJH292CQSXWK6X6WKERDG",
+  "after": [
+    "01M6TGGYYT7J177ETAN2BP92SZ"
+  ],
+  "at": "2026-11-07T08:06:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at cb434652: built this branch's rhiza (go build -trimpath) and ran it in a scratch repo with a bare origin and a gh shim whose 'run view --log-failed' prints real logs fetched with gh from dphaener/nebari's failed Actions runs. Each head: first ship check --settled --json reran run 42, the second listed tests and findings. Run 42339573426 (nebari#72) gave ['rspec ./spec/views/tasks/list_spec.rb:290']; run 42331018773 gave ['rspec ./spec/system/garden_location_spec.rb[1:1:11]'] and run 42329799773 gave ['rspec ./spec/system/climate_profile_spec.rb[1:1:6]', 'rspec ./spec/system/garden_location_spec.rb[1:1:11]'], closing bracket kept, so cycle 1's id-form defect is fixed; each with one finding per test and no '# ...' comment text, and ship check --test-failures exited 0. gh-prefixed synthetic logs: Minitest gave 'bin/rails test test/models/x_test.rb:12', pytest 'FAILED tests/test_x.py::test_y - AssertionError' gave 'pytest tests/test_x.py::test_y' (both --test-failures exit 0); a Jest 'FAIL src/x.test.js' plus '1 failure' log and an infra-only 'Error: Process completed with exit code 1.' log gave no tests, and --test-failures exited 1 with 'no failing test was recorded for the head: an infra or unparsable failure.'"
+        },
+        "handle": "ship-check-runner-test-failures-qa-2",
+        "id": "01M6TGQ1E71JZHJMAJC6R7YZ07",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TGQ1E71JZHJMAJC5HZA87H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TGQ1E71JZHJMAJC5HZA87H",
+        "id": "01M6TGQ1G57K65PMYVS0Y3VVJ7",
+        "link": "01M6TGQ1G57K65PMYVRX8S3RJX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBDK41SM1XY2928W79FEYZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6TB6N9BYGB9S6ZF3HS4EDWM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TGQ1MVZCJMYC2HA4Q0GRV6",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,39 @@
+{
+  "actor": "01M6SP15NGHB81KF31Q7SMVZ6W",
+  "after": [
+    "01M6SNXF6ZE41EZ84SC1WQNYYS"
+  ],
+  "at": "2026-11-07T00:21:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Attempt 2 builder, 2026-11-07: still blocked. The root daemon at ~/code is up (version e1d900cd, max runs 5), but Nebari has no planned or accepted change set to ship. Its 12 non-landed change sets are all draft intentions: Gardens & sharing designs (01M6S6QJ1P), Settings › Gardens & sharing (01M6S6QJTA), Shared with me (01M6S6QXYE), Open the Patreon page (01M6S6R05Z), Domain DNS and email (01M6S6R10T), Backup bucket and key (01M6S6R2JP), GitHub feedback token (01M6S6R391), Go live (01M6S6R441), Generate more seed tiers (01M6S6R617), Review anchor offsets (01M6S6R71K), Disabled button contrast (01M6S6R84W), Bonsai photos of species (01M6S6R9ET). Planning one needs the owner (rhiza.autonomy.plan = owner). A small, code-only candidate such as Disabled button contrast would let the daemon plan, build and merge it next to a rhiza run."
+        },
+        "handle": "note-01m6sp34wkksh5",
+        "id": "01M6SP34WKKSH5806WAYVQTDQ8",
+        "key": null,
+        "kind": "note",
+        "node": "01M6SP34WKKSH5806WAYS15MK0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SP34WKKSH5806WAYS15MK0",
+        "id": "01M6SP34Z5JTSJ5YTK53ABQVAW",
+        "link": "01M6SP34Z5JTSJ5YTK505M661X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6SNX8DWNC1C10JHF5N0D1MF",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SP353D5GW6DJB9HKFT54K7",
+  "type": "ops",
+  "v": 1
+}

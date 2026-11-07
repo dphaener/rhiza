@@ -168,11 +168,12 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		self = "rhiza"
 	}
 	launch := adapter.Launch{
-		SessionID:      rec.ID,
-		PermissionMode: rec.PermissionMode,
-		HookCommand:    []string{self, "session", "hook"},
-		Prompt:         rec.Prompt,
-		Model:          rec.Model,
+		SessionID:         rec.ID,
+		PermissionMode:    rec.PermissionMode,
+		HookCommand:       []string{self, "session", "hook"},
+		StatusLineCommand: []string{self, "session", "status-line"},
+		Prompt:            rec.Prompt,
+		Model:             rec.Model,
 	}
 	argv, err := a.Command(launch)
 	if err != nil {

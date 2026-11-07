@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6SPERQYSB28M5H374JJR1YK"
+  ],
+  "at": "2026-11-07T00:34:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Leaf vm-second-project-ships failed all 3 attempts of round 2: attempt 4 verifier failed: verifier found 1 problem(s) (f1 Acceptance still not met at d6387d68: the attempt-4 commit only adds the builder's actor record (no code or model change beyond that), deferring to decision m2…); attempt 5 verifier failed: verifier found 1 problem(s) (f1 Acceptance still not met at ab161f24: the attempt-5 commit only adds model records (actor record plus notes) restating that the leaf waits on the owner (m29-wh…); attempt 6 verifier failed: verifier found 1 problem(s) (f1 Acceptance not met at 5227c77d (attempt 6). `rhiza daemon status` run in ~/code (the root daemon, service mode, pid 3484327, max runs 5) reports 'Live runs: no…). How should it be built, or should it change?"
+        },
+        "handle": "leaf-failed-01m6snq9-2",
+        "id": "01M6SPVC5ZPSS6M06SHCYN9NNP",
+        "key": null,
+        "kind": "question",
+        "node": "01M6SPVC5ZPSS6M06SH987RYN7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SPVC5ZPSS6M06SH987RYN7",
+        "id": "01M6SPVH1GEH7CQC2F5TXNXB5Z",
+        "link": "01M6SPVH1GEH7CQC2F5PXW68DZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN873HV3NYMXTSJ13CXZJF",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SPVK8D4XEJCSSCJQE4EA31",
+  "type": "ops",
+  "v": 1
+}

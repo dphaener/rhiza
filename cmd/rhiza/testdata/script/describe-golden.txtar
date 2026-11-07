@@ -21420,6 +21420,30 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "session.status-line",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "recorded": {
+            "description": "How many rate-limit windows were recorded",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "recorded"
+        ],
+        "type": "object"
+      },
+      "summary": "Record the live rate limits an agent's status line reports, read from stdin, then print the owner's own status line; the agent's status line runs this",
+      "write": false
+    },
+    {
       "name": "set",
       "request": {
         "additionalProperties": false,
@@ -21673,7 +21697,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "tests": {
-            "description": "The Go tests and testscripts, such as TestScripts/x, that the failed Actions runs' logs name with a '--- FAIL:' line, once the failed jobs were rerun and failed again",
+            "description": "The failing tests the failed Actions runs' logs name, once the failed jobs were rerun and failed again: Go tests and testscripts (a '--- FAIL:' line, such as TestScripts/x), RSpec ('rspec ./spec/x_spec.rb:12'), Minitest ('bin/rails test test/x_test.rb:12') and pytest ('pytest tests/test_x.py::test_y'), each as its runner's rerun command",
             "items": {
               "type": "string"
             },
