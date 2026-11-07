@@ -1033,6 +1033,9 @@ func daemonStartQueued(ctx *Ctx, s daemon.Start, mode string) error {
 	args := []string{"run", "start", "--foreground", s.Change}
 	if s.Workflow != "" {
 		args = append(args, "--workflow", s.Workflow)
+		if s.Pick != "" {
+			args = append(args, "--pick", s.Pick)
+		}
 	}
 	if mode != "" {
 		args = append(args, "--permission-mode", mode)
@@ -1266,8 +1269,11 @@ func claimStartLog(ctx *Ctx, common, rid string) {
 func daemonStart(ctx *Ctx, fold *daemonFolded, cs string, autonomous bool, mode string) error {
 	args := []string{"run", "start", "--foreground", cs, "--permission-mode", mode}
 	if id, err := id.Parse(cs); err == nil {
-		if name, ok := daemonReadyWorkflow(ctx.Root, fold, id); ok && name != defaultWorkflow {
-			args = append(args, "--workflow", name)
+		if name, pick, ok := daemonReadyPick(ctx.Root, fold, id); ok {
+			if name != defaultWorkflow {
+				args = append(args, "--workflow", name, "--pick", pick)
+			}
+			daemonLogPick(ctx, "a run of "+cs, name, pick)
 		}
 	}
 	if autonomous {
@@ -1733,15 +1739,30 @@ func ensureRepoSession(ctx *Ctx) error {
 
 // daemonReadyWorkflow is the readyWorkflow of change set cs in fold.
 func daemonReadyWorkflow(root string, fold *daemonFolded, cs id.ID) (string, bool) {
+	name, _, ok := daemonReadyPick(root, fold, cs)
+	return name, ok
+}
+
+// daemonReadyPick is the readyPick of change set cs in fold.
+func daemonReadyPick(root string, fold *daemonFolded, cs id.ID) (name, pick string, ok bool) {
 	if fold == nil {
-		return "", false
+		return "", "", false
 	}
-	c, ok := fold.changeSet(cs)
-	if !ok {
-		return "", false
+	c, found := fold.changeSet(cs)
+	if !found {
+		return "", "", false
 	}
-	name, err := readyWorkflow(root, c.Open)
-	return name, err == nil
+	name, pick, err := readyPick(root, c.Open)
+	return name, pick, err == nil
+}
+
+// daemonLogPick is the daemon's start line for a run it starts: what it
+// starts, the workflow dispatch picked and why.
+func daemonLogPick(ctx *Ctx, what, workflow, pick string) {
+	if ctx.Stderr == nil {
+		return
+	}
+	fmt.Fprintf(ctx.Stderr, "rhiza: daemon: starting %s with workflow %s (picked by %s)\n", what, workflow, pick)
 }
 
 // addDaemonSkip appends sk to skips unless a skip of the same subject and

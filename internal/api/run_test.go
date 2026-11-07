@@ -940,7 +940,7 @@ func TestRunStartQueuesForTheDaemon(t *testing.T) {
 	for i := range starts {
 		starts[i].At = time.Time{}
 	}
-	if want := []daemon.Start{{Change: cs.String(), Workflow: "hello", NoWait: true, Autonomous: true}}; !slices.Equal(starts, want) {
+	if want := []daemon.Start{{Change: cs.String(), Workflow: "hello", Pick: PickExplicit, NoWait: true, Autonomous: true}}; !slices.Equal(starts, want) {
 		t.Errorf("starts %+v, want %+v", starts, want)
 	}
 

@@ -40,11 +40,32 @@ var Kinds = []string{KindFeature, KindBug, KindMilestone}
 type Rules struct {
 	Request map[string]string
 	Ready   map[string]string
+	// Set holds "<table>.<kind>" for each rule the file sets, as against
+	// the built-in default.
+	Set map[string]bool
+}
+
+// RequestPick is ForRequest and where it came from: the rule's name
+// (request.bug) or "default" when the file does not set it.
+func (r Rules) RequestPick(kind string) (name, source string) {
+	return r.Request[kind], r.source(TableRequest, kind)
+}
+
+// ReadyPick is ForReady and where it came from.
+func (r Rules) ReadyPick(kind string) (name, source string) {
+	return r.Ready[kind], r.source(TableReady, kind)
+}
+
+func (r Rules) source(table, kind string) string {
+	if r.Set[table+"."+kind] {
+		return "rule " + table + "." + kind
+	}
+	return "default"
 }
 
 // Defaults returns the built-in rules.
 func Defaults() Rules {
-	r := Rules{Request: map[string]string{}, Ready: map[string]string{}}
+	r := Rules{Request: map[string]string{}, Ready: map[string]string{}, Set: map[string]bool{}}
 	for _, k := range Kinds {
 		r.Request[k] = DefaultRequest
 		r.Ready[k] = DefaultReady
@@ -119,6 +140,7 @@ func Parse(data []byte) (Rules, error) {
 				return Rules{}, fmt.Errorf("[%s] %s: %q is not a bare workflow name (no path, no .toml)", t, k, s)
 			}
 			dst[k] = s
+			r.Set[t+"."+k] = true
 		}
 	}
 	return r, nil

@@ -3958,6 +3958,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
+              },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
                 "type": "string"
@@ -5591,6 +5595,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
               },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
@@ -8976,6 +8984,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
+              },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
                 "type": "string"
@@ -10466,6 +10478,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
+              },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
                 "type": "string"
@@ -11805,6 +11821,10 @@ cmp stdout describe.golden.json
                   "description": "True while another process holds the run",
                   "type": "boolean"
                 },
+                "pick": {
+                  "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                  "type": "string"
+                },
                 "started_at": {
                   "description": "When it started, RFC 3339 UTC",
                   "type": "string"
@@ -12865,6 +12885,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
               },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
@@ -14379,6 +14403,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
               },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
@@ -15926,6 +15954,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
+              },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
                 "type": "string"
@@ -16647,6 +16679,10 @@ cmp stdout describe.golden.json
           },
           "permission_mode": {
             "description": "The permission mode of agent steps that set none; modes that bypass the agent's permission checks are refused",
+            "type": "string"
+          },
+          "pick": {
+            "description": "With --workflow: which dispatch pick named it (rule ready.bug, default, request), recorded on the run instead of explicit. The daemon passes it",
             "type": "string"
           },
           "request": {
@@ -17461,6 +17497,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
               },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
@@ -18840,6 +18880,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "pick": {
+            "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+            "type": "string"
           },
           "pr": {
             "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",

@@ -1,0 +1,109 @@
+# Each run's journal records which workflow dispatch picked and why:
+# a [ready] rule (rule ready.bug), the built-in default, or an explicit
+# --workflow; run status --json and run ls --json show it.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+cp $WORK/bugfix.toml .rhiza/workflows/bugfix.toml
+cp $WORK/other.toml .rhiza/workflows/other.toml
+cp $WORK/ship-change.toml .rhiza/workflows/ship-change.toml
+exec git add -A
+exec git commit -qm init
+
+# A bug change set: the plan run of a queued bug request opens it.
+exec rhiza request 'login fails' --kind bug
+exec rhiza daemon --permission-mode manual --max-runs 1 --once
+exec sh -c 'rhiza request ls --json | sed -n "s/^      \"id\": \"\(.*\)\",$/\1/p" | tr -d "\n" > $WORK/req'
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Fix login fails" --request $(cat $WORK/req) --permission-mode manual --json'
+stdout '"state": "succeeded"'
+exec sh -c 'rhiza change ls --json | grep -B3 "Fix login fails" | sed -n "s/^.*\"id\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1 > $WORK/bug'
+
+# The [ready] rule for bug picks bugfix and the run records rule ready.bug.
+cp $WORK/dispatch.toml .rhiza/dispatch.toml
+exec sh -c 'rhiza run start --foreground $(cat $WORK/bug) --permission-mode manual --json'
+stdout '"workflow": "bugfix"'
+stdout '"pick": "rule ready.bug"'
+exec rhiza run status --json
+stdout '"pick": "rule ready.bug"'
+exec rhiza run ls --json
+stdout '"pick": "rule ready.bug"'
+exec rhiza run ls
+stdout '\(rule ready.bug\)'
+
+# No dispatch file: a feature change set with a leaf runs the built-in
+# default name (the repo's one-step ship-change shadows its body) and the run
+# records default.
+rm .rhiza/dispatch.toml
+exec rhiza change new 'Something to build' --title 'Something' --json
+exec rhiza add capability thing --field 'statement=A thing'
+exec rhiza run start --foreground --permission-mode manual --json
+stdout '"workflow": "ship-change"'
+stdout '"pick": "default"'
+exec rhiza run status --json
+stdout '"pick": "default"'
+
+# --workflow records explicit, and the pick shows in run status text.
+exec sh -c 'rhiza run start --foreground $(cat $WORK/bug) --workflow other --permission-mode manual --json'
+stdout '"workflow": "other"'
+stdout '"pick": "explicit"'
+exec rhiza run status
+stdout '^- Picked by: default$'
+exec rhiza run ls --json
+stdout '"pick": "default"'
+stdout '"pick": "rule ready.bug"'
+stdout '"pick": "explicit"'
+fold-ok
+
+-- ship-change.toml --
+name = "ship-change"
+
+[step.only]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- dispatch.toml --
+[ready]
+bug = "bugfix"
+-- plan.toml --
+name = "plan"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- bugfix.toml --
+name = "bugfix"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- other.toml --
+name = "other"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

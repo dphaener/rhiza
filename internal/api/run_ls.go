@@ -45,6 +45,7 @@ type RunLsItem struct {
 	StartedAt  string `json:"started_at" desc:"When it started, RFC 3339 UTC"`
 	Live       bool   `json:"live" desc:"True while another process holds the run"`
 	Workflow   string `json:"workflow" desc:"The workflow's name"`
+	Pick       string `json:"pick,omitempty" desc:"Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded"`
 	Autonomous bool   `json:"autonomous,omitempty" desc:"True for a run started with --autonomous; absent otherwise"`
 }
 
@@ -61,6 +62,9 @@ func (r RunLsResponse) Human(w io.Writer) {
 	}
 	for _, it := range r.Runs {
 		fmt.Fprintf(w, "%s %s %s", it.ID, it.State, it.Workflow)
+		if it.Pick != "" {
+			fmt.Fprintf(w, " (%s)", it.Pick)
+		}
 		if it.Current != "" {
 			fmt.Fprintf(w, " at %s", it.Current)
 		}
@@ -103,7 +107,7 @@ func runRunLs(ctx *Ctx, req any) (any, error) {
 		info := runInfo(ctx, st, live, sessions)
 		out = append(out, RunLsItem{
 			ID: st.ID, Change: st.Change, Title: st.Title, State: info.State, Current: st.Current,
-			StartedAt: rfc3339(st.StartedAt), Live: live, Workflow: st.Workflow, Autonomous: st.Autonomous,
+			StartedAt: rfc3339(st.StartedAt), Live: live, Workflow: st.Workflow, Pick: st.Pick, Autonomous: st.Autonomous,
 		})
 	}
 	return RunLsResponse{Runs: out}, nil

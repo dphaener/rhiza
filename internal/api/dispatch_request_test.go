@@ -26,6 +26,8 @@ func TestDaemonStartsRequestWithDispatchedWorkflow(t *testing.T) {
 		detached = append(detached, p.Args)
 		return nil
 	}
+	var logged strings.Builder
+	f.ctx.Stderr = &logged
 	// The workflows the rules name must resolve, or the daemon starts no run.
 	plan, err := os.ReadFile(filepath.Join("..", "workflow", "builtin", "plan.toml"))
 	if err != nil {
@@ -70,9 +72,18 @@ func TestDaemonStartsRequestWithDispatchedWorkflow(t *testing.T) {
 	if flag(bug, "--workflow") != "bugfix" || !slices.Contains(bug, "--new") {
 		t.Errorf("bug start %q, want --workflow bugfix --new", bug)
 	}
+	if flag(bug, "--pick") != "rule request.bug" {
+		t.Errorf("bug start %q, want --pick rule request.bug", bug)
+	}
+	if !strings.Contains(logged.String(), "with workflow bugfix (picked by rule request.bug)") {
+		t.Errorf("daemon log %q, want the start line naming workflow bugfix and rule request.bug", logged.String())
+	}
 	feature := started("feature", "")
 	if flag(feature, "--workflow") != "plan" {
 		t.Errorf("feature start %q, want --workflow plan", feature)
+	}
+	if flag(feature, "--pick") != "default" || !strings.Contains(logged.String(), "with workflow plan (picked by default)") {
+		t.Errorf("feature start %q, daemon log %q, want the default pick named", feature, logged.String())
 	}
 	ms := started("milestone", "milestone")
 	if flag(ms, "--workflow") != "roadmap" || !slices.Contains(ms, "--milestone") || slices.Contains(ms, "--autonomous") {
@@ -211,12 +222,12 @@ func TestStartWorkflowExplicitWins(t *testing.T) {
 		{"rule", changeset.Open{Kind: changeset.KindIntention, RequestKind: changeset.RequestBug}},
 		{"default", changeset.Open{Kind: changeset.KindIntention}},
 	} {
-		got, err := startWorkflow(root, "other", c.open)
+		got, _, err := startWorkflow(root, "other", c.open)
 		if err != nil || got != "other" {
 			t.Errorf("%s: %q, %v; want the explicit other", c.name, got, err)
 		}
 		want, _ := readyWorkflow(root, c.open)
-		if got, err := startWorkflow(root, " ", c.open); err != nil || got != want {
+		if got, _, err := startWorkflow(root, " ", c.open); err != nil || got != want {
 			t.Errorf("%s with no --workflow: %q, %v; want the ready workflow %q", c.name, got, err, want)
 		}
 	}

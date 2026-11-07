@@ -393,11 +393,12 @@ func newRequestRunID(ctx *Ctx, rs *run.Store, reqs []daemon.Request) (string, er
 // for a milestone, and --request so the run takes the ID the request names.
 // A milestone request never gets --autonomous. Its log is that run's, <run>.log, as run log reads it.
 func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) error {
-	wf, err := requestWorkflow(ctx.Root, q)
+	wf, pick, err := requestPick(ctx.Root, q)
 	if err != nil {
 		return err
 	}
-	args := []string{"run", "start", "--foreground", "--workflow", wf, "--new", q.Intent(), "--request", q.ID, "--permission-mode", mode}
+	daemonLogPick(ctx, "the plan run of request "+q.ID, wf, pick)
+	args := []string{"run", "start", "--foreground", "--workflow", wf, "--pick", pick, "--new", q.Intent(), "--request", q.ID, "--permission-mode", mode}
 	if q.Kind == daemon.KindMilestone {
 		args = append(args, "--milestone")
 		// Planning a milestone always needs the owner: the run waits on the
@@ -414,15 +415,22 @@ func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) e
 // rule of .rhiza/dispatch.toml for its kind (plan by default). The
 // request's own workflow is for its change set's ready pick, not this.
 func requestWorkflow(root string, q daemon.Request) (string, error) {
+	name, _, err := requestPick(root, q)
+	return name, err
+}
+
+// requestPick is requestWorkflow and why: "rule request.<kind>" or default.
+func requestPick(root string, q daemon.Request) (name, pick string, err error) {
 	rules, err := dispatch.Load(root)
 	if err != nil {
-		return "", Errorf("%v", err)
+		return "", "", Errorf("%v", err)
 	}
 	kind := q.Kind
 	if kind != daemon.KindBug && kind != daemon.KindMilestone {
 		kind = dispatch.KindFeature
 	}
-	return rules.ForRequest(kind), nil
+	name, pick = rules.RequestPick(kind)
+	return name, pick, nil
 }
 
 // requestRun is the request run start --request <id> names, whose Run is

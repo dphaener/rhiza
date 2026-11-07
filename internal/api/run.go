@@ -113,6 +113,7 @@ type RunStartRequest struct {
 	New            string `json:"new,omitempty" desc:"With --workflow plan and no change set: open a draft change set with this one-line intent and start the plan run on it"`
 	Milestone      bool   `json:"milestone,omitempty" desc:"With --new: open a record change set, to plan a milestone in; without it an intention"`
 	Request        string `json:"request,omitempty" desc:"With --new: the plan request this run plans; the run takes the ID the daemon drew for it. The daemon passes it"`
+	Pick           string `json:"pick,omitempty" desc:"With --workflow: which dispatch pick named it (rule ready.bug, default, request), recorded on the run instead of explicit. The daemon passes it"`
 	Foreground     bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
 }
 
@@ -165,6 +166,7 @@ type RunResponse struct {
 type RunInfo struct {
 	ID             string          `json:"id" desc:"The run ID"`
 	Workflow       string          `json:"workflow" desc:"The workflow's name"`
+	Pick           string          `json:"pick,omitempty" desc:"Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded"`
 	Change         string          `json:"change" desc:"The change set it runs on"`
 	Title          string          `json:"title" desc:"The change set's title"`
 	Worktree       string          `json:"worktree" desc:"The worktree every step runs in"`
@@ -544,8 +546,17 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	// On an existing change set the one resolver picks the workflow, as the
 	// daemon's ship pick does, unless --workflow names one.
 	if strings.TrimSpace(r.New) == "" {
-		if name, ok := startWorkflowOfRef(ctx, r.Change, r.Workflow); ok {
+		if name, pick, ok := startWorkflowOfRef(ctx, r.Change, r.Workflow); ok {
 			r.Workflow = name
+			if r.Pick == "" {
+				r.Pick = pick
+			}
+		}
+	}
+	if r.Pick == "" {
+		r.Pick = PickDefault
+		if strings.TrimSpace(r.Workflow) != "" {
+			r.Pick = PickExplicit
 		}
 	}
 	path, def, data, err := resolveWorkflow(ctx.Root, r.Workflow)
@@ -601,7 +612,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		}
 	}
 	started := run.Started{
-		Workflow: def.Name, WorkflowPath: path, Definition: string(data), Includes: def.Includes,
+		Workflow: def.Name, WorkflowPath: path, Pick: r.Pick, Definition: string(data), Includes: def.Includes,
 		Change: t.cs.String(), Title: t.title, Worktree: t.worktree, Branch: t.branch,
 		PermissionMode: r.PermissionMode, Agent: r.Agent, Autonomous: r.Autonomous, Milestone: reqMilestone,
 		MilestonePlan: r.Milestone, Plan: strings.TrimSpace(r.New) != "",
@@ -611,7 +622,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 		return RunResponse{Run: RunInfo{
-			ID: rid, Workflow: def.Name, Change: started.Change, Title: t.title, Worktree: t.worktree,
+			ID: rid, Workflow: def.Name, Pick: r.Pick, Change: started.Change, Title: t.title, Worktree: t.worktree,
 			Autonomous: r.Autonomous, Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
 			Messages: []RunMessage{}, Sessions: []RunSession{},
 		}, DryRun: true, Queued: !r.Foreground}, nil
@@ -669,7 +680,7 @@ func queueRunStart(rs *run.Store, t changeWorktree, def *workflow.Definition, r 
 			return nil, Usagef("change set %s already has a run queued for the daemon", change).WithNext("rhiza daemon status")
 		}
 		return append(starts, daemon.Start{
-			Change: change, Workflow: r.Workflow, PermissionMode: r.PermissionMode, Agent: r.Agent,
+			Change: change, Workflow: r.Workflow, Pick: r.Pick, PermissionMode: r.PermissionMode, Agent: r.Agent,
 			NoWait: r.NoWait, Autonomous: r.Autonomous,
 		}), nil
 	})
@@ -682,7 +693,7 @@ func queueRunStart(rs *run.Store, t changeWorktree, def *workflow.Definition, r 
 	}
 	h, up := daemon.Running(t.common)
 	resp := RunResponse{Run: RunInfo{
-		Workflow: def.Name, Change: change, Title: t.title, Worktree: t.worktree, Autonomous: r.Autonomous,
+		Workflow: def.Name, Pick: r.Pick, Change: change, Title: t.title, Worktree: t.worktree, Autonomous: r.Autonomous,
 		Steps: []RunStep{}, Amendments: []RunAmendment{}, Messages: []RunMessage{}, Sessions: []RunSession{},
 	}, Queued: true}
 	if up {
@@ -2580,7 +2591,7 @@ func rexField(s string, limit int) string {
 // is blocked reads blocked, with what it waits on from sessions.
 func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo {
 	info := RunInfo{
-		ID: st.ID, Workflow: st.Workflow, Change: st.Change, Title: st.Title, Worktree: st.Worktree,
+		ID: st.ID, Workflow: st.Workflow, Pick: st.Pick, Change: st.Change, Title: st.Title, Worktree: st.Worktree,
 		Autonomous: st.Autonomous, Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
 		Amendments: []RunAmendment{}, Messages: []RunMessage{}, Sessions: []RunSession{},
 	}
@@ -3155,6 +3166,9 @@ func tokenUseLine(u SessionTokenUse) string {
 // autonomous, current step and detail, one per line.
 func runLines(w io.Writer, r RunInfo) {
 	fmt.Fprintf(w, "- Workflow: %s\n", r.Workflow)
+	if r.Pick != "" {
+		fmt.Fprintf(w, "- Picked by: %s\n", r.Pick)
+	}
 	fmt.Fprintf(w, "- Change set: %s: %s\n", r.Change, r.Title)
 	fmt.Fprintf(w, "- Worktree: %s\n", r.Worktree)
 	if r.Autonomous {
@@ -3189,43 +3203,58 @@ func runLines(w io.Writer, r RunInfo) {
 	}
 }
 
+// How a run's workflow was picked, as Started.Pick records it.
+const (
+	PickExplicit = "explicit"
+	PickDefault  = "default"
+	PickRequest  = "request"
+)
+
 // readyWorkflow is the workflow a ready change set's run starts, the one
 // resolver of the daemon's ship pick and of run start without --workflow:
 // the workflow its request named (recorded on the change set), else the
 // [ready] rule of .rhiza/dispatch.toml for its kind, else ship-change (the
 // built-in default rule). An explicit run start --workflow bypasses it.
 func readyWorkflow(root string, o changeset.Open) (string, error) {
+	name, _, err := readyPick(root, o)
+	return name, err
+}
+
+// readyPick is readyWorkflow and why: PickRequest, "rule ready.<kind>" or
+// PickDefault.
+func readyPick(root string, o changeset.Open) (name, pick string, err error) {
 	if o.Workflow != "" {
-		return o.Workflow, nil
+		return o.Workflow, PickRequest, nil
 	}
 	rules, err := dispatch.Load(root)
 	if err != nil {
-		return "", Errorf("%v", err)
+		return "", "", Errorf("%v", err)
 	}
-	return rules.ForReady(o.DispatchKind()), nil
+	name, pick = rules.ReadyPick(o.DispatchKind())
+	return name, pick, nil
 }
 
 // startWorkflow is the workflow run start runs on an existing change set
 // whose open record is o: the explicit --workflow over all, else its
-// readyWorkflow.
-func startWorkflow(root, explicit string, o changeset.Open) (string, error) {
+// readyWorkflow. The pick says which.
+func startWorkflow(root, explicit string, o changeset.Open) (name, pick string, err error) {
 	if explicit = strings.TrimSpace(explicit); explicit != "" {
-		return explicit, nil
+		return explicit, PickExplicit, nil
 	}
-	return readyWorkflow(root, o)
+	return readyPick(root, o)
 }
 
 // startWorkflowOfRef resolves the change set ref names (default the current
 // one) and returns its startWorkflow. With no explicit workflow it reports
 // false when the change set or the rules cannot be read: the start's own
 // checks then report why.
-func startWorkflowOfRef(ctx *Ctx, ref, explicit string) (string, bool) {
+func startWorkflowOfRef(ctx *Ctx, ref, explicit string) (string, string, bool) {
 	if strings.TrimSpace(explicit) != "" {
-		return explicit, true
+		return explicit, PickExplicit, true
 	}
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
-		return "", false
+		return "", "", false
 	}
 	var cs id.ID
 	if ref = strings.TrimSpace(ref); ref != "" {
@@ -3234,12 +3263,12 @@ func startWorkflowOfRef(ctx *Ctx, ref, explicit string) (string, bool) {
 		cs, err = w.effectiveChangeSet(ctx)
 	}
 	if err != nil || cs.IsZero() {
-		return "", false
+		return "", "", false
 	}
 	c, ok := w.changeSet(cs)
 	if !ok {
-		return "", false
+		return "", "", false
 	}
-	name, err := startWorkflow(ctx.Root, explicit, c.Open)
-	return name, err == nil
+	name, pick, err := startWorkflow(ctx.Root, explicit, c.Open)
+	return name, pick, err == nil
 }

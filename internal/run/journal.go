@@ -192,7 +192,11 @@ const (
 type Started struct {
 	Workflow     string `json:"workflow"`
 	WorkflowPath string `json:"workflow_path,omitempty"`
-	Definition   string `json:"definition"`
+	// Pick is which workflow dispatch picked and why: "explicit",
+	// "request" (the workflow its request named), "rule <table>.<kind>"
+	// or "default"; empty for a run journaled before dispatch recorded it.
+	Pick       string `json:"pick,omitempty"`
+	Definition string `json:"definition"`
 	// Includes holds the source of each workflow the definition's
 	// workflow steps include, by name, as the run started with them.
 	Includes       map[string]string `json:"includes,omitempty"`
@@ -1018,6 +1022,7 @@ type Retry struct {
 type State struct {
 	ID             string
 	Workflow       string
+	Pick           string
 	Change         string
 	Title          string
 	Worktree       string
@@ -1311,6 +1316,7 @@ func (j Journal) State() State {
 			st.Current = e.Step
 			if s := e.Started; s != nil {
 				st.Workflow = s.Workflow
+				st.Pick = s.Pick
 				st.Change = s.Change
 				st.Title = s.Title
 				st.Worktree = s.Worktree
