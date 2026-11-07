@@ -1,0 +1,247 @@
+{
+  "actor": "01M6VY8QXM0QV7VN35CRKN6307",
+  "after": [
+    "01M6VYN0V1SWR958T4RSVSQ2H9"
+  ],
+  "at": "2026-11-07T21:30:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6VYJHQNTEEG7ERHY6X3E3D8",
+        "id": "01M6VYPVHMAGTHX1GE5Q9ZNMXN",
+        "link": "01M6VYPVHMAGTHX1GE5P1F4E2S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYN0TMXZMDF553PH6QCDFH",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/workflow tests load autonomous = true, autonomous = false, a partial [autonomy] table and no declaration, reading each stage's declared mode or none, and refuse a file with both forms, an unknown stage and a bad value with a message naming the key; a testscript shows workflow check reporting the same refusal for a repo workflow file",
+          "statement": "A workflow file may declare its autonomy: a top-level autonomous = true|false sets all four stages (plan, accept, ship, signoff) to auto or owner, or an [autonomy] table sets any of them by name to auto or owner; a stage it leaves out follows rhiza.autonomy.<stage>, and workflow check (and every load) refuses both forms in one file, an unknown stage or a value other than auto or owner"
+        },
+        "handle": "workflow-autonomy-declaration",
+        "id": "01M6VYPVKA8H196XPZQZ9X91B4",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6VYPVKA8H196XPZQX6BHQZK",
+        "op": "node.create",
+        "parent": "01M5SWT9A05VXSMXQME4CPJN2D"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYPVKA8H196XPZQX6BHQZK",
+        "id": "01M6VYPVKWMFMZNPBHZSN4XEQ1",
+        "link": "01M6VYPVKWMFMZNPBHZRVQG5GR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYJHQNTEEG7ERHY6X3E3D8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYPVKA8H196XPZQX6BHQZK",
+        "id": "01M6VYPVNG42YQC2Z9QZTP5AKT",
+        "link": "01M6VYPVNG42YQC2Z9QXYPZEVV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYN0TMXZMDF553PH6QCDFH",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscripts with a fake rex and agents: a repo override of plan declaring autonomous = true starts a feature request's plan run with --autonomous while rhiza.autonomy.plan is owner, and one declaring plan = owner starts it without while the setting is auto; a plan workflow declaring accept = owner leaves its drafts proposed while rhiza.autonomy.accept is auto; a ship-change override declaring ship = auto starts a ready change set while rhiza.autonomy.ship is owner, and one declaring signoff = owner starts run start without --autonomous; a ship workflow's plan = auto changes nothing about plan runs; with no declaration each stage still follows its setting (stage-autonomy's scripts pass unchanged)",
+          "statement": "Each stage takes its autonomy from the workflow of the run that performs it, falling back to rhiza.autonomy.<stage> when that workflow declares nothing for it: the daemon starts a request's plan run autonomous by its plan workflow's plan stage, the plan gate accepts by that workflow's accept stage, the daemon starts or holds a ready change set's ship run by its ship workflow's ship stage and starts it autonomous by that workflow's signoff stage; a declaration for a stage the run does not perform is ignored for that run"
+        },
+        "handle": "stage-autonomy-from-workflow",
+        "id": "01M6VYPVPYWCJVW98YSTEZFKTY",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6VYPVPYWCJVW98YSSNWHPDP",
+        "op": "node.create",
+        "parent": "01M5SWTCJQP64M9ZDHGT7GS7PT"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYPVPYWCJVW98YSSNWHPDP",
+        "id": "01M6VYPVQEA69190XAGJ2QQDM9",
+        "link": "01M6VYPVQEA69190XAGG0YS9CD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYJHQNTEEG7ERHY6X3E3D8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYPVPYWCJVW98YSSNWHPDP",
+        "id": "01M6VYPVR60KRCJKBAEP2J9EBJ",
+        "link": "01M6VYPVR60KRCJKBAEP1R82EX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYN0TMXZMDF553PH6QCDFH",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript starts a plan run whose workflow declares plan = auto and leaves accept undeclared, then shows run status --json and run status naming plan auto from workflow <name> and accept <mode> from rhiza.autonomy.accept, and the run's started entry carrying both; describe-golden.txtar is regenerated",
+          "statement": "A run's journal records, for each stage the run performs, its autonomy mode and where it came from (the workflow's declaration, naming the workflow, or the rhiza.autonomy.<stage> setting), and rhiza run status shows that line for each stage"
+        },
+        "handle": "run-autonomy-source",
+        "id": "01M6VYPVTC8M1XMBKTDWA2ZZAR",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M6VYPVTC8M1XMBKTDTGBX14K",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYPVTC8M1XMBKTDTGBX14K",
+        "id": "01M6VYPVVAW7QK781ESG1ZYH5V",
+        "link": "01M6VYPVVAW7QK781ESCJ7PMH6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYJHQNTEEG7ERHY6X3E3D8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYPVTC8M1XMBKTDTGBX14K",
+        "id": "01M6VYPVW4CY6BG2H3DK8RZP01",
+        "link": "01M6VYPVW4CY6BG2H3DHDT9W18",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYN0TMXZMDF553PH6QCDFH",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "health.txtar: with a repo workflow declaring autonomous = true the autonomy part's detail names that workflow, its file and plan, accept, ship and signoff auto, and the built-in plan-milestone with plan, accept, ship and signoff owner; with no repo declaration only plan-milestone is listed; health --json and api call health print the same bytes",
+          "statement": "rhiza health's autonomy part lists, after the rhiza.autonomy.* settings, every workflow the repo resolves (personal, repo or built-in) that declares autonomy, with each stage it declares and the file it comes from, so the owner sees where a run's autonomy will come from"
+        },
+        "handle": "health-workflow-autonomy",
+        "id": "01M6VYPVWZYB3NKSKBKD0T4AP5",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6VYPVWZYB3NKSKBKACYXEXZ",
+        "op": "node.create",
+        "parent": "01M6CS2B9S9YVY1WBBVAHWZFR9"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYPVWZYB3NKSKBKACYXEXZ",
+        "id": "01M6VYPVXN1Y920BH66MAVKC2C",
+        "link": "01M6VYPVXN1Y920BH66M9K1Y9K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYJHQNTEEG7ERHY6X3E3D8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYPVWZYB3NKSKBKACYXEXZ",
+        "id": "01M6VYPVYPWGH2R6B0Y3E6FJHK",
+        "link": "01M6VYPVYPWGH2R6B0XZSEY6N1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYN0TMXZMDF553PH6QCDFH",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscripts with a fake rex and agents: a milestone request's plan run journals workflow builtin:plan-milestone and starts without --autonomous while rhiza.autonomy.plan is auto; a repo .rhiza/workflows/plan-milestone.toml declaring autonomous = true makes the daemon start it with --autonomous; workflow ls lists plan-milestone as built-in; internal/workflow tests load the built-in and find its steps equal to plan's",
+          "statement": "The binary ships a plan-milestone workflow with the plan workflow's steps declaring autonomous = false, and a milestone request's plan run (and run start --milestone or on a record change set) runs it; daemonStartPlan's hard-coded non-autonomous milestone rule goes, so a repo changes milestone planning's autonomy by overriding plan-milestone like any other workflow"
+        },
+        "handle": "plan-milestone-workflow",
+        "id": "01M6VYPVZJ3PB7QGSNA0BS1PWD",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6VYPVZJ3PB7QGSN9XZVP9GN",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYPVZJ3PB7QGSN9XZVP9GN",
+        "id": "01M6VYPW05VK3RZ5SFRQCH4BTP",
+        "link": "01M6VYPW05VK3RZ5SFRP27008V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYJHQNTEEG7ERHY6X3E3D8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYPVZJ3PB7QGSN9XZVP9GN",
+        "id": "01M6VYPW125NEEG0TYQJQ2YN7D",
+        "link": "01M6VYPW125NEEG0TYQFTF4603",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYN0TMXZMDF553PH6QCDFH",
+        "type": "derived-from"
+      },
+      {
+        "base": "01M6MYGJT14RGWC73S0VWHD448",
+        "handle": null,
+        "id": "01M6VYPW20P2FGN9WPV6ZFH04H",
+        "node": "01M6MYGJT14RGWC73S0V3A5YEB",
+        "op": "node.update",
+        "set": {
+          "acceptance": "Testscripts: run start --workflow plan --new <intent> --milestone --autonomous, and run start --autonomous on a record change set, each exit with a usage error naming plan-milestone's declaration and write no journal and no draft; the same starts without --autonomous run; run start --workflow plan --new <intent> --autonomous (an intention) still runs autonomous; with a repo plan-milestone.toml declaring autonomous = true the milestone start with --autonomous runs; run resume of an autonomous-journaled run whose workflow declares owner is refused",
+          "statement": "rhiza run start refuses --autonomous on a run whose workflow declares the stage it performs owner (by default the built-in plan-milestone, which milestone plan runs use) with a usage error naming the workflow and its declaration, and run resume refuses to continue such a run journaled autonomous; a repo that overrides plan-milestone to declare auto lifts the refusal"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6MYGJT14RGWC73S0V3A5YEB",
+        "id": "01M6VYPW30YQCYVGBKSFNRBHPS",
+        "link": "01M6VYPW30YQCYVGBKSFBZG796",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYJHQNTEEG7ERHY6X3E3D8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake rex, agents and gh: a repo .rhiza/workflows/bugfix.toml declaring autonomous = true and mapped to kind bug, rhiza.autonomy.plan owner and rhiza.autonomy.signoff owner; a queued bug request's plan run starts autonomous, its gate accepts the change set, the daemon starts the ship run autonomous, and the run lands with no inbox item for the owner at any point",
+          "statement": "A repo workflow declaring autonomous = true, picked for bug requests by workflow dispatch, takes a bug request from its plan run through its ship run with no owner step while rhiza.autonomy.plan stays owner"
+        },
+        "handle": "bugfix-workflow-autonomous",
+        "id": "01M6VYPW4D8366CNFT3FRB3EAF",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6VYPW4D8366CNFT3EH72465",
+        "op": "node.create",
+        "parent": "01M5SWTCJQP64M9ZDHGT7GS7PT"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYPW4D8366CNFT3EH72465",
+        "id": "01M6VYPW5GQV6VBZ1KBVFP4N0M",
+        "link": "01M6VYPW5GQV6VBZ1KBTFH1GHV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYJHQNTEEG7ERHY6X3E3D8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYPW4D8366CNFT3EH72465",
+        "id": "01M6VYPW6KCYZK9MH2Y83YT9YR",
+        "link": "01M6VYPW6KCYZK9MH2Y64AZZ3Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYN0TMXZMDF553PH6QCDFH",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYPW7SEXZYJHY8ZDN1FPFN",
+  "type": "ops",
+  "v": 1
+}
