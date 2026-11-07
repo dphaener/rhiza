@@ -186,9 +186,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	// poll (--once) and a test run (RHIZA_TEST_NOW) bind nothing.
 	var webUI *web.Manager
 	if !r.Once && ctxGetenv(ctx)("RHIZA_TEST_NOW") == "" {
-		// The handler gets its own copy of ctx: the poll goes on changing
-		// ctx while requests run. One listener serves every project: the
-		// home project at /, each at /p/<project>/.
+		// The handlers take their own copies of ctx (WebProjectHandler and
+		// WebRootHandler each copy it once, here, before any request): the
+		// poll goes on changing ctx while requests run. One listener
+		// serves every project: the home project at /, each at
+		// /p/<project>/.
 		home := WebProjectHandler(homeCtx)
 		webUI = &web.Manager{Factory: webFactory, Handler: WebRootHandler(ctx, root, homeName, home)}
 		defer webUI.Close()

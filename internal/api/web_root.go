@@ -21,8 +21,12 @@ func WebProjectHandler(base *Ctx) http.Handler {
 // project's UI, at /, and every other registered, initialised project's at
 // /p/<project>/ (the home project also answers there). Projects are read
 // from the root's rhiza.toml on each request, so a newly registered one
-// is served at once; each project's handler is built once and kept.
+// is served at once; each project's handler is built once and kept. ctx is
+// copied once, here: the poll goes on changing the ctx it came from while
+// requests run, and every project's ctx is derived from the copy.
 func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Handler {
+	snap := *ctx
+	ctx = &snap
 	var mu sync.Mutex
 	type built struct {
 		dir string
@@ -58,7 +62,8 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 // WebProjectsSource reads every project registered in the root for the web
 // UI's all-projects home: live runs, inbox count and health of each
 // initialised one, a project with no .rhiza/ yet marked as such. Each
-// project's health report is kept, as WebProjectHandler's is.
+// project's health report is kept, as WebProjectHandler's is. ctx must not
+// change while the source runs: WebRootHandler hands it its own copy.
 func WebProjectsSource(ctx *Ctx, root, homeName string) web.ProjectsSource {
 	var mu sync.Mutex
 	healths := map[string]*WebHealth{}
@@ -98,7 +103,8 @@ func WebProjectsSource(ctx *Ctx, root, homeName string) web.ProjectsSource {
 }
 
 // WebMergedInboxSource reads the inbox of every initialised project
-// registered in the root, for the web UI's merged inbox.
+// registered in the root, for the web UI's merged inbox. ctx must not
+// change while the source runs: WebRootHandler hands it its own copy.
 func WebMergedInboxSource(ctx *Ctx, root string) web.MergedInboxSource {
 	return func() []web.ProjectInbox {
 		reg, err := rootcfg.Load(root)
