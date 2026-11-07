@@ -12,7 +12,7 @@ func WebMilestonesSource(base *Ctx) web.MilestonesSource {
 		c := *base
 		c.Record, c.DryRun, c.Out, c.JSON = false, false, nil, true
 		c.Stdin, c.Rex, c.Start, c.Detach, c.Interrupts = nil, nil, nil, nil, nil
-		out, err := runRoadmap(&c, RoadmapRequest{All: true})
+		out, err := runRoadmap(&c, RoadmapRequest{All: true, local: true})
 		if err != nil {
 			return nil
 		}

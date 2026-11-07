@@ -370,7 +370,7 @@ func healthRequests(ctx *Ctx) HealthPart {
 // healthRoadmap counts the milestones and the in-flight change sets by
 // state, and how many are ready.
 func healthRoadmap(ctx *Ctx) HealthPart {
-	out, err := runRoadmap(ctx, RoadmapRequest{All: true})
+	out, err := runRoadmap(ctx, RoadmapRequest{All: true, local: true})
 	if err != nil {
 		return healthFailed(HealthRoadmap, err)
 	}

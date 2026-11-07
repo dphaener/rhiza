@@ -7707,7 +7707,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "all": {
-            "description": "Return every change set, ignoring --limit and --cursor",
+            "description": "Return every change set, ignoring --limit and --cursor, and, under a Rhiza root, of every registered project, from anywhere under the root",
             "type": "boolean"
           },
           "cursor": {
@@ -7717,6 +7717,10 @@ cmp stdout describe.golden.json
           "limit": {
             "description": "The most change sets to return, 1 to 1000; default 100",
             "type": "integer"
+          },
+          "project": {
+            "description": "Only this registered project's roadmap; default the current project, or every project at the root",
+            "type": "string"
           },
           "view": {
             "description": "The view: as-is, to-be or what-if:<change set>; default to-be, whatever the current change set",
@@ -7758,6 +7762,10 @@ cmp stdout describe.golden.json
                       },
                       "kind": {
                         "description": "intention or record",
+                        "type": "string"
+                      },
+                      "project": {
+                        "description": "The registered project the change set belongs to, on a roadmap that covers every project; absent on a single project's roadmap",
                         "type": "string"
                       },
                       "ready": {
@@ -7824,6 +7832,10 @@ cmp stdout describe.golden.json
                 },
                 "kind": {
                   "description": "milestone, backlog for the change sets that serve no milestone, or umbrella for those serving an umbrella intent",
+                  "type": "string"
+                },
+                "project": {
+                  "description": "The registered project the group belongs to, on a roadmap that covers every project; absent on a single project's roadmap",
                   "type": "string"
                 }
               },
