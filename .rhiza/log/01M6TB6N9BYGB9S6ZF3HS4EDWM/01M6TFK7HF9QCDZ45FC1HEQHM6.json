@@ -1,0 +1,40 @@
+{
+  "actor": "01M6TFF3N9G11KWYHE2FD13MNK",
+  "after": [
+    "01M6TFC41AE4GZN4TE2XPADQJ5"
+  ],
+  "at": "2026-11-07T07:47:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1: built this branch's rhiza (go build -trimpath) and ran it in a scratch repo with a bare origin and a gh shim whose 'run view --log-failed' prints real logs fetched with gh from dphaener/nebari's failed Actions runs. With run 42339573426's log (nebari#72's red head, 5295 lines, 'Failed examples:' then 'rspec ./spec/views/tasks/list_spec.rb:290 # tasks/_list ...'), the first ship check --settled --json reran the run and the second listed tests ['rspec ./spec/views/tasks/list_spec.rb:290'] and one finding with that test and no comment text; ship check --test-failures exited 0. An infra-only log ('Error: Process completed with exit code 1.') gave detail 'failed: test', no tests, and --test-failures exited 1 with 'no failing test was recorded for the head'. Defect seen: runs 42331018773 and 42329799773 print RSpec's id form 'rspec ./spec/system/garden_location_spec.rb[1:1:11] # ...', which ship check names 'rspec ./spec/system/garden_location_spec.rb[1:1:11' (closing bracket dropped), recorded as a qa finding."
+        },
+        "handle": "ship-check-runner-test-failures-qa-1",
+        "id": "01M6TFK7G4428YTQ7N1N1J1DWF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TFK7G4428YTQ7N1M5TARWY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TFK7G4428YTQ7N1M5TARWY",
+        "id": "01M6TFK7GTYHNYY61SA8YYRD0T",
+        "link": "01M6TFK7GTYHNYY61SA8FKVE47",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBDK41SM1XY2928W79FEYZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6TB6N9BYGB9S6ZF3HS4EDWM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TFK7HF9QCDZ45FC1HEQHM6",
+  "type": "ops",
+  "v": 1
+}
