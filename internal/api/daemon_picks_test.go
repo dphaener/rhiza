@@ -8,6 +8,7 @@ import (
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/policy"
 	"github.com/dphaener/rhiza/internal/run"
 )
 
@@ -39,7 +40,7 @@ func TestDaemonPicks(t *testing.T) {
 	f.dep(notReady, first)
 
 	hasLeaves := func(cs id.ID) bool { return cs != leafless }
-	cands, skips := daemonCandidates(f.core(), hasLeaves)
+	cands, skips := daemonCandidates(f.core(), hasLeaves, daemonSchedule{Backlog: policy.BacklogSkip})
 	reasons := map[string]string{}
 	for _, sk := range skips {
 		reasons[sk.Change] = sk.Reason
@@ -142,5 +143,60 @@ func TestDaemonHeld(t *testing.T) {
 	daemonHeld(pending, unjournaled, []run.Journal{old}, func(string) bool { return false }, later.Add(time.Minute))
 	if len(unjournaled) != 0 {
 		t.Fatalf("B still held after it landed: %v", unjournaled)
+	}
+}
+
+// The backlog rule orders the backlog against the milestone work: after
+// (the default) behind it, before ahead of it, oldest accepted first
+// inside; skip and an unknown value skip it as no-milestone, the unknown
+// one with its reason in the detail.
+func TestDaemonCandidatesBacklog(t *testing.T) {
+	f := newPlanFix()
+	m := f.intent("m", id.ID{}, "a")
+	f.milestone(m)
+	plain := f.intent("plain", id.ID{}, "b")
+	mk := func(name string, serves id.ID) id.ID {
+		cs := f.cs(name, changeset.StateAccepted)
+		f.serve(cs, serves)
+		return cs
+	}
+	m1, m2 := mk("m1", m), mk("m2", m)
+	b1, b2 := mk("b1", plain), mk("b2", plain)
+	since := map[id.ID]time.Time{b1: time.Unix(2000, 0), b2: time.Unix(1000, 0)}
+	yes := func(id.ID) bool { return true }
+	strs := func(ids ...id.ID) []string {
+		var out []string
+		for _, i := range ids {
+			out = append(out, i.String())
+		}
+		return out
+	}
+	sched := func(backlog string, detail ...string) daemonSchedule {
+		return daemonSchedule{Backlog: backlog, Detail: detail, Since: func(cs id.ID) time.Time { return since[cs] }}
+	}
+	for backlog, want := range map[string][]string{
+		policy.BacklogAfter:  strs(m1, m2, b2, b1),
+		policy.BacklogBefore: strs(b2, b1, m1, m2),
+		policy.BacklogSkip:   strs(m1, m2),
+	} {
+		cands, skips := daemonCandidates(f.core(), yes, sched(backlog))
+		if !slices.Equal(cands, want) {
+			t.Errorf("%s: candidates = %v, want %v", backlog, cands, want)
+		}
+		if backlog == policy.BacklogSkip && len(skips) != 2 {
+			t.Errorf("skip: skips = %v", skips)
+		}
+		if backlog != policy.BacklogSkip && len(skips) != 0 {
+			t.Errorf("%s: skips = %v", backlog, skips)
+		}
+	}
+	cands, skips := daemonCandidates(f.core(), yes, sched("", "bad value"))
+	if !slices.Equal(cands, strs(m1, m2)) || len(skips) != 2 {
+		t.Fatalf("unknown: candidates %v skips %v", cands, skips)
+	}
+	for _, sk := range skips {
+		if sk.Reason != daemon.SkipNoMilestone || !slices.Equal(sk.Detail, []string{"bad value"}) {
+			t.Errorf("unknown: skip = %+v", sk)
+		}
 	}
 }

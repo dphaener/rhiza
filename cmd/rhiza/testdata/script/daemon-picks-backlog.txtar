@@ -1,0 +1,41 @@
+# The daemon starts an accepted change set that serves no milestone by the
+# repo's backlog rule: with no policy.toml (the default, after) it starts it;
+# with [schedule] backlog = "skip" it does not, and rhiza daemon status says
+# it serves no milestone. Rex is faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new Orphan --title Orphan
+exec rhiza add capability orphan-leaf
+exec rhiza propose
+exec rhiza accept --reason ok
+
+exec rhiza daemon --permission-mode manual --once --max-runs=1 --autonomous
+stdout '^Started a run of '
+
+# backlog = "skip" turns it off.
+rm $WORK/detach.log
+exec sh -c 'printf "[schedule]\nbacklog = \"skip\"\n" > .rhiza/policy.toml'
+exec rhiza daemon --permission-mode manual --once --max-runs=1 --autonomous
+! stdout '^Started a run of '
+exec rhiza daemon status
+stdout 'Orphan: serves no milestone'
+
+# An unknown value skips it too, with the value in the detail.
+exec sh -c 'printf "[schedule]\nbacklog = \"sometimes\"\n" > .rhiza/policy.toml'
+exec rhiza daemon --permission-mode manual --once --max-runs=1 --autonomous
+! stdout '^Started a run of '
+exec rhiza daemon status --json
+stdout 'sometimes'
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
