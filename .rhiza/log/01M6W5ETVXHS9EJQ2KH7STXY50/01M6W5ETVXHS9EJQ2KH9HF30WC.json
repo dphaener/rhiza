@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-07T23:28:20Z",
+  "body": {
+    "intent": "Agents, runs and daemon docs: docs/ explains using Rhiza with coding agents, workflows and runs, the daemon and autonomy, schedules and writing a custom workflow, with Rex and Claude Code setup",
+    "kind": "intention",
+    "sources": [
+      "01M6W5ANB6CXAAYAVSP53Z43CY"
+    ]
+  },
+  "change_set": "01M6W5ETVXHS9EJQ2KH7STXY50",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W5ETVXHS9EJQ2KH9HF30WC",
+  "type": "open",
+  "v": 1
+}

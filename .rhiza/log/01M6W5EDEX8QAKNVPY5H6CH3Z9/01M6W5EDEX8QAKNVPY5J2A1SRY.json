@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-07T23:28:06Z",
+  "body": {
+    "intent": "README and quickstart: the README is Rhiza's front door (what and why, install, where next) and docs/quickstart.md walks the model loop without agents, run by a testscript",
+    "kind": "intention",
+    "sources": [
+      "01M6W5ANB6CXAAYAVSP53Z43CY"
+    ]
+  },
+  "change_set": "01M6W5EDEX8QAKNVPY5H6CH3Z9",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W5EDEX8QAKNVPY5J2A1SRY",
+  "type": "open",
+  "v": 1
+}

@@ -1,0 +1,38 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6W5A2R4BXDGQGHNWJWN6XJY"
+  ],
+  "at": "2026-11-07T23:26:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "i want to start a new milestone first. I'm planning on sharing this out with few people soon and i need to get a polished readme and documentation in place. if my humanize plugin isn't installed we need to install it for all the docs. it's in my dotfiles",
+              "where": "planning chat, 2026-11-07"
+            }
+          ],
+          "raw_sha256": "a34bb6c0bbacc3adca0cb8cf388cd5955381bdb6c896103669217955bd86010a",
+          "summary": "The owner plans to share Rhiza with a few people soon and wants a polished README and documentation. The humanize skill (voice engine from the owner's dotfiles) was installed first so all doc prose goes through it. Settled through multiple-choice picks of the agent's options: the audience is developers who try Rhiza on their own repo; install by go install plus tagged GitHub releases built with GoReleaser, first version v0.1.0; docs are Markdown in docs/ with the README as front door (the tabled landing page stays tabled); docs lead with the CLI model working alone, with Rex and Claude Code as requirements for runs and the daemon; the doc set is README and quickstart, concepts, agents/runs/daemon, and reference; the CLI, config and workflow reference is generated and checked stale by make check; the repo goes public under MIT, after an audit of git history and .rhiza/ for secrets, personal data and private hostnames, with the owner flipping visibility by hand; humanize is a standing rule for human-facing doc prose, generated reference exempt; the quickstart covers the model loop without agents so a testscript can run it; all six change sets are planned now; the agents/runs/daemon docs wait for the queued workflow work (dispatch, per-workflow autonomy, schedules, refs, warnings) to land.",
+          "title": "Milestone 30 planning: ready to share"
+        },
+        "handle": "m30-planning",
+        "id": "01M6W5ANB6CXAAYAVSP87W2A3Q",
+        "key": null,
+        "kind": "source",
+        "node": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6W5A2R4BXDGQGHNWGZNB3XY",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W5ANC1PSWBJG38J80ZQK3H",
+  "type": "ops",
+  "v": 1
+}

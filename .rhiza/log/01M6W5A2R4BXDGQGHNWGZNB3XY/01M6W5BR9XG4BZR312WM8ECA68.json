@@ -1,0 +1,696 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6W5ANC1PSWBJG38J80ZQK3H"
+  ],
+  "at": "2026-11-07T23:26:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": 30,
+          "statement": "Rhiza is ready to share: a developer with the link installs it, tries it on their own repo from the README and docs, and the repo is public under MIT."
+        },
+        "handle": "milestone-30",
+        "id": "01M6W5BP51JQ71YH03KVT96WS3",
+        "key": "zzzzzzw",
+        "kind": "intent",
+        "node": "01M6W5BP50YK3XRZTGRHBEC7EK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "go install github.com/dphaener/rhiza/cmd/rhiza builds a working rhiza, and a v* tag publishes linux and darwin binaries for amd64 and arm64 as a GitHub release; the first shared version is v0.1.0."
+        },
+        "handle": "m30-install",
+        "id": "01M6W5BP6112W0TRZGANNWCRNT",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M6W5BP6112W0TRZGANMN7SSJ",
+        "op": "node.create",
+        "parent": "01M6W5BP50YK3XRZTGRHBEC7EK"
+      },
+      {
+        "fields": {
+          "statement": "The README says what Rhiza is and why, how to install it and where to go next, and the quickstart walks the model loop without agents; a testscript runs the quickstart's commands so it cannot rot."
+        },
+        "handle": "m30-readme",
+        "id": "01M6W5BP6SCNA3KYZ3KMRTVRAZ",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M6W5BP6SCNA3KYZ3KM97EVH1",
+        "op": "node.create",
+        "parent": "01M6W5BP50YK3XRZTGRHBEC7EK"
+      },
+      {
+        "fields": {
+          "statement": "docs/ explains the concepts and how to use Rhiza with agents, runs and the daemon: the CLI model alone first, Rex and Claude Code as the requirements for runs, written after the queued workflow work lands."
+        },
+        "handle": "m30-docs",
+        "id": "01M6W5BP7A0FBGPGZNWY5FF0E2",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M6W5BP7A0FBGPGZNWVK8MHDW",
+        "op": "node.create",
+        "parent": "01M6W5BP50YK3XRZTGRHBEC7EK"
+      },
+      {
+        "fields": {
+          "statement": "The CLI, rhiza.toml settings and workflow file references in docs/reference/ are generated from the code, and make check fails when they are stale."
+        },
+        "handle": "m30-reference",
+        "id": "01M6W5BP8JF2CV5FHPZC6JBMG5",
+        "key": "y",
+        "kind": "intent",
+        "node": "01M6W5BP8JF2CV5FHPZAZNR0RP",
+        "op": "node.create",
+        "parent": "01M6W5BP50YK3XRZTGRHBEC7EK"
+      },
+      {
+        "fields": {
+          "statement": "Git history and .rhiza/ are audited for secrets, personal data and private hostnames, an MIT LICENSE is in place, and the owner has made the repository public by hand."
+        },
+        "handle": "m30-public",
+        "id": "01M6W5BP9R6QA4PTTJRWVMV91T",
+        "key": "z",
+        "kind": "intent",
+        "node": "01M6W5BP9R6QA4PTTJRWHYK57R",
+        "op": "node.create",
+        "parent": "01M6W5BP50YK3XRZTGRHBEC7EK"
+      },
+      {
+        "fields": {
+          "statement": "Rhiza's README and docs/ tell a new developer what Rhiza is, how to install it and how to use it, with a reference generated from the code"
+        },
+        "handle": "documentation",
+        "id": "01M6W5BPB34NRRKBCVMH52RW1H",
+        "key": "zzzzzzzzw",
+        "kind": "capability",
+        "node": "01M6W5BPB34NRRKBCVME8KTGWM",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "statement": "Rhiza installs with go install or from release binaries published for each version tag"
+        },
+        "handle": "distribution",
+        "id": "01M6W5BPEBTX6XAWPRN741Z7WH",
+        "key": "zzzzzzzzy",
+        "kind": "capability",
+        "node": "01M6W5BPEBTX6XAWPRN3N7CH38",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "statement": "Human-facing doc prose (the README, docs/ and the PR bodies of doc changes) is drafted or revised with the owner's humanize skill; generated reference tables are exempt."
+        },
+        "handle": "doc-prose-humanized",
+        "id": "01M6W5BPFS232NPDYJXKP9KA4H",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M6W5BPFS232NPDYJXJSQ1WWA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BPFS232NPDYJXJSQ1WWA",
+        "id": "01M6W5BPH38PX3PHBXGT6YAV8B",
+        "link": "01M6W5BPH38PX3PHBXGSBAD0VQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BPB34NRRKBCVME8KTGWM",
+        "type": "constrains"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BPFS232NPDYJXJSQ1WWA",
+        "id": "01M6W5BPK9F13XPFG7Y097BV6B",
+        "link": "01M6W5BPK9F13XPFG7XXCP36PA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "Who are the few people you're sharing Rhiza with, and what should they be able to do after reading the docs?",
+          "statement": "Docs target developers trying Rhiza on their own repo: install, quickstart, concepts, CLI and workflow reference",
+          "wording": "Try it on their repo: developers who install Rhiza, init it in their own repo, and run the model and agent workflows, picked by the owner"
+        },
+        "handle": "m30-audience",
+        "id": "01M6W5BPMGJ5NCNF3RAFNASD7A",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BPMGJ5NCNF3RAE9QERYG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BPMGJ5NCNF3RAE9QERYG",
+        "id": "01M6W5BPPVEHQ25A3EYAX5TF7V",
+        "link": "01M6W5BPPVEHQ25A3EY8CR2M4Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP50YK3XRZTGRHBEC7EK",
+        "id": "01M6W5BPRRVJ84SPH0KVHK03S3",
+        "link": "01M6W5BPRRVJ84SPH0KRSDF9FS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BPMGJ5NCNF3RAE9QERYG",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "How should those people install Rhiza?",
+          "statement": "Install by go install and by prebuilt binaries on tagged GitHub releases",
+          "wording": "go install + releases: go install documented now, plus tagged GitHub releases with prebuilt linux/darwin binaries, picked by the owner"
+        },
+        "handle": "m30-install-path",
+        "id": "01M6W5BPVADRQXFPMNGEF1P3V1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BPVADRQXFPMNGCB64D5Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BPVADRQXFPMNGCB64D5Y",
+        "id": "01M6W5BPWJGN4HFS9EFQY5QMN5",
+        "link": "01M6W5BPWJGN4HFS9EFNW3YYPT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP6112W0TRZGANMN7SSJ",
+        "id": "01M6W5BPY8WYZ1AS57FVARZVHD",
+        "link": "01M6W5BPY8WYZ1AS57FRM6VS8W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BPVADRQXFPMNGCB64D5Y",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "Where do the docs live?",
+          "statement": "Docs are Markdown in docs/ with the README as the front door; no docs site",
+          "wording": "Markdown in docs/: README as the front door linking into docs/*.md on GitHub; the tabled landing page stays tabled, picked by the owner"
+        },
+        "handle": "m30-docs-in-repo",
+        "id": "01M6W5BQ0BVR9VMR2QV9R5ZNAP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BQ0BVR9VMR2QV7NBYM0C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BQ0BVR9VMR2QV7NBYM0C",
+        "id": "01M6W5BQ1J9ZZ6EHFZ26635A7W",
+        "link": "01M6W5BQ1J9ZZ6EHFZ2541RHBD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP7A0FBGPGZNWVK8MHDW",
+        "id": "01M6W5BQ25E023A68KE4FFKGJH",
+        "link": "01M6W5BQ25E023A68KE18QF5QF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQ0BVR9VMR2QV7NBYM0C",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP6SCNA3KYZ3KM97EVH1",
+        "id": "01M6W5BQ30866QZ0P6WDZEAJR6",
+        "link": "01M6W5BQ30866QZ0P6WC1XWBE8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQ0BVR9VMR2QV7NBYM0C",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "What about Rex and Claude Code? Runs, the daemon and the apps depend on them.",
+          "statement": "Docs present the CLI model as working alone and Rex and Claude Code as requirements only for runs, the daemon and the apps",
+          "wording": "Core works alone: docs lead with the CLI model, then a separate section for runs/daemon that lists Rex + Claude Code as requirements, picked by the owner"
+        },
+        "handle": "m30-core-alone",
+        "id": "01M6W5BQ4038Z02EFV8A8J8605",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BQ4038Z02EFV873C2J54",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BQ4038Z02EFV873C2J54",
+        "id": "01M6W5BQ5372QM4TNRB7QSAGFT",
+        "link": "01M6W5BQ5372QM4TNRB5Y28ATH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP7A0FBGPGZNWVK8MHDW",
+        "id": "01M6W5BQ69BZK24Q24C9FC85EJ",
+        "link": "01M6W5BQ69BZK24Q24C8QDBVEY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQ4038Z02EFV873C2J54",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "Which docs make up the set? (pick all that belong in this milestone)",
+          "statement": "The doc set is README and quickstart, concepts, agents/runs/daemon, and reference",
+          "wording": "README + quickstart, Concepts, Agents, runs & daemon, Reference, picked by the owner"
+        },
+        "handle": "m30-doc-set",
+        "id": "01M6W5BQ79KX8F3XMHXPXX86W0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BQ79KX8F3XMHXKSMQV8Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BQ79KX8F3XMHXKSMQV8Y",
+        "id": "01M6W5BQ81Y7P7T0EQM8998624",
+        "link": "01M6W5BQ81Y7P7T0EQM5NZ8BRP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP7A0FBGPGZNWVK8MHDW",
+        "id": "01M6W5BQ96XTBSCVR08HNWJ6YX",
+        "link": "01M6W5BQ96XTBSCVR08GFHXDN0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQ79KX8F3XMHXKSMQV8Y",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP6SCNA3KYZ3KM97EVH1",
+        "id": "01M6W5BQ9VZ7PQ0ZFWHF32QPGC",
+        "link": "01M6W5BQ9VZ7PQ0ZFWHE4ZNT42",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQ79KX8F3XMHXKSMQV8Y",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP8JF2CV5FHPZAZNR0RP",
+        "id": "01M6W5BQAJ2Q2MPKQF9T0XXCE9",
+        "link": "01M6W5BQAJ2Q2MPKQF9RWYMS6E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQ79KX8F3XMHXKSMQV8Y",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "How is the CLI and config reference kept accurate?",
+          "statement": "Generate the reference from the code and fail make check when it is stale",
+          "wording": "Generated, CI-checked: a rhiza docs command renders docs/reference/*.md from the op registry and settings schema; make check fails when it's stale, picked by the owner"
+        },
+        "handle": "m30-generated-reference",
+        "id": "01M6W5BQB2SZW5TD310YZ7PD5Y",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BQB2SZW5TD310XD49GJJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BQB2SZW5TD310XD49GJJ",
+        "id": "01M6W5BQBZ22E0P03H91H4Y90J",
+        "link": "01M6W5BQBZ22E0P03H8YEMWZAR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP8JF2CV5FHPZAZNR0RP",
+        "id": "01M6W5BQCRP16YHMQKEBA8G2G4",
+        "link": "01M6W5BQCRP16YHMQKEAACCH3G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQB2SZW5TD310XD49GJJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "Sharing a private repo with a few people: what about visibility and license?",
+          "statement": "Make the repository public in this milestone under a license",
+          "wording": "Go public with a license, picked by the owner"
+        },
+        "handle": "m30-go-public",
+        "id": "01M6W5BQDD8KRD0K3M4K7QEG9G",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BQDD8KRD0K3M4G5NK74C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BQDD8KRD0K3M4G5NK74C",
+        "id": "01M6W5BQDY1T9G0ECTVV7VZDE9",
+        "link": "01M6W5BQDY1T9G0ECTVS801CFW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP9R6QA4PTTJRWHYK57R",
+        "id": "01M6W5BQEM8SM886DTQZ24E817",
+        "link": "01M6W5BQEM8SM886DTQXMCRZE2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQDD8KRD0K3M4G5NK74C",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "Which license?",
+          "statement": "License Rhiza under MIT",
+          "wording": "MIT, picked by the owner"
+        },
+        "handle": "m30-mit",
+        "id": "01M6W5BQF6XRT65PR1G8KZM1ZR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BQF6XRT65PR1G8200FKS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BQF6XRT65PR1G8200FKS",
+        "id": "01M6W5BQG15N8YJDD16MYAQNQA",
+        "link": "01M6W5BQG15N8YJDD16HCT8ANC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP9R6QA4PTTJRWHYK57R",
+        "id": "01M6W5BQGN0RAQ1GCV7A9QZHY5",
+        "link": "01M6W5BQGN0RAQ1GCV78D3GHGH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQF6XRT65PR1G8200FKS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "Going public exposes the whole git history and .rhiza/ log (Sources quote you, commits carry emails, session notes name machines). How do we prepare?",
+          "statement": "Audit history and .rhiza/ before publishing; only the owner changes the repository's visibility",
+          "wording": "Audit, then you flip it: a change set audits history and .rhiza/ and fixes what it can going forward, reporting anything only a history rewrite would remove; the owner flips visibility by hand, no agent changes repo settings, picked by the owner"
+        },
+        "handle": "m30-audit-then-owner-flips",
+        "id": "01M6W5BQHHD0YRRE1N34DKJFX2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BQHHD0YRRE1N32E1XXX3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BQHHD0YRRE1N32E1XXX3",
+        "id": "01M6W5BQJ9Q083KKY7MKGKXKWG",
+        "link": "01M6W5BQJ9Q083KKY7MHGMJNQ5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP9R6QA4PTTJRWHYK57R",
+        "id": "01M6W5BQJXVDZTZQHFNJA6K2ZA",
+        "link": "01M6W5BQJXVDZTZQHFNGNWA2QX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQHHD0YRRE1N32E1XXX3",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "How strict is 'humanize for all the docs'?",
+          "statement": "Humanize is a standing rule for human-facing doc prose",
+          "wording": "Rule for doc prose: a constraint that every human-facing doc is drafted or revised with the humanize skill; generated reference tables are exempt, picked by the owner"
+        },
+        "handle": "m30-humanize-rule",
+        "id": "01M6W5BQKPTP2B751P6CT7WN6D",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BQKPTP2B751P6AB2W7M2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BQKPTP2B751P6AB2W7M2",
+        "id": "01M6W5BQM9D99EDQZ0797SHA3J",
+        "link": "01M6W5BQM9D99EDQZ076XWD38A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP7A0FBGPGZNWVK8MHDW",
+        "id": "01M6W5BQMT61WCE33BCVQ2X3DB",
+        "link": "01M6W5BQMT61WCE33BCT0QA48Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQKPTP2B751P6AB2W7M2",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP6SCNA3KYZ3KM97EVH1",
+        "id": "01M6W5BQNDDH99SGV36H8MZE88",
+        "link": "01M6W5BQNDDH99SGV36GZXDJNC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQKPTP2B751P6AB2W7M2",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "How are releases built? (version stamping via -ldflags already exists in the Makefile)",
+          "statement": "Build releases with GoReleaser from a GitHub Actions job on v* tags",
+          "wording": "GoReleaser on tag: a .goreleaser.yaml and a GitHub Actions job on v* tags building linux/darwin amd64+arm64 with checksums, attached to a GitHub release, picked by the owner"
+        },
+        "handle": "m30-goreleaser",
+        "id": "01M6W5BQP21T6REHE626Q652PP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BQP21T6REHE624ZGDMHK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BQP21T6REHE624ZGDMHK",
+        "id": "01M6W5BQPZ4TW0W43W6JMDQXZ4",
+        "link": "01M6W5BQPZ4TW0W43W6HHTKF36",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP6112W0TRZGANMN7SSJ",
+        "id": "01M6W5BQQWVAREV93EMJY6GS75",
+        "link": "01M6W5BQQWVAREV93EMJN6K980",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQP21T6REHE624ZGDMHK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "What is the first shared version?",
+          "statement": "The first shared version is v0.1.0",
+          "wording": "v0.1.0, picked by the owner"
+        },
+        "handle": "m30-v0-1-0",
+        "id": "01M6W5BQRXH2K66094RZHQPWD3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BQRXH2K66094RWKPXGY3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BQRXH2K66094RWKPXGY3",
+        "id": "01M6W5BQT1X2P2SEKKKYVJNGMJ",
+        "link": "01M6W5BQT1X2P2SEKKKTZBHYB7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP6112W0TRZGANMN7SSJ",
+        "id": "01M6W5BQVB6V48Q42WNYXY8Q52",
+        "link": "01M6W5BQVB6V48Q42WNYD2B2JR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQRXH2K66094RWKPXGY3",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "What should the quickstart walk through?",
+          "statement": "The quickstart covers the model loop without agents so a testscript can run it",
+          "wording": "Model loop, no agents: init, a capability and a decision, open/propose/accept/land a change set, render, slice/why; fully runnable in a testscript, picked by the owner"
+        },
+        "handle": "m30-quickstart-model-loop",
+        "id": "01M6W5BQWKJ6A2T3WTTA1B1A20",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BQWKJ6A2T3WTT696NH32",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BQWKJ6A2T3WTT696NH32",
+        "id": "01M6W5BQY2RSJ7D95DYQ6SFKMH",
+        "link": "01M6W5BQY2RSJ7D95DYM0FGFES",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP6SCNA3KYZ3KM97EVH1",
+        "id": "01M6W5BQYW276H33Q0QR673H9P",
+        "link": "01M6W5BQYW276H33Q0QMWP90CV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQWKJ6A2T3WTT696NH32",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "Which change sets should get their leaves planned now? The rest keep only their intent until later.",
+          "statement": "Plan all six change sets now",
+          "wording": "1 Release pipeline, 2 Generated reference, 3 README + quickstart, 4-6 Docs + audit, picked by the owner"
+        },
+        "handle": "m30-plan-all-now",
+        "id": "01M6W5BQZFB8WKQWNB6N1CJ8JS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BQZFB8WKQWNB6M78TBMB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BQZFB8WKQWNB6M78TBMB",
+        "id": "01M6W5BR08437Z2QMS4HDSB5SN",
+        "link": "01M6W5BR08437Z2QMS4G4RS3GM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP50YK3XRZTGRHBEC7EK",
+        "id": "01M6W5BR21PMT4HYCWPS4AD5N4",
+        "link": "01M6W5BR21PMT4HYCWPQH1GZ42",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQZFB8WKQWNB6M78TBMB",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "question": "Six workflow requests are queued (dispatch, per-workflow autonomy, schedules, ...) that will change how runs and the daemon behave. When should the agents/runs/daemon docs be written?",
+          "statement": "The agents/runs/daemon docs wait for the queued workflow work to land",
+          "wording": "After the workflow work: the agents/runs/daemon docs change set depends on the workflow requests landing; sharing waits for them, picked by the owner"
+        },
+        "handle": "m30-agent-docs-after-workflows",
+        "id": "01M6W5BR44TSR001G89099KB5Y",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W5BR44TSR001G88YVDQ883",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BR44TSR001G88YVDQ883",
+        "id": "01M6W5BR70NPB6WCPR4JX4EQGD",
+        "link": "01M6W5BR70NPB6WCPR4G501NFP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5ANB6CXAAYAVSP53Z43CY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5BP7A0FBGPGZNWVK8MHDW",
+        "id": "01M6W5BR8NRBXFBHD28M0NXD0A",
+        "link": "01M6W5BR8NRBXFBHD28JX96DMY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BR44TSR001G88YVDQ883",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6W5A2R4BXDGQGHNWGZNB3XY",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W5BR9XG4BZR312WM8ECA68",
+  "type": "ops",
+  "v": 1
+}

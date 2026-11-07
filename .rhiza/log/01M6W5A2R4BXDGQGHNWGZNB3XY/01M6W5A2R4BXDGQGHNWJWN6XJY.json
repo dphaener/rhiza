@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-07T23:25:44Z",
+  "body": {
+    "intent": "Milestone 30: Rhiza is ready to share: install, README and docs, generated reference, public under MIT",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6W5A2R4BXDGQGHNWGZNB3XY",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W5A2R4BXDGQGHNWJWN6XJY",
+  "type": "open",
+  "v": 1
+}

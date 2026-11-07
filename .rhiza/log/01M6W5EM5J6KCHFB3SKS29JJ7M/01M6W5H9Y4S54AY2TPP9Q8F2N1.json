@@ -1,0 +1,116 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6W5EM5KA7TMRJWN7M9PYW8T"
+  ],
+  "at": "2026-11-07T23:29:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "the owner reads it; docs-commands-exist and docs-links-resolve pass on it. Prose written with the humanize skill (constraint doc-prose-humanized).",
+          "statement": "docs/concepts/model.md explains the product model: the node kinds, links and their types, handles, IDs and text references, and the capability tree"
+        },
+        "handle": "docs-concepts-model",
+        "id": "01M6W5H9S6GJNR5ZJWFDX214CH",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6W5H9S6GJNR5ZJWFCEQNAP2",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H9S6GJNR5ZJWFCEQNAP2",
+        "id": "01M6W5H9SNB4FG1V0XMN7GGMD5",
+        "link": "01M6W5H9SNB4FG1V0XMK8170W1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQ79KX8F3XMHXKSMQV8Y",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H9S6GJNR5ZJWFCEQNAP2",
+        "id": "01M6W5H9T0K7DFPWGR6ECBDPM1",
+        "link": "01M6W5H9T0K7DFPWGR6AYCS4X8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQKPTP2B751P6AB2W7M2",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "the owner reads it; docs-commands-exist and docs-links-resolve pass on it. Prose written with the humanize skill (constraint doc-prose-humanized).",
+          "statement": "docs/concepts/change-sets.md explains change sets: intention and record, the lifecycle from draft to landed, the append-only log, carving and reopening, and rendering"
+        },
+        "handle": "docs-concepts-change-sets",
+        "id": "01M6W5H9TG178RSX38AGQPTMT8",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6W5H9TG178RSX38AEMFC34G",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H9TG178RSX38AEMFC34G",
+        "id": "01M6W5H9TVAK80282VVTRMHJGZ",
+        "link": "01M6W5H9TVAK80282VVPZKB835",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQ79KX8F3XMHXKSMQV8Y",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H9TG178RSX38AEMFC34G",
+        "id": "01M6W5H9VBZ8TS3J40VFS1TMX4",
+        "link": "01M6W5H9VBZ8TS3J40VEW34XD7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQKPTP2B751P6AB2W7M2",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "the owner reads it; docs-commands-exist and docs-links-resolve pass on it. Prose written with the humanize skill (constraint doc-prose-humanized).",
+          "statement": "docs/concepts/why.md explains the reasons layer: decisions and quoting the owner, questions, sources and scrubbing, evidence, and reading it back with why and slice"
+        },
+        "handle": "docs-concepts-why",
+        "id": "01M6W5H9VZ7KK36MZPHE9BBF3R",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6W5H9VZ7KK36MZPHB97X9EB",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H9VZ7KK36MZPHB97X9EB",
+        "id": "01M6W5H9WJZ1YN6XF7A1W67Q7A",
+        "link": "01M6W5H9WJZ1YN6XF7A1BV1BT0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQ79KX8F3XMHXKSMQV8Y",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H9VZ7KK36MZPHB97X9EB",
+        "id": "01M6W5H9XKH5J981NQ8DMNWDNP",
+        "link": "01M6W5H9XKH5J981NQ8AB9XFT8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQKPTP2B751P6AB2W7M2",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6W5EM5J6KCHFB3SKS29JJ7M",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W5H9Y4S54AY2TPP9Q8F2N1",
+  "type": "ops",
+  "v": 1
+}

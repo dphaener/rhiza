@@ -1,0 +1,132 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6W5E3JQXD62WN4RHKVGDGYX"
+  ],
+  "at": "2026-11-07T23:29:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "a testscript runs rhiza docs into a temp dir and checks the request command's section lists --kind and --milestone; go test of the docs package",
+          "statement": "rhiza docs writes docs/reference/cli.md from the op registry: every command with its arguments, flags, descriptions, output and exit codes"
+        },
+        "handle": "docs-reference-cli",
+        "id": "01M6W5GZVA1QCBXVCK87C1J39D",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6W5GZVA1QCBXVCK83RMHFW8",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5GZVA1QCBXVCK83RMHFW8",
+        "id": "01M6W5GZWD9TH4P3ZJVFXRQX30",
+        "link": "01M6W5GZWD9TH4P3ZJVC7BMCW2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQB2SZW5TD310XD49GJJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "a testscript checks rhiza.autonomy.plan appears with its default; a unit test fails if a settings definition has no description",
+          "statement": "rhiza docs writes docs/reference/config.md: every rhiza.toml setting with its type, default and description, from the settings definitions"
+        },
+        "handle": "docs-reference-config",
+        "id": "01M6W5GZXB8YMB2G6144QJJMHZ",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6W5GZXB8YMB2G6142DGQTS7",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5GZXB8YMB2G6142DGQTS7",
+        "id": "01M6W5GZXSD9QNPZ1TT8HGDCNS",
+        "link": "01M6W5GZXSD9QNPZ1TT78SHMKR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQB2SZW5TD310XD49GJJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "a testscript checks every step kind internal/workflow defines has a section",
+          "statement": "rhiza docs writes docs/reference/workflow-file.md: the workflow file format, its step kinds, their keys and outcomes, from internal/workflow's definitions"
+        },
+        "handle": "docs-reference-workflow",
+        "id": "01M6W5GZYH2DCX2XH47N6HX5B5",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6W5GZYH2DCX2XH47KX3X2ZE",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5GZYH2DCX2XH47KX3X2ZE",
+        "id": "01M6W5GZZJGRT09763ZR83PTGM",
+        "link": "01M6W5GZZJGRT09763ZPZASBWZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQB2SZW5TD310XD49GJJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "a testscript edits a generated file and sees the staleness check fail naming it, then pass after rhiza docs",
+          "statement": "make check fails when docs/reference/ differs from what rhiza docs writes, naming the stale files, as it does for .rhiza/rendered/"
+        },
+        "handle": "docs-reference-stale",
+        "id": "01M6W5H0026NYNDG8X1K9X1B28",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6W5H0026NYNDG8X1JYS6R7C",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H0026NYNDG8X1JYS6R7C",
+        "id": "01M6W5H00WE21TZ821FF7A65WX",
+        "link": "01M6W5H00WE21TZ821FEW80T2H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQB2SZW5TD310XD49GJJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "a testscript feeds a doc naming rhiza no-such-command and sees the check fail; the check runs in make check",
+          "statement": "A check fails when README.md or docs/ names a rhiza command (in backticks or a code block) that the registry does not have"
+        },
+        "handle": "docs-commands-exist",
+        "id": "01M6W5H01JDC5QZZECFM3FMRT0",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6W5H01JDC5QZZECFJSXQSTK",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H01JDC5QZZECFJSXQSTK",
+        "id": "01M6W5H02WXCNY6XGMSQH2361E",
+        "link": "01M6W5H02WXCNY6XGMSM4J6CS2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQB2SZW5TD310XD49GJJ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6W5E3JQXD62WN4RHG546KRX",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W5H046QHDNK0EBQQB3ZB2Z",
+  "type": "ops",
+  "v": 1
+}
