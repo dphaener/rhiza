@@ -1,0 +1,40 @@
+{
+  "actor": "01M6TG1RYP858VRHY5KKSDC3DY",
+  "after": [
+    "01M6TD9A3BJNV52EPWAFK36ZWX"
+  ],
+  "at": "2026-11-07T08:11:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 006e559c, with fake gh only: go test -trimpath ./internal/api -run 'Ship|PRView|Plan' passes, including TestShipOpenPRRefusesForeignPR (open-pr refuses an OPEN, MERGED or CLOSED PR whose body names another change set or has no 'Change set' line, exit 3 naming #7, no pr create/edit, no ship state file) and TestShipCheckRefusesForeignPR (check with and without --settled, the wait step, refuses other-change-set, no-line and empty bodies in all three states, exit 3 naming #345, no state file); the existing ship tests, whose fake gh bodies name the run's change set, still pass, so an owned PR is tracked as before. The 32 testscripts the commit touched (run-ship-*, plan-workflow-*, ship-check-*, etc.) pass. Diff read: requirePROwned runs right after parsePRView in open-pr (before the merged-PR re-create path and after it) and in check, before any writeShipState; prOwnedBy matches the 'Change set <id>' line planSummary writes. An unfiltered go test ./internal/api/... hit the 600s default timeout on a machine at load ~17, which is unrelated to this leaf; the ship subset passed in 18s."
+        },
+        "handle": "ship-tracks-own-pr-verified",
+        "id": "01M6TH0W1AJ1EVSW0603TRNHKY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TH0W1AJ1EVSW060095R1GN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TH0W1AJ1EVSW060095R1GN",
+        "id": "01M6TH0W1WJXJA03CSX951YZ63",
+        "link": "01M6TH0W1WJXJA03CSX7JDF66W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBRW1FQSQTEHBGNK10NGSV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6TBDRB2N5MTW4BW0K2NZCG6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TH0W2MVKYTT0TR7WG2NPGT",
+  "type": "ops",
+  "v": 1
+}

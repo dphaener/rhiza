@@ -150,6 +150,7 @@ on.pass = "done"
 on.changes = "review"
 -- bin/gh --
 #!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
 echo "$@" >> "$WORK/gh.log"
 o="$WORK/origin.git"
 case "$1 $2" in
@@ -158,7 +159,7 @@ case "$1 $2" in
 		echo "no pull requests found for branch \"$3\"" >&2
 		exit 1
 	fi
-	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"FAILURE"},{"context":"lint","state":"SUCCESS"}]}\n' "$head"
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"FAILURE"},{"context":"lint","state":"SUCCESS"}]}\n' "$head"
 	;;
 "pr create")
 	touch "$WORK/pr.created"

@@ -175,12 +175,14 @@ func findShipTarget(ctx *Ctx) (shipTarget, error) {
 	}
 	var cs id.ID
 	var c changeset.ChangeSet
+	var sets []changeset.ChangeSet
 	if len(w.pending) == 0 && ctx.IndexPath != "" {
-		cs, c, err = indexedShipChangeSet(ctx, w)
+		cs, c, sets, err = indexedShipChangeSet(ctx, w)
 	} else {
 		cs, err = w.effectiveChangeSet(ctx)
 		if err == nil && !cs.IsZero() {
 			c, _ = w.changeSet(cs)
+			sets = w.changeSets()
 		}
 	}
 	if err != nil {
@@ -202,7 +204,7 @@ func findShipTarget(ctx *Ctx) (shipTarget, error) {
 		return t, Errorf("git worktree list names no main checkout")
 	}
 	t = shipTarget{cs: cs, title: c.Open.DisplayTitle(), main: main, common: common}
-	t.slug = session.Slug(t.title)
+	t.slug = session.ChangeSetSlug(sets, cs)
 	t.branch = session.Branch(t.slug)
 	mainRoot := filepath.Dir(common)
 	t.worktree = session.Worktree(mainRoot, filepath.Base(mainRoot), t.slug)
@@ -210,30 +212,43 @@ func findShipTarget(ctx *Ctx) (shipTarget, error) {
 }
 
 // indexedShipChangeSet is the effective change set and its fold, from the
-// index's stored change sets: the log is not read.
-func indexedShipChangeSet(ctx *Ctx, w *workspace) (id.ID, changeset.ChangeSet, error) {
+// index's stored change sets: the log is not read. sets are the folded
+// change sets up to it, which name its unique slug.
+func indexedShipChangeSet(ctx *Ctx, w *workspace) (id.ID, changeset.ChangeSet, []changeset.ChangeSet, error) {
 	x, err := index.Open(ctx.Root, ctx.IndexPath)
 	if err != nil {
-		return id.ID{}, changeset.ChangeSet{}, Errorf("%s", err.Error())
+		return id.ID{}, changeset.ChangeSet{}, nil, Errorf("%s", err.Error())
 	}
 	defer x.Close()
 	current, err := w.current()
 	if err != nil {
-		return id.ID{}, changeset.ChangeSet{}, err
+		return id.ID{}, changeset.ChangeSet{}, nil, err
 	}
 	infos, err := x.ChangeSets()
 	if err != nil {
-		return id.ID{}, changeset.ChangeSet{}, Errorf("%s", err.Error())
+		return id.ID{}, changeset.ChangeSet{}, nil, Errorf("%s", err.Error())
 	}
 	cs, err := indexedEffective(ctx, current, infos)
 	if err != nil || cs.IsZero() {
-		return cs, changeset.ChangeSet{}, err
+		return cs, changeset.ChangeSet{}, nil, err
 	}
-	got, err := x.FoldedOf([]id.ID{cs})
+	var ids []id.ID
+	for _, in := range infos {
+		if id.Compare(in.ID, cs) <= 0 {
+			ids = append(ids, in.ID)
+		}
+	}
+	got, err := x.FoldedOf(ids)
 	if err != nil {
-		return id.ID{}, changeset.ChangeSet{}, Errorf("%s", err.Error())
+		return id.ID{}, changeset.ChangeSet{}, nil, Errorf("%s", err.Error())
 	}
-	return cs, got[cs], nil
+	var sets []changeset.ChangeSet
+	for _, i := range ids {
+		if c, ok := got[i]; ok {
+			sets = append(sets, c)
+		}
+	}
+	return cs, got[cs], sets, nil
 }
 
 // firstWorktree is the path of the first entry of `git worktree list
@@ -341,6 +356,8 @@ type prView struct {
 	URL    string
 	State  string
 	Head   string
+	// Body is the pull request's description.
+	Body string
 	// Mergeable is GitHub's verdict: MERGEABLE, CONFLICTING or UNKNOWN.
 	Mergeable string
 	Checks    []ShipCheck
@@ -356,6 +373,7 @@ func parsePRView(b []byte) (prView, error) {
 		URL        string `json:"url"`
 		State      string `json:"state"`
 		HeadRefOid string `json:"headRefOid"`
+		Body       string `json:"body"`
 		Mergeable  string `json:"mergeable"`
 		Rollup     []struct {
 			Name       string `json:"name"`
@@ -369,7 +387,7 @@ func parsePRView(b []byte) (prView, error) {
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return prView{}, fmt.Errorf("gh pr view: %v", err)
 	}
-	v := prView{Number: raw.Number, URL: raw.URL, State: raw.State, Head: raw.HeadRefOid, Mergeable: raw.Mergeable, Checks: []ShipCheck{}}
+	v := prView{Number: raw.Number, URL: raw.URL, State: raw.State, Head: raw.HeadRefOid, Body: raw.Body, Mergeable: raw.Mergeable, Checks: []ShipCheck{}}
 	for _, r := range raw.Rollup {
 		if r.Context != "" || (r.Status == "" && r.State != "") {
 			c := ShipCheck{Name: r.Context, Status: "COMPLETED", Conclusion: r.State}
@@ -382,6 +400,35 @@ func parsePRView(b []byte) (prView, error) {
 		v.Checks = append(v.Checks, ShipCheck{Name: r.Name, Status: r.Status, Conclusion: r.Conclusion, RunID: actionsRunID(r.DetailsURL)})
 	}
 	return v, nil
+}
+
+// prOwnedBy reports whether the pull request's body has a "Change set <id>"
+// line naming cs: the line open-pr's body opens with.
+func prOwnedBy(body string, cs id.ID) bool {
+	for _, line := range strings.Split(body, "\n") {
+		rest, ok := strings.CutPrefix(strings.TrimSpace(line), "Change set ")
+		if !ok {
+			continue
+		}
+		name := rest
+		if i := strings.IndexAny(rest, ":. \t"); i >= 0 {
+			name = rest[:i]
+		}
+		if name == cs.String() {
+			return true
+		}
+	}
+	return false
+}
+
+// requirePROwned refuses a pull request on the change set's branch whose body
+// does not name the change set: another change set's, or none, so ship never
+// tracks it. Nothing is written.
+func requirePROwned(t shipTarget, v prView) error {
+	if prOwnedBy(v.Body, t.cs) {
+		return nil
+	}
+	return Conflictf("pull request #%d for branch %s (%s) does not name change set %s in its body's 'Change set' line: it is another change set's, so ship does not track it", v.Number, t.branch, strings.ToLower(v.State), t.cs)
 }
 
 // actionsRunRe finds the run ID in an Actions details URL such as
@@ -478,7 +525,7 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		resp.PR, resp.URL, resp.Commit = st.PR, st.URL, st.MergeCommit
 		return shipCheckMainTree(ctx, t, st, resp, path, r.Settled)
 	} else {
-		out, err := gh(ctx, t.dir(), "pr", "view", t.branch, "--json", "number,url,state,headRefOid,mergeable,statusCheckRollup")
+		out, err := gh(ctx, t.dir(), "pr", "view", t.branch, "--json", "number,url,state,headRefOid,body,mergeable,statusCheckRollup")
 		if noPR(err) {
 			resp.Detail = fmt.Sprintf("no open pull request for branch %s", t.branch)
 			return resp, nil
@@ -489,6 +536,9 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		v, err := parsePRView(out)
 		if err != nil {
 			return nil, Errorf("%v", err)
+		}
+		if err := requirePROwned(t, v); err != nil {
+			return nil, err
 		}
 		resp.PR, resp.URL, resp.State, resp.Commit, resp.Checks = v.Number, v.URL, v.State, v.Head, v.Checks
 		if !strings.EqualFold(v.State, "OPEN") {

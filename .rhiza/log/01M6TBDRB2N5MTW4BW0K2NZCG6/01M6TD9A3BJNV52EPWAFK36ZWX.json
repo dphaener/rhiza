@@ -1,0 +1,40 @@
+{
+  "actor": "01M6TD7QRSPT9HRBNHJ5VRZ7XK",
+  "after": [
+    "01M6TCHFWFX7NM0NJ5637J8BDT"
+  ],
+  "at": "2026-11-07T07:06:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 0d7a957f: read the diff of internal/session/names.go and names_test.go. ChangeSetSlug(sets, cs) takes the folded change sets, returns Slug(DisplayTitle) and appends '-' + strings.ToLower(first 12 ID chars) only when another set with a lower ID (id.Compare, state never consulted, sets without an open entry skipped) has the same title slug, so landing, abandoning or creating later sets cannot change it. Ran go test -trimpath -count=1 -run TestChangeSetSlug -v ./internal/session/ (PASS) and go test -trimpath ./internal/session/... (ok); go vet and gofmt -l clean. TestChangeSetSlug checks: the earlier (landed) set keeps the bare slug 'fix-the-usage-governor-s'; the later one gets 'fix-the-usage-governor-s-01m6t2dc1234'; a no-clash set keeps 'other-work'; a set whose ID shares 25 characters with another still gets the fixed 12-character suffix; after the earlier set is withdrawn (abandoned) the later one keeps its suffix across repeated calls; without the earlier set it is bare."
+        },
+        "handle": "unique-change-set-slug-verified",
+        "id": "01M6TD9A114E3Y4P63KPJQC5QQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TD9A102B2YKQABSJA0DFAT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TD9A102B2YKQABSJA0DFAT",
+        "id": "01M6TD9A2J8KD42NNMJFY82QHE",
+        "link": "01M6TD9A2J8KD42NNMJFSJ8NTP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBRVYX75117KD157BPHBGB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6TBDRB2N5MTW4BW0K2NZCG6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TD9A3BJNV52EPWAFK36ZWX",
+  "type": "ops",
+  "v": 1
+}

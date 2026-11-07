@@ -99,6 +99,7 @@ on.pass = "done"
 on.changes = "review"
 -- bin/gh --
 #!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
 echo "$@" >> "$WORK/gh.log"
 o="$WORK/origin.git"
 case "$1 $2" in
@@ -109,7 +110,7 @@ case "$1 $2" in
 	fi
 	concl=FAILURE
 	if [ -f "$WORK/rerun.done" ] && [ -n "x" ]; then concl=SUCCESS; fi
-	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"%s","detailsUrl":"https://github.test/o/r/actions/runs/42/job/9"},{"context":"lint","state":"SUCCESS"}]}\n' "$head" "$concl"
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"%s","detailsUrl":"https://github.test/o/r/actions/runs/42/job/9"},{"context":"lint","state":"SUCCESS"}]}\n' "$head" "$concl"
 	;;
 "pr create")
 	touch "$WORK/pr.created"

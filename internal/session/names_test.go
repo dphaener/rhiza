@@ -4,6 +4,9 @@ import (
 	"strings"
 	"testing"
 	"unicode/utf8"
+
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 func TestSlug(t *testing.T) {
@@ -82,5 +85,45 @@ func TestTabTitlesFitRex(t *testing.T) {
 	tail := strings.Repeat("x", 200)
 	if got := RunTabTitle("rhiza", "T", "R", "s", tail); utf8.RuneCountInString(got) != MaxTabTitle {
 		t.Errorf("RunTabTitle with an overlong tail is %d characters, want %d", utf8.RuneCountInString(got), MaxTabTitle)
+	}
+}
+
+func TestChangeSetSlug(t *testing.T) {
+	mk := func(idStr, title string, state changeset.State) changeset.ChangeSet {
+		cs, err := id.Parse(idStr)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return changeset.ChangeSet{ID: cs, OpenEntry: cs, State: state, Open: changeset.Open{Title: title}}
+	}
+	a := mk("01M6T1ZR0000000000000000AA", "Fix the usage governor's", changeset.StateLanded)
+	b := mk("01M6T2DC1234567890ABCDEFGH", "Fix the usage governor's", changeset.StateDraft)
+	c := mk("01M6T2DC1234567890ABCDEFGJ", "Fix the usage governor's", changeset.StateDraft)
+	d := mk("01M6T3000000000000000000AA", "Other work", changeset.StateDraft)
+	sets := []changeset.ChangeSet{b, d, a, c}
+
+	if got := ChangeSetSlug(sets, a.ID); got != "fix-the-usage-governor-s" {
+		t.Errorf("earlier = %q", got)
+	}
+	if got, want := ChangeSetSlug(sets, b.ID), "fix-the-usage-governor-s-01m6t2dc1234"; got != want {
+		t.Errorf("later = %q, want %q", got, want)
+	}
+	if got := ChangeSetSlug(sets, d.ID); got != "other-work" {
+		t.Errorf("no clash = %q", got)
+	}
+	// IDs sharing a long prefix still get fixed-length suffixes, stable on repeat.
+	if got := ChangeSetSlug(sets, c.ID); got != "fix-the-usage-governor-s-01m6t2dc1234" {
+		t.Errorf("c = %q", got)
+	}
+	// Same after the earlier set is withdrawn, and on repeat.
+	a.State = changeset.StateWithdrawn
+	for i := 0; i < 2; i++ {
+		if got := ChangeSetSlug([]changeset.ChangeSet{a, b, c}, b.ID); got != "fix-the-usage-governor-s-01m6t2dc1234" {
+			t.Errorf("after abandon = %q", got)
+		}
+	}
+	// Without the earlier set b is bare.
+	if got := ChangeSetSlug([]changeset.ChangeSet{b, c}, b.ID); got != "fix-the-usage-governor-s" {
+		t.Errorf("alone = %q", got)
 	}
 }

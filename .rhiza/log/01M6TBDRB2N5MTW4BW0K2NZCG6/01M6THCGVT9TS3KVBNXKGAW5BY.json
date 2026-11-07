@@ -1,0 +1,40 @@
+{
+  "actor": "01M6TG5VB93NB0F08GS8009AZA",
+  "after": [
+    "01M6TH0W2MVKYTT0TR7WG2NPGT"
+  ],
+  "at": "2026-11-07T08:18:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at a47ea982 (leaf commits cd5fe1a5, a47ea982). go test -trimpath ./cmd/rhiza -run 'TestScripts/(change-worktree-unique-slug|arbiter-agent-tabs)$' passed: two change sets titled 'Twin work' get worktrees repo.twin-work and repo.twin-work-01m5pwgjc82p and branches cs/twin-work and cs/twin-work-01m5pwgjc82p (12 lowercased ID characters, not the 9-character short ID), and run start --dry-run (existing and --new plan) predicts the suffixed worktree. go test -trimpath ./internal/api -run TestUniqueSlugShipTargetAndAbandon passed: findShipTarget names the later change set's suffixed slug/branch/worktree, and abandonCleanup names cs/twin-work-<suffix>, never cs/twin-work. Full go test -trimpath -timeout 40m ./internal/api passed (416s; an earlier run hit the default 10m timeout under load ~10) and ./internal/session passed. grep for 'Slug(' in non-test Go: session.Slug is called only inside session.ChangeSetSlug; change worktree, run start/dry run (newPlanChange), leaf/check/fix/agent prompts (t.slug), ship target and abandon cleanup all use ChangeSetSlug."
+        },
+        "handle": "slug-callers-agree-verified",
+        "id": "01M6THCGTKYPJDVY2TTKCRMY7X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6THCGTKYPJDVY2TTGZXWA0Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6THCGTKYPJDVY2TTGZXWA0Z",
+        "id": "01M6THCGV4BP7XBT2QNCM45KWY",
+        "link": "01M6THCGV4BP7XBT2QNB65KNHF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBRVZXT2PN5R0C1X1JC5X1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6TBDRB2N5MTW4BW0K2NZCG6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6THCGVT9TS3KVBNXKGAW5BY",
+  "type": "ops",
+  "v": 1
+}

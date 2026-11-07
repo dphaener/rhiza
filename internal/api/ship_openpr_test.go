@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -49,11 +50,10 @@ func (g *openPRGH) run(name string, args []string, dir string, env []string) ([]
 		if !g.exists {
 			return nil, errors.New("gh " + k + ": no pull requests found for branch \"" + g.branch + "\"")
 		}
-		head, err := g.exec("git", []string{"--git-dir", g.origin, "rev-parse", g.branch}, "", nil)
-		if err != nil {
-			g.t.Fatal(err)
-		}
-		return []byte(`{"number":7,"url":"https://github.com/o/r/pull/7","state":"` + g.state + `","headRefOid":"` + strings.TrimSpace(string(head)) + `","statusCheckRollup":[]}`), nil
+		// A branch origin lacks has no head yet: "" (a foreign PR seen
+		// before anything is pushed).
+		head, _ := g.exec("git", []string{"--git-dir", g.origin, "rev-parse", "--verify", "--quiet", "refs/heads/" + g.branch}, "", nil)
+		return []byte(`{"number":7,"url":"https://github.com/o/r/pull/7","state":"` + g.state + `","body":` + strconv.Quote(g.body) + `,"headRefOid":"` + strings.TrimSpace(string(head)) + `","statusCheckRollup":[]}`), nil
 	case strings.HasPrefix(k, "pr create "):
 		if g.exists {
 			g.t.Fatalf("gh %s: a second pull request", k)
@@ -286,5 +286,58 @@ func TestShipOpenPRRefusesPlanWithoutRound(t *testing.T) {
 	}
 	if len(g.calls) != 0 {
 		t.Errorf("gh called: %q", g.calls)
+	}
+}
+
+// TestShipOpenPRRefusesForeignPR: a pull request on the branch whose body
+// names another change set, or none, is refused whatever its state, with a
+// conflict naming it; nothing is edited, created or written to ship state.
+func TestShipOpenPRRefusesForeignPR(t *testing.T) {
+	for _, body := range []string{"# Plan\n\nChange set 01M6T1ZR0000000000000000AB: Other.\n", "Fixes a bug."} {
+		for _, state := range []string{"OPEN", "MERGED", "CLOSED"} {
+			// onOrigin: the foreign PR's commit is ahead on origin's branch,
+			// which open-pr must not pull in; otherwise origin lacks the
+			// branch and this run's commit must not be pushed onto the PR.
+			for _, onOrigin := range []bool{true, false} {
+				ctx, g, _, git := openPRFixture(t, true)
+				g.exists, g.state, g.body = true, state, body
+				local := git("rev-parse", "HEAD")
+				if onOrigin {
+					git("checkout", "-q", "-b", "foreign")
+					git("commit", "-q", "--allow-empty", "-m", "foreign")
+					git("push", "-q", "origin", "foreign:cs/ship-it")
+					git("checkout", "-q", "cs/ship-it")
+				}
+				originHead := func() string {
+					out, _ := g.exec("git", []string{"--git-dir", g.origin, "rev-parse", "--verify", "--quiet", "refs/heads/cs/ship-it"}, "", nil)
+					return strings.TrimSpace(string(out))
+				}
+				before := originHead()
+				_, err := callOp(t, ctx, "ship.open-pr", `{}`)
+				if err == nil || !strings.Contains(err.Error(), "#7") {
+					t.Errorf("%q, %s, %v: err = %v, want a conflict naming #7", body, state, onOrigin, err)
+					continue
+				}
+				wantExit(t, err, 3)
+				for _, c := range g.calls {
+					if strings.HasPrefix(c, "pr create") || strings.HasPrefix(c, "pr edit") {
+						t.Errorf("%q, %s, %v: gh %s", body, state, onOrigin, c)
+					}
+				}
+				if g.body != body {
+					t.Errorf("%q, %s, %v: body changed to %q", body, state, onOrigin, g.body)
+				}
+				if h := git("rev-parse", "HEAD"); h != local {
+					t.Errorf("%q, %s, %v: HEAD moved to %s, want %s: the foreign PR's commits were pulled in", body, state, onOrigin, h, local)
+				}
+				if h := originHead(); h != before {
+					t.Errorf("%q, %s, %v: origin's cs/ship-it moved from %q to %q: pushed onto the foreign PR", body, state, onOrigin, before, h)
+				}
+				ents, _ := filepath.Glob(filepath.Join(ctx.Root, ".git", "rhiza", "ship", "*.json"))
+				if len(ents) != 0 {
+					t.Errorf("%q, %s, %v: ship state written: %v", body, state, onOrigin, ents)
+				}
+			}
+		}
 	}
 }

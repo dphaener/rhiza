@@ -175,6 +175,7 @@ echo 'tab closed' > "$WORK/claude.done"
 exit 129
 -- bin/gh --
 #!/bin/sh
+csid=01M5PWGEF85Y185JZ2ZGCNH40N
 echo "$@" >> "$WORK/gh.log"
 o="$WORK/origin.git"
 case "$1 $2" in
@@ -183,7 +184,7 @@ case "$1 $2" in
 		echo "no pull requests found for branch \"$3\"" >&2
 		exit 1
 	fi
-	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
 	;;
 *)
 	echo "fake gh: unexpected: $*" >&2

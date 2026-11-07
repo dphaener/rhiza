@@ -5,6 +5,9 @@ import (
 	"path/filepath"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 // Slug lowercases title, turns each run of characters outside [a-z0-9] into
@@ -91,4 +94,31 @@ func NewID(entropy [16]byte) string {
 	b[6] = b[6]&0x0f | 0x40
 	b[8] = b[8]&0x3f | 0x80
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
+}
+
+// ChangeSetSlug is the slug of the change set cs among sets, the folded
+// model's change sets (any state). It is Slug of the display title, plus "-"
+// and the first 12 characters of cs's ID in lowercase when an earlier change
+// set (lower ID) has the same title slug. The suffix is a fixed-length ID
+// prefix, never the neighbour-dependent short ID, so the result does not
+// change when other change sets land or are created. A cs that sets does not
+// hold keeps the bare slug.
+func ChangeSetSlug(sets []changeset.ChangeSet, cs id.ID) string {
+	var title string
+	for _, s := range sets {
+		if s.ID == cs {
+			title = s.Open.DisplayTitle()
+			break
+		}
+	}
+	slug := Slug(title)
+	for _, s := range sets {
+		if s.ID == cs || s.OpenEntry.IsZero() || id.Compare(s.ID, cs) >= 0 {
+			continue
+		}
+		if Slug(s.Open.DisplayTitle()) == slug {
+			return slug + "-" + strings.ToLower(cs.String()[:12])
+		}
+	}
+	return slug
 }

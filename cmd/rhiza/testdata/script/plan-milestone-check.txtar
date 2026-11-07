@@ -157,6 +157,7 @@ sleep 3
 exit 0
 -- bin/gh --
 #!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
 echo "$@" >> "$WORK/gh.log"
 o="$WORK/origin.git"
 case "$1 $2" in
@@ -170,7 +171,7 @@ case "$1 $2" in
 		exit 0
 	fi
 	head=$(git -C "$o" rev-parse --verify "refs/heads/$3")
-	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
 	;;
 "pr merge")
 	# Squash-free: main on origin takes the branch as it was checked.
