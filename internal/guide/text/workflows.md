@@ -53,3 +53,17 @@ rhiza run start --workflow mine --dry-run
 `.rhiza/workflows/mine.toml` (without `--from`, a skeleton) and never overwrites. `describe`
 shows the steps as the run resolves them. `check` reports every problem with the step it is in.
 `--dry-run` starts nothing. Edit the file, check, repeat.
+
+## Outside input
+
+`rhiza health` and `rhiza workflow check` warn when a workflow runs autonomously in
+`bypassPermissions` and outside input can reach it: a schedule, or a request, whose text and
+`--ref` go to agents with no permission checks. Every queued request counts. Rhiza cannot see
+what a scheduled command running `rhiza request` does. `rhiza request --ref` prints a note
+when its workflow is such a one. Nothing is refused.
+
+Mitigations:
+
+- A person gates intake: `rhiza.autonomy.plan` `owner`.
+- A narrower `permission_mode` on agent steps.
+- Owner sign-off: `rhiza.autonomy.signoff` `owner`.

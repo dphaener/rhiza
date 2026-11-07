@@ -30,6 +30,10 @@ func TestWorkflowsText(t *testing.T) {
 			"rhiza workflow describe mine", "rhiza workflow check mine",
 			"rhiza run start --workflow mine --dry-run",
 		},
+		"outside input": {
+			"## Outside input", "bypassPermissions", "rhiza.autonomy.plan", "rhiza request",
+			"Rhiza cannot see", "permission_mode", "rhiza.autonomy.signoff",
+		},
 	})
 	if strings.Contains(wf.Body+wf.Description, "Claude") {
 		t.Errorf("workflows names an agent product")
