@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6T6YBV5Z15K64XGAVZQHKSZ"
+  ],
+  "at": "2026-11-07T05:16:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/fix-tests-write-fake onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: internal/api/usage_learn_test.go?"
+        },
+        "handle": "rebase-conflict-fix-tests-write-fake",
+        "id": "01M6T6Z7PGCKXDV7039DBHF81E",
+        "key": null,
+        "kind": "question",
+        "node": "01M6T6Z7PGCKXDV7039ACA83G6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T6Z7PGCKXDV7039ACA83G6",
+        "id": "01M6T6Z7QF88XNSVEARV9PQSPH",
+        "link": "01M6T6Z7QF88XNSVEARTCJA7HQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T20EGCJZNFEY6YPJ1PSEDW",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6T20EGCJZNFEY6YPJ1PSEDW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T6Z7SHTR0WFTW4F7FEP1JC",
+  "type": "ops",
+  "v": 1
+}
