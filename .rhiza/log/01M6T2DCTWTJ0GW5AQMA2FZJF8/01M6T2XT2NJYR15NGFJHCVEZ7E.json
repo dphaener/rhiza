@@ -1,0 +1,73 @@
+{
+  "actor": "01M6T2W6Z13FJKQS2238TXSYPB",
+  "after": [
+    "01M6T2P415SEW8EVBCYFK1NJGF"
+  ],
+  "at": "2026-11-07T04:05:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "internal/adapter/claudecode tests show Settings carries a statusLine command alongside the hooks; a new usage-live-record.txtar pipes status line JSON with five_hour and seven_day rate_limits into the command and finds one latest snapshot per kind in the root's state folder (and the repo's daemon dir outside a root), a second input replaces the first, and input without rate_limits or malformed JSON exits 0 and records nothing; with a fake user settings file whose statusLine command echoes its stdin the command prints that output after recording, with no user statusLine it prints nothing, and a failing user command still exits 0 (go test -trimpath ./internal/adapter/claudecode/... and go test -trimpath ./cmd/rhiza -run TestScripts/usage-live-record)",
+          "statement": "Every Claude Code session Rhiza launches runs a rhiza statusLine command (added to the adapter's --settings JSON) that reads the status line JSON on stdin and records each rate_limits window it carries (five_hour as session, seven_day as weekly: used_percentage, resets_at and the capture time) to a live-usage file in the same state folder as the usage-limit hits, keeping the latest snapshot per window kind; input with no rate_limits records nothing. Since the --settings statusLine replaces the user's own, the command then runs the statusLine command the user's own Claude Code settings configure, if any, with the same stdin, and prints its output as the status line; with none it prints nothing. The command never fails the session, even when the user's command fails"
+        },
+        "handle": "usage-live-snapshot-record",
+        "id": "01M6T2P2NB2AXZ8SE7K9JK35QW",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6T2P2NB2AXZ8SE7K6XJMK1C",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "base": "01M6T2K944VMQ2D1266S6FGJ2X",
+        "handle": null,
+        "id": "01M6T2XSYGH75FZX9QSEREZ7J0",
+        "node": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "op": "node.update",
+        "set": {
+          "acceptance": "Tests in internal/api's daemon tests with a fake clock and fake token use show: under the line it starts; one projected run over the line holds picks, resumes, queued work and plans and stops no live run; with no finished runs only use so far counts; a live run adds only the mean less its tokens so far, never below zero; the next poll after the reset starts the held change set; with no live snapshot a learned limit with no setting holds, a set rhiza.daemon.usage.session wins over a learned session limit, and a window with no live limit, no setting and no learned limit never holds; a live limit wins over both the setting and the learned limit (go test -trimpath ./internal/api -run 'TestUsageHold')",
+          "statement": "At each poll the daemon holds everything it would launch (picks, resumes of interrupted runs, queued starts and continues, feature and bug plan requests) while a window's projected use exceeds its limit minus the reserve. Projected use is the window's use so far, plus for each live run what it is still expected to burn (the mean tokens of the last 10 finished runs less that run's tokens so far, never below zero; usage-live-run-remaining), plus one full mean for the next. A window's limit is its live limit when a live snapshot gives one (usage-live-limit, which also fixes the window's start and reset), else its setting when set, else its learned limit, and a window with none never holds. Live runs, runs the owner starts directly and milestone requests' plan runs (milestone-request-past-usage-hold) are untouched, and the hold clears at the first poll after the window resets"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "id": "01M6T2XSZGXV7NVQX1E55JZY4C",
+        "link": "01M6T2XSZGXV7NVQX1E4FY20AN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2M4HFGZH5WZ0Z731RPDVS",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M6HHVZH70MTTQ6JJ2G1X7J6T",
+        "handle": null,
+        "id": "01M6T2XT0H29Y0RJDV1J8ZJHAH",
+        "node": "01M6HHVZH70MTTQ6JJ2D403TY5",
+        "op": "node.update",
+        "set": {
+          "statement": "(1) When: at each poll the governor checks two windows, the 5-hour session window and the 7-day weekly window. A window with a live snapshot takes its start and reset from it (live-usage-source); otherwise a window starts at the first token record after the previous window ended, or at the reset time a usage-limit message gave. Each window has a limit: the live limit derived from a live snapshot if there is one (live-usage-source), else the daemon setting for that window (tokens) if set, else the window use at the last usage-limit hit in that kind of window. A run driver that sees a hit records its time and reset time where the daemon reads it at each poll. The hit's kind comes from its reset time: a reset 5 hours or less after the hit is the session window, a later one the weekly window. A hit with no reset time teaches nothing. A window with no known limit never holds. The reserve is a daemon setting, a percentage of the limit, default 20%. The daemon holds a new pick when the window's use so far, plus the mean tokens of the last 10 finished runs for each live run and for the one it would start, exceeds the limit minus the reserve. With no finished runs to average, only the use so far counts. (2) Tokens: input, output and cache-creation tokens count, for the session and its helpers; cache-read tokens do not. They come from every Claude Code transcript on the machine, the owner's own sessions included, since they share the account. Only records timestamped inside the window count, each message once (deduplicated by message id, as TokenUse already does). (3) Scope: a hold works like the disk-low guard. It stops everything the daemon would launch: picks, its resumes of interrupted runs, queued starts and continues, and plan requests. Each held change set shows as a skip with reason usage-reserve, giving the window, use, limit and reset time in its detail, in daemon status, health and the inbox. It never interrupts live runs, and it does not stop runs the owner starts directly outside the daemon. It clears on its own at the first poll after the window resets."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6HHVZH70MTTQ6JJ2D403TY5",
+        "id": "01M6T2XT13V5KGZQTK9WM64QM9",
+        "link": "01M6T2XT13V5KGZQTK9S2AZ5M9",
+        "note": "Amended by live-usage-source: a live snapshot now comes first for a window's limit and fixes its start and reset; the setting and the learned limit are its fallbacks.",
+        "op": "link.create",
+        "to": "01M6T2M4HFGZH5WZ0Z731RPDVS",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M6T2DCTWTJ0GW5AQMA2FZJF8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T2XT2NJYR15NGFJHCVEZ7E",
+  "type": "ops",
+  "v": 1
+}
