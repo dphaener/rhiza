@@ -1,0 +1,40 @@
+{
+  "actor": "01M6T3PX8PEZKJPXNTCXM1K66X",
+  "after": [
+    "01M6T3B53DYRZE1PJ07K4BH0SQ"
+  ],
+  "at": "2026-11-07T04:20:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fc4648cb ran go test -trimpath ./internal/api -run 'TestUsageHold' -count=1: TestUsageHoldProjection, TestUsageHoldStopsLaunches, TestUsageHoldStopsEveryLaunch and the new TestUsageHoldLiveRunRemaining pass. The new test uses fake journals (three finished runs of 1000, window use 100): no live run projects 1100, a live run at 600 projects 1500 (adds 400), one at 1500 projects 1100 (adds 0), the next pick adds one full mean, and at limit 1500 a live run past the mean no longer holds (the old full-mean-per-live-run count gave 2100). Read the diff: usageHoldOf now adds max(mean - usageRunTokens(st), 0) per live run plus one mean, usageRunTokens counts session and helper input+output+cache creation the same way usageRunMean does, and the result is the Projected field that usageHoldDetail prints. go test ./cmd/rhiza -run TestScripts/usage-hold also passes."
+        },
+        "handle": "usage-live-run-remaining-verified",
+        "id": "01M6T3SQPFK7XPZX3ZEGGWNP5R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6T3SQPEWAZFESTVDM34VKKD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T3SQPEWAZFESTVDM34VKKD",
+        "id": "01M6T3SQQ8JEM05X1FC7KHFCNM",
+        "link": "01M6T3SQQ8JEM05X1FC78W0Y55",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2AQV83TNHDJ565NSM1TXG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6T1ZR3ZCDCYF96CSR2AYN7D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T3SQRYVHNDQ1KSA1PEEQK6",
+  "type": "ops",
+  "v": 1
+}
