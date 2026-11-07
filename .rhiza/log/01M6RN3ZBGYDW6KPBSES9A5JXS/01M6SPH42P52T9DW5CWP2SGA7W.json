@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SP2AY94ZGRSBB724NTE7XT",
+  "after": [
+    "01M6RYFVZS1B92KJTZEF733S0N"
+  ],
+  "at": "2026-11-07T00:28:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At de2323a2 the verifier read the diff: runDaemon builds one web.Manager whose handler is WebRootHandler, which serves the home project at / and each registered, initialised project at /p/<project>/ through web.Root. It resolves projects from the root's rhiza.toml on each request, gives 404 for unknown or uninitialised projects and redirects /p/<name> to /p/<name>/. No other listener is opened (the only web.Manager/webFactory use is in daemon.go). go test -trimpath ./internal/api -run TestWebRootHandlerServesEveryProject PASS: a root of two initialised projects (alpha, beta) plus an uninitialised one answers /p/alpha and /p/beta /api/roadmap and /runs with 200, each /api/status from its own model, home /runs 200, bare and unknown 404. go test -trimpath ./internal/api -run 'TestWebRoot|TestDaemon|TestWeb' PASS. go test -trimpath ./internal/web/... PASS (TestRootRoutesProjects included) when run from a normal worktree at this commit. Run from the run's checkout under .git/rhiza/checkouts, TestOverviewReadsDaemonFromRepo fails for an environmental reason, not because of this change. go vet and gofmt are clean. Links in the pages are still absolute (/runs, /roadmap); scoping them is the web-project-switcher leaf's job."
+        },
+        "handle": "web-root-listener-verified",
+        "id": "01M6SPH3WYZSXSYYT465X5NQCV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SPH3WYZSXSYYT4635ZC7A7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SPH3WYZSXSYYT4635ZC7A7",
+        "id": "01M6SPH3ZW565YB4B918VJXJER",
+        "link": "01M6SPH3ZW565YB4B915B02M74",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN862M5W8HPN62BWDYC124",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3ZBGYDW6KPBSES9A5JXS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SPH42P52T9DW5CWP2SGA7W",
+  "type": "ops",
+  "v": 1
+}
