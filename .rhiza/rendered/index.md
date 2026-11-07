@@ -1464,6 +1464,7 @@
 - [vm-move-mac-no-daemon](decision/vm-move-mac-no-daemon.md)
 - [vm-move-notify-chime-and-marker](decision/vm-move-notify-chime-and-marker.md)
 - [wait-settles-conflict-rule](decision/wait-settles-conflict-rule.md)
+- [warn-dont-safeguard](decision/warn-dont-safeguard.md)
 - [web-api-read-only-marker](decision/web-api-read-only-marker.md)
 - [web-design-system-in-internal-web](decision/web-design-system-in-internal-web.md)
 - [web-host-amends-not-supersedes](decision/web-host-amends-not-supersedes.md)
@@ -1483,6 +1484,7 @@
 - [work-state-outside-log](decision/work-state-outside-log.md)
 - [workflow-authoring-shape](decision/workflow-authoring-shape.md)
 - [workflow-writing-tools](decision/workflow-writing-tools.md)
+- [workflows-are-the-rules](decision/workflows-are-the-rules.md)
 - [writes-see-dependencies](decision/writes-see-dependencies.md)
 
 ## Questions

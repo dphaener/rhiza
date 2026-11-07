@@ -1,0 +1,45 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6W4H2QV52XMGY4JXMT1ZQ12"
+  ],
+  "at": "2026-11-07T23:12:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "warn, never block",
+            "fence untrusted request text",
+            "refuse risky setups"
+          ],
+          "quote": "\"i don't think we can reliably safeguard against users shooting themselves in the foot. best we can do is warn people.\" (owner, 2026-11-07); \"a schedule can run anything. who cares?\" (owner, 2026-11-07). The agent's proposed defaults (warnings never block; schedules per repo in rhiza.toml, run once after downtime, skip a slot while the previous run is going) were accepted by the owner (\"go ahead\").",
+          "statement": "Rhiza does not try to safeguard owners against risky setups (such as an autonomous workflow with bypassPermissions fed by outside input); it warns plainly, in rhiza health, workflow check and the guides, and leaves the choice to the owner. A schedule can run anything: a workflow or a plain command."
+        },
+        "handle": "warn-dont-safeguard",
+        "id": "01M6W4H6F2KYTFE6ER05QYW1A3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W4H6F2KYTFE6ER04FQ3EWE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT95KQCW65MYWN9S7K9P3",
+        "id": "01M6W4H6FN8XQ16K9XX2N6ZBWA",
+        "link": "01M6W4H6FN8XQ16K9XX0AXDVQY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4H6F2KYTFE6ER04FQ3EWE",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6W4H2QV52XMGY4JXMJ11A3Q",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W4H6GKF2H8NNWQ08KVVJGX",
+  "type": "ops",
+  "v": 1
+}

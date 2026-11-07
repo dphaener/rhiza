@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-07T21:20:11Z",
+  "body": {
+    "intent": "Record the owner's principle: every rule is workflow policy; Rhiza enforces only references between nodes",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6VY4688KRW7ZMSTA847M80V",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6VY4689GGFW2ZSDXB7SWJZG",
+  "type": "open",
+  "v": 1
+}
