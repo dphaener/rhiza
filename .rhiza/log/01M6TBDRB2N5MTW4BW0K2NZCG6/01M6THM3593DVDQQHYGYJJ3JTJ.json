@@ -1,0 +1,86 @@
+{
+  "actor": "01M6THEFS5ADCY1EWN345A1S70",
+  "after": [
+    "01M6THCGVT9TS3KVBNXKGAW5BY"
+  ],
+  "at": "2026-11-07T08:22:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from the branch head and, in a scratch repo, made two change sets titled \"Fix the usage governor's\" (01M6THGEMJ…, 01M6THGETK…): the earlier got slug fix-the-usage-governor-s, the later fix-the-usage-governor-s-01m6thgetkzw (12 lowercased ID characters); a plan --new dry run for a third same-titled change set predicted fix-the-usage-governor-s-01m6thh4w48d"
+        },
+        "handle": "unique-change-set-slug-qa-1",
+        "id": "01M6THM2WZAZS428G8BABJE4QX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6THM2WZAZS428G8B92HM2D3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6THM2WZAZS428G8B92HM2D3",
+        "id": "01M6THM2Y8780VBY014FN7Y30K",
+        "link": "01M6THM2Y8780VBY014CN9Y3RJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBRVYX75117KD157BPHBGB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "With the built binary and fake rex/claude: run start --dry-run on the later twin predicted worktree repo.fix-the-usage-governor-s-01m6thgetkzw; session start on both twins created distinct worktrees and branches cs/fix-the-usage-governor-s and cs/fix-the-usage-governor-s-01m6thgetkzw; ship check run in the later twin's worktree targeted cs/fix-the-usage-governor-s-01m6thgetkzw and recorded that branch in ship state"
+        },
+        "handle": "slug-callers-agree-qa-1",
+        "id": "01M6THM2Z5B88DR0ZN3HPFQR88",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6THM2Z5B88DR0ZN3EG9R29D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6THM2Z5B88DR0ZN3EG9R29D",
+        "id": "01M6THM300D6JRCK2S87P5G102",
+        "link": "01M6THM300D6JRCK2S84R46RW3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBRVZXT2PN5R0C1X1JC5X1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "With the built binary and a fake gh in the later twin's worktree: ship check and ship check --settled each refused PR #345 (open and merged) whose body named the other twin's change set, or had no 'Change set' line, with exit-3 conflicts naming #345, and wrote no ship state; a green PR whose body names the run's change set passed and was recorded (pr 345, its branch). ship open-pr was not exercised by hand (needs a live run with a journaled review); its guard is covered by internal/api tests, which pass"
+        },
+        "handle": "ship-tracks-own-pr-qa-1",
+        "id": "01M6THM31H8MGENYD1EGANMY92",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6THM31H8MGENYD1ED1DD1VC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6THM31H8MGENYD1ED1DD1VC",
+        "id": "01M6THM344AK6H984NQBVKH1NV",
+        "link": "01M6THM344AK6H984NQ8X839W4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBRW1FQSQTEHBGNK10NGSV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6TBDRB2N5MTW4BW0K2NZCG6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6THM3593DVDQQHYGYJJ3JTJ",
+  "type": "ops",
+  "v": 1
+}
