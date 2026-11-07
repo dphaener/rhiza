@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-07T23:27:56Z",
+  "body": {
+    "intent": "Generated reference: rhiza docs writes docs/reference/ (CLI commands, rhiza.toml settings, workflow file format) from the code, and make check fails when it is stale or the docs name a command that does not exist",
+    "kind": "intention",
+    "sources": [
+      "01M6W5ANB6CXAAYAVSP53Z43CY"
+    ]
+  },
+  "change_set": "01M6W5E3JQXD62WN4RHG546KRX",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W5E3JQXD62WN4RHKVGDGYX",
+  "type": "open",
+  "v": 1
+}
