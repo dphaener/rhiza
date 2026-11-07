@@ -58,7 +58,7 @@ func (a Adapter) Command(l adapter.Launch) ([]string, error) {
 	if l.SessionID == "" {
 		return nil, fmt.Errorf("a session ID is required")
 	}
-	settings, err := Settings(l.HookCommand)
+	settings, err := Settings(l.HookCommand, l.StatusLineCommand)
 	if err != nil {
 		return nil, err
 	}
@@ -85,12 +85,19 @@ type hookGroup struct {
 	Hooks []hookCmd `json:"hooks"`
 }
 
-type settings struct {
-	Hooks map[string][]hookGroup `json:"hooks"`
+type statusLine struct {
+	Type    string `json:"type"`
+	Command string `json:"command"`
 }
 
-// Settings returns the settings JSON: command hooks only, never permissions.
-func Settings(hookCommand []string) (string, error) {
+type settings struct {
+	Hooks      map[string][]hookGroup `json:"hooks"`
+	StatusLine *statusLine            `json:"statusLine,omitempty"`
+}
+
+// Settings returns the settings JSON: command hooks and, when
+// statusLineCommand is not empty, a status line command; never permissions.
+func Settings(hookCommand, statusLineCommand []string) (string, error) {
 	if len(hookCommand) == 0 {
 		return "", fmt.Errorf("a hook command is required")
 	}
@@ -98,6 +105,9 @@ func Settings(hookCommand []string) (string, error) {
 	for _, ev := range hookEvents {
 		cmd := shellJoin(append(append([]string(nil), hookCommand...), ev))
 		s.Hooks[ev] = []hookGroup{{Hooks: []hookCmd{{Type: "command", Command: cmd}}}}
+	}
+	if len(statusLineCommand) > 0 {
+		s.StatusLine = &statusLine{Type: "command", Command: shellJoin(statusLineCommand)}
 	}
 	b, err := json.Marshal(s)
 	return string(b), err

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 )
 
@@ -99,4 +100,79 @@ func ActiveHold(dir string, now time.Time) (LimitHit, bool) {
 		}
 	}
 	return best, found
+}
+
+// LiveFile is the file, under a usage state folder, that status lines
+// record the account's live rate-limit windows to: one JSON object holding
+// the latest snapshot per window kind.
+const LiveFile = "usage.live.json"
+
+// LiveSnapshot is one window's live figure as an agent's status line
+// reported it.
+type LiveSnapshot struct {
+	Kind           string    `json:"kind"`
+	UsedPercentage float64   `json:"used_percentage"`
+	ResetsAt       time.Time `json:"resets_at"`
+	CapturedAt     time.Time `json:"captured_at"`
+	Agent          string    `json:"agent,omitempty"`
+}
+
+// RecordLive saves snaps in dir's live file, each replacing the earlier
+// snapshot of its kind and leaving the other kinds as they were.
+func RecordLive(dir string, snaps []LiveSnapshot) error {
+	if len(snaps) == 0 {
+		return nil
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	byKind := map[string]LiveSnapshot{}
+	for _, s := range ReadLive(dir) {
+		byKind[s.Kind] = s
+	}
+	for _, s := range snaps {
+		byKind[s.Kind] = s
+	}
+	kinds := make([]string, 0, len(byKind))
+	for k := range byKind {
+		kinds = append(kinds, k)
+	}
+	sort.Strings(kinds)
+	all := make([]LiveSnapshot, 0, len(kinds))
+	for _, k := range kinds {
+		all = append(all, byKind[k])
+	}
+	b, err := json.Marshal(all)
+	if err != nil {
+		return err
+	}
+	tmp, err := os.CreateTemp(dir, LiveFile+".*")
+	if err != nil {
+		return err
+	}
+	_, err = tmp.Write(append(b, '\n'))
+	if cerr := tmp.Close(); err == nil {
+		err = cerr
+	}
+	if err == nil {
+		err = os.Rename(tmp.Name(), filepath.Join(dir, LiveFile))
+	}
+	if err != nil {
+		os.Remove(tmp.Name())
+	}
+	return err
+}
+
+// ReadLive returns the latest snapshot of each window kind recorded in dir,
+// ordered by kind; none when the file is missing or does not parse.
+func ReadLive(dir string) []LiveSnapshot {
+	b, err := os.ReadFile(filepath.Join(dir, LiveFile))
+	if err != nil {
+		return nil
+	}
+	var out []LiveSnapshot
+	if json.Unmarshal(b, &out) != nil {
+		return nil
+	}
+	return out
 }

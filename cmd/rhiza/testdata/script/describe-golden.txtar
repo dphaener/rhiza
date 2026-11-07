@@ -21420,6 +21420,30 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "session.status-line",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "recorded": {
+            "description": "How many rate-limit windows were recorded",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "recorded"
+        ],
+        "type": "object"
+      },
+      "summary": "Record the live rate limits an agent's status line reports, read from stdin, then print the owner's own status line; the agent's status line runs this",
+      "write": false
+    },
+    {
       "name": "set",
       "request": {
         "additionalProperties": false,
