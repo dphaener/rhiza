@@ -142,3 +142,34 @@ func UsedAt(kind Kind, records []adapter.UsageRecord, l Limit) (int64, bool) {
 	w, ok := Current(kind, upto, []Limit{l}, l.HitAt)
 	return w.Used, ok
 }
+
+// minLivePercent is the least used_percentage a live snapshot must report to
+// give a limit: below it the ratio of tokens to percentage is too unstable.
+const minLivePercent = 1.0
+
+// LiveWindow is the window a live snapshot fixes: it resets at resetsAt and
+// starts one window length before. It is false for an unknown kind.
+func LiveWindow(kind Kind, resetsAt time.Time) (start, reset time.Time, ok bool) {
+	length := kind.Length()
+	if length <= 0 || resetsAt.IsZero() {
+		return time.Time{}, time.Time{}, false
+	}
+	return resetsAt.Add(-length), resetsAt, true
+}
+
+// LiveAt reports whether a snapshot resetting at resetsAt is still live at
+// now: its window has not reset yet.
+func LiveAt(resetsAt, now time.Time) bool {
+	return resetsAt.After(now)
+}
+
+// LiveLimit derives a window's token limit from a live snapshot: tokens, the
+// counted tokens of the window up to the capture, are usedPercentage of the
+// limit. There is none under 1% used or with no tokens.
+func LiveLimit(usedPercentage float64, tokens int64) (int64, bool) {
+	if usedPercentage < minLivePercent || usedPercentage > 100 || tokens <= 0 {
+		return 0, false
+	}
+	n := int64(float64(tokens) / (usedPercentage / 100))
+	return n, n > 0
+}

@@ -107,6 +107,9 @@ type Launch struct {
 	// HookCommand is the argv prefix the agent runs for each hook; the adapter
 	// appends the event name.
 	HookCommand []string
+	// StatusLineCommand is the argv the agent runs to render its status
+	// line, with the status line JSON on stdin; empty installs none.
+	StatusLineCommand []string
 	// Prompt is the agent's first prompt; empty starts it with none.
 	Prompt string
 	// Resume continues the session SessionID instead of starting it; Prompt
@@ -280,4 +283,50 @@ type UsageReader interface {
 	// getenv looks up an environment variable. Unreadable files and lines
 	// are skipped, not fatal.
 	UsageRecords(getenv func(string) string, from, to time.Time) ([]UsageRecord, error)
+}
+
+// LiveWindow is one rate-limit window an agent reports about the account's
+// live use.
+type LiveWindow struct {
+	// Kind is the window kind: "session" or "weekly".
+	Kind string
+	// UsedPercentage is the share of the window's limit used, 0 to 100.
+	UsedPercentage float64
+	// ResetsAt is when the window resets.
+	ResetsAt time.Time
+}
+
+// StatusLineReader is the optional part of an adapter whose agent renders a
+// status line from a JSON payload on stdin that carries the account's live
+// rate limits.
+type StatusLineReader interface {
+	// LiveUsage returns the rate-limit windows the payload carries; none
+	// when it carries none. A payload that does not parse is an error.
+	LiveUsage(payload []byte) ([]LiveWindow, error)
+	// UserStatusLine returns the status line command the owner's own agent
+	// settings configure, "" when there is none. getenv looks up an
+	// environment variable.
+	UserStatusLine(getenv func(string) string) string
+}
+
+// LiveSnapshot is the latest live figure recorded for one rate-limit window.
+type LiveSnapshot struct {
+	// Kind is the window kind: "session" or "weekly".
+	Kind string
+	// UsedPercentage is the share of the window's limit used, 0 to 100.
+	UsedPercentage float64
+	// ResetsAt is when the window resets.
+	ResetsAt time.Time
+	// CapturedAt is when the figure was recorded.
+	CapturedAt time.Time
+}
+
+// LiveUsageReader is the optional part of an adapter that reports the live
+// rate-limit figures its agent's status lines recorded. An adapter without
+// it reports none.
+type LiveUsageReader interface {
+	// LiveSnapshots returns the latest recorded snapshot of each window kind
+	// in the usage state folder dir, ordered by kind. A missing or corrupt
+	// record gives none, never an error.
+	LiveSnapshots(dir string) []LiveSnapshot
 }

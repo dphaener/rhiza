@@ -1,0 +1,40 @@
+{
+  "actor": "01M6TDJG856J206EFW9WH7DAFH",
+  "after": [
+    "01M6TCFN1Q0EVXGDXVA9XM9GQ9"
+  ],
+  "at": "2026-11-07T07:18:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 2d58ab91 by reading the diff and running scoped tests. go test -trimpath ./internal/usage/... passes: TestLiveLimit (49% of 4900 tokens gives 10000, i.e. tokens/0.49; none under 1%, with 0 or negative tokens), TestLiveWindowAndLiveness (Start = resets_at minus kind length; not live at or after resets_at). From a checkout outside ~/code, go test -trimpath ./internal/api -run 'TestUsageWindowsHitKinds|TestUsageLiveLimit|TestHealthUsage|TestUsageHold' passes. TestUsageLiveLimit uses a fake clock and fake adapter: the live 2000 beats setting 1000 and learned 900 (no hold at 1100 used); the window comes from the snapshot, with used counted to now; a lower live 1111 holds and a raised one lifts it; an expired snapshot falls back to setting 1000, then learned 900; under 1% gives no limit; a recorded limit hit still holds through governorHold. The hold is recomputed each poll (prepare keeps no hold state), so setting 1000 holding without a live limit and not holding with live 2000 shows a raised live limit lifts a hold the setting caused. TestHealthUsageLiveLimit with weekly=777 reports 'weekly 0 of 2000' and never 777. usageLimit is live, then setting, then learned, and both usageHoldOf and healthUsage call it. TestLimitHits/TestLearnedLimit* pass. Note: TestUsageWindowsHitKinds fails when run inside ~/code (the rhiza root redirects limitsDir), but the parent commit fails the same way there, so this commit did not cause it."
+        },
+        "handle": "usage-live-limit-verified",
+        "id": "01M6TDYE4TR1R67MJPZMF2CGNR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TDYE4TR1R67MJPZJ0P9ZCE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TDYE4TR1R67MJPZJ0P9ZCE",
+        "id": "01M6TDYE6VTNJGYBQ0FH9WVA0G",
+        "link": "01M6TDYE6VTNJGYBQ0FH6A4WWJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2P2PWNPYM6T54QB5Q08K6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6T2DCTWTJ0GW5AQMA2FZJF8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TDYE82KJHZMK2320EPXYKR",
+  "type": "ops",
+  "v": 1
+}

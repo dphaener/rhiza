@@ -88,3 +88,37 @@ func TestNoRecords(t *testing.T) {
 		t.Error("expected no windows")
 	}
 }
+
+func TestLiveLimit(t *testing.T) {
+	// 49% of the window used by 4900 counted tokens: the limit is 10000.
+	if n, ok := LiveLimit(49, 4900); !ok || n != 10000 {
+		t.Errorf("49%%: %d %v", n, ok)
+	}
+	for _, c := range []struct {
+		pct    float64
+		tokens int64
+	}{{0.9, 1000}, {0, 1000}, {50, 0}, {50, -1}} {
+		if n, ok := LiveLimit(c.pct, c.tokens); ok {
+			t.Errorf("%+v gave a limit %d", c, n)
+		}
+	}
+	if n, ok := LiveLimit(1, 100); !ok || n != 10000 {
+		t.Errorf("1%%: %d %v", n, ok)
+	}
+}
+
+func TestLiveWindowAndLiveness(t *testing.T) {
+	reset := t0.Add(24 * time.Hour)
+	for _, k := range Kinds {
+		s, r, ok := LiveWindow(k, reset)
+		if !ok || !r.Equal(reset) || !s.Equal(reset.Add(-k.Length())) {
+			t.Errorf("%s: %v %v %v", k, s, r, ok)
+		}
+	}
+	if _, _, ok := LiveWindow(Kind("x"), reset); ok {
+		t.Error("unknown kind has a window")
+	}
+	if !LiveAt(reset, reset.Add(-time.Second)) || LiveAt(reset, reset) || LiveAt(reset, reset.Add(time.Second)) {
+		t.Error("a snapshot is live only before its resets_at")
+	}
+}

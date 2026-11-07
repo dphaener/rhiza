@@ -150,11 +150,11 @@ func TestSettingsJSON(t *testing.T) {
 }
 
 func TestSettingsQuotesHookCommand(t *testing.T) {
-	s, err := Settings([]string{"/path with space/rhiza", "session", "hook"})
+	s, err := Settings([]string{"/path with space/rhiza", "session", "hook"}, nil)
 	if err != nil || !strings.Contains(s, `'/path with space/rhiza' session hook Stop`) {
 		t.Fatalf("%s %v", s, err)
 	}
-	if _, err := Settings(nil); err == nil {
+	if _, err := Settings(nil, nil); err == nil {
 		t.Fatal("empty hook command should error")
 	}
 }
@@ -222,7 +222,7 @@ func TestHookStatusMalformedPreToolUse(t *testing.T) {
 }
 
 func TestSettingsInstallsPostToolUse(t *testing.T) {
-	s, err := Settings([]string{"rhiza", "session", "hook"})
+	s, err := Settings([]string{"rhiza", "session", "hook"}, nil)
 	if err != nil || !strings.Contains(s, `"PostToolUse":[{"hooks":[{"type":"command","command":"rhiza session hook PostToolUse"}]}]`) {
 		t.Fatalf("%s %v", s, err)
 	}
@@ -331,7 +331,7 @@ func TestHookStatusUnchangedBySendMessage(t *testing.T) {
 }
 
 func TestSettingsOnePostToolUseGroupWithoutMatcher(t *testing.T) {
-	s, err := Settings(hook)
+	s, err := Settings(hook, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -847,5 +847,64 @@ func TestCommandWritesNoFile(t *testing.T) {
 		if ents, _ := os.ReadDir(d); len(ents) != 0 {
 			t.Errorf("Command wrote %v in %s", ents, d)
 		}
+	}
+}
+
+func TestSettingsStatusLine(t *testing.T) {
+	s, err := Settings([]string{"rhiza", "session", "hook"}, []string{"/path with space/rhiza", "session", "status-line"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got struct {
+		Hooks      map[string]json.RawMessage `json:"hooks"`
+		StatusLine statusLine                 `json:"statusLine"`
+	}
+	if err := json.Unmarshal([]byte(s), &got); err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Hooks) != len(hookEvents) {
+		t.Errorf("hooks = %d events", len(got.Hooks))
+	}
+	if got.StatusLine.Type != "command" || got.StatusLine.Command != "'/path with space/rhiza' session status-line" {
+		t.Errorf("statusLine = %+v", got.StatusLine)
+	}
+	plain, _ := Settings([]string{"rhiza", "session", "hook"}, nil)
+	if strings.Contains(plain, "statusLine") {
+		t.Errorf("no status line command still installed one: %s", plain)
+	}
+}
+
+func TestLiveUsage(t *testing.T) {
+	ws, err := Adapter{}.LiveUsage([]byte(`{"rate_limits":{"five_hour":{"used_percentage":12.5,"resets_at":1893474000},"seven_day":{"used_percentage":49,"resets_at":1893700000},"other":{"used_percentage":1,"resets_at":5}}}`))
+	if err != nil || len(ws) != 2 {
+		t.Fatalf("%+v %v", ws, err)
+	}
+	if ws[0].Kind != "session" || ws[0].UsedPercentage != 12.5 || ws[0].ResetsAt.Unix() != 1893474000 || ws[1].Kind != "weekly" || ws[1].UsedPercentage != 49 {
+		t.Errorf("%+v", ws)
+	}
+	if ws, err := (Adapter{}).LiveUsage([]byte(`{"model":"x"}`)); err != nil || len(ws) != 0 {
+		t.Errorf("no rate_limits: %+v %v", ws, err)
+	}
+	if _, err := (Adapter{}).LiveUsage([]byte(`{nope`)); err == nil {
+		t.Error("malformed JSON should error")
+	}
+}
+
+func TestUserStatusLine(t *testing.T) {
+	dir := t.TempDir()
+	env := func(k string) string {
+		if k == "CLAUDE_CONFIG_DIR" {
+			return dir
+		}
+		return ""
+	}
+	if got := Adapter.UserStatusLine(Adapter{}, env); got != "" {
+		t.Errorf("no settings: %q", got)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"statusLine":{"type":"command","command":"cat"}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if got := Adapter.UserStatusLine(Adapter{}, env); got != "cat" {
+		t.Errorf("got %q", got)
 	}
 }

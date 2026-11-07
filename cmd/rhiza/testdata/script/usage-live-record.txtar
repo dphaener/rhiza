@@ -1,0 +1,76 @@
+# The status line command a launched agent runs records the account's live
+# rate-limit windows (the latest snapshot per kind) in the usage state
+# folder (the root's, else the repo's own), then prints the owner's own
+# status line, if any. It never fails.
+
+env REX_SESSION=
+env REX_SERVER=
+env CLAUDE_CONFIG_DIR=$WORK/claude
+mkdir claude repo
+cd repo
+exec git init -q -b main
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+cd ..
+
+# No user status line: nothing printed. Both windows recorded.
+cd repo
+stdin ../full.json
+exec rhiza session status-line
+! stdout .
+exec cat ../.rhiza-root/usage.live.json
+stdout '"kind":"session","used_percentage":12.5'
+stdout '"kind":"weekly","used_percentage":49'
+
+# A second input replaces the first, per kind.
+stdin ../second.json
+exec rhiza session status-line
+exec cat ../.rhiza-root/usage.live.json
+stdout '"kind":"session","used_percentage":13'
+stdout '"kind":"weekly","used_percentage":49'
+! stdout '12.5'
+
+# No rate_limits, or malformed input: exit 0, nothing recorded.
+exec cp ../.rhiza-root/usage.live.json ../before.json
+stdin ../none.json
+exec rhiza session status-line
+stdin ../bad.json
+exec rhiza session status-line
+exec cmp ../.rhiza-root/usage.live.json ../before.json
+
+# Outside a root the snapshots go to the repo's own folder.
+cd $NOROOT
+mkdir repo2
+cd repo2
+exec git init -q -b main
+exec rhiza init
+stdin $WORK/full.json
+exec rhiza session status-line
+exec cat .git/rhiza/usage.live.json
+stdout '"kind":"weekly","used_percentage":49'
+
+# The owner's own status line gets the same stdin; its output is printed.
+cd $WORK/repo
+cp ../user.json $WORK/claude/settings.json
+stdin ../full.json
+exec rhiza session status-line
+stdout '"five_hour"'
+
+# A failing user command still exits 0.
+cp ../failing.json $WORK/claude/settings.json
+stdin ../full.json
+exec rhiza session status-line
+
+-- full.json --
+{"rate_limits":{"five_hour":{"used_percentage":12.5,"resets_at":1893474000},"seven_day":{"used_percentage":49,"resets_at":1893700000}}}
+-- second.json --
+{"rate_limits":{"five_hour":{"used_percentage":13,"resets_at":1893474000}}}
+-- none.json --
+{"model":{"id":"x"}}
+-- bad.json --
+{nope
+-- user.json --
+{"statusLine":{"type":"command","command":"cat"}}
+-- failing.json --
+{"statusLine":{"type":"command","command":"exit 3"}}
