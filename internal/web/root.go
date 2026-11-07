@@ -24,13 +24,27 @@ func Root(home http.Handler, project ProjectResolver) http.Handler {
 // ProjectsPath is the all-projects home on the root's listener.
 const ProjectsPath = "/projects"
 
+// InboxPath is the merged inbox on the root's listener.
+const InboxPath = "/inbox"
+
 // RootWithProjects is Root that also serves the all-projects home at
 // /projects, listing what projects reads.
 func RootWithProjects(home http.Handler, project ProjectResolver, projects ProjectsSource) http.Handler {
+	return RootWithInbox(home, project, projects, nil)
+}
+
+// RootWithInbox is RootWithProjects that also serves the merged inbox at
+// /inbox, listing what inbox reads.
+func RootWithInbox(home http.Handler, project ProjectResolver, projects ProjectsSource, inbox MergedInboxSource) http.Handler {
 	list := ProjectsHome(projects)
+	merged := MergedInbox(inbox)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == ProjectsPath && (r.Method == "GET" || r.Method == "HEAD") {
 			list.ServeHTTP(w, r)
+			return
+		}
+		if r.URL.Path == InboxPath && (r.Method == "GET" || r.Method == "HEAD") {
+			merged.ServeHTTP(w, r)
 			return
 		}
 		rest, ok := strings.CutPrefix(r.URL.Path, ProjectPrefix)

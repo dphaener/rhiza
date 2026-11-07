@@ -29,7 +29,7 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 		h   http.Handler
 	}
 	cache := map[string]built{}
-	return web.RootWithProjects(home, func(name string) http.Handler {
+	return web.RootWithInbox(home, func(name string) http.Handler {
 		reg, err := rootcfg.Load(root)
 		if err != nil {
 			return nil
@@ -52,7 +52,7 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 		h := WebProjectHandler(projectCtx(ctx, dir))
 		cache[name] = built{dir, h}
 		return h
-	}, WebProjectsSource(ctx, root, homeName))
+	}, WebProjectsSource(ctx, root, homeName), WebMergedInboxSource(ctx, root))
 }
 
 // WebProjectsSource reads every project registered in the root for the web
@@ -94,5 +94,25 @@ func WebProjectsSource(ctx *Ctx, root, homeName string) web.ProjectsSource {
 			views = append(views, v)
 		}
 		return views
+	}
+}
+
+// WebMergedInboxSource reads the inbox of every initialised project
+// registered in the root, for the web UI's merged inbox.
+func WebMergedInboxSource(ctx *Ctx, root string) web.MergedInboxSource {
+	return func() []web.ProjectInbox {
+		reg, err := rootcfg.Load(root)
+		if err != nil {
+			return nil
+		}
+		var out []web.ProjectInbox
+		for _, name := range reg.Names() {
+			dir := reg.Dir(root, name)
+			if !projectInitialised(dir) {
+				continue
+			}
+			out = append(out, web.ProjectInbox{Name: name, Items: WebInboxSource(projectCtx(ctx, dir))()})
+		}
+		return out
 	}
 }
