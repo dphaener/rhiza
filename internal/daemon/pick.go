@@ -49,13 +49,20 @@ const (
 // reopened, which Since reports (the zero time when it does not know).
 type Ship struct {
 	Workflow string
-	Since    func(change string) time.Time
+	// For, when set, names the workflow whose success means change shipped,
+	// in place of Workflow: dispatch may run a change set under another.
+	For   func(change string) string
+	Since func(change string) time.Time
 }
 
 // shipped reports whether st is a succeeded run of the ship workflow that
 // ended after its change set was last accepted or reopened.
 func (s Ship) shipped(st run.State) bool {
-	if s.Workflow == "" || s.Since == nil || !st.Ended || st.Result != run.Succeeded || st.Workflow != s.Workflow {
+	want := s.Workflow
+	if s.For != nil {
+		want = s.For(st.Change)
+	}
+	if want == "" || s.Since == nil || !st.Ended || st.Result != run.Succeeded || st.Workflow != want {
 		return false
 	}
 	return st.EndedAt.After(s.Since(st.Change))

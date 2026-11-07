@@ -1,0 +1,44 @@
+# run start with no --workflow resolves the workflow like the daemon's ship
+# pick: the [ready] rule of .rhiza/dispatch.toml for the change set's kind;
+# an explicit --workflow wins.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp ../bugfix.toml .rhiza/workflows/bugfix.toml
+cp ../other.toml .rhiza/workflows/other.toml
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Plain work' --title 'Plain work'
+
+# No rule names it: the default ship-change, which needs leaves.
+! exec rhiza run start --dry-run
+stderr 'ship-change|leaves|leaf'
+
+cp ../dispatch.toml .rhiza/dispatch.toml
+exec rhiza run start --dry-run
+stdout '^- Workflow: bugfix$'
+
+exec rhiza run start --dry-run --workflow other
+stdout '^- Workflow: other$'
+fold-ok
+
+-- dispatch.toml --
+[ready]
+feature = "bugfix"
+-- bugfix.toml --
+name = "bugfix"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- other.toml --
+name = "other"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"

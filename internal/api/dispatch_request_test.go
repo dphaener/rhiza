@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/run"
 )
 
@@ -141,5 +142,39 @@ func TestRunResumeLetsLandedPlanRunUnderOtherWorkflow(t *testing.T) {
 	_, err = callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"ROTHER"}`)
 	if err == nil || !strings.Contains(err.Error(), "no longer accepted") {
 		t.Fatalf("resume of a non-plan run on a landed change set: %v, want it refused", err)
+	}
+}
+
+// The ready workflow is the change set's recorded workflow, else the [ready]
+// rule for its kind, else ship-change.
+func TestReadyWorkflowOrder(t *testing.T) {
+	root := t.TempDir()
+	bug := changeset.Open{Kind: changeset.KindIntention, RequestKind: changeset.RequestBug}
+	got := func(o changeset.Open) string {
+		t.Helper()
+		name, err := readyWorkflow(root, o)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return name
+	}
+	if g := got(bug); g != "ship-change" {
+		t.Errorf("no file: %q, want ship-change", g)
+	}
+	if err := os.MkdirAll(filepath.Join(root, ".rhiza"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, ".rhiza", "dispatch.toml"), []byte("[ready]\nbug = \"bugfix\"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if g := got(bug); g != "bugfix" {
+		t.Errorf("rule: %q, want bugfix", g)
+	}
+	if g := got(changeset.Open{Kind: changeset.KindIntention}); g != "ship-change" {
+		t.Errorf("feature: %q, want ship-change", g)
+	}
+	bug.Workflow = "hotfix"
+	if g := got(bug); g != "hotfix" {
+		t.Errorf("recorded: %q, want hotfix over the rule", g)
 	}
 }

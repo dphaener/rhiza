@@ -35,6 +35,7 @@ import (
 	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/dispatch"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
@@ -539,6 +540,13 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	}
 	if strings.TrimSpace(r.Request) != "" && strings.TrimSpace(r.New) == "" {
 		return nil, Usagef("--request goes with --new").WithNext(runStartNext)
+	}
+	// No --workflow on an existing change set: the one resolver picks it, as
+	// the daemon's ship pick does.
+	if strings.TrimSpace(r.Workflow) == "" && strings.TrimSpace(r.New) == "" {
+		if name, ok := readyWorkflowOfRef(ctx, r.Change); ok {
+			r.Workflow = name
+		}
 	}
 	path, def, data, err := resolveWorkflow(ctx.Root, r.Workflow)
 	if err != nil {
@@ -3179,4 +3187,45 @@ func runLines(w io.Writer, r RunInfo) {
 			fmt.Fprintf(w, "- Question: %s\n", b.Question)
 		}
 	}
+}
+
+// readyWorkflow is the workflow a ready change set's run starts, the one
+// resolver of the daemon's ship pick and of run start without --workflow:
+// the workflow its request named (recorded on the change set), else the
+// [ready] rule of .rhiza/dispatch.toml for its kind, else ship-change (the
+// built-in default rule). An explicit run start --workflow bypasses it.
+func readyWorkflow(root string, o changeset.Open) (string, error) {
+	if o.Workflow != "" {
+		return o.Workflow, nil
+	}
+	rules, err := dispatch.Load(root)
+	if err != nil {
+		return "", Errorf("%v", err)
+	}
+	return rules.ForReady(o.DispatchKind()), nil
+}
+
+// readyWorkflowOfRef resolves the change set ref names (default the current
+// one) and returns its readyWorkflow. It reports false when the change set
+// or the rules cannot be read: the start's own checks then report why.
+func readyWorkflowOfRef(ctx *Ctx, ref string) (string, bool) {
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return "", false
+	}
+	var cs id.ID
+	if ref = strings.TrimSpace(ref); ref != "" {
+		cs, err = w.resolveChangeSet(ref)
+	} else {
+		cs, err = w.effectiveChangeSet(ctx)
+	}
+	if err != nil || cs.IsZero() {
+		return "", false
+	}
+	c, ok := w.changeSet(cs)
+	if !ok {
+		return "", false
+	}
+	name, err := readyWorkflow(ctx.Root, c.Open)
+	return name, err == nil
 }

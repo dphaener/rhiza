@@ -751,8 +751,18 @@ func daemonRequestsWaiting(ctx *Ctx) int {
 
 // daemonShipOf is what says which of fold's change sets have shipped (see
 // daemon.Ship).
-func daemonShipOf(fold *daemonFolded) daemon.Ship {
-	return daemon.Ship{Workflow: shipChangeWorkflow, Since: func(change string) time.Time {
+func daemonShipOf(root string, fold *daemonFolded) daemon.Ship {
+	return daemon.Ship{Workflow: shipChangeWorkflow, For: func(change string) string {
+		cs, err := id.Parse(change)
+		if err != nil {
+			return shipChangeWorkflow
+		}
+		name, ok := daemonReadyWorkflow(root, fold, cs)
+		if !ok {
+			return shipChangeWorkflow
+		}
+		return name
+	}, Since: func(change string) time.Time {
 		cs, err := id.Parse(change)
 		if err != nil {
 			return time.Time{}
@@ -830,7 +840,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		return ok
 	})
-	ship := daemonShipOf(fold)
+	ship := daemonShipOf(ctx.Root, fold)
 	shipMode, err := autonomyStage(ctx, "ship")
 	if err != nil {
 		return nil, resumed, nil, err
@@ -912,7 +922,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 	}
 	for _, cs := range picked {
-		if err := daemonStart(ctx, cs, autonomous, mode); err != nil {
+		if err := daemonStart(ctx, fold, cs, autonomous, mode); err != nil {
 			return started, resumed, milestoned, err
 		}
 		pending[cs] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, cs)}
@@ -1240,8 +1250,13 @@ func claimStartLog(ctx *Ctx, common, rid string) {
 
 // daemonStart starts the run of change set cs as a detached rhiza run start
 // --foreground process, with permission mode mode.
-func daemonStart(ctx *Ctx, cs string, autonomous bool, mode string) error {
+func daemonStart(ctx *Ctx, fold *daemonFolded, cs string, autonomous bool, mode string) error {
 	args := []string{"run", "start", "--foreground", cs, "--permission-mode", mode}
+	if id, err := id.Parse(cs); err == nil {
+		if name, ok := daemonReadyWorkflow(ctx.Root, fold, id); ok && name != defaultWorkflow {
+			args = append(args, "--workflow", name)
+		}
+	}
 	if autonomous {
 		args = append(args, "--autonomous")
 	}
@@ -1695,4 +1710,17 @@ func ensureRepoSession(ctx *Ctx) error {
 	}
 	ctx.RexSession, ctx.repoSession = name, true
 	return nil
+}
+
+// daemonReadyWorkflow is the readyWorkflow of change set cs in fold.
+func daemonReadyWorkflow(root string, fold *daemonFolded, cs id.ID) (string, bool) {
+	if fold == nil {
+		return "", false
+	}
+	c, ok := fold.changeSet(cs)
+	if !ok {
+		return "", false
+	}
+	name, err := readyWorkflow(root, c.Open)
+	return name, err == nil
 }

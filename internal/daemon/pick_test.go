@@ -187,3 +187,27 @@ func TestResumablePlanRunUnderOtherWorkflow(t *testing.T) {
 		t.Fatalf("Resumable = %v, want [plan]", got)
 	}
 }
+
+// With For set, a change set has shipped when a succeeded run of the workflow
+// dispatch gives it ended, not of Workflow.
+func TestPickShippedUnderDispatchedWorkflow(t *testing.T) {
+	at := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	done := func(cs, wf string) run.Journal {
+		return run.Journal{ID: "R" + cs, Entries: []run.Entry{
+			{Type: run.TypeStarted, At: at, Started: &run.Started{Change: cs, Workflow: wf}},
+			{Type: run.TypeFinished, At: at.Add(time.Minute), End: run.Succeeded},
+		}}
+	}
+	ship := Ship{Workflow: "ship", Since: func(string) time.Time { return at.Add(-time.Hour) },
+		For: func(cs string) string {
+			if cs == "bug" {
+				return "bugfix"
+			}
+			return "ship"
+		}}
+	runs := []run.Journal{done("bug", "bugfix"), done("plain", "bugfix")}
+	got := Pick([]string{"bug", "plain"}, runs, nil, "h", func(int) bool { return false }, 2, ship)
+	if len(got) != 1 || got[0] != "plain" {
+		t.Fatalf("Pick = %v, want [plain]", got)
+	}
+}
