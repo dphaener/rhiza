@@ -1,0 +1,40 @@
+{
+  "actor": "01M6TCXF1SVB3EZCSEGRP3MGNF",
+  "after": [
+    "01M6TBJ0A0STVRVEQ2ARE6YEYN"
+  ],
+  "at": "2026-11-07T07:43:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-ad2d1657 at 502573ff: read the diff (internal/api/ship.go parseFailedTests plus logText, which strips gh's job/step/timestamp prefix and ANSI codes, then anchors rspec/rails test/bin/rails test/FAILED ...::... matches at the start of the text; Go '--- FAIL:' leaf handling untouched; Tests desc names Go, RSpec, Minitest and pytest). TestParseFailedTests passes: gh-prefixed RSpec 'Failed examples:' block -> 'rspec ./spec/views/tasks/list_spec.rb:290' (comment trimmed, repeat once), Minitest -> 'bin/rails test test/models/x_test.rb:12', pytest -> 'pytest tests/test_x.py::test_y'; '1 failure', Jest 'FAIL src/x.test.js' and an infra error -> none; existing Go cases unchanged (diff only adds lines). go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship|describe-golden)' ok (219s): the new run-ship-rspec-failure script shows ship check --json listing the rspec test and a finding test, --test-failures exits 0, and describe-golden matches the new description. go test -trimpath ./internal/api/... passes (649s) in a scratch worktree at this commit with RHIZA_ROOT/CHANGE/RUN unset. In the run checkout it hit the 10m timeout under load ~10 on 4 cores, and then TestSessionRunRecordsLimitHit failed there because of the run environment; that test passes at both this commit and its parent once outside it, and the commit touches no usage code"
+        },
+        "handle": "ship-check-runner-test-failures-verified",
+        "id": "01M6TFC3YBTV4EYEAWEMV2W351",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TFC3YBTV4EYEAWEJJZPMB0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TFC3YBTV4EYEAWEJJZPMB0",
+        "id": "01M6TFC3ZR8ZGCMAWM98XEB7EX",
+        "link": "01M6TFC3ZR8ZGCMAWM94Z2QYFY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBDK41SM1XY2928W79FEYZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6TB6N9BYGB9S6ZF3HS4EDWM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TFC41AE4GZN4TE2XPADQJ5",
+  "type": "ops",
+  "v": 1
+}
