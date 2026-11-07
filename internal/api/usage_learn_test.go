@@ -86,13 +86,13 @@ func TestLimitHitsBecomeLearnedLimits(t *testing.T) {
 
 	// The setting wins while set; a window with neither has no limit.
 	rows := []Setting{{Key: "rhiza.daemon.usage.session", Value: "42"}, {Key: "rhiza.daemon.usage.weekly"}}
-	if n, ok := usageLimit(rows, state.Learned, "session"); !ok || n != 42 {
+	if n, ok := usageLimit(rows, state.Learned, nil, "session"); !ok || n != 42 {
 		t.Errorf("session limit = %d, %v: want the setting 42", n, ok)
 	}
-	if n, ok := usageLimit(rows, state.Learned, "weekly"); !ok || n != 1349 {
+	if n, ok := usageLimit(rows, state.Learned, nil, "weekly"); !ok || n != 1349 {
 		t.Errorf("weekly limit = %d, %v: want the learned 1349", n, ok)
 	}
-	if _, ok := usageLimit(nil, nil, "session"); ok {
+	if _, ok := usageLimit(nil, nil, nil, "session"); ok {
 		t.Error("a window with no limit reported one")
 	}
 }
@@ -233,7 +233,7 @@ func TestLearnedLimitRatchets(t *testing.T) {
 
 	// A setting is still what usageLimit returns.
 	rows := []Setting{{Key: "rhiza.daemon.usage.weekly", Value: "42"}}
-	if n, ok := usageLimit(rows, st.Learned, "weekly"); !ok || n != 42 {
+	if n, ok := usageLimit(rows, st.Learned, nil, "weekly"); !ok || n != 42 {
 		t.Errorf("weekly limit = %d, %v: want the setting 42", n, ok)
 	}
 }
@@ -328,7 +328,7 @@ func TestLearnedLimitRatchetsAtPoll(t *testing.T) {
 			learned = append(learned, l)
 		}
 		rows := []Setting{{Key: "rhiza.daemon.usage.weekly", Value: "42"}}
-		if n, ok := usageLimit(rows, learned, "weekly"); !ok || n != 42 {
+		if n, ok := usageLimit(rows, learned, nil, "weekly"); !ok || n != 42 {
 			t.Errorf("weekly limit = %d, %v: want the setting 42", n, ok)
 		}
 	})
