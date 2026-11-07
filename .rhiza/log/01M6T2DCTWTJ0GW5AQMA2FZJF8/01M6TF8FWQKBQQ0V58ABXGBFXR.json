@@ -1,0 +1,40 @@
+{
+  "actor": "01M6TEYMKF3VPKC6WEQREEZE6R",
+  "after": [
+    "01M6TEZXH43K3HYPTEDYN1H76N"
+  ],
+  "at": "2026-11-07T07:41:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 3b30a893 (fix for the quality finding on test hermeticity): go test -trimpath -count=1 ./internal/usage/... passed; go test -trimpath -count=1 ./internal/api -run 'TestUsage|TestHealth|Limit' passed, including TestUsageLiveLimit (live limit beats the setting and the learned limit, expired snapshot falls back, raised live limit lifts a hold, recorded hit still holds) and TestHealthUsageLiveLimit (health reports weekly N of the live limit). Hermeticity: in a scratch copy under a fake root (rhiza.toml plus .rhiza-root holding an active limit hit to 2100 and 99% live snapshots), the same api tests passed and nothing was written to the fake root's state; with the fix's two test files reverted to HEAD~1, TestUsageHoldProjection, TestUsageWindowsHitKinds and TestSessionRunRecordsLimitHit failed under that root, so the usageFix/limitFixture Wd change is what keeps them out of the real root. Diff read: test-only, sets ctx.Wd outside any root."
+        },
+        "handle": "usage-live-limit-verified-2",
+        "id": "01M6TF8FRT58SWC0GYTWPESNED",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TF8FRT58SWC0GYTVGR8JP7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TF8FRT58SWC0GYTVGR8JP7",
+        "id": "01M6TF8FTKVF76XJ757K9W827S",
+        "link": "01M6TF8FTKVF76XJ757JBXTGAB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2P2PWNPYM6T54QB5Q08K6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6T2DCTWTJ0GW5AQMA2FZJF8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TF8FWQKBQQ0V58ABXGBFXR",
+  "type": "ops",
+  "v": 1
+}
