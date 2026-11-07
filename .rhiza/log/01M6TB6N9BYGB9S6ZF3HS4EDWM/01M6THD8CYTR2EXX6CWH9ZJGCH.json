@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6TGQ1MVZCJMYC2HA4Q0GRV6"
+  ],
+  "at": "2026-11-07T08:18:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "a19368db74b94b9c0a045f2469d20686b968eeba",
+          "pr": "https://github.com/dphaener/rhiza/pull/350",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #350 (https://github.com/dphaener/rhiza/pull/350) passed CI at a19368d",
+          "status": "verified"
+        },
+        "handle": "pr-350-fix-the-ship-change-ci-triage",
+        "id": "01M6THD8AXYMW5PBP2DZR3A4W9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6THD8AXYMW5PBP2DXGEWDET",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6THD8AXYMW5PBP2DXGEWDET",
+        "id": "01M6THD8BE4MY1PK2KNWN2AW4Q",
+        "link": "01M6THD8BE4MY1PK2KNTAN4W5F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBDK41SM1XY2928W79FEYZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6TB6N9BYGB9S6ZF3HS4EDWM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6THD8CYTR2EXX6CWH9ZJGCH",
+  "type": "ops",
+  "v": 1
+}

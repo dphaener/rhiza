@@ -19,6 +19,7 @@ When a PR head's checks still fail after their once-per-head rerun, rhiza ship c
 ### In
 
 - depends-on [ship-change-ci-fix-step](ship-change-ci-fix-step.md)
+- depends-on [ship-check-runner-test-failures](ship-check-runner-test-failures.md)
 - verifies [ship-check-ci-test-findings-verified](../../../../../evidence/ship-check-ci-test-findings-verified.md)
 - verifies [ship-check-ci-test-findings-qa-1](../../../../../evidence/ship-check-ci-test-findings-qa-1.md)
 - verifies [ship-check-ci-test-findings-verified-2](../../../../../evidence/ship-check-ci-test-findings-verified-2.md)
