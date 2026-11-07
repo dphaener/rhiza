@@ -76,6 +76,10 @@
 //     proposed or accepted change set wrote, each in that change set's view
 //     (as-is for a landed one, what-if otherwise), skipping verbatim fields.
 //     It fails on one naming no node and warns on one naming a retired node.
+//   - dispatch fails on each of Input.Dispatch: a .rhiza/dispatch.toml that
+//     does not parse, or a rule naming a workflow the repo layer and the
+//     built-ins do not resolve. Its caller finds them, never reading the
+//     personal layer, so every machine and CI agree.
 //   - render fails on each rendered file that differs from what
 //     render.Render writes, is missing or is extra, and on a missing
 //     rendered folder.
@@ -127,6 +131,7 @@ const (
 	RuleUnclaimed     = "unclaimed"
 	RuleAnchor        = "anchor"
 	RuleTextRef       = "text-ref"
+	RuleDispatch      = "dispatch"
 	RuleRender        = "render"
 	RuleAppendOnly    = "append-only"
 )
@@ -134,7 +139,7 @@ const (
 // Rules returns the rules in report order.
 func Rules() []string {
 	return []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleEvidenceActor, RuleUnclaimed, RuleAnchor,
-		RuleTextRef, RuleRender, RuleAppendOnly}
+		RuleTextRef, RuleDispatch, RuleRender, RuleAppendOnly}
 }
 
 // Paths in findings are relative to the project root.
@@ -168,6 +173,9 @@ type Input struct {
 	// UnclaimedSince is the full hash of the unclaimed-changes cutoff from
 	// .rhiza/check.json, "" when the rule is off.
 	UnclaimedSince string
+	// Dispatch are the problems with .rhiza/dispatch.toml, each a message
+	// naming the file, the trigger.kind or table and the workflow.
+	Dispatch []string
 	// Unclaimed are the non-merge commits of UnclaimedSince..HEAD that change
 	// a file outside .rhiza/, newest first.
 	Unclaimed []Commit
@@ -236,6 +244,9 @@ func Run(in Input) Report {
 	c.unclaimed(sets)
 	c.anchors(asIs)
 	c.textRefs(asIs, sets)
+	for _, m := range in.Dispatch {
+		c.findings = append(c.findings, Finding{Severity: SeverityFail, Rule: RuleDispatch, Path: ".rhiza/dispatch.toml", Message: m})
+	}
 	c.render(asIs, sets)
 	c.appendOnly()
 

@@ -1,0 +1,62 @@
+# rhiza check reads .rhiza/dispatch.toml: it fails on a file that does not
+# parse and on a rule naming a workflow the repo layer and the built-ins do
+# not resolve. It never reads the personal layer.
+
+env XDG_CONFIG_HOME=$WORK/xdg
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+fold-ok
+exec rhiza render
+
+# no dispatch file
+exec rhiza check
+
+# a rule naming a repo workflow
+mkdir .rhiza/workflows
+cp $WORK/mine.toml .rhiza/workflows/bugfix.toml
+cp $WORK/dispatch-repo.toml .rhiza/dispatch.toml
+exec rhiza check
+
+# a rule naming a built-in workflow
+cp $WORK/dispatch-builtin.toml .rhiza/dispatch.toml
+exec rhiza check
+
+# a rule naming a missing workflow
+cp $WORK/dispatch-missing.toml .rhiza/dispatch.toml
+! exec rhiza check
+stdout 'dispatch.toml: request.bug names workflow "nothing-here"'
+
+# a workflow only the personal layer has does not count
+mkdir $WORK/xdg/rhiza/workflows
+cp $WORK/mine.toml $WORK/xdg/rhiza/workflows/personal-only.toml
+cp $WORK/dispatch-personal.toml .rhiza/dispatch.toml
+! exec rhiza check
+stdout 'dispatch.toml: ready.milestone names workflow "personal-only"'
+
+# an unknown table
+cp $WORK/dispatch-table.toml .rhiza/dispatch.toml
+! exec rhiza check
+stdout 'dispatch.toml: .*unknown table \[reqest\]'
+
+-- mine.toml --
+name = "bugfix"
+[step.go]
+kind = "command"
+run = "true"
+-- dispatch-repo.toml --
+[request]
+bug = "bugfix"
+-- dispatch-builtin.toml --
+[ready]
+feature = "ship-change"
+-- dispatch-missing.toml --
+[request]
+bug = "nothing-here"
+-- dispatch-personal.toml --
+[ready]
+milestone = "personal-only"
+-- dispatch-table.toml --
+[reqest]
+bug = "plan"

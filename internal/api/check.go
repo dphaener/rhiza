@@ -49,7 +49,9 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/check"
+	"github.com/dphaener/rhiza/internal/dispatch"
 	"github.com/dphaener/rhiza/internal/store"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 // baseCandidates are the refs the default base is merged with, first that
@@ -73,13 +75,13 @@ type CheckResponse struct {
 	Base        string         `json:"base" desc:"The git revision the append-only rule compared against; empty when it was skipped"`
 	MergeBaseOf string         `json:"merge_base_of,omitempty" desc:"The ref whose merge-base with HEAD is the default base; absent with --base"`
 	Skipped     string         `json:"skipped,omitempty" desc:"Why the append-only rule was skipped, if it was"`
-	Findings    []CheckFinding `json:"findings" desc:"Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, unclaimed, anchor, text-ref, render, append-only), then path and IDs"`
+	Findings    []CheckFinding `json:"findings" desc:"Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, unclaimed, anchor, text-ref, dispatch, render, append-only), then path and IDs"`
 }
 
 // CheckFinding is one thing check found.
 type CheckFinding struct {
 	Severity  string `json:"severity" enum:"fail,warn" desc:"fail makes the check fail; warn does not"`
-	Rule      string `json:"rule" enum:"log,fold,model,in-flight,link,depends-on,evidence-actor,unclaimed,anchor,text-ref,render,append-only" desc:"The rule that found it"`
+	Rule      string `json:"rule" enum:"log,fold,model,in-flight,link,depends-on,evidence-actor,unclaimed,anchor,text-ref,dispatch,render,append-only" desc:"The rule that found it"`
 	Path      string `json:"path,omitempty" desc:"The file, relative to the project root"`
 	ChangeSet string `json:"change_set,omitempty" desc:"The change set's ID"`
 	Entry     string `json:"entry,omitempty" desc:"The entry's ID"`
@@ -136,6 +138,7 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 	if in.UnclaimedSince != "" && inWorkTree(ctx.Git) {
 		in.Unclaimed = gitUnclaimed(ctx.Git, in.UnclaimedSince)
 	}
+	in.Dispatch = dispatchProblems(ctx.Root)
 	rep := check.Run(in)
 	resp := CheckResponse{OK: rep.OK, Base: rep.Base, MergeBaseOf: from, Skipped: skipped,
 		Findings: make([]CheckFinding, 0, len(rep.Findings))}
@@ -519,4 +522,37 @@ func (f CheckFinding) line() string {
 		return fmt.Sprintf("%s %s: %s", f.Severity, f.Rule, f.Message)
 	}
 	return fmt.Sprintf("%s %s %s: %s", f.Severity, f.Rule, where, f.Message)
+}
+
+// dispatchProblems checks root's dispatch.toml: that it parses and that each
+// rule's workflow resolves in the repo layer or the built-ins. The personal
+// layer is never read, so the result is the same on every machine.
+func dispatchProblems(root string) []string {
+	rules, err := dispatch.Load(root)
+	if err != nil {
+		return []string{err.Error()}
+	}
+	var out []string
+	for _, t := range []struct {
+		table string
+		m     map[string]string
+	}{{dispatch.TableRequest, rules.Request}, {dispatch.TableReady, rules.Ready}} {
+		for _, k := range dispatch.Kinds {
+			name := t.m[k]
+			if repoOrBuiltinWorkflow(root, name) {
+				continue
+			}
+			out = append(out, fmt.Sprintf("%s: %s.%s names workflow %q, which is neither in %s nor built in (built-in: %s)",
+				dispatch.File, t.table, k, name, workflowsDir, strings.Join(workflow.BuiltinNames(), ", ")))
+		}
+	}
+	return out
+}
+
+func repoOrBuiltinWorkflow(root, name string) bool {
+	if _, err := os.Stat(filepath.Join(root, filepath.FromSlash(workflowsDir), name+".toml")); err == nil {
+		return true
+	}
+	_, ok := workflow.Builtin(name)
+	return ok
 }
