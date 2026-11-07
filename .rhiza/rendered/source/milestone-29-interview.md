@@ -51,6 +51,7 @@ Milestone 29 interview: many projects from one root
 - derived-from [m29-unready-listed](../decision/m29-unready-listed.md)
 - derived-from [m29-rex-session-per-project](../decision/m29-rex-session-per-project.md)
 - derived-from [m29-tui-current-project](../decision/m29-tui-current-project.md)
+- derived-from [m29-tui-project-from-pane](../decision/m29-tui-project-from-pane.md)
 - derived-from [answer-05fe56c8-12](../decision/answer-05fe56c8-12.md)
 
 ## History

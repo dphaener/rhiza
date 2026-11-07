@@ -1,0 +1,40 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6T6Z7SHTR0WFTW4F7FEP1JC"
+  ],
+  "at": "2026-11-07T06:32:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The conflict in internal/api/usage_learn_test.go is resolved by keeping both sides' new tests (this change set's TestUsageLearnEmptyWdStaysInRepoFolder and main's TestLimitHitTeachesOnlyItsKind and TestLearnedLimitRatchets), merging origin/main into the branch; the usage tests pass on the merge and write nothing under ~/code/.rhiza-root",
+          "wording": "Stated by the orchestrator acting as arbiter: keep both sides' tests and merge main"
+        },
+        "handle": "rebase-conflict-fix-tests-write-fake-merged",
+        "id": "01M6TBBMH1Y8DFGMBS0EFQ5YDN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6TBBMH1Y8DFGMBS0CY88HF0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TBBMH1Y8DFGMBS0CY88HF0",
+        "id": "01M6TBBMJG0B1N4WZMZSXAD3W7",
+        "link": "01M6TBBMJG0B1N4WZMZRFZZ6B0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T6Z7PGCKXDV7039ACA83G6",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6T20EGCJZNFEY6YPJ1PSEDW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TBBMPB3BA8E5E55AT3R373",
+  "type": "ops",
+  "v": 1
+}

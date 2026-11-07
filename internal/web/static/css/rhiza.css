@@ -363,3 +363,7 @@ a.rz-session-who:hover b { color: var(--teal); }
   .rz-finding .rz-meta { grid-column: 1; }
   .rz-panel-foot { padding: var(--space-3) var(--space-4); }
 }
+
+.rz-switcher { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.rz-switcher a { color: var(--muted, inherit); font-size: 14px; }
+.rz-switcher a[aria-current="true"] { color: var(--ink); font-weight: 600; }

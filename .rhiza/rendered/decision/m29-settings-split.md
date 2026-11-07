@@ -24,6 +24,7 @@ Split machine/project. The assistant's option, picked by the owner.
 
 - decided-by [m29-one-daemon](../intent/milestone-29/m29-one-daemon.md)
 - decided-by [root-daemon-settings-scope](../capability/rhiza/orchestration/daemon/root-daemon-settings-scope.md)
+- decided-by [tui-runs-daemon-across-projects](../capability/rhiza/tui-runs-daemon-across-projects.md)
 
 ## History
 

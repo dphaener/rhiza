@@ -1,0 +1,60 @@
+{
+  "actor": "01M6TB73ER4PEA36ADR62K7D4C",
+  "after": [
+    "01M6TBD5XCMQ9DGCM3YK40ABR1"
+  ],
+  "at": "2026-11-07T06:34:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6TBCFT3VTPXC20R9C8F9TQT",
+        "id": "01M6TBDK32ZRX6FMAG4HF59HPV",
+        "link": "01M6TBDK32ZRX6FMAG4ENG9QA8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBD5MV606EMNJPGW6R277R",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "TestParseFailedTests in internal/api parses sample gh --log-failed output, each line carrying gh's job/step/timestamp prefix: an RSpec log with a 'Failed examples:' block (from nebari#72's shape, 'rspec ./spec/views/tasks/list_spec.rb:290 # Tasks list ...') into 'rspec ./spec/views/tasks/list_spec.rb:290', a Minitest log into 'bin/rails test test/models/x_test.rb:12', a pytest summary into 'pytest tests/test_x.py::test_y', a repeated line once, the existing Go cases unchanged, and logs with only '1 failure', a Jest 'FAIL src/x.test.js' line or an infra error into none; a testscript run-ship-rspec-failure with a fake gh whose failed run's log prints an RSpec 'Failed examples:' block shows rhiza ship check --json listing 'rspec ./spec/views/tasks/list_spec.rb:290' in tests and as a finding's test, and rhiza ship check --test-failures exiting 0; describe-golden regenerated for the tests field's description; run with go test -trimpath ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship|describe-golden)' only",
+          "statement": "rhiza ship check reads failing tests of RSpec, Rails Minitest and pytest from a failed Actions run's gh run view --log-failed output as well as Go's: besides Go '--- FAIL: <name>' lines (leaves only, bare names as today), it matches, at the start of the log text after gh's job/step/timestamp prefix, RSpec's 'rspec ./<path>:<line>' lines, Minitest's 'rails test <path>:<line>' and 'bin/rails test <path>:<line>' lines and pytest's 'FAILED <path>::<test>' summary lines, and names each such failing test by the rerun command its runner printed, trimmed of any trailing comment ('rspec ./spec/views/tasks/list_spec.rb:290', 'bin/rails test test/models/x_test.rb:12', 'pytest tests/test_x.py::test_y'), deduplicated, unchanged in ship check's tests and each finding's Test, so ci-triage passes a Rails or Python project's red CI to ci-fix; a log with none of these lines (counts such as '1 failure', Jest's file-level 'FAIL <file>', infra errors) still ends as an infra or unparsable failure, and the tests field's description names Go, RSpec, Minitest and pytest"
+        },
+        "handle": "ship-check-runner-test-failures",
+        "id": "01M6TBDK41SM1XY2928WNESY3T",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6TBDK41SM1XY2928W79FEYZ",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6TBDK41SM1XY2928W79FEYZ",
+        "id": "01M6TBDK71H2KT0CQSNDZXJ5FA",
+        "link": "01M6TBDK71H2KT0CQSNDQ5D3GJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBCFT3VTPXC20R9C8F9TQT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6TBDK41SM1XY2928W79FEYZ",
+        "id": "01M6TBDK7Z544RPTE66CYCWNXB",
+        "link": "01M6TBDK7Z544RPTE669QFKM9M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MC4GXTJ7SWF8NV4SYXD3F9",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6TB6N9BYGB9S6ZF3HS4EDWM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TBDKA6F24DFD6E7KHTQN5A",
+  "type": "ops",
+  "v": 1
+}

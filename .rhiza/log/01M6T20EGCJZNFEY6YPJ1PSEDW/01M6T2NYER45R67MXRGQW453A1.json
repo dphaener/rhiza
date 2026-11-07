@@ -1,0 +1,44 @@
+{
+  "actor": "01M6T2KDS95FD7KD43QFK07SY8",
+  "after": [
+    "01M6T2CQNH5T5M38ZDFBWW8WK5"
+  ],
+  "at": "2026-11-07T04:01:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The leak comes from filepath.Abs(\"\") turning an empty dir into the cwd inside rootcfg.Find; fixing it at Find closes it for every caller, not just limitsDir (daemon.go, project.go, root.go, daemon_service.go, usage_learn.go all call Find(ctx.Wd)). rootOf in daemon_settings.go already treats an empty Wd as no root, so this generalises an existing rule. cmd/rhiza/ctx.go always sets Wd from os.Getwd, and daemon_projects.go sets it explicitly, so no production path relies on the empty-dir fallback. For failing a test run, a sandbox or syscall interception is not portable or cheap in Go; the concrete damage was files appearing under ~/code/.rhiza-root, so a TestMain before/after snapshot of the enclosing root's state dir catches exactly that class in the two packages that reach root state, fails the run loudly, and is a no-op on CI where no root encloses the checkout. Setting Wd in testCtx alone would fix today's test but not stop the next one.",
+          "statement": "An empty directory never resolves a root: rootcfg.Find(\"\") returns not found instead of falling back to the process cwd, so every caller (limitsDir and the other api ops on ctx.Wd) treats an empty Ctx.Wd as outside any root; the CLI keeps passing os.Getwd() explicitly as Ctx.Wd, so real runs are unchanged. A test run fails on writes outside its temp dir through a guard (package internal/rootguard) in TestMain of internal/api and cmd/rhiza: before m.Run it snapshots the state dir (.rhiza-root/: names, sizes, mod times, the usage.limits.jsonl line count) of any root enclosing the package dir, and after m.Run exits non-zero naming each write attributed to the run. Because the live root daemon and run drivers write there at the same time, the files they own are excluded, and an appended usage.limits.jsonl line counts only when its hit_at lies outside the run's wall-clock span. A unit test pins Find(\"\") to not found, and a usage-learn test with an empty Wd asserts nothing is written under the enclosing root.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "empty-wd-finds-no-root",
+        "id": "01M6T25PYG4GAVPAD47AWY79M4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6T25PYG4GAVPAD47AC5R6KN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/rootguard/... passes with tests that, on a temp root, the helper reports a file added or changed in .rhiza-root/ and a usage.limits.jsonl line appended with a hit_at outside the run span, and reports nothing when the folder is untouched, when no root encloses the dir, when only daemon-owned files changed, or when the appended line's hit_at lies inside the run span; go test -trimpath ./internal/api/... and go test -trimpath ./cmd/rhiza -run TestScripts/usage pass from a checkout under a root with no write attributed to them in its .rhiza-root/",
+          "statement": "The test runs of internal/api and cmd/rhiza fail when they write into the state folder of a root enclosing the package dir, through one shared helper in a new package internal/rootguard: TestMain snapshots that root's .rhiza-root/ (names, sizes, mod times, and the line count of usage.limits.jsonl) before m.Run and, after it, exits non-zero naming each write it attributes to the test run, while writes the live root daemon and run drivers make at the same time pass. Attribution: a file that appeared or changed is reported unless the daemon or drivers own it (daemon.lock, daemon.home, daemon.state.json, requests.json, requests.lock, starts.json, starts.lock, continues.json, continues.lock, main-stale.json, usage.limits.jsonl); in usage.limits.jsonl, an appended line is reported when its hit_at lies outside the wall-clock span of the test run (tests stamp hits with fixed clocks, real drivers with the current time). cmd/rhiza's TestMain moves from testscript.Main, which exits itself, to testscript.RunMain so the check runs after the scripts"
+        },
+        "handle": "tests-leave-root-state-alone",
+        "id": "01M6T26X2D1D7TTAJ0MQ8VAY2P",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6T26X2D1D7TTAJ0MMF0X9FN",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      }
+    ]
+  },
+  "change_set": "01M6T20EGCJZNFEY6YPJ1PSEDW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T2NYER45R67MXRGQW453A1",
+  "type": "ops",
+  "v": 1
+}

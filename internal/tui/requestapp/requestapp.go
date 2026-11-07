@@ -54,14 +54,51 @@ func RequestArgs(kind, text string) []string {
 	return []string{"--kind", kind, "--", text}
 }
 
+// ProjectRunner is a Runner that runs in the named project.
+type ProjectRunner func(project, op string, args []string) ([]byte, error)
+
+const projectKey = "project"
+
 // App is the request app as a modal shell component.
 type App struct {
 	modalshell.Component
-	run Runner
+	run     ProjectRunner
+	project string
+	profile colorprofile.Profile
 }
 
-// New returns the request app over run, drawn for profile.
+// New returns the request app over run, drawn for profile, in no project:
+// run's calls go where run sends them.
 func New(run Runner, profile colorprofile.Profile) *App {
+	var pr ProjectRunner
+	if run != nil {
+		pr = func(_, op string, args []string) ([]byte, error) { return run(op, args) }
+	}
+	a := &App{run: pr, profile: profile}
+	a.Component = a.requestForm()
+	return a
+}
+
+// NewIn returns the request app for the app's current project. With project
+// empty it first asks for one of projects from a picker and starts nothing
+// until one is picked; Esc then closes it with nothing queued.
+func NewIn(run ProjectRunner, profile colorprofile.Profile, project string, projects []string) *App {
+	a := &App{run: run, project: project, profile: profile}
+	if project != "" || len(projects) == 0 {
+		a.Component = a.requestForm()
+		return a
+	}
+	opts := make([]ui.Option, 0, len(projects))
+	for _, p := range projects {
+		opts = append(opts, ui.Option{Label: p, Value: p})
+	}
+	pick := ui.NewSelect(projectKey, "Project").Options(opts...).Default(projects[0])
+	a.Component = modalshell.Form(ui.NewForm(theme.Dark(), profile, pick))
+	return a
+}
+
+func (a *App) requestForm() modalshell.Component {
+	profile := a.profile
 	kind := ui.NewSelect(kindKey, "Kind").Options(
 		ui.Option{Label: "Feature", Value: "feature"},
 		ui.Option{Label: "Bug", Value: "bug"},
@@ -77,18 +114,24 @@ func New(run Runner, profile colorprofile.Profile) *App {
 			return nil
 		})
 	f := ui.NewForm(theme.Dark(), profile, kind, text)
-	return &App{Component: modalshell.Form(f), run: run}
+	return modalshell.Form(f)
 }
 
 // Update queues the request when the form submits and reports the app done;
 // every other message goes to the form.
 func (a *App) Update(msg tea.Msg) tea.Cmd {
 	if s, ok := msg.(ui.FormSubmittedMsg); ok {
+		if a.project == "" && s.Values.String(projectKey) != "" {
+			// The picker is answered: the request form follows, in that project.
+			a.project = s.Values.String(projectKey)
+			a.Component = a.requestForm()
+			return a.Component.Init()
+		}
 		text := strings.Join(strings.Fields(s.Values.String(textKey)), " ")
 		if text == "" || a.run == nil {
 			return modalshell.Done(nil, errors.New("request: nothing to queue"))
 		}
-		return modalshell.Done(a.run("request", RequestArgs(s.Values.String(kindKey), text)))
+		return modalshell.Done(a.run(a.project, "request", RequestArgs(s.Values.String(kindKey), text)))
 	}
 	return a.Component.Update(msg)
 }

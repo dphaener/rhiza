@@ -1,0 +1,109 @@
+{
+  "actor": "01M6STJ6TV553PWJ9GPZHAPSFV",
+  "after": [
+    "01M6STF5XR75K9E0WCPPE2K4TV"
+  ],
+  "at": "2026-11-07T01:45:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-6b4d6ff8 at fac284e5, hands-on with the built binary (go build -trimpath -o $TMPDIR/rhiza-qa ./cmd/rhiza): a scratch root (rhiza root init) with alpha and beta initialised and bare a plain git checkout, each registered with rhiza project add; fixture run journals in alpha (a failed run at 01:00, a question at 03:00) and beta (a question at 02:00, a stale run); rhiza daemon set paused=true, web.host 127.0.0.1, web.port 18931; rhiza daemon --permission-mode manual run from alpha, then curl against http://127.0.0.1:18931. One listener answered for every project: / 200 (home alpha), /p/alpha/ and /p/beta/ 200, /p/alpha/runs, /p/beta/roadmap 200, /p/alpha 301, /p/nope/ and /p/bare/ 404. Running rhiza init in bare with the daemon still up made /p/bare/ answer 200 with no restart, and the switcher then listed bare."
+        },
+        "handle": "web-root-listener-qa-1",
+        "id": "01M6STWHHKVW4Y9HGA7H6B0ZRM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6STWHHKVW4Y9HGA7G2XXD1G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6STWHHKVW4Y9HGA7G2XXD1G",
+        "id": "01M6STWHKEWH5BNCQ5WQGH1DND",
+        "link": "01M6STWHKEWH5BNCQ5WKJEDKXN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN862M5W8HPN62BWDYC124",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-6b4d6ff8 at fac284e5, hands-on with the built binary (go build -trimpath -o $TMPDIR/rhiza-qa ./cmd/rhiza): a scratch root (rhiza root init) with alpha and beta initialised and bare a plain git checkout, each registered with rhiza project add; fixture run journals in alpha (a failed run at 01:00, a question at 03:00) and beta (a question at 02:00, a stale run); rhiza daemon set paused=true, web.host 127.0.0.1, web.port 18931; rhiza daemon --permission-mode manual run from alpha, then curl against http://127.0.0.1:18931. GET /projects listed alpha (1 waiting on you · 2 in inbox), bare (not initialised, no counts or health) and beta (2 waiting on you · 1 in inbox). Each project had its own health pill: unknown at first, unhealthy after the first poll, which matches rhiza health in that project (bad check, as the model was not rendered). Rows linked /p/alpha/, /p/bare/ and /p/beta/. The home is served at /projects and linked from every page's nav; / itself is still the home project's overview (see the QA findings)."
+        },
+        "handle": "web-projects-home-qa-1",
+        "id": "01M6STWHP4PAQVTBT7BQQYB1CQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6STWHP4PAQVTBT7BP00K6JD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6STWHP4PAQVTBT7BP00K6JD",
+        "id": "01M6STWHRTN3RXCS87EA4K2PCE",
+        "link": "01M6STWHRTN3RXCS87E8VSKV7G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN864EGF59H96RE13VRMX7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-6b4d6ff8 at fac284e5, hands-on with the built binary (go build -trimpath -o $TMPDIR/rhiza-qa ./cmd/rhiza): a scratch root (rhiza root init) with alpha and beta initialised and bare a plain git checkout, each registered with rhiza project add; fixture run journals in alpha (a failed run at 01:00, a question at 03:00) and beta (a question at 02:00, a stale run); rhiza daemon set paused=true, web.host 127.0.0.1, web.port 18931; rhiza daemon --permission-mode manual run from alpha, then curl against http://127.0.0.1:18931. GET /inbox listed the items oldest first across projects: alpha Alpha failing work (failed, 01:00), beta Which beta colour? (02:00), alpha Which alpha store? (03:00). Each row had a rz-project-tag span with its project and linked /p/<project>/runs/<run>, and each link answered 200. A question journal added to beta while the daemon ran showed up on /inbox, tagged beta."
+        },
+        "handle": "web-merged-inbox-qa-1",
+        "id": "01M6STWHTTPZ17YA6Z0QGHWFJW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6STWHTTPZ17YA6Z0NKC7RRA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6STWHTTPZ17YA6Z0NKC7RRA",
+        "id": "01M6STWHW90AC93A51WVV2JGSD",
+        "link": "01M6STWHW90AC93A51WVQ026QB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN866N4BCG43KR20K6EFC3",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-6b4d6ff8 at fac284e5, hands-on with the built binary (go build -trimpath -o $TMPDIR/rhiza-qa ./cmd/rhiza): a scratch root (rhiza root init) with alpha and beta initialised and bare a plain git checkout, each registered with rhiza project add; fixture run journals in alpha (a failed run at 01:00, a question at 03:00) and beta (a question at 02:00, a stale run); rhiza daemon set paused=true, web.host 127.0.0.1, web.port 18931; rhiza daemon --permission-mode manual run from alpha, then curl against http://127.0.0.1:18931. /p/alpha/, /p/alpha/roadmap, /p/alpha/runs, /p/beta/runs/<run> and /p/beta/changes/<cs> each showed only their own project's change sets and runs. Each header had nav.rz-switcher with All projects and every initialised project. The links kept the page kind: roadmap went to /p/beta/roadmap, runs to /p/beta/runs, and a run or change set detail page went to the other project's runs or roadmap list. The current project was marked aria-current. Another project's run or change set ID under /p/alpha/ gave 404, and so did /p/nope/events. body data-rz-base=/p/beta. With /p/alpha/events and /p/beta/events open, a new beta journal sent inbox and run events only on beta's stream; alpha's got only its daemon health event."
+        },
+        "handle": "web-project-switcher-qa-1",
+        "id": "01M6STWHXG5PEV02TET975N3E3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6STWHXG5PEV02TET88XBCCJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6STWHXG5PEV02TET88XBCCJ",
+        "id": "01M6STWHZKV6HFMB0PDGE708SP",
+        "link": "01M6STWHZKV6HFMB0PDE830X93",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN8687F2WDVVXSSTW5W65A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3ZBGYDW6KPBSES9A5JXS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6STWJ1YVJ4PB21B34761TJ4",
+  "type": "ops",
+  "v": 1
+}

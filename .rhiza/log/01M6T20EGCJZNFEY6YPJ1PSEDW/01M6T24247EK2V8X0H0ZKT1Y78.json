@@ -1,0 +1,30 @@
+{
+  "actor": "01M6T2118ZGSWB4XVFC7QPT8EY",
+  "after": [
+    "01M6T20EGCJZNFEY6YPMWSZYQC"
+  ],
+  "at": "2026-11-07T03:51:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "df8b7e8a-c713-40c2-ae5d-01a1b4206f96",
+          "statement": "Where should an empty working directory stop resolving the machine's root (today rootcfg.Find(\"\") resolves the process cwd)? / How should a test run fail when something writes outside its temp dir?"
+        },
+        "handle": "question-df8b7e8a-1",
+        "id": "01M6T240AFNVXCY1N0YH9RE326",
+        "key": null,
+        "kind": "question",
+        "node": "01M6T240AFNVXCY1N0YG48S78B",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6T20EGCJZNFEY6YPJ1PSEDW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T24247EK2V8X0H0ZKT1Y78",
+  "type": "ops",
+  "v": 1
+}

@@ -186,11 +186,13 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	// poll (--once) and a test run (RHIZA_TEST_NOW) bind nothing.
 	var webUI *web.Manager
 	if !r.Once && ctxGetenv(ctx)("RHIZA_TEST_NOW") == "" {
-		// The handler gets its own copy of ctx: the poll goes on changing
-		// ctx while requests run.
-		snap := *homeCtx
-		health := NewWebHealth(&snap)
-		webUI = &web.Manager{Factory: webFactory, Handler: web.HandlerWithMilestones(WebDaemonSource(&snap, health), WebRunsSource(&snap), WebInboxSource(&snap), WebMilestonesSource(&snap), ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap, health), web.PollEvery))}
+		// The handlers take their own copies of ctx (WebProjectHandler and
+		// WebRootHandler each copy it once, here, before any request): the
+		// poll goes on changing ctx while requests run. One listener
+		// serves every project: the home project at /, each at
+		// /p/<project>/.
+		home := WebProjectHandler(homeCtx)
+		webUI = &web.Manager{Factory: webFactory, Handler: WebRootHandler(ctx, root, homeName, home)}
 		defer webUI.Close()
 	}
 	var sweep daemon.SweepSchedule
@@ -1263,8 +1265,22 @@ func init() {
 	})
 }
 
-// DaemonStatusRequest takes nothing.
-type DaemonStatusRequest struct{}
+// DaemonStatusRequest picks the projects the status covers.
+type DaemonStatusRequest struct {
+	All     bool   `json:"all,omitempty" flag:"all" desc:"Cover every registered project, from anywhere under a Rhiza root; the default at the root itself"`
+	Project string `json:"project,omitempty" flag:"project" desc:"Only this registered project's part of the daemon's state; default the current project, or every project at the root"`
+}
+
+// DaemonProjectStatus is one project's part of the root daemon's state: what
+// its poll saw and did there.
+type DaemonProjectStatus struct {
+	Project     string        `json:"project" desc:"The project's name in the root"`
+	Runs        []DaemonRun   `json:"runs" desc:"The project's live runs (running or interrupted) as of its last poll"`
+	LastStarted *DaemonEvent  `json:"last_started,omitempty" desc:"The run the daemon last started in the project; absent if none"`
+	LastResumed *DaemonEvent  `json:"last_resumed,omitempty" desc:"The run the daemon last resumed in the project; absent if none"`
+	Skipped     []DaemonSkip  `json:"skipped" desc:"The project's accepted change sets not started at its last poll, each with its reason"`
+	Unjournaled []DaemonEvent `json:"unjournaled" desc:"The project's runs started that never wrote a journal"`
+}
 
 // DaemonRun is a run the daemon sees as live.
 type DaemonRun struct {
@@ -1317,25 +1333,26 @@ type DaemonProjectSkip struct {
 // DaemonStatusResponse is the daemon's state. While no daemon holds the
 // lock, Running is false and the rest, if any, is what the last daemon left.
 type DaemonStatusResponse struct {
-	Mode            string              `json:"mode" enum:"service,tab" desc:"How this installation runs the daemon: service when daemon install wrote a systemd unit, else tab (the Rex tab 'rhiza daemon')"`
-	Running         bool                `json:"running" desc:"True while a live daemon holds the repository's lock"`
-	Process         string              `json:"process,omitempty" desc:"The daemon's process, as host:pid; absent when none ever ran"`
-	Version         string              `json:"version,omitempty" desc:"The version of the binary the daemon runs, as recorded when it started"`
-	Commit          string              `json:"commit,omitempty" desc:"The git commit the daemon's binary was built from, as recorded when it started; absent when the build carried none"`
-	Started         string              `json:"started,omitempty" desc:"When the daemon started, RFC 3339 UTC"`
-	LastPoll        string              `json:"last_poll,omitempty" desc:"When it last polled, RFC 3339 UTC"`
-	Stopped         string              `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
-	MaxRuns         int                 `json:"max_runs,omitempty" desc:"How many runs it keeps running at once"`
-	Autonomous      bool                `json:"autonomous" desc:"True when it starts each run with --autonomous"`
-	Web             string              `json:"web,omitempty" desc:"The web UI as the daemon's last poll recorded it from rhiza.web.port: its URL (http://127.0.0.1:<port>), or off; it is the recorded setting, the listener is not probed; absent when none was recorded"`
-	Settings        []Setting           `json:"settings" desc:"The settings as its last poll read them, each with its source: default, git config or flag"`
-	Runs            []DaemonRun         `json:"runs" desc:"The live runs (running or interrupted) as of its last poll"`
-	LastStarted     *DaemonEvent        `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
-	LastResumed     *DaemonEvent        `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
-	Skipped         []DaemonSkip        `json:"skipped" desc:"The accepted change sets it did not start at its last poll, each with its reason"`
-	SkippedProjects []DaemonProjectSkip `json:"skipped_projects" desc:"The registered projects the root daemon did not work at its last poll, each with its reason"`
-	Hooks           []HookRow           `json:"hooks" desc:"The notify and event commands the daemon took at start, each with its source: daemon flag, git config or unset"`
-	Unjournaled     []DaemonEvent       `json:"unjournaled" desc:"The runs it started that never wrote a journal, by change set and when; it starts these again 15 minutes after the start, or sooner when a run of the change set journals"`
+	Mode            string                `json:"mode" enum:"service,tab" desc:"How this installation runs the daemon: service when daemon install wrote a systemd unit, else tab (the Rex tab 'rhiza daemon')"`
+	Running         bool                  `json:"running" desc:"True while a live daemon holds the repository's lock"`
+	Process         string                `json:"process,omitempty" desc:"The daemon's process, as host:pid; absent when none ever ran"`
+	Version         string                `json:"version,omitempty" desc:"The version of the binary the daemon runs, as recorded when it started"`
+	Commit          string                `json:"commit,omitempty" desc:"The git commit the daemon's binary was built from, as recorded when it started; absent when the build carried none"`
+	Started         string                `json:"started,omitempty" desc:"When the daemon started, RFC 3339 UTC"`
+	LastPoll        string                `json:"last_poll,omitempty" desc:"When it last polled, RFC 3339 UTC"`
+	Stopped         string                `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
+	MaxRuns         int                   `json:"max_runs,omitempty" desc:"How many runs it keeps running at once"`
+	Autonomous      bool                  `json:"autonomous" desc:"True when it starts each run with --autonomous"`
+	Web             string                `json:"web,omitempty" desc:"The web UI as the daemon's last poll recorded it from rhiza.web.port: its URL (http://127.0.0.1:<port>), or off; it is the recorded setting, the listener is not probed; absent when none was recorded"`
+	Settings        []Setting             `json:"settings" desc:"The settings as its last poll read them, each with its source: default, git config or flag"`
+	Runs            []DaemonRun           `json:"runs" desc:"The live runs (running or interrupted) as of its last poll"`
+	LastStarted     *DaemonEvent          `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
+	LastResumed     *DaemonEvent          `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
+	Skipped         []DaemonSkip          `json:"skipped" desc:"The accepted change sets it did not start at its last poll, each with its reason"`
+	SkippedProjects []DaemonProjectSkip   `json:"skipped_projects" desc:"The registered projects the root daemon did not work at its last poll, each with its reason"`
+	Hooks           []HookRow             `json:"hooks" desc:"The notify and event commands the daemon took at start, each with its source: daemon flag, git config or unset"`
+	Unjournaled     []DaemonEvent         `json:"unjournaled" desc:"The runs it started that never wrote a journal, by change set and when; it starts these again 15 minutes after the start, or sooner when a run of the change set journals"`
+	Projects        []DaemonProjectStatus `json:"projects" desc:"At the root or with --all: each registered, initialised project's runs, last start and resume, skips and unjournaled starts, in name order, the top-level runs, skipped and unjournaled then being empty; empty for one project"`
 }
 
 // Human writes the status as text.
@@ -1375,27 +1392,7 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 	for _, h := range r.Hooks {
 		fmt.Fprintf(w, "Hook %s: %s\n", h.Name, h.text())
 	}
-	if len(r.Runs) == 0 {
-		fmt.Fprintln(w, "Live runs: none")
-	} else {
-		fmt.Fprintln(w, "Live runs:")
-		for _, d := range r.Runs {
-			fmt.Fprintf(w, "- %s %s (change set %s)\n", d.ID, d.State, d.Change)
-		}
-	}
-	if e := r.LastStarted; e != nil {
-		fmt.Fprintf(w, "Last started: a run of %s at %s\n", e.Change, e.At)
-	}
-	if e := r.LastResumed; e != nil {
-		fmt.Fprintf(w, "Last resumed: run %s at %s\n", e.Run, e.At)
-	}
-	for _, k := range r.Skipped {
-		fmt.Fprintf(w, "Skipped: %s %s: %s", k.Change, k.Title, skipText[k.Reason])
-		if len(k.Detail) > 0 {
-			fmt.Fprintf(w, " (%s)", strings.Join(k.Detail, "; "))
-		}
-		fmt.Fprintln(w)
-	}
+	humanPart(w, "", r.Runs, r.LastStarted, r.LastResumed, r.Skipped)
 	for _, k := range r.SkippedProjects {
 		fmt.Fprintf(w, "Skipped project: %s: %s", k.Project, k.Reason)
 		if k.Detail != "" {
@@ -1403,8 +1400,43 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 		}
 		fmt.Fprintln(w)
 	}
-	for _, e := range r.Unjournaled {
-		fmt.Fprintf(w, "Not journaled: the run of %s started at %s wrote no journal; retried at %s, or sooner when a run of it journals\n", e.Change, e.At, daemonRetryAt(e.At))
+	humanUnjournaled(w, "", r.Unjournaled)
+	for _, p := range r.Projects {
+		fmt.Fprintf(w, "Project %s:\n", p.Project)
+		humanPart(w, "  ", p.Runs, p.LastStarted, p.LastResumed, p.Skipped)
+		humanUnjournaled(w, "  ", p.Unjournaled)
+	}
+}
+
+// humanPart writes the runs, last start and resume and skips of a status
+// (or of one project's part of it), each line behind indent.
+func humanPart(w io.Writer, indent string, runs []DaemonRun, started, resumed *DaemonEvent, skipped []DaemonSkip) {
+	if len(runs) == 0 {
+		fmt.Fprintf(w, "%sLive runs: none\n", indent)
+	} else {
+		fmt.Fprintf(w, "%sLive runs:\n", indent)
+		for _, d := range runs {
+			fmt.Fprintf(w, "%s- %s %s (change set %s)\n", indent, d.ID, d.State, d.Change)
+		}
+	}
+	if e := started; e != nil {
+		fmt.Fprintf(w, "%sLast started: a run of %s at %s\n", indent, e.Change, e.At)
+	}
+	if e := resumed; e != nil {
+		fmt.Fprintf(w, "%sLast resumed: run %s at %s\n", indent, e.Run, e.At)
+	}
+	for _, k := range skipped {
+		fmt.Fprintf(w, "%sSkipped: %s %s: %s", indent, k.Change, k.Title, skipText[k.Reason])
+		if len(k.Detail) > 0 {
+			fmt.Fprintf(w, " (%s)", strings.Join(k.Detail, "; "))
+		}
+		fmt.Fprintln(w)
+	}
+}
+
+func humanUnjournaled(w io.Writer, indent string, un []DaemonEvent) {
+	for _, e := range un {
+		fmt.Fprintf(w, "%sNot journaled: the run of %s started at %s wrote no journal; retried at %s, or sooner when a run of it journals\n", indent, e.Change, e.At, daemonRetryAt(e.At))
 	}
 }
 
@@ -1421,6 +1453,65 @@ func daemonRetryAt(at string) string {
 // daemon holding the lock it says not running, and shows the state file's
 // last daemon, if one left it.
 func runDaemonStatus(ctx *Ctx, req any) (any, error) {
+	out, err := daemonStatusHome(ctx)
+	r, typed := req.(DaemonStatusRequest)
+	if err != nil || !typed {
+		return out, err
+	}
+	resp := out.(DaemonStatusResponse)
+	resp.Projects = []DaemonProjectStatus{}
+	// Outside a root there is one daemon and one state: all of it is the
+	// project's.
+	root, cfg, haveRoot := rootOf(ctx)
+	if !haveRoot {
+		if r.Project != "" || r.All {
+			_, _, err := inboxScopes(ctx, r.Project, r.All)
+			return nil, err
+		}
+		return resp, nil
+	}
+	// A root folder that holds a model of its own is read as that one
+	// project, unless --project names a registered one.
+	if _, in := cfg.ProjectOf(root, ctx.Wd); r.Project == "" && !in && !r.All && projectInitialised(ctx.Wd) {
+		return resp, nil
+	}
+	scopes, merged, err := inboxScopes(ctx, r.Project, r.All)
+	if err != nil {
+		return nil, err
+	}
+	parts := []DaemonProjectStatus{}
+	for _, sc := range scopes {
+		part := DaemonProjectStatus{Project: sc.name, Runs: []DaemonRun{}, Skipped: []DaemonSkip{}, Unjournaled: []DaemonEvent{}}
+		common, err := gitCommonDir(sc.ctx)
+		if err != nil {
+			return nil, err
+		}
+		if st, ok := daemon.ReadState(common); ok {
+			for _, d := range st.Runs {
+				part.Runs = append(part.Runs, DaemonRun{ID: d.ID, Change: d.Change, State: d.State})
+			}
+			part.LastStarted, part.LastResumed = daemonEvent(st.LastStarted), daemonEvent(st.LastResumed)
+			for _, k := range st.Skips {
+				part.Skipped = append(part.Skipped, DaemonSkip{Change: k.Change, Title: k.Title, Reason: k.Reason, Detail: append([]string{}, k.Detail...)})
+			}
+			for _, e := range st.Unjournaled {
+				part.Unjournaled = append(part.Unjournaled, *daemonEvent(&e))
+			}
+		}
+		parts = append(parts, part)
+	}
+	resp.Runs, resp.LastStarted, resp.LastResumed = []DaemonRun{}, nil, nil
+	resp.Skipped, resp.Unjournaled = []DaemonSkip{}, []DaemonEvent{}
+	if merged {
+		resp.Projects = parts
+	} else if len(parts) == 1 {
+		p := parts[0]
+		resp.Runs, resp.LastStarted, resp.LastResumed, resp.Skipped, resp.Unjournaled = p.Runs, p.LastStarted, p.LastResumed, p.Skipped, p.Unjournaled
+	}
+	return resp, nil
+}
+
+func daemonStatusHome(ctx *Ctx) (any, error) {
 	resp := DaemonStatusResponse{Settings: []Setting{}, Runs: []DaemonRun{}, Skipped: []DaemonSkip{}, SkippedProjects: []DaemonProjectSkip{}, Hooks: []HookRow{}, Unjournaled: []DaemonEvent{}}
 	resp.Mode, _ = daemonMode(ctx)
 	common, rooted, err := daemonStatusDir(ctx)
@@ -1501,16 +1592,24 @@ func daemonStatusDir(ctx *Ctx) (common, root string, err error) {
 	if err != nil {
 		return "", "", err
 	}
-	var home *Ctx
-	if name := daemon.ReadHome(root); name != "" && slices.Contains(reg.Names(), name) && projectInitialised(reg.Dir(root, name)) {
-		home = projectCtx(ctx, reg.Dir(root, name))
-	} else if _, c, ok := daemonHome(ctx, root, reg); ok {
-		home = c
-	} else {
+	home, ok := rootDaemonHome(ctx, root, reg)
+	if !ok {
 		return "", root, nil
 	}
 	common, err = gitCommonDir(home)
 	return common, root, err
+}
+
+// rootDaemonHome is the context of the root daemon's home project, whose
+// git directory holds the root daemon's state: the one the daemon
+// recorded, else the one daemon would pick from here; false when the root
+// has no initialised project.
+func rootDaemonHome(ctx *Ctx, root string, reg rootcfg.Config) (*Ctx, bool) {
+	if name := daemon.ReadHome(root); name != "" && slices.Contains(reg.Names(), name) && projectInitialised(reg.Dir(root, name)) {
+		return projectCtx(ctx, reg.Dir(root, name)), true
+	}
+	_, c, ok := daemonHome(ctx, root, reg)
+	return c, ok
 }
 
 // webStatus is the web UI line for the recorded settings: its URL, off, or

@@ -1,0 +1,41 @@
+{
+  "actor": "01M6T27AFH4JW26Q8917YYKZ85",
+  "after": [
+    "01M6T2716QFQGVR0BH5XPCXTNT"
+  ],
+  "at": "2026-11-07T03:54:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the question, @{01M6HJ0WFSJ9JEM9JEBHND0VX9}, internal/api/usage_learn.go, usage_hold.go and usage.KindOf. m29-one-daemon is the only open milestone's done point that names the governor, so the change set serves it. learnLimits keys each hit by usage.KindOf and keeps the latest per kind, so one hit cannot teach both kinds; the owner's memory notes and the planning request show every recorded hit was a usage-fake test hit, already a separate change set, so duplicating that fix here would overlap it; a regression test pins the behaviour the intent asks for. For relearning, a window passing its limit without a hit proves the real limit is at least that use, so raising to observed use is safe and never invents headroom; it rises slowly because the hold stops new picks near the limit, which is acceptable since an explicit setting (as the owner now has in rhiza.toml) overrides it. For live runs, the window use already includes their tokens so far, so only the rest of a mean run is still to come; clamping at zero keeps a long run from lowering the projection.",
+          "statement": "(1) Change set 01M6T1ZR serves @{01M6RN37911APKX6WN4EB1CGR7} (milestone-29's 'one usage governor'). (2) On a hit teaching both limits: no new code here; the code already teaches only the kind KindOf gives, and the wrong weekly limit came from a leaked fake test hit, which the fake-usage-hits fix (request 01M6T20A, run 01M6T20C) removes. 01M6T1ZR only adds a regression test: a session-kind hit leaves the learned weekly limit unchanged. (3) A learned limit is a lower bound and only ratchets up: at each poll, when a window's use passes its kind's learned limit and no hit falls in that window, the learned limit becomes that use (keeping its kind; a later hit replaces it as now, and may move it down). A limit setting is never changed; setting it stays the way to jump straight to a new plan's limit. (4) The projection counts each live run's remaining expected tokens only: projected = window use + for each live run max(0, run mean - that run's tokens so far) + one run mean for the new pick.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "usage-governor-limits-fix-scope",
+        "id": "01M6T298K6HQ3H61GT41JN2PFW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6T298K6HQ3H61GT3Y0EACCE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T298K6HQ3H61GT3Y0EACCE",
+        "id": "01M6T298KS18V3YMG6772JYY8Z",
+        "link": "01M6T298KS18V3YMG674BGR4SF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T26ZFS8SVCP4E0JZ00RYPX",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6T1ZR3ZCDCYF96CSR2AYN7D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T298MFST77G10HTRFGBW77",
+  "type": "ops",
+  "v": 1
+}

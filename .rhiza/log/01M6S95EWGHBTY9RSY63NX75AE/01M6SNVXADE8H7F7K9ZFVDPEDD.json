@@ -1,0 +1,53 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6SND2467KRATD8G1ED4AQ1W"
+  ],
+  "at": "2026-11-07T00:17:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "985ed64372b6ec18b36d1e18afcb57c2fc262921",
+          "pr": "https://github.com/dphaener/rhiza/pull/339",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #339 (https://github.com/dphaener/rhiza/pull/339) passed CI at 985ed64",
+          "status": "verified"
+        },
+        "handle": "pr-339-the-import-guide-s-decision",
+        "id": "01M6SNVWXX7FAAKER7BZNYGRJD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SNVWXRP3KXJ196AYQC5XJP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SNVWXRP3KXJ196AYQC5XJP",
+        "id": "01M6SNVX03EQ0Q3FA18F39JYGC",
+        "link": "01M6SNVX03EQ0Q3FA18DZP8RHA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6S9A3X180Y1D4QEHZ8AKDD9",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6SNVWXRP3KXJ196AYQC5XJP",
+        "id": "01M6SNVX2BK27MAN2GYVV8HQ2E",
+        "link": "01M6SNVX2BK27MAN2GYR6D3EMB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3CF3E8B054GW1370AQN2G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6S95EWGHBTY9RSY63NX75AE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SNVXADE8H7F7K9ZFVDPEDD",
+  "type": "ops",
+  "v": 1
+}

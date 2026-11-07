@@ -1,0 +1,81 @@
+# At the root, rhiza health covers every registered project: the machine's
+# parts once, each project's parts under its project name; with --project,
+# or from inside a project, only that project's.
+
+env REX_SESSION=
+env REX_SERVER=
+env RHIZA_TEST_FREE_BYTES=1099511627776
+
+exec sh -c 'printf "[projects.alpha]\npath = \"alpha\"\n[projects.beta]\npath = \"beta\"\n" > $WORK/rhiza.toml'
+mkdir alpha beta
+
+cd alpha
+exec git init -q -b main
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+
+cd ../beta
+exec git init -q -b main
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+cd $WORK
+
+# At the root: machine parts once, project parts per project.
+exec rhiza health --json
+stdout -count=1 '"part": "daemon"'
+stdout -count=1 '"part": "disk"'
+stdout -count=1 '"part": "usage"'
+stdout -count=1 '"part": "machine"'
+stdout -count=2 '"part": "inbox"'
+stdout -count=2 '"part": "check"'
+stdout -count=5 '"project": "alpha"'
+stdout -count=5 '"project": "beta"'
+exec rhiza health
+stdout '^ok   main     alpha: '
+stdout '^ok   main     beta: '
+exec rhiza api call health
+stdout -count=5 '"project": "beta"'
+
+# One project's bad part makes the whole report exit 1.
+exec sh -c 'echo junk > beta/.rhiza/log/junk.json'
+! exec rhiza health
+stdout '^bad  check    beta: '
+! stdout '^bad  check    alpha'
+rm beta/.rhiza/log/junk.json
+
+# --project and the project's own directory give only that project's.
+exec rhiza health --project alpha --json
+! stdout '"project"'
+stdout -count=1 '"part": "inbox"'
+cd beta
+exec rhiza health --json
+! stdout '"project"'
+stdout -count=1 '"part": "inbox"'
+exec rhiza health --all --json
+stdout -count=5 '"project": "alpha"'
+cd $WORK
+! exec rhiza health --project nope
+stderr 'not registered'
+
+# The machine's parts read the root daemon: its live runs in every
+# project, and the usage in its home project's state, not the first
+# project's by name.
+mkdir .rhiza-root alpha/.git/rhiza beta/.git/rhiza
+exec sh -c 'echo beta > .rhiza-root/daemon.home'
+root-daemon-lock .
+cp alpha-state.json alpha/.git/rhiza/daemon.state.json
+cp beta-state.json beta/.git/rhiza/daemon.state.json
+exec rhiza daemon status --json
+stdout -count=3 '"id": "RUN'
+exec rhiza health
+stdout '^ok   daemon +running, process .*, 3 live runs$'
+exec rhiza health --json
+stdout '"part": "usage",\n\s*"state": "ok",\n\s*"summary": "session 300, no limit known'
+-- alpha-state.json --
+{"process":{"host":"h","pid":1,"started":"2030-01-01T00:00:00Z"},"last_poll":"2030-01-01T00:10:00Z","max_runs":2,"autonomous":false,"runs":[{"id":"RUNA","change":"CSA","state":"building"}]}
+-- beta-state.json --
+{"process":{"host":"h","pid":1,"started":"2030-01-01T00:00:00Z"},"last_poll":"2030-01-01T00:10:00Z","max_runs":2,"autonomous":false,"runs":[{"id":"RUNB1","change":"CSB","state":"building"},{"id":"RUNB2","change":"CSC","state":"reviewing"}],"usage_windows":[{"kind":"session","start":"2026-10-24T10:00:00Z","reset":"2099-01-01T00:00:00Z","used":300}]}

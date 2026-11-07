@@ -1,0 +1,30 @@
+{
+  "actor": "01M6TB73ER4PEA36ADR62K7D4C",
+  "after": [
+    "01M6TB6N9BYGB9S6ZF3HZ03VSW"
+  ],
+  "at": "2026-11-07T06:32:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "bfd0cb38-b7d7-452d-a819-01a1b4b37d39",
+          "statement": "Change set 01M6TB6N (ci-triage can't read RSpec failures on nebari#72) serves no intent yet. Which intent should it serve? / ship check's parseFailedTests reads only Go '--- FAIL:' lines. Which runners' failure lines should it also read from gh run view --log-failed? / How should a non-Go failing test be named in ship check's tests and findings?"
+        },
+        "handle": "question-bfd0cb38-1",
+        "id": "01M6TBA4SSA2NGV3ZMPVR0C1F8",
+        "key": null,
+        "kind": "question",
+        "node": "01M6TBA4SSA2NGV3ZMPT0SV8P3",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6TB6N9BYGB9S6ZF3HS4EDWM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TBA6EWQ4DZT71J58FYD87X",
+  "type": "ops",
+  "v": 1
+}

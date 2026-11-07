@@ -173,5 +173,5 @@ func serveRoadmap(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "roadmap: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	render(w, "roadmap", page{Title: "Roadmap", Nav: "roadmap", Data: v})
+	render(w, r, "roadmap", page{Title: "Roadmap", Nav: "roadmap", Data: v})
 }

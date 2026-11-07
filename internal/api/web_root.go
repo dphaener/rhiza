@@ -1,0 +1,145 @@
+package api
+
+import (
+	"net/http"
+	"sync"
+
+	"github.com/dphaener/rhiza/internal/rootcfg"
+	"github.com/dphaener/rhiza/internal/web"
+)
+
+// WebProjectHandler is the web UI of the project base works in: its pages,
+// events and read-only API, all over that project's own data. base is
+// copied, as the poll goes on changing the ctx it came from.
+func WebProjectHandler(base *Ctx) http.Handler {
+	snap := *base
+	health := NewWebHealth(&snap)
+	return web.HandlerWithMilestones(WebDaemonSource(&snap, health), WebRunsSource(&snap), WebInboxSource(&snap), WebMilestonesSource(&snap), ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap, health), web.PollEvery))
+}
+
+// WebRootHandler is the one web UI of the root daemon: the all-projects
+// home at / and /projects, and every registered, initialised project's UI
+// at /p/<project>/. An old unscoped page path redirects to that page of the
+// home project, under /p/<homeName>/; shared assets and streams stay served
+// by home at the root. Projects are read
+// from the root's rhiza.toml on each request, so a newly registered one
+// is served at once; each project's handler is built once and kept. ctx is
+// copied once, here: the poll goes on changing the ctx it came from while
+// requests run, and every project's ctx is derived from the copy.
+func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Handler {
+	snap := *ctx
+	ctx = &snap
+	var mu sync.Mutex
+	type built struct {
+		dir string
+		h   http.Handler
+	}
+	cache := map[string]built{}
+	return web.RootWithSwitcher(home, homeName, func(name string) http.Handler {
+		reg, err := rootcfg.Load(root)
+		if err != nil {
+			return nil
+		}
+		if _, ok := reg.Projects[name]; !ok {
+			return nil
+		}
+		if name == homeName {
+			return home
+		}
+		dir := reg.Dir(root, name)
+		if !projectInitialised(dir) {
+			return nil
+		}
+		mu.Lock()
+		defer mu.Unlock()
+		if b, ok := cache[name]; ok && b.dir == dir {
+			return b.h
+		}
+		h := WebProjectHandler(projectCtx(ctx, dir))
+		cache[name] = built{dir, h}
+		return h
+	}, WebProjectsSource(ctx, root, homeName), WebMergedInboxSource(ctx, root), WebProjectNames(root))
+}
+
+// WebProjectNames lists the initialised projects registered in the root for
+// a project page's switcher: names only, from rhiza.toml and each
+// project's .rhiza/, never its runs, inbox or health.
+func WebProjectNames(root string) web.ProjectNames {
+	return func() []string {
+		reg, err := rootcfg.Load(root)
+		if err != nil {
+			return nil
+		}
+		var names []string
+		for _, name := range reg.Names() {
+			if projectInitialised(reg.Dir(root, name)) {
+				names = append(names, name)
+			}
+		}
+		return names
+	}
+}
+
+// WebProjectsSource reads every project registered in the root for the web
+// UI's all-projects home: live runs, inbox count and health of each
+// initialised one, a project with no .rhiza/ yet marked as such. Each
+// project's health report is kept, as WebProjectHandler's is. ctx must not
+// change while the source runs: WebRootHandler hands it its own copy.
+func WebProjectsSource(ctx *Ctx, root, homeName string) web.ProjectsSource {
+	var mu sync.Mutex
+	healths := map[string]*WebHealth{}
+	return func() []web.ProjectView {
+		reg, err := rootcfg.Load(root)
+		if err != nil {
+			return nil
+		}
+		var views []web.ProjectView
+		for _, name := range reg.Names() {
+			v := web.ProjectView{Name: name}
+			dir := reg.Dir(root, name)
+			if projectInitialised(dir) {
+				v.Initialised = true
+				c := projectCtx(ctx, dir)
+				for _, r := range WebRunsSource(c)() {
+					if r.State == "running" {
+						v.Running++
+					} else {
+						v.Waiting++
+					}
+				}
+				v.Inbox = len(WebInboxSource(c)())
+				mu.Lock()
+				h := healths[name]
+				if h == nil {
+					h = NewWebHealth(c)
+					healths[name] = h
+				}
+				mu.Unlock()
+				v.Health = WebDaemonSource(c, h)().Health
+			}
+			views = append(views, v)
+		}
+		return views
+	}
+}
+
+// WebMergedInboxSource reads the inbox of every initialised project
+// registered in the root, for the web UI's merged inbox. ctx must not
+// change while the source runs: WebRootHandler hands it its own copy.
+func WebMergedInboxSource(ctx *Ctx, root string) web.MergedInboxSource {
+	return func() []web.ProjectInbox {
+		reg, err := rootcfg.Load(root)
+		if err != nil {
+			return nil
+		}
+		var out []web.ProjectInbox
+		for _, name := range reg.Names() {
+			dir := reg.Dir(root, name)
+			if !projectInitialised(dir) {
+				continue
+			}
+			out = append(out, web.ProjectInbox{Name: name, Items: WebInboxSource(projectCtx(ctx, dir))()})
+		}
+		return out
+	}
+}

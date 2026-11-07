@@ -17,6 +17,7 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/quiettest"
+	"github.com/dphaener/rhiza/internal/rootguard"
 	"github.com/dphaener/rhiza/internal/tmpsweep"
 )
 
@@ -79,7 +80,7 @@ var (
 func TestMain(m *testing.M) {
 	// A run killed by a go test timeout never reached the RemoveAll below.
 	tmpsweep.StaleTemp("rhiza-api-budget-")
-	code := m.Run()
+	code := rootguard.Main(m.Run)
 	if genDir != "" {
 		os.RemoveAll(genDir)
 	}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SV79SXE64DECPX61STHNDR",
+  "after": [
+    "01M6STWJ1YVJ4PB21B34761TJ4"
+  ],
+  "at": "2026-11-07T01:56:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-a8f11b1e at 970b7136 (attempt 2). Read the fix diff: WebRootHandler now copies ctx once (snap := *ctx) when it is built, synchronously in runDaemon before the poll loop, and the resolver, WebProjectsSource and WebMergedInboxSource derive every projectCtx from that copy. That resolves the confirmed quality finding f1 (the live ctx raced the poll's ensureRepoSession writes). runDaemon still builds a single web.Manager with WebRootHandler, so one listener serves the home project at / and each registered project at /p/<project>/. Ran `go test -trimpath -race -count=1 -run 'WebRoot|WebProject|Projects|MergedInbox|Daemon' ./internal/api/`: ok, no races, including TestWebRootHandlerServesEveryProject (two projects' pages answer through one handler). Ran `go test -trimpath -count=1 ./internal/web/...`: ok in a scratch copy outside ~/code. Under ~/code only TestOverviewReadsDaemonFromRepo fails, because it reads the machine's root daemon, which this change does not touch. go vet and gofmt are clean on internal/api and internal/web."
+        },
+        "handle": "web-root-listener-verified-2",
+        "id": "01M6SVHTC02M7EE0EMBA3X5RD0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SVHTC02M7EE0EMB9RX803G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SVHTC02M7EE0EMB9RX803G",
+        "id": "01M6SVHTD6ECBSX1MCM8EDAN5M",
+        "link": "01M6SVHTD6ECBSX1MCM7YHZ3ZT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN862M5W8HPN62BWDYC124",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3ZBGYDW6KPBSES9A5JXS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SVHTE40FEAFAZ9RHGNQ8TT",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6T3S3GR1BMTSND7B5S78W94",
+  "after": [
+    "01M6T2V1FS2FKJTEJSDXE1FDMM"
+  ],
+  "at": "2026-11-07T04:23:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2a7a01a1: go test -trimpath ./internal/rootcfg/... passes, including TestFindEmptyDirFindsNoRoot, which chdirs into a subfolder of a rhiza.toml root and asserts Find(\"\") reports no root (and Find(\".\") still finds it). go test -trimpath ./internal/api/... -run Usage passes, including TestUsageLearnEmptyWdStaysInRepoFolder: Ctx.Wd empty, cwd under an enclosing root, recordLimitHit writes one hit to the repo's daemon folder and none under the root (RootStateDir not even created). In a scratch worktree with the old rootcfg.go both tests fail, so they cover the fix. Diff read: Find returns false for an empty dir; cmd/rhiza newCtx still sets Ctx.Wd from os.Getwd (absolute), and TUI projectctx callers pass os.Getwd. go vet and gofmt clean on both packages."
+        },
+        "handle": "empty-dir-finds-no-root-verified",
+        "id": "01M6T3YAKDN8GEPP4D5RARS871",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6T3YAKDN8GEPP4D5PCG4VF7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6T3YAKDN8GEPP4D5PCG4VF7",
+        "id": "01M6T3YAMMDQWR2A02V60HMG0K",
+        "link": "01M6T3YAMMDQWR2A02V3EA4363",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T26X1CPJA6YNWN7KQTP4C5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6T20EGCJZNFEY6YPJ1PSEDW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T3YAN8ECEKJC29HAKWHKBK",
+  "type": "ops",
+  "v": 1
+}

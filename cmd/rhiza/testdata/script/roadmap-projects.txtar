@@ -1,0 +1,68 @@
+# At the root, rhiza roadmap covers every registered project: each
+# project's milestone groups and backlog under its project name, each
+# change set tagged; with --project, or from inside a project, only that
+# project's part.
+
+exec sh -c 'printf "[projects.alpha]\npath = \"alpha\"\n[projects.beta]\npath = \"beta\"\n" > $WORK/rhiza.toml'
+mkdir alpha beta
+
+cd alpha
+exec git init -q
+exec rhiza init
+exec rhiza add intent ma --field milestone=1 --record
+exec sh -c 'rhiza change new Alpha-work | sed -n "s/^Opened change set \([0-9A-Z]*\) .*/\1/p" > $WORK/a'
+exec sh -c 'rhiza link $(cat $WORK/a) serves ma' 
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm init
+
+cd ../beta
+exec git init -q
+exec rhiza init
+exec rhiza change new Beta-backlog
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm init
+cd $WORK
+
+# At the root: both projects, groups and change sets tagged.
+exec rhiza roadmap --json
+stdout -count=2 '"project": "alpha"'
+stdout -count=2 '"project": "beta"'
+stdout '"kind": "milestone"'
+stdout '"kind": "backlog"'
+stdout 'Alpha-work'
+stdout 'Beta-backlog'
+exec rhiza roadmap
+stdout '^## alpha: '
+stdout '^## beta: Backlog'
+
+# Paging goes across projects, one entry a page, to the end.
+exec rhiza roadmap --limit 1 --json
+stdout -count=2 '"project": "alpha"'
+! stdout 'Beta-backlog'
+stdout '"next_cursor"'
+
+# --all from inside a project is the same; the project's own directory
+# and --project give only that project's.
+cd alpha
+exec rhiza roadmap --all --json
+stdout 'Beta-backlog'
+exec rhiza roadmap --json
+stdout 'Alpha-work'
+! stdout 'Beta-backlog'
+! stdout '"project"'
+exec rhiza roadmap --project beta --json
+stdout 'Beta-backlog'
+! stdout 'Alpha-work'
+! stdout '"project"'
+cd $WORK
+exec rhiza roadmap --project alpha --json
+stdout 'Alpha-work'
+! stdout 'Beta-backlog'
+! exec rhiza roadmap --project nope
+stderr 'not registered'
+exec rhiza api call roadmap
+stdout 'Beta-backlog'

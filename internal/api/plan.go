@@ -114,10 +114,15 @@ const planNewNext = `rhiza change new "<intent>"`
 
 // RoadmapRequest asks for the roadmap.
 type RoadmapRequest struct {
-	View   string `json:"view,omitempty" desc:"The view: as-is, to-be or what-if:<change set>; default to-be, whatever the current change set"`
-	Limit  int    `json:"limit,omitempty" desc:"The most change sets to return, 1 to 1000; default 100"`
-	Cursor string `json:"cursor,omitempty" desc:"Where to go on: the next_cursor of the page before"`
-	All    bool   `json:"all,omitempty" flag:"all" desc:"Return every change set, ignoring --limit and --cursor"`
+	View    string `json:"view,omitempty" desc:"The view: as-is, to-be or what-if:<change set>; default to-be, whatever the current change set"`
+	Limit   int    `json:"limit,omitempty" desc:"The most change sets to return, 1 to 1000; default 100"`
+	Cursor  string `json:"cursor,omitempty" desc:"Where to go on: the next_cursor of the page before"`
+	All     bool   `json:"all,omitempty" flag:"all" desc:"Return every change set, ignoring --limit and --cursor, and, under a Rhiza root, of every registered project, from anywhere under the root"`
+	Project string `json:"project,omitempty" flag:"project" desc:"Only this registered project's roadmap; default the current project, or every project at the root"`
+
+	// local keeps a caller that reads every change set of the project it
+	// works in (health, the web UI) from widening to every project.
+	local bool
 }
 
 // RoadmapResponse is the roadmap: its groups in order, and the view.
@@ -134,6 +139,7 @@ type RoadmapResponse struct {
 // RoadmapGroup is the change sets of one milestone, or of the backlog, in
 // depends-on order.
 type RoadmapGroup struct {
+	Project    string             `json:"project,omitempty" desc:"The registered project the group belongs to, on a roadmap that covers every project; absent on a single project's roadmap"`
 	Kind       string             `json:"kind" desc:"milestone, backlog for the change sets that serve no milestone, or umbrella for those serving an umbrella intent"`
 	Intent     RoadmapIntent      `json:"intent,omitzero" desc:"The milestone; absent for the backlog"`
 	ChangeSets []RoadmapChangeSet `json:"change_sets" desc:"The group's change sets, in depends-on order, ties by ID"`
@@ -150,6 +156,7 @@ type RoadmapIntent struct {
 
 // RoadmapChangeSet is one change set in a group.
 type RoadmapChangeSet struct {
+	Project   string          `json:"project,omitempty" desc:"The registered project the change set belongs to, on a roadmap that covers every project; absent on a single project's roadmap"`
 	ID        id.ID           `json:"id" desc:"The change set's ID"`
 	State     changeset.State `json:"state" desc:"proposed or accepted"`
 	Kind      changeset.Kind  `json:"kind" desc:"intention or record"`
@@ -1508,7 +1515,41 @@ func planRead(ctx *Ctx, opName, view string) (planResult, planInputs, string, er
 	return planCore(in), in, r.View(), nil
 }
 
-// runRoadmap answers roadmap.
+// roadmapOne is every group of the roadmap of the one project ctx works
+// in, whole, and the view read.
+func roadmapOne(ctx *Ctx, view string) ([]RoadmapGroup, string, error) {
+	res, in, v, err := planRead(ctx, "roadmap", view)
+	if err != nil {
+		return nil, "", err
+	}
+	groups := []RoadmapGroup{}
+	// A milestone may be only an ancestor of the intents served.
+	paths := planAncestorPaths(in.intentPath)
+	for _, g := range res.groups {
+		rg := RoadmapGroup{Kind: "backlog", ChangeSets: []RoadmapChangeSet{}}
+		if !g.backlog {
+			rg.Kind = "milestone"
+			if g.umbrella {
+				rg.Kind = "umbrella"
+			}
+			rg.Intent = RoadmapIntent{ID: g.intent, Handle: in.nodes[g.intent].Handle, Statement: in.statements[g.intent], Path: []string{}}
+			for _, a := range paths[g.intent] {
+				rg.Intent.Path = append(rg.Intent.Path, planHandle(a, in.nodes))
+			}
+		}
+		for _, p := range g.members {
+			rg.ChangeSets = append(rg.ChangeSets, RoadmapChangeSet{ID: p.info.ID, State: p.info.State,
+				Kind: p.info.Kind, Intent: p.info.Intent, Ready: p.ready, DependsOn: orEmpty(p.dependsOn),
+				Serves: orEmpty(slices.Clone(p.serves))})
+		}
+		if len(rg.ChangeSets) > 0 {
+			groups = append(groups, rg)
+		}
+	}
+	return groups, v, nil
+}
+
+// runRoadmap answers roadmap, over one project or every registered one.
 func runRoadmap(ctx *Ctx, req any) (any, error) {
 	q := req.(RoadmapRequest)
 	limit := q.Limit
@@ -1526,9 +1567,47 @@ func runRoadmap(ctx *Ctx, req any) (any, error) {
 		}
 		after = c
 	}
-	res, in, v, err := planRead(ctx, "roadmap", q.View)
-	if err != nil {
-		return nil, err
+	scopes := []inboxScope{{"", ctx}}
+	merged := false
+	// A root folder that holds a model of its own is read as that one
+	// project, unless --project names a registered one.
+	own := false
+	if root, cfg, ok := rootOf(ctx); ok && q.Project == "" && projectInitialised(ctx.Wd) {
+		_, inProject := cfg.ProjectOf(root, ctx.Wd)
+		own = !inProject
+	}
+	if !q.local && !own {
+		// --all is also every change set, so with no root to hold projects
+		// it only means that.
+		_, _, haveRoot := rootOf(ctx)
+		var err error
+		if scopes, merged, err = inboxScopes(ctx, q.Project, q.All && haveRoot); err != nil {
+			return nil, err
+		}
+	}
+	var groups []RoadmapGroup
+	v := ""
+	for _, sc := range scopes {
+		gs, view, err := roadmapOne(sc.ctx, q.View)
+		if err != nil {
+			if merged {
+				return nil, fmt.Errorf("project %s: %w", sc.name, err)
+			}
+			return nil, err
+		}
+		v = view
+		for _, g := range gs {
+			if merged {
+				g.Project = sc.name
+				for i := range g.ChangeSets {
+					g.ChangeSets[i].Project = sc.name
+				}
+			}
+			groups = append(groups, g)
+		}
+	}
+	if v == "" {
+		v = cmp.Or(q.View, "to-be")
 	}
 	resp := RoadmapResponse{Groups: []RoadmapGroup{}, View: v, command: roadmapCommand(q)}
 	var last roadmapPos
@@ -1536,27 +1615,12 @@ func runRoadmap(ctx *Ctx, req any) (any, error) {
 	// the page; a group only shows when one of its entries does.
 	skipping := after.kind != ""
 	taken := 0
-	// A milestone may be only an ancestor of the intents served.
-	paths := planAncestorPaths(in.intentPath)
-	for _, g := range res.groups {
-		rg := RoadmapGroup{Kind: "backlog", ChangeSets: []RoadmapChangeSet{}}
-		if !g.backlog {
-			rg.Kind = "milestone"
-			if g.umbrella {
-				rg.Kind = "umbrella"
-			}
-			rg.Intent = RoadmapIntent{ID: g.intent, Handle: in.nodes[g.intent].Handle, Statement: in.statements[g.intent], Path: []string{}}
-			for _, a := range paths[g.intent] {
-				rg.Intent.Path = append(rg.Intent.Path, planHandle(a, in.nodes))
-			}
-		}
-		pos := roadmapPos{kind: rg.Kind, intent: rg.Intent.ID}
-		if !g.backlog {
-			pos.intent = g.intent
-		}
-		for _, p := range g.members {
+	for _, g := range groups {
+		rg := RoadmapGroup{Kind: g.Kind, Intent: g.Intent, Project: g.Project, ChangeSets: []RoadmapChangeSet{}}
+		pos := roadmapPos{project: g.Project, kind: g.Kind, intent: g.Intent.ID}
+		for _, c := range g.ChangeSets {
 			if skipping {
-				if pos == after.group() && p.info.ID == after.cs {
+				if pos == after.group() && c.ID == after.cs {
 					skipping = false
 				}
 				continue
@@ -1569,11 +1633,9 @@ func runRoadmap(ctx *Ctx, req any) (any, error) {
 				return resp, nil
 			}
 			taken++
-			pos.cs = p.info.ID
+			pos.cs = c.ID
 			last = pos
-			rg.ChangeSets = append(rg.ChangeSets, RoadmapChangeSet{ID: p.info.ID, State: p.info.State,
-				Kind: p.info.Kind, Intent: p.info.Intent, Ready: p.ready, DependsOn: orEmpty(p.dependsOn),
-				Serves: orEmpty(slices.Clone(p.serves))})
+			rg.ChangeSets = append(rg.ChangeSets, c)
 		}
 		if len(rg.ChangeSets) > 0 {
 			resp.Groups = append(resp.Groups, rg)
@@ -1588,9 +1650,10 @@ func runRoadmap(ctx *Ctx, req any) (any, error) {
 // roadmapPos is one entry of the roadmap: a change set in a group. A change
 // set that serves two milestones has two entries.
 type roadmapPos struct {
-	kind   string
-	intent id.ID
-	cs     id.ID
+	project string
+	kind    string
+	intent  id.ID
+	cs      id.ID
 }
 
 // group is the position without its change set.
@@ -1605,7 +1668,11 @@ func roadmapEncodeCursor(p roadmapPos) string {
 	if !p.intent.IsZero() {
 		in = p.intent.String()
 	}
-	return base64.RawURLEncoding.EncodeToString([]byte(p.kind + " " + in + " " + p.cs.String()))
+	raw := p.kind + " " + in + " " + p.cs.String()
+	if p.project != "" {
+		raw += " " + p.project
+	}
+	return base64.RawURLEncoding.EncodeToString([]byte(raw))
 }
 
 // roadmapDecodeCursor is the entry cursor c goes on after; anything that is
@@ -1617,10 +1684,14 @@ func roadmapDecodeCursor(c string) (roadmapPos, error) {
 		return roadmapPos{}, bad
 	}
 	f := strings.Split(string(b), " ")
+	project := ""
+	if len(f) == 4 && f[3] != "" {
+		project, f = f[3], f[:3]
+	}
 	if len(f) != 3 || (f[0] != "milestone" && f[0] != "backlog" && f[0] != "umbrella") {
 		return roadmapPos{}, bad
 	}
-	p := roadmapPos{kind: f[0]}
+	p := roadmapPos{kind: f[0], project: project}
 	if f[1] != "" {
 		if p.intent, err = id.Parse(f[1]); err != nil {
 			return roadmapPos{}, bad
@@ -1642,6 +1713,9 @@ func roadmapCommand(q RoadmapRequest) string {
 	if q.View != "" {
 		parts = append(parts, "--view", q.View)
 	}
+	if q.Project != "" {
+		parts = append(parts, "--project", q.Project)
+	}
 	return commandLine(parts...)
 }
 
@@ -1657,6 +1731,9 @@ func (r RoadmapResponse) Human(w io.Writer) {
 		name := "Backlog"
 		if g.Kind != "backlog" {
 			name = strings.Join(append(slices.Clone(g.Intent.Path), cmp.Or(g.Intent.Handle, shortID(g.Intent.ID))), " / ")
+		}
+		if g.Project != "" {
+			name = g.Project + ": " + name
 		}
 		fmt.Fprintf(w, "\n## %s\n\n", name)
 		for _, c := range g.ChangeSets {

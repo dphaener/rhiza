@@ -1,0 +1,41 @@
+{
+  "actor": "01M6TBJ11NPT9QC26RN11BRKG5",
+  "after": [
+    "01M6TBHQ7S0SA0AMZA20VR93ZB"
+  ],
+  "at": "2026-11-07T06:39:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question requires a slug that comes out the same every time it is derived. A suffix chosen 'on collision' with whatever is in flight now is not stable: the other change set landing or being abandoned would rename the second one's worktree and branch mid-run. Ordering by ID fixes that: change set IDs are time-ordered ULIDs and change sets are never removed from the log, so the set of earlier change sets with the same slug only changes if someone retitles one, which already changes slugs today. Counting landed and abandoned change sets is what fixes the reported case (01M6T1ZR had landed when 01M6T2DC reused its slug and its merged PR #345). Always appending the short ID would be simpler but renames every in-flight change set's worktree and branch (13 accepted ones and live runs, this one included) at deploy; the earliest-keeps-bare-slug rule leaves every non-colliding change set's slug unchanged. The short ID is the change set's existing 7-character display form, lowercased to fit Slug's [a-z0-9-] alphabet. Callers currently re-derive via session.Slug(t.title) in internal/api (session.go, run.go, run_leaves.go, run_checks.go, ship.go), all of which have the model in hand, so they can route through the one function.",
+          "statement": "A change set's slug is session.Slug(title), unless an earlier change set (lower ID, in any state: draft, proposed, accepted, landed or abandoned) has the same title slug; then it is that slug plus '-' and its own short ID in lowercase (e.g. fix-the-usage-governor-s-01m6t2d). The rule is one function over the folded model (the change set's ID and title plus every other change set's ID and title), and every caller (worktree, branch, ship target, abandon cleanup, run tabs and run sessions) calls it instead of session.Slug(title) directly.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "slug-unique-by-earliest-id",
+        "id": "01M6TBQEQ2ANYJFH8AV9DFBZVT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6TBQEQ2ANYJFH8AV5EY7FB1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TBQEQ2ANYJFH8AV5EY7FB1",
+        "id": "01M6TBQEQFG97Q3ZZTZ7PV9FEJ",
+        "link": "01M6TBQEQFG97Q3ZZTZ7DNSSYY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBHMBQ5DZ7XVV6GW7Q1SWV",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6TBDRB2N5MTW4BW0K2NZCG6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TBQEQV83Q2SXWPQKT680JY",
+  "type": "ops",
+  "v": 1
+}

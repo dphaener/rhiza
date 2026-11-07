@@ -1,0 +1,41 @@
+{
+  "actor": "01M6TCFTBS7P0243VPF2J1M94Y",
+  "after": [
+    "01M6TCFK0GVYAVZ3SS2HY5BKS9"
+  ],
+  "at": "2026-11-07T06:53:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding is right: internal/api registers no ship wait op, and the wait-pr steps in plan.toml and ship-change.toml are workflow wait steps whose until is 'rhiza ship check --settled'. Reading internal/api, the only places that look a PR up by branch on GitHub are runShipOpenPR (ship_openpr.go:125-150, gh pr view <branch>) and ship check without --main (ship.go:481, gh pr view <branch>), which records PR, URL and head into ship state (ship.go:558). Ship merge (ship.go:796-822) and land (ship_close.go:195-217) read st.PR from ship state and never search by branch; check --main reads the recorded merge commit. So guarding open-pr and check keeps every other op off a foreign PR, since a foreign PR can never reach ship state. In the reported failure the merged #345 was picked up by exactly this branch lookup. Naming check --settled explicitly keeps the wait-pr path covered by the acceptance without inventing an op a builder cannot test; adding guards to merge or rebase would duplicate the check against state that is already guarded.",
+          "statement": "ship-tracks-own-pr names the two ops that look a pull request up by branch, ship open-pr and ship check (with and without --settled, which is what the workflows' wait-pr steps run), not a 'wait' op: each refuses a PR on the branch, open, merged or closed, whose body's 'Change set <id>' line is missing or names another change set, with a conflict naming that PR, and writes nothing to ship state. Ship merge, land and close-out need no guard of their own: they act only on the PR recorded in ship state, which only open-pr and check write. Its acceptance tests open-pr, check and check --settled with a fake gh.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "ship-guard-at-pr-lookups",
+        "id": "01M6TCGVZFQEPRYXS61211JE39",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6TCGVZFQEPRYXS60YJGP7ST",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TCGVZFQEPRYXS60YJGP7ST",
+        "id": "01M6TCGW0N23PN41EXGZE2VWF9",
+        "link": "01M6TCGW0N23PN41EXGVJ16J43",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TCFJY75K5P3Z54PQTH334Y",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6TBDRB2N5MTW4BW0K2NZCG6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TCGW1WW24CMZQS21CGQE74",
+  "type": "ops",
+  "v": 1
+}

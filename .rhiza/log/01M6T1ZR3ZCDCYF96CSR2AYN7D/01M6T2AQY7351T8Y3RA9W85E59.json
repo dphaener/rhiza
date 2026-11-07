@@ -1,0 +1,96 @@
+{
+  "actor": "01M6T209RBJ677HGVNWX7VDTHJ",
+  "after": [
+    "01M6T2A9K5MDT5B44H5DSXRHY4"
+  ],
+  "at": "2026-11-07T03:55:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6T298K6HQ3H61GT3Y0EACCE",
+        "id": "01M6T2AQQ8GQR4PC1C2BGDE538",
+        "link": "01M6T2AQQ8GQR4PC1C29CK6RRV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T2A9J57GY31J85KJZ2WJ3W",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestLimitHit' passes with a regression test that records one session-kind hit (reset 3 hours out) over an already learned weekly limit and asserts the weekly learned limit keeps its tokens and hit time, and the reverse for a weekly-kind hit over a learned session limit",
+          "statement": "A usage-limit hit teaches only the window kind its reset time gives: a session-kind hit leaves the learned weekly limit as it was, and a weekly-kind hit leaves the learned session limit as it was"
+        },
+        "handle": "usage-hit-teaches-its-kind",
+        "id": "01M6T2AQQYD3ESRA7NZB7XD32H",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6T2AQQYD3ESRA7NZAQW22KT",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "decision": null,
+        "from": "01M6T2AQQYD3ESRA7NZAQW22KT",
+        "id": "01M6T2AQRH3DG7Z47GDECVFP6G",
+        "link": "01M6T2AQRH3DG7Z47GDB44SYYY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T298K6HQ3H61GT3Y0EACCE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestLearnedLimit' passes with tests using a fake clock and fake token records: a window whose use passes the learned weekly limit with no hit raises it to that use and saves it in daemon state; a window under the learned limit leaves it; a window holding a hit of that kind does not raise it past the hit's use; a later hit with lower use moves it down; and with rhiza.daemon.usage.weekly set, usageLimit still returns the setting",
+          "statement": "A learned limit only ratchets up between hits: at each poll, when a current window's use passes its kind's learned limit and no recorded hit of that kind falls inside the window, the daemon saves that use as the kind's learned limit (keeping the hit time it had), so limits learned before a plan upgrade rise with use; a later hit still replaces the learned limit with the use at that hit, up or down, and a limit setting is never changed"
+        },
+        "handle": "usage-learned-limit-ratchets",
+        "id": "01M6T2AQSEY1KKA7VTEVCHWZ1C",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6T2AQSEY1KKA7VTESYMXWD8",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "decision": null,
+        "from": "01M6T2AQSEY1KKA7VTESYMXWD8",
+        "id": "01M6T2AQTQB1466WM9PW20DE9H",
+        "link": "01M6T2AQTQB1466WM9PR3F97V4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T298K6HQ3H61GT3Y0EACCE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestUsageHold' passes with tests over fake run journals: with a mean of 1000, a live run that has recorded 600 tokens adds 400 and one that has recorded 1500 adds 0, the next pick adds 1000, the hold detail's projected number is window use plus those, and a window that held before only because live runs were counted twice no longer holds",
+          "statement": "The hold's projection counts only what live runs are still expected to burn: projected use is the window's use so far, plus for each live run the mean of the last finished runs less that run's tokens so far (its journaled latest token readings, session and helpers, counted as the mean counts them), never below zero, plus one full mean for the next pick"
+        },
+        "handle": "usage-live-run-remaining",
+        "id": "01M6T2AQV83TNHDJ565NV5EMZ5",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6T2AQV83TNHDJ565NSM1TXG",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "decision": null,
+        "from": "01M6T2AQV83TNHDJ565NSM1TXG",
+        "id": "01M6T2AQWEV7Y9MAD9AF3NNYT9",
+        "link": "01M6T2AQWEV7Y9MAD9AEZ9JSSS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T298K6HQ3H61GT3Y0EACCE",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6T1ZR3ZCDCYF96CSR2AYN7D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T2AQY7351T8Y3RA9W85E59",
+  "type": "ops",
+  "v": 1
+}

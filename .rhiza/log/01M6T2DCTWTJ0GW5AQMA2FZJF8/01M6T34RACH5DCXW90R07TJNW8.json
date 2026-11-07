@@ -1,0 +1,41 @@
+{
+  "actor": "01M6T33JBGHTJ9ZME13YAVD10X",
+  "after": [
+    "01M6T2XT2NJYR15NGFJHCVEZ7E"
+  ],
+  "at": "2026-11-07T04:09:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Unit tests in internal/usage derive window and limit from a snapshot (49% of a 7-day window's counted tokens gives tokens/0.49), give no limit under 1% or with no tokens, and treat a snapshot past its resets_at as not live; internal/api usage_hold tests with a fake clock and fake adapter show a live limit wins over a set rhiza.daemon.usage.weekly and a learned limit, an expired snapshot falls back to the setting and then the learned limit, a raised live limit lifts a hold the old setting caused, and a recorded limit hit still holds regardless; an internal/api health test with the same fake live snapshot and a set rhiza.daemon.usage.weekly shows the usage part reporting 'weekly N of <live limit>', not the setting",
+          "statement": "At each poll a window kind with a live snapshot (its resets_at after now) takes its window from it, Reset = resets_at and Start = resets_at minus the kind's length, and its limit from it, the window's counted tokens over [Start, capture time) divided by used_percentage/100; a snapshot under 1% used or with no tokens in its window gives no limit. Each kind's limit is the live one, else the rhiza.daemon.usage.<kind> setting, else the learned limit, and with none the kind never holds; Used is still counted fresh up to now, and the machine-wide hold from a recorded limit hit is unchanged; every caller that needs a kind's limit, the poll's hold and rhiza health's usage part alike, goes through this one live-first limit, so health reports each window's use against the same limit that holds work"
+        },
+        "handle": "usage-live-limit",
+        "id": "01M6T2P2PWNPYM6T54QBRSQ68N",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6T2P2PWNPYM6T54QB5Q08K6",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "base": "01M6HHVZH70MTTQ6JJ2G1X7J6T",
+        "handle": null,
+        "id": "01M6T2XT0H29Y0RJDV1J8ZJHAH",
+        "node": "01M6HHVZH70MTTQ6JJ2D403TY5",
+        "op": "node.update",
+        "set": {
+          "statement": "(1) When: at each poll the governor checks two windows, the 5-hour session window and the 7-day weekly window. A window with a live snapshot takes its start and reset from it (live-usage-source); otherwise a window starts at the first token record after the previous window ended, or at the reset time a usage-limit message gave. Each window has a limit: the live limit derived from a live snapshot if there is one (live-usage-source), else the daemon setting for that window (tokens) if set, else the learned limit: the window use at the last usage-limit hit in that kind of window, raised to a window's use whenever that use passes it with no hit of that kind inside the window (usage-learned-limit-ratchets). A run driver that sees a hit records its time and reset time where the daemon reads it at each poll. The hit's kind comes from its reset time: a reset 5 hours or less after the hit is the session window, a later one the weekly window. A hit with no reset time teaches nothing. A window with no known limit never holds. The reserve is a daemon setting, a percentage of the limit, default 20%. The daemon holds a new pick when the window's use so far, plus the mean tokens of the last 10 finished runs for each live run and for the one it would start, exceeds the limit minus the reserve. With no finished runs to average, only the use so far counts. (2) Tokens: input, output and cache-creation tokens count, for the session and its helpers; cache-read tokens do not. They come from every Claude Code transcript on the machine, the owner's own sessions included, since they share the account. Only records timestamped inside the window count, each message once (deduplicated by message id, as TokenUse already does). (3) Scope: a hold works like the disk-low guard. It stops everything the daemon would launch: picks, its resumes of interrupted runs, queued starts and continues, and plan requests. Each held change set shows as a skip with reason usage-reserve, giving the window, use, limit and reset time in its detail, in daemon status, health and the inbox. It never interrupts live runs, and it does not stop runs the owner starts directly outside the daemon. It clears on its own at the first poll after the window resets."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6T2DCTWTJ0GW5AQMA2FZJF8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T34RACH5DCXW90R07TJNW8",
+  "type": "ops",
+  "v": 1
+}

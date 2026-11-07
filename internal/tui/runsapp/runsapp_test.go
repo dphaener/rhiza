@@ -101,3 +101,34 @@ func TestRegistered(t *testing.T) {
 	}
 	t.Fatal("runs app not registered")
 }
+
+func TestMergedTagsRunsByProject(t *testing.T) {
+	byProject := map[string]string{
+		"alpha": `{"runs":[{"id":"R1","change":"C1","title":"Alpha work","state":"running","current":"build","started_at":"2026-01-01T00:00:00Z","live":true,"workflow":"w"}]}`,
+		"beta": `{"runs":[{"id":"R2","change":"C2","title":"Beta work","state":"running","current":"review","started_at":"2026-01-01T00:00:30Z","live":true,"workflow":"w"},
+{"id":"R3","change":"C3","title":"Beta done","state":"succeeded","started_at":"2026-01-01T00:00:10Z","live":false,"workflow":"w"}]}`,
+	}
+	var seen []string
+	run := func(project, op string, args []string) ([]byte, error) {
+		seen = append(seen, project+":"+op)
+		return []byte(byProject[project]), nil
+	}
+	now := time.Date(2026, 1, 1, 0, 1, 5, 0, time.UTC)
+	m := NewMergedModel(run, []string{"alpha", "beta"}, func() time.Time { return now })
+	v := m.Render()
+	a, b := strings.Index(v, "alpha · Alpha work"), strings.Index(v, "beta · Beta work")
+	if a < 0 || b < 0 {
+		t.Fatalf("rows not tagged by project:\n%s", v)
+	}
+	if b > a {
+		t.Errorf("newest run should come first:\n%s", v)
+	}
+	if strings.Contains(v, "Beta done") {
+		t.Errorf("finished run listed:\n%s", v)
+	}
+	for _, s := range seen {
+		if !strings.HasSuffix(s, ":run.ls") {
+			t.Errorf("ran %q", s)
+		}
+	}
+}

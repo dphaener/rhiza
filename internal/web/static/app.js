@@ -38,7 +38,7 @@
     });
   };
   const connect = () => {
-    es = new EventSource('/events');
+    es = new EventSource(((document.body.dataset.rzBase) || '') + '/events');
     es.onopen = () => {
       lastEvent = Date.now();
       // events missed while down: bring every section up to date

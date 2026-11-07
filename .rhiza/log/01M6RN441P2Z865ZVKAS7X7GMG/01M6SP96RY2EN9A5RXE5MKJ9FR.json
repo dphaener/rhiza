@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SP3N9952R8DF29GCYYVP2Z",
+  "after": [
+    "01M6RYG0VWVZHXHVJXC8SQGG7V"
+  ],
+  "at": "2026-11-07T00:24:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ce0597ee: go test -trimpath ./internal/tui/requestapp/... ./internal/tui/projectctx/... passes, including TestRequestQueuedInCurrentProject (app in project B submits; the runner is called for B), TestPickerAtRootThenQueuesInPicked (no project: Project picker shown, picking A queues nothing until the form submits, then queues in A) and TestPickerEscStartsNothing. End to end, a scratch build of rhiza driven in a pty over a scratch root with projects A and B: `rhiza tui app request` opened in B's folder queued the request in B/.git/rhiza/requests.json only; opened at the root it showed the Project picker, Esc closed it with nothing queued in A or B, and Enter (A) then a request queued it in A only. go vet and gofmt are clean. The diff wires cmd/rhiza's request app to projectctx.Current/Folders and chdirs to the picked project's folder before the in-process call, which resolves its repo from the working directory."
+        },
+        "handle": "tui-starts-in-project-verified",
+        "id": "01M6SP965FG4KY4VJ9AQNRP8AF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SP965ABYTGB5BHA7ZHYDA5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SP965ABYTGB5BHA7ZHYDA5",
+        "id": "01M6SP96J8KSJCT1N33RB3HQSG",
+        "link": "01M6SP96J8KSJCT1N33MFEXZTQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN86K392PSD63NH20X4D85",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN441P2Z865ZVKAS7X7GMG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SP96RY2EN9A5RXE5MKJ9FR",
+  "type": "ops",
+  "v": 1
+}

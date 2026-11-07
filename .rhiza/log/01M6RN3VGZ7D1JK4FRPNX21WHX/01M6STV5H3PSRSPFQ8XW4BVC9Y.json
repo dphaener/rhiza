@@ -1,0 +1,109 @@
+{
+  "actor": "01M6STE2AYB49QPZ2HSMGCPN56",
+  "after": [
+    "01M6STBT46GW8ERDS4T726R95T"
+  ],
+  "at": "2026-11-07T01:44:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 538fc842 with a scratch build (go build -trimpath ./cmd/rhiza), read-only against the machine's real root ~/code (projects nebari and rhiza, live root daemon), RHIZA_* env cleared. rhiza daemon status --json at the root: the root daemon once (running true, top-level runs and skipped empty), a projects part for nebari (0 runs, its last_started) and for rhiza (the 2 live runs of this milestone, 13 skipped change sets with reasons such as usage reserve and umbrella), skipped_projects empty (both initialised). Human text shows Project nebari:/Project rhiza: sections. --project nebari gives only nebari's part (no projects entries); run inside ~/code/rhiza it gives rhiza's 2 runs and 13 skips at the top level; --all from inside rhiza covers both; --project nope exits 2 with not registered. Nit seen: at the root the top-level human line reads Live runs: none above the per-project sections that list 2 live runs."
+        },
+        "handle": "daemon-status-across-projects-qa-1",
+        "id": "01M6STV5BXZ65VV4WRBQ649WK5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6STV5BXZ65VV4WRBPE9TFFG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6STV5BXZ65VV4WRBPE9TFFG",
+        "id": "01M6STV5CNGJAA23VTJ9NMXFBX",
+        "link": "01M6STV5CNGJAA23VTJ9046E6E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85TXNPGZEANC6R3HFM27",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at 538fc842 with a scratch build, read-only against the real root ~/code (nebari, rhiza). rhiza health at the root: daemon, autonomy, machine, disk and usage once untagged, then main, inbox, requests, roadmap and check once for nebari and once for rhiza, tagged (nebari: 5 behind origin/main; rhiza: 49 requests, 14 change sets, 7 check warnings), exit 0 with no bad part. Inside ~/code/rhiza and with --project nebari: one project's parts, no project tags. Defect: at the root the daemon part says 0 live runs while daemon status at the root lists 2 live runs under rhiza, and inside ~/code/rhiza health says 2 live runs. runHealth reads the machine parts through scopes[0] (nebari, first by name), so healthDaemon counts only nebari's runs; the usage part likewise reads nebari's daemon state only."
+        },
+        "handle": "health-across-projects-qa-1",
+        "id": "01M6STV5D54N2ACS701JMFPSJN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6STV5D54N2ACS701HE06J0R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6STV5D54N2ACS701HE06J0R",
+        "id": "01M6STV5DSJN4BKZT4EGYB0YYE",
+        "link": "01M6STV5DSJN4BKZT4EF2SD7W0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85RW7YTX1MJ53SF5RB1J",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 538fc842 with a scratch build. Real root ~/code, read-only: rhiza inbox at the root lists rhiza's failed run, nebari's failed run (each with project: line) and the machine-wide usage-reserve item once, untagged; inside nebari only nebari's items; --project rhiza from inside nebari only rhiza's; --all with --project exits 2. Scratch root of two hand-built projects alpha and beta (hermetic HOME, fake rex on PATH, the testscript's journal fixtures): inbox at the root tags the alpha question and beta sign-off; inbox open of alpha's question from the root focused block:q1 (rex.log shows block inspect and focus); from inside beta it is no inbox item, with --all it focuses; inbox approve --foreground --dry-run of beta's sign-off from the root reached beta's run SIGNOFFRUN01 (its fixture workflow has no steps); approve of the question is refused naming inbox open."
+        },
+        "handle": "inbox-across-projects-qa-1",
+        "id": "01M6STV5E9K5NK7AFNXF959S4K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6STV5E9K5NK7AFNXDXXWMBN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6STV5E9K5NK7AFNXDXXWMBN",
+        "id": "01M6STV5ETZ7XDXX4BDYC9KMNT",
+        "link": "01M6STV5ETZ7XDXX4BDX18RNAJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85P5RQ03S1THHX2PE816",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 538fc842 with a scratch build. Scratch root of two hand-built projects (alpha with milestone ma and an accepted change set serving it, beta with a backlog change set): rhiza roadmap at the root prints ## alpha: ma and ## beta: Backlog, and --json tags every group and change set with its project; from inside beta only beta's backlog untagged, --all from inside beta both; --project alpha only alpha's milestone untagged; --project nope exits 2 not registered. Real root ~/code: only rhiza's groups (milestone-29, Backlog, areas) tagged rhiza, as nebari has no in-flight change sets (main's rhiza roadmap in nebari also shows Nothing planned yet)."
+        },
+        "handle": "roadmap-across-projects-qa-1",
+        "id": "01M6STV5FD2A8MKAT1K6HR4TAF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6STV5FD2A8MKAT1K5E6DT4F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6STV5FD2A8MKAT1K5E6DT4F",
+        "id": "01M6STV5FZ71ZEK0W0HD30HKW1",
+        "link": "01M6STV5FZ71ZEK0W0HBFABRFR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85QCT4TJYR8BAR6KZ499",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3VGZ7D1JK4FRPNX21WHX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6STV5H3PSRSPFQ8XW4BVC9Y",
+  "type": "ops",
+  "v": 1
+}

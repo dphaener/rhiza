@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SQ4JVQFNWE5YSCXMZ4047P",
+  "after": [
+    "01M6SPH42P52T9DW5CWP2SGA7W"
+  ],
+  "at": "2026-11-07T00:54:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-baea7c60 at 6480ce30: go test -trimpath -count=1 -run MergedInbox -v ./internal/web passes TestMergedInboxOrdersTagsAndLinks (two projects alpha/beta, three items rendered oldest first across projects: Alpha early failure, Beta middle sign-off, Alpha late question; each row carries <span class=\"rz-project-tag\"> with its project; links /p/alpha/runs/R1, /p/beta/changes/C2, /p/alpha/changes/C1) and TestMergedInboxEmpty. Read the diff: mergedInboxRows prefixes each row's href with /p/<escaped project>, tags Row.Project, stable-sorts by RFC 3339 At then project name; RootWithInbox serves GET/HEAD /inbox; WebMergedInboxSource reads each initialised registered project's inbox. go test -run 'WebRoot|WebProject|WebInbox|WebMerged' ./internal/api passes. TestOverviewReadsDaemonFromRepo fails only when run from this checkout nested in the live repo's .git; it passes at the same commit in a clean worktree under TMPDIR, so it is environmental."
+        },
+        "handle": "web-merged-inbox-verified",
+        "id": "01M6SQZSTKXHPB5DDR3K0CY0N0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6SQZSTKXHPB5DDR3GZA68FC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SQZSTKXHPB5DDR3GZA68FC",
+        "id": "01M6SQZSW88ED8XN5DMQKHVATW",
+        "link": "01M6SQZSW88ED8XN5DMPSDE9QM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN866N4BCG43KR20K6EFC3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3ZBGYDW6KPBSES9A5JXS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SQZSYQEW1A4BKN9DGHS3A3",
+  "type": "ops",
+  "v": 1
+}

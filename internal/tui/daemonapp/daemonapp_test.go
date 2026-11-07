@@ -8,6 +8,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/colorprofile"
 
+	"github.com/dphaener/rexuikit/ui"
 	"github.com/dphaener/rexuikit/ui/theme"
 
 	"github.com/dphaener/rhiza/internal/tui/modalshell"
@@ -187,5 +188,33 @@ func TestInvalidLimitCallsNothing(t *testing.T) {
 		if s.Closed() {
 			t.Errorf("limit %q: app quit", v)
 		}
+	}
+}
+
+func TestProjectFieldsWriteProjectSettings(t *testing.T) {
+	f := &fake{paused: "false"}
+	a, err := NewIn(f.run, theme.Dark(), colorprofile.TrueColor, "alpha")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v := a.Render(); !strings.Contains(v, "Pause project alpha?") {
+		t.Fatalf("project field missing:\n%s", v)
+	}
+	a.Update(ui.FormSubmittedMsg{Values: ui.Values{
+		pausedField: false, maxRunsField: "3", projPaused: true, projMaxRuns: "2"}})
+	got := f.sets()
+	if len(got) != 2 || got[0][2] != ProjectPausedKey || got[1][2] != ProjectMaxRunsKey {
+		t.Errorf("sets = %v", got)
+	}
+}
+
+func TestNoProjectFieldsWithoutProject(t *testing.T) {
+	f := &fake{paused: "false"}
+	a, err := New(f.run, theme.Dark(), colorprofile.TrueColor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v := a.Render(); strings.Contains(v, "Pause project") {
+		t.Errorf("project field shown with no project:\n%s", v)
 	}
 }

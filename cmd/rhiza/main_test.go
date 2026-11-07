@@ -15,15 +15,23 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/rootguard"
 	runpkg "github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
 	"github.com/rogpeppe/go-internal/testscript"
 )
 
 func TestMain(m *testing.M) {
-	testscript.Main(m, map[string]func(){
-		"rhiza": main,
-	})
+	os.Exit(rootguard.Main(func() int {
+		return testscript.RunMain(m, map[string]func() int{
+			"rhiza": func() int {
+				return profiled(os.Getenv("RHIZA_CPUPROFILE"), func() int {
+					return run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr, os.Getenv)
+				})
+			},
+		})
+	}))
 }
 
 // -update rewrites a script's archive file when a `cmp stdout <file>` fails,
@@ -45,7 +53,7 @@ func TestScripts(t *testing.T) {
 		Dir:           dir,
 		Files:         files,
 		Setup:         setup,
-		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "chtimes": chtimes, "health-server": healthServer, "run-lock": runLock},
+		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "chtimes": chtimes, "health-server": healthServer, "run-lock": runLock, "root-daemon-lock": rootDaemonLock},
 		UpdateScripts: *update,
 	})
 }
@@ -155,6 +163,20 @@ func runLock(ts *testscript.TestScript, neg bool, args []string) {
 		ts.Fatalf("run-lock %s: held=%v err=%v", args[1], !ok, err)
 	}
 	ts.Defer(unlock)
+}
+
+// rootDaemonLock is the script command `root-daemon-lock <root>`: it takes
+// the root daemon's lock in the test process, so every rhiza the script
+// runs sees a root daemon running, until the script ends.
+func rootDaemonLock(ts *testscript.TestScript, neg bool, args []string) {
+	if neg || len(args) != 1 {
+		ts.Fatalf("usage: root-daemon-lock root")
+	}
+	l, err := daemon.TryLockRoot(ts.MkAbs(args[0]), time.Now())
+	if err != nil {
+		ts.Fatalf("root-daemon-lock: %v", err)
+	}
+	ts.Defer(l.Unlock)
 }
 
 // healthServer is the script command `health-server <var> <log> <status>...`:

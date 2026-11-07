@@ -23,6 +23,10 @@ All-projects + per project. The assistant's option, picked by the owner.
 ### In
 
 - decided-by [m29-surfaces-across-projects](../intent/milestone-29/m29-surfaces-across-projects.md)
+- decided-by [web-root-listener](../capability/rhiza/web-root-listener.md)
+- decided-by [web-projects-home](../capability/rhiza/web-projects-home.md)
+- decided-by [web-merged-inbox](../capability/rhiza/web-merged-inbox.md)
+- decided-by [web-project-switcher](../capability/rhiza/web-project-switcher.md)
 
 ## History
 
