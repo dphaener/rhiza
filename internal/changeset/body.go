@@ -44,6 +44,8 @@
 // and EntryVersion tells a writer which format a body needs, so every other
 // entry is still written as format 1. A reopen body needs format 3, the
 // first with a reopen entry: DecodeBody refuses one in an earlier format.
+// An open body's request_kind and workflow need format 4; in an earlier
+// format they are unknown fields.
 package changeset
 
 import (
@@ -52,6 +54,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/dphaener/rhiza/internal/canon"
@@ -97,6 +100,30 @@ type Open struct {
 	// one line. It is optional, and needs format 2 when set; DisplayTitle
 	// falls back to the intent's first clause without it.
 	Title string
+	// RequestKind is what kind of plan request opened the change set:
+	// RequestBug or RequestMilestone. Empty is the default, feature, and the
+	// only spelling of it, so each open body has one encoding. It is
+	// separate from Kind (how the change set lands). It needs format 4.
+	RequestKind string
+	// Workflow is the workflow the opening request named for the change
+	// set's ready pick: a bare workflow name, optional, and format 4.
+	Workflow string
+}
+
+// The request kinds an open body records besides the default, feature.
+const (
+	RequestFeature   = "feature"
+	RequestBug       = "bug"
+	RequestMilestone = "milestone"
+)
+
+// DispatchKind returns the change set's request kind, feature when none
+// was recorded.
+func (o Open) DispatchKind() string {
+	if o.RequestKind == "" {
+		return RequestFeature
+	}
+	return o.RequestKind
 }
 
 // Ops is the body of an ops entry: {ops, drop}, plus {carve} on either side
@@ -191,8 +218,8 @@ var shapes = map[entry.Type][]string{
 // exactly one of the last two is present.
 var carveShape = []string{"entry", "from", "to"}
 
-// EntryVersion returns the lowest entry format that can spell b: 3 for a
-// reopen body, 2 for an ops body with a carve or an open body with a title,
+// EntryVersion returns the lowest entry format that can spell b: 4 for an
+// open body with a request kind or workflow, 3 for a reopen body, 2 for an ops body with a carve or an open body with a title,
 // 1 for every other body. A writer stamps it as the entry's v.
 func EntryVersion(b Body) int {
 	switch b := b.(type) {
@@ -203,6 +230,9 @@ func EntryVersion(b Body) int {
 			return 2
 		}
 	case Open:
+		if b.RequestKind != "" || b.Workflow != "" {
+			return 4
+		}
 		if b.Title != "" {
 			return 2
 		}
@@ -259,6 +289,16 @@ func (o Open) Validate() error {
 	}
 	if err := sortedIDs("sources", o.Sources); err != nil {
 		return err
+	}
+	switch o.RequestKind {
+	case "", RequestBug, RequestMilestone:
+	case RequestFeature:
+		return invalid("request_kind", "%q is the default: leave it out instead", o.RequestKind)
+	default:
+		return invalid("request_kind", "unknown request kind %q", o.RequestKind)
+	}
+	if o.Workflow != "" && (strings.ContainsAny(o.Workflow, "/\\ \t\r\n") || o.Workflow == "." || o.Workflow == ".." || strings.HasSuffix(o.Workflow, ".toml")) {
+		return invalid("workflow", "%q is not a bare workflow name", o.Workflow)
 	}
 	return validTitle(o.Title)
 }
@@ -383,6 +423,12 @@ func EncodeBody(b Body) (json.RawMessage, error) {
 		if b.Title != "" {
 			m["title"] = b.Title
 		}
+		if b.RequestKind != "" {
+			m["request_kind"] = b.RequestKind
+		}
+		if b.Workflow != "" {
+			m["workflow"] = b.Workflow
+		}
 	case Ops:
 		ops := make([]json.RawMessage, 0, len(b.Ops))
 		for i, x := range b.Ops {
@@ -480,6 +526,9 @@ func decodeBody(e entry.Entry, canonical bool) (Body, error) {
 			known = append(slices.Clip(shape), "carve")
 		case entry.TypeOpen:
 			known = append(slices.Clip(shape), "title")
+			if e.V >= 4 {
+				known = append(known, "request_kind", "workflow")
+			}
 		}
 	}
 	if name, ok := unknownField(fields, known); ok {
@@ -567,6 +616,21 @@ func decodeOpen(fields map[string]json.RawMessage) (Body, error) {
 		// has one encoding.
 		if b.Title == "" {
 			return nil, invalid("title", "empty: leave it out instead")
+		}
+	}
+	for _, f := range []struct {
+		name string
+		to   *string
+	}{{"request_kind", &b.RequestKind}, {"workflow", &b.Workflow}} {
+		raw, ok := fields[f.name]
+		if !ok {
+			continue
+		}
+		if *f.to, err = str(raw); err != nil {
+			return nil, invalidWrap(f.name, err)
+		}
+		if *f.to == "" {
+			return nil, invalid(f.name, "empty: leave it out instead")
 		}
 	}
 	return b, nil

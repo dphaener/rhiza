@@ -50,7 +50,7 @@ func TestReadLogProblems(t *testing.T) {
 	other := testEntry(t)
 	other.ID = mustID(t, sOtherID)
 
-	v4 := bytes.Replace(mustEncode(t, other), []byte(`"v": 1`), []byte(`"v": 4`), 1)
+	v4 := bytes.Replace(mustEncode(t, other), []byte(`"v": 1`), []byte(`"v": 5`), 1)
 	if bytes.Equal(v4, mustEncode(t, other)) {
 		t.Fatal(`no "v": 1 in the encoding`)
 	}

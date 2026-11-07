@@ -552,7 +552,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	}
 	// A request's run takes the ID the daemon drew for it: check it before
 	// a draft is opened, so a refused start leaves none.
-	var reqRun, reqMilestone string
+	var reqRun, reqMilestone, reqKind, reqWorkflow string
 	if q := strings.TrimSpace(r.Request); q != "" {
 		common, err := gitCommonDir(ctx)
 		if err != nil {
@@ -566,11 +566,11 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		if r.Autonomous && def.Name == planWorkflow && req.Kind == daemon.KindMilestone {
 			return nil, milestoneNeedsOwner(runStartNext)
 		}
-		reqRun, reqMilestone = req.Run, req.Milestone
+		reqRun, reqMilestone, reqKind, reqWorkflow = req.Run, req.Milestone, req.Kind, req.Workflow
 	}
 	var t changeWorktree
 	if strings.TrimSpace(r.New) != "" {
-		t, err = newPlanChange(ctx, r, def)
+		t, err = newPlanChange(ctx, r, def, reqKind, reqWorkflow)
 	} else {
 		t, err = resolveChangeWorktree(ctx, r.Change, "no run can work on it")
 	}
@@ -687,9 +687,11 @@ func queueRunStart(rs *run.Store, t changeWorktree, def *workflow.Definition, r 
 // record with --milestone, else an intention) and derives its worktree.
 // It refuses a change set argument and any workflow but plan first, and in
 // a real run also the agent-session and can-run refusals, so a refused
-// start leaves no draft behind. A dry run writes nothing: the change set
+// start leaves no draft behind. The request's kind (bug or milestone; feature
+// is the default) and its workflow, if it named one, are recorded on the
+// change set's open entry. A dry run writes nothing: the change set
 // is the ID the real run would draw, with the worktree its title gives.
-func newPlanChange(ctx *Ctx, r RunStartRequest, def *workflow.Definition) (changeWorktree, error) {
+func newPlanChange(ctx *Ctx, r RunStartRequest, def *workflow.Definition, reqKind, reqWorkflow string) (changeWorktree, error) {
 	var t changeWorktree
 	if strings.TrimSpace(r.Change) != "" || strings.TrimSpace(ctx.ChangeRef) != "" || !ctx.ChangeSet.IsZero() {
 		return t, Usagef("--new opens the change set to plan: it takes no change set").WithNext(runStartNext)
@@ -702,7 +704,10 @@ func newPlanChange(ctx *Ctx, r RunStartRequest, def *workflow.Definition) (chang
 	if r.Milestone {
 		kind = changeset.KindRecord
 	}
-	open := changeset.Open{Kind: kind, Intent: strings.TrimSpace(r.New)}
+	open := changeset.Open{Kind: kind, Intent: strings.TrimSpace(r.New), Workflow: reqWorkflow}
+	if reqKind == daemon.KindBug || reqKind == daemon.KindMilestone {
+		open.RequestKind = reqKind
+	}
 	if err := open.Validate(); err != nil {
 		return t, Usagef("%s", err.Error()).WithNext(runStartNext)
 	}

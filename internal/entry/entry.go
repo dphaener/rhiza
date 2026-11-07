@@ -31,7 +31,7 @@ import (
 
 // FormatVersion is the newest entry format this package reads and writes.
 // Every format from 1 through FormatVersion is read and written.
-const FormatVersion = 3
+const FormatVersion = 4
 
 // ErrInvalid is wrapped by every error for an entry that is not a valid
 // entry of a format from 1 through FormatVersion.

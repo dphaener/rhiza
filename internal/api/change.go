@@ -218,6 +218,8 @@ type ChangeShowRequest struct {
 type ChangeShowResponse struct {
 	ID           id.ID              `json:"id" desc:"The change set's ID"`
 	Kind         changeset.Kind     `json:"kind" desc:"intention or record; empty without a valid open"`
+	RequestKind  string             `json:"request_kind" desc:"feature, bug or milestone: the kind of request that opened it, feature when none did; empty without a valid open"`
+	Workflow     string             `json:"workflow,omitempty" desc:"The workflow its request named for its ready pick, if any"`
 	Intent       string             `json:"intent" desc:"The change set's intent"`
 	Title        string             `json:"title" desc:"The change set's title, else its intent's first clause"`
 	Sources      []id.ID            `json:"sources" desc:"The source node IDs"`
@@ -302,6 +304,8 @@ func runChangeShow(ctx *Ctx, req any) (any, error) {
 	resp := ChangeShowResponse{
 		ID:           cs,
 		Kind:         c.Open.Kind,
+		RequestKind:  openRequestKind(c.Open),
+		Workflow:     c.Open.Workflow,
 		Intent:       c.Open.Intent,
 		Title:        c.Open.DisplayTitle(),
 		Sources:      orEmpty(c.Open.Sources),
@@ -342,6 +346,10 @@ func (r ChangeShowResponse) Human(w io.Writer) {
 	fmt.Fprintf(w, "- Title: %s\n", r.Title)
 	fmt.Fprintf(w, "- Intent: %s\n", r.Intent)
 	fmt.Fprintf(w, "- Kind: %s\n", r.Kind)
+	fmt.Fprintf(w, "- Request kind: %s\n", r.RequestKind)
+	if r.Workflow != "" {
+		fmt.Fprintf(w, "- Workflow: %s\n", r.Workflow)
+	}
 	state := string(r.State)
 	if r.Current {
 		state += " (current)"
@@ -616,4 +624,13 @@ func joinIDs(ids []id.ID) string {
 		s[i] = x.String()
 	}
 	return strings.Join(s, ", ")
+}
+
+// openRequestKind is the request kind a change set shows: its open's, feature
+// by default, and empty when it has no valid open.
+func openRequestKind(o changeset.Open) string {
+	if o.Kind == "" {
+		return ""
+	}
+	return o.DispatchKind()
 }

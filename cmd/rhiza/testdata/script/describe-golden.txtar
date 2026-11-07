@@ -1379,6 +1379,10 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "request_kind": {
+            "description": "feature, bug or milestone: the kind of request that opened it, feature when none did; empty without a valid open",
+            "type": "string"
+          },
           "serves": {
             "description": "The intents its live serves links point to, in its write view, by link ID; empty when it serves none yet",
             "items": {
@@ -1407,6 +1411,10 @@ cmp stdout describe.golden.json
           "title": {
             "description": "The change set's title, else its intent's first clause",
             "type": "string"
+          },
+          "workflow": {
+            "description": "The workflow its request named for its ready pick, if any",
+            "type": "string"
           }
         },
         "required": [
@@ -1422,6 +1430,7 @@ cmp stdout describe.golden.json
           "notes",
           "ops",
           "problems",
+          "request_kind",
           "serves",
           "sources",
           "state",

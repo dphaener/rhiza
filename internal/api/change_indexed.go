@@ -274,6 +274,8 @@ func runChangeShowIndexed(ctx *Ctx, w *workspace, r ChangeShowRequest) (any, err
 	resp := ChangeShowResponse{
 		ID:           cs,
 		Kind:         c.Open.Kind,
+		RequestKind:  openRequestKind(c.Open),
+		Workflow:     c.Open.Workflow,
 		Intent:       c.Open.Intent,
 		Title:        c.Open.DisplayTitle(),
 		Sources:      orEmpty(c.Open.Sources),
