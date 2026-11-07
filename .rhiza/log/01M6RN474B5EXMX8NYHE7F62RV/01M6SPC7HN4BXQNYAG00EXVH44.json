@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6SP8EKEC8F7E7N6ZMS4G4C0"
+  ],
+  "at": "2026-11-07T00:26:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Leaf vm-second-project-ships failed all 3 attempts of round 1: attempt 1 verifier failed: verifier found 1 problem(s) (f1 Acceptance not met at 37f47f5b: the commit only adds question m29-which-nebari-change-set (blocks vm-second-project-ships); no code or run ships a nebari chang…); attempt 2 verifier failed: verifier found 1 problem(s) (f1 Acceptance still not met at ec31b062: the fix commit only adds a note to question m29-which-nebari-change-set listing Nebari's draft change sets; no nebari cha…); attempt 3 verifier failed: verifier found 1 problem(s) (f1 Acceptance still not met at 0fffd898: the attempt-3 commit only adds model notes recording that the leaf is blocked on the owner (m29-which-nebari-change-set, …). How should it be built, or should it change?"
+        },
+        "handle": "leaf-failed-01m6snq9-1",
+        "id": "01M6SPBZHPJDWC64AGRJ7YCKVK",
+        "key": null,
+        "kind": "question",
+        "node": "01M6SPBZHPJDWC64AGREAVG6AV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6SPBZHPJDWC64AGREAVG6AV",
+        "id": "01M6SPC4M8G4WJ53YCQDMX4FCT",
+        "link": "01M6SPC4M8G4WJ53YCQ9RE65Q6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN873HV3NYMXTSJ13CXZJF",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6RN474B5EXMX8NYHE7F62RV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6SPC7HN4BXQNYAG00EXVH44",
+  "type": "ops",
+  "v": 1
+}
