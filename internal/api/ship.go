@@ -93,7 +93,7 @@ type ShipCheckResponse struct {
 	Conflicts []string      `json:"conflicts,omitempty" desc:"With --settled on a conflicting pull request: the files whose conflict outside the rendered files stopped the rebase; the command exits 75"`
 	Question  string        `json:"question,omitempty" desc:"The handle of the question raised about those conflicts"`
 	Stop      string        `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
-	Tests     []string      `json:"tests,omitempty" desc:"The Go tests and testscripts, such as TestScripts/x, that the failed Actions runs' logs name with a '--- FAIL:' line, once the failed jobs were rerun and failed again"`
+	Tests     []string      `json:"tests,omitempty" desc:"The failing tests the failed Actions runs' logs name, once the failed jobs were rerun and failed again: Go tests and testscripts (a '--- FAIL:' line, such as TestScripts/x), RSpec ('rspec ./spec/x_spec.rb:12'), Minitest ('bin/rails test test/x_test.rb:12') and pytest ('pytest tests/test_x.py::test_y'), each as its runner's rerun command"`
 	Findings  []ShipFinding `json:"findings,omitempty" desc:"One finding, with no leaf, per failing test, for a fix step; recorded in the state file as well"`
 	Reran     []string      `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, once per head, instead of failing; the check then reports not settled"`
 }
@@ -667,10 +667,35 @@ func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckRespo
 // (possibly after a CI timestamp and indentation for a subtest).
 var failLine = regexp.MustCompile(`--- FAIL: (\S+)`)
 
-// parseFailedTests returns the distinct tests named by '--- FAIL:' lines in
-// a gh run view --log-failed output, in order of appearance. A failing
-// subtest's parent fails too, but only the leaves are kept: rerunning the
-// parent (TestScripts, say) would rerun its whole suite.
+// Rerun commands that RSpec, Minitest and pytest print for each failing
+// test, matched at the start of a log line's text. RSpec names an example
+// by line ('./spec/x_spec.rb:12') or, when a line is ambiguous (shared
+// examples, loops), by its id ('./spec/x_spec.rb[1:1:11]'), matched whole.
+var (
+	rspecLine    = regexp.MustCompile(`^rspec (\./\S+?(?::\d+|\[[\d:,]+\]))(?:\s|$)`)
+	minitestLine = regexp.MustCompile(`^((?:bin/)?rails test \S+:\d+)`)
+	pytestLine   = regexp.MustCompile(`^FAILED (\S+::\S+)`)
+	ansiEscape   = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
+	logTimestamp = regexp.MustCompile(`^\d{4}-\d\d-\d\dT\S+ ?`)
+)
+
+// logText returns a log line's text after gh's "job<TAB>step<TAB>timestamp "
+// prefix (when it has one) and any colour codes, leading space trimmed.
+func logText(line string) string {
+	line = ansiEscape.ReplaceAllString(line, "")
+	if parts := strings.SplitN(line, "\t", 3); len(parts) == 3 {
+		line = logTimestamp.ReplaceAllString(parts[2], "")
+	}
+	return strings.TrimLeft(line, " \t")
+}
+
+// parseFailedTests returns the distinct tests named in a gh run view
+// --log-failed output, in order of appearance: Go's '--- FAIL:' leaves
+// first (a failing subtest's parent fails too, but rerunning the parent,
+// TestScripts say, would rerun its whole suite), then the rerun commands
+// RSpec, Minitest and pytest print, as printed and without any trailing
+// comment ('rspec ./spec/x_spec.rb:12', 'rspec ./spec/x_spec.rb[1:1:11]', 'bin/rails test test/x_test.rb:12',
+// 'pytest tests/test_x.py::test_y').
 func parseFailedTests(log string) []string {
 	var names []string
 	seen := map[string]bool{}
@@ -683,6 +708,22 @@ func parseFailedTests(log string) []string {
 	var out []string
 	for _, name := range names {
 		if !slices.ContainsFunc(names, func(o string) bool { return strings.HasPrefix(o, name+"/") }) {
+			out = append(out, name)
+		}
+	}
+	seen = map[string]bool{}
+	for _, line := range strings.Split(log, "\n") {
+		text := logText(strings.TrimRight(line, "\r"))
+		name := ""
+		if m := rspecLine.FindStringSubmatch(text); m != nil {
+			name = "rspec " + m[1]
+		} else if m := minitestLine.FindStringSubmatch(text); m != nil {
+			name = m[1]
+		} else if m := pytestLine.FindStringSubmatch(text); m != nil {
+			name = "pytest " + m[1]
+		}
+		if name != "" && !seen[name] {
+			seen[name] = true
 			out = append(out, name)
 		}
 	}

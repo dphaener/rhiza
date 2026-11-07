@@ -1,0 +1,40 @@
+{
+  "actor": "01M6TFQRBCQ4ESS4NCJ3JJ0R7J",
+  "after": [
+    "01M6TFK7HF9QCDZ45FC1HEQHM6"
+  ],
+  "at": "2026-11-07T08:03:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2, at b9f87b04: read the leaf's diff from the merge-base (internal/api/ship.go, ship_test.go). The fix commit's rspecLine `^rspec (\\./\\S+?(?::\\d+|\\[[\\d:,]+\\]))(?:\\s|$)` keeps RSpec's example-id form whole, so the attempt-1 finding (closing ']' dropped) is fixed. go test -trimpath ./internal/api -run TestParseFailedTests -v PASS; it covers prefixed RSpec 'Failed examples:' lines -> 'rspec ./spec/views/tasks/list_spec.rb:290' (plus ANSI, deduped, and the id forms [1:1:11] and [1:2,1:3]), Minitest 'bin/rails test test/models/x_test.rb:12' and 'rails test ...', pytest FAILED -> 'pytest tests/test_x.py::test_y', the Go nested and dedup cases unchanged, and none for '1 failure', Jest 'FAIL src/x.test.js', infra errors and a mid-line rspec mention. go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship|describe-golden)' ok (225s): run-ship-rspec-failure lists the rspec command in tests and as a finding's test, and --test-failures exits 0; describe-golden's tests description names Go, RSpec, Minitest and pytest. The full ./internal/api/... run had one failure, TestSessionRunRecordsLimitHit (usage_learn_test.go:119). It fails only in checkouts under ~/code: the same HEAD passes in a scratch worktree outside ~/code, and so does origin/main. The change set doesn't touch that code. The shipReadFailures doc comment still names only '--- FAIL:' lines, a minor stale comment outside acceptance."
+        },
+        "handle": "ship-check-runner-test-failures-verified-2",
+        "id": "01M6TGGYV4S9XAA733EYE796TA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6TGGYV4S9XAA733ETVE3YDN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6TGGYV4S9XAA733ETVE3YDN",
+        "id": "01M6TGGYXKSDFZ49D2N83RGW50",
+        "link": "01M6TGGYXKSDFZ49D2N7CYGPZ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TBDK41SM1XY2928W79FEYZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6TB6N9BYGB9S6ZF3HS4EDWM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TGGYYT7J177ETAN2BP92SZ",
+  "type": "ops",
+  "v": 1
+}
