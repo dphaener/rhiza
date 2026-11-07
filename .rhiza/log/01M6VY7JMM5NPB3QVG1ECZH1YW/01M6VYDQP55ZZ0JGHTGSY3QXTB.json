@@ -1,0 +1,30 @@
+{
+  "actor": "01M6VY8R15AWXJ6W8JD2QW5QMA",
+  "after": [
+    "01M6VY7JMM5NPB3QVG1JAZN2H8"
+  ],
+  "at": "2026-11-07T21:25:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "0e06ee7e-7cb8-432f-97f8-01a1b7e43938",
+          "statement": "Change set 01M6VY7 (requests carry an opaque --ref) serves no intent, and `rhiza health` reports 0 open milestones. Which intent should it serve so the daemon will build it? / Where should a request's --ref live on the change set its plan run opens? / What length limit should Rhiza enforce on a --ref? / Decision workflows-are-the-rules (PR #353) is not landed, so this plan cannot link to it. What should the plan do?"
+        },
+        "handle": "question-0e06ee7e-1",
+        "id": "01M6VYDNN7EMSMMZ8Z6PA59AT9",
+        "key": null,
+        "kind": "question",
+        "node": "01M6VYDNN7EMSMMZ8Z6K5Q41AZ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6VY7JMM5NPB3QVG1ECZH1YW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYDQP55ZZ0JGHTGSY3QXTB",
+  "type": "ops",
+  "v": 1
+}
