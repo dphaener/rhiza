@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/dispatch"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 )
@@ -359,11 +360,15 @@ func newRequestRunID(ctx *Ctx, rs *run.Store, reqs []daemon.Request) (string, er
 }
 
 // daemonStartPlan starts the plan run of request q as a detached process:
-// run start --foreground --workflow plan --new with its intent, --milestone
+// run start --foreground --workflow <w> --new with its intent, --milestone
 // for a milestone, and --request so the run takes the ID the request names.
 // A milestone request never gets --autonomous. Its log is that run's, <run>.log, as run log reads it.
 func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) error {
-	args := []string{"run", "start", "--foreground", "--workflow", planWorkflow, "--new", q.Intent(), "--request", q.ID, "--permission-mode", mode}
+	wf, err := requestWorkflow(ctx.Root, q)
+	if err != nil {
+		return err
+	}
+	args := []string{"run", "start", "--foreground", "--workflow", wf, "--new", q.Intent(), "--request", q.ID, "--permission-mode", mode}
 	if q.Kind == daemon.KindMilestone {
 		args = append(args, "--milestone")
 		// Planning a milestone always needs the owner: the run waits on the
@@ -374,6 +379,21 @@ func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) e
 		args = append(args, "--autonomous")
 	}
 	return daemonDetach(ctx, "the plan run of request "+q.ID, q.Run, nil, args)
+}
+
+// requestWorkflow is the workflow request q's plan run starts: the [request]
+// rule of .rhiza/dispatch.toml for its kind (plan by default). The
+// request's own workflow is for its change set's ready pick, not this.
+func requestWorkflow(root string, q daemon.Request) (string, error) {
+	rules, err := dispatch.Load(root)
+	if err != nil {
+		return "", Errorf("%v", err)
+	}
+	kind := q.Kind
+	if kind != daemon.KindBug && kind != daemon.KindMilestone {
+		kind = dispatch.KindFeature
+	}
+	return rules.ForRequest(kind), nil
 }
 
 // requestRun is the request run start --request <id> names, whose Run is

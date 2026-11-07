@@ -212,6 +212,9 @@ type Started struct {
 	// MilestonePlan is true for the plan run of a milestone request: its
 	// interview session waits on the owner from launch.
 	MilestonePlan bool `json:"milestone_plan,omitempty"`
+	// Plan is true for a run started with --new (a request's plan run),
+	// whatever workflow it runs.
+	Plan bool `json:"plan,omitempty"`
 }
 
 // Block is what a blocked agent step waits on: the kind of block and the
@@ -1030,6 +1033,8 @@ type State struct {
 	Milestone string
 	// MilestonePlan is the started entry's MilestonePlan.
 	MilestonePlan bool
+	// Plan is the started entry's Plan.
+	Plan bool
 	// Current is the step entered and not ended, or the next step to
 	// enter. Empty when the run is finished.
 	Current      string
@@ -1316,6 +1321,7 @@ func (j Journal) State() State {
 				st.Autonomous = s.Autonomous
 				st.Milestone = s.Milestone
 				st.MilestonePlan = s.MilestonePlan
+				st.Plan = s.Plan
 			}
 		case TypeProcess:
 			if e.Process != nil {
@@ -1766,3 +1772,12 @@ const AbandonedPrefix = "abandoned by "
 func (st State) Abandoned() bool {
 	return st.Ended && st.Result == Failed && strings.HasPrefix(st.Detail, AbandonedPrefix)
 }
+
+// PlanWorkflow is the built-in workflow a request's plan run uses by default.
+const PlanWorkflow = "plan"
+
+// IsPlanRun reports whether the run is a plan run: started with --new (for
+// a request or not), or, for a journal that predates that mark, running the
+// plan workflow. It does not depend on the workflow's name otherwise, since
+// a dispatch rule may map a request to any workflow.
+func (s State) IsPlanRun() bool { return s.Plan || s.Workflow == PlanWorkflow }

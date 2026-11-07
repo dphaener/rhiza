@@ -31,7 +31,7 @@ func TestResumable(t *testing.T) {
 	}
 	locked := func(id string) bool { return id == "locked" }
 	accepted := func(string) string { return "accepted" }
-	got := Resumable(runs, "h", dead, locked, accepted, "plan", now)
+	got := Resumable(runs, "h", dead, locked, accepted, now)
 	if len(got) != 2 || got[0] != "interrupted" || got[1] != "unrecorded" {
 		t.Fatalf("Resumable = %v, want [interrupted unrecorded]", got)
 	}
@@ -61,7 +61,7 @@ func TestResumableOnlyAcceptedOrLandedPastLand(t *testing.T) {
 	for _, s := range []string{"rejected", "withdrawn", "proposed", "draft"} {
 		add(s, s, "ship-change", true)
 	}
-	got := Resumable(runs, "h", dead, func(string) bool { return false }, func(cs string) string { return states[cs] }, "plan", now)
+	got := Resumable(runs, "h", dead, func(string) bool { return false }, func(cs string) string { return states[cs] }, now)
 	if len(got) != 3 || got[0] != "run-accepted" || got[1] != "run-landed-past" || got[2] != "run-landed-plan" {
 		t.Fatalf("Resumable = %v, want [run-accepted run-landed-past run-landed-plan]", got)
 	}
@@ -168,5 +168,22 @@ func TestPickSkipsShipped(t *testing.T) {
 		if (len(got) == 1) != c.picked {
 			t.Errorf("%s: Pick = %v", c.name, got)
 		}
+	}
+}
+
+// A request's plan run is resumed after its change set lands early whatever
+// workflow it runs; a non-plan run that never reached land is not.
+func TestResumablePlanRunUnderOtherWorkflow(t *testing.T) {
+	dead := func(int) bool { return false }
+	proc := run.Entry{Type: run.TypeProcess, Process: &run.Process{Host: "h", Pid: 1}}
+	now := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	mk := func(id string, plan bool) run.Journal {
+		s := &run.Started{Change: id, Workflow: "bugfix", Plan: plan}
+		return run.Journal{ID: id, Entries: []run.Entry{{Type: run.TypeStarted, At: now.Add(-time.Hour), Started: s}, proc}}
+	}
+	runs := []run.Journal{mk("plan", true), mk("other", false)}
+	got := Resumable(runs, "h", dead, func(string) bool { return false }, func(string) string { return "landed" }, now)
+	if len(got) != 1 || got[0] != "plan" {
+		t.Fatalf("Resumable = %v, want [plan]", got)
 	}
 }

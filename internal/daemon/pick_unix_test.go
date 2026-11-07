@@ -23,11 +23,11 @@ func TestResumableLeavesAStoreLockedRun(t *testing.T) {
 	if err != nil || !ok {
 		t.Fatalf("TryLock = %v, %v", ok, err)
 	}
-	if got := Resumable(runs, "h", dead, rs.Live, func(string) string { return "accepted" }, "plan", now); len(got) != 0 {
+	if got := Resumable(runs, "h", dead, rs.Live, func(string) string { return "accepted" }, now); len(got) != 0 {
 		t.Fatalf("Resumable with the lock held = %v, want none", got)
 	}
 	unlock()
-	if got := Resumable(runs, "h", dead, rs.Live, func(string) string { return "accepted" }, "plan", now); len(got) != 1 || got[0] != "R1" {
+	if got := Resumable(runs, "h", dead, rs.Live, func(string) string { return "accepted" }, now); len(got) != 1 || got[0] != "R1" {
 		t.Fatalf("Resumable with the lock free = %v, want [R1]", got)
 	}
 }

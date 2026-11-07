@@ -276,7 +276,7 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 	// listed like any other run.
 	gone := func(st run.State) bool {
 		state, ok := changeState(st.Change)
-		if ok && state == string(changeset.StateLanded) && (st.Workflow == planWorkflow || st.Visits["land"] > 0) {
+		if ok && state == string(changeset.StateLanded) && (st.IsPlanRun() || st.Visits["land"] > 0) {
 			return false
 		}
 		return ok && changeset.State(state).Terminal()
