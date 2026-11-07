@@ -1,0 +1,40 @@
+{
+  "actor": "01M6TJ8SR8PTVH4NFK11YEJK1C",
+  "after": [
+    "01M6THM3593DVDQQHYGYJJ3JTJ"
+  ],
+  "at": "2026-11-07T08:39:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "internal/api ship tests with a fake gh: open-pr, check and check --settled each refuse an open or merged PR whose body names another change set, and one whose body has no 'Change set' line, and leave ship state unwritten (open-pr also neither pulls the foreign PR's commits in nor pushes onto it); a PR whose body names the run's change set is tracked as before",
+          "statement": "Ship open-pr and ship check (with and without --settled, which the workflows' wait-pr steps run), the ops that look a pull request up by branch, refuse a pull request on the change set's branch, open, merged or closed, unless its body's 'Change set <id>' line names the run's change set (a PR naming another change set or with no such line is refused), with a conflict naming that PR, before open-pr fetches, follows or pushes the branch, and never write it to ship state"
+        },
+        "handle": "ship-tracks-own-pr",
+        "id": "01M6TBRW1FQSQTEHBGNKVSR7VS",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6TBRW1FQSQTEHBGNK10NGSV",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M6TBRW1FQSQTEHBGNK10NGSV",
+        "id": "01M6TJK2JHZ7DG2VYXJJXSVD1K",
+        "link": "01M6TJK2JHZ7DG2VYXJEYZHAVN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6TCGVZFQEPRYXS60YJGP7ST",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6TBDRB2N5MTW4BW0K2NZCG6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6TJK2KSCKDH5BZH13NX8G8H",
+  "type": "ops",
+  "v": 1
+}

@@ -87,6 +87,26 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 	if b := strings.TrimSpace(head); b != t.branch {
 		return nil, Conflictf("ship open-pr pushes the change set's branch %s, but %s is on %s", t.branch, ctx.Root, b)
 	}
+	// The branch's PR is looked up first: a PR that is another change set's
+	// is refused before anything is fetched into this worktree or pushed
+	// onto it.
+	dir := t.dir()
+	var v prView
+	out, err := gh(ctx, dir, "pr", "view", t.branch, "--json", "number,url,state,headRefOid,body,statusCheckRollup")
+	exists := true
+	switch {
+	case noPR(err):
+		exists = false
+	case err != nil:
+		return nil, Errorf("%v", err)
+	default:
+		if v, err = parsePRView(out); err != nil {
+			return nil, Errorf("%v", err)
+		}
+		if err := requirePROwned(t, v); err != nil {
+			return nil, err
+		}
+	}
 	if err := shipFollowPR(ctx, t); err != nil {
 		return nil, err
 	}
@@ -121,10 +141,7 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 		return nil, Errorf("ship open-pr: write the body: %v", werr)
 	}
 
-	dir := t.dir()
-	out, err := gh(ctx, dir, "pr", "view", t.branch, "--json", "number,url,state,headRefOid,body,statusCheckRollup")
-	switch {
-	case noPR(err):
+	if !exists {
 		if _, err := gh(ctx, dir, "pr", "create", "--base", shipMain, "--head", t.branch, "--title", t.title, "--body-file", body.Name()); err != nil {
 			return nil, Errorf("%v", err)
 		}
@@ -132,16 +149,8 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 		if out, err = gh(ctx, dir, "pr", "view", t.branch, "--json", "number,url,state,headRefOid,body,statusCheckRollup"); err != nil {
 			return nil, Errorf("%v", err)
 		}
-	case err != nil:
-		return nil, Errorf("%v", err)
-	}
-	v, err := parsePRView(out)
-	if err != nil {
-		return nil, Errorf("%v", err)
-	}
-	if !resp.Created {
-		if err := requirePROwned(t, v); err != nil {
-			return nil, err
+		if v, err = parsePRView(out); err != nil {
+			return nil, Errorf("%v", err)
 		}
 	}
 	// A branch whose only pull request was merged or closed before this run
