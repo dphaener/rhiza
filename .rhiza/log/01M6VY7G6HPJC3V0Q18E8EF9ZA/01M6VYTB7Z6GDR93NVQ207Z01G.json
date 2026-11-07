@@ -1,0 +1,426 @@
+{
+  "actor": "01M6VY8QXK6RWXV77SZ1RDZA25",
+  "after": [
+    "01M6VYTA27JDEAG666P3SG651B"
+  ],
+  "at": "2026-11-07T21:32:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6VYH807FA05BQQ196XC8JPN",
+        "id": "01M6VYTA9K4JYM3591N0Q2KWW2",
+        "link": "01M6VYTA9K4JYM3591MXHNTK1H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYSB8HVGWDQP0DECJFHSY9",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYQWKXT7DC11ET2AAAER7G",
+        "id": "01M6VYTAAEATJ3686PM90VQ715",
+        "link": "01M6VYTAAEATJ3686PM5A7HFHV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYSB8HVGWDQP0DECJFHSY9",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Every run the daemon or run start begins picks its workflow through the repo's dispatch rules, keyed by trigger and request kind, with built-in defaults that reproduce plan and ship-change"
+        },
+        "handle": "workflow-dispatch",
+        "id": "01M6VYTAAZ3666PP9D4RP9C6WT",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6VYTAAZ3666PP9D4N9HTVSQ",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAAZ3666PP9D4N9HTVSQ",
+        "id": "01M6VYTABPS1D05REW92WY35HF",
+        "link": "01M6VYTABPS1D05REW91F3DN9T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYH807FA05BQQ196XC8JPN",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests in the package that parses the file cover: no file gives plan for every request kind and ship-change for every ready kind; a file setting only [ready] bug changes only that pick; an unknown table, an unknown kind key and a non-string or path-like value each fail with an error naming the table and key",
+          "statement": "Rhiza reads the repo's committed .rhiza/dispatch.toml: a [request] table (a request is queued) and a [ready] table (a change set is accepted and ready), each mapping a kind (feature, bug, milestone) to a workflow name; a missing file, table or key falls back to the built-in default (request: plan; ready: ship-change), and any other table or key, or a value that is not a bare workflow name, is an error naming it"
+        },
+        "handle": "dispatch-rules-file",
+        "id": "01M6VYTACHSRCG9FCR51ESF67H",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6VYTACHSRCG9FCR50S9S8JB",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTACHSRCG9FCR50S9S8JB",
+        "id": "01M6VYTADX60VS3Q0KM7AKHFW6",
+        "link": "01M6VYTADX60VS3Q0KM3Z2ANCA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYQWKXT7DC11ET2AAAER7G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTACHSRCG9FCR50S9S8JB",
+        "id": "01M6VYTAFBBHVNK8TYEKY54FQR",
+        "link": "01M6VYTAFBBHVNK8TYEG22HC78",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYH807FA05BQQ196XC8JPN",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript (dispatch-check) shows rhiza check passing with no dispatch file and with a rule naming a repo workflow in .rhiza/workflows/, and failing with a rule naming a missing workflow and with an unknown table, each failure naming trigger.kind or the table",
+          "statement": "rhiza check fails on a .rhiza/dispatch.toml that does not parse, or whose rule names a workflow that no layer (personal, repo, built-in) resolves, naming the file, the trigger.kind and the workflow"
+        },
+        "handle": "dispatch-rules-check",
+        "id": "01M6VYTAG5STEEVHYYJ8T16A33",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6VYTAG5STEEVHYYJ6V971SN",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAG5STEEVHYYJ6V971SN",
+        "id": "01M6VYTAGWGAY2ABFYSSN3ARSB",
+        "link": "01M6VYTAGWGAY2ABFYSS5JTR2T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYQWKXT7DC11ET2AAAER7G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAG5STEEVHYYJ6V971SN",
+        "id": "01M6VYTAHP7J5Z2Q4C76SWD81Q",
+        "link": "01M6VYTAHP7J5Z2Q4C754Q88AB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTACHSRCG9FCR50S9S8JB",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript shows a change set opened by run start --new --request for a bug request with a workflow recording kind bug and that workflow in change show --json, a change set from rhiza change new showing kind feature and no workflow, and the log still folding with fold-ok",
+          "statement": "A change set records its kind and an optional workflow: the change set a request's plan run opens records that request's kind and the workflow the request named, any other change set (from a milestone plan or rhiza change new) has kind feature and no workflow, and rhiza change show shows both"
+        },
+        "handle": "change-set-records-dispatch",
+        "id": "01M6VYTAJBDW1YH8D7Y4QE9G5E",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6VYTAJBDW1YH8D7Y1XGCK76",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAJBDW1YH8D7Y1XGCK76",
+        "id": "01M6VYTAK2853NEYSVH3KTQ9V8",
+        "link": "01M6VYTAK2853NEYSVH1XETXF6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYQWKXT7DC11ET2AAAER7G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAJBDW1YH8D7Y1XGCK76",
+        "id": "01M6VYTAKWD6A6MJCQNYCZG35D",
+        "link": "01M6VYTAKWD6A6MJCQNVYY2ZCQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYH807FA05BQQ196XC8JPN",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript shows request --workflow naming a repo workflow queued and listed by request ls --json with the workflow, request --workflow naming a missing workflow exiting 2 with the queue unchanged, and describe-golden regenerated for the new request field",
+          "statement": "rhiza request --workflow <name> stores the name on the queued request, refuses with a usage error (exit 2, nothing queued) a name no layer resolves, and request ls shows it; the request's plan run passes it to the change set it opens, so it overrides only that change set's ready pick"
+        },
+        "handle": "request-workflow-flag",
+        "id": "01M6VYTAMKNBD6G38RFZJ03NXZ",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6VYTAMKNBD6G38RFW88RFB7",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAMKNBD6G38RFW88RFB7",
+        "id": "01M6VYTANQZB4NEPXJAA5M13Y2",
+        "link": "01M6VYTANQZB4NEPXJA9QD1G31",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYH807FA05BQQ196XC8JPN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAMKNBD6G38RFW88RFB7",
+        "id": "01M6VYTAPKQCPMZP19KQK2V8BJ",
+        "link": "01M6VYTAPKQCPMZP19KNJPR654",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYQWKXT7DC11ET2AAAER7G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAMKNBD6G38RFW88RFB7",
+        "id": "01M6VYTAQQXHCXQWKNJ18M82VB",
+        "link": "01M6VYTAQQXHCXQWKNJ0WR4HEV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAJBDW1YH8D7Y1XGCK76",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api show a dispatch file mapping [request] bug to a repo workflow making the daemon's start of a bug request run that workflow with --new, a feature request still running plan, and a milestone request mapped to another workflow starting it with --milestone and without --autonomous",
+          "statement": "The daemon starts a queued request's plan run with the workflow the [request] rule names for the request's kind (default plan), and run start --new accepts that workflow instead of refusing every workflow but plan; a milestone request still opens a record change set and never runs autonomous, whatever workflow its rule names"
+        },
+        "handle": "request-trigger-dispatch",
+        "id": "01M6VYTARWAQRW1FDT2CR4N82T",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6VYTARWAQRW1FDT2AKAFZQA",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTARWAQRW1FDT2AKAFZQA",
+        "id": "01M6VYTAT089EY13YDQ69WAPMD",
+        "link": "01M6VYTAT089EY13YDQ5GP3EYT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYQWKXT7DC11ET2AAAER7G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTARWAQRW1FDT2AKAFZQA",
+        "id": "01M6VYTATN2036BXGPDFTQATT7",
+        "link": "01M6VYTATN2036BXGPDCMFFSCH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTACHSRCG9FCR50S9S8JB",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTARWAQRW1FDT2AKAFZQA",
+        "id": "01M6VYTAVAXVEVMEJNZEZZ5WCA",
+        "link": "01M6VYTAVAXVEVMEJNZD1A0S70",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAJBDW1YH8D7Y1XGCK76",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api show the resolver's order (recorded workflow over rule over ship-change, explicit --workflow over all), and a testscript shows run start --dry-run on a bug change set with [ready] bug set to a repo workflow naming that workflow, and with no dispatch file naming ship-change",
+          "statement": "One resolver picks the workflow of a ready change set's run, used both by the daemon's ship pick and by rhiza run start <cs> with no --workflow: the change set's recorded workflow, else the [ready] rule for its kind, else ship-change; an explicit run start --workflow always wins"
+        },
+        "handle": "ready-trigger-dispatch",
+        "id": "01M6VYTAW1NNHC09NTGHBWVBXM",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6VYTAW1NNHC09NTGF6RPVKS",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAW1NNHC09NTGF6RPVKS",
+        "id": "01M6VYTAWQQXJXMTKW4HWYJFSZ",
+        "link": "01M6VYTAWQQXJXMTKW4EDF3WRQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYH807FA05BQQ196XC8JPN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAW1NNHC09NTGF6RPVKS",
+        "id": "01M6VYTAXBQZVCJZDTZEM7XFMN",
+        "link": "01M6VYTAXBQZVCJZDTZBTX3X29",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYQWKXT7DC11ET2AAAER7G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAW1NNHC09NTGF6RPVKS",
+        "id": "01M6VYTAXYE8NCTW192JB6NNJN",
+        "link": "01M6VYTAXYE8NCTW192HNRKXEP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTACHSRCG9FCR50S9S8JB",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAW1NNHC09NTGF6RPVKS",
+        "id": "01M6VYTAYEG8QKA2N0TNG3685F",
+        "link": "01M6VYTAYEG8QKA2N0TMGT9S00",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAJBDW1YH8D7Y1XGCK76",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api show a daemon poll with a recorded workflow or a rule naming a workflow that does not resolve starting no run, recording a skip naming the workflow and its source, and listing an inbox item for it, while other candidates in the same poll still start",
+          "statement": "When the workflow dispatch picks for a request or a ready change set no longer resolves at start time, the daemon starts no run, never falls back to the default, and raises it as attention: a skip reason in daemon status and an inbox item naming the change set or request, the workflow and where the pick came from"
+        },
+        "handle": "dispatch-unresolved-attention",
+        "id": "01M6VYTAYZW0RTPZ31DZANAKBN",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6VYTAYZW0RTPZ31DVTTYVTB",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAYZW0RTPZ31DVTTYVTB",
+        "id": "01M6VYTAZK9T3S1BR8C5MAEEY0",
+        "link": "01M6VYTAZK9T3S1BR8C2M08AP0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYQWKXT7DC11ET2AAAER7G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAYZW0RTPZ31DVTTYVTB",
+        "id": "01M6VYTB0BPERK153G12GTD54E",
+        "link": "01M6VYTB0BPERK153G12ABH40H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTARWAQRW1FDT2AKAFZQA",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTAYZW0RTPZ31DVTTYVTB",
+        "id": "01M6VYTB150NQPGERD6DDY6S7B",
+        "link": "01M6VYTB150NQPGERD6B9S2KVN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAW1NNHC09NTGF6RPVKS",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript shows run start on a change set picked by a [ready] rule recording rule ready.bug, one with no dispatch file recording the default, and one with --workflow recording explicit, each shown by run status --json and run ls --json; a test in internal/api shows the daemon's start log line naming the pick",
+          "statement": "Each run's journal records which workflow dispatch picked and why (the request's or change set's override, the rule trigger.kind, the built-in default, or an explicit --workflow), rhiza run ls and rhiza run status show it, and the daemon logs it when it starts the run"
+        },
+        "handle": "run-records-dispatch",
+        "id": "01M6VYTB1Y3D4W01CFEAHHRN69",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6VYTB1Y3D4W01CFE712D6TD",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTB1Y3D4W01CFE712D6TD",
+        "id": "01M6VYTB2MMGQBR29P3XD7S4NW",
+        "link": "01M6VYTB2MMGQBR29P3T2NCQB5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYQWKXT7DC11ET2AAAER7G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTB1Y3D4W01CFE712D6TD",
+        "id": "01M6VYTB3K6GWYHFT288MEB5SE",
+        "link": "01M6VYTB3K6GWYHFT2858P5FYX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTARWAQRW1FDT2AKAFZQA",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTB1Y3D4W01CFE712D6TD",
+        "id": "01M6VYTB4CRJWHXRMYYQERNSQ7",
+        "link": "01M6VYTB4CRJWHXRMYYP5TM46H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAW1NNHC09NTGF6RPVKS",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A test of the guide shows the workflows topic naming dispatch.toml, [request], [ready] and request --workflow, and the guide's existing size checks still pass",
+          "statement": "The workflows guide topic explains .rhiza/dispatch.toml: its two tables, the kinds, the built-in defaults, rhiza request --workflow, the resolution order and how a broken name is reported"
+        },
+        "handle": "dispatch-guide-topic",
+        "id": "01M6VYTB5F2Z10QBJNJM7CR4YB",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6VYTB5F2Z10QBJNJH3M0BGN",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTB5F2Z10QBJNJH3M0BGN",
+        "id": "01M6VYTB646H463T2362QMKBMC",
+        "link": "01M6VYTB646H463T23602QFC0V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYQWKXT7DC11ET2AAAER7G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTB5F2Z10QBJNJH3M0BGN",
+        "id": "01M6VYTB6SQD49KE76CWNDR71N",
+        "link": "01M6VYTB6SQD49KE76CVYPXJCM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAMKNBD6G38RFW88RFB7",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYTB5F2Z10QBJNJH3M0BGN",
+        "id": "01M6VYTB7CTGKZGTKEZ3EMFSFN",
+        "link": "01M6VYTB7CTGKZGTKEZ03M6GBN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAW1NNHC09NTGF6RPVKS",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYTB7Z6GDR93NVQ207Z01G",
+  "type": "ops",
+  "v": 1
+}

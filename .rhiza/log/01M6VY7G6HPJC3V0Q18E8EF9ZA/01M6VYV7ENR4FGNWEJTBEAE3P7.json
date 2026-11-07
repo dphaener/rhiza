@@ -1,0 +1,39 @@
+{
+  "actor": "01M6VY8QXK6RWXV77SZ1RDZA25",
+  "after": [
+    "01M6VYTB7Z6GDR93NVQ207Z01G"
+  ],
+  "at": "2026-11-07T21:32:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The intent says the rules live in rhiza.toml; decision workflow-dispatch-shape moved them to the committed repo file .rhiza/dispatch.toml, because rhiza.toml is the root's machine-wide config shared by several projects. The leaves follow the decision."
+        },
+        "handle": "note-01m6vyv7cm92x6",
+        "id": "01M6VYV7CM92X6XCG1HPXMXP1M",
+        "key": null,
+        "kind": "note",
+        "node": "01M6VYV7CM92X6XCG1HPF0JWB3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6VYV7CM92X6XCG1HPF0JWB3",
+        "id": "01M6VYV7DPSE8RXEA0EBZBN2ZE",
+        "link": "01M6VYV7DPSE8RXEA0E8PJVK5X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYV7ENR4FGNWEJTBEAE3P7",
+  "type": "ops",
+  "v": 1
+}

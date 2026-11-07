@@ -1,0 +1,30 @@
+{
+  "actor": "01M6VY8QXK6RWXV77SZ1RDZA25",
+  "after": [
+    "01M6VYH80ZFSYK4KR3FM2C3BT1"
+  ],
+  "at": "2026-11-07T21:29:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "b640ca70-18c2-43e6-a7ec-01a1b7e43901",
+          "statement": "What shape does .rhiza/dispatch.toml take? There are two triggers (request queued, change set ready) and three request kinds (feature, bug, milestone). / How are bad workflow names handled: a rule in .rhiza/dispatch.toml, or a `rhiza request --workflow` value, naming a workflow no layer (personal, repo or built-in) resolves? / Which kind does a change set get when no request opened it, e.g. one opened by a milestone plan or by `rhiza change new`? The ready trigger maps kind to workflow. / Where does the owner see what dispatch picked?"
+        },
+        "handle": "question-b640ca70-2",
+        "id": "01M6VYNG696SP9M2NGXK252Y2E",
+        "key": null,
+        "kind": "question",
+        "node": "01M6VYNG696SP9M2NGXG5CEC3R",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYNHWPST4V9X7QQ3EZKXS8",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,73 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6VZBTJ7KPZM0RQWXC3YZ2PF"
+  ],
+  "at": "2026-11-07T21:47:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on change-set-records-dispatch): The leaf has a change set 'record its kind' (feature, bug, milestone) and its acceptance checks 'kind bug' and 'kind feature' in change show --json. But a change set already has a kind with another meaning: changeset.Kind is intention or record (internal/changeset/body.go:66-77), `rhiza change new --kind` takes intention|record (internal/api/change.go:63), and change show --json already prints \"kind\": \"intention\"/\"record\". As written, the new field collides with or overwrites the existing one, and a milestone request's change set would need kind both 'record' and 'milestone'. The leaf (and decision workflow-dispatch-rules-file, 'rhiza change show shows the change set's recorded kind') should name a distinct field, e.g. request_kind, in the open entry and in change show. The critic confirmed it: A change set already has a kind with another meaning: changeset.Kind is intention|record (internal/changeset/body.go:66-77), change new --kind takes intention|record (internal/api/change.go:63) and change show --json prints \"kind\" from c.Open.Kind (change.go:220,304). change-set-records-dispatch says the change set 'records its kind' and its acceptance reads 'kind bug'/'kind feature' in change show --json, so the new field collides with the existing one (a milestone request's change set is kind record). The leaf and decision workflow-dispatch-rules-file need a distinct field name. How should it be settled?"
+        },
+        "handle": "review-01m6vy7e-r3-f1",
+        "id": "01M6VZP9EAZX6GB0QF2VXYQ2GG",
+        "key": null,
+        "kind": "question",
+        "node": "01M6VZP9EAZX6GB0QF2R2WHCXP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6VZP9EAZX6GB0QF2R2WHCXP",
+        "id": "01M6VZP9ET56R48HZVD6YJRMP7",
+        "link": "01M6VZP9ET56R48HZVD3RVY4G0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAJBDW1YH8D7Y1XGCK76",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on request-trigger-dispatch): The leaf lists the checks that must key on 'is a request's plan run' instead of the name plan: daemon.Resumable, the inbox, and run resume's milestone owner gate (run.go:849). It misses run resume's own landed-state check (internal/api/run.go:879-889): it lets a run on a landed change set through only if st.Workflow == planWorkflow or the run already visited land, else Terminal() refuses it with a Conflict. So a bug request dispatched to e.g. 'bugplan' whose change set lands early would be picked by daemon.Resumable (as the acceptance tests) and then refused by run resume, stuck. The statement and acceptance should include run.go:879 (and the acceptance should resume the run, not just see it in Resumable's list). The critic confirmed it: run resume (internal/api/run.go:879-889) lets a non-ended run on a landed change set through only if st.Workflow == planWorkflow or the run already visited land; otherwise Terminal() refuses it with a Conflict. request-trigger-dispatch lists daemon.Resumable, the inbox and the milestone owner gate (run.go:849) as the checks to rekey, but not this one, and its acceptance only checks Resumable's pick, so a request run under a non-plan workflow whose change set landed early would be picked and then refused by run resume. How should it be settled?"
+        },
+        "handle": "review-01m6vy7e-r3-f2",
+        "id": "01M6VZP9FPP58AM3F8KMM38MPM",
+        "key": null,
+        "kind": "question",
+        "node": "01M6VZP9FPP58AM3F8KM40FS24",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6VZP9FPP58AM3F8KM40FS24",
+        "id": "01M6VZP9H8P2G4YNXFAD182CPD",
+        "link": "01M6VZP9H8P2G4YNXFAAS0NFVC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTARWAQRW1FDT2AKAFZQA",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f3 (contradiction on workflow-dispatch-rules-file): The decision (and leaf dispatch-rules-file) lets [ready] map the kind milestone to a workflow, but the same plan makes that key unreachable: a milestone request's plan run opens a record change set, which lands as is and is never accepted and ready (changeset fold.go:606; request-trigger-dispatch 'a milestone request still opens a record change set'), and change sets a milestone plan opens get kind feature (decision: 'A change set no request opened ... has kind feature'). So `[ready] milestone = \"x\"` passes rhiza check yet can never fire. Either drop milestone from [ready]'s keys (an error, like any other unknown key) or say what change set ever has kind milestone at the ready trigger. The critic confirmed it: The ready trigger fires on accepted, ready change sets that serve a milestone (internal/daemon/pick.go:13,84). A milestone request's plan run opens a record change set (request.go:43, run.go:703) which lands straight from in-flight (fold.go:606, lifecycle.go:160) and is never accepted-and-ready in the normal flow, and the decision gives every change set no request opened kind feature. So no change set reaches the ready trigger with kind milestone, yet the decision and dispatch-rules-file accept [ready] milestone as a valid key that rhiza check passes. The plan must drop the key or say which change set carries kind milestone at ready. How should it be settled?"
+        },
+        "handle": "review-01m6vy7e-r3-f3",
+        "id": "01M6VZP9JVHFVPNR4SRTSH0MBV",
+        "key": null,
+        "kind": "question",
+        "node": "01M6VZP9JVHFVPNR4SRSMN2NMT",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VZP9RMXBA0WGNR70BA7WMS",
+  "type": "ops",
+  "v": 1
+}
