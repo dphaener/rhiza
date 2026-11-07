@@ -207,3 +207,99 @@ func TestLearnedLimitRatchets(t *testing.T) {
 		t.Errorf("weekly limit = %d, %v: want the setting 42", n, ok)
 	}
 }
+
+// TestLearnedLimitRatchetsAtPoll drives the daemon's poll of a project with a
+// fake clock and fake token records, and reads the learned weekly limit back
+// from the daemon state the poll saves.
+func TestLearnedLimitRatchetsAtPoll(t *testing.T) {
+	holdFakeOnce()
+	usageFakeOnce()
+	t0 := time.Date(2027, 3, 1, 10, 0, 0, 0, time.UTC)
+	old := t0.Add(-30 * 24 * time.Hour)
+	weekly := func(at time.Time) time.Time { return at.Add(6 * 24 * time.Hour) }
+
+	// setup starts the daemon's work in a fresh project whose agent reports
+	// recs and whose learned weekly limit is learned. Its poll runs one poll
+	// at now and returns the learned limits of the state that poll saved.
+	setup := func(t *testing.T, recs []adapter.UsageRecord, learned int64) (*daemonProj, func(now time.Time) map[string]daemon.LearnedLimit) {
+		f, _, _ := limitFixture(t)
+		f.ctx.Getenv = func(string) string { return "" }
+		f.ctx.Wd = t.TempDir() // outside any root, so hits stay in this repo
+		holdFakeRecords = recs
+		t.Cleanup(func() { holdFakeRecords = nil })
+		p, err := newDaemonProj(f.ctx, "p", f.ctx.Root, daemon.Holder{}, true, DaemonRequest{}, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		p.state.Learned = []daemon.LearnedLimit{{Kind: "weekly", Tokens: learned, HitAt: old}}
+		poll := func(now time.Time) map[string]daemon.LearnedLimit {
+			f.ctx.Now = func() time.Time { return now }
+			if turn := p.prepare(DaemonRequest{}, nil); turn.err != nil {
+				t.Fatal(turn.err)
+			}
+			p.saveState()
+			st, ok := daemon.ReadState(p.common)
+			if !ok {
+				t.Fatal("the poll saved no daemon state")
+			}
+			got := map[string]daemon.LearnedLimit{}
+			for _, l := range st.Learned {
+				got[l.Kind] = l
+			}
+			return got
+		}
+		return p, poll
+	}
+	hit := func(p *daemonProj, at time.Time) {
+		daemon.RecordLimitHitIn(limitsDir(p.ctx, p.common), daemon.LimitHit{HitAt: at, ResetAt: weekly(at), Agent: holdFakeAgent})
+	}
+	recs := []adapter.UsageRecord{{At: t0, Tokens: 600}, {At: t0.Add(time.Hour), Tokens: 900}}
+
+	t.Run("use past the limit with no hit raises it", func(t *testing.T) {
+		_, poll := setup(t, recs, 1000)
+		if l := poll(t0.Add(2 * time.Hour))["weekly"]; l.Tokens != 1500 || !l.HitAt.Equal(old) {
+			t.Errorf("saved learned %+v: want 1500 at the old hit time", l)
+		}
+	})
+
+	t.Run("use under the limit leaves it", func(t *testing.T) {
+		_, poll := setup(t, recs, 2000)
+		if l := poll(t0.Add(2 * time.Hour))["weekly"]; l.Tokens != 2000 || !l.HitAt.Equal(old) {
+			t.Errorf("saved learned %+v: want 2000 left alone", l)
+		}
+	})
+
+	t.Run("a window holding a hit keeps the use at the hit", func(t *testing.T) {
+		more := append(append([]adapter.UsageRecord(nil), recs...), adapter.UsageRecord{At: t0.Add(2 * time.Hour), Tokens: 700})
+		p, poll := setup(t, more, 1000)
+		at := t0.Add(90 * time.Minute)
+		hit(p, at)
+		// The window now holds 2200, but the hit saw 1500.
+		if l := poll(t0.Add(3 * time.Hour))["weekly"]; l.Tokens != 1500 || !l.HitAt.Equal(at) {
+			t.Errorf("saved learned %+v: want the 1500 used at the hit, not the 2200 since", l)
+		}
+	})
+
+	t.Run("a later hit with lower use moves a raised limit down", func(t *testing.T) {
+		week2 := t0.Add(8 * 24 * time.Hour)
+		more := append(append([]adapter.UsageRecord(nil), recs...), adapter.UsageRecord{At: week2, Tokens: 1200})
+		p, poll := setup(t, more, 1000)
+		if l := poll(t0.Add(2 * time.Hour))["weekly"]; l.Tokens != 1500 {
+			t.Fatalf("saved learned %+v: want it raised to 1500 first", l)
+		}
+		at := week2.Add(time.Hour)
+		hit(p, at)
+		got := poll(week2.Add(2 * time.Hour))
+		if l := got["weekly"]; l.Tokens != 1200 || !l.HitAt.Equal(at) {
+			t.Errorf("saved learned %+v: want the later hit's 1200 at %s", l, at)
+		}
+		var learned []daemon.LearnedLimit
+		for _, l := range got {
+			learned = append(learned, l)
+		}
+		rows := []Setting{{Key: "rhiza.daemon.usage.weekly", Value: "42"}}
+		if n, ok := usageLimit(rows, learned, "weekly"); !ok || n != 42 {
+			t.Errorf("weekly limit = %d, %v: want the setting 42", n, ok)
+		}
+	})
+}
