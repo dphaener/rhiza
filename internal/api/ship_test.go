@@ -1522,6 +1522,27 @@ test	Run tests	2026-11-04T10:00:00Z FAIL	github.com/dphaener/rhiza/cmd/rhiza	13.
 	if got := parseFailedTests("Error: setup-go failed\nprocess completed with exit code 1\n"); len(got) != 0 {
 		t.Errorf("infra log = %v, want none", got)
 	}
+	p := "test\tRun specs\t2026-11-04T10:00:00Z "
+	rspec := p + "Failed examples:\n" + p + "\n" +
+		p + "rspec ./spec/views/tasks/list_spec.rb:290 # Tasks list shows rows\n" +
+		p + "rspec ./spec/views/tasks/list_spec.rb:290 # Tasks list shows rows\n" +
+		p + "\x1b[31mrspec ./spec/models/x_spec.rb:5\x1b[0m # X works\n"
+	if got, want := parseFailedTests(rspec), []string{"rspec ./spec/views/tasks/list_spec.rb:290", "rspec ./spec/models/x_spec.rb:5"}; !slices.Equal(got, want) {
+		t.Errorf("rspec = %v, want %v", got, want)
+	}
+	mini := p + "bin/rails test test/models/x_test.rb:12\n" + p + "rails test test/models/y_test.rb:3\n"
+	if got, want := parseFailedTests(mini), []string{"bin/rails test test/models/x_test.rb:12", "rails test test/models/y_test.rb:3"}; !slices.Equal(got, want) {
+		t.Errorf("minitest = %v, want %v", got, want)
+	}
+	py := p + "FAILED tests/test_x.py::test_y - AssertionError: nope\n"
+	if got, want := parseFailedTests(py), []string{"pytest tests/test_x.py::test_y"}; !slices.Equal(got, want) {
+		t.Errorf("pytest = %v, want %v", got, want)
+	}
+	for _, none := range []string{p + "1 failure\n", p + "FAIL src/x.test.js\n", p + "Error: runner lost contact\n", p + "see rspec ./spec/x_spec.rb:1 above\n"} {
+		if got := parseFailedTests(none); len(got) != 0 {
+			t.Errorf("%q = %v, want none", none, got)
+		}
+	}
 }
 
 // --test-failures passes only with a failing test recorded for the head,
