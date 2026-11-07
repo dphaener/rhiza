@@ -215,7 +215,7 @@ func servRun(w http.ResponseWriter, r *http.Request) {
 		d.Frag = "run-detail?run=" + url.QueryEscape(r.PathValue("id"))
 		d.LogFrag = "run-log?run=" + url.QueryEscape(r.PathValue("id"))
 	}
-	render(w, "run", page{Title: d.Title, Nav: "runs", Data: d})
+	render(w, r, "run", page{Title: d.Title, Nav: "runs", Data: d})
 }
 
 func init() {

@@ -13,11 +13,11 @@
 <link rel="stylesheet" href="/static/css/rhiza-tokens.css">
 <link rel="stylesheet" href="/static/css/rhiza.css">
 </head>
-<body class="rz">
+<body class="rz"{{if .Base}} data-rz-base="{{.Base}}"{{end}}>
 <div class="rz-app">
 <header class="rz-header">
   <a class="rz-wordmark" href="/"><b>Rhiza</b><span>monitor</span></a>
-  <nav class="rz-nav" aria-label="Pages">{{if eq .Nav "projects"}}<a href="/projects" aria-current="page">Projects</a>{{end}}{{if eq .Nav "inbox"}}<a href="/inbox" aria-current="page">Inbox</a>{{end}}<a href="/"{{if eq .Nav "overview"}} aria-current="page"{{end}}>Overview</a><a href="/runs"{{if eq .Nav "runs"}} aria-current="page"{{end}}>Runs</a><a href="/roadmap"{{if eq .Nav "roadmap"}} aria-current="page"{{end}}>Roadmap</a></nav>
+{{if .Switcher}}{{template "switcher" .Switcher}}{{end}}  <nav class="rz-nav" aria-label="Pages">{{if eq .Nav "projects"}}<a href="/projects" aria-current="page">Projects</a>{{end}}{{if eq .Nav "inbox"}}<a href="/inbox" aria-current="page">Inbox</a>{{end}}<a href="/"{{if eq .Nav "overview"}} aria-current="page"{{end}}>Overview</a><a href="/runs"{{if eq .Nav "runs"}} aria-current="page"{{end}}>Runs</a><a href="/roadmap"{{if eq .Nav "roadmap"}} aria-current="page"{{end}}>Roadmap</a></nav>
   <div class="rz-header-end">{{if .Daemon.Text}}{{template "pill" .Daemon}}{{end}}<span class="rz-live" title="Live stream connected"><span class="rz-live-dot" aria-hidden="true"></span>live</span></div>
 </header>
 <main class="rz-main">
@@ -28,3 +28,5 @@
 <script src="/static/app.js" defer></script>
 </body>
 </html>{{end}}
+
+{{define "switcher"}}<nav class="rz-switcher" aria-label="Project"><a class="rz-switcher-all" href="/projects">All projects</a>{{range .Items}}<a href="{{.Href}}"{{if .Current}} aria-current="true"{{end}}>{{.Name}}</a>{{end}}</nav>{{end}}

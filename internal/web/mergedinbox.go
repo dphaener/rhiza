@@ -53,6 +53,6 @@ func MergedInbox(src MergedInboxSource) http.Handler {
 		if src != nil {
 			rows = mergedInboxRows(src())
 		}
-		render(w, "mergedinbox", page{Title: "Inbox", Nav: "inbox", Inbox: InboxPanel{Rows: rows}})
+		render(w, r, "mergedinbox", page{Title: "Inbox", Nav: "inbox", Inbox: InboxPanel{Rows: rows}})
 	})
 }

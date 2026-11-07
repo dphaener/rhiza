@@ -2,6 +2,8 @@ package web
 
 import (
 	"net/http"
+	"net/url"
+	"slices"
 	"strings"
 )
 
@@ -65,7 +67,19 @@ func RootWithInbox(home http.Handler, project ProjectResolver, projects Projects
 			http.Redirect(w, r, ProjectPrefix+name+"/", http.StatusMovedPermanently)
 			return
 		}
-		r2 := r.Clone(r.Context())
+		sc := &scope{Name: name, Prefix: ProjectPrefix + url.PathEscape(name), Tail: tail, Names: []string{name}}
+		if projects != nil {
+			sc.Names = sc.Names[:0]
+			for _, p := range projects() {
+				if p.Initialised {
+					sc.Names = append(sc.Names, p.Name)
+				}
+			}
+			if !slices.Contains(sc.Names, name) {
+				sc.Names = append(sc.Names, name)
+			}
+		}
+		r2 := withScope(r.Clone(r.Context()), sc)
 		r2.URL.Path = "/" + tail
 		r2.URL.RawPath = ""
 		h.ServeHTTP(w, r2)
