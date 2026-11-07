@@ -172,9 +172,19 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		if once {
 			return writeError(stdout, stderr, api.Usagef("tui app request has no --once: it files a request from its form"), false)
 		}
-		out, err := modalshell.New(requestapp.New(func(op string, args []string) ([]byte, error) {
+		// A request is queued in the app's current project: the one holding
+		// the pane's directory, or the one picked first.
+		wd, _ := os.Getwd()
+		current, _ := projectctx.Current(wd)
+		names, folder := projectctx.Folders(wd)
+		out, err := modalshell.New(requestapp.NewIn(func(project, op string, args []string) ([]byte, error) {
+			if project != "" && folder != nil {
+				if err := os.Chdir(folder(project)); err != nil {
+					return nil, err
+				}
+			}
 			return call(op, false, false, args)
-		}, colorprofile.Detect(os.Stdout, os.Environ()))).WithHeader(header).Run()
+		}, colorprofile.Detect(os.Stdout, os.Environ()), current, names)).WithHeader(header).Run()
 		if err != nil {
 			return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
 		}

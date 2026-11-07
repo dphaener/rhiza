@@ -31,3 +31,17 @@ func Header(dir string) string {
 	}
 	return NoProject
 }
+
+// Folders are the registered projects of the root that dir is under, by
+// name, with the folder of each. It is empty when dir is under no root.
+func Folders(dir string) (names []string, folder func(string) string) {
+	root, ok := rootcfg.Find(dir)
+	if !ok {
+		return nil, nil
+	}
+	cfg, err := rootcfg.Load(root)
+	if err != nil {
+		return nil, nil
+	}
+	return cfg.Names(), func(name string) string { return cfg.Dir(root, name) }
+}
