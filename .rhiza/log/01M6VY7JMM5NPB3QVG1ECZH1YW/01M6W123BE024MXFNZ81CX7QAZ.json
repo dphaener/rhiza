@@ -1,0 +1,132 @@
+{
+  "actor": "01M6W0WF22XVKYF70NJK8VC2F9",
+  "after": [
+    "01M6W0SYNDRHTTEK1VXDSDM25T"
+  ],
+  "at": "2026-11-07T22:11:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 66e50695 with a built binary in a scratch repo: change new 'Link it' --ref with ESC, newline and backticks; --json and change show --json returned it verbatim (\\u001b, \\n); human change show printed '- Ref: \"https://ex.com/i/1\\x1b[31m\\n`x`\"' with no raw ESC (cat -v); the open entry is stored at v 4 with a ref key, and a change set without --ref has none. A binary built from the merge-base refused the entry: 'newer format: field \"v\": 4, this Rhiza reads 3'. go test ./internal/changeset/... and TestScripts/change-set-ref pass."
+        },
+        "handle": "change-set-ref-qa-1",
+        "id": "01M6W122X39SKC29Z826ZN1FX9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W122X39SKC29Z826A3CCQP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W122X39SKC29Z826A3CCQP",
+        "id": "01M6W122XNA7R2N1AJADYST829",
+        "link": "01M6W122XNA7R2N1AJADS7DP15",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMKCZ09KBA0BHCVXF1Y7G",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 66e50695 with a built binary: a scratch root plus project, daemon --once --max-runs 0 --event-command appending stdin to a file; after the recording first poll, proposed and accepted moves of a change set with --ref https://github.com/o/r/issues/42 and a proposed move of one without. The second poll wrote three payloads: both moves of the first carry \"ref\":\"https://github.com/o/r/issues/42\" verbatim, the plain one has no ref key. TestDaemonEventsRef passes."
+        },
+        "handle": "event-payload-ref-qa-1",
+        "id": "01M6W122Z27DS8K7BV9X61SNFJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W122Z27DS8K7BV9W0QJYWR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W122Z27DS8K7BV9W0QJYWR",
+        "id": "01M6W1230KSW4JKJDGNC4R523V",
+        "link": "01M6W1230KSW4JKJDGN8C9YBBN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMKEVBTRJ5WA7618HFQF8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 66e50695 with a built binary: run start --workflow plan --new 'Planned' --ref 'https://ex.com/9' --permission-mode manual queued the plan run and opened a change set whose change show --json has \"ref\":\"https://ex.com/9\"; run start --workflow plan --ref x without --new is a usage error '--ref goes with --new'. The daemon's detached start (needs Rex and an agent) was not run by hand; TestRequestPlanRunArgsPassRef covers that the plan run arguments carry --ref for a request with one and none without."
+        },
+        "handle": "plan-run-carries-ref-qa-1",
+        "id": "01M6W12327KVMDWV6F5TB4DKJS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W12327KVMDWV6F5PN8662B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W12327KVMDWV6F5PN8662B",
+        "id": "01M6W1233GTAMX0AEDWG9S8MHN",
+        "link": "01M6W1233GTAMX0AEDWCGP5Q9X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMKDW2EP33TZA6ABET0V8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 66e50695 with a built binary: request 'Fix login' --kind bug --ref '  https://github.com/o/r/issues/7  ' stored it trimmed; a ref with an OSC sequence, BEL and newline came back verbatim in request ls --json and Go-quoted in human request ls ('[ref \"x\\x1b]0;pwn\\a\\ny\"]', no raw control bytes); 2048 bytes queued; 2049 bytes exited 2 with '--ref is 2049 bytes, at most 2048' and queued nothing; --ref '' queued a request with no ref key. TestScripts/request-ref and describe-golden pass."
+        },
+        "handle": "request-ref-qa-1",
+        "id": "01M6W1234PYBBJF17T85Z4TY2D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W1234PYBBJF17T8391AEWF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W1234PYBBJF17T8391AEWF",
+        "id": "01M6W1236PTFND7B60CPHAE13B",
+        "link": "01M6W1236PTFND7B60CKMPJXT1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMKBYZQBDVR648YSHRVEY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 66e50695: read prBodyRef and its use in ship open-pr (the ref from the change set's open, appended to the summary as one inline code span with backticks, CR/LF and control characters escaped). Opening a real PR needs gh and was not run by hand; go test ./internal/api -run OpenPR passes, including TestShipOpenPRBodyRef (backticks, newline and @mention ref in one escaped span; no ref line without a ref)."
+        },
+        "handle": "ship-pr-body-ref-qa-1",
+        "id": "01M6W12389SC0QE6KMY0B07B4R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W12389SC0QE6KMY04T3SPP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W12389SC0QE6KMY04T3SPP",
+        "id": "01M6W1239YQYQQA6M0BBWDBWEF",
+        "link": "01M6W1239YQYQQA6M0B9VEC9XY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMKG6TVD7M4Y8QM04GP38",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7JMM5NPB3QVG1ECZH1YW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W123BE024MXFNZ81CX7QAZ",
+  "type": "ops",
+  "v": 1
+}
