@@ -23,6 +23,9 @@ CLI and TUI apps now. The assistant's option, picked by the owner.
 ### In
 
 - decided-by [m29-surfaces-across-projects](../intent/milestone-29/m29-surfaces-across-projects.md)
+- decided-by [tui-project-switch](../capability/rhiza/tui-project-switch.md)
+- decided-by [tui-merged-inbox](../capability/rhiza/tui-merged-inbox.md)
+- decided-by [tui-runs-daemon-across-projects](../capability/rhiza/tui-runs-daemon-across-projects.md)
 
 ## History
 
