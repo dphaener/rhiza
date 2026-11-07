@@ -1,0 +1,40 @@
+{
+  "actor": "01M6SRGDD0B3W11H3QT63JHKR2",
+  "after": [
+    "01M6SSAFT4T0J506RRMDE0XNP1"
+  ],
+  "at": "2026-11-07T01:31:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 318b2ef1, go test -trimpath ./cmd/rhiza -run 'TestScripts/(roadmap|describe-golden|inbox|health)' passes, including the new roadmap-projects.txtar: with a root of two projects (alpha with a milestone, beta with a backlog change set), rhiza roadmap --json at the root gives alpha's milestone group and beta's backlog group, each group and change set tagged with its project; --project alpha/beta and running from inside alpha give only that project's part, with no project tags; --project nope fails with 'not registered'. By hand with a scratch build and a fresh two-project root, the human roadmap shows '## alpha: ma' and '## beta: Backlog', and --limit 1 paging continues from alpha onto beta's backlog, ending with next_cursor null. go test ./internal/api -run 'Roadmap|Health|Milestone|Plan|Inbox' passes. The usage/limit tests in internal/api pass at this commit in a clean worktree; they failed only inside the verifier checkout, and also fail there on code this diff does not touch. Read the diff: health and the web milestones view keep a local-only roadmap; cursors carry the project."
+        },
+        "handle": "roadmap-across-projects-verified",
+        "id": "01M6ST3PPXKK6VTNRG919BPYJE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ST3PPXKK6VTNRG8ZN341PX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ST3PPXKK6VTNRG8ZN341PX",
+        "id": "01M6ST3PR8Q7NSQ1JFY6T0X52H",
+        "link": "01M6ST3PR8Q7NSQ1JFY3T4M0EB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85QCT4TJYR8BAR6KZ499",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6RN3VGZ7D1JK4FRPNX21WHX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ST3PS6XTP43SR17BD96SF7",
+  "type": "ops",
+  "v": 1
+}
