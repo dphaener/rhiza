@@ -1,0 +1,40 @@
+# A change set's opaque ref: set with --ref, shown by change show, and
+# only a ref-carrying open is a format-4 entry.
+
+exec rhiza init
+
+exec rhiza change new 'Linked work' --title 'Linked work' --ref 'https://example.com/issues/7' --json
+stdout '"ref": "https://example.com/issues/7"'
+exec rhiza change show --json
+stdout '"ref": "https://example.com/issues/7"'
+exec rhiza change show
+stdout '^- Ref: "https://example.com/issues/7"$'
+fold-ok
+exec grep -rl '"v": 4' .rhiza/log
+stdout -count=1 '\.json$'
+
+# Control bytes are quoted in human output.
+exec sh -c 'rhiza change new Hostile --ref "$(printf "a\033[31mb\nc")" --json'
+exec rhiza change show
+stdout '^- Ref: "a\\x1b\[31mb\\nc"$'
+! stdout '\x1b'
+fold-ok
+
+# Without a ref nothing shows and the open stays format 1.
+exec rhiza change new 'Plain work'
+exec rhiza change show --json
+! stdout '"ref"'
+exec rhiza change show
+! stdout 'Ref:'
+exec grep -rl '"v": 4' .rhiza/log
+stdout -count=2 '\.json$'
+
+# Over 2048 bytes is a usage error and writes nothing.
+exec ls -R .rhiza/log
+cp stdout before.txt
+exec sh -c 'head -c 2049 /dev/zero | tr "\0" a > long.txt'
+! exec sh -c 'rhiza change new x --ref "$(cat long.txt)" --json'
+stdout '"code": "usage"'
+stdout '2049 bytes, at most 2048'
+exec ls -R .rhiza/log
+cmp stdout before.txt

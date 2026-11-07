@@ -138,8 +138,8 @@ func TestGolden(t *testing.T) {
 }
 
 func TestVersions(t *testing.T) {
-	if FormatVersion != 3 {
-		t.Fatalf("FormatVersion = %d, want 3", FormatVersion)
+	if FormatVersion != 4 {
+		t.Fatalf("FormatVersion = %d, want 4", FormatVersion)
 	}
 	// Every format reads and writes; the envelope is the same in each.
 	for v := 1; v <= FormatVersion; v++ {
@@ -254,9 +254,9 @@ var decodeFailures = []struct {
 	{"v negative", swap(`"v": 1`, `"v": -1`), ErrInvalid, "v", ""},
 	{"v string", swap(`"v": 1`, `"v": "1"`), ErrInvalid, "v", ""},
 	{"v missing", swap(`,`+"\n"+`  "v": 1`, ``), ErrInvalid, "v", ""},
-	{"v 4", swap(`"v": 1`, `"v": 4`), ErrNewerFormat, "v", ""},
-	{"v 4 with unknown keys", "{\n  \"future\": [],\n  \"v\": 4\n}\n", ErrNewerFormat, "v", ""},
-	{"reopen v 4", strings.Replace(swap(`"type": "note"`, `"type": "reopen"`), `"v": 1`, `"v": 4`, 1), ErrNewerFormat, "v", ""},
+	{"v 5", swap(`"v": 1`, `"v": 5`), ErrNewerFormat, "v", ""},
+	{"v 5 with unknown keys", "{\n  \"future\": [],\n  \"v\": 5\n}\n", ErrNewerFormat, "v", ""},
+	{"reopen v 5", strings.Replace(swap(`"type": "note"`, `"type": "reopen"`), `"v": 1`, `"v": 5`, 1), ErrNewerFormat, "v", ""},
 	{"missing for", swap(`  "for": "`+sFor+`",`+"\n", ``), ErrInvalid, "for", "missing"},
 	{"extra key", swap(`  "for"`, `  "extra": 1,`+"\n"+`  "for"`), ErrInvalid, "extra", "unknown"},
 	{"lower-case id", swap(sID, strings.ToLower(sID)), ErrInvalid, "id", ""},
@@ -351,7 +351,7 @@ func TestEncodeFailures(t *testing.T) {
 		field  string
 	}{
 		{"v 0", func(e *Entry) { e.V = 0 }, "v"},
-		{"v 4", func(e *Entry) { e.V = 4 }, "v"},
+		{"v 5", func(e *Entry) { e.V = 5 }, "v"},
 		{"reopen v 1", func(e *Entry) { e.Type = TypeReopen }, "type"},
 		{"reopen v 2", func(e *Entry) { e.Type, e.V = TypeReopen, 2 }, "type"},
 		{"v negative", func(e *Entry) { e.V = -1 }, "v"},

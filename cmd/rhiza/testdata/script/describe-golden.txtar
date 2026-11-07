@@ -963,6 +963,10 @@ cmp stdout describe.golden.json
             ],
             "type": "string"
           },
+          "ref": {
+            "description": "An opaque external reference, such as an issue URL, at most 2048 bytes; Rhiza never interprets it",
+            "type": "string"
+          },
           "sources": {
             "description": "A source node the change set comes from: an ID, ID prefix or handle",
             "items": {
@@ -1008,6 +1012,10 @@ cmp stdout describe.golden.json
           },
           "kind": {
             "description": "intention or record",
+            "type": "string"
+          },
+          "ref": {
+            "description": "The change set's opaque external reference, if any",
             "type": "string"
           },
           "sources": {
@@ -1378,6 +1386,10 @@ cmp stdout describe.golden.json
               "type": "string"
             },
             "type": "array"
+          },
+          "ref": {
+            "description": "The change set's opaque external reference, if any: untrusted text",
+            "type": "string"
           },
           "serves": {
             "description": "The intents its live serves links point to, in its write view, by link ID; empty when it serves none yet",
