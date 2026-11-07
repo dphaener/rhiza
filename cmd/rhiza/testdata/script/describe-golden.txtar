@@ -7590,6 +7590,10 @@ cmp stdout describe.golden.json
           "text": {
             "description": "What to plan, in one line",
             "type": "string"
+          },
+          "workflow": {
+            "description": "A workflow, by name, for the change set the request's plan run opens: it overrides that change set's ready pick only, not the plan run's own workflow; default none (the dispatch rules choose)",
+            "type": "string"
           }
         },
         "required": [
@@ -7638,6 +7642,10 @@ cmp stdout describe.golden.json
               },
               "text": {
                 "description": "What to plan",
+                "type": "string"
+              },
+              "workflow": {
+                "description": "The workflow the request named for its change set's ready pick; absent if none",
                 "type": "string"
               }
             },
@@ -7705,6 +7713,10 @@ cmp stdout describe.golden.json
                 },
                 "text": {
                   "description": "What to plan",
+                  "type": "string"
+                },
+                "workflow": {
+                  "description": "The workflow the request named for its change set's ready pick; absent if none",
                   "type": "string"
                 }
               },

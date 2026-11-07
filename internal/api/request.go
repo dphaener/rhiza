@@ -43,6 +43,7 @@ type RequestRequest struct {
 	Text      string `json:"text" arg:"0" desc:"What to plan, in one line"`
 	Kind      string `json:"kind,omitempty" enum:"feature,bug,milestone" desc:"feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed 'Fix ' (so its title names the bug), a milestone's a record change set"`
 	Milestone string `json:"milestone,omitempty" flag:"milestone" desc:"A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)"`
+	Workflow  string `json:"workflow,omitempty" flag:"workflow" desc:"A workflow, by name, for the change set the request's plan run opens: it overrides that change set's ready pick only, not the plan run's own workflow; default none (the dispatch rules choose)"`
 }
 
 // RequestInfo is one plan request.
@@ -51,6 +52,7 @@ type RequestInfo struct {
 	Kind      string `json:"kind" desc:"feature, bug or milestone"`
 	Text      string `json:"text" desc:"What to plan"`
 	Milestone string `json:"milestone,omitempty" desc:"The ID of the milestone intent the request names; absent if none"`
+	Workflow  string `json:"workflow,omitempty" desc:"The workflow the request named for its change set's ready pick; absent if none"`
 	At        string `json:"at" desc:"When it was queued, RFC 3339 UTC"`
 	State     string `json:"state" desc:"queued, planning (its plan run started), planned (its run succeeded) or failed (its run failed)"`
 	Run       string `json:"run,omitempty" desc:"Its plan run; absent while queued"`
@@ -85,6 +87,9 @@ func (r RequestLsResponse) Human(w io.Writer) {
 	}
 	for _, q := range r.Requests {
 		fmt.Fprintf(w, "- %s %s %s: %s", q.ID, q.Kind, q.State, q.Text)
+		if q.Workflow != "" {
+			fmt.Fprintf(w, " [workflow %s]", q.Workflow)
+		}
 		if q.Run != "" {
 			fmt.Fprintf(w, " (run %s", q.Run)
 			if q.Change != "" {
@@ -119,6 +124,16 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	wf := strings.TrimSpace(r.Workflow)
+	if wf != "" {
+		_, _, found, err := lookupWorkflow(ctx.Root, wf)
+		if err != nil {
+			return nil, Errorf("workflow %q: %v", wf, err)
+		}
+		if !found {
+			return nil, Usagef("--workflow %q: there is no such workflow in %s, your personal workflows or built in", wf, workflowsDir).WithNext("rhiza workflow ls")
+		}
+	}
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return nil, err
@@ -129,7 +144,7 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		q = daemon.Request{ID: rid, Kind: kind, Text: text, Milestone: milestone, At: ctx.Now().UTC()}
+		q = daemon.Request{ID: rid, Kind: kind, Text: text, Milestone: milestone, Workflow: wf, At: ctx.Now().UTC()}
 		return append(reqs, q), nil
 	}
 	if ctx.DryRun {
@@ -219,7 +234,7 @@ func runRequestLs(ctx *Ctx, req any) (any, error) {
 
 func requestInfo(q daemon.Request, runs []run.Journal) RequestInfo {
 	state, change := daemon.RequestState(q, runs)
-	return RequestInfo{ID: q.ID, Kind: q.Kind, Text: q.Text, Milestone: q.Milestone, At: q.At.UTC().Format(time.RFC3339), State: state, Run: q.Run, Change: change}
+	return RequestInfo{ID: q.ID, Kind: q.Kind, Text: q.Text, Milestone: q.Milestone, Workflow: q.Workflow, At: q.At.UTC().Format(time.RFC3339), State: state, Run: q.Run, Change: change}
 }
 
 // daemonPlanRequests starts a plan run, in a new Rex tab, for each of the
