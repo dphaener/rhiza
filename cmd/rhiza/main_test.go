@@ -16,15 +16,22 @@ import (
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/rootguard"
 	runpkg "github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
 	"github.com/rogpeppe/go-internal/testscript"
 )
 
 func TestMain(m *testing.M) {
-	testscript.Main(m, map[string]func(){
-		"rhiza": main,
-	})
+	os.Exit(rootguard.Main(func() int {
+		return testscript.RunMain(m, map[string]func() int{
+			"rhiza": func() int {
+				return profiled(os.Getenv("RHIZA_CPUPROFILE"), func() int {
+					return run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr, os.Getenv)
+				})
+			},
+		})
+	}))
 }
 
 // -update rewrites a script's archive file when a `cmp stdout <file>` fails,
