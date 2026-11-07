@@ -1,0 +1,28 @@
+{
+  "actor": "01M6VYX2NDFCRW9A550HVSS0EZ",
+  "after": [
+    "01M6VYMQGDMMFKWRMGWGH7PXH0"
+  ],
+  "at": "2026-11-07T21:34:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6RNJW1SR1KMZHG5CQ34D137",
+        "handle": null,
+        "id": "01M6VYK51YPTGWVTFS4M24EH1C",
+        "node": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "op": "node.update",
+        "set": {
+          "statement": "Each poll, the daemon picks, in each project, the accepted change sets that rhiza ready says can start, that serve a milestone intent or, as daemon-picks-backlog sets out by the repo's [schedule] backlog rule, serve none, have at least one leaf, have no live run (running or interrupted, as run-one-live counts it) and whose latest run is not a failed run still in the inbox (as inbox-list keeps it: not abandoned, not retried, no newer run), in that project's roadmap milestone order (with the backlog placed and ordered as daemon-picks-backlog sets out, not by the roadmap's backlog group), and starts them, round-robin across projects as root-daemon-round-robin sets out, until its running runs (live runs whose process is running) reach the machine-wide maxRuns (default 2), so an interrupted run keeps its change set from being picked but takes no slot and a failed run's change set is never started again by the daemon until the owner clears that item; it never picks a draft, proposed or leafless change set on its own. Runs the owner queued (run-start-through-daemon) are not picks: they skip these filters and only share the maxRuns slots."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6VY7GRV7BAJ9MMFVAY9GPZ2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYY88KM3CN31HHDM74641C",
+  "type": "ops",
+  "v": 1
+}

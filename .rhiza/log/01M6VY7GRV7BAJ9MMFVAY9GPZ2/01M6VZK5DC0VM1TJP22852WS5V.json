@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6VZ8MZSRF5RJYHFCQT34AQH"
+  ],
+  "at": "2026-11-07T21:45:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on daemon-picks-backlog): The new default (backlog = \"after\", used with no policy.toml) contradicts two landed testscripts that no leaf of the plan names. (1) cmd/rhiza/testdata/script/daemon-picks.txtar accepts a 'Backlog' change set with a leaf serving no milestone, then polls with --min-free 0 under the default max-runs 2 and expects exactly one 'Started a run of' (stdout -count=1, around lines 64-70). Under 'after' the Backlog change set would also start. (2) cmd/rhiza/testdata/script/daemon-status-projects.txtar (capability daemon-status-across-projects) expects each project's accepted no-milestone 'Orphan' to be skipped with reason no-milestone / 'serves no milestone' (lines 73-82). Under the default it would be picked. daemon-picks-backlog's acceptance covers only daemon_picks_test.go, and daemon-status-skips covers only daemon-status.txtar. A leaf's acceptance should say how these two scripts change (set backlog = \"skip\" in their repos, or expect the backlog pick). The critic confirmed it: No leaf's acceptance names daemon-picks.txtar or daemon-status-projects.txtar (daemon-status-skips names only daemon-status.txtar, daemon-picks-backlog only daemon_picks_test.go and a new testscript). In daemon-picks.txtar the Backlog change set has a leaf (backlog-leaf), serves only the non-milestone intent plain and is accepted; with no policy.toml and the default max-runs of 2, the 20 GiB poll expects stdout -count=1 '^Started a run of ', which fails once Backlog is picked under the default after. daemon-status-projects.txtar expects each project's accepted, leafed Orphan skipped with reason no-milestone / 'serves no milestone', which the default also turns into a pick. The plan contradicts these landed scripts without saying how they change. How should it be settled?"
+        },
+        "handle": "review-01m6vy7e-r3-f1",
+        "id": "01M6VZK56QGXB742TV3ZPV5YJH",
+        "key": null,
+        "kind": "question",
+        "node": "01M6VZK56QGXB742TV3WNV21K6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6VZK56QGXB742TV3WNV21K6",
+        "id": "01M6VZK58AV59YSDQSE4J05955",
+        "link": "01M6VZK58AV59YSDQSE4DV2600",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYK4TRY2VN9XHGKRD9V4XZ",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6VY7GRV7BAJ9MMFVAY9GPZ2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VZK5DC0VM1TJP22852WS5V",
+  "type": "ops",
+  "v": 1
+}

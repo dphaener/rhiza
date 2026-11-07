@@ -1,0 +1,94 @@
+{
+  "actor": "01M6VZ6P7BB4N0N6KF9HQ6VRFZ",
+  "after": [
+    "01M6VYY88KM3CN31HHDM74641C"
+  ],
+  "at": "2026-11-07T21:40:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test of daemonCandidates over a fixture with two milestone change sets and two backlog change sets with leaves, accepted at different times, gives milestone then backlog-oldest-first under after, backlog-oldest-first then milestone under before, only the milestone ones with both backlog ones skipped no-milestone under skip, and under an unknown value the skip with the value in its detail; the existing case in internal/api/daemon_picks_test.go that expects SkipNoMilestone for a backlog change set with no policy now expects it picked (or sets backlog = \"skip\"); a testscript runs rhiza daemon --once with a fake Rex on a repo whose only accepted change set serves no milestone, sees it started with no policy.toml, and not started with backlog = \"skip\"",
+          "statement": "The daemon picks accepted, ready change sets with a leaf that serve no milestone by the repo's [schedule] backlog rule: after (the default), after every milestone group's candidates; before, ahead of them; skip, never, skipped as 'serves no milestone' as today. Within the backlog it picks the oldest accepted first (by the time each change set was last accepted or reopened). With an unknown backlog value it skips every backlog change set as 'serves no milestone' and puts the bad value in the skip's detail, so rhiza daemon status shows it"
+        },
+        "handle": "daemon-picks-backlog",
+        "id": "01M6VYK4TRY2VN9XHGKT0WDVTP",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6VYK4TRY2VN9XHGKRD9V4XZ",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      },
+      {
+        "decision": null,
+        "from": "01M6VYH21ZJVTTS56VT3D87NYH",
+        "id": "01M6VZ8MCV50EVRP6SQ8J0WGQ8",
+        "link": "01M6VZ8MCV50EVRP6SQ4R9VC9N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JDXH6A7W60623XN96ZV9JV",
+        "type": "supersedes"
+      },
+      {
+        "base": "01M6JE3Q7D5D1W99YE5STTKE6J",
+        "id": "01M6VZ8MEWCP8DTJQT97K8711Y",
+        "link": "01M6JE3Q7D5D1W99YE5PKRCB61",
+        "op": "link.retire"
+      },
+      {
+        "base": "01M6JE3XSQYS53CM8R8R0A2SJE",
+        "id": "01M6VZ8MJ12FBH89MT8BTJMNDJ",
+        "link": "01M6JE3XSQYS53CM8R8QVEQSCK",
+        "op": "link.retire"
+      },
+      {
+        "base": "01M6MJFRDB10S1DKAEE2HWHRF8",
+        "handle": null,
+        "id": "01M6VZ8MM7A154ZSV99WYVRW98",
+        "node": "01M5WSGDJMV9EEVE603M22PTYT",
+        "op": "node.update",
+        "set": {
+          "statement": "The binary ships a built-in plan workflow: an interview agent step driven by the rhiza-plan skill, then a milestone-check command step (rhiza run milestone-check) that ends the run failed only as plan-step-milestone-check sets out (a planned change set serving no milestone passes, unless the run was started with a milestone it does not serve or the repo's [schedule] backlog is \"skip\"), then rounds of a fresh review agent step told only the change set's ID, a critic agent step and rhiza run review-check, with a revise agent step on a failed check, then rhiza run gate, and after it the ship steps open-pr, wait-pr, pr-green, rebase, wait-rebased, rebased-green, merge and close-out. It writes no plan file."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDJMV9EEVE603M22PTYT",
+        "id": "01M6VZ8MQRCXC22YKQRC0ASXA6",
+        "link": "01M6VZ8MQRCXC22YKQR8140N8K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMQ92BYC34XV88RA2A320",
+        "type": "depends-on"
+      },
+      {
+        "base": "01M686TKZGT5S1SHQSCKFXQZ0B",
+        "handle": null,
+        "id": "01M6VZ8MTASJB92K9P4RAGDGAP",
+        "node": "01M686TKZGT5S1SHQSCK4QPPRR",
+        "op": "node.update",
+        "set": {
+          "acceptance": "daemon-status.txtar sets up an accepted change set serving no milestone in a repo whose .rhiza/policy.toml sets [schedule] backlog = \"skip\", one with no leaves and one depending on an unlanded change set, runs daemon --once, and checks Skipped: lines with serves no milestone and the JSON skipped list with reason not-ready and its reasons; describe-golden.txtar is regenerated"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M686TKZGT5S1SHQSCK4QPPRR",
+        "id": "01M6VZ8MW7GMZCEZM0TR73P2RB",
+        "link": "01M6VZ8MW7GMZCEZM0TNHJE64N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYK4TRY2VN9XHGKRD9V4XZ",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6VY7GRV7BAJ9MMFVAY9GPZ2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VZ8MZSRF5RJYHFCQT34AQH",
+  "type": "ops",
+  "v": 1
+}
