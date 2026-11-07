@@ -1,0 +1,468 @@
+{
+  "actor": "01M6W4M30VJFMDVGPM5A3T2ZVN",
+  "after": [
+    "01M6W5GEW594XM8N0G2CJMKBSX"
+  ],
+  "at": "2026-11-07T23:30:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6W4K49SDWJPW9NRF27QVBP3",
+        "id": "01M6W5HTMMYMJPBD63NXGTQZ0E",
+        "link": "01M6W5HTMMYMJPBD63NVP69FQH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HKVRE1B7RPP12EN6J2GGXC",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6W4VFJ8Z4Y2K49NCY21ASDZ",
+        "id": "01M6W5HTP8G0ZNZRVBARSPWF0R",
+        "link": "01M6W5HTP8G0ZNZRVBAPTMJEGR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5GEV7HWZXNE5R20ZJNA6C",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5013PBWWW9NTYV38FRH8R",
+        "id": "01M6W5HTR1YQKF12QNB2HD2HYG",
+        "link": "01M6W5HTR1YQKF12QNB1RAHNZ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5GEV7HWZXNE5R20ZJNA6C",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A repo declares schedules in .rhiza/dispatch.toml and the daemon serving the root runs each one's workflow or command on its slots, as a run with no change set on the project's main checkout"
+        },
+        "handle": "scheduled-triggers",
+        "id": "01M6W5HTS2GPF0MXKPGYN4D6V5",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6W5HTS2GPF0MXKPGWSQF9DM",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HTS2GPF0MXKPGWSQF9DM",
+        "id": "01M6W5HTT52YWSFGASGCY5FQ49",
+        "link": "01M6W5HTT52YWSFGASGCCY6RZV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4VFJ8Z4Y2K49NCY21ASDZ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests in the new schedule package cover: next slot for a step, a list, a range, names and each macro; both day fields restricted matching either; CRON_TZ=America/Denver against a UTC clock; a spring-forward slot skipped and a fall-back slot fired once; every 15m giving :00, :15, :30, :45 whatever the start time; and parse errors for a six-field expression, an unknown zone, every 30s and every -5m",
+          "statement": "A schedule package computes a schedule's slots: cron takes the five-field dialect (minute hour day-of-month month day-of-week) with *, lists, ranges, steps, month and weekday names and the macros @hourly, @daily, @weekly, @monthly and @yearly, read in the machine's local time zone unless prefixed CRON_TZ=<IANA zone>, a slot matching either day field when both are restricted, a slot a DST change skips not firing and one it repeats firing once; every takes a Go duration of at least 1m whose slots are multiples of it since the Unix epoch in UTC"
+        },
+        "handle": "schedule-slots",
+        "id": "01M6W5HTVXNGQK1CJ946A0WZ8Z",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6W5HTVXNGQK1CJ943THTJDB",
+        "op": "node.create",
+        "parent": "01M6W5HTS2GPF0MXKPGWSQF9DM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HTVXNGQK1CJ943THTJDB",
+        "id": "01M6W5HTX2B6Q8G6KVF5RG70FX",
+        "link": "01M6W5HTX2B6Q8G6KVF53GYHHN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4VFJ8Z4Y2K49NCY21ASDZ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HTVXNGQK1CJ943THTJDB",
+        "id": "01M6W5HTYD26CEJ5MV3RD4CJ1C",
+        "link": "01M6W5HTYD26CEJ5MV3PJMCGMY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5013PBWWW9NTYV38FRH8R",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests in the package that parses .rhiza/dispatch.toml cover: no file or no [[schedules]] giving no schedules; an entry with every and workflow and one with cron and command read with defaults catch_up once and overlap skip; each error case (unknown key, duplicate name, every with cron, neither workflow nor command, bad cron, every 30s, catch_up = \"all\", overlap = \"parallel\") failing with an error naming the schedule and the key",
+          "statement": "Rhiza reads [[schedules]] entries from the repo's committed .rhiza/dispatch.toml beside its dispatch tables: each has a name unique in the repo, exactly one of every and cron, exactly one of workflow and command, and optionally catch_up (once, the default, or skip) and overlap (skip, the default, or queue); any other key, a duplicate name, both or neither of a pair, an unparsable every or cron, or an unknown catch_up or overlap value is an error naming the schedule and key"
+        },
+        "handle": "schedules-file",
+        "id": "01M6W5HTZ9ZZ6PWNAJ74C3DSA1",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6W5HTZ9ZZ6PWNAJ739T6ASH",
+        "op": "node.create",
+        "parent": "01M6W5HTS2GPF0MXKPGWSQF9DM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HTZ9ZZ6PWNAJ739T6ASH",
+        "id": "01M6W5HV0NGW4GYCYS2X4W31VP",
+        "link": "01M6W5HV0NGW4GYCYS2TPQ11QD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4VFJ8Z4Y2K49NCY21ASDZ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HTZ9ZZ6PWNAJ739T6ASH",
+        "id": "01M6W5HV25C04EXP2VV1218FT7",
+        "link": "01M6W5HV25C04EXP2VV0E3WJ7E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5013PBWWW9NTYV38FRH8R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HTZ9ZZ6PWNAJ739T6ASH",
+        "id": "01M6W5HV39X1VA1JZ7E679596Y",
+        "link": "01M6W5HV39X1VA1JZ7E4E1MGEG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HTVXNGQK1CJ943THTJDB",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript (schedules-check) shows rhiza check passing with a schedule naming a repo workflow and one with a command, and failing with a schedule naming a missing workflow, with an unknown key and with a bad cron expression, each failure naming the schedule",
+          "statement": "rhiza check fails on a [[schedules]] entry that does not read, or whose workflow neither the repo layer (.rhiza/workflows/) nor the built-in layer resolves, naming .rhiza/dispatch.toml, the schedule's name and the key, as it does for the dispatch rules"
+        },
+        "handle": "schedules-check",
+        "id": "01M6W5HV4DHZKJGNMDBRNT0NPN",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6W5HV4DHZKJGNMDBNYDEBTN",
+        "op": "node.create",
+        "parent": "01M6W5HTS2GPF0MXKPGWSQF9DM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HV4DHZKJGNMDBNYDEBTN",
+        "id": "01M6W5HV5DC6AKTPP6VFEWEXDA",
+        "link": "01M6W5HV5DC6AKTPP6VBWVR6FE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4VFJ8Z4Y2K49NCY21ASDZ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HV4DHZKJGNMDBNYDEBTN",
+        "id": "01M6W5HV61D26CT6RBJRC4SMMJ",
+        "link": "01M6W5HV61D26CT6RBJQA7F6VT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5013PBWWW9NTYV38FRH8R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HV4DHZKJGNMDBNYDEBTN",
+        "id": "01M6W5HV75BM0795TE2V8F3RBT",
+        "link": "01M6W5HV75BM0795TE2S5474R5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HTZ9ZZ6PWNAJ739T6ASH",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api and internal/run start a scheduled run of a command and of a repo workflow in a scratch repo: neither opens a change set or a worktree, both run in the main checkout, each journal records trigger schedule and the name, run ls --json and run status --json show them with no change set, the command's output reaches the run's log, and a workflow with a leaves step fails naming that step",
+          "statement": "A run can be started for a schedule with no change set: it opens none, works in the project's main checkout with no worktree or branch, runs the schedule's workflow, or its command wrapped as an implicit one-step workflow with a single command step, autonomous, and its journal records trigger schedule and the schedule's name in place of a change set, shown by rhiza run ls and rhiza run status; a step that needs a change set (such as a leaves step) fails the run with an error naming the step"
+        },
+        "handle": "scheduled-run",
+        "id": "01M6W5HV83HMQEQ1531AZYD0PK",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6W5HV83HMQEQ15319XERHJ6",
+        "op": "node.create",
+        "parent": "01M6W5HTS2GPF0MXKPGWSQF9DM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HV83HMQEQ15319XERHJ6",
+        "id": "01M6W5HV8JWT6G71C7BGRJAN0V",
+        "link": "01M6W5HV8JWT6G71C7BEHWGTEA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4VFJ8Z4Y2K49NCY21ASDZ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HV83HMQEQ15319XERHJ6",
+        "id": "01M6W5HV998BWJ8PG4H76Q4N3B",
+        "link": "01M6W5HV998BWJ8PG4H4MVZ6CE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HTZ9ZZ6PWNAJ739T6ASH",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api show a scheduled command that leaves the checkout alone recording no warning, and commands that switch branch, make a commit, and modify a tracked file each ending with the run's status as the command left it plus a warning in run status --json and the log naming the branch, the new HEAD or the file",
+          "statement": "When a scheduled run ends, Rhiza compares the main checkout's branch, HEAD and uncommitted tracked changes with their state when the run started, and if the run changed any of them the run's record and log carry a warning naming what changed; nothing is reverted or blocked"
+        },
+        "handle": "main-checkout-change-warning",
+        "id": "01M6W5HVA0S11V8P7TJS8KRYZA",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6W5HVA0S11V8P7TJPCY6QH8",
+        "op": "node.create",
+        "parent": "01M6W5HTS2GPF0MXKPGWSQF9DM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HVA0S11V8P7TJPCY6QH8",
+        "id": "01M6W5HVAK1B1PCDR3T371QYX5",
+        "link": "01M6W5HVAK1B1PCDR3T34PB0CE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5013PBWWW9NTYV38FRH8R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HVA0S11V8P7TJPCY6QH8",
+        "id": "01M6W5HVCAFV0HJM9385ZGKPMG",
+        "link": "01M6W5HVCAFV0HJM9384YF1Q65",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HV83HMQEQ15319XERHJ6",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests in internal/daemon cover: a slot due on time; three missed slots after downtime firing once under catch_up once and none under skip; a new schedule not firing before its first slot; a slot during a running run dropped under overlap skip and fired once at its end under queue, with two such slots still firing once",
+          "statement": "A pure daemon decision says which schedules are due at a time, from each schedule's slots and its runs' journals (the last slot fired and whether its run is still going), so the state survives daemon restarts: one firing per due slot however many slots were missed, catch_up once firing once after downtime and skip waiting for the next slot, a schedule with no run yet waiting for its next slot, overlap skip dropping a slot while the schedule's previous run is going and queue keeping one firing to start when it ends"
+        },
+        "handle": "schedule-due",
+        "id": "01M6W5HVEXS3EA891B7YWVEXFX",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6W5HVEXS3EA891B7V2FAT01",
+        "op": "node.create",
+        "parent": "01M6W5HTS2GPF0MXKPGWSQF9DM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HVEXS3EA891B7V2FAT01",
+        "id": "01M6W5HVGZ6FM14BQNA1SD2G8H",
+        "link": "01M6W5HVGZ6FM14BQNA0ZPJCJY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4VFJ8Z4Y2K49NCY21ASDZ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HVEXS3EA891B7V2FAT01",
+        "id": "01M6W5HVK5VK2VVZT5KKR7S45A",
+        "link": "01M6W5HVK5VK2VVZT5KKG9523E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HTVXNGQK1CJ943THTJDB",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api with a fake clock show a daemon poll over two projects starting each due schedule's run, a due schedule waiting while maxRuns is full and then firing once, an unresolvable workflow starting nothing with a log line naming the schedule, and the daemon log carrying a scheduled run's start and its failure, with no Rex call made",
+          "statement": "The daemon serving the root reads every registered project's schedules on each poll and starts each due schedule's run, taking a slot under rhiza.daemon.maxRuns and the project's maxRuns like any run; a due schedule with no free slot waits for one and still fires once, a schedule whose file no longer reads or whose workflow no longer resolves starts nothing and is logged; it logs each scheduled run's start, end and result, and opens no Rex tab or pane for any of them"
+        },
+        "handle": "daemon-fires-schedules",
+        "id": "01M6W5HVM44MDKXV4ESVH8PH3W",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6W5HVM44MDKXV4ESTPX0KSX",
+        "op": "node.create",
+        "parent": "01M6W5HTS2GPF0MXKPGWSQF9DM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HVM44MDKXV4ESTPX0KSX",
+        "id": "01M6W5HVP9Y6N79FWCFBH90C6J",
+        "link": "01M6W5HVP9Y6N79FWCFAJJ8646",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4VFJ8Z4Y2K49NCY21ASDZ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HVM44MDKXV4ESTPX0KSX",
+        "id": "01M6W5HVQWSB3HCBGS8E7AEWFV",
+        "link": "01M6W5HVQWSB3HCBGS8D267KRX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HVEXS3EA891B7V2FAT01",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HVM44MDKXV4ESTPX0KSX",
+        "id": "01M6W5HVSDM2BRNB2C74AV0508",
+        "link": "01M6W5HVSDM2BRNB2C7414SPDM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HV83HMQEQ15319XERHJ6",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HVM44MDKXV4ESTPX0KSX",
+        "id": "01M6W5HVZDVT5TRXNXZ4K8DB1C",
+        "link": "01M6W5HVZDVT5TRXNXZ3X4SE5X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HTZ9ZZ6PWNAJ739T6ASH",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api show a project with no schedules having no schedules part, a schedule not yet run listed ok with its next run, a failed last run making the part warn with next naming that run's log, a last run that changed the checkout making it warn, no daemon making it warn, and health exiting 0 in each; describe-golden regenerated for the new part enum value",
+          "statement": "rhiza health shows a schedules part for each project that has schedules: its summary counts them and each schedule is a detail line with its last run (time and run ID), result and next run; it is warn when any schedule's last run failed or changed the main checkout, or no daemon is running to fire them, with next pointing at the failing run's log, ok otherwise, never bad, and absent for a project without schedules"
+        },
+        "handle": "health-schedules-part",
+        "id": "01M6W5HW3CJ9HJ6KKRS98KTBP8",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6W5HW3CJ9HJ6KKRS7G4CJXC",
+        "op": "node.create",
+        "parent": "01M6W5HTS2GPF0MXKPGWSQF9DM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HW3CJ9HJ6KKRS7G4CJXC",
+        "id": "01M6W5HW82SSXJRDNVRARWZWKB",
+        "link": "01M6W5HW82SSXJRDNVR9GM2AVS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5013PBWWW9NTYV38FRH8R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HW3CJ9HJ6KKRS7G4CJXC",
+        "id": "01M6W5HWB7GR428NX2K9N6A3WQ",
+        "link": "01M6W5HWB7GR428NX2K7XPMXZ3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HVM44MDKXV4ESTPX0KSX",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HW3CJ9HJ6KKRS7G4CJXC",
+        "id": "01M6W5HWCRKVMC5SM1ANTSM977",
+        "link": "01M6W5HWCRKVMC5SM1AKKCQDVS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HVA0S11V8P7TJPCY6QH8",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A test of the guide shows the workflows topic naming [[schedules]], CRON_TZ, catch_up, overlap and the main checkout convention, and the guide's existing size checks still pass",
+          "statement": "The workflows guide topic explains [[schedules]] in .rhiza/dispatch.toml: the keys, cron and every forms with CRON_TZ, catch_up and overlap, that a scheduled run has no change set and runs on the main checkout, that it should leave the checkout as it found it and acts on the model only through existing paths such as rhiza request, and where its health and logs show"
+        },
+        "handle": "schedules-guide-topic",
+        "id": "01M6W5HWFGG153SAAWP2CX2G84",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6W5HWFGG153SAAWP0XEK7JT",
+        "op": "node.create",
+        "parent": "01M6W5HTS2GPF0MXKPGWSQF9DM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HWFGG153SAAWP0XEK7JT",
+        "id": "01M6W5HWHJ45MG4MABK0A4437W",
+        "link": "01M6W5HWHJ45MG4MABJZ5ZC604",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4VFJ8Z4Y2K49NCY21ASDZ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HWFGG153SAAWP0XEK7JT",
+        "id": "01M6W5HWQ16F43W55Q6X4FGW2Y",
+        "link": "01M6W5HWQ16F43W55Q6WWZTEGK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5013PBWWW9NTYV38FRH8R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HWFGG153SAAWP0XEK7JT",
+        "id": "01M6W5HWTB9ZB3YQTGFJ6RJPS6",
+        "link": "01M6W5HWTB9ZB3YQTGFFY8E666",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HTZ9ZZ6PWNAJ739T6ASH",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HWFGG153SAAWP0XEK7JT",
+        "id": "01M6W5HWV2B4WQ2EGTFNV1J2VS",
+        "link": "01M6W5HWV2B4WQ2EGTFKZ5YA9W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HVA0S11V8P7TJPCY6QH8",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "statement": "The intent says schedules live in a repo's rhiza.toml; decision scheduled-triggers-shape puts them in the committed .rhiza/dispatch.toml, because rhiza.toml is the root's machine-wide config shared by several projects. The leaves follow the decision. The intent's 'wrapping a command as an implicit one-step workflow' holds, on the main checkout with no change set."
+        },
+        "handle": "note-scheduled-triggers-file",
+        "id": "01M6W5HWW57H2YBDNKXGFCS53E",
+        "key": null,
+        "kind": "note",
+        "node": "01M6W5HWW57H2YBDNKXD94G199",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5HWW57H2YBDNKXD94G199",
+        "id": "01M6W5HWZV6N941NF80A085KA7",
+        "link": "01M6W5HWZV6N941NF806XWMM61",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4K49SDWJPW9NRF27QVBP3",
+        "type": "discusses"
+      },
+      {
+        "decision": null,
+        "from": "01M6W4K49SDWJPW9NRF27QVBP3",
+        "id": "01M6W5HYBS45A9NJRJMW0EVCVB",
+        "link": "01M6W5HYBS45A9NJRJMRQH2KYG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W5HYESBM9JH01TKX1J7K25",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,43 @@
+{
+  "actor": "01M6W5YK4ACC1JQWHE0G2E9GNH",
+  "after": [
+    "01M6W5HYESBM9JH01TKX1J7K25"
+  ],
+  "at": "2026-11-07T23:37:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Unit tests in the package that parses .rhiza/dispatch.toml cover: no file or no [[schedules]] giving no schedules; an entry with every and workflow and one with cron and command read with defaults catch_up once and overlap skip; a file with both [request] and [[schedules]] reading both with no error; an unknown table still failing with an error naming it; each error case (unknown key, duplicate name, every with cron, neither workflow nor command, bad cron, every 30s, catch_up = \"all\", overlap = \"parallel\") failing with an error naming the schedule and the key; and a testscript where rhiza check passes on a repo whose .rhiza/dispatch.toml holds [request] and [[schedules]]",
+          "statement": "Rhiza reads [[schedules]] entries from the repo's committed .rhiza/dispatch.toml beside its [request] and [ready] dispatch tables, widening the tables that file allows to those three (amending dispatch-rules-file's rule that any other table is an error, so [[schedules]] is no longer one): each entry has a name unique in the repo, exactly one of every and cron, exactly one of workflow and command, and optionally catch_up (once, the default, or skip) and overlap (skip, the default, or queue); any other key, a duplicate name, both or neither of a pair, an unparsable every or cron, or an unknown catch_up or overlap value is an error naming the schedule and key, and any table other than [request], [ready] and [[schedules]] is still an error naming it"
+        },
+        "handle": "schedules-file",
+        "id": "01M6W5HTZ9ZZ6PWNAJ74C3DSA1",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6W5HTZ9ZZ6PWNAJ739T6ASH",
+        "op": "node.create",
+        "parent": "01M6W5HTS2GPF0MXKPGWSQF9DM"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api with a fake clock show a daemon poll over two projects starting each due schedule's run, a due schedule waiting while maxRuns is full and then firing once, an unresolvable workflow starting nothing with a log line naming the schedule, and the daemon log carrying a scheduled run's start and its failure; for a scheduled command run that starts and fails, no Rex call is made",
+          "statement": "The daemon serving the root reads every registered project's schedules on each poll and starts each due schedule's run, taking a slot under rhiza.daemon.maxRuns and the project's maxRuns like any run; a due schedule with no free slot waits for one and still fires once, a schedule whose file no longer reads or whose workflow no longer resolves starts nothing and is logged; it logs each scheduled run's start, end and result, and Rhiza opens no Rex tab or pane of its own for a scheduled run, its start or its failure (failures go to the daemon log); an agent step inside a scheduled workflow opens its session as in any headless daemon run"
+        },
+        "handle": "daemon-fires-schedules",
+        "id": "01M6W5HVM44MDKXV4ESVH8PH3W",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6W5HVM44MDKXV4ESTPX0KSX",
+        "op": "node.create",
+        "parent": "01M6W5HTS2GPF0MXKPGWSQF9DM"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W5ZW4NP81H9X12S5DXZWYW",
+  "type": "ops",
+  "v": 1
+}

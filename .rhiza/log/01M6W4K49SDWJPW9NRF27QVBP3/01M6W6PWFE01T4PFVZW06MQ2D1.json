@@ -1,0 +1,41 @@
+{
+  "actor": "01M6W6ND5Q7S0D0Z784A7VSRMS",
+  "after": [
+    "01M6W6MW40S4DMTWNY5C8D06C7"
+  ],
+  "at": "2026-11-07T23:50:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the question, schedules-file (which already claims to amend dispatch-rules-file's unknown-table rule), and dispatch-rules-file in 01M6VY7G (its statement says 'any other table or key ... is an error'). Rewording only schedules-file would leave the two rules contradicting each other once both land, so dispatch-rules-file itself has to change. The two places that could do it: (1) edit 01M6VY7G. It is accepted and queued to build, its intent is workflow dispatch rather than schedules, and reopening another accepted plan from this one would churn work already approved. (2) Make the write here. Schedules are this change set's intent, it already depends on Workflow dispatch and builds after it, and it already claims the amendment. So (2) puts the write where the claim is. This change set's view cannot see dispatch-rules-file yet (rhiza show returns not_found without --change 01M6VY7G), so the write has to follow that change set's landing. The ordering this plan already follows covers that.",
+          "statement": "Scheduled triggers settles the contradiction itself: it adds a set on dispatch-rules-file's statement and acceptance so the tables .rhiza/dispatch.toml allows are [request], [ready] and [[schedules]] (whose entries schedules-file defines), and any other table is still an error naming it. Workflow dispatch (01M6VY7G) is left as it is. Because dispatch-rules-file only exists in Workflow dispatch's view until that change set lands, the write is made as soon as it lands (or through a --source on it), and before this change set is accepted; schedules-file keeps its wording, and that write now backs it.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "schedules-amend-dispatch-rules-here",
+        "id": "01M6W6PW2QYZMXEFHQECC7Y96V",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W6PW2F17SE6B31EYAWSCRQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W6PW2F17SE6B31EYAWSCRQ",
+        "id": "01M6W6PWAVQXWAQ4C5JCGCTN39",
+        "link": "01M6W6PWAVQXWAQ4C5JC09CKQF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W6KPX1HP0R9B3DRGWYQGJ9",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W6PWFE01T4PFVZW06MQ2D1",
+  "type": "ops",
+  "v": 1
+}

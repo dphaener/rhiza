@@ -1,0 +1,30 @@
+{
+  "actor": "01M6W4M30VJFMDVGPM5A3T2ZVN",
+  "after": [
+    "01M6W4VFKCQ7K9ZQ23K827YQAN"
+  ],
+  "at": "2026-11-07T23:18:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "d0780667-0b40-44e7-a17d-01a1b849f0e6",
+          "statement": "Decision scheduled-triggers-shape says a scheduled run uses the repo's main checkout, 'read-only by default'. Following warn-dont-safeguard, what does read-only mean in practice? / Which cron dialect and time zone does cron = '<expr>' use, and which every = '<duration>' values are allowed? / How does rhiza health rate a schedule's part?"
+        },
+        "handle": "question-d0780667-2",
+        "id": "01M6W4WZHD7J536GFBWAA5WA54",
+        "key": null,
+        "kind": "question",
+        "node": "01M6W4WZHD7J536GFBW9DD7HHE",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W4X1K5X42AHW0R5KKQ377S",
+  "type": "ops",
+  "v": 1
+}
