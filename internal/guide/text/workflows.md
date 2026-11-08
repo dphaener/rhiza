@@ -1,18 +1,17 @@
 # Workflows
 
-A workflow is a TOML state machine of named steps. Each step ends with an outcome, and its
+A workflow is a TOML state machine of named steps. Each step ends with an outcome; its
 `on.<outcome>` names the next step. Write your own instead of editing the binary's.
 
 ## Where a name resolves
 
-`rhiza run start --workflow <name>` takes the first of: your personal
-`$XDG_CONFIG_HOME/rhiza/workflows/<name>.toml`, the repo's `.rhiza/workflows/<name>.toml`, then a
-built-in. A path with a `/` or ending in `.toml` is that file. A higher layer shadows the lower.
+`--workflow <name>` takes the first of `$XDG_CONFIG_HOME/rhiza/workflows/<name>.toml`,
+`.rhiza/workflows/<name>.toml`, a built-in. A path with `/` or ending `.toml` is that file.
 
 ## File
 
-`name`, `start` (the first step), then `[step.<name>]` tables. A step name is lowercase words
-joined by `-`, at most 30 characters. An unknown key is an error.
+`name`, `start` (the first step), `[step.<name>]` tables. Step names: lowercase words joined
+by `-`, at most 30 characters. An unknown key is an error.
 
 ## Step kinds
 
@@ -20,24 +19,22 @@ joined by `-`, at most 30 characters. An unknown key is an error.
   `done`), `timeout`, `interval`, `max_visits`. Outcomes `pass`, `fail`.
 - `wait`: `until`, `timeout`, `interval`. Outcomes `pass`, `timeout`.
 - `command`: `run`, `timeout`. Outcomes `pass`, `fail`.
-- `leaves`: the change set's leaves, a `[step.<name>.builder]` then a
-  `[step.<name>.verifier]` (each `prompt`, `agent`, `permission_mode`, `models`), `split`
-  (`auto`, `right`, `below`). Outcomes `pass`, `fail`.
+- `leaves`: `[step.<name>.builder]`, `[step.<name>.verifier]` (each `prompt`, `agent`,
+  `permission_mode`, `models`), `split`. Outcomes `pass`, `fail`.
 - `checks`: `[[step.<name>.check]]` (`name`, `prompt`), `critic`, `fixer`, `verifier`.
   Outcomes `pass`, `fail`.
 - `signoff`: waits for the owner. Outcomes `pass`, `changes`.
-- `arbiter`: decides a question in an autonomous run. Not a state: nothing goes to it. At most
-  one, only to set its agent, permission mode and interval.
-- `workflow`: `workflow = "<name>"` and `skip = [steps]` runs another workflow's steps,
-  named `<workflow>/<step>`. It takes no prompt, run or other session key.
+- `arbiter`: decides questions in an autonomous run; no state, at most one, sets its agent.
+- `workflow`: `workflow = "<name>"`, `skip = [steps]`: another workflow's steps, named
+  `<workflow>/<step>`.
 
-Prompts may use `{change}`, `{slug}`, `{title}`, `{run}`, `{step}`; leaf and check steps add
+Prompts take `{change}`, `{slug}`, `{title}`, `{run}`, `{step}`, and in leaf and check steps
 `{leaf}`, `{attempt}`, `{check}`, `{cycle}`.
 
 ## Outcomes and targets
 
-`on.pass = "next-step"`. The reserved targets `done` and `failed` end the run. A missing
-`on.fail` fails the run; a step may loop back, bounded by `max_visits`.
+`on.pass = "next-step"`. `done` and `failed` end the run. A missing `on.fail` fails it; a
+loop back is bounded by `max_visits`.
 
 ## The loop
 
@@ -49,21 +46,23 @@ rhiza workflow check mine
 rhiza run start --workflow mine --dry-run
 ```
 
-`ls` shows each layer and what it shadows. `new` forks a workflow into
-`.rhiza/workflows/mine.toml` (without `--from`, a skeleton) and never overwrites. `describe`
-shows the steps as the run resolves them. `check` reports every problem with the step it is in.
-`--dry-run` starts nothing. Edit, check, repeat.
+`new` never overwrites; `describe` shows resolved steps; `check` names each problem's step.
+
+## Dispatch
+
+`.rhiza/dispatch.toml` maps a kind to a workflow name in `[request]` (a request's plan run:
+`feature`, `bug`, `milestone`) and `[ready]` (an accepted change set's run: `feature`, `bug`).
+Unset: `plan` and `ship-change`. `rhiza request --workflow <name>` is recorded on the change
+set the request opens. A ready run takes `run start --workflow`, else the request's
+workflow, else `[ready]`, else `ship-change`. A name that does not resolve never falls back:
+a `workflow-unresolved` skip in `rhiza daemon status` and the inbox names it.
 
 ## Outside input
 
 `rhiza health` and `rhiza workflow check` warn when a request's text and `--ref` reach an
-autonomous workflow in `bypassPermissions`. Every queued request counts. Rhiza cannot see
-what a scheduled `rhiza request` sends. Nothing is refused.
-
-`rhiza.autonomy.plan` `owner` does not gate intake: each request is planned at once under
-`rhiza.daemon.permissionMode`; the owner must only accept the plan before the rest runs.
-Mitigations:
-
-- Gate intake outside Rhiza: people, never a schedule, queue requests.
-- Narrow `rhiza.daemon.permissionMode`, or `permission_mode` on the plan workflow's steps.
-- `rhiza.autonomy.plan` `owner` and `rhiza.autonomy.signoff` `owner` for what runs after.
+autonomous workflow in `bypassPermissions`. Rhiza cannot see what a scheduled
+`rhiza request` sends. Nothing is refused.
+`rhiza.autonomy.plan` `owner` does not gate intake: requests are planned at once under `rhiza.daemon.permissionMode`; the owner must
+only accept the plan. Mitigations: gate intake outside Rhiza; narrow
+`rhiza.daemon.permissionMode` or `permission_mode` on the plan workflow's steps; set
+`rhiza.autonomy.plan` and `rhiza.autonomy.signoff` to `owner`.

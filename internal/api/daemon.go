@@ -23,6 +23,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/dispatch"
 	"github.com/dphaener/rhiza/internal/gosweep"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/policy"
@@ -460,6 +461,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	items = append(items, usageHoldItems(state.UsageHold)...)
 	if common, err := gitCommonDir(ctx); err == nil {
 		items = append(items, mainStaleItems(common)...)
+		items = append(items, workflowItems(common, state.Skips)...)
 	}
 	titles := map[string]string{}
 	for _, j := range runs {
@@ -554,6 +556,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return "disk space is low: the daemon holds new starts and resumes"
 	case InboxUsageReserve:
 		return "usage reserve: the daemon holds new launches until the window resets"
+	case InboxWorkflow:
+		return it.Detail
 	case InboxMainStale:
 		return what + ": main was not updated after the merge: " + it.Detail
 	case InboxOverlap:
@@ -753,8 +757,18 @@ func daemonRequestsWaiting(ctx *Ctx) int {
 
 // daemonShipOf is what says which of fold's change sets have shipped (see
 // daemon.Ship).
-func daemonShipOf(fold *daemonFolded) daemon.Ship {
-	return daemon.Ship{Workflow: shipChangeWorkflow, Since: func(change string) time.Time {
+func daemonShipOf(root string, fold *daemonFolded) daemon.Ship {
+	return daemon.Ship{Workflow: shipChangeWorkflow, For: func(change string) string {
+		cs, err := id.Parse(change)
+		if err != nil {
+			return shipChangeWorkflow
+		}
+		name, ok := daemonReadyWorkflow(root, fold, cs)
+		if !ok {
+			return shipChangeWorkflow
+		}
+		return name
+	}, Since: func(change string) time.Time {
 		cs, err := id.Parse(change)
 		if err != nil {
 			return time.Time{}
@@ -798,7 +812,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		resumable = daemon.Resumable(runs, host, nil, rs.Live, func(change string) string {
 			st, _ := fold.stateOf(change)
 			return st
-		}, planWorkflow, ctx.Now())
+		}, ctx.Now())
 	}
 	// The owner's queued continuations are started below, within max; the
 	// daemon's own resume of an interrupted run leaves those runs to them.
@@ -832,7 +846,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		return ok
 	})
-	ship := daemonShipOf(fold)
+	ship := daemonShipOf(ctx.Root, fold)
 	shipMode, err := autonomyStage(ctx, "ship")
 	if err != nil {
 		return nil, resumed, nil, err
@@ -849,8 +863,9 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	// slot; the later picks (continuations, queued starts, plan requests)
 	// count it as a running run.
 	var milestoned []string
+	var reqSkips []daemon.Skip
 	if !paused && !low {
-		milestoned, err = daemonPlanRequests(ctx, rs, runs, 0, max, mode, daemon.KindMilestone)
+		milestoned, err = daemonPlanRequests(ctx, rs, runs, 0, max, mode, daemon.KindMilestone, &reqSkips)
 		if err != nil {
 			return nil, resumed, milestoned, err
 		}
@@ -894,6 +909,11 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		if shipMax < 0 {
 			shipMax = 0
 		}
+		// A change set whose ready workflow does not resolve starts no run
+		// and is raised, not run under the default.
+		var unresolved []daemon.Skip
+		cands, unresolved = daemonUnresolvedReady(ctx, fold, cands)
+		planSkips = append(planSkips, unresolved...)
 		picked = daemon.Pick(cands, runs, held, host, nil, shipMax, ship)
 		shipSkips := daemon.Skips(cands, runs, held, host, nil, shipMax, ship)
 		if shipMax < max {
@@ -906,6 +926,9 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		*skips = append(append(planSkips, unj...), shipSkips...)
 	}
+	for _, sk := range reqSkips {
+		addDaemonSkip(skips, sk)
+	}
 	for i, sk := range *skips {
 		if cs, err := id.Parse(sk.Change); err == nil {
 			if c, ok := fold.changeSet(cs); ok {
@@ -914,7 +937,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 	}
 	for _, cs := range picked {
-		if err := daemonStart(ctx, cs, autonomous, mode); err != nil {
+		if err := daemonStart(ctx, fold, cs, autonomous, mode); err != nil {
 			return started, resumed, milestoned, err
 		}
 		pending[cs] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, cs)}
@@ -951,7 +974,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	if err != nil {
 		return started, resumed, nil, err
 	}
-	planned, err = daemonPlanRequests(ctx, rs, runs, running+len(queued), max, mode, "")
+	planned, err = daemonPlanRequests(ctx, rs, runs, running+len(queued), max, mode, "", skips)
 	return started, resumed, append(milestoned, planned...), err
 }
 
@@ -1012,6 +1035,9 @@ func daemonStartQueued(ctx *Ctx, s daemon.Start, mode string) error {
 	args := []string{"run", "start", "--foreground", s.Change}
 	if s.Workflow != "" {
 		args = append(args, "--workflow", s.Workflow)
+		if s.Pick != "" {
+			args = append(args, "--pick", s.Pick)
+		}
 	}
 	if mode != "" {
 		args = append(args, "--permission-mode", mode)
@@ -1259,8 +1285,16 @@ func claimStartLog(ctx *Ctx, common, rid string) {
 
 // daemonStart starts the run of change set cs as a detached rhiza run start
 // --foreground process, with permission mode mode.
-func daemonStart(ctx *Ctx, cs string, autonomous bool, mode string) error {
+func daemonStart(ctx *Ctx, fold *daemonFolded, cs string, autonomous bool, mode string) error {
 	args := []string{"run", "start", "--foreground", cs, "--permission-mode", mode}
+	if id, err := id.Parse(cs); err == nil {
+		if name, pick, ok := daemonReadyPick(ctx.Root, fold, id); ok {
+			if name != defaultWorkflow {
+				args = append(args, "--workflow", name, "--pick", pick)
+			}
+			daemonLogPick(ctx, "a run of "+cs, name, pick)
+		}
+	}
 	if autonomous {
 		args = append(args, "--autonomous")
 	}
@@ -1318,10 +1352,11 @@ type DaemonEvent struct {
 // DaemonSkip is an accepted change set the daemon did not start at its last
 // poll.
 type DaemonSkip struct {
-	Change string   `json:"change" desc:"The change set's ID"`
-	Title  string   `json:"title" desc:"The change set's display title"`
-	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve or ship-owner"`
-	Detail []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; else empty"`
+	Change  string   `json:"change" desc:"The change set's ID; empty for a queued request that was not started"`
+	Request string   `json:"request,omitempty" desc:"The queued request's ID, when the skip is a request whose workflow does not resolve"`
+	Title   string   `json:"title" desc:"The change set's display title, or the request's text"`
+	Reason  string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve, ship-owner or workflow-unresolved"`
+	Detail  []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty"`
 }
 
 // skipText is the words for a skip reason in the text status.
@@ -1339,6 +1374,7 @@ var skipText = map[string]string{
 	daemon.SkipUsageReserve: "usage reserve: held until the window resets",
 	daemon.SkipPaused:       "paused",
 	daemon.SkipShipOwner:    "ship is set to owner: only the owner starts its run",
+	daemon.SkipWorkflow:     "its workflow does not resolve: no run started",
 }
 
 // DaemonProjectSkip is a registered project the root daemon did not work at
@@ -1445,7 +1481,11 @@ func humanPart(w io.Writer, indent string, runs []DaemonRun, started, resumed *D
 		fmt.Fprintf(w, "%sLast resumed: run %s at %s\n", indent, e.Run, e.At)
 	}
 	for _, k := range skipped {
-		fmt.Fprintf(w, "%sSkipped: %s %s: %s", indent, k.Change, k.Title, skipText[k.Reason])
+		subject := k.Change
+		if subject == "" {
+			subject = "request " + k.Request
+		}
+		fmt.Fprintf(w, "%sSkipped: %s %s: %s", indent, subject, k.Title, skipText[k.Reason])
 		if len(k.Detail) > 0 {
 			fmt.Fprintf(w, " (%s)", strings.Join(k.Detail, "; "))
 		}
@@ -1511,7 +1551,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 			}
 			part.LastStarted, part.LastResumed = daemonEvent(st.LastStarted), daemonEvent(st.LastResumed)
 			for _, k := range st.Skips {
-				part.Skipped = append(part.Skipped, DaemonSkip{Change: k.Change, Title: k.Title, Reason: k.Reason, Detail: append([]string{}, k.Detail...)})
+				part.Skipped = append(part.Skipped, DaemonSkip{Change: k.Change, Request: k.Request, Title: k.Title, Reason: k.Reason, Detail: append([]string{}, k.Detail...)})
 			}
 			for _, e := range st.Unjournaled {
 				part.Unjournaled = append(part.Unjournaled, *daemonEvent(&e))
@@ -1585,7 +1625,7 @@ func daemonStatusHome(ctx *Ctx) (any, error) {
 	resp.LastStarted = daemonEvent(st.LastStarted)
 	resp.LastResumed = daemonEvent(st.LastResumed)
 	for _, k := range st.Skips {
-		resp.Skipped = append(resp.Skipped, DaemonSkip{Change: k.Change, Title: k.Title, Reason: k.Reason, Detail: append([]string{}, k.Detail...)})
+		resp.Skipped = append(resp.Skipped, DaemonSkip{Change: k.Change, Request: k.Request, Title: k.Title, Reason: k.Reason, Detail: append([]string{}, k.Detail...)})
 	}
 	for _, k := range st.ProjectSkips {
 		resp.SkippedProjects = append(resp.SkippedProjects, DaemonProjectSkip{Project: k.Project, Reason: k.Reason, Detail: k.Detail})
@@ -1714,4 +1754,79 @@ func ensureRepoSession(ctx *Ctx) error {
 	}
 	ctx.RexSession, ctx.repoSession = name, true
 	return nil
+}
+
+// daemonReadyWorkflow is the readyWorkflow of change set cs in fold.
+func daemonReadyWorkflow(root string, fold *daemonFolded, cs id.ID) (string, bool) {
+	name, _, ok := daemonReadyPick(root, fold, cs)
+	return name, ok
+}
+
+// daemonReadyPick is the readyPick of change set cs in fold.
+func daemonReadyPick(root string, fold *daemonFolded, cs id.ID) (name, pick string, ok bool) {
+	if fold == nil {
+		return "", "", false
+	}
+	c, found := fold.changeSet(cs)
+	if !found {
+		return "", "", false
+	}
+	name, pick, err := readyPick(root, c.Open)
+	return name, pick, err == nil
+}
+
+// daemonLogPick is the daemon's start line for a run it starts: what it
+// starts, the workflow dispatch picked and why.
+func daemonLogPick(ctx *Ctx, what, workflow, pick string) {
+	if ctx.Stderr == nil {
+		return
+	}
+	fmt.Fprintf(ctx.Stderr, "rhiza: daemon: starting %s with workflow %s (picked by %s)\n", what, workflow, pick)
+}
+
+// addDaemonSkip appends sk to skips unless a skip of the same subject and
+// reason is there.
+func addDaemonSkip(skips *[]daemon.Skip, sk daemon.Skip) {
+	if !slices.ContainsFunc(*skips, func(o daemon.Skip) bool {
+		return o.Change == sk.Change && o.Request == sk.Request && o.Reason == sk.Reason
+	}) {
+		*skips = append(*skips, sk)
+	}
+}
+
+// daemonUnresolvedReady splits cands into those whose ready workflow
+// resolves and a workflow-unresolved skip for each other, including each
+// whose pick the dispatch file, not loading, cannot make: none falls back
+// to the default.
+func daemonUnresolvedReady(ctx *Ctx, fold *daemonFolded, cands []string) ([]string, []daemon.Skip) {
+	var ok []string
+	var skips []daemon.Skip
+	for _, cs := range cands {
+		cid, err := id.Parse(cs)
+		if err != nil {
+			ok = append(ok, cs)
+			continue
+		}
+		c, found := fold.changeSet(cid)
+		if !found {
+			ok = append(ok, cs)
+			continue
+		}
+		name, err := readyWorkflow(ctx.Root, c.Open)
+		if err != nil {
+			kind := c.Open.DispatchKind()
+			skips = append(skips, daemon.Skip{Change: cs, Reason: daemon.SkipWorkflow, Detail: []string{dispatch.TableReady + "." + kind, "the [ready] rule for " + kind + " in " + dispatch.File, err.Error()}})
+			continue
+		}
+		if _, _, _, err := resolveWorkflow(ctx.Root, name); err != nil {
+			source := "the [ready] rule for " + c.Open.DispatchKind() + " in " + dispatch.File
+			if c.Open.Workflow != "" {
+				source = "recorded on the change set by its request"
+			}
+			skips = append(skips, daemon.Skip{Change: cs, Reason: daemon.SkipWorkflow, Detail: []string{name, source, err.Error()}})
+			continue
+		}
+		ok = append(ok, cs)
+	}
+	return ok, skips
 }

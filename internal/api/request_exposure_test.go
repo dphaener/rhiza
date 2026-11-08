@@ -223,6 +223,24 @@ permission_mode = "bypassPermissions"
 			}
 		}
 	})
+
+	t.Run("the dispatch rules name the request and ready workflows", func(t *testing.T) {
+		bugfix := strings.Replace(exposurePlan, `name = "plan"`, `name = "bugfix"`, 1)
+		ctx := exposureRepo(t, map[string]string{"bugfix": bugfix})
+		rules := "[request]\nbug = \"bugfix\"\n[ready]\nbug = \"bugfix\"\n"
+		if err := os.WriteFile(filepath.Join(ctx.Root, ".rhiza", "dispatch.toml"), []byte(rules), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		got := requestExposedWorkflows(ctx, exposureSettings("auto", "auto", "auto", bypass))
+		var names []string
+		for _, e := range got {
+			names = append(names, e.Workflow+" "+e.Trigger)
+		}
+		want := []string{"plan request", "bugfix request", "ship-change ready", "bugfix ready"}
+		if !reflect.DeepEqual(names, want) {
+			t.Fatalf("got %q, want %q", names, want)
+		}
+	})
 }
 
 func sprintfExposure(format, arg string) string {

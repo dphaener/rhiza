@@ -1,0 +1,98 @@
+# run start with no --workflow resolves the workflow like the daemon's ship
+# pick: with no dispatch file the default ship-change; else the [ready] rule
+# of .rhiza/dispatch.toml for the change set's kind (here a bug change set,
+# opened by a bug request's plan run); an explicit --workflow wins.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+cp $WORK/bugfix.toml .rhiza/workflows/bugfix.toml
+cp $WORK/other.toml .rhiza/workflows/other.toml
+exec git add -A
+exec git commit -qm init
+
+# A bug change set: the plan run of a queued bug request opens it.
+exec rhiza request 'login fails' --kind bug
+exec rhiza daemon --permission-mode manual --max-runs 1 --once
+stdout '^Started the plan run of request '
+exec sh -c 'rhiza request ls --json | sed -n "s/^      \"id\": \"\(.*\)\",$/\1/p" | tr -d "\n" > $WORK/req'
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Fix login fails" --request $(cat $WORK/req) --permission-mode manual --json'
+stdout '"state": "succeeded"'
+exec sh -c 'rhiza change ls --json | grep -B3 "Fix login fails" | sed -n "s/^.*\"id\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1 > $WORK/bug'
+exec sh -c 'rhiza change show $(cat $WORK/bug)'
+stdout '- Request kind: bug'
+! stdout '- Workflow:'
+
+# No dispatch file: the default ship-change, which builds leaves this change
+# set lacks.
+! exec sh -c 'rhiza run start --dry-run $(cat $WORK/bug) --permission-mode manual'
+stderr 'ship-change builds and reviews its leaves'
+
+# [ready] bug names the repo workflow bugfix.
+cp $WORK/dispatch.toml .rhiza/dispatch.toml
+exec sh -c 'rhiza run start --dry-run $(cat $WORK/bug)'
+stdout '^- Workflow: bugfix$'
+
+# An explicit --workflow wins over the rule.
+exec sh -c 'rhiza run start --dry-run $(cat $WORK/bug) --workflow other'
+stdout '^- Workflow: other$'
+
+# A dispatch file that does not load fails the start, never falling back to
+# ship-change; an explicit --workflow does not read it.
+cp $WORK/bad-dispatch.toml .rhiza/dispatch.toml
+! exec sh -c 'rhiza run start --dry-run $(cat $WORK/bug)'
+stderr 'dispatch.toml'
+! stderr 'ship-change'
+exec sh -c 'rhiza run start --dry-run $(cat $WORK/bug) --workflow other'
+stdout '^- Workflow: other$'
+cp $WORK/dispatch.toml .rhiza/dispatch.toml
+fold-ok
+
+-- dispatch.toml --
+[ready]
+bug = "bugfix"
+-- bad-dispatch.toml --
+[ready]
+bug = 3
+-- plan.toml --
+name = "plan"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- bugfix.toml --
+name = "bugfix"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- other.toml --
+name = "other"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

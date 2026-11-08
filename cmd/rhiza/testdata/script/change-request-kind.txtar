@@ -1,0 +1,66 @@
+# A change set records the request kind and the workflow of the request whose
+# plan run opened it; any other change set is feature with no workflow. The
+# queue entry's workflow is written directly: request --workflow comes later.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+
+# A change set from change new: feature, no workflow.
+exec rhiza change new 'Plain work' --title 'Plain work'
+exec rhiza change show --json
+stdout '"kind": "intention"'
+stdout '"request_kind": "feature"'
+! stdout '"workflow"'
+exec rhiza change show
+stdout '- Request kind: feature'
+! stdout '- Workflow:'
+
+# A queued bug request whose entry names a workflow.
+exec rhiza request 'login fails' --kind bug
+exec rhiza daemon --permission-mode manual --max-runs 1 --once
+stdout '^Started the plan run of request '
+exec sh -c 'rhiza request ls --json | sed -n "s/^      \"id\": \"\(.*\)\",$/\1/p" | tr -d "\n" > $WORK/req'
+exec sh -c 'sed -i "s/\"kind\": *\"bug\"/\"kind\":\"bug\",\"workflow\":\"bugfix\"/" .git/rhiza/requests.json'
+grep '"workflow":"bugfix"' .git/rhiza/requests.json
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Fix login fails" --request $(cat $WORK/req) --permission-mode manual --json'
+stdout '"state": "succeeded"'
+exec sh -c 'rhiza change ls --json | grep -B3 "Fix login fails" | sed -n "s/^.*\"id\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1 > $WORK/bug'
+exec sh -c 'rhiza change show $(cat $WORK/bug) --json'
+stdout '"request_kind": "bug"'
+stdout '"workflow": "bugfix"'
+exec sh -c 'rhiza change show $(cat $WORK/bug)'
+stdout '- Request kind: bug'
+stdout '- Workflow: bugfix'
+fold-ok
+
+-- plan.toml --
+name = "plan"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

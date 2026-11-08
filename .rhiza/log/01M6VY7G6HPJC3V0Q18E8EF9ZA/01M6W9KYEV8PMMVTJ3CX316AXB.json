@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W9HGCYR7H1XY2H7AX8MFGS",
+  "after": [
+    "01M6W9KS44TZF330KKSM58Y6GJ"
+  ],
+  "at": "2026-11-08T00:41:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at a97778b2 (attempt 2). Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/dispatch-check$' -count=1: ok. The script, with XDG_CONFIG_HOME set to $WORK/xdg inside it, shows rhiza check passing with no dispatch.toml, with [request] bug naming .rhiza/workflows/bugfix.toml, and with [ready] feature naming built-in ship-change. It fails with request.bug naming missing \"nothing-here\" (stdout names request.bug), with ready.feature naming \"personal-only\", which exists only in $XDG_CONFIG_HOME/rhiza/workflows (stdout names ready.feature), with [ready] milestone (unknown key), and with unknown table [reqest] (stdout names the table). Compliance f2 is fixed: the personal-layer case now uses the valid [ready] feature key, and dispatchProblems (internal/api/check.go:530) iterates dispatch.TableKinds per table and resolves only the repo layer and built-ins, never the personal layer. go test -trimpath ./internal/dispatch/... also passes: ok."
+        },
+        "handle": "dispatch-rules-check-verified-2",
+        "id": "01M6W9KXVX02JYWA4KA3T062YA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W9KXVX02JYWA4KA2PH2M8Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W9KXVX02JYWA4KA2PH2M8Q",
+        "id": "01M6W9KY415V9045XMHYYR7AS8",
+        "link": "01M6W9KY415V9045XMHY8CERRC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAG5STEEVHYYJ6V971SN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W9KYEV8PMMVTJ3CX316AXB",
+  "type": "ops",
+  "v": 1
+}

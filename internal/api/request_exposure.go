@@ -8,9 +8,11 @@ package api
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/adapter"
+	"github.com/dphaener/rhiza/internal/dispatch"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
 
@@ -45,19 +47,37 @@ func ExposureDetail(e ExposedWorkflow) string {
 // requestExposedWorkflows lists the workflows the daemon would run from a
 // queued request with no person in between, each with the steps and roles
 // whose effective mode its adapter reports as a bypass mode. settings are
-// the daemon's settings (settingsOf). The request workflow (plan) counts
-// whatever rhiza.autonomy.plan says: its interview agent starts at once on
-// the request's text. The ready workflow (ship-change) counts only when
+// the daemon's settings (settingsOf). The request and ready workflows are
+// those .rhiza/dispatch.toml picks for each kind (plan and ship-change by
+// default; the defaults when the file does not load). The request
+// workflows count whatever rhiza.autonomy.plan says: their agents start at
+// once on the request's text. The ready workflows count only when
 // rhiza.autonomy.plan, accept and ship are all auto, as only then does
-// request text reach its agents unseen. A workflow that cannot be loaded
+// request text reach their agents unseen. A request's own --workflow is
+// not listed: it is a per-request choice, not a standing rule. A workflow that cannot be loaded
 // is left out: rhiza workflow check reports it.
 func requestExposedWorkflows(ctx *Ctx, settings []Setting) []ExposedWorkflow {
 	mode := settingValue(settings, "rhiza.daemon.permissionMode")
-	picks := []struct{ name, trigger string }{{planWorkflow, TriggerRequest}}
+	rules, err := dispatch.Load(ctx.Root)
+	if err != nil {
+		rules = dispatch.Defaults()
+	}
+	type pick struct{ name, trigger string }
+	var picks []pick
+	add := func(name, trigger string) {
+		if !slices.Contains(picks, pick{name, trigger}) {
+			picks = append(picks, pick{name, trigger})
+		}
+	}
+	for _, k := range dispatch.Kinds {
+		add(rules.ForRequest(k), TriggerRequest)
+	}
 	if settingValue(settings, "rhiza.autonomy.plan") == AutonomyAuto &&
 		settingValue(settings, "rhiza.autonomy.accept") == AutonomyAuto &&
 		settingValue(settings, "rhiza.autonomy.ship") == AutonomyAuto {
-		picks = append(picks, struct{ name, trigger string }{shipChangeWorkflow, TriggerReady})
+		for _, k := range dispatch.ReadyKinds {
+			add(rules.ForReady(k), TriggerReady)
+		}
 	}
 	var out []ExposedWorkflow
 	for _, p := range picks {

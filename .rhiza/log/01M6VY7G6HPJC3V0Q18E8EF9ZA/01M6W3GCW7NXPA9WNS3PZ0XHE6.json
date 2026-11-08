@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W1ZT1592GKZMPY17M70F6T",
+  "after": [
+    "01M6W356WVD54VEKRM0DJ3HRXR"
+  ],
+  "at": "2026-11-07T22:54:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b11bed21, as verifier: go test -trimpath ./cmd/rhiza -run 'TestScripts/(change-request-kind|describe-golden)$' passes. change-request-kind.txtar shows that a change set from rhiza change new prints request_kind feature and no workflow in change show --json (and '- Request kind: feature' with no Workflow line in human output). It also shows that a queued bug request, whose queue entry in .git/rhiza/requests.json the script edits to carry workflow bugfix, opened by run start --new --request, prints request_kind bug and workflow bugfix in change show --json and human output. fold-ok passes. go test -trimpath for internal/changeset, entry, store and daemon passes (new format-4 encode/decode and Validate tests included). internal/api passes, except that TestReadBudget missed its roadmap/ready what-if 50ms budget in a run beside another agent's api.test at load ~10. Re-run alone, TestReadBudget passed at both b11bed21 and its parent with matching medians (roadmap what-if 30ms vs 27ms, ready 28ms vs 38ms), so the miss was load, not this diff. The diff adds request_kind/workflow to the open body behind entry format 4 (FormatVersion 3->4; format 3 rejects the fields), threads the request's kind and workflow through newPlanChange, and adds both to ChangeShowResponse in the fold and indexed paths. Changed Go files are gofmt-clean."
+        },
+        "handle": "change-set-records-dispatch-verified",
+        "id": "01M6W3GCT9DXNDTA2P9F5TJ6T9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W3GCT9DXNDTA2P9D4BJ9Z2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W3GCT9DXNDTA2P9D4BJ9Z2",
+        "id": "01M6W3GCV7X3P3WZ01N9VN7PSS",
+        "link": "01M6W3GCV7X3P3WZ01N6MMZ1W1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAJBDW1YH8D7Y1XGCK76",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W3GCW7NXPA9WNS3PZ0XHE6",
+  "type": "ops",
+  "v": 1
+}

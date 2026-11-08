@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WASJQ321X35KMQW02SCH2Y",
+  "after": [
+    "01M6WB8WVK2GCFMWX82WPNFVN5"
+  ],
+  "at": "2026-11-08T01:10:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at 76c40f51, built binary: rhiza guide workflows prints the Dispatch section naming .rhiza/dispatch.toml, [request] (feature, bug, milestone) and [ready] (now feature, bug only), the defaults plan and ship-change, rhiza request --workflow, the ready order (run start --workflow, the request's workflow, the [ready] rule, ship-change), and the workflow-unresolved skip, which matches what daemon status and inbox showed hands-on. go test -trimpath ./internal/guide/... passes. The stray 'opens,.' is still there."
+        },
+        "handle": "dispatch-guide-topic-qa-2",
+        "id": "01M6WB9752XWNFXGM2T6G3WK4Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WB9752XWNFXGM2T3C1BBP3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WB9752XWNFXGM2T3C1BBP3",
+        "id": "01M6WB977FBGQEWS1Z146YB7S8",
+        "link": "01M6WB977FBGQEWS1Z121VQHHW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTB5F2Z10QBJNJH3M0BGN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WB97C6TNR7NVHWFPE0MYPJ",
+  "type": "ops",
+  "v": 1
+}

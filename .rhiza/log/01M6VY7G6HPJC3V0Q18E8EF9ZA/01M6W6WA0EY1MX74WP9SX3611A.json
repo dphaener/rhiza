@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W6175ED1VPGQDEF4FNFZG6",
+  "after": [
+    "01M6W6KP56R68KGMQ6PA8MTE2D"
+  ],
+  "at": "2026-11-07T23:53:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-817af69f at 8bdad8b6: read the diff (internal/api daemon.go, request.go, inbox.go, internal/daemon/pick.go) and ran go test -trimpath -count=1 ./internal/api -run 'Unresolved|Dispatch|PlanRequests|DaemonStatus|Inbox' (ok, run from a scratch worktree outside ~/code; inside ~/code the rootguard flags the live root's state folder, a known environmental issue) plus go test ./cmd/rhiza TestScripts describe-golden/daemon*/inbox*/request*/dispatch* (ok). TestDaemonSkipsReadyWithUnresolvedWorkflow: a daemon poll with a [ready] rule naming the missing workflow 'ghost' picks nothing (no default fallback), records a workflow-unresolved skip with Detail [ghost, the [ready] rule for feature in .rhiza/dispatch.toml, error], workflowItems lists one 'workflow' inbox item naming ghost and the rule and no ID; after the rule is removed the next poll starts it. TestDaemonSkipsRequestWithUnresolvedWorkflow: a queued request whose recorded workflow is 'ghost' starts no plan run and gets a skip (request ID, text, ghost, 'named by the request (--workflow)') and an inbox item, while the other request in the same daemonPlanRequests pass still starts. The poll merges request skips into daemon state, so daemon status and the inbox and notices show them."
+        },
+        "handle": "dispatch-unresolved-attention-verified",
+        "id": "01M6W6W9W9JHDVDFKF9JYSJ32K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W6W9W9JHDVDFKF9G5VJVJK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W6W9W9JHDVDFKF9G5VJVJK",
+        "id": "01M6W6W9XY2NHBGERZEBJY7ZWN",
+        "link": "01M6W6W9XY2NHBGERZE9BXD0MJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAYZW0RTPZ31DVTTYVTB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W6WA0EY1MX74WP9SX3611A",
+  "type": "ops",
+  "v": 1
+}

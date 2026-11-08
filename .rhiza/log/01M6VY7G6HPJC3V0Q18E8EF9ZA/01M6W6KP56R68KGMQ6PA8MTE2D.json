@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W6JAYYGQRACSPWHD65MJ2G",
+  "after": [
+    "01M6W5D1XE94KXBWH0FGBQPVW0"
+  ],
+  "at": "2026-11-07T23:48:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3866a47a ran go test -trimpath -count=1 -v ./internal/guide/...: all 20 tests PASS, including TestWorkflowsText, whose new dispatch group requires .rhiza/dispatch.toml, [request], [ready], rhiza request --workflow, feature/bug/milestone, ship-change and workflow-unresolved in the workflows topic, and the existing size checks TestCaps, TestCapCatchesOversize and TestTokens. Read the diff: the new Dispatch section of internal/guide/text/workflows.md matches internal/dispatch (two tables, three kinds, an error naming any other table, key or value, defaults plan and ship-change, no kind means feature) and readyPick/startWorkflow in internal/api/run.go (explicit --workflow, then the request's workflow, then the [ready] rule, then ship-change). It also covers the workflow-unresolved skip with no fallback. Minor: a stray comma in 'the request opens,.' for the review run to fix."
+        },
+        "handle": "dispatch-guide-topic-verified",
+        "id": "01M6W6KNWY80T8SV2KPGDZP0YX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W6KNWY80T8SV2KPD8MD6A3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W6KNWY80T8SV2KPD8MD6A3",
+        "id": "01M6W6KP00QKK6YZXT7W8AYCZ7",
+        "link": "01M6W6KP00QKK6YZXT7SH66GQN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTB5F2Z10QBJNJH3M0BGN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W6KP56R68KGMQ6PA8MTE2D",
+  "type": "ops",
+  "v": 1
+}

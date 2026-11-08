@@ -14,6 +14,7 @@ import (
 	"os"
 	"reflect"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -84,6 +85,7 @@ const (
 	InboxMainStale    = "main-stale"
 	InboxAccept       = "accept"
 	InboxInterview    = "interview"
+	InboxWorkflow     = "workflow"
 )
 
 // InboxRequest takes nothing.
@@ -95,7 +97,7 @@ type InboxRequest struct {
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string              `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale, accept or interview"`
+	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale, accept, interview or workflow"`
 	At             string              `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string              `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
 	Change         string              `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
@@ -168,6 +170,14 @@ func (r InboxResponse) Human(w io.Writer) {
 			if it.Next != "" {
 				fmt.Fprintf(w, "  next: %s\n", it.Next)
 			}
+			continue
+		}
+		if it.Kind == InboxWorkflow {
+			fmt.Fprintf(w, "%s workflow\n", it.ID)
+			if it.Project != "" {
+				fmt.Fprintf(w, "  project: %s\n", it.Project)
+			}
+			fmt.Fprintf(w, "  %s\n", it.Detail)
 			continue
 		}
 		if it.Kind == InboxDiskLow {
@@ -276,7 +286,7 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 	// listed like any other run.
 	gone := func(st run.State) bool {
 		state, ok := changeState(st.Change)
-		if ok && state == string(changeset.StateLanded) && (st.Workflow == planWorkflow || st.Visits["land"] > 0) {
+		if ok && state == string(changeset.StateLanded) && (st.IsPlanRun() || st.Visits["land"] > 0) {
 			return false
 		}
 		return ok && changeset.State(state).Terminal()
@@ -732,7 +742,7 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	items = sortInboxItems(append(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...))
+	items = sortInboxItems(append(append(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...), inboxWorkflow(ctx)...))
 	byRun := map[string]run.State{}
 	for _, j := range runs {
 		byRun[j.ID] = j.State()
@@ -1092,7 +1102,7 @@ func findInboxItems(ctx *Ctx, ref string) ([]InboxItem, map[string]run.State, er
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, it := range append(append(append(append(append(all, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...) {
+	for _, it := range append(append(append(append(append(append(all, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...), inboxWorkflow(ctx)...) {
 		if strings.HasPrefix(it.ID, ref) {
 			found = append(found, it)
 		}
@@ -1122,6 +1132,9 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 	}
 	if item.Kind == InboxMainStale {
 		return nil, Usagef("item %s is the main checkout not being up to date: it has no tab to open", item.ID).WithNext("rhiza health")
+	}
+	if item.Kind == InboxWorkflow {
+		return nil, Usagef("item %s is a workflow that does not resolve: it has no tab to open", item.ID).WithNext("rhiza daemon status")
 	}
 	if item.Kind == InboxOverlap {
 		return nil, Usagef("item %s is an overlap between change sets %s and %s: it has no tab to open", item.ID, item.Change, item.Other).WithNext(item.Next)
@@ -1318,4 +1331,62 @@ func inboxGateRead(ctx *Ctx, st run.State, handles []string) ([]InboxGateQuestio
 		askers = append(askers, asker)
 	}
 	return out, askers
+}
+
+// inboxWorkflow is one item per skip the daemon's last poll made because the
+// workflow its dispatch picked does not resolve; none once a later poll
+// found it resolving.
+func inboxWorkflow(ctx *Ctx) []InboxItem {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil
+	}
+	st, ok := daemon.ReadState(common)
+	if !ok {
+		return nil
+	}
+	return workflowItems(common, st.Skips)
+}
+
+// workflowItems is the workflow item of each workflow-unresolved skip. The
+// item names the change set by title or the request by its text, the
+// workflow and where the pick came from, never an ID in its text. It began
+// to wait when its request was queued or its change set opened.
+func workflowItems(common string, skips []daemon.Skip) []InboxItem {
+	var items []InboxItem
+	var queue []daemon.Request
+	for _, sk := range skips {
+		if sk.Reason != daemon.SkipWorkflow || len(sk.Detail) < 2 {
+			continue
+		}
+		subject, key := "", sk.Change
+		at := time.Time{}
+		if sk.Request != "" {
+			subject, key = "request "+strconv.Quote(sk.Title), "request:"+sk.Request
+			if queue == nil {
+				queue, _ = daemon.ReadRequests(common)
+			}
+			for _, q := range queue {
+				if q.ID == sk.Request {
+					at = q.At
+				}
+			}
+		} else {
+			subject = "change set " + strconv.Quote(sk.Title)
+			if cs, err := id.Parse(sk.Change); err == nil {
+				at = ulid.Time(ulid.ULID(cs).Time())
+			}
+		}
+		atS := at.UTC().Format(time.RFC3339)
+		sum := sha256.Sum256([]byte(strings.Join([]string{InboxWorkflow, key, sk.Detail[0]}, "\x00")))
+		detail := fmt.Sprintf("%s: no run started: workflow %s, %s, does not resolve", subject, sk.Detail[0], sk.Detail[1])
+		if len(sk.Detail) > 2 {
+			detail += ": " + sk.Detail[2]
+		}
+		items = append(items, InboxItem{
+			ID: hex.EncodeToString(sum[:])[:7], Kind: InboxWorkflow, At: atS, Change: sk.Change,
+			ChangeTitle: sk.Title, Detail: detail,
+		})
+	}
+	return items
 }

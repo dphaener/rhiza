@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W2RV4642PQ3QKP8BYTJ78J",
+  "after": [
+    "01M6W13JC12VRCRX621H8N4H11"
+  ],
+  "at": "2026-11-07T22:43:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1a855d1c I read the diff of 8c465daa and 1a855d1c and ran go test -trimpath -count=1 ./internal/api -run 'OtherWorkflow|DispatchedWorkflow'. All pass. TestDaemonStartsRequestWithDispatchedWorkflow: with a dispatch.toml of [request] bug=bugfix and milestone=roadmap, a bug request starts --workflow bugfix --new, a feature request starts --workflow plan, and a milestone request starts --workflow roadmap --milestone without --autonomous. TestRunResumeGatesMilestonePlanUnderOtherWorkflow: an autonomous Plan run under roadmap on a record change set hits the milestone owner gate. TestInboxKeepsPlanRunUnderOtherWorkflow: the inbox keeps it listed (not skipped). TestRunResumeLetsLandedPlanRunUnderOtherWorkflow: run.resume lets a Plan run under bugfix on a landed change set through, and refuses a non-plan run that never reached land. This answers attempt 1's finding f1. TestResumablePlanRunUnderOtherWorkflow in internal/daemon shows Resumable keeps the landed plan run under bugfix. ./internal/daemon, ./internal/run, ./internal/dispatch and the cmd/rhiza scripts run-start-new, request* and daemon* all pass. The keying is run.State.IsPlanRun (Started.Plan, set when the run is started with --new, or a legacy plan workflow). It is used in Resumable, inboxItems and both run.resume checks."
+        },
+        "handle": "request-trigger-dispatch-verified",
+        "id": "01M6W2XJGWA5D60ERS93DRCNSM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W2XJGWA5D60ERS91EA263P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W2XJGWA5D60ERS91EA263P",
+        "id": "01M6W2XJJFCJWD7BCDA4D08HR0",
+        "link": "01M6W2XJJFCJWD7BCDA31WVE56",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTARWAQRW1FDT2AKAFZQA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W2XJM9J7ENJJTHAEWVH44N",
+  "type": "ops",
+  "v": 1
+}

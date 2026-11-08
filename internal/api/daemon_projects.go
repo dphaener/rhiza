@@ -266,7 +266,7 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 			_, ok := unjournaled[cs]
 			return ok
 		})
-		ready = append(ready, daemon.Pick(cands, runs, held, host, nil, running+len(cands), daemonShipOf(fold))...)
+		ready = append(ready, daemon.Pick(cands, runs, held, host, nil, running+len(cands), daemonShipOf(ctx.Root, fold))...)
 	}
 	return ready, running
 }

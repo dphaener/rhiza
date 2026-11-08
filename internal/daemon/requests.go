@@ -40,10 +40,13 @@ const (
 // of the daemon's never journaled and the request went back in the queue:
 // the daemon does not start it again before then.
 type Request struct {
-	ID        string    `json:"id"`
-	Kind      string    `json:"kind"`
-	Text      string    `json:"text"`
-	Milestone string    `json:"milestone,omitempty"`
+	ID        string `json:"id"`
+	Kind      string `json:"kind"`
+	Text      string `json:"text"`
+	Milestone string `json:"milestone,omitempty"`
+	// Workflow is the workflow the request named for its change set's ready
+	// pick; the change set its plan run opens records it.
+	Workflow  string    `json:"workflow,omitempty"`
 	Ref       string    `json:"ref,omitempty"`
 	At        time.Time `json:"at"`
 	Run       string    `json:"run,omitempty"`

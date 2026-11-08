@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W5AJQDVW2XRQ6RZCCKHQ2D",
+  "after": [
+    "01M6W3SJ2HGRGZ821W8E22RR8M"
+  ],
+  "at": "2026-11-07T23:27:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 044ec30f I read the diff df9cc6f4..HEAD: one resolver readyWorkflow (recorded workflow, else the [ready] rule for its kind, else ship-change) used by the daemon's ship pick (daemonShipOf For, daemonStart passes --workflow) and by run start on an existing change set via startWorkflow (explicit --workflow over all). go test -trimpath ./internal/api -run 'TestReadyWorkflowOrder|TestStartWorkflowExplicitWins|TestRunStartExplicitWorkflowOverRule' passes: recorded over rule over ship-change, and explicit --workflow over a recorded workflow, a rule and the default. go test -trimpath ./internal/daemon/... passes (TestPickShippedUnderDispatchedWorkflow). go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-start-ready-dispatch|describe-golden|request-workflow-flag)$' passes: run-start-ready-dispatch makes a real bug change set (request --kind bug, plan run), and run start --dry-run with no dispatch file fails naming ship-change ('ship-change builds and reviews its leaves'), with [ready] bug = \"bugfix\" prints '- Workflow: bugfix', and with --workflow other prints '- Workflow: other'. Attempt 1's three findings are fixed."
+        },
+        "handle": "ready-trigger-dispatch-verified",
+        "id": "01M6W5D1T25YYFM8VMZ7D5VK34",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W5D1T25YYFM8VMZ4TTPZVY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W5D1T25YYFM8VMZ4TTPZVY",
+        "id": "01M6W5D1VEVPKN1MCQM07J30FX",
+        "link": "01M6W5D1VEVPKN1MCQKWW5JET6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAW1NNHC09NTGF6RPVKS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W5D1XE94KXBWH0FGBQPVW0",
+  "type": "ops",
+  "v": 1
+}

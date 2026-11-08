@@ -1391,6 +1391,10 @@ cmp stdout describe.golden.json
             "description": "The change set's opaque external reference, if any: untrusted text",
             "type": "string"
           },
+          "request_kind": {
+            "description": "feature, bug or milestone: the kind of request that opened it, feature when none did; empty without a valid open",
+            "type": "string"
+          },
           "serves": {
             "description": "The intents its live serves links point to, in its write view, by link ID; empty when it serves none yet",
             "items": {
@@ -1419,6 +1423,10 @@ cmp stdout describe.golden.json
           "title": {
             "description": "The change set's title, else its intent's first clause",
             "type": "string"
+          },
+          "workflow": {
+            "description": "The workflow its request named for its ready pick, if any",
+            "type": "string"
           }
         },
         "required": [
@@ -1434,6 +1442,7 @@ cmp stdout describe.golden.json
           "notes",
           "ops",
           "problems",
+          "request_kind",
           "serves",
           "sources",
           "state",
@@ -1505,7 +1514,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "findings": {
-            "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, unclaimed, anchor, text-ref, render, append-only), then path and IDs",
+            "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, unclaimed, anchor, text-ref, dispatch, render, append-only), then path and IDs",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -1550,6 +1559,7 @@ cmp stdout describe.golden.json
                     "unclaimed",
                     "anchor",
                     "text-ref",
+                    "dispatch",
                     "render",
                     "append-only"
                   ],
@@ -2097,22 +2107,26 @@ cmp stdout describe.golden.json
                     "additionalProperties": false,
                     "properties": {
                       "change": {
-                        "description": "The change set's ID",
+                        "description": "The change set's ID; empty for a queued request that was not started",
                         "type": "string"
                       },
                       "detail": {
-                        "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; else empty",
+                        "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty",
                         "items": {
                           "type": "string"
                         },
                         "type": "array"
                       },
                       "reason": {
-                        "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve or ship-owner",
+                        "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve, ship-owner or workflow-unresolved",
+                        "type": "string"
+                      },
+                      "request": {
+                        "description": "The queued request's ID, when the skip is a request whose workflow does not resolve",
                         "type": "string"
                       },
                       "title": {
-                        "description": "The change set's display title",
+                        "description": "The change set's display title, or the request's text",
                         "type": "string"
                       }
                     },
@@ -2236,22 +2250,26 @@ cmp stdout describe.golden.json
               "additionalProperties": false,
               "properties": {
                 "change": {
-                  "description": "The change set's ID",
+                  "description": "The change set's ID; empty for a queued request that was not started",
                   "type": "string"
                 },
                 "detail": {
-                  "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; else empty",
+                  "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty",
                   "items": {
                     "type": "string"
                   },
                   "type": "array"
                 },
                 "reason": {
-                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve or ship-owner",
+                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve, ship-owner or workflow-unresolved",
+                  "type": "string"
+                },
+                "request": {
+                  "description": "The queued request's ID, when the skip is a request whose workflow does not resolve",
                   "type": "string"
                 },
                 "title": {
-                  "description": "The change set's display title",
+                  "description": "The change set's display title, or the request's text",
                   "type": "string"
                 }
               },
@@ -2999,7 +3017,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale, accept or interview",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale, accept, interview or workflow",
                   "type": "string"
                 },
                 "next": {
@@ -3951,6 +3969,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
               },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
@@ -5585,6 +5607,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
               },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
@@ -7596,6 +7622,10 @@ cmp stdout describe.golden.json
           "text": {
             "description": "What to plan, in one line",
             "type": "string"
+          },
+          "workflow": {
+            "description": "A workflow, by name, for the change set the request's plan run opens: it overrides that change set's ready pick only, not the plan run's own workflow; default none (the dispatch rules choose)",
+            "type": "string"
           }
         },
         "required": [
@@ -7652,6 +7682,10 @@ cmp stdout describe.golden.json
               },
               "text": {
                 "description": "What to plan",
+                "type": "string"
+              },
+              "workflow": {
+                "description": "The workflow the request named for its change set's ready pick; absent if none",
                 "type": "string"
               }
             },
@@ -7723,6 +7757,10 @@ cmp stdout describe.golden.json
                 },
                 "text": {
                   "description": "What to plan",
+                  "type": "string"
+                },
+                "workflow": {
+                  "description": "The workflow the request named for its change set's ready pick; absent if none",
                   "type": "string"
                 }
               },
@@ -8973,6 +9011,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
               },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
@@ -10464,6 +10506,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
+              },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
                 "type": "string"
@@ -11255,7 +11301,7 @@ cmp stdout describe.golden.json
                 "type": "string"
               },
               "findings": {
-                "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, unclaimed, anchor, text-ref, render, append-only), then path and IDs",
+                "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, unclaimed, anchor, text-ref, dispatch, render, append-only), then path and IDs",
                 "items": {
                   "additionalProperties": false,
                   "properties": {
@@ -11300,6 +11346,7 @@ cmp stdout describe.golden.json
                         "unclaimed",
                         "anchor",
                         "text-ref",
+                        "dispatch",
                         "render",
                         "append-only"
                       ],
@@ -11801,6 +11848,10 @@ cmp stdout describe.golden.json
                 "live": {
                   "description": "True while another process holds the run",
                   "type": "boolean"
+                },
+                "pick": {
+                  "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                  "type": "string"
                 },
                 "started_at": {
                   "description": "When it started, RFC 3339 UTC",
@@ -12862,6 +12913,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
               },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
@@ -14376,6 +14431,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
               },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
@@ -15923,6 +15982,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
+              },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
                 "type": "string"
@@ -16644,6 +16707,10 @@ cmp stdout describe.golden.json
           },
           "permission_mode": {
             "description": "The permission mode of agent steps that set none; modes that bypass the agent's permission checks are refused",
+            "type": "string"
+          },
+          "pick": {
+            "description": "With --workflow: which dispatch pick named it (rule ready.bug, default, request), recorded on the run instead of explicit. The daemon passes it",
             "type": "string"
           },
           "ref": {
@@ -17462,6 +17529,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "pick": {
+                "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+                "type": "string"
               },
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
@@ -18841,6 +18912,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "pick": {
+            "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
+            "type": "string"
           },
           "pr": {
             "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",

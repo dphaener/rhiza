@@ -57,7 +57,7 @@ stdout -count=1 '^Started a run of 01M5PWGMARA1WR6BD0MEF4Y76P'
 stdout -count=1 '^Started the plan run of request '
 exec sh -c 'grep -c "run start --foreground 01M5PWG" $WORK/detach.log'
 stdout '^1$'
-exec sh -c 'grep -c "run start --foreground --workflow plan --new Add exports" $WORK/detach.log'
+exec sh -c 'grep -c "run start --foreground --workflow plan --pick default --new Add exports" $WORK/detach.log'
 stdout '^1$'
 exec rhiza request ls
 stdout 'feature planning: Add exports'
