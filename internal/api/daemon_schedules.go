@@ -99,8 +99,15 @@ func (d *daemonSchedules) scheduleStateOf(name string, runs []run.Journal, host 
 				st.LastEnd = st.LastStart
 			}
 		default:
-			// Interrupted: its process is gone; the next slot goes on.
-			st.LastEnd = now
+			// Interrupted: its process is gone and nothing will end it. Its
+			// last entry is its end, fixed across polls, so the next slot
+			// goes on.
+			st.LastEnd = st.LastStart
+			for _, e := range last.Entries {
+				if e.At.After(st.LastEnd) {
+					st.LastEnd = e.At
+				}
+			}
 		}
 	}
 	if t, ok := d.starting[name]; ok {

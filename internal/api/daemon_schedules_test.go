@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
@@ -209,14 +210,61 @@ func TestDaemonScheduledRunFailureLogged(t *testing.T) {
 	if c := h.rexCalls(0); len(c) != 0 {
 		t.Errorf("a failing scheduled command called rex: %v", c)
 	}
+	// Its failure is the daemon log's only: no inbox item, no Rex notice.
+	var notices bytes.Buffer
+	p.ctx.Rex = &notices
 	h.now = h.now.Add(time.Minute)
 	h.poll(2)
+	if strings.Contains(notices.String(), "run failed") || strings.Contains(notices.String(), "blocked") {
+		t.Errorf("a failed scheduled run made a Rex notice: %q", notices.String())
+	}
+	inbox, err := callOp(t, p.ctx, "inbox", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if items := inbox.(InboxResponse).Items; len(items) != 0 {
+		t.Errorf("a failed scheduled run is in the inbox: %+v", items)
+	}
 	out := h.log.String()
 	if !strings.Contains(out, "started a run of schedule bad") || !strings.Contains(out, "of schedule bad failed") {
 		t.Errorf("daemon log lacks the start or the failure:\n%s", out)
 	}
 	if c := h.rexCalls(0); len(c) != 0 {
 		t.Errorf("rex was called: %v", c)
+	}
+}
+
+// A scheduled run interrupted (its process gone, no finished entry) does not
+// stop the schedule: the next slot after it fires.
+func TestDaemonInterruptedScheduledRunNextSlotFires(t *testing.T) {
+	h := newSchedHarness(t, hourlyCmd)
+	h.poll(2)
+	h.now = h.now.Add(31 * time.Minute) // 11:01, slot 11:00
+	h.poll(2)
+	if len(h.progs) != 1 {
+		t.Fatalf("started %v", h.started())
+	}
+	p := h.projs[0]
+	rid := "01M6WSQMY5Q33CWG319V9ARINT"
+	at := h.now
+	if err := p.rs.Create(rid, run.Entry{Type: run.TypeStarted, At: at, Started: &run.Started{Workflow: "schedule:tick", Trigger: run.TriggerSchedule, TriggerName: "tick"}}); err != nil {
+		t.Fatal(err)
+	}
+	// A pid that is not running: the run was interrupted.
+	if err := p.rs.Append(rid, run.Entry{Type: run.TypeProcess, At: at, Process: &run.Process{Host: hostName(), Pid: 1 << 30}}); err != nil {
+		t.Fatal(err)
+	}
+	for _, step := range []time.Duration{time.Minute, 30 * time.Minute} {
+		h.now = h.now.Add(step)
+		h.poll(2)
+	}
+	if len(h.progs) != 1 {
+		t.Fatalf("fired before the next slot: %v", h.started())
+	}
+	h.now = h.now.Add(30 * time.Minute) // 12:02, slot 12:00
+	h.poll(2)
+	if len(h.progs) != 2 {
+		t.Fatalf("the slot after an interrupted run did not fire: %v\n%s", h.started(), h.log)
 	}
 }
 
