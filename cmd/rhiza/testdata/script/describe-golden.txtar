@@ -2017,6 +2017,10 @@ cmp stdout describe.golden.json
             ],
             "type": "string"
           },
+          "poll_behind": {
+            "description": "Set while its last poll took longer than the watchdog's pollBehind multiple of the poll interval: how long it took and the limit; absent when polls keep up",
+            "type": "string"
+          },
           "process": {
             "description": "The daemon's process, as host:pid; absent when none ever ran",
             "type": "string"

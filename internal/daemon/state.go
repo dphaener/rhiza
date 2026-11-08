@@ -79,6 +79,9 @@ type State struct {
 	// WatchdogHolds are the stalled steps the last poll left to the owner
 	// (an attended run, or a spent budget), each an inbox item while it lasts.
 	WatchdogHolds []WatchdogHold `json:"watchdog_holds,omitempty"`
+	// PollBehind is set while the last poll took longer than the watchdog's
+	// multiple of the poll interval, and absent once a poll is within it.
+	PollBehind *PollBehind `json:"poll_behind,omitempty"`
 	// Events are the IDs of the lifecycle moves the event command has been
 	// handled for, run or seeded; EventsSeeded says the first run recorded
 	// every move then in the log, so history is not replayed.
@@ -225,4 +228,11 @@ type WatchdogHold struct {
 	Step   string    `json:"step"`
 	Since  time.Time `json:"since"`
 	Detail string    `json:"detail"`
+}
+
+// PollBehind is a poll that ran past its limit.
+type PollBehind struct {
+	At    time.Time     `json:"at"`
+	Took  time.Duration `json:"took"`
+	Limit time.Duration `json:"limit"`
 }

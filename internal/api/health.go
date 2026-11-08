@@ -225,7 +225,7 @@ func healthDaemon(ctx, home *Ctx, all bool) HealthPart {
 	if s.LastPoll != "" {
 		p.Detail = append(p.Detail, "last poll "+s.LastPoll)
 	}
-	return p
+	return healthPollBehind(p, s.PollBehind)
 }
 
 // healthAutonomy lists the autonomy settings and whether the daemon is
