@@ -1647,3 +1647,42 @@ func TestStepStall(t *testing.T) {
 		t.Fatalf("err %v", err)
 	}
 }
+
+// The plan workflows give a red PR head two reruns (three CI attempts) before
+// a ship check step fails the run; ship-change keeps the default one.
+func TestPlanRerunsCIFlakes(t *testing.T) {
+	load := func(name string) *Definition {
+		data, ok := Builtin(name)
+		if !ok {
+			t.Fatalf("no %s built-in", name)
+		}
+		def, err := ParseWith(name, data, builtinResolver)
+		if err != nil {
+			t.Fatalf("parse %s: %v", name, err)
+		}
+		return def
+	}
+	for _, name := range []string{"plan", "plan-milestone"} {
+		def := load(name)
+		routes := map[string]string{"wait-pr": "pr-green", "pr-green": "rebase", "wait-rebased": "rebased-green", "rebased-green": "merge"}
+		for step, pass := range routes {
+			s := def.Steps[step]
+			cmd := s.Run
+			if s.Kind == KindWait {
+				cmd = s.Until
+			}
+			if !strings.Contains(cmd, "rhiza ship check") || !strings.Contains(cmd, "--reruns 2") {
+				t.Errorf("%s %s = %q; want rhiza ship check with --reruns 2", name, step, cmd)
+			}
+			if s.On["pass"] != pass || s.On["fail"] != "" || s.MaxVisits != 3 {
+				t.Errorf("%s %s routes = pass %q fail %q max_visits %d; want pass %q, no fail, 3", name, step, s.On["pass"], s.On["fail"], s.MaxVisits, pass)
+			}
+		}
+	}
+	ship := load("ship-change")
+	for name, s := range ship.Steps {
+		if strings.Contains(s.Run+s.Until, "--reruns") {
+			t.Errorf("ship-change %s = %q; want no --reruns", name, s.Run+s.Until)
+		}
+	}
+}
