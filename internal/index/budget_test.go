@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"slices"
 	"sync"
 	"syscall"
 	"testing"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/gen"
 	"github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/quiettest"
 	"github.com/dphaener/rhiza/internal/tmpsweep"
 )
 
@@ -150,11 +150,11 @@ func TestBudget(t *testing.T) {
 	budgetLock(t)
 	g := defaultModel(t)
 	s := g.summary
-	var times []time.Duration
+	var laps []quiettest.Lap
 	for range budgetRuns {
-		start := time.Now()
+		sw := quiettest.Start()
 		resolved, ancestors, children, links, err := freshRead(g)
-		times = append(times, time.Since(start))
+		laps = append(laps, sw.Stop())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -171,13 +171,16 @@ func TestBudget(t *testing.T) {
 			t.Fatalf("Links(linked) has %d live links, want at least %d", live, s.LinksOut+s.LinksIn)
 		}
 	}
-	slices.Sort(times)
-	median := (times[budgetRuns/2-1] + times[budgetRuns/2]) / 2
+	tm := quiettest.Summarize(laps)
 	t.Logf("model: %d entries, %d change sets, %d nodes, %d links", s.Entries, s.ChangeSets, s.Nodes, s.Links)
 	t.Logf("scratch build: %v", g.build)
-	t.Logf("fresh read over %d runs: min %v, median %v, max %v", budgetRuns, times[0], median, times[len(times)-1])
-	if median >= budget {
-		t.Fatalf("fresh read median %v, want < %v", median, budget)
+	t.Logf("fresh read over %d runs: %v", budgetRuns, tm)
+	// Own time: the clock less waiting for a CPU, inconclusive on a
+	// saturated machine (quiettest.Timing.Over).
+	if over, why := tm.Over(budget); over {
+		t.Fatalf("fresh read median own time %v, want < %v", tm.Own, budget)
+	} else if why != "" {
+		t.Log("fresh read " + why)
 	}
 }
 
