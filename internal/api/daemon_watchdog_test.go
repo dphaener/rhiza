@@ -168,6 +168,57 @@ func TestWatchdogTransient(t *testing.T) {
 	}
 }
 
+// TestWatchdogTransientBudgetAcrossPolls runs whole polls, the stalled-step
+// pass included, over a run that keeps failing on a transient error: the
+// budget of one holds across them, and a run whose continue is already
+// queued is not charged.
+func TestWatchdogTransientBudgetAcrossPolls(t *testing.T) {
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	js := []run.Journal{{ID: "gh", Entries: []run.Entry{
+		{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true}},
+		{Type: run.TypeEntered, At: t0, Step: "build", Visit: 1},
+		{Type: run.TypeEnded, At: t0, Step: "build", Visit: 1, Outcome: "fail", Detail: "exit 1\ngh: HTTP 502 Bad Gateway"},
+		{Type: run.TypeFinished, At: t0, Step: "build", End: "failed", Detail: "step build failed"},
+	}}}
+	var resumed []string
+	queued := true
+	d := watchdogDeps{
+		resume: func(id string) error { resumed = append(resumed, id); return nil },
+		queued: func(string) bool { return queued },
+		log:    func(string, ...any) {},
+	}
+	pol := WatchdogPolicy{Enabled: true, RetryBudget: 1, AutonomousOnly: true}
+	nolive := func(string) bool { return false }
+	var mem []daemon.WatchdogRun
+	poll := func() {
+		t.Helper()
+		var err error
+		if mem, _, err = watchdogPasses(pol, js, nolive, t0.Add(time.Hour), mem, d); err != nil {
+			t.Fatal(err)
+		}
+	}
+	poll()
+	if len(resumed) != 0 {
+		t.Fatalf("continue already queued: resumed %v", resumed)
+	}
+	queued = false
+	for range 5 {
+		poll()
+	}
+	if strings.Join(resumed, ",") != "gh" {
+		t.Fatalf("five polls resumed %v, want gh once", resumed)
+	}
+	if len(mem) != 1 || mem[0].Spent != 1 {
+		t.Errorf("memory %+v, want gh spent 1", mem)
+	}
+	// A run gone from the store is forgotten.
+	js = nil
+	poll()
+	if len(mem) != 0 {
+		t.Errorf("memory %+v after the run is gone", mem)
+	}
+}
+
 // TestWatchdogCIRerun drives the CI rerun: red checks on a head are rerun
 // once, the run is resumed once they pass, and a head already at attempt 2,
 // or already rerun, gets no second rerun, while a new head gets its own.

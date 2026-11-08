@@ -34,6 +34,9 @@ type watchdogDeps struct {
 	send   func(sid, text string) error
 	stop   func(st run.State, sessions []string) error
 	resume func(runID string) error
+	// queued is whether a continue of the run is already queued: the
+	// failure passes leave such a run be, uncharged. nil is never.
+	queued func(runID string) bool
 	// ci reads the PR of st's change set: its head, its checks and the
 	// attempt of each Actions run on the head. rerun reruns the failed jobs
 	// of one Actions run of st's PR.
@@ -158,7 +161,7 @@ func watchdogStalled(pol WatchdogPolicy, journals []run.Journal, now time.Time, 
 	return out, holds, first
 }
 
-// daemonWatchdog is the poll's stalled-step pass over the live runs.
+// daemonWatchdog is the poll's watchdog over this repo's runs.
 func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPolicy) error {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
@@ -167,12 +170,6 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 	all, err := rs.List()
 	if err != nil {
 		return Errorf("read runs: %v", err)
-	}
-	var live []run.Journal
-	for _, j := range all {
-		if st := j.State(); !st.Ended && rs.Live(j.ID) {
-			live = append(live, j)
-		}
 	}
 	d := watchdogDeps{
 		sessions: session.NewStore(session.Dir(common)),
@@ -205,17 +202,9 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 			}
 		},
 	}
-	mem, holds, err := watchdogStalled(pol, live, ctx.Now(), state.Watchdog, d)
-	d.resume = func(id string) error {
-		if q, qerr := daemon.ReadContinues(common); qerr == nil && slices.ContainsFunc(q, func(c daemon.Continue) bool { return c.Run == id }) {
-			return nil
-		}
-		_, err := queueContinue(ctx, common, id, true, false)
-		return err
-	}
-	mem, terr := watchdogTransient(pol, all, rs.Live, mem, d)
-	if err == nil {
-		err = terr
+	d.queued = func(id string) bool {
+		q, err := daemon.ReadContinues(common)
+		return err == nil && slices.ContainsFunc(q, func(c daemon.Continue) bool { return c.Run == id })
 	}
 	d.ci = func(st run.State) (watchdogPR, error) { return watchdogReadPR(ctx, st) }
 	d.rerun = func(st run.State, id string) error {
@@ -226,12 +215,42 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 		_, err = gh(ctx, t.dir(), "run", "rerun", id, "--failed")
 		return err
 	}
-	mem, terr = watchdogCIRerun(pol, all, rs.Live, mem, d)
+	mem, holds, err := watchdogPasses(pol, all, rs.Live, ctx.Now(), state.Watchdog, d)
+	state.Watchdog, state.WatchdogHolds = mem, holds
+	return err
+}
+
+// watchdogPasses is one poll of the watchdog over all runs: the
+// stalled-step pass over the live ones, then the transient-failure and CI
+// passes over the failed ones. The memory of a run that is not live is
+// carried over from prev, so its budget holds across polls; a run gone from
+// all is forgotten. It returns the memory and holds after, and the first
+// error.
+func watchdogPasses(pol WatchdogPolicy, all []run.Journal, live func(id string) bool, now time.Time, prev []daemon.WatchdogRun, d watchdogDeps) ([]daemon.WatchdogRun, []daemon.WatchdogHold, error) {
+	var running []run.Journal
+	for _, j := range all {
+		if st := j.State(); !st.Ended && live(j.ID) {
+			running = append(running, j)
+		}
+	}
+	mem, holds, err := watchdogStalled(pol, running, now, prev, d)
+	for _, j := range all {
+		if slices.ContainsFunc(mem, func(w daemon.WatchdogRun) bool { return w.Run == j.ID }) {
+			continue
+		}
+		if i := slices.IndexFunc(prev, func(w daemon.WatchdogRun) bool { return w.Run == j.ID }); i >= 0 {
+			mem = append(mem, prev[i])
+		}
+	}
+	mem, terr := watchdogTransient(pol, all, live, mem, d)
 	if err == nil {
 		err = terr
 	}
-	state.Watchdog, state.WatchdogHolds = mem, holds
-	return err
+	mem, terr = watchdogCIRerun(pol, all, live, mem, d)
+	if err == nil {
+		err = terr
+	}
+	return mem, holds, err
 }
 
 // transientSignatures are the failure outputs a rerun is expected to clear:
@@ -281,7 +300,7 @@ func watchdogTransient(pol WatchdogPolicy, journals []run.Journal, live func(id 
 			mem = append(mem, daemon.WatchdogRun{Run: j.ID})
 			i = len(mem) - 1
 		}
-		if mem[i].Spent >= pol.RetryBudget {
+		if mem[i].Spent >= pol.RetryBudget || d.queued != nil && d.queued(j.ID) {
 			continue
 		}
 		if err := d.resume(j.ID); err != nil {
@@ -457,7 +476,7 @@ func watchdogCIRerun(pol WatchdogPolicy, journals []run.Journal, live func(id st
 		m := &mem[i]
 		if m.CIHead == pr.Head {
 			// Rerun by the watchdog: resume once, when the rerun passed.
-			if m.CIResumed || !green || m.Spent >= pol.RetryBudget {
+			if m.CIResumed || !green || m.Spent >= pol.RetryBudget || d.queued != nil && d.queued(j.ID) {
 				continue
 			}
 			if err := d.resume(j.ID); err != nil {
