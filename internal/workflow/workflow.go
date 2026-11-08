@@ -166,6 +166,82 @@ type Definition struct {
 	// declared describes each step the file declares, by its name, in
 	// terms of the flat steps: see declStep.
 	declared map[string]declStep
+
+	// autonomy is the autonomy the file declares, by stage; a stage it
+	// leaves out is absent. See Autonomy.
+	autonomy map[string]string
+}
+
+// The autonomy stages a workflow file may declare, and the two modes.
+const (
+	StagePlan    = "plan"
+	StageAccept  = "accept"
+	StageShip    = "ship"
+	StageSignoff = "signoff"
+
+	AutonomyAuto  = "auto"
+	AutonomyOwner = "owner"
+)
+
+// AutonomyStages lists the stages in order.
+var AutonomyStages = []string{StagePlan, StageAccept, StageShip, StageSignoff}
+
+// Autonomy reports the mode the workflow declares for stage, AutonomyAuto or
+// AutonomyOwner, and false when it declares none: the stage then follows
+// rhiza.autonomy.<stage>.
+func (d *Definition) Autonomy(stage string) (string, bool) {
+	m, ok := d.autonomy[stage]
+	return m, ok
+}
+
+// parseAutonomy reads the file's autonomy declaration: top-level
+// autonomous = true|false (all four stages) or an [autonomy] table.
+func parseAutonomy(f fileDef) (map[string]string, error) {
+	if f.Autonomous == nil && f.Autonomy == nil {
+		return nil, nil
+	}
+	if f.Autonomous != nil && f.Autonomy != nil {
+		return nil, errors.New("autonomous and [autonomy] are both set: declare autonomy one way, autonomous = true|false for every stage or an [autonomy] table per stage")
+	}
+	out := map[string]string{}
+	if f.Autonomous != nil {
+		b, ok := f.Autonomous.(bool)
+		if !ok {
+			return nil, fmt.Errorf("autonomous: %v is not a boolean; want true or false", f.Autonomous)
+		}
+		mode := AutonomyOwner
+		if b {
+			mode = AutonomyAuto
+		}
+		for _, st := range AutonomyStages {
+			out[st] = mode
+		}
+		return out, nil
+	}
+	tbl, ok := f.Autonomy.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("autonomy: want a table of stages (%s), got %v", strings.Join(AutonomyStages, ", "), f.Autonomy)
+	}
+	keys := make([]string, 0, len(tbl))
+	for k := range tbl {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		known := false
+		for _, st := range AutonomyStages {
+			known = known || st == k
+		}
+		if !known {
+			return nil, fmt.Errorf("autonomy.%s: unknown stage; want %s", k, strings.Join(AutonomyStages, ", "))
+		}
+		v, _ := tbl[k].(string)
+		if v != AutonomyAuto && v != AutonomyOwner {
+			return nil, fmt.Errorf("autonomy.%s: %v is not a mode; want %q or %q", k, tbl[k], AutonomyAuto, AutonomyOwner)
+		}
+		out[k] = v
+	}
+	return out, nil
 }
 
 // declStep is a declared step as seen by a workflow that includes this
@@ -450,6 +526,10 @@ type fileDef struct {
 	Name  string              `toml:"name"`
 	Start string              `toml:"start"`
 	Step  map[string]fileStep `toml:"step"`
+	// Autonomous and Autonomy are decoded loosely so a bad value is
+	// refused with a message naming the key.
+	Autonomous any `toml:"autonomous"`
+	Autonomy   any `toml:"autonomy"`
 }
 
 type fileStep struct {
@@ -533,7 +613,7 @@ func parse(name string, data []byte, resolve Resolver, stack []string, includes 
 	if err != nil {
 		return nil, err
 	}
-	if und := md.Undecoded(); len(und) > 0 {
+	if und := undecoded(md); len(und) > 0 {
 		return nil, unknownKey(und[0])
 	}
 	if f.Name != "" {
@@ -546,7 +626,11 @@ func parse(name string, data []byte, resolve Resolver, stack []string, includes 
 		return nil, errors.New("workflow has no steps: add a [step.<name>] table")
 	}
 
-	d := &Definition{Name: name, Steps: make(map[string]Step, len(f.Step))}
+	aut, err := parseAutonomy(f)
+	if err != nil {
+		return nil, err
+	}
+	d := &Definition{Name: name, Steps: make(map[string]Step, len(f.Step)), autonomy: aut}
 	d.Order = stepOrder(md.Keys(), f.Step)
 	arbiter := ""
 	for _, n := range d.Order {
@@ -582,6 +666,18 @@ func parse(name string, data []byte, resolve Resolver, stack []string, includes 
 		return nil, err
 	}
 	return d, nil
+}
+
+// undecoded is md.Undecoded without the keys under [autonomy], which
+// parseAutonomy reads and checks itself.
+func undecoded(md toml.MetaData) []toml.Key {
+	var out []toml.Key
+	for _, k := range md.Undecoded() {
+		if k[0] != "autonomy" {
+			out = append(out, k)
+		}
+	}
+	return out
 }
 
 // unknownKey names a key the format does not know, by step when it is in one.

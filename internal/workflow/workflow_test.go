@@ -1543,3 +1543,62 @@ func TestBuiltinRolePromptsScopeTests(t *testing.T) {
 		}
 	}
 }
+
+func TestAutonomyDeclaration(t *testing.T) {
+	const steps = "\n[step.a]\nkind = \"command\"\nrun = \"true\"\n"
+	ok := []struct {
+		name, head string
+		want       map[string]string
+	}{
+		{"true", "autonomous = true\n", map[string]string{"plan": "auto", "accept": "auto", "ship": "auto", "signoff": "auto"}},
+		{"false", "autonomous = false\n", map[string]string{"plan": "owner", "accept": "owner", "ship": "owner", "signoff": "owner"}},
+		{"partial", "[autonomy]\nplan = \"owner\"\nship = \"auto\"\n", map[string]string{"plan": "owner", "ship": "auto"}},
+		{"none", "", map[string]string{}},
+	}
+	for _, c := range ok {
+		src := "name = \"x\"\n" + c.head + steps
+		if c.name == "partial" {
+			src = "name = \"x\"\n" + steps + "\n" + c.head
+		}
+		d, err := Parse("x", []byte(src))
+		if err != nil {
+			t.Fatalf("%s: %v", c.name, err)
+		}
+		for _, st := range AutonomyStages {
+			got, has := d.Autonomy(st)
+			want, wantHas := c.want[st]
+			if got != want || has != wantHas {
+				t.Errorf("%s: %s = %q,%v; want %q,%v", c.name, st, got, has, want, wantHas)
+			}
+		}
+	}
+	bad := []struct{ name, src, msg string }{
+		{"both", "autonomous = true\n[autonomy]\nplan = \"auto\"\n", "both set"},
+		{"stage", "[autonomy]\nbuild = \"auto\"\n", "autonomy.build: unknown stage"},
+		{"value", "[autonomy]\nship = \"maybe\"\n", "autonomy.ship: maybe is not a mode"},
+		{"type", "autonomous = \"yes\"\n", "autonomous: yes is not a boolean"},
+	}
+	for _, c := range bad {
+		// the [autonomy] table must follow the top-level keys, so put the
+		// steps last only when no table is declared
+		src := "name = \"x\"\n" + c.src + steps
+		if strings.Contains(c.src, "[autonomy]") {
+			src = "name = \"x\"\n" + c.src
+			if strings.HasPrefix(c.src, "autonomous") {
+				src = "name = \"x\"\n" + c.src
+			}
+			src += steps
+		}
+		if _, err := Parse("x", []byte(src)); err == nil || !strings.Contains(err.Error(), c.msg) {
+			t.Errorf("%s: Parse err = %v; want %q", c.name, err, c.msg)
+		}
+		_, ps := Validate("x", []byte(src), nil)
+		found := false
+		for _, p := range ps {
+			found = found || strings.Contains(p.Message, c.msg)
+		}
+		if !found {
+			t.Errorf("%s: Validate = %+v; want %q", c.name, ps, c.msg)
+		}
+	}
+}
