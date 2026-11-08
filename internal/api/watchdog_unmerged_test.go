@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -166,5 +167,89 @@ run = "rhiza ship merge"
 	}
 	if reads != 2 {
 		t.Fatalf("%d PR reads after the journal moved, want 2", reads)
+	}
+}
+
+// TestWatchdogReadPR checks the shared PR read gives a run the PR only when
+// the change set's ship record names that run: another run's, or none, is no
+// PR, and the owning run still reads it.
+func TestWatchdogReadPR(t *testing.T) {
+	f, g, state := shipFixture(t)
+	g.answers[shipPRView] = openPR(greenRollup)
+	g.answers["run list --commit abc1234def --json databaseId,attempt"] = `[]`
+	cs := strings.TrimSuffix(filepath.Base(state), ".json")
+	read := func(runID string) watchdogPR {
+		t.Helper()
+		pr, err := watchdogReadPR(f.ctx, run.State{ID: runID, Change: cs})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return pr
+	}
+	// No record, then a record naming no run: no run owns the PR.
+	if pr := read("SHIP"); pr.Head != "" {
+		t.Errorf("no record: head %q, want none", pr.Head)
+	}
+	if err := writeShipState(state, shipState{PR: 7}); err != nil {
+		t.Fatal(err)
+	}
+	if pr := read("SHIP"); pr.Head != "" {
+		t.Errorf("record naming no run: head %q, want none", pr.Head)
+	}
+	// A record naming the ship run: it owns the PR, the plan run does not.
+	if err := writeShipState(state, shipState{PR: 7, Run: "SHIP"}); err != nil {
+		t.Fatal(err)
+	}
+	if pr := read("SHIP"); pr.Head != "abc1234def" {
+		t.Errorf("owner: head %q, want abc1234def", pr.Head)
+	}
+	if pr := read("PLAN"); pr.Head != "" {
+		t.Errorf("other run: head %q, want none", pr.Head)
+	}
+}
+
+// TestWatchdogGreenUnmergedSkipsBusyChange checks a succeeded run of a
+// change set whose other run is live, or has a continue queued, gets no
+// hold and no resume.
+func TestWatchdogGreenUnmergedSkipsBusyChange(t *testing.T) {
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	const def = `name = "w"
+[step.merge]
+kind = "command"
+run = "rhiza ship merge"
+`
+	mk := func(id, change string, ended bool) run.Journal {
+		es := []run.Entry{
+			{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true, Definition: def, Change: change}},
+			{Type: run.TypeEntered, At: t0, Step: "merge", Visit: 1},
+		}
+		if ended {
+			es = append(es,
+				run.Entry{Type: run.TypeEnded, At: t0, Step: "merge", Visit: 1, Outcome: "pass"},
+				run.Entry{Type: run.TypeFinished, At: t0, Step: "merge", End: "succeeded"})
+		}
+		return run.Journal{ID: id, Entries: es}
+	}
+	js := []run.Journal{mk("plan", "CS", true), mk("ship", "CS", false)}
+	green := watchdogPR{Head: "aaaa111", Checks: []ShipCheck{{Name: "test", Status: "COMPLETED", Conclusion: "SUCCESS", RunID: "7"}}}
+	var resumed []string
+	d := watchdogDeps{
+		ci:     func(run.State) (watchdogPR, error) { return green, nil },
+		resume: func(id string) error { resumed = append(resumed, id); return nil },
+		log:    func(string, ...any) {},
+	}
+	pol := WatchdogPolicy{Enabled: true, RetryBudget: 1, AutonomousOnly: true}
+	live := func(id string) bool { return id == "ship" }
+	if _, holds, err := watchdogGreenUnmerged(pol, js, live, nil, d); err != nil || len(holds) != 0 || len(resumed) != 0 {
+		t.Fatalf("live run: holds %v resumed %v err %v", holds, resumed, err)
+	}
+	d.queued = func(id string) bool { return id == "ship" }
+	if _, holds, err := watchdogGreenUnmerged(pol, js, func(string) bool { return false }, nil, d); err != nil || len(holds) != 0 || len(resumed) != 0 {
+		t.Fatalf("queued run: holds %v resumed %v err %v", holds, resumed, err)
+	}
+	// Nothing else running: the succeeded run is held as before.
+	d.queued = nil
+	if _, holds, _ := watchdogGreenUnmerged(pol, js[:1], func(string) bool { return false }, nil, d); len(holds) != 1 {
+		t.Fatalf("idle: holds %v, want 1", holds)
 	}
 }

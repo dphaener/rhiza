@@ -188,7 +188,7 @@ func TestShipOpenPR(t *testing.T) {
 		t.Errorf("human = %q", got)
 	}
 	state := filepath.Join(ctx.Root, ".git", "rhiza", "ship", r.Change+".json")
-	if st, _ := readShipState(state); st.PR != 7 || st.URL != "https://github.com/o/r/pull/7" || st.Branch != "cs/ship-it" || st.Pushed != first {
+	if st, _ := readShipState(state); st.PR != 7 || st.URL != "https://github.com/o/r/pull/7" || st.Branch != "cs/ship-it" || st.Pushed != first || st.Run != "R1" {
 		t.Errorf("state = %+v", st)
 	}
 

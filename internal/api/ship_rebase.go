@@ -225,6 +225,9 @@ func runShipRebase(ctx *Ctx, _ any) (any, error) {
 		return nil, err
 	}
 	st.Pushed, st.Head, st.Checks, st.MergeConflict = resp.Pushed, "", nil, nil
+	if id := shipRunID(ctx); id != "" {
+		st.Run = id
+	}
 	if err := writeShipState(t.statePath(), st); err != nil {
 		return nil, err
 	}

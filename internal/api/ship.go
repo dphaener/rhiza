@@ -299,6 +299,10 @@ type shipState struct {
 	// MergeConflict is the context of a merge of main that conflicts in
 	// code, left in progress in the worktree for a fixer.
 	MergeConflict *ShipMergeConflict `json:"merge_conflict,omitempty"`
+	// Run is the run the last step that opened, checked or pushed the PR
+	// ran for (RHIZA_RUN, or the run the watchdog acted for), so the
+	// record names the run that owns the PR.
+	Run string `json:"run,omitempty"`
 	// RerunHead is the head (or merge commit) whose failed checks were
 	// rerun, and Reruns the Actions run IDs rerun for it: a head is rerun
 	// once, so a second failure on it fails.
@@ -311,6 +315,12 @@ type shipState struct {
 	// Dispatched the workflow files dispatched for it, once each.
 	DispatchCommit string   `json:"dispatch_commit,omitempty"`
 	Dispatched     []string `json:"dispatched,omitempty"`
+}
+
+// shipRunID is the run the ship step runs for: RHIZA_RUN, or empty outside
+// a run.
+func shipRunID(ctx *Ctx) string {
+	return strings.TrimSpace(ctxGetenv(ctx)(envRun))
 }
 
 // readShipState reads the state file at path; a missing file is the zero
@@ -628,6 +638,9 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		st.Main = resp.Checks
 	} else {
 		st.PR, st.URL, st.Branch, st.Head, st.Checks = resp.PR, resp.URL, t.branch, resp.Commit, resp.Checks
+	}
+	if id := shipRunID(ctx); id != "" {
+		st.Run = id
 	}
 	if err := writeShipState(path, st); err != nil {
 		return nil, err

@@ -265,6 +265,9 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 		if !shipConflictUnresolved(ctx, t, st.MergeConflict) {
 			st.MergeConflict = nil
 		}
+		if id := shipRunID(ctx); id != "" {
+			st.Run = id
+		}
 		if err := writeShipState(t.statePath(), st); err != nil {
 			return nil, err
 		}

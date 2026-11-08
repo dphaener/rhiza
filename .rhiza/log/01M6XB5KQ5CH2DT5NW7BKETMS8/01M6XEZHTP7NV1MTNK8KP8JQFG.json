@@ -1,0 +1,40 @@
+{
+  "actor": "01M6XEVSE7DGWMWT4ZSQ4Q0HMH",
+  "after": [
+    "01M6XEQRFK5NFP7P1V9GE03BZ4"
+  ],
+  "at": "2026-11-08T11:33:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-e4cda6c3 at 468bae82 ran go test -trimpath -count=1 ./internal/api -run 'TestWatchdog(GreenUnmerged|ReadPR|CIRerun|PRNoCI)' with the fake gh: TestWatchdogCIRerun, TestWatchdogPRNoCI, TestWatchdogGreenUnmerged, TestWatchdogGreenUnmergedReadsOnce, TestWatchdogReadPR and TestWatchdogGreenUnmergedSkipsBusyChange all PASS; go vet and gofmt clean. Read the diff: watchdogReadPR returns an empty head unless readShipState names st.ID as Run (no record or Run empty gives every run no PR; PLAN gets none while SHIP owns it), and all three passes (green-unmerged, CI-rerun, no-CI) skip an empty head, so a succeeded plan run gets no hold, resume or merge (the 0568a71 case); watchdogReadOnce caches by run ID, so the owner's read does not leak to the plan run; watchdogGreenUnmerged also skips a change set any of whose runs is live or has a continue queued (tested both ways), while an idle succeeded run still gets its hold and the existing owner-run hold/resume tests still pass."
+        },
+        "handle": "watchdog-pr-owned-by-run-verified",
+        "id": "01M6XEZHRKE5V8878DZV7TKEN4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XEZHRKE5V8878DZSXN2DV8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XEZHRKE5V8878DZSXN2DV8",
+        "id": "01M6XEZHSP8GANPEYYS5EJYVDK",
+        "link": "01M6XEZHSP8GANPEYYS1FSF9HS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XBDTCS3RKPWJHKKRT0EXKH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XB5KQ5CH2DT5NW7BKETMS8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XEZHTP7NV1MTNK8KP8JQFG",
+  "type": "ops",
+  "v": 1
+}

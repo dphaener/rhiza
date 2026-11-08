@@ -35,6 +35,7 @@ workflows-are-the-rules: recoveries that belong to a step stay in that step's wo
 - decided-by [watchdog-files-bugs](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-files-bugs.md)
 - decided-by [watchdog-poll-behind](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-poll-behind.md)
 - decided-by [watchdog-actions-shown](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-actions-shown.md)
+- decided-by [watchdog-pr-owned-by-run](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-pr-owned-by-run.md)
 
 ## History
 

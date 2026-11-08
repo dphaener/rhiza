@@ -68,7 +68,8 @@ func mergeStepReach(st run.State, from string) (hasMerge, direct bool) {
 // PR is open with every check green: a failed run that reaches its merge step
 // on its own is resumed with --retry within the run's budget; a succeeded run,
 // or one that needs the owner before it merges, is held as an inbox item.
-// Runs with a live process, abandoned runs, runs of a workflow with no merge
+// A change set any of whose runs is live or has a continue queued is left
+// alone whole. Runs with a live process, abandoned runs, runs of a workflow with no merge
 // step, and attended runs under an autonomous-only policy are left alone. A
 // run whose PR was found not open, or that watchdogPRIdle leaves idle
 // otherwise, is not read again while its journal stays as it was, so the
@@ -81,9 +82,17 @@ func watchdogGreenUnmerged(pol WatchdogPolicy, journals []run.Journal, live func
 	if d.ci == nil {
 		return mem, nil, nil
 	}
+	busy := map[string]bool{}
+	for _, j := range journals {
+		if live(j.ID) || (d.queued != nil && d.queued(j.ID)) {
+			if c := j.State().Change; c != "" {
+				busy[c] = true
+			}
+		}
+	}
 	for _, j := range journals {
 		st := j.State()
-		if live(j.ID) || !st.Ended || st.Abandoned() || len(j.Entries) == 0 {
+		if (st.Change != "" && busy[st.Change]) || live(j.ID) || !st.Ended || st.Abandoned() || len(j.Entries) == 0 {
 			continue
 		}
 		if st.Result != run.Failed && st.Result != run.Succeeded {

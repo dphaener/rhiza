@@ -190,6 +190,7 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 		return nil, err
 	}
 	st.PR, st.URL, st.Branch, st.Pushed = v.Number, v.URL, t.branch, sha
+	st.Run = shipRunID(ctx)
 	// A merge commit left by an earlier PR (a plan's) is not this PR's.
 	st.Head, st.Checks, st.MergeCommit, st.Main = "", nil, "", nil
 	if !shipConflictUnresolved(ctx, t, st.MergeConflict) {
