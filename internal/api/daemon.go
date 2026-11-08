@@ -1511,7 +1511,9 @@ type DaemonStatusResponse struct {
 	Web             string                `json:"web,omitempty" desc:"The web UI as the daemon's last poll recorded it from rhiza.web.port: its URL (http://127.0.0.1:<port>), or off; it is the recorded setting, the listener is not probed; absent when none was recorded"`
 	Settings        []Setting             `json:"settings" desc:"The settings as its last poll read them, each with its source: default, git config or flag"`
 	Runs            []DaemonRun           `json:"runs" desc:"The live runs (running or interrupted) as of its last poll"`
-	Starting        int                   `json:"starting,omitempty" desc:"The starts and resumes not journaled yet, each holding a slot, as of its last poll"`
+	Live            int                   `json:"live" desc:"The machine-wide live runs holding a slot (running, not interrupted), summed over the daemon's projects"`
+	Starting        int                   `json:"starting" desc:"The machine-wide starts and resumes not journaled yet, each holding a slot, summed over the daemon's projects, as of its last poll"`
+	Max             int                   `json:"max" desc:"rhiza.daemon.maxRuns as the daemon's last poll recorded it: the cap live plus starting is counted against"`
 	LastStarted     *DaemonEvent          `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
 	LastResumed     *DaemonEvent          `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
 	Skipped         []DaemonSkip          `json:"skipped" desc:"The accepted change sets it did not start at its last poll, each with its reason"`
@@ -1558,6 +1560,9 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 	for _, h := range r.Hooks {
 		fmt.Fprintf(w, "Hook %s: %s\n", h.Name, h.text())
 	}
+	if r.Max > 0 {
+		fmt.Fprintf(w, "runs: %d/%d live, %d starting\n", r.Live, r.Max, r.Starting)
+	}
 	humanPart(w, "", r.Runs, r.LastStarted, r.LastResumed, r.Skipped)
 	for _, k := range r.SkippedProjects {
 		fmt.Fprintf(w, "Skipped project: %s: %s", k.Project, k.Reason)
@@ -1572,6 +1577,26 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 		humanPart(w, "  ", p.Runs, p.LastStarted, p.LastResumed, p.Skipped)
 		humanUnjournaled(w, "  ", p.Unjournaled)
 	}
+}
+
+// daemonRunsHeld is the machine-wide runs holding a slot: the live runs (an
+// interrupted one takes none) and the starts not journaled yet, over the
+// status's own runs and each project's part.
+func daemonRunsHeld(r DaemonStatusResponse) (live, starting int) {
+	count := func(runs []DaemonRun) {
+		for _, d := range runs {
+			if d.State != "interrupted" {
+				live++
+			}
+		}
+	}
+	count(r.Runs)
+	starting = r.Starting
+	for _, p := range r.Projects {
+		count(p.Runs)
+		starting += p.Starting
+	}
+	return live, starting
 }
 
 // humanPart writes the runs, last start and resume and skips of a status
@@ -1681,6 +1706,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 		resp.Starting = p.Starting
 		resp.Runs, resp.LastStarted, resp.LastResumed, resp.Skipped, resp.Unjournaled = p.Runs, p.LastStarted, p.LastResumed, p.Skipped, p.Unjournaled
 	}
+	resp.Live, resp.Starting = daemonRunsHeld(resp)
 	return resp, nil
 }
 
@@ -1729,7 +1755,7 @@ func daemonStatusHome(ctx *Ctx) (any, error) {
 	if !st.Stopped.IsZero() && !resp.Running {
 		resp.Stopped = st.Stopped.UTC().Format(time.RFC3339)
 	}
-	resp.MaxRuns, resp.Autonomous = st.MaxRuns, st.Autonomous
+	resp.MaxRuns, resp.Max, resp.Autonomous = st.MaxRuns, st.MaxRuns, st.Autonomous
 	for _, v := range st.Settings {
 		resp.Settings = append(resp.Settings, Setting{Key: v.Key, Value: v.Value, Source: v.Source, Default: settingDefault(v.Key), Scope: settingScope(v.Key)})
 	}
@@ -1741,6 +1767,7 @@ func daemonStatusHome(ctx *Ctx) (any, error) {
 		resp.Runs = append(resp.Runs, DaemonRun{ID: d.ID, Change: d.Change, State: d.State})
 	}
 	resp.Starting = st.Starting
+	resp.Live, resp.Starting = daemonRunsHeld(resp)
 	resp.LastStarted = daemonEvent(st.LastStarted)
 	resp.LastResumed = daemonEvent(st.LastResumed)
 	for _, k := range st.Skips {

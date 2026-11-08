@@ -79,11 +79,8 @@ func WebDaemonSource(base *Ctx, health *WebHealth) web.DaemonSource {
 		if out, err := runDaemonStatus(c, DaemonStatusRequest{}); err == nil {
 			s := out.(DaemonStatusResponse)
 			v.Running, v.Limit = s.Running, s.MaxRuns
-			for _, run := range s.Runs {
-				if run.State == "running" {
-					v.Slots++
-				}
-			}
+			v.Live, v.Starting = s.Live, s.Starting
+			v.Slots = s.Live + s.Starting
 			for _, set := range s.Settings {
 				if set.Key == "rhiza.daemon.paused" {
 					v.Paused = set.Value == "true"

@@ -2005,6 +2005,14 @@ cmp stdout describe.golden.json
             ],
             "type": "object"
           },
+          "live": {
+            "description": "The machine-wide live runs holding a slot (running, not interrupted), summed over the daemon's projects",
+            "type": "integer"
+          },
+          "max": {
+            "description": "rhiza.daemon.maxRuns as the daemon's last poll recorded it: the cap live plus starting is counted against",
+            "type": "integer"
+          },
           "max_runs": {
             "description": "How many runs it keeps running at once",
             "type": "integer"
@@ -2322,7 +2330,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "starting": {
-            "description": "The starts and resumes not journaled yet, each holding a slot, as of its last poll",
+            "description": "The machine-wide starts and resumes not journaled yet, each holding a slot, summed over the daemon's projects, as of its last poll",
             "type": "integer"
           },
           "stopped": {
@@ -2373,6 +2381,8 @@ cmp stdout describe.golden.json
         "required": [
           "autonomous",
           "hooks",
+          "live",
+          "max",
           "mode",
           "projects",
           "running",
@@ -2380,6 +2390,7 @@ cmp stdout describe.golden.json
           "settings",
           "skipped",
           "skipped_projects",
+          "starting",
           "unjournaled"
         ],
         "type": "object"

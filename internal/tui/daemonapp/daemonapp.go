@@ -79,7 +79,13 @@ type App struct {
 	project  string
 	pPaused  bool
 	pMaxRuns string
+	// runs is the machine-wide count, "runs: <live>/<max> live, <n>
+	// starting", as daemon status gives it; empty when it is unavailable.
+	runs string
 }
+
+// RunsLine is the runs-against-cap line the app's subtitle carries.
+func (a *App) RunsLine() string { return a.runs }
 
 // validateMaxRuns accepts a whole number of at least 1.
 func validateMaxRuns(v string) error {
@@ -135,11 +141,22 @@ func NewIn(run Runner, t theme.Theme, profile colorprofile.Profile, project stri
 				return validateMaxRuns(v)
 			}))
 	}
+	runs := ""
+	if out, err := run("daemon.status", nil); err == nil {
+		var st api.DaemonStatusResponse
+		if json.Unmarshal(out, &st) == nil && st.Max > 0 {
+			runs = fmt.Sprintf("runs: %d/%d live, %d starting", st.Live, st.Max, st.Starting)
+		}
+	}
+	subtitle := "Daemon"
+	if runs != "" {
+		subtitle += " · " + runs
+	}
 	form := ui.NewForm(t, profile, fields...).
-		WithSubtitle("Daemon").
+		WithSubtitle(subtitle).
 		WithThemeFunc(func(color.Color) theme.Theme { return t })
 	return &App{Component: modalshell.Form(form), run: run, paused: paused, maxRuns: maxRuns,
-		project: project, pPaused: pPause, pMaxRuns: pMax}, nil
+		project: project, pPaused: pPause, pMaxRuns: pMax, runs: runs}, nil
 }
 
 // Paused is the value the app opened with.

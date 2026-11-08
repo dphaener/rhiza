@@ -13,7 +13,7 @@ import (
 
 // The Overview at / reads the daemon from the repository: a live daemon
 // (its lock held) whose recorded state says paused, with two of its three
-// runs running against a limit of four, and every health part of the
+// runs running, one start not journaled against a limit of four, and every health part of the
 // repository's health report as a pill with its state.
 func TestOverviewReadsDaemonFromRepo(t *testing.T) {
 	ctx := fixtureCtx(t)
@@ -28,6 +28,7 @@ func TestOverviewReadsDaemonFromRepo(t *testing.T) {
 		LastPoll: ctx.Now(),
 		MaxRuns:  4,
 		Settings: []daemon.SettingValue{{Key: "rhiza.daemon.paused", Value: "true", Source: "git config"}},
+		Starting: 1,
 		Runs: []daemon.LiveRun{
 			{ID: "R1", Change: "C1", State: "running"},
 			{ID: "R2", Change: "C2", State: "interrupted"},
@@ -54,11 +55,12 @@ func TestOverviewReadsDaemonFromRepo(t *testing.T) {
 		body = serve(h, "GET", "/").Body.String()
 	}
 	wants := []string{
-		"Paused, 2 of 4 slots in use",
+		"Paused, 3 of 4 slots in use",
 		`<div class="rz-stat-val">Paused</div>`,
-		`<div class="rz-stat-val">2<small>/ 4</small></div>`,
-		`<div class="rz-slots" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i><i></i></div>`,
-		"daemon · paused · 2/4",
+		`<div class="rz-stat-val">3<small>/ 4</small></div>`,
+		`<div class="rz-slots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>`,
+		"runs: 2/4 live, 1 starting",
+		"daemon · paused · 3/4",
 		`rz-pill--health rz-pill--ok" title="daemon: ok`,
 	}
 	for _, p := range parts {

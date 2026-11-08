@@ -257,9 +257,8 @@ func healthRunsAgainstCap(ctx *Ctx, p HealthPart, s DaemonStatusResponse) Health
 	type scoped struct {
 		project string
 		runs    []DaemonRun
-		starts  int
 	}
-	groups := []scoped{{"", s.Runs, s.Starting}}
+	groups := []scoped{{"", s.Runs}}
 	titles := map[string]func(string) string{"": healthTitler(ctx)}
 	if len(s.Projects) > 0 {
 		scopes, _, err := inboxScopes(ctx, "", true)
@@ -271,17 +270,17 @@ func healthRunsAgainstCap(ctx *Ctx, p HealthPart, s DaemonStatusResponse) Health
 		}
 	}
 	for _, pr := range s.Projects {
-		groups = append(groups, scoped{pr.Project, pr.Runs, pr.Starting})
+		groups = append(groups, scoped{pr.Project, pr.Runs})
 	}
-	live, starting := 0, 0
+	// Daemon status already sums live runs and starts over its projects;
+	// the groups only name each live run.
+	live, starting := s.Live, s.Starting
 	var lines []string
 	for _, g := range groups {
-		starting += g.starts
 		for _, r := range g.runs {
 			if r.State == "interrupted" {
 				continue
 			}
-			live++
 			name := r.Change
 			if t := titles[g.project]; t != nil {
 				if title := t(r.Change); title != "" {
