@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6WNK4AWCYDNHAV32RC56RYT"
+  ],
+  "at": "2026-11-08T04:14:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (missing-acceptance on wait-merges-conflicting-pr): Its acceptance (and statement) check that `ship check --conflicts` exits 1 after the resolving merge, but the --conflicts flag is introduced by ship-change-conflict-fix-step, which depends-on wait-merges-conflicting-pr and so is built after it. When this leaf is built and verified the flag does not exist, so that part of its acceptance cannot run. Either move the --conflicts assertion to ship-change-conflict-fix-step's acceptance, or move the flag into this leaf (or ship-rebase-merges-only) and reverse the ordering. The critic confirmed it: internal/api/ship.go ShipCheckRequest has no --conflicts flag today (only settled, main, pr-open, test-failures); ship-change-conflict-fix-step introduces it and depends-on wait-merges-conflicting-pr, so it is built later. wait-merges-conflicting-pr's acceptance asserts 'ship check --conflicts exits 1' after the resolving merge, which cannot run when that leaf is built and verified. How should it be settled?"
+        },
+        "handle": "review-01m6wmcatnzdh5gh9egga6efbr-r3-f1",
+        "id": "01M6WNV5122P06P203DCNBNRPZ",
+        "key": null,
+        "kind": "question",
+        "node": "01M6WNV511KX736205MYN2MVQN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WNV511KX736205MYN2MVQN",
+        "id": "01M6WNV52HKH773BV0RW23A3ZJ",
+        "link": "01M6WNV52HKH773BV0RVYAF0T7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WMSB7FA6TA1SMY3YW9AC1Q",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6WMCCRC0KSCWEV17VY8KVQP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WNV56J65673E9F5K7HBAA4",
+  "type": "ops",
+  "v": 1
+}

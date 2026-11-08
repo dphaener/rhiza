@@ -1,0 +1,30 @@
+{
+  "actor": "01M6WMD0YWZCCFWSBH9E291Q0V",
+  "after": [
+    "01M6WMCCRC0KSCWEV17ZM5WEQH"
+  ],
+  "at": "2026-11-08T03:53:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "97efbc82-de6a-48f6-a9fa-01a1b9467030",
+          "statement": "Ship-change conflict fix (change set 01M6WMCC): how should the run bring origin/main into a change set's branch? Today `rhiza ship rebase` (steps rebase, rebase-merge) and `ship check --settled` (wait steps, on a CONFLICTING PR) rebase and force-push with a lease, and only merge when the branch already holds a merge. / When the merge conflicts in code, a fixer agent step resolves it. Who pushes the fixer's merge commit to the PR? / If the fixer finds a real design clash (both sides change the same behaviour in incompatible ways), what happens? / How many conflict-fix cycles may one ship-change run make before it fails?"
+        },
+        "handle": "question-97efbc82-1",
+        "id": "01M6WMKQYEHGK1KKNGP378SD7P",
+        "key": null,
+        "kind": "question",
+        "node": "01M6WMKQYEHGK1KKNGP2FQ4MH6",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6WMCCRC0KSCWEV17VY8KVQP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WMKSTHB7ZQ1ACDNCXCJFH9",
+  "type": "ops",
+  "v": 1
+}
