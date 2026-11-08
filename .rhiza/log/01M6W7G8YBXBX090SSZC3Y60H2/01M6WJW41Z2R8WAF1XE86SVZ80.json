@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WHG1YA6H3H14YGR69MSX4J",
+  "after": [
+    "01M6WHA6SYDHBGKMDT4EZ3NKV1"
+  ],
+  "at": "2026-11-08T03:22:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 7de305eb (attempt 2, after compliance finding f1). go test -trimpath -short ./internal/api -run 'Review|Gate|RunReview' -v: all 17 tests PASS, including TestReviewQuestionHandleFullID (two IDs sharing their first 8 chars get different handles carrying the full lower-cased ID) and TestReviewAskedFor, which now calls gateReview with a round-3 run whose journalled asked entry is review-<id>-r3-f1-2. The gate takes it as the question left, and it rejects another run's handle. (The package exit was FAIL only from the root-state guard: the root daemon changed ~/code/.rhiza-root/usage.live.json during the run. The full package hit a 10m timeout only because TestInboxGateQuestionsBudget blocked on the shared budgetLock under load 17.) Mutation check in a scratch copy: reverting gateReview to the old asked[reviewQuestionHandle(...)] lookup makes TestReviewAskedFor fail with 'confirmed finding f1 with no question left for it', so f1 is fixed. go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-review-check.*|run-gate.*)$': ok. That covers run-review-check-handles: two runs started in the same second share an 8-char ID prefix; run 1's full-ID handle is taken by an unrelated question; review-check gives run 1 review-<id>-r3-f1-2, journals it in the asked entry, and gives run 2 its own base handle; a second review-check returns added=false with one asked entry. Diff read: reviewQuestionHandle uses the full ID; review-check finds journalled entries via reviewAskedFor, otherwise uniqueHandle; gateReview uses reviewAskedFor. Remaining nit f2 (a stale comment naming reviewQuestionHandleFor, and gateReview's asked map is now unused) does not affect acceptance."
+        },
+        "handle": "review-question-handle-unique-verified-2",
+        "id": "01M6WJW3XM78MYZ7FWTFVMVDX1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WJW3XM78MYZ7FWTD8WFNQ7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WJW3XM78MYZ7FWTD8WFNQ7",
+        "id": "01M6WJW3ZVWDR86VVYA0124MB8",
+        "link": "01M6WJW3ZVWDR86VVY9ZHNKWXF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W7QGXS2VNCJ3KMFRMW78XE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W7G8YBXBX090SSZC3Y60H2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WJW41Z2R8WAF1XE86SVZ80",
+  "type": "ops",
+  "v": 1
+}
