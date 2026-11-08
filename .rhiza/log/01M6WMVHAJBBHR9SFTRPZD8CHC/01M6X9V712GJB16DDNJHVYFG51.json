@@ -1,0 +1,40 @@
+{
+  "actor": "01M6X9Q0ZYZTD9XGMKE32P3TMT",
+  "after": [
+    "01M6X9N7R0N1QYBMCDNYRF1ADT"
+  ],
+  "at": "2026-11-08T10:04:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 with the branch's built rhiza binary at b7586ebf (scratch root, fake rex/claude, isolated HOME): leaf alpha failed 3 attempts, beta skipped, gamma passed. run resume --retry with the question unanswered gave alpha a retry round: JSON round 2 retry:true with no decision, attempts 4-6 ran, a new question leaf-failed-...-2 blocks it, and human run status now prints 'round 2 from attempt 4: given by the retry' (no empty 'decision  answers'). The retry-round builder prompts say 'A person retried the run, which gives it a fresh round of 3 attempts; no Decision answers its failure' (round-1 prompts do not). A second retry with the builder passing gave round 3 (also the retry's), alpha passed at attempt 7, skipped beta was built and the run succeeded. In a fresh run with Decision use-a-map answering the leaf's question before the retry, alpha got exactly one round (round 2 from attempt 4: decision use-a-map answers question ...), the engine logged 'gets round 2: decision use-a-map', no leaf round had retry:true, the builder prompt named the Decision and not the retry, and the run succeeded. go test -trimpath ./cmd/rhiza -run 'TestScripts/(build-leaf-fails|describe-golden)$', ./internal/run -run TestLeafFails and ./internal/api -run 'TestLeafPrompt|TestRunInfoRetryRound|TestRunResumeRetry' pass."
+        },
+        "handle": "retry-revives-failed-leaves-qa-2",
+        "id": "01M6X9V6YKB4M1HV45FW7ZCZRA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X9V6YKB4M1HV45FVD6EZVG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X9V6YKB4M1HV45FVD6EZVG",
+        "id": "01M6X9V6ZKPF47MS45YVGHN9BT",
+        "link": "01M6X9V6ZKPF47MS45YRNY2EJH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WN5CRPVBSVTZ8CPGDM6AST",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WMVHAJBBHR9SFTRPZD8CHC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6X9V712GJB16DDNJHVYFG51",
+  "type": "ops",
+  "v": 1
+}
