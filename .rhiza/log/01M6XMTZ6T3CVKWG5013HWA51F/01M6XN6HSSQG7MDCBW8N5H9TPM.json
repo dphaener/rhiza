@@ -1,0 +1,33 @@
+{
+  "actor": "01M6XMWKKHPH7YR8WE0A7RC1DH",
+  "after": [
+    "01M6XN59DJJW08SCVQAKJ0SBAX"
+  ],
+  "at": "2026-11-08T13:22:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "c173074b77a8388b06e65d15da16e3b635c1a8fc2fff132815a15d3f2c3b765a",
+          "session": "8d4fbe69-c91e-4026-a866-01a1bb4e1527",
+          "summary": "Autonomous plan run, no owner. The planner read internal/api/write_node.go: buildRetire drops a node's pending ops only when the node was created in this change set; for a landed node it writes node.retire with Base n.Version (the landed version), ignoring this change set's pending update or move on that node. At land, model.checkBase (internal/model/apply.go) walks the target's history after the base and reports a conflict against the change set's own earlier update, which is how change set 01M6WMCCRC0K (PR #383) fails to land. The intent prescribes both fixes. One question went to the arbiter, who ruled (assumed, would have escalated) in Decision own-ops-never-stale: checkBase skips history entries of the op's own change set for every node and link op; other change sets' entries after the base still conflict on overlapping aspects, including interleaved ones; the ErrBase and retired-target checks are unchanged. The planner split the work into two leaves: retire drops the change set's pending updates and moves on a landed node and bases the retire on the landed version (model-writes), and an op is never stale against its own change set's ops (conflicts), with a test of the 01M6WMCCRC0K log shape. The change set serves milestone-25, like the other backlog fixes.",
+          "title": "Plan of fix 01M6XMT: update-then-retire in one change set lands (autonomous)"
+        },
+        "handle": "fix-01m6xmt-plan",
+        "id": "01M6XN6HQP02JPRD38Z0YR3W32",
+        "key": null,
+        "kind": "source",
+        "node": "01M6XN6HQP02JPRD38Z06CJCY5",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6XMTZ6T3CVKWG5013HWA51F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XN6HSSQG7MDCBW8N5H9TPM",
+  "type": "ops",
+  "v": 1
+}
