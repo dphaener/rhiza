@@ -386,6 +386,32 @@ var applyCases = []applyCase{
 		problems: []want{{csC, 3, ErrConflict}},
 	},
 	{
+		name: "a change set's own earlier ops never make its base stale",
+		steps: []step{a(mkDec(1, 1, "jwt")), b(set(2, 1, 1, "statement", `"x"`)), b(rename(3, 1, 1, "pki")),
+			b(retire(4, 1, 1))},
+		check: func(t *testing.T, m Model) {
+			if x := mustNode(t, m, 1); !x.Retired || x.Handle != "pki" || x.Version != fid(4) {
+				t.Errorf("node = %+v", x)
+			}
+		},
+	},
+	{
+		name: "another change set's op between a change set's own ops still conflicts",
+		steps: []step{a(mkDec(1, 1, "jwt")), b(set(2, 1, 1, "a", "1")), c(set(3, 1, 2, "statement", `"y"`)),
+			b(set(4, 1, 1, "statement", `"x"`))},
+		problems: []want{{csB, 4, ErrConflict}},
+	},
+	{
+		name:     "a change set writing a node again after retiring it on an older base is skipped",
+		steps:    []step{a(mkDec(1, 1, "jwt")), b(retire(2, 1, 1)), b(set(3, 1, 1, "a", "1"))},
+		problems: []want{{csB, 3, ErrRetired}},
+	},
+	{
+		name:     "a change set retiring a link twice on an older base is skipped",
+		steps:    []step{a(mkDec(1, 1, "jwt")), a(mkLink(2, 1, nd(1), csA)), b(retireLink(3, 1, 2)), b(retireLink(4, 1, 2))},
+		problems: []want{{csB, 4, ErrRetired}},
+	},
+	{
 		name:     "stale update after a retire conflicts and still applies",
 		steps:    []step{a(mkDec(1, 1, "jwt")), b(retire(2, 1, 1)), c(set(3, 1, 1, "a", "1"))},
 		problems: []want{{csC, 3, ErrConflict}},
@@ -475,10 +501,10 @@ var applyCases = []applyCase{
 			c(set(4, 1, 3, "statement", `"d"`)), a(set(5, 1, 4, "a", "2"))},
 	},
 	{
-		name: "a stale rewrite does not repair a conflict: it conflicts itself",
+		name: "a rewrite on a base only its own change set superseded does not repair a conflict",
 		steps: []step{a(mkDec(1, 1, "jwt")), b(set(2, 1, 1, "statement", `"b"`)), c(set(3, 1, 1, "statement", `"c"`)),
 			c(set(4, 1, 2, "statement", `"d"`))},
-		problems: []want{{csC, 3, ErrConflict}, {csC, 4, ErrConflict}},
+		problems: []want{{csC, 3, ErrConflict}},
 	},
 	{
 		name: "a handle conflict is repaired by a rename from the current version",
