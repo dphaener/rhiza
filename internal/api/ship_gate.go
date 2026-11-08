@@ -48,6 +48,7 @@ type ShipGateResponse struct {
 	Passed  bool   `json:"passed" desc:"True if the gate ran and exited 0"`
 	Output  string `json:"output,omitempty" desc:"The end of the gate's combined output, when it ran"`
 	Error   string `json:"error,omitempty" desc:"How a failing gate failed: its exit status or a timeout"`
+	Head    string `json:"head,omitempty" desc:"The commit the gate passed on"`
 }
 
 // ExitCode is 0 when the gate passed or was skipped, else 1.
@@ -77,9 +78,18 @@ func runShipGate(ctx *Ctx, _ any) (any, error) {
 	if err := refuseShipDryRun(ctx, "ship.gate"); err != nil {
 		return nil, err
 	}
+	return shipLocalGate(ctx, nil)
+}
+
+// shipLocalGate runs the local gate in the change set's worktree (t, or
+// the one findShipTarget finds when t is nil) while CI is unstable. A head
+// the gate already passed on, recorded in the ship state as Gated, passes
+// again without running it: the gate before rebase or land, say, re-checks
+// the head the gate before open-pr already passed.
+func shipLocalGate(ctx *Ctx, t *shipTarget) (ShipGateResponse, error) {
 	rows, err := settingsOf(ctx, nil)
 	if err != nil {
-		return nil, err
+		return ShipGateResponse{}, err
 	}
 	gate := strings.TrimSpace(settingValue(rows, LocalGateKey))
 	if gate == "" {
@@ -87,16 +97,29 @@ func runShipGate(ctx *Ctx, _ any) (any, error) {
 	}
 	v, err := ciStabilityVerdict(ctx)
 	if err != nil {
-		return nil, err
+		return ShipGateResponse{}, err
 	}
 	if !v.Unstable {
 		return ShipGateResponse{Command: gate, Skipped: true, Reason: "CI is stable"}, nil
 	}
-	t, err := findShipTarget(ctx)
-	if err != nil {
-		return nil, err
+	if t == nil {
+		found, err := findShipTarget(ctx)
+		if err != nil {
+			return ShipGateResponse{}, err
+		}
+		t = &found
 	}
 	resp := ShipGateResponse{Command: gate, Reason: v.Reason}
+	head, _ := gitAt(ctx, t.dir(), "rev-parse", "HEAD")
+	head = strings.TrimSpace(head)
+	st, err := readShipState(t.statePath())
+	if err != nil {
+		return ShipGateResponse{}, err
+	}
+	if head != "" && st.Gated == head && shipTreeClean(ctx, t.dir()) {
+		resp.Passed, resp.Head, resp.Reason = true, head, v.Reason+"; it already passed on "+shortSHA(head)
+		return resp, nil
+	}
 	c, cancel := context.WithTimeout(context.Background(), shipGateTimeout)
 	defer cancel()
 	cmd := exec.CommandContext(c, "sh", "-c", gate)
@@ -116,7 +139,24 @@ func runShipGate(ctx *Ctx, _ any) (any, error) {
 	case runErr != nil:
 		resp.Error = runErr.Error()
 	default:
-		resp.Passed = true
+		resp.Passed, resp.Head = true, head
+		if head != "" && shipTreeClean(ctx, t.dir()) {
+			st, err := readShipState(t.statePath())
+			if err != nil {
+				return ShipGateResponse{}, err
+			}
+			st.Gated = head
+			if err := writeShipState(t.statePath(), st); err != nil {
+				return ShipGateResponse{}, err
+			}
+		}
 	}
 	return resp, nil
+}
+
+// shipTreeClean reports whether dir has no uncommitted changes to tracked
+// files, so a gate run there tested its HEAD.
+func shipTreeClean(ctx *Ctx, dir string) bool {
+	out, err := gitAt(ctx, dir, "status", "--porcelain", "--untracked-files=no")
+	return err == nil && strings.TrimSpace(out) == ""
 }

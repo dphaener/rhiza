@@ -1,14 +1,20 @@
 package api
 
 // This file holds the daemon's settings: they live in the repo's git config
-// and the daemon re-reads them every poll. A command-line flag wins over
+// (a project setting may also be committed in .rhiza/settings.json, which
+// git config overrides) and the daemon re-reads them every poll. A command-line flag wins over
 // config for that run. rhiza daemon settings lists each with its value and
 // source; rhiza daemon set validates and writes one.
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/url"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
@@ -16,6 +22,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/rootcfg"
+	"github.com/dphaener/rhiza/internal/store"
 	"github.com/dphaener/rhiza/internal/web"
 )
 
@@ -31,6 +38,7 @@ const (
 	SettingDefault = "default"
 	SettingConfig  = "git config"
 	SettingRoot    = "rhiza.toml"
+	SettingFile    = store.Dir + "/" + settingsFile
 	SettingFlag    = "flag"
 )
 
@@ -189,8 +197,8 @@ type Setting struct {
 	Key     string `json:"key" desc:"The git config key"`
 	Value   string `json:"value" desc:"The effective value"`
 	Default string `json:"default" desc:"The value when nothing sets it"`
-	Source  string `json:"source" desc:"Where the value comes from: default, rhiza.toml, git config or flag"`
-	Scope   string `json:"scope" desc:"machine (kept in the root's rhiza.toml) or project (kept in the project's git config)"`
+	Source  string `json:"source" desc:"Where the value comes from: default, rhiza.toml, .rhiza/settings.json, git config or flag"`
+	Scope   string `json:"scope" desc:"machine (kept in the root's rhiza.toml) or project (kept in the project's git config, or committed in .rhiza/settings.json)"`
 }
 
 func (d settingDef) scope() string {
@@ -216,11 +224,56 @@ func rootOf(ctx *Ctx) (string, rootcfg.Config, bool) {
 	return root, c, true
 }
 
+// settingsFile is the optional committed project settings file inside the
+// store folder: a JSON object of project setting keys to values, which
+// every checkout of the project shares (git config is per clone).
+const settingsFile = "settings.json"
+
+// projectSettingsFile reads the committed .rhiza/settings.json under
+// ctx.Root. No file is no settings. A key that is not a project setting,
+// a value that is not a string, or one its setting refuses is a usage
+// error naming the file.
+func projectSettingsFile(ctx *Ctx) (map[string]string, error) {
+	if ctx.Root == "" {
+		return nil, nil
+	}
+	b, err := os.ReadFile(filepath.Join(ctx.Root, filepath.FromSlash(SettingFile)))
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, Errorf("read %s: %v", SettingFile, err)
+	}
+	var m map[string]string
+	if err := json.Unmarshal(b, &m); err != nil {
+		return nil, Usagef("%s: %v; want an object of project setting keys to string values", SettingFile, err)
+	}
+	for k, v := range m {
+		d, ok := findSetting(k)
+		switch {
+		case !ok:
+			return nil, Usagef("%s: %s is not a setting", SettingFile, k)
+		case !d.project:
+			return nil, Usagef("%s: %s is a machine setting; set it in the root's rhiza.toml", SettingFile, k)
+		}
+		if err := d.validate(strings.TrimSpace(v)); err != nil {
+			return nil, Usagef("%s %s is %q: %v", SettingFile, k, v, err)
+		}
+	}
+	return m, nil
+}
+
 // settingsOf reads every setting from git config, a flag in flags (key to
-// value) winning. A bad value in config is a usage error naming the key.
+// value) winning. A project setting not in git config reads the committed
+// .rhiza/settings.json. A bad value in config is a usage error naming the
+// key.
 func settingsOf(ctx *Ctx, flags map[string]string) ([]Setting, error) {
 	var out []Setting
 	_, cfg, haveRoot := rootOf(ctx)
+	file, err := projectSettingsFile(ctx)
+	if err != nil {
+		return nil, err
+	}
 	for _, d := range settingDefs {
 		s := Setting{Key: d.key, Value: d.def, Default: d.def, Source: SettingDefault, Scope: d.scope()}
 		if !d.project && haveRoot {
@@ -241,6 +294,11 @@ func settingsOf(ctx *Ctx, flags map[string]string) ([]Setting, error) {
 					}
 					s.Value, s.Source = v, SettingConfig
 				}
+			}
+		}
+		if s.Source == SettingDefault && d.project {
+			if v := strings.TrimSpace(file[d.key]); v != "" {
+				s.Value, s.Source = v, SettingFile
 			}
 		}
 		if v, ok := flags[d.key]; ok {

@@ -37,7 +37,10 @@ on.pass = "local-gate"
 # local gate (rhiza.ship.localGate), the gate runs here, on the run
 # worktree, before the push: open-pr pushes only once it exits 0. A failing
 # gate goes to one fixer, then back through render-pr and the gate. With CI
-# stable, or no gate set, the step passes at once.
+# stable, or no gate set, the step passes at once. The same gate runs
+# before every other push too (gate-rebase, gate-land, gate-rebase-merge),
+# and ship rebase runs it again on a head it rebased, before pushing that;
+# a head the gate already passed on passes at once.
 [step.local-gate]
 kind = "command"
 run = "rhiza ship gate"
@@ -97,8 +100,15 @@ on.pass = "render-pr"
 [step.signoff]
 kind = "signoff"
 max_visits = 5
-on.pass = "rebase"
+on.pass = "gate-rebase"
 on.changes = "review/review"
+
+[step.gate-rebase]
+kind = "command"
+run = "rhiza ship gate"
+max_visits = 3
+on.pass = "rebase"
+on.fail = "gate-fix"
 
 [step.rebase]
 kind = "command"
@@ -118,8 +128,15 @@ on.pass = "rebased-green"
 kind = "command"
 run = "rhiza ship check"
 max_visits = 3
-on.pass = "land"
+on.pass = "gate-land"
 on.fail = "ci-triage"
+
+[step.gate-land]
+kind = "command"
+run = "rhiza ship gate"
+max_visits = 3
+on.pass = "land"
+on.fail = "gate-fix"
 
 [step.land]
 kind = "command"
@@ -136,7 +153,14 @@ on.pass = "landed-green"
 [step.landed-green]
 kind = "command"
 run = "rhiza ship check"
+on.pass = "gate-rebase-merge"
+
+[step.gate-rebase-merge]
+kind = "command"
+run = "rhiza ship gate"
+max_visits = 4
 on.pass = "rebase-merge"
+on.fail = "gate-fix"
 
 [step.rebase-merge]
 kind = "command"
@@ -159,13 +183,13 @@ max_visits = 3
 on.pass = "merge"
 
 # Merges nothing when origin/main moved after the head's checks passed:
-# the step fails and the run rebases and waits on the new head again.
+# the step fails and the run gates, rebases and waits on the new head again.
 [step.merge]
 kind = "command"
 run = "rhiza ship merge"
 max_visits = 3
 on.pass = "wait-main"
-on.fail = "rebase-merge"
+on.fail = "gate-rebase-merge"
 
 # Main is confirmed locally with git, not by waiting for CI on it, when the
 # merge commit's tree equals the tested head's: the wait passes at its first

@@ -395,8 +395,8 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "wait-pr", "pr-green", "ci-triage", "ci-fix", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
-		"rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "wait-pr", "pr-green", "ci-triage", "ci-fix", "signoff", "gate-rebase", "rebase", "wait-rebased", "rebased-green", "gate-land", "land", "wait-landed", "landed-green",
+		"gate-rebase-merge", "rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
 	}
@@ -1721,9 +1721,10 @@ func TestShipChangeCIFixPrompt(t *testing.T) {
 	}
 }
 
-// ship-change runs the local gate before the push: render-pr passes to
-// local-gate, which passes to open-pr and sends a failure to the gate-fix
-// fixer, which goes back through render-pr.
+// ship-change runs the local gate before every push: each step that
+// pushes (open-pr, rebase, land, rebase-merge) is reached only through a
+// gate step, which passes to it and sends a failure to the gate-fix fixer,
+// which goes back through render-pr.
 func TestShipChangeLocalGate(t *testing.T) {
 	data, ok := Builtin("ship-change")
 	if !ok {
@@ -1733,12 +1734,39 @@ func TestShipChangeLocalGate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	gates := map[string]string{"open-pr": "local-gate", "rebase": "gate-rebase", "land": "gate-land", "rebase-merge": "gate-rebase-merge"}
+	pushers := map[string]bool{}
+	for _, n := range def.Order {
+		s := def.Steps[n]
+		if s.Kind == "command" && strings.Contains(s.Run, "rhiza ship ") && !strings.Contains(s.Run, "rhiza ship gate") {
+			sub := strings.Fields(strings.SplitN(s.Run, "rhiza ship ", 2)[1])[0]
+			if sub == "open-pr" || sub == "rebase" || sub == "land" {
+				pushers[n] = true
+			}
+		}
+	}
+	if len(pushers) != len(gates) {
+		t.Errorf("push steps = %v; want %v", pushers, gates)
+	}
+	for push, gate := range gates {
+		if !pushers[push] {
+			t.Errorf("%s is not a push step", push)
+		}
+		g := def.Steps[gate]
+		if g.Run != "rhiza ship gate" || g.On["pass"] != push || g.On["fail"] != "gate-fix" {
+			t.Errorf("%s = %+v; want rhiza ship gate, on.pass %s, on.fail gate-fix", gate, g, push)
+		}
+		// Every way into the push step goes through its gate.
+		for _, n := range def.Order {
+			for o, to := range def.Steps[n].On {
+				if to == push && n != gate {
+					t.Errorf("%s on.%s goes to %s, skipping %s", n, o, push, gate)
+				}
+			}
+		}
+	}
 	if s := def.Steps["render-pr"]; s.On["pass"] != "local-gate" {
 		t.Errorf("render-pr on.pass = %q, want local-gate", s.On["pass"])
-	}
-	g := def.Steps["local-gate"]
-	if g.Run != "rhiza ship gate" || g.On["pass"] != "open-pr" || g.On["fail"] != "gate-fix" {
-		t.Errorf("local-gate = %+v", g)
 	}
 	f := def.Steps["gate-fix"]
 	if f.Kind != "agent" || f.On["pass"] != "render-pr" {

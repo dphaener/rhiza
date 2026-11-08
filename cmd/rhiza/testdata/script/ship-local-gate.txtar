@@ -1,6 +1,8 @@
 # The local gate setting and the ship gate step. rhiza.ship.localGate is a
 # project setting, empty by default (no gate: the step passes at once), and
-# settable to a command such as make check.
+# settable to a command such as make check: committed in
+# .rhiza/settings.json, which every checkout shares, or in git config,
+# which wins over it.
 
 mkdir repo
 cd repo
@@ -17,6 +19,15 @@ stdout '"source": "default"'
 exec rhiza ship gate
 stdout 'no gate is set'
 
+# Committed in .rhiza/settings.json.
+cp $WORK/settings.json .rhiza/settings.json
+exec rhiza daemon settings
+stdout 'rhiza.ship.localGate = make check \(.rhiza/settings.json, project\)'
+exec rhiza daemon settings --json
+stdout '"value": "make check"'
+stdout '"source": ".rhiza/settings.json"'
+rm .rhiza/settings.json
+
 exec rhiza daemon set rhiza.ship.localGate 'make check'
 exec rhiza daemon settings
 stdout 'rhiza.ship.localGate = make check \(git config, project\)'
@@ -30,3 +41,6 @@ stdout '^make check$'
 stderr 'must not be empty'
 
 fold-ok
+
+-- settings.json --
+{"rhiza.ship.localGate": "make check"}

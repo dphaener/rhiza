@@ -1837,11 +1837,11 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "scope": {
-                  "description": "machine (kept in the root's rhiza.toml) or project (kept in the project's git config)",
+                  "description": "machine (kept in the root's rhiza.toml) or project (kept in the project's git config, or committed in .rhiza/settings.json)",
                   "type": "string"
                 },
                 "source": {
-                  "description": "Where the value comes from: default, rhiza.toml, git config or flag",
+                  "description": "Where the value comes from: default, rhiza.toml, .rhiza/settings.json, git config or flag",
                   "type": "string"
                 },
                 "value": {
@@ -2233,11 +2233,11 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "scope": {
-                  "description": "machine (kept in the root's rhiza.toml) or project (kept in the project's git config)",
+                  "description": "machine (kept in the root's rhiza.toml) or project (kept in the project's git config, or committed in .rhiza/settings.json)",
                   "type": "string"
                 },
                 "source": {
-                  "description": "Where the value comes from: default, rhiza.toml, git config or flag",
+                  "description": "Where the value comes from: default, rhiza.toml, .rhiza/settings.json, git config or flag",
                   "type": "string"
                 },
                 "value": {
@@ -22623,6 +22623,10 @@ cmp stdout describe.golden.json
             "description": "How a failing gate failed: its exit status or a timeout",
             "type": "string"
           },
+          "head": {
+            "description": "The commit the gate passed on",
+            "type": "string"
+          },
           "output": {
             "description": "The end of the gate's combined output, when it ran",
             "type": "string"
@@ -22860,6 +22864,45 @@ cmp stdout describe.golden.json
           "detail": {
             "description": "Why the rebase stopped; the command exits 1 then",
             "type": "string"
+          },
+          "gate": {
+            "additionalProperties": false,
+            "description": "The local gate run on the rebased head before the push, while CI is unstable; a failing gate put the branch back and pushed nothing",
+            "properties": {
+              "command": {
+                "description": "The gate command (rhiza.ship.localGate); empty if none is set",
+                "type": "string"
+              },
+              "error": {
+                "description": "How a failing gate failed: its exit status or a timeout",
+                "type": "string"
+              },
+              "head": {
+                "description": "The commit the gate passed on",
+                "type": "string"
+              },
+              "output": {
+                "description": "The end of the gate's combined output, when it ran",
+                "type": "string"
+              },
+              "passed": {
+                "description": "True if the gate ran and exited 0",
+                "type": "boolean"
+              },
+              "reason": {
+                "description": "Why it ran (why CI is unstable) or why it was skipped",
+                "type": "string"
+              },
+              "skipped": {
+                "description": "True if the gate did not run: CI is stable, or no gate is set",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "passed",
+              "skipped"
+            ],
+            "type": "object"
           },
           "onto": {
             "description": "The commit of origin's main the branch was compared with",

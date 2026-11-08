@@ -6,10 +6,14 @@ package api
 // Conflicts only in rendered files are settled by rendering again, since
 // rendered files follow from the model; any other conflict stops the
 // rebase, leaves the branch as it was, and raises a question naming the
-// files. A rebased branch is pushed with a lease, and the pushed head is
-// recorded so the next ship check waits for CI on it.
+// files. While CI is unstable, the project's local gate runs on the
+// rebased head before the push (the gate step before this one saw only the
+// head before main was brought in); a failing gate puts the branch back and
+// pushes nothing. A rebased branch is pushed with a lease, and the pushed
+// head is recorded so the next ship check waits for CI on it.
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"reflect"
@@ -50,24 +54,26 @@ type ShipRebaseRequest struct{}
 
 // ShipRebaseResponse is what ship.rebase found and did.
 type ShipRebaseResponse struct {
-	Change         string   `json:"change" desc:"The change set"`
-	Branch         string   `json:"branch" desc:"The change set's branch"`
-	Onto           string   `json:"onto" desc:"The commit of origin's main the branch was compared with"`
-	Behind         bool     `json:"behind" desc:"True if origin's main had commits the branch did not"`
-	Rebased        bool     `json:"rebased" desc:"True if the branch was rebased onto origin's main"`
-	Settled        []string `json:"settled,omitempty" desc:"The rendered files whose conflicts were settled by rendering again"`
-	Conflicts      []string `json:"conflicts,omitempty" desc:"The files that conflicted when the rebase stopped on a conflict outside the rendered files; the rebase was aborted"`
-	Question       string   `json:"question,omitempty" desc:"The handle of the question raised about those conflicts"`
-	QuestionChange string   `json:"question_change,omitempty" desc:"The change set the question was written into: the change set itself, or a record change set when it had already landed"`
-	Rendered       []string `json:"rendered,omitempty" desc:"The rendered files written or removed by rendering after the rebase"`
-	Commit         string   `json:"commit,omitempty" desc:"The commit of that rendering; empty if it changed nothing"`
-	Pushed         string   `json:"pushed,omitempty" desc:"The rebased head pushed to the PR branch"`
-	Detail         string   `json:"detail,omitempty" desc:"Why the rebase stopped; the command exits 1 then"`
+	Change         string            `json:"change" desc:"The change set"`
+	Branch         string            `json:"branch" desc:"The change set's branch"`
+	Onto           string            `json:"onto" desc:"The commit of origin's main the branch was compared with"`
+	Behind         bool              `json:"behind" desc:"True if origin's main had commits the branch did not"`
+	Rebased        bool              `json:"rebased" desc:"True if the branch was rebased onto origin's main"`
+	Settled        []string          `json:"settled,omitempty" desc:"The rendered files whose conflicts were settled by rendering again"`
+	Conflicts      []string          `json:"conflicts,omitempty" desc:"The files that conflicted when the rebase stopped on a conflict outside the rendered files; the rebase was aborted"`
+	Question       string            `json:"question,omitempty" desc:"The handle of the question raised about those conflicts"`
+	QuestionChange string            `json:"question_change,omitempty" desc:"The change set the question was written into: the change set itself, or a record change set when it had already landed"`
+	Rendered       []string          `json:"rendered,omitempty" desc:"The rendered files written or removed by rendering after the rebase"`
+	Commit         string            `json:"commit,omitempty" desc:"The commit of that rendering; empty if it changed nothing"`
+	Pushed         string            `json:"pushed,omitempty" desc:"The rebased head pushed to the PR branch"`
+	Gate           *ShipGateResponse `json:"gate,omitempty" desc:"The local gate run on the rebased head before the push, while CI is unstable; a failing gate put the branch back and pushed nothing"`
+	Detail         string            `json:"detail,omitempty" desc:"Why the rebase stopped; the command exits 1 then"`
 }
 
-// ExitCode is 1 when a conflict stopped the rebase, else 0.
+// ExitCode is 1 when a conflict or a failing local gate stopped the
+// rebase, else 0.
 func (r ShipRebaseResponse) ExitCode() int {
-	if len(r.Conflicts) > 0 {
+	if len(r.Conflicts) > 0 || (r.Gate != nil && r.Gate.ExitCode() != 0) {
 		return 1
 	}
 	return 0
@@ -197,6 +203,10 @@ func runShipRebase(ctx *Ctx, _ any) (any, error) {
 		if _, rerr := ctx.Git("reset", "-q", "--keep", orig); rerr != nil {
 			return nil, Errorf("%v; and could not put %s back at %s: %v", err, t.branch, shortSHA(orig), rerr)
 		}
+		if errors.Is(err, errShipGateFailed) {
+			resp.Detail = fmt.Sprintf("the local gate (%s) failed on %s rebased onto origin/%s; the branch is as it was and nothing was pushed", resp.Gate.Command, t.branch, shipMain)
+			return resp, nil
+		}
 		return nil, err
 	}
 	if resp.Pushed, err = gitHead(ctx); err != nil {
@@ -216,8 +226,12 @@ func runShipRebase(ctx *Ctx, _ any) (any, error) {
 	return resp, nil
 }
 
+// errShipGateFailed is shipFinishRebase's error when the local gate failed
+// on the rebased head.
+var errShipGateFailed = errors.New("the local gate failed")
+
 // shipFinishRebase renders the rebased head, commits what that changed,
-// and pushes it to the change set's branch on origin with lease as the
+// runs the local gate on it while CI is unstable, and pushes it to the change set's branch on origin with lease as the
 // expected head ("" for none): never forced past a head it has not seen,
 // and never to main.
 func shipFinishRebase(ctx *Ctx, t shipTarget, rendered, lease string, resp *ShipRebaseResponse) error {
@@ -227,6 +241,16 @@ func shipFinishRebase(ctx *Ctx, t shipTarget, rendered, lease string, resp *Ship
 	}
 	if resp.Commit, err = shipCommitRendered(ctx, t, rendered, shipRebaseMessage); err != nil {
 		return err
+	}
+	gate, err := shipLocalGate(ctx, &t)
+	if err != nil {
+		return err
+	}
+	if !gate.Skipped {
+		resp.Gate = &gate
+		if !gate.Passed {
+			return errShipGateFailed
+		}
 	}
 	if _, err := ctx.Git("push", "--force-with-lease=refs/heads/"+t.branch+":"+lease, "origin", "HEAD:refs/heads/"+t.branch); err != nil {
 		return Errorf("%v", err)
@@ -470,6 +494,10 @@ func (r ShipRebaseResponse) Human(w io.Writer) {
 	case !r.Behind:
 		fmt.Fprintf(w, "%s already holds origin/%s at %s; nothing to rebase.\n", r.Branch, shipMain, shortSHA(r.Onto))
 		return
+	case r.Gate != nil && !r.Gate.Passed:
+		r.Gate.Human(w)
+		fmt.Fprintf(w, "Rebased %s onto origin/%s at %s, but the local gate failed on it: the branch is as it was and nothing was pushed.\n", r.Branch, shipMain, shortSHA(r.Onto))
+		return
 	case len(r.Conflicts) > 0:
 		fmt.Fprintf(w, "Rebasing %s onto origin/%s at %s conflicts in:\n", r.Branch, shipMain, shortSHA(r.Onto))
 		for _, c := range r.Conflicts {
@@ -487,6 +515,9 @@ func (r ShipRebaseResponse) Human(w io.Writer) {
 	}
 	if r.Commit != "" {
 		fmt.Fprintf(w, "Committed %s.\n", shortSHA(r.Commit))
+	}
+	if r.Gate != nil {
+		fmt.Fprintf(w, "Local gate passed on it (%s).\n", r.Gate.Command)
 	}
 	fmt.Fprintf(w, "Pushed %s.\n", shortSHA(r.Pushed))
 }

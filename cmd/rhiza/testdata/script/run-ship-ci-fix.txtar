@@ -65,7 +65,7 @@ stdout '^Run \S+ succeeded$'
 cd $WORK/repo
 exec rhiza run status
 stdout '^- rebase \(visit 2\): pass, then wait-rebased'
-stdout '^- rebased-green \(visit 2\): pass, then land'
+stdout '^- rebased-green \(visit 2\): pass, then gate-land'
 stdout '^- land \(visit 1\): pass'
 exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
 stdout '^- State: landed'
