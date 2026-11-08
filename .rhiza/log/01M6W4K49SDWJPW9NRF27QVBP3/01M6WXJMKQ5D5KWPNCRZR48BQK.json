@@ -1,0 +1,29 @@
+{
+  "actor": "01M6WXGS9H0PYGCJA85BQXP96N",
+  "after": [
+    "01M6WX8YSRBKG6J4XPJ6BT0MA1"
+  ],
+  "at": "2026-11-08T06:29:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6VYTACHSRCG9FCR51ESF67H",
+        "handle": null,
+        "id": "01M6WXJMFBAJZH43KDEHF0CV61",
+        "node": "01M6VYTACHSRCG9FCR50S9S8JB",
+        "op": "node.update",
+        "set": {
+          "acceptance": "Unit tests in the package that parses the file cover: no file gives plan for every request kind and ship-change for every ready kind; a file setting only [ready] bug changes only that pick; a file holding [request] and [[schedules]] reads with no error; an unknown table, an unknown kind key and a non-string or path-like value each fail with an error naming the table and key",
+          "statement": "Rhiza reads the repo's committed .rhiza/dispatch.toml: a [request] table (a request is queued) and a [ready] table (a change set is accepted and ready), each mapping a kind (feature, bug, milestone) to a workflow name, beside the [[schedules]] entries schedules-file defines; a missing file, table or key falls back to the built-in default (request: plan; ready: ship-change), and any table other than [request], [ready] and [[schedules]], any other key in [request] or [ready], or a value that is not a bare workflow name, is an error naming it"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WXJMKQ5D5KWPNCRZR48BQK",
+  "type": "ops",
+  "v": 1
+}
