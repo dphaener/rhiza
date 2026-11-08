@@ -491,6 +491,49 @@ func TestLeafPrompt(t *testing.T) {
 	if got := leafPrompt(role, spec, vars); got != "build leaf-a attempt 5 of CS1" {
 		t.Errorf("verifier in round 2 = %q", got)
 	}
+
+	// The retry's round names the retry and no Decision.
+	spec = run.LeafSpec{Role: workflow.RoleBuilder, Leaf: run.Leaf{Handle: "leaf-a"}, Attempt: 4, Round: 2, RoundAttempt: 1,
+		Question: "Q1", Retry: true}
+	got = leafPrompt(role, spec, vars)
+	for _, want := range []string{"A person retried the run", "fresh round of 3 attempts", "no Decision answers its failure"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("retry round = %q, lacks %q", got, want)
+		}
+	}
+	if strings.Contains(got, "Decision use-a-map") || strings.Contains(got, "answers it:") || strings.Contains(got, "raised question") {
+		t.Errorf("retry round names a Decision: %q", got)
+	}
+}
+
+// A round the retry gave shows as the retry's in run status, with no
+// decision.
+func TestRunInfoRetryRound(t *testing.T) {
+	st := run.State{Leaves: []run.LeafState{{Step: "build", Leaf: "LA", Handle: "leaf-a", Rounds: []run.LeafRound{
+		{Round: 2, After: 3, Question: "Q1", QuestionHandle: "q-one", Decision: "use-a-map"},
+		{Round: 3, After: 6, Question: "Q2", Retry: true},
+	}}}}
+	info := runInfo(&Ctx{}, st, false, nil)
+	if len(info.Leaves) != 1 || len(info.Leaves[0].Rounds) != 2 {
+		t.Fatalf("leaves %+v", info.Leaves)
+	}
+	rs := info.Leaves[0].Rounds
+	if rs[0].Retry || rs[0].Decision != "use-a-map" || !rs[1].Retry || rs[1].Decision != "" {
+		t.Errorf("rounds %+v", rs)
+	}
+	var b strings.Builder
+	info.Human(&b)
+	for _, want := range []string{
+		"\n  - round 2 from attempt 4: decision use-a-map answers question q-one (Q1)\n",
+		"\n  - round 3 from attempt 7: given by the retry\n",
+	} {
+		if !strings.Contains(b.String(), want) {
+			t.Errorf("run status text lacks %q:\n%s", want, b.String())
+		}
+	}
+	if strings.Contains(b.String(), "decision  ") {
+		t.Errorf("run status text names an empty decision:\n%s", b.String())
+	}
 }
 
 // AddLeafQuestion writes one question node into the run's change set,

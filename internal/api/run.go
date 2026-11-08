@@ -307,7 +307,7 @@ type RunLeaf struct {
 	Question       string           `json:"question,omitempty" desc:"The question node a failed leaf raised, by ID, if any"`
 	QuestionHandle string           `json:"question_handle,omitempty" desc:"That question node's handle"`
 	Round          int              `json:"round" desc:"The leaf's current round of attempts, from 1"`
-	Rounds         []RunLeafRound   `json:"rounds,omitempty" desc:"Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1"`
+	Rounds         []RunLeafRound   `json:"rounds,omitempty" desc:"Its fresh rounds, each given once a Decision answered the question its failure raised, or by a retry; absent in round 1"`
 	Commit         string           `json:"commit,omitempty" desc:"A passed leaf's Evidence commit: its verifier's Evidence entries, committed alone"`
 	Detail         string           `json:"detail,omitempty" desc:"Why the leaf ended as it did"`
 }
@@ -318,7 +318,8 @@ type RunLeafRound struct {
 	After          int    `json:"after" desc:"The attempts before it: its first attempt is after + 1"`
 	Question       string `json:"question" desc:"The question node the leaf's failure raised, by ID"`
 	QuestionHandle string `json:"question_handle,omitempty" desc:"That question node's handle"`
-	Decision       string `json:"decision" desc:"The handle of the Decision that answers it"`
+	Decision       string `json:"decision,omitempty" desc:"The handle of the Decision that answers it; absent in a round the retry gave"`
+	Retry          bool   `json:"retry,omitempty" desc:"True for a round given by rhiza run resume --retry, not by a Decision"`
 	At             string `json:"at" desc:"When the round began, RFC 3339 UTC"`
 }
 
@@ -2792,7 +2793,7 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 		}
 		for _, rd := range l.Rounds {
 			rl.Rounds = append(rl.Rounds, RunLeafRound{
-				Round: rd.Round, After: rd.After, Question: rd.Question, QuestionHandle: rd.QuestionHandle, Decision: rd.Decision, At: rfc3339(rd.At),
+				Round: rd.Round, After: rd.After, Question: rd.Question, QuestionHandle: rd.QuestionHandle, Decision: rd.Decision, Retry: rd.Retry, At: rfc3339(rd.At),
 			})
 		}
 		for _, ls := range l.Sessions {
@@ -3044,6 +3045,10 @@ func (r RunInfo) Human(w io.Writer) {
 				fmt.Fprintf(w, "  - question %s (%s) blocks it\n", l.QuestionHandle, l.Question)
 			}
 			for _, rd := range l.Rounds {
+				if rd.Retry {
+					fmt.Fprintf(w, "  - round %d from attempt %d: given by the retry\n", rd.Round, rd.After+1)
+					continue
+				}
 				fmt.Fprintf(w, "  - round %d from attempt %d: decision %s answers question %s (%s)\n", rd.Round, rd.After+1, rd.Decision, rd.QuestionHandle, rd.Question)
 			}
 			for _, ls := range l.Sessions {

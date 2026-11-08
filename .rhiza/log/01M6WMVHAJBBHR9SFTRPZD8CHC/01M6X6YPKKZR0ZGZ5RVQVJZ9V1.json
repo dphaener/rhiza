@@ -1,0 +1,40 @@
+{
+  "actor": "01M6X6G7E3ZJMXFJ3QRR09PQY7",
+  "after": [
+    "01M6X6B1CSV4N61GDVH64EHXRY"
+  ],
+  "at": "2026-11-08T09:13:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA with the branch's built rhiza binary (fake rex/claude, scratch root): leaf alpha failed 3 attempts (beta skipped); run resume --retry with its question unanswered gave alpha a retry round (JSON round 2 retry:true, no decision) and attempts 4-6 ran; with the builder then passing, a second retry gave round 3, the builder prompt named the retry round with no Decision, alpha passed at attempt 7, skipped beta was built and the run succeeded. In a fresh run with the question answered by Decision use-a-map before the retry, alpha got exactly one round (decision use-a-map, no retry round, no 'retry gives it' log line) and its prompt named the Decision. Problems: human run status prints 'decision  answers question' (empty) for retry rounds (internal/api/run.go:2952), and testscript build-leaf-fails.txtar still asserts the old 'unanswered retry starts nothing' and fails."
+        },
+        "handle": "retry-revives-failed-leaves-qa-1",
+        "id": "01M6X6YPEMKPRCMHM0F0AWNQBH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X6YPEMKPRCMHM0EWX7SQ0X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X6YPEMKPRCMHM0EWX7SQ0X",
+        "id": "01M6X6YPH1HK366A7D1P0Q9YYH",
+        "link": "01M6X6YPH1HK366A7D1M65CQT0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WN5CRPVBSVTZ8CPGDM6AST",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WMVHAJBBHR9SFTRPZD8CHC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6X6YPKKZR0ZGZ5RVQVJZ9V1",
+  "type": "ops",
+  "v": 1
+}
