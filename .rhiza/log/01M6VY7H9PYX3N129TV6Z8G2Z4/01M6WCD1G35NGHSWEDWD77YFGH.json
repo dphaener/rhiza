@@ -1,0 +1,39 @@
+{
+  "actor": "01M6WCB37NZG59HYV3FE0T181E",
+  "after": [
+    "01M6WC1GHP89PGGESEME1E2HYC"
+  ],
+  "at": "2026-11-08T01:29:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Round 2 attempt 3 (run attempt 6), 2026-11-08: still blocked. origin/main is b696b22c with no internal/dispatch; PR #367 (cs/workflow-dispatch, 3d0ab412) is open, DIRTY against main, with no checks. Per decision @{01M6WBX7DB8E3B3EY78RTNRTT0} the leaf was not built, cs/workflow-dispatch was not merged here and the acceptance was not weakened. Further build attempts cannot pass: the run should pause this leaf until #367 is brought up to date and lands, or move the leaf into a follow-up change set that depends on dispatch so this change set can ship."
+        },
+        "handle": "note-01m6wcd1b7smjz",
+        "id": "01M6WCD1B7SMJZN34CV0FAQGWN",
+        "key": null,
+        "kind": "note",
+        "node": "01M6WCD1B7SMJZN34CTXPKVJST",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WCD1B7SMJZN34CTXPKVJST",
+        "id": "01M6WCD1CNC4QJ5HXAZJM77ZCV",
+        "link": "01M6WCD1CNC4QJ5HXAZF35K2VT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WB3CJ5R7561BXEX3X6HP2N",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WCD1G35NGHSWEDWD77YFGH",
+  "type": "ops",
+  "v": 1
+}
