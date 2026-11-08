@@ -1,0 +1,281 @@
+{
+  "actor": "01M6YCF3SVVWJPG3A6HWB25HNB",
+  "after": [
+    "01M6YCRJQ4G1AFFKB09N7NH55M"
+  ],
+  "at": "2026-11-08T20:14:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6YCNMKDZAYW484HXMT7JZJH",
+        "id": "01M6YCRK7S09QPJWR1AZAHPJWE",
+        "link": "01M6YCRK7S09QPJWR1AYPQDKCH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCQ68SZB48PD6ESRDXY20F",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "i think my note about ci didnt have enough nuance. the original request was meant to speed up builds. this is assuming we already have a stable, green ci pipeline. which we currently do not. when we're diagnosing flaky tests just firing away at ci A/m's hopping for the best doesn't make sense",
+          "statement": "Scoped local tests plus the PR's CI (ci-runs-full-suite) stay the default while CI is stable and green; while CI is unstable, or when a red is not explained by the change, runs reproduce and fix it locally and push only once it passes locally, instead of pushing and rerunning CI in hope"
+        },
+        "handle": "no-ci-as-debugger",
+        "id": "01M6YCRK9M673YQN6HN3A4NAFP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6YCRK9M673YQN6HN2JVBEB8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRK9M673YQN6HN2JVBEB8",
+        "id": "01M6YCRKB25M009MDPKZ6K99QG",
+        "link": "01M6YCRKB25M009MDPKV8VXAXY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCQ68SZB48PD6ESRDXY20F",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRK9M673YQN6HN2JVBEB8",
+        "id": "01M6YCRKD0TWA0NQ4QYY1KCZME",
+        "link": "01M6YCRKD0TWA0NQ4QYT3QSHSP",
+        "note": "Refines ci-runs-full-suite for unstable CI; does not replace it",
+        "op": "link.create",
+        "to": "01M6M0ECQ2TXFF5Y2V9J59HNX8",
+        "type": "relates-to"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestShipCheckStabilityRecord shows a green first attempt recorded as a clean run, a red head that passes on its rerun recorded with one flake per failing test, a head still red after its rerun recorded red with no flake, and a ship check --main recording main's result",
+          "statement": "rhiza ship check records each CI run it settles, on a run's PR head or on main, in the repo's CI stability record (head, PR or main, result, time), and each failing test whose job then passed on a rerun of the same head as a flake against that test"
+        },
+        "handle": "ci-stability-record",
+        "id": "01M6YCRKDX9JJQ25FRHHHZF2CG",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6YCRKDX9JJQ25FRHFJND2ZK",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKDX9JJQ25FRHFJND2ZK",
+        "id": "01M6YCRKFNWMEQJQKSKW5QXPEK",
+        "link": "01M6YCRKFNWMEQJQKSKTR5PWYA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCNMKDZAYW484HXMT7JZJH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestCIStability shows: an empty record stable; a flake inside the window unstable, and stable once 20 later clean runs push it out; main's latest run red unstable, and stable once a later main run is green; rhiza.ship.ciWindow=5 shrinking the window; an invalid window refused by rhiza daemon set",
+          "statement": "Rhiza judges a repo's CI unstable while its last completed CI runs in the stability record (20 by default, the project setting rhiza.ship.ciWindow) hold a flake, or while main's latest completed run is red, and stable again once neither holds"
+        },
+        "handle": "ci-stability-state",
+        "id": "01M6YCRKH9VEHGSH0A2DFQRQ4W",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "id": "01M6YCRKJM3FBY3J86E0GTKWPW",
+        "link": "01M6YCRKJM3FBY3J86DY1Z3QDF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCNMKDZAYW484HXMT7JZJH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "id": "01M6YCRKMDQC4X4G1D1N3ZDY4R",
+        "link": "01M6YCRKMDQC4X4G1D1KX347RE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKDX9JJQ25FRHFJND2ZK",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestHealthCI shows the part ok on a clean record, warn with each flaky test and its count on a flake, warn naming main red, and the no-local-gate warning only when unstable with rhiza.ship.localGate unset; go test -trimpath ./cmd/rhiza -run TestScripts/health-ci prints the part in rhiza health and health --json",
+          "statement": "rhiza health shows a CI part: stable or unstable with the reason (flakes in the window, main red), each flaky test with its flake count, and a warning when CI is unstable and no local gate (rhiza.ship.localGate) is set"
+        },
+        "handle": "health-ci-stability",
+        "id": "01M6YCRKNPNZY0F0BTDF9F11MG",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6YCRKNPNZY0F0BTDCXQAP74",
+        "op": "node.create",
+        "parent": "01M6CS2B9S9YVY1WBBVAHWZFR9"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKNPNZY0F0BTDCXQAP74",
+        "id": "01M6YCRKQSRP6DJ6DP2X83RRPW",
+        "link": "01M6YCRKQSRP6DJ6DP2TWE63EC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCNMKDZAYW484HXMT7JZJH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKNPNZY0F0BTDCXQAP74",
+        "id": "01M6YCRKRHK8HM3Z2ZTVBGK8F6",
+        "link": "01M6YCRKRHK8HM3Z2ZTTQVV9BC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestShipLocalGate shows the gate run in the run worktree when unstable, skipped when stable, skipped with no gate set, and a failing gate failing the step with its output; go test -trimpath ./internal/workflow passes with the gate step before each push step of ship-change.toml and its on.fail to a fixer; go test -trimpath ./cmd/rhiza -run TestScripts/ship-local-gate passes; this repo's project settings set rhiza.ship.localGate to make check",
+          "statement": "While CI is unstable, the built-in ship-change workflow runs the project's local gate command (rhiza.ship.localGate; make check for Rhiza itself) in the run's worktree before every push and pushes only when it exits 0, sending a failing gate to a fixer like a red CI; while CI is stable, or with no gate set, the step passes at once and the run keeps its scoped tests"
+        },
+        "handle": "ship-local-gate",
+        "id": "01M6YCRKT22SQQH70HYXCEX3AF",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "id": "01M6YCRKVXGTJBEBRENTCR7M1N",
+        "link": "01M6YCRKVXGTJBEBRENPTB91GY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCNMKDZAYW484HXMT7JZJH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "id": "01M6YCRKX69WW0DZ183GWSNH7J",
+        "link": "01M6YCRKX69WW0DZ183FXE6AEJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRK9M673YQN6HN2JVBEB8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "id": "01M6YCRKZ831NVPV53E0PFF96S",
+        "link": "01M6YCRKZ831NVPV53DX1PNNF0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestShipChangeCIFixPrompt asserts the ci-fix prompt carries the reproduce-locally, fix-or-quarantine-with-a-bug and pass-locally-before-push rules and names no Go, make or testscript command; go test -trimpath ./internal/api -run 'TestShipCheckRerunBudget|TestWatchdogCIRerun' shows neither ship check nor the watchdog rerunning a head's failed jobs a second time",
+          "statement": "A head still red after its one rerun is never rerun again: ship-change's ci-fix fixer runs each failing test locally, repeatedly until it reproduces or plainly passes, fixes it or quarantines it with a bug request filed and named at the skip, and commits only once those tests and the packages it touched pass locally"
+        },
+        "handle": "ci-fix-reproduces-locally",
+        "id": "01M6YCRM0GKZ3W3J2QDE6D1R43",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M6YCRM0GKZ3W3J2QDD87GWHQ",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRM0GKZ3W3J2QDD87GWHQ",
+        "id": "01M6YCRM19VNRMF4322V623TT2",
+        "link": "01M6YCRM19VNRMF4322TVG6D7J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCNMKDZAYW484HXMT7JZJH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRM0GKZ3W3J2QDD87GWHQ",
+        "id": "01M6YCRM2NFPNV0D6D8SD9T6KW",
+        "link": "01M6YCRM2NFPNV0D6D8PTF5042",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRK9M673YQN6HN2JVBEB8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestFlakyTestBugs shows one bug request queued per newly flaky test with the test name and runs, a second flake of the same test queuing none while the first request is open, two flaky tests queuing two, and fileBugs = false queuing none",
+          "statement": "With the watchdog's fileBugs on, each test the CI stability record holds a flake for queues one bug request naming the test, its flaky runs and their heads, asking to reproduce it locally and fix or quarantine it, and no second one while an open request names the same test"
+        },
+        "handle": "flaky-test-bugs",
+        "id": "01M6YCRM4F76QFJRC0740136DW",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M6YCRM4F76QFJRC071CY3DYZ",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRM4F76QFJRC071CY3DYZ",
+        "id": "01M6YCRM7TNPBHQJZ34MKS322W",
+        "link": "01M6YCRM7TNPBHQJZ34JKH4FPY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCNMKDZAYW484HXMT7JZJH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRM4F76QFJRC071CY3DYZ",
+        "id": "01M6YCRM989DJGF341NBE8V93M",
+        "link": "01M6YCRM989DJGF341NA98AGSB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKDX9JJQ25FRHFJND2ZK",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A test reads CLAUDE.md and the build and review guide texts and finds the scoped-tests rule unchanged plus the unstable-CI reproduce-locally rule; it passes with go test -trimpath on its package, as does go test -trimpath ./internal/guide",
+          "statement": "This repo's CLAUDE.md and the rhiza-build and rhiza-review guide topics keep scoped tests as the default and add that, while CI is unstable or a red is not explained by the change, an agent reproduces the failing test locally and pushes only after it and the touched packages pass, never pushing or rerunning CI to see"
+        },
+        "handle": "unstable-ci-guidance",
+        "id": "01M6YCRMA48VMM2KTZ2QZXPZHV",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6YCRMA48VMM2KTZ2Q92EY10",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRMA48VMM2KTZ2Q92EY10",
+        "id": "01M6YCRMB0DCENXPMVVYWWTX0T",
+        "link": "01M6YCRMB0DCENXPMVVYAXF8FD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRK9M673YQN6HN2JVBEB8",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YCRMC94KZ8FN0Z4N23MZWE",
+  "type": "ops",
+  "v": 1
+}
