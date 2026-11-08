@@ -1,0 +1,69 @@
+{
+  "actor": "01M6YD1GY0CMYHWV7KR7683YSP",
+  "after": [
+    "01M6YCRMC94KZ8FN0Z4N23MZWE"
+  ],
+  "at": "2026-11-08T20:20:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestShipCheckStabilityRecord shows a green first attempt recorded as a clean run, a red head that passes on its rerun recorded with one flake per failing test, a head still red after its rerun recorded red with no flake, a tree-equal ship check --main recording a green main result for the merge commit (the tested head's result, no CI run), and a tree-differing ship check --main recording the dispatched CI run's result on main",
+          "statement": "rhiza ship check records each CI run it settles, on a run's PR head or on main, in the repo's CI stability record (head, PR or main, result, time), and each failing test whose job then passed on a rerun of the same head as a flake against that test"
+        },
+        "handle": "ci-stability-record",
+        "id": "01M6YCRKDX9JJQ25FRHHHZF2CG",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6YCRKDX9JJQ25FRHFJND2ZK",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestCIStability shows: an empty record stable; a flake inside the window unstable, and stable once 20 later clean runs push it out; a red dispatched main result unstable, and stable once a later ship check --main records green, whether by a tree-equal merge or a green dispatched run; rhiza.ship.ciWindow=5 shrinking the window; an invalid window refused by rhiza daemon set",
+          "statement": "Rhiza judges a repo's CI unstable while its last completed CI runs in the stability record (20 by default, the project setting rhiza.ship.ciWindow) hold a flake, or while main's latest result in the record is red, and stable again once neither holds. Main's latest result is the one the latest rhiza ship check --main recorded: a merge whose tree equals its tested PR head's records that head's green result for the merge commit, and a tree-differing merge records the dispatched CI run's result, so a red main clears at the next merge that settles green"
+        },
+        "handle": "ci-stability-state",
+        "id": "01M6YCRKH9VEHGSH0A2DFQRQ4W",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestShipLocalGate shows the gate run in the run worktree when unstable, skipped when stable, skipped with no gate set, and a failing gate failing the step with its output; go test -trimpath ./internal/workflow passes with the gate step before each push step of ship-change.toml and its on.fail to a fixer; go test -trimpath ./cmd/rhiza -run TestScripts/ship-local-gate passes; in this repo rhiza daemon settings --json lists rhiza.ship.localGate with value make check from the project settings",
+          "statement": "While CI is unstable, the built-in ship-change workflow runs the project's local gate command (rhiza.ship.localGate; make check for Rhiza itself) in the run's worktree before every push and pushes only when it exits 0, sending a failing gate to a fixer like a red CI; while CI is stable, or with no gate set, the step passes at once and the run keeps its scoped tests"
+        },
+        "handle": "ship-local-gate",
+        "id": "01M6YCRKT22SQQH70HYXCEX3AF",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestClaudeMDScopedTests finds CLAUDE.md's scoped-tests rule unchanged plus the unstable-CI reproduce-locally rule; go test -trimpath ./internal/guide -run 'TestBuildText|TestReviewText' finds the same two rules in the rhiza-build and rhiza-review guide texts",
+          "statement": "This repo's CLAUDE.md and the rhiza-build and rhiza-review guide topics keep scoped tests as the default and add that, while CI is unstable or a red is not explained by the change, an agent reproduces the failing test locally and pushes only after it and the touched packages pass, never pushing or rerunning CI to see"
+        },
+        "handle": "unstable-ci-guidance",
+        "id": "01M6YCRMA48VMM2KTZ2QZXPZHV",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6YCRMA48VMM2KTZ2Q92EY10",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YD38B8MAER0YBYWAXJAVAG",
+  "type": "ops",
+  "v": 1
+}
