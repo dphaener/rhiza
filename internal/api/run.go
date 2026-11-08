@@ -1164,6 +1164,9 @@ func runRunAbandon(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("journal the abandoning of run %s: %v", j.ID, err).WithNext("rhiza run status " + j.ID)
 	}
 	j.Entries = append(j.Entries, e)
+	// A run whose process died left its own temp folder behind; the engine
+	// that would have removed it is gone, so abandoning removes it.
+	_ = os.RemoveAll(filepath.Dir(rs.TmpDir(j.ID)))
 	st := j.State()
 	return RunAbandonResponse{Run: runInfo(ctx, st, false, sessions), Cleanup: abandonCleanup(ctx, common, rs, j.ID, st)}, nil
 }
