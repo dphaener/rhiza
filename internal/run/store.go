@@ -39,6 +39,15 @@ func Dir(gitCommonDir string) string {
 	return filepath.Join(gitCommonDir, "rhiza", "runs")
 }
 
+// EnvGoTmp is the variable that moves go's build temp folders.
+const EnvGoTmp = "GOTMPDIR"
+
+// TmpDir is the run's own temp folder under the runs directory dir:
+// <dir>/<run id>/gotmp. The run's processes get it as GOTMPDIR, so a sweep
+// of the shared TMPDIR never removes a live go build's $WORK. The engine
+// creates it as a step starts and removes it when the run stops.
+func TmpDir(dir, id string) string { return filepath.Join(dir, id, "gotmp") }
+
 // Store keeps one append-only JSONL journal per run in a directory.
 type Store struct {
 	dir string
@@ -46,6 +55,9 @@ type Store struct {
 
 // NewStore returns a store over dir. The directory is created on first write.
 func NewStore(dir string) *Store { return &Store{dir: dir} }
+
+// TmpDir is TmpDir for a run of this store.
+func (s *Store) TmpDir(id string) string { return TmpDir(s.dir, id) }
 
 func (s *Store) path(id string) string { return filepath.Join(s.dir, id+".jsonl") }
 
