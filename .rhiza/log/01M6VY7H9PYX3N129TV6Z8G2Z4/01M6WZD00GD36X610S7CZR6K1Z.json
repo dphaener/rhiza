@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WX4YCWP5V8VBHBKG48JP3J",
+  "after": [
+    "01M6WXTCT2WZ990QK8XHN7WFE5"
+  ],
+  "at": "2026-11-08T07:01:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified attempt 2 at 59ffe16b, the fix for the confirmed quality f2 / model f3 finding. Read the diff: daemonDemand in internal/api/daemon_projects.go now filters each ready candidate by workflowStageMode(ctx, ship.For(cs), \"ship\"), using the same daemonShipOf dispatch as daemonPoll1 (daemon.go:849-870), in place of the built-in ship-change declaration. Ran go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(daemon-root-ship-workflow|stage-autonomy|workflow-stage-autonomy|workflow-plan-autonomy|plan-workflow-autonomous|plan-workflow-autonomous-left|autonomy-accept-rule|bugfix-workflow-autonomous|run-start-ready-dispatch|run-autonomy-source|daemon-root.*)$': ok. These cover the acceptance (plan autonomous/owner overrides, accept = owner leaves drafts proposed, ship = auto starts while the setting is owner, signoff = owner starts without --autonomous, a ship workflow's plan ignored, stage-autonomy unchanged). Ran the new daemon-root-ship-workflow.txtar against 59ffe16b~ in a scratch worktree: it fails ('no match for ^Started a run of'), so it covers the finding. The full internal/api package did not finish here: one run hit the 600s timeout at load ~15, one tripped the known write into ~/code's root state folder, and a scratch-worktree rerun was stopped for time. CI runs it before merge."
+        },
+        "handle": "stage-autonomy-from-workflow-verified-59ffe16b",
+        "id": "01M6WZCZV0GKFTXBDCHM9REYM5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WZCZV0GKFTXBDCHJXVMEAQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WZCZV0GKFTXBDCHJXVMEAQ",
+        "id": "01M6WZCZY88212S49BTEN6PGH0",
+        "link": "01M6WZCZY88212S49BTAYHZVTG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVPYWCJVW98YSSNWHPDP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WZD00GD36X610S7CZR6K1Z",
+  "type": "ops",
+  "v": 1
+}
