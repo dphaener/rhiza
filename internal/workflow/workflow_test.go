@@ -1543,3 +1543,17 @@ func TestBuiltinRolePromptsScopeTests(t *testing.T) {
 		}
 	}
 }
+
+func TestStepStall(t *testing.T) {
+	d, err := Parse("w", []byte("name = \"w\"\nstart = \"a\"\n[step.a]\nkind = \"command\"\nrun = \"true\"\nstall = \"7m\"\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := d.Steps["a"].Stall; got != 7*time.Minute {
+		t.Fatalf("stall %v", got)
+	}
+	_, err = Parse("w", []byte("name = \"w\"\nstart = \"a\"\n[step.a]\nkind = \"command\"\nrun = \"true\"\nstall = \"soon\"\n"))
+	if err == nil || !strings.Contains(err.Error(), "stall") {
+		t.Fatalf("err %v", err)
+	}
+}
