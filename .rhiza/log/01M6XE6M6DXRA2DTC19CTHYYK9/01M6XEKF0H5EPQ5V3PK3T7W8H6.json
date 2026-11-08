@@ -1,0 +1,41 @@
+{
+  "actor": "01M6XEHEYY49CMWG1NF9B9S9J3",
+  "after": [
+    "01M6XEGNFYZCEM1EBZ7VJR4TMB"
+  ],
+  "at": "2026-11-08T11:27:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question's evidence checks out in the code: repoFreeBytes (internal/api/daemon.go) honours RHIZA_TEST_FREE_BYTES only through ctxGetenv(ctx) alongside RHIZA_TEST_NOW and otherwise calls daemon.FreeBytes(ctx.Root); cmd/rhiza/main_test.go pins testFreeBytes = 1 TiB for scripts, but the internal/api tests build Ctx values without that Getenv, so they read the runner's real disk. A runner at 3.7 GiB free trips the 10 GiB guard, the daemon holds schedule starts and the health disk part goes bad, which is exactly the three failing tests; attempt 2 at the same commit passed, and #379's next head passed, which a real merge interaction would not do. ci.yml already dispatches CI for a main commit whose tree differs from the tested head, and ship merge requires the head to contain origin/main, so main's tree was the tested tree. Building a merge queue or post-merge red-main pause would add machinery against a failure that did not happen and leave the actual flake in place; fixing the test hermeticity removes the cause and stays inside the change set's purpose (main and PRs going red for no real defect).",
+          "statement": "This change set builds no merge gate, merge queue or post-merge CI on main. It makes the internal/api Go tests hermetic about free disk: every test that reaches repoFreeBytes (the daemon's disk guard and health's disk part, via the schedule and health tests) gets a pinned free-disk figure, the same 1 TiB the cmd/rhiza scripts pin with RHIZA_TEST_FREE_BYTES, through the Ctx's Getenv (or one shared test helper that builds such a Ctx), so no internal/api test reads the CI host's real free space. A test that wants low disk sets the figure itself. Acceptance: with the host's free space below 10 GiB (simulated by making daemon.FreeBytes unreachable from the tests, e.g. a test that fails if the real figure is consulted), TestDaemonPollStartsEachProjectsSchedule, TestDaemonScheduleUnresolvedWorkflow and TestHealthSchedulesPart still pass. The change set's intent should be narrowed to this flaky-test fix.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "main-red-was-host-disk-not-merge",
+        "id": "01M6XEKESD34G4P39FM2M5DJ9B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6XEKESD34G4P39FM1NFECZ3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XEKESD34G4P39FM1NFECZ3",
+        "id": "01M6XEKEX5P244D3ZGX2Z1K4Z6",
+        "link": "01M6XEKEX5P244D3ZGX0Y2F03K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XEGGR71R8C0XZETE1S3S60",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6XE6M6DXRA2DTC19CTHYYK9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XEKF0H5EPQ5V3PK3T7W8H6",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,30 @@
+{
+  "actor": "01M6XEYA41VWCZW0FKGNCZBZM5",
+  "after": [
+    "01M6XENBASV28AQSJB21X6XXVQ"
+  ],
+  "at": "2026-11-08T11:34:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "internal/api tests reach repoFreeBytes only through a Ctx (or one shared test helper building it) whose Getenv pins RHIZA_TEST_FREE_BYTES=1099511627776 beside RHIZA_TEST_NOW, and the package's test setup makes consulting the real daemon.FreeBytes fail the test; go test -trimpath ./internal/api -run 'TestDaemonPollStartsEachProjectsSchedule|TestDaemonScheduleUnresolvedWorkflow|TestHealthSchedulesPart|TestFreeBytesOverride' -count=1 passes, where TestFreeBytesOverride is a new internal/api test that overrides the helper's figure with one under 10 GiB and sees daemonDiskLow report low (so a due schedule is held) and health's disk part go bad, proving a test can still set its own figure; go test -trimpath ./cmd/rhiza -run 'TestScripts/(health|daemon-notify-disk-low)' passes unchanged; with the pinned figure removed from the helper, the three schedule and health tests fail on the real-disk guard rather than passing on the host's disk",
+          "statement": "Every internal/api Go test sees a fixed 1 TiB of free disk unless it sets its own figure, so the daemon's minFree guard and health's disk part never read the CI host's real free space, and a runner short on disk no longer turns PRs red"
+        },
+        "handle": "api-tests-free-disk-hermetic",
+        "id": "01M6XENB2AST9TAX4MTYZWV1JV",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6XENB2AST9TAX4MTWCDY0VK",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      }
+    ]
+  },
+  "change_set": "01M6XE6M6DXRA2DTC19CTHYYK9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XF07HW5J7DXT0E8D8C045R",
+  "type": "ops",
+  "v": 1
+}
