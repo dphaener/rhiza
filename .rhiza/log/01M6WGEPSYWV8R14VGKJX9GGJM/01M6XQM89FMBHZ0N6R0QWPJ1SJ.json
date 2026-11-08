@@ -1,0 +1,63 @@
+{
+  "actor": "01M6XQDNK92KE8CPKXSP4WABFP",
+  "after": [
+    "01M6XQ8SY3XFTC960RKBP2HQ76"
+  ],
+  "at": "2026-11-08T14:05:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza at the branch head (go build -trimpath) and ran it by hand in a scratch root/repo with RHIZA_* unset. rhiza run start --foreground on a command-step workflow: the step saw GOTMPDIR=<repo>/.git/rhiza/runs/<run id>/gotmp, the folder existed when the step ran (ls -ld), and a real `go build -x` inside the step reported WORK=<that gotmp>/go-build303976419, so go's $WORK sat outside the shared TMPDIR. After the run succeeded, and after a second run failed, runs/ held only the .jsonl journals with no <run id>/ folder left. A third run whose step ran kill -9 $PPID (rhiza died, exit 137) left runs/<id>/gotmp behind; rhiza run ls listed it as a run of its journal, not of the folder; rhiza run abandon <id> exited 0 and the <id>/ folder was gone. Agent steps (session_run GOTMPDIR) were not run by hand, since that would start real agents; they are covered only by the unit tests. go test -trimpath ./internal/run -run GoTmp|TmpDir: ok."
+        },
+        "handle": "run-private-gotmpdir-qa-1",
+        "id": "01M6XQM7KEJ557X2Y8B9M7F2B0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XQM7KEJ557X2Y8B9JSG6S6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XQM7KEJ557X2Y8B9JSG6S6",
+        "id": "01M6XQM7S9F5MQRRKHK7TXGT1C",
+        "link": "01M6XQM7S9F5MQRRKHK6HVKTTF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WGXA5QZV54A91F061Y3KNQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "With the built binary in a scratch repo: a command step that printed 'could not import io (open $WORK/b033/_pkg_.a: no such file or directory)' and exited 1 on its first try only was rerun once. stderr showed one line, 'rhiza: step failed as go's $WORK folder vanished; running it once more', then second-ok, and the step passed (exit 0). A step that printed \"can't create $WORK/b094/_pkg_.a: open $WORK/b094/_pkg_.a: no such file or directory\" every time ran exactly twice, and the second failure stood (run failed, step detail exit 1). A step that failed with 'main.go:3: undefined: foo' ran once (counter file = 1) and was not rerun. go test -trimpath ./internal/api -run VanishedGoWork|GoWork|AbandonGoTmp|GoTmp|SessionRun printed PASS; rootguard then flagged an unrelated write to ~/code/.rhiza-root/usage.live.json."
+        },
+        "handle": "step-retry-vanished-go-work-qa-1",
+        "id": "01M6XQM7XPH98W84VE9Q0GNSCV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XQM7XPH98W84VE9P6F1BTJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XQM7XPH98W84VE9P6F1BTJ",
+        "id": "01M6XQM832W6VP5JM98JKHWMJV",
+        "link": "01M6XQM832W6VP5JM98GF7JBZX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WGXA821QDFHM5T4K3G3P2Q",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WGEPSYWV8R14VGKJX9GGJM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XQM89FMBHZ0N6R0QWPJ1SJ",
+  "type": "ops",
+  "v": 1
+}
