@@ -1,0 +1,39 @@
+{
+  "actor": "01M6WBKBR0ANA6MWZA2E2121XG",
+  "after": [
+    "01M6WBG32NGP8DZAVD6S2WA7Z5"
+  ],
+  "at": "2026-11-08T01:16:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Still open at attempt 3 (2026-11-08): workflow dispatch (01M6VY7G6HPJC3V0Q18E8EF9ZA) is still on cs/workflow-dispatch (d1f24b16, in review) and not on origin/main (cf81def4) or this branch, so no internal/dispatch package maps kind bug to a repo bugfix.toml. Merging that branch here would ship another change set inside this one. Land dispatch, then rebuild this leaf on top of it."
+        },
+        "handle": "note-01m6wbn6a0v03y",
+        "id": "01M6WBN6A0V03YFNW08AGKX6V1",
+        "key": null,
+        "kind": "note",
+        "node": "01M6WBN6A0V03YFNW088GG64SN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WBN6A0V03YFNW088GG64SN",
+        "id": "01M6WBN6BKSHV6VZJN5G14QG49",
+        "link": "01M6WBN6BKSHV6VZJN5C2HTAJW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WB3CJ5R7561BXEX3X6HP2N",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WBN6DMET1CV442RDPXM3RW",
+  "type": "ops",
+  "v": 1
+}
