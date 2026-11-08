@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Y1BT76Q41YXCWF7NZNZHNQ",
+  "after": [
+    "01M6Y1FAK15PY9TPQDFTKKMMZX"
+  ],
+  "at": "2026-11-08T16:57:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at bfd78be9 (attempt 3), RHIZA_ROOT/CHANGE/RUN unset, -count=1: go test -trimpath ./internal/daemon/... ok; go test -trimpath ./internal/api -run TestDaemonScheduledStartHoldsSlotForQueuedStart PASS; go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-max-runs-pending|daemon-request-slot|daemon-queued-start-slot|daemon-continue-slot|daemon-round-robin|daemon-picks|daemon-milestone-request)' PASS, plus daemon-resume-slot, health-runs-cap and describe-golden PASS; gofmt clean, go vet ok. I read the diff d1e26ecf..bfd78be9 against the acceptance. daemon-max-runs-pending.txtar: one live run and an unjournaled feature plan run, at max-runs 2 nothing starts and status shows 2 no-slot; at 3 exactly one ship run starts. daemon-milestone-request.txtar: at --max-runs 1 with one live run nothing starts and both requests stay queued; with one interrupted run and one free slot the milestone plan run starts, no daemon-resumed entry is journaled and the feature request stays queued. daemon-request-slot.txtar (second root): with only a milestone request queued, two ready change sets and max-runs 2, it starts the plan run and one ship run (2 detach starts) and status shows 1 no-slot. TestRoundRobinCountsUnjournaledStarts covers a project share computed with unjournaled starts. daemonPoll1 now counts live runs, held, request, schedule and resume starts plus this poll's starts against max; the milestone request goes before resumes and only into a free slot. This answers attempt 1's findings f1-f3."
+        },
+        "handle": "daemon-starts-within-max-runs-verified",
+        "id": "01M6Y1GMQQB4Q0HA7Z4AFTZGNG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Y1GMQQB4Q0HA7Z470C7AQ2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Y1GMQQB4Q0HA7Z470C7AQ2",
+        "id": "01M6Y1GMW2T7HTK0SXCN1HH9SR",
+        "link": "01M6Y1GMW2T7HTK0SXCMEDYB6F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVG9DK25PFK9BHJCBDQHQ6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Y1GN4JRE32EJ1BM36EWAHK",
+  "type": "ops",
+  "v": 1
+}
