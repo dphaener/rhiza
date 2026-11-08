@@ -1,0 +1,40 @@
+{
+  "actor": "01M6X96Y73CPRN1BEHDBHN75ZV",
+  "after": [
+    "01M6X6KZF330CCCPACGP2GBDKK"
+  ],
+  "at": "2026-11-08T10:04:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at e12f061d (attempt 2). Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(ship-check-settles-conflict|describe-golden)$' -count=1 -v: both PASS. Read the script and diff: case 1 (rendered-only conflict, fake gh CONFLICTING until origin's branch holds main) has ship check --settled exit non-zero, origin/cs/ship-it holding origin/main and the ship record's pushed equal to the new head; case 2 (code conflict) has ship check --settled --json exit 0 with settled true, code.txt and the merge left in progress (MERGE_HEAD present, origin branch unchanged), no question, ship check --json exit=1 with passed false naming code.txt although the fake gh reports checks SUCCESS, and plain ship check failing with 'unresolved, conflicts in code.txt'. After the resolving merge is committed, plain ship check exits 0 and ship check --conflicts exits 1 ('is resolved'); after ship check --settled pushes, merge_conflict is dropped from the ship state, plain check exits 0 and --conflicts exits 1 ('no merge conflict is recorded'). That closes attempt 1's finding f1: the new --conflicts flag (ShipCheckRequest.Conflicts, runShipConflicts in internal/api/ship.go) reads only the state file and git, and refuses to combine with other modes. go test -trimpath ./internal/api -run Ship -v: every TestShip* PASS, among them ShipRebaseCodeConflict, ShipRebaseFixerMerge and ShipCheckTestFailures. The package reported FAIL only through its guard against writes into the enclosing ~/code root's state folder, an effect of running under the root and not of this change."
+        },
+        "handle": "wait-merges-conflicting-pr-verified",
+        "id": "01M6X9WF3NXXJ6V71PXJMEMYDH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X9WF3NXXJ6V71PXF736M0F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X9WF3NXXJ6V71PXF736M0F",
+        "id": "01M6X9WF58TJFWKT9EKZKRYG3A",
+        "link": "01M6X9WF58TJFWKT9EKZB6MRPF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WMSB7FA6TA1SMY3YW9AC1Q",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WMCCRC0KSCWEV17VY8KVQP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6X9WF8S2D11R2VPCB2JPGN2",
+  "type": "ops",
+  "v": 1
+}
