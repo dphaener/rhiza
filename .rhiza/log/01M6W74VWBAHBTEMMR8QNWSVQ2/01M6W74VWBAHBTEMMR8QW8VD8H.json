@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-07T23:57:50Z",
+  "body": {
+    "intent": "Record agent actor claude-code-d0dc9477 for session d0dc9477-9925-41f9-90d5-01a1b872579f",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6W74VWBAHBTEMMR8QNWSVQ2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W74VWBAHBTEMMR8QW8VD8H",
+  "type": "open",
+  "v": 1
+}

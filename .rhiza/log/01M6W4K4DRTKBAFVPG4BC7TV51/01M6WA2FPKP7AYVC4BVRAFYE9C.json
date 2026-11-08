@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W9Y02WP1XYTD3HERX90Y5M",
+  "after": [
+    "01M6W9ZRENPRFJTYHAT81TQ3GQ"
+  ],
+  "at": "2026-11-08T00:48:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Attempt 2 at d35520fc (a model-only commit rewriting the leaf's statement and acceptance to match decision request-workflow-exposure-ignores-plan-stage). Ran go test -trimpath ./internal/api -run TestRequestExposedWorkflows -v: PASS. Read the tests and internal/api/request_exposure.go against each acceptance point: plan auto under bypassPermissions flags plan only; plan/accept/ship auto flags plan (request) and ship-change (ready); accept owner flags plan only; plan owner with ship auto under bypass flags plan, not ship-change; a step acceptEdits under a bypass daemon mode is not flagged, a step bypassPermissions with no daemon mode is; an arbiter step with bypassPermissions is counted; ship-change is flagged through an included build builder alone ('build/build builder') and an included review critic alone ('review/review critic') with no daemon mode; each entry carries workflow, trigger and steps. No dispatch.toml support exists in this code, so the conditional dispatch clause does not apply. The rewritten statement now matches requestExposedWorkflows (plan always picked; ship-change only when plan, accept and ship are all auto). make self-check reports only stale-render failures (rhiza render runs after landing), no model problems."
+        },
+        "handle": "request-exposed-workflows-verified-2",
+        "id": "01M6WA2FCZ26JYKGMVKKVCHBPS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WA2FCZ26JYKGMVKHRR74DP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WA2FCZ26JYKGMVKHRR74DP",
+        "id": "01M6WA2FHHKET5X1VF92HS9VYB",
+        "link": "01M6WA2FHHKET5X1VF8ZRCKA4S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZMW57BSXGYJYXV6XPWP2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K4DRTKBAFVPG4BC7TV51",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WA2FPKP7AYVC4BVRAFYE9C",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W7K2H38FRQ68QFYYXNTBKX",
+  "after": [
+    "01M6W7DSR89157TCARA83CD8M8"
+  ],
+  "at": "2026-11-08T00:08:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 601a755d, go test -trimpath ./cmd/rhiza -run 'TestScripts/(request-ref-risk-note|describe-golden)$' -count=1 -v: both PASS. The script sets rhiza.autonomy.plan auto and rhiza.daemon.permissionMode bypassPermissions, runs request --ref, sees 'Queued feature request', exactly one '^Note: .*workflow plan' line saying 'no permission checks', request ls lists the request, and --json carries a note naming plan; a request without --ref and one with plan owner print no Note. describe-golden passes with the new note field. Read the diff: runRequest still queues as before and only adds requestRiskNote, which returns empty for no ref, unreadable settings or an empty requestExposedWorkflows list."
+        },
+        "handle": "request-ref-risk-note-verified",
+        "id": "01M6W7RRJDX12H9MV0E31ASQ9S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W7RRJDX12H9MV0E1MJJQJ6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W7RRJDX12H9MV0E1MJJQJ6",
+        "id": "01M6W7RRMJXKSNMV0WVGTCM3FK",
+        "link": "01M6W7RRMJXKSNMV0WVEZ8X7J6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZN5TXW2QGS4G4047F38A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K4DRTKBAFVPG4BC7TV51",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W7RRQ255JQ6SJGB00TQSWK",
+  "type": "ops",
+  "v": 1
+}

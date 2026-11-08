@@ -1,0 +1,26 @@
+# rhiza health warns, exits 0, when a queued request reaches a
+# bypass-mode workflow.
+
+env REX_SESSION=
+env REX_SERVER=
+env RHIZA_TEST_FREE_BYTES=1099511627776
+env XDG_CONFIG_HOME=$WORK/xdg
+mkdir repo
+cd repo
+exec git init -q -b main
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+
+exec git config rhiza.autonomy.plan auto
+exec git config rhiza.daemon.permissionMode bypassPermissions
+exec rhiza health
+stdout 'warn autonomy .*outside text reaches agents with no permission checks'
+stdout 'workflow plan runs from a queued request with bypassed permissions in interview'
+exec rhiza health --json
+stdout '"part": "autonomy",\n\s*"state": "warn"'
+
+exec git config rhiza.daemon.permissionMode acceptEdits
+exec rhiza health
+! stdout 'outside text reaches agents'

@@ -7610,6 +7610,10 @@ cmp stdout describe.golden.json
             "description": "True if nothing was written",
             "type": "boolean"
           },
+          "note": {
+            "description": "A one-line risk note, only for a request with a --ref while the request-exposed list is not empty: it names the flagged workflows and says outside text reaches agents with no permission checks; never changes the outcome",
+            "type": "string"
+          },
           "request": {
             "additionalProperties": false,
             "description": "The request",
@@ -24120,6 +24124,13 @@ cmp stdout describe.golden.json
           "valid": {
             "description": "True when run start would accept the workflow",
             "type": "boolean"
+          },
+          "warnings": {
+            "description": "Risks worth knowing about that do not make the workflow invalid, such as outside text reaching its agents with no permission checks; never change valid or the exit code",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WA2AR4R79AT7J29HJJAFT9",
+  "after": [
+    "01M6WA2FPKP7AYVC4BVRAFYE9C"
+  ],
+  "at": "2026-11-08T00:49:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 43079b55 ran go test -trimpath -count=1 ./internal/guide/...: ok. TestWorkflowsText passes and checks the workflows topic's '## Outside input' section for bypassPermissions, rhiza.autonomy.plan with 'does not gate intake', rhiza.daemon.permissionMode, rhiza request, the schedule caveat ('Rhiza cannot see' what a scheduled rhiza request sends), permission_mode on the plan workflow's steps, and rhiza.autonomy.signoff; TestCaps and TestCapCatchesOversize (size checks) pass. Read internal/guide/text/workflows.md: the section states the warning, every queued request counts, nothing is refused, plan owner only accepts the plan, and the mitigations (people outside Rhiza gate intake, never a schedule; narrower permission mode; plan/signoff owner)."
+        },
+        "handle": "workflows-guide-outside-input-verified-2",
+        "id": "01M6WA3M70RBGMPEZ7MNAMQX45",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WA3M70RBGMPEZ7MJZYJ2ED",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WA3M70RBGMPEZ7MJZYJ2ED",
+        "id": "01M6WA3M9VHAM6021EJPZNXYT7",
+        "link": "01M6WA3M9VHAM6021EJN1DPDE0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZN88P5XT2RXYH35YRVMZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K4DRTKBAFVPG4BC7TV51",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WA3MBQEDPNAYT8C9RTA6RP",
+  "type": "ops",
+  "v": 1
+}
