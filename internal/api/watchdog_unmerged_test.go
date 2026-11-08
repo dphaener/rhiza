@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/run"
 )
 
@@ -111,5 +112,53 @@ run = "rhiza ship merge"
 		if len(resumed) != 0 || len(holds) != 0 {
 			t.Errorf("pr %+v: resumed %v holds %v", p, resumed, holds)
 		}
+	}
+}
+
+// TestWatchdogGreenUnmergedReadsOnce checks that the pass's gh reads stay
+// bounded: a run found with no open PR is not read again on later polls,
+// through watchdogPasses as the daemon runs them, until its journal moves.
+func TestWatchdogGreenUnmergedReadsOnce(t *testing.T) {
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	const def = `name = "w"
+[step.merge]
+kind = "command"
+run = "rhiza ship merge"
+`
+	ok := run.Journal{ID: "ok", Entries: []run.Entry{
+		{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true, Definition: def}},
+		{Type: run.TypeEntered, At: t0, Step: "merge", Visit: 1},
+		{Type: run.TypeEnded, At: t0, Step: "merge", Visit: 1, Outcome: "pass"},
+		{Type: run.TypeFinished, At: t0, Step: "merge", End: "succeeded"},
+	}}
+	reads := 0
+	d := watchdogDeps{
+		ci:     func(run.State) (watchdogPR, error) { reads++; return watchdogPR{}, nil },
+		resume: func(string) error { t.Fatal("resumed"); return nil },
+		log:    func(string, ...any) {},
+	}
+	pol := WatchdogPolicy{Enabled: true, RetryBudget: 1, AutonomousOnly: true}
+	none := func(string) bool { return false }
+	js := []run.Journal{ok}
+	var mem []daemon.WatchdogRun
+	for range 3 {
+		var err error
+		mem, _, err = watchdogPasses(pol, js, none, t0, mem, d)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	if reads != 1 {
+		t.Fatalf("%d PR reads over three polls, want 1", reads)
+	}
+	// A journal that moved on (here: a later entry) is read again, once.
+	moved := run.Journal{ID: "ok", Entries: append(append([]run.Entry{}, ok.Entries...),
+		run.Entry{Type: run.TypeFinished, At: t0.Add(time.Minute), Step: "merge", End: "succeeded"})}
+	js = []run.Journal{moved}
+	for range 2 {
+		mem, _, _ = watchdogPasses(pol, js, none, t0, mem, d)
+	}
+	if reads != 2 {
+		t.Fatalf("%d PR reads after the journal moved, want 2", reads)
 	}
 }
