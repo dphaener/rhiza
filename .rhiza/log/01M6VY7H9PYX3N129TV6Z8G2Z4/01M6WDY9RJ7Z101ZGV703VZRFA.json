@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WBJP3Y5B6GHANVA2F6W5DY",
+  "after": [
+    "01M6WCG24W0D5HH2WAW28EE7FE"
+  ],
+  "at": "2026-11-08T01:56:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1bf699e7: go test -trimpath ./cmd/rhiza -run 'TestScripts/^health$' passes; health.txtar asserts the built-in plan-milestone line alone, then with .rhiza/workflows/bugfix.toml (autonomous = true) the line 'workflow bugfix (.rhiza/workflows/bugfix.toml): plan auto, accept auto, ship auto, signoff auto' plus plan-milestone with plan, accept, ship and signoff owner, and cmp of health --json against api call health. By hand with a scratch build in a fresh repo: without a repo workflow the autonomy detail lists only 'workflow plan-milestone (builtin:plan-milestone): plan owner, accept owner, ship owner, signoff owner' after the four rhiza.autonomy.* settings; with bugfix.toml added it also lists bugfix with its file and all four stages auto; health --json and api call health are byte-identical. Diff reviewed: healthWorkflowAutonomy unions personal, repo and built-in names, resolves each through resolveWorkflow (so precedence holds), and lists only workflows declaring a stage. go test -short -run Health ./internal/api passes; the other internal/api failures seen (TestReadBudget timeout at load 15, a usage.live.json leak into the enclosing root, TestRunStartAgentRefusalsBeforeWrite) are unrelated to health, and the last also fails at the parent 1e97bc3f."
+        },
+        "handle": "health-workflow-autonomy-verified",
+        "id": "01M6WDY9MNEQGGA49Q9SVBE0Y0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WDY9MNEQGGA49Q9RK4Z90E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WDY9MNEQGGA49Q9RK4Z90E",
+        "id": "01M6WDY9PVVHBHK09FAM2BBV1G",
+        "link": "01M6WDY9PVVHBHK09FAHC7RF0B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVWZYB3NKSKBKACYXEXZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WDY9RJ7Z101ZGV703VZRFA",
+  "type": "ops",
+  "v": 1
+}

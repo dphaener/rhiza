@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/run"
 )
 
@@ -91,29 +92,19 @@ func TestDaemonStartsRequestWithDispatchedWorkflow(t *testing.T) {
 	}
 }
 
-// A run under a workflow not named plan, started with --new, is a plan run:
-// run resume's milestone owner gate stops it when autonomous.
-func TestRunResumeGatesMilestonePlanUnderOtherWorkflow(t *testing.T) {
+// A milestone request's plan run is never autonomous by default: the
+// built-in plan-milestone declares the owner for plan, which overrides
+// rhiza.autonomy.plan=auto; a feature request under plan still follows the
+// setting.
+func TestMilestonePlanRunOwnerByDeclaration(t *testing.T) {
 	f := newSessionFixture(t, "gate")
-	cs := newChange(t, f.ctx, `{"intent":"Roadmap","title":"Roadmap","kind":"record"}`).ChangeSet
-	rs := run.NewStore(run.Dir(f.common))
-	create := func(id string, plan bool) {
-		t.Helper()
-		s := run.Started{Workflow: "roadmap", Change: cs.String(), Definition: twoCommands, Autonomous: true, Plan: plan}
-		err := rs.Create(id, run.Entry{Type: run.TypeStarted, At: time.Now(), Step: "one", Started: &s})
-		if err != nil {
-			t.Fatal(err)
-		}
+	auto, err := planRunAutonomous(f.ctx, daemon.Request{ID: "M", Kind: daemon.KindMilestone}, AutonomyAuto)
+	if err != nil || auto {
+		t.Fatalf("milestone request under plan=auto: autonomous %v, %v; want false from plan-milestone's declaration", auto, err)
 	}
-	create("RPLAN", true)
-	_, err := callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"RPLAN"}`)
-	if err == nil || !strings.Contains(err.Error(), "milestone planning needs the owner") {
-		t.Fatalf("resume of a plan run under workflow roadmap: %v, want the owner gate", err)
-	}
-	create("ROTHER", false)
-	_, err = callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"ROTHER"}`)
-	if err != nil && strings.Contains(err.Error(), "milestone planning needs the owner") {
-		t.Fatalf("resume of a non-plan run: %v, want no owner gate", err)
+	auto, err = planRunAutonomous(f.ctx, daemon.Request{ID: "F", Kind: daemon.KindFeature}, AutonomyAuto)
+	if err != nil || !auto {
+		t.Fatalf("feature request under plan=auto: autonomous %v, %v; want true from the setting", auto, err)
 	}
 }
 

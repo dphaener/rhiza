@@ -1,0 +1,41 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6X20GBP3GHB991WCR4PCBKA"
+  ],
+  "at": "2026-11-08T08:08:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The conflicts were additive: this branch's autonomy tests and fields and main's scheduled-trigger, watchdog and stall additions touched neighbouring lines, with no clash in behaviour. A merge (commit 246e8a33) keeps both without rewriting pushed history, the rendered index is regenerated from the merged log, and the touched packages' tests and affected scripts pass.",
+          "statement": "Resolve the conflicts by merging origin/main into cs/autonomy-per-workflow, keeping both sides: workflow_test.go keeps the autonomy declaration and plan-milestone tests beside main's step stall test, run info and the journal keep stage autonomy beside scheduled triggers and warnings, and .rhiza/rendered/index.md is re-rendered.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "rebase-conflict-merged-main",
+        "id": "01M6X37K4EAHNWGCWM76P3671Z",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6X37K4EAHNWGCWM74C9YF38",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X37K4EAHNWGCWM74C9YF38",
+        "id": "01M6X37K6SG034SMJE6BKD68YJ",
+        "link": "01M6X37K6SG034SMJE6A4P5KNM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6X20G2S99GCDBHZ90QVA2MD",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6X37KA91TXE3BN6J67Y28M3",
+  "type": "ops",
+  "v": 1
+}

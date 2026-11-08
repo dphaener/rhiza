@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-08T04:03:13Z",
+  "body": {
+    "intent": "Record agent actor claude-code-94ca1840 for session 94ca1840-ad88-4114-a6e6-01a1b952e1ea",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6WN64RPP6W1YYZHWJJM0WX0",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WN64RPP6W1YYZHWNQMZA81",
+  "type": "open",
+  "v": 1
+}

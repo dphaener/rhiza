@@ -1,10 +1,12 @@
-# run start --workflow plan --autonomous is a usage error (exit 2) when the
-# run plans a milestone: --new --milestone, --request naming a milestone
-# request (with or without --milestone), or an existing record change set. It writes no draft and no journal. The same starts without
-# --autonomous run, an intention with --autonomous still runs, and run
-# resume refuses a milestone plan run journaled autonomous.
-#
-# The workflow has no agent step, so nothing here needs an agent.
+# run start --autonomous is a usage error (exit 2) on a plan run whose
+# workflow declares the plan stage owner: by default the built-in
+# plan-milestone, which --new --milestone, a milestone request's plan run
+# and a plan run on a record change set use. The error names the workflow
+# and its declaration, and the start writes no draft and no journal. The
+# same starts without --autonomous run, an intention with --autonomous
+# still runs, a repo plan-milestone.toml declaring autonomous = true lifts
+# the refusal, and run resume refuses a run journaled autonomous whose
+# workflow declares owner.
 
 chmod 755 bin/rex
 env PATH=$WORK/bin:$PATH
@@ -15,50 +17,80 @@ exec git init -q
 exec rhiza init
 exec git add -A
 exec git commit -qm init
+exec git config rhiza.autonomy.plan auto
 mkdir .rhiza/workflows
 cp $WORK/plan.toml .rhiza/workflows/plan.toml
 exec rhiza change new 'Plan reports' --kind record --title 'Plan reports' --json
 exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rec'
 exec sh -c 'rhiza change ls --json | grep -c "\"intent\"" > $WORK/before'
 
-# Refused: nothing is opened or journaled.
-exec sh -c 'rhiza run start --foreground --workflow plan --new "Plan the milestone" --milestone --permission-mode manual --autonomous 2>&1; echo exit=$?'
-stdout 'milestone planning needs the owner'
+# Refused under the built-in plan-milestone: nothing is opened or journaled.
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Ship v3" --milestone --autonomous --dry-run --json 2>&1; echo exit=$?'
+stdout 'workflow plan-milestone \(builtin:plan-milestone\) declares the plan stage owner'
+stdout '^exit=2$'
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Ship v3" --milestone --permission-mode manual --autonomous 2>&1; echo exit=$?'
+stdout 'workflow plan-milestone \(builtin:plan-milestone\) declares the plan stage owner'
 stdout '^exit=2$'
 exec sh -c 'rhiza run start --foreground $(cat $WORK/rec) --workflow plan --permission-mode manual --autonomous 2>&1; echo exit=$?'
-stdout 'milestone planning needs the owner'
+stdout 'workflow plan-milestone \(builtin:plan-milestone\) declares the plan stage owner'
 stdout '^exit=2$'
 exec rhiza request 'Ship v3' --kind milestone
 exec rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout '^Started the plan run of request '
 exec sh -c 'rhiza request ls --json | sed -n "s/^      \"id\": \"\(.*\)\",$/\1/p" | tr -d "\n" > $WORK/req'
-exec sh -c 'rhiza run start --foreground --workflow plan --new "Ship v3" --request $(cat $WORK/req) --permission-mode manual --autonomous --dry-run --json 2>&1; echo exit=$?'
-stdout 'milestone planning needs the owner'
-stdout '^exit=2$'
 exec sh -c 'rhiza run start --foreground --workflow plan --new "Ship v3" --request $(cat $WORK/req) --permission-mode manual --autonomous 2>&1; echo exit=$?'
-stdout 'milestone planning needs the owner'
+stdout 'declares the plan stage owner'
 stdout '^exit=2$'
 exec sh -c 'rhiza change ls --json | grep -c "\"intent\""'
 cmp stdout $WORK/before
 ! exists .git/rhiza/runs
 
-# Without --autonomous a milestone plan runs; so does an autonomous
-# intention plan.
+# A repo plan-milestone.toml declaring owner: the milestone plan runs
+# without --autonomous and is refused with it, naming the repo file; an
+# autonomous intention plan runs.
+cp $WORK/owner.toml .rhiza/workflows/plan-milestone.toml
+exec sh -c 'rhiza run start --foreground $(cat $WORK/rec) --workflow plan --permission-mode manual --autonomous 2>&1; echo exit=$?'
+stdout 'workflow plan-milestone \(.*plan-milestone.toml\) declares the plan stage owner'
+stdout '^exit=2$'
 exec sh -c 'rhiza run start --foreground $(cat $WORK/rec) --workflow plan --permission-mode manual --json'
+stdout '"workflow": "plan-milestone"'
 stdout '"state": "succeeded"'
 exec rhiza run start --foreground --workflow plan --new 'Plan an intention' --permission-mode manual --autonomous --json
 stdout '"state": "succeeded"'
 stdout '"autonomous": true'
 
-# A milestone run journaled autonomous is not resumed.
+# A run journaled autonomous whose workflow declares owner is not resumed.
 exec sh -c 'grep -l "$(cat $WORK/rec)" .git/rhiza/runs/*.jsonl > $WORK/journal'
 exec sh -c 'sed -i "0,/\"permission_mode\":\"manual\"/s//\"permission_mode\":\"manual\",\"autonomous\":true/" $(cat $WORK/journal)'
 exec sh -c 'rhiza run resume $(basename $(cat $WORK/journal) .jsonl) 2>&1; echo exit=$?'
-stdout 'milestone planning needs the owner'
+stdout 'workflow plan-milestone \(as run .* journaled it\) declares the plan stage owner'
 stdout '^exit=2$'
+
+# A repo plan-milestone.toml declaring autonomous = true lifts the refusal.
+cp $WORK/auto.toml .rhiza/workflows/plan-milestone.toml
+exec rhiza run start --foreground --workflow plan --new 'Ship v4' --milestone --permission-mode manual --autonomous --json
+stdout '"workflow": "plan-milestone"'
+stdout '"state": "succeeded"'
+stdout '"autonomous": true'
 
 -- plan.toml --
 name = "plan"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- owner.toml --
+name = "plan-milestone"
+autonomous = false
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- auto.toml --
+name = "plan-milestone"
+autonomous = true
 
 [step.a]
 kind = "command"

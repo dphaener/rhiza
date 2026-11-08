@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WQWN8MREMZRMZ3QC2D1G4P",
+  "after": [
+    "01M6WNGYN5AB0BCAKE2WE4STAV"
+  ],
+  "at": "2026-11-08T04:51:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-d57d46ca at ab0aeb30: ran go test -trimpath ./cmd/rhiza -run 'TestScripts/^health$' -count=1, PASS. health.txtar checks that with .rhiza/workflows/bugfix.toml declaring autonomous = true the autonomy detail lists 'workflow bugfix (.rhiza/workflows/bugfix.toml): plan auto, accept auto, ship auto, signoff auto' and 'workflow plan-milestone (builtin:plan-milestone): plan owner, accept owner, ship owner, signoff owner'; with no repo declaration only plan-milestone is listed and no bugfix; health --json and api call health compared with cmp in both states. The leaf commit adds only model records (confirmation that the capability was already built)."
+        },
+        "handle": "health-workflow-autonomy-verified-2",
+        "id": "01M6WQY2B0VNP49KJMRHWW3KHT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WQY2B0VNP49KJMRGY7DR81",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WQY2B0VNP49KJMRGY7DR81",
+        "id": "01M6WQY2D4VQWP3D9A6M7C2BE4",
+        "link": "01M6WQY2D2E1FCAVC3QZMGB3XV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVWZYB3NKSKBKACYXEXZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WQY2FA2YP2GABJMGGHJRHH",
+  "type": "ops",
+  "v": 1
+}

@@ -17,9 +17,11 @@ func TestHealthAutonomyRisk(t *testing.T) {
 		if !strings.Contains(p.Summary, phrase) {
 			t.Errorf("summary %q lacks %q", p.Summary, phrase)
 		}
+		// Exposure lines only: each workflow's autonomy declarations are
+		// detail lines too.
 		var lines []string
 		for _, d := range p.Detail {
-			if strings.HasPrefix(d, "workflow ") {
+			if strings.HasPrefix(d, "workflow ") && strings.Contains(d, "runs from a queued request") {
 				lines = append(lines, d)
 			}
 		}
@@ -38,7 +40,7 @@ func TestHealthAutonomyRisk(t *testing.T) {
 			t.Errorf("got %+v, want ok and unchanged", p)
 		}
 		for _, d := range p.Detail {
-			if strings.HasPrefix(d, "workflow ") {
+			if strings.Contains(d, "runs from a queued request") {
 				t.Errorf("unexpected detail %q", d)
 			}
 		}

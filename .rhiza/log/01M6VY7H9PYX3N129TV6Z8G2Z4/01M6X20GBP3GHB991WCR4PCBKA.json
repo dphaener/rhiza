@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6X00MJCACVTY3R02JQY3EBD"
+  ],
+  "at": "2026-11-08T07:47:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/autonomy-per-workflow onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: .rhiza/rendered/index.md, internal/workflow/workflow_test.go?"
+        },
+        "handle": "rebase-conflict-autonomy-per-workflow",
+        "id": "01M6X20G2T8C09SF036CBGHS2Z",
+        "key": null,
+        "kind": "question",
+        "node": "01M6X20G2S99GCDBHZ90QVA2MD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X20G2S99GCDBHZ90QVA2MD",
+        "id": "01M6X20G64F2BS0K81EV63FSVS",
+        "link": "01M6X20G64F2BS0K81ESS4NX8C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6X20GBP3GHB991WCR4PCBKA",
+  "type": "ops",
+  "v": 1
+}

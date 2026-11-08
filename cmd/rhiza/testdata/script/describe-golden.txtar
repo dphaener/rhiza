@@ -3277,6 +3277,51 @@ cmp stdout describe.golden.json
                 "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
                 "type": "boolean"
               },
+              "autonomy": {
+                "description": "The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "mode": {
+                      "description": "auto or owner",
+                      "enum": [
+                        "auto",
+                        "owner"
+                      ],
+                      "type": "string"
+                    },
+                    "source": {
+                      "description": "workflow (the workflow's declaration) or setting (rhiza.autonomy.<stage>)",
+                      "enum": [
+                        "workflow",
+                        "setting"
+                      ],
+                      "type": "string"
+                    },
+                    "stage": {
+                      "description": "The stage",
+                      "enum": [
+                        "plan",
+                        "accept",
+                        "ship",
+                        "signoff"
+                      ],
+                      "type": "string"
+                    },
+                    "workflow": {
+                      "description": "With source workflow: the workflow that declares it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "source",
+                    "stage"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "blocked": {
                 "additionalProperties": false,
                 "description": "What the run waits on while its agent step's session is blocked; absent otherwise",
@@ -4929,6 +4974,51 @@ cmp stdout describe.golden.json
               "autonomous": {
                 "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
                 "type": "boolean"
+              },
+              "autonomy": {
+                "description": "The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "mode": {
+                      "description": "auto or owner",
+                      "enum": [
+                        "auto",
+                        "owner"
+                      ],
+                      "type": "string"
+                    },
+                    "source": {
+                      "description": "workflow (the workflow's declaration) or setting (rhiza.autonomy.<stage>)",
+                      "enum": [
+                        "workflow",
+                        "setting"
+                      ],
+                      "type": "string"
+                    },
+                    "stage": {
+                      "description": "The stage",
+                      "enum": [
+                        "plan",
+                        "accept",
+                        "ship",
+                        "signoff"
+                      ],
+                      "type": "string"
+                    },
+                    "workflow": {
+                      "description": "With source workflow: the workflow that declares it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "source",
+                    "stage"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
               },
               "blocked": {
                 "additionalProperties": false,
@@ -8349,6 +8439,51 @@ cmp stdout describe.golden.json
                 "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
                 "type": "boolean"
               },
+              "autonomy": {
+                "description": "The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "mode": {
+                      "description": "auto or owner",
+                      "enum": [
+                        "auto",
+                        "owner"
+                      ],
+                      "type": "string"
+                    },
+                    "source": {
+                      "description": "workflow (the workflow's declaration) or setting (rhiza.autonomy.<stage>)",
+                      "enum": [
+                        "workflow",
+                        "setting"
+                      ],
+                      "type": "string"
+                    },
+                    "stage": {
+                      "description": "The stage",
+                      "enum": [
+                        "plan",
+                        "accept",
+                        "ship",
+                        "signoff"
+                      ],
+                      "type": "string"
+                    },
+                    "workflow": {
+                      "description": "With source workflow: the workflow that declares it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "source",
+                    "stage"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "blocked": {
                 "additionalProperties": false,
                 "description": "What the run waits on while its agent step's session is blocked; absent otherwise",
@@ -9857,6 +9992,51 @@ cmp stdout describe.golden.json
               "autonomous": {
                 "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
                 "type": "boolean"
+              },
+              "autonomy": {
+                "description": "The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "mode": {
+                      "description": "auto or owner",
+                      "enum": [
+                        "auto",
+                        "owner"
+                      ],
+                      "type": "string"
+                    },
+                    "source": {
+                      "description": "workflow (the workflow's declaration) or setting (rhiza.autonomy.<stage>)",
+                      "enum": [
+                        "workflow",
+                        "setting"
+                      ],
+                      "type": "string"
+                    },
+                    "stage": {
+                      "description": "The stage",
+                      "enum": [
+                        "plan",
+                        "accept",
+                        "ship",
+                        "signoff"
+                      ],
+                      "type": "string"
+                    },
+                    "workflow": {
+                      "description": "With source workflow: the workflow that declares it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "source",
+                    "stage"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
               },
               "blocked": {
                 "additionalProperties": false,
@@ -12289,6 +12469,51 @@ cmp stdout describe.golden.json
                 "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
                 "type": "boolean"
               },
+              "autonomy": {
+                "description": "The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "mode": {
+                      "description": "auto or owner",
+                      "enum": [
+                        "auto",
+                        "owner"
+                      ],
+                      "type": "string"
+                    },
+                    "source": {
+                      "description": "workflow (the workflow's declaration) or setting (rhiza.autonomy.<stage>)",
+                      "enum": [
+                        "workflow",
+                        "setting"
+                      ],
+                      "type": "string"
+                    },
+                    "stage": {
+                      "description": "The stage",
+                      "enum": [
+                        "plan",
+                        "accept",
+                        "ship",
+                        "signoff"
+                      ],
+                      "type": "string"
+                    },
+                    "workflow": {
+                      "description": "With source workflow: the workflow that declares it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "source",
+                    "stage"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "blocked": {
                 "additionalProperties": false,
                 "description": "What the run waits on while its agent step's session is blocked; absent otherwise",
@@ -13821,6 +14046,51 @@ cmp stdout describe.golden.json
               "autonomous": {
                 "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
                 "type": "boolean"
+              },
+              "autonomy": {
+                "description": "The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "mode": {
+                      "description": "auto or owner",
+                      "enum": [
+                        "auto",
+                        "owner"
+                      ],
+                      "type": "string"
+                    },
+                    "source": {
+                      "description": "workflow (the workflow's declaration) or setting (rhiza.autonomy.<stage>)",
+                      "enum": [
+                        "workflow",
+                        "setting"
+                      ],
+                      "type": "string"
+                    },
+                    "stage": {
+                      "description": "The stage",
+                      "enum": [
+                        "plan",
+                        "accept",
+                        "ship",
+                        "signoff"
+                      ],
+                      "type": "string"
+                    },
+                    "workflow": {
+                      "description": "With source workflow: the workflow that declares it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "source",
+                    "stage"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
               },
               "blocked": {
                 "additionalProperties": false,
@@ -15386,6 +15656,51 @@ cmp stdout describe.golden.json
               "autonomous": {
                 "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
                 "type": "boolean"
+              },
+              "autonomy": {
+                "description": "The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "mode": {
+                      "description": "auto or owner",
+                      "enum": [
+                        "auto",
+                        "owner"
+                      ],
+                      "type": "string"
+                    },
+                    "source": {
+                      "description": "workflow (the workflow's declaration) or setting (rhiza.autonomy.<stage>)",
+                      "enum": [
+                        "workflow",
+                        "setting"
+                      ],
+                      "type": "string"
+                    },
+                    "stage": {
+                      "description": "The stage",
+                      "enum": [
+                        "plan",
+                        "accept",
+                        "ship",
+                        "signoff"
+                      ],
+                      "type": "string"
+                    },
+                    "workflow": {
+                      "description": "With source workflow: the workflow that declares it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "source",
+                    "stage"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
               },
               "blocked": {
                 "additionalProperties": false,
@@ -16954,6 +17269,51 @@ cmp stdout describe.golden.json
                 "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
                 "type": "boolean"
               },
+              "autonomy": {
+                "description": "The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "mode": {
+                      "description": "auto or owner",
+                      "enum": [
+                        "auto",
+                        "owner"
+                      ],
+                      "type": "string"
+                    },
+                    "source": {
+                      "description": "workflow (the workflow's declaration) or setting (rhiza.autonomy.<stage>)",
+                      "enum": [
+                        "workflow",
+                        "setting"
+                      ],
+                      "type": "string"
+                    },
+                    "stage": {
+                      "description": "The stage",
+                      "enum": [
+                        "plan",
+                        "accept",
+                        "ship",
+                        "signoff"
+                      ],
+                      "type": "string"
+                    },
+                    "workflow": {
+                      "description": "With source workflow: the workflow that declares it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "source",
+                    "stage"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "blocked": {
                 "additionalProperties": false,
                 "description": "What the run waits on while its agent step's session is blocked; absent otherwise",
@@ -18351,6 +18711,51 @@ cmp stdout describe.golden.json
           "autonomous": {
             "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
             "type": "boolean"
+          },
+          "autonomy": {
+            "description": "The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "mode": {
+                  "description": "auto or owner",
+                  "enum": [
+                    "auto",
+                    "owner"
+                  ],
+                  "type": "string"
+                },
+                "source": {
+                  "description": "workflow (the workflow's declaration) or setting (rhiza.autonomy.<stage>)",
+                  "enum": [
+                    "workflow",
+                    "setting"
+                  ],
+                  "type": "string"
+                },
+                "stage": {
+                  "description": "The stage",
+                  "enum": [
+                    "plan",
+                    "accept",
+                    "ship",
+                    "signoff"
+                  ],
+                  "type": "string"
+                },
+                "workflow": {
+                  "description": "With source workflow: the workflow that declares it",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "mode",
+                "source",
+                "stage"
+              ],
+              "type": "object"
+            },
+            "type": "array"
           },
           "blocked": {
             "additionalProperties": false,

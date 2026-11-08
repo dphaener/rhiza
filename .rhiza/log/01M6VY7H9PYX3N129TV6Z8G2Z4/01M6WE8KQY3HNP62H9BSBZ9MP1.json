@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WD130PBSF591ADY16TF77P",
+  "after": [
+    "01M6WDY9RJ7Z101ZGV703VZRFA"
+  ],
+  "at": "2026-11-08T02:02:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 9062cd7f (attempt 2): the attempt-1 finding is fixed: runRunStart checks agent steps on the request's workflow (plan-milestone when --milestone) before resolving the change set, and again only when a plan run on a record change set swaps in plan-milestone; go test -trimpath ./internal/api -run 'TestRunStartAgentRefusalsBeforeWrite|Milestone|PlanMilestone|RunStart' passes. go test ./internal/workflow passes, incl. TestBuiltinPlanMilestone (steps equal to plan's, every stage owner). Testscripts plan-milestone-workflow (workflow ls lists plan-milestone builtin; dry-run --milestone with rhiza.autonomy.plan=auto shows workflow plan-milestone, not autonomous; daemon starts the milestone request on plan-milestone without --autonomous; a repo plan-milestone.toml with autonomous = true makes the daemon pass --autonomous), plan-milestone-backlog, plan-workflow, plan-workflow-open, plan-workflow-pr, plan-requests, daemon-milestone-request, run-start-new, describe-golden and workflow-ls pass. The four plan scripts now expect the planned change set left proposed, consistent with plan-milestone's owner accept stage. The full internal/api package at load ~12 only failed TestReadBudget (timing budget) and the root usage.live.json leak guard, both environmental and outside this diff."
+        },
+        "handle": "plan-milestone-workflow-verified",
+        "id": "01M6WE8KMW201KZTPXZXM8ZNES",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WE8KMW201KZTPXZV1BPTRQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WE8KMW201KZTPXZV1BPTRQ",
+        "id": "01M6WE8KPCK5TC14ZY8HZAKMMT",
+        "link": "01M6WE8KPCK5TC14ZY8FNM4CSQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVZJ3PB7QGSN9XZVP9GN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WE8KQY3HNP62H9BSBZ9MP1",
+  "type": "ops",
+  "v": 1
+}

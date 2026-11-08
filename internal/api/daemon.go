@@ -862,16 +862,27 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		return ok
 	})
 	ship := daemonShipOf(ctx.Root, fold)
-	shipMode, err := autonomyStage(ctx, "ship")
-	if err != nil {
-		return nil, resumed, nil, err
-	}
-	signoffMode, err := autonomyStage(ctx, "signoff")
-	if err != nil {
-		return nil, resumed, nil, err
-	}
-	if signoffMode == AutonomyOwner {
-		autonomous = false
+	// Each candidate's ship stage is the one its dispatched workflow
+	// declares, else rhiza.autonomy.ship: one whose ship stage is the
+	// owner's is raised, not picked.
+	var shipOwner []daemon.Skip
+	if !paused {
+		var modeErr error
+		cands = slices.DeleteFunc(cands, func(cs string) bool {
+			m, err := workflowStageMode(ctx, ship.For(cs), "ship")
+			if err != nil {
+				modeErr = err
+				return false
+			}
+			if m == AutonomyOwner {
+				shipOwner = append(shipOwner, daemon.Skip{Change: cs, Reason: daemon.SkipShipOwner})
+				return true
+			}
+			return false
+		})
+		if modeErr != nil {
+			return nil, resumed, nil, modeErr
+		}
 	}
 	// A milestone request's plan run is the owner's own interactive start:
 	// it goes first, whether or not a run slot is free, and keeps no ship
@@ -892,12 +903,6 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 			ps = append(ps, daemon.Skip{Change: cs, Reason: daemon.SkipPaused})
 		}
 		*skips = append(append(planSkips, unj...), ps...)
-	} else if shipMode == AutonomyOwner {
-		var owner []daemon.Skip
-		for _, cs := range cands {
-			owner = append(owner, daemon.Skip{Change: cs, Reason: daemon.SkipShipOwner})
-		}
-		*skips = append(append(planSkips, unj...), owner...)
 	} else if low {
 		detail := fmt.Sprintf("%s free, under the minimum of %s", daemon.FormatSize(free), daemon.FormatSize(minFree))
 		var low []daemon.Skip
@@ -941,6 +946,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		*skips = append(append(planSkips, unj...), shipSkips...)
 	}
+	*skips = append(*skips, shipOwner...)
 	for _, sk := range reqSkips {
 		addDaemonSkip(skips, sk)
 	}
@@ -1325,13 +1331,24 @@ func claimStartLog(ctx *Ctx, common, rid string) {
 // --foreground process, with permission mode mode.
 func daemonStart(ctx *Ctx, fold *daemonFolded, cs string, autonomous bool, mode string) error {
 	args := []string{"run", "start", "--foreground", cs, "--permission-mode", mode}
+	wf := shipChangeWorkflow
 	if id, err := id.Parse(cs); err == nil {
 		if name, pick, ok := daemonReadyPick(ctx.Root, fold, id); ok {
+			wf = name
 			if name != defaultWorkflow {
 				args = append(args, "--workflow", name, "--pick", pick)
 			}
 			daemonLogPick(ctx, "a run of "+cs, name, pick)
 		}
+	}
+	// The sign-off stage is the one the dispatched workflow declares, else
+	// rhiza.autonomy.signoff: the owner's keeps the run from --autonomous.
+	if autonomous {
+		m, err := workflowStageMode(ctx, wf, "signoff")
+		if err != nil {
+			return err
+		}
+		autonomous = m != AutonomyOwner
 	}
 	if autonomous {
 		args = append(args, "--autonomous")

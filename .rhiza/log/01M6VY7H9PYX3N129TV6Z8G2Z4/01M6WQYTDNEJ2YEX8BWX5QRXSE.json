@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WQRR80RABRDH3JH9AKX8K0",
+  "after": [
+    "01M6WQY2FA2YP2GABJMGGHJRHH"
+  ],
+  "at": "2026-11-08T04:51:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7a89e838 ran `go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/bugfix-workflow-autonomous$'`: ok (124s). The script uses fake rex, claude and gh; the repo has .rhiza/workflows/bugfix.toml and bugfix-ship.toml with autonomous = true, dispatch.toml maps request.bug=bugfix and ready.bug=bugfix-ship, and git config rhiza.autonomy.plan and rhiza.autonomy.signoff are owner. It asserts the daemon logs the bug request's plan run start with --autonomous (planRunAutonomous reads the workflow's declaration before the setting), the plan run succeeds with Autonomous: yes, gate pass and one accepted event, the change set is accepted by rule autonomous, the daemon logs the ship run start with --workflow bugfix-ship --pick rule ready.bug --autonomous (daemonStart drops --autonomous when the signoff stage is owner, so the declaration is what keeps it), the ship run succeeds signed off by rule autonomous with no actor, and rhiza inbox --json holds no item after each phase. Read the diff: test-only plus the builder's actor record."
+        },
+        "handle": "bugfix-workflow-autonomous-verified",
+        "id": "01M6WQYT62S0FH0GAXYMHPZ868",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WQYT62S0FH0GAXYM5RMY0D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WQYT62S0FH0GAXYM5RMY0D",
+        "id": "01M6WQYT9EXNWD43PRFR02A4G6",
+        "link": "01M6WQYT9EXNWD43PRFQN22C1S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPW4D8366CNFT3EH72465",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WQYTDNEJ2YEX8BWX5QRXSE",
+  "type": "ops",
+  "v": 1
+}

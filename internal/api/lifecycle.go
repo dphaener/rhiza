@@ -289,7 +289,7 @@ func checkAutonomousRule(ctx *Ctx, verb, rule string) (autonomousGate, error) {
 		why = "it is only for a move made inside a run"
 	}
 	if rule == autonomyRule {
-		mode, err := autonomyStage(ctx, "accept")
+		mode, err := acceptStageMode(ctx)
 		if err != nil {
 			return autonomousGate{}, err
 		}

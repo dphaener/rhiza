@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W9ZF6WBXNTKA8PYPRMXQ15",
+  "after": [
+    "01M6WB3CNAEPZRQW6M8TWS1XEC"
+  ],
+  "at": "2026-11-08T01:13:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-19a95588 at b187f837: go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-autonomy-source|describe-golden)$' -v passes both. run-autonomy-source.txtar starts a run whose workflow declares [autonomy] plan = \"auto\" with rhiza.autonomy.accept = owner and accept undeclared; run start, run status show '- Autonomy plan: auto from workflow declares' and '- Autonomy accept: owner from rhiza.autonomy.accept'; run status --json carries stage/mode/source/workflow; the journal's started entry carries both. describe-golden.txtar is regenerated with the new autonomy field (RunStageAutonomy) and passes. The testscript's workflow is named declares, not plan, so I also ran a real plan run by hand in a scratch root (built binary, RHIZA_ env cleared, committed .rhiza/workflows/plan.toml = builtin plan + [autonomy] plan = \"auto\", git config rhiza.autonomy.accept owner): rhiza run start --workflow plan --new ... --dry-run printed 'Autonomy plan: auto from workflow plan' and 'Autonomy accept: owner from rhiza.autonomy.accept'. Diff read: runAutonomy takes the workflow declaration first, else rhiza.autonomy.<stage>; Started.Autonomy is folded into State and RunInfo; runLines prints one line per stage. It records all four stages (plan, accept, ship, signoff) rather than only those the run performs, which the acceptance allows. go test ./internal/run passes, and the internal/api tests for autonomy, run start and run status pass. The full internal/api package timed out under load average ~14 on 4 cores, with TestReadBudget failing on model read timings (show/ls/ready), which this change does not touch."
+        },
+        "handle": "run-autonomy-source-verified",
+        "id": "01M6WBG2Y3FG260W7XKZD4AN26",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WBG2Y3FG260W7XKXBW544E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WBG2Y3FG260W7XKXBW544E",
+        "id": "01M6WBG2ZPX403RZE5JWZTST8W",
+        "link": "01M6WBG2ZPX403RZE5JSQXVVZ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVTC8M1XMBKTDTGBX14K",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WBG32NGP8DZAVD6S2WA7Z5",
+  "type": "ops",
+  "v": 1
+}

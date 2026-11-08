@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W8ASAYY2C4WN6PWDSC5RP1",
+  "after": [
+    "01M6W66PA4H8FFN354NDGCHM6K"
+  ],
+  "at": "2026-11-08T00:26:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 6e3f6571: go test -trimpath ./internal/workflow/... passes; TestAutonomyDeclaration parses autonomous = true (all four stages auto), autonomous = false (all owner), a partial [autonomy] table (plan owner, ship auto, accept/signoff undeclared) and no declaration (every stage undeclared, so it follows rhiza.autonomy.<stage>) through Definition.Autonomy, and both Parse and Validate refuse both forms in one file (\"autonomous and [autonomy] are both set\"), an unknown stage (\"autonomy.build: unknown stage\"), a bad value (\"autonomy.ship: maybe is not a mode\") and a non-boolean autonomous, each naming the key. go test -trimpath ./cmd/rhiza -run TestScripts/workflow-check$ passes: rhiza workflow check accepts a file with autonomous = true and exits non-zero with the same messages for a bad [autonomy] value and for both forms. Diff read: parseAutonomy runs on every load (parse) and in Validate; [autonomy] keys are excluded from the unknown-key check and checked by parseAutonomy instead."
+        },
+        "handle": "workflow-autonomy-declaration-verified",
+        "id": "01M6W8RN0SZBRV40YS1SAFYB74",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W8RN0SZBRV40YS1P0NA6M6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W8RN0SZBRV40YS1P0NA6M6",
+        "id": "01M6W8RN2TAW689PZDMX25ASDQ",
+        "link": "01M6W8RN2TAW689PZDMVBED6YV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVKA8H196XPZQX6BHQZK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W8RN8K34JANMBWK9F9TX5W",
+  "type": "ops",
+  "v": 1
+}

@@ -166,39 +166,57 @@ type RunResponse struct {
 
 // RunInfo is a run folded from its journal.
 type RunInfo struct {
-	ID             string          `json:"id" desc:"The run ID"`
-	Workflow       string          `json:"workflow" desc:"The workflow's name"`
-	Pick           string          `json:"pick,omitempty" desc:"Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded"`
-	Change         string          `json:"change" desc:"The change set it runs on; empty for a scheduled run, which has none"`
-	Trigger        string          `json:"trigger,omitempty" desc:"What started a run with no change set: schedule; absent for a change set's run"`
-	TriggerName    string          `json:"trigger_name,omitempty" desc:"With trigger schedule: the schedule's name"`
-	Title          string          `json:"title" desc:"The change set's title"`
-	Worktree       string          `json:"worktree" desc:"The worktree every step runs in"`
-	Autonomous     bool            `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
-	State          string          `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
-	Current        string          `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
-	Detail         string          `json:"detail,omitempty" desc:"Why it stopped or failed"`
-	Steps          []RunStep       `json:"steps" desc:"The steps done, in order"`
-	StartedAt      string          `json:"started_at" desc:"When it started, RFC 3339 UTC"`
-	Blocked        *RunBlocked     `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
-	Stalled        *RunStalled     `json:"stalled,omitempty" desc:"A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise"`
-	Amendments     []RunAmendment  `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
-	Messages       []RunMessage    `json:"messages" desc:"The messages its sessions sent each other, in order"`
-	Sessions       []RunSession    `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
-	Totals         SessionTokenUse `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
-	Warnings       []string        `json:"warnings,omitempty" desc:"The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none"`
-	Retries        []RunRetry      `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
-	Accepts        []RunAccept     `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
-	Questions      []RunQuestion   `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
-	Rounds         []RunRound      `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
-	Waiting        []RunWaiting    `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
-	Leaves         []RunLeaf       `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
-	Checks         []RunCheck      `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
-	Fixes          []RunFix        `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
-	CodeChecks     []RunCodeCheck  `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
-	Signoffs       []RunSignoff    `json:"signoffs,omitempty" desc:"The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none"`
-	PR             string          `json:"pr,omitempty" desc:"While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise"`
-	SignoffWaiting bool            `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise"`
+	ID             string             `json:"id" desc:"The run ID"`
+	Workflow       string             `json:"workflow" desc:"The workflow's name"`
+	Pick           string             `json:"pick,omitempty" desc:"Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded"`
+	Change         string             `json:"change" desc:"The change set it runs on; empty for a scheduled run, which has none"`
+	Trigger        string             `json:"trigger,omitempty" desc:"What started a run with no change set: schedule; absent for a change set's run"`
+	TriggerName    string             `json:"trigger_name,omitempty" desc:"With trigger schedule: the schedule's name"`
+	Title          string             `json:"title" desc:"The change set's title"`
+	Worktree       string             `json:"worktree" desc:"The worktree every step runs in"`
+	Autonomous     bool               `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
+	Autonomy       []RunStageAutonomy `json:"autonomy,omitempty" desc:"The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded"`
+	State          string             `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
+	Current        string             `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
+	Detail         string             `json:"detail,omitempty" desc:"Why it stopped or failed"`
+	Steps          []RunStep          `json:"steps" desc:"The steps done, in order"`
+	StartedAt      string             `json:"started_at" desc:"When it started, RFC 3339 UTC"`
+	Blocked        *RunBlocked        `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
+	Stalled        *RunStalled        `json:"stalled,omitempty" desc:"A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise"`
+	Amendments     []RunAmendment     `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
+	Messages       []RunMessage       `json:"messages" desc:"The messages its sessions sent each other, in order"`
+	Sessions       []RunSession       `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
+	Totals         SessionTokenUse    `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
+	Warnings       []string           `json:"warnings,omitempty" desc:"The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none"`
+	Retries        []RunRetry         `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
+	Accepts        []RunAccept        `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
+	Questions      []RunQuestion      `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
+	Rounds         []RunRound         `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
+	Waiting        []RunWaiting       `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
+	Leaves         []RunLeaf          `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
+	Checks         []RunCheck         `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
+	Fixes          []RunFix           `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
+	CodeChecks     []RunCodeCheck     `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
+	Signoffs       []RunSignoff       `json:"signoffs,omitempty" desc:"The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none"`
+	PR             string             `json:"pr,omitempty" desc:"While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise"`
+	SignoffWaiting bool               `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise"`
+}
+
+// RunStageAutonomy is one stage's autonomy as a run started.
+type RunStageAutonomy struct {
+	Stage    string `json:"stage" enum:"plan,accept,ship,signoff" desc:"The stage"`
+	Mode     string `json:"mode" enum:"auto,owner" desc:"auto or owner"`
+	Source   string `json:"source" enum:"workflow,setting" desc:"workflow (the workflow's declaration) or setting (rhiza.autonomy.<stage>)"`
+	Workflow string `json:"workflow,omitempty" desc:"With source workflow: the workflow that declares it"`
+}
+
+// runStageAutonomy is the response form of a journal's stage autonomy.
+func runStageAutonomy(in []run.StageAutonomy) []RunStageAutonomy {
+	var out []RunStageAutonomy
+	for _, a := range in {
+		out = append(out, RunStageAutonomy{Stage: a.Stage, Mode: a.Mode, Source: a.Source, Workflow: a.Workflow})
+	}
+	return out
 }
 
 // RunCodeCheck is one code check: rhiza check and build-check on the
@@ -578,12 +596,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if r.Autonomous && r.Milestone {
-		return nil, milestoneNeedsOwner(runStartNext)
-	}
-	if err := checkAgentSteps(ctx, def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
-		return nil, err
-	}
+	milestone := r.Milestone
 	// A request's run takes the ID the daemon drew for it: check it before
 	// a draft is opened, so a refused start leaves none.
 	var reqRun, reqMilestone, reqKind, reqWorkflow string
@@ -597,10 +610,20 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 		// A milestone request's plan plans the milestone, --milestone or not.
-		if r.Autonomous && req.Kind == daemon.KindMilestone {
-			return nil, milestoneNeedsOwner(runStartNext)
-		}
+		milestone = milestone || req.Kind == daemon.KindMilestone
 		reqRun, reqMilestone, reqKind, reqWorkflow = req.Run, req.Milestone, req.Kind, req.Workflow
+	}
+	if def, path, data, err = milestonePlanWorkflow(ctx, def, path, data, milestone); err != nil {
+		return nil, err
+	}
+	if err := planOwnerRefuses(def, path, r.Autonomous && (strings.TrimSpace(r.New) != "" || isPlanWorkflow(def.Name)), runStartNext); err != nil {
+		return nil, err
+	}
+	// Refuse a start whose agent steps cannot run before the change set or
+	// its worktree is resolved, so a refused start runs no git and writes
+	// nothing.
+	if err := checkAgentSteps(ctx, def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
+		return nil, err
 	}
 	var t changeWorktree
 	if strings.TrimSpace(r.New) != "" {
@@ -611,8 +634,18 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if r.Autonomous && (strings.TrimSpace(r.New) != "" || def.Name == planWorkflow) && planIsMilestone(ctx, t.cs.String()) {
-		return nil, milestoneNeedsOwner(runStartNext)
+	// A plan run on a record change set plans a milestone too; its
+	// plan-milestone workflow's agent steps are checked again.
+	if !milestone && def.Name == planWorkflow && planIsMilestone(ctx, t.cs.String()) {
+		if def, path, data, err = milestonePlanWorkflow(ctx, def, path, data, true); err != nil {
+			return nil, err
+		}
+		if err := planOwnerRefuses(def, path, r.Autonomous, runStartNext); err != nil {
+			return nil, err
+		}
+		if err := checkAgentSteps(ctx, def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
+			return nil, err
+		}
 	}
 	if def.Name == shipChangeWorkflow {
 		if err := checkShipLeaves(t); err != nil {
@@ -626,7 +659,12 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 	}
+	stages, err := runAutonomy(ctx, def)
+	if err != nil {
+		return nil, err
+	}
 	started := run.Started{
+		Autonomy: stages,
 		Workflow: def.Name, WorkflowPath: path, Pick: r.Pick, Definition: string(data), Includes: def.Includes,
 		Change: t.cs.String(), Title: t.title, Worktree: t.worktree, Branch: t.branch,
 		PermissionMode: r.PermissionMode, Agent: r.Agent, Autonomous: r.Autonomous, Milestone: reqMilestone,
@@ -639,7 +677,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		return RunResponse{Run: RunInfo{
 			ID: rid, Workflow: def.Name, Pick: r.Pick, Change: started.Change, Title: t.title, Worktree: t.worktree,
 			Autonomous: r.Autonomous, Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
-			Messages: []RunMessage{}, Sessions: []RunSession{},
+			Messages: []RunMessage{}, Sessions: []RunSession{}, Autonomy: runStageAutonomy(stages),
 		}, DryRun: true, Queued: !r.Foreground}, nil
 	}
 	if ctx.Getenv != nil {
@@ -664,11 +702,64 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, started.Autonomous, r.NoWait)
 }
 
-// milestoneNeedsOwner is the usage error for an autonomous plan run that
-// plans a milestone: milestone planning always needs the owner.
-func milestoneNeedsOwner(next string) error {
-	return Usagef("--autonomous is refused on a plan run that plans a milestone: milestone planning needs the owner, even in autonomous mode").
+// milestonePlanWorkflow swaps the plan workflow for plan-milestone when the
+// run plans a milestone: the built-in declares the owner for every stage, and
+// a repo changes milestone planning's autonomy by overriding it like any
+// other workflow. Any other workflow, or a plan run that plans no milestone,
+// is returned as it is.
+func milestonePlanWorkflow(ctx *Ctx, def *workflow.Definition, path string, data []byte, milestone bool) (*workflow.Definition, string, []byte, error) {
+	if !milestone || def.Name != planWorkflow {
+		return def, path, data, nil
+	}
+	p, d, src, err := resolveWorkflow(ctx.Root, planMilestoneWorkflow)
+	if err != nil {
+		return nil, "", nil, err
+	}
+	return d, p, src, nil
+}
+
+// isPlanWorkflow reports whether name is the plan or plan-milestone workflow.
+func isPlanWorkflow(name string) bool {
+	return name == planWorkflow || name == planMilestoneWorkflow
+}
+
+// planOwnerRefuses is the usage error for an autonomous plan run whose
+// workflow (def, resolved from path) declares the plan stage owner: by
+// default the built-in plan-milestone, so milestone planning needs the
+// owner. A repo override declaring the plan stage auto lifts it. It is nil
+// when autonomous is false.
+func planOwnerRefuses(def *workflow.Definition, path string, autonomous bool, next string) error {
+	if !autonomous {
+		return nil
+	}
+	if m, ok := def.Autonomy(workflow.StagePlan); !ok || m != workflow.AutonomyOwner {
+		return nil
+	}
+	return planOwnerError(def.Name, path, next)
+}
+
+// planOwnerError names the workflow whose declaration makes its plan stage
+// the owner's, and where that declaration was read (its path, or the run's
+// journal).
+func planOwnerError(name, path, next string) error {
+	return Usagef("--autonomous is refused: workflow %s (%s) declares the plan stage owner, so its plan run needs the owner; a repo .rhiza/workflows/%s.toml declaring it auto lifts this", name, path, name).
 		WithNext(next)
+}
+
+// planOwnerJournaled reports whether the run's workflow declares the plan
+// stage owner: as its journal recorded at start, or, for a journal that
+// predates the record, as the workflow resolves now.
+func planOwnerJournaled(ctx *Ctx, st run.State) bool {
+	for _, a := range st.Autonomy {
+		if a.Stage == workflow.StagePlan {
+			return a.Source == run.SourceWorkflow && a.Mode == workflow.AutonomyOwner
+		}
+	}
+	if _, def, _, err := resolveWorkflow(ctx.Root, st.Workflow); err == nil {
+		m, ok := def.Autonomy(workflow.StagePlan)
+		return ok && m == workflow.AutonomyOwner
+	}
+	return false
 }
 
 // planIsMilestone reports whether the change set is a record change set,
@@ -797,6 +888,10 @@ func newPlanChange(ctx *Ctx, r RunStartRequest, def *workflow.Definition, reqKin
 // planWorkflow is the workflow run start --new opens a change set for.
 const planWorkflow = run.PlanWorkflow
 
+// planMilestoneWorkflow is the workflow a plan run that plans a milestone
+// runs instead of plan.
+const planMilestoneWorkflow = run.PlanMilestoneWorkflow
+
 // startRun journals a new run under the change set's lock, after checking
 // that the change set has no other live run, so two starts never both begin.
 func startRun(rs *run.Store, rid string, started run.Started, now time.Time, def *workflow.Definition) error {
@@ -888,8 +983,8 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		return nil, Usagef("run %s was abandoned: %s", j.ID, st.Detail).
 			WithNext("rhiza run start " + st.Change)
 	}
-	if st.Autonomous && st.IsPlanRun() && planIsMilestone(ctx, st.Change) {
-		return nil, milestoneNeedsOwner("rhiza run status " + j.ID)
+	if st.Autonomous && st.IsPlanRun() && planOwnerJournaled(ctx, st) {
+		return nil, planOwnerError(st.Workflow, "as run "+j.ID+" journaled it", "rhiza run status "+j.ID)
 	}
 	retryStep := ""
 	switch {
@@ -2617,6 +2712,7 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 		Trigger: st.Trigger, TriggerName: st.TriggerName,
 		Autonomous: st.Autonomous, Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
 		Amendments: []RunAmendment{}, Messages: []RunMessage{}, Sessions: []RunSession{},
+		Autonomy: runStageAutonomy(st.Autonomy),
 		Warnings: slices.Clone(st.Warnings),
 	}
 	switch {
@@ -3197,6 +3293,13 @@ func runLines(w io.Writer, r RunInfo) {
 	fmt.Fprintf(w, "- Worktree: %s\n", r.Worktree)
 	if r.Autonomous {
 		fmt.Fprintf(w, "- Autonomous: yes\n")
+	}
+	for _, a := range r.Autonomy {
+		if a.Source == run.SourceWorkflow {
+			fmt.Fprintf(w, "- Autonomy %s: %s from workflow %s\n", a.Stage, a.Mode, a.Workflow)
+		} else {
+			fmt.Fprintf(w, "- Autonomy %s: %s from rhiza.autonomy.%s\n", a.Stage, a.Mode, a.Stage)
+		}
 	}
 	fmt.Fprintf(w, "- Started: %s\n", r.StartedAt)
 	if r.Current != "" {

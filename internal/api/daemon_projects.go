@@ -305,13 +305,18 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 	for range daemonRequestsWaiting(ctx) {
 		ready = append(ready, "plan request")
 	}
-	if mode, err := autonomyStage(ctx, "ship"); err == nil && mode != AutonomyOwner {
-		cands := slices.DeleteFunc(slices.Clone(fold.cands), func(cs string) bool {
-			_, ok := unjournaled[cs]
-			return ok
-		})
-		ready = append(ready, daemon.Pick(cands, runs, held, host, nil, running+len(cands), daemonShipOf(ctx.Root, fold))...)
-	}
+	// As in daemonPoll1, each candidate's ship stage is the one its
+	// dispatched workflow declares: one whose ship stage is the owner's is
+	// raised, not picked, so it claims no slot.
+	ship := daemonShipOf(ctx.Root, fold)
+	cands := slices.DeleteFunc(slices.Clone(fold.cands), func(cs string) bool {
+		if _, ok := unjournaled[cs]; ok {
+			return true
+		}
+		mode, err := workflowStageMode(ctx, ship.For(cs), "ship")
+		return err != nil || mode == AutonomyOwner
+	})
+	ready = append(ready, daemon.Pick(cands, runs, held, host, nil, running+len(cands), ship)...)
 	return ready, running
 }
 

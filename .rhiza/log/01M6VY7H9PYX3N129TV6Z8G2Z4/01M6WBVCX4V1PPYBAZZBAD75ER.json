@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6WBN6DMET1CV442RDPXM3RW"
+  ],
+  "at": "2026-11-08T01:20:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Leaf bugfix-workflow-autonomous failed all 3 attempts of round 1: attempt 1 builder failed: no new commit since 54220972edbb; attempt 2 verifier failed: verifier found 1 problem(s) (f1 Acceptance not met at 2c1be359: the commit adds only model records (the blocking question bugfix-needs-workflow-dispatch and actor records), no code and no tes…); attempt 3 verifier failed: verifier found 1 problem(s) (f1 Acceptance not met at 5242ecef: the attempt-3 commit adds only model records (a note on question bugfix-needs-workflow-dispatch plus actor records), no code or…). How should it be built, or should it change?"
+        },
+        "handle": "leaf-failed-01m6w86n-1",
+        "id": "01M6WBV4C8V31ZWE6WPBPGSFK5",
+        "key": null,
+        "kind": "question",
+        "node": "01M6WBV4C8V31ZWE6WP87S9K1B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WBV4C8V31ZWE6WP87S9K1B",
+        "id": "01M6WBV96T0CEKFW35MJYP4GYN",
+        "link": "01M6WBV96T0CEKFW35MF5NAQ9X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPW4D8366CNFT3EH72465",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WBVCX4V1PPYBAZZBAD75ER",
+  "type": "ops",
+  "v": 1
+}

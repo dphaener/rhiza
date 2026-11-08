@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WNC2K96RTV45HYFZAYM0JQ",
+  "after": [
+    "01M6WNG31ZKB1W6N7CVY56CXF1"
+  ],
+  "at": "2026-11-08T04:09:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 7e0092cc (commit adds only the builder's actor record; no code). Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(workflow-plan-autonomy|workflow-stage-autonomy|stage-autonomy|plan-workflow-autonomous|plan-workflow-autonomous-left|autonomy-accept-rule)$': all PASS, with fake rex and agents. Read the scripts against the acceptance: workflow-plan-autonomy covers plan.toml autonomous=true starting the request's plan run --autonomous under rhiza.autonomy.plan=owner, plan=owner starting it without under auto, and a ship-change plan=auto leaving plan runs unchanged; workflow-stage-autonomy covers ship=auto starting a ready change set under ship=owner, signoff=owner starting run start without --autonomous under signoff=auto, plan=auto not affecting ship, and accept=owner (both a custom workflow and a plan.toml override) leaving drafts proposed under accept=auto; stage-autonomy passes unchanged for the no-declaration fallback."
+        },
+        "handle": "stage-autonomy-from-workflow-verified-7e0092cc",
+        "id": "01M6WNGY1GCJ5A20QQT7EDG3XX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WNGY1GCJ5A20QQT50BPH2E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WNGY1GCJ5A20QQT50BPH2E",
+        "id": "01M6WNGYFSVXKXCZFAHB129KZ9",
+        "link": "01M6WNGYFSVXKXCZFAHAEPGA01",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVPYWCJVW98YSSNWHPDP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WNGYN5AB0BCAKE2WE4STAV",
+  "type": "ops",
+  "v": 1
+}

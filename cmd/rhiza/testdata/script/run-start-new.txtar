@@ -16,6 +16,7 @@ exec git add -A
 exec git commit -qm init
 mkdir .rhiza/workflows
 cp $WORK/plan.toml .rhiza/workflows/plan.toml
+cp $WORK/plan.toml .rhiza/workflows/plan-milestone.toml
 cp $WORK/other.toml .rhiza/workflows/other.toml
 exec rhiza change new 'Existing' --title 'Existing' --json
 stdout '"change_set": "(01[0-9A-Z]{24})"'

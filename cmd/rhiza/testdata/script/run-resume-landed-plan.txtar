@@ -11,6 +11,7 @@ exec git add -A
 exec git commit -qm init
 mkdir .rhiza/workflows
 cp $WORK/plan.toml .rhiza/workflows/plan.toml
+cp $WORK/plan.toml .rhiza/workflows/plan-milestone.toml
 
 # A plan run stops at its wait; its record then lands.
 exec rhiza change new 'Plan P' --kind record --title 'Plan P' --json

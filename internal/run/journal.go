@@ -219,6 +219,10 @@ type Started struct {
 	// MilestonePlan is true for the plan run of a milestone request: its
 	// interview session waits on the owner from launch.
 	MilestonePlan bool `json:"milestone_plan,omitempty"`
+	// Autonomy is the autonomy each stage had when the run started and
+	// where it came from, in stage order; empty for a run started before
+	// it was recorded.
+	Autonomy []StageAutonomy `json:"autonomy,omitempty"`
 	// Plan is true for a run started with --new (a request's plan run),
 	// whatever workflow it runs.
 	Plan bool `json:"plan,omitempty"`
@@ -227,6 +231,22 @@ type Started struct {
 	Trigger     string `json:"trigger,omitempty"`
 	TriggerName string `json:"trigger_name,omitempty"`
 }
+
+// StageAutonomy is one stage's autonomy mode (auto or owner) and its
+// source: SourceWorkflow, the declaration of the workflow named Workflow,
+// or SourceSetting, the rhiza.autonomy.<stage> setting.
+type StageAutonomy struct {
+	Stage    string `json:"stage"`
+	Mode     string `json:"mode"`
+	Source   string `json:"source"`
+	Workflow string `json:"workflow,omitempty"`
+}
+
+// The sources of a stage's autonomy.
+const (
+	SourceWorkflow = "workflow"
+	SourceSetting  = "setting"
+)
 
 // TriggerSchedule is the Started.Trigger of a run a [[schedules]] entry
 // started.
@@ -1055,6 +1075,8 @@ type State struct {
 	Milestone string
 	// MilestonePlan is the started entry's MilestonePlan.
 	MilestonePlan bool
+	// Autonomy is the started entry's Autonomy.
+	Autonomy []StageAutonomy
 	// Plan is the started entry's Plan.
 	Plan bool
 	// Current is the step entered and not ended, or the next step to
@@ -1348,6 +1370,7 @@ func (j Journal) State() State {
 				st.Autonomous = s.Autonomous
 				st.Milestone = s.Milestone
 				st.MilestonePlan = s.MilestonePlan
+				st.Autonomy = s.Autonomy
 				st.Plan = s.Plan
 			}
 		case TypeProcess:
@@ -1805,8 +1828,15 @@ func (st State) Abandoned() bool {
 // PlanWorkflow is the built-in workflow a request's plan run uses by default.
 const PlanWorkflow = "plan"
 
+// PlanMilestoneWorkflow is the built-in workflow a plan run that plans a
+// milestone runs instead of plan.
+const PlanMilestoneWorkflow = "plan-milestone"
+
 // IsPlanRun reports whether the run is a plan run: started with --new (for
-// a request or not), or, for a journal that predates that mark, running the
-// plan workflow. It does not depend on the workflow's name otherwise, since
-// a dispatch rule may map a request to any workflow.
-func (s State) IsPlanRun() bool { return s.Plan || s.Workflow == PlanWorkflow }
+// a request or not), or running the plan or plan-milestone workflow (a
+// journal that predates that mark, or a milestone's plan run started on its
+// record change set). It does not depend on the workflow's name otherwise,
+// since a dispatch rule may map a request to any workflow.
+func (s State) IsPlanRun() bool {
+	return s.Plan || s.Workflow == PlanWorkflow || s.Workflow == PlanMilestoneWorkflow
+}

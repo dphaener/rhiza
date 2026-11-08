@@ -1,0 +1,269 @@
+# A repo workflow declaring autonomous = true, picked for bug requests by
+# workflow dispatch, takes a bug request from its plan run through its ship
+# run with no owner step while rhiza.autonomy.plan and rhiza.autonomy.signoff
+# stay owner: the plan run starts autonomous, its gate accepts the change
+# set, the daemon starts the ship run autonomous, and the run ends signed
+# off by rule autonomous. At no point does the owner's inbox hold an item.
+#
+# The repo's bugfix and bugfix-ship workflows are trimmed to the steps that
+# carry the autonomy (the planner's interview and the gate; one review check,
+# the sign-off, the push, the PR's check and the land): the build, review and
+# merge machinery is covered by its own scripts. Rex, claude and gh are fakes
+# (gh answers pr view from the bare origin: PR #7 open with every check
+# passed at the branch's head); the daemon's detached starts only log, so the
+# script runs each logged start by hand.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+env CLAUDE_CONFIG_DIR=$WORK/claude
+env RHIZA_TEST_FREE_BYTES=1099511627776
+mkdir $HOME/.claude/projects/p
+exec git init -q --bare origin.git
+env ORIGIN=$WORK/origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec sh -c 'printf "[request]\nbug = \"bugfix\"\n\n[ready]\nbug = \"bugfix-ship\"\n" > .rhiza/dispatch.toml'
+mkdir .rhiza/workflows
+cp $WORK/bugfix.toml .rhiza/workflows/bugfix.toml
+cp $WORK/bugfix-ship.toml .rhiza/workflows/bugfix-ship.toml
+exec rhiza add intent ms --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+exec git push -q -u origin main
+exec git config rhiza.autonomy.plan owner
+exec git config rhiza.autonomy.signoff owner
+
+# The plan run of a queued bug request starts autonomous by the declaration,
+# although rhiza.autonomy.plan is owner.
+env FAKE_REX_DAEMON=1
+exec rhiza request --kind bug 'Crash'
+exec rhiza daemon --permission-mode manual --once
+stdout '^Started the plan run of request '
+exec sh -c 'grep -c -e "--workflow bugfix --pick rule request.bug --new Fix Crash --request .* --autonomous" $WORK/detach.log'
+stdout '^1$'
+exec sh -c 'rhiza request ls --json | sed -n "s/^      \"id\": \"\(.*\)\",$/\1/p" | tr -d "\n" > $WORK/req'
+exec rhiza inbox --json
+! stdout '"kind"'
+
+env FAKE_REX_DAEMON=
+env REX_BLOCK=block:root
+env REX_SESSION=session:s1
+exec sh -c 'rhiza run start --foreground --workflow bugfix --new "Fix Crash" --request $(cat $WORK/req) --permission-mode manual --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/out
+stdout '^Run [0-9A-Z]{26} succeeded$'
+stdout '^- Autonomous: yes$'
+exec cat $WORK/err
+! stdout 'state=blocked'
+exec rhiza run status
+stdout '^- gate \(visit 1\): pass'
+exec sh -c 'grep -c "\"type\":\"accepted\"" .git/rhiza/runs/*.jsonl'
+stdout '^1$'
+exec git clean -fdq
+exec git merge -q --no-edit cs/fix-crash
+exec git push -q origin main
+exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
+stdout '"rule": "autonomous"'
+exec rhiza inbox --json
+! stdout '"kind"'
+
+# The plan's change set is accepted, a bug's: the daemon starts its ship run
+# with the repo's bugfix-ship workflow, autonomous by the declaration though
+# rhiza.autonomy.signoff is owner. The run signs off by rule, pushes, sees
+# its PR green and lands the change set.
+exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
+stdout '"state": "accepted"'
+exec rm $WORK/detach.log
+env FAKE_REX_DAEMON=1
+exec rhiza daemon --permission-mode manual --autonomous --once
+stdout '^Started a run of '
+exec sh -c 'grep -c -e "run start --foreground $(cat $WORK/cs) --permission-mode manual --workflow bugfix-ship --pick rule ready.bug --autonomous" $WORK/detach.log'
+stdout '^1$'
+env FAKE_REX_DAEMON=
+exec sh -c 'rhiza run start --foreground $(cat $WORK/cs) --workflow bugfix-ship --permission-mode manual --autonomous > $WORK/out2 2> $WORK/err2; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/out2
+stdout '^Run [0-9A-Z]{26} succeeded$'
+stdout '^- signoff \(visit 1\): pass, then push: approved by rule autonomous$'
+stdout '^- land \(visit 1\): pass'
+exec cat $WORK/err2
+stdout 'step signoff: signed off under rule autonomous'
+exec sh -c 'grep -h "\"type\":\"signoff\"" .git/rhiza/runs/*.jsonl'
+stdout '"outcome":"approved"'
+stdout '"rule":"autonomous"'
+! stdout '"actor"'
+exec grep -c '^pr view cs/fix-crash' $WORK/gh.log
+! stdout '^0$'
+# The land entry is committed and pushed on the run's branch, in its worktree.
+exec sh -c 'cd $WORK/repo.fix-crash && rhiza change show $(cat $WORK/cs) --json'
+stdout '"state": "landed"'
+exec sh -c 'git -C $WORK/repo.fix-crash rev-parse HEAD > $WORK/head; git -C $ORIGIN rev-parse cs/fix-crash > $WORK/pushed; cmp $WORK/head $WORK/pushed && echo same'
+stdout '^same$'
+exec rhiza inbox --json
+! stdout '"kind"'
+fold-ok
+
+-- bugfix.toml --
+name = "bugfix"
+autonomous = true
+
+[step.interview]
+kind = "agent"
+prompt = "/rhiza-plan Plan change set {change} ({title})"
+until = "true"
+until_when = "done"
+interval = "50ms"
+on.pass = "gate"
+
+[step.gate]
+kind = "command"
+run = "rhiza run gate"
+-- bugfix-ship.toml --
+name = "bugfix-ship"
+autonomous = true
+
+[step.review]
+kind = "checks"
+interval = "50ms"
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+on.pass = "push"
+on.changes = "review"
+
+[step.push]
+kind = "command"
+run = "git push -q -u origin HEAD"
+on.pass = "pr-green"
+
+[step.pr-green]
+kind = "command"
+run = "rhiza ship check"
+on.pass = "land"
+
+[step.land]
+kind = "command"
+run = "rhiza ship land"
+on.pass = "done"
+-- leaf.json --
+{"writes":[
+  {"op":"add","kind":"capability","handle":"fix-crash","fields":[
+    "statement=The export no longer crashes on an empty report",
+    "acceptance=A test exports an empty report"]}
+]}
+-- clean.json --
+{"findings":[]}
+-- bin/rex --
+#!/bin/sh
+if [ -n "$FAKE_REX_DAEMON" ]; then
+	echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+	exit 0
+fi
+case "$1" in
+events)
+	exit 0
+	;;
+send | send-key)
+	exit 0
+	;;
+esac
+case "$1 $2" in
+"window close" | "block close")
+	exit 0
+	;;
+"block call")
+	echo '{"columns":200,"rows":50,"cell_width_px":8,"cell_height_px":16}'
+	exit 0
+	;;
+esac
+verb=$1
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+i=0
+until [ -f "$WORK/ready" ]; do
+	i=$((i + 1))
+	if [ $i -gt 1600 ]; then
+		echo 'fake rex: the agent never got ready' >&2
+		exit 1
+	fi
+	sleep 0.025
+done
+rm -f "$WORK/ready"
+if [ "$verb" = split ]; then
+	echo '{"block_id":"block:b2","window_id":"window:w1"}'
+else
+	echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+fi
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+fail() {
+	echo "fake claude: $*" >> "$WORK/claude.err"
+	touch "$WORK/ready"
+	exit 1
+}
+case "$last" in
+/rhiza-plan*)
+	[ "$RHIZA_AUTONOMOUS" = 1 ] || fail not autonomous
+	touch "$WORK/ready"
+	echo "$RHIZA_CHANGE" > "$WORK/cs"
+	rhiza apply "$WORK/leaf.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" 2>&1 || { cat "$WORK/agent.out" >> "$WORK/claude.err"; exit 8; }
+	rhiza run findings "$WORK/clean.json" --json >> "$WORK/agent.out" 2>&1 || exit 9
+	rhiza session done >> "$WORK/done.out" || exit 10
+	exit 0
+	;;
+*"as check"*)
+	touch "$WORK/ready"
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/clean.json" >> "$WORK/agent.out" 2>&1 || exit 1
+	exit 0
+	;;
+*)
+	fail "unexpected prompt: $last"
+	;;
+esac
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+case "$1 $2" in
+"pr view")
+	if ! head=$(git -C "$ORIGIN" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	printf '{"body":"Change set '"$RHIZA_CHANGE"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

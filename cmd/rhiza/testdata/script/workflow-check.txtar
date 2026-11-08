@@ -71,6 +71,13 @@ exec rhiza api call workflow.check '{"workflow":"build"}'
 cmp stdout ok.json
 stdout '"valid": true'
 
+# an autonomy declaration is checked: a bad value, both forms
+exec rhiza workflow check $WORK/good-autonomy.toml
+! exec rhiza workflow check $WORK/bad-autonomy.toml
+stdout 'autonomy.ship: maybe is not a mode'
+! exec rhiza workflow check $WORK/both-autonomy.toml
+stdout 'autonomous and \[autonomy\] are both set'
+
 # nothing was written
 fold-ok
 
@@ -179,3 +186,29 @@ start = "build"
 kind = "agent"
 permission_mode = "bypassPermissions"
 prompt = "Build {change}"
+-- bad-autonomy.toml --
+name = "bad-autonomy"
+
+[autonomy]
+ship = "maybe"
+
+[step.build]
+kind = "command"
+run = "make"
+-- both-autonomy.toml --
+name = "both-autonomy"
+autonomous = true
+
+[autonomy]
+plan = "auto"
+
+[step.build]
+kind = "command"
+run = "make"
+-- good-autonomy.toml --
+name = "good-autonomy"
+autonomous = true
+
+[step.build]
+kind = "command"
+run = "make"

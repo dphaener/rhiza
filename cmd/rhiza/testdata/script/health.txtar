@@ -31,6 +31,22 @@ cp stdout ../health.json
 exec rhiza api call health
 cmp stdout ../health.json
 
+# With no repo declaration only the built-in plan-milestone is listed.
+stdout 'workflow plan-milestone \(builtin:plan-milestone\): plan owner, accept owner, ship owner, signoff owner'
+! stdout 'workflow bugfix'
+
+# A repo workflow declaring autonomous = true is listed with its file.
+mkdir .rhiza/workflows
+cp ../bugfix.toml .rhiza/workflows/bugfix.toml
+exec rhiza health
+stdout 'workflow bugfix \(.rhiza/workflows/bugfix.toml\): plan auto, accept auto, ship auto, signoff auto'
+stdout 'workflow plan-milestone \(builtin:plan-milestone\): plan owner, accept owner, ship owner, signoff owner'
+exec rhiza health --json
+cp stdout ../health-wf.json
+exec rhiza api call health
+cmp stdout ../health-wf.json
+rm .rhiza/workflows/bugfix.toml
+
 # Free space under the minimum makes disk bad, and health exits 1.
 env RHIZA_TEST_FREE_BYTES=100
 ! exec rhiza health
@@ -77,6 +93,14 @@ stdout '^bad  check    1 failing, 0 warnings$'
 stdout 'fail render: '
 
 
+-- bugfix.toml --
+name = "bugfix"
+autonomous = true
+
+[step.go]
+kind = "command"
+run = "true"
+on.pass = "done"
 -- notes.txt --
 notes
 -- stale.json --

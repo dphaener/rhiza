@@ -1,0 +1,41 @@
+{
+  "actor": "01M6WBVZRHRANCWXY614K1NP23",
+  "after": [
+    "01M6WBVCX4V1PPYBAZZBAD75ER"
+  ],
+  "at": "2026-11-08T01:21:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "All three attempts failed for one reason, and retrying will not change it. The leaf's statement says the workflow is 'picked for bug requests by workflow dispatch', and its acceptance needs bugfix.toml mapped to kind bug. Dispatch is not on this branch or on origin/main (b696b22c has no internal/dispatch, and planRunArgs in internal/api/request.go:393 still picks only plan or plan-milestone). Attempt 2 already recorded this as question bugfix-needs-workflow-dispatch, and attempt 3 confirmed it. Builders that cannot write the code produce commits with only model records, which the verifier rightly rejects. The change set's intent names this end-to-end bug flow as its acceptance, so weakening or dropping the leaf would remove the change set's proof that it works. Merging the dispatch branch in would ship another change set inside this one, which the builder's note warned against. So the right answer is to sequence the leaf after dispatch, not to rebuild it now or reshape it.",
+          "statement": "Leaf bugfix-workflow-autonomous keeps its statement and acceptance unchanged and is not rebuilt until workflow dispatch (change set 01M6VY7G6HPJC3V0Q18E8EF9ZA) has landed on main. Then merge origin/main into cs/autonomy-per-workflow and build the leaf as specified: the testscript with a repo .rhiza/workflows/bugfix.toml (autonomous = true) mapped to kind bug, plan and signoff settings owner, the bug request going from plan run through gate and ship run with no owner inbox item. Do not merge cs/workflow-dispatch into this branch, and do not weaken the acceptance to pick the workflow some other way. Until dispatch lands the leaf stays blocked by bugfix-needs-workflow-dispatch; if this change set has to ship first, move the leaf into a follow-up change set that depends on dispatch rather than dropping it.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "bugfix-autonomous-waits-for-dispatch",
+        "id": "01M6WBX7DB8E3B3EY78SGT4FZM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6WBX7DB8E3B3EY78RTNRTT0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WBX7DB8E3B3EY78RTNRTT0",
+        "id": "01M6WBX7FGEG92MT85E2WYE1BH",
+        "link": "01M6WBX7FGEG92MT85DZYKCACR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WBV4C8V31ZWE6WP87S9K1B",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WBX7J1NZSV5JXCT1M9K8JK",
+  "type": "ops",
+  "v": 1
+}

@@ -20,6 +20,7 @@ exec git init -q
 exec rhiza init
 mkdir .rhiza/workflows
 cp $WORK/plan.toml .rhiza/workflows/plan.toml
+cp $WORK/plan.toml .rhiza/workflows/plan-milestone.toml
 exec git add -A
 exec git commit -qm init
 
@@ -38,11 +39,6 @@ stdout '^state=working state=blocked state=done $'
 # A feature plan run: none.
 exec rhiza run start --foreground --workflow plan --new 'Add exports' --permission-mode manual --json
 stdout '"state": "succeeded"'
-! stderr 'state=blocked'
-
-# An autonomous milestone run: refused before it starts, so none.
-! exec rhiza run start --foreground --workflow plan --new 'Backlog again' --milestone --autonomous --permission-mode manual --json
-stdout 'milestone planning needs the owner'
 ! stderr 'state=blocked'
 
 -- plan.toml --
