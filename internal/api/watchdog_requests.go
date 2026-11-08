@@ -72,7 +72,7 @@ func watchdogRequests(pol WatchdogPolicy, reqs []daemon.Request, journals []run.
 			fail(fmt.Errorf("resume plan run %s: %w", r.Run, err))
 			continue
 		}
-		mem[i].Spent++
+		d.charge(&mem[i], fmt.Sprintf("request %s: %s: resumed with --retry", r.ID, why))
 		d.log("watchdog: request %s: %s: resumed run %s with --retry (budget %d of %d)", r.ID, why, r.Run, mem[i].Spent, pol.RetryBudget)
 	}
 	return mem, first

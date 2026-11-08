@@ -47,7 +47,19 @@ type watchdogDeps struct {
 	merge func(st run.State) (watchdogMerge, error)
 	// requests reads the plan request queue; nil is none.
 	requests func() ([]daemon.Request, error)
-	log      func(format string, args ...any)
+	// now is the clock stamping journalled attempts; nil stamps none.
+	now func() time.Time
+	log func(format string, args ...any)
+}
+
+// charge spends one retry of m's budget and journals the recovery tried.
+func (d watchdogDeps) charge(m *daemon.WatchdogRun, action string) {
+	var at time.Time
+	if d.now != nil {
+		at = d.now()
+	}
+	m.Spent++
+	m.Attempts = append(m.Attempts, daemon.WatchdogAttempt{At: at, Action: action})
 }
 
 // watchdogProgress is the latest sign of life of st's current step: the last
@@ -159,7 +171,7 @@ func watchdogStalled(pol WatchdogPolicy, journals []run.Journal, now time.Time, 
 			fail(fmt.Errorf("resume run %s: %w", j.ID, err))
 			continue
 		}
-		cur.Spent++
+		d.charge(cur, fmt.Sprintf("step %s stalled: stopped and resumed with --retry", st.Current))
 		cur.Nudged = false
 		d.log("watchdog: run %s step %s silent since %s: stopped and resumed with --retry (budget %d of %d)", j.ID, st.Current, at.UTC().Format(time.RFC3339), cur.Spent, pol.RetryBudget)
 	}
@@ -201,6 +213,7 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 			_, err := queueContinue(ctx, common, id, true, false)
 			return err
 		},
+		now: ctx.Now,
 		log: func(format string, args ...any) {
 			if ctx.Stderr != nil {
 				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: "+format+"\n", args...)
@@ -282,7 +295,43 @@ func watchdogPasses(pol WatchdogPolicy, all []run.Journal, live func(id string) 
 	if err == nil {
 		err = terr
 	}
-	return mem, holds, err
+	return mem, watchdogBudgetHolds(pol, all, mem, holds), err
+}
+
+// watchdogBudgetHolds adds, for each run that is not done well and whose
+// budget is spent, one hold listing every attempt; it replaces any other
+// hold on that run, so the owner gets one item. The hold's time is the last
+// attempt's, so its inbox item stays the same across polls.
+func watchdogBudgetHolds(pol WatchdogPolicy, all []run.Journal, mem []daemon.WatchdogRun, holds []daemon.WatchdogHold) []daemon.WatchdogHold {
+	for _, m := range mem {
+		if len(m.Attempts) == 0 || m.Spent < pol.RetryBudget {
+			continue
+		}
+		i := slices.IndexFunc(all, func(j run.Journal) bool { return j.ID == m.Run })
+		if i < 0 {
+			continue
+		}
+		st := all[i].State()
+		if st.Ended && st.Result != run.Failed {
+			continue
+		}
+		step := st.Current
+		if st.Ended {
+			if s, err := st.FailedStep(); err == nil {
+				step = s
+			}
+		}
+		var tried []string
+		for _, a := range m.Attempts {
+			tried = append(tried, fmt.Sprintf("%s at %s", a.Action, a.At.UTC().Format(time.RFC3339)))
+		}
+		holds = slices.DeleteFunc(holds, func(h daemon.WatchdogHold) bool { return h.Run == m.Run })
+		holds = append(holds, daemon.WatchdogHold{
+			Run: m.Run, Change: st.Change, Step: step, Since: m.Attempts[len(m.Attempts)-1].At,
+			Detail: fmt.Sprintf("the watchdog's retry budget of %d is spent and it acts on this run no more; it tried: %s", pol.RetryBudget, strings.Join(tried, "; ")),
+		})
+	}
+	return holds
 }
 
 // transientSignatures are the failure outputs a rerun is expected to clear:
@@ -341,7 +390,7 @@ func watchdogTransient(pol WatchdogPolicy, journals []run.Journal, live func(id 
 			}
 			continue
 		}
-		mem[i].Spent++
+		d.charge(&mem[i], fmt.Sprintf("step %s failed on a transient error (%q): resumed with --retry", step, sig))
 		d.log("watchdog: run %s step %s failed on a transient error (%q): resumed with --retry (budget %d of %d)", j.ID, step, sig, mem[i].Spent, pol.RetryBudget)
 	}
 	return mem, first
@@ -517,7 +566,7 @@ func watchdogCIRerun(pol WatchdogPolicy, journals []run.Journal, live func(id st
 				fail(fmt.Errorf("resume run %s: %w", j.ID, err))
 				continue
 			}
-			m.Spent++
+			d.charge(m, fmt.Sprintf("step %s: CI passed after the rerun on %s: resumed with --retry", step, shortSHA(pr.Head)))
 			m.CIResumed = true
 			d.log("watchdog: run %s step %s: CI passed after the rerun on %s: resumed with --retry (budget %d of %d)", j.ID, step, shortSHA(pr.Head), m.Spent, pol.RetryBudget)
 			continue

@@ -168,7 +168,7 @@ func watchdogPRNoCI(pol WatchdogPolicy, journals []run.Journal, live func(id str
 				fail(fmt.Errorf("resume run %s: %w", j.ID, err))
 				return false
 			}
-			m.Spent++
+			d.charge(m, fmt.Sprintf("step %s: PR has no CI: resumed with --retry", step))
 			return true
 		}
 		switch {

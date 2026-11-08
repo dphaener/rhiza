@@ -198,6 +198,9 @@ type WatchdogRun struct {
 	Nudged   bool      `json:"nudged,omitempty"`
 	// Spent is the retries charged to the run's watchdog budget.
 	Spent int `json:"spent,omitempty"`
+	// Attempts journals each recovery charged to the budget, oldest first,
+	// so a restarted daemon still knows what was tried.
+	Attempts []WatchdogAttempt `json:"attempts,omitempty"`
 	// CIHead is the PR head whose failed CI jobs the watchdog reran, and
 	// CIResumed that the run was resumed once they passed: a head is
 	// rerun once.
@@ -207,6 +210,12 @@ type WatchdogRun struct {
 	// found its change set with no open PR: while the journal ends there,
 	// the green-but-unmerged pass reads that PR no more.
 	PRGone time.Time `json:"pr_gone,omitzero"`
+}
+
+// WatchdogAttempt is one recovery the watchdog tried on a run.
+type WatchdogAttempt struct {
+	At     time.Time `json:"at"`
+	Action string    `json:"action"`
 }
 
 // WatchdogHold is a stalled step the watchdog only reports.
