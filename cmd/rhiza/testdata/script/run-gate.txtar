@@ -135,7 +135,7 @@ exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run findings $WORK/findings.json'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run verdict $WORK/verdict.json'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) RHIZA_STEP=check rhiza run review-check --json'
 stdout '"passed": true'
-exec sh -c 'echo review-$(cut -c1-8 $WORK/runc | tr A-Z a-z)-r3-f1 > $WORK/qc'
+exec sh -c 'echo review-$(tr A-Z a-z < $WORK/runc)-r3-f1 > $WORK/qc'
 exec rhiza land
 exec sh -c 'rhiza change new "Serve C one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/c1'
 exec sh -c 'rhiza link $(cat $WORK/c1) serves want-c'
@@ -144,8 +144,8 @@ exec sh -c 'rhiza link $(cat $WORK/c2) serves want-c'
 
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run gate; echo exit=$?'
 stdout '^exit=75$'
-stdout 'review-[0-9a-z]{8}-r3-f1 \(01[0-9A-Z]{24}\)'
-stdout 'stop: open questions: review-[0-9a-z]{8}-r3-f1'
+stdout 'review-[0-9a-z]{26}-r3-f1 \(01[0-9A-Z]{24}\)'
+stdout 'stop: open questions: review-[0-9a-z]{26}-r3-f1'
 ! stdout 'accepted'
 # Named once in the list and once on the stop line.
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run gate 2>&1 | grep -c "$(cat $WORK/qc)"'
@@ -196,7 +196,7 @@ exec sh -c 'RHIZA_RUN=$(cat $WORK/rune) rhiza run findings $WORK/findings-e.json
 exec sh -c 'RHIZA_RUN=$(cat $WORK/rune) rhiza run verdict $WORK/verdict.json'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/rune) RHIZA_STEP=check rhiza run review-check --json'
 stdout '"passed": true'
-exec sh -c 'echo review-$(cut -c1-8 $WORK/rune | tr A-Z a-z)-r3-f1 > $WORK/qe'
+exec sh -c 'echo review-$(tr A-Z a-z < $WORK/rune)-r3-f1 > $WORK/qe'
 exec rhiza land
 exec sh -c 'rhiza change new "Serve E one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/e1'
 exec sh -c 'rhiza link $(cat $WORK/e1) serves want-e'
@@ -204,7 +204,7 @@ exec sh -c 'rhiza add question pq-e --field "statement=Which disk?" --change $(c
 exec sh -c 'RHIZA_RUN=$(cat $WORK/rune) rhiza run gate --json 2>&1; true'
 stdout '"open": \['
 stdout '"handle": "pq-e"'
-stdout 'review-[0-9a-z]{8}-r3-f1'
+stdout 'review-[0-9a-z]{26}-r3-f1'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/rune) rhiza run gate 2>&1; true'
 stdout 'question\(s\)'
 exec rhiza add decision ans-e1 --field 'statement=Settled one' --record
@@ -228,7 +228,7 @@ exec sh -c 'RHIZA_RUN=$(cat $WORK/runf) rhiza run findings $WORK/findings-f.json
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runf) rhiza run verdict $WORK/verdict.json'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runf) RHIZA_STEP=check rhiza run review-check --json'
 stdout '"passed": true'
-exec sh -c 'echo review-$(cut -c1-8 $WORK/runf | tr A-Z a-z)-r3-f1 > $WORK/qf'
+exec sh -c 'echo review-$(tr A-Z a-z < $WORK/runf)-r3-f1 > $WORK/qf'
 exec rhiza land
 exec sh -c 'rhiza change new "Serve F one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/f1'
 exec sh -c 'rhiza link $(cat $WORK/f1) serves want-f'

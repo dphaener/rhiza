@@ -1,0 +1,71 @@
+# run review-check names its questions with the run's full ID, so two runs
+# started together never share a handle. When that handle is taken by an
+# unrelated node it takes review-<id>-r3-f1-2 and journals it; a second
+# check adds nothing and finds the question by the journal.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Handles' --title 'Handles' --json
+exec rhiza add capability cap-a --field 'statement=Does A'
+mkdir .rhiza/workflows
+cp $WORK/hold.toml .rhiza/workflows/hold.toml
+exec rhiza run start --foreground --workflow hold --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/run1'
+exec rhiza change new 'Handles two' --title 'Handles two' --json
+exec rhiza add capability cap-b --field 'statement=Does B'
+exec rhiza run start --foreground --workflow hold --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/run1 > $WORK/run2'
+
+# Take run 1's full-ID handle with an unrelated node.
+exec sh -c 'rhiza add question review-$(tr A-Z a-z < $WORK/run1)-r3-f1 --field "statement=Unrelated"'
+
+# Both runs reach round 3 with f1 confirmed.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/run1) rhiza run findings $WORK/findings.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/run1) rhiza run findings $WORK/findings.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/run1) rhiza run findings $WORK/findings.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/run1) rhiza run verdict $WORK/verdict.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/run2) rhiza run findings $WORK/findings2.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/run2) rhiza run findings $WORK/findings2.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/run2) rhiza run findings $WORK/findings2.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/run2) rhiza run verdict $WORK/verdict.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/run1) RHIZA_STEP=check rhiza run review-check --json'
+stdout '"handle": "review-[0-9a-z]{26}-r3-f1-2"'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/run2) RHIZA_STEP=check rhiza run review-check --json'
+stdout '"handle": "review-[0-9a-z]{26}-r3-f1"'
+! stdout 'f1-2'
+
+# Run 1's journal holds the handle it used.
+exec sh -c 'grep "\"type\":\"asked\"" .git/rhiza/runs/$(cat $WORK/run1).jsonl'
+stdout 'r3-f1-2"'
+
+# A second check adds nothing: no new question, one entry for run 1.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/run1) rhiza run review-check --json'
+stdout '"handle": "review-[0-9a-z]{26}-r3-f1-2"'
+stdout '"added": false'
+exec sh -c 'rhiza ls --kind question --json | grep -c "\"handle\": \"review-"'
+stdout '^2$'
+exec sh -c 'grep -c "\"type\":\"asked\"" .git/rhiza/runs/$(cat $WORK/run1).jsonl'
+stdout '^1$'
+
+fold-ok
+
+-- hold.toml --
+name = "hold"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- findings.json --
+{"findings":[{"node":"cap-a","kind":"missing-acceptance","reason":"No acceptance criteria"}]}
+-- findings2.json --
+{"findings":[{"node":"cap-b","kind":"missing-acceptance","reason":"No acceptance criteria"}]}
+-- verdict.json --
+{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"It has none"}]}
