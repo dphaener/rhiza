@@ -581,7 +581,7 @@ func TestRetire(t *testing.T) {
 		mustWrite(t, ctx, "set", `{"ref":"store","fields":["acceptance=1"]}`)
 		r := mustWrite(t, ctx, "retire", `{"ref":"store","reason":"Gone"}`)
 		ops := opsOf(t, ctx, cs)
-		if len(ops) != 2 || ops[1].Type != op.TypeNodeRetire || ops[1].Base != n.Version || ops[1].Reason != "Gone" {
+		if len(ops) != 1 || ops[0].Type != op.TypeNodeRetire || ops[0].Base != n.Version || ops[0].Reason != "Gone" {
 			t.Fatalf("ops = %+v", ops)
 		}
 		if !slices.Equal(r.Nodes, []id.ID{n.ID}) {
@@ -589,6 +589,24 @@ func TestRetire(t *testing.T) {
 		}
 		_, err := callOp(t, ctx, "retire", `{"ref":"`+n.ID.String()+`","reason":"Again"}`)
 		wantExit(t, err, 3)
+	})
+
+	t.Run("AfterUpdateLands", func(t *testing.T) {
+		ctx, cs := writeCtx(t)
+		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"store","fields":["statement=Old"]}`)
+		n := nodeAt(t, ctx, "store")
+		mustWrite(t, ctx, "set", `{"ref":"store","fields":["acceptance=1","statement=New"],"handle":"stash"}`)
+		mustWrite(t, ctx, "retire", `{"ref":"stash","reason":"Gone"}`)
+		ops := opsOf(t, ctx, cs)
+		if len(ops) != 1 || ops[0].Type != op.TypeNodeRetire || ops[0].Base != n.Version {
+			t.Fatalf("ops = %+v", ops)
+		}
+		for _, s := range []string{"propose", "accept", "land"} {
+			move(t, ctx, s, `{}`)
+		}
+		if got, err := ctxWorkspace(t, ctx).model(cs).Resolve(n.ID.String()); err != nil || !got.Retired {
+			t.Errorf("node after land = %+v, %v", got, err)
+		}
 	})
 
 	t.Run("CreatedHereIsDropped", func(t *testing.T) {
@@ -1012,7 +1030,7 @@ func TestStackedWrites(t *testing.T) {
 				}
 			}
 		}
-		if want := []op.Type{op.TypeNodeUpdate, op.TypeNodeMove, op.TypeNodeRetire}; !slices.Equal(kinds, want) {
+		if want := []op.Type{op.TypeNodeRetire}; !slices.Equal(kinds, want) {
 			t.Errorf("ops on base = %v, want %v", kinds, want)
 		}
 		// A's own view is unchanged.

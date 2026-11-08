@@ -353,7 +353,9 @@ func buildMv(b writeBase, r MvRequest) (edit, error) {
 
 // buildRetire adds a node.retire against the node's version. A node created
 // in this change set is dropped instead: its create, every other op on it,
-// and the links created here that end at it.
+// and the links created here that end at it. On a landed node the change
+// set's pending updates and moves are dropped and the retire is based on
+// the landed version.
 func buildRetire(b writeBase, r RetireRequest) (edit, error) {
 	if strings.TrimSpace(r.Reason) == "" {
 		return edit{}, Usagef("retire needs a --reason").WithNext("rhiza describe retire")
@@ -385,6 +387,10 @@ func buildRetire(b writeBase, r RetireRequest) (edit, error) {
 	if err != nil {
 		return edit{}, err
 	}
+	// Pending updates and moves on a landed node are dropped: the retire
+	// supersedes them, and based on the landed version it is not stale
+	// against this change set's own earlier ops.
+	e.drop = append(e.drop, n.Pending...)
 	e.ops = []op.Op{{ID: opID, Type: op.TypeNodeRetire, Node: n.ID, Base: n.Version, Reason: r.Reason}}
 	return e, nil
 }
