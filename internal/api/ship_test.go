@@ -1736,3 +1736,48 @@ func TestShipCheckRefusesForeignPR(t *testing.T) {
 		}
 	}
 }
+
+const (
+	gitMergeBaseAbc = "git merge-base refs/remotes/origin/main abc1234def"
+	gitDiffAbc      = "git diff --name-only base111 abc1234def"
+)
+
+// A red head after its reruns names the count, the failing tests and, when
+// the diff is .rhiza-only, that fact: never a claim about the cause.
+func TestShipCheckFailureDetailNotes(t *testing.T) {
+	const logCall = "run view 42 --log-failed"
+	const testLog = "test\tRun\t--- FAIL: TestGarden (0.1s)\n"
+	cases := []struct{ name, diff, check, log, want string }{
+		{"rhiza only", ".rhiza/log/x.json\n.rhiza/rendered/a.md\n", "test", testLog,
+			"failed: test after 2 reruns; failing tests: TestGarden; the PR changes only .rhiza/"},
+		{"other path", ".rhiza/log/x.json\nmain.go\n", "test", testLog,
+			"failed: test after 2 reruns; failing tests: TestGarden"},
+		{"reads rhiza", ".rhiza/rendered/a.md\n", "lint", "lint\tRun\trhiza check: .rhiza/rendered/a.md is stale\n",
+			"failed: lint after 2 reruns; the PR changes only .rhiza/"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			f, g, _ := shipFixture(t)
+			roll := strings.Replace(rerunRollup, `"name":"test"`, `"name":"`+c.check+`"`, 1)
+			g.answers[shipPRView] = openPR(roll)
+			g.answers["run rerun 42 --failed"] = ""
+			g.answers[logCall] = c.log
+			g.answers[gitMergeBaseAbc] = "base111\n"
+			g.answers[gitDiffAbc] = c.diff
+			for i := 0; i < 2; i++ {
+				if r := shipCheck(t, f, `{"settled":true,"reruns":2}`); r.Settled {
+					t.Fatalf("rerun %d: %+v", i, r)
+				}
+			}
+			r := shipCheck(t, f, `{"settled":true,"reruns":2}`)
+			if r.Detail != c.want {
+				t.Errorf("detail = %q, want %q", r.Detail, c.want)
+			}
+			for _, bad := range []string{"unrelated", "flaky", "on main"} {
+				if strings.Contains(r.Detail, bad) {
+					t.Errorf("detail %q contains %q", r.Detail, bad)
+				}
+			}
+		})
+	}
+}

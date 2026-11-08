@@ -635,8 +635,14 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		}
 	} else if !resp.Green {
 		resp.Detail = "failed: " + strings.Join(resp.Failed, ", ")
+		if n := shipRerunsSpent(st, resp.Commit); n > 0 {
+			resp.Detail += fmt.Sprintf(" after %d reruns", n)
+		}
 		if len(resp.Tests) > 0 {
 			resp.Detail += "; failing tests: " + strings.Join(resp.Tests, ", ")
+		}
+		if shipDiffOnlyRhiza(ctx, t, resp.Commit) {
+			resp.Detail += "; the PR changes only .rhiza/"
 		}
 	}
 	if !resp.Passed || r.Settled {
@@ -714,16 +720,51 @@ func shipCheckMainTree(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckRespo
 	return resp, nil
 }
 
+// shipRerunsSpent is how many times the failed jobs of head were rerun: 0
+// for a head other than the recorded one. A state written before the count
+// existed holds Reruns alone and counts as one rerun.
+func shipRerunsSpent(st shipState, head string) int {
+	if st.RerunHead != head {
+		return 0
+	}
+	return max(st.RerunCount, min(len(st.Reruns), 1))
+}
+
+// shipDiffOnlyRhiza reports whether the diff from head's merge base with
+// origin/main touches paths under .rhiza/ only, and at least one. Any git
+// failure, or an empty diff, counts as no.
+func shipDiffOnlyRhiza(ctx *Ctx, t shipTarget, head string) bool {
+	if head == "" {
+		return false
+	}
+	base, err := gitAt(ctx, t.dir(), "merge-base", "refs/remotes/origin/"+shipMain, head)
+	if err != nil || strings.TrimSpace(base) == "" {
+		return false
+	}
+	out, err := gitAt(ctx, t.dir(), "diff", "--name-only", strings.TrimSpace(base), head)
+	if err != nil {
+		return false
+	}
+	n := 0
+	for _, p := range strings.Split(out, "\n") {
+		if p = strings.TrimSpace(p); p == "" {
+			continue
+		}
+		if !strings.HasPrefix(p, ".rhiza/") {
+			return false
+		}
+		n++
+	}
+	return n > 0
+}
+
 // shipRerunFailed reruns, up to budget times per head, the failed jobs of the Actions
 // runs of the settled checks that failed: it records the runs in the state
 // file and turns resp into not settled, so a wait keeps waiting for the
 // rerun. A head whose reruns are spent, and failed checks with no Actions run ID,
 // are left to fail as before.
 func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResponse, path string, budget int) error {
-	count := 0
-	if st.RerunHead == resp.Commit {
-		count = max(st.RerunCount, min(len(st.Reruns), 1))
-	}
+	count := shipRerunsSpent(*st, resp.Commit)
 	if count >= budget {
 		return nil
 	}
