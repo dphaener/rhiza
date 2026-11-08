@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YGVMPA6JGXY0VVFWMPB4JD",
+  "after": [
+    "01M6YHGWC3W6NPGPH6YA6KPWM5"
+  ],
+  "at": "2026-11-08T21:39:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 4f1bc3c3: go test -trimpath ./internal/api -run TestShipCheckStabilityRecord -v -count=1 passed all five subtests: a green first attempt is recorded once as a clean run (head, PR 7, not main, green, time set, no flakes, a repeat check adds nothing); a red head whose rerun passes records nothing before the rerun settles, then one green entry with flakes TestGarden and TestPond read from the first attempt's --log-failed; a head still red after its rerun records one red entry with no flake; a tree-equal ship check --main records a green main entry for merge commit fff0000aaa with no gh run call; a tree-differing one records the dispatched run's green on main. Re-run with all TestShip* tests from a clean git-archive copy outside ~/code (RHIZA_ROOT/CHANGE/RUN unset): ok. go vet and gofmt clean on internal/api. Read the diff: recordSettledCI hooks the settled paths in runShipCheck, shipCheckMainTree and shipCheckMainDispatch after shipRerunFailed (so a rerun records nothing until it settles), dedups per (head, main), skips dry runs, keeps 500 entries under the git common dir; RerunTests are captured only on a head's first rerun. In-tree, the full internal/api package hit the rootguard on .rhiza-root/usage.live.json, which the live root daemon rewrites on its own (mtime moved with no test running), and the 600s default timeout under VM load; both are environmental, not this change."
+        },
+        "handle": "ci-stability-record-verified",
+        "id": "01M6YHKHVSSPS6T9JHNN9GW9EG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YHKHVSSPS6T9JHNK6K16S1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YHKHVSSPS6T9JHNK6K16S1",
+        "id": "01M6YHKHWRBMP14AXM2CV3XT3N",
+        "link": "01M6YHKHWRBMP14AXM2CTKSK4M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKDX9JJQ25FRHFJND2ZK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YHKHXHM418N19Z60N57BJR",
+  "type": "ops",
+  "v": 1
+}
