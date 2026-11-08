@@ -1,0 +1,86 @@
+{
+  "actor": "01M6WR3W2X4YCMDK5VWPNEK1N2",
+  "after": [
+    "01M6WQYTDNEJ2YEX8BWX5QRXSE"
+  ],
+  "at": "2026-11-08T05:02:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA by hand with this branch's build (0c176623) in a scratch repo: rhiza workflow check passes .rhiza/workflows/bugfix.toml with autonomous = true and partial.toml with [autonomy] plan = \"auto\"; it exits 1 naming the key for autonomous plus [autonomy] together ('autonomous and [autonomy] are both set'), [autonomy] deploy ('autonomy.deploy: unknown stage; want plan, accept, ship, signoff'), plan = \"yes\" ('autonomy.plan: yes is not a mode') and autonomous = \"yes\" ('autonomous: yes is not a boolean'). go test ./internal/workflow passes."
+        },
+        "handle": "workflow-autonomy-declaration-qa-1",
+        "id": "01M6WRKKP653EPCP9FZXYJ9J94",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WRKKP5S6XE2D203GDGM78B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WRKKP5S6XE2D203GDGM78B",
+        "id": "01M6WRKKSKZHDJJZQRM3RGZ37W",
+        "link": "01M6WRKKSKZHDJJZQRKZZW1GVM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVKA8H196XPZQX6BHQZK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA by hand with this branch's build (0c176623) in a scratch repo: with no repo workflow rhiza health's autonomy part lists only 'workflow plan-milestone (builtin:plan-milestone): plan owner, accept owner, ship owner, signoff owner'; with .rhiza/workflows/bugfix.toml declaring autonomous = true it adds 'workflow bugfix (.rhiza/workflows/bugfix.toml): plan auto, accept auto, ship auto, signoff auto', and a partial [autonomy] file shows only its declared stage; rhiza health --json and rhiza api call health printed identical bytes (cmp)."
+        },
+        "handle": "health-workflow-autonomy-qa-1",
+        "id": "01M6WRKKVMZ946RVX7EEM8EC2G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WRKKVMZ946RVX7EDM0C3BP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WRKKVMZ946RVX7EDM0C3BP",
+        "id": "01M6WRKKZG6108ZS0F237DVP2M",
+        "link": "01M6WRKKZG6108ZS0F20W13SXE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVWZYB3NKSKBKACYXEXZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA with this branch's build (0c176623): run start is refused inside an agent session, so origin/main's run-start-milestone-autonomous.txtar (deleted on this branch) was run against the branch: rhiza run start --foreground --workflow plan --new 'Plan the milestone' --milestone --permission-mode manual --autonomous is not refused; it runs workflow plan-milestone with 'Autonomous: yes' while run status shows every stage 'owner from workflow plan-milestone'. The amended acceptance (usage error naming plan-milestone's declaration, no journal, no draft; run resume refusal) is not met, and no script on the branch checks it."
+        },
+        "handle": "milestone-plan-refuses-autonomous-qa-3",
+        "id": "01M6WRKM4KTMQ6YS7M7RC6HAK7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WRKM4KTMQ6YS7M7MHFJBKA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WRKM4KTMQ6YS7M7MHFJBKA",
+        "id": "01M6WRKMAE7TMNKVJE98X2E8X3",
+        "link": "01M6WRKMAE7TMNKVJE9682VD1E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYGJT14RGWC73S0V3A5YEB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WRKMEN8J4E40G5F624AJG4",
+  "type": "ops",
+  "v": 1
+}
