@@ -13,12 +13,20 @@ exec rhiza change new 'Handles' --title 'Handles' --json
 exec rhiza add capability cap-a --field 'statement=Does A'
 mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
+exec sh -c 'ls .rhiza/log/*/*.json | wc -l > $WORK/n1'
 exec rhiza run start --foreground --workflow hold --no-wait
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/run1'
 exec rhiza change new 'Handles two' --title 'Handles two' --json
 exec rhiza add capability cap-b --field 'statement=Does B'
-exec rhiza run start --foreground --workflow hold --no-wait
+# The test clock adds a second per log entry, so start run 2 with its clock
+# wound back by the entries written since run 1: both start in the same
+# second, and their IDs share the first 8 characters the old handle used.
+exec sh -c 's=$((3600 - $(ls .rhiza/log/*/*.json | wc -l) + $(cat $WORK/n1))); RHIZA_TEST_NOW=$(printf "2026-10-24T11:%02d:%02dZ" $((s/60)) $((s%60))) rhiza run start --foreground --workflow hold --no-wait'
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/run1 > $WORK/run2'
+
+# The runs differ, yet share the 8-character prefix.
+exec sh -c 'test "$(cut -c1-8 $WORK/run1)" = "$(cut -c1-8 $WORK/run2)"'
+! cmp $WORK/run1 $WORK/run2
 
 # Take run 1's full-ID handle with an unrelated node.
 exec sh -c 'rhiza add question review-$(tr A-Z a-z < $WORK/run1)-r3-f1 --field "statement=Unrelated"'
