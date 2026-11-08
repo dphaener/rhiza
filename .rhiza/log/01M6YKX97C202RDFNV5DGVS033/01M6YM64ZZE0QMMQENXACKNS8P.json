@@ -1,0 +1,30 @@
+{
+  "actor": "01M6YKYAV3HNXAD1BRK0HY71PE",
+  "after": [
+    "01M6YKX97C202RDFNV5DKA5ZM3"
+  ],
+  "at": "2026-11-08T22:24:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "08516f9a-2c06-4f2d-96f1-01a1bd3f13ae",
+          "statement": "TestWebRootHandlerServesEveryProject flakes because GET / starts a background health refresh (healthCache.get in internal/api/web_daemon.go) that keeps running and touching files under the test's TempDir after the test returns. Where should the fix live?"
+        },
+        "handle": "question-08516f9a-1",
+        "id": "01M6YM62WARWNNJ9BB48KATQ53",
+        "key": null,
+        "kind": "question",
+        "node": "01M6YM62WARWNNJ9BB48AY58M3",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6YKX97C202RDFNV5DGVS033",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YM64ZZE0QMMQENXACKNS8P",
+  "type": "ops",
+  "v": 1
+}
