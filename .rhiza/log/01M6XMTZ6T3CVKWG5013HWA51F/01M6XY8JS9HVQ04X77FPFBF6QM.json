@@ -1,0 +1,63 @@
+{
+  "actor": "01M6XXAR25W8FJD1W125P5DX7N",
+  "after": [
+    "01M6XX53VHX6SH807VQZZYYP9V"
+  ],
+  "at": "2026-11-08T16:01:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 90e4ec13 with the built binary (go build ./cmd/rhiza) in a scratch git repo: landed capability store, then in a new change set ran `rhiza set store --field statement=New --field acceptance=1 --handle stash` and `rhiza retire stash --reason Gone`. The retire entry's body has drop=[<the update op>] and one node.retire whose base is the landed version; propose/accept/land exit 0, `rhiza render && rhiza check` ok, `rhiza show <node>` reports Retired: Gone. The merge-base binary on the same steps writes no drop and fails land with exit 3 (stale base against its own update)."
+        },
+        "handle": "retire-after-update-lands-qa-1",
+        "id": "01M6XY8HY830EP3C3ZKQJPYW2G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XY8HY830EP3C3ZKNHHDPNZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XY8HY830EP3C3ZKNHHDPNZ",
+        "id": "01M6XY8JA22PZXN9WFACW1QN3D",
+        "link": "01M6XY8JA22PZXN9WFACV73ZFE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XN76S19AD6C3BQKAKJ6BMN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 90e4ec13: wrote the 01M6WMCCRC0K log shape (node.update with handle rename, then node.retire on the old landed base, no drop) with the merge-base binary in a scratch repo. Landing it with the merge-base binary fails exit 3 ('base ... is stale: op ... of change set <same> since wrote field:acceptance, field:statement, handle') and check warns. Landing the same log with the new binary exits 0, check is ok, and the node shows Retired: Gone. Cross-change-set conflicts still fire: change set B updates and retires store on the landed base, change set A then writes statement and lands first, and B's land fails exit 3 with 'stale: op ... of change set A since wrote field:statement'."
+        },
+        "handle": "own-change-set-ops-not-stale-qa-1",
+        "id": "01M6XY8JH0073ZCWC7T18N2HX1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XY8JH0073ZCWC7SXXCJDQR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XY8JH0073ZCWC7SXXCJDQR",
+        "id": "01M6XY8JNZRXDDE05G3XH6W5VX",
+        "link": "01M6XY8JNZRXDDE05G3WDWKRNJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XN774723KQDY2E0HZ0HXFJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XMTZ6T3CVKWG5013HWA51F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XY8JS9HVQ04X77FPFBF6QM",
+  "type": "ops",
+  "v": 1
+}
