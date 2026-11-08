@@ -1,0 +1,40 @@
+{
+  "actor": "01M6XPM5B0V4G08TVW7E543T8N",
+  "after": [
+    "01M6XJFGRA1C6KBHF928EPTE0P"
+  ],
+  "at": "2026-11-08T13:49:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 737fcfc5: ran go test -trimpath ./internal/api/... -run 'Ship' (ok) and TestShipLandHeadBuildErrorDetail -v: case 'json body' fakes the head build bin exiting with err 'exit status 3' and stdout {\"error\":{\"code\":\"conflict\",\"message\":\"cannot land change set X: node N changed\"}}; ship.land's error names conflict, the message and exit status 3 (PASS). Case 'stderr only' with no JSON body and an err carrying the child's stderr (as cmd/rhiza execIn builds it) shows that stderr in the error (PASS). Diff read: shipRunHead now formats headFailure(out, err), parsing the --json error body from stdout for land and render; gofmt and go vet clean."
+        },
+        "handle": "ship-head-build-error-detail-verified",
+        "id": "01M6XPQAXVGX48H4KNAJDP3AT4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XPQAXVGX48H4KNAFEGGDB2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XPQAXVGX48H4KNAFEGGDB2",
+        "id": "01M6XPQB1DMT5Q2RGA7YEDZDXK",
+        "link": "01M6XPQB1DMT5Q2RGA7X8BBM5S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XHVSXCAK8XB69G5FFYN9MT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XHCX4FRER8CR0MG5D4D76D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XPQB52WKECX6K977BHX8NP",
+  "type": "ops",
+  "v": 1
+}
