@@ -1342,8 +1342,98 @@ on.pass = "solo"
 		t.Fatal(err)
 	}
 	for step, want := range map[string]string{"shared": "shared", "solo": "solo", "w1": "w1"} {
-		if got := RetryStep(def, step); got != want {
+		if got := RetryStep(def, State{}, step); got != want {
 			t.Errorf("RetryStep(%s) = %s, want %s", step, got, want)
+		}
+	}
+}
+
+// A run failed at a triage step reached by a check's on.fail, itself entered
+// from a wait's on.pass, reopens at that wait; the journal picks between
+// two such checks, and retried visits of the failed step are skipped.
+func TestRetryStepAtWaitBeforeCheck(t *testing.T) {
+	def, err := workflow.Parse("wf", []byte(`
+name = "wf"
+[step.wait-a]
+kind = "wait"
+until = "true"
+timeout = "1m"
+on.pass = "check-a"
+[step.wait-b]
+kind = "wait"
+until = "true"
+timeout = "1m"
+on.pass = "check-b"
+[step.check-a]
+kind = "command"
+run = "true"
+on.pass = "done"
+on.fail = "triage"
+[step.check-b]
+kind = "command"
+run = "true"
+on.pass = "done"
+on.fail = "triage"
+[step.triage]
+kind = "command"
+run = "false"
+on.pass = "done"
+[step.wait-c]
+kind = "wait"
+until = "true"
+timeout = "1m"
+on.pass = "check-c"
+[step.check-c]
+kind = "command"
+run = "true"
+on.pass = "done"
+on.fail = "mid"
+[step.mid]
+kind = "command"
+run = "true"
+on.pass = "done"
+on.fail = "tail"
+[step.tail]
+kind = "command"
+run = "false"
+on.pass = "done"
+[step.lone]
+kind = "command"
+run = "false"
+on.pass = "done"
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	steps := func(names ...string) State {
+		var st State
+		for _, n := range names {
+			st.Steps = append(st.Steps, StepDone{Step: n})
+		}
+		return st
+	}
+	for _, c := range []struct {
+		name string
+		st   State
+		want string
+	}{
+		{"via a", steps("wait-a", "check-a", "triage"), "wait-a"},
+		{"via b", steps("wait-a", "check-a", "wait-b", "check-b", "triage"), "wait-b"},
+		{"through a middle step", steps("wait-c", "check-c", "mid", "tail"), "wait-c"},
+		{"twice retried", steps("wait-b", "check-b", "triage", "triage", "triage"), "wait-b"},
+		{"no predecessor", steps("triage"), "triage"},
+		{"failed at a lone step", steps("wait-a", "check-a", "lone"), "lone"},
+		{"previous not routing in", steps("wait-a", "check-a", "wait-b", "triage"), "triage"},
+	} {
+		failed := "triage"
+		switch c.want {
+		case "lone":
+			failed = "lone"
+		case "wait-c":
+			failed = "tail"
+		}
+		if got := RetryStep(def, c.st, failed); got != c.want {
+			t.Errorf("%s: RetryStep = %s, want %s", c.name, got, c.want)
 		}
 	}
 }

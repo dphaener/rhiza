@@ -1799,19 +1799,48 @@ func (st State) FailedStep() (string, error) {
 // RetryStep is the step a retry of a run that failed at failed reopens it
 // at in def: when failed is the on.pass target of exactly one wait step,
 // that wait step, so a check that failed because what it checks had not
-// settled waits for it again; otherwise failed itself.
-func RetryStep(def *workflow.Definition, failed string) string {
+// settled waits for it again. Otherwise, when the last other step the
+// journal visited before the failed one (its own earlier visits, each
+// retry's included, skipped) is a command step whose on.fail routes into
+// failed (through further such steps) and that is the on.pass target of
+// exactly one wait step, that wait: a triage of a red check re-waits for CI, then re-runs the check.
+// Else failed itself.
+func RetryStep(def *workflow.Definition, st State, failed string) string {
+	if w := soleWaitFor(def, failed); w != "" {
+		return w
+	}
+	// Walk back from the failed visit: each step before it that routes
+	// into the one after it by on.fail (ship-change's pr-green, then
+	// conflict-triage, then ci-triage) is a check whose wait comes first.
+	cur := failed
+	for i := len(st.Steps) - 1; i >= 0; i-- {
+		prev := st.Steps[i].Step
+		if prev == cur {
+			continue
+		}
+		s, ok := def.Steps[prev]
+		if !ok || s.Kind != workflow.KindCommand || s.On[workflow.OutcomeFail] != cur {
+			break
+		}
+		if w := soleWaitFor(def, prev); w != "" {
+			return w
+		}
+		cur = prev
+	}
+	return failed
+}
+
+// soleWaitFor is the one wait step whose on.pass is target, or "" when
+// there is none or several.
+func soleWaitFor(def *workflow.Definition, target string) string {
 	wait := ""
 	for name, s := range def.Steps {
-		if s.Kind == workflow.KindWait && s.On[workflow.OutcomePass] == failed {
+		if s.Kind == workflow.KindWait && s.On[workflow.OutcomePass] == target {
 			if wait != "" {
-				return failed
+				return ""
 			}
 			wait = name
 		}
-	}
-	if wait == "" {
-		return failed
 	}
 	return wait
 }
