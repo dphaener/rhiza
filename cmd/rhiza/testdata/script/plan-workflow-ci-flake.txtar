@@ -176,9 +176,9 @@ case "$1 $2" in
 		exit 0
 	fi
 	n=$(grep -c "^run rerun" "$WORK/gh.log")
-		concl=FAILURE
-		if [ "$n" -ge 2 ]; then concl=SUCCESS; fi
-head=$(git -C "$o" rev-parse --verify "refs/heads/$3")
+	concl=FAILURE
+	if [ "$n" -ge 2 ]; then concl=SUCCESS; fi
+	head=$(git -C "$o" rev-parse --verify "refs/heads/$3")
 	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test (4/5)","status":"COMPLETED","conclusion":"%s","detailsUrl":"https://github.test/o/r/actions/runs/42/job/9"}]}\n' "$head" "$concl"
 	;;
 "run rerun")

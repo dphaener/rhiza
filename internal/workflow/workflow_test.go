@@ -1680,9 +1680,18 @@ func TestPlanRerunsCIFlakes(t *testing.T) {
 		}
 	}
 	ship := load("ship-change")
+	checks := 0
 	for name, s := range ship.Steps {
-		if strings.Contains(s.Run+s.Until, "--reruns") {
-			t.Errorf("ship-change %s = %q; want no --reruns", name, s.Run+s.Until)
+		cmd := s.Run + s.Until
+		if !strings.Contains(cmd, "rhiza ship check") {
+			continue
 		}
+		checks++
+		if strings.Contains(cmd, "--reruns") {
+			t.Errorf("ship-change %s = %q; want no --reruns", name, cmd)
+		}
+	}
+	if checks == 0 {
+		t.Errorf("ship-change has no rhiza ship check step")
 	}
 }
