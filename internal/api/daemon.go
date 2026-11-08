@@ -658,6 +658,23 @@ func daemonHeld(pending map[string]daemonPending, unjournaled map[string]daemonP
 	return held
 }
 
+// daemonResumesStarting counts the runs the daemon resumed whose new process
+// has not journaled yet and is still within daemonStartGrace: each holds a
+// slot, as a start not journaled does.
+func daemonResumesStarting(ctx *Ctx, runs []run.Journal, host string) int {
+	n := 0
+	for _, j := range runs {
+		st := j.State()
+		if !st.DaemonResumed || ctx.Now().Sub(st.DaemonResumedAt) >= daemonStartGrace {
+			continue
+		}
+		if st.Liveness(host, nil) == run.LiveInterrupted && !st.ProcessAt.After(st.DaemonResumedAt) {
+			n++
+		}
+	}
+	return n
+}
+
 // daemonRunsOf counts the runs of change set cs.
 func daemonRunsOf(runs []run.Journal, cs string) int {
 	n := 0
@@ -860,7 +877,8 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 			liveRunning++
 		}
 	}
-	used := liveRunning + len(held) + reqStarting + starting
+	resStarting := daemonResumesStarting(ctx, runs, host)
+	used := liveRunning + len(held) + reqStarting + starting + resStarting
 	resumable := daemonResumable(ctx, rs, runs, fold, host, stopped || paused)
 	for _, id := range resumable {
 		if used >= max {
@@ -951,7 +969,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		// The starts of this poll so far (resumes, a milestone request's plan
 		// run) and the starts not journaled that daemon.Pick cannot see
 		// (plan requests, schedules) take slots from the picks too.
-		extra := reqStarting + starting + len(resumed) + len(milestoned)
+		extra := reqStarting + starting + resStarting + len(resumed) + len(milestoned)
 		shipMax := max - kept - extra
 		if shipMax < 0 {
 			shipMax = 0
@@ -996,7 +1014,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	}
 	// daemonPlanRequests counts the plan requests started and not journaled
 	// itself, the milestone request's among them: running leaves them out.
-	running := liveRunning + len(held) + len(started) + len(resumed) + starting
+	running := liveRunning + len(held) + len(started) + len(resumed) + starting + resStarting
 	if hold != nil {
 		// A usage hold stops every launch but a milestone request's plan
 		// run, started above.

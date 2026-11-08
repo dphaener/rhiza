@@ -283,6 +283,7 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 		}
 	}
 	running += daemonRequestsStarting(ctx, rs, runs)
+	running += daemonResumesStarting(ctx, runs, host)
 	if conf.paused || ferr != nil {
 		return nil, running
 	}
