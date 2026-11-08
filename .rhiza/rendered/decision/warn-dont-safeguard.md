@@ -25,6 +25,7 @@ Rhiza does not try to safeguard owners against risky setups (such as an autonomo
 ### In
 
 - decided-by [workflows](../capability/rhiza/workflows.md)
+- decided-by [watchdog-policy](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-policy.md)
 
 ## History
 

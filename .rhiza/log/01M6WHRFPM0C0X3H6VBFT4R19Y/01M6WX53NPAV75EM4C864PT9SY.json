@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WX1H59AXQZWSF22Z3Z0DBN",
+  "after": [
+    "01M6WWZSTXNCSJ0KN72K9J5XWX"
+  ],
+  "at": "2026-11-08T06:22:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 93c41166, go test -trimpath -count=1 ./internal/api -run TestWatchdogGreenUnmerged -v passes TestWatchdogGreenUnmerged and TestWatchdogGreenUnmergedReadsOnce. With a fake gh read (watchdogDeps.ci) and no merge dep, the pass resumes (--retry via queueContinue) only the autonomous run failed at its merge step, leaves the live run at merge alone, and holds the succeeded-unmerged run and the run gated by a signoff as inbox items with no resume and no merge call; red/absent checks or no open PR do nothing, and a spent budget holds. Attempt 1's finding (gh read per ended run every poll) is fixed: a run found with no open PR is remembered as PRGone at its last journal entry, persisted in daemon state, and skipped until the journal moves; the ReadsOnce test shows 1 read over three polls through watchdogPasses and one more after the journal moved. All TestWatchdog* in internal/api and internal/daemon tests pass; go vet and gofmt clean."
+        },
+        "handle": "watchdog-green-pr-unmerged-verified",
+        "id": "01M6WX5395J6G27FPJX9Y9X067",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WX5395J6G27FPJX78CRWF6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WX5395J6G27FPJX78CRWF6",
+        "id": "01M6WX53F67DTDM3KK1XP2H45V",
+        "link": "01M6WX53F67DTDM3KK1V4AZHJT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2D976WM21C1X3YVMCHY8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WX53NPAV75EM4C864PT9SY",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,43 @@
+{
+  "actor": "01M6WN1D3FKN0J8K5QWYGT1X4V",
+  "after": [
+    "01M6WMSBF555R5VZFBS85823HB"
+  ],
+  "at": "2026-11-08T04:02:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/workflow loads the built-in ship-change workflow and asserts the routes, kinds and max_visits above (rebase on.fail rebase-triage, rebase-triage on.pass conflict-fix with no on.fail, pr-green and rebased-green on.fail conflict-triage, conflict-triage on.pass conflict-fix and on.fail ci-triage, conflict-fix on.pass render-pr, rebase-merge, landed-green and rebased-merge-green on.fail conflict-triage-landed, conflict-triage-landed on.pass conflict-fix-landed with no on.fail, conflict-fix-landed on.pass rebase-merge, max_visits 3 on both fixers); a Go test in internal/api shows ship check --conflicts passing with a recorded unresolved conflict and no fixes, failing with no recorded conflict, and failing with a recorded conflict once the branch holds 3 merge commits with the run's Review: trailer; a testscript run-ship-conflict-fix.txtar with a local bare origin, a fake gh and a fake fixer agent: main moves with a code conflict during wait-pr and again at rebase, each time the fake fixer commits a resolving merge with a Review: trailer, the run pushes it with no force push, waits again and merges; a conflict at rebase-merge goes through conflict-triage-landed and conflict-fix-landed back to rebase-merge with one land; a rebase that fails on a push refused by origin (no conflict) ends the run at rebase-triage with no fixer session started; a fourth conflict, after two fixes before land and one after, fails the run; run with go test -trimpath ./internal/workflow/... ./internal/api/... ./internal/guide/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship|ship-check)' only",
+          "statement": "The built-in ship-change workflow sends a code conflict to a fixer instead of the owner, through a triage that tells a conflict from any other failure: rhiza ship check --conflicts passes only when the ship state records an unresolved merge conflict and the run has made fewer than 3 conflict fixes, counted run-wide as the merge commits on the branch carrying this run's Review: trailer, so the cap is one count shared by every fixer step, before and after land; with no recorded conflict, or with 3 fixes already made, it fails and names why. rebase fails (on.fail) to a command step rebase-triage running rhiza ship check --conflicts, which passes to conflict-fix and has no on.fail, so a fetch, push, hook or refusal failure of rebase ends the run as today instead of launching a fixer; pr-green and rebased-green fail to a command step conflict-triage running the same check, which passes to conflict-fix and fails to ci-triage as before; conflict-fix is an agent step on the run worktree whose prompt gives the fixer both sides' commits and change sets from rhiza ship check --json and tells it to resolve the conflicts, regenerate golden files and rendered output, run only the touched packages' tests and scripts, and commit the merge with Change:, Actor: and a Review: <run> trailer, never pushing, then rhiza session done; it passes to render-pr, so open-pr pushes plainly and records the head and the run waits for CI again. After land, rebase-merge fails to conflict-triage-landed (the same check, no on.fail), which passes to conflict-fix-landed, the same fixer, which passes back to rebase-merge so the fixer's merge is pushed there and nothing lands twice; landed-green and rebased-merge-green fail to conflict-triage-landed too, so a red CI or a non-conflict failure after land still ends the run. A fourth conflict in one run, before or after land, fails its triage and so fails the run (pre-land through ci-triage, which finds no failing test); conflict-fix and conflict-fix-landed keep max_visits 3 only as a backstop, and the steps they re-enter get max_visits raised so 3 conflict fixes and 2 CI fixes fit"
+        },
+        "handle": "ship-change-conflict-fix-step",
+        "id": "01M6WMRS4TPPTR6N3JKSAMBGEF",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6WMRS4TPPTR6N3JKP0F7HQJ",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "fields": {
+          "acceptance": "ship-check-settles-conflict.txtar with a fake gh whose pr view reports mergeable CONFLICTING until a new head is pushed: with origin/main conflicting only under .rhiza/rendered, ship check --settled exits non-zero, origin's branch fast-forwards to a merge holding origin/main and the ship record's pushed is the new head; with a conflict in a code file it exits 0, the merge is still in progress, ship check --json lists the conflicts and no question is raised, and plain ship check then exits 1 naming the conflicted files although the fake gh reports the head's checks green; run with go test -trimpath ./cmd/rhiza -run 'TestScripts/ship-check-settles-conflict'",
+          "statement": "rhiza ship check --settled reads the PR's mergeable state and, when GitHub reports it CONFLICTING, merges origin/main as rhiza ship rebase does: a clean or rendered-only merge is pushed plainly, recorded as pushed and reported not settled; a conflict in code leaves the merge in progress, records the conflicts in the ship state and reports settled (exit 0) with the conflict in its detail; it never exits 75 and raises no question on a conflict. Plain rhiza ship check (the green steps pr-green, rebased-green, landed-green, rebased-merge-green) fails, whatever the head's checks say, while the ship state records an unresolved merge conflict, naming the conflicted files in its detail, so the green step after the wait routes the run to the conflict triage and never on to signoff or land with a merge in progress"
+        },
+        "handle": "wait-merges-conflicting-pr",
+        "id": "01M6WMSB7FA6TA1SMY419CWX7Y",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6WMSB7FA6TA1SMY3YW9AC1Q",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      }
+    ]
+  },
+  "change_set": "01M6WMCCRC0KSCWEV17VY8KVQP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WN497RBYNJ5C3BQW4XY3R2",
+  "type": "ops",
+  "v": 1
+}

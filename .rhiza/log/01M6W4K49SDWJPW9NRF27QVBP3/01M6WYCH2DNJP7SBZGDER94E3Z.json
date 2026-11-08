@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WYB8W8K9QW1N72SGTDFP41",
+  "after": [
+    "01M6WY6G1QC7ZGZ6B7D4BYMTNN"
+  ],
+  "at": "2026-11-08T06:43:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 0e9166f6 ran go test -trimpath -count=1 ./internal/guide/...: ok. TestWorkflowsText checks the workflows topic's Schedules section names [[schedules]], CRON_TZ, catch_up, overlap, every, cron, main checkout, no change set, as it found it, rhiza request, rhiza health and daemon log; the package's size/cap tests pass too. Read the diff: the fix now says cron without CRON_TZ reads local time, matching schedule.ParseCron (nil location -> time.Local, as dispatch.go and daemon_schedules.go call it). The depends-on main-checkout-change-warning is gone per Decision guide-topic-drops-warning-dependency; only depends-on schedules-file remains."
+        },
+        "handle": "schedules-guide-topic-verified-2",
+        "id": "01M6WYCGVY4W66J7WT11VGX8K6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WYCGVY4W66J7WT0YVDH2D4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WYCGVY4W66J7WT0YVDH2D4",
+        "id": "01M6WYCGZFQ9JBQD2HE7DDH63P",
+        "link": "01M6WYCGZFQ9JBQD2HE6CY4HZC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HWFGG153SAAWP0XEK7JT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WYCH2DNJP7SBZGDER94E3Z",
+  "type": "ops",
+  "v": 1
+}

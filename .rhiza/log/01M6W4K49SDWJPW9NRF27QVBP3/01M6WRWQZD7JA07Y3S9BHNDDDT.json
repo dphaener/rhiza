@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WPTF4FH1MTZNG53QC6050B",
+  "after": [
+    "01M6WPMFJ4QC8WQ4T683G2EJ91"
+  ],
+  "at": "2026-11-08T05:07:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 421532c6 ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(schedules-check|schedules-file|dispatch)' -count=1: ok. The schedules-check script passes rhiza check with a schedule naming a repo workflow (.rhiza/workflows/bugfix.toml) and one with a command, and fails it on a missing workflow, an unknown key and a bad cron, each stdout naming the schedule. By hand with a scratch build, rhiza check exits 1 with: 'dispatch.toml: schedule \"x\": workflow: names workflow \"nothing-here\", which is neither in .rhiza/workflows nor built in', '[[schedules]] schedule \"x\": unknown key \"evry\"', '[[schedules]] schedule \"x\": cron: cron \"99 * * * *\": minute: 99 out of range 0-59', each naming .rhiza/dispatch.toml, the schedule and the key. go test ./internal/api -run 'Check|Dispatch|Schedule' passed (its only FAIL was the root-state guard on ~/code/.rhiza-root/usage.live.json, unrelated); internal/dispatch ok. Diff read: dispatchProblems now checks each schedule's workflow with repoOrBuiltinWorkflow, the same check the dispatch rules use."
+        },
+        "handle": "schedules-check-verified",
+        "id": "01M6WRWQRM33G6MWAY3BSG7ZTB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WRWQRKEW15PMCA66Q2FN1P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WRWQRKEW15PMCA66Q2FN1P",
+        "id": "01M6WRWQVTAW5FR2VDM9704J9V",
+        "link": "01M6WRWQVTAW5FR2VDM65P0VTY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HV4DHZKJGNMDBNYDEBTN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WRWQZD7JA07Y3S9BHNDDDT",
+  "type": "ops",
+  "v": 1
+}

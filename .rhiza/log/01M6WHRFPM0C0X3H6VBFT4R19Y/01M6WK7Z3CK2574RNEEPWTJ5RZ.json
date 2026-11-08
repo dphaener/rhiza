@@ -1,0 +1,41 @@
+{
+  "actor": "01M6WK6NB15SC2VAV9WJJBPHM2",
+  "after": [
+    "01M6WK5T57VBHMXY6JHD33J973"
+  ],
+  "at": "2026-11-08T03:29:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The root's rhiza.toml today holds daemon settings as flat full-key strings under [daemon] (\"rhiza.daemon.maxRuns\" = \"3\", \"rhiza.daemon.selfUpdate\", ...), settingDefs declares them that way, and daemonapp pairs rhiza.daemon.maxRuns with rhiza.project.maxRuns in git config. The Decision and capability follow that existing convention and are what the leaves will build and test against (TestWatchdogPolicy names [daemon] and rhiza.project.watchdog.*). A [rhiza.daemon.watchdog] table with snake_case file_bugs would be a new, inconsistent layout no code reads. The Source's summary is the planner's paraphrase of the arbiter's answer and lost detail; it is a provenance record, so it must describe the Decision it backs accurately rather than the Decision bending to it.",
+          "statement": "The Decision @{01M6WHZY78QBQEYRN9FEQWJ60A} and the capability @{01M6WJ2BR1XZB2E5F21H8TNBFH} are authoritative on where the watchdog policy lives and what its keys are called: machine keys rhiza.daemon.watchdog.* as flat full-key strings under [daemon] in the root's rhiza.toml, camelCase names (fileBugs, agentNudge, retryBudget, ...), and project keys rhiza.project.watchdog.* of the same names (all but pollBehind) in the project's git config, overriding the machine keys. The Source @{01M6WJ1GK03S6X3QRQEP6KGNTT} is corrected to match: its summary is rewritten to state that layout, the camelCase key names and the project keys, in place of '[rhiza.daemon.watchdog]' and 'file_bugs'. The Decision and capability are not changed.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "watchdog-settings-layout-follows-decision",
+        "id": "01M6WK7YZZBT82TKQ4PAYXPPMD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6WK7YZZBT82TKQ4P9TJXNCG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WK7YZZBT82TKQ4P9TJXNCG",
+        "id": "01M6WK7Z15DPE1B56G1W4GDWFS",
+        "link": "01M6WK7Z15DPE1B56G1T6MSQEE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WK4B4K1M2XTSZBBCN4F1C0",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WK7Z3CK2574RNEEPWTJ5RZ",
+  "type": "ops",
+  "v": 1
+}

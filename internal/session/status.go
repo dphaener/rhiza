@@ -119,6 +119,16 @@ const LimitPausedDetail = "paused at its usage limit"
 // an owner-attended run never stalls, as it may be waiting on the owner.
 // Blocked, exited and usage-paused sessions never do.
 func Stalled(r Record, now time.Time) bool {
+	if !Stallable(r) {
+		return false
+	}
+	rep, _ := Resolve(r)
+	return now.Sub(rep.At) > StallAfter
+}
+
+// Stallable reports whether the session could be stalled given enough
+// silence: Stalled's conditions but for the time.
+func Stallable(r Record) bool {
 	rep, src := Resolve(r)
 	if src != SourceHook {
 		return false
@@ -132,5 +142,5 @@ func Stalled(r Record, now time.Time) bool {
 	if strings.HasPrefix(rep.Detail, LimitPausedDetail) {
 		return false
 	}
-	return now.Sub(rep.At) > StallAfter
+	return true
 }

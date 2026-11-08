@@ -1,0 +1,322 @@
+{
+  "actor": "01M6WHSD93J9TWD03RVXPXPHCQ",
+  "after": [
+    "01M6WJ1GPR2EFP0XRXCHF84EYT"
+  ],
+  "at": "2026-11-08T03:08:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The daemon notices runs, requests and PRs that have stopped progressing and recovers them by the workflows' own paths, under policy in rhiza.toml"
+        },
+        "handle": "daemon-watchdog",
+        "id": "01M6WJ2BF77G0R9ZNBBNQDS66B",
+        "key": "zzzzzzw",
+        "kind": "capability",
+        "node": "01M6WJ2BF6X93480DV342ARX39",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ2BF6X93480DV342ARX39",
+        "id": "01M6WJ2BJQ5QPPZCP02NWWG9YC",
+        "link": "01M6WJ2BJQ5QPPZCP02JN5R5T9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "id": "01M6WJ2BPV15DJPNT6FC46R3H5",
+        "link": "01M6WJ2BPV15DJPNT6FBK0GHCZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ1GK03S6X3QRQEP6KGNTT",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestWatchdogPolicy covers the defaults with no rhiza.toml section, a repo override, a workflow step-kind override winning over the repo value, and an invalid value rejected with its key named; go test -trimpath ./cmd/rhiza -run TestScripts/watchdog-policy shows the values and their sources in rhiza daemon settings",
+          "statement": "The daemon reads its watchdog policy from [rhiza.daemon.watchdog] in rhiza.toml, with shipped defaults (enabled = true; agent steps nudged after 20m idle and retried after 40m; command steps 30m; CI and PR wait steps 90m; retry budget 2 per run; failed CI rerun once per PR head; poll-behind warning past 3x the poll interval; file_bugs = true; autonomous runs only), each overridable per repo and per workflow step kind, and rhiza daemon settings lists every value with where it came from"
+        },
+        "handle": "watchdog-policy",
+        "id": "01M6WJ2BR1XZB2E5F21K9ZN9Y3",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6WJ2BR1XZB2E5F21H8TNBFH",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ2BR1XZB2E5F21H8TNBFH",
+        "id": "01M6WJ2BYCNBVGKMP2THNBBD1M",
+        "link": "01M6WJ2BYCNBVGKMP2TGAGKB0Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ2BR1XZB2E5F21H8TNBFH",
+        "id": "01M6WJ2C53CHR7F53GMPCGW7K2",
+        "link": "01M6WJ2C53CHR7F53GMMQCM05R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VY483G51DG4WY4PR58AMXV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ2BR1XZB2E5F21H8TNBFH",
+        "id": "01M6WJ2CG53HRZRWYW30A26WMV",
+        "link": "01M6WJ2CG53HRZRWYW2YT7MD4P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4H6F2KYTFE6ER04FQ3EWE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestWatchdogStalled, with a fake clock, fake sessions and a fake run driver, shows an autonomous run nudged at the first limit, stopped and retried at the second with one log line and one budget charge, a run whose step makes progress in between left alone, and an owner-attended run getting a log line and an inbox item but no stop or retry",
+          "statement": "When a live autonomous run's step has had no journal entry or session report past its step kind's limit, the daemon nudges the session, and if nothing moves by the second limit it stops the step and resumes the run with --retry, charging the run's watchdog budget; an owner-attended run gets only a log line and an inbox item, never a stop or retry"
+        },
+        "handle": "watchdog-stalled-step",
+        "id": "01M6WJ2CKKVZMZ0EMK7MCR47ZT",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6WJ2CKKVZMZ0EMK7HYXK1WH",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ2CKKVZMZ0EMK7HYXK1WH",
+        "id": "01M6WJ2CNDG2M3KJY4SQSC75S9",
+        "link": "01M6WJ2CNDG2M3KJY4SQ23CYZN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestWatchdogTransient shows each signature in a failed step's output leading to one resume --retry, a failure matching no signature left for the owner, and a live step with the same output left alone",
+          "statement": "The daemon resumes with --retry a run that ended failed at a step whose output matches a known transient signature (a vanished go $WORK file, a held git index.lock, a network or GitHub 5xx error), within the run's watchdog budget, and never acts on a step that is still live"
+        },
+        "handle": "watchdog-transient-failure",
+        "id": "01M6WJ2CRTGK0ZMW94E2DGSTFC",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6WJ2CRTGK0ZMW94E2BA801H",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ2CRTGK0ZMW94E2BA801H",
+        "id": "01M6WJ2CTNKMW59SZWKNJ19DJQ",
+        "link": "01M6WJ2CTNKMW59SZWKK73R9NS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestWatchdogCIRerun, with a fake gh, shows the failed jobs rerun once, the run resumed after they pass, no second rerun on the same head, and a new head allowed its own rerun",
+          "statement": "When a run ended failed waiting on CI with red checks, the daemon reruns the PR's failed jobs once per PR head and resumes the run with --retry when they pass; a second red on the same head is left for the owner"
+        },
+        "handle": "watchdog-ci-rerun",
+        "id": "01M6WJ2CXX5VYQ2236KM3FC4PK",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6WJ2CXX5VYQ2236KG5ZEX7X",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ2CXX5VYQ2236KG5ZEX7X",
+        "id": "01M6WJ2CZ5674SXGVXB6KHA5ZY",
+        "link": "01M6WJ2CZ5674SXGVXB3TZJ6Y9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestWatchdogPRNoCI, with fake git remotes and a fake gh, shows a clean merge pushed without force and recorded in the ship state, and a conflicting merge aborted and handed to the run (or to an inbox item) with the branch unchanged",
+          "statement": "When a run's PR has no CI because it conflicts with main, the daemon merges origin/main into the branch in the run's worktree, pushes normally (never rebases or force-pushes) and records the push in the run's ship state; if the merge conflicts it resumes the run so the run's own conflict handling takes it, or leaves an inbox item when the workflow has none"
+        },
+        "handle": "watchdog-pr-no-ci",
+        "id": "01M6WJ2D2ZAVPKEZVHFWPQNV92",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6WJ2D2ZAVPKEZVHFSTVKQCM",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ2D2ZAVPKEZVHFSTVKQCM",
+        "id": "01M6WJ2D5V1FQZRD43R5T976SJ",
+        "link": "01M6WJ2D5V1FQZRD43R39WWGQS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestWatchdogGreenUnmerged, with a fake gh, shows a resume --retry for an autonomous ship and an inbox item, with no resume and no merge call, when the ship stage needs the owner",
+          "statement": "When a run's PR is green but the run never merged it, the daemon resumes the run with --retry so the workflow's own merge step merges it, never merging outside a workflow, and leaves an inbox item instead when that workflow's merge needs the owner"
+        },
+        "handle": "watchdog-green-pr-unmerged",
+        "id": "01M6WJ2D976WM21C1X41AK0E50",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6WJ2D976WM21C1X3YVMCHY8",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ2D976WM21C1X3YVMCHY8",
+        "id": "01M6WJ2DFX8S0QGXWB5J5MK1X2",
+        "link": "01M6WJ2DFX8S0QGXWB5H9G8BW3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestWatchdogRequests shows a request whose plan run is gone resumed, a request whose plan run failed on a transient signature retried, and a request failed for any other reason left for the owner",
+          "statement": "A plan request stuck planning (its plan run stalled, or ended with no live run while the request still says planning) or failed on a transient signature is recovered the same way as any run: its plan run is nudged, retried or resumed within the budget"
+        },
+        "handle": "watchdog-stuck-requests",
+        "id": "01M6WJ2DHPKP2B9JRXXE8T59JV",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6WJ2DHPKP2B9JRXXB8NCGPX",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ2DHPKP2B9JRXXB8NCGPX",
+        "id": "01M6WJ2DJVNTRV95468HV3TWR9",
+        "link": "01M6WJ2DJVNTRV95468E4TSFMN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestWatchdogBudget shows attempts journalled and counted across daemon restarts, no further action once the budget is spent, and one inbox item listing the attempts",
+          "statement": "Each run carries its own watchdog retry budget, separate from any step's retries and journalled with every attempt; once it is spent the daemon stops acting on the run and leaves one inbox item naming each recovery it tried"
+        },
+        "handle": "watchdog-retry-budget",
+        "id": "01M6WJ2DP43PV2BDTVP7K9WWZ3",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6WJ2DP43PV2BDTVP6AHT2DN",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ2DP43PV2BDTVP6AHT2DN",
+        "id": "01M6WJ2DSXCBYEN88JP4MZ07YY",
+        "link": "01M6WJ2DSXCBYEN88JP2R1Q75X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestWatchdogBugs shows one bug request queued with the run ID, step and log lines, a second matching recovery queuing none while the first request is open, a CI flake queuing none, and file_bugs = false queuing none",
+          "statement": "For each recovery caused by a bug (a stall, a transient failure other than a CI flake, a PR its run left unmerged or without CI) the daemon queues one bug request with the evidence (run and request IDs, step, log lines), and does not queue another while an open request already names the same recovery kind and step; file_bugs = false turns this off"
+        },
+        "handle": "watchdog-files-bugs",
+        "id": "01M6WJ2DW8TQBJPM5R5AXT7FCK",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6WJ2DW8TQBJPM5R59T3QGFK",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ2DW8TQBJPM5R59T3QGFK",
+        "id": "01M6WJ2E032CCD3ZSGQNWX752F",
+        "link": "01M6WJ2E032CCD3ZSGQKY0PBET",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestWatchdogPollBehind, with a fake clock, shows a slow poll logged and reported as warn in health, and health back to ok after a poll within the limit",
+          "statement": "The daemon warns when a poll takes longer than the configured multiple of its poll interval: one log line per slow poll and a warn part in rhiza health until polls catch up"
+        },
+        "handle": "watchdog-poll-behind",
+        "id": "01M6WJ2E3CQQKRN6CDHTDEERJ3",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6WJ2E3CQQKRN6CDHTAA07TG",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ2E3CQQKRN6CDHTAA07TG",
+        "id": "01M6WJ2E7QJ5K5VD3SSE0V6KQ3",
+        "link": "01M6WJ2E7QJ5K5VD3SSCCA5QWA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScripts/watchdog-health shows rhiza health listing the latest watchdog actions, newest first, from a journal written by a faked recovery, and go test -trimpath ./internal/api -run TestWatchdogLog checks one log line per action",
+          "statement": "The daemon logs one line per watchdog action (what it saw, what it did, the run or request) and rhiza health shows the watchdog's last actions"
+        },
+        "handle": "watchdog-actions-shown",
+        "id": "01M6WJ2EA89XVKKBJ31M44HKJY",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6WJ2EA89XVKKBJ31JVBAZB7",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ2EA89XVKKBJ31JVBAZB7",
+        "id": "01M6WJ2EEW7SH606CGDBJW93SP",
+        "link": "01M6WJ2EEW7SH606CGD7MDVBQS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WJ2EHFS15QM1F98BJWERK5",
+  "type": "ops",
+  "v": 1
+}

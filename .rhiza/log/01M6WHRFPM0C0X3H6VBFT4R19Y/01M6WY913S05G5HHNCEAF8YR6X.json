@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WXWWADMKEA14XWQHK8VXP4",
+  "after": [
+    "01M6WXMPXYDWWMFG32W96736ME"
+  ],
+  "at": "2026-11-08T06:42:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 315c91c7, ran go test -trimpath -count=1 ./internal/api -run TestWatchdogPollBehind -v: PASS. The test uses fixed fake times and durations: a poll at the 3x5s limit (15s) logs nothing and health stays ok; a 40s poll logs exactly one line naming 40s and 15s and turns the daemon health part to warn with 'polling behind'; a 2s poll clears state.PollBehind and health is ok again with no new log line; a disabled watchdog records nothing. Read the diff: runDaemon times each poll with ctx.Now, applies the home project's watchdog pollBehind policy (default 3) to its *daemonProj state before saveState, carries PollBehind across restarts, daemon status reports poll_behind and healthDaemon warns from it; describe-golden updated. Also ran TestDaemon*/TestHealth* in ./internal/api (all pass; the package's known enclosing-root state leak comes from existing tests, the new test alone is clean), ./internal/daemon tests, and cmd/rhiza TestScripts for describe-golden, health* and daemon* (ok); go vet and gofmt clean."
+        },
+        "handle": "watchdog-poll-behind-verified",
+        "id": "01M6WY90T2YQC7GTZV7YX3XX23",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WY90T2YQC7GTZV7Y01SBKP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WY90T2YQC7GTZV7Y01SBKP",
+        "id": "01M6WY90YGQ56S8DAZYX9BWRZF",
+        "link": "01M6WY90YGQ56S8DAZYWHAZ0F5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2E3CQQKRN6CDHTAA07TG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WY913S05G5HHNCEAF8YR6X",
+  "type": "ops",
+  "v": 1
+}

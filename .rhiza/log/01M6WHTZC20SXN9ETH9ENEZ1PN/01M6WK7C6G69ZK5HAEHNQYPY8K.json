@@ -1,0 +1,41 @@
+{
+  "actor": "01M6WK62NTTS5ZSGHXB2N7VB1P",
+  "after": [
+    "01M6WK5KSMVJ437CP3FMB19BES"
+  ],
+  "at": "2026-11-08T03:28:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The Source's summary is the planner's own paraphrase of the arbiter's answer, not owner words (quotes is empty; 'No owner words were given'), so correcting it invents nothing. The Decision it backs explicitly rejects claiming the cause: a check that reads .rhiza/, such as Rhiza's own self-check, can fail on a plan's content, so 'unrelated' could be false; the leaf forbids 'unrelated' in any detail. The Decision and leaf are the reviewed, authoritative design, and the change set's intent ('naming the test as unrelated') is served by naming the failing tests and stating the .rhiza-only fact. Changing the Decision to match the Source would reintroduce the rejected, possibly false claim, so the Source must follow the Decision so provenance readers see the chosen design.",
+          "statement": "Correct Source plan-ci-flake-reruns-interview's summary to match Decision plan-ci-flake-reruns: replace 'says the failure is unrelated to the plan' with wording that, when the PR's diff from its merge base touches only .rhiza/, the error appends that the PR changes only .rhiza/ (a fact, not a claim about the cause), and adds ' after <n> reruns' when reruns were spent. Decision plan-ci-flake-reruns and leaf ship-check-names-unrelated-failure stay as they are; the Source summary is the only thing that changes, and it adds no owner words since none were given.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "plan-ci-flake-source-summary-matches",
+        "id": "01M6WK7C2W9WTGM1MWZH8945YQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6WK7C2W9WTGM1MWZE4PEG5G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WK7C2W9WTGM1MWZE4PEG5G",
+        "id": "01M6WK7C4F1HDHYQT617712C2S",
+        "link": "01M6WK7C4F1HDHYQT61444EPKP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WK5KH8ZSWGNGMXXYGT0X0P",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WK7C6G69ZK5HAEHNQYPY8K",
+  "type": "ops",
+  "v": 1
+}

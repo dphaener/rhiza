@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WX8G5ANWD1FHZZQJV4ENBT",
+  "after": [
+    "01M6WX53NPAV75EM4C864PT9SY"
+  ],
+  "at": "2026-11-08T06:26:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 071e243b ran `go test -trimpath ./internal/api -run TestWatchdogBudget -v -count=1`: PASS. The test polls a run that keeps failing on a transient gh 502, round-tripping the watchdog memory and holds through daemon.State JSON between polls (a daemon restart). It shows each attempt journalled in WatchdogRun.Attempts with its time and action, Spent counted across restarts, exactly two resumes with budget 2 and none after over three more polls, and one inbox item (watchdogHoldItems) that names the spent budget, the 502 and both attempt times, with the same ID on the next poll. Read the diff: every pass that charged Spent++ (stalled, transient, CI rerun, no-CI, requests, green-unmerged) now goes through watchdogDeps.charge, which also appends the attempt. The budget sits in daemon state per run, separate from step retries. watchdogBudgetHolds swaps any other hold on a spent run for one item listing every attempt. Also ran `go test -trimpath ./internal/api -run Watchdog` and `go test -trimpath ./internal/daemon/...`, both ok; go vet and gofmt are clean."
+        },
+        "handle": "watchdog-retry-budget-verified",
+        "id": "01M6WXC14Z1B5QW2RX8TXFS33N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WXC14YCXXHBSBCZWHYPWWD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WXC14YCXXHBSBCZWHYPWWD",
+        "id": "01M6WXC1J4V14DR320QRE1E15N",
+        "link": "01M6WXC1J4V14DR320QNQDYV2Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2DP43PV2BDTVP6AHT2DN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WXC1NR4BC2WPFEYC6YMC3A",
+  "type": "ops",
+  "v": 1
+}

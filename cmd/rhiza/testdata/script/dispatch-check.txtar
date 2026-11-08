@@ -45,6 +45,15 @@ cp $WORK/dispatch-table.toml .rhiza/dispatch.toml
 ! exec rhiza check
 stdout 'dispatch.toml: .*unknown table \[reqest\]'
 
+# [request] and [[schedules]] together
+cp $WORK/dispatch-schedules.toml .rhiza/dispatch.toml
+exec rhiza check
+
+# a bad schedule names the schedule and key
+cp $WORK/dispatch-schedule-bad.toml .rhiza/dispatch.toml
+! exec rhiza check
+stdout 'dispatch.toml: .*schedule "intake": every'
+
 -- mine.toml --
 name = "bugfix"
 [step.go]
@@ -68,3 +77,21 @@ milestone = "plan"
 -- dispatch-table.toml --
 [reqest]
 bug = "plan"
+-- dispatch-schedules.toml --
+[request]
+bug = "bugfix"
+
+[[schedules]]
+name = "intake"
+every = "15m"
+workflow = "bugfix"
+
+[[schedules]]
+name = "nightly"
+cron = "CRON_TZ=UTC 0 3 * * *"
+command = "true"
+-- dispatch-schedule-bad.toml --
+[[schedules]]
+name = "intake"
+every = "30s"
+command = "true"

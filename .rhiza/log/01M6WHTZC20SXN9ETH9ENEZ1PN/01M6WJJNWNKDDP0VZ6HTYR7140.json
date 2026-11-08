@@ -1,0 +1,44 @@
+{
+  "actor": "01M6WJGCF7XC4Y06QQTRDCK0KS",
+  "after": [
+    "01M6WJ6ZXMGTD0V5BFAA971C1A"
+  ],
+  "at": "2026-11-08T03:17:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Intent: the evidence is a Nebari plan run (01M6VY5APJP9, PR #78) blocked by a Rails flake, and the closest precedent, the ci-triage RSpec fix (01M6TB6N, decision-ci-triage-runners), served m27-nebari-on-rhiza ('Nebari's daemon builds and ships a Nebari change set on its own with Rhiza's workflows'); a plan run that dies on an unrelated flake is the same blocker. Rerun: internal/api/ship.go shipRerunFailed stops after one rerun per head (st.RerunHead == resp.Commit && len(st.Reruns) > 0), and plan.toml's pr-green and rebased-green just run 'rhiza ship check', so the run fails on the second red; the question notes the first rerun already fired and failed and a third attempt passed, so the plan needs a second rerun per head, not the first. A budgeted flag on ship check keeps it deterministic, bounded and visible in the workflow file, leaves ship-change and ci-rerun-once-per-head unchanged by default, and avoids an agent step for a plan whose diff is only .rhiza/. Naming: ship check already parses failing tests from --log-failed (parseFailedTests, shipReadFailures), so reusing it names the test; the 'unrelated' claim is made only when the diff really is .rhiza-only, so it is true whichever workflow calls it. Failing: the change set's intent says 'rerun the failed jobs once (budgeted) and only then fail', and merging on red would bypass the repo's required checks and could hide a real break on main; the reruns absorb ordinary flakes and a persistent red is worth the owner's eye, now with a message that says it is not the plan's fault.",
+          "statement": "Change set 01M6WHT serves intent m27-nebari-on-rhiza (01M6J303FW4PYT5E5CE39QNHJ8). (1) Rerun budget: rhiza ship check takes a --reruns <n> flag (default 1, today's ci-rerun-once-per-head behaviour; n >= 1) that reruns a head's failed Actions jobs up to n times per head, each rerun recorded in the ship record (a per-head count beside RerunHead/Reruns) before gh run rerun --failed is called, so a crash costs a missed rerun, never an extra one; plan.toml passes --reruns 2 to every ship check in wait-pr, pr-green, wait-rebased and rebased-green, giving a plan PR three CI attempts per head; ship-change keeps the default, since its red CI goes to ci-triage and ci-fix. No agent step and no change to max_visits. (2) Naming: when a check is still red, ship check keeps today's detail form ('failed: <checks>; failing tests: <tests>', the tests parsed from the failed runs' logs as it does for ci-triage) and the human line's 'PR #<n> at <short head>: ' prefix; when reruns were spent on the head it adds ' after <n> reruns' after the failed checks, and when the PR's diff from its merge base touches only .rhiza/ paths it appends that the PR changes only .rhiza/, so the failure is unrelated to the plan (a flaky or broken test on main), for example: 'PR #78 at 18230d2: failed: test (4/5) after 2 reruns; failing tests: rspec ./spec/system/garden_location_spec.rb[1:1:11]; the PR changes only .rhiza/, so this failure is unrelated to the plan'. A head with no rerun spent and a diff touching other paths keep today's detail unchanged. (3) Yes: a .rhiza-only PR whose checks stay red after the reruns still fails the step and ends the run failed; Rhiza never merges past a red check. The run's inbox item carries that message, and the owner resumes with gh run rerun --failed and rhiza run resume --retry as today.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "plan-ci-flake-reruns",
+        "id": "01M6WJ4SM7KZVYHEW98HB2J9SQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6WJ4SM7KZVYHEW98G3KJG66",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api with a fake gh and a git repo shows a red head after 2 reruns failing with the detail 'failed: test after 2 reruns; failing tests: <parsed test>; the PR changes only .rhiza/, so this failure is unrelated to the plan' when the branch's diff touches only .rhiza/ paths, and the same detail without the .rhiza/ note when it also touches a file outside .rhiza/; the existing assertions pass unchanged, including internal/api/ship_test.go's human line 'PR #7 at abc1234: failed: test, ci/x' (no rerun spent) and the testscript ship-check-ci-test-findings's stdout 'failed: test' (lines 39 and 51); run with go test -trimpath ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/ship-check-ci-test-findings' only",
+          "statement": "When a head's checks stay red, rhiza ship check's failure detail keeps today's form, 'failed: <checks>' then '; failing tests: <tests>' when it parsed any from the failed runs' logs (the human line already prefixes the PR and short head, 'PR #7 at abc1234: '), and extends it in two ways only: when one or more reruns were spent on the head it inserts ' after <n> reruns' right after the failed checks ('failed: test after 2 reruns; failing tests: ...'), and when the head's diff from its merge base with origin/main touches only paths under .rhiza/ it appends '; the PR changes only .rhiza/, so this failure is unrelated to the plan'. A head with no rerun spent (for example a check with no Actions run) gets no rerun count, and a diff touching any other path, or one that cannot be computed, gets no .rhiza/ note, so those details are byte-identical to today's"
+        },
+        "handle": "ship-check-names-unrelated-failure",
+        "id": "01M6WJ6ZEEPYS69MVFGMKJEGZ7",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6WJ6ZEEPYS69MVFGK79HHKN",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      }
+    ]
+  },
+  "change_set": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WJJNWNKDDP0VZ6HTYR7140",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,33 @@
+{
+  "actor": "01M6WHSD93J9TWD03RVXPXPHCQ",
+  "after": [
+    "01M6WJ1FJRZA3NMQB9ZWRX8A1W"
+  ],
+  "at": "2026-11-08T03:08:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "43a55ed74fb45e332b148137e8a274b338095d3f032d320063459a73af75ade4",
+          "session": "fa29a4a8-96f3-4ec1-b17f-01a1b91c9b4a",
+          "summary": "Autonomous plan run: no owner present. The planner read the intent, the daemon code (daemonPoll1, daemonNudge, session.StallAfter, inbox stalled items) and the overlapping queued bug requests 01M6W8KN, 01M6W9VN and 01M6WBVX, and raised four choices as one question for the arbiter: scope against those requests, stalled-step recovery, PR recovery and shipped defaults. The arbiter answered with Decision watchdog-scope-and-defaults: the watchdog is the daemon-level backstop that acts only on runs that stalled or ended on a transient signature, never while a step's own recovery is live, with its own per-run retry budget; stalled autonomous steps are nudged, then stopped and retried, while owner-attended runs get only a log line and an inbox item; a PR with no CI gets origin/main merged in and pushed normally (never rebase or force-push), a green unmerged PR gets its run resumed so the workflow merges it; defaults live under [rhiza.daemon.watchdog] in rhiza.toml (nudge 20m then retry 40m for agent steps, command steps 30m, CI and PR waits 90m, budget 2, CI rerun once per PR head, poll-behind warning past 3x the interval, file_bugs on, autonomous runs only). The change set serves milestone-25 (the daemon builds and ships the queued requests on its own), as its sibling requests do.",
+          "title": "Daemon watchdog plan, autonomous interview with the arbiter"
+        },
+        "handle": "watchdog-plan-interview",
+        "id": "01M6WJ1GK03S6X3QRQEPGVARE8",
+        "key": null,
+        "kind": "source",
+        "node": "01M6WJ1GK03S6X3QRQEP6KGNTT",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WJ1GPR2EFP0XRXCHF84EYT",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WP9DASYXF0W1AF5J4ZP4XC",
+  "after": [
+    "01M6W6QRVEK9BP00WWQ3JRG40F"
+  ],
+  "at": "2026-11-08T04:23:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 3f7ad85b ran go test -trimpath -v ./internal/schedule/...: all 8 tests PASS (TestCronFields: step */20, list 5,35, range 9-11, range-step 10-30/10, month and weekday names jan-feb mon-wed, 7 as Sunday, 29 FEB; TestCronMacros: @hourly @daily @weekly @monthly @yearly; TestCronEitherDayField: '0 0 15 * fri' fires on the 15th or Fridays, a star field requires both; TestCronTimeZone: CRON_TZ=America/Denver 0 9 * * * against UTC clocks gives 16:00Z winter and 15:00Z summer; TestCronDST: 02:30 skipped on 2026-03-08 spring-forward, 01:30 fired once on 2026-11-01 fall-back and hourly slots in the repeated hour fire once; TestEvery: 15m gives only :00/:15/:30/:45 from four start times, slots are epoch multiples (90m from epoch = 5400s); TestParseErrors: six fields, CRON_TZ=Mars/Olympus, every 30s and every -5m all rejected). gofmt -l and go vet on the package are clean. Read the diff: pure package (no clock or file reads), time/tzdata embedded, Cron.Next walks month/day/hour/minute in the zone and skips a repeated wall reading via ZoneBounds, Every.Next floors to epoch multiples in UTC; only the builder's own actor record is added under .rhiza/log."
+        },
+        "handle": "schedule-slots-verified",
+        "id": "01M6WPAYYM3ATZB1AT42CQ5VPB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WPAYYM3ATZB1AT42CDN72P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WPAYYM3ATZB1AT42CDN72P",
+        "id": "01M6WPAYZXRQZC41C66YCC6F8T",
+        "link": "01M6WPAYZXRQZC41C66VZF3CY8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HTVXNGQK1CJ943THTJDB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WPAZ1JET2G8R3788RKA97M",
+  "type": "ops",
+  "v": 1
+}

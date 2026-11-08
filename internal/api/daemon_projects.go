@@ -92,6 +92,7 @@ type daemonProj struct {
 	pending           map[string]daemonPending
 	unjournaled       map[string]daemonPending
 	state             daemon.State
+	scheds            daemonSchedules
 	notifyCmd         string
 	eventCmd          string
 	// lock is the project's per-repo daemon lock, nil for the home project,
@@ -195,7 +196,50 @@ func (p *daemonProj) prepare(r DaemonRequest, onConf func(daemonConf)) daemonTur
 		hold = governorHold(ctx, p.common)
 	}
 	ready, running := daemonDemand(ctx, p.rs, p.pending, p.unjournaled, conf, hold)
+	// A due schedule is demand for a slot after the rest; one started and
+	// not journaled yet holds a slot.
+	if runs, lerr := p.rs.List(); lerr == nil {
+		p.scheds.logEnds(ctx, p.name, runs)
+		running += p.scheds.startingCount(ctx.Now(), runs)
+		if !p.schedulesStopped(conf, hold) {
+			for range p.scheds.due(ctx, p.name, runs) {
+				ready = append(ready, "schedule")
+			}
+		}
+	}
 	return daemonTurn{conf: conf, hold: hold, pick: daemon.ProjectPick{Project: p.name, Ready: ready, Running: running, Max: conf.projectMax}}
+}
+
+// schedulesStopped says a paused or held project, or one on a disk low on
+// space, starts no scheduled run, as it starts nothing else.
+func (p *daemonProj) schedulesStopped(conf daemonConf, hold *usageHold) bool {
+	if conf.paused || hold != nil {
+		return true
+	}
+	low, _ := daemonDiskLow(p.ctx, conf.minFree)
+	return low
+}
+
+// startSchedules starts the due schedules' runs in the slots left of share.
+func (p *daemonProj) startSchedules(conf daemonConf, hold *usageHold, free int) {
+	if free <= 0 || p.schedulesStopped(conf, hold) {
+		return
+	}
+	runs, err := p.rs.List()
+	if err != nil {
+		daemonLogf(p.ctx, "project %s: schedules not started: read runs: %v", p.name, err)
+		return
+	}
+	for _, ds := range p.scheds.due(p.ctx, p.name, runs) {
+		if free <= 0 {
+			break
+		}
+		if err := p.scheds.start(p.ctx, p.name, ds, conf.mode); err != nil {
+			daemonLogf(p.ctx, "project %s: schedule %s not started: %v", p.name, ds.sc.Name, err)
+			continue
+		}
+		free--
+	}
 }
 
 // daemonDemand is what the project of ctx could start now, in the order
@@ -292,6 +336,11 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 	started, resumed, planned, err := daemonPoll1(ctx, p.rs, p.pending, p.unjournaled, t.pick.Running+share, minFree, r.Autonomous, conf.mode, conf.paused, hold, &skips)
 	resp.Planned = append(resp.Planned, planned...)
 	if err == nil {
+		// A schedule that does not start is in the daemon log; it never
+		// fails the poll.
+		p.startSchedules(conf, hold, share-len(started)-len(resumed)-len(planned))
+	}
+	if err == nil {
 		state.Skips = skips
 		state.UsageHold = usageHoldState(hold, state.UsageHold, ctx.Now())
 		if low, free := daemonDiskLow(ctx, minFree); !low {
@@ -318,7 +367,11 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 	if nerr := daemonNotify(ctx, p.rs, state, p.notifyCmd); err == nil {
 		err = nerr
 	}
-	if nerr := daemonNudge(ctx, p.rs, state); err == nil {
+	if pol := watchdogPolicyOf(t.conf.rows); pol.Enabled {
+		if werr := daemonWatchdog(ctx, p.rs, state, pol); err == nil {
+			err = werr
+		}
+	} else if nerr := daemonNudge(ctx, p.rs, state); err == nil {
 		err = nerr
 	}
 	if eerr := daemonEvents(ctx, state, p.eventCmd); err == nil {

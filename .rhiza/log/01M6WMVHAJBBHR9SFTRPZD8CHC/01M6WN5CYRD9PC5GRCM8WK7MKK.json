@@ -1,0 +1,60 @@
+{
+  "actor": "01M6WMWN3EAWTQMV1216G1PB3B",
+  "after": [
+    "01M6WN53GGYZ8HFYMRJC018EJR"
+  ],
+  "at": "2026-11-08T04:02:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6WN3EQ24GGSKCPVWF623BKV",
+        "id": "01M6WN5CPKTV9JM284A1EC939S",
+        "link": "01M6WN5CPKTV9JM2849Y8RCFSK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WN52NAA4P2EYS63YNDRJYA",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "An engine test in internal/run where a leaf fails both rounds of an autonomous run with its question unanswered, then Retry: the leaf gets a leaf-round marked as the retry's, a fresh builder starts at the next attempt, its skipped dependent is built after it passes and the run succeeds; a second case where it fails again ends the run failed with no new arbitration; internal/api tests show run status and the builder prompt naming the retry round with no empty decision; go test -trimpath ./internal/run/... ./internal/api/... passes",
+          "statement": "rhiza run resume --retry on a run that failed at a leaves step gives every failed leaf of that step one fresh round of 3 attempts, journalled as a leaf-round given by the retry rather than by a Decision, whether or not its question was answered; the step's skipped leaves reopen with it, its builder's prompt and run status name the round as the retry's, and a failure in that round is not arbitrated again"
+        },
+        "handle": "retry-revives-failed-leaves",
+        "id": "01M6WN5CRPVBSVTZ8CPHWZ114V",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M6WN5CRPVBSVTZ8CPGDM6AST",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M6WN5CRPVBSVTZ8CPGDM6AST",
+        "id": "01M6WN5CWMK5Q79XKXG1J328YS",
+        "link": "01M6WN5CWMK5Q79XKXFY4FEBZR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WN3EQ24GGSKCPVWF623BKV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6WN5CRPVBSVTZ8CPGDM6AST",
+        "id": "01M6WN5CXMZN3FKCR6VHZ7ER7Q",
+        "link": "01M6WN5CXMZN3FKCR6VFGJY0J5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WN52NAA4P2EYS63YNDRJYA",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6WMVHAJBBHR9SFTRPZD8CHC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WN5CYRD9PC5GRCM8WK7MKK",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WVPRXTC39719ERFZ5J6FV0",
+  "after": [
+    "01M6WT95VQ1XE1CTRCRKFYS99B"
+  ],
+  "at": "2026-11-08T06:01:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 973764aa ran go test -trimpath -count=1 ./internal/api -run TestWatchdogPRNoCI -v: PASS. It uses local bare repos as fake git remotes and a fake gh PR read. In the clean case watchdogMergeMain adds one merge commit on top of the branch's old head and runs a plain git push origin HEAD:refs/heads/<branch> (no --force, no rebase). Origin's branch then equals the pushed head, and the ship state records Pushed with Head cleared. A second call does nothing. In the conflict case the merge is aborted: HEAD and origin's branch are unchanged, the worktree is clean, a.txt is reported and no ship state is written. In the pass, a clean merge resumes the run. A conflict resumes the run when the workflow has conflict handling (ship check --settled / ship rebase). Otherwise it holds a WatchdogHold that becomes an InboxStalled item. PRs that have checks or are not CONFLICTING are skipped. Read the diff. Also ran go test -run Watchdog ./internal/api (all pass), go vet and gofmt (clean). One run of the Watchdog filter tripped TestMain's guard on ~/code/.rhiza-root/usage.live.json. That file is written by the live root daemon; three reruns passed."
+        },
+        "handle": "watchdog-pr-no-ci-verified",
+        "id": "01M6WVYCGDT83DTT4CR93K2K1Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WVYCGDT83DTT4CR70EVND9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WVYCGDT83DTT4CR70EVND9",
+        "id": "01M6WVYCR3XP5SPKD9VVCRZ7Y9",
+        "link": "01M6WVYCR3XP5SPKD9VV09NZNH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2D2ZAVPKEZVHFSTVKQCM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WVYCTQAPYXDD7VN66DJAV0",
+  "type": "ops",
+  "v": 1
+}

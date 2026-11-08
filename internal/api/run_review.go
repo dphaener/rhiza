@@ -922,10 +922,41 @@ type RunReviewCheckResponse struct {
 	DryRun    bool                `json:"dry_run,omitempty" desc:"True if nothing was written or journalled"`
 }
 
-// reviewQuestionHandle is the handle of the question run rid leaves for
-// finding fid of round n.
+// reviewQuestionHandle is the handle the question run rid leaves for
+// finding fid of round n starts from: the run's full ID, since a run ID's
+// first characters are only its start time. When another node holds it the
+// check takes the next free one (reviewQuestionHandleFor).
 func reviewQuestionHandle(rid string, n int, fid string) string {
-	return reviewQuestionPrefix + strings.ToLower(rid[:8]) + "-r" + strconv.Itoa(n) + "-" + fid
+	return reviewQuestionPrefix + strings.ToLower(rid) + "-r" + strconv.Itoa(n) + "-" + fid
+}
+
+// reviewAskedFor is the asked entry among asked for the question with base
+// handle base: its handle is base or base-2, base-3, ....
+func reviewAskedFor(asked []run.Asked, base string) (run.Asked, bool) {
+	for _, a := range asked {
+		if a.Handle == base {
+			return a, true
+		}
+		if rest, ok := strings.CutPrefix(a.Handle, base+"-"); ok && rest != "" && strings.Trim(rest, "0123456789") == "" {
+			return a, true
+		}
+	}
+	return run.Asked{}, false
+}
+
+// reviewNodeStatement is the statement of the node.create op with handle h
+// in sets, "" if it has none.
+func reviewNodeStatement(sets []changeset.ChangeSet, h string) string {
+	for _, c := range sets {
+		for _, o := range c.Ops {
+			if o.Type == op.TypeNodeCreate && o.Handle == h {
+				var st string
+				_ = json.Unmarshal(o.Fields["statement"], &st)
+				return st
+			}
+		}
+	}
+	return ""
 }
 
 // reviewQuestionText is the statement of the question left for finding
@@ -1003,12 +1034,32 @@ func runRunReviewCheck(ctx *Ctx, _ any) (any, error) {
 	items := map[reviewTarget][]applyItem{}
 	for _, f := range confirmed {
 		v, _ := rd.Verdict(f.ID)
-		q := RunReviewQuestion{Handle: reviewQuestionHandle(rr.id, rd.Number, f.ID), Finding: f.ID}
+		base := reviewQuestionHandle(rr.id, rd.Number, f.ID)
+		text := reviewQuestionText(rd.Number, f, v.Reason)
 		t := reviewQuestionTarget(c, plan, mustParseID(f.Node))
+		q := RunReviewQuestion{Handle: base, Finding: f.ID}
+		var qid id.ID
+		found := false
+		if a, ok := reviewAskedFor(reviewQuestions(rr.state), base); ok {
+			// Journalled: its entry names the handle and node.
+			q.Handle = a.Handle
+			qid, found = mustParseID(a.Question), true
+		} else {
+			// The first handle no other node holds, or the one an earlier
+			// check of this run created before it could journal it.
+			q.Handle = uniqueHandle(base, func(h string) bool {
+				if _, ok := reviewQuestionNode(sets, h); ok {
+					return reviewNodeStatement(sets, h) != text
+				}
+				_, taken := w.model(t.cs).HandleTaken(h)
+				return taken
+			})
+			qid, found = reviewQuestionNode(sets, q.Handle)
+		}
 		if n, ok := w.model(t.cs).Node(mustParseID(f.Node)); ok && n.Kind == op.KindCapability && !n.Retired {
 			q.Blocks = n.ID.String()
 		}
-		if qid, ok := reviewQuestionNode(sets, q.Handle); ok {
+		if found {
 			q.ID = qid.String()
 		} else {
 			q.Added = true
@@ -1016,7 +1067,7 @@ func runRunReviewCheck(ctx *Ctx, _ any) (any, error) {
 				targets = append(targets, t)
 			}
 			add := AddRequest{Kind: string(op.KindQuestion), Handle: q.Handle,
-				Fields: []string{"statement=" + reviewQuestionText(rd.Number, f, v.Reason)}, lenient: true}
+				Fields: []string{"statement=" + text}, lenient: true}
 			items[t] = append(items[t], applyItem{op: "add", build: func(b writeBase) (edit, error) { return buildAdd(b, add) }})
 			if q.Blocks != "" {
 				link := LinkRequest{From: q.Handle, Type: string(op.LinkBlocks), To: q.Blocks}
@@ -1491,7 +1542,7 @@ func gateReview(sets []changeset.ChangeSet, m Model, rr reviewRun) (bool, error)
 		}
 	}
 	for _, f := range rd.Confirmed() {
-		if !asked[reviewQuestionHandle(rr.id, rd.Number, f.ID)] {
+		if _, ok := reviewAskedFor(reviewQuestions(rr.state), reviewQuestionHandle(rr.id, rd.Number, f.ID)); !ok {
 			return false, Errorf("%s: run %s is autonomous and review round %d has confirmed finding %s with no question left for it, so the review has not passed and it accepts nothing: run rhiza run review-check",
 				cmd, rr.id, rd.Number, f.ID).WithNext(runReviewCheckNext)
 		}

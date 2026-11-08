@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WG8YSANFK8STMXHAXE9PRA",
+  "after": [
+    "01M6W7X9QMB2PG4QXARZ3S27RV"
+  ],
+  "at": "2026-11-08T02:49:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at e58a2be7 by claude-code-a33034aa. Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-review-check-handles|run-review-check|run-review-check-landed|run-gate|run-arbitrate-asked)$': ok. In run-review-check-handles' -testwork dir the two runs were 01M5PWGKBGYFZMTH8Y8AF1G8GN and 01M5PWGKBGMVZ1H5AXG5VQ0BY9 (same first 10 chars, so the old 8-char handle would collide; the script asserts the shared 8-char prefix), both reached round 3 with f1 confirmed, and their journals hold asked entries with handles review-01m5pwgkbgyfzmth8y8af1g8gn-r3-f1-2 (run 1, whose full-ID handle an unrelated question held) and review-01m5pwgkbgmvz1h5axg5vq0by9-r3-f1 (run 2); a second review-check added nothing and kept one asked entry. go test -trimpath ./internal/api -run 'Review|Gate|Asked' (from a scratch worktree outside ~/code): ok, including TestReviewQuestionHandleFullID and TestReviewAskedFor (gate finds the -2 question via the journal). Read the diff: the gate and repeated checks use reviewAskedFor on journalled entries, not the rebuilt handle. Note: the full internal/api package timed out at 600s under VM load ~8.5, and a run under ~/code tripped the enclosing-root state guard; neither touches this change. Nit: a comment cites a nonexistent reviewQuestionHandleFor."
+        },
+        "handle": "review-question-handle-unique-verified",
+        "id": "01M6WGZZN4Z8QH5JXJGG8SYWK8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WGZZN4Z8QH5JXJGDFPR5QQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WGZZN4Z8QH5JXJGDFPR5QQ",
+        "id": "01M6WGZZPA7AJGSRK91WNK1KJG",
+        "link": "01M6WGZZPA7AJGSRK91S0E8MCB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W7QGXS2VNCJ3KMFRMW78XE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W7G8YBXBX090SSZC3Y60H2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WGZZQAQJ5RYHX5WH4C0M5E",
+  "type": "ops",
+  "v": 1
+}

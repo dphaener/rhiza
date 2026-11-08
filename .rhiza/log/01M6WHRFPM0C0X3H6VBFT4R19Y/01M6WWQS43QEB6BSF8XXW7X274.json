@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WWMGYZ2V18E727FBPW7FMZ",
+  "after": [
+    "01M6WVYCTQAPYXDD7VN66DJAV0"
+  ],
+  "at": "2026-11-08T06:15:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e89dc1ca, ran go test -trimpath -count=1 ./internal/api -run 'TestWatchdogRequests$' -v: PASS. The test drives watchdogRequests over fake journals and a fake resume: request r1 whose plan run is unended and not live (gone, still planning) is resumed; r3 whose plan run failed on a git index.lock transient signature is retried (resume --retry, logged with the signature); r4 failed with 'exit 1' is not resumed (left for the owner); the live run, a milestone request and an unstarted request are untouched; a second poll with RetryBudget 1 resumes nothing. Read the diff: the pass is wired into watchdogPasses via daemon.ReadRequests, shares the per-run budget memory and the continue queue check, skips runs the failed-transient pass already owns, and leaves planned (succeeded) requests alone. Also ran the whole -run TestWatchdog set: every test passes; the package then reports the known pre-existing usage.live.json leak into ~/code/.rhiza-root, which TestWatchdogRequests alone does not trigger."
+        },
+        "handle": "watchdog-stuck-requests-verified",
+        "id": "01M6WWQRF22MPND8E3YV6VQSKR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WWQRF22MPND8E3YSSFMGTK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WWQRF22MPND8E3YSSFMGTK",
+        "id": "01M6WWQRSCGDW4J2SC3XHPX5H7",
+        "link": "01M6WWQRSCGDW4J2SC3T2YEJ2R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2DHPKP2B9JRXXB8NCGPX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WWQS43QEB6BSF8XXW7X274",
+  "type": "ops",
+  "v": 1
+}

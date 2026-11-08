@@ -1,0 +1,163 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6X11934V3WV516JY2EV6EE1"
+  ],
+  "at": "2026-11-08T07:37:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "3cd60b3141138ad578bb68d5e5bfa4263f916397",
+          "pr": "https://github.com/dphaener/rhiza/pull/375",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #375 (https://github.com/dphaener/rhiza/pull/375) passed CI at 3cd60b3",
+          "status": "verified"
+        },
+        "handle": "pr-375-daemon-watchdog",
+        "id": "01M6X1EZM2MWFV9MANZWTS8QKE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X1EZM2MWFV9MANZTWV6NFE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X1EZM2MWFV9MANZTWV6NFE",
+        "id": "01M6X1EZPQ63D5AT80M6KVDHVX",
+        "link": "01M6X1EZPQ63D5AT80M32QD1WZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2BF6X93480DV342ARX39",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6X1EZM2MWFV9MANZTWV6NFE",
+        "id": "01M6X1EZS11ATHSV2X4DYK44GE",
+        "link": "01M6X1EZS11ATHSV2X4AFNBABT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2BR1XZB2E5F21H8TNBFH",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6X1EZM2MWFV9MANZTWV6NFE",
+        "id": "01M6X1EZV5WD9K1DY3M07TBJQK",
+        "link": "01M6X1EZV5WD9K1DY3KZCV6HCM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2CKKVZMZ0EMK7HYXK1WH",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6X1EZM2MWFV9MANZTWV6NFE",
+        "id": "01M6X1EZX3GPF1AM10JYGQREMV",
+        "link": "01M6X1EZX3GPF1AM10JWDNB7X2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2CRTGK0ZMW94E2BA801H",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6X1EZM2MWFV9MANZTWV6NFE",
+        "id": "01M6X1EZZ5EJ2TR61GGRRS1MB2",
+        "link": "01M6X1EZZ5EJ2TR61GGQPXAXGM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2CXX5VYQ2236KG5ZEX7X",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6X1EZM2MWFV9MANZTWV6NFE",
+        "id": "01M6X1F010D5RWEA21C4BVQ2EQ",
+        "link": "01M6X1F010D5RWEA21C3XBPHQ7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2D2ZAVPKEZVHFSTVKQCM",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6X1EZM2MWFV9MANZTWV6NFE",
+        "id": "01M6X1F02XF5C4YB5TP1NDWNQX",
+        "link": "01M6X1F02XF5C4YB5TP1BZDD99",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2D976WM21C1X3YVMCHY8",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6X1EZM2MWFV9MANZTWV6NFE",
+        "id": "01M6X1F04F7KME10X8XYG47EYY",
+        "link": "01M6X1F04F7KME10X8XVYB8NYV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2DHPKP2B9JRXXB8NCGPX",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6X1EZM2MWFV9MANZTWV6NFE",
+        "id": "01M6X1F06B57KNQXEMABK3N9B9",
+        "link": "01M6X1F06B57KNQXEMA8Z1QH8H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2DP43PV2BDTVP6AHT2DN",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6X1EZM2MWFV9MANZTWV6NFE",
+        "id": "01M6X1F07RFWGJ6B8HKJ1B5HRH",
+        "link": "01M6X1F07RFWGJ6B8HKEDREFYC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2DW8TQBJPM5R59T3QGFK",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6X1EZM2MWFV9MANZTWV6NFE",
+        "id": "01M6X1F095E138ZR0KC7WWJWPC",
+        "link": "01M6X1F095E138ZR0KC5DJRRHR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2E3CQQKRN6CDHTAA07TG",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6X1EZM2MWFV9MANZTWV6NFE",
+        "id": "01M6X1F0B2EV41YC32Z7Q08JBZ",
+        "link": "01M6X1F0B2EV41YC32Z6QX5EN7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2EA89XVKKBJ31JVBAZB7",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6X1EZM2MWFV9MANZTWV6NFE",
+        "id": "01M6X1F0DKJNE2E6HPQQYW233E",
+        "link": "01M6X1F0DKJNE2E6HPQPPXRA4T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6X1F0KPWC4JYMKKYC038T34",
+  "type": "ops",
+  "v": 1
+}

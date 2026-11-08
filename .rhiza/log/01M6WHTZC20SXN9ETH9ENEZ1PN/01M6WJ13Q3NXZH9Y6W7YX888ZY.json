@@ -1,0 +1,30 @@
+{
+  "actor": "01M6WHW2WSGRB6MZG3FC8217VF",
+  "after": [
+    "01M6WHTZC20SXN9ETH9JGW0924"
+  ],
+  "at": "2026-11-08T03:08:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "5d744c51-b515-4500-b578-01a1b91df18d",
+          "statement": "Change set 01M6WHT (plan workflow ends a run on a CI flake) serves no intent yet. Which intent should it serve? / ship check already reruns a head's failed Actions jobs once (ci-rerun-once-per-head). In run 01M6VY5APJP9 that rerun fired and both flaky specs failed again; a third attempt passed. How should the plan workflow get its extra rerun? / When a check stays red after the reruns, how should ship check say the failure is unrelated to the plan? / Should a .rhiza-only PR whose app tests stay red after the reruns still end the run failed?"
+        },
+        "handle": "question-5d744c51-1",
+        "id": "01M6WJ10YJKJ6GG53EVPYXHVQA",
+        "key": null,
+        "kind": "question",
+        "node": "01M6WJ10YJKJ6GG53EVNNFCYAX",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WJ13Q3NXZH9Y6W7YX888ZY",
+  "type": "ops",
+  "v": 1
+}

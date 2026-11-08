@@ -1,0 +1,109 @@
+{
+  "actor": "01M6WYWD1J76JFF56CF7SDZ0R6",
+  "after": [
+    "01M6WYT0A2898QJH4Z76RAGQ8V"
+  ],
+  "at": "2026-11-08T06:59:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1738f418 I built rhiza into a scratch dir and ran it on a scratch git repo registered in a scratch Rhiza root, with RHIZA_ROOT/CHANGE/RUN unset and a logging fake rex first on PATH. dispatch.toml had failer (every 1m, command exits 3) and sleeper (every 1m, sleep 600). I ran rhiza daemon --autonomous --max-runs 3 --min-free 0 --permission-mode manual for real. Both fired at 06:56. The daemon log said 'run … of schedule failer failed: step \"command\" ended with outcome \"fail\"'. rhiza inbox from the root and from the project said 'Nothing waits on you'. The daemon output had no escape bytes, so no OSC 7501 status. The fake rex was never called. I then SIGKILLed the daemon and the live sleeper run, and health showed sleeper 'interrupted'. I restarted the daemon at 06:58:16 and sleeper fired again for slot 06:58, so an interrupted run no longer stalls its schedule. The 06:59 sleeper slot was skipped while that run was live, and failer fired and failed again with the inbox still empty."
+        },
+        "handle": "daemon-fires-schedules-qa-2",
+        "id": "01M6WZ97KRH5KBN15YS413EVBK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WZ97KQ6MHD578R5QXE0XRP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WZ97KQ6MHD578R5QXE0XRP",
+        "id": "01M6WZ97PEBFZE4XHKBWV1B5KA",
+        "link": "01M6WZ97PEBFZE4XHKBVBEEKNX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HVM44MDKXV4ESTPX0KSX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1738f418, against the same scratch root, rhiza health with no daemon warned '2 schedules; no daemon is running to fire them', with next run 06:56:00Z for each. With the daemon up it warned 'failer failed', listed each schedule's last run (time, run ID, failed/running/interrupted) and next run, and gave next 'rhiza run log <failed run>'. After the kill the sleeper line read 'interrupted'."
+        },
+        "handle": "health-schedules-part-qa-2",
+        "id": "01M6WZ97TC6G0WJN77F10A2W6C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WZ97TC6G0WJN77F0VA3Q0R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WZ97TC6G0WJN77F0VA3Q0R",
+        "id": "01M6WZ982CCG55RPHFBZ204W1B",
+        "link": "01M6WZ982CCG55RPHFBWTX8QWT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HW3CJ9HJ6KKRS7G4CJXC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1738f418, the built rhiza's guide workflows topic has a Schedules section naming every, cron (five fields, local time or a leading CRON_TZ=<zone>), workflow or command, catch_up and overlap. It says a scheduled run has no change set and that health shows schedules. The cycle 1 UTC wording is gone."
+        },
+        "handle": "schedules-guide-topic-qa-2",
+        "id": "01M6WZ98D54TC9BFVDNNGQRA3N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WZ98D54TC9BFVDNJ08YPD5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WZ98D54TC9BFVDNJ08YPD5",
+        "id": "01M6WZ98K3HWNYK0WFDGA6SN7K",
+        "link": "01M6WZ98K3HWNYK0WFDDJ9JJDY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HWFGG153SAAWP0XEK7JT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1738f418, the real daemon started scheduled command runs as 'rhiza run start --foreground --schedule <name>' on the scratch project's main checkout, with no change set. Six runs were journalled, and git status of the checkout stayed clean."
+        },
+        "handle": "scheduled-run-qa-2",
+        "id": "01M6WZ98Q1T7V2227XTNRGK0PJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WZ98Q1T7V2227XTJR5EN9Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WZ98Q1T7V2227XTJR5EN9Z",
+        "id": "01M6WZ98XRTT7QRN41NPBAZ8DH",
+        "link": "01M6WZ98XRTT7QRN41NJT2WV2E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HV83HMQEQ15319XERHJ6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WZ99535TYS198CZAVEA88R",
+  "type": "ops",
+  "v": 1
+}

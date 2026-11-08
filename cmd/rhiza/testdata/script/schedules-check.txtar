@@ -1,0 +1,59 @@
+# rhiza check reads [[schedules]]: it passes a schedule naming a repo workflow
+# and one with a command, and fails, naming the schedule, on a missing
+# workflow, an unknown key and a bad cron expression.
+
+env XDG_CONFIG_HOME=$WORK/xdg
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+fold-ok
+exec rhiza render
+mkdir .rhiza/workflows
+cp $WORK/mine.toml .rhiza/workflows/bugfix.toml
+
+cp $WORK/ok.toml .rhiza/dispatch.toml
+exec rhiza check
+
+cp $WORK/missing.toml .rhiza/dispatch.toml
+! exec rhiza check
+stdout 'dispatch.toml: schedule "intake": workflow: names workflow "nothing-here"'
+
+cp $WORK/unknown-key.toml .rhiza/dispatch.toml
+! exec rhiza check
+stdout 'dispatch.toml: .*schedule "intake": unknown key "evry"'
+
+cp $WORK/bad-cron.toml .rhiza/dispatch.toml
+! exec rhiza check
+stdout 'dispatch.toml: .*schedule "nightly": cron'
+
+-- mine.toml --
+name = "bugfix"
+[step.go]
+kind = "command"
+run = "true"
+-- ok.toml --
+[[schedules]]
+name = "intake"
+every = "15m"
+workflow = "bugfix"
+
+[[schedules]]
+name = "nightly"
+cron = "CRON_TZ=UTC 0 3 * * *"
+command = "true"
+-- missing.toml --
+[[schedules]]
+name = "intake"
+every = "15m"
+workflow = "nothing-here"
+-- unknown-key.toml --
+[[schedules]]
+name = "intake"
+evry = "15m"
+command = "true"
+-- bad-cron.toml --
+[[schedules]]
+name = "nightly"
+cron = "99 * * * *"
+command = "true"

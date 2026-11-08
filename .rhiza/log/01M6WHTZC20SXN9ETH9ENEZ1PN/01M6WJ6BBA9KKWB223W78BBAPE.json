@@ -1,0 +1,33 @@
+{
+  "actor": "01M6WHW2WSGRB6MZG3FC8217VF",
+  "after": [
+    "01M6WJ6ANNC0C3AYFMV70D1AR0"
+  ],
+  "at": "2026-11-08T03:10:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "dc48b438eb47615f227d087a39da0a5fe8e8ad9e0546bc6029ec4e0456c33f73",
+          "session": "5d744c51-b515-4500-b578-01a1b91df18d",
+          "summary": "Autonomous plan run for change set 01M6WHT. The planner found that Nebari plan run 01M6VY5APJP9 (PR #78) failed at rebased-green twice, on two different rebased heads, each on a different flaky RSpec system spec, after ship check's existing once-per-head rerun of the failed Actions jobs had already fired and failed again (the ship record shows rerun_head and reruns for e893ad0); a manual third attempt passed. The planner asked four questions (which intent the change set serves, how the plan workflow gets an extra rerun, how the failure is named as unrelated to the plan, and whether a .rhiza-only PR that stays red still fails). With no owner, the arbiter answered all four with Decision plan-ci-flake-reruns: serve m27-nebari-on-rhiza; rhiza ship check gains --reruns <n> (default 1) with a per-head count in the ship record, and plan.toml passes --reruns 2 to its four ship check steps; once the reruns are spent, the error names the failed checks and parsed failing tests and, when the PR's diff touches only .rhiza/, says the failure is unrelated to the plan; the run still fails on a persistent red. No owner words were given.",
+          "title": "Plan workflow CI flake reruns, autonomous plan interview"
+        },
+        "handle": "plan-ci-flake-reruns-interview",
+        "id": "01M6WJ6B8CAWDTWP2YT7AV6WBC",
+        "key": null,
+        "kind": "source",
+        "node": "01M6WJ6B8CAWDTWP2YT6NMESGW",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WJ6BBA9KKWB223W78BBAPE",
+  "type": "ops",
+  "v": 1
+}

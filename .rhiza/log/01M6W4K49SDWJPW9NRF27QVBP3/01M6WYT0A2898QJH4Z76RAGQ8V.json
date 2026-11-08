@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WY3EH973TSCTDAPCPG7J05",
+  "after": [
+    "01M6WYCH2DNJP7SBZGDER94E3Z"
+  ],
+  "at": "2026-11-08T06:51:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified attempt 2 at a14eb564 (fix on bb9a5544). I read the diff: an interrupted scheduled run's LastEnd is now its last journal entry, fixed across polls, not each poll's now, and inbox.go leaves scheduled runs with no change set out of the inbox and its newer-run key, so no Rex blocked notice. I ran go test -trimpath ./internal/api -run 'TestDaemon(Poll|Schedule|Scheduled|Interrupted)|TestScheduledRun|TestHealthSchedules|TestInbox' -count=1 from an archive of HEAD outside ~/code: ok. From the checkout every test passes, but rootguard fails on ~/code/.rhiza-root/usage.live.json changing, a known environment leak that is not this leaf's code. internal/daemon: ok. Acceptance, with a fake clock: TestDaemonPollFiresSchedules (each due schedule starts across two projects; with maxRuns full the other waits, then fires once over repeated polls, no rex calls), TestDaemonPollStartsEachProjectsSchedule, TestDaemonScheduleUnresolvedWorkflow (starts nothing, log names the schedule), TestDaemonScheduledRunFailureLogged (daemon log has the start and the failure, zero rex calls, now also no inbox item and no Rex notice), and the new TestDaemonInterruptedScheduledRunNextSlotFires (the slot after an interrupted run fires). Review findings quality f1 and qa f1/f4 are fixed. quality f2 (catch_up=skip drops a slot that waits more than 2m) is unchanged and was minor. Process note: the fix commit's Actor claude-code-7a69f316 has no tracked record, though rhiza check reports nothing for it. make self-check's only failures are stale rendered files, as expected partway through a run."
+        },
+        "handle": "daemon-fires-schedules-verified-2",
+        "id": "01M6WYT02NAA45F11NW56WFSAS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WYT02NAA45F11NW3RY56Z3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WYT02NAA45F11NW3RY56Z3",
+        "id": "01M6WYT06ACN0A7B43THAJ2PSY",
+        "link": "01M6WYT06ACN0A7B43TE7FQ39F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HVM44MDKXV4ESTPX0KSX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WYT0A2898QJH4Z76RAGQ8V",
+  "type": "ops",
+  "v": 1
+}

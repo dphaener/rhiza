@@ -266,6 +266,10 @@ type Step struct {
 	Until string
 	// Timeout is how long a wait step waits for its condition.
 	Timeout time.Duration
+	// Stall is how long the daemon's watchdog lets the step go without
+	// journal or session progress before it acts; zero means the watchdog's
+	// default for the step's kind.
+	Stall time.Duration
 	// UntilWhen is when an agent step with an `until` checks it:
 	// UntilWhenIdle (also when empty) or UntilWhenDone. Empty on other
 	// steps.
@@ -538,6 +542,7 @@ type fileStep struct {
 	Until          string            `toml:"until"`
 	UntilWhen      string            `toml:"until_when"`
 	Timeout        string            `toml:"timeout"`
+	Stall          string            `toml:"stall"`
 	Interval       string            `toml:"interval"`
 	Agent          string            `toml:"agent"`
 	PermissionMode string            `toml:"permission_mode"`
@@ -812,6 +817,13 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	}
 	if err := checkModels(fs.Models); err != nil {
 		return fail("models %v", err)
+	}
+	if fs.Stall != "" && fs.Kind != KindWorkflow {
+		d, err := positiveDuration(fs.Stall)
+		if err != nil {
+			return fail("stall %v", err)
+		}
+		s.Stall = d
 	}
 	switch fs.Kind {
 	case KindArbiter:

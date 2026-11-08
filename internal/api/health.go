@@ -40,16 +40,17 @@ const (
 
 // The parts of the health report, in the order it lists them.
 const (
-	HealthDaemon   = "daemon"
-	HealthAutonomy = "autonomy"
-	HealthMachine  = "machine"
-	HealthDisk     = "disk"
-	HealthUsage    = "usage"
-	HealthMain     = "main"
-	HealthInbox    = "inbox"
-	HealthRequests = "requests"
-	HealthRoadmap  = "roadmap"
-	HealthCheck    = "check"
+	HealthDaemon    = "daemon"
+	HealthAutonomy  = "autonomy"
+	HealthMachine   = "machine"
+	HealthDisk      = "disk"
+	HealthUsage     = "usage"
+	HealthMain      = "main"
+	HealthSchedules = "schedules"
+	HealthInbox     = "inbox"
+	HealthRequests  = "requests"
+	HealthRoadmap   = "roadmap"
+	HealthCheck     = "check"
 )
 
 // HealthRequest picks the projects the report covers.
@@ -61,7 +62,7 @@ type HealthRequest struct {
 // HealthPart is one part of the system and its state.
 type HealthPart struct {
 	Project string   `json:"project,omitempty" desc:"The registered project the part belongs to, on a report that covers every project; absent on the machine's parts and on a single project's report"`
-	Part    string   `json:"part" enum:"daemon,autonomy,machine,disk,usage,main,inbox,requests,roadmap,check" desc:"The part"`
+	Part    string   `json:"part" enum:"daemon,autonomy,machine,disk,usage,main,schedules,inbox,requests,roadmap,check" desc:"The part"`
 	State   string   `json:"state" enum:"ok,warn,bad" desc:"ok, warn (worth a look) or bad (rhiza health exits 1)"`
 	Summary string   `json:"summary" desc:"One line on the part's state"`
 	Detail  []string `json:"detail" desc:"More lines on the part, such as each setting or each count; empty when none"`
@@ -71,7 +72,7 @@ type HealthPart struct {
 // HealthResponse is the report.
 type HealthResponse struct {
 	State string       `json:"state" enum:"ok,warn,bad" desc:"The worst state of any part"`
-	Parts []HealthPart `json:"parts" desc:"Every part, in a fixed order: daemon, autonomy, machine, disk, usage, then main, inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project"`
+	Parts []HealthPart `json:"parts" desc:"Every part, in a fixed order: daemon, autonomy, machine, disk, usage, then main, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project"`
 }
 
 // ExitCode is 1 when a part is bad, else 0.
@@ -112,14 +113,17 @@ func healthRank(s string) int {
 }
 
 // healthProjectParts are the parts that belong to one project.
-func healthProjectParts(ctx *Ctx) []HealthPart {
-	return []HealthPart{
-		healthMain(ctx),
+func healthProjectParts(ctx *Ctx, daemonRunning bool) []HealthPart {
+	parts := []HealthPart{healthMain(ctx)}
+	if p, ok := healthSchedules(ctx, daemonRunning); ok {
+		parts = append(parts, p)
+	}
+	return append(parts,
 		healthInbox(ctx),
 		healthRequests(ctx),
 		healthRoadmap(ctx),
 		healthCheck(ctx),
-	}
+	)
 }
 
 // runHealth answers health over the one project ctx works in, or, at the
@@ -169,8 +173,12 @@ func runHealth(ctx *Ctx, req any) (any, error) {
 		healthDisk(mctx, settings, serr),
 		healthUsage(mctx, settings, serr),
 	}
+	daemonUp := false
+	if out, err := runDaemonStatus(ctx, DaemonStatusRequest{All: merged}); err == nil {
+		daemonUp = out.(DaemonStatusResponse).Running
+	}
 	for _, sc := range scopes {
-		for _, p := range healthProjectParts(sc.ctx) {
+		for _, p := range healthProjectParts(sc.ctx, daemonUp) {
 			if merged {
 				p.Project = sc.name
 			}
@@ -213,7 +221,7 @@ func healthDaemon(ctx, home *Ctx, all bool) HealthPart {
 		if s.Stopped != "" {
 			p.Detail = append(p.Detail, "last daemon "+s.Process+" stopped "+s.Stopped)
 		}
-		return p
+		return healthWatchdogActions(p, s.WatchdogActions)
 	}
 	p := HealthPart{Part: HealthDaemon, State: HealthOK,
 		Summary: fmt.Sprintf("running, process %s, %d live runs", s.Process, len(s.Runs))}
@@ -228,7 +236,7 @@ func healthDaemon(ctx, home *Ctx, all bool) HealthPart {
 	if s.LastPoll != "" {
 		p.Detail = append(p.Detail, "last poll "+s.LastPoll)
 	}
-	return p
+	return healthWatchdogActions(healthPollBehind(p, s.PollBehind), s.WatchdogActions)
 }
 
 // healthAutonomy lists the autonomy settings and whether the daemon is

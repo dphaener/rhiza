@@ -1,0 +1,40 @@
+{
+  "actor": "01M6X0GA3AF191VRGBW6PFBD24",
+  "after": [
+    "01M6X0JPRY1G71T3CBZJ8SHE4J"
+  ],
+  "at": "2026-11-08T07:23:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-d272dcf4 at a1a714e0 (attempt 3, after review quality f1): go test -trimpath ./internal/api -run TestWatchdogCIRerun -v -count=1 PASS. Its fake gh shows the failed run 7 rerun once on a red head, nothing while the rerun runs, one resume with --retry after green and none on the next poll, no second rerun and no resume when the same head goes red again after the rerun (CIDone set), no rerun of a head whose run is already at attempt 2, and a rerun for a new head. TestWatchdogCIReadsBounded (via watchdogPasses) shows each run's PR read at most once per poll across the three PR passes: over three polls, gone-PR and red-after-rerun runs are read once, a run with its budget spent is never read, and a run is read again once its journal moves on. go test -run Watchdog ./internal/api, go test ./internal/daemon/... and go vet ./internal/api all pass. In the diff of 47741152, watchdogReadOnce wraps d.ci per poll; watchdogPRIdle skips runs while the journal end equals PRGone or CIDone, or when the budget is spent; rerunSpent replaces the old Attempts loop with the same meaning. Trade-off noted, as the f1 finding asked: while CIDone holds, a head pushed by hand without a resume is not read until the journal moves on."
+        },
+        "handle": "watchdog-ci-rerun-verified-3",
+        "id": "01M6X0MJRQBEARYS0D3G66JF4C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X0MJRQBEARYS0D3D4T4F8P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X0MJRQBEARYS0D3D4T4F8P",
+        "id": "01M6X0MJWN3QX0ZXENMG7FBT3A",
+        "link": "01M6X0MJWN3QX0ZXENMFEJ05C8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2CXX5VYQ2236KG5ZEX7X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6X0MJYXNESYZ6HR4Y8ZRZ7S",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,51 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6WJW9KQ5AVW48YT6MXCWZEK"
+  ],
+  "at": "2026-11-08T03:27:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on plan-ci-flake-reruns-interview): The Source's summary says that once the reruns are spent the error 'says the failure is unrelated to the plan' when the diff touches only .rhiza/. Decision plan-ci-flake-reruns, which is derived from this Source, and leaf ship-check-names-unrelated-failure say the opposite: the note is only '; the PR changes only .rhiza/', it never claims the cause, and no detail may contain 'unrelated'. The summary has to match the Decision it backs. The critic confirmed it: Checked: Source plan-ci-flake-reruns-interview's summary says that with a .rhiza-only diff the error 'says the failure is unrelated to the plan', and attributes that to Decision plan-ci-flake-reruns. The Decision (derived-from this Source) now says the note is only that the PR changes only .rhiza/, 'a fact and not a claim about the cause', and leaf ship-check-names-unrelated-failure forbids 'unrelated' in any detail. The Source misreports the Decision it backs, so a reader following provenance gets the rejected design; the summary must match (no owner words are involved, so correcting it invents nothing). How should it be settled?"
+        },
+        "handle": "review-01m6whtv-r3-f1",
+        "id": "01M6WK5KH9HS8TX0FXNR9BZT7G",
+        "key": null,
+        "kind": "question",
+        "node": "01M6WK5KH8ZSWGNGMXXYGT0X0P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on ship-check-names-unrelated-failure): The leaf's handle says ship check names an unrelated failure, but its statement and acceptance forbid that: ship check 'never says a failure is unrelated to the plan', and no detail may contain 'unrelated'. A builder reading the handle, and plan-run-reruns-ci-flakes's depends-on that names it, gets the rejected design. Rename it to match the statement, for example ship-check-failure-names-reruns-and-rhiza-only-diff. The critic confirmed it: Checked: the leaf's handle is ship-check-names-unrelated-failure while its statement says ship check 'never says a failure is unrelated to the plan' and its acceptance asserts no detail contains 'unrelated'. plan-run-reruns-ci-flakes depends on it by that handle. The handle names the design rounds 1-2 rejected and contradicts the leaf's own statement; renaming it to describe the rerun count and .rhiza-only note fixes it. How should it be settled?"
+        },
+        "handle": "review-01m6whtv-r3-f2",
+        "id": "01M6WK5KK0ZXXJN489FHJ13P03",
+        "key": null,
+        "kind": "question",
+        "node": "01M6WK5KK0ZXXJN489FHC7KJ27",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WK5KK0ZXXJN489FHC7KJ27",
+        "id": "01M6WK5KNB15W6V1R8BZGJJF5J",
+        "link": "01M6WK5KNB15W6V1R8BVZYYKN5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ6ZEEPYS69MVFGK79HHKN",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WK5KSMVJ437CP3FMB19BES",
+  "type": "ops",
+  "v": 1
+}

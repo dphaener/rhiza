@@ -296,8 +296,13 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 	for i := len(runs) - 1; i >= 0; i-- {
 		j := runs[i]
 		st := j.State()
+		// A scheduled run with no change set reports its end and failure to
+		// the daemon log only: it is no owner's item, and no retry of one.
+		scheduled := st.Trigger == run.TriggerSchedule && st.Change == ""
 		retried := newer[st.Change]
-		newer[st.Change] = true
+		if !scheduled {
+			newer[st.Change] = true
+		}
 		add := func(kind, disc string, at time.Time, it InboxItem) {
 			it.Kind, it.Run, it.Change = kind, j.ID, st.Change
 			it.At = at.UTC().Format(time.RFC3339)
@@ -321,7 +326,7 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 		}
 		switch {
 		case st.Ended:
-			if st.Result != run.Failed || st.Abandoned() || retried || gone(st) {
+			if st.Result != run.Failed || st.Abandoned() || retried || scheduled || gone(st) {
 				continue
 			}
 			step, _ := st.FailedStep()
@@ -742,7 +747,7 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	items = sortInboxItems(append(append(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...), inboxWorkflow(ctx)...))
+	items = sortInboxItems(append(append(append(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...), inboxWorkflow(ctx)...), inboxWatchdog(ctx)...))
 	byRun := map[string]run.State{}
 	for _, j := range runs {
 		byRun[j.ID] = j.State()

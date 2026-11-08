@@ -1,0 +1,132 @@
+{
+  "actor": "01M6X0P7YQZYCEKCKG1NC0BEWM",
+  "after": [
+    "01M6X0MJYXNESYZ6HR4Y8ZRZ7S"
+  ],
+  "at": "2026-11-08T07:30:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza at the branch head (7420691c fix included) into a scratch root with fake rex and gh. A command step 'sleep 300' with stall = \"5s\", started as a session leader (setsid rhiza run start --foreground --autonomous): after 9s rhiza daemon --once logged 'step one silent since ...: stopped and resumed with --retry (budget 1 of 2)', and ps showed both the run and its 'sh -c exec 2>&1 sleep 300' child and sleep gone (cycle 1 left them orphaned). The next poll resumed it as a detached 'rhiza run resume --foreground <run> --retry'; that stalled again and the following poll stopped it, its sleep child gone too (budget 2 of 2). A wait step with timeout = \"20s\" under rhiza.daemon.watchdog.waitLimit = 5s was left alone past 9s (limit = timeout + 10m) and ended on its own timeout; the same wait step with stall = \"5s\" was stopped and retried."
+        },
+        "handle": "watchdog-stalled-step-qa-2",
+        "id": "01M6X118E4Q6VP9MND054813XN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X118E4Q6VP9MND02HCN0C8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X118E4Q6VP9MND02HCN0C8",
+        "id": "01M6X118G07HBF29PWZYQ2TPC2",
+        "link": "01M6X118G07HBF29PWZVZM2S5N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2CKKVZMZ0EMK7HYXK1WH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Same stalled run, each poll a fresh rhiza daemon --once process: after two stop-and-retry recoveries a third stall got no stop (its step left running for the owner), and rhiza inbox listed one 'stalled run ... step one' item: 'the watchdog's retry budget of 2 is spent ... it tried: step one stalled: stopped and resumed with --retry at <t1>; ... at <t2>'."
+        },
+        "handle": "watchdog-retry-budget-qa-2",
+        "id": "01M6X118H9YKR4WPTAWTTJ8PMB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X118H9YKR4WPTAWTSPE8V4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X118H9YKR4WPTAWTSPE8V4",
+        "id": "01M6X118JZTMQC57HQPNXRJHYX",
+        "link": "01M6X118JZTMQC57HQPM8MYQ20",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2DP43PV2BDTVP6AHT2DN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "The first stall recovery logged 'filed a bug request for the stall' and the next poll started that request's plan run (fake rex, no agent); the second recovery of the same run filed none. A stall on another run (wait step) filed its own bug request."
+        },
+        "handle": "watchdog-files-bugs-qa-2",
+        "id": "01M6X118MV0KYBDZZ140VH57X3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X118MV0KYBDZZ13YT23H4J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X118MV0KYBDZZ13YT23H4J",
+        "id": "01M6X118PRXKGB2X3HH8SW7X7J",
+        "link": "01M6X118PRXKGB2X3HH6MJJCGG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2DW8TQBJPM5R59T3QGFK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "After the real polls, rhiza health listed 'watchdog's last actions, newest first:' with budget 2 of 2, then budget 1 of 2, then the bug filing, each with its RFC 3339 time, matching the 'rhiza: daemon: watchdog: ...' lines on stderr."
+        },
+        "handle": "watchdog-actions-shown-qa-2",
+        "id": "01M6X118SAK5705HGB49THT127",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X118SAK5705HGB496D2N85",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X118SAK5705HGB496D2N85",
+        "id": "01M6X118VKM5RB46X4EGEWXYDZ",
+        "link": "01M6X118VKM5RB46X4EEA3H80P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2EA89XVKKBJ31JVBAZB7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "An autonomous run whose command step 'rhiza ship check --settled' failed (fake gh answering pr view with a CLOSED PR) was polled by four rhiza daemon --once processes: the fake gh log showed one 'gh pr view' in total, none on later polls, and no gh run list or rerun (47741152: the PR is read once and a closed PR is not re-read while the journal is unchanged)."
+        },
+        "handle": "watchdog-ci-rerun-qa-2",
+        "id": "01M6X118XDZ88BTXDMBZ93010F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X118XDZ88BTXDMBWAH1AJM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X118XDZ88BTXDMBWAH1AJM",
+        "id": "01M6X11900JW7ZNNT1YT0ZX1TD",
+        "link": "01M6X11900JW7ZNNT1YS9X7RN2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2CXX5VYQ2236KG5ZEX7X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6X11934V3WV516JY2EV6EE1",
+  "type": "ops",
+  "v": 1
+}

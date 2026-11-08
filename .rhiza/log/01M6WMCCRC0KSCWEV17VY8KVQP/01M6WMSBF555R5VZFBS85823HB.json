@@ -1,0 +1,107 @@
+{
+  "actor": "01M6WMD0YWZCCFWSBH9E291Q0V",
+  "after": [
+    "01M6WMRSBVJPB3J1T7PG2EMT1G"
+  ],
+  "at": "2026-11-08T03:56:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M68581Q6V7XS1VHP9Q4F011R",
+        "id": "01M6WMSB28CDQRHTSCV85SKK99",
+        "node": "01M68581Q6V7XS1VHP9Q48KQJS",
+        "op": "node.retire",
+        "reason": "superseded by ship-rebase-merges-only: ship rebase now always merges main, not only when the branch already holds a merge"
+      },
+      {
+        "base": "01M6A0NG1VRQKBM20M8GRJ3T9S",
+        "id": "01M6WMSB34BK9ATX1SBERJVT7C",
+        "node": "01M6A0NG1VRQKBM20M8CSVTX3B",
+        "op": "node.retire",
+        "reason": "superseded by wait-merges-conflicting-pr: the wait merges main and hands a code conflict to the conflict fixer instead of stopping for the owner"
+      },
+      {
+        "fields": {
+          "acceptance": "run-ship-change-rebase.txtar covers: main moves with an unrelated commit, the step merges (the pushed head has main and the branch's old head as parents, origin's branch only fast-forwards); a rendered-only conflict is settled by rendering and pushed; a code conflict exits 1 with the merge still in progress, the conflicted files and main's commits and change sets in ship check --json, and no rebase-conflict question written; a merge committed by hand on top is pushed and recorded as pushed on the next ship rebase; plus the internal/api ship tests; run with go test -trimpath ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/run-ship-change-rebase'",
+          "statement": "rhiza ship rebase always merges origin's main into the change set's branch (git merge, never git rebase) and pushes with a plain push (no --force, no lease), recording the pushed head; conflicts only under .rhiza/rendered are settled by rendering again; a conflict in code leaves the merge in progress in the worktree (not aborted), records in the ship state the conflicted files, origin/main's commits since the merge-base with their Change: change sets, and the branch's change set, shows them in rhiza ship check --json, raises no question and exits 1; when HEAD already holds origin/main and is ahead of origin's branch (a fixer's committed merge) it renders, commits what rendering changed, pushes plainly and records the pushed head"
+        },
+        "handle": "ship-rebase-merges-only",
+        "id": "01M6WMSB5S57K6QW44FCFHR0ZX",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6WMSB5S57K6QW44F90TEDEZ",
+        "op": "node.create",
+        "parent": "01M5X3GCHZRJ9YPV8BA37J1AN3"
+      },
+      {
+        "decision": null,
+        "from": "01M6WMSB5S57K6QW44F90TEDEZ",
+        "id": "01M6WMSB6QM36CGCVC6QX9ZHAC",
+        "link": "01M6WMSB6QM36CGCVC6P1ZJARN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WMNNQ3C861GJX73FRKRXRY",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "ship-check-settles-conflict.txtar with a fake gh whose pr view reports mergeable CONFLICTING until a new head is pushed: with origin/main conflicting only under .rhiza/rendered, ship check --settled exits non-zero, origin's branch fast-forwards to a merge holding origin/main and the ship record's pushed is the new head; with a conflict in a code file it exits 0, the merge is still in progress, ship check --json lists the conflicts and no question is raised; run with go test -trimpath ./cmd/rhiza -run 'TestScripts/ship-check-settles-conflict'",
+          "statement": "rhiza ship check --settled reads the PR's mergeable state and, when GitHub reports it CONFLICTING, merges origin/main as rhiza ship rebase does: a clean or rendered-only merge is pushed plainly, recorded as pushed and reported not settled; a conflict in code leaves the merge in progress, records the conflicts in the ship state and reports settled (exit 0) with the conflict in its detail, so the green step after the wait routes the run to the conflict fixer; it never exits 75 and raises no question on a conflict"
+        },
+        "handle": "wait-merges-conflicting-pr",
+        "id": "01M6WMSB7FA6TA1SMY419CWX7Y",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6WMSB7FA6TA1SMY3YW9AC1Q",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6WMSB7FA6TA1SMY3YW9AC1Q",
+        "id": "01M6WMSB9WKSZXYV572AFHF3SJ",
+        "link": "01M6WMSB9WKSZXYV5728BKY9T1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WMNNQ3C861GJX73FRKRXRY",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6WMSB7FA6TA1SMY3YW9AC1Q",
+        "id": "01M6WMSBARRF5RFXSHKQ7P5SGG",
+        "link": "01M6WMSBARRF5RFXSHKMHYWBM7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WMSB5S57K6QW44F90TEDEZ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6WMRS4TPPTR6N3JKP0F7HQJ",
+        "id": "01M6WMSBBG8JHHMD4YYQ50EM5H",
+        "link": "01M6WMSBBG8JHHMD4YYQ2CTJ39",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WMSB7FA6TA1SMY3YW9AC1Q",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6WMRS6BFQHDFXKF5RNPBF0G",
+        "id": "01M6WMSBCKZS1WKRWRBWZS1N85",
+        "link": "01M6WMSBCKZS1WKRWRBT3X2QTN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WMRS4TPPTR6N3JKP0F7HQJ",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6WMCCRC0KSCWEV17VY8KVQP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WMSBF555R5VZFBS85823HB",
+  "type": "ops",
+  "v": 1
+}
