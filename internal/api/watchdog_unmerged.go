@@ -70,9 +70,10 @@ func mergeStepReach(st run.State, from string) (hasMerge, direct bool) {
 // or one that needs the owner before it merges, is held as an inbox item.
 // Runs with a live process, abandoned runs, runs of a workflow with no merge
 // step, and attended runs under an autonomous-only policy are left alone. A
-// run whose PR was found not open is remembered and not read again while its
-// journal stays as it was, so the pass's gh reads stay bounded by the runs
-// with an open PR plus those that ended or moved since the last poll. It
+// run whose PR was found not open, or that watchdogPRIdle leaves idle
+// otherwise, is not read again while its journal stays as it was, so the
+// pass's gh reads stay bounded by the runs the watchdog can still act on
+// plus those that ended or moved since the last poll. It
 // returns the memory and holds after, and the first error.
 func watchdogGreenUnmerged(pol WatchdogPolicy, journals []run.Journal, live func(id string) bool, mem []daemon.WatchdogRun, d watchdogDeps) ([]daemon.WatchdogRun, []daemon.WatchdogHold, error) {
 	var holds []daemon.WatchdogHold
@@ -104,8 +105,7 @@ func watchdogGreenUnmerged(pol WatchdogPolicy, journals []run.Journal, live func
 			continue
 		}
 		last := j.Entries[len(j.Entries)-1].At
-		k := slices.IndexFunc(mem, func(w daemon.WatchdogRun) bool { return w.Run == j.ID })
-		if k >= 0 && !mem[k].PRGone.IsZero() && mem[k].PRGone.Equal(last) {
+		if watchdogPRIdle(pol, mem, j, st) {
 			continue
 		}
 		pr, err := d.ci(st)
@@ -116,13 +116,7 @@ func watchdogGreenUnmerged(pol WatchdogPolicy, journals []run.Journal, live func
 			continue
 		}
 		if pr.Head == "" {
-			// No open PR: an ended run's PR is not reopened by itself, so
-			// later polls skip it until the journal moves on (a resume).
-			if k < 0 {
-				mem = append(mem, daemon.WatchdogRun{Run: j.ID})
-				k = len(mem) - 1
-			}
-			mem[k].PRGone = last
+			mem = markPRGone(mem, j)
 			continue
 		}
 		if _, green, _ := checksVerdict(pr.Checks); !green {

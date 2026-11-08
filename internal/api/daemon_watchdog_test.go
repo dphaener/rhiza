@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -260,13 +261,12 @@ func TestWatchdogCIRerun(t *testing.T) {
 	if strings.Join(reran, ",") != "7" || len(resumed) != 0 {
 		t.Fatalf("red head: reran %v resumed %v", reran, resumed)
 	}
-	// Still red after the rerun (attempt 2): no second rerun, no resume.
+	rerun := slices.Clone(mem)
+	// Still running after the rerun: nothing yet.
 	pr = red
+	pr.Checks = []ShipCheck{{Name: "test", Status: "IN_PROGRESS", RunID: "7"}}
 	pr.Attempts = map[string]int{"7": 2}
 	mem = poll(mem)
-	if len(reran) != 1 || len(resumed) != 0 {
-		t.Fatalf("red again: reran %v resumed %v", reran, resumed)
-	}
 	// The rerun passed: the run is resumed once.
 	pr = green
 	mem = poll(mem)
@@ -276,6 +276,20 @@ func TestWatchdogCIRerun(t *testing.T) {
 	}
 	if len(log) != 2 {
 		t.Errorf("want one line per action, log %q", log)
+	}
+	// Red again after the rerun (attempt 2): no second rerun, no resume, and
+	// the head is left to the owner until the journal moves on.
+	resumed = nil
+	pr = red
+	pr.Attempts = map[string]int{"7": 2}
+	red2 := poll(slices.Clone(rerun))
+	if len(reran) != 1 || len(resumed) != 0 || red2[0].CIDone.IsZero() {
+		t.Fatalf("red again: reran %v resumed %v mem %+v", reran, resumed, red2)
+	}
+	pr = green
+	poll(red2)
+	if len(resumed) != 0 {
+		t.Fatalf("left to the owner: resumed %v", resumed)
 	}
 	// A head whose run is already at attempt 2 (the plan step's rerun) is not
 	// rerun again.
@@ -292,5 +306,54 @@ func TestWatchdogCIRerun(t *testing.T) {
 	poll(mem)
 	if strings.Join(reran, ",") != "7" {
 		t.Errorf("new head reran %v, want 7", reran)
+	}
+}
+
+// TestWatchdogCIReadsBounded checks the PR reads of the CI passes through
+// watchdogPasses: a run's PR is read at most once per poll by the three
+// passes together, and not at all while its journal stays where the PR was
+// found gone, its head red again after the rerun, or its budget spent.
+func TestWatchdogCIReadsBounded(t *testing.T) {
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	const def = "name = \"w\"\n[step.wait]\nkind = \"command\"\nrun = \"rhiza ship check --settled\"\non.pass = \"merge\"\n[step.merge]\nkind = \"command\"\nrun = \"rhiza ship merge\"\n"
+	failed := func(id string) run.Journal {
+		return run.Journal{ID: id, Entries: []run.Entry{
+			{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true, Definition: def}},
+			{Type: run.TypeEntered, At: t0, Step: "wait", Visit: 1},
+			{Type: run.TypeEnded, At: t0, Step: "wait", Visit: 1, Outcome: "fail", Detail: "failed: test"},
+			{Type: run.TypeFinished, At: t0, Step: "wait", End: "failed", Detail: "step wait failed"},
+		}}
+	}
+	red := watchdogPR{Head: "aaaa111", Mergeable: "MERGEABLE", Checks: []ShipCheck{{Name: "test", Status: "COMPLETED", Conclusion: "FAILURE", RunID: "7"}}, Attempts: map[string]int{"7": 2}}
+	prs := map[string]watchdogPR{"gone": {}, "red": red, "spent": red}
+	reads := map[string]int{}
+	d := watchdogDeps{
+		ci:     func(st run.State) (watchdogPR, error) { reads[st.ID]++; return prs[st.ID], nil },
+		rerun:  func(run.State, string) error { t.Fatal("reran"); return nil },
+		resume: func(string) error { t.Fatal("resumed"); return nil },
+		merge:  func(run.State) (watchdogMerge, error) { t.Fatal("merged"); return watchdogMerge{}, nil },
+		log:    func(string, ...any) {},
+	}
+	pol := WatchdogPolicy{Enabled: true, RetryBudget: 1, CIReruns: 1, AutonomousOnly: true}
+	none := func(string) bool { return false }
+	js := []run.Journal{failed("gone"), failed("red"), failed("spent")}
+	mem := []daemon.WatchdogRun{{Run: "spent", Spent: 1, Attempts: []daemon.WatchdogAttempt{{At: t0, Action: "x"}}}}
+	for range 3 {
+		var err error
+		mem, _, err = watchdogPasses(pol, js, none, t0, mem, d)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	if reads["gone"] != 1 || reads["red"] != 1 || reads["spent"] != 0 {
+		t.Fatalf("reads over three polls %v, want gone 1, red 1, spent 0", reads)
+	}
+	// A journal that moved on is read again, once for the poll.
+	moved := failed("red")
+	moved.Entries[len(moved.Entries)-1].At = t0.Add(time.Minute)
+	js[1] = moved
+	watchdogPasses(pol, js, none, t0, mem, d)
+	if reads["red"] != 2 {
+		t.Fatalf("red read %d times after the journal moved, want 2", reads["red"])
 	}
 }

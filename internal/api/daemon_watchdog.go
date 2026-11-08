@@ -270,6 +270,7 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 // error.
 func watchdogPasses(pol WatchdogPolicy, all []run.Journal, live func(id string) bool, now time.Time, prev []daemon.WatchdogRun, d watchdogDeps) ([]daemon.WatchdogRun, []daemon.WatchdogHold, error) {
 	d.all = all
+	d.ci = watchdogReadOnce(d.ci)
 	var running []run.Journal
 	for _, j := range all {
 		if st := j.State(); !st.Ended && live(j.ID) {
@@ -313,6 +314,63 @@ func watchdogPasses(pol WatchdogPolicy, all []run.Journal, live func(id string) 
 		err = terr
 	}
 	return mem, watchdogBudgetHolds(pol, all, mem, holds), err
+}
+
+// watchdogReadOnce wraps ci so each run's PR is read at most once per poll:
+// the CI rerun, no-CI and green-but-unmerged passes share the read. A
+// rerun or a push by an earlier pass leaves the later ones the read from
+// before it, which they act on no differently. nil stays nil.
+func watchdogReadOnce(ci func(st run.State) (watchdogPR, error)) func(st run.State) (watchdogPR, error) {
+	if ci == nil {
+		return nil
+	}
+	type read struct {
+		pr  watchdogPR
+		err error
+	}
+	seen := map[string]read{}
+	return func(st run.State) (watchdogPR, error) {
+		if r, ok := seen[st.ID]; ok {
+			return r.pr, r.err
+		}
+		pr, err := ci(st)
+		seen[st.ID] = read{pr, err}
+		return pr, err
+	}
+}
+
+// watchdogPRIdle reports whether the PR passes leave j's PR unread: its run
+// failed with the watchdog's budget spent on attempts (the budget hold owns
+// it and nothing more is resumed), or its PR was found gone, or its head red
+// again after the rerun, while the journal still ends where it did then. A
+// resume moves the journal on, and the PR is read again.
+func watchdogPRIdle(pol WatchdogPolicy, mem []daemon.WatchdogRun, j run.Journal, st run.State) bool {
+	i := slices.IndexFunc(mem, func(w daemon.WatchdogRun) bool { return w.Run == j.ID })
+	if i < 0 || len(j.Entries) == 0 {
+		return false
+	}
+	m := mem[i]
+	if st.Result == run.Failed && len(m.Attempts) > 0 && m.Spent >= pol.RetryBudget {
+		return true
+	}
+	last := j.Entries[len(j.Entries)-1].At
+	return !m.PRGone.IsZero() && m.PRGone.Equal(last) || !m.CIDone.IsZero() && m.CIDone.Equal(last)
+}
+
+// markPRGone remembers that j's change set has no open PR, so the PR passes
+// skip it until its journal moves on: an ended run's PR is not reopened by
+// itself.
+func markPRGone(mem []daemon.WatchdogRun, j run.Journal) []daemon.WatchdogRun {
+	if len(j.Entries) == 0 {
+		return mem
+	}
+	i := slices.IndexFunc(mem, func(w daemon.WatchdogRun) bool { return w.Run == j.ID })
+	if i < 0 {
+		mem = append(mem, daemon.WatchdogRun{Run: j.ID})
+		i = len(mem) - 1
+	}
+	mem[i].PRGone = j.Entries[len(j.Entries)-1].At
+	return mem
 }
 
 // watchdogBudgetHolds adds, for each run that is not done well and whose
@@ -531,13 +589,29 @@ func waitingOnCI(st run.State, step string) bool {
 	return false
 }
 
+// rerunSpent reports whether a failing Actions run of pr's head is already
+// at an attempt above pol's reruns: its checks settled red after a rerun.
+func rerunSpent(pr watchdogPR, pol WatchdogPolicy) bool {
+	for _, c := range pr.Checks {
+		if passingConclusions[strings.ToUpper(c.Conclusion)] || c.RunID == "" {
+			continue
+		}
+		if pr.Attempts[c.RunID] > pol.CIReruns {
+			return true
+		}
+	}
+	return false
+}
+
 // watchdogCIRerun handles each failed run that ended waiting on its PR's CI
 // with red checks: it reruns the failed jobs once per PR head and, on a
 // later poll, resumes the run with --retry once the checks are green. A
 // head with an Actions run already at attempt above the policy's reruns
 // (the plan step's own rerun leaves one) counts as rerun, and a second red
-// on the head is left to the owner. It returns the memory after, and the
-// first error.
+// on the head is left to the owner. A run whose budget is spent, whose PR
+// is gone, or whose head is red again after its rerun is not read again
+// while its journal stays as it was (watchdogPRIdle). It returns the memory
+// after, and the first error.
 func watchdogCIRerun(pol WatchdogPolicy, journals []run.Journal, live func(id string) bool, mem []daemon.WatchdogRun, d watchdogDeps) ([]daemon.WatchdogRun, error) {
 	var first error
 	fail := func(err error) {
@@ -557,13 +631,13 @@ func watchdogCIRerun(pol WatchdogPolicy, journals []run.Journal, live func(id st
 			continue
 		}
 		step, err := st.FailedStep()
-		if err != nil || !waitingOnCI(st, step) {
+		if err != nil || !waitingOnCI(st, step) || watchdogPRIdle(pol, mem, j, st) {
 			continue
 		}
 		i := slices.IndexFunc(mem, func(w daemon.WatchdogRun) bool { return w.Run == j.ID })
-		if i < 0 {
-			mem = append(mem, daemon.WatchdogRun{Run: j.ID})
-			i = len(mem) - 1
+		if i >= 0 && mem[i].Spent >= pol.RetryBudget {
+			// A rerun could never be followed by the resume.
+			continue
 		}
 		pr, err := d.ci(st)
 		if err != nil {
@@ -571,11 +645,22 @@ func watchdogCIRerun(pol WatchdogPolicy, journals []run.Journal, live func(id st
 			continue
 		}
 		if pr.Head == "" {
+			mem = markPRGone(mem, j)
 			continue
+		}
+		if i < 0 {
+			mem = append(mem, daemon.WatchdogRun{Run: j.ID})
+			i = len(mem) - 1
 		}
 		settled, green, failed := checksVerdict(pr.Checks)
 		m := &mem[i]
 		if m.CIHead == pr.Head {
+			if !m.CIResumed && settled && !green && rerunSpent(pr, pol) {
+				// Red again after the rerun: left to the owner, and not
+				// read again until the journal moves on.
+				m.CIDone = j.Entries[len(j.Entries)-1].At
+				continue
+			}
 			// Rerun by the watchdog: resume once, when the rerun passed.
 			if m.CIResumed || !green || m.Spent >= pol.RetryBudget || d.queued != nil && d.queued(j.ID) {
 				continue
@@ -608,10 +693,12 @@ func watchdogCIRerun(pol WatchdogPolicy, journals []run.Journal, live func(id st
 				runs = append(runs, c.RunID)
 			}
 		}
-		for id, n := range pr.Attempts {
-			if n > pol.CIReruns && seen[id] {
-				skip = true
-			}
+		if rerunSpent(pr, pol) {
+			// Already rerun (the plan step's own rerun): a second red on
+			// the head is the owner's, and is not read again until the
+			// journal moves on.
+			m.CIDone = j.Entries[len(j.Entries)-1].At
+			continue
 		}
 		if skip || len(runs) == 0 {
 			continue

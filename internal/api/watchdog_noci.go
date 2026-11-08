@@ -116,8 +116,8 @@ func hasConflictHandling(st run.State) bool {
 // main into the branch and resumes the run with --retry to wait for CI on
 // the pushed head. If the merge conflicts it resumes the run so the run's
 // own conflict handling takes it, or holds an inbox item when the workflow
-// has none or the budget is spent. It returns the memory and holds after,
-// and the first error.
+// has none or the budget is spent. A run left idle by watchdogPRIdle is not
+// read. It returns the memory and holds after, and the first error.
 func watchdogPRNoCI(pol WatchdogPolicy, journals []run.Journal, live func(id string) bool, mem []daemon.WatchdogRun, d watchdogDeps) ([]daemon.WatchdogRun, []daemon.WatchdogHold, error) {
 	var holds []daemon.WatchdogHold
 	var first error
@@ -138,7 +138,7 @@ func watchdogPRNoCI(pol WatchdogPolicy, journals []run.Journal, live func(id str
 			continue
 		}
 		step, err := st.FailedStep()
-		if err != nil || !waitingOnCI(st, step) {
+		if err != nil || !waitingOnCI(st, step) || watchdogPRIdle(pol, mem, j, st) {
 			continue
 		}
 		pr, err := d.ci(st)
@@ -146,7 +146,11 @@ func watchdogPRNoCI(pol WatchdogPolicy, journals []run.Journal, live func(id str
 			fail(fmt.Errorf("read the PR of run %s: %w", j.ID, err))
 			continue
 		}
-		if pr.Head == "" || len(pr.Checks) > 0 || !strings.EqualFold(pr.Mergeable, "CONFLICTING") {
+		if pr.Head == "" {
+			mem = markPRGone(mem, j)
+			continue
+		}
+		if len(pr.Checks) > 0 || !strings.EqualFold(pr.Mergeable, "CONFLICTING") {
 			continue
 		}
 		i := slices.IndexFunc(mem, func(w daemon.WatchdogRun) bool { return w.Run == j.ID })

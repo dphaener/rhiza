@@ -98,11 +98,17 @@ run = "rhiza ship merge"
 	if len(holds) != 2 || !got["gate"] || !got["ok"] {
 		t.Fatalf("holds %+v, want gate and ok", holds)
 	}
-	// Budget of one: the next poll resumes nothing and holds the run too.
+	// Budget of one, spent on an attempt: the next poll resumes nothing and
+	// leaves the run to the budget hold, unread.
 	resumed = nil
 	_, holds, err = watchdogGreenUnmerged(pol, js, live, mem, d)
-	if err != nil || len(resumed) != 0 || len(holds) != 3 {
+	if err != nil || len(resumed) != 0 || len(holds) != 2 {
 		t.Fatalf("over budget: resumed %v holds %d err %v", resumed, len(holds), err)
+	}
+	// Spent without an attempt on record (a budget of zero): held by the pass.
+	_, holds, _ = watchdogGreenUnmerged(WatchdogPolicy{Enabled: true, AutonomousOnly: true}, js, live, nil, d)
+	if len(holds) != 3 {
+		t.Fatalf("budget zero: holds %d, want 3", len(holds))
 	}
 	// Red or absent checks, or no open PR: nothing.
 	for _, p := range []watchdogPR{{}, {Head: "aaaa111"}, {Head: "aaaa111", Checks: []ShipCheck{{Name: "t", Status: "COMPLETED", Conclusion: "FAILURE"}}}} {

@@ -214,8 +214,12 @@ type WatchdogRun struct {
 	CIResumed bool   `json:"ci_resumed,omitempty"`
 	// PRGone is the time of the run's last journal entry when the watchdog
 	// found its change set with no open PR: while the journal ends there,
-	// the green-but-unmerged pass reads that PR no more.
+	// the watchdog's PR passes read that PR no more.
 	PRGone time.Time `json:"pr_gone,omitzero"`
+	// CIDone is the time of the run's last journal entry when the watchdog
+	// found CIHead red again after its rerun: the head is left to the owner,
+	// and while the journal ends there the PR passes read that PR no more.
+	CIDone time.Time `json:"ci_done,omitzero"`
 }
 
 // WatchdogAttempt is one recovery the watchdog tried on a run.
