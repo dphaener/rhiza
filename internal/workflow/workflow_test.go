@@ -1695,3 +1695,28 @@ func TestPlanRerunsCIFlakes(t *testing.T) {
 		t.Errorf("ship-change has no rhiza ship check step")
 	}
 }
+
+// The ci-fix fixer reproduces each failing test locally, fixes or quarantines
+// it with a bug filed, and commits only once the tests pass locally; the
+// prompt stays repo-agnostic, naming no Go, make or testscript command.
+func TestShipChangeCIFixPrompt(t *testing.T) {
+	data, ok := Builtin("ship-change")
+	if !ok {
+		t.Fatal("no ship-change built-in")
+	}
+	def, err := ParseWith("ship-change", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := def.Steps["ci-fix"].Prompt
+	for _, want := range []string{"Reproduce each failing test locally", "repeating it until it fails again or plainly passes", "quarantine it", "bug request filed and named at the skip", "Commit only once those tests and the packages you touched pass locally", "never push to see"} {
+		if !strings.Contains(p, want) {
+			t.Errorf("ci-fix prompt lacks %q", want)
+		}
+	}
+	for _, bad := range []string{"go test", "go vet", "make ", "testscript", "TestScripts", "-trimpath"} {
+		if strings.Contains(p, bad) {
+			t.Errorf("ci-fix prompt names %q", bad)
+		}
+	}
+}

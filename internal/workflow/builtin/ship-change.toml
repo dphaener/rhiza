@@ -68,7 +68,7 @@ on.pass = "ci-fix"
 
 [step.ci-fix]
 kind = "agent"
-prompt = "/rhiza-review Fix the failing CI tests of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. Read the failing tests from `rhiza ship check --json` (its tests, and its findings, which name no leaf). Re-run only those tests or scripts and their packages, never the repo's full suite: the PR's CI runs it again after your push. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
+prompt = "/rhiza-review Fix the failing CI tests of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. Read the failing tests from `rhiza ship check --json` (its tests, and its findings, which name no leaf). Reproduce each failing test locally first, with the repo's own scoped test command from its contributor guide, repeating it until it fails again or plainly passes: never push to see what CI does. A test that fails locally: fix it. One that does not reproduce is a flake: fix it, or quarantine it (skip it) with a bug request filed and named at the skip. Commit only once those tests and the packages you touched pass locally, never the repo's full suite: the PR's CI runs it again after your push. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
 until = "true"
 until_when = "done"
 max_visits = 2
