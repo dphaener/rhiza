@@ -92,12 +92,24 @@ func TestWatchdogPolicy(t *testing.T) {
 		}
 		p := WatchdogPolicy{CommandLimit: 30 * time.Minute, AgentRetry: 40 * time.Minute}
 		a := def.Steps["a"]
-		if got := p.StallLimit(a.Kind, a.Stall); got != 7*time.Minute {
+		if got := p.StallLimit(a.Kind, a.Stall, a.Timeout); got != 7*time.Minute {
 			t.Fatalf("step a limit %v", got)
 		}
 		b := def.Steps["b"]
-		if got := p.StallLimit(b.Kind, b.Stall); got != 30*time.Minute {
+		if got := p.StallLimit(b.Kind, b.Stall, b.Timeout); got != 30*time.Minute {
 			t.Fatalf("step b limit %v", got)
+		}
+	})
+	t.Run("wait step outlives its timeout", func(t *testing.T) {
+		p := WatchdogPolicy{WaitLimit: 90 * time.Minute}
+		if got := p.StallLimit("wait", 0, 2*time.Hour); got != 2*time.Hour+waitStallMargin {
+			t.Fatalf("2h wait limit %v", got)
+		}
+		if got := p.StallLimit("wait", 0, 10*time.Minute); got != 90*time.Minute {
+			t.Fatalf("10m wait limit %v", got)
+		}
+		if got := p.StallLimit("wait", 5*time.Minute, 2*time.Hour); got != 5*time.Minute {
+			t.Fatalf("own stall limit %v", got)
 		}
 	})
 	t.Run("invalid values name the key", func(t *testing.T) {

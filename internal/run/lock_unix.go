@@ -128,9 +128,15 @@ func PidAlive(pid int) bool {
 }
 
 // Terminate asks the process with the pid to stop; a process that is gone
-// is not an error.
+// is not an error. A process that leads its process group (a detached run
+// leads its own session) is stopped with its whole group, so the step
+// children it started do not outlive it.
 func Terminate(pid int) error {
-	if err := syscall.Kill(pid, syscall.SIGTERM); err != nil && err != syscall.ESRCH {
+	target := pid
+	if pgid, err := syscall.Getpgid(pid); err == nil && pgid == pid {
+		target = -pid
+	}
+	if err := syscall.Kill(target, syscall.SIGTERM); err != nil && err != syscall.ESRCH {
 		return err
 	}
 	return nil

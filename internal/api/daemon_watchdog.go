@@ -23,14 +23,15 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 // watchdogDeps is everything the stalled-step check touches outside the
 // journals: tests replace each.
 type watchdogDeps struct {
 	sessions *session.Store
-	// step is the kind of st's current step and its own stall limit.
-	step   func(st run.State) (kind string, stall time.Duration)
+	// step is st's current step: its kind, stall limit and timeout.
+	step   func(st run.State) workflow.Step
 	send   func(sid, text string) error
 	stop   func(st run.State, sessions []string) error
 	resume func(runID string) error
@@ -121,8 +122,9 @@ func watchdogStalled(pol WatchdogPolicy, journals []run.Journal, now time.Time, 
 		if !at.Equal(cur.Progress) {
 			cur.Progress, cur.Nudged = at, false
 		}
-		kind, stall := d.step(st)
-		second := pol.StallLimit(kind, stall)
+		step := d.step(st)
+		stall := step.Stall
+		second := pol.StallLimit(step.Kind, stall, step.Timeout)
 		first1 := second
 		if len(sids) > 0 {
 			first1 = pol.AgentNudge
@@ -195,13 +197,12 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 	}
 	d := watchdogDeps{
 		sessions: session.NewStore(session.Dir(common)),
-		step: func(st run.State) (string, time.Duration) {
+		step: func(st run.State) workflow.Step {
 			def, err := st.ParseDefinition()
 			if err != nil {
-				return "agent", 0
+				return workflow.Step{Kind: "agent"}
 			}
-			s := def.Steps[st.Current]
-			return s.Kind, s.Stall
+			return def.Steps[st.Current]
 		},
 		send: func(sid, text string) error { return daemonSend(ctx, sid, text) },
 		stop: func(st run.State, sids []string) error {

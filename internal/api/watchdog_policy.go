@@ -127,17 +127,28 @@ func WatchdogPolicyOf(ctx *Ctx) (WatchdogPolicy, error) {
 	return watchdogPolicyOf(rows), nil
 }
 
+// waitStallMargin is how long past its own timeout a wait step may go
+// silent before the watchdog calls it stalled: the wait loop writes nothing
+// while it polls, so its timeout is the earliest a live wait ends.
+const waitStallMargin = 10 * time.Minute
+
 // StallLimit is how long a step of kind may go without progress: its own
 // stall field when set, else the policy's limit for its kind (the agent
-// retry limit for an agent step; nudge is the earlier AgentNudge).
-func (p WatchdogPolicy) StallLimit(kind string, stall time.Duration) time.Duration {
+// retry limit for an agent step; nudge is the earlier AgentNudge). A wait
+// step's limit is never under its own timeout plus waitStallMargin.
+func (p WatchdogPolicy) StallLimit(kind string, stall, timeout time.Duration) time.Duration {
 	if stall > 0 {
 		return stall
 	}
 	switch kind {
 	case "command":
 		return p.CommandLimit
-	case "wait", "signoff":
+	case "wait":
+		if timeout > 0 {
+			return max(p.WaitLimit, timeout+waitStallMargin)
+		}
+		return p.WaitLimit
+	case "signoff":
 		return p.WaitLimit
 	}
 	return p.AgentRetry

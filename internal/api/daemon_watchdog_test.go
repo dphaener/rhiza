@@ -9,6 +9,7 @@ import (
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 // TestWatchdogStalled drives the stalled-step recovery with a fake clock,
@@ -33,7 +34,7 @@ func TestWatchdogStalled(t *testing.T) {
 	var log, sent, stopped, resumed []string
 	d := watchdogDeps{
 		sessions: sessions,
-		step:     func(run.State) (string, time.Duration) { return "agent", 0 },
+		step:     func(run.State) workflow.Step { return workflow.Step{Kind: "agent"} },
 		send:     func(sid, _ string) error { sent = append(sent, sid); return nil },
 		stop:     func(st run.State, _ []string) error { stopped = append(stopped, st.ID); return nil },
 		resume:   func(id string) error { resumed = append(resumed, id); return nil },
