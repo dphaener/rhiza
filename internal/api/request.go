@@ -20,6 +20,7 @@ import (
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 func init() {
@@ -334,7 +335,11 @@ func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, ma
 		if q.ID == "" {
 			break
 		}
-		if err := daemonStartPlan(ctx, q, planMode == AutonomyAuto, mode); err != nil {
+		auto, err := planRunAutonomous(ctx, q, planMode)
+		if err == nil {
+			err = daemonStartPlan(ctx, q, auto, mode)
+		}
+		if err != nil {
 			uerr := daemon.UpdateRequests(common, func(reqs []daemon.Request) ([]daemon.Request, error) {
 				for i := range reqs {
 					if reqs[i].ID == q.ID && reqs[i].Run == q.Run {
@@ -375,7 +380,8 @@ func newRequestRunID(ctx *Ctx, rs *run.Store, reqs []daemon.Request) (string, er
 // daemonStartPlan starts the plan run of request q as a detached process:
 // run start --foreground --workflow plan --new with its intent, --milestone
 // for a milestone, and --request so the run takes the ID the request names.
-// A milestone request never gets --autonomous. Its log is that run's, <run>.log, as run log reads it.
+// A milestone request runs plan-milestone, whose declaration, as any
+// plan run's workflow's, decides --autonomous. Its log is that run's, <run>.log, as run log reads it.
 func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) error {
 	return daemonDetach(ctx, "the plan run of request "+q.ID, q.Run, nil, planRunArgs(q, autonomous, mode))
 }
@@ -385,15 +391,16 @@ func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) e
 // ref such as --dry-run or --change=<id> is never read as a flag, and a
 // request without one passes none.
 func planRunArgs(q daemon.Request, autonomous bool, mode string) []string {
-	args := []string{"run", "start", "--foreground", "--workflow", planWorkflow, "--new", q.Intent(), "--request", q.ID, "--permission-mode", mode}
+	wf := planWorkflow
+	if q.Kind == daemon.KindMilestone {
+		wf = planMilestoneWorkflow
+	}
+	args := []string{"run", "start", "--foreground", "--workflow", wf, "--new", q.Intent(), "--request", q.ID, "--permission-mode", mode}
 	if q.Ref != "" {
 		args = append(args, "--ref="+q.Ref)
 	}
 	if q.Kind == daemon.KindMilestone {
 		args = append(args, "--milestone")
-		// Planning a milestone always needs the owner: the run waits on the
-		// interview, whatever rhiza.autonomy.plan says.
-		autonomous = false
 	}
 	if autonomous {
 		args = append(args, "--autonomous")
@@ -427,4 +434,23 @@ func requestRun(common, reqID string, rs *run.Store) (daemon.Request, error) {
 		return q, nil
 	}
 	return daemon.Request{}, Usagef("no request %s", reqID).WithNext("rhiza request ls")
+}
+
+// planRunAutonomous reads whether the plan run of request q starts
+// autonomous: the plan stage as its workflow (plan, or plan-milestone for a
+// milestone request) declares it, else the rhiza.autonomy.plan setting,
+// read as planSetting.
+func planRunAutonomous(ctx *Ctx, q daemon.Request, planSetting string) (bool, error) {
+	name := planWorkflow
+	if q.Kind == daemon.KindMilestone {
+		name = planMilestoneWorkflow
+	}
+	_, def, _, err := resolveWorkflow(ctx.Root, name)
+	if err != nil {
+		return false, err
+	}
+	if m, ok := def.Autonomy(workflow.StagePlan); ok {
+		return m == AutonomyAuto, nil
+	}
+	return planSetting == AutonomyAuto, nil
 }

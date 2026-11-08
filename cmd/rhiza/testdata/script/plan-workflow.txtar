@@ -44,7 +44,7 @@ stdout '^Run [0-9A-Z]{26} succeeded$'
 # The steps ran in order: one failed check sent the plan to the reviser,
 # and the second round passed to the gate.
 exec rhiza run status --json
-stdout '"workflow": "plan"'
+stdout '"workflow": "plan-milestone"'
 stdout '"state": "succeeded"'
 exec rhiza run status
 stdout '^- interview \(visit 1\): pass, then milestone-check, '

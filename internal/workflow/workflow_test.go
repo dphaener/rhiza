@@ -1602,3 +1602,34 @@ func TestAutonomyDeclaration(t *testing.T) {
 		}
 	}
 }
+
+// The built-in plan-milestone workflow is plan's steps with every stage
+// declared owner.
+func TestBuiltinPlanMilestone(t *testing.T) {
+	if !slices.Contains(BuiltinNames(), "plan-milestone") {
+		t.Fatalf("BuiltinNames = %v; want it to list plan-milestone", BuiltinNames())
+	}
+	load := func(name string) *Definition {
+		data, ok := Builtin(name)
+		if !ok {
+			t.Fatalf("no %s built-in", name)
+		}
+		def, err := Parse(name, data)
+		if err != nil {
+			t.Fatalf("parse %s: %v", name, err)
+		}
+		return def
+	}
+	plan, ms := load("plan"), load("plan-milestone")
+	if ms.Start != plan.Start || !reflect.DeepEqual(ms.Steps, plan.Steps) {
+		t.Errorf("plan-milestone steps differ from plan's")
+	}
+	for _, st := range AutonomyStages {
+		if m, ok := ms.Autonomy(st); !ok || m != "owner" {
+			t.Errorf("plan-milestone %s autonomy = %q, %v; want owner", st, m, ok)
+		}
+		if _, ok := plan.Autonomy(st); ok {
+			t.Errorf("plan declares %s autonomy; want none", st)
+		}
+	}
+}

@@ -566,12 +566,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if r.Autonomous && def.Name == planWorkflow && r.Milestone {
-		return nil, milestoneNeedsOwner(runStartNext)
-	}
-	if err := checkAgentSteps(ctx, def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
-		return nil, err
-	}
+	milestone := r.Milestone
 	// A request's run takes the ID the daemon drew for it: check it before
 	// a draft is opened, so a refused start leaves none.
 	var reqRun, reqMilestone string
@@ -585,10 +580,11 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 		// A milestone request's plan plans the milestone, --milestone or not.
-		if r.Autonomous && def.Name == planWorkflow && req.Kind == daemon.KindMilestone {
-			return nil, milestoneNeedsOwner(runStartNext)
-		}
+		milestone = milestone || req.Kind == daemon.KindMilestone
 		reqRun, reqMilestone = req.Run, req.Milestone
+	}
+	if def, path, data, err = milestonePlanWorkflow(ctx, def, path, data, milestone); err != nil {
+		return nil, err
 	}
 	var t changeWorktree
 	if strings.TrimSpace(r.New) != "" {
@@ -599,8 +595,12 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if r.Autonomous && def.Name == planWorkflow && planIsMilestone(ctx, t.cs.String()) {
-		return nil, milestoneNeedsOwner(runStartNext)
+	// A plan run on a record change set plans a milestone too.
+	if def, path, data, err = milestonePlanWorkflow(ctx, def, path, data, milestone || planIsMilestone(ctx, t.cs.String())); err != nil {
+		return nil, err
+	}
+	if err := checkAgentSteps(ctx, def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
+		return nil, err
 	}
 	if def.Name == shipChangeWorkflow {
 		if err := checkShipLeaves(t); err != nil {
@@ -657,11 +657,20 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, started.Autonomous, r.NoWait)
 }
 
-// milestoneNeedsOwner is the usage error for an autonomous plan run that
-// plans a milestone: milestone planning always needs the owner.
-func milestoneNeedsOwner(next string) error {
-	return Usagef("--autonomous is refused on a plan run that plans a milestone: milestone planning needs the owner, even in autonomous mode").
-		WithNext(next)
+// milestonePlanWorkflow swaps the plan workflow for plan-milestone when the
+// run plans a milestone: the built-in declares the owner for every stage, and
+// a repo changes milestone planning's autonomy by overriding it like any
+// other workflow. Any other workflow, or a plan run that plans no milestone,
+// is returned as it is.
+func milestonePlanWorkflow(ctx *Ctx, def *workflow.Definition, path string, data []byte, milestone bool) (*workflow.Definition, string, []byte, error) {
+	if !milestone || def.Name != planWorkflow {
+		return def, path, data, nil
+	}
+	p, d, src, err := resolveWorkflow(ctx.Root, planMilestoneWorkflow)
+	if err != nil {
+		return nil, "", nil, err
+	}
+	return d, p, src, nil
 }
 
 // planIsMilestone reports whether the change set is a record change set,
@@ -721,7 +730,7 @@ func newPlanChange(ctx *Ctx, r RunStartRequest, def *workflow.Definition) (chang
 	if strings.TrimSpace(r.Change) != "" || strings.TrimSpace(ctx.ChangeRef) != "" || !ctx.ChangeSet.IsZero() {
 		return t, Usagef("--new opens the change set to plan: it takes no change set").WithNext(runStartNext)
 	}
-	if def.Name != planWorkflow {
+	if def.Name != planWorkflow && def.Name != planMilestoneWorkflow {
 		return t, Usagef("--new starts a plan run: workflow %q is not %s", def.Name, planWorkflow).
 			WithNext("rhiza run start --workflow plan --new \"<intent>\"")
 	}
@@ -788,6 +797,15 @@ func newPlanChange(ctx *Ctx, r RunStartRequest, def *workflow.Definition) (chang
 
 // planWorkflow is the workflow run start --new opens a change set for.
 const planWorkflow = "plan"
+
+// planMilestoneWorkflow is the workflow a plan run that plans a milestone
+// runs instead of plan.
+const planMilestoneWorkflow = "plan-milestone"
+
+// isPlanWorkflow reports whether name is a plan run's workflow.
+func isPlanWorkflow(name string) bool {
+	return name == planWorkflow || name == planMilestoneWorkflow
+}
 
 // startRun journals a new run under the change set's lock, after checking
 // that the change set has no other live run, so two starts never both begin.
@@ -873,9 +891,6 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		return nil, Usagef("run %s was abandoned: %s", j.ID, st.Detail).
 			WithNext("rhiza run start " + st.Change)
 	}
-	if st.Autonomous && st.Workflow == planWorkflow && planIsMilestone(ctx, st.Change) {
-		return nil, milestoneNeedsOwner("rhiza run status " + j.ID)
-	}
 	retryStep := ""
 	switch {
 	case st.Ended && !r.Retry:
@@ -903,12 +918,12 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		// change set does not stop a plan run; rejected, withdrawn and
 		// superseded ones still do.
 		state, ok := changeStateOf(ctx)(st.Change)
-		if ok && st.Workflow == planWorkflow && changeset.State(state) == changeset.StateLanded {
+		if ok && isPlanWorkflow(st.Workflow) && changeset.State(state) == changeset.StateLanded {
 			ok = false
 		}
 		// A non-plan run that reached its land step goes on past it: what
 		// is left (wait-main, close-out) happens after the landing.
-		if ok && st.Workflow != planWorkflow && changeset.State(state) == changeset.StateLanded && st.Visits["land"] > 0 {
+		if ok && !isPlanWorkflow(st.Workflow) && changeset.State(state) == changeset.StateLanded && st.Visits["land"] > 0 {
 			ok = false
 		}
 		if ok && changeset.State(state).Terminal() {
