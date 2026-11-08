@@ -1236,6 +1236,15 @@ func daemonDetach(ctx *Ctx, what, name string, env, args []string) error {
 	if err := ensureRepoSession(ctx); err != nil {
 		return err
 	}
+	return daemonDetachNoRex(ctx, what, name, env, args)
+}
+
+// daemonDetachNoRex detaches the program in the session ctx names, without
+// asking Rex whether it exists.
+func daemonDetachNoRex(ctx *Ctx, what, name string, env, args []string) error {
+	if ctx.Detach == nil || ctx.Self == "" {
+		return Errorf("daemon cannot start %s: no rhiza path", what)
+	}
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return err
@@ -1271,6 +1280,16 @@ func daemonDetachStart(ctx *Ctx, what, cs string, args []string) error {
 	if err != nil {
 		return err
 	}
+	return daemonDetachNumbered(ctx, common, what, cs, args, true)
+}
+
+// daemonDetachLog is daemonDetachStart for a scheduled run: it makes no Rex
+// call.
+func daemonDetachLog(ctx *Ctx, common, what, base string, args []string) error {
+	return daemonDetachNumbered(ctx, common, what, base, args, false)
+}
+
+func daemonDetachNumbered(ctx *Ctx, common, what, cs string, args []string, rex bool) error {
 	name := ""
 	for n := 1; ; n++ {
 		name = fmt.Sprintf("%s.start-%d", cs, n)
@@ -1280,7 +1299,11 @@ func daemonDetachStart(ctx *Ctx, what, cs string, args []string) error {
 			return Errorf("start %s: %v", what, err)
 		}
 	}
-	return daemonDetach(ctx, what, name, []string{envRunLog + "=" + name + ".log"}, args)
+	env := []string{envRunLog + "=" + name + ".log"}
+	if !rex {
+		return daemonDetachNoRex(ctx, what, name, env, args)
+	}
+	return daemonDetach(ctx, what, name, env, args)
 }
 
 // claimStartLog renames the start log the daemon named in envRunLog, if
