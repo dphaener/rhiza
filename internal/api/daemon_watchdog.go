@@ -45,7 +45,9 @@ type watchdogDeps struct {
 	// merge merges origin/main into the branch of st's PR in the run's
 	// worktree and pushes it; on a conflict it aborts and names the files.
 	merge func(st run.State) (watchdogMerge, error)
-	log   func(format string, args ...any)
+	// requests reads the plan request queue; nil is none.
+	requests func() ([]daemon.Request, error)
+	log      func(format string, args ...any)
 }
 
 // watchdogProgress is the latest sign of life of st's current step: the last
@@ -209,6 +211,7 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 		q, err := daemon.ReadContinues(common)
 		return err == nil && slices.ContainsFunc(q, func(c daemon.Continue) bool { return c.Run == id })
 	}
+	d.requests = func() ([]daemon.Request, error) { return daemon.ReadRequests(common) }
 	d.ci = func(st run.State) (watchdogPR, error) { return watchdogReadPR(ctx, st) }
 	d.rerun = func(st run.State, id string) error {
 		t, err := watchdogShipTarget(ctx, st)
@@ -259,6 +262,15 @@ func watchdogPasses(pol WatchdogPolicy, all []run.Journal, live func(id string) 
 	mem, terr = watchdogCIRerun(pol, all, live, mem, d)
 	if err == nil {
 		err = terr
+	}
+	if d.requests != nil {
+		reqs, rerr := d.requests()
+		if rerr == nil {
+			mem, rerr = watchdogRequests(pol, reqs, all, live, mem, d)
+		}
+		if err == nil {
+			err = rerr
+		}
 	}
 	mem, nholds, terr := watchdogPRNoCI(pol, all, live, mem, d)
 	holds = append(holds, nholds...)
