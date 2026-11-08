@@ -1,0 +1,30 @@
+{
+  "actor": "01M6XC6AW4C8KHKDKN88XWVAK2",
+  "after": [
+    "01M6XC4M3W7Y351WGXEAR49CPB"
+  ],
+  "at": "2026-11-08T10:49:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "29479c02-8aba-4deb-b5a8-01a1bac2ee1c",
+          "statement": "Run 01M6WMX2's queued continuation waited 75 min because the machine cap (maxRuns 3) was held the whole time by three long build/review runs (rhiza X2EMM and X2HMV, nebari WFRNHP). The interrupted run itself took no slot, and no plain start jumped ahead. But the root daemon's round-robin can give a freed slot to another project's plain start ahead of a continuation. Status also shows the queued run only as 'interrupted'. What should the fix do?"
+        },
+        "handle": "question-29479c02-1",
+        "id": "01M6XCDGQSEWXK93F2BXHXSPRE",
+        "key": null,
+        "kind": "question",
+        "node": "01M6XCDGQSEWXK93F2BV3428TP",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6XC4M3W7Y351WGXE8DTZACT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XCDMCEN4PB8FBZB0S4XPGQ",
+  "type": "ops",
+  "v": 1
+}
