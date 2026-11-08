@@ -1,0 +1,41 @@
+{
+  "actor": "01M6WNVGD59GGN5JWYNYJZKFVV",
+  "after": [
+    "01M6WNV56J65673E9F5K7HBAA4"
+  ],
+  "at": "2026-11-08T04:15:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The critic confirmed ShipCheckRequest has no --conflicts flag today and ship-change-conflict-fix-step introduces it while depending on wait-merges-conflicting-pr, so the assertion cannot run when wait-merges-conflicting-pr is built and verified. Moving the flag earlier would reverse the order and push the triage gate (its 3-fix cap counted from Review: trailers) into a leaf about the wait step, which is the fix step's concern. Moving only the assertion keeps each leaf testable when it is built: wait-merges-conflicting-pr still defines when a recorded conflict counts as resolved (read from git), which plain ship check already exercises, and the leaf that adds --conflicts tests it, including the resolved case it does not cover now (its acceptance only has 'no recorded conflict' and '3 fixes'). The change is the smaller edit, and the conflict-fix design (ship-merge-main-conflict-fixer) is unchanged.",
+          "statement": "Move the ship check --conflicts assertion out of wait-merges-conflicting-pr and into ship-change-conflict-fix-step; keep the leaf order as is. wait-merges-conflicting-pr drops 'and ship check --conflicts exits 1' from its acceptance and 'and ship check --conflicts fails with no conflict' from its statement: after a resolving merge it asserts only that plain ship check exits 0 on green checks (before and after the push) and that the next push drops the resolved record. ship-change-conflict-fix-step, which introduces the flag, adds to its internal/api Go test that ship check --conflicts fails once a recorded conflict's resolving merge is committed (MERGE_HEAD gone and HEAD holding the recorded origin/main commit), and to ship-check-settles-conflict.txtar's resolving-merge step that ship check --conflicts exits 1 before and after the head is pushed.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "conflicts-assert-moves-to-fix-step",
+        "id": "01M6WNWM30M9EFMCNGM7R7QD09",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6WNWM30M9EFMCNGM55HQN9H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WNWM30M9EFMCNGM55HQN9H",
+        "id": "01M6WNWM3RRV47MGGPRX7DM5HP",
+        "link": "01M6WNWM3RRV47MGGPRWDF3P3G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WNV511KX736205MYN2MVQN",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6WMCCRC0KSCWEV17VY8KVQP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WNWM54VV07Z1HH457J4CY4",
+  "type": "ops",
+  "v": 1
+}
