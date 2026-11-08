@@ -1,0 +1,63 @@
+{
+  "actor": "01M6XY53QMC2EJEJYYGTMQ4H8F",
+  "after": [
+    "01M6XY0MX9DW7DVVJN1X31ME5B"
+  ],
+  "at": "2026-11-08T16:02:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 728608f3 with the built binary (go build ./cmd/rhiza into the session scratchpad), hands-on in a scratch root outside ~/code with two registered projects (a, b), fake rex, RHIZA_* unset, hermetic HOME. Project a (first in turn order) had two accepted milestone change sets ready; project b had a failed flaky-workflow run queued with rhiza run resume --retry. rhiza daemon --max-runs 1 --once at the root printed only 'Resumed run <b's run>', no 'Started a run of' for a. Then in b: one live running run (journal naming a live sleep pid) and two interrupted runs queued with rhiza run resume. With --max-runs 2 the one free slot went to b's oldest continuation (Resumed run QUEUEDONE01), not a's change sets; with --max-runs 4 the picks were QUEUEDTWO02 plus a's One and Two. go test -trimpath ./internal/daemon/... ok; TestScripts daemon-continue-slot, daemon-round-robin, describe-golden PASS."
+        },
+        "handle": "root-continuations-first-qa-1",
+        "id": "01M6XYC0C3BACJ4730ASYSW0B1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XYC0C3BACJ4730ARSMZKNY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XYC0C3BACJ4730ARSMZKNY",
+        "id": "01M6XYC0EZW1RYVYZANQJS2S52",
+        "link": "01M6XYC0EZW1RYVYZANM29K1B8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XCJN76SFKMEST71CGEA6VG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 728608f3 with the built binary, hands-on in a scratch two-project root (fake rex, RHIZA_* unset): in project b, one running run, two interrupted runs queued with rhiza run resume (QUEUEDONE01 then QUEUEDTWO02) and one interrupted run with nothing queued (PLAININT003); rhiza daemon --max-runs 1 --once, then status. Root rhiza daemon status under 'Project b:' and project b's own rhiza daemon status both printed 'QUEUEDONE01 interrupted, queued, waiting for a slot (place 1)', 'QUEUEDTWO02 ... (place 2)', 'PLAININT003 interrupted' and 'RUNNING0001 running'. Root status --json gave projects[b].runs with queued 1 and 2 on the two queued runs and no queued field on PLAININT003 or the running run. describe-golden and daemon-continue-slot testscripts PASS."
+        },
+        "handle": "daemon-status-queued-continuation-qa-1",
+        "id": "01M6XYC0GAGN0SZHMD5S495EE2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XYC0GAGN0SZHMD5NB3MN9T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XYC0GAGN0SZHMD5NB3MN9T",
+        "id": "01M6XYC0J9E4R7PWPECJ6ETQ6Y",
+        "link": "01M6XYC0J9E4R7PWPECHQFNZT3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XCJNBA3Y2XBG39EKDVCRZ7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XC4M3W7Y351WGXE8DTZACT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XYC0MKWBRZQN9J151HMBBK",
+  "type": "ops",
+  "v": 1
+}
