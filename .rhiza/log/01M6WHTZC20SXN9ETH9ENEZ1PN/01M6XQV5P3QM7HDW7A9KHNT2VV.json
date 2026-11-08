@@ -1,0 +1,41 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6XMTDZ24C2MA1N5SG2YMTAT"
+  ],
+  "at": "2026-11-08T14:08:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The conflict was purely additive: both sides appended new tests at the same spot after TestShipCheck's conflict test, and neither changes the other's. Main now merges main into a branch rather than rebasing (no force-push), so a merge commit matches the current ship flow. ship.go auto-merged; go test -trimpath ./internal/api -run 'Ship|Plan|Watchdog', internal/workflow tests and the describe-golden and plan-workflow-ci-flake testscripts pass on the merged tree.",
+          "statement": "Merge origin/main into cs/fix-the-plan-workflow-ends-a instead of rebasing, and resolve internal/api/ship_test.go by keeping both sides' tests: the branch's TestShipCheckFailureDetailNotes (with its merge-base/diff git constants) and main's withRunEnv helper with TestShipCheckNamesRun, TestShipLandNamesRun and TestShipRebaseNamesRun; re-render .rhiza/rendered/index.md",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "resolve-rebase-conflict-fix-the-plan-workflow-ends-a",
+        "id": "01M6XQV5H1FZZKJ72V4ZMAZ4YG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6XQV5H1FZZKJ72V4XTC5QKZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XQV5H1FZZKJ72V4XTC5QKZ",
+        "id": "01M6XQV5KJKQCA70EVDVFVG2JR",
+        "link": "01M6XQV5KJKQCA70EVDRNSA7SD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XMTDKAXYTFM3T7MAB9981D",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6XQV5P3QM7HDW7A9KHNT2VV",
+  "type": "ops",
+  "v": 1
+}
