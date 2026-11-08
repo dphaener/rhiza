@@ -1,0 +1,101 @@
+# A feature request's plan run takes its plan-stage autonomy from the plan
+# workflow, falling back to rhiza.autonomy.plan: a repo plan.toml declaring
+# autonomous = true starts it --autonomous while the setting is owner, one
+# declaring plan = owner starts it without while the setting is auto, and a
+# ship workflow's plan = auto changes nothing about plan runs. Rex is faked
+# and only logs. Each case gets its own root, so no run of another counts.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env CLAUDE_CONFIG_DIR=$WORK/none
+
+# plan.toml declaring autonomous = true, setting owner: --autonomous.
+env RHIZA_TEST_DETACH_LOG=$WORK/auto.log
+mkdir r1/repo
+exec sh -c 'printf "[projects.repo]\npath = \"repo\"\n" > r1/rhiza.toml'
+cd r1/repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec git config rhiza.autonomy.plan owner
+mkdir .rhiza/workflows
+cp $WORK/plan-autonomous.toml .rhiza/workflows/plan.toml
+exec rhiza request 'Add exports'
+exec rhiza daemon --permission-mode manual --max-runs 1 --once
+stdout '^Started the plan run of request '
+exec sh -c 'grep -c "run start --foreground --workflow plan --new Add exports .* --autonomous" $WORK/auto.log'
+stdout '^1$'
+
+# plan.toml declaring plan = owner, setting auto: no --autonomous.
+cd $WORK
+env RHIZA_TEST_DETACH_LOG=$WORK/owner.log
+mkdir r2/repo
+exec sh -c 'printf "[projects.repo]\npath = \"repo\"\n" > r2/rhiza.toml'
+cd r2/repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec git config rhiza.autonomy.plan auto
+mkdir .rhiza/workflows
+cp $WORK/plan-owner.toml .rhiza/workflows/plan.toml
+exec rhiza request 'Add imports'
+exec rhiza daemon --permission-mode manual --max-runs 1 --once
+stdout '^Started the plan run of request '
+exec sh -c 'grep -c "run start --foreground --workflow plan --new Add imports" $WORK/owner.log'
+stdout '^1$'
+! grep 'autonomous' $WORK/owner.log
+
+# ship-change.toml declaring plan = auto, setting owner: the plan run starts
+# without --autonomous.
+cd $WORK
+env RHIZA_TEST_DETACH_LOG=$WORK/ship.log
+mkdir r3/repo
+exec sh -c 'printf "[projects.repo]\npath = \"repo\"\n" > r3/rhiza.toml'
+cd r3/repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec git config rhiza.autonomy.plan owner
+mkdir .rhiza/workflows
+cp $WORK/ship-plan-auto.toml .rhiza/workflows/ship-change.toml
+exec rhiza request 'Add reports'
+exec rhiza daemon --permission-mode manual --max-runs 1 --once
+stdout '^Started the plan run of request '
+exec sh -c 'grep -c "run start --foreground --workflow plan --new Add reports" $WORK/ship.log'
+stdout '^1$'
+! grep 'autonomous' $WORK/ship.log
+
+-- plan-autonomous.toml --
+name = "plan"
+autonomous = true
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- plan-owner.toml --
+name = "plan"
+
+[autonomy]
+plan = "owner"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- ship-plan-auto.toml --
+name = "ship-change"
+
+[autonomy]
+plan = "auto"
+
+[step.go]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
