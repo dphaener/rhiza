@@ -833,11 +833,11 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		return ok
 	})
 	ship := daemonShipOf(fold)
-	shipMode, err := autonomyStage(ctx, "ship")
+	shipMode, err := workflowStageMode(ctx, shipChangeWorkflow, "ship")
 	if err != nil {
 		return nil, resumed, nil, err
 	}
-	signoffMode, err := autonomyStage(ctx, "signoff")
+	signoffMode, err := workflowStageMode(ctx, shipChangeWorkflow, "signoff")
 	if err != nil {
 		return nil, resumed, nil, err
 	}

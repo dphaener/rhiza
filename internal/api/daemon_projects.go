@@ -261,7 +261,7 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 	for range daemonRequestsWaiting(ctx) {
 		ready = append(ready, "plan request")
 	}
-	if mode, err := autonomyStage(ctx, "ship"); err == nil && mode != AutonomyOwner {
+	if mode, err := workflowStageMode(ctx, shipChangeWorkflow, "ship"); err == nil && mode != AutonomyOwner {
 		cands := slices.DeleteFunc(slices.Clone(fold.cands), func(cs string) bool {
 			_, ok := unjournaled[cs]
 			return ok

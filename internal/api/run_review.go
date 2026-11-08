@@ -1324,7 +1324,7 @@ func runRunGate(ctx *Ctx, _ any) (any, error) {
 		}
 		return resp, nil
 	}
-	acceptMode, err := autonomyStage(ctx, "accept")
+	acceptMode, err := stateStageMode(ctx, rr.state, "accept")
 	if err != nil {
 		return nil, err
 	}

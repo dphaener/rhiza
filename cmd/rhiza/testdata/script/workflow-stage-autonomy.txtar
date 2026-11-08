@@ -1,0 +1,117 @@
+# A workflow's declaration overrides rhiza.autonomy.<stage> for its runs. A
+# ship-change override declaring ship = auto starts a ready change set while
+# the setting is owner; one declaring signoff = owner starts run start without
+# --autonomous while the setting is auto; a plan = auto declaration changes
+# nothing about the ship stage. Rex is faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+
+exec sh -c 'rhiza change new Built --title Built --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/built'
+exec rhiza add capability built-leaf
+exec sh -c 'rhiza link $(cat $WORK/built) serves m'
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# No declaration: the setting rules, ship owner holds the change set.
+exec git config rhiza.autonomy.ship owner
+exec rhiza daemon --permission-mode manual --once
+! exists $WORK/detach.log
+
+# ship-change declaring plan = auto only: ship still follows the setting.
+mkdir .rhiza/workflows
+cp $WORK/plan-only.toml .rhiza/workflows/ship-change.toml
+exec rhiza daemon --permission-mode manual --once
+! exists $WORK/detach.log
+
+# ship-change declaring ship = auto starts it while the setting is owner.
+cp $WORK/ship-auto.toml .rhiza/workflows/ship-change.toml
+exec rhiza daemon --permission-mode manual --once
+exec sh -c 'grep -c "run start --foreground [0-9A-Z]* --permission-mode manual" $WORK/detach.log'
+stdout '^1$'
+
+# signoff = owner declared while the setting is auto: no --autonomous.
+exec rm $WORK/detach.log
+exec rm .git/rhiza/daemon.state.json
+exec git config rhiza.autonomy.signoff auto
+cp $WORK/signoff-owner.toml .rhiza/workflows/ship-change.toml
+exec rhiza daemon --permission-mode manual --autonomous --once
+exec sh -c 'grep -c "run start --foreground" $WORK/detach.log'
+stdout '^1$'
+exec sh -c '! grep -e --autonomous $WORK/detach.log'
+
+# accept = owner declared by the run's workflow while the setting is auto: an
+# autonomous run's gate leaves the drafts proposed.
+exec git config rhiza.autonomy.accept auto
+exec rhiza change new 'Plan B' --kind record --title 'Plan B' --json
+exec rhiza add intent want-b
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
+cp $WORK/hold.toml .rhiza/workflows/hold.toml
+exec rhiza run start --foreground --workflow hold --autonomous --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runb'
+exec rhiza land
+exec sh -c 'rhiza change new "Serve B one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/b1'
+exec sh -c 'rhiza link $(cat $WORK/b1) serves want-b'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run findings $WORK/clean.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+exec sh -c 'rhiza change show $(cat $WORK/b1) --json'
+stdout '"state": "proposed"'
+
+fold-ok
+
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- plan-only.toml --
+name = "ship-change"
+[autonomy]
+plan = "auto"
+
+[step.go]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- ship-auto.toml --
+name = "ship-change"
+[autonomy]
+ship = "auto"
+
+[step.go]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- signoff-owner.toml --
+name = "ship-change"
+[autonomy]
+ship = "auto"
+signoff = "owner"
+
+[step.go]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- hold.toml --
+name = "hold"
+
+[autonomy]
+accept = "owner"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- clean.json --
+{"findings":[]}
