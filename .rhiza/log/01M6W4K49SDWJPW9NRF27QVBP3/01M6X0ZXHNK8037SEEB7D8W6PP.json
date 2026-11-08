@@ -1,0 +1,29 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6X0ZMRK1SK1QM17TCYQ9D1M"
+  ],
+  "at": "2026-11-08T07:29:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on schedules-file): schedules-file allows [[schedules]] in .rhiza/dispatch.toml and says it amends dispatch-rules-file. But dispatch-rules-file (01M6VYTACHSR, in the accepted, unbuilt change set 01M6VY7G6HPJ, Workflow dispatch) still says 'any other table or key ... is an error', and this plan writes nothing to it. Once both land, the model holds two statements that contradict each other. rhiza overlaps cannot catch this because no node is written twice. dispatch-rules-file needs a change, either in 01M6VY7G or in a write this plan makes, so it names [[schedules]] as an allowed table. The critic confirmed it: schedules-file's statement says it amends dispatch-rules-file's unknown-table rule. But rhiza change show lists no write by this plan to dispatch-rules-file (01M6VYTACHSRCG9FCR51ESF67H in 01M6VY7G), whose statement still says 'any other table or key ... is an error naming it'. rhiza overlaps reports nothing because no node is written twice. Once both change sets land, the model holds two contradicting rules for .rhiza/dispatch.toml. dispatch-rules-file's statement needs to name [[schedules]] as an allowed table. How should it be settled?"
+        },
+        "handle": "review-01m6w4k1-sched-r3-f2",
+        "id": "01M6W6KPX1HP0R9B3DRM9KS4E6",
+        "key": null,
+        "kind": "question",
+        "node": "01M6W6KPX1HP0R9B3DRGWYQGJ9",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6X0ZXHNK8037SEEB7D8W6PP",
+  "type": "ops",
+  "v": 1
+}
