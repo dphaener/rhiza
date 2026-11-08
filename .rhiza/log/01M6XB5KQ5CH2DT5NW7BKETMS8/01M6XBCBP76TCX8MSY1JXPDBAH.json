@@ -1,0 +1,41 @@
+{
+  "actor": "01M6XBB9E2GN12RFZZR3YSERCR",
+  "after": [
+    "01M6XBAWQFDCWFCVWPHQ9FE9M0"
+  ],
+  "at": "2026-11-08T10:31:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "watchdogReadPR (internal/api/daemon_watchdog.go) is the single read behind d.ci, used by every watchdog pass; it finds the PR by the change set's branch and only checks prOwnedBy(body, change set), so any ended run of the change set claims the PR. Putting the run check there fixes the reported wrong-run inbox item and also stops the rerun and merge passes acting on a PR a live or resumed run owns (the PR #376 case), with one check instead of three. For legacy records with no run, matching no run is the safe failure: the cost is the watchdog no longer rescuing a pre-change stalled PR (the owner can still act), while guessing an owner could reproduce the exact bug this change set fixes. Legacy records age out as runs write new ones.",
+          "statement": "The watchdog matches a PR to a run only when the change set's ship record (.git/rhiza/ship/<cs>.json) names that run as the one that opened or pushed the PR. The check lives in the shared PR read, watchdogReadPR, so the stalled-PR inbox item, the CI-rerun pass and the no-CI merge pass all see no PR for a run that does not own it. A ship record that names no run (written before this change) matches no run: the watchdog skips that PR, and records written from now on carry the run.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "watchdog-pr-owned-by-ship-record-run",
+        "id": "01M6XBCBKRAR1HDT7ZGR0TP5Z3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6XBCBKRAR1HDT7ZGPE2FP0B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XBCBKRAR1HDT7ZGPE2FP0B",
+        "id": "01M6XBCBMY8K0W8FCV3P0QMTFH",
+        "link": "01M6XBCBMY8K0W8FCV3MV32HPA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XBAT3QEZCNZJ3NFCME8ZME",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6XB5KQ5CH2DT5NW7BKETMS8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XBCBP76TCX8MSY1JXPDBAH",
+  "type": "ops",
+  "v": 1
+}
