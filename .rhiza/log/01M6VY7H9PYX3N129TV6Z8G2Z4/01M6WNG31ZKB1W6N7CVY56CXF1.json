@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WN64RN4S59KJ4XAN2KDBQ9",
+  "after": [
+    "01M6WN6G7DCD3EM90B3KBM23N7"
+  ],
+  "at": "2026-11-08T04:08:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 20626479 (fakes only): go test -trimpath ./internal/workflow -run TestBuiltin passes, incl. TestBuiltinPlanMilestone (plan-milestone loads, Start and Steps DeepEqual plan's, every stage autonomy owner). go test -trimpath ./cmd/rhiza -run 'TestScripts/(plan-milestone-workflow|workflow-ls|daemon-milestone-request|plan-workflow-autonomous|run-autonomy-source)$' passes: with fake rex and rhiza.autonomy.plan auto, workflow ls lists plan-milestone as builtin:plan-milestone, the milestone dry-run reports workflow plan-milestone sourced from the workflow and not autonomous, the daemon detaches run start --workflow plan-milestone ... --milestone with no --autonomous, and a repo .rhiza/workflows/plan-milestone.toml declaring autonomous = true makes the daemon pass --autonomous even with plan owner. Read internal/api: daemonStartPlan/planRunArgs carry no hard-coded milestone rule (requestPick swaps plan for plan-milestone; milestonePlanWorkflow swaps it for run start --milestone and record change sets via planIsMilestone, journaling resolveWorkflow's builtin:plan-milestone path)."
+        },
+        "handle": "plan-milestone-workflow-verified-2",
+        "id": "01M6WNG2WXVZZQ40PB5A52TZD8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WNG2WXVZZQ40PB57VQQE0B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WNG2WXVZZQ40PB57VQQE0B",
+        "id": "01M6WNG2ZA05QHVHVB57V5MFFX",
+        "link": "01M6WNG2ZA05QHVHVB544Q8KDZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVZJ3PB7QGSN9XZVP9GN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WNG31ZKB1W6N7CVY56CXF1",
+  "type": "ops",
+  "v": 1
+}
