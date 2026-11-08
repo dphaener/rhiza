@@ -609,6 +609,9 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if def, path, data, err = milestonePlanWorkflow(ctx, def, path, data, milestone); err != nil {
 		return nil, err
 	}
+	if err := planOwnerRefuses(def, path, r.Autonomous && (strings.TrimSpace(r.New) != "" || isPlanWorkflow(def.Name)), runStartNext); err != nil {
+		return nil, err
+	}
 	// Refuse a start whose agent steps cannot run before the change set or
 	// its worktree is resolved, so a refused start runs no git and writes
 	// nothing.
@@ -628,6 +631,9 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	// plan-milestone workflow's agent steps are checked again.
 	if !milestone && def.Name == planWorkflow && planIsMilestone(ctx, t.cs.String()) {
 		if def, path, data, err = milestonePlanWorkflow(ctx, def, path, data, true); err != nil {
+			return nil, err
+		}
+		if err := planOwnerRefuses(def, path, r.Autonomous, runStartNext); err != nil {
 			return nil, err
 		}
 		if err := checkAgentSteps(ctx, def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
@@ -703,6 +709,50 @@ func milestonePlanWorkflow(ctx *Ctx, def *workflow.Definition, path string, data
 		return nil, "", nil, err
 	}
 	return d, p, src, nil
+}
+
+// isPlanWorkflow reports whether name is the plan or plan-milestone workflow.
+func isPlanWorkflow(name string) bool {
+	return name == planWorkflow || name == planMilestoneWorkflow
+}
+
+// planOwnerRefuses is the usage error for an autonomous plan run whose
+// workflow (def, resolved from path) declares the plan stage owner: by
+// default the built-in plan-milestone, so milestone planning needs the
+// owner. A repo override declaring the plan stage auto lifts it. It is nil
+// when autonomous is false.
+func planOwnerRefuses(def *workflow.Definition, path string, autonomous bool, next string) error {
+	if !autonomous {
+		return nil
+	}
+	if m, ok := def.Autonomy(workflow.StagePlan); !ok || m != workflow.AutonomyOwner {
+		return nil
+	}
+	return planOwnerError(def.Name, path, next)
+}
+
+// planOwnerError names the workflow whose declaration makes its plan stage
+// the owner's, and where that declaration was read (its path, or the run's
+// journal).
+func planOwnerError(name, path, next string) error {
+	return Usagef("--autonomous is refused: workflow %s (%s) declares the plan stage owner, so its plan run needs the owner; a repo .rhiza/workflows/%s.toml declaring it auto lifts this", name, path, name).
+		WithNext(next)
+}
+
+// planOwnerJournaled reports whether the run's workflow declares the plan
+// stage owner: as its journal recorded at start, or, for a journal that
+// predates the record, as the workflow resolves now.
+func planOwnerJournaled(ctx *Ctx, st run.State) bool {
+	for _, a := range st.Autonomy {
+		if a.Stage == workflow.StagePlan {
+			return a.Source == run.SourceWorkflow && a.Mode == workflow.AutonomyOwner
+		}
+	}
+	if _, def, _, err := resolveWorkflow(ctx.Root, st.Workflow); err == nil {
+		m, ok := def.Autonomy(workflow.StagePlan)
+		return ok && m == workflow.AutonomyOwner
+	}
+	return false
 }
 
 // planIsMilestone reports whether the change set is a record change set,
@@ -918,6 +968,9 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	if st.Abandoned() {
 		return nil, Usagef("run %s was abandoned: %s", j.ID, st.Detail).
 			WithNext("rhiza run start " + st.Change)
+	}
+	if st.Autonomous && st.IsPlanRun() && planOwnerJournaled(ctx, st) {
+		return nil, planOwnerError(st.Workflow, "as run "+j.ID+" journaled it", "rhiza run status "+j.ID)
 	}
 	retryStep := ""
 	switch {
