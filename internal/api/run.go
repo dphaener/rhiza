@@ -1953,7 +1953,8 @@ func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (s
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous, req.model = r.change, r.run, r.autonomous, model
 	req.milestone = r.milestoneOf()
-	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
+	req.landedOK = true
+	t, err := resolveChangeWorktreeIn(r.ctx, r.change, "no agent can work on it", true)
 	if err != nil {
 		return "", err
 	}

@@ -19,7 +19,7 @@ ship check --settled reads the PR's mergeable state; on CONFLICTING it runs the 
 ### In
 
 - decided-by [wait-stops-on-75](../capability/rhiza/workflows/workflow-definitions/wait-step/wait-stops-on-75.md)
-- decided-by [wait-settles-conflicting-pr](../capability/rhiza/orchestration/shipping/wait-green-pr/wait-settles-conflicting-pr.md)
+- decided-by wait-settles-conflicting-pr (retired)
 
 ## History
 

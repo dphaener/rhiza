@@ -1,0 +1,29 @@
+# ship-change-conflict-fix-step
+
+capability · `01M6WMRS4TPPTR6N3JKP0F7HQJ` · parent [wait-green-pr](../wait-green-pr.md)
+
+## acceptance
+
+A Go test in internal/workflow loads the built-in ship-change workflow and asserts the routes, kinds and max_visits above (rebase on.fail rebase-triage, rebase-triage on.pass conflict-fix with no on.fail, pr-green and rebased-green on.fail conflict-triage, conflict-triage on.pass conflict-fix and on.fail ci-triage, conflict-fix on.pass render-pr, rebase-merge, landed-green and rebased-merge-green on.fail conflict-triage-landed, conflict-triage-landed on.pass conflict-fix-landed with no on.fail, conflict-fix-landed on.pass rebase-merge, max_visits 3 on both fixers); a Go test in internal/api shows ship check --conflicts passing with a recorded unresolved conflict and no fixes, failing with no recorded conflict, and failing with a recorded conflict once the branch holds 3 merge commits with the run's Review: trailer; a testscript run-ship-conflict-fix.txtar with a local bare origin, a fake gh and a fake fixer agent: main moves with a code conflict during wait-pr and again at rebase, each time the fake fixer commits a resolving merge with a Review: trailer, the run pushes it with no force push, waits again, pr-green passes on the fixer's merge with no second triage or fixer session, and the run merges; a conflict at rebase-merge goes through conflict-triage-landed and conflict-fix-landed back to rebase-merge with one land; a rebase that fails on a push refused by origin (no conflict) ends the run at rebase-triage with no fixer session started; a fourth conflict, after two fixes before land and one after, fails the run; run with go test -trimpath ./internal/workflow/... ./internal/api/... ./internal/guide/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship|ship-check)' only
+
+## statement
+
+The built-in ship-change workflow sends a code conflict to a fixer instead of the owner, through a triage that tells a conflict from any other failure: rhiza ship check --conflicts passes only when the ship state records an unresolved merge conflict and the run has made fewer than 3 conflict fixes, counted run-wide as the merge commits on the branch carrying this run's Review: trailer, so the cap is one count shared by every fixer step, before and after land; with no recorded conflict, or with 3 fixes already made, it fails and names why. rebase fails (on.fail) to a command step rebase-triage running rhiza ship check --conflicts, which passes to conflict-fix and has no on.fail, so a fetch, push, hook or refusal failure of rebase ends the run as today instead of launching a fixer; pr-green and rebased-green fail to a command step conflict-triage running the same check, which passes to conflict-fix and fails to ci-triage as before; conflict-fix is an agent step on the run worktree whose prompt gives the fixer both sides' commits and change sets from rhiza ship check --json and tells it to resolve the conflicts, regenerate golden files and rendered output, run only the touched packages' tests and scripts, and commit the merge with Change:, Actor: and a Review: <run> trailer, never pushing, then rhiza session done; it passes to render-pr, so open-pr pushes plainly and records the head and the run waits for CI again. After land, rebase-merge fails to conflict-triage-landed (the same check, no on.fail), which passes to conflict-fix-landed, the same fixer, which passes back to rebase-merge so the fixer's merge is pushed there and nothing lands twice; landed-green and rebased-merge-green fail to conflict-triage-landed too, so a red CI or a non-conflict failure after land still ends the run. A fourth conflict in one run, before or after land, fails its triage and so fails the run (pre-land through ci-triage, which finds no failing test); conflict-fix and conflict-fix-landed keep max_visits 3 only as a backstop, and the steps they re-enter get max_visits raised so 3 conflict fixes and 2 CI fixes fit
+
+## Links
+
+### Out
+
+- depends-on [wait-merges-conflicting-pr](wait-merges-conflicting-pr.md)
+- decided-by [ship-merge-main-conflict-fixer](../../../../../decision/ship-merge-main-conflict-fixer.md)
+
+### In
+
+- depends-on [conflict-fix-design-clash](conflict-fix-design-clash.md)
+- verifies [ship-change-conflict-fix-step-verified](../../../../../evidence/ship-change-conflict-fix-step-verified.md)
+- verifies [ship-change-conflict-fix-step-qa-1](../../../../../evidence/ship-change-conflict-fix-step-qa-1.md)
+- verifies [pr-383-fix-ship-change-stops-on-a](../../../../../evidence/pr-383-fix-ship-change-stops-on-a.md)
+
+## History
+
+- `01M6WMCCRC0KSCWEV17VY8KVQP` Fix Ship-change stops on a rebase conflict and waits for the owner instead of resolving it: run 01M6W0Z45JXE (change set 01M6VY7G6HPJ, Workflow dispatch, PR #367) stopped at wait-pr on 2026-11-08 ~01:20Z with 'rebasing cs/workflow-dispatch onto origin/main conflicts in describe-golden.txtar, internal/api/change.go, internal/api/run.go, internal/changeset/body.go, body_test.go, internal/daemon/requests.go, internal/store/read_test.go; the rebase was aborted; answer question rebase-conflict-workflow-dispatch'. With several runs in flight, main always moves under a long run, so this will recur. Instead, ship-change should merge origin/main into the branch (never rebase or force-push) and give the conflicts to a fixer agent session with both sides' commits and change sets as context. The fixer resolves them, regenerates golden files, runs the touched packages' tests, commits with trailers and pushes; the run records the push and goes on. It asks the owner (or the arbiter in an autonomous run) only if the fixer reports a real design clash. Unstuck by hand: an agent merged main in the run's worktree, answered the question and resumed the run.

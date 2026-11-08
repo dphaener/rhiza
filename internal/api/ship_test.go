@@ -1135,12 +1135,12 @@ const (
 	rebaseOnto     = "main000"
 	rebaseOrigin   = "abc1234def"
 	rebaseConflict = "diff --name-only --diff-filter=U"
-	rebasePush     = "push --force-with-lease=refs/heads/cs/ship-it:" + rebaseOrigin + " origin HEAD:refs/heads/cs/ship-it"
+	rebasePush     = "push origin HEAD:refs/heads/cs/ship-it"
 	renderedSpec   = ":(top,literal).rhiza/rendered/"
 )
 
 // shipRebaseFixture is shipLandFixture with git answering a branch that
-// origin's main has moved past; the rebase itself stops (no answer).
+// origin's main has moved past; the merge itself stops (no answer).
 func shipRebaseFixture(t *testing.T) (*sessionFixture, string) {
 	t.Helper()
 	f, state, _ := shipLandFixture(t)
@@ -1149,17 +1149,18 @@ func shipRebaseFixture(t *testing.T) (*sessionFixture, string) {
 		"rev-parse --verify --quiet refs/remotes/origin/main":       rebaseOnto + "\n",
 		"rev-parse --verify --quiet refs/remotes/origin/cs/ship-it": rebaseOrigin + "\n",
 		"merge-base --is-ancestor " + rebaseOrigin + " HEAD":        "",
-		"rev-parse HEAD": "beef000111\n",
-		"rebase --abort": "",
-		"rev-list --merges --count " + rebaseOnto + "..HEAD":                  "0\n",
-		"add -A -- " + renderedSpec:                                           "",
-		"diff --cached --name-only -- " + renderedSpec:                        "",
+		"rev-parse HEAD":                               "beef000111\n",
+		"merge --abort":                                "",
+		"add -A -- " + renderedSpec:                    "",
+		"diff --cached --name-only -- " + renderedSpec: "",
 		"rm -q -f --ignore-unmatch -- :(top,literal).rhiza/rendered/index.md": "",
 	} {
 		f.git.out[k] = v
 	}
 	return f, state
 }
+
+const rebaseMerge = "merge --no-edit -m Merge origin/main into cs/ship-it " + rebaseOnto
 
 func shipRebase(t *testing.T, f *sessionFixture) ShipRebaseResponse {
 	t.Helper()
@@ -1178,21 +1179,21 @@ func TestShipRebaseNotBehind(t *testing.T) {
 		t.Fatalf("rebase = %+v", r)
 	}
 	for _, c := range f.git.calls {
-		if strings.HasPrefix(c, "rebase") || strings.HasPrefix(c, "push") {
+		if strings.HasPrefix(c, "merge ") || strings.HasPrefix(c, "push") {
 			t.Errorf("git call %q when not behind", c)
 		}
 	}
 	if st, _ := readShipState(state); st.Head != "abc1234def" || len(st.Checks) != 1 || st.Pushed != "" {
 		t.Errorf("state changed: %+v", st)
 	}
-	if got := human(t, r); got != "cs/ship-it already holds origin/main at main000; nothing to rebase.\n" {
+	if got := human(t, r); got != "cs/ship-it already holds origin/main at main000; nothing to merge.\n" {
 		t.Errorf("human = %q", got)
 	}
 }
 
 func TestShipRebaseClean(t *testing.T) {
 	f, state := shipRebaseFixture(t)
-	f.git.out["rebase "+rebaseOnto] = ""
+	f.git.out[rebaseMerge] = ""
 	f.git.out[rebasePush] = ""
 	r := shipRebase(t, f)
 	if !r.Behind || !r.Rebased || len(r.Settled) != 0 || r.Pushed != "beef000111" || r.Commit != "" || r.ExitCode() != 0 {
@@ -1206,6 +1207,9 @@ func TestShipRebaseClean(t *testing.T) {
 		if strings.HasPrefix(c, "push") && c != rebasePush {
 			t.Errorf("push %q; want only %q", c, rebasePush)
 		}
+		if strings.Contains(c, "force") || strings.Contains(c, "lease") || strings.HasPrefix(c, "rebase") {
+			t.Errorf("git call %q forces or rebases", c)
+		}
 		if strings.Contains(c, "main:") || strings.Contains(c, ":refs/heads/main") {
 			t.Errorf("git call %q reaches main", c)
 		}
@@ -1216,27 +1220,26 @@ func TestShipRebaseRenderedConflict(t *testing.T) {
 	f, state := shipRebaseFixture(t)
 	f.git.out[rebaseConflict] = ".rhiza/rendered/index.md\n"
 	f.git.out["diff --cached --name-only"] = ".rhiza/rendered/index.md\n"
-	f.git.out["commit -q -C REBASE_HEAD"] = ""
-	f.git.out["rebase --continue"] = ""
+	f.git.out["commit -q --no-edit"] = ""
 	f.git.out[rebasePush] = ""
 	r := shipRebase(t, f)
 	if !r.Rebased || !slices.Equal(r.Settled, []string{".rhiza/rendered/index.md"}) || len(r.Conflicts) != 0 || r.Pushed != "beef000111" {
 		t.Fatalf("rebase = %+v", r)
 	}
-	// The stop was settled in order: drop the file, render, stage, commit
-	// as the replayed commit, continue.
+	// The conflict was settled in order: drop the file, render, commit the
+	// merge, push.
 	var order []string
 	for _, c := range f.git.calls {
 		switch {
-		case strings.HasPrefix(c, "rm "), strings.HasPrefix(c, "commit -q -C"), c == "rebase --continue", c == rebasePush:
+		case strings.HasPrefix(c, "rm "), c == "commit -q --no-edit", c == rebasePush:
 			order = append(order, strings.Fields(c)[0])
 		}
 	}
-	if !slices.Equal(order, []string{"rm", "commit", "rebase", "push"}) {
+	if !slices.Equal(order, []string{"rm", "commit", "push"}) {
 		t.Errorf("git order = %v", order)
 	}
-	if slices.Contains(f.git.calls, "rebase --abort") {
-		t.Error("a rendered-only conflict aborted the rebase")
+	if slices.Contains(f.git.calls, "merge --abort") {
+		t.Error("a rendered-only conflict aborted the merge")
 	}
 	if st, _ := readShipState(state); st.Pushed != "beef000111" || st.Head != "" {
 		t.Errorf("state = %+v", st)
@@ -1250,45 +1253,139 @@ func TestShipRebaseCodeConflict(t *testing.T) {
 	f, state := shipRebaseFixture(t)
 	cs := currentOf(t, f.ctx)
 	f.git.out[rebaseConflict] = ".rhiza/rendered/index.md\nfeature.txt\n"
-	f.git.out["add -- .rhiza"] = ""
-	f.git.out["diff --cached --name-only -- .rhiza"] = ".rhiza/log/x.json\n"
-	f.git.out["commit -q -m Raise a question on the rebase conflicts -m Change: "+cs.String()+"\nActor: "+shipTestActor+" -- .rhiza"] = ""
+	f.git.out["merge-base HEAD "+rebaseOnto] = "base000\n"
+	f.git.out["log --format=%H%x09%s%x09%(trailers:key=Change,valueonly,separator=%x2C) base000.."+rebaseOnto] =
+		"aaa1111\tAdd other\tCS_OTHER\nbbb2222\tTouch up\t\n"
 	r := shipRebase(t, f)
-	if r.Rebased || !slices.Equal(r.Conflicts, []string{".rhiza/rendered/index.md", "feature.txt"}) ||
-		r.Question != "rebase-conflict-ship-it" || r.QuestionChange != cs.String() || r.ExitCode() != 1 ||
-		!strings.Contains(r.Detail, "feature.txt") {
+	if r.Rebased || !slices.Equal(r.Conflicts, []string{".rhiza/rendered/index.md", "feature.txt"}) || r.ExitCode() != 1 ||
+		!strings.Contains(r.Detail, "feature.txt") || r.Pushed != "" {
 		t.Fatalf("rebase = %+v", r)
 	}
-	if !slices.Contains(f.git.calls, "rebase --abort") {
-		t.Error("the rebase was not aborted")
-	}
 	for _, c := range f.git.calls {
-		if strings.HasPrefix(c, "push") || strings.HasPrefix(c, "rm ") || strings.HasPrefix(c, "rebase --continue") {
+		if strings.HasPrefix(c, "push") || strings.HasPrefix(c, "rm ") || strings.HasPrefix(c, "merge --abort") || strings.HasPrefix(c, "rebase") {
 			t.Errorf("git call %q after a code conflict", c)
 		}
 	}
-	q, err := ctxWorkspace(t, f.ctx).model(cs).Resolve("rebase-conflict-ship-it")
-	if err != nil || q.Kind != op.KindQuestion || !strings.Contains(fieldText(q.Fields["statement"]), "feature.txt") ||
-		!strings.Contains(fieldText(q.Fields["statement"]), "cs/ship-it") {
-		t.Fatalf("question = %+v, %v", q, err)
+	// No question was written.
+	if _, err := ctxWorkspace(t, f.ctx).model(cs).Resolve("rebase-conflict-ship-it"); err == nil {
+		t.Error("a question was raised")
 	}
-	if st, _ := readShipState(state); st.Head != "abc1234def" || st.Pushed != "" {
-		t.Errorf("state changed: %+v", st)
+	// The context is in the ship state.
+	st, _ := readShipState(state)
+	mc := st.MergeConflict
+	if mc == nil || mc.Change != cs.String() || mc.Branch != "cs/ship-it" || mc.Onto != rebaseOnto ||
+		!slices.Equal(mc.Files, r.Conflicts) || len(mc.MainCommits) != 2 ||
+		mc.MainCommits[0].Commit != "aaa1111" || !slices.Equal(mc.MainCommits[0].Changes, []string{"CS_OTHER"}) ||
+		len(mc.MainCommits[1].Changes) != 0 || st.Head != "abc1234def" || st.Pushed != "" {
+		t.Errorf("state = %+v", st)
+	}
+	if got := human(t, r); !strings.Contains(got, "- feature.txt\n") || !strings.Contains(got, "left in progress") {
+		t.Errorf("human = %q", got)
 	}
 
-	// Again, as a retried step would: the same question is not raised twice.
+	// Again, with the merge in progress: the conflicts are reported from
+	// the state, nothing is merged.
+	f.git.out["rev-parse --verify --quiet MERGE_HEAD"] = "cafe000\n"
+	n := len(f.git.calls)
 	r = shipRebase(t, f)
-	if r.Question != "rebase-conflict-ship-it" || r.QuestionChange != "" {
+	if len(r.Conflicts) != 2 || r.MergeConflict == nil || r.ExitCode() != 1 {
 		t.Errorf("again = %+v", r)
 	}
-	if got := human(t, r); !strings.Contains(got, "- feature.txt\n") || !strings.Contains(got, "Raised question rebase-conflict-ship-it.") {
-		t.Errorf("human = %q", got)
+	for _, c := range f.git.calls[n:] {
+		if strings.HasPrefix(c, "merge ") || strings.HasPrefix(c, "push") {
+			t.Errorf("git call %q with a merge in progress", c)
+		}
+	}
+}
+
+// ship check --conflicts passes only for a recorded unresolved merge with
+// fewer than 3 conflict fixes (merge commits with the run's Review:
+// trailer) on the branch.
+func TestShipCheckConflicts(t *testing.T) {
+	f, _ := shipRebaseFixture(t)
+	fixes := ""
+	inner := f.ctx.Exec
+	f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		if name == "git" && strings.Join(args, " ") == "log --merges --format=%H -E --grep=^Review: RUN1$ HEAD" {
+			return []byte(fixes), nil
+		}
+		return inner(name, args, dir, env)
+	}
+	f.ctx.Getenv = func(k string) string {
+		if k == "RHIZA_RUN" {
+			return "RUN1"
+		}
+		return ""
+	}
+
+	// No recorded conflict: fails.
+	r := shipCheck(t, f, `{"conflicts":true}`)
+	if r.Passed || r.ExitCode() != 1 || !strings.Contains(r.Detail, "no merge conflict is recorded") {
+		t.Errorf("no conflict: %+v", r)
+	}
+
+	// Record an unresolved conflict.
+	f.git.out[rebaseConflict] = "feature.txt\n"
+	f.git.out["merge-base HEAD "+rebaseOnto] = "base000\n"
+	if r := shipRebase(t, f); len(r.Conflicts) != 1 {
+		t.Fatalf("rebase = %+v", r)
+	}
+
+	// No fixes yet, and two: passes.
+	for _, out := range []string{"", "a1\nb2\n"} {
+		fixes = out
+		r = shipCheck(t, f, `{"conflicts":true}`)
+		if !r.Passed || r.ExitCode() != 0 || !slices.Equal(r.Conflicts, []string{"feature.txt"}) {
+			t.Errorf("fixes %q: %+v", out, r)
+		}
+	}
+
+	// Three fixes: fails, naming why.
+	fixes = "a1\nb2\nc3\n"
+	r = shipCheck(t, f, `{"conflicts":true}`)
+	if r.Passed || r.ExitCode() != 1 || !strings.Contains(r.Detail, "3 conflict fixes") {
+		t.Errorf("three fixes: %+v", r)
+	}
+
+	// Once the merge is resolved it fails too.
+	fixes = ""
+	inner2 := f.ctx.Exec
+	f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		if name == "git" && strings.Join(args, " ") == "merge-base --is-ancestor "+rebaseOnto+" HEAD" {
+			return nil, nil
+		}
+		return inner2(name, args, dir, env)
+	}
+	r = shipCheck(t, f, `{"conflicts":true}`)
+	if r.Passed || !strings.Contains(r.Detail, "is resolved") {
+		t.Errorf("resolved: %+v", r)
+	}
+}
+
+// A fixer's merge, committed on top of origin's branch and holding main,
+// is rendered, pushed plainly and recorded.
+func TestShipRebaseFixerMerge(t *testing.T) {
+	f, state := shipRebaseFixture(t)
+	f.git.out["merge-base --is-ancestor "+rebaseOnto+" HEAD"] = ""
+	f.git.out["rev-list --merges --count "+rebaseOrigin+"..HEAD"] = "1\n"
+	f.git.out[rebasePush] = ""
+	r := shipRebase(t, f)
+	if !r.Behind || !r.Rebased || r.Pushed != "beef000111" || r.ExitCode() != 0 {
+		t.Fatalf("rebase = %+v", r)
+	}
+	for _, c := range f.git.calls {
+		if strings.HasPrefix(c, "merge ") {
+			t.Errorf("git call %q merging again", c)
+		}
+	}
+	if st, _ := readShipState(state); st.Pushed != "beef000111" || st.Head != "" || st.MergeConflict != nil {
+		t.Errorf("state = %+v", st)
 	}
 }
 
 func TestShipRebasePushFails(t *testing.T) {
 	f, state := shipRebaseFixture(t)
-	f.git.out["rebase "+rebaseOnto] = ""
+	f.git.out[rebaseMerge] = ""
 	f.git.out["reset -q --keep beef000111"] = ""
 	if _, err := callOp(t, f.ctx, "ship.rebase", `{}`); err == nil {
 		t.Fatal("ship.rebase passed with a failed push")
@@ -1309,14 +1406,14 @@ func TestShipRebaseRefusals(t *testing.T) {
 	if !strings.Contains(err.Error(), "on main") {
 		t.Errorf("err = %v", err)
 	}
-	// origin's branch has a commit the local branch lacks: no rebase, no
-	// forced push.
+	// origin's branch has a commit the local branch lacks: no merge, no
+	// push.
 	f, _ = shipRebaseFixture(t)
 	delete(f.git.out, "merge-base --is-ancestor "+rebaseOrigin+" HEAD")
 	_, err = callOp(t, f.ctx, "ship.rebase", `{}`)
 	wantExit(t, err, 3)
 	for _, c := range f.git.calls {
-		if strings.HasPrefix(c, "rebase") || strings.HasPrefix(c, "push") {
+		if strings.HasPrefix(c, "merge ") || strings.HasPrefix(c, "push") {
 			t.Errorf("git call %q with origin's branch ahead", c)
 		}
 	}
@@ -1826,7 +1923,7 @@ func TestShipLandNamesRun(t *testing.T) {
 
 func TestShipRebaseNamesRun(t *testing.T) {
 	f, state := shipRebaseFixture(t)
-	f.git.out["rebase "+rebaseOnto] = ""
+	f.git.out[rebaseMerge] = ""
 	f.git.out[rebasePush] = ""
 	run := "01RUNA"
 	withRunEnv(f, &run)

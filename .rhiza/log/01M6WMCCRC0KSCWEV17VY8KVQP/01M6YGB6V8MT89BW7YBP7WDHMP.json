@@ -1,0 +1,27 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6YGB066CC31298SMDH01EN1"
+  ],
+  "at": "2026-11-08T21:17:03Z",
+  "body": {
+    "drop": [
+      "01M6WMRS1ZPYC4NQHVP80GGGKH",
+      "01M6WMSB28CDQRHTSCV85SKK99"
+    ],
+    "ops": [
+      {
+        "base": "01M68581Q6V7XS1VHP9Q4F011R",
+        "id": "01M6YGB6PFXDCS3KD8BVB9PMRV",
+        "node": "01M68581Q6V7XS1VHP9Q48KQJS",
+        "op": "node.retire",
+        "reason": "superseded by ship-rebase-merges-only: ship rebase now always merges main, not only when the branch already holds a merge"
+      }
+    ]
+  },
+  "change_set": "01M6WMCCRC0KSCWEV17VY8KVQP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YGB6V8MT89BW7YBP7WDHMP",
+  "type": "ops",
+  "v": 1
+}
