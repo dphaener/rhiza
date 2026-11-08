@@ -1,0 +1,41 @@
+{
+  "actor": "01M6XHR17YH5G7861NYQMGEHG3",
+  "after": [
+    "01M6XHQAG34M781V1ZNE97ND86"
+  ],
+  "at": "2026-11-08T12:23:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "internal/api/write_node.go:388 (and write_link.go:276 for links) bases a retire on n.Version, the landed version, while model.checkBase (internal/model/apply.go:284) then finds the change set's own earlier update after that base and reports a conflict. The retire write already handles the analogous pending-create case by dropping the change set's own ops (e.drop), so extending that to pending updates/moves is the smallest fix consistent with existing code: a retire makes earlier edits of the same node in the same change set meaningless, and dropping them avoids basing on an unlanded version, which would break the landed-base invariant other writes rely on. Re-running retire on PR 383 uses the same supported drop mechanism, so no log entry is edited by hand. Making check fail would catch this in CI but doesn't fix the cause and widens the change set past the watchdog fix.",
+          "statement": "Fix it in the retire write: when the current change set already has pending update or move ops on the node (or link) being retired, `rhiza retire` drops those ops from the change set and bases the retire on the landed version, the same way it already drops a pending create. The retired node's own pending edits are moot, so the change set then holds one retire on a valid base and lands. Then repair PR 383 by re-running `rhiza retire` on that node in its change set with the fixed build, so its stale ops are dropped and it lands. Add a model/api test for update-then-retire in one change set landing cleanly. Turning rhiza check's in-flight warning into an error is out of scope for this change set.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "retire-supersedes-own-pending-edits",
+        "id": "01M6XHSWN3BP7VKEH90FHD1SGG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6XHSWN256M1Y406SGD500RB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XHSWN256M1Y406SGD500RB",
+        "id": "01M6XHSWRQPA5YYXDH4BRHKPJK",
+        "link": "01M6XHSWRQPA5YYXDH49JKBYFY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XHQ6HBXZXWDW1CZWN4ZA2P",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6XHCX4FRER8CR0MG5D4D76D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XHSWTYAKR4T0S3TTAA7EAV",
+  "type": "ops",
+  "v": 1
+}

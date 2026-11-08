@@ -1,0 +1,39 @@
+{
+  "actor": "01M6XHEAH4XDKCP9GJE1NE7JPG",
+  "after": [
+    "01M6XHVT1MNZV58SNWFW0Q3YA1"
+  ],
+  "at": "2026-11-08T12:24:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "After this lands, repair change set 'Fix Ship-change stops on a' (01M6WMCCRC0KSCWEV17VY8KVQP, PR 383) per Decision retire-supersedes-own-pending-edits: with the fixed build, in its worktree, re-run rhiza retire --change 01M6WMCCRC0KSCWEV17VY8KVQP on nodes 01M68581Q6V7XS1VHP9Q48KQJS and 01M6A0NG1VRQKBM20M8CSVTX3B (same reasons), push, and let its run retry land. Making rhiza check's in-flight warning an error is out of scope here."
+        },
+        "handle": "note-01m6xhw4emfym6",
+        "id": "01M6XHW4EQBQF5M0PDKNFRKSPP",
+        "key": null,
+        "kind": "note",
+        "node": "01M6XHW4EMFYM6QCT7D2V4ANFT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XHW4EMFYM6QCT7D2V4ANFT",
+        "id": "01M6XHW4H5R67F4QWPQAM1DTAB",
+        "link": "01M6XHW4H5R67F4QWPQ715B2P7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XHCX4FRER8CR0MG5D4D76D",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M6XHCX4FRER8CR0MG5D4D76D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XHW4JXSNQ73XHRYKHKQ1X6",
+  "type": "ops",
+  "v": 1
+}
