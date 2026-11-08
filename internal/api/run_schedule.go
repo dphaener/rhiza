@@ -6,6 +6,9 @@ package api
 
 import (
 	"bytes"
+	"fmt"
+	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -111,5 +114,98 @@ func runScheduledStart(ctx *Ctx, r RunStartRequest) (any, error) {
 	if err := startRun(rs, rid, started, ctx.Now(), def); err != nil {
 		return nil, err
 	}
-	return runEngine(ctx, rs, common, rid, "", "", r.PermissionMode, r.Agent, true, r.NoWait)
+	main := filepath.Dir(common)
+	before, snapErr := snapshotCheckout(ctx, main)
+	resp, err := runEngine(ctx, rs, common, rid, "", "", r.PermissionMode, r.Agent, true, r.NoWait)
+	if err != nil || snapErr != nil {
+		return resp, err
+	}
+	rr, ok := resp.(RunResponse)
+	if !ok || rr.Run.State == runRunning || rr.Run.State == runStopped || rr.Run.State == runBlocked {
+		// The run goes on elsewhere: its end is not here.
+		return resp, nil
+	}
+	after, err := snapshotCheckout(ctx, main)
+	if err != nil {
+		return resp, nil
+	}
+	if w := before.changes(after); w != "" {
+		// A warning only: nothing is reverted or blocked.
+		if err := rs.Append(rid, run.Entry{Type: run.TypeWarning, At: ctx.Now(), Detail: w}); err == nil {
+			rr.Run.Warnings = append(rr.Run.Warnings, w)
+			if ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: warning: scheduled run %s (schedule %s) %s\n", rid, sc.Name, w)
+			}
+		}
+	}
+	return rr, nil
+}
+
+// checkoutSnapshot is the main checkout's branch, HEAD and uncommitted
+// tracked changes (path to its content's hash, "deleted" when gone) at one
+// moment.
+type checkoutSnapshot struct {
+	branch, head string
+	files        map[string]string
+}
+
+func snapshotCheckout(ctx *Ctx, dir string) (checkoutSnapshot, error) {
+	git := func(args ...string) (string, error) {
+		out, err := ctx.Exec("git", append([]string{"-C", dir}, args...), dir, nil)
+		return strings.TrimSpace(string(out)), err
+	}
+	var s checkoutSnapshot
+	var err error
+	if s.head, err = git("rev-parse", "HEAD"); err != nil {
+		return s, err
+	}
+	// Detached HEAD reads as HEAD itself, which never equals a branch name.
+	if s.branch, err = git("rev-parse", "--abbrev-ref", "HEAD"); err != nil {
+		return s, err
+	}
+	names, err := git("diff", "HEAD", "--name-only")
+	if err != nil {
+		return s, err
+	}
+	s.files = map[string]string{}
+	for _, f := range strings.Split(names, "\n") {
+		if f = strings.TrimSpace(f); f == "" {
+			continue
+		}
+		h, err := git("hash-object", "--", f)
+		if err != nil {
+			h = "deleted"
+		}
+		s.files[f] = h
+	}
+	return s, nil
+}
+
+// changes names what the run changed between s (its start) and after (its
+// end): the branch, the HEAD and each tracked file whose uncommitted state
+// differs; empty when nothing changed.
+func (s checkoutSnapshot) changes(after checkoutSnapshot) string {
+	var parts []string
+	if s.branch != after.branch {
+		parts = append(parts, fmt.Sprintf("switched the main checkout's branch from %s to %s", s.branch, after.branch))
+	}
+	if s.head != after.head {
+		parts = append(parts, fmt.Sprintf("moved the main checkout's HEAD from %s to %s", s.head, after.head))
+	}
+	var files []string
+	for f, h := range after.files {
+		if old, ok := s.files[f]; !ok || old != h {
+			files = append(files, f)
+		}
+	}
+	for f := range s.files {
+		if _, ok := after.files[f]; !ok {
+			files = append(files, f)
+		}
+	}
+	if len(files) > 0 {
+		slices.Sort(files)
+		parts = append(parts, "changed uncommitted tracked files in the main checkout: "+strings.Join(files, ", "))
+	}
+	return strings.Join(parts, "; ")
 }

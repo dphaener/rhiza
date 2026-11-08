@@ -85,6 +85,9 @@ const (
 	// TypeDaemonResumed records that the daemon resumed the run, which it
 	// does once.
 	TypeDaemonResumed = "daemon-resumed"
+	// TypeWarning records a warning on the run: Detail says what. It never
+	// changes the run's state or result, and may follow the finished entry.
+	TypeWarning = "warning"
 )
 
 // Sign-off outcomes, a signoff entry's Outcome.
@@ -333,6 +336,8 @@ type Block struct {
 //	           started or was resumed; the latest process entry wins)
 //	daemon-resumed: Detail (the daemon opened a tab running rhiza run
 //	           resume on the run; it does so once)
+//	warning:   Detail (a warning on the run; the run's state is untouched,
+//	           and the entry may come after the run finished)
 //	signoff:   Step, Visit, Actor, Rule (owner or autonomous), Outcome (approved
 //	           or changes), Findings (signoff step Step's visit Visit was
 //	           signed off: approved, or with changes, the owner's findings,
@@ -1165,6 +1170,8 @@ type State struct {
 	// DaemonResumedAt is when.
 	DaemonResumed   bool
 	DaemonResumedAt time.Time
+	// Warnings are the run's warning entries' details, in order.
+	Warnings []string
 	// StoppedAt is when the last stopped entry was journalled, and EndedAt
 	// when the finished entry was; zero while there is none.
 	StoppedAt time.Time
@@ -1351,6 +1358,8 @@ func (j Journal) State() State {
 			}
 		case TypeDaemonResumed:
 			st.DaemonResumed, st.DaemonResumedAt = true, e.At
+		case TypeWarning:
+			st.Warnings = append(st.Warnings, e.Detail)
 		case TypeEntered:
 			st.Visits[e.Step]++
 			st.Current = e.Step

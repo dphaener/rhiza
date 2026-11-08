@@ -139,3 +139,85 @@ func TestScheduledRunRefusals(t *testing.T) {
 		t.Errorf("schedule with --workflow: %v", err)
 	}
 }
+
+// fakeCheckout answers the git reads of a main checkout's snapshot from
+// fields a test's command changes.
+type fakeCheckout struct {
+	branch, head string
+	files        map[string]string
+}
+
+func (c *fakeCheckout) exec(name string, args []string, dir string, env []string) ([]byte, error) {
+	args = args[2:] // -C <dir>
+	switch strings.Join(args, " ") {
+	case "rev-parse HEAD":
+		return []byte(c.head + "\n"), nil
+	case "rev-parse --abbrev-ref HEAD":
+		return []byte(c.branch + "\n"), nil
+	case "diff HEAD --name-only":
+		var out string
+		for f := range c.files {
+			out += f + "\n"
+		}
+		return []byte(out), nil
+	}
+	if len(args) == 3 && args[0] == "hash-object" {
+		return []byte(c.files[args[2]] + "\n"), nil
+	}
+	return nil, nil
+}
+
+// A scheduled command that leaves the checkout alone records no warning; one
+// that switches branch, commits or edits a tracked file ends with its own
+// status and a warning in run status and the log naming what changed.
+func TestScheduledRunWarnsOnMainCheckoutChange(t *testing.T) {
+	cases := []struct {
+		name   string
+		mutate func(*fakeCheckout)
+		want   string
+	}{
+		{"quiet", func(*fakeCheckout) {}, ""},
+		{"branch", func(c *fakeCheckout) { c.branch = "feature" }, "branch from main to feature"},
+		{"commit", func(c *fakeCheckout) { c.head = "bbbb2222" }, "HEAD from aaaa1111 to bbbb2222"},
+		{"edit", func(c *fakeCheckout) { c.files = map[string]string{"main.go": "h2"} }, "main.go"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			f := newSessionFixture(t, "sched")
+			writeDispatch(t, f.ctx.Root, "[[schedules]]\nname = \"s\"\nevery = \"1h\"\ncommand = \"go\"\n")
+			co := &fakeCheckout{branch: "main", head: "aaaa1111", files: map[string]string{}}
+			f.ctx.Exec = co.exec
+			var log strings.Builder
+			f.ctx.Stderr = &log
+			f.ctx.Start = func(p Program) (Process, error) {
+				c.mutate(co)
+				return &fakeProcess{out: strings.NewReader(""), code: 0}, nil
+			}
+			resp, err := callOp(t, f.ctx, "run.start", `{"schedule":"s"}`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			info := resp.(RunResponse).Run
+			if info.State != "succeeded" {
+				t.Errorf("state = %q, want the command's own status", info.State)
+			}
+			st, err := callOp(t, f.ctx, "run.status", `{"run":"`+info.ID+`"}`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			warns := st.(RunInfo).Warnings
+			if c.want == "" {
+				if len(warns) != 0 || strings.Contains(log.String(), "warning") {
+					t.Errorf("warnings %v, log %q: want none", warns, log.String())
+				}
+				return
+			}
+			if len(warns) != 1 || !strings.Contains(warns[0], c.want) {
+				t.Errorf("warnings = %v, want one naming %q", warns, c.want)
+			}
+			if !strings.Contains(log.String(), "warning") || !strings.Contains(log.String(), c.want) {
+				t.Errorf("log %q lacks the warning naming %q", log.String(), c.want)
+			}
+		})
+	}
+}

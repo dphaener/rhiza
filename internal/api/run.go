@@ -186,6 +186,7 @@ type RunInfo struct {
 	Messages       []RunMessage    `json:"messages" desc:"The messages its sessions sent each other, in order"`
 	Sessions       []RunSession    `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
 	Totals         SessionTokenUse `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
+	Warnings       []string        `json:"warnings,omitempty" desc:"The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none"`
 	Retries        []RunRetry      `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
 	Accepts        []RunAccept     `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
 	Questions      []RunQuestion   `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
@@ -2616,6 +2617,7 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 		Trigger: st.Trigger, TriggerName: st.TriggerName,
 		Autonomous: st.Autonomous, Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
 		Amendments: []RunAmendment{}, Messages: []RunMessage{}, Sessions: []RunSession{},
+		Warnings: slices.Clone(st.Warnings),
 	}
 	switch {
 	case st.Ended:

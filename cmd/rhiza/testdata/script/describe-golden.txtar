@@ -4544,6 +4544,13 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "warnings": {
+                "description": "The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
               "workflow": {
                 "description": "The workflow's name",
                 "type": "string"
@@ -6187,6 +6194,13 @@ cmp stdout describe.golden.json
                     "title"
                   ],
                   "type": "object"
+                },
+                "type": "array"
+              },
+              "warnings": {
+                "description": "The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none",
+                "items": {
+                  "type": "string"
                 },
                 "type": "array"
               },
@@ -9602,6 +9616,13 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "warnings": {
+                "description": "The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
               "workflow": {
                 "description": "The workflow's name",
                 "type": "string"
@@ -11101,6 +11122,13 @@ cmp stdout describe.golden.json
                     "title"
                   ],
                   "type": "object"
+                },
+                "type": "array"
+              },
+              "warnings": {
+                "description": "The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none",
+                "items": {
+                  "type": "string"
                 },
                 "type": "array"
               },
@@ -13528,6 +13556,13 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "warnings": {
+                "description": "The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
               "workflow": {
                 "description": "The workflow's name",
                 "type": "string"
@@ -15051,6 +15086,13 @@ cmp stdout describe.golden.json
                     "title"
                   ],
                   "type": "object"
+                },
+                "type": "array"
+              },
+              "warnings": {
+                "description": "The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none",
+                "items": {
+                  "type": "string"
                 },
                 "type": "array"
               },
@@ -16609,6 +16651,13 @@ cmp stdout describe.golden.json
                     "title"
                   ],
                   "type": "object"
+                },
+                "type": "array"
+              },
+              "warnings": {
+                "description": "The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none",
+                "items": {
+                  "type": "string"
                 },
                 "type": "array"
               },
@@ -18172,6 +18221,13 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "warnings": {
+                "description": "The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
               "workflow": {
                 "description": "The workflow's name",
                 "type": "string"
@@ -19560,6 +19616,13 @@ cmp stdout describe.golden.json
                 "title"
               ],
               "type": "object"
+            },
+            "type": "array"
+          },
+          "warnings": {
+            "description": "The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none",
+            "items": {
+              "type": "string"
             },
             "type": "array"
           },
