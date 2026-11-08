@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YN6C77YZAK4WYPB5RQXEFD",
+  "after": [
+    "01M6YHKMS0YR415WZZXT2PPESR"
+  ],
+  "at": "2026-11-08T23:35:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 1bf8725d. Read the diff: RetryStep(def, st, failed) keeps the sole-wait rule, then walks st.Steps back from the failed visit. It skips the failed step's own visits; retried entries are never in State.Steps. It follows command steps whose on.fail routes into the next step, and returns the sole wait whose on.pass is such a check, else failed. Traced the built-in ship-change: pr-green -> conflict-triage -> ci-triage gives wait-pr; rebased-green -> conflict-triage -> ci-triage gives wait-rebased. engine.go and api/run.go pass the state. Ran with RHIZA_* unset and GOTMPDIR/TMPDIR in a scratch dir. Inherited GOTMPDIR sits under ~/code/rhiza and breaks rhiza init in scripts. go test -trimpath ./internal/run/... ok. TestRetryStepAtWaitBeforeCheck covers: via a -> wait-a; via b (journal picks) -> wait-b; through a middle step -> wait-c; three triage visits -> wait-b; no predecessor, lone step, and previous not routing in -> the failed step. go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-resume-retry|run-ship-retry)' passed: run-resume-retry, run-resume-retry-wait, run-ship-retry-pending and the new run-ship-retry-ci-triage. That script uses a fake gh, red then green: dry-run says retried at step wait-pr, resume succeeds, wait-pr visit 2 (retried) passes, then pr-green passes. internal/api: 533 tests passed and none failed, including TestRunResumeRetry and the other Resume/Retry tests. The package overran 8-15 min timeouts on load-heavy tests unrelated to this diff (TestReadBudget 151s, TestLinkEndpointKinds 226s alone, which passed) at VM load 10-16. CI runs the full package. gofmt clean, go vet ./internal/run ok."
+        },
+        "handle": "retry-ci-triage-at-wait-verified",
+        "id": "01M6YR97VF29CSEYZA5M5DTDJC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YR97VF29CSEYZA5GKDQAAB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YR97VF29CSEYZA5GKDQAAB",
+        "id": "01M6YR97WMZ6XP4G5VV4M14K87",
+        "link": "01M6YR97WMZ6XP4G5VV2YHQ16R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YGXM7SRCDR03S5J1K60QVR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YGFGQT0A9VRZ4AZ9X6VSMJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YR97ZB5FA5FWE5QTWAMQZR",
+  "type": "ops",
+  "v": 1
+}
