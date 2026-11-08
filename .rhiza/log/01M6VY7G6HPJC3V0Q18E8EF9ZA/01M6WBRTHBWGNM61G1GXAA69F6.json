@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6WB97C6TNR7NVHWFPE0MYPJ"
+  ],
+  "at": "2026-11-08T01:18:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/workflow-dispatch onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: cmd/rhiza/testdata/script/describe-golden.txtar, internal/api/change.go, internal/api/run.go, internal/changeset/body.go, internal/changeset/body_test.go, internal/daemon/requests.go, internal/store/read_test.go?"
+        },
+        "handle": "rebase-conflict-workflow-dispatch",
+        "id": "01M6WBRT5VWJRE02TVTFMK0E4X",
+        "key": null,
+        "kind": "question",
+        "node": "01M6WBRT5VWJRE02TVTD1C1Z2D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WBRT5VWJRE02TVTD1C1Z2D",
+        "id": "01M6WBRTAZCQK53845FKPPJ35R",
+        "link": "01M6WBRTAZCQK53845FJSBYBFF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WBRTHBWGNM61G1GXAA69F6",
+  "type": "ops",
+  "v": 1
+}
