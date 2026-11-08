@@ -39,11 +39,18 @@ exec rhiza daemon --permission-mode manual --once --max-runs 1
 exec sh -c 'grep -c "daemon-resumed" .git/rhiza/runs/INTERRUPTED1.jsonl || true'
 stdout '^0$'
 
-# Two slots, the live run holds one: the resume takes the other, no ship run.
+# Two slots, no live run, one interrupted run and two ready change sets
+# (One is the interrupted run's): the resume takes one slot and one ship run
+# the other, not two.
+rm .git/rhiza/runs/LIVE0000001.jsonl
 exec rhiza daemon --permission-mode manual --once --max-runs 2
 stdout '^Resumed run INTERRUPTED1$'
-! stdout '^Started a run of '
+stdout -count=1 '^Started a run of '
 exec sh -c 'grep -c "\"type\":\"daemon-resumed\"" .git/rhiza/runs/INTERRUPTED1.jsonl'
+stdout '^1$'
+exec sh -c 'grep -c "run resume" $WORK/detach.log'
+stdout '^1$'
+exec sh -c 'grep -c "run start" $WORK/detach.log'
 stdout '^1$'
 -- bin/rex --
 #!/bin/sh
