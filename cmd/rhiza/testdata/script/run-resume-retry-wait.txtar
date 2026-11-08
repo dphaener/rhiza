@@ -1,0 +1,70 @@
+# run resume --retry on a run failed at the on.pass target of exactly one
+# wait step reopens at that wait, which polls again before passing on to
+# the step that failed (ship-change's landed-green after a CI that had not
+# finished). A failed step with no wait before it is retried at itself.
+#
+# ci waits until ../polled exists, making it on its first poll, so it
+# fails to hold once and passes on the second. green fails until
+# ../green exists; solo, which no wait leads to, fails until ../solo does.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Retry at the wait' --title 'Retry wait' --json
+mkdir .rhiza/workflows
+cp ../pending.toml .rhiza/workflows/pending.toml
+cp ../plain.toml .rhiza/workflows/plain.toml
+
+! exec rhiza run start --foreground --workflow pending
+stdout '^- ci \(visit 1\): pass, then green'
+stdout '^- green \(visit 1\): fail, then end'
+
+# The CI the retry waits for is pending again: the retry reopens at ci.
+exec rm $WORK/polled
+exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG --retry --dry-run
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG would be retried at step ci$'
+exec sh -c 'echo > $WORK/green'
+exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG --retry
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout '^- ci \(visit 2, retried\): pass, then green'
+stdout '^- green \(visit 2\): pass, then end'
+stdout 'retried at ci, after: step "green" ended with outcome "fail"$'
+
+# A failed step with no wait before it is retried at itself.
+! exec rhiza run start --foreground --workflow plain
+exec rhiza run status
+stdout '^- solo \(visit 1\): fail, then end'
+exec sh -c 'echo > $WORK/solo'
+exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYJ3Y88Z9 --retry --dry-run
+stdout 'would be retried at step solo$'
+
+fold-ok
+
+-- pending.toml --
+name = "pending"
+start = "ci"
+
+[step.ci]
+kind = "wait"
+until = "if [ -f ../polled ]; then true; else touch ../polled; false; fi"
+interval = "1s"
+timeout = "30s"
+on.pass = "green"
+
+[step.green]
+kind = "command"
+run = "test -f ../green"
+on.pass = "done"
+on.fail = "failed"
+-- plain.toml --
+name = "plain"
+
+[step.solo]
+kind = "command"
+run = "test -f ../solo"
+on.pass = "done"
+on.fail = "failed"

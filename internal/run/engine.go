@@ -383,6 +383,7 @@ func (e *Engine) run(id string, retry bool, before func(State) ([]Entry, error))
 		if _, ok := def.Steps[step]; !ok {
 			return st, fmt.Errorf("run %s: step %q is not in workflow %q", j.ID, step, def.Name)
 		}
+		step = RetryStep(def, step)
 		if err := r.append(Entry{Type: TypeRetried, Step: step, Detail: st.Detail}); err != nil {
 			return r.j.State(), err
 		}

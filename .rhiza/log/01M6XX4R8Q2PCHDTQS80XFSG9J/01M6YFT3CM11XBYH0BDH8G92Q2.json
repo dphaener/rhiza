@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YFMSH0AGA0XDC0B52FN22W",
+  "after": [
+    "01M6YFH0P4E0XY1ZAK3X9F61F3"
+  ],
+  "at": "2026-11-08T21:07:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 9b783f07, hands-on with the built binary (go build -trimpath) in a scratch Rhiza root and repo, RHIZA_* unset. Workflow qa: wait-ci (until test -f ci-done, 200ms interval) then green (test -f ci-green). With ci-done present and ci-green absent, run start --foreground failed at green. With ci-done removed (CI pending again), run resume --retry --dry-run printed 'would be retried at step wait-ci' and --json gave retry: wait-ci; the real retry, with a background job creating both files after 1.5s, showed 'wait-ci (visit 2, retried): pass, then green: held after 8 checks', then green passed and the run succeeded, with the retry journalled 'retried at wait-ci'. Real red: a fresh run with ci-done present and ci-green absent, retried, went back to wait-ci, which passed on its first check, and green failed again (the run failed). Workflow qa2: solo (a command no wait leads to) failed, and the dry-run and the retry both chose solo; twin (the on.pass target of two waits, w1 and w2) failed, and the retry chose twin itself, not a wait. The built-in ship-change, plan and plan-milestone each have exactly one wait before every green step (pr, rebased, landed, rebased-merge, main). Scoped tests: go test -trimpath ./internal/run/... -run Retry ok; go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-resume-retry|run-ship-retry-pending)' ok in a clean env (env -i). Under the review session's env, rhiza init in the scripts hits the enclosing repo, which the change did not cause."
+        },
+        "handle": "retry-reopens-at-wait-qa-1",
+        "id": "01M6YFT39PH4BY68AGXD63SKGD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YFT39PH4BY68AGXCYTX32H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YFT39PH4BY68AGXCYTX32H",
+        "id": "01M6YFT3B32YDS9RSR477A31QN",
+        "link": "01M6YFT3B32YDS9RSR45TB0TS1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XXHNR6FZCKNSA3SC47TZZK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XX4R8Q2PCHDTQS80XFSG9J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YFT3CM11XBYH0BDH8G92Q2",
+  "type": "ops",
+  "v": 1
+}

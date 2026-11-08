@@ -1,0 +1,103 @@
+# run resume --retry on a ship-change run failed at landed-green while the
+# new head's checks are pending reopens at wait-landed, which polls the
+# pending checks until they pass, then passes landed-green.
+#
+# The repo's .rhiza/workflows/ship-change.toml replaces the built-in by
+# name with its tail: land, then the built-in's wait-landed and
+# landed-green (rhiza ship check --settled, rhiza ship check), polled
+# every 50ms. gh pr view answers from the queue in $WORK/checks: each call
+# takes its first line while more than one is left, so the last line
+# sticks. The first run's wait sees the old head's checks finished, then
+# landed-green sees the new head's test check pending and fails.
+
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/ship-change.toml .rhiza/workflows/ship-change.toml
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec git push -q origin main:cs/ship-it
+
+cp $WORK/first.queue $WORK/checks
+! exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
+stdout '^Run (\S+) failed$'
+stdout '^- Detail: step "landed-green" ended with outcome "fail"$'
+stderr 'not settled'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec rhiza run status
+stdout '^- wait-landed \(visit 1\): pass, then landed-green'
+stdout '^- landed-green \(visit 1\): fail, then end'
+
+# The new head's checks are still pending: the retry reopens at the wait.
+cp $WORK/retry.queue $WORK/checks
+exec sh -c 'rhiza run resume --foreground $(cat $WORK/runid) --retry --dry-run'
+stdout 'would be retried at step wait-landed$'
+exec sh -c 'rhiza run resume --foreground $(cat $WORK/runid) --retry'
+stdout 'succeeded$'
+exec rhiza run status
+stdout '^- wait-landed \(visit 2, retried\): pass, then landed-green: held after [2-9][0-9]* checks$'
+stdout '^- landed-green \(visit 2\): pass, then end'
+stdout 'retried at wait-landed, after: step "landed-green" ended with outcome "fail"$'
+fold-ok
+
+-- ship-change.toml --
+name = "ship-change"
+start = "land"
+
+[step.land]
+kind = "command"
+run = "echo landed"
+on.pass = "wait-landed"
+
+[step.wait-landed]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "30s"
+interval = "50ms"
+on.pass = "landed-green"
+
+[step.landed-green]
+kind = "command"
+run = "rhiza ship check"
+on.pass = "done"
+-- first.queue --
+SUCCESS
+PENDING
+-- retry.queue --
+PENDING
+PENDING
+SUCCESS
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+case "$1 $2" in
+"pr view")
+	q="$WORK/checks"
+	c=$(head -1 "$q")
+	if [ "$(wc -l < "$q")" -gt 1 ]; then
+		sed -i 1d "$q"
+	fi
+	head=$(git -C "$WORK/origin.git" rev-parse "refs/heads/$3")
+	case "$c" in
+	SUCCESS) test='{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}' ;;
+	*) test='{"name":"test","status":"IN_PROGRESS","conclusion":""}' ;;
+	esac
+	printf '{"body":"Change set %s","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[%s]}\n' "$RHIZA_CHANGE" "$head" "$test"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac
