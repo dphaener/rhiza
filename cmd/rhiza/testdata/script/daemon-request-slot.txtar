@@ -3,7 +3,7 @@
 # and the request's plan run, and status says why the other change set
 # waits. With no request waiting, both ship runs start. With --max-runs 1
 # the ship pick keeps the one slot, as before. A queued milestone request
-# keeps no slot: with --max-runs 2 both ship runs start beside its plan run.
+# takes the next free slot ahead of the ship picks, within --max-runs.
 # Rex is faked and only logs.
 
 chmod 755 bin/rex
@@ -67,18 +67,21 @@ stdout 'waiting for a slot: kept for queued continuations or a plan request'
 exec rhiza daemon status
 stdout 'Two: .*\(waiting for a slot: kept for queued continuations or a plan request\)'
 
-# Only a milestone request waits (the feature request is planning): it keeps
-# no slot, so both ship runs start beside its plan run, and no change set
-# waits for a slot.
+# Only a milestone request waits (the feature request is planning and holds
+# a slot): it takes the next free slot ahead of the ship picks, so with
+# --max-runs 2 no ship run starts and both change sets wait for a slot.
 exec rhiza request --kind milestone 'Backlog empty'
 exec rhiza daemon --permission-mode manual --once --max-runs 2
-stdout -count=2 '^Started a run of '
+! stdout '^Started a run of '
 stdout -count=1 '^Started the plan run of request '
 exec rhiza daemon status --json
-! stdout 'no-slot'
-exec rhiza daemon status
-! stdout 'waiting for a slot'
+stdout -count=2 '"reason": "no-slot"'
 exec rm $WORK/detach.log
+
+# A third slot lets one ship run start beside the two plan runs, never more.
+exec rhiza daemon --permission-mode manual --once --max-runs 3
+stdout -count=1 '^Started a run of '
+! stdout 'plan run'
 
 fold-ok
 

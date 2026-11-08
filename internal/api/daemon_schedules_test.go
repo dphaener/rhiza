@@ -296,3 +296,30 @@ func TestDaemonPollStartsEachProjectsSchedule(t *testing.T) {
 		t.Fatalf("started = %v, want one run per project", h.started())
 	}
 }
+
+// A scheduled run started and not journaled yet holds the one slot, so a
+// queued start stays queued until the grace passes or its run journals.
+func TestDaemonScheduledStartHoldsSlotForQueuedStart(t *testing.T) {
+	h := newSchedHarness(t, hourlyCmd)
+	h.poll(1) // first sight: nothing due
+	h.now = h.now.Add(31 * time.Minute)
+	h.poll(1)
+	if len(h.progs) != 1 {
+		t.Fatalf("started = %v, want one scheduled run", h.started())
+	}
+	common := h.projs[0].common
+	const cs = "01M6XV4WGSPC346CQEV9DGYWR3"
+	if err := daemon.UpdateStarts(common, func(s []daemon.Start) ([]daemon.Start, error) {
+		return append(s, daemon.Start{Change: cs, At: h.now}), nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	h.now = h.now.Add(10 * time.Second)
+	h.poll(1)
+	if len(h.progs) != 1 {
+		t.Fatalf("started = %v, want the queued start held back by the unjournaled schedule", h.started())
+	}
+	if q, err := daemon.ReadStarts(common); err != nil || len(q) != 1 {
+		t.Fatalf("queue = %v, %v; want the start still queued", q, err)
+	}
+}

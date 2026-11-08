@@ -283,13 +283,29 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 		}
 	}
 	running += daemonRequestsStarting(ctx, rs, runs)
-	if conf.paused || hold != nil || ferr != nil {
+	if conf.paused || ferr != nil {
 		return nil, running
 	}
-	if low, _ := daemonDiskLow(ctx, conf.minFree); low {
+	low, _ := daemonDiskLow(ctx, conf.minFree)
+	if low {
 		return nil, running
 	}
+	// A queued milestone request's plan run and the daemon's resume of an
+	// interrupted run each take a slot, first (a usage hold stops all but
+	// the milestone request).
 	var ready []string
+	if hold == nil {
+		host, _ := os.Hostname()
+		for range daemonResumable(ctx, rs, runs, fold, host, false) {
+			ready = append(ready, "resume")
+		}
+	}
+	if daemonMilestoneWaits(ctx) {
+		ready = append(ready, "milestone request")
+	}
+	if hold != nil {
+		return ready, running
+	}
 	for range daemonContinuesWaiting(ctx, rs, runs) {
 		ready = append(ready, "continue")
 	}
@@ -333,7 +349,8 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 	minFree := conf.minFree
 	state.MaxRuns = maxRuns
 	var skips []daemon.Skip
-	started, resumed, planned, err := daemonPoll1(ctx, p.rs, p.pending, p.unjournaled, t.pick.Running+share, minFree, r.Autonomous, conf.mode, conf.paused, hold, &skips)
+	startRuns, _ := p.rs.List()
+	started, resumed, planned, err := daemonPoll1(ctx, p.rs, p.pending, p.unjournaled, p.scheds.startingCount(ctx.Now(), startRuns), t.pick.Running+share, minFree, r.Autonomous, conf.mode, conf.paused, hold, &skips)
 	resp.Planned = append(resp.Planned, planned...)
 	if err == nil {
 		// A schedule that does not start is in the daemon log; it never
@@ -379,6 +396,32 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 	}
 	p.saveState()
 	return err
+}
+
+// daemonMilestoneWaits reports whether a queued milestone request could
+// start now: one with no run whose retry time has passed, and no other
+// milestone request's run in flight.
+func daemonMilestoneWaits(ctx *Ctx) bool {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return false
+	}
+	reqs, err := daemon.ReadRequests(common)
+	if err != nil {
+		return false
+	}
+	now := ctx.Now()
+	wait := false
+	for _, q := range reqs {
+		if q.Kind != daemon.KindMilestone {
+			continue
+		}
+		if q.Run != "" {
+			return false
+		}
+		wait = wait || !now.Before(q.RetryAt)
+	}
+	return wait
 }
 
 // daemonRequestsStarting counts the plan requests whose start has not
