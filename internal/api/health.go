@@ -8,14 +8,17 @@ package api
 import (
 	"fmt"
 	"io"
+	"path/filepath"
 	"reflect"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/machine"
 	"github.com/dphaener/rhiza/internal/usage"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 func init() {
@@ -161,7 +164,7 @@ func runHealth(ctx *Ctx, req any) (any, error) {
 	settings, serr := settingsOf(mctx, nil)
 	parts := []HealthPart{
 		healthDaemon(ctx, mctx, merged),
-		healthAutonomy(settings, serr),
+		healthAutonomy(mctx, settings, serr),
 		healthMachine(mctx),
 		healthDisk(mctx, settings, serr),
 		healthUsage(mctx, settings, serr),
@@ -230,7 +233,7 @@ func healthDaemon(ctx, home *Ctx, all bool) HealthPart {
 
 // healthAutonomy lists the autonomy settings and whether the daemon is
 // paused, which is warn.
-func healthAutonomy(settings []Setting, err error) HealthPart {
+func healthAutonomy(ctx *Ctx, settings []Setting, err error) HealthPart {
 	if err != nil {
 		return HealthPart{Part: HealthAutonomy, State: HealthBad, Summary: err.Error(), Next: "rhiza daemon settings"}
 	}
@@ -243,6 +246,7 @@ func healthAutonomy(settings []Setting, err error) HealthPart {
 		}
 	}
 	p.Summary = strings.Join(stages, ", ")
+	p.Detail = append(p.Detail, healthWorkflowAutonomy(ctx)...)
 	if settingValue(settings, "rhiza.daemon.paused") == "true" {
 		p.State = HealthWarn
 		p.Summary = "daemon paused; " + p.Summary
@@ -525,4 +529,46 @@ func healthOriginAhead(ctx *Ctx, commit string) string {
 		return ""
 	}
 	return origin
+}
+
+// healthWorkflowAutonomy lists, one line each in name order, every workflow
+// the repo resolves (personal, repo or built-in) that declares autonomy, with
+// each stage it declares and the file it comes from: the owner sees where a
+// run's autonomy will come from. A workflow that cannot be read is skipped.
+func healthWorkflowAutonomy(ctx *Ctx) []string {
+	seen := map[string]bool{}
+	for _, d := range []string{personalWorkflowsDir(), filepath.Join(ctx.Root, filepath.FromSlash(workflowsDir))} {
+		for _, n := range workflowNames(d) {
+			seen[n] = true
+		}
+	}
+	for _, n := range workflow.BuiltinNames() {
+		seen[n] = true
+	}
+	names := make([]string, 0, len(seen))
+	for n := range seen {
+		names = append(names, n)
+	}
+	sort.Strings(names)
+	var out []string
+	for _, n := range names {
+		file, def, _, err := resolveWorkflow(ctx.Root, n)
+		if err != nil {
+			continue
+		}
+		var stages []string
+		for _, st := range workflow.AutonomyStages {
+			if m, ok := def.Autonomy(st); ok {
+				stages = append(stages, st+" "+m)
+			}
+		}
+		if len(stages) == 0 {
+			continue
+		}
+		if rel, rerr := filepath.Rel(ctx.Root, file); rerr == nil && !strings.HasPrefix(rel, "..") {
+			file = filepath.ToSlash(rel)
+		}
+		out = append(out, fmt.Sprintf("workflow %s (%s): %s", n, file, strings.Join(stages, ", ")))
+	}
+	return out
 }
