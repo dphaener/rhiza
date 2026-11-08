@@ -33,7 +33,7 @@ exec rhiza run status
 stdout '^- pr-green \(visit 1\): fail, then ci-triage'
 stdout '^- ci-triage \(visit 1\): pass, then ci-fix: '
 stdout '^- ci-fix \(visit 1\): pass, then render-pr'
-stdout '^- render-pr \(visit 2\): pass, then open-pr'
+stdout '^- render-pr \(visit 2\): pass, then local-gate'
 stdout '^- pr-green \(visit 2\): pass, then signoff'
 stdout '^- Current step: signoff$'
 # The one fixer's commit carries a Review: trailer naming the run, with

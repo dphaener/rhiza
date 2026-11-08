@@ -31,7 +31,27 @@ git add -A -- .rhiza/rendered .rhiza/log &&
   git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
 """
 max_visits = 5
+on.pass = "local-gate"
+
+# While CI is unstable (rhiza health shows why) and the project sets a
+# local gate (rhiza.ship.localGate), the gate runs here, on the run
+# worktree, before the push: open-pr pushes only once it exits 0. A failing
+# gate goes to one fixer, then back through render-pr and the gate. With CI
+# stable, or no gate set, the step passes at once.
+[step.local-gate]
+kind = "command"
+run = "rhiza ship gate"
+max_visits = 5
 on.pass = "open-pr"
+on.fail = "gate-fix"
+
+[step.gate-fix]
+kind = "agent"
+prompt = "/rhiza-review Fix the failing local gate of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. CI is unstable, so the project's local gate (rhiza.ship.localGate) runs before the push, and it failed: run `rhiza ship gate` to see its output. Reproduce the failure locally with the failing test's own scoped command, repeating it until you see it fail again or plainly pass, then fix it or quarantine it (skip it) with a bug request filed and named at the skip. Commit only once the failing tests and the packages you touched pass locally. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
+until = "true"
+until_when = "done"
+max_visits = 2
+on.pass = "render-pr"
 
 [step.open-pr]
 kind = "command"

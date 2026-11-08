@@ -395,7 +395,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "open-pr", "wait-pr", "pr-green", "ci-triage", "ci-fix", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "wait-pr", "pr-green", "ci-triage", "ci-fix", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
 		"rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
@@ -1717,6 +1717,36 @@ func TestShipChangeCIFixPrompt(t *testing.T) {
 	for _, bad := range []string{"go test", "go vet", "make ", "testscript", "TestScripts", "-trimpath"} {
 		if strings.Contains(p, bad) {
 			t.Errorf("ci-fix prompt names %q", bad)
+		}
+	}
+}
+
+// ship-change runs the local gate before the push: render-pr passes to
+// local-gate, which passes to open-pr and sends a failure to the gate-fix
+// fixer, which goes back through render-pr.
+func TestShipChangeLocalGate(t *testing.T) {
+	data, ok := Builtin("ship-change")
+	if !ok {
+		t.Fatal("no ship-change built-in")
+	}
+	def, err := ParseWith("ship-change", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s := def.Steps["render-pr"]; s.On["pass"] != "local-gate" {
+		t.Errorf("render-pr on.pass = %q, want local-gate", s.On["pass"])
+	}
+	g := def.Steps["local-gate"]
+	if g.Run != "rhiza ship gate" || g.On["pass"] != "open-pr" || g.On["fail"] != "gate-fix" {
+		t.Errorf("local-gate = %+v", g)
+	}
+	f := def.Steps["gate-fix"]
+	if f.Kind != "agent" || f.On["pass"] != "render-pr" {
+		t.Errorf("gate-fix = %+v", f)
+	}
+	for _, bad := range []string{"go test", "make ", "testscript", "-trimpath"} {
+		if strings.Contains(f.Prompt, bad) {
+			t.Errorf("gate-fix prompt names %q", bad)
 		}
 	}
 }

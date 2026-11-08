@@ -120,6 +120,9 @@ var settingDefs = []settingDef{
 	// The CI stability window: how many of the latest settled CI runs in the
 	// stability record are checked for flakes.
 	{project: true, key: CIWindowKey, def: strconv.Itoa(DefaultCIWindow), validate: validateWholeFrom(1)},
+	// The local gate: the command ship-change runs in the run's worktree
+	// before every push while CI is unstable (unset means none).
+	{project: true, key: LocalGateKey, def: "", validate: validateCommand},
 	{project: true, key: "rhiza.autonomy.plan", def: AutonomyOwner, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	// accept governs every plan run's gate, autonomous or owner-run, which
 	// accepts once the review passed unless it is owner; other change sets
