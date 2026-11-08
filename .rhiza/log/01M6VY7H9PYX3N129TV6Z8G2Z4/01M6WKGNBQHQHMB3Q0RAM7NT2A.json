@@ -1,0 +1,41 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6WEDR2BS7413527NHA595HJ"
+  ],
+  "at": "2026-11-08T03:33:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question asked to land dispatch and then rebuild the leaf on it. Dispatch merged to main as PR #367 and origin/main was merged into this branch (merge commit ea0899ea), which resolved the overlap so a request's plan run takes the workflow dispatch picks and autonomy reads that workflow's declaration. Nothing still blocks the leaf, so the retry builds it as planned.",
+          "statement": "Build leaf bugfix-workflow-autonomous on workflow dispatch as it landed: dispatch (change set 01M6VY7G6HPJC3V0Q18E8EF9ZA, PR #367) is on main and has been merged into cs/autonomy-per-workflow, so a bugfix.toml mapped to request kind bug through .rhiza/dispatch.toml is reachable and the leaf's acceptance stands unchanged.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "bugfix-builds-on-landed-dispatch",
+        "id": "01M6WKGN81K7SZ36RB0TG3M451",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6WKGN81K7SZ36RB0PJEADB1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WKGN81K7SZ36RB0PJEADB1",
+        "id": "01M6WKGN9MK74AJTT0N0GH1G5F",
+        "link": "01M6WKGN9MK74AJTT0MZC4B1WY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WB3CJ5R7561BXEX3X6HP2N",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6WKGNBQHQHMB3Q0RAM7NT2A",
+  "type": "ops",
+  "v": 1
+}
