@@ -1,0 +1,30 @@
+{
+  "actor": "01M6XM2K204MHFXJZT43ZD6QB2",
+  "after": [
+    "01M6XM1F1A5QHT3C1460CDMAJQ"
+  ],
+  "at": "2026-11-08T13:05:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "470c2a7c-8cf3-416b-b3ff-01a1bb4128e2",
+          "statement": "Change set 01M6XM1F (Fix Ship-change fails at land) says run 01M6X2EMMHKM's land failed because another change set landed an update to capability 01M68581Q6V7 after it planned. The log says otherwise: the stale-base op 01M6WMRS1ZPY is 01M6WMCCRC0K's own node.update, and its later node.retire was based on the same landed version. No other change set touched that node. Accepted change set 01M6XHCX (leaf retire-supersedes-pending-edits) already fixes this cause and repairs PR 383. What should 01M6XM1F plan?"
+        },
+        "handle": "question-470c2a7c-1",
+        "id": "01M6XM6Q6GX0VW6JQZYE13YKZ4",
+        "key": null,
+        "kind": "question",
+        "node": "01M6XM6Q6GX0VW6JQZYBZECSXH",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6XM1F19MEG623D6829T9TPV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XM6TA65PSAM4GP9P4XZFMR",
+  "type": "ops",
+  "v": 1
+}

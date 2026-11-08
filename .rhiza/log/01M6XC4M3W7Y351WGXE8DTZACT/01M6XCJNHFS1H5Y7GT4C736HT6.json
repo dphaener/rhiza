@@ -1,0 +1,73 @@
+{
+  "actor": "01M6XC6AW4C8KHKDKN88XWVAK2",
+  "after": [
+    "01M6XCJ8SDTJ3C41N8GGD7G5Z8"
+  ],
+  "at": "2026-11-08T10:51:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6XCGGE44R8KVNVM9PX33SDQ",
+        "id": "01M6XCJN4VZ08FP3KWR142FFCX",
+        "link": "01M6XCJN4VZ08FP3KWQZZRGV8X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XCJ8RAFR0TEKRWQF04460T",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/daemon roundrobin tests: with maxRuns 3, 2 running and one free slot, project A (turn next, 2 ready change sets) and project B (1 queued continuation), B's continuation takes the slot; with 2 free slots, A has a queued start and a ready change set and B has a continuation, the picks are B's continuation, then A's start; a project at its per-project max gets no continuation slot, and the slot goes to the next project's continuation, else its start; with no continuations queued, the existing roundrobin cases pick as before. daemon-round-robin.txtar and daemon-continue-slot.txtar still pass",
+          "statement": "The root daemon's round-robin (daemon.RoundRobin) fills freed machine-wide slots in three tiers: first every project's queued continuations that could start now, in round-robin order across projects; then queued starts and plan requests; then ready change sets. Each tier keeps each project's rhiza.project.maxRuns and the machine-wide maxRuns, and the rotation's last turn carries on as before. So a queued continuation never loses a freed slot to another project's start or roadmap pick. Counting is unchanged: an interrupted run takes no slot, and no run is pre-empted."
+        },
+        "handle": "root-continuations-first",
+        "id": "01M6XCJN76SFKMEST71F1YSXRB",
+        "key": "zzzzzzy",
+        "kind": "capability",
+        "node": "01M6XCJN76SFKMEST71CGEA6VG",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6XCJN76SFKMEST71CGEA6VG",
+        "id": "01M6XCJN9VPQ5KNA1E71PN008Z",
+        "link": "01M6XCJN9VPQ5KNA1E707ASQ2D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XCGGE44R8KVNVM9PX33SDQ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "daemon-continue-slot.txtar with a fake rex: with max-runs 1 and one running run, two interrupted runs with rhiza run resume queued show in rhiza daemon status as interrupted, queued, waiting for a slot, at places 1 and 2, and --json gives each a queued place of 1 and 2; an interrupted run with nothing queued shows no queued place; describe-golden.txtar regenerated for the new response field",
+          "statement": "rhiza daemon status, in text and in --json (each live run's entry, per project under the root daemon), shows an interrupted run that has a queued continuation that could start as queued, waiting for a slot, with its place in its project's continuation queue (1 for the oldest), as well as interrupted. An interrupted run with nothing queued shows as before."
+        },
+        "handle": "daemon-status-queued-continuation",
+        "id": "01M6XCJNBA3Y2XBG39ENMWXBZF",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6XCJNBA3Y2XBG39EKDVCRZ7",
+        "op": "node.create",
+        "parent": "01M61R7NEEK19RP2QEHFRQ6W8S"
+      },
+      {
+        "decision": null,
+        "from": "01M6XCJNBA3Y2XBG39EKDVCRZ7",
+        "id": "01M6XCJNFMAHSQ51CE008TNF2T",
+        "link": "01M6XCJNFMAHSQ51CE0042ZW7M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XCGGE44R8KVNVM9PX33SDQ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6XC4M3W7Y351WGXE8DTZACT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XCJNHFS1H5Y7GT4C736HT6",
+  "type": "ops",
+  "v": 1
+}

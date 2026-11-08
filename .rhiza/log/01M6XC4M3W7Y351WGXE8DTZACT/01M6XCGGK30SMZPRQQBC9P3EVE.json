@@ -1,0 +1,41 @@
+{
+  "actor": "01M6XCE78SK6ZMGM2JA5SXRMGF",
+  "after": [
+    "01M6XCDMCEN4PB8FBZB0S4XPGQ"
+  ],
+  "at": "2026-11-08T10:50:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question's own diagnosis, which the code confirms, is that the 75-minute wait came from three long runs holding maxRuns 3, and that daemonDemand counts a LiveInterrupted run as live but not as running, so the cap is not the bug. The real gap is in daemon.RoundRobin (internal/daemon/roundrobin.go): it takes each project's Ready list in project order, one item per project per round, so project B's queued 'start' or roadmap pick can take the slot that frees while project A's 'continue' waits. Each project already orders its own Ready list with continuations first (daemonDemand), and per-repo daemonPoll1 already keeps slots for queued continuations (daemonSlotKept), which shows the intent (#226/#243) that continuations go ahead of new starts. Making the machine-wide pass honour that same order is the smallest change that matches the intent. Pre-emption or reserved slots would go beyond the change set's intent and the owner's cap control (rhiza.daemon.maxRuns). The status change is cheap and fixes the second symptom the change set names: status listed the run only as 'interrupted', which hid that it was queued.",
+          "statement": "Fix two things and leave the cap alone. (1) Machine-wide priority: the root daemon's round-robin (daemon.RoundRobin) first hands freed slots to every project's queued continuations, in round-robin order across projects and within each project's rhiza.project.maxRuns, then to queued starts and plan requests, and only then to ready change sets; so a continuation never loses a freed slot to another project's plain start or roadmap pick. (2) Status: rhiza daemon status (and its JSON) shows an interrupted run with a queued continuation as queued, waiting for a slot, with its place in line, not only as 'interrupted'. Not in scope: counting rules (an interrupted run already takes no slot), pre-empting or pausing running runs, or a slot reserved outside maxRuns; a long wait while all slots hold long runs is expected behaviour.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "continuations-first-machine-wide",
+        "id": "01M6XCGGE44R8KVNVM9TVTSMYY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6XCGGE44R8KVNVM9PX33SDQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XCGGE44R8KVNVM9PX33SDQ",
+        "id": "01M6XCGGGVS7B7RMMGDQFC5T21",
+        "link": "01M6XCGGGVS7B7RMMGDPQ1R6D8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XCDGQSEWXK93F2BV3428TP",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6XC4M3W7Y351WGXE8DTZACT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XCGGK30SMZPRQQBC9P3EVE",
+  "type": "ops",
+  "v": 1
+}

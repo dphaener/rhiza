@@ -262,6 +262,9 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 			return nil, err
 		}
 		st.Pushed = resp.Pushed
+		if id := shipRunID(ctx); id != "" {
+			st.Run = id
+		}
 		if err := writeShipState(t.statePath(), st); err != nil {
 			return nil, err
 		}

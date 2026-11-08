@@ -1,0 +1,83 @@
+{
+  "actor": "01M6XB6NSEDPT6J0PS42TFHWXB",
+  "after": [
+    "01M6XBDSXS585GZYPNBHRE4W04"
+  ],
+  "at": "2026-11-08T10:31:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6XBCBKRAR1HDT7ZGPE2FP0B",
+        "id": "01M6XBDT89NH85285BN8TBRMDM",
+        "link": "01M6XBDT89NH85285BN83TH8CN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XBDC2TNMPHBESTDGGXSM1W",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestShip.*Run' shows the ship record naming the run after ship.open-pr, ship.check and ship.rebase run under one RHIZA_RUN, and naming a second run after that run's ship.check on the same change set",
+          "statement": "Each ship step that opens, checks or pushes a change set's PR (ship.open-pr, ship.check, ship.land, ship.rebase, and the watchdog's merge of main on behalf of a run) records in the change set's ship record the run it ran for (RHIZA_RUN, or the run the watchdog acted for), so the record names the run that opened or last pushed the PR"
+        },
+        "handle": "ship-record-names-run",
+        "id": "01M6XBDT9GM17AEB5M6PRJCN21",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M6XBDT9GM17AEB5M6N0RB4KX",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M6XBDT9GM17AEB5M6N0RB4KX",
+        "id": "01M6XBDTAV0XYXG80RSF971G4Q",
+        "link": "01M6XBDTAV0XYXG80RSDF7PWKW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XBCBKRAR1HDT7ZGPE2FP0B",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestWatchdog(GreenUnmerged|ReadPR|CIRerun|PRNoCI)', with a fake gh, shows: a succeeded plan run of a change set whose ship record names a later ship-change run gets no inbox item, no resume and no merge (the inbox item 0568a71 case); the same with the ship-change run live or its continue queued; a ship record naming no run gives every run no PR; and the owning run still gets its hold or resume as before",
+          "statement": "The watchdog's shared PR read gives a run its change set's PR only when the ship record names that run, and no PR when it names another run or none, so the green-unmerged, CI-rerun and no-CI passes never act on or raise an inbox item about a PR another run owns; the green-unmerged pass also skips a change set any of whose runs is live or has a continue queued"
+        },
+        "handle": "watchdog-pr-owned-by-run",
+        "id": "01M6XBDTCS3RKPWJHKKW5QMA3Z",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M6XBDTCS3RKPWJHKKRT0EXKH",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M6XBDTCS3RKPWJHKKRT0EXKH",
+        "id": "01M6XBDTEXVXBVYD9XVP7YV7ZD",
+        "link": "01M6XBDTEXVXBVYD9XVMPVJQ93",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XBCBKRAR1HDT7ZGPE2FP0B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6XBDTCS3RKPWJHKKRT0EXKH",
+        "id": "01M6XBDTG7TG9HG4HHFQKQQRSE",
+        "link": "01M6XBDTG7TG9HG4HHFMVQMHP2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6XB5KQ5CH2DT5NW7BKETMS8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XBDTHKHFPJYGEA28EW45SR",
+  "type": "ops",
+  "v": 1
+}

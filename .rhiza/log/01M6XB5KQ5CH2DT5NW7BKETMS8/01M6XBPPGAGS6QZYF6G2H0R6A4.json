@@ -1,0 +1,30 @@
+{
+  "actor": "01M6XBNBJ6F3D1VFQ52EKPBWGX",
+  "after": [
+    "01M6XBDTHKHFPJYGEA28EW45SR"
+  ],
+  "at": "2026-11-08T10:36:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestShip.*Run|TestShipLand|TestWatchdogPRNoCI' shows the ship record naming the run after ship.open-pr, ship.check, ship.land and ship.rebase run under one RHIZA_RUN, naming a second run after that run's ship.check on the same change set, and naming the run the watchdog acted for after its no-CI merge of main pushes the PR",
+          "statement": "Each ship step that opens, checks or pushes a change set's PR (ship.open-pr, ship.check, ship.land, ship.rebase, and the watchdog's merge of main on behalf of a run) records in the change set's ship record the run it ran for (RHIZA_RUN, or the run the watchdog acted for), so the record names the run that opened or last pushed the PR"
+        },
+        "handle": "ship-record-names-run",
+        "id": "01M6XBDT9GM17AEB5M6PRJCN21",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M6XBDT9GM17AEB5M6N0RB4KX",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      }
+    ]
+  },
+  "change_set": "01M6XB5KQ5CH2DT5NW7BKETMS8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XBPPGAGS6QZYF6G2H0R6A4",
+  "type": "ops",
+  "v": 1
+}

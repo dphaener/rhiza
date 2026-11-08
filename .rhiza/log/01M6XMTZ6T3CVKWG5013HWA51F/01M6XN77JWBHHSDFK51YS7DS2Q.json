@@ -1,0 +1,97 @@
+{
+  "actor": "01M6XMWKKHPH7YR8WE0A7RC1DH",
+  "after": [
+    "01M6XN6HSSQG7MDCBW8N5H9TPM"
+  ],
+  "at": "2026-11-08T13:23:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6XMTZ6T3CVKWG5013HWA51F",
+        "id": "01M6XN76AY4MM1YVCAG91X8FDY",
+        "link": "01M6XN76AXCSYMWFHP2QCKMRGX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HKVRE1B7RPP12EN6J2GGXC",
+        "type": "serves"
+      },
+      {
+        "fields": {
+          "reasoning": "The change set's intent prescribes it (part 1). A retired node takes no more writes, so the dropped updates would change nothing that survives; basing the retire on the landed version keeps it from conflicting with its own change set at land.",
+          "statement": "Retiring a landed node that this change set has pending updates or moves on drops those pending ops, as retiring a node created in the change set already drops its create, and writes the node.retire on the node's landed version, so the retire is never based behind its own change set's update.",
+          "wording": "(from the change set's intent)"
+        },
+        "handle": "retire-drops-pending-updates",
+        "id": "01M6XN76EA3EFYEXPD9A4WXGZQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6XN76EA3EFYEXPD998RVP8Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XN76EA3EFYEXPD998RVP8Q",
+        "id": "01M6XN76KDHC53CB1S6T54G8AG",
+        "link": "01M6XN76KA40E44C2WMKVFQ29Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XN6HQP02JPRD38Z06CJCY5",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/api updates (fields and handle) then retires a landed node in one change set and finds a single node.retire based on the landed version, no pending update on the node, and a what-if and land of the change set with no conflict; go test -trimpath ./internal/api/... passes.",
+          "statement": "Retiring a landed node in a change set that already updated or moved it drops those pending ops and bases the retire on the node's landed version, so the change set lands with no conflict."
+        },
+        "handle": "retire-after-update-lands",
+        "id": "01M6XN76S19AD6C3BQKC7A9CY1",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6XN76S19AD6C3BQKAKJ6BMN",
+        "op": "node.create",
+        "parent": "01M5SWS52HMX7W0SM2B3TMWKTY"
+      },
+      {
+        "decision": null,
+        "from": "01M6XN76S19AD6C3BQKAKJ6BMN",
+        "id": "01M6XN76WMRN88BV6RJX1440AN",
+        "link": "01M6XN76WMRN88BV6RJTEMARM3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XN76EA3EFYEXPD998RVP8Q",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/model fold a log of the 01M6WMCCRC0K shape (one change set updates and renames a node, then retires it on the old base) with no problems and land it, and still report a conflict when another change set's overlapping op sits after the base, including one interleaved between the change set's own ops, for both node and link ops; go test -trimpath ./internal/model/... passes.",
+          "statement": "An op is never stale against its own change set's ops: a base superseded only by the same change set's earlier ops on the target folds and lands with no conflict, while other change sets' overlapping ops after the base still conflict."
+        },
+        "handle": "own-change-set-ops-not-stale",
+        "id": "01M6XN774723KQDY2E0NKG0VE9",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6XN774723KQDY2E0HZ0HXFJ",
+        "op": "node.create",
+        "parent": "01M5SWRZ69FKFXS01D7Y60C0S4"
+      },
+      {
+        "decision": null,
+        "from": "01M6XN774723KQDY2E0HZ0HXFJ",
+        "id": "01M6XN77DX4Q58RKR35M4WB9SQ",
+        "link": "01M6XN77DX4Q58RKR35G5PPR3X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XN5972NYED9NYJFMQNEHV3",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6XMTZ6T3CVKWG5013HWA51F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XN77JWBHHSDFK51YS7DS2Q",
+  "type": "ops",
+  "v": 1
+}

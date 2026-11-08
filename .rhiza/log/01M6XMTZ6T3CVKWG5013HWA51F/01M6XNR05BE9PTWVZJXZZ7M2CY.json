@@ -1,0 +1,30 @@
+{
+  "actor": "01M6XNNJ8SERXYJFQTC3C9YDFW",
+  "after": [
+    "01M6XN94RD1R1Y65QV6BN52QW0"
+  ],
+  "at": "2026-11-08T13:32:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Tests in internal/model fold a log of the 01M6WMCCRC0K shape (one change set updates and renames a node, then retires it on the old base) with no problems and land it; still report a conflict when another change set's overlapping op sits after the base, including one interleaved between the change set's own ops; and still report the target as retired (ErrRetired or a conflict, never an applied write) when one change set retires a target and then writes it again on a base older than the retire, for both node and link ops; go test -trimpath ./internal/model/... passes.",
+          "statement": "An op is never stale against its own change set's ops: a base superseded only by the same change set's earlier ops on the target folds and lands with no conflict, while other change sets' overlapping ops after the base still conflict."
+        },
+        "handle": "own-change-set-ops-not-stale",
+        "id": "01M6XN774723KQDY2E0NKG0VE9",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6XN774723KQDY2E0HZ0HXFJ",
+        "op": "node.create",
+        "parent": "01M5SWRZ69FKFXS01D7Y60C0S4"
+      }
+    ]
+  },
+  "change_set": "01M6XMTZ6T3CVKWG5013HWA51F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XNR05BE9PTWVZJXZZ7M2CY",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,39 @@
+{
+  "actor": "01M6XM2K204MHFXJZT43ZD6QB2",
+  "after": [
+    "01M6XMABRR2X3WPDATPRFTN8KW"
+  ],
+  "at": "2026-11-08T13:07:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Superseded by 01M6XHCX4FRER8CR0MG5D4D76D, per Decision stale-land-superseded-by-retire-fix. This intent's diagnosis was wrong: the land conflict came from 01M6WMCCRC0K's own update-then-retire of 01M68581Q6V7, not from another change set. Withdrawn with no leaves. If a real cross-change-set stale-base land failure shows up, open a new draft for the land-time fixer session."
+        },
+        "handle": "note-01m6xmah25rp21",
+        "id": "01M6XMAH286DP4D0XHDHD1380K",
+        "key": null,
+        "kind": "note",
+        "node": "01M6XMAH25RP21QK17TY21HHBZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XMAH25RP21QK17TY21HHBZ",
+        "id": "01M6XMAH56BC2ZRFW6DQ21DJSM",
+        "link": "01M6XMAH56BC2ZRFW6DPV2DY4F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XM1F19MEG623D6829T9TPV",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M6XM1F19MEG623D6829T9TPV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XMAH685PA1HNY31YE41WB1",
+  "type": "ops",
+  "v": 1
+}

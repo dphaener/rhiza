@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-08T13:26:32Z",
+  "body": {
+    "intent": "Record agent actor claude-code-ac450b52 for session ac450b52-cb3c-4fa9-a5c4-01a1bb56a2a2",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6XNDKE6VKFKKHWZ6H6GXZ8V",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XNDKE6VKFKKHWZ6KQG3P9V",
+  "type": "open",
+  "v": 1
+}

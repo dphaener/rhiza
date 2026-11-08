@@ -1,0 +1,40 @@
+{
+  "actor": "01M6XF533BPQQ7WHZ1QB4NY69T",
+  "after": [
+    "01M6XEZHTP7NV1MTNK8KP8JQFG"
+  ],
+  "at": "2026-11-08T11:41:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from the branch head and drove it by hand in a scratch repo (bare origin, fake gh answering pr view as PR #7 green). rhiza ship check with no RHIZA_RUN left the ship record's run unset; RHIZA_RUN=runA ship check wrote run=runA; RHIZA_RUN=runA ship land pushed and kept run=runA; RHIZA_RUN=runB ship check --change switched it to run=runB; a later ship check with no RHIZA_RUN kept runB; after main moved, RHIZA_RUN=runC ship rebase pushed, cleared head and wrote run=runC. internal/run/engine.go sets RHIZA_RUN for every step. go test -trimpath ./internal/api -run 'TestShip.*Run|TestShipLand|TestWatchdogPRNoCI' passes (with the inherited RHIZA_ROOT unset)."
+        },
+        "handle": "ship-record-names-run-qa-1",
+        "id": "01M6XFCHV43PY0F39Y1KGA2G9G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XFCHV43PY0F39Y1JK874T4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XFCHV43PY0F39Y1JK874T4",
+        "id": "01M6XFCHXZDPADRCC1Q5NZ885H",
+        "link": "01M6XFCHXZDPADRCC1Q1WA7J96",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XBDT9GM17AEB5M6N0RB4KX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XB5KQ5CH2DT5NW7BKETMS8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XFCJ1HC3SR7AQPRSPVD7KX",
+  "type": "ops",
+  "v": 1
+}

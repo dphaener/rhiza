@@ -1,0 +1,15 @@
+{
+  "actor": "01M6XEKPKG9XZDA5TTJ3T23JXZ",
+  "after": [],
+  "at": "2026-11-08T11:29:16Z",
+  "body": {
+    "intent": "rootguard ignores usage.live.json, which live agent statuslines write, so scoped go test runs in agent sessions stop failing at random",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6XEPTM57C88AEYN4SPME6M5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XEPTM686BNSRGGEEWN3RVT",
+  "type": "open",
+  "v": 1
+}
