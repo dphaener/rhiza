@@ -1,0 +1,30 @@
+{
+  "actor": "01M6XX61F8MBCRS8ZAW9DG5ER5",
+  "after": [
+    "01M6XX4R8Q2PCHDTQS828A61K5"
+  ],
+  "at": "2026-11-08T15:44:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "47f5cdc8-5adc-491d-a6cf-01a1bbd2cfd6",
+          "statement": "Ship-change's landed-green failed on pending CI because `rhiza run resume --retry` restarts a failed run at the step that failed (landed-green, a plain `rhiza ship check` command), skipping wait-landed, which is the step that polls until checks settle. The same happens to pr-green, rebased-green and rebased-merge-green in ship-change and plan's green steps. How should a retry wait for CI?"
+        },
+        "handle": "question-47f5cdc8-1",
+        "id": "01M6XXAH5Y23S06ZT8GN5XP2VC",
+        "key": null,
+        "kind": "question",
+        "node": "01M6XXAH5Y23S06ZT8GJX7QTBY",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6XX4R8Q2PCHDTQS80XFSG9J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XXAP0ZZJYMCZ3G711NB739",
+  "type": "ops",
+  "v": 1
+}
