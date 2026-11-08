@@ -50,7 +50,11 @@ exec rhiza run status --json
 stdout '"pick": "default"'
 
 # --workflow records explicit, and the pick shows in run status text.
-exec sh -c 'rhiza run start --foreground $(cat $WORK/bug) --workflow other --permission-mode manual --json'
+exec sh -c 'rhiza run start --foreground $(cat $WORK/bug) --workflow other --permission-mode manual --json | tee $WORK/explicit.json'
+stdout '"workflow": "other"'
+stdout '"pick": "explicit"'
+exec sh -c 'sed -n "s/^    \"id\": \"\([0-9A-Z]*\)\",$/\1/p" $WORK/explicit.json | head -1 | tr -d "\n" > $WORK/explicit'
+exec sh -c 'test -s $WORK/explicit && rhiza run status $(cat $WORK/explicit) --json'
 stdout '"workflow": "other"'
 stdout '"pick": "explicit"'
 exec rhiza run status
