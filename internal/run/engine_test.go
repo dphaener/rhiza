@@ -1271,6 +1271,83 @@ on.fail = "failed"
 	}
 }
 
+// A retry of a run failed at a step that is the on.pass target of exactly
+// one wait step reopens at that wait, which polls its until again (not
+// settled on the retry's first poll) before passing on to the step; a step
+// with no wait predecessor is retried at itself.
+func TestRetryReopensAtWait(t *testing.T) {
+	wf := `
+name = "wf"
+[step.wait]
+kind = "wait"
+until = "gh pr checks"
+interval = "1s"
+timeout = "5s"
+on.pass = "green"
+
+[step.green]
+kind = "command"
+run = "check"
+on.pass = "done"
+on.fail = "failed"
+`
+	e, r, _, _ := setup(t, wf)
+	r.holds["wait"] = []bool{true, false, true}
+	r.codes["green"] = []int{1, 0}
+	st, err := e.Run(runID)
+	if err != nil || st.Result != Failed {
+		t.Fatalf("first run: %v, %q", err, st.Result)
+	}
+	st, err = e.Retry(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded {
+		t.Fatalf("result after retry = %q (%s)", st.Result, st.Detail)
+	}
+	if len(st.Retries) != 1 || st.Retries[0].Step != "wait" {
+		t.Errorf("retries = %+v", st.Retries)
+	}
+	if got, want := outcomes(st), []string{"wait:pass", "green:fail", "wait:pass", "green:pass"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("outcomes = %v, want %v", got, want)
+	}
+	if r.polls["wait"] != 3 {
+		t.Errorf("wait polls = %d, want 3: one before the failure, two on the retry", r.polls["wait"])
+	}
+}
+
+func TestRetryStepChoice(t *testing.T) {
+	def, err := workflow.Parse("wf", []byte(`
+name = "wf"
+[step.w1]
+kind = "wait"
+until = "true"
+timeout = "1m"
+on.pass = "shared"
+[step.w2]
+kind = "wait"
+until = "true"
+timeout = "1m"
+on.pass = "shared"
+[step.solo]
+kind = "command"
+run = "true"
+on.pass = "done"
+[step.shared]
+kind = "command"
+run = "true"
+on.pass = "solo"
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for step, want := range map[string]string{"shared": "shared", "solo": "solo", "w1": "w1"} {
+		if got := RetryStep(def, step); got != want {
+			t.Errorf("RetryStep(%s) = %s, want %s", step, got, want)
+		}
+	}
+}
+
 // A run that went over a step's max_visits is retried at that step: the
 // cap counts only visits since the retry, so the step is entered again.
 func TestRetryOverCapStep(t *testing.T) {
