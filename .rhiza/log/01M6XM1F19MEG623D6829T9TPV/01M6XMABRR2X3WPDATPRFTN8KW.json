@@ -1,0 +1,27 @@
+{
+  "actor": "01M6XM2K204MHFXJZT43ZD6QB2",
+  "after": [
+    "01M6XMA5M692B98Q16B3AB3PVX"
+  ],
+  "at": "2026-11-08T13:07:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6XM1F19MEG623D6829T9TPV",
+        "id": "01M6XMABQ24M62E2TSRBMSZSSS",
+        "link": "01M6XMABQ24M62E2TSR7P2GGR1",
+        "note": "Superseded by 01M6XHCX: it fixes the actual cause of run 01M6X2EMMHKM's land failure (Decision stale-land-superseded-by-retire-fix); this change set is withdrawn",
+        "op": "link.create",
+        "to": "01M6XHCX4FRER8CR0MG5D4D76D",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M6XM1F19MEG623D6829T9TPV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XMABRR2X3WPDATPRFTN8KW",
+  "type": "ops",
+  "v": 1
+}

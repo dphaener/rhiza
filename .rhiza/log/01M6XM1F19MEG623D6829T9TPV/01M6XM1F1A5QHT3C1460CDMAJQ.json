@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-08T13:02:26Z",
+  "body": {
+    "intent": "Fix Ship-change fails at land on a stale model base and needs a person: run 01M6X2EMMHKM (change set 01M6WMCCRC0K, ship-change conflict fix) failed at land on 2026-11-08 ~12:10Z with 'model: conflict: base 01M68581Q6V7 of 01M68581Q6V7XS1VHP9Q48KQJS is stale: op 01M6WMRS1ZPY ... since wrote field:acceptance, field:statement, handle', because another change set landed an update to the same capability after this one planned its own. The only fix is by hand: rhiza set --rebase restating every field with merged text (#297). Instead, the land step should find stale-base conflicts before landing and give them to a fixer agent session with both versions and both change sets' intents. The fixer writes the rebased op, commits, pushes and the run lands. It asks the owner or arbiter only if the two intents contradict. Unstuck by an agent doing the set --rebase.",
+    "kind": "intention",
+    "request_kind": "bug",
+    "sources": []
+  },
+  "change_set": "01M6XM1F19MEG623D6829T9TPV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XM1F1A5QHT3C1460CDMAJQ",
+  "type": "open",
+  "v": 4
+}

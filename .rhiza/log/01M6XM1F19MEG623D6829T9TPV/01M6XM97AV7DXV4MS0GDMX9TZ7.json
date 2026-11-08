@@ -1,0 +1,41 @@
+{
+  "actor": "01M6XM7C005SKVPQWKRWA7RYCM",
+  "after": [
+    "01M6XM6TA65PSAM4GP9P4XZFMR"
+  ],
+  "at": "2026-11-08T13:06:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question says op 01M6WMRS1ZPY is 01M6WMCCRC0K's own node.update and that no other change set touched the node. Change set 01M6XHCX (accepted 2026-11-08T12:35Z, autonomous run 01M6XHCS7V9X) gives the same diagnosis for the same run 01M6X2EMMHKM: rhiza retire bases the retire on the landed version, so model.checkBase sees the change set's own earlier update as a stale-base conflict. Its leaf retire-supersedes-pending-edits drops the change set's pending update and move ops on retire and repairs an already-stale retire. Its note re-runs retire on 01M68581Q6V7XS1VHP9Q48KQJS and 01M6A0NG1VRQKBM20M8CSVTX3B in PR 383. Its leaf ship-head-build-error-detail makes the land error readable. So every concrete symptom in 01M6XM1F's intent is covered. Building a cross-change-set fixer agent now would be speculative work with no observed failure behind it, and it would duplicate the land path 01M6XHCX changes. Withdrawing avoids two change sets changing ship land at the same time.",
+          "statement": "01M6XM1F plans no build leaves. Its diagnosis is wrong: run 01M6X2EMMHKM's land conflict came from change set 01M6WMCCRC0K's own update-then-retire of node 01M68581Q6V7, not from another change set landing on the same capability. Accepted change set 01M6XHCX already fixes that cause (leaf retire-supersedes-pending-edits), carries the PR 383 repair in its note, and adds the land error detail (leaf ship-head-build-error-detail). Mark 01M6XM1F as superseded by 01M6XHCX and withdraw it. The general feature it proposes, a land-time fixer session that rebases a stale base against another change set's landed edit, is not planned now. File it as its own draft change set only when a real cross-change-set stale-base land failure is seen.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "stale-land-superseded-by-retire-fix",
+        "id": "01M6XM977HWS17WY5Y601F9AB4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6XM977HWS17WY5Y5X2JTBM1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XM977HWS17WY5Y5X2JTBM1",
+        "id": "01M6XM979BEYZX51N7P3N027RB",
+        "link": "01M6XM979BEYZX51N7P35C5J10",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XM6Q6GX0VW6JQZYBZECSXH",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6XM1F19MEG623D6829T9TPV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XM97AV7DXV4MS0GDMX9TZ7",
+  "type": "ops",
+  "v": 1
+}
