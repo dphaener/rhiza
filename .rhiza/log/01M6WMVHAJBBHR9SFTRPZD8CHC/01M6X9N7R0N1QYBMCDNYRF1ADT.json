@@ -1,0 +1,40 @@
+{
+  "actor": "01M6X8G62C83APMM0E4QAN44ZY",
+  "after": [
+    "01M6X6YPKKZR0ZGZ5RVQVJZ9V1"
+  ],
+  "at": "2026-11-08T10:00:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2 at a21e593c: read the fixer's diff, which handles the confirmed review findings. RunInfo.Human now prints a retry round as 'round N from attempt M: given by the retry' instead of 'decision  answers question ...', and TestRunInfoRetryRound checks that text. build-leaf-fails.txtar now expects the unanswered retry to give alpha round 2 (attempts 4-6) with no empty decision, and the answered retry to give round 3 at attempt 7 carrying use-a-map. Ran go test -trimpath ./internal/run/... (ok). The engine tests TestLeafFailsRetryRound (retry round, attempt 7 builder, then dependent leaf-c, run succeeds), TestLeafFailsRetryRoundFailsAgain (fails, arbiters only QL1) and the answered case (one leaf-round carrying the Decision, no retry) pass. Ran go test -trimpath ./internal/api/... -skip Budget: every test PASS, including TestRunInfoRetryRound, TestLeafPrompt (retry prompt with no Decision; answered prompt names the Decision) and TestRunResumeRetry. The package was flagged only by the post-run guard on ~/code/.rhiza-root/usage.live.json, which the live root daemon writes; the full api run with Budget tests ran out of time waiting on the machine-wide budget flock (load ~13), and neither is related to this change. Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(build-leaf-fails|describe-golden)$': ok."
+        },
+        "handle": "retry-revives-failed-leaves-verified-2",
+        "id": "01M6X9N7NBS2PQY7YX658J7RW8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X9N7NBS2PQY7YX64EK0ESC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X9N7NBS2PQY7YX64EK0ESC",
+        "id": "01M6X9N7P97R6VQFD4GK8AE9JV",
+        "link": "01M6X9N7P97R6VQFD4GHZR06VH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WN5CRPVBSVTZ8CPGDM6AST",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WMVHAJBBHR9SFTRPZD8CHC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6X9N7R0N1QYBMCDNYRF1ADT",
+  "type": "ops",
+  "v": 1
+}
