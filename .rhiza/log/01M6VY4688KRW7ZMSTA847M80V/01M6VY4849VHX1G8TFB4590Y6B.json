@@ -1,0 +1,44 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6VY4689GGFW2ZSDXB7SWJZG"
+  ],
+  "at": "2026-11-07T21:20:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "rules as workflow policy with built-in defaults",
+            "rules hard-coded in the daemon"
+          ],
+          "quote": "\"everything should run through a workflow. those are the rules that are defined by the user/owner. rhiza ships with sensible defaults but should be flexible. the only thing we enforce is the references between nodes.\" (owner, 2026-11-07); also \"we should be able to have bug fixes without a milestone. smaller features without a milestone. hell even no milestones at all if people don't want that. autonomy should be configurable on a workflow by workflow basis.\" (owner, 2026-11-07). Agent's reading, confirmed by the owner (\"yes this sounds correct\"): the append-only log and change-set lifecycle stay as mechanism; who may accept, the daemon's milestone skip, autonomy and the milestone-needs-a-human rule become defaults in built-in workflows.",
+          "statement": "Everything Rhiza does runs through a workflow: the rules (which workflow a request or change set gets, whether work without a milestone is built and in what order, each stage's autonomy, whether milestone planning needs the owner) are workflow and repo policy the owner defines. Rhiza ships them as built-in defaults; the only rule it enforces is that references between nodes hold."
+        },
+        "handle": "workflows-are-the-rules",
+        "id": "01M6VY483G51DG4WY4PVCXQQ2W",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6VY483G51DG4WY4PR58AMXV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT95KQCW65MYWN9S7K9P3",
+        "id": "01M6VY483TK9XAWVP8024PYQ4Z",
+        "link": "01M6VY483TK9XAWVP801S6CY1E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VY483G51DG4WY4PR58AMXV",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6VY4688KRW7ZMSTA847M80V",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6VY4849VHX1G8TFB4590Y6B",
+  "type": "ops",
+  "v": 1
+}

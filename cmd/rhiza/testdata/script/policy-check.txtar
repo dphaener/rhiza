@@ -1,0 +1,48 @@
+# check reads .rhiza/policy.toml: a backlog value outside after, before and
+# skip, or a file that does not parse, fails under the policy rule, naming
+# the file and the value. A missing file or key is fine.
+
+exec rhiza init
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+
+# No key, or a valid value, passes.
+cp ok-empty.toml .rhiza/policy.toml
+exec rhiza check
+stdout '^ok$'
+cp ok-before.toml .rhiza/policy.toml
+exec rhiza check
+stdout '^ok$'
+
+# A bad value fails.
+cp bad.toml .rhiza/policy.toml
+! exec rhiza check
+stdout '^fail policy \.rhiza/policy\.toml: schedule\.backlog "sometimes" is not one of "after", "before" or "skip"$'
+stdout '^failed$'
+
+# A file that does not parse fails.
+cp broken.toml .rhiza/policy.toml
+! exec rhiza check
+stdout '^fail policy \.rhiza/policy\.toml: toml: '
+stdout '^failed$'
+
+# Skip passes.
+cp ok-skip.toml .rhiza/policy.toml
+exec rhiza check
+stdout '^ok$'
+
+-- ok-empty.toml --
+[schedule]
+-- ok-before.toml --
+[schedule]
+backlog = "before"
+-- ok-skip.toml --
+[schedule]
+backlog = "skip"
+-- bad.toml --
+[schedule]
+backlog = "sometimes"
+-- broken.toml --
+[schedule
+backlog =

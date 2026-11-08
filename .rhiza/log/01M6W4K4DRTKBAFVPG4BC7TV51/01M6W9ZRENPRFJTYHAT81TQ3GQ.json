@@ -1,0 +1,30 @@
+{
+  "actor": "01M6W9YMSCN0EYRDP2KRNSZ1DC",
+  "after": [
+    "01M6W9VA5QD5NMPA8ETJTW7CD0"
+  ],
+  "at": "2026-11-08T00:47:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test in internal/guide (go test -trimpath ./internal/guide) checks the workflows topic has the Outside input section naming bypassPermissions, rhiza.autonomy.plan (as not gating intake), rhiza.daemon.permissionMode, rhiza request, the schedule caveat, permission_mode and rhiza.autonomy.signoff, and the guide's existing size checks still pass",
+          "statement": "The workflows guide topic has an Outside input section: what the risk warning means (a request's text and --ref reach autonomous agents running in a bypass mode), that every queued request counts and Rhiza cannot see what a scheduled command running rhiza request does, that rhiza.autonomy.plan owner does not gate intake (each request is planned at once under rhiza.daemon.permissionMode; the owner only accepts the plan before the rest runs), and the usual mitigations: people outside Rhiza gate intake (never a schedule), a narrower rhiza.daemon.permissionMode or permission_mode on the plan workflow's steps, and rhiza.autonomy.plan owner and rhiza.autonomy.signoff owner for what runs after; nothing is refused"
+        },
+        "handle": "workflows-guide-outside-input",
+        "id": "01M6W4ZN88P5XT2RXYH68QPFPW",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6W4ZN88P5XT2RXYH35YRVMZ",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      }
+    ]
+  },
+  "change_set": "01M6W4K4DRTKBAFVPG4BC7TV51",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W9ZRENPRFJTYHAT81TQ3GQ",
+  "type": "ops",
+  "v": 1
+}

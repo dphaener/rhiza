@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W1VS9Y8MHD5169F8XW4EBF",
+  "after": [
+    "01M6W1C5VEB2DJDKQJF6S5T0EE"
+  ],
+  "at": "2026-11-07T22:26:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8f4eb820, read the diff of internal/api/run_milestone.go: the check reads .rhiza/policy.toml, requires the run's started milestone (RHIZA_MILESTONE) when set, requires some milestone only when backlog = \"skip\", and otherwise passes, with errors naming the change set and a Fix. Ran go test -trimpath ./internal/api -run TestRunMilestoneCheck from a scratch worktree outside ~/code: TestRunMilestoneCheck (backlog = skip: serving nothing or a loose intent fails naming the change set; serving a milestone directly or through an intent passes) and TestRunMilestoneCheckBacklogAndNamedMilestone (no policy and backlog = before pass; with a milestone, serving it directly or through an intent passes; serving another milestone or none fails naming the change set and milestone) both PASS. Ran go test -trimpath ./cmd/rhiza -run TestScripts for plan-milestone-backlog (fake agent, change set serves an intent under no milestone, no policy.toml: milestone-check passes and the run enters review), plan-milestone-check (same with backlog = skip: fails at milestone-check, never reviewed), plan-workflow and describe-golden: ok."
+        },
+        "handle": "milestone-check-follows-policy-verified",
+        "id": "01M6W1YA25KXTCSPA0EB0KQ983",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W1YA25KXTCSPA0E8YQZ0Y2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W1YA25KXTCSPA0E8YQZ0Y2",
+        "id": "01M6W1YA436EEJHD474SWN37NH",
+        "link": "01M6W1YA3VYX9YQYGF2CDD4FHK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMQ92BYC34XV88RA2A320",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7GRV7BAJ9MMFVAY9GPZ2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W1YA798A8G05CTHGFBEQ74",
+  "type": "ops",
+  "v": 1
+}

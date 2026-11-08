@@ -1,0 +1,30 @@
+{
+  "actor": "01M6W7H118ZVMHV0NN1PJCCVX2",
+  "after": [
+    "01M6W7G8YBXBX090SSZE86GDT8"
+  ],
+  "at": "2026-11-08T00:06:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "c97ce25f-459e-4c9d-8e24-01a1b8787167",
+          "statement": "Review question handles (run.review-check) collide because they use only the run ID's first 8 characters, which are its start time. What should the handle carry, and how should a taken handle be handled?"
+        },
+        "handle": "question-c97ce25f-1",
+        "id": "01M6W7M77J37T0KR2T3DSCW8AB",
+        "key": null,
+        "kind": "question",
+        "node": "01M6W7M77J37T0KR2T3CR2B39Q",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6W7G8YBXBX090SSZC3Y60H2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W7MA5DDEJTG9E5XEBA975C",
+  "type": "ops",
+  "v": 1
+}

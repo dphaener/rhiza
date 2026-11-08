@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-07T23:26:55Z",
+  "body": {
+    "intent": "Release pipeline: GoReleaser builds linux and darwin binaries for amd64 and arm64 on v* tags and publishes them as a GitHub release, rhiza version reports the tag, and go install of the module path works",
+    "kind": "intention",
+    "sources": [
+      "01M6W5ANB6CXAAYAVSP53Z43CY"
+    ]
+  },
+  "change_set": "01M6W5C84ZKXW2C2AE3YWKZ1XD",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W5C84ZKXW2C2AE42F928HQ",
+  "type": "open",
+  "v": 1
+}

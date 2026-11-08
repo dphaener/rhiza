@@ -14,6 +14,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/dphaener/rhiza/internal/run"
 )
@@ -133,7 +134,7 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 		}
 		summary = planSummary(rr.state, w.changeSets())
 	}
-	_, werr := io.WriteString(body, summary)
+	_, werr := io.WriteString(body, summary+prBodyRef(t.ref))
 	if cerr := body.Close(); werr == nil {
 		werr = cerr
 	}
@@ -208,4 +209,32 @@ func (r ShipOpenPRResponse) Human(w io.Writer) {
 		pushed = "pushed " + shortSHA(r.Head)
 	}
 	fmt.Fprintf(w, "%s PR #%d (%s): %s.\n", verb, r.PR, pushed, r.URL)
+}
+
+// prBodyRef is the PR body's ref section for a change set's ref: nothing
+// when it has none, else one line holding the ref in a single inline code
+// span. The ref is untrusted text, so its backticks and line breaks are
+// written as escapes (a backtick as \x60, a line break as \n or \r, other
+// control characters as \u00XX) and it can neither close the span nor
+// start markdown or a mention.
+func prBodyRef(ref string) string {
+	if ref == "" {
+		return ""
+	}
+	var b strings.Builder
+	for _, r := range ref {
+		switch {
+		case r == '`':
+			b.WriteString(`\x60`)
+		case r == '\n':
+			b.WriteString(`\n`)
+		case r == '\r':
+			b.WriteString(`\r`)
+		case unicode.IsControl(r):
+			fmt.Fprintf(&b, `\u%04X`, r)
+		default:
+			b.WriteRune(r)
+		}
+	}
+	return "\nRef: `" + b.String() + "`\n"
 }

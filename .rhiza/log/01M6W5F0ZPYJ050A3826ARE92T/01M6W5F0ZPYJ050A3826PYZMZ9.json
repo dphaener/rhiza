@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-07T23:28:26Z",
+  "body": {
+    "intent": "Pre-publish audit and MIT license: audit git history and .rhiza/ for secrets, personal data and private hostnames, add the MIT LICENSE, and hand the owner the go-ahead to make the repository public and tag v0.1.0",
+    "kind": "intention",
+    "sources": [
+      "01M6W5ANB6CXAAYAVSP53Z43CY"
+    ]
+  },
+  "change_set": "01M6W5F0ZPYJ050A3826ARE92T",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W5F0ZPYJ050A3826PYZMZ9",
+  "type": "open",
+  "v": 1
+}

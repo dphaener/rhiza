@@ -829,3 +829,53 @@ func TestOpenRequestKindAndWorkflowRules(t *testing.T) {
 		}
 	}
 }
+
+func TestOpenRef(t *testing.T) {
+	base := Open{Kind: KindIntention, Intent: "x", Sources: []id.ID{}}
+	// Without a ref the encoding and format are unchanged.
+	plain, err := EncodeBody(base)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(plain), "ref") {
+		t.Fatalf("encoding without a ref holds one: %s", plain)
+	}
+	if v := EntryVersion(base); v != 1 {
+		t.Fatalf("EntryVersion without ref = %d, want 1", v)
+	}
+	// With a ref it round-trips and needs format 4.
+	withRef := base
+	withRef.Ref = "https://github.com/o/r/issues/7"
+	if v := EntryVersion(withRef); v != 4 {
+		t.Fatalf("EntryVersion with ref = %d, want 4", v)
+	}
+	raw, err := EncodeBody(withRef)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, canonical := range []bool{false, true} {
+		got, err := decodeBody(entry.Entry{V: 4, Type: entry.TypeOpen, Body: raw}, canonical)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if o := got.(Open); o.Ref != withRef.Ref {
+			t.Fatalf("ref = %q, want %q", o.Ref, withRef.Ref)
+		}
+	}
+	// A reader at the previous format refuses it.
+	for _, v := range []int{1, 2, 3} {
+		_, err := DecodeBody(entry.Entry{V: v, Type: entry.TypeOpen, Body: raw})
+		checkErr(t, err, "ref", nil)
+	}
+	// Empty is spelled by leaving it out.
+	_, err = DecodeBody(entry.Entry{V: 4, Type: entry.TypeOpen, Body: json.RawMessage(strings.Replace(string(raw), withRef.Ref, "", 1))})
+	checkErr(t, err, "ref", nil)
+	// The limit is 2048 bytes.
+	withRef.Ref = strings.Repeat("a", MaxRef)
+	if _, err := EncodeBody(withRef); err != nil {
+		t.Fatalf("ref of %d bytes: %v", MaxRef, err)
+	}
+	withRef.Ref += "a"
+	_, err = EncodeBody(withRef)
+	checkErr(t, err, "ref", nil)
+}

@@ -112,6 +112,7 @@ type RunStartRequest struct {
 	Autonomous     bool   `json:"autonomous,omitempty" desc:"Run without the owner: skip the owner's gates and questions, recording each; never changes agent permissions. Resume keeps it"`
 	New            string `json:"new,omitempty" desc:"With --workflow plan and no change set: open a draft change set with this one-line intent and start the plan run on it"`
 	Milestone      bool   `json:"milestone,omitempty" desc:"With --new: open a record change set, to plan a milestone in; without it an intention"`
+	Ref            string `json:"ref,omitempty" desc:"With --new: an opaque external reference for the opened change set, such as an issue URL, at most 2048 bytes; Rhiza never interprets it. The daemon passes the request's"`
 	Request        string `json:"request,omitempty" desc:"With --new: the plan request this run plans; the run takes the ID the daemon drew for it. The daemon passes it"`
 	Pick           string `json:"pick,omitempty" desc:"With --workflow: which dispatch pick named it (rule ready.bug, default, request), recorded on the run instead of explicit. The daemon passes it"`
 	Foreground     bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
@@ -540,6 +541,9 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if r.Milestone && strings.TrimSpace(r.New) == "" {
 		return nil, Usagef("--milestone goes with --new").WithNext(runStartNext)
 	}
+	if strings.TrimSpace(r.Ref) != "" && strings.TrimSpace(r.New) == "" {
+		return nil, Usagef("--ref goes with --new").WithNext(runStartNext)
+	}
 	if strings.TrimSpace(r.Request) != "" && strings.TrimSpace(r.New) == "" {
 		return nil, Usagef("--request goes with --new").WithNext(runStartNext)
 	}
@@ -723,7 +727,7 @@ func newPlanChange(ctx *Ctx, r RunStartRequest, def *workflow.Definition, reqKin
 	if r.Milestone {
 		kind = changeset.KindRecord
 	}
-	open := changeset.Open{Kind: kind, Intent: strings.TrimSpace(r.New), Workflow: reqWorkflow}
+	open := changeset.Open{Kind: kind, Intent: strings.TrimSpace(r.New), Workflow: reqWorkflow, Ref: strings.TrimSpace(r.Ref)}
 	if reqKind == daemon.KindBug || reqKind == daemon.KindMilestone {
 		open.RequestKind = reqKind
 	}

@@ -1,0 +1,126 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6W5EDEX8QAKNVPY5J2A1SRY"
+  ],
+  "at": "2026-11-07T23:29:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "the owner reads it and signs off; every relative link resolves (docs-links-resolve). Prose written with the humanize skill (constraint doc-prose-humanized).",
+          "statement": "README.md is Rhiza's front door: what Rhiza is and why in a few paragraphs, install by go install or release binaries, links to the quickstart, concepts, agents and reference docs, and the MIT license"
+        },
+        "handle": "readme-front-door",
+        "id": "01M6W5H0QXCSXEQHC10M96T8PC",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6W5H0QXCSXEQHC10HVVTF1W",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H0QXCSXEQHC10HVVTF1W",
+        "id": "01M6W5H0RSHHA22RXTR15KA049",
+        "link": "01M6W5H0RSHHA22RXTQXKYY1G2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BPMGJ5NCNF3RAE9QERYG",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H0QXCSXEQHC10HVVTF1W",
+        "id": "01M6W5H0SSNQVZH9E8QQJ4CB03",
+        "link": "01M6W5H0SSNQVZH9E8QP92R47A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQ0BVR9VMR2QV7NBYM0C",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H0QXCSXEQHC10HVVTF1W",
+        "id": "01M6W5H0V74ERRN87MCPPQB0P4",
+        "link": "01M6W5H0V74ERRN87MCPJ7YHD9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQKPTP2B751P6AB2W7M2",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H0QXCSXEQHC10HVVTF1W",
+        "id": "01M6W5H0YAHR1KYN9PFCH1G2JE",
+        "link": "01M6W5H0YAHR1KYN9PFA6SAMNS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQ4038Z02EFV873C2J54",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScripts/quickstart runs every command in docs/quickstart.md's shell blocks, in order, in a fresh repo, and fails if any fails or the doc and script drift. Prose written with the humanize skill (constraint doc-prose-humanized).",
+          "statement": "docs/quickstart.md walks a new user through the model loop without agents: init in a fresh repo, add a capability and a decision, open, propose, accept and land a change set, render, and read slice and why"
+        },
+        "handle": "quickstart-doc",
+        "id": "01M6W5H11AZV166CP6M6YVJ947",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6W5H11AZV166CP6M6R0F9SX",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H11AZV166CP6M6R0F9SX",
+        "id": "01M6W5H145K5XBC11J36M9FDZK",
+        "link": "01M6W5H145K5XBC11J357J7T9K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQWKJ6A2T3WTT696NH32",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H11AZV166CP6M6R0F9SX",
+        "id": "01M6W5H163558DYPFAQGR086BM",
+        "link": "01M6W5H163558DYPFAQDG6W2KX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQKPTP2B751P6AB2W7M2",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "a test over a fixture with a broken link fails and over the real README and docs/ passes; it runs in make check",
+          "statement": "A check fails when a relative link in README.md or docs/ points at a file or anchor that does not exist"
+        },
+        "handle": "docs-links-resolve",
+        "id": "01M6W5H182FRSXES06CJGS4NC5",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6W5H182FRSXES06CH1P6V9E",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H182FRSXES06CH1P6V9E",
+        "id": "01M6W5H1AXXWHG33KEWANRX6PY",
+        "link": "01M6W5H1AXXWHG33KEW7MJ0WR4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQ0BVR9VMR2QV7NBYM0C",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6W5EDEX8QAKNVPY5H6CH3Z9",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W5H1F6DH79WDQC5BZQ4G1C",
+  "type": "ops",
+  "v": 1
+}

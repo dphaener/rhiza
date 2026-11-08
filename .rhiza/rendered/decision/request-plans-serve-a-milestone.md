@@ -25,9 +25,8 @@ Change set 01M6JDM serves milestone-25 (01M6HKVRE1B7). A request's plan reaches 
 
 - decided-by [request-names-milestone](../capability/rhiza/orchestration/daemon/plan-requests/request-names-milestone.md)
 - decided-by [plan-run-hands-milestone](../capability/rhiza/orchestration/daemon/plan-requests/plan-run-hands-milestone.md)
-- decided-by [planner-serves-milestone](../capability/rhiza/orchestration/daemon/plan-requests/planner-serves-milestone.md)
-- decided-by [plan-step-milestone-check](../capability/rhiza/orchestration/daemon/plan-requests/plan-step-milestone-check.md)
 - decided-by requests-app-milestone (retired)
+- supersedes [scheduling-policy-shape](scheduling-policy-shape.md)
 
 ## History
 

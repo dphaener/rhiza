@@ -1,0 +1,41 @@
+{
+  "actor": "01M6VYFA4JGV64NA1MQ4QMC02V",
+  "after": [
+    "01M6VYERH0N29P67WGMB757NXM"
+  ],
+  "at": "2026-11-07T21:28:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "rhiza health shows 0 open milestones. planMilestoneOf (internal/api/plan.go:512) counts only live milestones, so linking a landed one such as m26-autonomy-app would not pass milestone-check. An arbiter cannot open a milestone: milestone planning is owner-only (failed request 01M6MY89 quotes the owner: 'milestone planning should never be autonomous even in autonomous mode. that always requires a human'), and this change set's own intent keeps that as the milestone-planning default. Of the four follow-ups to decision workflows-are-the-rules, scheduling-as-policy (01M6VY7GRV) is the one that makes a milestone optional for a request's plan, so the honest order is that one first, not a made-up milestone. For stages: today the plan run covers plan and accept at its gate, and a later ship-change run covers ship and signoff. Dispatch (01M6VY7G6H) records the chosen workflow on the change set so the ship pick follows it. Reading the declaration of whichever workflow runs a stage keeps each run self-contained, and it meets the acceptance: a bugfix workflow declaring autonomous = true goes through plan and ship with no owner step while rhiza.autonomy.plan stays owner. For milestone planning: a workflow file cannot declare autonomy per request kind, and the intent asks for a built-in milestone planning workflow that declares owner as a changeable default. So it has to be a separate workflow, and the --milestone hard-code has to go, or the default could not be changed.",
+          "statement": "(1) Change set 01M6VY7H serves no milestone, and no milestone is invented for it: it waits on sibling 01M6VY7GRV (scheduling as policy), which relaxes the every-plan-serves-a-milestone rule, and a plan run that fails milestone-check before then fails loudly and is retried once that sibling lands or the owner opens a milestone it fits. (2) Each stage takes its autonomy from the workflow of the run that performs it: plan and accept from the plan run's workflow (the one dispatch picked for the request), ship and signoff from the ship run's workflow (the one picked for the ready change set, following the workflow the change set records). A declaration for a stage the run does not perform is ignored for that run, and a stage with no declaration falls back to rhiza.autonomy.<stage>. (3) Milestone planning gets its own built-in workflow, plan-milestone, with the plan workflow's steps, declaring autonomous = false. Milestone requests run it, through dispatch's default rule once 01M6VY7G6H lands and through daemonStartPlan until then. The hard-coded autonomous = false in daemonStartPlan (internal/api/request.go:366-371) goes, so a repo changes the default by overriding plan-milestone like any other workflow.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "autonomy-per-workflow-scope",
+        "id": "01M6VYJHQNTEEG7ERHY8CS63SM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6VYJHQNTEEG7ERHY6X3E3D8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6VYJHQNTEEG7ERHY6X3E3D8",
+        "id": "01M6VYJHRH7GFFFS52B9S1EVVV",
+        "link": "01M6VYJHRH7GFFFS52B7R85ANG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYENVE0ZD9ZP8JYHATZQQY",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYJHSFEKMW7YR2P1QAD54B",
+  "type": "ops",
+  "v": 1
+}

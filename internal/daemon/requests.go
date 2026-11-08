@@ -47,6 +47,7 @@ type Request struct {
 	// Workflow is the workflow the request named for its change set's ready
 	// pick; the change set its plan run opens records it.
 	Workflow  string    `json:"workflow,omitempty"`
+	Ref       string    `json:"ref,omitempty"`
 	At        time.Time `json:"at"`
 	Run       string    `json:"run,omitempty"`
 	StartedAt time.Time `json:"started_at,omitzero"`

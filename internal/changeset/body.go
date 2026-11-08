@@ -44,7 +44,7 @@
 // and EntryVersion tells a writer which format a body needs, so every other
 // entry is still written as format 1. A reopen body needs format 3, the
 // first with a reopen entry: DecodeBody refuses one in an earlier format.
-// An open body's request_kind and workflow need format 4; in an earlier
+// An open body's ref, request_kind and workflow need format 4; in an earlier
 // format they are unknown fields.
 package changeset
 
@@ -108,6 +108,10 @@ type Open struct {
 	// Workflow is the workflow the opening request named for the change
 	// set's ready pick: a bare workflow name, optional, and format 4.
 	Workflow string
+	// Ref is an opaque external reference, such as an issue URL, at most
+	// MaxRef bytes of valid UTF-8. Rhiza never interprets it. It is
+	// optional, and needs format 4 when set.
+	Ref string
 }
 
 // The request kinds an open body records besides the default, feature.
@@ -125,6 +129,9 @@ func (o Open) DispatchKind() string {
 	}
 	return o.RequestKind
 }
+
+// MaxRef is the most bytes a ref may have.
+const MaxRef = 2048
 
 // Ops is the body of an ops entry: {ops, drop}, plus {carve} on either side
 // of a carve. At least one of ops and drop is non-empty.
@@ -219,7 +226,7 @@ var shapes = map[entry.Type][]string{
 var carveShape = []string{"entry", "from", "to"}
 
 // EntryVersion returns the lowest entry format that can spell b: 4 for an
-// open body with a request kind or workflow, 3 for a reopen body, 2 for an ops body with a carve or an open body with a title,
+// open body with a ref, request kind or workflow, 3 for a reopen body, 2 for an ops body with a carve or an open body with a title,
 // 1 for every other body. A writer stamps it as the entry's v.
 func EntryVersion(b Body) int {
 	switch b := b.(type) {
@@ -230,7 +237,7 @@ func EntryVersion(b Body) int {
 			return 2
 		}
 	case Open:
-		if b.RequestKind != "" || b.Workflow != "" {
+		if b.Ref != "" || b.RequestKind != "" || b.Workflow != "" {
 			return 4
 		}
 		if b.Title != "" {
@@ -300,7 +307,22 @@ func (o Open) Validate() error {
 	if o.Workflow != "" && (strings.ContainsAny(o.Workflow, "/\\ \t\r\n") || o.Workflow == "." || o.Workflow == ".." || strings.HasSuffix(o.Workflow, ".toml")) {
 		return invalid("workflow", "%q is not a bare workflow name", o.Workflow)
 	}
-	return validTitle(o.Title)
+	if err := validTitle(o.Title); err != nil {
+		return err
+	}
+	return validRef(o.Ref)
+}
+
+// validRef checks an open body's ref: empty (none), or valid UTF-8 of at
+// most MaxRef bytes.
+func validRef(s string) error {
+	if !utf8.ValidString(s) {
+		return invalid("ref", "invalid UTF-8")
+	}
+	if len(s) > MaxRef {
+		return invalid("ref", "%d bytes, at most %d", len(s), MaxRef)
+	}
+	return nil
 }
 
 // Validate reports the first rule o breaks.
@@ -429,6 +451,9 @@ func EncodeBody(b Body) (json.RawMessage, error) {
 		if b.Workflow != "" {
 			m["workflow"] = b.Workflow
 		}
+		if b.Ref != "" {
+			m["ref"] = b.Ref
+		}
 	case Ops:
 		ops := make([]json.RawMessage, 0, len(b.Ops))
 		for i, x := range b.Ops {
@@ -527,7 +552,7 @@ func decodeBody(e entry.Entry, canonical bool) (Body, error) {
 		case entry.TypeOpen:
 			known = append(slices.Clip(shape), "title")
 			if e.V >= 4 {
-				known = append(known, "request_kind", "workflow")
+				known = append(known, "ref", "request_kind", "workflow")
 			}
 		}
 	}
@@ -616,6 +641,17 @@ func decodeOpen(fields map[string]json.RawMessage) (Body, error) {
 		// has one encoding.
 		if b.Title == "" {
 			return nil, invalid("title", "empty: leave it out instead")
+		}
+	}
+	if raw, ok := fields["ref"]; ok {
+		if b.Ref, err = str(raw); err != nil {
+			return nil, invalidWrap("ref", err)
+		}
+		if b.Ref == "" {
+			return nil, invalid("ref", "empty: leave it out instead")
+		}
+		if err := validRef(b.Ref); err != nil {
+			return nil, err
 		}
 	}
 	for _, f := range []struct {

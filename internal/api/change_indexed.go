@@ -279,6 +279,7 @@ func runChangeShowIndexed(ctx *Ctx, w *workspace, r ChangeShowRequest) (any, err
 		Intent:       c.Open.Intent,
 		Title:        c.Open.DisplayTitle(),
 		Sources:      orEmpty(c.Open.Sources),
+		Ref:          c.Open.Ref,
 		Serves:       serves,
 		State:        c.State,
 		Current:      cs == current,

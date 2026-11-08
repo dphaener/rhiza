@@ -25,6 +25,7 @@ Rhiza manages and builds several projects on one machine from one root directory
 - serves change set `01M6RN3ZBGYDW6KPBSES9A5JXS` (Web UI across projects: an all-projects home, a merged inbox tagged by project, and every page scoped to one project through a switcher)
 - serves change set `01M6RN441P2Z865ZVKAS7X7GMG` (Project-aware TUI apps: the Rex apps know the current project, start milestones, change sets, plans and requests in it, switch project, and show a merged inbox)
 - serves change set `01M6RN474B5EXMX8NYHE7F62RV` (This VM on one root: rhiza and nebari registered under one root run by one root daemon service, replacing rhiza-rhiza.service)
+- serves change set `01M6VY7GRV7BAJ9MMFVAY9GPZ2` (Scheduling as policy: whether accepted change sets that serve no milestone are built, and in what order relative to milestone work, is a repo rule, not daemon code; today the daemon always skips them as 'serves no milestone' (SkipNoMilestone, internal/api/daemon.go:1159). The shipped default builds them after milestone work, oldest accepted first, so bug fixes, small features and repos with no milestones at all ship. A request's plan links a milestone only when one fits or the request names one with --milestone (relaxes the landed fix 01M6JDMJ, which made every request's plan serve a milestone). Follows decision workflows-are-the-rules (PR #353): every rule is workflow policy the owner defines, Rhiza ships defaults and enforces only references between nodes.)
 
 ## History
 

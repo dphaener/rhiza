@@ -59,6 +59,11 @@ var corpusExpect = map[string][]corpusWant{
 		{intent: "Let people archive reports", state: changeset.StateLanded,
 			handles: []string{"archive", "archive-list", "archive-restore"}, decided: entry.TypeAccept},
 	},
+	"format-4/ref": {
+		{intent: "Record actor ada@example.com", state: changeset.StateLanded, handles: []string{"ada"}},
+		{intent: "Let people tag reports", state: changeset.StateLanded,
+			handles: []string{"tags"}, decided: entry.TypeAccept},
+	},
 }
 
 func TestCorpusFolds(t *testing.T) {
@@ -142,6 +147,8 @@ func TestCorpusFolds(t *testing.T) {
 				checkCarve(t, l.Entries, got[1], got[2])
 			case "format-3/reopen":
 				checkReopen(t, l.Entries, got[1])
+			case "format-4/ref":
+				checkRef(t, l.Entries, got)
 			}
 		})
 	}
@@ -209,6 +216,28 @@ func checkReopen(t *testing.T, entries []entry.Entry, cs changeset.ChangeSet) {
 	want := []entry.Type{entry.TypeLand, entry.TypeReopen, entry.TypeLand}
 	if !slices.Equal(types, want) {
 		t.Errorf("%s: land and reopen entries %v, want %v", cs.ID, types, want)
+	}
+}
+
+// checkRef checks the ref case in detail: the one change set opened with a
+// ref has it, by its one v4 entry (that open), and every other entry is v1
+// with no ref.
+func checkRef(t *testing.T, entries []entry.Entry, sets []changeset.ChangeSet) {
+	t.Helper()
+	for _, e := range entries {
+		want := 1
+		if e.Type == entry.TypeOpen && e.ChangeSet == sets[1].ID {
+			want = 4
+		}
+		if e.V != want {
+			t.Errorf("entry %s: v%d %s, want v%d", e.ID, e.V, e.Type, want)
+		}
+	}
+	if got := sets[0].Open.Ref; got != "" {
+		t.Errorf("%s: ref %q, want none", sets[0].ID, got)
+	}
+	if got, want := sets[1].Open.Ref, "https://example.com/issues/42"; got != want {
+		t.Errorf("%s: ref %q, want %q", sets[1].ID, got, want)
 	}
 }
 

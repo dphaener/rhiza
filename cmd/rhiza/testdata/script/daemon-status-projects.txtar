@@ -21,6 +21,7 @@ mkdir repo second
 cd repo
 exec git init -q
 exec rhiza init
+exec sh -c 'printf "[schedule]\nbacklog = \"skip\"\n" > .rhiza/policy.toml'
 exec rhiza add intent m --field milestone=1 --record
 exec git add -A
 exec git commit -qm init
@@ -38,6 +39,7 @@ exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:0
 cd $WORK/second
 exec git init -q
 exec rhiza init
+exec sh -c 'printf "[schedule]\nbacklog = \"skip\"\n" > .rhiza/policy.toml'
 exec rhiza add intent m --field milestone=1 --record
 exec git add -A
 exec git commit -qm init

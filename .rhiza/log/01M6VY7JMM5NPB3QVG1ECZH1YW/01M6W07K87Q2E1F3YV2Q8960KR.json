@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W05AYQSGJGJJ7K7XJVHJBG",
+  "after": [
+    "01M6W06PX2NVZ8H30YSZTQE309"
+  ],
+  "at": "2026-11-07T21:56:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 174b2970 ran go test -trimpath ./internal/api/... -run 'OpenPR' -count=1 -v: all five OpenPR tests pass, incl. TestShipOpenPRBodyRef. It opens a PR for a change set whose ref holds backticks, a newline and an @mention and checks the body sent to the fake gh has exactly one line Ref: `https://x.test/1 \\x60a\\x60 @mention\\n# heading` (one inline code span, backticks as \\x60, newline as \\n, no line escapes the span), and that a change set without a ref gets no Ref: line. Read the diff: findShipTarget carries c.Open.Ref; prBodyRef returns empty for no ref and escapes backticks, CR/LF and other control runes before wrapping in one code span. gofmt and go vet clean."
+        },
+        "handle": "ship-pr-body-ref-verified",
+        "id": "01M6W07K71E88TEVY4BWVJR1BS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W07K71E88TEVY4BT8YWAFE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W07K71E88TEVY4BT8YWAFE",
+        "id": "01M6W07K7MCBA9RPR680XXJZFS",
+        "link": "01M6W07K7MCBA9RPR67Y6JD2RD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMKG6TVD7M4Y8QM04GP38",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7JMM5NPB3QVG1ECZH1YW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W07K87Q2E1F3YV2Q8960KR",
+  "type": "ops",
+  "v": 1
+}

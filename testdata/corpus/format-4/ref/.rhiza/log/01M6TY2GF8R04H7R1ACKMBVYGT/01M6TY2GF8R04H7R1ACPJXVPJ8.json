@@ -1,0 +1,30 @@
+{
+  "actor": "01M6TY2GF8R04H7R1ACFJCYMSD",
+  "after": [
+    "01M6TY2GF8R04H7R1ACN219RYA"
+  ],
+  "at": "2026-11-07T12:00:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "email": "ada@example.com",
+          "name": "Ada Example"
+        },
+        "handle": "ada",
+        "id": "01M6TY2GF8R04H7R1ACJP8ABRX",
+        "key": null,
+        "kind": "actor",
+        "node": "01M6TY2GF8R04H7R1ACFJCYMSD",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6TY2GF8R04H7R1ACKMBVYGT",
+  "for": "01M6TY2GF8R04H7R1ACFJCYMSD",
+  "id": "01M6TY2GF8R04H7R1ACPJXVPJ8",
+  "type": "ops",
+  "v": 1
+}

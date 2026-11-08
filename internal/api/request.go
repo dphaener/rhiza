@@ -14,7 +14,9 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode/utf8"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/dispatch"
 	"github.com/dphaener/rhiza/internal/op"
@@ -44,6 +46,7 @@ type RequestRequest struct {
 	Kind      string `json:"kind,omitempty" enum:"feature,bug,milestone" desc:"feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed 'Fix ' (so its title names the bug), a milestone's a record change set"`
 	Milestone string `json:"milestone,omitempty" flag:"milestone" desc:"A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)"`
 	Workflow  string `json:"workflow,omitempty" flag:"workflow" desc:"A workflow, by name, for the change set the request's plan run opens: it overrides that change set's ready pick only, not the plan run's own workflow; default none (the dispatch rules choose)"`
+	Ref       string `json:"ref,omitempty" flag:"ref" desc:"An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none"`
 }
 
 // RequestInfo is one plan request.
@@ -53,6 +56,7 @@ type RequestInfo struct {
 	Text      string `json:"text" desc:"What to plan"`
 	Milestone string `json:"milestone,omitempty" desc:"The ID of the milestone intent the request names; absent if none"`
 	Workflow  string `json:"workflow,omitempty" desc:"The workflow the request named for its change set's ready pick; absent if none"`
+	Ref       string `json:"ref,omitempty" desc:"The request's opaque external reference, if any: untrusted text"`
 	At        string `json:"at" desc:"When it was queued, RFC 3339 UTC"`
 	State     string `json:"state" desc:"queued, planning (its plan run started), planned (its run succeeded) or failed (its run failed)"`
 	Run       string `json:"run,omitempty" desc:"Its plan run; absent while queued"`
@@ -64,11 +68,15 @@ type RequestInfo struct {
 type RequestResponse struct {
 	Request RequestInfo `json:"request" desc:"The request"`
 	DryRun  bool        `json:"dry_run,omitempty" desc:"True if nothing was written"`
+	Note    string      `json:"note,omitempty" desc:"A one-line risk note, only for a request with a --ref while the request-exposed list is not empty: it names the flagged workflows and says outside text reaches agents with no permission checks; never changes the outcome"`
 }
 
 // Human writes the response as text.
 func (r RequestResponse) Human(w io.Writer) {
 	fmt.Fprintf(w, "Queued %s request %s: %s\n", r.Request.Kind, r.Request.ID, r.Request.Text)
+	if r.Note != "" {
+		fmt.Fprintln(w, r.Note)
+	}
 }
 
 // RequestLsRequest takes nothing.
@@ -89,6 +97,9 @@ func (r RequestLsResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "- %s %s %s: %s", q.ID, q.Kind, q.State, q.Text)
 		if q.Workflow != "" {
 			fmt.Fprintf(w, " [workflow %s]", q.Workflow)
+		}
+		if q.Ref != "" {
+			fmt.Fprintf(w, " [ref %q]", q.Ref)
 		}
 		if q.Run != "" {
 			fmt.Fprintf(w, " (run %s", q.Run)
@@ -120,6 +131,13 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 	if !slices.Contains(requestKinds, kind) {
 		return nil, Usagef("--kind %q: one of %s", r.Kind, strings.Join(requestKinds, ", "))
 	}
+	ref := strings.TrimSpace(r.Ref)
+	if len(ref) > changeset.MaxRef {
+		return nil, Usagef("--ref is %d bytes, at most %d", len(ref), changeset.MaxRef)
+	}
+	if !utf8.ValidString(ref) {
+		return nil, Usagef("--ref is not valid UTF-8")
+	}
 	milestone, err := requestMilestone(ctx, r.Milestone)
 	if err != nil {
 		return nil, err
@@ -144,7 +162,7 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		q = daemon.Request{ID: rid, Kind: kind, Text: text, Milestone: milestone, Workflow: wf, At: ctx.Now().UTC()}
+		q = daemon.Request{ID: rid, Kind: kind, Text: text, Milestone: milestone, Workflow: wf, Ref: ref, At: ctx.Now().UTC()}
 		return append(reqs, q), nil
 	}
 	if ctx.DryRun {
@@ -158,7 +176,29 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 	} else if err := daemon.UpdateRequests(common, queue); err != nil {
 		return nil, requestsErr(err)
 	}
-	return RequestResponse{Request: requestInfo(q, nil), DryRun: ctx.DryRun}, nil
+	return RequestResponse{Request: requestInfo(q, nil), DryRun: ctx.DryRun, Note: requestRiskNote(ctx, ref)}, nil
+}
+
+// requestRiskNote is the one-line note for a request with a ref while the
+// request-exposed list is not empty, else "". Settings that cannot be read
+// give none: rhiza health reports them.
+func requestRiskNote(ctx *Ctx, ref string) string {
+	if ref == "" {
+		return ""
+	}
+	settings, err := settingsOf(ctx, nil)
+	if err != nil {
+		return ""
+	}
+	exposed := requestExposedWorkflows(ctx, settings)
+	if len(exposed) == 0 {
+		return ""
+	}
+	names := make([]string, len(exposed))
+	for i, e := range exposed {
+		names[i] = e.Workflow
+	}
+	return fmt.Sprintf("Note: outside text reaches agents with no permission checks in workflow %s (rhiza guide workflows)", strings.Join(names, ", "))
 }
 
 // requestMilestone resolves ref, a milestone intent's handle or ID, to the
@@ -234,7 +274,7 @@ func runRequestLs(ctx *Ctx, req any) (any, error) {
 
 func requestInfo(q daemon.Request, runs []run.Journal) RequestInfo {
 	state, change := daemon.RequestState(q, runs)
-	return RequestInfo{ID: q.ID, Kind: q.Kind, Text: q.Text, Milestone: q.Milestone, Workflow: q.Workflow, At: q.At.UTC().Format(time.RFC3339), State: state, Run: q.Run, Change: change}
+	return RequestInfo{ID: q.ID, Kind: q.Kind, Text: q.Text, Milestone: q.Milestone, Workflow: q.Workflow, Ref: q.Ref, At: q.At.UTC().Format(time.RFC3339), State: state, Run: q.Run, Change: change}
 }
 
 // daemonPlanRequests starts a plan run, in a new Rex tab, for each of the
@@ -398,7 +438,19 @@ func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) e
 		return err
 	}
 	daemonLogPick(ctx, "the plan run of request "+q.ID, wf, pick)
+	return daemonDetach(ctx, "the plan run of request "+q.ID, q.Run, nil, planRunArgs(q, wf, pick, autonomous, mode))
+}
+
+// planRunArgs is the run start arguments daemonStartPlan detaches for
+// request q, whose plan run starts workflow wf, picked by pick:
+// --ref=<ref> passes the request's ref on as one word, so a ref such as
+// --dry-run or --change=<id> is never read as a flag, and a request
+// without one passes none.
+func planRunArgs(q daemon.Request, wf, pick string, autonomous bool, mode string) []string {
 	args := []string{"run", "start", "--foreground", "--workflow", wf, "--pick", pick, "--new", q.Intent(), "--request", q.ID, "--permission-mode", mode}
+	if q.Ref != "" {
+		args = append(args, "--ref="+q.Ref)
+	}
 	if q.Kind == daemon.KindMilestone {
 		args = append(args, "--milestone")
 		// Planning a milestone always needs the owner: the run waits on the
@@ -408,7 +460,7 @@ func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) e
 	if autonomous {
 		args = append(args, "--autonomous")
 	}
-	return daemonDetach(ctx, "the plan run of request "+q.ID, q.Run, nil, args)
+	return args
 }
 
 // requestWorkflow is the workflow request q's plan run starts: the [request]

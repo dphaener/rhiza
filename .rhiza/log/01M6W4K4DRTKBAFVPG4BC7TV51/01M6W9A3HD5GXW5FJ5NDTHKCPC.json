@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W7FN52P9Y222CVSDTM8QM9",
+  "after": [
+    "01M6W7RRQ255JQ6SJGB00TQSWK"
+  ],
+  "at": "2026-11-08T00:35:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 9d6f60e8: go test -trimpath ./internal/api -run TestHealthAutonomyRisk -v -count=1 passes its three subtests: flagged plan (state warn, summary has 'outside text reaches agents with no permission checks', exactly one 'workflow plan runs from a queued request with bypassed permissions in interview' detail line, Next 'rhiza guide workflows'), nothing flagged (ok, no Next, no phrase, no workflow detail), flagged while paused (warn, 'daemon paused; ' prefix plus phrase, Next stays 'rhiza daemon set rhiza.daemon.paused false'). go test -trimpath ./cmd/rhiza -run TestScripts/health -count=1 passes, including health-risk-warning: rhiza health exits 0 with 'warn autonomy ... outside text reaches agents...' and the detail line, --json shows part autonomy state warn, and acceptEdits clears it. Read the diff: healthAutonomy calls requestExposedWorkflows, adds one ExposureDetail per exposed workflow (name, trigger, bypassing steps), never sets bad, and the paused branch runs last so it keeps its Next. Full internal/api package: every test PASS; the run reported only the root guard's .rhiza-root/usage.live.json change, written by the live root daemon, not by this diff."
+        },
+        "handle": "health-autonomy-risk-verified",
+        "id": "01M6W9A3FF82HQ1N1H3YA0W388",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W9A3FF82HQ1N1H3WAX1PJM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W9A3FF82HQ1N1H3WAX1PJM",
+        "id": "01M6W9A3GDAH3XRZM23MDV5NVT",
+        "link": "01M6W9A3GDAH3XRZM23HNW0W5T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZN34KQZG9YEWQ1TKCXM3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K4DRTKBAFVPG4BC7TV51",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W9A3HD5GXW5FJ5NDTHKCPC",
+  "type": "ops",
+  "v": 1
+}

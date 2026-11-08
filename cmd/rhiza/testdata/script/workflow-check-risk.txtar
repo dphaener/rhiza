@@ -1,0 +1,28 @@
+# workflow check warns, never fails, when the workflow it checks is one a
+# queued request reaches with bypassed permissions.
+
+env XDG_CONFIG_HOME=$WORK/xdg
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+fold-ok
+
+# no bypass mode: no warning
+exec rhiza workflow check plan
+stdout '^workflow plan is valid'
+! stdout 'warning'
+
+exec git config rhiza.autonomy.plan auto
+exec git config rhiza.daemon.permissionMode bypassPermissions
+exec rhiza workflow check plan
+stdout '^workflow plan is valid'
+stdout '^  warning: workflow plan runs from a queued request with bypassed permissions in interview.*outside text reaches agents with no permission checks$'
+exec rhiza workflow check plan --json
+stdout '"valid": true'
+stdout '"warnings": \['
+stdout 'outside text reaches agents with no permission checks'
+
+# a workflow no request reaches is not flagged
+exec rhiza workflow check build
+! stdout 'warning'

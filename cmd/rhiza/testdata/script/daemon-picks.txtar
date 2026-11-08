@@ -10,6 +10,7 @@ mkdir repo
 cd repo
 exec git init -q
 exec rhiza init
+exec sh -c 'printf "[schedule]\nbacklog = \"skip\"\n" > .rhiza/policy.toml'
 exec rhiza add intent m --field milestone=1 --record
 exec rhiza add intent plain --record
 exec git add -A

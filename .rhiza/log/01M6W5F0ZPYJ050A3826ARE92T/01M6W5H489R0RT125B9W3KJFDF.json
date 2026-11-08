@@ -1,0 +1,73 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6W5F0ZPYJ050A3826PYZMZ9"
+  ],
+  "at": "2026-11-07T23:29:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "LICENSE matches the MIT text; GitHub's license detection reports MIT on the PR branch",
+          "statement": "The repository carries an MIT LICENSE file naming Darin Haener as copyright holder, and the README states the license"
+        },
+        "handle": "license-mit",
+        "id": "01M6W5H3ZWYXBTMJ7W63ASGK40",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6W5H3ZWYXBTMJ7W6132943Q",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H3ZWYXBTMJ7W6132943Q",
+        "id": "01M6W5H419TNSMPRYKC9XGSR02",
+        "link": "01M6W5H419TNSMPRYKC8FDREXH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQF6XRT65PR1G8200FKS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "an Evidence node records the scanner (gitleaks over full history plus a review of Sources and session notes), its clean result or each finding with its disposition; the owner reads it before flipping visibility",
+          "statement": "Before publishing, an audit of the full git history and .rhiza/ (log, Sources, rendered) for secrets, tokens, personal data and private hostnames fixes what the current tree holds and records the result as Evidence, listing anything only a history rewrite would remove"
+        },
+        "handle": "publish-audit",
+        "id": "01M6W5H42YADPD9H9302B1W1BD",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6W5H42YADPD9H92ZZFBH54D",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H42YADPD9H92ZZFBH54D",
+        "id": "01M6W5H44TTKYVTNJS9YFHWJDG",
+        "link": "01M6W5H44TTKYVTNJS9X0SGFB0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQHHD0YRRE1N32E1XXX3",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5H42YADPD9H92ZZFBH54D",
+        "id": "01M6W5H46S1MP5MD1QKSM7K0T4",
+        "link": "01M6W5H46S1MP5MD1QKNN62HSC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQDD8KRD0K3M4G5NK74C",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6W5F0ZPYJ050A3826ARE92T",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W5H489R0RT125B9W3KJFDF",
+  "type": "ops",
+  "v": 1
+}

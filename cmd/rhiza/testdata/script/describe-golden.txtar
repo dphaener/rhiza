@@ -963,6 +963,10 @@ cmp stdout describe.golden.json
             ],
             "type": "string"
           },
+          "ref": {
+            "description": "An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none",
+            "type": "string"
+          },
           "sources": {
             "description": "A source node the change set comes from: an ID, ID prefix or handle",
             "items": {
@@ -1008,6 +1012,10 @@ cmp stdout describe.golden.json
           },
           "kind": {
             "description": "intention or record",
+            "type": "string"
+          },
+          "ref": {
+            "description": "The change set's opaque external reference, if any",
             "type": "string"
           },
           "sources": {
@@ -1378,6 +1386,10 @@ cmp stdout describe.golden.json
               "type": "string"
             },
             "type": "array"
+          },
+          "ref": {
+            "description": "The change set's opaque external reference, if any: untrusted text",
+            "type": "string"
           },
           "request_kind": {
             "description": "feature, bug or milestone: the kind of request that opened it, feature when none did; empty without a valid open",
@@ -7603,6 +7615,10 @@ cmp stdout describe.golden.json
             "description": "A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)",
             "type": "string"
           },
+          "ref": {
+            "description": "An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none",
+            "type": "string"
+          },
           "text": {
             "description": "What to plan, in one line",
             "type": "string"
@@ -7623,6 +7639,10 @@ cmp stdout describe.golden.json
           "dry_run": {
             "description": "True if nothing was written",
             "type": "boolean"
+          },
+          "note": {
+            "description": "A one-line risk note, only for a request with a --ref while the request-exposed list is not empty: it names the flagged workflows and says outside text reaches agents with no permission checks; never changes the outcome",
+            "type": "string"
           },
           "request": {
             "additionalProperties": false,
@@ -7646,6 +7666,10 @@ cmp stdout describe.golden.json
               },
               "milestone": {
                 "description": "The ID of the milestone intent the request names; absent if none",
+                "type": "string"
+              },
+              "ref": {
+                "description": "The request's opaque external reference, if any: untrusted text",
                 "type": "string"
               },
               "run": {
@@ -7717,6 +7741,10 @@ cmp stdout describe.golden.json
                 },
                 "milestone": {
                   "description": "The ID of the milestone intent the request names; absent if none",
+                  "type": "string"
+                },
+                "ref": {
+                  "description": "The request's opaque external reference, if any: untrusted text",
                   "type": "string"
                 },
                 "run": {
@@ -11876,7 +11904,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "change_sets": {
-            "description": "The plan's change sets checked, by ID, each serving a milestone",
+            "description": "The plan's change sets checked, by ID, checked against the milestone and policy rules",
             "items": {
               "type": "string"
             },
@@ -11893,7 +11921,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Check that each change set the plan of the run RHIZA_RUN names makes serves a milestone, directly or through an intent under one: pass, or fail naming each that does not",
+      "summary": "Check the change sets the plan of the run RHIZA_RUN names makes: each must serve the milestone the run was started with (RHIZA_MILESTONE), directly or through an intent under it, and some milestone when the repo's .rhiza/policy.toml sets backlog = \"skip\"; otherwise pass. Fails naming each that does not",
       "write": false
     },
     {
@@ -16683,6 +16711,10 @@ cmp stdout describe.golden.json
           },
           "pick": {
             "description": "With --workflow: which dispatch pick named it (rule ready.bug, default, request), recorded on the run instead of explicit. The daemon passes it",
+            "type": "string"
+          },
+          "ref": {
+            "description": "With --new: an opaque external reference for the opened change set, such as an issue URL, at most 2048 bytes; Rhiza never interprets it. The daemon passes the request's",
             "type": "string"
           },
           "request": {
@@ -24167,6 +24199,13 @@ cmp stdout describe.golden.json
           "valid": {
             "description": "True when run start would accept the workflow",
             "type": "boolean"
+          },
+          "warnings": {
+            "description": "Risks worth knowing about that do not make the workflow invalid, such as outside text reaching its agents with no permission checks; never change valid or the exit code",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [

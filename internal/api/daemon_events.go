@@ -30,8 +30,11 @@ type lifecycleEvent struct {
 	Change string `json:"change"`
 	Entry  string `json:"entry"`
 	Title  string `json:"title"`
-	At     string `json:"at"`
-	Actor  string `json:"actor"`
+	// Ref is the change set's opaque external reference: untrusted text,
+	// absent when it has none.
+	Ref   string `json:"ref,omitempty"`
+	At    string `json:"at"`
+	Actor string `json:"actor"`
 }
 
 // daemonEvents runs command once for each lifecycle move in the log that

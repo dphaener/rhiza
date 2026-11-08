@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-07T23:28:13Z",
+  "body": {
+    "intent": "Concepts docs: docs/ explains the model (node kinds, links, handles, references), change sets and the log, and decisions, sources and why",
+    "kind": "intention",
+    "sources": [
+      "01M6W5ANB6CXAAYAVSP53Z43CY"
+    ]
+  },
+  "change_set": "01M6W5EM5J6KCHFB3SKS29JJ7M",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W5EM5KA7TMRJWN7M9PYW8T",
+  "type": "open",
+  "v": 1
+}

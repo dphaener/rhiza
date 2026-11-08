@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W1MVF78AJND50DNG7FXNM9",
+  "after": [
+    "01M6W123BE024MXFNZ81CX7QAZ"
+  ],
+  "at": "2026-11-07T22:23:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ab36a226 (leaf commits 2438d674 and fix ab36a226), go test -trimpath -count=1 ./internal/changeset/... ./internal/entry/... ./internal/render/... passes. TestOpenRef round-trips an open with a ref (v4, decoded and canonical), checks that no ref leaves the encoding without a ref key at EntryVersion 1, rejects a 2049-byte ref while accepting 2048, and refuses the ref field at v1-v3. TestCorpusFolds, TestPropertyPermutation and render TestGolden pass on the new format-4/ref corpus case. go test -trimpath ./cmd/rhiza -run 'TestScripts/(change-set-ref|describe-golden)$' passes. The script checks that change new --ref, then change show --json and change show, print the ref. The human line is Go-quoted (\\x1b and \\n escaped, no raw ESC byte). The ref is trimmed and a blank one means none. An over-limit ref is a usage error that writes nothing, and fold-ok holds. Diff read: Ref is encoded only when set, decodeBody accepts it only at v>=4, and FormatVersion is now 4."
+        },
+        "handle": "change-set-ref-verified-2",
+        "id": "01M6W1QJAJG0G134FYK1HGT2SY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W1QJAJG0G134FYJXZYSDNB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W1QJAJG0G134FYJXZYSDNB",
+        "id": "01M6W1QJBK9701NNGRPHAD3CS7",
+        "link": "01M6W1QJBK9701NNGRPF04YEJX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYMKCZ09KBA0BHCVXF1Y7G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7JMM5NPB3QVG1ECZH1YW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W1QJD1VAYFF6D9HQS012YD",
+  "type": "ops",
+  "v": 1
+}

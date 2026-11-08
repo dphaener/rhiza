@@ -14,6 +14,7 @@ import (
 	"github.com/dphaener/rhiza/internal/index"
 	gmodel "github.com/dphaener/rhiza/internal/model"
 	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/policy"
 )
 
 // planID is a fixed ID whose short ID tells n apart.
@@ -886,7 +887,7 @@ func TestUmbrellaNotReady(t *testing.T) {
 	cs := f.cs("umbrella", changeset.StateAccepted)
 	f.serve(cs, u)
 	wantReasons(t, f.verdict(t, cs), planUmbrellaReason)
-	cands, skips := daemonCandidates(f.core(), func(id.ID) bool { return true })
+	cands, skips := daemonCandidates(f.core(), func(id.ID) bool { return true }, daemonSchedule{Backlog: policy.BacklogAfter})
 	if len(cands) != 0 {
 		t.Errorf("candidates = %v", cands)
 	}

@@ -1,8 +1,9 @@
-# A plan run whose interview links the change set it makes to an intent
-# under no milestone ends failed at step milestone-check, naming the
-# change set, and never enters review, even though the interview session
-# is left live after `rhiza session done`. (plan-workflow.txtar covers the
-# milestone case passing.)
+# With .rhiza/policy.toml's [schedule] backlog = "skip", a plan run whose
+# interview links the change set it makes to an intent under no milestone
+# ends failed at step milestone-check, naming the change set, and never
+# enters review, even though the interview session is left live after
+# `rhiza session done`. (plan-workflow.txtar covers the milestone case
+# passing, plan-milestone-backlog.txtar the same plan without the policy.)
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -15,6 +16,7 @@ cd repo
 exec git init -q
 exec git remote add origin $WORK/origin.git
 exec rhiza init
+cp ../policy.toml .rhiza/policy.toml
 exec git add -A
 exec git commit -qm init
 exec git push -q -u origin main
@@ -44,6 +46,9 @@ stdout '^- milestone-check \(visit 1\): fail, '
 exec cat $WORK/prompts.log
 ! stdout 'as the reviewer'
 
+-- policy.toml --
+[schedule]
+backlog = "skip"
 -- source.json --
 {"title":"Planning interview","summary":"The owner planned the reports milestone.","quotes":[{"text":"Stream it, reports get huge","by":"owner"}]}
 -- record.json --

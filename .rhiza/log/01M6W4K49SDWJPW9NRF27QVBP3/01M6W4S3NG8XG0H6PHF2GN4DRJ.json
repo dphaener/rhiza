@@ -1,0 +1,30 @@
+{
+  "actor": "01M6W4M30VJFMDVGPM5A3T2ZVN",
+  "after": [
+    "01M6W4K49SDWJPW9NRF63WANK7"
+  ],
+  "at": "2026-11-07T23:16:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "d0780667-0b40-44e7-a17d-01a1b849f0e6",
+          "statement": "Which intent should Scheduled triggers (01M6W4K) serve? It serves nothing yet. The repo has no .rhiza/policy.toml, so backlog work is built after milestone work by default. Workflow dispatch (01M6VY7G), which this change set depends on, serves milestone-25 (01M6HKVRE1B7, the backlog milestone). / Where does a repo declare its [[schedules]]? The intent says 'a repo's rhiza.toml', but rhiza.toml is the root's machine-wide config (internal/rootcfg). It isn't committed in any repo and is shared by several projects. Workflow dispatch moved its rules to a committed .rhiza/dispatch.toml for the same reason, and calls a schedule another trigger kind. / Where does a scheduled run work, given every run today is on a change set and its worktree (run start <cs>)? A schedule such as Nebari's 15-minute issue intake has no change set, and opening one per firing would flood the model with draft change sets. / How do scheduled runs fit the daemon's existing limits, and what can a schedule override? The intent's defaults: after downtime a schedule runs once, and a slot is skipped while the previous run is still going."
+        },
+        "handle": "question-d0780667-1",
+        "id": "01M6W4S1C1J0WRG7PHPEV3GW7D",
+        "key": null,
+        "kind": "question",
+        "node": "01M6W4S1C1J0WRG7PHPBRQZS98",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W4S3NG8XG0H6PHF2GN4DRJ",
+  "type": "ops",
+  "v": 1
+}

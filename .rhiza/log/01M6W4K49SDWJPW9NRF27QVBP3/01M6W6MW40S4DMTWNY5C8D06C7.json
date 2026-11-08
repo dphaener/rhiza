@@ -1,0 +1,41 @@
+{
+  "actor": "01M6W6M22RVFFWQF3SWK4YTXHG",
+  "after": [
+    "01M6W6KQ0G71ZSFXXSFWW6AS7Q"
+  ],
+  "at": "2026-11-07T23:49:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "schedules-guide-topic's statement and acceptance document the convention that a scheduled run should leave the main checkout as it found it, plus the schedule keys, CRON_TZ, catch_up, overlap and where health and logs show; neither names the end-of-run warning that main-checkout-change-warning builds. Writing the guide text needs none of that leaf's code (the branch/HEAD/tracked-change comparison), and the keys it documents come from schedules-file, which it already depends on. The plan reviewer and the critic both found the link unreal. Keeping it would only serialize the build without reason. The other option, widening the topic to describe the warning, would add scope that the change set's intent and the owner never asked for, so dropping the link is the smaller and better-supported fix.",
+          "statement": "Remove the depends-on link from @{01M6W5HWFGG153SAAWP0XEK7JT} to @{01M6W5HVA0S11V8P7TJPCY6QH8}; the topic keeps its depends-on @{01M6W5HTZ9ZZ6PWNAJ739T6ASH}, and its statement and acceptance stay as they are",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "guide-topic-drops-warning-dependency",
+        "id": "01M6W6MW12DXS177YAGYS95C96",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6W6MW114WEMH4Q0B4Y53AN4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W6MW114WEMH4Q0B4Y53AN4",
+        "id": "01M6W6MW2J86V5KVW6NK3M17YR",
+        "link": "01M6W6MW2J86V5KVW6NJ470CMD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W6KPTEX7QHZCPMD01P63EN",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W6MW40S4DMTWNY5C8D06C7",
+  "type": "ops",
+  "v": 1
+}

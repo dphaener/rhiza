@@ -9,6 +9,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"os"
+	"path/filepath"
 	"slices"
 	"sync/atomic"
 	"time"
@@ -19,6 +20,7 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
 	gmodel "github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/policy"
 )
 
 // planReadCount and planFoldCount count the plan reads and the in-flight
@@ -95,6 +97,10 @@ func daemonStamp(ctx *Ctx) string {
 		}
 	}
 	h.Write([]byte{0})
+	if data, err := os.ReadFile(filepath.Join(ctx.Root, filepath.FromSlash(policy.Path))); err == nil {
+		h.Write(data)
+	}
+	h.Write([]byte{0})
 	h.Write([]byte(ctx.ChangeSet.String() + "|" + ctx.ChangeRef))
 	if w, err := openCtxWorkspace(ctx); err == nil {
 		if data, err := os.ReadFile(w.currentPath()); err == nil {
@@ -142,10 +148,16 @@ func daemonFold(ctx *Ctx) (*daemonFolded, error) {
 	for _, c := range list {
 		f.sets[c.ID] = c
 	}
+	sched := daemonSchedule{Since: func(cs id.ID) time.Time { return acceptedSince(f.sets[cs]) }}
+	if pol, err := policy.Read(os.DirFS(ctx.Root)); err != nil {
+		sched.Detail = []string{err.Error()}
+	} else {
+		sched.Backlog = pol.Backlog
+	}
 	f.cands, f.planSkips = daemonCandidates(res, func(cs id.ID) bool {
 		c, ok := f.sets[cs]
 		return ok && len(changeLeaves(newModelSets(list, cs), c.Ops)) > 0
-	})
+	}, sched)
 	m0 := newModelSets(list, id.ID{})
 	if ovs := gmodel.Overlaps(list); len(ovs) > 0 {
 		f.overlaps = overlapItems(ovs, m0)
@@ -158,7 +170,7 @@ func daemonFold(ctx *Ctx) (*daemonFolded, error) {
 			}
 			f.moves = append(f.moves, daemonMove{id: mv.Entry, ev: lifecycleEvent{
 				Event: name, Change: c.ID.String(), Entry: mv.Entry.String(),
-				Title: c.Open.DisplayTitle(), At: rfc3339(mv.At), Actor: feedActor(m0, mv.Actor),
+				Title: c.Open.DisplayTitle(), Ref: c.Open.Ref, At: rfc3339(mv.At), Actor: feedActor(m0, mv.Actor),
 			}})
 		}
 	}

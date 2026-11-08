@@ -156,6 +156,7 @@ func (r ShipCheckResponse) ExitCode() int {
 type shipTarget struct {
 	cs       id.ID
 	title    string
+	ref      string // the change set's opaque external reference; untrusted
 	slug     string
 	branch   string // cs/<slug>
 	worktree string // the change set's worktree; it may not exist (yet, or any more)
@@ -203,7 +204,7 @@ func findShipTarget(ctx *Ctx) (shipTarget, error) {
 	if !ok {
 		return t, Errorf("git worktree list names no main checkout")
 	}
-	t = shipTarget{cs: cs, title: c.Open.DisplayTitle(), main: main, common: common}
+	t = shipTarget{cs: cs, title: c.Open.DisplayTitle(), ref: c.Open.Ref, main: main, common: common}
 	t.slug = session.ChangeSetSlug(sets, cs)
 	t.branch = session.Branch(t.slug)
 	mainRoot := filepath.Dir(common)

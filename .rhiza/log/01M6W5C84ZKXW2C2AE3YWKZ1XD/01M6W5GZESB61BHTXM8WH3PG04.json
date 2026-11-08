@@ -1,0 +1,96 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6W5C84ZKXW2C2AE42F928HQ"
+  ],
+  "at": "2026-11-07T23:29:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "goreleaser check passes on .goreleaser.yaml; a CI step runs goreleaser release --snapshot --clean on pull requests that touch it and produces all four archives; the release job's trigger is only v* tags",
+          "statement": "A v* tag runs a GitHub Actions release job that builds rhiza with GoReleaser for linux and darwin on amd64 and arm64 and publishes the archives and a checksums file to a GitHub release"
+        },
+        "handle": "release-goreleaser",
+        "id": "01M6W5GZ1GA5NPS1AP0SVFW78F",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6W5GZ1GA5NPS1AP0QYYSKTA",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5GZ1GA5NPS1AP0QYYSKTA",
+        "id": "01M6W5GZ2T547C0YBZSSG3G17N",
+        "link": "01M6W5GZ2T547C0YBZSP3XNM5Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQP21T6REHE624ZGDMHK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5GZ1GA5NPS1AP0QYYSKTA",
+        "id": "01M6W5GZ55H42DX8BBJWM7M80Q",
+        "link": "01M6W5GZ55H42DX8BBJW494S3N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BPVADRQXFPMNGCB64D5Y",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestVersion covers the ldflags and module-version paths, and .goreleaser.yaml sets -X main.version from the tag",
+          "statement": "rhiza version prints the release tag (v0.1.0) for a GoReleaser build and the module version for a go install build"
+        },
+        "handle": "release-version-stamp",
+        "id": "01M6W5GZ81178V2ADCD0QWHJHZ",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6W5GZ804XVRFGSN0V242MST",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5GZ804XVRFGSN0V242MST",
+        "id": "01M6W5GZA7Q64BMVBCBK1HSB2A",
+        "link": "01M6W5GZA7Q64BMVBCBHPNHFBK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BQRXH2K66094RWKPXGY3",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "a CI step runs go install ./cmd/rhiza into a fresh GOBIN with -mod=readonly and runs rhiza version; go.mod has no replace directives",
+          "statement": "go install github.com/dphaener/rhiza/cmd/rhiza@<version> builds a working rhiza: go.mod's module path matches the repository and nothing needs a replace directive or a private dependency"
+        },
+        "handle": "release-go-install",
+        "id": "01M6W5GZC2YS53M8KZWHSYSVSA",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6W5GZC2YS53M8KZWFQK4E00",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "decision": null,
+        "from": "01M6W5GZC2YS53M8KZWFQK4E00",
+        "id": "01M6W5GZD8HH0TRPAVAQV7YEK0",
+        "link": "01M6W5GZD8HH0TRPAVAM25T8TW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5BPVADRQXFPMNGCB64D5Y",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6W5C84ZKXW2C2AE3YWKZ1XD",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6W5GZESB61BHTXM8WH3PG04",
+  "type": "ops",
+  "v": 1
+}

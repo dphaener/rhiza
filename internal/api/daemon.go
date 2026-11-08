@@ -6,6 +6,7 @@ package api
 // refused, naming the first one's process. It binds no socket.
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -25,6 +26,7 @@ import (
 	"github.com/dphaener/rhiza/internal/dispatch"
 	"github.com/dphaener/rhiza/internal/gosweep"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/policy"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/web"
 )
@@ -1146,46 +1148,63 @@ func repoFreeBytes(ctx *Ctx) (uint64, error) {
 	return daemon.FreeBytes(ctx.Root)
 }
 
-// daemonCandidates are the accepted, ready change sets of the milestone
-// groups that hasLeaves, in roadmap order, each once. skips are the other
-// accepted change sets, each once: those serving no milestone, those not
-// ready (with their readiness reasons) and those with no leaves.
-func daemonCandidates(res planResult, hasLeaves func(id.ID) bool) ([]string, []daemon.Skip) {
-	var out []string
+// daemonSchedule is the repo's scheduling rule as daemonCandidates applies
+// it: Backlog is a policy backlog value, or "" when it is unknown, and then
+// Detail says why, for the skips. Since is when a change set was last
+// accepted or reopened, the backlog's order.
+type daemonSchedule struct {
+	Backlog string
+	Detail  []string
+	Since   func(id.ID) time.Time
+}
+
+// daemonCandidates are the accepted, ready change sets that hasLeaves, each
+// once: first those of the milestone groups, in roadmap order, then the
+// backlog's (those serving no milestone), oldest accepted first, or the
+// backlog first under sched's "before", or none of it under "skip" and
+// under an unknown value. skips are the other accepted change sets, each
+// once: the skipped backlog (no-milestone, with the unknown value as its
+// detail), those not ready (with their readiness reasons) and those with no
+// leaves.
+func daemonCandidates(res planResult, hasLeaves func(id.ID) bool, sched daemonSchedule) ([]string, []daemon.Skip) {
+	var milestone, backlog []string
 	var skips []daemon.Skip
 	seen := map[id.ID]bool{}
 	for _, g := range res.groups {
-		if g.backlog {
-			continue
-		}
 		for _, p := range g.members {
 			if seen[p.info.ID] || p.info.State != changeset.StateAccepted {
 				continue
 			}
 			seen[p.info.ID] = true
+			if g.backlog {
+				if sched.Backlog == "" || sched.Backlog == policy.BacklogSkip {
+					skips = append(skips, daemon.Skip{Change: p.info.ID.String(), Reason: daemon.SkipNoMilestone, Detail: slices.Clone(sched.Detail)})
+					continue
+				}
+			}
 			switch {
 			case !p.ready:
 				skips = append(skips, daemon.Skip{Change: p.info.ID.String(), Reason: daemon.SkipNotReady, Detail: slices.Clone(p.reasons)})
 			case !hasLeaves(p.info.ID):
 				skips = append(skips, daemon.Skip{Change: p.info.ID.String(), Reason: daemon.SkipNoLeaves})
+			case g.backlog:
+				backlog = append(backlog, p.info.ID.String())
 			default:
-				out = append(out, p.info.ID.String())
+				milestone = append(milestone, p.info.ID.String())
 			}
 		}
 	}
-	for _, g := range res.groups {
-		if !g.backlog {
-			continue
-		}
-		for _, p := range g.members {
-			if seen[p.info.ID] || p.info.State != changeset.StateAccepted {
-				continue
-			}
-			seen[p.info.ID] = true
-			skips = append(skips, daemon.Skip{Change: p.info.ID.String(), Reason: daemon.SkipNoMilestone})
-		}
+	if sched.Since != nil {
+		slices.SortStableFunc(backlog, func(a, b string) int {
+			ia, _ := id.Parse(a)
+			ib, _ := id.Parse(b)
+			return cmp.Or(sched.Since(ia).Compare(sched.Since(ib)), id.Compare(ia, ib))
+		})
 	}
-	return out, skips
+	if sched.Backlog == policy.BacklogBefore {
+		return append(backlog, milestone...), skips
+	}
+	return append(milestone, backlog...), skips
 }
 
 // daemonDetach starts rhiza with args as a detached child in the repo, outside
