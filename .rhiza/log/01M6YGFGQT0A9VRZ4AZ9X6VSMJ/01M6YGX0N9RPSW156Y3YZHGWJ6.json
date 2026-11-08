@@ -1,0 +1,33 @@
+{
+  "actor": "01M6YGGF8YMS502Q4X4W26NKR8",
+  "after": [
+    "01M6YGVS26A7A4DVYN124F1CBX"
+  ],
+  "at": "2026-11-08T21:26:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "ae3779ee4a735ab3b2e2b904eb1a3c017737297039230a5ae108fcbafbcc8eb3",
+          "session": "bc50c2e7-c330-4961-babf-01a1bd082164",
+          "summary": "Autonomous plan run for the bug where `rhiza run resume --retry` of ship-change run 01M6XVTXGJAM (PR #393) restarted at ci-triage and failed again on stale state, after a billing outage had failed every CI job with no failing test. The planner found the cause in the code: Engine.Retry reopens at State.FailedStep, and ci-triage (`rhiza ship check --test-failures`) has no on.fail, so an infra-only red head ends the run. The accepted change set 01M6XX4R8 (retry-reopens-at-wait) covers retries of green steps entered from a wait, but not ci-triage, which pr-green's or rebased-green's on.fail reaches. The change set was placed under milestone-25, like the other ship-change fixes. Two questions went to the arbiter. It decided retry-ci-triage-reopens-at-wait: a retry follows the journal back from ci-triage to the check that routed into it and reopens at that check's wait. It also decided ci-triage-infra-waits-for-new-ci: ci-triage's on.fail goes to a new wait step that settles only once CI moved past the judged state, with a 6h timeout and 3 visits, then re-checks at pr-green. The change set depends on 01M6XX4R8, whose engine rule it extends. No owner words: the run was autonomous.",
+          "title": "Resume-retry at ci-triage plan, autonomous"
+        },
+        "handle": "resume-retry-ci-triage-plan",
+        "id": "01M6YGX0K9MV6C076HCHDXW6G6",
+        "key": null,
+        "kind": "source",
+        "node": "01M6YGX0K9MV6C076HCG8CEANC",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6YGFGQT0A9VRZ4AZ9X6VSMJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YGX0N9RPSW156Y3YZHGWJ6",
+  "type": "ops",
+  "v": 1
+}

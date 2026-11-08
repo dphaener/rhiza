@@ -1,0 +1,103 @@
+{
+  "actor": "01M6YGGF8YMS502Q4X4W26NKR8",
+  "after": [
+    "01M6YGX0N9RPSW156Y3YZHGWJ6"
+  ],
+  "at": "2026-11-08T21:27:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6YGPS3159C8B71XAJ6XYMRC",
+        "id": "01M6YGXKV931XV9AXMCCG76ZE9",
+        "link": "01M6YGXKV931XV9AXMCATKZDV2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YGX0K9MV6C076HCG8CEANC",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6YGVRV397Z6Q7B41Z7PXKN1",
+        "id": "01M6YGXM0N76DCVPQMSH9AY8F9",
+        "link": "01M6YGXM0N76DCVPQMSFCZMPRM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YGX0K9MV6C076HCG8CEANC",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/run (or internal/api) retries a run failed at a step reached from a command step's on.fail, itself entered from a wait's on.pass, and shows it reopening at that wait, choosing between two such predecessors from the journal; a run failed at a step with neither still retries at that step; testscript run-resume-retry (or a new run-ship-retry-ci-triage with a fake gh) retries a ship-change run failed at ci-triage after the PR head turned green and it passes wait-pr and pr-green on to signoff; run with go test -trimpath ./internal/run/... ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-resume-retry|run-ship-retry)' only",
+          "statement": "rhiza run resume --retry on a run that failed at a step with no wait whose on.pass it is (ship-change's ci-triage) reads from the journal the step visited just before it, the check whose on.fail routed into it (pr-green or rebased-green), and reopens the run at that check's wait step (wait-pr or wait-rebased), so the retry waits for CI on the current or a new head and re-runs the check: green goes on to signoff or land, red goes to ci-triage again with fresh state; a failed step reached by no on.fail edge still retries at itself"
+        },
+        "handle": "retry-ci-triage-at-wait",
+        "id": "01M6YGXM7SRCDR03S5J42QW60S",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6YGXM7SRCDR03S5J1K60QVR",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6YGXM7SRCDR03S5J1K60QVR",
+        "id": "01M6YGXMBQ3DK59DNAAQXHGSGZ",
+        "link": "01M6YGXMBQ3DK59DNAAM8KGFB7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YGPS3159C8B71XAJ6XYMRC",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YGXM7SRCDR03S5J1K60QVR",
+        "id": "01M6YGXME1PVC4KE3E04D7SXHD",
+        "link": "01M6YGXME1PVC4KE3E02XF0HWS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YGX0K9MV6C076HCG8CEANC",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api show ship check --settled --changed not settling on an unchanged settled red head, settling on a new head or a newer check run attempt once it finishes, and the timeout detail naming the infra failure; testscript run-ship-rerun-fail (or a new run-ship-infra-wait with a fake gh) drives a ship-change run whose CI fails with no failing test into wait-ci-rerun, then a rerun turns the head green and the run passes pr-green to signoff; run with go test -trimpath ./internal/api/... ./internal/workflow/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship-rerun-fail|run-ship-infra-wait|run-ship-ci-fix)' only",
+          "statement": "When ship-change's ci-triage finds no failing test for a red head (an infra or unparsable failure), the run goes to a new wait step wait-ci-rerun instead of ending: its until, rhiza ship check --settled --changed, settles only once CI moved past the state ci-triage judged (a new head SHA, or a check run or attempt newer than the head's latest ship-check record) and that new CI finished; it waits up to 6h with max_visits 3, its timeout ends the run with a line naming the infra failure, and its on.pass goes to pr-green, which re-checks the head (a run back from after the rebase passes signoff again)"
+        },
+        "handle": "ci-triage-infra-waits",
+        "id": "01M6YGXMGVZQBYW9NX75YF2VVH",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6YGXMGVZQBYW9NX74P1TQ4W",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6YGXMGVZQBYW9NX74P1TQ4W",
+        "id": "01M6YGXMMDXH3Y9G1N58YS59SD",
+        "link": "01M6YGXMMDXH3Y9G1N55V1JN66",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YGVRV397Z6Q7B41Z7PXKN1",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YGXMGVZQBYW9NX74P1TQ4W",
+        "id": "01M6YGXMT8CNR82EGY2RB0Y3MZ",
+        "link": "01M6YGXMT8CNR82EGY2MWKS8PN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YGX0K9MV6C076HCG8CEANC",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6YGFGQT0A9VRZ4AZ9X6VSMJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YGXMXC93W646A5PYEVHPWZ",
+  "type": "ops",
+  "v": 1
+}
