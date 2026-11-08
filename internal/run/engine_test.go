@@ -1272,8 +1272,9 @@ on.fail = "failed"
 }
 
 // A retry of a run failed at a step that is the on.pass target of exactly
-// one wait step reopens at that wait; a step with no wait predecessor is
-// retried at itself.
+// one wait step reopens at that wait, which polls its until again (not
+// settled on the retry's first poll) before passing on to the step; a step
+// with no wait predecessor is retried at itself.
 func TestRetryReopensAtWait(t *testing.T) {
 	wf := `
 name = "wf"
@@ -1291,7 +1292,7 @@ on.pass = "done"
 on.fail = "failed"
 `
 	e, r, _, _ := setup(t, wf)
-	r.holds["wait"] = []bool{true}
+	r.holds["wait"] = []bool{true, false, true}
 	r.codes["green"] = []int{1, 0}
 	st, err := e.Run(runID)
 	if err != nil || st.Result != Failed {
@@ -1309,6 +1310,9 @@ on.fail = "failed"
 	}
 	if got, want := outcomes(st), []string{"wait:pass", "green:fail", "wait:pass", "green:pass"}; !reflect.DeepEqual(got, want) {
 		t.Errorf("outcomes = %v, want %v", got, want)
+	}
+	if r.polls["wait"] != 3 {
+		t.Errorf("wait polls = %d, want 3: one before the failure, two on the retry", r.polls["wait"])
 	}
 }
 
