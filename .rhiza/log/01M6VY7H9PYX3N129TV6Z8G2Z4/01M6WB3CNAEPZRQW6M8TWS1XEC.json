@@ -1,0 +1,39 @@
+{
+  "actor": "01M6WB1QVB97T53YSQ8BTZT68A",
+  "after": [
+    "01M6W8RN8K34JANMBWK9F9TX5W"
+  ],
+  "at": "2026-11-08T01:06:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Workflow dispatch (change set 01M6VY7G6HPJC3V0Q18E8EF9ZA, branch cs/workflow-dispatch) is not on this branch or main, so nothing maps a request kind to a repo workflow: planRunArgs always picks plan or plan-milestone. The leaf's acceptance, a bugfix.toml mapped to kind bug, cannot pass until dispatch lands. Land dispatch, then rebuild this leaf on top of it."
+        },
+        "handle": "bugfix-needs-workflow-dispatch",
+        "id": "01M6WB3CJ5R7561BXEX475E4B1",
+        "key": null,
+        "kind": "question",
+        "node": "01M6WB3CJ5R7561BXEX3X6HP2N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WB3CJ5R7561BXEX3X6HP2N",
+        "id": "01M6WB3CK0QZDXA45B8THWCC6T",
+        "link": "01M6WB3CK0QZDXA45B8RQWDH4S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPW4D8366CNFT3EH72465",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WB3CNAEPZRQW6M8TWS1XEC",
+  "type": "ops",
+  "v": 1
+}
