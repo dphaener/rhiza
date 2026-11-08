@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/run"
 )
 
@@ -88,6 +89,22 @@ func TestDaemonStartsRequestWithDispatchedWorkflow(t *testing.T) {
 	ms := started("milestone", "milestone")
 	if flag(ms, "--workflow") != "roadmap" || !slices.Contains(ms, "--milestone") || slices.Contains(ms, "--autonomous") {
 		t.Errorf("milestone start %q, want --workflow roadmap --milestone without --autonomous", ms)
+	}
+}
+
+// A milestone request's plan run is never autonomous by default: the
+// built-in plan-milestone declares the owner for plan, which overrides
+// rhiza.autonomy.plan=auto; a feature request under plan still follows the
+// setting.
+func TestMilestonePlanRunOwnerByDeclaration(t *testing.T) {
+	f := newSessionFixture(t, "gate")
+	auto, err := planRunAutonomous(f.ctx, daemon.Request{ID: "M", Kind: daemon.KindMilestone}, AutonomyAuto)
+	if err != nil || auto {
+		t.Fatalf("milestone request under plan=auto: autonomous %v, %v; want false from plan-milestone's declaration", auto, err)
+	}
+	auto, err = planRunAutonomous(f.ctx, daemon.Request{ID: "F", Kind: daemon.KindFeature}, AutonomyAuto)
+	if err != nil || !auto {
+		t.Fatalf("feature request under plan=auto: autonomous %v, %v; want true from the setting", auto, err)
 	}
 }
 
