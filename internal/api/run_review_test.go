@@ -3,7 +3,9 @@ package api
 import (
 	"testing"
 
+	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // A check or critic session's RHIZA_CYCLE names its round's cycle when it
@@ -70,10 +72,16 @@ func TestReviewAskedFor(t *testing.T) {
 	}
 	st := run.State{ID: "01M6VY7E0AAAAAAAAAAAAAAAAA", Asked: []run.Asked{{Handle: base + "-2", Question: "01M6W7QGXS2VNCJ3KMFRMW78XE"}},
 		Rounds: []run.Round{{Number: 3, Findings: []run.Finding{{ID: "f1", Node: "n"}}, Verdicts: []run.Verdict{{Finding: "f1", Verdict: run.Confirmed}}}}}
-	rd, _ := st.LatestRound()
-	for _, f := range rd.Confirmed() {
-		if _, ok := reviewAskedFor(reviewQuestions(st), reviewQuestionHandle(st.ID, rd.Number, f.ID)); !ok {
-			t.Errorf("gate finds no question for %s", f.ID)
-		}
+	m := newModel(store.Log{}, id.ID{})
+	open, err := gateReview(nil, m, reviewRun{id: st.ID, state: st})
+	if err != nil {
+		t.Fatalf("gateReview with the -2 question: %v", err)
+	}
+	if !open {
+		t.Error("gateReview: the unanswered -2 question is not open")
+	}
+	st.Asked = []run.Asked{{Handle: other, Question: "01M6W7QGXS2VNCJ3KMFRMW78XE"}}
+	if _, err := gateReview(nil, m, reviewRun{id: st.ID, state: st}); err == nil {
+		t.Error("gateReview took another run's question for the finding")
 	}
 }
