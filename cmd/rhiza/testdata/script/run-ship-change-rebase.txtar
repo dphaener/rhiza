@@ -161,15 +161,16 @@ exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode m
 stdout '"signoff_waiting": true'
 ! exec rhiza run approve --foreground
 stdout '^Run \S+ failed$'
-stdout '^- Detail: step "rebase" ended with outcome "fail"$'
+stdout '^- Detail: step "conflict-fix" ended with outcome "fail"$'
 stderr '^Merging origin/main at [0-9a-f]{7} into cs/ship-two conflicts in:$'
 stderr '^- feature\.txt$'
 stderr '^- @shipping$'
 stderr 'left in progress'
-! stderr 'question'
+! stderr 'Raised question'
 
 exec rhiza run status
-stdout '^- rebase \(visit 1\): fail, then end: exit 1$'
+stdout '^- rebase \(visit 1\): fail, then rebase-triage: exit 1$'
+stdout '^- conflict-fix \(visit 1\): fail, then end, session '
 ! stdout '^- land '
 ! grep '^pr merge' $WORK/gh.log
 
@@ -204,9 +205,10 @@ exec git rev-parse HEAD
 cp stdout $WORK/fixed.sha
 exec rhiza ship rebase
 stdout '^Pushed [0-9a-f]{7}\.$'
-exec sh -c 'test "$(git -C $WORK/origin2.git rev-parse refs/heads/cs/ship-two)" = "$(cat $WORK/fixed.sha)" && echo pushed'
+# The pushed head is the hand-made merge, or that plus a render commit.
+exec sh -c 'git -C $WORK/origin2.git merge-base --is-ancestor $(cat $WORK/fixed.sha) refs/heads/cs/ship-two && echo pushed'
 stdout '^pushed$'
-exec sh -c 'grep -q "\"pushed\": \"$(cat $WORK/fixed.sha)\"" "$(git rev-parse --git-common-dir)"/rhiza/ship/*.json && echo recorded'
+exec sh -c 'grep -q "\"pushed\": \"$(git -C $WORK/origin2.git rev-parse refs/heads/cs/ship-two)\"" "$(git rev-parse --git-common-dir)"/rhiza/ship/*.json && echo recorded'
 stdout '^recorded$'
 ! exec sh -c 'grep -q merge_conflict "$(git rev-parse --git-common-dir)"/rhiza/ship/*.json'
 exec git -C $WORK/origin2.git merge-base --is-ancestor main refs/heads/cs/ship-two
@@ -322,12 +324,13 @@ exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode m
 stdout '"signoff_waiting": true'
 ! exec rhiza run approve --foreground
 stdout '^Run \S+ failed$'
-stdout '^- Detail: step "rebase-merge" ended with outcome "fail"$'
+stdout '^- Detail: step "conflict-fix-landed" ended with outcome "fail"$'
 stderr '^- feature\.txt$'
 stderr 'left in progress'
-! stderr 'question'
+! stderr 'Raised question'
 exec rhiza run status
-stdout '^- rebase-merge \(visit 1\): fail, then end: exit 1$'
+stdout '^- rebase-merge \(visit 1\): fail, then conflict-triage-landed: exit 1$'
+stdout '^- conflict-fix-landed \(visit 1\): fail, then end, session '
 ! grep '^pr merge' $WORK/gh.log
 cd $WORK/repo4.ship-it
 exec git rev-parse --verify MERGE_HEAD
@@ -383,6 +386,7 @@ done
 echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 -- bin/claude --
 #!/bin/sh
+for a; do last=$a; done
 case "$RHIZA_ROLE" in
 builder)
 	files=feature.txt
@@ -411,6 +415,13 @@ verifier)
 check)
 	echo '{"findings":[]}' > "$WORK/empty-round.json"
 	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+	;;
+*)
+	# The conflict fixer: this script leaves the merge in progress, so the
+	# fixer gives up without committing and the run fails.
+	case "$last" in
+	*"Resolve the merge conflicts"*) exit 1 ;;
+	esac
 	;;
 esac
 exit 0

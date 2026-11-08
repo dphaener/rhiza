@@ -22251,7 +22251,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "conflicts": {
-            "description": "Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed; reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)",
+            "description": "Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed or once the run has made 3 conflict fixes (merge commits on the branch with its Review: trailer); reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)",
             "type": "boolean"
           },
           "main": {

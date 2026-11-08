@@ -74,7 +74,7 @@ type ShipCheckRequest struct {
 	// Conflicts asks only whether the ship state records a merge of main
 	// that is still unresolved; it reads the state file and git, runs no
 	// gh and records nothing.
-	Conflicts bool `json:"conflicts,omitempty" flag:"conflicts" desc:"Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed; reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)"`
+	Conflicts bool `json:"conflicts,omitempty" flag:"conflicts" desc:"Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed or once the run has made 3 conflict fixes (merge commits on the branch with its Review: trailer); reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)"`
 }
 
 // ShipCheckResponse is what ship.check found.
@@ -682,10 +682,34 @@ func runShipConflicts(ctx *Ctx) (any, error) {
 		resp.Detail = fmt.Sprintf("the merge of origin/%s into %s is resolved", shipMain, t.branch)
 	default:
 		resp.Conflicts = st.MergeConflict.Files
+		fixes := shipConflictFixes(ctx, t)
+		if fixes >= shipConflictFixCap {
+			resp.Detail = fmt.Sprintf("merging origin/%s into %s is unresolved, but the run has already made %d conflict fixes (the most it makes): conflicts in %s", shipMain, t.branch, fixes, strings.Join(st.MergeConflict.Files, ", "))
+			break
+		}
 		resp.Detail = fmt.Sprintf("merging origin/%s into %s is unresolved, conflicts in %s", shipMain, t.branch, strings.Join(st.MergeConflict.Files, ", "))
 		resp.Passed = true
 	}
 	return resp, nil
+}
+
+// shipConflictFixCap is how many conflict fixes one run makes, before and
+// after land together.
+const shipConflictFixCap = 3
+
+// shipConflictFixes counts the conflict fixes the run RHIZA_RUN names has
+// made: the merge commits on the branch carrying its Review: trailer. With
+// no run set, or git failing, it counts none.
+func shipConflictFixes(ctx *Ctx, t shipTarget) int {
+	rid := strings.TrimSpace(ctxGetenv(ctx)(envRun))
+	if rid == "" {
+		return 0
+	}
+	out, err := gitAt(ctx, t.dir(), "log", "--merges", "--format=%H", "-E", "--grep=^Review: "+rid+"$", "HEAD")
+	if err != nil {
+		return 0
+	}
+	return len(gitLines(out))
 }
 
 // shipCheckMainTree confirms main locally, with git and no wait on CI: the

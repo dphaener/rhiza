@@ -1298,6 +1298,70 @@ func TestShipRebaseCodeConflict(t *testing.T) {
 	}
 }
 
+// ship check --conflicts passes only for a recorded unresolved merge with
+// fewer than 3 conflict fixes (merge commits with the run's Review:
+// trailer) on the branch.
+func TestShipCheckConflicts(t *testing.T) {
+	f, _ := shipRebaseFixture(t)
+	fixes := ""
+	inner := f.ctx.Exec
+	f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		if name == "git" && strings.Join(args, " ") == "log --merges --format=%H -E --grep=^Review: RUN1$ HEAD" {
+			return []byte(fixes), nil
+		}
+		return inner(name, args, dir, env)
+	}
+	f.ctx.Getenv = func(k string) string {
+		if k == "RHIZA_RUN" {
+			return "RUN1"
+		}
+		return ""
+	}
+
+	// No recorded conflict: fails.
+	r := shipCheck(t, f, `{"conflicts":true}`)
+	if r.Passed || r.ExitCode() != 1 || !strings.Contains(r.Detail, "no merge conflict is recorded") {
+		t.Errorf("no conflict: %+v", r)
+	}
+
+	// Record an unresolved conflict.
+	f.git.out[rebaseConflict] = "feature.txt\n"
+	f.git.out["merge-base HEAD "+rebaseOnto] = "base000\n"
+	if r := shipRebase(t, f); len(r.Conflicts) != 1 {
+		t.Fatalf("rebase = %+v", r)
+	}
+
+	// No fixes yet, and two: passes.
+	for _, out := range []string{"", "a1\nb2\n"} {
+		fixes = out
+		r = shipCheck(t, f, `{"conflicts":true}`)
+		if !r.Passed || r.ExitCode() != 0 || !slices.Equal(r.Conflicts, []string{"feature.txt"}) {
+			t.Errorf("fixes %q: %+v", out, r)
+		}
+	}
+
+	// Three fixes: fails, naming why.
+	fixes = "a1\nb2\nc3\n"
+	r = shipCheck(t, f, `{"conflicts":true}`)
+	if r.Passed || r.ExitCode() != 1 || !strings.Contains(r.Detail, "3 conflict fixes") {
+		t.Errorf("three fixes: %+v", r)
+	}
+
+	// Once the merge is resolved it fails too.
+	fixes = ""
+	inner2 := f.ctx.Exec
+	f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		if name == "git" && strings.Join(args, " ") == "merge-base --is-ancestor "+rebaseOnto+" HEAD" {
+			return nil, nil
+		}
+		return inner2(name, args, dir, env)
+	}
+	r = shipCheck(t, f, `{"conflicts":true}`)
+	if r.Passed || !strings.Contains(r.Detail, "is resolved") {
+		t.Errorf("resolved: %+v", r)
+	}
+}
+
 // A fixer's merge, committed on top of origin's branch and holding main,
 // is rendered, pushed plainly and recorded.
 func TestShipRebaseFixerMerge(t *testing.T) {
