@@ -120,3 +120,50 @@ func slicesHoldFor(holds []daemon.WatchdogHold, id string) bool {
 	}
 	return false
 }
+
+// TestWatchdogTransient drives the transient-failure recovery: each known
+// signature leads to one resume --retry, an unknown failure is left alone,
+// and so is a run that is live.
+func TestWatchdogTransient(t *testing.T) {
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	failed := func(id, out string, auto bool) run.Journal {
+		return run.Journal{ID: id, Entries: []run.Entry{
+			{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: auto}},
+			{Type: run.TypeEntered, At: t0, Step: "build", Visit: 1},
+			{Type: run.TypeEnded, At: t0, Step: "build", Visit: 1, Outcome: "fail", Detail: "exit 1\n" + out},
+			{Type: run.TypeFinished, At: t0, Step: "build", End: "failed", Detail: "step build failed"},
+		}}
+	}
+	js := []run.Journal{
+		failed("work", "open /tmp/go-build123/b001/importcfg: no such file or directory", true),
+		failed("lock", "fatal: Unable to create '/r/.git/index.lock': File exists.", true),
+		failed("gh", "gh: HTTP 502 Bad Gateway", true),
+		failed("real", "FAIL: TestThing expected 1 got 2", true),
+		failed("live", "gh: HTTP 503 Service Unavailable", true),
+		failed("owner", "gh: HTTP 502 Bad Gateway", false),
+	}
+	var log, resumed []string
+	d := watchdogDeps{
+		resume: func(id string) error { resumed = append(resumed, id); return nil },
+		log:    func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
+	}
+	pol := WatchdogPolicy{Enabled: true, RetryBudget: 1, AutonomousOnly: true}
+	live := func(id string) bool { return id == "live" }
+	mem, err := watchdogTransient(pol, js, live, nil, d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Join(resumed, ","); got != "work,lock,gh" {
+		t.Fatalf("resumed %s, want work,lock,gh", got)
+	}
+	if len(log) != 3 {
+		t.Errorf("want one line per resume, log %q", log)
+	}
+	// The budget is one: a second poll over the same failures acts on none.
+	if _, err := watchdogTransient(pol, js, live, mem, d); err != nil {
+		t.Fatal(err)
+	}
+	if len(resumed) != 3 {
+		t.Errorf("over budget resumed %v", resumed)
+	}
+}

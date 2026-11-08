@@ -12,6 +12,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -197,8 +198,81 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 		},
 	}
 	mem, holds, err := watchdogStalled(pol, live, ctx.Now(), state.Watchdog, d)
+	d.resume = func(id string) error {
+		if q, qerr := daemon.ReadContinues(common); qerr == nil && slices.ContainsFunc(q, func(c daemon.Continue) bool { return c.Run == id }) {
+			return nil
+		}
+		_, err := queueContinue(ctx, common, id, true, false)
+		return err
+	}
+	mem, terr := watchdogTransient(pol, all, rs.Live, mem, d)
+	if err == nil {
+		err = terr
+	}
 	state.Watchdog, state.WatchdogHolds = mem, holds
 	return err
+}
+
+// transientSignatures are the failure outputs a rerun is expected to clear:
+// a go build's $WORK directory removed under it, a git index.lock held by
+// another process, and a network or GitHub 5xx error.
+var transientSignatures = []*regexp.Regexp{
+	regexp.MustCompile(`(?i)go-build\d*/[^\n]*no such file or directory`),
+	regexp.MustCompile(`(?i)index\.lock['"]?:? (file exists|exists)|unable to create '[^\n]*index\.lock'`),
+	regexp.MustCompile(`(?i)(http|status|error|returned|received)[ :]*(50[0234])\b|\b50[0234] (bad gateway|service unavailable|gateway time-?out|internal server error)`),
+	regexp.MustCompile(`(?i)(connection reset by peer|i/o timeout|tls handshake timeout|temporary failure in name resolution)`),
+}
+
+// transientSignature names the signature text matches, or "".
+func transientSignature(text string) string {
+	for _, re := range transientSignatures {
+		if m := re.FindString(text); m != "" {
+			return strings.TrimSpace(m)
+		}
+	}
+	return ""
+}
+
+// watchdogTransient resumes with --retry each failed run of journals whose
+// failing step's output matches a transient signature, within the run's
+// budget. A failure matching none is left to the owner, as is an attended
+// run when the policy is autonomous-only. A run with a live process is never touched. It returns the memory after, and the first error.
+func watchdogTransient(pol WatchdogPolicy, journals []run.Journal, live func(id string) bool, mem []daemon.WatchdogRun, d watchdogDeps) ([]daemon.WatchdogRun, error) {
+	var first error
+	for _, j := range journals {
+		st := j.State()
+		if live(j.ID) || !st.Ended || st.Result != run.Failed || st.Abandoned() {
+			continue
+		}
+		if !st.Autonomous && pol.AutonomousOnly {
+			continue
+		}
+		step, err := st.FailedStep()
+		if err != nil {
+			continue
+		}
+		sig := transientSignature(failedDetail(st, step))
+		if sig == "" {
+			continue
+		}
+		i := slices.IndexFunc(mem, func(w daemon.WatchdogRun) bool { return w.Run == j.ID })
+		if i < 0 {
+			mem = append(mem, daemon.WatchdogRun{Run: j.ID})
+			i = len(mem) - 1
+		}
+		if mem[i].Spent >= pol.RetryBudget {
+			continue
+		}
+		if err := d.resume(j.ID); err != nil {
+			if first == nil {
+				first = fmt.Errorf("resume run %s: %w", j.ID, err)
+			}
+			continue
+		}
+		mem[i].Spent++
+		d.log("watchdog: run %s step %s failed on a transient error (%q): resumed with --retry (budget %d of %d)", j.ID, step, sig, mem[i].Spent, pol.RetryBudget)
+	}
+	return mem, first
 }
 
 // terminateRun signals the process that drives st on this host to stop; a
