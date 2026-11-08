@@ -24,6 +24,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -1801,6 +1802,13 @@ func (r *stepRunner) Command(step workflow.Step, env []string) (int, string, err
 	tail := &tailWriter{}
 	var buf bytes.Buffer
 	code, err := r.sh("exec 2>&1\n"+step.Run, env, io.MultiWriter(r.ctx.Stderr, tail, &buf))
+	if err == nil && code != 0 && code != run.StopExit && vanishedGoWork(buf.String()) {
+		// go's $WORK folder vanished mid-build: run the command once more
+		// and let that second result stand.
+		fmt.Fprintln(r.ctx.Stderr, "rhiza: step failed as go's $WORK folder vanished; running it once more")
+		tail, buf = &tailWriter{}, bytes.Buffer{}
+		code, err = r.sh("exec 2>&1\n"+step.Run, env, io.MultiWriter(r.ctx.Stderr, tail, &buf))
+	}
 	if err != nil || code == 0 {
 		return code, "", err
 	}
@@ -1809,6 +1817,13 @@ func (r *stepRunner) Command(step workflow.Step, env []string) (int, string, err
 	}
 	return code, tail.String(), nil
 }
+
+// vanishedGoWorkRE is go's signature of a build whose $WORK folder was
+// removed under it: a path under $WORK/b<NNN>/ that can no longer be opened.
+var vanishedGoWorkRE = regexp.MustCompile(`open \$WORK/b\d+/[^\s:)]*: no such file or directory`)
+
+// vanishedGoWork reports whether out holds that signature.
+func vanishedGoWork(out string) bool { return vanishedGoWorkRE.MatchString(out) }
 
 // lastStopLine is the text after the last "stop: " line of out.
 func lastStopLine(out string) string {
