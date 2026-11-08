@@ -1,0 +1,16 @@
+# A change set that edits a node and later retires it holds one retire on the
+# node's landed version, and lands with no conflict.
+
+exec rhiza init
+exec rhiza add capability store --field 'statement=Stores' --record
+exec rhiza change new Shape
+exec rhiza set store --field 'statement=Stores more'
+exec rhiza retire store --reason 'Folded into api'
+exec rhiza change show --json
+stdout -count=1 '"op": "node.retire"'
+! stdout '"op": "node.update"'
+fold-ok
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+fold-ok

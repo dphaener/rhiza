@@ -1,0 +1,41 @@
+{
+  "actor": "01M6XWAV7QFJAA1CY8T6X0Q4QR",
+  "after": [
+    "01M6XWA2WYTNTBPFJ9AY7YCKKP"
+  ],
+  "at": "2026-11-08T15:28:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding offers two fixes: revert the statement to its original text, or update the reasoning. Reverting brings back round 1's f1 (the landed decision's statement would again say the interview starts without a free slot, contradicting plan-runs-share-max-runs and the change set's intent that nothing may exceed the cap), and the critic said so. The statement already names plan-runs-share-max-runs as the superseding decision, so the misattribution concern is mostly met; what remains is the stale reasoning sentence, which now argues against its own statement. plan-runs-share-max-runs's reasoning already gives the replacement argument (a plan run starts agents, was in the reported burst, and the owner's 'must not exceed the cap' outranks an assumed exception), so pointing the reasoning at it makes the two decisions agree without changing any behaviour. Wording is unchanged because neither decision quotes the owner.",
+          "statement": "Keep milestone-interview-starts-at-once's rewritten statement (the interview waits while running is at rhiza.daemon.maxRuns, with its parenthetical naming plan-runs-share-max-runs) and update that decision's reasoning to match: drop the claim that the interview 'costs little compute and need not compete for a slot', and say instead that plan-runs-share-max-runs superseded the start without a free slot because a plan run still starts agents and the owner's words 'must not exceed the cap' outrank the earlier assumption, while first claim on the next free slot keeps the point that an owner interview is not queued behind build picks. The rest of the reasoning (one owner, waiting status at launch, Rex notifies from OSC 7501, usage reserve does not hold it, pause and disk-low still hold it) stays. Its wording stays '(assumed, would have escalated)': both the original and the supersession are arbiter assumptions, so no owner ruling is misattributed.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "milestone-interview-reasoning-follows-supersession",
+        "id": "01M6XWC3THKT0H06REGDEX4P7Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6XWC3THKT0H06REGBKXX7JT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XWC3THKT0H06REGBKXX7JT",
+        "id": "01M6XWC3YSWQ4VE9GXB3D3RR5W",
+        "link": "01M6XWC3YSWQ4VE9GXAZE0C79Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XW7W29EAN8MHAK7CJJSX60",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XWC4218FW769AV00XY4AWK",
+  "type": "ops",
+  "v": 1
+}

@@ -1835,3 +1835,36 @@ func TestShipRebaseNamesRun(t *testing.T) {
 		t.Errorf("run = %q, want 01RUNA", st.Run)
 	}
 }
+
+func TestShipLandHeadBuildErrorDetail(t *testing.T) {
+	cases := []struct {
+		name, out string
+		err       error
+		want      []string
+	}{
+		{"json body", `{"error":{"code":"conflict","message":"cannot land change set X: node N changed"}}`,
+			errors.New("exit status 3"), []string{"conflict", "cannot land change set X: node N changed", "exit status 3"}},
+		{"stderr only", "", errors.New("rhiza land: boom on stderr"), []string{"boom on stderr"}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			f, x, bin := rhizaRepoFixture(t)
+			x.answers["go build -o "+bin+" ./cmd/rhiza"] = ""
+			f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+				if name == bin {
+					return []byte(c.out), c.err
+				}
+				return x.run(name, args, dir, env)
+			}
+			_, err := callOp(t, f.ctx, "ship.land", `{}`)
+			if err == nil {
+				t.Fatal("no error")
+			}
+			for _, w := range c.want {
+				if !strings.Contains(err.Error(), w) {
+					t.Errorf("err = %v, want %q", err, w)
+				}
+			}
+		})
+	}
+}

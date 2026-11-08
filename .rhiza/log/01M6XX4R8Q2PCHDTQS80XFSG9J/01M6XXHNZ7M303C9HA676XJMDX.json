@@ -1,0 +1,60 @@
+{
+  "actor": "01M6XX61F8MBCRS8ZAW9DG5ER5",
+  "after": [
+    "01M6XXHM1TFNCQS2H7XNJDYN1K"
+  ],
+  "at": "2026-11-08T15:48:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6XXFK3NNFP29EST9F4G2CBN",
+        "id": "01M6XXHNN0FXR8T67W4V93YX9D",
+        "link": "01M6XXHNN0FXR8T67W4V64TS6T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XXH70ABSQH0W636M5GWRKD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api (or internal/run) shows a retry of a run failed at a command step entered from a wait step's on.pass restarting at the wait, which polls a not-settled until and then passes on to the command; a run failed at a step with no wait predecessor still retries at that step; a testscript (run-resume-retry or a new run-ship-retry-pending with a fake gh) retries a ship-change run failed at landed-green while the new head's checks are pending, and it waits at wait-landed, then passes landed-green once they pass; run with go test -trimpath ./internal/api/... ./internal/run/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-resume-retry|run-ship)' only",
+          "statement": "rhiza run resume --retry on a failed run whose failed step is the on.pass target of exactly one wait step in its workflow reopens the run at that wait step instead of the failed step (the retry is journalled, and the response's retry field, at that wait step), so ship-change's pr-green, rebased-green, landed-green and rebased-merge-green and plan's and plan-milestone's green steps wait for pending CI after a retry and fail only on a real red; a failed step with no such wait, or more than one, is retried at itself as today"
+        },
+        "handle": "retry-reopens-at-wait",
+        "id": "01M6XXHNR6FZCKNSA3SEB5XZE9",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6XXHNR6FZCKNSA3SC47TZZK",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6XXHNR6FZCKNSA3SC47TZZK",
+        "id": "01M6XXHNTMSTXTGS4P6AJ8AY58",
+        "link": "01M6XXHNTMSTXTGS4P66PTJ68P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XXFK3NNFP29EST9F4G2CBN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6XXHNR6FZCKNSA3SC47TZZK",
+        "id": "01M6XXHNX9X2K9FH4TPXM68ZES",
+        "link": "01M6XXHNX9X2K9FH4TPSNDRFBF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XXH70ABSQH0W636M5GWRKD",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6XX4R8Q2PCHDTQS80XFSG9J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XXHNZ7M303C9HA676XJMDX",
+  "type": "ops",
+  "v": 1
+}

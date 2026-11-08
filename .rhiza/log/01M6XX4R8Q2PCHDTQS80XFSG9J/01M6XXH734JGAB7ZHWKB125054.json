@@ -1,0 +1,33 @@
+{
+  "actor": "01M6XX61F8MBCRS8ZAW9DG5ER5",
+  "after": [
+    "01M6XXFK98DN6PYDX7Q0SMFA26"
+  ],
+  "at": "2026-11-08T15:48:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "d7adf395dbb40f05d660aaaf535031c82edd5fd974d6170cb9f6f7636bd1d0eb",
+          "session": "47f5cdc8-5adc-491d-a6cf-01a1bbd2cfd6",
+          "summary": "Autonomous plan run for the bug where ship-change's landed-green failed on pending CI (nebari PR #83). The planner found the cause: rhiza run resume --retry restarts a failed run at the failed command step (landed-green), skipping the wait step (wait-landed) that polls until checks settle. The change set was placed under m27-nebari-on-rhiza, like the plan-flake fix. One question (how a retry should wait for CI: a retry_at field, an engine rule inferring the wait, or green steps that poll) went to the arbiter, who decided retry-reopens-at-the-wait: a generic engine rule that reopens a retry at the wait step whose on.pass is the failed step. No owner words: the run was autonomous.",
+          "title": "Landed-green retry plan, autonomous"
+        },
+        "handle": "landed-green-retry-plan",
+        "id": "01M6XXH70ABSQH0W636MDP4WB8",
+        "key": null,
+        "kind": "source",
+        "node": "01M6XXH70ABSQH0W636M5GWRKD",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6XX4R8Q2PCHDTQS80XFSG9J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XXH734JGAB7ZHWKB125054",
+  "type": "ops",
+  "v": 1
+}

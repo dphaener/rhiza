@@ -11,8 +11,10 @@ package api
 // in-process, as before.
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -112,9 +114,29 @@ func shipActorFlags(ctx *Ctx) []string {
 func shipRunHead(ctx *Ctx, bin string, args ...string) ([]byte, error) {
 	out, err := ctx.Exec(bin, append(args, shipActorFlags(ctx)...), ctx.Root, nil)
 	if err != nil {
-		return nil, Errorf("ship: %s with the PR head's build: %v", args[0], err)
+		return nil, Errorf("ship: %s with the PR head's build: %s", args[0], headFailure(out, err))
 	}
 	return out, nil
+}
+
+// headFailure describes a failed head-build run: err (which carries the
+// exit status, and the child's stderr when it printed any), preceded by the
+// code and message of the {"error":{...}} body the child's --json printed
+// on standard output, when there is one.
+func headFailure(out []byte, err error) string {
+	var body struct {
+		Error struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(bytes.TrimSpace(out), &body) == nil && body.Error.Message != "" {
+		if body.Error.Code != "" {
+			return fmt.Sprintf("%s: %s: %v", body.Error.Code, body.Error.Message, err)
+		}
+		return fmt.Sprintf("%s: %v", body.Error.Message, err)
+	}
+	return err.Error()
 }
 
 // shipLandWith lands change set t.cs: with the head build bin when given,

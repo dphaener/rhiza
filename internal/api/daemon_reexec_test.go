@@ -86,10 +86,12 @@ func runDaemonTicks(t *testing.T, ctx *Ctx, n int, between func(tick int)) error
 }
 
 // daemonRepo is a repository with an empty model, so a poll starts
-// nothing, and the git common dir it reports.
+// nothing, and the git common dir it reports. Its ctx pins free disk (and
+// RHIZA_TEST_NOW, so the daemon binds no web listener).
 func daemonRepo(t *testing.T) (*Ctx, string) {
 	t.Helper()
 	ctx := testCtx(t.TempDir())
+	pinFreeBytes(ctx)
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
 		t.Fatal(err)
 	}
