@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WXS1SCK74EFYXSY4A1VZBW",
+  "after": [
+    "01M6WY5QRNEQ6W6FFYME9Q0K7V"
+  ],
+  "at": "2026-11-08T06:40:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Attempt 2, at d2a48274 (leaf commits 0fdec5a0 code and d2a48274, which widens dispatch-rules-file's statement and acceptance to allow [[schedules]]). Read the diff of internal/dispatch and ran `go test -trimpath -count=1 -v ./internal/dispatch/...`: TestSchedulesAbsent (empty and [request]-only content give no schedules; Load on a missing file returns Defaults(), which sets no Schedules), TestSchedulesRead (every+workflow and cron+command entries, defaults catch_up once / overlap skip, [request] read beside [[schedules]]) and TestSchedulesErrors (unknown key, duplicate name, every with cron, neither workflow nor command, bad cron, every 30s, catch_up all, overlap parallel each fail naming schedule \"s\" and the key; unknown table [other] still fails naming it) all PASS. `go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/dispatch-check$'` PASS: rhiza check passes on a .rhiza/dispatch.toml holding [request] and [[schedules]], and fails naming schedule \"intake\": every for every = 30s. make self-check reports only stale rendered files, no model problems."
+        },
+        "handle": "schedules-file-verified-2",
+        "id": "01M6WY6FANPT76JZKTANFZW7C8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WY6FANPT76JZKTAJ2XKXD0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WY6FANPT76JZKTAJ2XKXD0",
+        "id": "01M6WY6FPEF1Z4MTMPE1M262ZF",
+        "link": "01M6WY6FPEF1Z4MTMPE1CND7GK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HTZ9ZZ6PWNAJ739T6ASH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WY6G1QC7ZGZ6B7D4BYMTNN",
+  "type": "ops",
+  "v": 1
+}

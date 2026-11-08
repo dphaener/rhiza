@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WSQMY5Q33CWG319STSYPN4",
+  "after": [
+    "01M6WS4PR9MA2SA1GJMA6J3722"
+  ],
+  "at": "2026-11-08T05:35:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 089435ff, go test -trimpath ./internal/api -run TestScheduled -v passed all four scheduled tests, including TestScheduledRunWarnsOnMainCheckoutChange with subtests quiet, branch, commit and edit. quiet records no warning and writes nothing to the log. branch, commit and edit each end in state succeeded (the command's own status) with one warning in run.status Warnings and on stderr, naming 'branch from main to feature', 'HEAD from aaaa1111 to bbbb2222' and 'main.go' respectively. go test ./internal/run/... and TestScripts/describe-golden pass, and gofmt and vet are clean. From the diff: runScheduledStart snapshots the branch, HEAD and the hashes of uncommitted tracked files before and after runEngine; a change appends a journal entry of type warning, which State folds into Warnings and runInfo exposes. The run's state is never touched, and nothing is reverted or blocked."
+        },
+        "handle": "main-checkout-change-warning-verified",
+        "id": "01M6WTE8VMCZGBWCAWGRAC8J9C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WTE8VMCZGBWCAWGMP9Z1W5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WTE8VMCZGBWCAWGMP9Z1W5",
+        "id": "01M6WTE95817W42E4QDXGF0H6C",
+        "link": "01M6WTE95817W42E4QDT0GY15R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HVA0S11V8P7TJPCY6QH8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WTE9FZSPRSH7QXPNXFEJ8J",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WQG7GYAGFKGHCA1DNE60ZY",
+  "after": [
+    "01M6WRWQZD7JA07Y3S9BHNDDDT"
+  ],
+  "at": "2026-11-08T05:12:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 566ff696, read the diff and ran go test -trimpath -count=1 ./internal/api -run Scheduled and ./internal/run -run TestRunWithoutChangeSet: all pass. In a scratch repo, TestScheduledRunCommandAndWorkflow starts the command schedule intake and the repo-workflow schedule nightly (workflow tidy) with run start --schedule. Both succeed and are autonomous. Neither has a change set, worktree or branch in the started entry, and neither adds an entry to .rhiza/log. Both steps run with Dir set to the main checkout. The journal records trigger schedule and the schedule's name. run ls --json and run status --json show trigger and trigger_name with an empty change, and the run ls text says 'schedule intake'. The command's faked output reaches the run's stderr log. TestScheduledRunLeavesStepFails, on a schedule naming a copy of the built-in build workflow, and TestRunWithoutChangeSetFailsLeavesStep both fail the run with 'step \"build\" is a leaves step, which needs a change set', and no leaf starts. Unknown schedules and --workflow are refused. go vet and gofmt are clean, and the describe-golden testscript passes. In the full ./internal/api suite, 501 tests passed. Only TestReadBudget failed: the roadmap and ready read timings went over 50ms at VM load 25, a read path this diff does not touch. The suite then hit its timeout during TestLinkEndpointKinds."
+        },
+        "handle": "scheduled-run-verified",
+        "id": "01M6WS4PMEJQNP25X4KTC7H1SQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WS4PMEJQNP25X4KQXB7MKK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WS4PMEJQNP25X4KQXB7MKK",
+        "id": "01M6WS4PNVM18H2EFHZ153VD7Z",
+        "link": "01M6WS4PNVM18H2EFHYZN0E1N4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HV83HMQEQ15319XERHJ6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WS4PR9MA2SA1GJMA6J3722",
+  "type": "ops",
+  "v": 1
+}

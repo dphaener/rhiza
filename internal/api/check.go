@@ -546,6 +546,13 @@ func dispatchProblems(root string) []string {
 				dispatch.File, t.table, k, name, workflowsDir, strings.Join(workflow.BuiltinNames(), ", ")))
 		}
 	}
+	for _, sc := range rules.Schedules {
+		if sc.Workflow == "" || repoOrBuiltinWorkflow(root, sc.Workflow) {
+			continue
+		}
+		out = append(out, fmt.Sprintf("%s: schedule %q: workflow: names workflow %q, which is neither in %s nor built in (built-in: %s)",
+			dispatch.File, sc.Name, sc.Workflow, workflowsDir, strings.Join(workflow.BuiltinNames(), ", ")))
+	}
 	return out
 }
 

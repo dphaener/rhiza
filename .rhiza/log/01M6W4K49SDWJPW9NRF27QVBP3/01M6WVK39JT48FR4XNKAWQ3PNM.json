@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WTP8PCYPF543DZWJ5HYC7C",
+  "after": [
+    "01M6WTE9FZSPRSH7QXPNXFEJ8J"
+  ],
+  "at": "2026-11-08T05:55:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At bb9a5544 I read the diff (internal/api/daemon_schedules.go, daemon_projects.go, daemon.go) and ran go vet plus go test -trimpath -count=1 ./internal/api -run 'Schedul|TestDaemon'. All pass on a fake clock with a fake Detach and fake exec. TestDaemonPollStartsEachProjectsSchedule: one poll over two projects starts each project's due schedule. TestDaemonPollFiresSchedules: with maxRuns=1, one schedule starts and the other waits while the first run is journaled and live; when that run ends, the waiting schedule fires exactly once over two polls, makes no rex call, and logs 'started a run of schedule'. TestDaemonScheduleUnresolvedWorkflow: workflow 'gone' starts nothing, and 'schedule nightly not started' is logged once. TestDaemonScheduledRunFailureLogged: the detached run start --schedule of a 'false' command fails with no rex call, and the daemon log carries both the start and 'of schedule bad failed'. Scheduled starts go through daemonDetachNoRex, so they never reach ensureRepoSession or Rex. Inside the ~/code root, the package's root-state guard sometimes flagged .rhiza-root/usage.live.json, which live status lines rewrite; no test failed, and the same run passes cleanly in a clone outside the root."
+        },
+        "handle": "daemon-fires-schedules-verified",
+        "id": "01M6WVK2G3X8XRQCK3B678Y5FV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WVK2G3X8XRQCK3B59NAN84",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WVK2G3X8XRQCK3B59NAN84",
+        "id": "01M6WVK2YKVEQXYK0ZS9ZGCFYH",
+        "link": "01M6WVK2YKVEQXYK0ZS9W28H7M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HVM44MDKXV4ESTPX0KSX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WVK39JT48FR4XNKAWQ3PNM",
+  "type": "ops",
+  "v": 1
+}

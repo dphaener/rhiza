@@ -34,11 +34,17 @@ func TestWorkflowsText(t *testing.T) {
 			"rhiza workflow describe mine", "rhiza workflow check mine",
 			"rhiza run start --workflow mine --dry-run",
 		},
+		"schedules": {
+			"## Schedules", "[[schedules]]", "CRON_TZ", "catch_up", "overlap", "every", "cron",
+			"main checkout", "no change set", "as it found it",
+			"rhiza request", "rhiza health", "daemon log",
+		},
 		"outside input": {
 			"## Outside input", "bypassPermissions", "rhiza.autonomy.plan", "rhiza request",
 			"Rhiza cannot see", "permission_mode", "rhiza.autonomy.signoff",
 			"does not gate intake", "rhiza.daemon.permissionMode", "outside Rhiza",
-			"accept the plan", "plan workflow's steps",
+			"accept the plan", "plan workflow's steps", "Nothing is refused",
+			"narrow `rhiza.daemon.permissionMode`",
 		},
 	})
 	if strings.Contains(wf.Body+wf.Description, "Claude") {

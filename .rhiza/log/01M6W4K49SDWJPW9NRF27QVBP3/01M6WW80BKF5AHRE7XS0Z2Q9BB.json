@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WW51N9TSX6KDVPCHEXX0DM",
+  "after": [
+    "01M6WW1FMHKPADT9N3HR15VGRZ"
+  ],
+  "at": "2026-11-08T06:06:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 05d571ac ran go test -trimpath -count=1 -v ./internal/guide/...: all tests PASS, including TestWorkflowsText, whose new schedules group requires '## Schedules', [[schedules]], CRON_TZ, catch_up, overlap, every, cron, 'main checkout', 'no change set', 'as it found it', rhiza request, rhiza health and daemon log, and the size checks TestCaps (workflows 800 tokens, cap 800), TestCapCatchesOversize and TestTokens. Read the diff from 98589c61~1: the Schedules section matches internal/dispatch (keys name, every, cron, workflow, command, catch_up once|skip, overlap skip|queue) and internal/schedule (MinEvery 1m, five-field cron with leading CRON_TZ=<zone>, else UTC). Attempt 1's finding f1 is fixed: Outside input again says 'Nothing is refused.' and lists 'narrow rhiza.daemon.permissionMode or permission_mode on the plan workflow's steps', and the test now checks both phrases. The bytes came from trimming Files/Step kinds/Targets/Dispatch wording; the points the workflow-guide-topic and dispatch-guide-topic capabilities require (resolution layers, every step kind, done/failed, includes, the workflow loop commands, both dispatch tables, defaults, ready order, workflow-unresolved skip) remain. The fix commit stages only its builder's actor record."
+        },
+        "handle": "schedules-guide-topic-verified",
+        "id": "01M6WW7ZVA9ZG7Z3RRJMT3NJCX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WW7ZVA9ZG7Z3RRJHG1FXRN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WW7ZVA9ZG7Z3RRJHG1FXRN",
+        "id": "01M6WW801WHB1GMDZ8YDXPMAVM",
+        "link": "01M6WW801WHB1GMDZ8YB1AQ5E6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HWFGG153SAAWP0XEK7JT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WW80BKF5AHRE7XS0Z2Q9BB",
+  "type": "ops",
+  "v": 1
+}

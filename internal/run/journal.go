@@ -85,6 +85,9 @@ const (
 	// TypeDaemonResumed records that the daemon resumed the run, which it
 	// does once.
 	TypeDaemonResumed = "daemon-resumed"
+	// TypeWarning records a warning on the run: Detail says what. It never
+	// changes the run's state or result, and may follow the finished entry.
+	TypeWarning = "warning"
 )
 
 // Sign-off outcomes, a signoff entry's Outcome.
@@ -219,7 +222,15 @@ type Started struct {
 	// Plan is true for a run started with --new (a request's plan run),
 	// whatever workflow it runs.
 	Plan bool `json:"plan,omitempty"`
+	// Trigger is what started a run that has no change set: TriggerSchedule.
+	// TriggerName names the schedule. Both are empty for a change set's run.
+	Trigger     string `json:"trigger,omitempty"`
+	TriggerName string `json:"trigger_name,omitempty"`
 }
+
+// TriggerSchedule is the Started.Trigger of a run a [[schedules]] entry
+// started.
+const TriggerSchedule = "schedule"
 
 // Block is what a blocked agent step waits on: the kind of block and the
 // question, as the session's blocked report gave them, and the tab its
@@ -325,6 +336,8 @@ type Block struct {
 //	           started or was resumed; the latest process entry wins)
 //	daemon-resumed: Detail (the daemon opened a tab running rhiza run
 //	           resume on the run; it does so once)
+//	warning:   Detail (a warning on the run; the run's state is untouched,
+//	           and the entry may come after the run finished)
 //	signoff:   Step, Visit, Actor, Rule (owner or autonomous), Outcome (approved
 //	           or changes), Findings (signoff step Step's visit Visit was
 //	           signed off: approved, or with changes, the owner's findings,
@@ -1020,12 +1033,16 @@ type Retry struct {
 
 // State is a journal folded.
 type State struct {
-	ID             string
-	Workflow       string
-	Pick           string
-	Change         string
-	Title          string
-	Worktree       string
+	ID       string
+	Workflow string
+	Pick     string
+	Change   string
+	Title    string
+	Worktree string
+	// Trigger and TriggerName are the started entry's: a scheduled run has
+	// a trigger and no change set.
+	Trigger        string
+	TriggerName    string
 	PermissionMode string
 	Agent          string
 	Definition     string
@@ -1153,6 +1170,8 @@ type State struct {
 	// DaemonResumedAt is when.
 	DaemonResumed   bool
 	DaemonResumedAt time.Time
+	// Warnings are the run's warning entries' details, in order.
+	Warnings []string
 	// StoppedAt is when the last stopped entry was journalled, and EndedAt
 	// when the finished entry was; zero while there is none.
 	StoppedAt time.Time
@@ -1318,6 +1337,8 @@ func (j Journal) State() State {
 				st.Workflow = s.Workflow
 				st.Pick = s.Pick
 				st.Change = s.Change
+				st.Trigger = s.Trigger
+				st.TriggerName = s.TriggerName
 				st.Title = s.Title
 				st.Worktree = s.Worktree
 				st.PermissionMode = s.PermissionMode
@@ -1337,6 +1358,8 @@ func (j Journal) State() State {
 			}
 		case TypeDaemonResumed:
 			st.DaemonResumed, st.DaemonResumedAt = true, e.At
+		case TypeWarning:
+			st.Warnings = append(st.Warnings, e.Detail)
 		case TypeEntered:
 			st.Visits[e.Step]++
 			st.Current = e.Step

@@ -1,0 +1,29 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6WZ99535TYS198CZAVEA88R"
+  ],
+  "at": "2026-11-08T07:29:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (unreal-depends-on on schedules-guide-topic): schedules-guide-topic depends-on main-checkout-change-warning, but the guide only states the convention that a schedule should leave the main checkout as it found it. Its statement and acceptance never mention the warning, and writing the workflows topic needs none of that leaf's code. Its depends-on schedules-file is enough. The critic confirmed it: schedules-guide-topic's statement and acceptance document the convention that a scheduled run should leave the main checkout as it found it, and never mention the warning main-checkout-change-warning records. Writing that guide text needs none of that leaf's code (the comparison of branch, HEAD and tracked changes at run end). The depends-on on schedules-file covers the keys the topic documents, so the link to main-checkout-change-warning is unreal. How should it be settled?"
+        },
+        "handle": "review-01m6w4k1-sched-r3-f1",
+        "id": "01M6W6KPTEX7QHZCPMD3XTY0X9",
+        "key": null,
+        "kind": "question",
+        "node": "01M6W6KPTEX7QHZCPMD01P63EN",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6X0ZMRK1SK1QM17TCYQ9D1M",
+  "type": "ops",
+  "v": 1
+}

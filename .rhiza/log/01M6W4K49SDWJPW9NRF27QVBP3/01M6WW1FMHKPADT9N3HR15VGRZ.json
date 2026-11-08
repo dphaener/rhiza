@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WVXZJEN2F8A1ZM1XKW5MTJ",
+  "after": [
+    "01M6WVK39JT48FR4XNKAWQ3PNM"
+  ],
+  "at": "2026-11-08T06:02:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b6d10bd3 (attempt 2) ran go test -trimpath ./internal/api -run TestHealthSchedulesPart -v -count=1: all five subtests pass — no schedules has no schedules part; a not-yet-run schedule is ok with 'none yet' and 'next run 2026-11-08T11:00:00Z'; a failed last run warns with next 'rhiza run log <id>'; a run that moved HEAD warns naming the main checkout; no daemon warns. Each subtest now runs the health op through schedHealth, which requires ExitCode()==0 and the schedules part never bad, on a fixture rendered so rhiza check passes (fixing attempt 1's finding f1). Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(describe-golden|health.*)$' -count=1: pass; describe-golden carries the new schedules part enum value. Read the diffs of a2ec10f4 and b6d10bd3: the fix commit changes only the test and stages the builder's own actor record."
+        },
+        "handle": "health-schedules-part-verified",
+        "id": "01M6WW1F2VV82H2P1N6ZZ6DDKG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WW1F2VV82H2P1N6ZHFQQEV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WW1F2VV82H2P1N6ZHFQQEV",
+        "id": "01M6WW1FC2HVW6KZ4MTXP8C23P",
+        "link": "01M6WW1FC2HVW6KZ4MTWATRR7S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HW3CJ9HJ6KKRS7G4CJXC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WW1FMHKPADT9N3HR15VGRZ",
+  "type": "ops",
+  "v": 1
+}
