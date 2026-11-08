@@ -1,0 +1,31 @@
+{
+  "actor": "01M6WH50SHHAY4B6YMCQGXKQB3",
+  "after": [
+    "01M6WGXAATT0Z2C2K6M1MEAX2A"
+  ],
+  "at": "2026-11-08T02:53:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Intent: milestone-29's statement is one root daemon building every project under one run cap on one machine, and this failure came from ~5 concurrent agents on the 4-core VM under that daemon; the previous fix of this kind served milestone-29 directly, and milestone-30 is about README, docs and MIT. Linking a milestone also keeps the change set schedulable while SkipNoMilestone (internal/api/daemon.go:1181) still skips milestone-less work. Stopping it: the asker searched gosweep (TempMaxAge 2h on top-level mtime, internal/gosweep/gosweep.go:19), cron, timers, tmpfiles and transcripts and found nothing; I also checked that the daemon's sweep under the test clock (2026-10-24, before real time) cannot judge a fresh folder stale, and that daemon-trims-go-cache.txtar points TMPDIR at $WORK. Without a culprit, a further hunt has no clear end, while a per-run GOTMPDIR outside TMPDIR removes the whole class of shared-TMPDIR deleters at once; the runs directory (run.Dir, internal/run/store.go:38-40) is shared by every run and holds one <run id>.jsonl journal each, with no per-run folder, so the leaf adds a <run id>/ folder beside the journal; Store's listing (internal/run/store.go:178-191) skips directories and non-.jsonl names, so that folder is never read as a run, and it sits on the repo's filesystem where nothing sweeps it. Retry: step commands are arbitrary shell from workflows (stepRunner.Command, internal/api/run.go:1690) and the engine is generic for any repo, so a Go-specific signature belongs beside the runner that already captures the output tail, not in internal/run; retrying exactly once matches the change set's intent and avoids masking a real, repeating failure.",
+          "statement": "(1) The change set serves milestone-29, like the last bug fix (Fix Review question handles): the failure is the root daemon building several runs at once on one machine, which is milestone 29's promise; milestone 30 (sharing Rhiza publicly) has nothing to do with it. (2) With no deleter found, stop it by isolation rather than by hunting: every process a run starts (command, wait and agent steps) gets GOTMPDIR set to a folder of that run's own outside the shared TMPDIR, at <git common dir>/rhiza/runs/<run id>/gotmp: a new <run id>/ folder the leaf creates beside the run's <run id>.jsonl journal in the runs directory every run shares (run.Dir), created when a step starts and removed when the run ends; nothing that sweeps ~/tmp by prefix or age (gosweep, tmpsweep, a test's TestMain, an agent's cleanup) can reach a live $WORK there. gosweep keeps sweeping TMPDIR unchanged. (3) The retry lives in the step runner's Command (internal/api/run.go stepRunner.Command), not in the run engine: when a command step exits non-zero and its output matches go's vanished-$WORK signature (open $WORK/<bNNN>/... : no such file or directory), it reruns the command once, writing one stderr line that says so, and the second result stands. The signature match is a small pure function with unit tests; the engine stays language-agnostic.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "go-work-vanish-fix-shape",
+        "id": "01M6WGVSGYDDRYDWFFPYEHE2DC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6WGVSGYDDRYDWFFPX7JKVPC",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6WGEPSYWV8R14VGKJX9GGJM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WH79QJ6M9Q8QMYZV250NFC",
+  "type": "ops",
+  "v": 1
+}

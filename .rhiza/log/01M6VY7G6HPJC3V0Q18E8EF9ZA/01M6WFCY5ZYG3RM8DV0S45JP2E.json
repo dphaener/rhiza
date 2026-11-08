@@ -1,0 +1,29 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6WDA5NGRCG2C88EJS4E1TFR"
+  ],
+  "at": "2026-11-08T02:22:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on change-set-records-dispatch): The leaf has a change set 'record its kind' (feature, bug, milestone) and its acceptance checks 'kind bug' and 'kind feature' in change show --json. But a change set already has a kind with another meaning: changeset.Kind is intention or record (internal/changeset/body.go:66-77), `rhiza change new --kind` takes intention|record (internal/api/change.go:63), and change show --json already prints \"kind\": \"intention\"/\"record\". As written, the new field collides with or overwrites the existing one, and a milestone request's change set would need kind both 'record' and 'milestone'. The leaf (and decision workflow-dispatch-rules-file, 'rhiza change show shows the change set's recorded kind') should name a distinct field, e.g. request_kind, in the open entry and in change show. The critic confirmed it: A change set already has a kind with another meaning: changeset.Kind is intention|record (internal/changeset/body.go:66-77), change new --kind takes intention|record (internal/api/change.go:63) and change show --json prints \"kind\" from c.Open.Kind (change.go:220,304). change-set-records-dispatch says the change set 'records its kind' and its acceptance reads 'kind bug'/'kind feature' in change show --json, so the new field collides with the existing one (a milestone request's change set is kind record). The leaf and decision workflow-dispatch-rules-file need a distinct field name. How should it be settled?"
+        },
+        "handle": "review-01m6vy7e-dispatch-r3-f1",
+        "id": "01M6VZP9EAZX6GB0QF2VXYQ2GG",
+        "key": null,
+        "kind": "question",
+        "node": "01M6VZP9EAZX6GB0QF2R2WHCXP",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6WFCY5ZYG3RM8DV0S45JP2E",
+  "type": "ops",
+  "v": 1
+}

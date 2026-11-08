@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W7C34A4FF11G7HFCQT08D2",
+  "after": [
+    "01M6W7BBH40ZHJCY65PKYZNX62"
+  ],
+  "at": "2026-11-08T00:02:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 09b17f17 ran go test -trimpath -count=1 ./internal/guide/...: ok (TestWorkflowsText's 'outside input' case checks ## Outside input, bypassPermissions, rhiza.autonomy.plan, rhiza request, 'Rhiza cannot see', permission_mode, rhiza.autonomy.signoff, plus 'does not gate intake', rhiza.daemon.permissionMode, 'outside Rhiza', 'accept the plan', \"plan workflow's steps\"; the guide's existing size checks pass in the same run). Built the commit and read `rhiza guide workflows`: the Outside input section says the warning means a request's text and --ref reach an autonomous bypassPermissions workflow, every queued request counts, Rhiza cannot see what a scheduled rhiza request sends, nothing is refused; per decision outside-input-plan-owner-not-intake it states plan owner does not gate intake (planned at once under rhiza.daemon.permissionMode, owner only accepts the plan) and lists the mitigations: intake gated by people outside Rhiza, narrower rhiza.daemon.permissionMode or permission_mode on the plan workflow's steps, plan owner and signoff owner for what runs after. This fixes attempt 1's finding f1. The fix commit stages only its builder's own actor record."
+        },
+        "handle": "workflows-guide-outside-input-verified",
+        "id": "01M6W7DSNGXYW7WNX7CWMSJY5N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W7DSNGXYW7WNX7CWK2JZV0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W7DSNGXYW7WNX7CWK2JZV0",
+        "id": "01M6W7DSPX479HMC2NZDP7X3ZA",
+        "link": "01M6W7DSPX479HMC2NZANPJXST",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZN88P5XT2RXYH35YRVMZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K4DRTKBAFVPG4BC7TV51",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W7DSR89157TCARA83CD8M8",
+  "type": "ops",
+  "v": 1
+}

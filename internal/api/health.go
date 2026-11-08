@@ -232,7 +232,11 @@ func healthDaemon(ctx, home *Ctx, all bool) HealthPart {
 }
 
 // healthAutonomy lists the autonomy settings and whether the daemon is
-// paused, which is warn.
+// paused, which is warn. It is also warn, never bad, while any workflow is
+// on the request-exposed list: outside text reaches its agents with no
+// permission checks. Each such workflow gets a detail line, and Next points
+// at the workflows guide unless the daemon is paused, which keeps its Next.
+// Each workflow's own autonomy declarations are detail lines too.
 func healthAutonomy(ctx *Ctx, settings []Setting, err error) HealthPart {
 	if err != nil {
 		return HealthPart{Part: HealthAutonomy, State: HealthBad, Summary: err.Error(), Next: "rhiza daemon settings"}
@@ -247,6 +251,14 @@ func healthAutonomy(ctx *Ctx, settings []Setting, err error) HealthPart {
 	}
 	p.Summary = strings.Join(stages, ", ")
 	p.Detail = append(p.Detail, healthWorkflowAutonomy(ctx)...)
+	if exposed := requestExposedWorkflows(ctx, settings); len(exposed) > 0 {
+		p.State = HealthWarn
+		p.Summary += "; outside text reaches agents with no permission checks"
+		for _, e := range exposed {
+			p.Detail = append(p.Detail, ExposureDetail(e))
+		}
+		p.Next = "rhiza guide workflows"
+	}
 	if settingValue(settings, "rhiza.daemon.paused") == "true" {
 		p.State = HealthWarn
 		p.Summary = "daemon paused; " + p.Summary

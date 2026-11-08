@@ -1,0 +1,30 @@
+{
+  "actor": "01M6WGFVEZYTBNN6B4BTBT0PCH",
+  "after": [
+    "01M6WGEPSYWV8R14VGKMBAMZXG"
+  ],
+  "at": "2026-11-08T02:45:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "457efc88-a06a-4e5e-afa5-01a1b907c681",
+          "statement": "Fix A Go build inside a run serves no intent yet. The last bug fix (Fix Review question handles) served milestone-29 directly; milestone 30 is about sharing Rhiza publicly. Which should this change set serve? / No code was found that deletes a fresh ~/tmp/go-build* folder: gosweep needs a 2h-old top-level mtime (this WORK lived 32s, 00:20:00-00:20:32Z), and no cron, timer, tmpfiles rule or agent transcript removed one. How should the change set stop it? / Where should the retry on go's vanished-$WORK failure live?"
+        },
+        "handle": "question-457efc88-1",
+        "id": "01M6WGRE5F081ZYEVZHR76EPM9",
+        "key": null,
+        "kind": "question",
+        "node": "01M6WGRE5F081ZYEVZHNMY0DZ3",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6WGEPSYWV8R14VGKJX9GGJM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WGRG8BWC8KZVZYVEMTSD77",
+  "type": "ops",
+  "v": 1
+}

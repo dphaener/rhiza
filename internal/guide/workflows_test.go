@@ -25,10 +25,20 @@ func TestWorkflowsText(t *testing.T) {
 		"layers":   {"$XDG_CONFIG_HOME/rhiza/workflows/<name>.toml", ".rhiza/workflows/<name>.toml", "built-in"},
 		"targets":  {"`done` and `failed`", "max_visits"},
 		"includes": {"skip = [steps]", "<workflow>/<step>"},
+		"dispatch": {
+			".rhiza/dispatch.toml", "[request]", "[ready]", "rhiza request --workflow",
+			"feature", "bug", "milestone", "ship-change", "workflow-unresolved",
+		},
 		"loop": {
 			"rhiza workflow ls", "rhiza workflow new mine --from ship-change",
 			"rhiza workflow describe mine", "rhiza workflow check mine",
 			"rhiza run start --workflow mine --dry-run",
+		},
+		"outside input": {
+			"## Outside input", "bypassPermissions", "rhiza.autonomy.plan", "rhiza request",
+			"Rhiza cannot see", "permission_mode", "rhiza.autonomy.signoff",
+			"does not gate intake", "rhiza.daemon.permissionMode", "outside Rhiza",
+			"accept the plan", "plan workflow's steps",
 		},
 	})
 	if strings.Contains(wf.Body+wf.Description, "Claude") {

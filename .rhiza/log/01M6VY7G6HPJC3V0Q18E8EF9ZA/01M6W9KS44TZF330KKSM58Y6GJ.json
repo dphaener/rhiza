@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W9D4PG8EC4PYK7FK6GZMNM",
+  "after": [
+    "01M6W8JQN0PZKNNNBSPVQCSKPW"
+  ],
+  "at": "2026-11-08T00:40:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 424d4a80 (attempt 2), ran go test -trimpath -count=1 -v ./internal/dispatch/...: TestDefaultsWhenNoFile (no file gives plan for every request kind and ship-change for every ready kind), TestReadyBugOnly (a file setting only [ready] bug changes only that pick; every other pick stays default) and TestParseErrors (unknown table [other]; unknown key [request] chore; non-string [ready] bug = 3; path-like a/b, x.toml and empty values; each error names the table and key) all PASS. The new case [ready] milestone = \"x\" fails with '[ready] unknown key \"milestone\": want one of feature, bug', which closes compliance finding f1 under decision dispatch-ready-no-milestone-key. Read the diff: Parse checks keys against TableKinds(table) (ReadyKinds = feature, bug for [ready]); ForReady falls back to ship-change for a kind [ready] cannot name; check.go's dispatchProblems loops over TableKinds. go test -trimpath ./cmd/rhiza -run 'TestScripts/dispatch' passed (ok, 125s), and go vet on internal/dispatch and internal/api is clean."
+        },
+        "handle": "dispatch-rules-file-verified-2",
+        "id": "01M6W9KRWCN38EJVRJEJHZYNJR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W9KRWCN38EJVRJEFV60VQB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W9KRWCN38EJVRJEFV60VQB",
+        "id": "01M6W9KRZQ1EA688EW9Q90PNDY",
+        "link": "01M6W9KRZQ1EA688EW9MTJXXEM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTACHSRCG9FCR50S9S8JB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W9KS44TZF330KKSM58Y6GJ",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,83 @@
+{
+  "actor": "01M6WGFVEZYTBNN6B4BTBT0PCH",
+  "after": [
+    "01M6WGWZSRGQ1PMNWZ4SSJMTF4"
+  ],
+  "at": "2026-11-08T02:48:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6WGEPSYWV8R14VGKJX9GGJM",
+        "id": "01M6WGXA32MF3DYK01TW3M5R18",
+        "link": "01M6WGXA32MF3DYK01TSCS2BX8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN3786W5DAVS69HMZ28RD9",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6WGVSGYDDRYDWFFPX7JKVPC",
+        "id": "01M6WGXA4PTDS8HXJKVYNPCVAZ",
+        "link": "01M6WGXA4PTDS8HXJKVYM8T3JW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WGWZRXF2F1D4FFJT7970RC",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests in internal/run (and internal/api where the step runner builds the env) show a command, a wait and an agent step each get GOTMPDIR=<git common dir>/rhiza/runs/<run id>/gotmp, the folder exists when the step's process starts, and it is gone after the run finishes, fails or is abandoned; go test -trimpath ./internal/run/... ./internal/api/... -run for those tests passes",
+          "statement": "Every process a run starts (command, wait and agent steps) runs with GOTMPDIR set to the run's own folder <git common dir>/rhiza/runs/<run id>/gotmp, created when a step starts and removed when the run ends, so no sweep of the shared TMPDIR can remove a live go build's $WORK"
+        },
+        "handle": "run-private-gotmpdir",
+        "id": "01M6WGXA5QZV54A91F08YWYSTD",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M6WGXA5QZV54A91F061Y3KNQ",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M6WGXA5QZV54A91F061Y3KNQ",
+        "id": "01M6WGXA6G6PZSMSCMFWC0KAY6",
+        "link": "01M6WGXA6G6PZSMSCMFTVKK22A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WGVSGYDDRYDWFFPX7JKVPC",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A table test of the pure signature match accepts the 'could not import io (open $WORK/b033/_pkg_.a: no such file or directory)' and \"can't create $WORK/b094/_pkg_.a: open $WORK/b094/_pkg_.a: no such file or directory\" lines and rejects other failures (a compile error, a missing file outside $WORK); a stepRunner.Command test in internal/api with a command that fails with the signature once then passes returns exit 0 after one rerun and one stderr line, one that fails with it twice returns the second failure, and one that fails otherwise is not rerun",
+          "statement": "A command step that exits non-zero with go's vanished-$WORK signature (open $WORK/<bNNN>/...: no such file or directory) is rerun once by the step runner, which writes one stderr line saying so, and the second result stands"
+        },
+        "handle": "step-retry-vanished-go-work",
+        "id": "01M6WGXA821QDFHM5T4PT97DAM",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M6WGXA821QDFHM5T4K3G3P2Q",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M6WGXA821QDFHM5T4K3G3P2Q",
+        "id": "01M6WGXA9F8H6YQ7NH5SNPXVQF",
+        "link": "01M6WGXA9F8H6YQ7NH5R6M04HT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WGVSGYDDRYDWFFPX7JKVPC",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6WGEPSYWV8R14VGKJX9GGJM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WGXAATT0Z2C2K6M1MEAX2A",
+  "type": "ops",
+  "v": 1
+}

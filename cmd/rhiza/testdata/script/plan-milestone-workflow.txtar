@@ -29,7 +29,7 @@ stdout '"source": "workflow"'
 exec rhiza request 'Ship v3' --kind milestone
 exec rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout '^Started the plan run of request '
-exec sh -c 'grep -c "run start --foreground --workflow plan-milestone --new Ship v3 .* --milestone" $WORK/detach.log'
+exec sh -c 'grep -c "run start --foreground --workflow plan-milestone --pick default --new Ship v3 .* --milestone" $WORK/detach.log'
 ! grep 'autonomous' $WORK/detach.log
 
 # A repo plan-milestone.toml declaring autonomous = true starts it
@@ -49,7 +49,7 @@ mkdir .rhiza/workflows
 cp $WORK/own.toml .rhiza/workflows/plan-milestone.toml
 exec rhiza request 'Ship v4' --kind milestone
 exec rhiza daemon --permission-mode manual --max-runs 1 --once
-exec sh -c 'grep -c "run start --foreground --workflow plan-milestone --new Ship v4 .* --autonomous" $WORK/detach2.log'
+exec sh -c 'grep -c "run start --foreground --workflow plan-milestone --pick default --new Ship v4 .* --autonomous" $WORK/detach2.log'
 
 -- own.toml --
 name = "plan-milestone"

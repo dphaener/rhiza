@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W9Y1K5HJ2EBH6XASZTT7E2",
+  "after": [
+    "01M6W9KYEV8PMMVTJ3CX316AXB"
+  ],
+  "at": "2026-11-08T00:59:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 77a481ff (attempt 2, fixing quality f1 / model f2). I read the diff: readyPick's dispatch.Load error now flows out of startWorkflowOfRef as an error, so runRunStart fails instead of falling back to ship-change. daemonUnresolvedReady now skips such a candidate as workflow-unresolved, with the load error in its detail, instead of keeping it for a default start. An explicit --workflow still never reads the file. I ran go test -trimpath ./internal/api with -run TestReadyWorkflowOrder (recorded over rule over ship-change), TestStartWorkflowExplicitWins (explicit over all), TestRunStartExplicitWorkflowOverRule, TestDaemonSkipsReadyWithUnresolvedWorkflow, TestDaemonSkipsReadyWithUnloadableDispatch (new), TestDaemonSkipsRequestWithUnresolvedWorkflow, TestDaemonStartsRequestWithDispatchedWorkflow and TestRunStartWorkflowRefusals: all PASS. The package's TestMain guard then reported .rhiza-root/usage.live.json changed. That file is the live root daemon's: it changed at 00:59:10 with no test running, so the report is environmental. The whole-package run hit Go's 600s timeout at VM load ~11, and CI's make check covers it. I ran go test -trimpath ./internal/dispatch/...: ok. I ran go test -trimpath ./cmd/rhiza -run TestScripts/(run-start-ready-dispatch|dispatch-check): both PASS. run-start-ready-dispatch shows run start --dry-run on a bug change set: with no dispatch file it falls to ship-change; with [ready] bug = \"bugfix\" it prints Workflow: bugfix; with --workflow other it prints other; with an unloadable dispatch.toml it fails naming dispatch.toml, not ship-change."
+        },
+        "handle": "ready-trigger-dispatch-verified-2",
+        "id": "01M6WAPD086Z0N97VF31NNYXWQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WAPD086Z0N97VF304Z8GPK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WAPD086Z0N97VF304Z8GPK",
+        "id": "01M6WAPD2H4MGXT6M11KAEYH3Z",
+        "link": "01M6WAPD2H4MGXT6M11GVSS17H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAW1NNHC09NTGF6RPVKS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WAPD5PM2CNDF1JJ3X6BZNZ",
+  "type": "ops",
+  "v": 1
+}

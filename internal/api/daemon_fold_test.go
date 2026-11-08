@@ -313,7 +313,7 @@ func TestDaemonPollCacheInvalidates(t *testing.T) {
 	idle("pick")
 
 	// The daemon starts a run.
-	if err := daemonStart(f.ctx, late1, false, ""); err != nil {
+	if err := daemonStart(f.ctx, nil, late1, false, ""); err != nil {
 		t.Fatal(err)
 	}
 	if n := readsNext(); n == 0 {

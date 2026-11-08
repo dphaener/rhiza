@@ -1,0 +1,224 @@
+{
+  "actor": "01M6W81TWZCQW9HD9TQT3MNDBW",
+  "after": [
+    "01M6W7ZDET6AE8TDHH44A7JRN7"
+  ],
+  "at": "2026-11-08T00:22:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at 75f0a821, built binary in a scratch Rhiza root (fake rex on PATH, one-step command workflows, RHIZA_* unset): rhiza check with .rhiza/dispatch.toml: unknown table [reqest] fails 'unknown table [reqest]: want [request] or [ready]'; [request] chore fails 'unknown key \"chore\"'; bug = 3 fails 'want a workflow name as a string, got int64'; bug = \"../x\" fails 'not a bare workflow name'; a broken TOML fails naming the line. With no file, run start --dry-run picks ship-change (default) and the daemon starts requests with plan (picked by default). But [ready] milestone = \"bugfix\" passes rhiza check (ok), against decision dispatch-ready-no-milestone-key, which makes it an unknown-key error."
+        },
+        "handle": "dispatch-rules-file-qa-1",
+        "id": "01M6W8JJBM56DT3GDVVDA1V2K9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W8JJBM56DT3GDVV9FE4J4P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W8JJBM56DT3GDVV9FE4J4P",
+        "id": "01M6W8JJJXNP4YQNNDFFB5GH37",
+        "link": "01M6W8JJJXNP4YQNNDFDBAVA2F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTACHSRCG9FCR50S9S8JB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 75f0a821, built binary in a scratch Rhiza root (fake rex on PATH, one-step command workflows, RHIZA_* unset): rhiza check passes with no dispatch file, with [request] bug naming the repo workflow .rhiza/workflows/bugfix.toml and with [ready] bug = ship-change (built in). It fails (exit 1) for [request] bug = \"nothing\" with 'fail dispatch .rhiza/dispatch.toml: ... request.bug names workflow \"nothing\", which is neither in .rhiza/workflows nor built in', and for [ready] bug = \"pers\" where pers exists only in $XDG_CONFIG_HOME/rhiza/workflows ('ready.bug names workflow \"pers\"'), so the personal layer is not read."
+        },
+        "handle": "dispatch-rules-check-qa-1",
+        "id": "01M6W8JK18DNGZY33A730G523P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W8JK18DNGZY33A72FMKA73",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W8JK18DNGZY33A72FMKA73",
+        "id": "01M6W8JKAF7TD0BY9Y1XNKPXSV",
+        "link": "01M6W8JKAF7TD0BY9Y1XFWQM5E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAG5STEEVHYYJ6V971SN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 75f0a821, built binary in a scratch Rhiza root (fake rex on PATH, one-step command workflows, RHIZA_* unset): rhiza request 'Crash on empty input' --kind bug --workflow bugfix queued it; request ls --json shows \"workflow\":\"bugfix\" and the text output shows '[workflow bugfix]'; a plain request has no workflow field. request --workflow nothing-here exits 2 ('there is no such workflow in .rhiza/workflows, your personal workflows or built in') and queues nothing."
+        },
+        "handle": "request-workflow-flag-qa-1",
+        "id": "01M6W8JKDNP3NEN3HYVEM9Q99Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W8JKDNP3NEN3HYVC31DHJ8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W8JKDNP3NEN3HYVC31DHJ8",
+        "id": "01M6W8JKJC85NC9C45H29CT0JM",
+        "link": "01M6W8JKJC85NC9C45H1H78E8Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAMKNBD6G38RFW88RFB7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 75f0a821, built binary in a scratch Rhiza root (fake rex on PATH, one-step command workflows, RHIZA_* unset): rhiza change new gives change show --json kind intention, request_kind feature, workflow null, and text '- Request kind: feature' with no Workflow line. The bug request queued with --workflow bugfix, claimed by daemon --once and run by the logged run start --foreground --new ... --request, opened 'Fix Crash on empty input' with request_kind bug and workflow bugfix (text: 'Request kind: bug', 'Workflow: bugfix'). A milestone request's run opened a record change set with request_kind milestone and no workflow. rhiza check stays ok."
+        },
+        "handle": "change-set-records-dispatch-qa-1",
+        "id": "01M6W8JKVY5G80KVNTEE2VMPVD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W8JKVY5G80KVNTEABM3CW1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W8JKVY5G80KVNTEABM3CW1",
+        "id": "01M6W8JMBFHYTH3G02K835822Z",
+        "link": "01M6W8JMBFHYTH3G02K5D6JSQP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAJBDW1YH8D7Y1XGCK76",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 75f0a821, built binary in a scratch Rhiza root (fake rex on PATH, one-step command workflows, RHIZA_* unset): With [request] bug = \"other\", daemon --once logged 'starting the plan run of request ... with workflow other (picked by rule request.bug)' and detached 'run start --foreground --workflow other --pick rule request.bug --new ... --request ...', which ran to succeeded. Feature requests in the same polls started with plan (picked by default). With [request] milestone = \"other\" and daemon --autonomous --permission-mode bypass, the milestone request started as '--workflow other ... --milestone' with no --autonomous, and its run opened a record change set."
+        },
+        "handle": "request-trigger-dispatch-qa-1",
+        "id": "01M6W8JMT8HFGQRQ7A20G5A9QQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W8JMT8HFGQRQ7A20AJ0ZDE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W8JMT8HFGQRQ7A20AJ0ZDE",
+        "id": "01M6W8JMZFMQZATVVY2SS7Y5WB",
+        "link": "01M6W8JMZFMQZATVVY2RAAT8C5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTARWAQRW1FDT2AKAFZQA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 75f0a821, built binary in a scratch Rhiza root (fake rex on PATH, one-step command workflows, RHIZA_* unset): run start --dry-run --json: the bug change set whose request recorded workflow bugfix picks bugfix (pick request) even with [ready] bug = \"other\"; --workflow plan wins (pick explicit); a feature change set with [ready] feature = \"other\" picks other (rule ready.feature); with no dispatch file it picks ship-change (default), and the text output shows 'Workflow: ship-change' / 'Picked by: default'. After the recorded bugfix workflow file was removed, run start on that change set exits 2 'no workflow \"bugfix\"' and does not fall back."
+        },
+        "handle": "ready-trigger-dispatch-qa-1",
+        "id": "01M6W8JN8PKB03BTE7DYWMPMNA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W8JN8PKB03BTE7DXZ4Q4EK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W8JN8PKB03BTE7DXZ4Q4EK",
+        "id": "01M6W8JNHMH25WEV87K96V7BCC",
+        "link": "01M6W8JNHMH25WEV87K8TZ5WE8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAW1NNHC09NTGF6RPVKS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 75f0a821, built binary in a scratch Rhiza root (fake rex on PATH, one-step command workflows, RHIZA_* unset): run ls shows 'succeeded other (rule request.bug)' and 'succeeded other (rule request.milestone)' for the real runs; run start --json carries \"pick\" (rule request.bug, rule request.milestone), and dry runs show request, explicit, rule ready.feature and default. The daemon's start log lines name the workflow and the pick ('with workflow other (picked by rule request.bug)')."
+        },
+        "handle": "run-records-dispatch-qa-1",
+        "id": "01M6W8JNPA0PZ8JNC373HND8XV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W8JNPA0PZ8JNC3708D2A8F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W8JNPA0PZ8JNC3708D2A8F",
+        "id": "01M6W8JNZ527EVXKXKWQTQEG2E",
+        "link": "01M6W8JNZ527EVXKXKWQSR4MVX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTB1Y3D4W01CFE712D6TD",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 75f0a821, built binary in a scratch Rhiza root (fake rex on PATH, one-step command workflows, RHIZA_* unset): With [request] bug = \"ghost\" (no such workflow), daemon --once started no run for the 'Ghost bug' request and still started the other queued feature requests in the same poll. daemon status shows 'Skipped: request ... Ghost bug: its workflow does not resolve: no run started (ghost; the [request] rule for bug in .rhiza/dispatch.toml; ...)', and rhiza inbox lists a workflow item 'request \"Ghost bug\": no run started: workflow ghost, the [request] rule for bug ... does not resolve'. The ready-change-set path was not reached by hand: the daemon skipped that change set first for serving no milestone."
+        },
+        "handle": "dispatch-unresolved-attention-qa-1",
+        "id": "01M6W8JPBDNFC585F0AHG7GEY9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W8JPBDNFC585F0AETE7SW5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W8JPBDNFC585F0AETE7SW5",
+        "id": "01M6W8JPPBD8W72PG5C8BCNPRB",
+        "link": "01M6W8JPPBD8W72PG5C6F2PK96",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAYZW0RTPZ31DVTTYVTB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 75f0a821, built binary in a scratch Rhiza root (fake rex on PATH, one-step command workflows, RHIZA_* unset): rhiza guide workflows prints a Dispatch section naming .rhiza/dispatch.toml, [request], [ready], feature/bug/milestone, the defaults plan and ship-change, rhiza request --workflow, the ready order (run start --workflow, the request's workflow, the [ready] rule, ship-change) and the workflow-unresolved skip, which matches daemon.SkipWorkflow. The stray comma 'the request opens,.' (line 63) is still there."
+        },
+        "handle": "dispatch-guide-topic-qa-1",
+        "id": "01M6W8JQ64SN394R0ZRH19HRTD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W8JQ64SN394R0ZREJ0C29C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W8JQ64SN394R0ZREJ0C29C",
+        "id": "01M6W8JQAVC9CBBFYYWVB64BJN",
+        "link": "01M6W8JQAVC9CBBFYYWRQJSA7C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTB5F2Z10QBJNJH3M0BGN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W8JQN0PZKNNNBSPVQCSKPW",
+  "type": "ops",
+  "v": 1
+}

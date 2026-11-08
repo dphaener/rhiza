@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W128250VXD1A5EC0V19VQQ",
+  "after": [
+    "01M6W00YN6AJYXR6K75GWQ0TYH"
+  ],
+  "at": "2026-11-07T22:12:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 15cf9c5a ran go test -trimpath -v ./internal/dispatch/...: TestDefaultsWhenNoFile (no file gives plan for every request kind and ship-change for every ready kind), TestReadyBugOnly ([ready] bug = \"bugfix\" changes only that pick; other ready kinds and all request kinds keep defaults) and TestParseErrors (unknown table [other], unknown key chore in [request], non-string bug = 3, path-like \"a/b\", \"x.toml\" and empty values each fail with an error naming the table and key) all PASS. Read internal/dispatch/dispatch.go: Parse rejects tables other than [request]/[ready], keys other than feature/bug/milestone, non-strings and values with path separators, whitespace, .toml suffix, . or ..; missing file/table/key fall back to Defaults. gofmt -l and go vet clean; no new module dependency (BurntSushi/toml already in go.mod)."
+        },
+        "handle": "dispatch-rules-file-verified",
+        "id": "01M6W13J820RMTGSXZJ4BW2YBN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W13J820RMTGSXZJ37CQQB9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W13J820RMTGSXZJ37CQQB9",
+        "id": "01M6W13J9KCAPESN1HW2G96TTJ",
+        "link": "01M6W13J9KCAPESN1HVZA1REDX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTACHSRCG9FCR50S9S8JB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W13JC12VRCRX621H8N4H11",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W7XBQQFYDS8SZRDTHAVYTJ",
+  "after": [
+    "01M6W6WA0EY1MX74WP9SX3611A"
+  ],
+  "at": "2026-11-08T00:12:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fe6bb167 ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-records-dispatch|describe-golden)$' (ok). The script run-records-dispatch.txtar starts a bug change set picked by the [ready] rule (run start, run status --json and run ls --json show pick rule ready.bug), a feature change set with no dispatch file (run start and run status --json show pick default, run ls --json lists it), and an explicit --workflow other run whose id is captured and checked by run status <id> --json (workflow other, pick explicit) and run ls --json, which fixes attempt 1's finding f1. In internal/api, TestDaemonStartsRequestWithDispatchedWorkflow asserts the daemon start log line 'with workflow bugfix (picked by rule request.bug)' and '(picked by default)' (daemon.go:1765); it, TestStartWorkflowExplicitWins and TestRunStartQueuesForTheDaemon pass; internal/dispatch and internal/run pass."
+        },
+        "handle": "run-records-dispatch-verified",
+        "id": "01M6W7ZDCASYR8CT722DHRW6HS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W7ZDCASYR8CT722A6E6KJX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W7ZDCASYR8CT722A6E6KJX",
+        "id": "01M6W7ZDDFVTAKNN4SXMPJ5EPM",
+        "link": "01M6W7ZDDFVTAKNN4SXJT4RZ0S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTB1Y3D4W01CFE712D6TD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W7ZDET6AE8TDHH44A7JRN7",
+  "type": "ops",
+  "v": 1
+}

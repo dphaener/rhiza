@@ -27,9 +27,6 @@ exec cat $WORK/before
 exec sh -c 'rhiza run start --foreground --workflow plan --new "Plan reports" 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual 2>&1; echo exit=$?'
 stdout 'takes no change set'
 stdout '^exit=2$'
-exec sh -c 'rhiza run start --foreground --workflow other --new "Plan reports" --permission-mode manual 2>&1; echo exit=$?'
-stdout 'not plan'
-stdout '^exit=2$'
 ! exec rhiza run start --foreground --workflow plan --milestone --permission-mode manual
 stderr '--milestone goes with --new'
 exec sh -c 'rhiza change ls --json | grep -c "\"intent\""'

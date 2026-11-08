@@ -1,0 +1,132 @@
+{
+  "actor": "01M6W9DK0WHCS5M5BZFB6M5SN9",
+  "after": [
+    "01M6W9A3HD5GXW5FJ5NDTHKCPC"
+  ],
+  "at": "2026-11-08T00:42:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at bbfe87e3 with a built binary (go build -trimpath) in a scratch Rhiza root and project, real git config, no fakes: rhiza health with defaults: autonomy ok, no phrase. After git config rhiza.autonomy.plan auto and rhiza.daemon.permissionMode bypassPermissions: exit 0, 'warn autonomy plan auto, accept auto, ship auto, signoff auto; outside text reaches agents with no permission checks', detail lines 'workflow plan runs from a queued request with bypassed permissions in interview, review, critic, revise, arbiter' and the ship-change one (accept/ship default auto), next rhiza guide workflows; --json autonomy state warn. With rhiza.daemon.paused true: 'daemon paused; ...' plus the phrase, next stays rhiza daemon set rhiza.daemon.paused false. permissionMode acceptEdits: ok, no phrase, no workflow lines."
+        },
+        "handle": "health-autonomy-risk-qa-1",
+        "id": "01M6W9QDKBP07NEKV9TD2N84D1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W9QDKBP07NEKV9TBJXEW7R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W9QDKBP07NEKV9TBJXEW7R",
+        "id": "01M6W9QDN20B2SGHE17FDDE3GM",
+        "link": "01M6W9QDN20B2SGHE17E3TNKFR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZN34KQZG9YEWQ1TKCXM3",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at bbfe87e3 with a built binary (go build -trimpath) in a scratch Rhiza root and project, real git config, no fakes: With plan auto + bypassPermissions (accept/ship auto) health and workflow check flag plan (trigger request; interview, review, critic, revise, arbiter) and ship-change (trigger ready; build/build builder and verifier, every review check, critic, fixer, verifier, ci-fix, arbiter). With plan owner + bypass, request --ref notes plan only (per decision outside-input-plan-owner-not-intake). With acceptEdits nothing is flagged anywhere."
+        },
+        "handle": "request-exposed-workflows-qa-1",
+        "id": "01M6W9QDQE59RDA4KWRP6RZ5RF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W9QDQE59RDA4KWRKK3TVW2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W9QDQE59RDA4KWRKK3TVW2",
+        "id": "01M6W9QDSZQRAFSCV0DYDAEWC3",
+        "link": "01M6W9QDSZQRAFSCV0DWT2V80K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZMW57BSXGYJYXV6XPWP2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at bbfe87e3 with a built binary (go build -trimpath) in a scratch Rhiza root and project, real git config, no fakes: rhiza workflow check plan with no bypass: 'workflow plan is valid (builtin:plan)', no warning. With plan auto + bypassPermissions: exit 0, valid line plus '  warning: workflow plan runs from a queued request with bypassed permissions in interview, review, critic, revise, arbiter: outside text reaches agents with no permission checks'; --json valid true, problems [], warnings holds that line. ship-change gets its warning only while plan, accept and ship are all auto; acceptEdits clears it."
+        },
+        "handle": "workflow-check-risk-warning-qa-1",
+        "id": "01M6W9QDWVJPX4SRFKB9G40A8J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W9QDWVJPX4SRFKB7Q2FXZ8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W9QDWVJPX4SRFKB7Q2FXZ8",
+        "id": "01M6W9QDZERKKQGMM5MZTR8FRJ",
+        "link": "01M6W9QDZERKKQGMM5MYTVGXEK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZMYKAC3V8D3C5E539YHV",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at bbfe87e3 with a built binary (go build -trimpath) in a scratch Rhiza root and project, real git config, no fakes: With plan auto + bypassPermissions: rhiza request --ref https://example.com/i/1 'Add a thing' exits 0, prints 'Queued feature request ...' then one 'Note: outside text reaches agents with no permission checks in workflow plan, ship-change (rhiza guide workflows)'; --json has the note field; request ls lists the queued requests; a request without --ref prints no note; --dry-run with --ref notes and queues nothing. plan owner + acceptEdits with --ref: no note."
+        },
+        "handle": "request-ref-risk-note-qa-1",
+        "id": "01M6W9QE38RXP1QT1ZEQ44MB5Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W9QE38RXP1QT1ZEMXZAKHR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W9QE38RXP1QT1ZEMXZAKHR",
+        "id": "01M6W9QE60YWPAF420RRG3RWWX",
+        "link": "01M6W9QE60YWPAF420RNPSS4VE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZN5TXW2QGS4G4047F38A",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at bbfe87e3 with a built binary (go build -trimpath) in a scratch Rhiza root and project, real git config, no fakes: rhiza guide workflows prints the '## Outside input' section: warns on request text and --ref reaching an autonomous bypassPermissions workflow, every queued request counts, Rhiza cannot see what a scheduled rhiza request sends, nothing refused; says rhiza.autonomy.plan owner does not gate intake; mitigations: people not schedules queue requests, narrower rhiza.daemon.permissionMode or step permission_mode, plan owner and rhiza.autonomy.signoff owner for what runs after."
+        },
+        "handle": "workflows-guide-outside-input-qa-1",
+        "id": "01M6W9QE7MX2YM8TJQJMHN4WHQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W9QE7MX2YM8TJQJHXMQ7T3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W9QE7MX2YM8TJQJHXMQ7T3",
+        "id": "01M6W9QE9KHYRB27QAF40KJYYS",
+        "link": "01M6W9QE9KHYRB27QAF0GMGD0W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W4ZN88P5XT2RXYH35YRVMZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K4DRTKBAFVPG4BC7TV51",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W9QEBRSEGE79YBKJY28HBN",
+  "type": "ops",
+  "v": 1
+}

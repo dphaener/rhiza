@@ -1,0 +1,40 @@
+{
+  "actor": "01M6W29367K4RTY7YPVNPZ35K5",
+  "after": [
+    "01M6W2XJM9J7ENJJTHAEWVH44N"
+  ],
+  "at": "2026-11-07T22:48:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 907c325a, go test -trimpath ./cmd/rhiza -run 'TestScripts/dispatch-check$' -v passes: the script runs rhiza check passing with no .rhiza/dispatch.toml, with [request] bug naming a repo workflow in .rhiza/workflows/bugfix.toml, and with [ready] feature naming the built-in ship-change; and failing with stdout 'dispatch.toml: request.bug names workflow \"nothing-here\"', with 'dispatch.toml: ready.milestone names workflow \"personal-only\"' while that workflow exists only in $XDG_CONFIG_HOME/rhiza/workflows set inside the script, and with 'unknown table [reqest]'. describe-golden passes with the new dispatch rule; internal/check, internal/dispatch and the api Check/Dispatch/Workflow tests pass. Diff read: dispatchProblems in internal/api/check.go resolves names only by os.Stat under .rhiza/workflows and workflow.Builtin, never the personal layer; findings carry rule dispatch, path .rhiza/dispatch.toml and severity fail. The full internal/api package went past a 240s timeout under load with no test failing, a pre-existing slowness and not this diff."
+        },
+        "handle": "dispatch-rules-check-verified",
+        "id": "01M6W356SCV297VTC0GJA33745",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6W356SBNK1R4ZQ8E96YMM77",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6W356SBNK1R4ZQ8E96YMM77",
+        "id": "01M6W356V2V3D9M54PX6SP6VWF",
+        "link": "01M6W356V2V3D9M54PX447DV30",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYTAG5STEEVHYYJ6V971SN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7G6HPJC3V0Q18E8EF9ZA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W356WVD54VEKRM0DJ3HRXR",
+  "type": "ops",
+  "v": 1
+}

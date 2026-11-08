@@ -22,6 +22,7 @@ const StartsLockFile = "starts.lock"
 type Start struct {
 	Change         string    `json:"change"`
 	Workflow       string    `json:"workflow,omitempty"`
+	Pick           string    `json:"pick,omitempty"`
 	PermissionMode string    `json:"permission_mode,omitempty"`
 	Agent          string    `json:"agent,omitempty"`
 	NoWait         bool      `json:"no_wait,omitempty"`

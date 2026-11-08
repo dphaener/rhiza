@@ -192,7 +192,11 @@ const (
 type Started struct {
 	Workflow     string `json:"workflow"`
 	WorkflowPath string `json:"workflow_path,omitempty"`
-	Definition   string `json:"definition"`
+	// Pick is which workflow dispatch picked and why: "explicit",
+	// "request" (the workflow its request named), "rule <table>.<kind>"
+	// or "default"; empty for a run journaled before dispatch recorded it.
+	Pick       string `json:"pick,omitempty"`
+	Definition string `json:"definition"`
 	// Includes holds the source of each workflow the definition's
 	// workflow steps include, by name, as the run started with them.
 	Includes       map[string]string `json:"includes,omitempty"`
@@ -216,6 +220,9 @@ type Started struct {
 	// where it came from, in stage order; empty for a run started before
 	// it was recorded.
 	Autonomy []StageAutonomy `json:"autonomy,omitempty"`
+	// Plan is true for a run started with --new (a request's plan run),
+	// whatever workflow it runs.
+	Plan bool `json:"plan,omitempty"`
 }
 
 // StageAutonomy is one stage's autonomy mode (auto or owner) and its
@@ -1035,6 +1042,7 @@ type Retry struct {
 type State struct {
 	ID             string
 	Workflow       string
+	Pick           string
 	Change         string
 	Title          string
 	Worktree       string
@@ -1052,6 +1060,8 @@ type State struct {
 	MilestonePlan bool
 	// Autonomy is the started entry's Autonomy.
 	Autonomy []StageAutonomy
+	// Plan is the started entry's Plan.
+	Plan bool
 	// Current is the step entered and not ended, or the next step to
 	// enter. Empty when the run is finished.
 	Current      string
@@ -1328,6 +1338,7 @@ func (j Journal) State() State {
 			st.Current = e.Step
 			if s := e.Started; s != nil {
 				st.Workflow = s.Workflow
+				st.Pick = s.Pick
 				st.Change = s.Change
 				st.Title = s.Title
 				st.Worktree = s.Worktree
@@ -1339,6 +1350,7 @@ func (j Journal) State() State {
 				st.Milestone = s.Milestone
 				st.MilestonePlan = s.MilestonePlan
 				st.Autonomy = s.Autonomy
+				st.Plan = s.Plan
 			}
 		case TypeProcess:
 			if e.Process != nil {
@@ -1788,4 +1800,20 @@ const AbandonedPrefix = "abandoned by "
 // abandoned, which a resume (a retry included) refuses.
 func (st State) Abandoned() bool {
 	return st.Ended && st.Result == Failed && strings.HasPrefix(st.Detail, AbandonedPrefix)
+}
+
+// PlanWorkflow is the built-in workflow a request's plan run uses by default.
+const PlanWorkflow = "plan"
+
+// PlanMilestoneWorkflow is the built-in workflow a plan run that plans a
+// milestone runs instead of plan.
+const PlanMilestoneWorkflow = "plan-milestone"
+
+// IsPlanRun reports whether the run is a plan run: started with --new (for
+// a request or not), or running the plan or plan-milestone workflow (a
+// journal that predates that mark, or a milestone's plan run started on its
+// record change set). It does not depend on the workflow's name otherwise,
+// since a dispatch rule may map a request to any workflow.
+func (s State) IsPlanRun() bool {
+	return s.Plan || s.Workflow == PlanWorkflow || s.Workflow == PlanMilestoneWorkflow
 }

@@ -1,0 +1,33 @@
+{
+  "actor": "01M6W7H118ZVMHV0NN1PJCCVX2",
+  "after": [
+    "01M6W7P66ZN7JPEXG7MMTDPYBJ"
+  ],
+  "at": "2026-11-08T00:07:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "9011dbad93b2e4478a2a431df03852e4a6f6b34a6f0f2964d5748d20b9467cc3",
+          "session": "c97ce25f-459e-4c9d-8e24-01a1b8787167",
+          "summary": "Autonomous plan run for change set 01M6W7G8 (Fix Review question handles). No owner took part. The planner read internal/api/run_review.go: reviewQuestionHandle builds review-<rid[:8]>-r<round>-<finding>. The first 8 characters of a ULID are only its start time, so plan runs the daemon starts in the same poll share them; runs of 01M6VY7G6HPJ and 01M6VY7GRV7B both added review-01m6vy7e-r3-f1. The handle is also the identity key: reviewQuestionNode reuses a question by handle across change sets, and the asked journal and the autonomous accept gate rebuild it. The planner raised one question: what the handle carries and what happens when it is taken. The arbiter answered with decision review-question-handle-full-run-id (assumed, would have escalated): the full lower-cased run ID; when that handle is taken by another node, take the first free one with uniqueHandle and journal the handle actually used; later checks match by the journal entry. Planned: one leaf, review-question-handle-unique, under plan-workflow, serving milestone-29, whose plan runs hit the collision. Not planned here: the two existing review-01m6vy7e-r3-f1 nodes belong to other unlanded change sets; the intent says to retitle one of them when it lands.",
+          "title": "Plan of Fix Review question handles (autonomous)"
+        },
+        "handle": "plan-fix-review-question-handles",
+        "id": "01M6W7Q7V0T5NYNNDYC1Q9AQAR",
+        "key": null,
+        "kind": "source",
+        "node": "01M6W7Q7V0T5NYNNDYC1DHZ13Q",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6W7G8YBXBX090SSZC3Y60H2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W7Q7VKPAJM9QXJWJTSNA13",
+  "type": "ops",
+  "v": 1
+}

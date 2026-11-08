@@ -32,7 +32,7 @@ func TestDaemonPlanRequestsRequeuesUnjournaled(t *testing.T) {
 	poll := func() []string {
 		t.Helper()
 		detached = nil
-		got, err := daemonPlanRequests(f.ctx, rs, nil, 0, 2, "auto", "")
+		got, err := daemonPlanRequests(f.ctx, rs, nil, 0, 2, "auto", "", nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -79,12 +79,12 @@ func TestDaemonPlanRequestsRequeuesUnjournaled(t *testing.T) {
 
 func TestRequestPlanRunArgsPassRef(t *testing.T) {
 	for _, ref := range []string{"https://example.com/issues/7", "--dry-run", "--change=01M6VY7JMM5NPB3QVG1ECZH1YW", "-h"} {
-		with := planRunArgs(daemon.Request{ID: "r1", Ref: ref}, false, "manual")
+		with := planRunArgs(daemon.Request{ID: "r1", Ref: ref}, "plan", "default", false, "manual")
 		if !slices.Contains(with, "--ref="+ref) || slices.Contains(with, ref) {
 			t.Fatalf("with ref %q: want the one word --ref=%s in %q", ref, ref, with)
 		}
 	}
-	without := planRunArgs(daemon.Request{ID: "r2"}, false, "manual")
+	without := planRunArgs(daemon.Request{ID: "r2"}, "plan", "default", false, "manual")
 	if slices.ContainsFunc(without, func(a string) bool { return strings.HasPrefix(a, "--ref") }) {
 		t.Fatalf("without a ref: %q", without)
 	}

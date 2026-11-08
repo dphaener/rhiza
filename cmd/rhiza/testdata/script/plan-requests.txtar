@@ -79,7 +79,7 @@ exec rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout -count=1 '^Started the plan run of request '
 exec cat $WORK/detach.log
 stdout -count=1 '^REX_SESSION=.* rhiza '
-stdout 'run start --foreground --workflow plan-milestone --new Ship v2 --request [0-9A-Z]{26} --permission-mode manual --milestone$'
+stdout 'run start --foreground --workflow plan-milestone --pick default --new Ship v2 --request [0-9A-Z]{26} --permission-mode manual --milestone$'
 exec rhiza request ls
 stdout 'milestone planning: Ship v2'
 stdout 'feature queued: Add exports$'
@@ -96,10 +96,10 @@ exec rhiza daemon --permission-mode manual --max-runs 4 --once
 stdout -count=3 '^Started the plan run of request '
 exec cat $WORK/detach.log
 stdout -count=4 '^REX_SESSION=.* rhiza '
-stdout 'run start --foreground --workflow plan --new Add exports --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
-stdout 'run start --foreground --workflow plan --new Fix Login fails --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
-stdout 'run start --foreground --workflow plan --new Add search --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
-stdout 'run start --foreground --workflow plan-milestone --new Ship v2 --request [0-9A-Z]{26} --permission-mode manual --milestone$'
+stdout 'run start --foreground --workflow plan --pick default --new Add exports --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
+stdout 'run start --foreground --workflow plan --pick default --new Fix Login fails --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
+stdout 'run start --foreground --workflow plan --pick default --new Add search --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
+stdout 'run start --foreground --workflow plan-milestone --pick default --new Ship v2 --request [0-9A-Z]{26} --permission-mode manual --milestone$'
 ! stdout 'Ship v2.*--autonomous'
 exec rhiza request ls --json
 stdout -count=4 '"state": "planning"'

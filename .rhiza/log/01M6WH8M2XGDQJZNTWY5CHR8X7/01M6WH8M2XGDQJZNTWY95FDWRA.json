@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-08T02:54:39Z",
+  "body": {
+    "intent": "Record agent actor claude-code-afa74298 for session afa74298-a86f-4a3f-8204-01a1b914348c",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6WH8M2XGDQJZNTWY5CHR8X7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WH8M2XGDQJZNTWY95FDWRA",
+  "type": "open",
+  "v": 1
+}

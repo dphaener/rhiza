@@ -41,6 +41,7 @@ const (
 	SkipUsageReserve = "usage-reserve"
 	SkipShipOwner    = "ship-owner"
 	SkipPaused       = "paused"
+	SkipWorkflow     = "workflow-unresolved"
 )
 
 // Ship says which succeeded runs mean a change set has shipped: those of
@@ -49,13 +50,20 @@ const (
 // reopened, which Since reports (the zero time when it does not know).
 type Ship struct {
 	Workflow string
-	Since    func(change string) time.Time
+	// For, when set, names the workflow whose success means change shipped,
+	// in place of Workflow: dispatch may run a change set under another.
+	For   func(change string) string
+	Since func(change string) time.Time
 }
 
 // shipped reports whether st is a succeeded run of the ship workflow that
 // ended after its change set was last accepted or reopened.
 func (s Ship) shipped(st run.State) bool {
-	if s.Workflow == "" || s.Since == nil || !st.Ended || st.Result != run.Succeeded || st.Workflow != s.Workflow {
+	want := s.Workflow
+	if s.For != nil {
+		want = s.For(st.Change)
+	}
+	if want == "" || s.Since == nil || !st.Ended || st.Result != run.Succeeded || st.Workflow != want {
 		return false
 	}
 	return st.EndedAt.After(s.Since(st.Change))
@@ -63,14 +71,18 @@ func (s Ship) shipped(st run.State) bool {
 
 // Skip is an accepted change set the daemon does not start, and why.
 type Skip struct {
-	Change string `json:"change"`
+	Change string `json:"change,omitempty"`
+	// Request is the queued request a workflow-unresolved skip is about;
+	// then Change is empty and Title is the request's text.
+	Request string `json:"request,omitempty"`
 	// Title is the change set's display title, filled in by the poll.
 	Title string `json:"title,omitempty"`
 	// Reason is one of the Skip constants.
 	Reason string `json:"reason"`
 	// Detail holds the readiness reasons of a not-ready change set, the free
 	// space of a disk-low one, or why a no-slot one waits when a slot is kept
-	// for a queued plan request.
+	// for a queued plan request. A workflow-unresolved skip holds the
+	// workflow's name, where the pick came from and why it does not resolve.
 	Detail []string `json:"detail,omitempty"`
 }
 
@@ -144,11 +156,11 @@ const Unrecorded = time.Minute
 // says, or one with no process record started less than Unrecorded before
 // now, whose process may not have recorded itself yet. Nor is a run whose
 // change set state reports as neither accepted nor landed, where landed
-// counts only for a run of the plan workflow, or of another workflow that
+// counts only for a plan run (see run.State.IsPlanRun), or of another workflow that
 // entered its land step: a run on a change set that has been rejected,
 // withdrawn or superseded, is still proposed or draft, or has landed without
 // a non-plan run reaching land waits in the inbox for the owner.
-func Resumable(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, state func(change string) string, plan string, now time.Time) []string {
+func Resumable(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, state func(change string) string, now time.Time) []string {
 	var ids []string
 	for _, j := range runs {
 		st := j.State()
@@ -164,7 +176,7 @@ func Resumable(runs []run.Journal, host string, alive func(pid int) bool, locked
 		switch state(st.Change) {
 		case "accepted":
 		case "landed":
-			if st.Workflow != plan && st.Workflow != plan+"-milestone" && st.Visits["land"] == 0 {
+			if !st.IsPlanRun() && st.Visits["land"] == 0 {
 				continue
 			}
 		default:

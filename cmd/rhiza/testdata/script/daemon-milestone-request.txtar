@@ -41,7 +41,7 @@ stdout -count=1 '^Started the plan run of request '
 exec rhiza request ls
 stdout 'milestone planning: Backlog empty'
 stdout 'feature queued: Add exports'
-exec sh -c 'grep -c "run start --foreground --workflow plan-milestone --new Backlog empty" $WORK/detach.log'
+exec sh -c 'grep -c "run start --foreground --workflow plan-milestone --pick default --new Backlog empty" $WORK/detach.log'
 stdout '^1$'
 exec sh -c 'grep -c "Add exports" $WORK/detach.log || true'
 stdout '^0$'
@@ -80,7 +80,7 @@ stdout -count=1 '^Started the plan run of request '
 exec rhiza request ls
 stdout 'milestone planning: First milestone'
 stdout 'feature queued: Add exports'
-exec sh -c 'grep -c "run start --foreground --workflow plan-milestone --new First milestone .* --milestone" $WORK/detach2.log'
+exec sh -c 'grep -c "run start --foreground --workflow plan-milestone --pick default --new First milestone .* --milestone" $WORK/detach2.log'
 stdout '^1$'
 
 exec rhiza request --kind milestone 'Second milestone'

@@ -24,7 +24,7 @@ cp $WORK/plan-autonomous.toml .rhiza/workflows/plan.toml
 exec rhiza request 'Add exports'
 exec rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout '^Started the plan run of request '
-exec sh -c 'grep -c "run start --foreground --workflow plan --new Add exports .* --autonomous" $WORK/auto.log'
+exec sh -c 'grep -c "run start --foreground --workflow plan --pick default --new Add exports .* --autonomous" $WORK/auto.log'
 stdout '^1$'
 
 # plan.toml declaring plan = owner, setting auto: no --autonomous.
@@ -43,7 +43,7 @@ cp $WORK/plan-owner.toml .rhiza/workflows/plan.toml
 exec rhiza request 'Add imports'
 exec rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout '^Started the plan run of request '
-exec sh -c 'grep -c "run start --foreground --workflow plan --new Add imports" $WORK/owner.log'
+exec sh -c 'grep -c "run start --foreground --workflow plan --pick default --new Add imports" $WORK/owner.log'
 stdout '^1$'
 ! grep 'autonomous' $WORK/owner.log
 
@@ -64,7 +64,7 @@ cp $WORK/ship-plan-auto.toml .rhiza/workflows/ship-change.toml
 exec rhiza request 'Add reports'
 exec rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout '^Started the plan run of request '
-exec sh -c 'grep -c "run start --foreground --workflow plan --new Add reports" $WORK/ship.log'
+exec sh -c 'grep -c "run start --foreground --workflow plan --pick default --new Add reports" $WORK/ship.log'
 stdout '^1$'
 ! grep 'autonomous' $WORK/ship.log
 

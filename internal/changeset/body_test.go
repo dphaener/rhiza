@@ -787,6 +787,49 @@ func TestDecodeBodyCanonicalMatches(t *testing.T) {
 	}
 }
 
+func TestOpenRequestKindAndWorkflowNeedFormat4(t *testing.T) {
+	plain := Open{Kind: KindIntention, Intent: "x"}
+	if v := EntryVersion(plain); v != 1 {
+		t.Fatalf("EntryVersion(plain) = %d, want 1", v)
+	}
+	if plain.DispatchKind() != RequestFeature {
+		t.Fatalf("DispatchKind() = %q, want feature", plain.DispatchKind())
+	}
+	want := Open{Kind: KindRecord, Intent: "x", RequestKind: RequestMilestone, Workflow: "bugfix"}
+	if v := EntryVersion(want); v != 4 {
+		t.Fatalf("EntryVersion = %d, want 4", v)
+	}
+	raw, err := EncodeBody(want)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, canonical := range []bool{false, true} {
+		b, err := decodeBody(entry.Entry{V: 4, Type: entry.TypeOpen, Body: raw}, canonical)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(b, want) {
+			t.Fatalf("decodeBody = %#v, want %#v", b, want)
+		}
+		// Format 3 cannot spell either field.
+		_, err = decodeBody(entry.Entry{V: 3, Type: entry.TypeOpen, Body: raw}, canonical)
+		checkErr(t, err, "request_kind", nil)
+	}
+}
+
+func TestOpenRequestKindAndWorkflowRules(t *testing.T) {
+	for name, o := range map[string]Open{
+		"feature spelled": {Kind: KindIntention, Intent: "x", RequestKind: RequestFeature},
+		"unknown kind":    {Kind: KindIntention, Intent: "x", RequestKind: "chore"},
+		"path workflow":   {Kind: KindIntention, Intent: "x", Workflow: "a/b"},
+		"toml workflow":   {Kind: KindIntention, Intent: "x", Workflow: "a.toml"},
+	} {
+		if err := o.Validate(); !errors.Is(err, ErrInvalid) {
+			t.Errorf("%s: Validate() = %v, want ErrInvalid", name, err)
+		}
+	}
+}
+
 func TestOpenRef(t *testing.T) {
 	base := Open{Kind: KindIntention, Intent: "x", Sources: []id.ID{}}
 	// Without a ref the encoding and format are unchanged.
