@@ -66,6 +66,25 @@ stdout '^exit=0$'
 exec sh -c 'rhiza change show $(cat $WORK/b1) --json'
 stdout '"state": "proposed"'
 
+# The same holds for a repo override of the plan workflow itself: a plan.toml
+# declaring accept = owner leaves its drafts proposed while the setting is auto.
+exec rhiza change new 'Plan C' --title 'Plan C' --json
+exec rhiza add intent want-c
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
+cp $WORK/plan-hold.toml .rhiza/workflows/plan.toml
+exec rhiza run start --foreground --workflow plan --autonomous --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runc'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+exec sh -c 'rhiza change new "Serve C one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/c1'
+exec sh -c 'rhiza link $(cat $WORK/c1) serves want-c'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run findings $WORK/clean.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+exec sh -c 'rhiza change show $(cat $WORK/c1) --json'
+stdout '"state": "proposed"'
+
 fold-ok
 
 -- bin/rex --
@@ -102,6 +121,19 @@ run = "true"
 on.pass = "done"
 -- hold.toml --
 name = "hold"
+
+[autonomy]
+accept = "owner"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- plan-hold.toml --
+name = "plan"
 
 [autonomy]
 accept = "owner"
