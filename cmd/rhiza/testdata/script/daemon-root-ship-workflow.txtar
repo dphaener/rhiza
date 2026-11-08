@@ -1,0 +1,51 @@
+# The root daemon gives a project a run slot for each ready change set by the
+# ship stage of the workflow dispatch picks for it, as the project's poll
+# decides: with rhiza.autonomy.ship owner, a change set whose [ready] workflow
+# declares ship = auto still gets a slot and starts. Rex is faked and only
+# logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+exec sh -c 'printf "[projects.repo]\npath = \"repo\"\n" > $WORK/rhiza.toml'
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/fast-ship.toml .rhiza/workflows/fast-ship.toml
+cp $WORK/dispatch.toml .rhiza/dispatch.toml
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+exec rhiza change new Built --title Built
+exec rhiza add capability built-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git config rhiza.autonomy.ship owner
+
+# From the root, the poll starts it with the workflow dispatch picked.
+cd $WORK
+exec rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of '
+exec cat $WORK/detach.log
+stdout -count=1 'rhiza run start --foreground '
+
+-- dispatch.toml --
+[ready]
+feature = "fast-ship"
+-- fast-ship.toml --
+name = "fast-ship"
+[autonomy]
+ship = "auto"
+
+[step.go]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
