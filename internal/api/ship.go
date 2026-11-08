@@ -75,27 +75,27 @@ type ShipCheckRequest struct {
 
 // ShipCheckResponse is what ship.check found.
 type ShipCheckResponse struct {
-	Change    string        `json:"change" desc:"The change set"`
-	Branch    string        `json:"branch" desc:"The change set's branch"`
-	Main      bool          `json:"main,omitempty" desc:"True if it checked the merge commit on main rather than the pull request"`
-	PR        int           `json:"pr,omitempty" desc:"The pull request's number; 0 if none was found"`
-	URL       string        `json:"url,omitempty" desc:"The pull request's URL"`
-	State     string        `json:"state,omitempty" desc:"The pull request's state, such as OPEN or MERGED"`
-	Commit    string        `json:"commit,omitempty" desc:"The commit checked: the PR's head, or the merge commit"`
-	Checks    []ShipCheck   `json:"checks" desc:"The checks reported for the commit"`
-	Settled   bool          `json:"settled" desc:"True if there is an open PR (or a merge commit) and every check on it has finished"`
-	Green     bool          `json:"green" desc:"True if settled and every check passed (success, neutral or skipped)"`
-	Failed    []string      `json:"failed,omitempty" desc:"The names of the settled checks that did not pass"`
-	Passed    bool          `json:"passed" desc:"True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise"`
-	Detail    string        `json:"detail,omitempty" desc:"Why it did not pass, such as no open pull request"`
-	Written   bool          `json:"written,omitempty" desc:"True if the result was recorded in the state file for the next steps"`
-	Rebased   string        `json:"rebased,omitempty" desc:"With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main"`
-	Conflicts []string      `json:"conflicts,omitempty" desc:"With --settled on a conflicting pull request: the files whose conflict outside the rendered files stopped the rebase; the command exits 75"`
-	Question  string        `json:"question,omitempty" desc:"The handle of the question raised about those conflicts"`
-	Stop      string        `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
-	Tests     []string      `json:"tests,omitempty" desc:"The failing tests the failed Actions runs' logs name, once the failed jobs were rerun and failed again: Go tests and testscripts (a '--- FAIL:' line, such as TestScripts/x), RSpec ('rspec ./spec/x_spec.rb:12'), Minitest ('bin/rails test test/x_test.rb:12') and pytest ('pytest tests/test_x.py::test_y'), each as its runner's rerun command"`
-	Findings  []ShipFinding `json:"findings,omitempty" desc:"One finding, with no leaf, per failing test, for a fix step; recorded in the state file as well"`
-	Reran     []string      `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, once per head, instead of failing; the check then reports not settled"`
+	Change        string             `json:"change" desc:"The change set"`
+	Branch        string             `json:"branch" desc:"The change set's branch"`
+	Main          bool               `json:"main,omitempty" desc:"True if it checked the merge commit on main rather than the pull request"`
+	PR            int                `json:"pr,omitempty" desc:"The pull request's number; 0 if none was found"`
+	URL           string             `json:"url,omitempty" desc:"The pull request's URL"`
+	State         string             `json:"state,omitempty" desc:"The pull request's state, such as OPEN or MERGED"`
+	Commit        string             `json:"commit,omitempty" desc:"The commit checked: the PR's head, or the merge commit"`
+	Checks        []ShipCheck        `json:"checks" desc:"The checks reported for the commit"`
+	Settled       bool               `json:"settled" desc:"True if there is an open PR (or a merge commit) and every check on it has finished"`
+	Green         bool               `json:"green" desc:"True if settled and every check passed (success, neutral or skipped)"`
+	Failed        []string           `json:"failed,omitempty" desc:"The names of the settled checks that did not pass"`
+	Passed        bool               `json:"passed" desc:"True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise"`
+	Detail        string             `json:"detail,omitempty" desc:"Why it did not pass, such as no open pull request"`
+	Written       bool               `json:"written,omitempty" desc:"True if the result was recorded in the state file for the next steps"`
+	Rebased       string             `json:"rebased,omitempty" desc:"With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main"`
+	Conflicts     []string           `json:"conflicts,omitempty" desc:"With --settled on a conflicting pull request: the files whose conflict outside the rendered files stopped the rebase; the command exits 75"`
+	MergeConflict *ShipMergeConflict `json:"merge_conflict,omitempty" desc:"A merge of main left in progress by a conflict in code: the files, origin/main's commits with their change sets and the branch's change set"`
+	Stop          string             `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
+	Tests         []string           `json:"tests,omitempty" desc:"The failing tests the failed Actions runs' logs name, once the failed jobs were rerun and failed again: Go tests and testscripts (a '--- FAIL:' line, such as TestScripts/x), RSpec ('rspec ./spec/x_spec.rb:12'), Minitest ('bin/rails test test/x_test.rb:12') and pytest ('pytest tests/test_x.py::test_y'), each as its runner's rerun command"`
+	Findings      []ShipFinding      `json:"findings,omitempty" desc:"One finding, with no leaf, per failing test, for a fix step; recorded in the state file as well"`
+	Reran         []string           `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, once per head, instead of failing; the check then reports not settled"`
 }
 
 // ShipFinding is a failing test read from a CI log, as a finding with no
@@ -292,6 +292,9 @@ type shipState struct {
 	// head before. ship.rebase also clears Head and Checks, so nothing
 	// lands or merges until ship.check records the rebased head's CI.
 	Pushed string `json:"pushed,omitempty"`
+	// MergeConflict is the context of a merge of main that conflicts in
+	// code, left in progress in the worktree for a fixer.
+	MergeConflict *ShipMergeConflict `json:"merge_conflict,omitempty"`
 	// RerunHead is the head (or merge commit) whose failed checks were
 	// rerun, and Reruns the Actions run IDs rerun for it: a head is rerun
 	// once, so a second failure on it fails.
@@ -518,6 +521,7 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	resp.MergeConflict = st.MergeConflict
 	if r.Main {
 		if st.MergeCommit == "" {
 			return nil, Usagef("change set %s has no merge commit recorded: its pull request is not merged", t.cs).
@@ -835,7 +839,7 @@ func shipSettleConflict(ctx *Ctx, resp ShipCheckResponse) (any, error) {
 	rb := out.(ShipRebaseResponse)
 	switch {
 	case len(rb.Conflicts) > 0:
-		resp.Conflicts, resp.Question, resp.Detail = rb.Conflicts, rb.Question, rb.Detail
+		resp.Conflicts, resp.MergeConflict, resp.Detail = rb.Conflicts, rb.MergeConflict, rb.Detail
 	case rb.Pushed != "":
 		resp.Rebased = rb.Pushed
 		resp.Detail = fmt.Sprintf("not settled: the pull request conflicted; rebased onto main and pushed %s", shortSHA(rb.Pushed))
@@ -954,7 +958,7 @@ func (r ShipCheckResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "stop: %s\n", r.Stop)
 	case len(r.Conflicts) > 0:
 		fmt.Fprintf(w, "%s: %s\n", what, r.Detail)
-		fmt.Fprintf(w, "stop: %s; answer question %s, then resume the run\n", r.Detail, r.Question)
+		fmt.Fprintf(w, "stop: %s; a fixer resolves the merge and commits, then the run resumes\n", r.Detail)
 	case r.PR == 0 && !r.Main:
 		fmt.Fprintf(w, "%s.\n", r.Detail)
 	case r.State != "" && !strings.EqualFold(r.State, "OPEN"):

@@ -1,8 +1,7 @@
 # Engine writes of free text never refuse on an unresolvable @word: question
 # answer resolves what it can, stores the rest as a literal @ (shown as @@),
 # and keeps the quote verbatim. A run session's question is covered by
-# TestAddQuestionLenientRefs, a rebase-conflict question by
-# run-ship-change-rebase.txtar.
+# TestAddQuestionLenientRefs.
 
 mkdir repo
 cd repo

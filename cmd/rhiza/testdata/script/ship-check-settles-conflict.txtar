@@ -6,8 +6,7 @@
 # origin/main, and the ship record's pushed is the new head.
 #
 # Case 2: main moved with a change to a code file the branch changed too.
-# The check exits 75 with a stop: line, raises a rebase-conflict question and
-# leaves the branch as it was.
+# The check exits 75 with a stop: line and leaves the merge in progress.
 #
 # The fake gh reports CONFLICTING until origin's branch holds origin's main.
 
@@ -94,13 +93,10 @@ cd $WORK/repo2
 exec sh -c 'rhiza ship check --settled; echo exit=$?'
 stdout '^stop: .*code\.txt'
 stdout '^exit=75$'
-stdout 'rebase-conflict'
+stdout 'merge is left in progress'
 exec git status --porcelain --untracked-files=no
-! stdout 'code.txt'
-exec git log -1 --format=%s
-stdout 'Raise a question on the rebase conflicts'
-exec git rev-parse HEAD~1
-cmp stdout $WORK/before.txt
+stdout 'code.txt'
+exec git rev-parse --verify MERGE_HEAD
 exec git rev-parse origin/cs/ship-it
 cmp stdout $WORK/before.txt
 
