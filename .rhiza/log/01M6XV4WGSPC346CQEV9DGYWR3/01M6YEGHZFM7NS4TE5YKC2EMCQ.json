@@ -1,0 +1,109 @@
+{
+  "actor": "01M6YE4D5CVSR0B9E2VKZECDSM",
+  "after": [
+    "01M6YE0D0K5S9CSA6872G9P69H"
+  ],
+  "at": "2026-11-08T20:45:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 3686b6ce. I built the binary with go build -trimpath into the session scratchpad and drove it by hand in a scratch root (HOME, git config, fake rex, RHIZA_TEST_DETACH_LOG so no real run starts). The setup had one live run (a process on another host), three ready change sets and a queued feature request and milestone request. At --max-runs 3, daemon --once started both requests' plan runs (run start --workflow plan-milestone ... --milestone, and run start --workflow plan) and no ship run: 1 live + 2 = 3. Two more --once polls at max 3 started nothing; detach.log stayed at 2 starts. daemon status showed 'runs: 1/3 live, 2 starting' and all three change sets 'waiting for a slot'. After the live run was removed in a second scratch root, --max-runs 3 with a resume still pending started exactly two ship runs (0 live + 1 resume pending + 2 = 3)."
+        },
+        "handle": "daemon-starts-within-max-runs-qa-1",
+        "id": "01M6YEGH05PFF48RTTQJTTEAG2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YEGH05PFF48RTTQJMR1NA9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YEGH05PFF48RTTQJMR1NA9",
+        "id": "01M6YEGH2KRHESFA0CWYW1QWFF",
+        "link": "01M6YEGH2KRHESFA0CWVD37GPP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVG9DK25PFK9BHJCBDQHQ6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 3686b6ce, with the built binary in a scratch root and a fake rex/detach log. The setup had an interrupted run (a dead pid on this host) of change set one, a live run on another host and two other ready change sets. daemon --once --max-runs 1 resumed nothing and started nothing, and the journal had 0 daemon-resumed entries. --max-runs 2 printed 'Resumed run INTERRUPTED1' and no ship start; the journal had 1 daemon-resumed entry, and status showed 'runs: 1/2 live, 1 starting' with two and three 'waiting for a slot'. A second --max-runs 2 poll, with the resume still unjournaled, started nothing: the resume kept holding its slot. With the live run removed, --max-runs 3 started two ship runs and did not resume again; detach.log held one run resume and two run starts."
+        },
+        "handle": "daemon-resume-takes-slot-qa-1",
+        "id": "01M6YEGHAA0VF1M79Q7FXKS4YA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YEGHAA0VF1M79Q7F9SR31A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YEGHAA0VF1M79Q7F9SR31A",
+        "id": "01M6YEGHDH2YEYXCAYDGBNRWEY",
+        "link": "01M6YEGHDH2YEYXCAYDCFXPZWT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVG9G0WNN7JX8ZNH1C5QPG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 3686b6ce, with the built binary running a long-lived daemon in a scratch root (one live run, two unjournaled plan-run starts). At --max-runs 3, rhiza health showed 'ok daemon running ...' with 'runs: 1/3 live, 2 starting', and health --json's daemon part carried live 1, starting 2, max 3, state ok. At --max-runs 1 it showed 'bad daemon running, ... 1 live runs; over rhiza.daemon.maxRuns 1', 'runs: 1/1 live, 2 starting' and a 'live run: <id>, ' line, health exited 1, and --json gave state bad with the same live, starting and max."
+        },
+        "handle": "health-runs-against-cap-qa-1",
+        "id": "01M6YEGHK7CZFJC28E9V5190B5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YEGHK7CZFJC28E9T9A2ENT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YEGHK7CZFJC28E9T9A2ENT",
+        "id": "01M6YEGHRHRE0QGETBZHSX4PNS",
+        "link": "01M6YEGHRHRE0QGETBZG07QSHG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVG9PE300YRA4FA4A530WC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 3686b6ce, with the built binary in a scratch root. rhiza daemon status printed 'runs: 1/3 live, 2 starting' (and '1/2 live, 1 starting' or '0/3 live, 3 starting' in the resume scenarios), and daemon status --json gave live, starting and max matching it. The web monitor came from a long-lived paused daemon with rhiza.web.port 17991, no RHIZA_TEST_NOW and nothing startable; GET /p/repo/ rendered 'Run slots 1 / 3' and 'runs: 1/3 live, 0 starting', which matched daemon status. I did not run the Daemon app under Rex. Its runs line comes from daemonapp.go:148, the same format, and go test -trimpath ./internal/tui/daemonapp/... passed."
+        },
+        "handle": "daemon-status-runs-cap-qa-1",
+        "id": "01M6YEGHTY2163DNDJW9XQQEM3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YEGHTY2163DNDJW7S7F3M9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YEGHTY2163DNDJW7S7F3M9",
+        "id": "01M6YEGHWSC49PQ05QM7RCFZQ5",
+        "link": "01M6YEGHWSC49PQ05QM6DBDY7C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVG9R7SPC15Y2DKK5M3JEZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YEGHZFM7NS4TE5YKC2EMCQ",
+  "type": "ops",
+  "v": 1
+}
