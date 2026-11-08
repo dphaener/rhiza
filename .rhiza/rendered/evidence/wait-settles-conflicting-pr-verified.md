@@ -14,7 +14,7 @@ At 2cfda3de, go test ./cmd/rhiza -run TestScripts/ship-check-settles-conflict pa
 
 ### Out
 
-- verifies [wait-settles-conflicting-pr](../capability/rhiza/orchestration/shipping/wait-green-pr/wait-settles-conflicting-pr.md)
+- verifies wait-settles-conflicting-pr (retired)
 
 ## History
 

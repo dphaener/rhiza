@@ -14,7 +14,7 @@ QA by hand at af6e4b54 with a scratch build (go build ./cmd/rhiza), in scratch r
 
 ### Out
 
-- verifies [wait-settles-conflicting-pr](../capability/rhiza/orchestration/shipping/wait-green-pr/wait-settles-conflicting-pr.md)
+- verifies wait-settles-conflicting-pr (retired)
 
 ## History
 

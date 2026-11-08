@@ -26,7 +26,7 @@ verified
 
 ### Out
 
-- verifies [conflict-question-blocks-change](../capability/rhiza/workflows/workflow-runs/rebase-when-behind/conflict-question-blocks-change.md)
+- verifies conflict-question-blocks-change (retired)
 
 ## History
 

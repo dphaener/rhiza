@@ -252,8 +252,7 @@
       - [agent-step-done-signal](capability/rhiza/workflows/workflow-runs/agent-step-done-signal.md)
       - [land-with-branch-build](capability/rhiza/workflows/workflow-runs/land-with-branch-build.md)
       - [rebase-when-behind](capability/rhiza/workflows/workflow-runs/rebase-when-behind.md)
-        - [rebase-keeps-branch-merges](capability/rhiza/workflows/workflow-runs/rebase-when-behind/rebase-keeps-branch-merges.md)
-        - [conflict-question-blocks-change](capability/rhiza/workflows/workflow-runs/rebase-when-behind/conflict-question-blocks-change.md)
+        - [ship-rebase-merges-only](capability/rhiza/workflows/workflow-runs/rebase-when-behind/ship-rebase-merges-only.md)
       - [resume-failed-run](capability/rhiza/workflows/workflow-runs/resume-failed-run.md)
       - [run-one-live](capability/rhiza/workflows/workflow-runs/run-one-live.md)
       - [run-abandon](capability/rhiza/workflows/workflow-runs/run-abandon.md)
@@ -405,13 +404,15 @@
     - [shipping](capability/rhiza/orchestration/shipping.md)
       - [wait-green-pr](capability/rhiza/orchestration/shipping/wait-green-pr.md)
         - [follow-moved-pr-head](capability/rhiza/orchestration/shipping/wait-green-pr/follow-moved-pr-head.md)
-        - [wait-settles-conflicting-pr](capability/rhiza/orchestration/shipping/wait-green-pr/wait-settles-conflicting-pr.md)
         - [ship-check-reruns-failed-once](capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-reruns-failed-once.md)
         - [ship-check-ci-test-findings](capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-ci-test-findings.md)
         - [ship-change-ci-fix-step](capability/rhiza/orchestration/shipping/wait-green-pr/ship-change-ci-fix-step.md)
         - [ship-check-runner-test-failures](capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-runner-test-failures.md)
         - [ship-check-rerun-budget](capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-rerun-budget.md)
+        - [ship-change-conflict-fix-step](capability/rhiza/orchestration/shipping/wait-green-pr/ship-change-conflict-fix-step.md)
         - [ship-check-failure-names-reruns-and-rhiza-only-diff](capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-failure-names-reruns-and-rhiza-only-diff.md)
+        - [conflict-fix-design-clash](capability/rhiza/orchestration/shipping/wait-green-pr/conflict-fix-design-clash.md)
+        - [wait-merges-conflicting-pr](capability/rhiza/orchestration/shipping/wait-green-pr/wait-merges-conflicting-pr.md)
       - [pinned-merge](capability/rhiza/orchestration/shipping/pinned-merge.md)
       - [close-out](capability/rhiza/orchestration/shipping/close-out.md)
       - [repo-ship-command](capability/rhiza/orchestration/shipping/repo-ship-command.md)
@@ -915,6 +916,7 @@
 - [code-checks-first](decision/code-checks-first.md)
 - [commit-actor-record-entries](decision/commit-actor-record-entries.md)
 - [conflict-question-blocks](decision/conflict-question-blocks.md)
+- [conflicts-assert-moves-to-fix-step](decision/conflicts-assert-moves-to-fix-step.md)
 - [continuations-first-machine-wide](decision/continuations-first-machine-wide.md)
 - [continue-slot-kept-owner](decision/continue-slot-kept-owner.md)
 - [cpu-drivers-fix-serves-milestone-25](decision/cpu-drivers-fix-serves-milestone-25.md)
@@ -1329,6 +1331,7 @@
 - [ship-guard-at-pr-lookups](decision/ship-guard-at-pr-lookups.md)
 - [ship-lands-before-merge](decision/ship-lands-before-merge.md)
 - [ship-main-dispatch-ci](decision/ship-main-dispatch-ci.md)
+- [ship-merge-main-conflict-fixer](decision/ship-merge-main-conflict-fixer.md)
 - [ship-pr-owned-by-body](decision/ship-pr-owned-by-body.md)
 - [ship-state-file](decision/ship-state-file.md)
 - [shipit-as-agent-step](decision/shipit-as-agent-step.md)
@@ -1679,6 +1682,7 @@
 - [question-7346bd67-1](question/question-7346bd67-1.md)
 - [question-8992bae3-1](question/question-8992bae3-1.md)
 - [question-8d4fbe69-1](question/question-8d4fbe69-1.md)
+- [question-97efbc82-1](question/question-97efbc82-1.md)
 - [question-99b69f45-1](question/question-99b69f45-1.md)
 - [question-9bf069b9-1](question/question-9bf069b9-1.md)
 - [question-9e004580-1](question/question-9e004580-1.md)
@@ -1785,6 +1789,7 @@
 - [review-01m6whrd-r3-f2](question/review-01m6whrd-r3-f2.md)
 - [review-01m6whtv-r3-f1](question/review-01m6whtv-r3-f1.md)
 - [review-01m6whtv-r3-f2](question/review-01m6whtv-r3-f2.md)
+- [review-01m6wmcatnzdh5gh9egga6efbr-r3-f1](question/review-01m6wmcatnzdh5gh9egga6efbr-r3-f1.md)
 - [review-code-check-fails](question/review-code-check-fails.md)
 - [review-overruled-findings](question/review-overruled-findings.md)
 - [review-questions-child-record](question/review-questions-child-record.md)
@@ -1986,6 +1991,8 @@
 - [commit-trailers-every-paragraph-qa-1](evidence/commit-trailers-every-paragraph-qa-1.md)
 - [commit-trailers-every-paragraph-verified](evidence/commit-trailers-every-paragraph-verified.md)
 - [commit-trailers-every-paragraph-verified-2](evidence/commit-trailers-every-paragraph-verified-2.md)
+- [conflict-fix-design-clash-qa-1](evidence/conflict-fix-design-clash-qa-1.md)
+- [conflict-fix-design-clash-verified](evidence/conflict-fix-design-clash-verified.md)
 - [conflict-question-blocks-change-qa-1](evidence/conflict-question-blocks-change-qa-1.md)
 - [conflict-question-blocks-change-verified](evidence/conflict-question-blocks-change-verified.md)
 - [conflict-question-blocks-change-verified-2](evidence/conflict-question-blocks-change-verified-2.md)
@@ -2621,6 +2628,7 @@
 - [pr-377-fix-rhiza-run-resume-retry](evidence/pr-377-fix-rhiza-run-resume-retry.md)
 - [pr-38-session-messages-and-token-use](evidence/pr-38-session-messages-and-token-use.md)
 - [pr-382-fix-the-inbox-flags-a-stalled](evidence/pr-382-fix-the-inbox-flags-a-stalled.md)
+- [pr-383-fix-ship-change-stops-on-a](evidence/pr-383-fix-ship-change-stops-on-a.md)
 - [pr-386-fix-the-plan-workflow-ends-a](evidence/pr-386-fix-the-plan-workflow-ends-a.md)
 - [pr-388-fix-a-go-build-inside-a-run](evidence/pr-388-fix-a-go-build-inside-a-run.md)
 - [pr-389-fix-watchdog-unmerged-pr-at](evidence/pr-389-fix-watchdog-unmerged-pr-at.md)
@@ -2965,6 +2973,8 @@
 - [session-token-use-tests](evidence/session-token-use-tests.md)
 - [ship-change-ci-fix-step-qa-1](evidence/ship-change-ci-fix-step-qa-1.md)
 - [ship-change-ci-fix-step-verified](evidence/ship-change-ci-fix-step-verified.md)
+- [ship-change-conflict-fix-step-qa-1](evidence/ship-change-conflict-fix-step-qa-1.md)
+- [ship-change-conflict-fix-step-verified](evidence/ship-change-conflict-fix-step-verified.md)
 - [ship-change-file-qa-1](evidence/ship-change-file-qa-1.md)
 - [ship-change-file-qa-3](evidence/ship-change-file-qa-3.md)
 - [ship-change-file-qa-4](evidence/ship-change-file-qa-4.md)
@@ -3018,6 +3028,8 @@
 - [ship-open-pr-verified](evidence/ship-open-pr-verified.md)
 - [ship-pr-body-ref-qa-1](evidence/ship-pr-body-ref-qa-1.md)
 - [ship-pr-body-ref-verified](evidence/ship-pr-body-ref-verified.md)
+- [ship-rebase-merges-only-qa-1](evidence/ship-rebase-merges-only-qa-1.md)
+- [ship-rebase-merges-only-verified](evidence/ship-rebase-merges-only-verified.md)
 - [ship-record-names-run-qa-1](evidence/ship-record-names-run-qa-1.md)
 - [ship-record-names-run-verified](evidence/ship-record-names-run-verified.md)
 - [ship-signoff-qa-1](evidence/ship-signoff-qa-1.md)
@@ -3166,6 +3178,8 @@
 - [vm-second-project-ships-qa-1](evidence/vm-second-project-ships-qa-1.md)
 - [vm-second-project-ships-verified](evidence/vm-second-project-ships-verified.md)
 - [wait-green-pr-tests](evidence/wait-green-pr-tests.md)
+- [wait-merges-conflicting-pr-qa-1](evidence/wait-merges-conflicting-pr-qa-1.md)
+- [wait-merges-conflicting-pr-verified](evidence/wait-merges-conflicting-pr-verified.md)
 - [wait-settles-conflicting-pr-qa-1](evidence/wait-settles-conflicting-pr-qa-1.md)
 - [wait-settles-conflicting-pr-verified](evidence/wait-settles-conflicting-pr-verified.md)
 - [wait-step-tested](evidence/wait-step-tested.md)
@@ -3446,6 +3460,7 @@
 - [scoped-tests-plan](source/scoped-tests-plan.md)
 - [ship-change-plan](source/ship-change-plan.md)
 - [ship-ci-fix-plan](source/ship-ci-fix-plan.md)
+- [ship-merge-main-plan](source/ship-merge-main-plan.md)
 - [ship-step-interview](source/ship-step-interview.md)
 - [stdin-findings-guides-plan](source/stdin-findings-guides-plan.md)
 - [task-interviews](source/task-interviews.md)
@@ -7219,6 +7234,7 @@
 - capability inbox-app-actions `01M6734J6ESHFYKFJ09YK6TEWT` — Replaced by inbox-app-pick-list, inbox-app-answer, inbox-app-signoff and inbox-app-retry-abandon: the rebuilt app picks one item and does its one action, with no o/t/y/c/R/x keys
 - capability agent-steps-tile-run-window `01M6857JXB8B7WXBN5VHE7MV1K` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability question-sessions-tile-run-window `01M6857KVT0NRCTAY6EZ2DH209` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
+- capability rebase-keeps-branch-merges `01M68581Q6V7XS1VHP9Q48KQJS` — superseded by ship-rebase-merges-only: ship rebase now always merges main, not only when the branch already holds a merge
 - capability inbox-app-answer-question `01M686TSHQQ5XJ0YAZ3Z538821` — Replaced by inbox-app-answer: the rebuilt inbox app answers a blocker through question.answer from a one-TextArea form
 - capability roadmap-app-umbrella-row `01M686TZYQZXDVR5B3880M6C21` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
 - capability roadmap-app-new-work `01M686V49K74FDKG4YV2BDJCSN` — Superseded by roadmap-new-work-requests: m and n now file a plan request (rhiza request) for the daemon to plan, and no longer ask y/n or open a Rex tab running run start --workflow plan --new
@@ -7226,6 +7242,7 @@
 - capability live-app-focus `01M686VAPN2NBZCGV4T968DYTD` — internal/tui/liveapp and its enter-to-focus are deleted; the read-only runs app replaces it
 - capability roadmap-detail-run-tick `01M686VBX481BWSM5W1YT6N1PQ` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
 - capability modelapp-timing-alone `01M696Q30C6Z9DX0WGCSNDSGHQ` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
+- capability wait-settles-conflicting-pr `01M6A0NG1VRQKBM20M8CSVTX3B` — superseded by wait-merges-conflicting-pr: the wait merges main and hands a code conflict to the conflict fixer instead of stopping for the owner
 - capability changes-app `01M6B3PG5BQ496EZCTRDFMH0T2` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
 - capability model-app-search `01M6BDAHCGWVSDN2MXQKK63CXJ` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
 - capability roadmap-new-work-requests `01M6CS24JZ06XER4X1ZKX4SNPG` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
@@ -7233,6 +7250,7 @@
 - capability health-app `01M6CS2EDTXKNNH3BNJBX81ZZ6` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
 - capability autonomy-app `01M6CS2HRAWMCTPDHFXBHFCX1C` — Replaced by autonomy-app-toggles: the autonomy app is now one form of the plan, accept, ship and sign-off toggles; it no longer lists daemon settings, toggles paused, edits numbers or starts/stops the daemon
 - capability inbox-nudge-stalled `01M6CS2KAT7R41TVN9WFDEFBRF` — The rebuilt inbox app has no n nudge: a stalled item shows its detail and opens its run's tab (inbox-app-pick-list)
+- capability conflict-question-blocks-change `01M6D133EKJDM0ACMC374VY9PK` — ship rebase no longer raises a rebase-conflict question: a code conflict goes to the conflict fixer, and only a design clash raises a blocking question (conflict-fix-design-clash)
 - capability daemon-service-install `01M6FES1Z3GF9HJGVS4Y1S687B` — Superseded by root-daemon-service: one rhiza-root.service unit for the root replaces the per-repo unit run in a main checkout (m29-one-root-daemon).
 - capability daemon-repo-session `01M6FES3PKQCSNG9SEECK4G1R7` — Superseded by root-daemon-rex-session: the session is named after the project's registered name, rhiza-<project>, not the main checkout's folder, and the root daemon creates and passes one per project (m29-rex-session-per-project).
 - capability daemon-self-update `01M6FES89JR3Z5XA751AGCD3RV` — Superseded by root-daemon-self-update: the root daemon self-updates from the project rhiza.toml names as self_update_project, with selfUpdate a machine setting in rhiza.toml (m29-settings-split).

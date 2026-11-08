@@ -27,7 +27,7 @@ verified
 ### Out
 
 - verifies [follow-moved-pr-head](../capability/rhiza/orchestration/shipping/wait-green-pr/follow-moved-pr-head.md)
-- verifies [rebase-keeps-branch-merges](../capability/rhiza/workflows/workflow-runs/rebase-when-behind/rebase-keeps-branch-merges.md)
+- verifies rebase-keeps-branch-merges (retired)
 - verifies [ship-worktree-follows-pr](../capability/rhiza/orchestration/shipping/ship-worktree-follows-pr.md)
 
 ## History
