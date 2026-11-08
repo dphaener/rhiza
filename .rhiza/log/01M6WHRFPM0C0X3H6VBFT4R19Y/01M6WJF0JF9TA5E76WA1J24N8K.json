@@ -1,0 +1,44 @@
+{
+  "actor": "01M6WJD0J9FDSGTA6S2FV0MR4F",
+  "after": [
+    "01M6WJ2EHFS15QM1F98BJWERK5"
+  ],
+  "at": "2026-11-08T03:15:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "workflows-are-the-rules: recoveries that belong to a step stay in that step's workflow, and the watchdog only resumes runs, so the workflow's own steps (including merge) still decide. That makes it a backstop, not a second implementation of the three bug fixes, and it never merges outside a workflow. The intent says 'rebase', but bug 01M6WBVX and the repo's practice say merge origin/main, never rebase or force-push (force-push is denied here), so the watchdog merges. Owner-attended runs are left alone, as daemonNudgeStalled already does, because the owner may be the one the run waits on. The 20m nudge reuses today's daemonNudgeText threshold; doubling it before a retry gives the session one chance to answer. Budget 2 and one CI rerun match the intent's 'rerun failed CI once' and the bug requests' 'retry once', with one spare for a stall. warn-dont-safeguard: everything is policy with defaults in rhiza.toml, and it warns (inbox, log, health) rather than blocking.",
+          "statement": "(1) The watchdog is the daemon-level backstop; the three bug requests stay separate and ship on their own. Each adds a first-line recovery inside its workflow step (a step retries once on a vanished go $WORK, plan reruns failed CI once, ship-change merges main on a conflict). The watchdog acts only on what those miss: a run that has stalled, or has ended on a known transient signature. It never duplicates a step's recovery while the step is still live. Its resume counts against its own per-run retry budget, separate from any step's. (2) Stalled step (no journal entry or session report past its limit), autonomous runs only: first nudge the session (today's daemonNudge). If there is still no progress after a second limit, stop the step and run resume --retry, logging one line and charging the run's budget. Once the budget is spent, leave an inbox item naming what was tried. Owner-attended runs get only the log line and an inbox item, never a stop or retry. (3) A PR with no CI because it conflicts with main: the watchdog merges origin/main into the branch and pushes normally (never rebase or force-push), then records the push in the run's ship state. If the merge conflicts, it resumes the run so the run's own conflict handling (the 01M6WBVX fixer, once shipped) takes it; until then it leaves an inbox item. A green PR its run never merged: the watchdog resumes the run with --retry so the workflow's own merge step merges it, and never merges outside a workflow. If that workflow's merge needs the owner, it leaves an inbox item instead. Every recovery caused by a bug files one deduplicated bug request with the evidence. (4) Shipped defaults, as rhiza.daemon.watchdog.* settings in settingDefs like the other daemon settings: machine values as flat full-key strings under [daemon] in the root's rhiza.toml, project overrides in the project's git config, per-step-kind overrides in the workflow (which win over the project value), and rhiza daemon settings shows each value's source: enabled = true; nudge after 20m idle for agent steps (as today), then retry after 40m; command steps 30m; CI and PR wait steps 90m; retry budget 2 per run; failed CI rerun once per PR head; poll-behind warning when a poll takes over 3x the poll interval; file_bugs = true; act only on autonomous runs.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "watchdog-scope-and-defaults",
+        "id": "01M6WHZY78QBQEYRN9FGG9PNHF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6WHZY78QBQEYRN9FEQWJ60A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestWatchdogPolicy covers the defaults with no rhiza.daemon.watchdog.* key set, a machine value under [daemon] in rhiza.toml, a project override in git config winning over it, a workflow step-kind override winning over the project value, and an invalid value rejected with its key named; go test -trimpath ./cmd/rhiza -run TestScripts/watchdog-policy shows the values with their sources and scopes in rhiza daemon settings",
+          "statement": "The daemon reads its watchdog policy from rhiza.daemon.watchdog.* settings declared in settingDefs like the other daemon settings: machine values as flat full-key strings under [daemon] in the root's rhiza.toml, project overrides in the project's git config, and per-workflow-step-kind overrides in the workflow, which win over the project value. Shipped defaults: enabled = true; agent steps nudged after 20m idle and retried after 40m; command steps 30m; CI and PR wait steps 90m; retry budget 2 per run; failed CI rerun once per PR head; poll-behind warning past 3x the poll interval; fileBugs = true; autonomous runs only. rhiza daemon settings lists every value with its source and scope"
+        },
+        "handle": "watchdog-policy",
+        "id": "01M6WJ2BR1XZB2E5F21K9ZN9Y3",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6WJ2BR1XZB2E5F21H8TNBFH",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WJF0JF9TA5E76WA1J24N8K",
+  "type": "ops",
+  "v": 1
+}

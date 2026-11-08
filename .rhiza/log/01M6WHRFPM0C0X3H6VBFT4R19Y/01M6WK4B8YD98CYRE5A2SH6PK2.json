@@ -1,0 +1,51 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6WJW7B2D3FKBHAMMS9VWPA0"
+  ],
+  "at": "2026-11-08T03:27:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on watchdog-transient-failure): The model's daemon-resume-once (01M61R7MP3HGEB60GJV4M3CWQA) says the daemon leaves alone every failed run (the inbox lists it as failed) and never resumes a run interrupted again after its one resume. The watchdog leaves watchdog-transient-failure, watchdog-ci-rerun, watchdog-green-pr-unmerged, watchdog-stuck-requests and watchdog-stalled-step resume failed or re-stalled runs with --retry. The plan doesn't amend or narrow daemon-resume-once, so after it lands the two capabilities contradict each other. daemon-resume-once should say failed and given-up runs are left to the watchdog's policy. The critic confirmed it: daemon-resume-once (01M61R7MP3HGEB60GJV4M3CWQA, unchanged in the what-if view of this change set) says the daemon leaves alone every failed run and any run interrupted again after its one resume. watchdog-transient-failure resumes failed runs with --retry, and the other watchdog leaves resume given-up runs. The plan writes no op on daemon-resume-once and rhiza overlaps shows nothing, so once it lands the two capabilities contradict each other. How should it be settled?"
+        },
+        "handle": "review-01m6whrd-r3-f1",
+        "id": "01M6WK4B1BFDQVKA33C9CAK3SN",
+        "key": null,
+        "kind": "question",
+        "node": "01M6WK4B1BFDQVKA33C7PNE4KA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WK4B1BFDQVKA33C7PNE4KA",
+        "id": "01M6WK4B386KK11YQ22638HHR3",
+        "link": "01M6WK4B386KK11YQ223SS7NBG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2CRTGK0ZMW94E2BA801H",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on watchdog-plan-interview): The Source's summary of the arbiter's answer puts the defaults 'under [rhiza.daemon.watchdog] in rhiza.toml' with 'file_bugs on', and mentions only machine settings. The Decision watchdog-scope-and-defaults it backs, and watchdog-policy, instead use flat full-key strings rhiza.daemon.watchdog.* under [daemon], a camelCase fileBugs key, and project keys rhiza.project.watchdog.* in git config that override the machine keys. The provenance record and the decision disagree on where the policy lives and what its keys are called. The critic confirmed it: The watchdog-plan-interview summary says the defaults live 'under [rhiza.daemon.watchdog] in rhiza.toml' with 'file_bugs on' and mentions no project keys. watchdog-policy states flat rhiza.daemon.watchdog.* keys under [daemon], a camelCase fileBugs key, and rhiza.project.watchdog.* project keys in git config. The Source behind the decision misstates its layout and key names. How should it be settled?"
+        },
+        "handle": "review-01m6whrd-r3-f2",
+        "id": "01M6WK4B4K1M2XTSZBBEYA0HY5",
+        "key": null,
+        "kind": "question",
+        "node": "01M6WK4B4K1M2XTSZBBCN4F1C0",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WK4B8YD98CYRE5A2SH6PK2",
+  "type": "ops",
+  "v": 1
+}

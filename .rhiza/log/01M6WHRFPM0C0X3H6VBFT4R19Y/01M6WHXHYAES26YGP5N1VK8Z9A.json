@@ -1,0 +1,30 @@
+{
+  "actor": "01M6WHSD93J9TWD03RVXPXPHCQ",
+  "after": [
+    "01M6WHRFPM0C0X3H6VBHQ4QBFY"
+  ],
+  "at": "2026-11-08T03:06:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "fa29a4a8-96f3-4ec1-b17f-01a1b91c9b4a",
+          "statement": "Daemon watchdog scope: bug requests 01M6W8KN (retry a step once on a vanished go $WORK), 01M6W9VN (plan workflow reruns failed CI once) and 01M6WBVX (ship-change merges main on a rebase conflict) each add one recovery inside a workflow step. How should the watchdog relate to them? / When a run's step has had no journal entry or session report for longer than its limit, what does the watchdog do? / A run's PR has no CI (it conflicts with main) or is green but its run never merged it. What does the watchdog do? / Which shipped defaults should the watchdog's rhiza.toml policy have?"
+        },
+        "handle": "question-fa29a4a8-1",
+        "id": "01M6WHXDC40GCZ2040HER56ZE8",
+        "key": null,
+        "kind": "question",
+        "node": "01M6WHXDC40GCZ2040HC7Y8W1S",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WHXHYAES26YGP5N1VK8Z9A",
+  "type": "ops",
+  "v": 1
+}
