@@ -1,0 +1,30 @@
+{
+  "actor": "01M6YKQ4BFXM9BSX50HWZ9RC4W",
+  "after": [
+    "01M6YKP1TFR204NPCNJWHQBSZK"
+  ],
+  "at": "2026-11-08T22:18:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "95eb7493-c225-410a-b431-01a1bd3b689e",
+          "statement": "`rhiza change show 01M6WMCCRC0KSCWEV17VY8KVQP` fails because model.ShowFieldValue (internal/model/textshow.go) re-encodes a text field that holds an @{ID} reference with json.Marshal. That HTML-escapes < > & (and always escapes U+2028/U+2029), so op.Encode's canonical check rejects the shown op. The same helper feeds change show, its indexed path, change diff, show, slice and render. How should the fix work?"
+        },
+        "handle": "question-95eb7493-1",
+        "id": "01M6YKW68VV73QQHSM7Y0S6KCM",
+        "key": null,
+        "kind": "question",
+        "node": "01M6YKW68VV73QQHSM7XMYNJK6",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6YKP1TFR204NPCNJVQ36A4F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YKW8F8K7BTVF4Y34BFBSAS",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,60 @@
+{
+  "actor": "01M6YKQ4BFXM9BSX50HWZ9RC4W",
+  "after": [
+    "01M6YKZ6DEDZG78KWMW3DR0XVS"
+  ],
+  "at": "2026-11-08T22:20:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6YKY44M04D82GEPRW690QR9",
+        "id": "01M6YM01ET5HBZT3Z4E81G18KC",
+        "link": "01M6YM01ET5HBZT3Z4E55M1TY5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YKZ5R257WA9KNBFH4X3RFD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A unit test in internal/model (go test -trimpath ./internal/model -run ShowField) gives ShowFieldValue a statement with an @{ID} reference plus <branch>, a & b, x > y and U+2028, and asserts the result equals canon.Marshal of the shown text minus its newline and passes canon.Check; a testscript (go test -trimpath ./cmd/rhiza -run TestScripts/change-show-canonical-text) writes such a statement referring to another node, then rhiza check passes, rhiza change show and change show --json succeed and print the text with literal <, > and &, rhiza change diff and rhiza show --json of the node succeed with the same literal text, and after landing, change show of the landed change set still succeeds",
+          "statement": "A text field shown by handle stays canonical JSON (literal < > & and U+2028/U+2029, as canon writes them), so change show, its indexed path, change diff, show, slice and render read every op that rhiza check and rhiza land accept"
+        },
+        "handle": "shown-text-canonical",
+        "id": "01M6YM01FKQKHVJ1VCA9B9R7EM",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6YM01FKQKHVJ1VCA63B6T2J",
+        "op": "node.create",
+        "parent": "01M5SWSWH9Y4B8S2ADQCGPYQ1E"
+      },
+      {
+        "decision": null,
+        "from": "01M6YM01FKQKHVJ1VCA63B6T2J",
+        "id": "01M6YM01G2500X8M06SAG3405P",
+        "link": "01M6YM01G2500X8M06S9EGZ6T7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YKY44M04D82GEPRW690QR9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YM01FKQKHVJ1VCA63B6T2J",
+        "id": "01M6YM01GNTF4PH8Q0QB6M69J7",
+        "link": "01M6YM01GNTF4PH8Q0QACZJ3VZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YKZ5R257WA9KNBFH4X3RFD",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6YKP1TFR204NPCNJVQ36A4F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YM01HC359RFJN7ABW8M305",
+  "type": "ops",
+  "v": 1
+}
