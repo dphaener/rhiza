@@ -4,11 +4,30 @@ package daemon
 // change sets it could start now in its own roadmap order (what Pick would
 // return for it with no slot limit), how many of its runs are already
 // running and its optional per-project cap on running runs (0 for none).
+// Ready is in three tiers: its first Continues entries are queued
+// continuations, the next Queued are queued starts and plan requests, and
+// the rest are ready change sets (and due schedules).
 type ProjectPick struct {
-	Project string
-	Ready   []string
-	Running int
-	Max     int
+	Project   string
+	Ready     []string
+	Continues int
+	Queued    int
+	Running   int
+	Max       int
+}
+
+// tier is the half-open range of p.Ready that tier t (0 continuations, 1
+// queued starts and plan requests, 2 the rest) covers.
+func (p ProjectPick) tier(t int) (int, int) {
+	c := min(max(p.Continues, 0), len(p.Ready))
+	q := min(c+max(p.Queued, 0), len(p.Ready))
+	switch t {
+	case 0:
+		return 0, c
+	case 1:
+		return c, q
+	}
+	return q, len(p.Ready)
 }
 
 // Picked is a change set the root daemon starts, and the project it is in.
@@ -26,7 +45,10 @@ type Picked struct {
 // project in that order that has a ready change set and is under its own
 // Max, and takes that project's next ready change set; a project with
 // nothing to take is passed over. It stops when the slots are full or no
-// project can take a turn. LastTurn of the result is the next pick's after.
+// project can take a turn. The slots fill in tiers: every project's queued
+// continuations first, then queued starts and plan requests, then ready
+// change sets, each tier round-robin and each under the projects' Max, so a
+// continuation never loses a freed slot to another project's start. LastTurn of the result is the next pick's after.
 func RoundRobin(projects []ProjectPick, running, maxRuns int, after string) []Picked {
 	n := len(projects)
 	start := 0
@@ -39,28 +61,34 @@ func RoundRobin(projects []ProjectPick, running, maxRuns int, after string) []Pi
 	next := make([]int, n)
 	taken := make([]int, n)
 	var out []Picked
-	for running < maxRuns {
-		progress := false
-		for j := 0; j < n; j++ {
-			if running >= maxRuns {
+	for t := 0; t < 3; t++ {
+		for i, p := range projects {
+			lo, _ := p.tier(t)
+			next[i] = lo
+		}
+		for running < maxRuns {
+			progress := false
+			for j := 0; j < n; j++ {
+				if running >= maxRuns {
+					break
+				}
+				i := (start + j) % n
+				p := projects[i]
+				if _, hi := p.tier(t); next[i] >= hi {
+					continue
+				}
+				if p.Max > 0 && p.Running+taken[i] >= p.Max {
+					continue
+				}
+				out = append(out, Picked{Project: p.Project, Change: p.Ready[next[i]]})
+				next[i]++
+				taken[i]++
+				running++
+				progress = true
+			}
+			if !progress {
 				break
 			}
-			i := (start + j) % n
-			p := projects[i]
-			if next[i] >= len(p.Ready) {
-				continue
-			}
-			if p.Max > 0 && p.Running+taken[i] >= p.Max {
-				continue
-			}
-			out = append(out, Picked{Project: p.Project, Change: p.Ready[next[i]]})
-			next[i]++
-			taken[i]++
-			running++
-			progress = true
-		}
-		if !progress {
-			break
 		}
 	}
 	return out

@@ -195,7 +195,7 @@ func (p *daemonProj) prepare(r DaemonRequest, onConf func(daemonConf)) daemonTur
 	if hold == nil {
 		hold = governorHold(ctx, p.common)
 	}
-	ready, running := daemonDemand(ctx, p.rs, p.pending, p.unjournaled, conf, hold)
+	ready, continues, queued, running := daemonDemand(ctx, p.rs, p.pending, p.unjournaled, conf, hold)
 	// A due schedule is demand for a slot after the rest; one started and
 	// not journaled yet holds a slot.
 	if runs, lerr := p.rs.List(); lerr == nil {
@@ -207,7 +207,7 @@ func (p *daemonProj) prepare(r DaemonRequest, onConf func(daemonConf)) daemonTur
 			}
 		}
 	}
-	return daemonTurn{conf: conf, hold: hold, pick: daemon.ProjectPick{Project: p.name, Ready: ready, Running: running, Max: conf.projectMax}}
+	return daemonTurn{conf: conf, hold: hold, pick: daemon.ProjectPick{Project: p.name, Ready: ready, Continues: continues, Queued: queued, Running: running, Max: conf.projectMax}}
 }
 
 // schedulesStopped says a paused or held project, or one on a disk low on
@@ -250,10 +250,10 @@ func (p *daemonProj) startSchedules(conf daemonConf, hold *usageHold, free int) 
 // disk low on space, could start nothing. A slot is held by a running run,
 // by a start not yet journaled, as daemon.Pick counts them, and by a plan
 // request's start not yet journaled, as daemonPlanRequests counts them.
-func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemonPending, conf daemonConf, hold *usageHold) ([]string, int) {
+func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemonPending, conf daemonConf, hold *usageHold) ([]string, int, int, int) {
 	runs, err := rs.List()
 	if err != nil {
-		return nil, 0
+		return nil, 0, 0, 0
 	}
 	host, _ := os.Hostname()
 	fold, ferr := daemonFoldOf(ctx)
@@ -284,15 +284,16 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 	}
 	running += daemonRequestsStarting(ctx, rs, runs)
 	if conf.paused || hold != nil || ferr != nil {
-		return nil, running
+		return nil, 0, 0, running
 	}
 	if low, _ := daemonDiskLow(ctx, conf.minFree); low {
-		return nil, running
+		return nil, 0, 0, running
 	}
 	var ready []string
 	for range daemonContinuesWaiting(ctx, rs, runs) {
 		ready = append(ready, "continue")
 	}
+	continues := len(ready)
 	if common, err := gitCommonDir(ctx); err == nil {
 		if starts, err := daemon.ReadStarts(common); err == nil {
 			for _, s := range starts {
@@ -305,6 +306,7 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 	for range daemonRequestsWaiting(ctx) {
 		ready = append(ready, "plan request")
 	}
+	queued := len(ready) - continues
 	// As in daemonPoll1, each candidate's ship stage is the one its
 	// dispatched workflow declares: one whose ship stage is the owner's is
 	// raised, not picked, so it claims no slot.
@@ -317,7 +319,7 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 		return err != nil || mode == AutonomyOwner
 	})
 	ready = append(ready, daemon.Pick(cands, runs, held, host, nil, running+len(cands), ship)...)
-	return ready, running
+	return ready, continues, queued, running
 }
 
 // poll is the rest of the project's poll, after prepare read t: what the

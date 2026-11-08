@@ -1,0 +1,40 @@
+{
+  "actor": "01M6XWTCTB37FV23HK13X4QNN6",
+  "after": [
+    "01M6XXJA9QMXXY59QBKFB2RJR0"
+  ],
+  "at": "2026-11-08T15:56:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7e0959aa, with RHIZA_* unset and GOTMPDIR/TMPDIR outside the repo, ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-continue-slot|describe-golden|daemon-status.*|daemon-root.*)$': all PASS. daemon-continue-slot.txtar (fake rex) has one live running run, max-runs 1, and two interrupted runs queued with rhiza run resume. rhiza daemon status prints QUEUEDONE01 and QUEUEDTWO02 as 'interrupted, queued, waiting for a slot (place 1)/(place 2)', and --json gives queued 1 and 2 with state interrupted. An interrupted run with nothing queued (PLAININT003) shows plain 'interrupted' with no queued field. describe-golden passes with the new queued field (omitempty int) on both DaemonRun schemas. Read the diff: daemonStatusRuns numbers places over the project's continuation queue in order, counting only entries daemonContinueCanStart accepts (the same predicate the slot accounting uses), for both per-project and root-home status. go test ./internal/api -run Daemon: every test PASS. The package's root-state guard then flagged ~/code/.rhiza-root/usage.live.json, which the live root daemon writes; this change does not."
+        },
+        "handle": "daemon-status-queued-continuation-verified",
+        "id": "01M6XY0MVZDXSPZ83AEKM4RGBG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XY0MVY0TP7XM04EX8DAZ4J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XY0MVY0TP7XM04EX8DAZ4J",
+        "id": "01M6XY0MWMDVEFSV5YV31QF9MG",
+        "link": "01M6XY0MWMDVEFSV5YTZA78Z7A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XCJNBA3Y2XBG39EKDVCRZ7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XC4M3W7Y351WGXE8DTZACT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XY0MX9DW7DVVJN1X31ME5B",
+  "type": "ops",
+  "v": 1
+}

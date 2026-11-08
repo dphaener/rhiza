@@ -22,6 +22,7 @@ Round-robin. The assistant's option, picked by the owner.
 
 ### In
 
+- relates-to [continuations-first-machine-wide](continuations-first-machine-wide.md) — Refines the owner-picked round-robin: rotation and roadmap order stay, but queued continuations, then queued starts and plan requests, go ahead of ready change sets machine-wide.
 - decided-by [m29-one-daemon](../intent/milestone-29/m29-one-daemon.md)
 - decided-by [root-daemon-round-robin](../capability/rhiza/orchestration/daemon/root-daemon-round-robin.md)
 - decided-by [vm-second-project-ships](../capability/rhiza/orchestration/daemon/vm-second-project-ships.md)
