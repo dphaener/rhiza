@@ -117,6 +117,9 @@ var settingDefs = []settingDef{
 	// merge (unset means no deploy check) and how long it waits.
 	{project: true, key: DeployURLKey, def: "", validate: validateDeployURL},
 	{project: true, key: DeployTimeoutKey, def: DefaultDeployTimeout, validate: validateDeployTimeout},
+	// The CI stability window: how many of the latest settled CI runs in the
+	// stability record are checked for flakes.
+	{project: true, key: CIWindowKey, def: strconv.Itoa(DefaultCIWindow), validate: validateWholeFrom(1)},
 	{project: true, key: "rhiza.autonomy.plan", def: AutonomyOwner, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	// accept governs every plan run's gate, autonomous or owner-run, which
 	// accepts once the review passed unless it is owner; other change sets
@@ -125,6 +128,12 @@ var settingDefs = []settingDef{
 	{project: true, key: "rhiza.autonomy.ship", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	{project: true, key: "rhiza.autonomy.signoff", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 }
+
+// The CI stability window's key and default.
+const (
+	CIWindowKey     = "rhiza.ship.ciWindow"
+	DefaultCIWindow = 20
+)
 
 // The ship deploy check's keys and the timeout's default.
 const (
@@ -377,7 +386,7 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl or deployTimeout, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout or ciWindow, or rhiza.autonomy.plan, accept, ship or signoff"`
 	Project string `json:"project,omitempty" flag:"project" desc:"The registered project a project setting is written to; default the current project"`
 	Value   string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes"`
 }

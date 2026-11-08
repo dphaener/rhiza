@@ -14,6 +14,8 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -112,4 +114,55 @@ func recordSettledCI(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckRespons
 		}
 	}
 	return recordCIRun(ctx, t, run)
+}
+
+// CIVerdict is Rhiza's judgment of a repo's CI, read from the record.
+type CIVerdict struct {
+	Unstable bool   `json:"unstable" desc:"True while the window holds a flake or main's latest result is red"`
+	Reason   string `json:"reason,omitempty" desc:"Why CI is unstable; empty when stable"`
+}
+
+// ciVerdict judges rec: CI is unstable while the last window runs hold a
+// flake, or while main's latest result is red. window below 1 counts as 1.
+func ciVerdict(rec CIStability, window int) CIVerdict {
+	window = max(window, 1)
+	runs := rec.Runs
+	if len(runs) > window {
+		runs = runs[len(runs)-window:]
+	}
+	for _, r := range runs {
+		if len(r.Flakes) > 0 {
+			return CIVerdict{Unstable: true, Reason: "flake in the last " + strconv.Itoa(window) + " CI runs: " + strings.Join(r.Flakes, ", ")}
+		}
+	}
+	for i := len(rec.Runs) - 1; i >= 0; i-- {
+		if r := rec.Runs[i]; r.Main {
+			if r.Result == ciRed {
+				return CIVerdict{Unstable: true, Reason: "main's latest CI result is red (" + r.Head + ")"}
+			}
+			break
+		}
+	}
+	return CIVerdict{}
+}
+
+// ciStabilityVerdict reads the repo's record and the ciWindow setting.
+func ciStabilityVerdict(ctx *Ctx) (CIVerdict, error) {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return CIVerdict{}, err
+	}
+	rec, err := readCIStability(ciStabilityPath(common))
+	if err != nil {
+		return CIVerdict{}, err
+	}
+	rows, err := settingsOf(ctx, nil)
+	if err != nil {
+		return CIVerdict{}, err
+	}
+	window, err := strconv.Atoi(settingValue(rows, CIWindowKey))
+	if err != nil {
+		return CIVerdict{}, Usagef("%s: %v", CIWindowKey, err).WithNext("rhiza daemon settings")
+	}
+	return ciVerdict(rec, window), nil
 }
