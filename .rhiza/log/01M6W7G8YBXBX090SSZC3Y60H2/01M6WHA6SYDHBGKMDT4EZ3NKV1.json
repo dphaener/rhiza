@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WH3JE464SPQD2CTZ9EAQJR",
+  "after": [
+    "01M6WGZZQAQJ5RYHX5WH4C0M5E"
+  ],
+  "at": "2026-11-08T02:55:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA by hand with the built binary (go build -trimpath ./cmd/rhiza) in a scratch Rhiza root with real wall-clock run IDs, no test clock. Two hold runs started in parallel got IDs 01M6WH7K22GY0EEKR47M709Y4N and 01M6WH7K5Y34JW19BVKB5XTRST, sharing the 8-character prefix the old handle used. With review-01m6wh7k22gy0eekr47m709y4n-r3-f1 pre-taken by an unrelated question, three findings rounds plus a confirmed f1 verdict on each run: review-check on run 1 added review-01m6wh7k22gy0eekr47m709y4n-r3-f1-2 and journalled that handle in its asked entry; on run 2 it added review-01m6wh7k5y34jw19bvkb5xtrst-r3-f1. A repeated review-check on each reported added false and left one asked entry per run; rhiza health showed no duplicate handle. An autonomous run with its full-ID handle pre-taken: rhiza run gate failed before review-check (no question left for f1) and passed after it, finding the -2 question by the journal. Scoped tests (go test ./internal/api -run Review; testscripts run-review-check, -handles, -landed, run-gate, run-arbitrate-asked) pass."
+        },
+        "handle": "review-question-handle-unique-qa-1",
+        "id": "01M6WHA6QFSNWS04AJ0QVPVT98",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WHA6QFSNWS04AJ0MDXJXCZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WHA6QFSNWS04AJ0MDXJXCZ",
+        "id": "01M6WHA6RK1P95SS0D2BX1TMVZ",
+        "link": "01M6WHA6RK1P95SS0D2BS9DNRB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W7QGXS2VNCJ3KMFRMW78XE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W7G8YBXBX090SSZC3Y60H2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WHA6SYDHBGKMDT4EZ3NKV1",
+  "type": "ops",
+  "v": 1
+}
