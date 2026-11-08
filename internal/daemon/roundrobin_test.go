@@ -91,3 +91,46 @@ func TestRoundRobinRotatesAcrossPolls(t *testing.T) {
 		t.Fatalf("LastTurn of nothing: %q", got)
 	}
 }
+
+// A queued continuation takes a freed slot ahead of another project's
+// turn, starts or ready change sets.
+func TestRoundRobinContinuationsFirst(t *testing.T) {
+	projects := []ProjectPick{
+		{Project: "A", Ready: []string{"A1", "A2"}},
+		{Project: "B", Ready: []string{"Bc"}, Continues: 1},
+	}
+	if got := names(RoundRobin(projects, 2, 3, "")); !slices.Equal(got, []string{"Bc"}) {
+		t.Fatalf("one free slot: %v", got)
+	}
+	projects = []ProjectPick{
+		{Project: "A", Ready: []string{"As", "A2"}, Queued: 1},
+		{Project: "B", Ready: []string{"Bc"}, Continues: 1},
+	}
+	if got := names(RoundRobin(projects, 1, 3, "")); !slices.Equal(got, []string{"Bc", "As"}) {
+		t.Fatalf("two free slots: %v", got)
+	}
+	// Queued starts come before ready change sets.
+	projects = []ProjectPick{
+		{Project: "A", Ready: []string{"A1"}},
+		{Project: "B", Ready: []string{"Bs"}, Queued: 1},
+	}
+	if got := names(RoundRobin(projects, 0, 1, "")); !slices.Equal(got, []string{"Bs"}) {
+		t.Fatalf("starts before roadmap: %v", got)
+	}
+}
+
+// A project at its own max gets no continuation slot; the next project's
+// continuation, else its start, takes it.
+func TestRoundRobinContinuationPerProjectMax(t *testing.T) {
+	projects := []ProjectPick{
+		{Project: "A", Ready: []string{"Ac"}, Continues: 1, Running: 1, Max: 1},
+		{Project: "B", Ready: []string{"Bc", "B1"}, Continues: 1},
+	}
+	if got := names(RoundRobin(projects, 1, 2, "")); !slices.Equal(got, []string{"Bc"}) {
+		t.Fatalf("A at max: %v", got)
+	}
+	projects[1].Continues = 0
+	if got := names(RoundRobin(projects, 1, 2, "")); !slices.Equal(got, []string{"Bc"}) {
+		t.Fatalf("B start: %v", got)
+	}
+}
