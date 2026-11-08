@@ -1,0 +1,155 @@
+{
+  "actor": "01M6WZ4KB6J84EZM5QJQHYJAZ2",
+  "after": [
+    "01M6WZ0KD8685G8AQ75SX72V7J"
+  ],
+  "at": "2026-11-08T07:02:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza at the branch head in a scratch root and project. rhiza daemon settings listed all ten rhiza.daemon.watchdog.* machine keys and nine rhiza.project.watchdog.* project keys (no pollBehind) with their defaults. daemon set rhiza.daemon.watchdog.agentNudge 7m wrote [daemon] \"rhiza.daemon.watchdog.agentNudge\" = \"7m\" to rhiza.toml. A hand-edited value of \"soon\" made both daemon settings and daemon --once fail with an error naming the key. daemon set ... commandLimit 0s was rejected with the key named. Setting rhiza.project.watchdog.enabled false in git config showed (git config, project), and the daemon then left an autonomous stalled run alone. A workflow step with stall = \"5s\" was used as that step's limit."
+        },
+        "handle": "watchdog-policy-qa-1",
+        "id": "01M6WZEQXRV9R55RZEH3D80G71",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WZEQXRV9R55RZEGZKYP42W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WZEQXRV9R55RZEGZKYP42W",
+        "id": "01M6WZER2CB58JPFZ7VB83G6EP",
+        "link": "01M6WZER2CB58JPFZ7V98STG5F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2BR1XZB2E5F21H8TNBFH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "An autonomous run of a command workflow failed with \"fatal: Unable to create '/x/.git/index.lock': File exists.\". Real rhiza daemon --once polls logged 'watchdog: run <id> step one failed on a transient error (\"Unable to create '/x/.git/index.lock'\"): resumed with --retry (budget 1 of 2)' and queued the continue, which the next poll resumed. run status showed visits 2 and 3 as retried."
+        },
+        "handle": "watchdog-transient-failure-qa-1",
+        "id": "01M6WZER8H0XY61S9TMW0G97YB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WZER8H0XY61S9TMVJPS8K3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WZER8H0XY61S9TMVJPS8K3",
+        "id": "01M6WZERD6RGQM5YA1DSA3EFHV",
+        "link": "01M6WZERD6RGQM5YA1DRZT6BQV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2CRTGK0ZMW94E2BA801H",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Same run: after two retries (budget 2 of 2), later daemon --once polls (each a fresh daemon process) took no further action. daemon.state.json kept spent=2 and both attempts across those restarts. rhiza inbox showed one watchdog item for the run: 'the watchdog's retry budget of 2 is spent ... it tried: <attempt> at <time>; <attempt> at <time>'."
+        },
+        "handle": "watchdog-retry-budget-qa-1",
+        "id": "01M6WZERFD17WT842YK7F48YW5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WZERFD17WT842YK54VBQBQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WZERFD17WT842YK54VBQBQ",
+        "id": "01M6WZERJT0H64JFP90GX3D53W",
+        "link": "01M6WZERJT0H64JFP90FC8NX8V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2DP43PV2BDTVP6AHT2DN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "The first transient recovery logged 'filed a bug request for the transient failure'. requests.json got one bug request with the run ID, step one and the failing log lines. The second recovery of the same failure filed none while that request was open. A stall recovery on another run filed its own separate stall bug request."
+        },
+        "handle": "watchdog-files-bugs-qa-1",
+        "id": "01M6WZERPNTPX32Z7CR5Z7R8RC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WZERPNTPX32Z7CR4336Z7K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WZERPNTPX32Z7CR4336Z7K",
+        "id": "01M6WZERV160P60H7Z7934DCR1",
+        "link": "01M6WZERV160P60H7Z76PXEJFY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2DW8TQBJPM5R59T3QGFK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "After the real daemon polls, rhiza health's daemon part listed \"watchdog's last actions, newest first:\" with the three actions (two retries and one bug filing) in newest-first order, each with its RFC 3339 time. Each action had also been logged as one 'rhiza: daemon: watchdog: ...' line on stderr."
+        },
+        "handle": "watchdog-actions-shown-qa-1",
+        "id": "01M6WZES0PMEYWM3DQ6X479PNQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WZES0PMEYWM3DQ6TRPD65G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WZES0PMEYWM3DQ6TRPD65G",
+        "id": "01M6WZES6PC45ZS0TT4ZQMYD6M",
+        "link": "01M6WZES6PC45ZS0TT4YYDY7P0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2EA89XVKKBJ31JVBAZB7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "A workflow command step 'sleep 300' with stall = \"5s\", run --autonomous, then rhiza daemon --once after 9s. The daemon logged 'step one silent since ...: stopped and resumed with --retry (budget 1 of 2)', the run showed stopped, and the next poll resumed it. An attended run of the same workflow was only logged ('attended, left to the owner') and listed in the inbox, with no stop. But stopping the run SIGTERMs only the run process: the step's child 'sh -c exec 2>&1 sleep 300' was reparented to PID 1 and kept running, and the retry started a second copy beside it."
+        },
+        "handle": "watchdog-stalled-step-qa-1",
+        "id": "01M6WZESBF1N0PS24MA57JHQSW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WZESBF1N0PS24MA2PRBD1P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WZESBF1N0PS24MA2PRBD1P",
+        "id": "01M6WZESHR7PV8V8S9F51EHJ5G",
+        "link": "01M6WZESHR7PV8V8S9F3Z4ZNHG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2CKKVZMZ0EMK7HYXK1WH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WZESPMVNW70176YNXH0AFE",
+  "type": "ops",
+  "v": 1
+}
