@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WMZPGTGJ56TVKS6A1G7008",
+  "after": [
+    "01M6WKGNBQHQHMB3Q0RAM7NT2A"
+  ],
+  "at": "2026-11-08T04:01:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-29bf50db at 13ac9726: go test -trimpath ./internal/workflow/... passes; TestAutonomyDeclaration parses autonomous = true (all four stages auto), autonomous = false (all owner), a partial [autonomy] table (plan owner, ship auto, accept/signoff undeclared) and no declaration (none), and Parse and Validate both refuse both forms ('autonomous and [autonomy] are both set'), an unknown stage ('autonomy.build: unknown stage') and a bad value ('autonomy.ship: maybe is not a mode') plus a non-boolean autonomous. go test ./cmd/rhiza -run TestScripts/(workflow-check|workflow-stage-autonomy|plan-milestone-workflow) passes; workflow-check.txtar shows rhiza workflow check exiting non-zero with the bad-value and both-forms messages. By hand with a scratch build, files in a scratch repo's .rhiza/workflows checked by name gave the unknown-stage, both-forms and bad-value refusals naming the key (exit 1) and a partial table valid (exit 0). Read parseAutonomy in internal/workflow/workflow.go and its call from Parse and check.go; the leaf commit itself adds only model records, the code having landed earlier in this change set."
+        },
+        "handle": "workflow-autonomy-declaration-verified-2",
+        "id": "01M6WN28ZE5MGBTYRY9HTX82GD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WN28ZE5MGBTYRY9G8VEH4X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WN28ZE5MGBTYRY9G8VEH4X",
+        "id": "01M6WN2983BP91JXEZBQD8H28H",
+        "link": "01M6WN2983BP91JXEZBPY0K51K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVKA8H196XPZQX6BHQZK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WN29FVKPEGQ0XCCX833NHN",
+  "type": "ops",
+  "v": 1
+}
