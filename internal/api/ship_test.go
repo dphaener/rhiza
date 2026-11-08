@@ -1438,6 +1438,72 @@ func TestShipCheckNoRunIDNotRerun(t *testing.T) {
 	}
 }
 
+const rerunRollup = `{"name":"test","status":"COMPLETED","conclusion":"FAILURE","detailsUrl":"https://github.com/o/r/actions/runs/42/job/1"}`
+
+// A budget of 2 reruns a head's failed run twice, recording the count
+// before each gh call, then fails on the third red; a new head starts over.
+func TestShipCheckRerunBudget(t *testing.T) {
+	f, g, state := shipFixture(t)
+	g.answers[shipPRView] = openPR(rerunRollup)
+	const rerun = "gh run rerun 42 --failed"
+	g.answers["run rerun 42 --failed"] = ""
+	count := func() int {
+		n := 0
+		for _, c := range g.calls {
+			if c == rerun {
+				n++
+			}
+		}
+		return n
+	}
+	for i := 1; i <= 2; i++ {
+		r := shipCheck(t, f, `{"settled":true,"reruns":2}`)
+		if r.Settled || len(r.Reran) != 1 || count() != i {
+			t.Fatalf("rerun %d: %+v, gh reruns %d", i, r, count())
+		}
+		if st, _ := readShipState(state); st.RerunCount != i || st.RerunHead != "abc1234def" {
+			t.Fatalf("state after rerun %d: %+v", i, st)
+		}
+	}
+	r := shipCheck(t, f, `{"settled":true,"reruns":2}`)
+	if !r.Settled || r.Green || len(r.Reran) != 0 || count() != 2 {
+		t.Errorf("third red: %+v, gh reruns %d", r, count())
+	}
+	// A new head resets the count.
+	g.answers[shipPRView] = strings.Replace(openPR(rerunRollup), "abc1234def", "def5678abc", 1)
+	r = shipCheck(t, f, `{"settled":true,"reruns":2}`)
+	if r.Settled || count() != 3 {
+		t.Errorf("new head: %+v, gh reruns %d", r, count())
+	}
+	if st, _ := readShipState(state); st.RerunCount != 1 || st.RerunHead != "def5678abc" {
+		t.Errorf("state after new head: %+v", st)
+	}
+}
+
+// Without the flag a head is rerun exactly once.
+func TestShipCheckRerunDefaultOnce(t *testing.T) {
+	f, g, _ := shipFixture(t)
+	g.answers[shipPRView] = openPR(rerunRollup)
+	g.answers["run rerun 42 --failed"] = ""
+	if r := shipCheck(t, f, `{"settled":true}`); r.Settled || len(r.Reran) != 1 {
+		t.Fatalf("first: %+v", r)
+	}
+	if r := shipCheck(t, f, `{"settled":true}`); !r.Settled || r.Green || len(r.Reran) != 0 {
+		t.Errorf("second: %+v", r)
+	}
+}
+
+func TestShipCheckRerunsUsage(t *testing.T) {
+	f, _, _ := shipFixture(t)
+	for _, req := range []string{`{"reruns":0}`, `{"reruns":-1}`} {
+		_, err := callOp(t, f.ctx, "ship.check", req)
+		var e *Error
+		if !errors.As(err, &e) || e.Code != CodeUsage {
+			t.Errorf("%s: err = %v, want a usage error", req, err)
+		}
+	}
+}
+
 func TestShipCloseOutRecordsStaleMain(t *testing.T) {
 	f, _, state := shipFixture(t)
 	if err := writeShipState(state, shipState{PR: 7, Head: "abc1234def", MergeCommit: "fff0000aaa"}); err != nil {
