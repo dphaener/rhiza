@@ -1,0 +1,41 @@
+{
+  "actor": "01M6WK4RPN5K2DSZ9XV7G4TSMB",
+  "after": [
+    "01M6WK4B8YD98CYRE5A2SH6PK2"
+  ],
+  "at": "2026-11-08T03:28:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent is that the daemon recovers failed and stalled runs by resume --retry with a per-run retry budget, so the watchdog leaves resuming failed and given-up runs is the point of the work and must not be narrowed. daemon-resume-once is the older, landed rule and its 'leaves alone every failed run' clause was written before any recovery policy existed; its acceptance (one resume, a second interrupt gets none) still holds for the daemon's own plain resume. Amending daemon-resume-once to defer to the watchdog, as the finding and critic propose, removes the contradiction while keeping the inbox listing for runs the watchdog gives up on, which matches the intent's 'after the budget is spent leaves an inbox item' and the policy-with-shipped-defaults decisions (workflows-are-the-rules, warn-dont-safeguard).",
+          "statement": "This change set amends @{01M61R7MP3HGEB60GJV4M3CWQA} so its one plain resume stays as it is, but failed runs and runs interrupted again after that resume are no longer left alone unconditionally: they are left to the watchdog's policy (@{01M6WJ2BF6X93480DV342ARX39} and its leaves), which may resume them with --retry within the per-run retry budget; only when the watchdog's policy does not apply, is turned off in rhiza.toml, or its budget is spent does the run stay listed in the inbox as failed or given up.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "daemon-resume-once-defers-to-watchdog",
+        "id": "01M6WK5SZATMGRYN3SWZ4YYGT1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6WK5SZATMGRYN3SWWDEFAK9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WK5SZATMGRYN3SWWDEFAK9",
+        "id": "01M6WK5T1Y6EBP6JJWNK9BK8RN",
+        "link": "01M6WK5T1Y6EBP6JJWNHKK9DCQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WK4B1BFDQVKA33C7PNE4KA",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WK5T57VBHMXY6JHD33J973",
+  "type": "ops",
+  "v": 1
+}
