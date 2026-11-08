@@ -3,6 +3,8 @@ package run
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -327,6 +329,9 @@ func (e *Engine) run(id string, retry bool, before func(State) ([]Entry, error))
 		return j.State(), &runError{id: j.ID, kind: ErrLive}
 	}
 	defer unlock()
+	// The run's private temp folder goes with the run, whether it finishes,
+	// fails or stops.
+	defer func() { _ = os.RemoveAll(filepath.Dir(e.Store.TmpDir(j.ID))) }()
 	// Read again under the lock: the holder may have moved on.
 	if j, err = e.Store.Read(j.ID); err != nil {
 		return State{}, err
@@ -595,10 +600,13 @@ func (r *running) runStep(step workflow.Step, change string) (result, error) {
 
 // stepEnv is the RHIZA_* variables of step on the run's change set.
 func (r *running) stepEnv(step, change string) []string {
+	tmp := r.e.Store.TmpDir(r.j.ID)
+	_ = os.MkdirAll(tmp, 0o755)
 	return []string{
 		"RHIZA_CHANGE=" + change,
 		"RHIZA_RUN=" + r.j.ID,
 		"RHIZA_STEP=" + step,
+		EnvGoTmp + "=" + tmp,
 	}
 }
 

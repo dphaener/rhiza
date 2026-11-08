@@ -180,6 +180,14 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("session %s: %v", rec.ID, err).WithNext(sessionStartNext)
 	}
 	env, unset := launchEnv(rec)
+	if rec.Run != "" && !ctx.DryRun {
+		if common, err := gitCommonDir(ctx); err == nil {
+			tmp := run.TmpDir(run.Dir(common), rec.Run)
+			if os.MkdirAll(tmp, 0o755) == nil {
+				env = append(env, run.EnvGoTmp+"="+tmp)
+			}
+		}
+	}
 	resp := SessionRunResponse{Session: sessionInfo(rec), Argv: argv, Env: env}
 	if ctx.DryRun {
 		resp.DryRun = true

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6XNXQK5F9FB9A2MMEMX3M8S",
+  "after": [
+    "01M6WHDKF3KGAKYQ5PJ6AMB2WC"
+  ],
+  "at": "2026-11-08T13:38:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 613bc62b (commits b2b5a2be and 613bc62b). Read the diffs: run.TmpDir is <git common dir>/rhiza/runs/<id>/gotmp, separate from the <id>.jsonl journal and lock files. The engine's stepEnv creates it and adds GOTMPDIR to every command, wait and agent step, and session.run creates it and adds GOTMPDIR to the agent's env. The engine.run defer removes <runs>/<id> under the run lock when the run finishes or fails, and runRunAbandon removes it under the lock after journaling the end, which covers attempt 1's finding f1. Ran go vet ./internal/run ./internal/api and go test -trimpath -count=1 ./internal/run/... ./internal/api/... -run 'GoTmp|TestSessionRun$|TestCommandPassFollowsOnPass|TestArbitratePasses|Abandon'. All passed: TestStepsGetRunPrivateGoTmp checks GOTMPDIR on command, wait and agent steps, that the folder exists when each step runs, and that it is gone after the run succeeds. TestGoTmpGoneAfterFailedRun covers a failed run, TestAbandonRemovesRunGoTmp covers abandon (the journal stays readable and the run is abandoned), and TestSessionRun checks the agent env and that the folder exists. Ran the abandon test in a throwaway worktree at 2bee5d01 (without the fix) and saw it fail with 'run folder ... still there after abandon', so the test does check the fix."
+        },
+        "handle": "run-private-gotmpdir-verified",
+        "id": "01M6XP2MTP58DJF1BRVYDRM71D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XP2MTP58DJF1BRVX1X89B9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XP2MTP58DJF1BRVX1X89B9",
+        "id": "01M6XP2MWRVW79HZQ56XJ1EX6Z",
+        "link": "01M6XP2MWRVW79HZQ56VGAK56E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WGXA5QZV54A91F061Y3KNQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WGEPSYWV8R14VGKJX9GGJM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XP2MZJ6J2079DJW3128S75",
+  "type": "ops",
+  "v": 1
+}
