@@ -1436,6 +1436,7 @@ type DaemonStatusRequest struct {
 type DaemonProjectStatus struct {
 	Project     string        `json:"project" desc:"The project's name in the root"`
 	Runs        []DaemonRun   `json:"runs" desc:"The project's live runs (running or interrupted) as of its last poll"`
+	Starting    int           `json:"starting,omitempty" desc:"The project's starts and resumes not journaled yet, each holding a slot, as of its last poll"`
 	LastStarted *DaemonEvent  `json:"last_started,omitempty" desc:"The run the daemon last started in the project; absent if none"`
 	LastResumed *DaemonEvent  `json:"last_resumed,omitempty" desc:"The run the daemon last resumed in the project; absent if none"`
 	Skipped     []DaemonSkip  `json:"skipped" desc:"The project's accepted change sets not started at its last poll, each with its reason"`
@@ -1510,6 +1511,7 @@ type DaemonStatusResponse struct {
 	Web             string                `json:"web,omitempty" desc:"The web UI as the daemon's last poll recorded it from rhiza.web.port: its URL (http://127.0.0.1:<port>), or off; it is the recorded setting, the listener is not probed; absent when none was recorded"`
 	Settings        []Setting             `json:"settings" desc:"The settings as its last poll read them, each with its source: default, git config or flag"`
 	Runs            []DaemonRun           `json:"runs" desc:"The live runs (running or interrupted) as of its last poll"`
+	Starting        int                   `json:"starting,omitempty" desc:"The starts and resumes not journaled yet, each holding a slot, as of its last poll"`
 	LastStarted     *DaemonEvent          `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
 	LastResumed     *DaemonEvent          `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
 	Skipped         []DaemonSkip          `json:"skipped" desc:"The accepted change sets it did not start at its last poll, each with its reason"`
@@ -1658,6 +1660,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 			for _, d := range st.Runs {
 				part.Runs = append(part.Runs, DaemonRun{ID: d.ID, Change: d.Change, State: d.State})
 			}
+			part.Starting = st.Starting
 			part.LastStarted, part.LastResumed = daemonEvent(st.LastStarted), daemonEvent(st.LastResumed)
 			for _, k := range st.Skips {
 				part.Skipped = append(part.Skipped, DaemonSkip{Change: k.Change, Request: k.Request, Title: k.Title, Reason: k.Reason, Detail: append([]string{}, k.Detail...)})
@@ -1670,10 +1673,12 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	}
 	resp.Runs, resp.LastStarted, resp.LastResumed = []DaemonRun{}, nil, nil
 	resp.Skipped, resp.Unjournaled = []DaemonSkip{}, []DaemonEvent{}
+	resp.Starting = 0
 	if merged {
 		resp.Projects = parts
 	} else if len(parts) == 1 {
 		p := parts[0]
+		resp.Starting = p.Starting
 		resp.Runs, resp.LastStarted, resp.LastResumed, resp.Skipped, resp.Unjournaled = p.Runs, p.LastStarted, p.LastResumed, p.Skipped, p.Unjournaled
 	}
 	return resp, nil
@@ -1735,6 +1740,7 @@ func daemonStatusHome(ctx *Ctx) (any, error) {
 	for _, d := range st.Runs {
 		resp.Runs = append(resp.Runs, DaemonRun{ID: d.ID, Change: d.Change, State: d.State})
 	}
+	resp.Starting = st.Starting
 	resp.LastStarted = daemonEvent(st.LastStarted)
 	resp.LastResumed = daemonEvent(st.LastResumed)
 	for _, k := range st.Skips {

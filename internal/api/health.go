@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/machine"
 	"github.com/dphaener/rhiza/internal/usage"
 	"github.com/dphaener/rhiza/internal/workflow"
@@ -61,12 +62,15 @@ type HealthRequest struct {
 
 // HealthPart is one part of the system and its state.
 type HealthPart struct {
-	Project string   `json:"project,omitempty" desc:"The registered project the part belongs to, on a report that covers every project; absent on the machine's parts and on a single project's report"`
-	Part    string   `json:"part" enum:"daemon,autonomy,machine,disk,usage,main,schedules,inbox,requests,roadmap,check" desc:"The part"`
-	State   string   `json:"state" enum:"ok,warn,bad" desc:"ok, warn (worth a look) or bad (rhiza health exits 1)"`
-	Summary string   `json:"summary" desc:"One line on the part's state"`
-	Detail  []string `json:"detail" desc:"More lines on the part, such as each setting or each count; empty when none"`
-	Next    string   `json:"next,omitempty" desc:"A command that would help, when one would"`
+	Project  string   `json:"project,omitempty" desc:"The registered project the part belongs to, on a report that covers every project; absent on the machine's parts and on a single project's report"`
+	Part     string   `json:"part" enum:"daemon,autonomy,machine,disk,usage,main,schedules,inbox,requests,roadmap,check" desc:"The part"`
+	State    string   `json:"state" enum:"ok,warn,bad" desc:"ok, warn (worth a look) or bad (rhiza health exits 1)"`
+	Summary  string   `json:"summary" desc:"One line on the part's state"`
+	Live     *int     `json:"live,omitempty" desc:"On the daemon part: the runs running now, summed across the daemon's projects; an interrupted run takes no slot"`
+	Starting *int     `json:"starting,omitempty" desc:"On the daemon part: the starts and resumes not journaled yet, within the start grace"`
+	Max      *int     `json:"max,omitempty" desc:"On the daemon part: rhiza.daemon.maxRuns as the daemon's last poll recorded it"`
+	Detail   []string `json:"detail" desc:"More lines on the part, such as each setting or each count; empty when none"`
+	Next     string   `json:"next,omitempty" desc:"A command that would help, when one would"`
 }
 
 // HealthResponse is the report.
@@ -211,6 +215,7 @@ func healthDaemon(ctx, home *Ctx, all bool) HealthPart {
 		return healthFailed(HealthDaemon, err)
 	}
 	s := out.(DaemonStatusResponse)
+	byProject := s
 	for _, p := range s.Projects {
 		s.Runs = append(s.Runs, p.Runs...)
 	}
@@ -225,6 +230,7 @@ func healthDaemon(ctx, home *Ctx, all bool) HealthPart {
 	}
 	p := HealthPart{Part: HealthDaemon, State: HealthOK,
 		Summary: fmt.Sprintf("running, process %s, %d live runs", s.Process, len(s.Runs))}
+	p = healthRunsAgainstCap(ctx, p, byProject)
 	if s.Commit != "" {
 		p.Detail = append(p.Detail, "built from "+s.Commit)
 		if origin := healthOriginAhead(home, s.Commit); origin != "" {
@@ -237,6 +243,85 @@ func healthDaemon(ctx, home *Ctx, all bool) HealthPart {
 		p.Detail = append(p.Detail, "last poll "+s.LastPoll)
 	}
 	return healthWatchdogActions(healthPollBehind(p, s.PollBehind), s.WatchdogActions)
+}
+
+// healthRunsAgainstCap adds the runs against rhiza.daemon.maxRuns to the
+// daemon part: live runs (an interrupted one takes no slot) plus starts not
+// journaled yet, summed over the daemon's projects, as a detail line. The
+// part is bad when they exceed the cap, with a detail line for each live
+// run: its project, run and change set title.
+func healthRunsAgainstCap(ctx *Ctx, p HealthPart, s DaemonStatusResponse) HealthPart {
+	if s.MaxRuns <= 0 {
+		return p
+	}
+	type scoped struct {
+		project string
+		runs    []DaemonRun
+		starts  int
+	}
+	groups := []scoped{{"", s.Runs, s.Starting}}
+	titles := map[string]func(string) string{"": healthTitler(ctx)}
+	if len(s.Projects) > 0 {
+		scopes, _, err := inboxScopes(ctx, "", true)
+		if err != nil {
+			scopes = nil
+		}
+		for _, sc := range scopes {
+			titles[sc.name] = healthTitler(sc.ctx)
+		}
+	}
+	for _, pr := range s.Projects {
+		groups = append(groups, scoped{pr.Project, pr.Runs, pr.Starting})
+	}
+	live, starting := 0, 0
+	var lines []string
+	for _, g := range groups {
+		starting += g.starts
+		for _, r := range g.runs {
+			if r.State == "interrupted" {
+				continue
+			}
+			live++
+			name := r.Change
+			if t := titles[g.project]; t != nil {
+				if title := t(r.Change); title != "" {
+					name = title
+				}
+			}
+			where := ""
+			if g.project != "" {
+				where = g.project + ", "
+			}
+			lines = append(lines, fmt.Sprintf("live run: %s%s, %s", where, r.ID, name))
+		}
+	}
+	p.Live, p.Starting, p.Max = &live, &starting, &s.MaxRuns
+	p.Detail = append(p.Detail, fmt.Sprintf("runs: %d/%d live, %d starting", live, s.MaxRuns, starting))
+	if live+starting > s.MaxRuns {
+		p.State = HealthBad
+		p.Summary += fmt.Sprintf("; over rhiza.daemon.maxRuns %d", s.MaxRuns)
+		p.Detail = append(p.Detail, lines...)
+	}
+	return p
+}
+
+// healthTitler gives a change set's display title in ctx's model, empty
+// when it cannot be read.
+func healthTitler(ctx *Ctx) func(string) string {
+	fold, err := daemonFoldOf(ctx)
+	return func(cs string) string {
+		if err != nil {
+			return ""
+		}
+		c, perr := id.Parse(cs)
+		if perr != nil {
+			return ""
+		}
+		if set, ok := fold.changeSet(c); ok {
+			return set.Open.DisplayTitle()
+		}
+		return ""
+	}
 }
 
 // healthAutonomy lists the autonomy settings and whether the daemon is

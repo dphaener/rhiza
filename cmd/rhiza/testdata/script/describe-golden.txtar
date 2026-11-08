@@ -2144,6 +2144,10 @@ cmp stdout describe.golden.json
                   },
                   "type": "array"
                 },
+                "starting": {
+                  "description": "The project's starts and resumes not journaled yet, each holding a slot, as of its last poll",
+                  "type": "integer"
+                },
                 "unjournaled": {
                   "description": "The project's runs started that never wrote a journal",
                   "items": {
@@ -2316,6 +2320,10 @@ cmp stdout describe.golden.json
           "started": {
             "description": "When the daemon started, RFC 3339 UTC",
             "type": "string"
+          },
+          "starting": {
+            "description": "The starts and resumes not journaled yet, each holding a slot, as of its last poll",
+            "type": "integer"
           },
           "stopped": {
             "description": "When the last daemon stopped, RFC 3339 UTC; absent while it runs",
@@ -2792,6 +2800,14 @@ cmp stdout describe.golden.json
                   },
                   "type": "array"
                 },
+                "live": {
+                  "description": "On the daemon part: the runs running now, summed across the daemon's projects; an interrupted run takes no slot",
+                  "type": "integer"
+                },
+                "max": {
+                  "description": "On the daemon part: rhiza.daemon.maxRuns as the daemon's last poll recorded it",
+                  "type": "integer"
+                },
                 "next": {
                   "description": "A command that would help, when one would",
                   "type": "string"
@@ -2816,6 +2832,10 @@ cmp stdout describe.golden.json
                 "project": {
                   "description": "The registered project the part belongs to, on a report that covers every project; absent on the machine's parts and on a single project's report",
                   "type": "string"
+                },
+                "starting": {
+                  "description": "On the daemon part: the starts and resumes not journaled yet, within the start grace",
+                  "type": "integer"
                 },
                 "state": {
                   "description": "ok, warn (worth a look) or bad (rhiza health exits 1)",

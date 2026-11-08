@@ -144,8 +144,24 @@ func (p *daemonProj) saveState() {
 	if runs, err := p.rs.List(); err == nil {
 		host, _ := os.Hostname()
 		p.state.Runs = daemon.LiveRuns(runs, host, nil)
+		p.state.Starting = p.startingCount(runs, host)
 	}
 	daemon.WriteState(p.common, p.state)
+}
+
+// startingCount is the runs the project's daemon started or resumed that
+// have not journaled yet, within daemonStartGrace.
+func (p *daemonProj) startingCount(runs []run.Journal, host string) int {
+	now := p.ctx.Now()
+	n := 0
+	for cs, pd := range p.pending {
+		if daemonRunsOf(runs, cs) <= pd.runs && now.Sub(pd.at) < daemonStartGrace {
+			n++
+		}
+	}
+	n += daemonRequestsStarting(p.ctx, p.rs, runs)
+	n += daemonResumesStarting(p.ctx, runs, host)
+	return n
 }
 
 // stop records that the daemon stopped working the project and releases
