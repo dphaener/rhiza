@@ -71,6 +71,10 @@ type ShipCheckRequest struct {
 	// TestFailures asks only whether the head's latest check recorded
 	// failing tests; it reads the state file and runs no gh.
 	TestFailures bool `json:"test_failures,omitempty" flag:"test-failures" desc:"Exit 0 only if the head's latest ship check recorded at least one failing test read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)"`
+	// Conflicts asks only whether the ship state records a merge of main
+	// that is still unresolved; it reads the state file and git, runs no
+	// gh and records nothing.
+	Conflicts bool `json:"conflicts,omitempty" flag:"conflicts" desc:"Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed; reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)"`
 }
 
 // ShipCheckResponse is what ship.check found.
@@ -502,6 +506,12 @@ func checksVerdict(checks []ShipCheck) (settled, green bool, failed []string) {
 // is open.
 func runShipCheck(ctx *Ctx, req any) (any, error) {
 	r := req.(ShipCheckRequest)
+	if r.Conflicts {
+		if r.PROpen || r.Main || r.Settled || r.TestFailures {
+			return nil, Usagef("--conflicts asks only whether a merge of main is unresolved; it takes none of --pr-open, --main, --settled or --test-failures")
+		}
+		return runShipConflicts(ctx)
+	}
 	if r.TestFailures {
 		if r.PROpen || r.Main || r.Settled {
 			return nil, Usagef("--test-failures asks only whether the last check recorded failing tests; it takes none of --pr-open, --main or --settled")
@@ -646,6 +656,35 @@ func runShipTestFailures(ctx *Ctx) (any, error) {
 		return resp, nil
 	}
 	resp.Passed = true
+	return resp, nil
+}
+
+// runShipConflicts passes only while the ship state records a merge of
+// main that a conflict in code left unresolved, read from git: a committed
+// resolving merge fails it with nothing written.
+func runShipConflicts(ctx *Ctx) (any, error) {
+	t, err := findShipTarget(ctx)
+	if err != nil {
+		return nil, err
+	}
+	st, err := readShipState(t.statePath())
+	if err != nil {
+		return nil, err
+	}
+	resp := ShipCheckResponse{Change: t.cs.String(), Branch: t.branch, Checks: []ShipCheck{}, MergeConflict: st.MergeConflict, PR: st.PR, URL: st.URL}
+	if out, err := gitAt(ctx, t.dir(), "rev-parse", "HEAD"); err == nil {
+		resp.Commit = strings.TrimSpace(out)
+	}
+	switch {
+	case st.MergeConflict == nil:
+		resp.Detail = "no merge conflict is recorded"
+	case !shipConflictUnresolved(ctx, t, st.MergeConflict):
+		resp.Detail = fmt.Sprintf("the merge of origin/%s into %s is resolved", shipMain, t.branch)
+	default:
+		resp.Conflicts = st.MergeConflict.Files
+		resp.Detail = fmt.Sprintf("merging origin/%s into %s is unresolved, conflicts in %s", shipMain, t.branch, strings.Join(st.MergeConflict.Files, ", "))
+		resp.Passed = true
+	}
 	return resp, nil
 }
 
@@ -977,6 +1016,9 @@ func shortSHA(sha string) string {
 // Human is one line: what was checked and how it stands.
 func (r ShipCheckResponse) Human(w io.Writer) {
 	what := fmt.Sprintf("PR #%d at %s", r.PR, shortSHA(r.Commit))
+	if r.PR == 0 {
+		what = fmt.Sprintf("%s at %s", r.Branch, shortSHA(r.Commit))
+	}
 	if r.Main {
 		what = fmt.Sprintf("main at %s", shortSHA(r.Commit))
 	}

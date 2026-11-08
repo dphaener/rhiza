@@ -10,6 +10,8 @@
 # in progress and raises no question. Plain ship check then fails naming the
 # files, whatever the head's checks say, until a resolving merge is committed;
 # after that it passes on green checks, before and after the head is pushed.
+# ship check --conflicts passes while the merge is unresolved and fails once
+# the resolving merge is committed, before and after the head is pushed.
 #
 # The fake gh reports CONFLICTING until origin's branch holds origin's main.
 
@@ -109,6 +111,8 @@ stdout '^exit=1$'
 ! exec rhiza ship check
 stdout 'unresolved, conflicts in code\.txt'
 exec sh -c 'grep -q merge_conflict "$(git rev-parse --git-common-dir)"/rhiza/ship/*.json'
+exec rhiza ship check --conflicts
+stdout 'unresolved, conflicts in code\.txt'
 
 # A merge committed on top resolves it: plain check passes on green checks,
 # before and after the head is pushed.
@@ -116,11 +120,15 @@ exec sh -c 'printf "base\nresolved\n" > code.txt'
 exec git add code.txt
 exec git commit -q --no-edit
 exec rhiza ship check
+! exec rhiza ship check --conflicts
+stdout 'is resolved'
 ! exec rhiza ship check --settled
 exec git fetch -q origin
 exec git merge-base --is-ancestor origin/main origin/cs/ship-it
 exec sh -c '! grep -q merge_conflict "$(git rev-parse --git-common-dir)"/rhiza/ship/*.json'
 exec rhiza ship check
+! exec rhiza ship check --conflicts
+stdout 'no merge conflict is recorded'
 
 -- base.txt --
 base
