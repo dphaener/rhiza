@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YDW86Y87AD4C4K7DK1NSE5",
+  "after": [
+    "01M6Y1HQMH9RRTM4PX9S1Z9309"
+  ],
+  "at": "2026-11-08T20:36:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 243aac07 I read the diff. DaemonStatusResponse gains live, starting (always present now) and max. daemonRunsHeld sums non-interrupted runs and unjournaled starts over the status's runs and each project's part. Human prints 'runs: <live>/<max> live, <n> starting'. The Daemon app subtitle and the web daemon panel show the same line, and web Slots = live + starting. Health takes the summed counts instead of adding each project's starts a second time. daemon-status.txtar asserts the human line '^runs: [0-9]+/3 live, [0-9]+ starting$' and the JSON fields live, starting and max=3. daemonapp TestShowsRunsAgainstCap (a fake status with 2 live, 1 starting, max 4) gives 'runs: 2/4 live, 1 starting'. Web TestOverviewReadsDaemonFromRepo (1 running, 1 interrupted, Starting 1, max 4) renders 'runs: 2/4 live, 1 starting' and 3 of 4 slots. With RHIZA_ROOT unset and GOTMPDIR outside the repo, these passed: go test -count=1 -trimpath ./internal/tui/daemonapp/... ./internal/web/...; go test -count=1 -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-status|daemon-status-projects|describe-golden|health.*)$' (daemon-status, daemon-status-projects, describe-golden, health, health-runs-cap, health-projects and health-machine-part all PASS); go test -trimpath ./internal/api -run 'Health|DaemonStatus|WebDaemon'."
+        },
+        "handle": "daemon-status-runs-cap-verified",
+        "id": "01M6YE0CYAW3ABDM3W9PQ4YSXT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YE0CYAW3ABDM3W9MX5JATN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YE0CYAW3ABDM3W9MX5JATN",
+        "id": "01M6YE0CZR7KKE11GEJ4RE7MSH",
+        "link": "01M6YE0CZR7KKE11GEJ19XZ0Q6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVG9R7SPC15Y2DKK5M3JEZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YE0D0K5S9CSA6872G9P69H",
+  "type": "ops",
+  "v": 1
+}
