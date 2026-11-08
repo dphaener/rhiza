@@ -1,0 +1,43 @@
+{
+  "actor": "01M6YH7ZPZAXYX57G82NC84Y56",
+  "after": [
+    "01M6YGXT6T5P37FVV4GS8YNMN4"
+  ],
+  "at": "2026-11-08T21:35:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/run retries a run failed at a step reached from a command step's on.fail, itself entered from a wait's on.pass, and shows it reopening at that wait, choosing between two such predecessors from the journal; the same for a run whose journal already holds two retried entries and three visits of the failed step (retried twice there), which still reopens at the wait; a run failed at a step with neither still retries at that step; testscript run-resume-retry (or a new run-ship-retry-ci-triage with a fake gh) retries a ship-change run failed at ci-triage after the PR head turned green and it passes wait-pr and pr-green on to signoff; run with go test -trimpath ./internal/run/... ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-resume-retry|run-ship-retry)' only",
+          "statement": "rhiza run resume --retry on a run that failed at a step with no wait whose on.pass it is (ship-change's ci-triage) walks the journal back from the failed visit, skipping retried entries and the failed step's own earlier visits (each earlier retry adds a retried entry and a fresh visit of that step), to the last other step visited: the check whose on.fail routed into it (pr-green or rebased-green). It reopens the run at that check's wait step (wait-pr or wait-rebased), so the retry waits for CI on the current or a new head and re-runs the check: green goes on to signoff or land, red goes to ci-triage again with fresh state. A run retried at ci-triage once or more before still reopens at that wait. A failed step whose last other step is not a command step routing into it by on.fail still retries at itself"
+        },
+        "handle": "retry-ci-triage-at-wait",
+        "id": "01M6YGXM7SRCDR03S5J42QW60S",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6YGXM7SRCDR03S5J1K60QVR",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api show a failing ship check recording red_head and red_checks (IDs and attempts) and no Head/Checks, ship check --settled --changed not settling on the unchanged settled red head and naming the infra failure in its output, settling on a new head or on a newer attempt of a check run once it finishes, and acting as --settled with no baseline; a Go test in internal/run shows a wait whose until never holds timing out with a detail that holds the until command's last output; testscript run-ship-rerun-fail (or a new run-ship-infra-wait with a fake gh) drives a ship-change run whose CI fails with no failing test into wait-ci-rerun, then a rerun turns the head green and the run passes pr-green to signoff; run with go test -trimpath ./internal/api/... ./internal/run/... ./internal/workflow/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship-rerun-fail|run-ship-infra-wait|run-ship-ci-fix)' only",
+          "statement": "When ship-change's ci-triage finds no failing test for a red head (an infra or unparsable failure), the run goes to a new wait step wait-ci-rerun instead of ending. The baseline it waits past is recorded by the failing ship check (pr-green or rebased-green, rhiza ship check without --settled): on a red head it now records in the state file the red head SHA and each of its check runs' ID and attempt (red_head, red_checks), while still recording no green Head/Checks; ci-triage (--test-failures) stays read-only. wait-ci-rerun's until, rhiza ship check --settled --changed, settles only once CI moved past that baseline (a head SHA other than red_head, or a check run ID or attempt not in red_checks) and that new CI finished; with no baseline recorded it behaves as --settled. While not settled its output names the infra failure (the red head and its failed checks with no failing test). The wait runs up to 6h with max_visits 3 and its on.pass goes to pr-green, which re-checks the head (a run back from after the rebase passes signoff again). Its timeout ends the run with a line naming the infra failure: the run engine's wait keeps the until command's last output and adds it to a wait's timeout detail (did not hold within <timeout>: <last output>)"
+        },
+        "handle": "ci-triage-infra-waits",
+        "id": "01M6YGXMGVZQBYW9NX75YF2VVH",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6YGXMGVZQBYW9NX74P1TQ4W",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      }
+    ]
+  },
+  "change_set": "01M6YGFGQT0A9VRZ4AZ9X6VSMJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YHCVQ4PSSTMK9K0B6QCHYV",
+  "type": "ops",
+  "v": 1
+}
