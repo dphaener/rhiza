@@ -42,6 +42,9 @@ type watchdogDeps struct {
 	// of one Actions run of st's PR.
 	ci    func(st run.State) (watchdogPR, error)
 	rerun func(st run.State, actionsRun string) error
+	// merge merges origin/main into the branch of st's PR in the run's
+	// worktree and pushes it; on a conflict it aborts and names the files.
+	merge func(st run.State) (watchdogMerge, error)
 	log   func(format string, args ...any)
 }
 
@@ -215,6 +218,13 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 		_, err = gh(ctx, t.dir(), "run", "rerun", id, "--failed")
 		return err
 	}
+	d.merge = func(st run.State) (watchdogMerge, error) {
+		t, err := watchdogShipTarget(ctx, st)
+		if err != nil {
+			return watchdogMerge{}, err
+		}
+		return watchdogMergeMain(ctx, t)
+	}
 	mem, holds, err := watchdogPasses(pol, all, rs.Live, ctx.Now(), state.Watchdog, d)
 	state.Watchdog, state.WatchdogHolds = mem, holds
 	return err
@@ -247,6 +257,11 @@ func watchdogPasses(pol WatchdogPolicy, all []run.Journal, live func(id string) 
 		err = terr
 	}
 	mem, terr = watchdogCIRerun(pol, all, live, mem, d)
+	if err == nil {
+		err = terr
+	}
+	mem, nholds, terr := watchdogPRNoCI(pol, all, live, mem, d)
+	holds = append(holds, nholds...)
 	if err == nil {
 		err = terr
 	}
@@ -360,6 +375,8 @@ type watchdogPR struct {
 	Head     string
 	Checks   []ShipCheck
 	Attempts map[string]int
+	// Mergeable is GitHub's verdict: MERGEABLE, CONFLICTING or UNKNOWN.
+	Mergeable string
 }
 
 // watchdogShipTarget resolves the PR target of st's change set.
@@ -394,7 +411,7 @@ func watchdogReadPR(ctx *Ctx, st run.State) (watchdogPR, error) {
 	if !strings.EqualFold(v.State, "OPEN") || !prOwnedBy(v.Body, t.cs) {
 		return watchdogPR{}, nil
 	}
-	pr := watchdogPR{Head: v.Head, Checks: v.Checks, Attempts: map[string]int{}}
+	pr := watchdogPR{Head: v.Head, Checks: v.Checks, Attempts: map[string]int{}, Mergeable: v.Mergeable}
 	out, err = gh(ctx, t.dir(), "run", "list", "--commit", v.Head, "--json", "databaseId,attempt")
 	if err != nil {
 		return watchdogPR{}, err
