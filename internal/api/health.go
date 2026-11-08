@@ -24,7 +24,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "health",
-		Summary:  "Report the daemon, autonomy settings, the machine trust, free disk, the usage hold, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
+		Summary:  "Report the daemon, autonomy settings, the machine trust, free disk, the usage hold, the main checkout, CI stability, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
 		Request:  reflect.TypeFor[HealthRequest](),
 		Response: reflect.TypeFor[HealthResponse](),
 		Run:      runHealth,
@@ -46,6 +46,7 @@ const (
 	HealthDisk      = "disk"
 	HealthUsage     = "usage"
 	HealthMain      = "main"
+	HealthCI        = "ci"
 	HealthSchedules = "schedules"
 	HealthInbox     = "inbox"
 	HealthRequests  = "requests"
@@ -62,7 +63,7 @@ type HealthRequest struct {
 // HealthPart is one part of the system and its state.
 type HealthPart struct {
 	Project string   `json:"project,omitempty" desc:"The registered project the part belongs to, on a report that covers every project; absent on the machine's parts and on a single project's report"`
-	Part    string   `json:"part" enum:"daemon,autonomy,machine,disk,usage,main,schedules,inbox,requests,roadmap,check" desc:"The part"`
+	Part    string   `json:"part" enum:"daemon,autonomy,machine,disk,usage,main,ci,schedules,inbox,requests,roadmap,check" desc:"The part"`
 	State   string   `json:"state" enum:"ok,warn,bad" desc:"ok, warn (worth a look) or bad (rhiza health exits 1)"`
 	Summary string   `json:"summary" desc:"One line on the part's state"`
 	Detail  []string `json:"detail" desc:"More lines on the part, such as each setting or each count; empty when none"`
@@ -72,7 +73,7 @@ type HealthPart struct {
 // HealthResponse is the report.
 type HealthResponse struct {
 	State string       `json:"state" enum:"ok,warn,bad" desc:"The worst state of any part"`
-	Parts []HealthPart `json:"parts" desc:"Every part, in a fixed order: daemon, autonomy, machine, disk, usage, then main, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project"`
+	Parts []HealthPart `json:"parts" desc:"Every part, in a fixed order: daemon, autonomy, machine, disk, usage, then main, ci, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project"`
 }
 
 // ExitCode is 1 when a part is bad, else 0.
@@ -114,7 +115,7 @@ func healthRank(s string) int {
 
 // healthProjectParts are the parts that belong to one project.
 func healthProjectParts(ctx *Ctx, daemonRunning bool) []HealthPart {
-	parts := []HealthPart{healthMain(ctx)}
+	parts := []HealthPart{healthMain(ctx), healthCI(ctx)}
 	if p, ok := healthSchedules(ctx, daemonRunning); ok {
 		parts = append(parts, p)
 	}

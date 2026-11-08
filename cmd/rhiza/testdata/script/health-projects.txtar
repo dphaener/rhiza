@@ -32,13 +32,13 @@ stdout -count=1 '"part": "usage"'
 stdout -count=1 '"part": "machine"'
 stdout -count=2 '"part": "inbox"'
 stdout -count=2 '"part": "check"'
-stdout -count=5 '"project": "alpha"'
-stdout -count=5 '"project": "beta"'
+stdout -count=6 '"project": "alpha"'
+stdout -count=6 '"project": "beta"'
 exec rhiza health
 stdout '^ok   main     alpha: '
 stdout '^ok   main     beta: '
 exec rhiza api call health
-stdout -count=5 '"project": "beta"'
+stdout -count=6 '"project": "beta"'
 
 # One project's bad part makes the whole report exit 1.
 exec sh -c 'echo junk > beta/.rhiza/log/junk.json'
@@ -56,7 +56,7 @@ exec rhiza health --json
 ! stdout '"project"'
 stdout -count=1 '"part": "inbox"'
 exec rhiza health --all --json
-stdout -count=5 '"project": "alpha"'
+stdout -count=6 '"project": "alpha"'
 cd $WORK
 ! exec rhiza health --project nope
 stderr 'not registered'

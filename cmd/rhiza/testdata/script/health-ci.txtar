@@ -1,0 +1,37 @@
+# rhiza health has a ci part: ok on a clean record, and warn with each flaky
+# test and its count, and the no-local-gate warning, once CI is unstable.
+
+env REX_SESSION=
+env REX_SERVER=
+env RHIZA_TEST_FREE_BYTES=1099511627776
+mkdir repo
+cd repo
+exec git init -q -b main
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+
+exec rhiza health
+stdout '^ok   ci       stable'
+exec rhiza health --json
+stdout '"part": "ci",\n\s*"state": "ok",\n\s*"summary": "stable"'
+
+cp ../ci-stability.json .git/rhiza/ci-stability.json
+exec rhiza health
+stdout '^warn ci       unstable: flake in the last [0-9]+ CI runs: TestPond; no local gate is set'
+stdout 'flaky TestPond: 2 flakes'
+stdout 'next: rhiza daemon set rhiza.ship.localGate <command>'
+exec rhiza health --json
+stdout '"part": "ci",\n\s*"state": "warn"'
+stdout 'flaky TestPond: 2 flakes'
+
+exec git config rhiza.ship.localGate 'make check'
+exec rhiza health
+stdout '^warn ci       unstable: flake'
+! stdout 'no local gate'
+
+-- ci-stability.json --
+{"runs":[
+{"head":"a","result":"green","time":"2026-11-08T00:00:00Z","flakes":["TestPond"]},
+{"head":"b","result":"green","time":"2026-11-08T01:00:00Z","flakes":["TestPond"]}]}
