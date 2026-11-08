@@ -1,0 +1,59 @@
+{
+  "actor": "01M6XVPGGVVA775CQTTV2Y13H4",
+  "after": [
+    "01M6XVG9SD4ZPDTNCJJC9XYB4F"
+  ],
+  "at": "2026-11-08T15:17:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6MYP9D5XEFXQ5DHG00Y7WHH",
+        "handle": null,
+        "id": "01M6XVQYJDN0TPN4PFMM1531RZ",
+        "node": "01M6MYP9D5XEFXQ5DHFXZQ8JDZ",
+        "op": "node.update",
+        "set": {
+          "statement": "A queued milestone request's plan run takes the next free run slot ahead of every other start in the poll (resumes included) and every other queued request, but waits while running is at rhiza.daemon.maxRuns (plan-runs-share-max-runs superseded the earlier start without a free slot): it is the owner's own interactive start, not a pick. It counts as a running run once started, so later picks see it, and only one milestone interview is live at a time; a second milestone request waits for the first to end. The owner is told the moment the interview's tab opens: the plan session's status goes to waiting-on-the-owner at launch (so Rex's notification fires from the OSC 7501 status) and the inbox lists the live milestone interview as an item from launch until the run ends, not from the first AskUserQuestion. A usage-reserve hold does not hold a milestone interview's start; it keeps holding build, review and other autonomous launches. Pause and the disk-low guard are unchanged and still hold it."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6XVDZHN24987TJWZ6FNEHXD",
+        "id": "01M6XVQYMD6Z9RRC0FH6ZZHKKH",
+        "link": "01M6XVQYMD6Z9RRC0FH3WM2MEZ",
+        "note": "supersedes its start without a free slot; the rest of that decision stands",
+        "op": "link.create",
+        "to": "01M6MYP9D5XEFXQ5DHFXZQ8JDZ",
+        "type": "relates-to"
+      },
+      {
+        "base": "01M6NP6CS39YS4XN41XQ7YT09G",
+        "handle": null,
+        "id": "01M6XVQYPDK56MVF7WVPC4G38K",
+        "node": "01M6D4SYDB1P7NX7DGKT0D19HM",
+        "op": "node.update",
+        "set": {
+          "statement": "rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the clone's .git/rhiza/requests.json, rhiza request ls shows each request's state, and the daemon, when not paused and a slot is free, starts a plan run for the oldest queued feature or bug request, autonomous when rhiza.autonomy.plan is auto, marking the request with its run and later the change set it planned; a queued milestone request instead takes the next free slot first, ahead of every other start and request, but waits while running is at rhiza.daemon.maxRuns (milestone-request-starts-at-once, plan-runs-share-max-runs), and its plan run always waits on the owner, never autonomous"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6D4SYDB1P7NX7DGKT0D19HM",
+        "id": "01M6XVQYRYFFBGSNY6K2YQ3YEH",
+        "link": "01M6XVQYRYFFBGSNY6K048Q155",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVDZHN24987TJWZ6FNEHXD",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XVQYTQXNSV4C0F4ZX2Z578",
+  "type": "ops",
+  "v": 1
+}
