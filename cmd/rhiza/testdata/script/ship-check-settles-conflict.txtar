@@ -1,13 +1,17 @@
-# ship check --settled on a PR GitHub reports CONFLICTING rebases the branch
-# onto origin's main as ship rebase does, then reports not settled.
+# ship check --settled on a PR GitHub reports CONFLICTING merges origin's main
+# into the branch as ship rebase does.
 #
 # Case 1: main moved with a change to a rendered file the branch changed too.
 # The conflict is settled by rendering again, origin's branch then holds
 # origin/main, and the ship record's pushed is the new head.
 #
 # Case 2: main moved with a change to a code file the branch changed too.
-# The check exits 75 with a stop: line, raises a rebase-conflict question and
-# leaves the branch as it was.
+# The check exits 0 (settled) with the conflict in its detail, leaves the merge
+# in progress and raises no question. Plain ship check then fails naming the
+# files, whatever the head's checks say, until a resolving merge is committed;
+# after that it passes on green checks, before and after the head is pushed.
+# ship check --conflicts passes while the merge is unresolved and fails once
+# the resolving merge is committed, before and after the head is pushed.
 #
 # The fake gh reports CONFLICTING until origin's branch holds origin's main.
 
@@ -91,18 +95,40 @@ exec git commit -qm 'Main edits code'
 exec git push -q origin main
 
 cd $WORK/repo2
-exec sh -c 'rhiza ship check --settled; echo exit=$?'
-stdout '^stop: .*code\.txt'
-stdout '^exit=75$'
-stdout 'rebase-conflict'
+exec rhiza ship check --settled --json
+stdout '"settled": true'
+stdout 'code\.txt'
+stdout 'merge is left in progress'
 exec git status --porcelain --untracked-files=no
-! stdout 'code.txt'
-exec git log -1 --format=%s
-stdout 'Raise a question on the rebase conflicts'
-exec git rev-parse HEAD~1
-cmp stdout $WORK/before.txt
+stdout 'code.txt'
+exec git rev-parse --verify MERGE_HEAD
 exec git rev-parse origin/cs/ship-it
 cmp stdout $WORK/before.txt
+exec sh -c 'rhiza ship check --json; echo exit=$?'
+stdout 'code\.txt'
+stdout '"passed": false'
+stdout '^exit=1$'
+! exec rhiza ship check
+stdout 'unresolved, conflicts in code\.txt'
+exec sh -c 'grep -q merge_conflict "$(git rev-parse --git-common-dir)"/rhiza/ship/*.json'
+exec rhiza ship check --conflicts
+stdout 'unresolved, conflicts in code\.txt'
+
+# A merge committed on top resolves it: plain check passes on green checks,
+# before and after the head is pushed.
+exec sh -c 'printf "base\nresolved\n" > code.txt'
+exec git add code.txt
+exec git commit -q --no-edit
+exec rhiza ship check
+! exec rhiza ship check --conflicts
+stdout 'is resolved'
+! exec rhiza ship check --settled
+exec git fetch -q origin
+exec git merge-base --is-ancestor origin/main origin/cs/ship-it
+exec sh -c '! grep -q merge_conflict "$(git rev-parse --git-common-dir)"/rhiza/ship/*.json'
+exec rhiza ship check
+! exec rhiza ship check --conflicts
+stdout 'no merge conflict is recorded'
 
 -- base.txt --
 base

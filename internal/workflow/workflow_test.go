@@ -395,19 +395,50 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "open-pr", "wait-pr", "pr-green", "ci-triage", "ci-fix", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
-		"rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "open-pr", "wait-pr", "pr-green", "conflict-triage", "conflict-fix", "ci-triage", "ci-fix", "signoff", "rebase", "rebase-triage", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
+		"conflict-triage-landed", "conflict-fix-landed", "rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
 	}
 	for _, n := range []string{"pr-green", "rebased-green"} {
-		if got := def.Steps[n].On[OutcomeFail]; got != "ci-triage" {
-			t.Errorf("%s on.fail = %q; want ci-triage", n, got)
+		if got := def.Steps[n].On[OutcomeFail]; got != "conflict-triage" {
+			t.Errorf("%s on.fail = %q; want conflict-triage", n, got)
 		}
 	}
-	for _, n := range []string{"landed-green", "rebased-merge-green"} {
-		if got, ok := def.Steps[n].On[OutcomeFail]; ok {
-			t.Errorf("%s on.fail = %q; want none", n, got)
+	for _, n := range []string{"landed-green", "rebase-merge", "rebased-merge-green"} {
+		if got := def.Steps[n].On[OutcomeFail]; got != "conflict-triage-landed" {
+			t.Errorf("%s on.fail = %q; want conflict-triage-landed", n, got)
+		}
+	}
+	if got := def.Steps["rebase"].On[OutcomeFail]; got != "rebase-triage" {
+		t.Errorf("rebase on.fail = %q; want rebase-triage", got)
+	}
+	// Each triage runs the conflicts check; only conflict-triage falls back to ci-triage.
+	for n, want := range map[string]struct{ pass, fail string }{
+		"rebase-triage":          {"conflict-fix", ""},
+		"conflict-triage":        {"conflict-fix", "ci-triage"},
+		"conflict-triage-landed": {"conflict-fix-landed", ""},
+	} {
+		st := def.Steps[n]
+		if st.Kind != KindCommand || st.Run != "rhiza ship check --conflicts" || st.On[OutcomePass] != want.pass || st.On[OutcomeFail] != want.fail {
+			t.Errorf("%s = %+v; want a command running ship check --conflicts, pass %q, fail %q", n, st, want.pass, want.fail)
+		}
+	}
+	if _, ok := def.Steps["rebase-triage"].On[OutcomeFail]; ok {
+		t.Error("rebase-triage has an on.fail")
+	}
+	if _, ok := def.Steps["conflict-triage-landed"].On[OutcomeFail]; ok {
+		t.Error("conflict-triage-landed has an on.fail")
+	}
+	for n, next := range map[string]string{"conflict-fix": "render-pr", "conflict-fix-landed": "rebase-merge"} {
+		fx := def.Steps[n]
+		if fx.Kind != KindAgent || fx.On[OutcomePass] != next || len(fx.On) != 1 || fx.MaxVisits != 3 {
+			t.Errorf("%s = %+v; want an agent step passing to %s, max_visits 3", n, fx, next)
+		}
+		for _, w := range []string{"Review: {run}", "rhiza ship check --json", "Change: {change}", "Actor:", "regenerate golden files", "Never push", "rhiza session done"} {
+			if !strings.Contains(fx.Prompt, w) {
+				t.Errorf("%s prompt lacks %q", n, w)
+			}
 		}
 	}
 	triage := def.Steps["ci-triage"]
@@ -418,7 +449,8 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if fix.Kind != KindAgent || fix.On[OutcomePass] != "render-pr" || !strings.Contains(fix.Prompt, "Review: {run}") || !strings.Contains(fix.Prompt, "rhiza ship check --json") {
 		t.Errorf("ci-fix = %+v; want an agent step passing to render-pr, told the Review: trailer and ship check --json", fix)
 	}
-	caps := map[string]int{"ci-fix": 2, "ci-triage": 3, "render-pr": 5, "open-pr": 5, "wait-pr": 5, "pr-green": 5, "signoff": 5, "rebase": 3, "wait-rebased": 3, "rebased-green": 3}
+	caps := map[string]int{"ci-fix": 2, "ci-triage": 3, "render-pr": 10, "open-pr": 10, "wait-pr": 10, "pr-green": 10, "signoff": 8, "rebase": 6, "wait-rebased": 6, "rebased-green": 6,
+		"rebase-merge": 6, "wait-rebased-merge": 6, "rebased-merge-green": 6, "merge": 6, "conflict-fix": 3, "conflict-fix-landed": 3}
 	for n, c := range caps {
 		if got := def.Steps[n].MaxVisits; got != c {
 			t.Errorf("%s max_visits = %d; want %d", n, got, c)

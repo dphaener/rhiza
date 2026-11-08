@@ -14,7 +14,7 @@ At cfc2ae4 I ran go test ./cmd/rhiza -run TestScripts/run-ship-change-rebase -co
 
 ### Out
 
-- verifies [rebase-keeps-branch-merges](../capability/rhiza/workflows/workflow-runs/rebase-when-behind/rebase-keeps-branch-merges.md)
+- verifies rebase-keeps-branch-merges (retired)
 
 ## History
 

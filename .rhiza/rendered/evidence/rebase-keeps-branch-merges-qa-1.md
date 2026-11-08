@@ -14,7 +14,7 @@ At 14d9f17, as QA with a scratch build in a scratch repo: when main conflicted o
 
 ### Out
 
-- verifies [rebase-keeps-branch-merges](../capability/rhiza/workflows/workflow-runs/rebase-when-behind/rebase-keeps-branch-merges.md)
+- verifies rebase-keeps-branch-merges (retired)
 
 ## History
 

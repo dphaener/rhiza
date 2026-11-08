@@ -27,7 +27,7 @@ verified
 ### Out
 
 - verifies [wait-stops-on-75](../capability/rhiza/workflows/workflow-definitions/wait-step/wait-stops-on-75.md)
-- verifies [wait-settles-conflicting-pr](../capability/rhiza/orchestration/shipping/wait-green-pr/wait-settles-conflicting-pr.md)
+- verifies wait-settles-conflicting-pr (retired)
 
 ## History
 

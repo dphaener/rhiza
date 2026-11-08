@@ -14,7 +14,7 @@ QA at 817b7c33 with a binary built from the branch (go build ./cmd/rhiza), in sc
 
 ### Out
 
-- verifies [conflict-question-blocks-change](../capability/rhiza/workflows/workflow-runs/rebase-when-behind/conflict-question-blocks-change.md)
+- verifies conflict-question-blocks-change (retired)
 
 ## History
 

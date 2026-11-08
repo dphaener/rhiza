@@ -8,6 +8,19 @@ name = "ship-change"
 # review's checks step (review/review); render-pr then renders again,
 # ship open-pr pushes and replaces the PR body, and the run waits for CI
 # and signs off again.
+#
+# A code conflict with main goes to a fixer, never to the owner: ship
+# rebase (and a ship check --settled that finds the PR conflicting) merges
+# origin/main into the branch and leaves a conflict in code as a merge in
+# progress, recorded in the ship state. A triage step, rhiza ship check
+# --conflicts, tells that from any other failure and passes only for a
+# recorded unresolved conflict with fewer than 3 fixes made in the run
+# (merge commits on the branch with the run's Review: trailer, counted run-wide).
+# conflict-fix then resolves and commits the merge (or, on a real design
+# clash, asks one blocking question in its session; its until fails a fixer
+# that ends with the merge still in progress), and the run pushes it
+# plainly through render-pr and open-pr, or through rebase-merge after
+# land, and goes on. Every other failure of those steps ends the run as before.
 [step.build]
 kind = "workflow"
 workflow = "build"
@@ -30,13 +43,13 @@ git add -A -- .rhiza/rendered .rhiza/log &&
 { git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
   git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
 """
-max_visits = 5
+max_visits = 10
 on.pass = "open-pr"
 
 [step.open-pr]
 kind = "command"
 run = "rhiza ship open-pr"
-max_visits = 5
+max_visits = 10
 on.pass = "wait-pr"
 
 [step.wait-pr]
@@ -44,15 +57,36 @@ kind = "wait"
 until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
-max_visits = 5
+max_visits = 10
 on.pass = "pr-green"
 
 [step.pr-green]
 kind = "command"
 run = "rhiza ship check"
-max_visits = 5
+max_visits = 10
 on.pass = "signoff"
+on.fail = "conflict-triage"
+
+# The PR's merge with main conflicts in code and waits for a fixer: only
+# then does this pass. Anything else (red CI, an infra failure, a fourth
+# conflict) goes on to ci-triage as a failed check always did.
+[step.conflict-triage]
+kind = "command"
+run = "rhiza ship check --conflicts"
+max_visits = 8
+on.pass = "conflict-fix"
 on.fail = "ci-triage"
+
+# One fixer on the run worktree, with the merge of origin/main into the
+# branch left in progress. It commits the merge and never pushes: render-pr
+# and open-pr push it plainly, and the run waits for CI again.
+[step.conflict-fix]
+kind = "agent"
+prompt = "/rhiza-review Resolve the merge conflicts of change set {change} in run {run}: origin/main was merged into the branch and the merge is left in progress in this worktree. Read both sides from `rhiza ship check --json` (its merge_conflict: the conflicted files, origin/main's commits with their change sets, and this branch's change set) and `rhiza show` both change sets for their intent. Resolve every conflicted file so both sides' behaviour holds, regenerate golden files and `rhiza render` output, and run only the touched packages' tests and scripts (never the repo's full suite: the PR's CI runs it after your push). Stage `.rhiza/rendered` and `.rhiza/log` too (`git add -A -- .rhiza/rendered .rhiza/log`), so nothing is left untracked, and commit the merge with `git commit` and a message whose final paragraph holds the `Change: {change}`, `Actor:` and `Review: {run}` trailers together with any Co-Authored-By. If both sides change the same behaviour incompatibly, a real design clash that no resolution can honour on both sides, commit nothing, leave the merge in progress and do not end your session: ask one blocking question here in the session (AskUserQuestion) that names both change sets, the clashing files and the incompatible behaviours, wait for the answer, then resolve the merge following it. Never end your session with the merge still in progress. Never push, never rebase and never force anything. Then run `rhiza session done` as your very last action."
+until = "! git rev-parse --verify --quiet MERGE_HEAD"
+until_when = "done"
+max_visits = 3
+on.pass = "render-pr"
 
 # A red PR whose CI logs named failing tests goes to one fixer on the run
 # worktree, then back through render-pr, the push and CI. ci-triage passes
@@ -76,30 +110,39 @@ on.pass = "render-pr"
 
 [step.signoff]
 kind = "signoff"
-max_visits = 5
+max_visits = 8
 on.pass = "rebase"
 on.changes = "review/review"
 
 [step.rebase]
 kind = "command"
 run = "rhiza ship rebase"
-max_visits = 3
+max_visits = 6
 on.pass = "wait-rebased"
+on.fail = "rebase-triage"
+
+# A rebase that failed on a conflict in code goes to the fixer; one that
+# failed on a fetch, push, hook or refusal has no on.fail and ends the run.
+[step.rebase-triage]
+kind = "command"
+run = "rhiza ship check --conflicts"
+max_visits = 6
+on.pass = "conflict-fix"
 
 [step.wait-rebased]
 kind = "wait"
 until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
-max_visits = 3
+max_visits = 6
 on.pass = "rebased-green"
 
 [step.rebased-green]
 kind = "command"
 run = "rhiza ship check"
-max_visits = 3
+max_visits = 6
 on.pass = "land"
-on.fail = "ci-triage"
+on.fail = "conflict-triage"
 
 [step.land]
 kind = "command"
@@ -117,33 +160,53 @@ on.pass = "landed-green"
 kind = "command"
 run = "rhiza ship check"
 on.pass = "rebase-merge"
+on.fail = "conflict-triage-landed"
+
+# After land the same fixer resolves a conflict, and the merge is pushed by
+# rebase-merge, so nothing lands twice. A red CI or any other failure still
+# ends the run here, and so does a fourth conflict.
+[step.conflict-triage-landed]
+kind = "command"
+run = "rhiza ship check --conflicts"
+max_visits = 6
+on.pass = "conflict-fix-landed"
+
+[step.conflict-fix-landed]
+kind = "agent"
+prompt = "/rhiza-review Resolve the merge conflicts of change set {change} in run {run}: it landed, and origin/main was merged into the branch and the merge is left in progress in this worktree. Read both sides from `rhiza ship check --json` (its merge_conflict: the conflicted files, origin/main's commits with their change sets, and this branch's change set) and `rhiza show` both change sets for their intent. Resolve every conflicted file so both sides' behaviour holds, regenerate golden files and `rhiza render` output, and run only the touched packages' tests and scripts (never the repo's full suite: the PR's CI runs it after your push). Stage `.rhiza/rendered` and `.rhiza/log` too (`git add -A -- .rhiza/rendered .rhiza/log`), so nothing is left untracked, and commit the merge with `git commit` and a message whose final paragraph holds the `Change: {change}`, `Actor:` and `Review: {run}` trailers together with any Co-Authored-By. If both sides change the same behaviour incompatibly, a real design clash that no resolution can honour on both sides, commit nothing, leave the merge in progress and do not end your session: ask one blocking question here in the session (AskUserQuestion) that names both change sets, the clashing files and the incompatible behaviours, wait for the answer, then resolve the merge following it. Never end your session with the merge still in progress. Never push, never rebase and never force anything. Then run `rhiza session done` as your very last action."
+until = "! git rev-parse --verify --quiet MERGE_HEAD"
+until_when = "done"
+max_visits = 3
+on.pass = "rebase-merge"
 
 [step.rebase-merge]
 kind = "command"
 run = "rhiza ship rebase"
-max_visits = 3
+max_visits = 6
 on.pass = "wait-rebased-merge"
+on.fail = "conflict-triage-landed"
 
 [step.wait-rebased-merge]
 kind = "wait"
 until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
-max_visits = 3
+max_visits = 6
 on.pass = "rebased-merge-green"
 
 [step.rebased-merge-green]
 kind = "command"
 run = "rhiza ship check"
-max_visits = 3
+max_visits = 6
 on.pass = "merge"
+on.fail = "conflict-triage-landed"
 
 # Merges nothing when origin/main moved after the head's checks passed:
 # the step fails and the run rebases and waits on the new head again.
 [step.merge]
 kind = "command"
 run = "rhiza ship merge"
-max_visits = 3
+max_visits = 6
 on.pass = "wait-main"
 on.fail = "rebase-merge"
 

@@ -18,7 +18,7 @@ ship rebase raises its rebase-conflict question together with a blocks link from
 
 ### In
 
-- decided-by [conflict-question-blocks-change](../capability/rhiza/workflows/workflow-runs/rebase-when-behind/conflict-question-blocks-change.md)
+- decided-by conflict-question-blocks-change (retired)
 
 ## History
 

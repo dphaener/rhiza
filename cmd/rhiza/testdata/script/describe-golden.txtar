@@ -22289,6 +22289,10 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "conflicts": {
+            "description": "Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed or once the run has made 3 conflict fixes (merge commits on the branch with its Review: trailer); reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)",
+            "type": "boolean"
+          },
           "main": {
             "description": "Check that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, locally with git and no wait on CI, instead of checking the pull request; a differing tree dispatches CI on the merge commit (once) and checks its runs as it does a pull request's, and a stop that cannot be waited out exits 75 with a stop: line",
             "type": "boolean"
@@ -22302,7 +22306,7 @@ cmp stdout describe.golden.json
             "type": "integer"
           },
           "settled": {
-            "description": "Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it rebases the branch onto main as ship rebase does, then reports not settled, and exits 75 with a stop: line on a conflict in code",
+            "description": "Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it merges main into the branch as ship rebase does: a clean merge is pushed and reported not settled, a conflict in code is left in progress and reported settled (exit 0) with the conflict in its detail",
             "type": "boolean"
           },
           "test_failures": {
@@ -22355,7 +22359,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "conflicts": {
-            "description": "With --settled on a conflicting pull request: the files whose conflict outside the rendered files stopped the rebase; the command exits 75",
+            "description": "The files of an unresolved merge of main (a conflict in code left in progress): with --settled the check reports settled, without it the check fails while the merge is unresolved",
             "items": {
               "type": "string"
             },
@@ -22402,6 +22406,67 @@ cmp stdout describe.golden.json
             "description": "True if it checked the merge commit on main rather than the pull request",
             "type": "boolean"
           },
+          "merge_conflict": {
+            "additionalProperties": false,
+            "description": "A merge of main left in progress by a conflict in code: the files, origin/main's commits with their change sets and the branch's change set",
+            "properties": {
+              "branch": {
+                "description": "The change set's branch",
+                "type": "string"
+              },
+              "change": {
+                "description": "The branch's change set",
+                "type": "string"
+              },
+              "files": {
+                "description": "The files still conflicted, including any rendered ones",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "main_commits": {
+                "description": "origin/main's commits since the merge-base, with their change sets",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "changes": {
+                      "description": "The change sets its Change: trailers name",
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "commit": {
+                      "description": "The commit",
+                      "type": "string"
+                    },
+                    "subject": {
+                      "description": "Its subject line",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "commit",
+                    "subject"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "onto": {
+                "description": "The origin/main commit being merged",
+                "type": "string"
+              }
+            },
+            "required": [
+              "branch",
+              "change",
+              "files",
+              "onto"
+            ],
+            "type": "object"
+          },
           "passed": {
             "description": "True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise",
             "type": "boolean"
@@ -22409,10 +22474,6 @@ cmp stdout describe.golden.json
           "pr": {
             "description": "The pull request's number; 0 if none was found",
             "type": "integer"
-          },
-          "question": {
-            "description": "The handle of the question raised about those conflicts",
-            "type": "string"
           },
           "rebased": {
             "description": "With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main",
@@ -22837,38 +22898,91 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "conflicts": {
-            "description": "The files that conflicted when the rebase stopped on a conflict outside the rendered files; the rebase was aborted",
+            "description": "The files that conflicted when the merge stopped on a conflict outside the rendered files; the merge is left in progress in the worktree",
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "detail": {
-            "description": "Why the rebase stopped; the command exits 1 then",
+            "description": "Why the merge stopped; the command exits 1 then",
             "type": "string"
+          },
+          "merge_conflict": {
+            "additionalProperties": false,
+            "description": "The conflict's context for a fixer: the conflicted files, origin/main's commits with their change sets, and the branch's change set",
+            "properties": {
+              "branch": {
+                "description": "The change set's branch",
+                "type": "string"
+              },
+              "change": {
+                "description": "The branch's change set",
+                "type": "string"
+              },
+              "files": {
+                "description": "The files still conflicted, including any rendered ones",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "main_commits": {
+                "description": "origin/main's commits since the merge-base, with their change sets",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "changes": {
+                      "description": "The change sets its Change: trailers name",
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "commit": {
+                      "description": "The commit",
+                      "type": "string"
+                    },
+                    "subject": {
+                      "description": "Its subject line",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "commit",
+                    "subject"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "onto": {
+                "description": "The origin/main commit being merged",
+                "type": "string"
+              }
+            },
+            "required": [
+              "branch",
+              "change",
+              "files",
+              "onto"
+            ],
+            "type": "object"
           },
           "onto": {
             "description": "The commit of origin's main the branch was compared with",
             "type": "string"
           },
           "pushed": {
-            "description": "The rebased head pushed to the PR branch",
-            "type": "string"
-          },
-          "question": {
-            "description": "The handle of the question raised about those conflicts",
-            "type": "string"
-          },
-          "question_change": {
-            "description": "The change set the question was written into: the change set itself, or a record change set when it had already landed",
+            "description": "The merged head pushed to the PR branch",
             "type": "string"
           },
           "rebased": {
-            "description": "True if the branch was rebased onto origin's main",
+            "description": "True if origin's main was merged into the branch and the result is ready to push (the name is kept from when this rebased)",
             "type": "boolean"
           },
           "rendered": {
-            "description": "The rendered files written or removed by rendering after the rebase",
+            "description": "The rendered files written or removed by rendering after the merge",
             "items": {
               "type": "string"
             },
@@ -22891,7 +23005,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Rebase a change set's branch onto origin's main when main has moved past it, settling rendered-only conflicts by rendering again, and push it",
+      "summary": "Merge origin's main into a change set's branch when main has moved past it, settling rendered-only conflicts by rendering again, and push it plainly; a conflict in code is left as a merge in progress",
       "write": true
     },
     {

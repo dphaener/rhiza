@@ -65,12 +65,16 @@ const shipDir = "rhiza/ship"
 // ShipCheckRequest asks about the change set's PR, or with Main about the
 // merge commit on main.
 type ShipCheckRequest struct {
-	Settled bool `json:"settled,omitempty" flag:"settled" desc:"Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it rebases the branch onto main as ship rebase does, then reports not settled, and exits 75 with a stop: line on a conflict in code"`
+	Settled bool `json:"settled,omitempty" flag:"settled" desc:"Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it merges main into the branch as ship rebase does: a clean merge is pushed and reported not settled, a conflict in code is left in progress and reported settled (exit 0) with the conflict in its detail"`
 	Main    bool `json:"main,omitempty" flag:"main" desc:"Check that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, locally with git and no wait on CI, instead of checking the pull request; a differing tree dispatches CI on the merge commit (once) and checks its runs as it does a pull request's, and a stop that cannot be waited out exits 75 with a stop: line"`
 	PROpen  bool `json:"pr_open,omitempty" flag:"pr-open" desc:"Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)"`
 	// TestFailures asks only whether the head's latest check recorded
 	// failing tests; it reads the state file and runs no gh.
 	TestFailures bool `json:"test_failures,omitempty" flag:"test-failures" desc:"Exit 0 only if the head's latest ship check recorded at least one failing test read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)"`
+	// Conflicts asks only whether the ship state records a merge of main
+	// that is still unresolved; it reads the state file and git, runs no
+	// gh and records nothing.
+	Conflicts bool `json:"conflicts,omitempty" flag:"conflicts" desc:"Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed or once the run has made 3 conflict fixes (merge commits on the branch with its Review: trailer); reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)"`
 	// Reruns is how many times a head's failed Actions runs are rerun.
 	Reruns ShipReruns `json:"reruns,omitempty" flag:"reruns" desc:"How many times a head's failed jobs are rerun before its failure stands, at least 1; default 1"`
 }
@@ -106,27 +110,27 @@ func (r ShipReruns) budget() (int, error) {
 
 // ShipCheckResponse is what ship.check found.
 type ShipCheckResponse struct {
-	Change    string        `json:"change" desc:"The change set"`
-	Branch    string        `json:"branch" desc:"The change set's branch"`
-	Main      bool          `json:"main,omitempty" desc:"True if it checked the merge commit on main rather than the pull request"`
-	PR        int           `json:"pr,omitempty" desc:"The pull request's number; 0 if none was found"`
-	URL       string        `json:"url,omitempty" desc:"The pull request's URL"`
-	State     string        `json:"state,omitempty" desc:"The pull request's state, such as OPEN or MERGED"`
-	Commit    string        `json:"commit,omitempty" desc:"The commit checked: the PR's head, or the merge commit"`
-	Checks    []ShipCheck   `json:"checks" desc:"The checks reported for the commit"`
-	Settled   bool          `json:"settled" desc:"True if there is an open PR (or a merge commit) and every check on it has finished"`
-	Green     bool          `json:"green" desc:"True if settled and every check passed (success, neutral or skipped)"`
-	Failed    []string      `json:"failed,omitempty" desc:"The names of the settled checks that did not pass"`
-	Passed    bool          `json:"passed" desc:"True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise"`
-	Detail    string        `json:"detail,omitempty" desc:"Why it did not pass, such as no open pull request"`
-	Written   bool          `json:"written,omitempty" desc:"True if the result was recorded in the state file for the next steps"`
-	Rebased   string        `json:"rebased,omitempty" desc:"With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main"`
-	Conflicts []string      `json:"conflicts,omitempty" desc:"With --settled on a conflicting pull request: the files whose conflict outside the rendered files stopped the rebase; the command exits 75"`
-	Question  string        `json:"question,omitempty" desc:"The handle of the question raised about those conflicts"`
-	Stop      string        `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
-	Tests     []string      `json:"tests,omitempty" desc:"The failing tests the failed Actions runs' logs name, once the failed jobs were rerun and failed again: Go tests and testscripts (a '--- FAIL:' line, such as TestScripts/x), RSpec ('rspec ./spec/x_spec.rb:12'), Minitest ('bin/rails test test/x_test.rb:12') and pytest ('pytest tests/test_x.py::test_y'), each as its runner's rerun command"`
-	Findings  []ShipFinding `json:"findings,omitempty" desc:"One finding, with no leaf, per failing test, for a fix step; recorded in the state file as well"`
-	Reran     []string      `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, up to --reruns times per head, instead of failing; the check then reports not settled"`
+	Change        string             `json:"change" desc:"The change set"`
+	Branch        string             `json:"branch" desc:"The change set's branch"`
+	Main          bool               `json:"main,omitempty" desc:"True if it checked the merge commit on main rather than the pull request"`
+	PR            int                `json:"pr,omitempty" desc:"The pull request's number; 0 if none was found"`
+	URL           string             `json:"url,omitempty" desc:"The pull request's URL"`
+	State         string             `json:"state,omitempty" desc:"The pull request's state, such as OPEN or MERGED"`
+	Commit        string             `json:"commit,omitempty" desc:"The commit checked: the PR's head, or the merge commit"`
+	Checks        []ShipCheck        `json:"checks" desc:"The checks reported for the commit"`
+	Settled       bool               `json:"settled" desc:"True if there is an open PR (or a merge commit) and every check on it has finished"`
+	Green         bool               `json:"green" desc:"True if settled and every check passed (success, neutral or skipped)"`
+	Failed        []string           `json:"failed,omitempty" desc:"The names of the settled checks that did not pass"`
+	Passed        bool               `json:"passed" desc:"True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise"`
+	Detail        string             `json:"detail,omitempty" desc:"Why it did not pass, such as no open pull request"`
+	Written       bool               `json:"written,omitempty" desc:"True if the result was recorded in the state file for the next steps"`
+	Rebased       string             `json:"rebased,omitempty" desc:"With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main"`
+	Conflicts     []string           `json:"conflicts,omitempty" desc:"The files of an unresolved merge of main (a conflict in code left in progress): with --settled the check reports settled, without it the check fails while the merge is unresolved"`
+	MergeConflict *ShipMergeConflict `json:"merge_conflict,omitempty" desc:"A merge of main left in progress by a conflict in code: the files, origin/main's commits with their change sets and the branch's change set"`
+	Stop          string             `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
+	Tests         []string           `json:"tests,omitempty" desc:"The failing tests the failed Actions runs' logs name, once the failed jobs were rerun and failed again: Go tests and testscripts (a '--- FAIL:' line, such as TestScripts/x), RSpec ('rspec ./spec/x_spec.rb:12'), Minitest ('bin/rails test test/x_test.rb:12') and pytest ('pytest tests/test_x.py::test_y'), each as its runner's rerun command"`
+	Findings      []ShipFinding      `json:"findings,omitempty" desc:"One finding, with no leaf, per failing test, for a fix step; recorded in the state file as well"`
+	Reran         []string           `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, up to --reruns times per head, instead of failing; the check then reports not settled"`
 }
 
 // ShipFinding is a failing test read from a CI log, as a finding with no
@@ -173,7 +177,7 @@ func (r ShipMergeResponse) ExitCode() int {
 
 // ExitCode is 0 when the check asked for holds, else 1.
 func (r ShipCheckResponse) ExitCode() int {
-	if len(r.Conflicts) > 0 || r.Stop != "" {
+	if r.Stop != "" {
 		return run.StopExit
 	}
 	if r.Passed {
@@ -323,6 +327,9 @@ type shipState struct {
 	// head before. ship.rebase also clears Head and Checks, so nothing
 	// lands or merges until ship.check records the rebased head's CI.
 	Pushed string `json:"pushed,omitempty"`
+	// MergeConflict is the context of a merge of main that conflicts in
+	// code, left in progress in the worktree for a fixer.
+	MergeConflict *ShipMergeConflict `json:"merge_conflict,omitempty"`
 	// Run is the run the last step that opened, checked or pushed the PR
 	// ran for (RHIZA_RUN, or the run the watchdog acted for), so the
 	// record names the run that owns the PR.
@@ -548,6 +555,12 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	if r.Conflicts {
+		if r.PROpen || r.Main || r.Settled || r.TestFailures {
+			return nil, Usagef("--conflicts asks only whether a merge of main is unresolved; it takes none of --pr-open, --main, --settled or --test-failures")
+		}
+		return runShipConflicts(ctx)
+	}
 	if r.TestFailures {
 		if r.PROpen || r.Main || r.Settled {
 			return nil, Usagef("--test-failures asks only whether the last check recorded failing tests; it takes none of --pr-open, --main or --settled")
@@ -567,6 +580,7 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	resp.MergeConflict = st.MergeConflict
 	if r.Main {
 		if st.MergeCommit == "" {
 			return nil, Usagef("change set %s has no merge commit recorded: its pull request is not merged", t.cs).
@@ -601,6 +615,13 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		}
 		if r.Settled && strings.EqualFold(v.Mergeable, "CONFLICTING") {
 			return shipSettleConflict(ctx, resp)
+		}
+		if !r.Settled && shipConflictUnresolved(ctx, t, st.MergeConflict) {
+			// A merge of main with conflicts is waiting for its fixer: the
+			// head's checks say nothing about it.
+			resp.Conflicts = st.MergeConflict.Files
+			resp.Detail = fmt.Sprintf("failed: merging origin/%s into %s is unresolved, conflicts in %s", shipMain, t.branch, strings.Join(st.MergeConflict.Files, ", "))
+			return resp, nil
 		}
 		if st.Pushed != "" && v.Head != st.Pushed {
 			// Someone else may have pushed on top of the run's head:
@@ -694,6 +715,59 @@ func runShipTestFailures(ctx *Ctx) (any, error) {
 	}
 	resp.Passed = true
 	return resp, nil
+}
+
+// runShipConflicts passes only while the ship state records a merge of
+// main that a conflict in code left unresolved, read from git: a committed
+// resolving merge fails it with nothing written.
+func runShipConflicts(ctx *Ctx) (any, error) {
+	t, err := findShipTarget(ctx)
+	if err != nil {
+		return nil, err
+	}
+	st, err := readShipState(t.statePath())
+	if err != nil {
+		return nil, err
+	}
+	resp := ShipCheckResponse{Change: t.cs.String(), Branch: t.branch, Checks: []ShipCheck{}, MergeConflict: st.MergeConflict, PR: st.PR, URL: st.URL}
+	if out, err := gitAt(ctx, t.dir(), "rev-parse", "HEAD"); err == nil {
+		resp.Commit = strings.TrimSpace(out)
+	}
+	switch {
+	case st.MergeConflict == nil:
+		resp.Detail = "no merge conflict is recorded"
+	case !shipConflictUnresolved(ctx, t, st.MergeConflict):
+		resp.Detail = fmt.Sprintf("the merge of origin/%s into %s is resolved", shipMain, t.branch)
+	default:
+		resp.Conflicts = st.MergeConflict.Files
+		fixes := shipConflictFixes(ctx, t)
+		if fixes >= shipConflictFixCap {
+			resp.Detail = fmt.Sprintf("merging origin/%s into %s is unresolved, but the run has already made %d conflict fixes (the most it makes): conflicts in %s", shipMain, t.branch, fixes, strings.Join(st.MergeConflict.Files, ", "))
+			break
+		}
+		resp.Detail = fmt.Sprintf("merging origin/%s into %s is unresolved, conflicts in %s", shipMain, t.branch, strings.Join(st.MergeConflict.Files, ", "))
+		resp.Passed = true
+	}
+	return resp, nil
+}
+
+// shipConflictFixCap is how many conflict fixes one run makes, before and
+// after land together.
+const shipConflictFixCap = 3
+
+// shipConflictFixes counts the conflict fixes the run RHIZA_RUN names has
+// made: the merge commits on the branch carrying its Review: trailer. With
+// no run set, or git failing, it counts none.
+func shipConflictFixes(ctx *Ctx, t shipTarget) int {
+	rid := strings.TrimSpace(ctxGetenv(ctx)(envRun))
+	if rid == "" {
+		return 0
+	}
+	out, err := gitAt(ctx, t.dir(), "log", "--merges", "--format=%H", "-E", "--grep=^Review: "+rid+"$", "HEAD")
+	if err != nil {
+		return 0
+	}
+	return len(gitLines(out))
 }
 
 // shipCheckMainTree confirms main locally, with git and no wait on CI: the
@@ -924,9 +998,10 @@ func shipReadFailures(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResp
 }
 
 // shipSettleConflict runs the ship rebase logic for a pull request GitHub
-// reports CONFLICTING and reports it not settled: after a push the next
-// check sees the new head; a conflict in code raises the rebase-conflict
-// question and stops the run (exit 75).
+// reports CONFLICTING: a push is reported not settled, so the next check
+// sees the new head; a conflict in code leaves the merge in progress and
+// is reported settled (exit 0) with the conflict in the detail, so the run
+// goes on to triage it. It raises no question.
 func shipSettleConflict(ctx *Ctx, resp ShipCheckResponse) (any, error) {
 	out, err := runShipRebase(ctx, ShipRebaseRequest{})
 	if err != nil {
@@ -935,7 +1010,8 @@ func shipSettleConflict(ctx *Ctx, resp ShipCheckResponse) (any, error) {
 	rb := out.(ShipRebaseResponse)
 	switch {
 	case len(rb.Conflicts) > 0:
-		resp.Conflicts, resp.Question, resp.Detail = rb.Conflicts, rb.Question, rb.Detail
+		resp.Conflicts, resp.MergeConflict, resp.Detail = rb.Conflicts, rb.MergeConflict, rb.Detail
+		resp.Settled, resp.Passed = true, true
 	case rb.Pushed != "":
 		resp.Rebased = rb.Pushed
 		resp.Detail = fmt.Sprintf("not settled: the pull request conflicted; rebased onto main and pushed %s", shortSHA(rb.Pushed))
@@ -943,6 +1019,24 @@ func shipSettleConflict(ctx *Ctx, resp ShipCheckResponse) (any, error) {
 		resp.Detail = "not settled: GitHub reports the pull request conflicting, though the branch holds main"
 	}
 	return resp, nil
+}
+
+// shipConflictUnresolved reports whether the merge conflict recorded in
+// the ship state is still unresolved: the worktree has the merge in
+// progress, or its HEAD does not yet hold the origin/main commit the
+// record names. A committed merge counts as resolved with nothing written.
+func shipConflictUnresolved(ctx *Ctx, t shipTarget, mc *ShipMergeConflict) bool {
+	if mc == nil {
+		return false
+	}
+	if _, err := gitAt(ctx, t.dir(), "rev-parse", "--verify", "--quiet", "MERGE_HEAD"); err == nil {
+		return true
+	}
+	if mc.Onto == "" {
+		return false
+	}
+	_, err := gitAt(ctx, t.dir(), "merge-base", "--is-ancestor", mc.Onto, "HEAD")
+	return err != nil
 }
 
 // shipHeadHolds reports whether commit anc is an ancestor of (or equal to)
@@ -1046,6 +1140,9 @@ func shortSHA(sha string) string {
 // Human is one line: what was checked and how it stands.
 func (r ShipCheckResponse) Human(w io.Writer) {
 	what := fmt.Sprintf("PR #%d at %s", r.PR, shortSHA(r.Commit))
+	if r.PR == 0 {
+		what = fmt.Sprintf("%s at %s", r.Branch, shortSHA(r.Commit))
+	}
 	if r.Main {
 		what = fmt.Sprintf("main at %s", shortSHA(r.Commit))
 	}
@@ -1054,7 +1151,6 @@ func (r ShipCheckResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "stop: %s\n", r.Stop)
 	case len(r.Conflicts) > 0:
 		fmt.Fprintf(w, "%s: %s\n", what, r.Detail)
-		fmt.Fprintf(w, "stop: %s; answer question %s, then resume the run\n", r.Detail, r.Question)
 	case r.PR == 0 && !r.Main:
 		fmt.Fprintf(w, "%s.\n", r.Detail)
 	case r.State != "" && !strings.EqualFold(r.State, "OPEN"):

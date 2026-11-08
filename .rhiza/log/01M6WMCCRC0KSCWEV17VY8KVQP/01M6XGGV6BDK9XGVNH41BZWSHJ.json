@@ -1,0 +1,29 @@
+{
+  "actor": "01M6XGF4FGFDEFFMA5MBYQFDYY",
+  "after": [
+    "01M6XFWW3A1FK2963TFKJD1ZMW"
+  ],
+  "at": "2026-11-08T12:00:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6MC56XH2VTXCYDT1GB8RKKB",
+        "handle": null,
+        "id": "01M6XGGV40XNZ0TC8HPCPY0HJ8",
+        "node": "01M6MC56XH2VTXCYDT1G5WD55E",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A Go test in internal/workflow loads the built-in ship-change workflow and asserts pr-green and rebased-green fail to conflict-triage, conflict-triage is a command step running rhiza ship check --conflicts with on.fail ci-triage, ci-triage is a command step running rhiza ship check --test-failures with on.pass ci-fix and no on.fail, ci-fix is an agent step passing to render-pr with max_visits 2, ci-triage max_visits 3, max_visits 10 on render-pr, open-pr, wait-pr and pr-green, max_visits 8 on signoff, max_visits 6 on rebase, wait-rebased and rebased-green, and landed-green, rebase-merge and rebased-merge-green fail to conflict-triage-landed, which has no on.fail; a Go test in internal/api shows ship check --test-failures passing with a recorded test failure and failing with none or an infra-only failure; a testscript run-ship-ci-fix with a fake gh and a fake fixer agent goes red with a parsed test failure, through conflict-triage, ci-triage and one ci-fix commit carrying a Review: trailer, back to green and signoff, a case red at rebased-green goes through ci-fix, signoff and rebase again to land, a case red after two fixes fails the run with the failing tests in the step output, and an infra-only failure fails at ci-triage with no ci-fix visit; run with go test -trimpath ./internal/workflow/... ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/run-ship' only",
+          "statement": "The built-in ship-change workflow sends a failure at pr-green or rebased-green (on.fail) to conflict-triage, which runs `rhiza ship check --conflicts` and falls back (its on.fail) to a command step ci-triage on anything but a merge conflict, so red CI reaches ci-triage through conflict-triage. ci-triage runs `rhiza ship check --test-failures`: it passes only when the head's latest ship check recorded at least one parsed test failure, and fails otherwise, and ci-triage has no on.fail, so an infra-only or unparsable failure ends the run there as today. ci-triage passes to ci-fix, an agent step (kind = \"agent\", one fixer session on the run worktree) whose prompt is the review fixer's prompt told to read the failing tests from `rhiza ship check --json` (its test failures and their no-leaf findings), re-run only those tests/scripts and their packages, and make one new commit with a Review: <run> trailer before `rhiza session done`; ci-fix passes to render-pr, then open-pr, wait-pr, pr-green and signoff. ci-fix runs at most twice per run (max_visits 2, so a third red head with test failures goes over the cap and fails the run, pr-green's or rebased-green's output naming the failing tests); ci-triage has max_visits 3; render-pr, open-pr, wait-pr and pr-green have max_visits 10 and signoff max_visits 8, so two CI fixes, conflict fixes and the owner's two request-changes fit; rebase, wait-rebased and rebased-green have max_visits 6 so a run re-enters them after each CI or conflict fix routed from rebased-green. After land, a failure at landed-green, rebase-merge or rebased-merge-green goes to conflict-triage-landed, which has no on.fail, so a red CI or any other non-conflict failure still ends the run there"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6WMCCRC0KSCWEV17VY8KVQP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XGGV6BDK9XGVNH41BZWSHJ",
+  "type": "ops",
+  "v": 1
+}

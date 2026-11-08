@@ -26,6 +26,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/adapter"
 	_ "github.com/dphaener/rhiza/internal/adapter/claudecode"
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/machine"
 	"github.com/dphaener/rhiza/internal/op"
@@ -92,6 +93,10 @@ type SessionStartRequest struct {
 	// autonomous marks the session as launched by an autonomous run. Only
 	// a run's StartAgent sets it, so it stays off the request schema.
 	autonomous bool
+
+	// landedOK lets the session work on a change set that has landed: a
+	// run's agent step after the land. Only the engine sets it.
+	landedOK bool
 	// milestone is the session record's Milestone. Only a plan run's
 	// StartAgent sets it.
 	milestone string
@@ -241,7 +246,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	t, err := resolveChangeWorktree(ctx, r.Change, "no agent can work on it")
+	t, err := resolveChangeWorktreeIn(ctx, r.Change, "no agent can work on it", r.landedOK)
 	if err != nil {
 		return nil, err
 	}
@@ -362,6 +367,13 @@ type changeWorktree struct {
 // "change set X is <state>; <refusal>", and derives its worktree. It
 // writes nothing.
 func resolveChangeWorktree(ctx *Ctx, ref, refusal string) (changeWorktree, error) {
+	return resolveChangeWorktreeIn(ctx, ref, refusal, false)
+}
+
+// resolveChangeWorktreeIn is resolveChangeWorktree, optionally also
+// accepting a change set that has landed: a run's agent step after the
+// land (a fixer resolving a conflict with main) still works on its branch.
+func resolveChangeWorktreeIn(ctx *Ctx, ref, refusal string, landedOK bool) (changeWorktree, error) {
 	var t changeWorktree
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
@@ -380,7 +392,7 @@ func resolveChangeWorktree(ctx *Ctx, ref, refusal string) (changeWorktree, error
 		return t, Usagef("no change set: name one or make one current").WithNext(changeLsNext)
 	}
 	c, _ := w.changeSet(cs)
-	if c.State.Terminal() {
+	if c.State.Terminal() && !(landedOK && c.State == changeset.StateLanded) {
 		return t, Conflictf("change set %s is %s; %s", cs, c.State, refusal).WithNext(changeLsNext)
 	}
 	common, err := gitCommonDir(ctx)

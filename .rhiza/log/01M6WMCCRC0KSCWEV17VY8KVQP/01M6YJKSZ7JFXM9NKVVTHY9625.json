@@ -1,0 +1,93 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6YGB6V8MT89BW7YBP7WDHMP"
+  ],
+  "at": "2026-11-08T21:56:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "6d6c4d1e7b0d4736e1fa378149423fc413a1990f",
+          "pr": "https://github.com/dphaener/rhiza/pull/383",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #383 (https://github.com/dphaener/rhiza/pull/383) passed CI at 6d6c4d1",
+          "status": "verified"
+        },
+        "handle": "pr-383-fix-ship-change-stops-on-a",
+        "id": "01M6YJKSPQVCPSRCS2030B9MF1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YJKSPQVCPSRCS202RAR9GM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YJKSPQVCPSRCS202RAR9GM",
+        "id": "01M6YJKSQGH8H25QPBYWHFCV12",
+        "link": "01M6YJKSQGH8H25QPBYRVN4YH1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X3GCHZRJ9YPV8BA37J1AN3",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6YJKSPQVCPSRCS202RAR9GM",
+        "id": "01M6YJKSREEG4RG9651B49HKAN",
+        "link": "01M6YJKSREEG4RG96517WTB1ND",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WMRS4TPPTR6N3JKP0F7HQJ",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6YJKSPQVCPSRCS202RAR9GM",
+        "id": "01M6YJKSSF0TEP50M6KK3KD4MT",
+        "link": "01M6YJKSSF0TEP50M6KFZ5DMRF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WMRS6BFQHDFXKF5RNPBF0G",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6YJKSPQVCPSRCS202RAR9GM",
+        "id": "01M6YJKSTFAGH2FBHM5JW6BK5P",
+        "link": "01M6YJKSTFAGH2FBHM5GK3RENE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WMSB5S57K6QW44F90TEDEZ",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6YJKSPQVCPSRCS202RAR9GM",
+        "id": "01M6YJKSVD4Q9S8K1PFCX1M1V8",
+        "link": "01M6YJKSVD4Q9S8K1PFCKAHB2K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WMSB7FA6TA1SMY3YW9AC1Q",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6YJKSPQVCPSRCS202RAR9GM",
+        "id": "01M6YJKSW9P3Q01Z1HQ3KQ3FXE",
+        "link": "01M6YJKSW9P3Q01Z1HQ1PK5AVV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MC56XH2VTXCYDT1G5WD55E",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WMCCRC0KSCWEV17VY8KVQP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YJKSZ7JFXM9NKVVTHY9625",
+  "type": "ops",
+  "v": 1
+}
