@@ -867,8 +867,9 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	// Every start takes one slot of max: the runs running, the plan
 	// requests and schedules started and not journaled, and the change sets
 	// the daemon started and not journaled (held, below) are the slots
-	// already used. A resume goes first and takes a slot only if one is
-	// free; the resumes of this poll count for the starts after them.
+	// already used. A queued milestone request's plan run goes first, then
+	// the resumes, each only in a free slot; the starts of this poll count
+	// for the starts after them.
 	held := daemonHeld(pending, unjournaled, runs, accepted, ctx.Now())
 	reqStarting := daemonRequestsStarting(ctx, rs, runs)
 	liveRunning := 0
@@ -879,6 +880,19 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	}
 	resStarting := daemonResumesStarting(ctx, runs, host)
 	used := liveRunning + len(held) + reqStarting + starting + resStarting
+	// A milestone request's plan run is the owner's own interactive start:
+	// it takes the next free slot ahead of every other start, resumes
+	// included, and waits while the slots are full; the later picks count
+	// it as a running run.
+	var milestoned []string
+	var reqSkips []daemon.Skip
+	if !paused && !low {
+		milestoned, err = daemonPlanRequests(ctx, rs, runs, used-reqStarting, max, mode, daemon.KindMilestone, &reqSkips)
+		if err != nil {
+			return nil, nil, milestoned, err
+		}
+	}
+	used += len(milestoned)
 	resumable := daemonResumable(ctx, rs, runs, fold, host, stopped || paused)
 	for _, id := range resumable {
 		if used >= max {
@@ -886,10 +900,10 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		// Journal the resume before the tab opens: a resume is tried once.
 		if err := rs.Append(id, run.Entry{Type: run.TypeDaemonResumed, At: ctx.Now(), Detail: "resumed by the daemon"}); err != nil {
-			return nil, resumed, nil, Errorf("journal the resume of run %s: %v", id, err)
+			return nil, resumed, milestoned, Errorf("journal the resume of run %s: %v", id, err)
 		}
 		if err := daemonResume(ctx, id); err != nil {
-			return nil, resumed, nil, err
+			return nil, resumed, milestoned, err
 		}
 		resumed = append(resumed, id)
 		used++
@@ -923,18 +937,6 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		})
 		if modeErr != nil {
 			return nil, resumed, nil, modeErr
-		}
-	}
-	// A milestone request's plan run is the owner's own interactive start:
-	// it takes the next free slot ahead of every other start but a resume,
-	// and waits while the slots are full; the later picks count it as a
-	// running run.
-	var milestoned []string
-	var reqSkips []daemon.Skip
-	if !paused && !low {
-		milestoned, err = daemonPlanRequests(ctx, rs, runs, used-reqStarting, max, mode, daemon.KindMilestone, &reqSkips)
-		if err != nil {
-			return nil, resumed, milestoned, err
 		}
 	}
 	var picked []string

@@ -291,18 +291,18 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 	if low {
 		return nil, running
 	}
-	// A queued milestone request's plan run and the daemon's resume of an
-	// interrupted run each take a slot, first (a usage hold stops all but
-	// the milestone request).
+	// A queued milestone request's plan run takes a slot first, then the
+	// daemon's resumes of interrupted runs (a usage hold stops all but the
+	// milestone request).
 	var ready []string
+	if daemonMilestoneWaits(ctx) {
+		ready = append(ready, "milestone request")
+	}
 	if hold == nil {
 		host, _ := os.Hostname()
 		for range daemonResumable(ctx, rs, runs, fold, host, false) {
 			ready = append(ready, "resume")
 		}
-	}
-	if daemonMilestoneWaits(ctx) {
-		ready = append(ready, "milestone request")
 	}
 	if hold != nil {
 		return ready, running

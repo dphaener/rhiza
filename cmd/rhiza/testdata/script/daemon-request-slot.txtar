@@ -3,7 +3,9 @@
 # and the request's plan run, and status says why the other change set
 # waits. With no request waiting, both ship runs start. With --max-runs 1
 # the ship pick keeps the one slot, as before. A queued milestone request
-# takes the next free slot ahead of the ship picks, within --max-runs.
+# takes the next free slot ahead of the ship picks, within --max-runs: with
+# only a milestone request queued and --max-runs 2, a poll starts its plan
+# run and one ship run, never three.
 # Rex is faked and only logs.
 
 chmod 755 bin/rex
@@ -82,6 +84,49 @@ exec rm $WORK/detach.log
 exec rhiza daemon --permission-mode manual --once --max-runs 3
 stdout -count=1 '^Started a run of '
 ! stdout 'plan run'
+
+fold-ok
+
+# Only a milestone request queued: with --max-runs 2 and two ready change
+# sets, a poll starts the milestone request's plan run and one ship run
+# (two runs, never three), and status says the other change set waits for a
+# slot. The second repo is in a root of its own: run slots are machine-wide,
+# and the first repo's plan runs still hold theirs.
+cd ..
+env RHIZA_TEST_DETACH_LOG=$WORK/detach2.log
+mkdir root2/repo2
+exec sh -c 'printf "[projects.repo2]\npath = \"repo2\"\n" > root2/rhiza.toml'
+cd root2/repo2
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+exec git add -A
+exec git commit -qm init
+exec rhiza change new One --title One
+exec rhiza add capability one-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza change new Two --title Two
+exec rhiza add capability two-leaf
+exec rhiza link 01M5PWGS702G3VYA781BNZ0K7Q serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+exec rhiza request --kind milestone 'Backlog empty'
+exec rhiza daemon --permission-mode manual --once --max-runs 2
+stdout -count=1 '^Started the plan run of request '
+stdout -count=1 '^Started a run of '
+exec sh -c 'grep -c "run start --foreground" $WORK/detach2.log'
+stdout '^2$'
+exec rhiza request ls
+stdout 'milestone planning: Backlog empty'
+exec rhiza daemon status --json
+stdout -count=1 '"reason": "no-slot"'
+exec rhiza daemon status
+stdout 'waiting for a slot'
 
 fold-ok
 
