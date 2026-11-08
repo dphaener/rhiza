@@ -3334,7 +3334,7 @@ cmp stdout describe.golden.json
                 "type": "object"
               },
               "change": {
-                "description": "The change set it runs on",
+                "description": "The change set it runs on; empty for a scheduled run, which has none",
                 "type": "string"
               },
               "checks": {
@@ -4508,6 +4508,14 @@ cmp stdout describe.golden.json
                   "session"
                 ],
                 "type": "object"
+              },
+              "trigger": {
+                "description": "What started a run with no change set: schedule; absent for a change set's run",
+                "type": "string"
+              },
+              "trigger_name": {
+                "description": "With trigger schedule: the schedule's name",
+                "type": "string"
               },
               "waiting": {
                 "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
@@ -4972,7 +4980,7 @@ cmp stdout describe.golden.json
                 "type": "object"
               },
               "change": {
-                "description": "The change set it runs on",
+                "description": "The change set it runs on; empty for a scheduled run, which has none",
                 "type": "string"
               },
               "checks": {
@@ -6146,6 +6154,14 @@ cmp stdout describe.golden.json
                   "session"
                 ],
                 "type": "object"
+              },
+              "trigger": {
+                "description": "What started a run with no change set: schedule; absent for a change set's run",
+                "type": "string"
+              },
+              "trigger_name": {
+                "description": "With trigger schedule: the schedule's name",
+                "type": "string"
               },
               "waiting": {
                 "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
@@ -8376,7 +8392,7 @@ cmp stdout describe.golden.json
                 "type": "object"
               },
               "change": {
-                "description": "The change set it runs on",
+                "description": "The change set it runs on; empty for a scheduled run, which has none",
                 "type": "string"
               },
               "checks": {
@@ -9550,6 +9566,14 @@ cmp stdout describe.golden.json
                   "session"
                 ],
                 "type": "object"
+              },
+              "trigger": {
+                "description": "What started a run with no change set: schedule; absent for a change set's run",
+                "type": "string"
+              },
+              "trigger_name": {
+                "description": "With trigger schedule: the schedule's name",
+                "type": "string"
               },
               "waiting": {
                 "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
@@ -9870,7 +9894,7 @@ cmp stdout describe.golden.json
                 "type": "object"
               },
               "change": {
-                "description": "The change set it runs on",
+                "description": "The change set it runs on; empty for a scheduled run, which has none",
                 "type": "string"
               },
               "checks": {
@@ -11044,6 +11068,14 @@ cmp stdout describe.golden.json
                   "session"
                 ],
                 "type": "object"
+              },
+              "trigger": {
+                "description": "What started a run with no change set: schedule; absent for a change set's run",
+                "type": "string"
+              },
+              "trigger_name": {
+                "description": "With trigger schedule: the schedule's name",
+                "type": "string"
               },
               "waiting": {
                 "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
@@ -11845,7 +11877,7 @@ cmp stdout describe.golden.json
                   "type": "boolean"
                 },
                 "change": {
-                  "description": "The change set it runs on",
+                  "description": "The change set it runs on; empty for a scheduled run",
                   "type": "string"
                 },
                 "current": {
@@ -11874,6 +11906,14 @@ cmp stdout describe.golden.json
                 },
                 "title": {
                   "description": "The change set's title; empty when it has none",
+                  "type": "string"
+                },
+                "trigger": {
+                  "description": "schedule for a run a schedule started, which has no change set; absent otherwise",
+                  "type": "string"
+                },
+                "trigger_name": {
+                  "description": "With trigger schedule: the schedule's name",
                   "type": "string"
                 },
                 "workflow": {
@@ -12278,7 +12318,7 @@ cmp stdout describe.golden.json
                 "type": "object"
               },
               "change": {
-                "description": "The change set it runs on",
+                "description": "The change set it runs on; empty for a scheduled run, which has none",
                 "type": "string"
               },
               "checks": {
@@ -13452,6 +13492,14 @@ cmp stdout describe.golden.json
                   "session"
                 ],
                 "type": "object"
+              },
+              "trigger": {
+                "description": "What started a run with no change set: schedule; absent for a change set's run",
+                "type": "string"
+              },
+              "trigger_name": {
+                "description": "With trigger schedule: the schedule's name",
+                "type": "string"
               },
               "waiting": {
                 "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
@@ -13796,7 +13844,7 @@ cmp stdout describe.golden.json
                 "type": "object"
               },
               "change": {
-                "description": "The change set it runs on",
+                "description": "The change set it runs on; empty for a scheduled run, which has none",
                 "type": "string"
               },
               "checks": {
@@ -14970,6 +15018,14 @@ cmp stdout describe.golden.json
                   "session"
                 ],
                 "type": "object"
+              },
+              "trigger": {
+                "description": "What started a run with no change set: schedule; absent for a change set's run",
+                "type": "string"
+              },
+              "trigger_name": {
+                "description": "With trigger schedule: the schedule's name",
+                "type": "string"
               },
               "waiting": {
                 "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
@@ -15346,7 +15402,7 @@ cmp stdout describe.golden.json
                 "type": "object"
               },
               "change": {
-                "description": "The change set it runs on",
+                "description": "The change set it runs on; empty for a scheduled run, which has none",
                 "type": "string"
               },
               "checks": {
@@ -16520,6 +16576,14 @@ cmp stdout describe.golden.json
                   "session"
                 ],
                 "type": "object"
+              },
+              "trigger": {
+                "description": "What started a run with no change set: schedule; absent for a change set's run",
+                "type": "string"
+              },
+              "trigger_name": {
+                "description": "With trigger schedule: the schedule's name",
+                "type": "string"
               },
               "waiting": {
                 "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
@@ -16732,6 +16796,10 @@ cmp stdout describe.golden.json
             "description": "With --new: the plan request this run plans; the run takes the ID the daemon drew for it. The daemon passes it",
             "type": "string"
           },
+          "schedule": {
+            "description": "Start a run for the [[schedules]] entry of this name in .rhiza/dispatch.toml: no change set, no worktree, every step in the main checkout, autonomous, driven in this process; its journal records the schedule as the trigger",
+            "type": "string"
+          },
           "workflow": {
             "description": "The workflow: a .toml file (a path with a / or ending in .toml), else a name: your personal $XDG_CONFIG_HOME/rhiza/workflows/<name>.toml, else .rhiza/workflows/<name>.toml, else a built-in; default ship-change",
             "type": "string"
@@ -16894,7 +16962,7 @@ cmp stdout describe.golden.json
                 "type": "object"
               },
               "change": {
-                "description": "The change set it runs on",
+                "description": "The change set it runs on; empty for a scheduled run, which has none",
                 "type": "string"
               },
               "checks": {
@@ -18069,6 +18137,14 @@ cmp stdout describe.golden.json
                 ],
                 "type": "object"
               },
+              "trigger": {
+                "description": "What started a run with no change set: schedule; absent for a change set's run",
+                "type": "string"
+              },
+              "trigger_name": {
+                "description": "With trigger schedule: the schedule's name",
+                "type": "string"
+              },
               "waiting": {
                 "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
                 "items": {
@@ -18277,7 +18353,7 @@ cmp stdout describe.golden.json
             "type": "object"
           },
           "change": {
-            "description": "The change set it runs on",
+            "description": "The change set it runs on; empty for a scheduled run, which has none",
             "type": "string"
           },
           "checks": {
@@ -19451,6 +19527,14 @@ cmp stdout describe.golden.json
               "session"
             ],
             "type": "object"
+          },
+          "trigger": {
+            "description": "What started a run with no change set: schedule; absent for a change set's run",
+            "type": "string"
+          },
+          "trigger_name": {
+            "description": "With trigger schedule: the schedule's name",
+            "type": "string"
           },
           "waiting": {
             "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",

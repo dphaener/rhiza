@@ -116,6 +116,7 @@ type RunStartRequest struct {
 	Request        string `json:"request,omitempty" desc:"With --new: the plan request this run plans; the run takes the ID the daemon drew for it. The daemon passes it"`
 	Pick           string `json:"pick,omitempty" desc:"With --workflow: which dispatch pick named it (rule ready.bug, default, request), recorded on the run instead of explicit. The daemon passes it"`
 	Foreground     bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
+	Schedule       string `json:"schedule,omitempty" desc:"Start a run for the [[schedules]] entry of this name in .rhiza/dispatch.toml: no change set, no worktree, every step in the main checkout, autonomous, driven in this process; its journal records the schedule as the trigger"`
 }
 
 // RunStatusRequest names a run, or none for the latest.
@@ -168,7 +169,9 @@ type RunInfo struct {
 	ID             string          `json:"id" desc:"The run ID"`
 	Workflow       string          `json:"workflow" desc:"The workflow's name"`
 	Pick           string          `json:"pick,omitempty" desc:"Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded"`
-	Change         string          `json:"change" desc:"The change set it runs on"`
+	Change         string          `json:"change" desc:"The change set it runs on; empty for a scheduled run, which has none"`
+	Trigger        string          `json:"trigger,omitempty" desc:"What started a run with no change set: schedule; absent for a change set's run"`
+	TriggerName    string          `json:"trigger_name,omitempty" desc:"With trigger schedule: the schedule's name"`
 	Title          string          `json:"title" desc:"The change set's title"`
 	Worktree       string          `json:"worktree" desc:"The worktree every step runs in"`
 	Autonomous     bool            `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
@@ -538,6 +541,9 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err := requireProject(ctx); err != nil {
 		return nil, err
 	}
+	if strings.TrimSpace(r.Schedule) != "" {
+		return runScheduledStart(ctx, r)
+	}
 	if r.Milestone && strings.TrimSpace(r.New) == "" {
 		return nil, Usagef("--milestone goes with --new").WithNext(runStartNext)
 	}
@@ -793,6 +799,13 @@ const planWorkflow = run.PlanWorkflow
 // startRun journals a new run under the change set's lock, after checking
 // that the change set has no other live run, so two starts never both begin.
 func startRun(rs *run.Store, rid string, started run.Started, now time.Time, def *workflow.Definition) error {
+	if started.Change == "" {
+		// A scheduled run has no change set to lock or to hold one live run.
+		if err := run.Start(rs, rid, started, now, def); err != nil {
+			return Errorf("start run %s: %v", rid, err)
+		}
+		return nil
+	}
 	unlock, err := rs.LockChange(started.Change)
 	if err != nil {
 		return Errorf("lock change set %s: %v", started.Change, err)
@@ -1579,14 +1592,14 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 	if ctx.Stderr != nil {
 		e.Log = func(line string) { fmt.Fprintf(ctx.Stderr, "rhiza: %s\n", line) }
 	}
-	if ctx.Rex != nil {
+	if ctx.Rex != nil && change != "" {
 		x := reportToRex(e, ctx.Rex)
 		e.Runner.(*stepRunner).launched = func(sid string) { x.launchBlocked(change, sid) }
 	}
 	// Under the run's lock and the change set's, check that no other run of
 	// it is live before the run is reopened or continued.
 	e.Admit = func(st run.State) (func(), error) {
-		if st.Ended && !retry {
+		if (st.Ended && !retry) || st.Change == "" {
 			return func() {}, nil
 		}
 		unlock, err := rs.LockChange(st.Change)
@@ -2600,6 +2613,7 @@ func rexField(s string, limit int) string {
 func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo {
 	info := RunInfo{
 		ID: st.ID, Workflow: st.Workflow, Pick: st.Pick, Change: st.Change, Title: st.Title, Worktree: st.Worktree,
+		Trigger: st.Trigger, TriggerName: st.TriggerName,
 		Autonomous: st.Autonomous, Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
 		Amendments: []RunAmendment{}, Messages: []RunMessage{}, Sessions: []RunSession{},
 	}

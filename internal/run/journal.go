@@ -219,7 +219,15 @@ type Started struct {
 	// Plan is true for a run started with --new (a request's plan run),
 	// whatever workflow it runs.
 	Plan bool `json:"plan,omitempty"`
+	// Trigger is what started a run that has no change set: TriggerSchedule.
+	// TriggerName names the schedule. Both are empty for a change set's run.
+	Trigger     string `json:"trigger,omitempty"`
+	TriggerName string `json:"trigger_name,omitempty"`
 }
+
+// TriggerSchedule is the Started.Trigger of a run a [[schedules]] entry
+// started.
+const TriggerSchedule = "schedule"
 
 // Block is what a blocked agent step waits on: the kind of block and the
 // question, as the session's blocked report gave them, and the tab its
@@ -1020,12 +1028,16 @@ type Retry struct {
 
 // State is a journal folded.
 type State struct {
-	ID             string
-	Workflow       string
-	Pick           string
-	Change         string
-	Title          string
-	Worktree       string
+	ID       string
+	Workflow string
+	Pick     string
+	Change   string
+	Title    string
+	Worktree string
+	// Trigger and TriggerName are the started entry's: a scheduled run has
+	// a trigger and no change set.
+	Trigger        string
+	TriggerName    string
 	PermissionMode string
 	Agent          string
 	Definition     string
@@ -1318,6 +1330,8 @@ func (j Journal) State() State {
 				st.Workflow = s.Workflow
 				st.Pick = s.Pick
 				st.Change = s.Change
+				st.Trigger = s.Trigger
+				st.TriggerName = s.TriggerName
 				st.Title = s.Title
 				st.Worktree = s.Worktree
 				st.PermissionMode = s.PermissionMode

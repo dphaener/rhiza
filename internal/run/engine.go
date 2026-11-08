@@ -566,6 +566,12 @@ func errResult(err error) result { return result{outcome: OutcomeError, detail: 
 // an error: it ends the run. The error return is for journal failures.
 func (r *running) runStep(step workflow.Step, change string) (result, error) {
 	env := r.stepEnv(step.Name, change)
+	if change == "" {
+		switch step.Kind {
+		case workflow.KindLeaves, workflow.KindChecks, workflow.KindSignoff:
+			return errResult(fmt.Errorf("step %q is a %s step, which needs a change set, and this run has none", step.Name, step.Kind)), nil
+		}
+	}
 	switch step.Kind {
 	case workflow.KindCommand:
 		res := r.command(step, env)

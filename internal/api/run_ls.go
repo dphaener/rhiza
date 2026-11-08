@@ -37,16 +37,18 @@ type RunLsRequest struct {
 
 // RunLsItem is one run in the listing.
 type RunLsItem struct {
-	ID         string `json:"id" desc:"The run ID"`
-	Change     string `json:"change" desc:"The change set it runs on"`
-	Title      string `json:"title" desc:"The change set's title; empty when it has none"`
-	State      string `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed"`
-	Current    string `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
-	StartedAt  string `json:"started_at" desc:"When it started, RFC 3339 UTC"`
-	Live       bool   `json:"live" desc:"True while another process holds the run"`
-	Workflow   string `json:"workflow" desc:"The workflow's name"`
-	Pick       string `json:"pick,omitempty" desc:"Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded"`
-	Autonomous bool   `json:"autonomous,omitempty" desc:"True for a run started with --autonomous; absent otherwise"`
+	ID          string `json:"id" desc:"The run ID"`
+	Change      string `json:"change" desc:"The change set it runs on; empty for a scheduled run"`
+	Trigger     string `json:"trigger,omitempty" desc:"schedule for a run a schedule started, which has no change set; absent otherwise"`
+	TriggerName string `json:"trigger_name,omitempty" desc:"With trigger schedule: the schedule's name"`
+	Title       string `json:"title" desc:"The change set's title; empty when it has none"`
+	State       string `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed"`
+	Current     string `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
+	StartedAt   string `json:"started_at" desc:"When it started, RFC 3339 UTC"`
+	Live        bool   `json:"live" desc:"True while another process holds the run"`
+	Workflow    string `json:"workflow" desc:"The workflow's name"`
+	Pick        string `json:"pick,omitempty" desc:"Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded"`
+	Autonomous  bool   `json:"autonomous,omitempty" desc:"True for a run started with --autonomous; absent otherwise"`
 }
 
 // RunLsResponse is the listing.
@@ -68,7 +70,11 @@ func (r RunLsResponse) Human(w io.Writer) {
 		if it.Current != "" {
 			fmt.Fprintf(w, " at %s", it.Current)
 		}
-		fmt.Fprintf(w, " since %s, change set %s", it.StartedAt, it.Change)
+		if it.Trigger != "" {
+			fmt.Fprintf(w, " since %s, %s %s", it.StartedAt, it.Trigger, it.TriggerName)
+		} else {
+			fmt.Fprintf(w, " since %s, change set %s", it.StartedAt, it.Change)
+		}
 		if it.Title != "" {
 			fmt.Fprintf(w, ": %s", oneLine(it.Title))
 		}
@@ -106,7 +112,7 @@ func runRunLs(ctx *Ctx, req any) (any, error) {
 		live := !st.Ended && rs.Live(j.ID)
 		info := runInfo(ctx, st, live, sessions)
 		out = append(out, RunLsItem{
-			ID: st.ID, Change: st.Change, Title: st.Title, State: info.State, Current: st.Current,
+			ID: st.ID, Change: st.Change, Trigger: st.Trigger, TriggerName: st.TriggerName, Title: st.Title, State: info.State, Current: st.Current,
 			StartedAt: rfc3339(st.StartedAt), Live: live, Workflow: st.Workflow, Pick: st.Pick, Autonomous: st.Autonomous,
 		})
 	}
