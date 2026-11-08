@@ -1,0 +1,30 @@
+{
+  "actor": "01M6YGGF8YMS502Q4X4W26NKR8",
+  "after": [
+    "01M6YGFGQT0A9VRZ4AZB67VG64"
+  ],
+  "at": "2026-11-08T21:22:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "bc50c2e7-c330-4961-babf-01a1bd082164",
+          "statement": "A ship-change run that failed at ci-triage (reached from pr-green's or rebased-green's on.fail) is retried with `rhiza run resume --retry`. Today the retry restarts at ci-triage, which reads the stale state and fails again. The accepted change set 01M6XX4R8 (retry-reopens-at-wait, not built yet) will reopen a retry at the wait step whose on.pass is the failed step, but ci-triage has no such wait. Where should a retry of a run that failed at ci-triage restart?"
+        },
+        "handle": "question-bc50c2e7-1",
+        "id": "01M6YGMPABACEVZCB6Y7TX9513",
+        "key": null,
+        "kind": "question",
+        "node": "01M6YGMPABACEVZCB6Y4SD5MG8",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6YGFGQT0A9VRZ4AZ9X6VSMJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YGMV4AC53JFNN5PTFX3PEQ",
+  "type": "ops",
+  "v": 1
+}
