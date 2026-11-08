@@ -546,7 +546,11 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	// On an existing change set the one resolver picks the workflow, as the
 	// daemon's ship pick does, unless --workflow names one.
 	if strings.TrimSpace(r.New) == "" {
-		if name, pick, ok := startWorkflowOfRef(ctx, r.Change, r.Workflow); ok {
+		name, pick, ok, err := startWorkflowOfRef(ctx, r.Change, r.Workflow)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
 			r.Workflow = name
 			if r.Pick == "" {
 				r.Pick = pick
@@ -3246,15 +3250,16 @@ func startWorkflow(root, explicit string, o changeset.Open) (name, pick string, 
 
 // startWorkflowOfRef resolves the change set ref names (default the current
 // one) and returns its startWorkflow. With no explicit workflow it reports
-// false when the change set or the rules cannot be read: the start's own
-// checks then report why.
-func startWorkflowOfRef(ctx *Ctx, ref, explicit string) (string, string, bool) {
+// false when the change set cannot be read: the start's own checks then
+// report why. Rules that do not load are an error, never a fall back to the
+// default.
+func startWorkflowOfRef(ctx *Ctx, ref, explicit string) (string, string, bool, error) {
 	if strings.TrimSpace(explicit) != "" {
-		return explicit, PickExplicit, true
+		return explicit, PickExplicit, true, nil
 	}
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
-		return "", "", false
+		return "", "", false, nil
 	}
 	var cs id.ID
 	if ref = strings.TrimSpace(ref); ref != "" {
@@ -3263,12 +3268,15 @@ func startWorkflowOfRef(ctx *Ctx, ref, explicit string) (string, string, bool) {
 		cs, err = w.effectiveChangeSet(ctx)
 	}
 	if err != nil || cs.IsZero() {
-		return "", "", false
+		return "", "", false, nil
 	}
 	c, ok := w.changeSet(cs)
 	if !ok {
-		return "", "", false
+		return "", "", false, nil
 	}
 	name, pick, err := startWorkflow(ctx.Root, explicit, c.Open)
-	return name, pick, err == nil
+	if err != nil {
+		return "", "", false, err
+	}
+	return name, pick, true, nil
 }

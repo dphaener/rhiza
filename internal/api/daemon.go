@@ -1776,8 +1776,9 @@ func addDaemonSkip(skips *[]daemon.Skip, sk daemon.Skip) {
 }
 
 // daemonUnresolvedReady splits cands into those whose ready workflow
-// resolves (or that the rules cannot say) and a workflow-unresolved skip
-// for each other.
+// resolves and a workflow-unresolved skip for each other, including each
+// whose pick the dispatch file, not loading, cannot make: none falls back
+// to the default.
 func daemonUnresolvedReady(ctx *Ctx, fold *daemonFolded, cands []string) ([]string, []daemon.Skip) {
 	var ok []string
 	var skips []daemon.Skip
@@ -1794,7 +1795,8 @@ func daemonUnresolvedReady(ctx *Ctx, fold *daemonFolded, cands []string) ([]stri
 		}
 		name, err := readyWorkflow(ctx.Root, c.Open)
 		if err != nil {
-			ok = append(ok, cs)
+			kind := c.Open.DispatchKind()
+			skips = append(skips, daemon.Skip{Change: cs, Reason: daemon.SkipWorkflow, Detail: []string{dispatch.TableReady + "." + kind, "the [ready] rule for " + kind + " in " + dispatch.File, err.Error()}})
 			continue
 		}
 		if _, _, _, err := resolveWorkflow(ctx.Root, name); err != nil {

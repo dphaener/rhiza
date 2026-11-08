@@ -42,11 +42,24 @@ stdout '^- Workflow: bugfix$'
 # An explicit --workflow wins over the rule.
 exec sh -c 'rhiza run start --dry-run $(cat $WORK/bug) --workflow other'
 stdout '^- Workflow: other$'
+
+# A dispatch file that does not load fails the start, never falling back to
+# ship-change; an explicit --workflow does not read it.
+cp $WORK/bad-dispatch.toml .rhiza/dispatch.toml
+! exec sh -c 'rhiza run start --dry-run $(cat $WORK/bug)'
+stderr 'dispatch.toml'
+! stderr 'ship-change'
+exec sh -c 'rhiza run start --dry-run $(cat $WORK/bug) --workflow other'
+stdout '^- Workflow: other$'
+cp $WORK/dispatch.toml .rhiza/dispatch.toml
 fold-ok
 
 -- dispatch.toml --
 [ready]
 bug = "bugfix"
+-- bad-dispatch.toml --
+[ready]
+bug = 3
 -- plan.toml --
 name = "plan"
 

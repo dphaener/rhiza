@@ -56,6 +56,33 @@ func TestDaemonSkipsReadyWithUnresolvedWorkflow(t *testing.T) {
 	}
 }
 
+// A ready change set whose dispatch file does not load starts no run (never
+// the default) and is skipped with the load error; once the file loads it
+// starts.
+func TestDaemonSkipsReadyWithUnloadableDispatch(t *testing.T) {
+	f := newDaemonFoldFix(t)
+	file := filepath.Join(f.ctx.Root, ".rhiza", "dispatch.toml")
+	if err := os.WriteFile(file, []byte("[ready]\nfeature = 3\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	f.poll(t)
+	if len(f.picked) != 0 {
+		t.Fatalf("started %v though the dispatch file does not load", f.picked)
+	}
+	ws := workflowSkips(f.skips)
+	if len(ws) != 1 || ws[0].Change != f.target || ws[0].Detail[0] != "ready.feature" ||
+		!strings.Contains(ws[0].Detail[1], "[ready] rule for feature") || !strings.Contains(ws[0].Detail[2], "dispatch.toml") {
+		t.Fatalf("workflow skips = %+v, want one for the target with the load error", ws)
+	}
+	if err := os.Remove(file); err != nil {
+		t.Fatal(err)
+	}
+	f.poll(t)
+	if !slices.Contains(f.picked, f.target) || len(workflowSkips(f.skips)) != 0 {
+		t.Fatalf("after the file went: picked %v, skips %+v", f.picked, f.skips)
+	}
+}
+
 // A queued request whose recorded workflow does not resolve starts no plan
 // run and is skipped, while another request in the same poll still starts.
 func TestDaemonSkipsRequestWithUnresolvedWorkflow(t *testing.T) {
