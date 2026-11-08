@@ -47,6 +47,10 @@ type watchdogDeps struct {
 	merge func(st run.State) (watchdogMerge, error)
 	// requests reads the plan request queue; nil is none.
 	requests func() ([]daemon.Request, error)
+	// file queues a bug request with the text; nil files none. all is every
+	// run's journal of the poll, for reading which requests are still open.
+	file func(text string) error
+	all  []run.Journal
 	// now is the clock stamping journalled attempts; nil stamps none.
 	now func() time.Time
 	log func(format string, args ...any)
@@ -173,6 +177,7 @@ func watchdogStalled(pol WatchdogPolicy, journals []run.Journal, now time.Time, 
 		}
 		d.charge(cur, fmt.Sprintf("step %s stalled: stopped and resumed with --retry", st.Current))
 		cur.Nudged = false
+		d.fileBug(pol, j.ID, bugStall, st.Current, fmt.Sprintf("no journal or session progress since %s", at.UTC().Format(time.RFC3339)))
 		d.log("watchdog: run %s step %s silent since %s: stopped and resumed with --retry (budget %d of %d)", j.ID, st.Current, at.UTC().Format(time.RFC3339), cur.Spent, pol.RetryBudget)
 	}
 	return out, holds, first
@@ -225,6 +230,15 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 		return err == nil && slices.ContainsFunc(q, func(c daemon.Continue) bool { return c.Run == id })
 	}
 	d.requests = func() ([]daemon.Request, error) { return daemon.ReadRequests(common) }
+	d.file = func(text string) error {
+		return daemon.UpdateRequests(common, func(reqs []daemon.Request) ([]daemon.Request, error) {
+			rid, err := newRequestID(ctx, reqs)
+			if err != nil {
+				return nil, err
+			}
+			return append(reqs, daemon.Request{ID: rid, Kind: daemon.KindBug, Text: text, At: ctx.Now().UTC()}), nil
+		})
+	}
 	d.ci = func(st run.State) (watchdogPR, error) { return watchdogReadPR(ctx, st) }
 	d.rerun = func(st run.State, id string) error {
 		t, err := watchdogShipTarget(ctx, st)
@@ -253,6 +267,7 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 // all is forgotten. It returns the memory and holds after, and the first
 // error.
 func watchdogPasses(pol WatchdogPolicy, all []run.Journal, live func(id string) bool, now time.Time, prev []daemon.WatchdogRun, d watchdogDeps) ([]daemon.WatchdogRun, []daemon.WatchdogHold, error) {
+	d.all = all
 	var running []run.Journal
 	for _, j := range all {
 		if st := j.State(); !st.Ended && live(j.ID) {
@@ -392,6 +407,7 @@ func watchdogTransient(pol WatchdogPolicy, journals []run.Journal, live func(id 
 		}
 		d.charge(&mem[i], fmt.Sprintf("step %s failed on a transient error (%q): resumed with --retry", step, sig))
 		d.log("watchdog: run %s step %s failed on a transient error (%q): resumed with --retry (budget %d of %d)", j.ID, step, sig, mem[i].Spent, pol.RetryBudget)
+		d.fileBug(pol, j.ID, bugTransient, step, failedDetail(st, step))
 	}
 	return mem, first
 }

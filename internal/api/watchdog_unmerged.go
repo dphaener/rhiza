@@ -163,6 +163,7 @@ func watchdogGreenUnmerged(pol WatchdogPolicy, journals []run.Journal, live func
 		}
 		d.charge(&mem[i], fmt.Sprintf("step %s failed with its PR green at %s and unmerged: resumed with --retry", step, shortSHA(pr.Head)))
 		d.log("watchdog: run %s step %s failed with its PR green at %s and unmerged: resumed with --retry for the workflow's merge (budget %d of %d)", j.ID, step, shortSHA(pr.Head), mem[i].Spent, pol.RetryBudget)
+		d.fileBug(pol, j.ID, bugUnmerged, step, fmt.Sprintf("PR green at %s and unmerged after step %s failed: %s", shortSHA(pr.Head), step, failedDetail(st, step)))
 	}
 	return mem, holds, first
 }

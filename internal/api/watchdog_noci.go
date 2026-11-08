@@ -169,6 +169,7 @@ func watchdogPRNoCI(pol WatchdogPolicy, journals []run.Journal, live func(id str
 				return false
 			}
 			d.charge(m, fmt.Sprintf("step %s: PR has no CI: resumed with --retry", step))
+			d.fileBug(pol, j.ID, bugNoCI, step, fmt.Sprintf("PR has no checks and is %s with main: %s", strings.ToLower(pr.Mergeable), failedDetail(st, step)))
 			return true
 		}
 		switch {
