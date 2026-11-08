@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YDC4SFKZDR8BKHXDVBS8R9",
+  "after": [
+    "01M6YD3J4MTJ9C0M6GZ8KSVD9F"
+  ],
+  "at": "2026-11-08T20:26:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestShipChangeCIFixPrompt asserts the ci-fix prompt carries the reproduce-locally, fix-or-quarantine-with-a-bug and pass-locally-before-push rules and names no Go, make or testscript command; go test -trimpath ./internal/api -run 'TestShipCheckRerunBudget|TestWatchdogCIRerun' shows neither ship check nor the watchdog rerunning a head's failed jobs beyond its rerun budget: one rerun at the default budget of 1, and exactly N at --reruns N / ciReruns N",
+          "statement": "A head still red once its rerun budget is spent (ship check --reruns and the watchdog's ciReruns, both default 1) is never rerun again: ship-change's ci-fix fixer runs each failing test locally, repeatedly until it reproduces or plainly passes, fixes it or quarantines it with a bug request filed and named at the skip, and commits only once those tests and the packages it touched pass locally"
+        },
+        "handle": "ci-fix-reproduces-locally",
+        "id": "01M6YCRM0GKZ3W3J2QDE6D1R43",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M6YCRM0GKZ3W3J2QDD87GWHQ",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKNPNZY0F0BTDCXQAP74",
+        "id": "01M6YDEAK8M0T6G29QX744796V",
+        "link": "01M6YDEAK8M0T6G29QX5GZHBKJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YDEANJKTF1C7QK3M3T149E",
+  "type": "ops",
+  "v": 1
+}
