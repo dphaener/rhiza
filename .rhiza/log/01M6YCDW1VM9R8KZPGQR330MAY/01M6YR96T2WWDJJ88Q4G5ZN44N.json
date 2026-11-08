@@ -1,0 +1,178 @@
+{
+  "actor": "01M6YQZ47ZDPHDQ3F328T2NE0Z",
+  "after": [
+    "01M6YQVA6R5ZCT9XS4SMF0DVS5"
+  ],
+  "at": "2026-11-08T23:35:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-ac99a081, binary built from abb2ffe1 (go build -trimpath), run by hand in a hermetic scratch repo outside ~/code (env -i, own HOME, bare origin, fake gh on PATH): rhiza ship check on PR #7 with gh reporting the test job FAILURE: first call 'not settled: reran the failed jobs of run 42', nothing recorded; after the rerun turned green the second call wrote one entry {head, pr 7, result green, time, flakes [TestFlakyPond]} read from run view --log-failed into .git/rhiza/ci-stability.json; a repeat check added nothing (1 entry). A new head still red after its rerun: 'failed: test after 1 reruns; failing tests: TestFlakyPond', recorded red with no flakes."
+        },
+        "handle": "ci-stability-record-qa-1",
+        "id": "01M6YR95RXKYK8WP6XYRSGAD71",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YR95RXKYK8WP6XYQ88ZGWX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YR95RXKYK8WP6XYQ88ZGWX",
+        "id": "01M6YR95TSXTGZ53Y7FKEYSHAF",
+        "link": "01M6YR95TSXTGZ53Y7FJSBGG46",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKDX9JJQ25FRHFJND2ZK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-ac99a081, binary built from abb2ffe1 (go build -trimpath), run by hand in a hermetic scratch repo outside ~/code (env -i, own HOME, bare origin, fake gh on PATH): rhiza health ci part: empty record 'ok ci stable'; two flaky runs 'warn ci unstable: flake in the last 20 CI runs'; with 3 later clean runs, rhiza daemon set rhiza.ship.ciWindow 3 gave stable and 5 gave unstable again; ciWindow 0 and abc each exit 2 'must be a whole number of at least 1'; a red main entry 'unstable: main's latest CI result is red (m1)' (also outliving the window), cleared to stable by a later green main entry."
+        },
+        "handle": "ci-stability-state-qa-1",
+        "id": "01M6YR95XEKAJZAHBK7JNDGPRH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YR95XEKAJZAHBK7G8N9ZK1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YR95XEKAJZAHBK7G8N9ZK1",
+        "id": "01M6YR960F8F9YBE5QCCEX2BH2",
+        "link": "01M6YR960F8F9YBE5QC8QAM3KB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-ac99a081, binary built from abb2ffe1 (go build -trimpath), run by hand in a hermetic scratch repo outside ~/code (env -i, own HOME, bare origin, fake gh on PATH): rhiza health shows 'warn ci unstable: flake in the last 20 CI runs: TestPond, TestGarden; no local gate is set, so nothing runs before a push' with 'flaky TestGarden: 1 flake', 'flaky TestPond: 2 flakes' and 'next: rhiza daemon set rhiza.ship.localGate <command>'; with git config rhiza.ship.localGate set the no-gate warning and next are gone; health --json carries the ci part (ok/stable when clean); exit 0 throughout."
+        },
+        "handle": "health-ci-stability-qa-1",
+        "id": "01M6YR9624X2TETZVK7HSE8CGF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YR9624X2TETZVK7E8J0E4X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YR9624X2TETZVK7E8J0E4X",
+        "id": "01M6YR9648GQWW6MZ4YM9Q3Y41",
+        "link": "01M6YR9648GQWW6MZ4YHTR4A5B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKNPNZY0F0BTDCXQAP74",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-ac99a081, binary built from abb2ffe1 (go build -trimpath), run by hand in a hermetic scratch repo outside ~/code (env -i, own HOME, bare origin, fake gh on PATH): rhiza ship gate: no gate set 'Local gate skipped: no gate is set'; gate set and CI unstable (main red, then a flake) it ran sh -c in the change set's worktree repo.gate-trial (output ran-in=.../repo.gate-trial), passed and recorded the head, a second call on the same head 'it already passed on adab9e6'; a gate 'echo boom-output; exit 3' printed its output and 'Local gate failed ... exit status 3 ... fix it here, never push to see', exit 1, --json with output/error; CI stable 'Local gate skipped: CI is stable', exit 0. rhiza workflow describe ship-change shows local-gate, gate-rebase, gate-land, gate-rebase-merge before each push step, each on.fail -> gate-fix; workflow check valid. In this repo rhiza daemon settings lists rhiza.ship.localGate = make check (.rhiza/settings.json, project)."
+        },
+        "handle": "ship-local-gate-qa-1",
+        "id": "01M6YR966TR2V9M6N6M1E552CA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YR966TR2V9M6N6KYE0660H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YR966TR2V9M6N6KYE0660H",
+        "id": "01M6YR969S9G4FGYEN0DE8XTPS",
+        "link": "01M6YR969S9G4FGYEN0DCP7N71",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-ac99a081, binary built from abb2ffe1 (go build -trimpath), run by hand in a hermetic scratch repo outside ~/code (env -i, own HOME, bare origin, fake gh on PATH): with rhiza.project.watchdog enabled/fileBugs true/autonomousOnly false under a scratch root (rhiza root init, project add, daemon paused), rhiza daemon --permission-mode manual logged 'watchdog: filed a bug request for flaky test TestFlakyPond' and '... TestOther'; rhiza request ls showed two queued bugs naming the test, PR #7/#8 and their heads, asking to reproduce locally, repeatedly, then fix or quarantine. After a further TestFlakyPond flake was added, a second daemon pass filed nothing (still 2 requests)."
+        },
+        "handle": "flaky-test-bugs-qa-1",
+        "id": "01M6YR96BY7C2DPJHD01JB70CK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YR96BY7C2DPJHCZY72JABG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YR96BY7C2DPJHCZY72JABG",
+        "id": "01M6YR96F991KNWDFX0909HF6X",
+        "link": "01M6YR96F991KNWDFX06GHKJSW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRM4F76QFJRC071CY3DYZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-ac99a081, binary built from abb2ffe1 (go build -trimpath), run by hand in a hermetic scratch repo outside ~/code (env -i, own HOME, bare origin, fake gh on PATH): rhiza workflow describe ship-change shows the ci-fix prompt: reproduce each failing test locally first with the repo's scoped command, repeating until it fails again or plainly passes, never push to see; fix, or quarantine with a bug request filed and named at the skip; commit only once those tests and touched packages pass locally; it names no go/make/testscript command. Hands-on ship check with a fake gh reran a red head's failed jobs exactly once (gh.log: one 'run rerun 42 --failed' over three checks), then reported the failure standing."
+        },
+        "handle": "ci-fix-reproduces-locally-qa-1",
+        "id": "01M6YR96J86BGA6F70MQ0Z6TDE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YR96J86BGA6F70MNG8H3RH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YR96J86BGA6F70MNG8H3RH",
+        "id": "01M6YR96M7DRXNA7KY0RJSM5AP",
+        "link": "01M6YR96M7DRXNA7KY0QZC8VSS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRM0GKZ3W3J2QDD87GWHQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-ac99a081, binary built from abb2ffe1 (go build -trimpath), run by hand in a hermetic scratch repo outside ~/code (env -i, own HOME, bare origin, fake gh on PATH): rhiza guide build and rhiza guide review both print 'While CI is unstable, or a red is not explained by your change, do not push or rerun CI to see. Reproduce the failing test locally, fix it, and push only after it and the touched packages pass locally.' beside the scoped-tests rule; CLAUDE.md at the head carries the same unstable-CI paragraph under the unchanged scoped-tests rule."
+        },
+        "handle": "unstable-ci-guidance-qa-1",
+        "id": "01M6YR96P6DKH9FFAR0YHWX47Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YR96P6DKH9FFAR0XH7EE8V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YR96P6DKH9FFAR0XH7EE8V",
+        "id": "01M6YR96QM7FC94Y5GP2XW6F8R",
+        "link": "01M6YR96QM7FC94Y5GP1XRHJ7D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRMA48VMM2KTZ2Q92EY10",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YR96T2WWDJJ88Q4G5ZN44N",
+  "type": "ops",
+  "v": 1
+}
