@@ -31,13 +31,43 @@ func schedRuns(t *testing.T, ctx *Ctx, rid string, ended bool, result string, wa
 	}
 }
 
+// schedHealthCtx is a project whose rhiza check passes (its rendered
+// folder written), so no other part of health is bad and the exit code is
+// health's own over the schedules part.
 func schedHealthCtx(t *testing.T, body string) *Ctx {
+	t.Helper()
 	f := newSessionFixture(t, "s")
 	f.ctx.Now = func() time.Time { return time.Date(2026, 11, 8, 10, 30, 0, 0, time.UTC) }
 	if body != "" {
 		writeDispatch(t, f.ctx.Root, body)
 	}
+	if _, err := callOp(t, f.ctx, "render", `{}`); err != nil {
+		t.Fatal(err)
+	}
 	return f.ctx
+}
+
+// schedHealth runs the health op, requires it to exit 0 with no bad part,
+// and returns its schedules part, false when it lists none.
+func schedHealth(t *testing.T, ctx *Ctx) (HealthPart, bool) {
+	t.Helper()
+	resp, err := callOp(t, ctx, "health", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := resp.(HealthResponse)
+	if r.ExitCode() != 0 {
+		t.Errorf("health exits %d (state %s): %+v", r.ExitCode(), r.State, r.Parts)
+	}
+	for _, p := range r.Parts {
+		if p.Part == HealthSchedules {
+			if p.State == HealthBad {
+				t.Errorf("schedules part bad: %+v", p)
+			}
+			return p, true
+		}
+	}
+	return HealthPart{}, false
 }
 
 func TestHealthSchedulesPart(t *testing.T) {
@@ -46,14 +76,8 @@ func TestHealthSchedulesPart(t *testing.T) {
 		if _, ok := healthSchedules(ctx, true); ok {
 			t.Fatal("part present")
 		}
-		resp, err := callOp(t, ctx, "health", `{}`)
-		if err != nil {
-			t.Fatal(err)
-		}
-		for _, p := range resp.(HealthResponse).Parts {
-			if p.Part == HealthSchedules {
-				t.Fatal("health lists a schedules part")
-			}
+		if _, ok := schedHealth(t, ctx); ok {
+			t.Fatal("health lists a schedules part")
 		}
 	})
 	t.Run("not yet run is ok with its next run", func(t *testing.T) {
@@ -65,6 +89,12 @@ func TestHealthSchedulesPart(t *testing.T) {
 		if len(p.Detail) != 1 || !strings.Contains(p.Detail[0], "none yet") || !strings.Contains(p.Detail[0], "next run 2026-11-08T11:00:00Z") {
 			t.Errorf("detail %q", p.Detail)
 		}
+		// Through the health op no daemon runs, so the part warns, but
+		// health still exits 0 and the line is the same.
+		hp, ok := schedHealth(t, ctx)
+		if !ok || len(hp.Detail) != 1 || hp.Detail[0] != p.Detail[0] {
+			t.Errorf("health part %+v", hp)
+		}
 	})
 	t.Run("failed last run warns with its log", func(t *testing.T) {
 		ctx := schedHealthCtx(t, hourlyCmd)
@@ -72,6 +102,10 @@ func TestHealthSchedulesPart(t *testing.T) {
 		p, _ := healthSchedules(ctx, true)
 		if p.State != HealthWarn || p.Next != "rhiza run log 01M6WSQMY5Q33CWG319V9ARAAA" || !strings.Contains(p.Detail[0], "failed") {
 			t.Fatalf("got %+v", p)
+		}
+		hp, ok := schedHealth(t, ctx)
+		if !ok || hp.State != HealthWarn || hp.Next != p.Next {
+			t.Errorf("health part %+v", hp)
 		}
 	})
 	t.Run("a run that changed the checkout warns", func(t *testing.T) {
@@ -81,6 +115,10 @@ func TestHealthSchedulesPart(t *testing.T) {
 		if p.State != HealthWarn || !strings.Contains(p.Summary, "main checkout") || !strings.Contains(p.Detail[0], "HEAD moved") {
 			t.Fatalf("got %+v", p)
 		}
+		hp, ok := schedHealth(t, ctx)
+		if !ok || hp.State != HealthWarn || !strings.Contains(hp.Summary, "main checkout") {
+			t.Errorf("health part %+v", hp)
+		}
 	})
 	t.Run("no daemon warns, and health exits 0", func(t *testing.T) {
 		ctx := schedHealthCtx(t, hourlyCmd)
@@ -88,30 +126,9 @@ func TestHealthSchedulesPart(t *testing.T) {
 		if p.State != HealthWarn || !strings.Contains(p.Summary, "no daemon") {
 			t.Fatalf("got %+v", p)
 		}
-		resp, err := callOp(t, ctx, "health", `{}`)
-		if err != nil {
-			t.Fatal(err)
-		}
-		r := resp.(HealthResponse)
-		found := false
-		for _, p := range r.Parts {
-			if p.Part == HealthSchedules {
-				found = true
-				if p.State != HealthWarn {
-					t.Errorf("state %q", p.State)
-				}
-			}
-		}
-		// Other parts of the bare fixture may be bad; the schedules part
-		// never is, so it alone does not move the exit code.
-		other := HealthResponse{State: HealthOK}
-		for _, p := range r.Parts {
-			if p.Part != HealthSchedules && healthRank(p.State) > healthRank(other.State) {
-				other.State = p.State
-			}
-		}
-		if !found || r.ExitCode() != other.ExitCode() {
-			t.Errorf("found=%v exit=%d, without the part %d", found, r.ExitCode(), other.ExitCode())
+		hp, ok := schedHealth(t, ctx)
+		if !ok || hp.State != HealthWarn || !strings.Contains(hp.Summary, "no daemon") {
+			t.Errorf("health part %+v", hp)
 		}
 	})
 }
