@@ -1,0 +1,63 @@
+{
+  "actor": "01M6XSPRW4T05V8WKBZXYDCQAC",
+  "after": [
+    "01M6XSJ4QX7QE2XGZYZQNA854W"
+  ],
+  "at": "2026-11-08T14:47:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 27e17a09 with the built binary in scratch git repos (RHIZA_* unset). New binary: set --handle store2 + statement, mv --parent, then retire store2 left one node.retire on the landed base; propose/accept/land exited 0. Old binary (merge-base) wrote set + mv + retire all on the landed base; land --json exited 3 with {\"error\":{\"code\":\"conflict\",...stale...}}; the new binary's retire <node-id> exited 0, dropped the update and move, left one retire on the landed base, and land exited 0. A second retire on a lone retire on the landed base is refused (exit 3, 'is retired'), as is retire of a node already retired on main; retire of a node created in the change set still drops it entirely. Retiring by handle after retire fails (handle no longer resolves), so the repair needs the node ID, as the PR 383 note gives. go test -trimpath ./internal/api -run 'TestRetire|Ship' ok; TestScripts/retire-after-update ok in a clean env."
+        },
+        "handle": "retire-supersedes-pending-edits-qa-1",
+        "id": "01M6XT122ZR1A1WXJ1WBE4XBWX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XT122X93K62G6NG7NYPYFG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XT122X93K62G6NG7NYPYFG",
+        "id": "01M6XT1262B5GNF07V9W6HPA2S",
+        "link": "01M6XT1262B5GNF07V9VDVG6CW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XHVSGJT8C0VDSS1ZQAWBM9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 27e17a09: produced a real land conflict with the built binary (old binary wrote update + retire on the landed base, new binary ran land --json: exit 3, error body on stdout, nothing on stderr). A throwaway in-package test ran that real binary through os/exec as cmd/rhiza execIn does and passed its stdout and error to headFailure, which returned 'conflict: cannot land change set ...: model: conflict: base ... is stale ...: rhiza land: exit status 3', naming the code, the conflict message and the exit status. Read execIn: it returns stdout with the error, so shipRunHead sees the body. go test -trimpath ./internal/api -run Ship ok."
+        },
+        "handle": "ship-head-build-error-detail-qa-1",
+        "id": "01M6XT12952XCFR0YRF97TW1CK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XT12952XCFR0YRF91R0SVA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XT12952XCFR0YRF91R0SVA",
+        "id": "01M6XT12DZ50C966NCXMFASPMN",
+        "link": "01M6XT12DZ50C966NCXKTFHJ2Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XHVSXCAK8XB69G5FFYN9MT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XHCX4FRER8CR0MG5D4D76D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XT12P3Y3QBJ7PWYB45PBN7",
+  "type": "ops",
+  "v": 1
+}
