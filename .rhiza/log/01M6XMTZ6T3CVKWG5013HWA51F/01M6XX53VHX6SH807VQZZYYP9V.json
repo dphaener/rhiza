@@ -1,0 +1,40 @@
+{
+  "actor": "01M6XVJCQ7VSAMAJEDH75J3SBJ",
+  "after": [
+    "01M6XW11AXWQP7B3QH96C7D9EV"
+  ],
+  "at": "2026-11-08T15:41:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 5d4cc959: read the diff. buildRetire (internal/api/write_node.go) now drops n.Pending (the change set's own updates/moves on the node) and adds one node.retire with Base = the landed version. New test TestRetire/AfterUpdateLands records a capability, then in one change set sets fields and renames the handle (store -> stash), retires it by the new handle, asserts the change set holds exactly one op, a node.retire based on the landed version (so no pending update remains on the node), then runs propose, accept and land (land runs gmodel.WhatIf and refuses on any conflict) and confirms the node is retired after land. go test -trimpath ./internal/api/... -run 'TestRetire|TestStackedWrites' -v: PASS, including TestRetire/AfterUpdateLands; the updated TestRetire and TestStackedWrites/SeesDependency expectations (retire only) also pass. Full go test -trimpath ./internal/api/...: all tests pass except the timing budgets TestReadBudget and TestReadBudgetApply, which missed their medians at VM load average 7-8 with other runs active; they time reads/apply and do not touch the retire path."
+        },
+        "handle": "retire-after-update-lands-verified",
+        "id": "01M6XX53QV2J59XW472C856K9P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XX53QV2J59XW472915PAXQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XX53QV2J59XW472915PAXQ",
+        "id": "01M6XX53TH6191PXWZEEV8Q6FQ",
+        "link": "01M6XX53TH6191PXWZECC3HJRV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XN76S19AD6C3BQKAKJ6BMN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XMTZ6T3CVKWG5013HWA51F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XX53VHX6SH807VQZZYYP9V",
+  "type": "ops",
+  "v": 1
+}
