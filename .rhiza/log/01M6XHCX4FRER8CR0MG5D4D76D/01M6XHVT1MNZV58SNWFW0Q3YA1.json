@@ -1,0 +1,73 @@
+{
+  "actor": "01M6XHEAH4XDKCP9GJE1NE7JPG",
+  "after": [
+    "01M6XHVA5H0JMKFYX5TR6YWBTE"
+  ],
+  "at": "2026-11-08T12:24:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api (and internal/model where the fold is checked): a change set sets a node's statement and handle, then retires it in a later entry; the change set holds only the retire, based on the landed version, and rhiza land succeeds with no conflict; the same with a node.move before the retire; a change set holding an update and a retire on the stale landed base (written as before this fix) is repaired by rhiza retire on that node, after which it lands; a testscript retire-after-update.txtar shows update, retire and land in one change set exit 0 with fold-ok; run with go test -trimpath ./internal/api/... ./internal/model/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/retire-after-update'",
+          "statement": "rhiza retire on a node the current change set has pending node.update or node.move ops on drops those ops from the change set and writes the retire on the node's landed version, as it already drops a pending create, so a change set that edits a node and later retires it holds one retire on a valid base and lands; run again on a node the change set already retired on a stale base (its own earlier edits after the landed version), it drops those edits and rewrites the retire onto the landed version, which repairs a change set written before this fix"
+        },
+        "handle": "retire-supersedes-pending-edits",
+        "id": "01M6XHVSGJT8C0VDSS22TJG9RZ",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6XHVSGJT8C0VDSS1ZQAWBM9",
+        "op": "node.create",
+        "parent": "01M5SWRZ69FKFXS01D7Y60C0S4"
+      },
+      {
+        "decision": null,
+        "from": "01M6XHVSGJT8C0VDSS1ZQAWBM9",
+        "id": "01M6XHVSNW7X434E3B54FHV7G0",
+        "link": "01M6XHVSNW7X434E3B520E3GXS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XHSWN256M1Y406SGD500RB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6XHVSGJT8C0VDSS1ZQAWBM9",
+        "id": "01M6XHVSSKPGQFS5F736S953E9",
+        "link": "01M6XHVSSKPGQFS5F734BY1NFW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XHVA4Q0021AZMQD4E0878G",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api with a fake Exec whose head build exits 3 printing {\"error\":{\"code\":\"conflict\",\"message\":\"cannot land change set X: ...\"}} shows the ship land error naming the conflict message and exit status 3; a second case with no JSON body shows the child's stderr in the error; run with go test -trimpath ./internal/api/... -run 'Ship'",
+          "statement": "When a ship step runs rhiza built from the PR head (land, render) and that run fails, the step's error carries the child's error message and code from its --json error body (or its stderr when there is none) besides the exit status, so the run log says why, e.g. the land conflict, instead of only 'exit status 3'"
+        },
+        "handle": "ship-head-build-error-detail",
+        "id": "01M6XHVSXCAK8XB69G5HGB8CGW",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M6XHVSXCAK8XB69G5FFYN9MT",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M6XHVSXCAK8XB69G5FFYN9MT",
+        "id": "01M6XHVSZTN9F1T9F798X25R3R",
+        "link": "01M6XHVSZTN9F1T9F797ARB8JA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XHVA4Q0021AZMQD4E0878G",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6XHCX4FRER8CR0MG5D4D76D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XHVT1MNZV58SNWFW0Q3YA1",
+  "type": "ops",
+  "v": 1
+}
