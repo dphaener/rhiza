@@ -586,6 +586,12 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if def, path, data, err = milestonePlanWorkflow(ctx, def, path, data, milestone); err != nil {
 		return nil, err
 	}
+	// Refuse a start whose agent steps cannot run before the change set or
+	// its worktree is resolved, so a refused start runs no git and writes
+	// nothing.
+	if err := checkAgentSteps(ctx, def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
+		return nil, err
+	}
 	var t changeWorktree
 	if strings.TrimSpace(r.New) != "" {
 		t, err = newPlanChange(ctx, r, def)
@@ -595,12 +601,15 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	// A plan run on a record change set plans a milestone too.
-	if def, path, data, err = milestonePlanWorkflow(ctx, def, path, data, milestone || planIsMilestone(ctx, t.cs.String())); err != nil {
-		return nil, err
-	}
-	if err := checkAgentSteps(ctx, def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
-		return nil, err
+	// A plan run on a record change set plans a milestone too; its
+	// plan-milestone workflow's agent steps are checked again.
+	if !milestone && def.Name == planWorkflow && planIsMilestone(ctx, t.cs.String()) {
+		if def, path, data, err = milestonePlanWorkflow(ctx, def, path, data, true); err != nil {
+			return nil, err
+		}
+		if err := checkAgentSteps(ctx, def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
+			return nil, err
+		}
 	}
 	if def.Name == shipChangeWorkflow {
 		if err := checkShipLeaves(t); err != nil {

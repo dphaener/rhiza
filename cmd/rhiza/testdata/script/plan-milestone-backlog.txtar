@@ -67,15 +67,14 @@ stdout '"verdict": "confirmed"'
 stdout '"round": 2'
 
 # The record landed with the interview; the planned change set was
-# accepted by the gate under rule autonomy (rhiza.autonomy.accept defaults
-# to auto and the last review round was clean), and has the reviser's
-# acceptance.
+# proposed and left for the owner (the run plans a milestone, so it runs
+# plan-milestone, whose accept stage is the owner's), and has the
+# reviser's acceptance.
 cd $WORK/repo
 exec sh -c 'rhiza change show $(cat $WORK/rec) --json'
 stdout '"state": "landed"'
 exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
-stdout '"state": "accepted"'
-stdout '"rule": "autonomy"'
+stdout '"state": "proposed"'
 exec sh -c 'rhiza show export-csv --change $(cat $WORK/cs) --json'
 stdout '"acceptance": "A test exports a 100k-row report with flat memory use"'
 exec sh -c 'rhiza show csv-streaming --json'
