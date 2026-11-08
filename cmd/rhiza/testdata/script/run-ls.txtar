@@ -45,7 +45,7 @@ stdout '"title": "Third run"'
 
 # Human output: one line per run, newest first.
 exec rhiza run ls
-stdout '^[0-9A-Z]{26} succeeded ok since 20[0-9-]+T[0-9:]+Z, change set [0-9A-Z]{26}: Third run$'
+stdout '^[0-9A-Z]{26} succeeded ok \(explicit\) since 20[0-9-]+T[0-9:]+Z, change set [0-9A-Z]{26}: Third run$'
 stdout 'failed bad'
 fold-ok
 

@@ -34,4 +34,4 @@ stdout -count=1 '^fail text-ref change set [0-9A-Z]{26}: pick field statement ho
 stdout '"rule": "text-ref"'
 stdout '"ok": false'
 exec rhiza describe --json
-stdout 'anchor, text-ref, render'
+stdout 'anchor, text-ref, dispatch, render'
