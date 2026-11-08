@@ -24,6 +24,7 @@ Everything Rhiza does runs through a workflow: the rules (which workflow a reque
 ### In
 
 - decided-by [workflows](../capability/rhiza/workflows.md)
+- decided-by [watchdog-policy](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-policy.md)
 
 ## History
 
