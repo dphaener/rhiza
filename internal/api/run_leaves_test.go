@@ -510,7 +510,7 @@ func TestLeafPrompt(t *testing.T) {
 // decision.
 func TestRunInfoRetryRound(t *testing.T) {
 	st := run.State{Leaves: []run.LeafState{{Step: "build", Leaf: "LA", Handle: "leaf-a", Rounds: []run.LeafRound{
-		{Round: 2, After: 3, Question: "Q1", Decision: "use-a-map"},
+		{Round: 2, After: 3, Question: "Q1", QuestionHandle: "q-one", Decision: "use-a-map"},
 		{Round: 3, After: 6, Question: "Q2", Retry: true},
 	}}}}
 	info := runInfo(&Ctx{}, st, false, nil)
@@ -520,6 +520,19 @@ func TestRunInfoRetryRound(t *testing.T) {
 	rs := info.Leaves[0].Rounds
 	if rs[0].Retry || rs[0].Decision != "use-a-map" || !rs[1].Retry || rs[1].Decision != "" {
 		t.Errorf("rounds %+v", rs)
+	}
+	var b strings.Builder
+	info.Human(&b)
+	for _, want := range []string{
+		"\n  - round 2 from attempt 4: decision use-a-map answers question q-one (Q1)\n",
+		"\n  - round 3 from attempt 7: given by the retry\n",
+	} {
+		if !strings.Contains(b.String(), want) {
+			t.Errorf("run status text lacks %q:\n%s", want, b.String())
+		}
+	}
+	if strings.Contains(b.String(), "decision  ") {
+		t.Errorf("run status text names an empty decision:\n%s", b.String())
 	}
 }
 

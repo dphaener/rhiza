@@ -3,8 +3,10 @@
 # is built and verified, and the run ends failed. Once the owner's
 # Decision answers the question, run resume --retry keeps the passed
 # leaf, gives the failed one a fresh round with the Decision in its
-# builder's prompt, then builds its dependent, and the run succeeds. run
-# status shows the question and the round.
+# builder's prompt, then builds its dependent, and the run succeeds. A
+# retry before that gives the failed leaf a round of its own, with no
+# Decision; failing it raises a new question. run status shows the
+# questions and the rounds.
 #
 # The fake rex runs the tab's command synchronously in the window's
 # directory. The fake claude, as a builder, fails on alpha until
@@ -52,14 +54,20 @@ stdout '"statement": "Leaf alpha failed all 3 attempts of round 1: attempt 1 bui
 stdout '"type": "blocks"'
 stdout '"handle": "alpha"'
 
-# A retry with the question unanswered starts nothing and fails again.
+# A retry with the question unanswered gives alpha a round of its own,
+# with no Decision; alpha fails it again and the run fails.
 exec sh -c 'rhiza run resume --foreground --retry "$(cat $WORK/runid)" --json; echo exit=$?'
 stdout '"state": "failed"'
 stdout '^exit=1$'
 exec cat $WORK/builders.log
-cmp stdout $WORK/want-round1.log
+cmp stdout $WORK/want-retry.log
+exec rhiza run status
+stdout '\n- alpha \(step build\): failed in round 2: attempt 6: builder failed: exit 1\n  - question leaf-failed-[0-9a-z]{8}-2 \([0-9A-Z]{26}\) blocks it\n  - round 2 from attempt 4: given by the retry\n'
+! stdout 'decision  '
+exec sh -c 'echo leaf-failed-$(tr A-Z a-z < $WORK/runid | cut -c1-8)-2 > $WORK/question'
 
-# The owner answers in the build worktree; the retry gives alpha round 2.
+# The owner answers the new question in the build worktree; the retry
+# gives alpha round 3.
 exec sh -c 'cd "$(cat $WORK/build.pwd)" && rhiza add decision use-a-map --field "statement=Use a map, not a list." --change "$(rhiza run status --json | sed -n "s/.*\"change\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1)" && rhiza link use-a-map answers "$(cat $WORK/question)" --change "$(rhiza run status --json | sed -n "s/.*\"change\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1)"'
 exec touch $WORK/answered
 exec sh -c 'rhiza run resume --foreground --retry "$(cat $WORK/runid)"'
@@ -67,12 +75,13 @@ exec cat $WORK/builders.log
 cmp stdout $WORK/want-round2.log
 
 exec rhiza run status
-stdout '\n- alpha \(step build\): passed in round 2: attempt 4: verifier passed\n  - round 2 from attempt 4: decision use-a-map answers question leaf-failed-[0-9a-z]{8}-1 \([0-9A-Z]{26}\)\n'
+stdout '\n- alpha \(step build\): passed in round 3: attempt 7: verifier passed\n  - round 2 from attempt 4: given by the retry\n  - round 3 from attempt 7: decision use-a-map answers question leaf-failed-[0-9a-z]{8}-2 \([0-9A-Z]{26}\)\n'
 stdout '\n- beta \(step build\): passed: attempt 1: verifier passed\n'
 stdout '\n- gamma \(step build\): passed: attempt 1: verifier passed\n'
 exec rhiza run status --json
 stdout '"state": "succeeded"'
-stdout '"round": 2'
+stdout '"round": 3'
+stdout '"retry": true'
 stdout '"decision": "use-a-map"'
 
 fold-ok
@@ -82,12 +91,23 @@ alpha 1 model=sonnet decision=no
 alpha 2 model=opus decision=no
 alpha 3 model=opus decision=no
 gamma 1 model=sonnet decision=no
+-- want-retry.log --
+alpha 1 model=sonnet decision=no
+alpha 2 model=opus decision=no
+alpha 3 model=opus decision=no
+gamma 1 model=sonnet decision=no
+alpha 4 model=sonnet decision=no
+alpha 5 model=opus decision=no
+alpha 6 model=opus decision=no
 -- want-round2.log --
 alpha 1 model=sonnet decision=no
 alpha 2 model=opus decision=no
 alpha 3 model=opus decision=no
 gamma 1 model=sonnet decision=no
-alpha 4 model=sonnet decision=yes
+alpha 4 model=sonnet decision=no
+alpha 5 model=opus decision=no
+alpha 6 model=opus decision=no
+alpha 7 model=sonnet decision=yes
 beta 1 model=sonnet decision=no
 -- build.toml --
 name = "build"

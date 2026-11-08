@@ -3045,6 +3045,10 @@ func (r RunInfo) Human(w io.Writer) {
 				fmt.Fprintf(w, "  - question %s (%s) blocks it\n", l.QuestionHandle, l.Question)
 			}
 			for _, rd := range l.Rounds {
+				if rd.Retry {
+					fmt.Fprintf(w, "  - round %d from attempt %d: given by the retry\n", rd.Round, rd.After+1)
+					continue
+				}
 				fmt.Fprintf(w, "  - round %d from attempt %d: decision %s answers question %s (%s)\n", rd.Round, rd.After+1, rd.Decision, rd.QuestionHandle, rd.Question)
 			}
 			for _, ls := range l.Sessions {
