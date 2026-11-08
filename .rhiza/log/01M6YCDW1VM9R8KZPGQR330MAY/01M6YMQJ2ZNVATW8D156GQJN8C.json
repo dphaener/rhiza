@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YKBMNFTEX2G9KXGHBBDZJX",
+  "after": [
+    "01M6YJ0YRTB65NGKH12QA41G1Y"
+  ],
+  "at": "2026-11-08T22:33:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 21c1eb26 I ran go test -trimpath -count=1 ./internal/api -run TestFlakyTestBugs -v (PASS, and PASS again with -count=3). It covers: one bug request for a newly flaky test naming the test, PR #7 and head aaa111 and asking to reproduce locally and fix or quarantine; no second request on a repeat poll or on a second flake of the same test while the first is open; TestB and TestAB each queued once; no request with fileBugs off. On attempt 1 the finding was that a planned request let the same flake be filed again. The new flakyBugFiled treats queued and planning requests as open. A planned or failed request covers the runs its text names and any flake recorded before its run finished, so only a later flake files the test again. The new test step plans request R1 through a finished journal, sees nothing queued over two polls, then sees exactly one new TestA request for the later flake ddd444. go vet and gofmt are clean on internal/api. A full go test -trimpath -count=1 ./internal/api ran every test with no --- FAIL. The package was failed only by the harness guard that the enclosing ~/code root's .rhiza-root/usage.live.json changed. That file is the live root daemon's and this diff (watchdog_flaky.go and its test) does not touch it. An earlier full run hit go's 10m default timeout under load average ~8; the rerun took 740s."
+        },
+        "handle": "flaky-test-bugs-verified",
+        "id": "01M6YMQHSDR7WW026AF71A2KHZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YMQHSDR7WW026AF5SKH1GE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YMQHSDR7WW026AF5SKH1GE",
+        "id": "01M6YMQHX33KPCG3RP6B03CJR0",
+        "link": "01M6YMQHX33KPCG3RP6767VQ1V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRM4F76QFJRC071CY3DYZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YMQJ2ZNVATW8D156GQJN8C",
+  "type": "ops",
+  "v": 1
+}
