@@ -220,6 +220,13 @@ type WatchdogRun struct {
 	// found CIHead red again after its rerun: the head is left to the owner,
 	// and while the journal ends there the PR passes read that PR no more.
 	CIDone time.Time `json:"ci_done,omitzero"`
+	// NoCIHead is the PR head the no-CI pass left to the owner (merging
+	// main conflicted in NoCIConflicts, or the budget was spent), and NoCIAt
+	// the run's last journal entry then: while both still hold, the pass
+	// keeps the hold without fetching, merging or logging again.
+	NoCIHead      string    `json:"noci_head,omitempty"`
+	NoCIAt        time.Time `json:"noci_at,omitzero"`
+	NoCIConflicts []string  `json:"noci_conflicts,omitempty"`
 }
 
 // WatchdogAttempt is one recovery the watchdog tried on a run.

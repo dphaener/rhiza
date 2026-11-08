@@ -116,7 +116,9 @@ func hasConflictHandling(st run.State) bool {
 // main into the branch and resumes the run with --retry to wait for CI on
 // the pushed head. If the merge conflicts it resumes the run so the run's
 // own conflict handling takes it, or holds an inbox item when the workflow
-// has none or the budget is spent. A run left idle by watchdogPRIdle is not
+// has none or the budget is spent; with the budget spent it holds without
+// merging. A head it left to the owner is not merged or logged again while
+// the journal ends where it did. A run left idle by watchdogPRIdle is not
 // read. It returns the memory and holds after, and the first error.
 func watchdogPRNoCI(pol WatchdogPolicy, journals []run.Journal, live func(id string) bool, mem []daemon.WatchdogRun, d watchdogDeps) ([]daemon.WatchdogRun, []daemon.WatchdogHold, error) {
 	var holds []daemon.WatchdogHold
@@ -159,6 +161,30 @@ func watchdogPRNoCI(pol WatchdogPolicy, journals []run.Journal, live func(id str
 			i = len(mem) - 1
 		}
 		m := &mem[i]
+		last := j.Entries[len(j.Entries)-1].At
+		hold := func(conflicts []string) {
+			detail := fmt.Sprintf("the PR has no CI because it conflicts with main, and the watchdog's retry budget of %d is spent: merging main in by hand is needed", pol.RetryBudget)
+			if len(conflicts) > 0 {
+				detail = fmt.Sprintf("the PR has no CI because it conflicts with main in %s, and merging main in by hand is needed: the workflow has no conflict handling, or the watchdog's retry budget of %d is spent", strings.Join(conflicts, ", "), pol.RetryBudget)
+			}
+			holds = append(holds, daemon.WatchdogHold{Run: j.ID, Change: st.Change, Step: step, Since: last, Detail: detail})
+		}
+		// A head already left to the owner, with the journal where it was,
+		// keeps its hold: no fetch, no merge, no log line.
+		if m.NoCIHead == pr.Head && m.NoCIAt.Equal(last) {
+			hold(m.NoCIConflicts)
+			continue
+		}
+		leave := func(conflicts []string) {
+			m.NoCIHead, m.NoCIAt, m.NoCIConflicts = pr.Head, last, conflicts
+			hold(conflicts)
+		}
+		// With the budget spent nothing would resume the run after a push.
+		if m.Spent >= pol.RetryBudget {
+			leave(nil)
+			d.log("watchdog: run %s step %s: PR has no CI because it conflicts with main: budget %d spent, left to the owner", j.ID, step, pol.RetryBudget)
+			continue
+		}
 		res, err := d.merge(st)
 		if err != nil {
 			fail(fmt.Errorf("merge main into the PR of run %s: %w", j.ID, err))
@@ -183,10 +209,7 @@ func watchdogPRNoCI(pol WatchdogPolicy, journals []run.Journal, live func(id str
 				d.log("watchdog: run %s step %s: PR has no CI and merging main conflicts in %s: left the branch unchanged, resumed with --retry for the run's conflict handling (budget %d of %d)", j.ID, step, files, m.Spent, pol.RetryBudget)
 				continue
 			}
-			holds = append(holds, daemon.WatchdogHold{
-				Run: j.ID, Change: st.Change, Step: step, Since: j.Entries[len(j.Entries)-1].At,
-				Detail: fmt.Sprintf("the PR has no CI because it conflicts with main in %s, and merging main in by hand is needed: the workflow has no conflict handling, or the watchdog's retry budget of %d is spent", files, pol.RetryBudget),
-			})
+			leave(res.Conflicts)
 			d.log("watchdog: run %s step %s: PR has no CI and merging main conflicts in %s: left to the owner", j.ID, step, files)
 		case res.Pushed != "":
 			d.log("watchdog: run %s step %s: PR has no CI because it conflicts with main: merged origin/main and pushed %s", j.ID, step, shortSHA(res.Pushed))

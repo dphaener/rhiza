@@ -173,4 +173,37 @@ func TestWatchdogPRNoCI(t *testing.T) {
 	if len(log) == 0 {
 		t.Error("no log lines")
 	}
+
+	// A head left to the owner keeps its hold on later polls without
+	// another merge or log line; a new head is merged again.
+	c3 := failed("c3", unhandled)
+	mem, h, err := watchdogPRNoCI(pol, []run.Journal{c3}, nolive, nil, d)
+	if err != nil || len(h) != 1 {
+		t.Fatalf("c3 first poll: holds %+v, %v", h, err)
+	}
+	merges, log = nil, nil
+	for range 3 {
+		if mem, h, err = watchdogPRNoCI(pol, []run.Journal{c3}, nolive, mem, d); err != nil || len(h) != 1 || !strings.Contains(h[0].Detail, "a.txt") {
+			t.Fatalf("c3 later poll: holds %+v, %v", h, err)
+		}
+	}
+	if len(merges) != 0 || len(log) != 0 {
+		t.Fatalf("c3 later polls merged %v, logged %q", merges, log)
+	}
+	pr.Head = "cccc333"
+	if mem, _, _ = watchdogPRNoCI(pol, []run.Journal{c3}, nolive, mem, d); len(merges) != 1 {
+		t.Fatalf("new head not merged: %v", merges)
+	}
+
+	// With the budget spent it holds once without merging.
+	merges, log = nil, nil
+	spent := []daemon.WatchdogRun{{Run: "c4", Spent: 1}}
+	for range 3 {
+		if spent, h, err = watchdogPRNoCI(pol, []run.Journal{failed("c4", handled)}, nolive, spent, d); err != nil || len(h) != 1 {
+			t.Fatalf("spent: holds %+v, %v", h, err)
+		}
+	}
+	if len(merges) != 0 || len(log) != 1 {
+		t.Fatalf("spent budget merged %v, logged %q", merges, log)
+	}
 }
