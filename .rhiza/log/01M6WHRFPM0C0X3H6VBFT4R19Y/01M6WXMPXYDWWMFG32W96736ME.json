@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WXGKP5Q9F95VFPXTA40CPR",
+  "after": [
+    "01M6WXC1NR4BC2WPFEYC6YMC3A"
+  ],
+  "at": "2026-11-08T06:30:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 445732ad ran go test -trimpath -count=1 ./internal/api -run TestWatchdogBugs -v: PASS. The test drives watchdogPasses with fakes: a transient-failure recovery (index.lock) queues exactly one bug request whose text names the kind and step (transient failure at step build), the run ID, the run's request ID req1 and the log line; a second run's matching recovery queues none while the first is open (dedup by kind+step head, open = RequestState not planned); a CI flake on the wait step queues none; FileBugs=false queues none. Read the diff: fileBug is also called from the stall, unmerged-PR and PR-without-CI recoveries, the real deps append a KindBug request via daemon.UpdateRequests, and fileBugs is read from the existing rhiza.daemon/project.watchdog policy. go test -run Watchdog ./internal/api, go vet and gofmt -l on internal/api were clean."
+        },
+        "handle": "watchdog-files-bugs-verified",
+        "id": "01M6WXMP7HCRZQQYJ0BZK5A6A4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WXMP7HCRZQQYJ0BWXHJ9F6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WXMP7HCRZQQYJ0BWXHJ9F6",
+        "id": "01M6WXMPHJ7J02RCNN9PA2X7HX",
+        "link": "01M6WXMPHJ7J02RCNN9MJG5RME",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2DW8TQBJPM5R59T3QGFK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WXMPXYDWWMFG32W96736ME",
+  "type": "ops",
+  "v": 1
+}
