@@ -4,7 +4,7 @@ A review run checks a built change set. Each session gets `RHIZA_CHANGE`, `RHIZA
 and `RHIZA_ROLE` (check, critic, fixer or verifier); checks and critics also `RHIZA_CHECK`,
 a leaf's fixer and verifier `RHIZA_LEAF`. Start with
 `rhiza slice --change "$RHIZA_CHANGE" --json`. Checks and critics work in a
-throwaway checkout at the branch head; their rhiza writes reach the run's log.
+throwaway checkout at the branch head.
 Review the diff from the merge-base with the default branch
 (`git diff $(git merge-base origin/main HEAD)`). Each role ends with `rhiza session done`.
 
@@ -12,12 +12,12 @@ Review the diff from the merge-base with the default branch
 
 Every check except `qa` tests runs with fakes only, never real Rex, agents or `gh`.
 Checks, critics and fixers run only the tests covering what the change touches, with the
-repo's own scoped commands (its contributor guide names them), never the repo's full
+repo's scoped commands, never the repo's full
 suite: the PR's CI runs it before merge.
 
-While CI is unstable, or when a red is not explained by your change (a flaky test, an
-infra error, a red that passes on rerun), do not push or rerun CI to see. Reproduce the
-failing test locally, repeatedly if it is a flake, fix it, and push only after it and the
+While CI is unstable, or a red is not explained by your change,
+do not push or rerun CI to see. Reproduce the
+failing test locally, fix it, and push only after it and the
 touched packages pass locally.
 
 - `compliance`: each leaf's `acceptance`, met as written.
@@ -38,8 +38,7 @@ touched packages pass locally.
 - `model`: the model matches the code; missing constraints go in a discovered-from
   draft change set.
 
-Record one round, `{"findings":[]}` when clean (a check with no round fails), with
-a heredoc on stdin, no temp file:
+Record one round, `{"findings":[]}` when clean (a check with none fails), on stdin:
 
 ```
 rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'
@@ -47,13 +46,13 @@ rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'
 EOF
 ```
 
-`leaf` is optional. Severities: `blocker` (wrong or broken; cannot ship), `major` (must be
+`leaf` is optional. Severities: `blocker` (broken; cannot ship), `major` (must be
 fixed), `minor` and `nit` (reported, never fixed). Schema: `rhiza describe run.findings`.
 
 ## Critic
 
 Read the check's latest round in `rhiza run status --json`. Confirm or drop each blocker
-and major against the code. Never add a finding. Record with a heredoc on stdin:
+and major against the code. Never add a finding. Record on stdin:
 
 ```
 rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'
@@ -61,12 +60,11 @@ rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'
 EOF
 ```
 
-`verdict` is `confirmed` or `dropped`. Dropped findings stay in the run journal; no Decision
-is written for them.
+`verdict` is `confirmed` or `dropped`. Dropped findings stay in the run journal; no Decision.
 
 ## Fixer
 
-Your prompt names the confirmed findings to fix. Fix them, nothing else, in one new
+Your prompt names the confirmed findings to fix. Fix only those, in one new
 commit with the `Change:` and `Actor:` trailers plus `Leaf: <leaf>` for a leaf fixer, or
 `Review: <run>` ($RHIZA_RUN) for the change set's fixer. Keep every trailer, `Co-Authored-By:`
 included, in the commit's one final paragraph, with no blank line between them.
@@ -75,7 +73,7 @@ A verifier re-run follows `rhiza guide build`.
 
 ## Outside work
 
-Work outside the intent, found by scope or any check, is a question, or a
-discovered-from draft change set: `rhiza change new "<intent>" --json`, then
+Work outside the intent is a question, or a discovered-from draft change set:
+`rhiza change new "<intent>" --json`, then
 `rhiza link <new> discovered-from <this> --change <new> --json`, then
 `rhiza change use <this>`.

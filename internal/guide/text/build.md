@@ -49,9 +49,9 @@ Builders and verifiers run only the tests covering what the change touches, with
 repo's own scoped commands (its contributor guide names them), never the repo's full
 suite: the PR's CI runs it before merge.
 
-While CI is unstable, or when a red is not explained by your change (a flaky test, an
-infra error, a red that passes on rerun), do not push or rerun CI to see. Reproduce the
-failing test locally, repeatedly if it is a flake, fix it, and push only after it and the
+While CI is unstable, or a red is not explained by your change,
+do not push or rerun CI to see. Reproduce the
+failing test locally, fix it, and push only after it and the
 touched packages pass locally.
 
 ## Outside work
