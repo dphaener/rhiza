@@ -19,6 +19,15 @@
 # ends the run at rebase-triage and no fixer starts.
 # Case 4: a fourth conflict, after two fixes before land and one after,
 # fails the run at conflict-triage-landed.
+# Case 5: autonomous, the fixer finds a design clash: it leaves the merge in
+# progress and asks in its session; the run adds the question to its change
+# set, the arbiter decides it, the same session gets the answer, commits
+# the merge, and the run pushes and merges, with one fixer session.
+# Case 6: not autonomous, the same question: the run reads blocked at
+# conflict-fix with kind question and nothing is pushed while it waits; the
+# owner's answer lets the same session finish.
+# Case 7: a fixer that says done without committing the merge fails the
+# step's until: the run fails and nothing is pushed.
 #
 # The fakes are run-ship-ci-fix.txtar's. gh reports CONFLICTING while the
 # PR's head lacks origin's main, and pushes prepared commits to main from
@@ -149,6 +158,76 @@ stdout '"state": "failed"'
 exec sh -c 'wc -l < $WORK/fixes.log'
 stdout '^3$'
 ! grep '^pr merge' $WORK/gh.log
+
+# Case 5: autonomous, a design clash is asked, arbitrated and resolved.
+exec sh -c 'printf "%s\n" "*=m1" > $WORK/triggers; : > $WORK/fixer-pushes; echo clash > $WORK/fixer-mode; echo bg > $WORK/bg; echo > $WORK/stop'
+cd $WORK
+exec sh $WORK/setup.sh
+cd repo
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --autonomous; echo exit=$?'
+stdout '^Run \S+ succeeded$'
+stderr 'step conflict-fix: blocked on question'
+stderr 'step conflict-fix: session [0-9a-f-]+ asked question question-[0-9a-f]{8}-1 \([0-9A-Z]{26}\); the arbiter answers it'
+stderr 'step conflict-fix: arbiter pass on question [0-9A-Z]{26}: answered by clash-ruling'
+exec rhiza run status
+stdout '^- conflict-fix \(visit 1\): pass, then render-pr'
+! stdout '^- conflict-fix \(visit 2\)'
+exec sh -c 'wc -l < $WORK/clash.log'
+stdout '^1$'
+exec sh -c 'wc -l < $WORK/fixes.log'
+stdout '^1$'
+exec sh -c 'grep "\"type\":\"asked\"" .git/rhiza/runs/*.jsonl | grep "\"step\":\"conflict-fix\"" | grep -c "Design clash"'
+stdout '^1$'
+exec sh -c 'grep -c "\"type\":\"answered\"" .git/rhiza/runs/*.jsonl'
+stdout '^1$'
+exec cat $WORK/typed.log
+stdout -count=1 '^send-key -b block:b1 enter$'
+exec grep '^pr merge' $WORK/gh.log
+exec git -C $WORK/origin.git log main --format=%s
+stdout 'Ship it \(#7\)'
+
+# Case 6: not autonomous, the run waits blocked, and pushes nothing.
+exec sh -c 'printf "%s\n" "*=m1" > $WORK/triggers; : > $WORK/fixer-pushes; echo clash > $WORK/fixer-mode; echo bg > $WORK/bg; rm -f $WORK/stop'
+cd $WORK
+exec sh $WORK/setup.sh
+cd repo
+env REX_BLOCK=block:root
+env REX_SESSION=session:s1
+exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual &
+exec sh -c 'i=0; while [ $i -lt 800 ]; do rhiza run status | grep -q "^Run .* blocked$" && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+exec rhiza run status --json
+stdout '"state": "blocked"'
+stdout '"kind": "question"'
+stdout 'Design clash'
+exec rhiza run status
+stdout '^- Current step: conflict-fix$'
+! exists $WORK/fixes.log
+! exec git -C $WORK/origin.git merge-base --is-ancestor main cs/ship-it
+exec rhiza ls --kind question --json
+! stdout 'Design clash'
+exec sh -c 'echo > $WORK/answer'
+wait
+exec rhiza run status
+stdout '^- conflict-fix \(visit 1\): pass, then render-pr'
+exec sh -c 'wc -l < $WORK/clash.log'
+stdout '^1$'
+env REX_BLOCK=
+env REX_SESSION=
+
+# Case 7: done without committing the merge fails the until.
+exec sh -c 'printf "%s\n" "*=m1" > $WORK/triggers; : > $WORK/fixer-pushes; echo nocommit > $WORK/fixer-mode; rm -f $WORK/bg $WORK/answer'
+cd $WORK
+exec sh $WORK/setup.sh
+cd repo
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual; echo exit=$?'
+stdout '^Run \S+ failed$'
+exec rhiza run status
+stdout '^- conflict-fix \(visit 1\): fail'
+stdout 'until did not hold'
+! stdout '^- render-pr \(visit 2\)'
+! exists $WORK/fixes.log
+! exec git -C $WORK/origin.git merge-base --is-ancestor main cs/ship-it
+! grep '^pr merge' $WORK/gh.log
 -- setup.sh --
 #!/bin/sh
 # A fresh bare origin that refuses pushes while $WORK/refuse exists, a repo
@@ -157,7 +236,7 @@ stdout '^3$'
 # touching an unrelated file.
 set -e
 rm -rf "$WORK/origin.git" "$WORK/repo" "$WORK/repo.ship-it" "$WORK/other"
-rm -f "$WORK/gh.log" "$WORK/pr.created" "$WORK/fixes.log" "$WORK/ship.log" "$WORK/refuse"
+rm -f "$WORK/gh.log" "$WORK/pr.created" "$WORK/fixes.log" "$WORK/ship.log" "$WORK/refuse" "$WORK/typed.log" "$WORK/answer" "$WORK/clash.log" "$WORK/tab.out" "$WORK/arbiter.log"
 git init -q --bare "$WORK/origin.git"
 cat > "$WORK/origin.git/hooks/pre-receive" <<'EOF'
 #!/bin/sh
@@ -239,6 +318,12 @@ echo shipped >> "$WORK/ship.log"
 echo shipped >> "$WORK/order.log"
 -- bin/rex --
 #!/bin/sh
+case "$1" in
+send | send-key)
+	echo "$*" >> "$WORK/typed.log"
+	exit 0
+	;;
+esac
 dir=
 while [ $# -gt 0 ]; do
 	if [ "$1" = -c ]; then
@@ -246,7 +331,11 @@ while [ $# -gt 0 ]; do
 	fi
 	if [ "$1" = -- ]; then
 		shift
-		(cd "$dir" && "$@") >&2 || true
+		if [ -f "$WORK/bg" ]; then
+			(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		else
+			(cd "$dir" && "$@") >&2 || true
+		fi
 		break
 	fi
 	shift
@@ -254,7 +343,23 @@ done
 echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 -- bin/claude --
 #!/bin/sh
+sid=
 for a; do last=$a; done
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+case "$last" in
+*'rhiza guide arbiter'*)
+	q=$(printf '%s\n' "$last" | sed -n 's/^Decide question \([0-9A-Z]*\):.*/\1/p')
+	printf '{"writes":[{"op":"add","kind":"decision","handle":"clash-ruling","fields":["statement=Keep main behaviour","wording=(assumed, would have escalated)","reasoning=Main moved first"]},{"op":"link","from":"clash-ruling","type":"answers","to":"%s"}]}\n' "$q" > "$WORK/decision.json"
+	rhiza apply "$WORK/decision.json" --json >&2 || exit 7
+	rhiza session done >&2 || exit 6
+	exit 0
+	;;
+esac
 case "$RHIZA_ROLE" in
 builder)
 	echo built > feature.txt
@@ -284,6 +389,27 @@ check)
 	grep -q '"merge_conflict"' "$WORK/fix-input.json" || exit 1
 	grep -q '"feature.txt"' "$WORK/fix-input.json" || exit 1
 	git rev-parse --verify --quiet MERGE_HEAD > /dev/null || exit 1
+	mode=$(cat "$WORK/fixer-mode" 2>/dev/null)
+	if [ "$mode" = nocommit ]; then
+		rhiza session done >&2 || exit 1
+		exit 0
+	fi
+	if [ "$mode" = clash ]; then
+		echo asked >> "$WORK/clash.log"
+		echo '{"session_id":"'$sid'","hook_event_name":"PreToolUse","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Design clash between change sets Ship it and Main in feature.txt: main writes main N, the branch writes built"}]}}' | rhiza session hook PreToolUse >> "$WORK/hook.out" || exit 8
+		# An autonomous run's denied question leaves the session idle; the
+		# owner's pending one does not.
+		if [ -f "$WORK/stop" ]; then
+			echo '{"session_id":"'$sid'","hook_event_name":"Stop"}' | rhiza session hook Stop >> "$WORK/hook.out" || exit 8
+		fi
+		i=0
+		until grep -q '^send-key ' "$WORK/typed.log" 2>/dev/null || [ -f "$WORK/answer" ]; do
+			i=$((i + 1))
+			[ $i -gt 4000 ] && exit 9
+			sleep 0.025
+		done
+		git rev-parse --verify --quiet MERGE_HEAD > /dev/null || exit 1
+	fi
 	run=$(printf '%s' "$last" | sed -n 's/.*in run \([^:]*\):.*/\1/p')
 	n=$(( $(cat "$WORK/fixes.log" 2>/dev/null | wc -l) + 1 ))
 	for f in $(git diff --name-only --diff-filter=U); do

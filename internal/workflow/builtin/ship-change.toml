@@ -16,7 +16,9 @@ name = "ship-change"
 # --conflicts, tells that from any other failure and passes only for a
 # recorded unresolved conflict with fewer than 3 fixes made in the run
 # (merge commits on the branch with the run's Review: trailer, counted run-wide).
-# conflict-fix then resolves and commits the merge, and the run pushes it
+# conflict-fix then resolves and commits the merge (or, on a real design
+# clash, asks one blocking question in its session; its until fails a fixer
+# that ends with the merge still in progress), and the run pushes it
 # plainly through render-pr and open-pr, or through rebase-merge after
 # land, and goes on. Every other failure of those steps ends the run as before.
 [step.build]
@@ -80,8 +82,8 @@ on.fail = "ci-triage"
 # and open-pr push it plainly, and the run waits for CI again.
 [step.conflict-fix]
 kind = "agent"
-prompt = "/rhiza-review Resolve the merge conflicts of change set {change} in run {run}: origin/main was merged into the branch and the merge is left in progress in this worktree. Read both sides from `rhiza ship check --json` (its merge_conflict: the conflicted files, origin/main's commits with their change sets, and this branch's change set) and `rhiza show` both change sets for their intent. Resolve every conflicted file so both sides' behaviour holds, regenerate golden files and `rhiza render` output, and run only the touched packages' tests and scripts (never the repo's full suite: the PR's CI runs it after your push). Stage `.rhiza/rendered` and `.rhiza/log` too (`git add -A -- .rhiza/rendered .rhiza/log`), so nothing is left untracked, and commit the merge with `git commit` and a message whose final paragraph holds the `Change: {change}`, `Actor:` and `Review: {run}` trailers together with any Co-Authored-By. Never push, never rebase and never force anything. Then run `rhiza session done` as your very last action."
-until = "true"
+prompt = "/rhiza-review Resolve the merge conflicts of change set {change} in run {run}: origin/main was merged into the branch and the merge is left in progress in this worktree. Read both sides from `rhiza ship check --json` (its merge_conflict: the conflicted files, origin/main's commits with their change sets, and this branch's change set) and `rhiza show` both change sets for their intent. Resolve every conflicted file so both sides' behaviour holds, regenerate golden files and `rhiza render` output, and run only the touched packages' tests and scripts (never the repo's full suite: the PR's CI runs it after your push). Stage `.rhiza/rendered` and `.rhiza/log` too (`git add -A -- .rhiza/rendered .rhiza/log`), so nothing is left untracked, and commit the merge with `git commit` and a message whose final paragraph holds the `Change: {change}`, `Actor:` and `Review: {run}` trailers together with any Co-Authored-By. If both sides change the same behaviour incompatibly, a real design clash that no resolution can honour on both sides, commit nothing, leave the merge in progress and do not end your session: ask one blocking question here in the session (AskUserQuestion) that names both change sets, the clashing files and the incompatible behaviours, wait for the answer, then resolve the merge following it. Never end your session with the merge still in progress. Never push, never rebase and never force anything. Then run `rhiza session done` as your very last action."
+until = "! git rev-parse --verify --quiet MERGE_HEAD"
 until_when = "done"
 max_visits = 3
 on.pass = "render-pr"
@@ -171,8 +173,8 @@ on.pass = "conflict-fix-landed"
 
 [step.conflict-fix-landed]
 kind = "agent"
-prompt = "/rhiza-review Resolve the merge conflicts of change set {change} in run {run}: it landed, and origin/main was merged into the branch and the merge is left in progress in this worktree. Read both sides from `rhiza ship check --json` (its merge_conflict: the conflicted files, origin/main's commits with their change sets, and this branch's change set) and `rhiza show` both change sets for their intent. Resolve every conflicted file so both sides' behaviour holds, regenerate golden files and `rhiza render` output, and run only the touched packages' tests and scripts (never the repo's full suite: the PR's CI runs it after your push). Stage `.rhiza/rendered` and `.rhiza/log` too (`git add -A -- .rhiza/rendered .rhiza/log`), so nothing is left untracked, and commit the merge with `git commit` and a message whose final paragraph holds the `Change: {change}`, `Actor:` and `Review: {run}` trailers together with any Co-Authored-By. Never push, never rebase and never force anything. Then run `rhiza session done` as your very last action."
-until = "true"
+prompt = "/rhiza-review Resolve the merge conflicts of change set {change} in run {run}: it landed, and origin/main was merged into the branch and the merge is left in progress in this worktree. Read both sides from `rhiza ship check --json` (its merge_conflict: the conflicted files, origin/main's commits with their change sets, and this branch's change set) and `rhiza show` both change sets for their intent. Resolve every conflicted file so both sides' behaviour holds, regenerate golden files and `rhiza render` output, and run only the touched packages' tests and scripts (never the repo's full suite: the PR's CI runs it after your push). Stage `.rhiza/rendered` and `.rhiza/log` too (`git add -A -- .rhiza/rendered .rhiza/log`), so nothing is left untracked, and commit the merge with `git commit` and a message whose final paragraph holds the `Change: {change}`, `Actor:` and `Review: {run}` trailers together with any Co-Authored-By. If both sides change the same behaviour incompatibly, a real design clash that no resolution can honour on both sides, commit nothing, leave the merge in progress and do not end your session: ask one blocking question here in the session (AskUserQuestion) that names both change sets, the clashing files and the incompatible behaviours, wait for the answer, then resolve the merge following it. Never end your session with the merge still in progress. Never push, never rebase and never force anything. Then run `rhiza session done` as your very last action."
+until = "! git rev-parse --verify --quiet MERGE_HEAD"
 until_when = "done"
 max_visits = 3
 on.pass = "rebase-merge"
