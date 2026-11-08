@@ -48,10 +48,11 @@ func newSchedHarness(t *testing.T, bodies ...string) *schedHarness {
 }
 
 // poll is one root poll over the projects with maxRuns machine-wide slots,
-// as runDaemon does it.
+// as runDaemon does it. The disk guard is off: it reads the host's real
+// free space, and a CI runner under the 10G default would hold every start.
 func (h *schedHarness) poll(maxRuns int) {
 	h.t.Helper()
-	r := DaemonRequest{Autonomous: true}
+	r := DaemonRequest{Autonomous: true, MinFree: "0"}
 	turns := make([]daemonTurn, len(h.projs))
 	var picks []daemon.ProjectPick
 	running := 0
