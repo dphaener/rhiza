@@ -3876,7 +3876,7 @@ cmp stdout describe.golden.json
                       "type": "integer"
                     },
                     "rounds": {
-                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1",
+                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised, or by a retry; absent in round 1",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -3889,7 +3889,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "decision": {
-                            "description": "The handle of the Decision that answers it",
+                            "description": "The handle of the Decision that answers it; absent in a round the retry gave",
                             "type": "string"
                           },
                           "question": {
@@ -3900,6 +3900,10 @@ cmp stdout describe.golden.json
                             "description": "That question node's handle",
                             "type": "string"
                           },
+                          "retry": {
+                            "description": "True for a round given by rhiza run resume --retry, not by a Decision",
+                            "type": "boolean"
+                          },
                           "round": {
                             "description": "The round, from 2",
                             "type": "integer"
@@ -3908,7 +3912,6 @@ cmp stdout describe.golden.json
                         "required": [
                           "after",
                           "at",
-                          "decision",
                           "question",
                           "round"
                         ],
@@ -5574,7 +5577,7 @@ cmp stdout describe.golden.json
                       "type": "integer"
                     },
                     "rounds": {
-                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1",
+                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised, or by a retry; absent in round 1",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -5587,7 +5590,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "decision": {
-                            "description": "The handle of the Decision that answers it",
+                            "description": "The handle of the Decision that answers it; absent in a round the retry gave",
                             "type": "string"
                           },
                           "question": {
@@ -5598,6 +5601,10 @@ cmp stdout describe.golden.json
                             "description": "That question node's handle",
                             "type": "string"
                           },
+                          "retry": {
+                            "description": "True for a round given by rhiza run resume --retry, not by a Decision",
+                            "type": "boolean"
+                          },
                           "round": {
                             "description": "The round, from 2",
                             "type": "integer"
@@ -5606,7 +5613,6 @@ cmp stdout describe.golden.json
                         "required": [
                           "after",
                           "at",
-                          "decision",
                           "question",
                           "round"
                         ],
@@ -9038,7 +9044,7 @@ cmp stdout describe.golden.json
                       "type": "integer"
                     },
                     "rounds": {
-                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1",
+                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised, or by a retry; absent in round 1",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -9051,7 +9057,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "decision": {
-                            "description": "The handle of the Decision that answers it",
+                            "description": "The handle of the Decision that answers it; absent in a round the retry gave",
                             "type": "string"
                           },
                           "question": {
@@ -9062,6 +9068,10 @@ cmp stdout describe.golden.json
                             "description": "That question node's handle",
                             "type": "string"
                           },
+                          "retry": {
+                            "description": "True for a round given by rhiza run resume --retry, not by a Decision",
+                            "type": "boolean"
+                          },
                           "round": {
                             "description": "The round, from 2",
                             "type": "integer"
@@ -9070,7 +9080,6 @@ cmp stdout describe.golden.json
                         "required": [
                           "after",
                           "at",
-                          "decision",
                           "question",
                           "round"
                         ],
@@ -10592,7 +10601,7 @@ cmp stdout describe.golden.json
                       "type": "integer"
                     },
                     "rounds": {
-                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1",
+                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised, or by a retry; absent in round 1",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -10605,7 +10614,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "decision": {
-                            "description": "The handle of the Decision that answers it",
+                            "description": "The handle of the Decision that answers it; absent in a round the retry gave",
                             "type": "string"
                           },
                           "question": {
@@ -10616,6 +10625,10 @@ cmp stdout describe.golden.json
                             "description": "That question node's handle",
                             "type": "string"
                           },
+                          "retry": {
+                            "description": "True for a round given by rhiza run resume --retry, not by a Decision",
+                            "type": "boolean"
+                          },
                           "round": {
                             "description": "The round, from 2",
                             "type": "integer"
@@ -10624,7 +10637,6 @@ cmp stdout describe.golden.json
                         "required": [
                           "after",
                           "at",
-                          "decision",
                           "question",
                           "round"
                         ],
@@ -13068,7 +13080,7 @@ cmp stdout describe.golden.json
                       "type": "integer"
                     },
                     "rounds": {
-                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1",
+                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised, or by a retry; absent in round 1",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -13081,7 +13093,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "decision": {
-                            "description": "The handle of the Decision that answers it",
+                            "description": "The handle of the Decision that answers it; absent in a round the retry gave",
                             "type": "string"
                           },
                           "question": {
@@ -13092,6 +13104,10 @@ cmp stdout describe.golden.json
                             "description": "That question node's handle",
                             "type": "string"
                           },
+                          "retry": {
+                            "description": "True for a round given by rhiza run resume --retry, not by a Decision",
+                            "type": "boolean"
+                          },
                           "round": {
                             "description": "The round, from 2",
                             "type": "integer"
@@ -13100,7 +13116,6 @@ cmp stdout describe.golden.json
                         "required": [
                           "after",
                           "at",
-                          "decision",
                           "question",
                           "round"
                         ],
@@ -14646,7 +14661,7 @@ cmp stdout describe.golden.json
                       "type": "integer"
                     },
                     "rounds": {
-                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1",
+                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised, or by a retry; absent in round 1",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -14659,7 +14674,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "decision": {
-                            "description": "The handle of the Decision that answers it",
+                            "description": "The handle of the Decision that answers it; absent in a round the retry gave",
                             "type": "string"
                           },
                           "question": {
@@ -14670,6 +14685,10 @@ cmp stdout describe.golden.json
                             "description": "That question node's handle",
                             "type": "string"
                           },
+                          "retry": {
+                            "description": "True for a round given by rhiza run resume --retry, not by a Decision",
+                            "type": "boolean"
+                          },
                           "round": {
                             "description": "The round, from 2",
                             "type": "integer"
@@ -14678,7 +14697,6 @@ cmp stdout describe.golden.json
                         "required": [
                           "after",
                           "at",
-                          "decision",
                           "question",
                           "round"
                         ],
@@ -16256,7 +16274,7 @@ cmp stdout describe.golden.json
                       "type": "integer"
                     },
                     "rounds": {
-                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1",
+                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised, or by a retry; absent in round 1",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -16269,7 +16287,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "decision": {
-                            "description": "The handle of the Decision that answers it",
+                            "description": "The handle of the Decision that answers it; absent in a round the retry gave",
                             "type": "string"
                           },
                           "question": {
@@ -16280,6 +16298,10 @@ cmp stdout describe.golden.json
                             "description": "That question node's handle",
                             "type": "string"
                           },
+                          "retry": {
+                            "description": "True for a round given by rhiza run resume --retry, not by a Decision",
+                            "type": "boolean"
+                          },
                           "round": {
                             "description": "The round, from 2",
                             "type": "integer"
@@ -16288,7 +16310,6 @@ cmp stdout describe.golden.json
                         "required": [
                           "after",
                           "at",
-                          "decision",
                           "question",
                           "round"
                         ],
@@ -17868,7 +17889,7 @@ cmp stdout describe.golden.json
                       "type": "integer"
                     },
                     "rounds": {
-                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1",
+                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised, or by a retry; absent in round 1",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -17881,7 +17902,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "decision": {
-                            "description": "The handle of the Decision that answers it",
+                            "description": "The handle of the Decision that answers it; absent in a round the retry gave",
                             "type": "string"
                           },
                           "question": {
@@ -17892,6 +17913,10 @@ cmp stdout describe.golden.json
                             "description": "That question node's handle",
                             "type": "string"
                           },
+                          "retry": {
+                            "description": "True for a round given by rhiza run resume --retry, not by a Decision",
+                            "type": "boolean"
+                          },
                           "round": {
                             "description": "The round, from 2",
                             "type": "integer"
@@ -17900,7 +17925,6 @@ cmp stdout describe.golden.json
                         "required": [
                           "after",
                           "at",
-                          "decision",
                           "question",
                           "round"
                         ],
@@ -19311,7 +19335,7 @@ cmp stdout describe.golden.json
                   "type": "integer"
                 },
                 "rounds": {
-                  "description": "Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1",
+                  "description": "Its fresh rounds, each given once a Decision answered the question its failure raised, or by a retry; absent in round 1",
                   "items": {
                     "additionalProperties": false,
                     "properties": {
@@ -19324,7 +19348,7 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "decision": {
-                        "description": "The handle of the Decision that answers it",
+                        "description": "The handle of the Decision that answers it; absent in a round the retry gave",
                         "type": "string"
                       },
                       "question": {
@@ -19335,6 +19359,10 @@ cmp stdout describe.golden.json
                         "description": "That question node's handle",
                         "type": "string"
                       },
+                      "retry": {
+                        "description": "True for a round given by rhiza run resume --retry, not by a Decision",
+                        "type": "boolean"
+                      },
                       "round": {
                         "description": "The round, from 2",
                         "type": "integer"
@@ -19343,7 +19371,6 @@ cmp stdout describe.golden.json
                     "required": [
                       "after",
                       "at",
-                      "decision",
                       "question",
                       "round"
                     ],

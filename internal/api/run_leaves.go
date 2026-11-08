@@ -153,6 +153,10 @@ func leafPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars)
 		try = spec.Attempt
 	}
 	var lines []string
+	if spec.Retry {
+		lines = append(lines, fmt.Sprintf("Leaf %s failed every attempt of its last round. A person retried the run, which gives it a fresh round of %d attempts; no Decision answers its failure. "+
+			"Read the earlier findings with `rhiza run status --json` and build the leaf to its acceptance.", spec.Leaf.Handle, run.MaxAttempts))
+	}
 	if spec.Decision != "" {
 		line := fmt.Sprintf("Leaf %s failed every attempt of its last round and raised question %s. Decision %s answers it",
 			spec.Leaf.Handle, spec.Question, spec.Decision)

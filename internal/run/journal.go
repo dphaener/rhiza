@@ -323,7 +323,8 @@ type Block struct {
 //	leaf-round: Step, Leaf, Handle, Question, QuestionHandle, Decision (failed leaf
 //	           Leaf gets a fresh round of MaxAttempts attempts: Decision, by
 //	           handle, answers Question, which its failure raised; the leaf is
-//	           open again, and the step's skipped leaves with it)
+//	           open again, and the step's skipped leaves with it). With Retry
+//	           set, a run retry gave the round: no Decision answers anything)
 //	pane-closed: Step, Leaf, Handle, Session (the pane of leaf session Session was
 //	           closed: its session passed, the next builder took its place, or
 //	           its leaves step ended). With Check set instead of Leaf, the pane
@@ -388,6 +389,9 @@ type Entry struct {
 	// Decision is an arbitrated entry's answering Decision's handle, when
 	// the arbiter passed, and a leaf-round entry's.
 	Decision string `json:"decision,omitempty"`
+	// Retry marks a leaf-round entry the retry of the run gave, not a
+	// Decision.
+	Retry bool `json:"retry,omitempty"`
 	// Handle is an asked entry's question node handle.
 	Handle string `json:"handle,omitempty"`
 	// Restated is a recommended entry's plain-language restatement of the
@@ -685,7 +689,11 @@ type LeafRound struct {
 	Question       string
 	QuestionHandle string
 	Decision       string
-	At             time.Time
+	// Retry is true for a round the run's retry gave, not a Decision.
+	Retry bool
+	// Visit is the step visit the round began in.
+	Visit int
+	At    time.Time
 }
 
 // LeafState is one leaf of a leaves step, folded from its entries: its
@@ -710,6 +718,12 @@ type LeafState struct {
 	// Commit is a passed leaf's Evidence commit.
 	Commit string
 	Detail string
+}
+
+// RetryVisit reports whether the step's current visit is the first one after
+// a retry reopened the run at it.
+func (st State) RetryVisit(step string) bool {
+	return st.CurrentVisit > 0 && st.retryVisit[step] == st.CurrentVisit
 }
 
 // Round is the leaf's current round, from 1.
@@ -1487,7 +1501,7 @@ func (j Journal) State() State {
 		case TypeLeafRound:
 			l := st.leaf(e)
 			l.Rounds = append(l.Rounds, LeafRound{
-				Round: l.Round() + 1, After: l.Attempt(), Question: e.Question, QuestionHandle: e.QuestionHandle, Decision: e.Decision, At: e.At,
+				Round: l.Round() + 1, After: l.Attempt(), Question: e.Question, QuestionHandle: e.QuestionHandle, Decision: e.Decision, Retry: e.Retry, Visit: st.CurrentVisit, At: e.At,
 			})
 			l.Outcome, l.Question, l.QuestionHandle, l.Commit, l.Detail = "", "", "", "", ""
 			// Leaves skipped for a failed dependency may start again; the

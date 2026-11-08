@@ -94,7 +94,10 @@ type LeafSpec struct {
 	Question     string
 	Decision     string
 	Answer       string
-	Anchor       string
+	// Retry is true when the leaf's round is the one a run retry gave:
+	// no Decision, Question aside.
+	Retry  bool
+	Anchor string
 	// Cycle is, on a checks step, the cycle a leaf's fixer or verifier
 	// works in, its Attempt too; 0 on a leaves step. Findings are a
 	// fixer's: the confirmed review findings on its leaf, read from the
@@ -449,13 +452,15 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 		spec.Model = role.Model(spec.RoundAttempt)
 	}
 	if rd, ok := l.LastRound(); ok && a.role == workflow.RoleBuilder {
-		spec.Question, spec.Decision = rd.Question, rd.Decision
-		d, statement, ok, err := lr.LeafAnswer(rd.Question)
-		if err != nil {
-			return errResult(fmt.Errorf("leaf %s: read the answer to question %s: %v", a.leaf.Handle, rd.Question, err)), true, nil
-		}
-		if ok && d == rd.Decision {
-			spec.Answer = statement
+		spec.Question, spec.Decision, spec.Retry = rd.Question, rd.Decision, rd.Retry
+		if !rd.Retry {
+			d, statement, ok, err := lr.LeafAnswer(rd.Question)
+			if err != nil {
+				return errResult(fmt.Errorf("leaf %s: read the answer to question %s: %v", a.leaf.Handle, rd.Question, err)), true, nil
+			}
+			if ok && d == rd.Decision {
+				spec.Answer = statement
+			}
 		}
 	}
 	if step.Kind == workflow.KindChecks {
@@ -807,15 +812,33 @@ func (r *running) endLeaf(lr LeafRunner, step workflow.Step, a leafAction) (res 
 // order the journal first names them.
 func (r *running) reviveLeaves(lr LeafRunner, step workflow.Step) (result, bool, error) {
 	var ids []string
+	retry := r.j.State().RetryVisit(step.Name)
 	for _, l := range r.j.State().Leaves {
-		if l.Step == step.Name && l.Outcome == LeafFailed && l.Question != "" {
+		if l.Step == step.Name && l.Outcome == LeafFailed && (l.Question != "" || retry) {
 			ids = append(ids, l.Leaf)
 		}
 	}
 	for _, leaf := range ids {
-		if res, ended, err := r.reviveLeaf(lr, step, r.leafStates(step.Name)[leaf]); err != nil || ended {
+		l := r.leafStates(step.Name)[leaf]
+		if res, ended, err := r.reviveLeaf(lr, step, l); err != nil || ended {
 			return res, ended, err
 		}
+		// A retry gives every failed leaf one round: one a Decision
+		// gave in this visit counts, so none gets two.
+		l = r.leafStates(step.Name)[leaf]
+		if !retry || l.Outcome != LeafFailed {
+			continue
+		}
+		if rd, ok := l.LastRound(); ok && rd.Visit == r.j.State().CurrentVisit {
+			continue
+		}
+		if err := r.append(Entry{
+			Type: TypeLeafRound, Step: step.Name, Leaf: l.Leaf, Handle: l.Handle,
+			Question: l.Question, QuestionHandle: l.QuestionHandle, Retry: true,
+		}); err != nil {
+			return result{}, false, err
+		}
+		r.log("step %s: leaf %s gets round %d: the retry gives it", step.Name, l.Handle, l.Round()+1)
 	}
 	return result{}, false, nil
 }

@@ -1349,17 +1349,88 @@ func TestLeafFailsResume(t *testing.T) {
 		t.Errorf("round 1 attempt 3 spec = %+v", r.leafSpecs[2])
 	}
 	a, _ := st.Leaf("build", "LA")
-	if want := []LeafRound{{Round: 2, After: 3, Question: "QL1", QuestionHandle: "leaf-failed-1", Decision: "use-a-map", At: at(1)}}; !reflect.DeepEqual(a.Rounds, want) {
+	if want := []LeafRound{{Round: 2, After: 3, Question: "QL1", QuestionHandle: "leaf-failed-1", Decision: "use-a-map", Visit: 2, At: at(1)}}; !reflect.DeepEqual(a.Rounds, want) {
 		t.Errorf("rounds %+v, want %+v", a.Rounds, want)
 	}
 	types := entryTypes(t, e)
 	if !slices.Contains(types, "leaf-round:build") {
 		t.Errorf("journal %v lacks leaf-round", types)
 	}
+	// The answered leaf's one round is the Decision's, not the retry's.
+	n := 0
+	for _, ty := range types {
+		if ty == "leaf-round:build" {
+			n++
+		}
+	}
+	if n != 1 || a.Rounds[0].Retry || spec.Retry {
+		t.Errorf("%d leaf-rounds, round %+v, spec retry %v: want exactly one, the Decision's", n, a.Rounds[0], spec.Retry)
+	}
 }
 
-// A retry while the failed leaf's question is unanswered starts nothing:
-// the leaf stays failed, its dependent skipped, and the run fails again.
+// A retry while the failed leaf's question is unanswered gives the leaf a
+// round the retry marks as its own, with no Decision, builds its skipped
+// dependent after it passes, and the run succeeds.
+func TestLeafFailsRetryRound(t *testing.T) {
+	e, r := autonomousSetup(t, leafFailsWF)
+	r.answers["QL1"] = Answer{OK: true, Decision: "assume-a-map", Statement: "Use a map."}
+	r.leafAnswers["QL1"] = [2]string{"assume-a-map", "Use a map."}
+	if st := leafFailsRun(t, e, r, 0); st.Result != Failed {
+		t.Fatalf("first run %q", st.Result)
+	}
+	before := len(r.leafSpecs)
+	for _, role := range []string{workflow.RoleBuilder, workflow.RoleVerifier} {
+		r.outcome[leafSID("leaf-a", role, 7)] = workflow.OutcomePass
+	}
+	st, err := e.Retry(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded {
+		t.Fatalf("retry %q: %s", st.Result, st.Detail)
+	}
+	a, _ := st.Leaf("build", "LA")
+	if len(a.Rounds) != 2 || a.Round() != 3 || !a.Rounds[1].Retry || a.Rounds[1].Decision != "" || a.Rounds[1].After != 6 || a.Rounds[0].Retry {
+		t.Errorf("rounds %+v", a.Rounds)
+	}
+	var started []string
+	for _, s := range r.leafSpecs[before:] {
+		started = append(started, s.Leaf.Handle+" "+s.Role+" "+strconv.Itoa(s.Attempt))
+	}
+	if want := []string{"leaf-a builder 7", "leaf-a verifier 7", "leaf-c builder 1", "leaf-c verifier 1"}; !reflect.DeepEqual(started, want) {
+		t.Errorf("started %v, want %v", started, want)
+	}
+	if spec := r.leafSpecs[before]; spec.Round != 3 || spec.RoundAttempt != 1 || !spec.Retry || spec.Decision != "" || spec.Answer != "" || spec.Model != "sonnet" {
+		t.Errorf("retry round spec = %+v", spec)
+	}
+}
+
+// A leaf that fails again in the retry's round ends the run failed, with
+// no new arbitration and no second retry round.
+func TestLeafFailsRetryRoundFailsAgain(t *testing.T) {
+	e, r := autonomousSetup(t, leafFailsWF)
+	r.answers["QL1"] = Answer{OK: true, Decision: "assume-a-map", Statement: "Use a map."}
+	r.leafAnswers["QL1"] = [2]string{"assume-a-map", "Use a map."}
+	leafFailsRun(t, e, r, 0)
+	st, err := e.Retry(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, _ := st.Leaf("build", "LA")
+	if st.Result != Failed || a.Outcome != LeafFailed || len(a.Rounds) != 2 || a.Attempt() != 9 {
+		t.Errorf("result %q leaf-a %+v", st.Result, a)
+	}
+	if !reflect.DeepEqual(r.arbiters, []string{"arbiter QL1"}) {
+		t.Errorf("arbiters %v: the retry round's failure was arbitrated", r.arbiters)
+	}
+	if got, want := leafOutcomes(st), []string{"leaf-a:failed", "leaf-b:passed", "leaf-c:skipped"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("leaves %v, want %v", got, want)
+	}
+}
+
+// A retry while the failed leaf's question is unanswered gives it the
+// retry's round, not a Decision's, and with every attempt of it failing
+// the run fails again with the dependent still skipped.
 func TestLeafFailsResumeUnanswered(t *testing.T) {
 	e, r, _, _ := setup(t, leafFailsWF)
 	leafFailsRun(t, e, r, 0)
@@ -1368,8 +1439,9 @@ func TestLeafFailsResumeUnanswered(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if st.Result != Failed || len(r.leafSpecs) != before || r.leafAnswerN["QL1"] != 1 {
-		t.Errorf("result %q, %d new sessions, %d answer reads", st.Result, len(r.leafSpecs)-before, r.leafAnswerN["QL1"])
+	a, _ := st.Leaf("build", "LA")
+	if st.Result != Failed || len(r.leafSpecs) == before || len(a.Rounds) != 1 || !a.Rounds[0].Retry {
+		t.Errorf("result %q, %d new sessions, rounds %+v", st.Result, len(r.leafSpecs)-before, a.Rounds)
 	}
 	if got, want := leafOutcomes(st), []string{"leaf-a:failed", "leaf-b:passed", "leaf-c:skipped"}; !reflect.DeepEqual(got, want) {
 		t.Errorf("leaves %v, want %v", got, want)
