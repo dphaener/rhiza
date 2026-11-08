@@ -1,0 +1,41 @@
+{
+  "actor": "01M6XW8FH0FJQZW7NGTQK96TY0",
+  "after": [
+    "01M6XW7W769FYKBT7K0V57WTPE"
+  ],
+  "at": "2026-11-08T15:26:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding is confirmed: changeLeavesIn (internal/api/change.go) takes only created capabilities, so the acceptance updates on milestone-request-starts-at-once and request-slot-kept reach no builder or verifier. daemon-starts-within-max-runs is the created leaf whose statement already lists 'a queued milestone request's plan run' among the starts held at the cap, and plan-runs-share-max-runs (3) makes the milestone wait at the cap part of the same one machine-wide count this leaf implements; the code change is one slot count, so splitting the milestone checks into a second created leaf would duplicate a capability and split one implementation across two builders. Both testscripts already exist (daemon-milestone-request.txtar, daemon-request-slot.txtar), so naming them with the exact cases from the updated capabilities' acceptance, and adding daemon-milestone-request to the -run pattern (daemon-request-slot is already in it), is the smallest edit that gives every new check a build that runs it.",
+          "statement": "Settle it on the existing leaf: @{01M6XVG9DK25PFK9BHJCBDQHQ6}'s acceptance takes over the milestone-at-cap checks written on @{01M6MYSEB8N545M8M9APZTBXYS} and @{01M6HT09X1W6W89R5N272GJXMP}. It names cmd/rhiza/testdata/script/daemon-milestone-request.txtar (with --max-runs 1 and one run live, daemon --once starts nothing and the milestone and feature requests stay queued; with one interrupted run and one free slot the milestone request starts and the run is not resumed) and daemon-request-slot.txtar (with max-runs 2, two ready change sets and only a queued milestone request, daemon --once starts the milestone request's plan run and one ship run, never three, and daemon status shows the other as no-slot), and its go test -run pattern adds daemon-milestone-request. No new created leaf is added for the milestone change.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "milestone-cap-checks-on-max-runs-leaf",
+        "id": "01M6XWA2TV85FHHRB7F89P4WD1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6XWA2TPB8VVVZW9FNFJ0XX7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XWA2TPB8VVVZW9FNFJ0XX7",
+        "id": "01M6XWA2VVX2PJCZA1AJ5W2KAC",
+        "link": "01M6XWA2VVX2PJCZA1AESWNY1N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XW7W0TT8W64R75667JDHZS",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XWA2WYTNTBPFJ9AY7YCKKP",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,33 @@
+{
+  "actor": "01M6XV5MK28CJRTAA5KNF0MM6F",
+  "after": [
+    "01M6XVDZKPMD1B8SFG01QV0BS9"
+  ],
+  "at": "2026-11-08T15:12:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "b93e56901f8006d860e41883abd564b8893c2d4537d0fd6933babb14e57cf240",
+          "session": "375c0132-d622-41bb-97c1-01a1bbb2b95d",
+          "summary": "Autonomous plan run of change set 01M6XV4 (bug: plan runs start outside rhiza.daemon.maxRuns). No owner took part; the arbiter answered. The planner traced the 2026-11-08 13:16 burst in the root daemon's journal: a request's plan run started at 13:16:15 and journaled at 13:16:40, and two ship runs started at 13:16:36 in between. The project poll's picks (daemon.Pick for ship runs, continuations, queued starts) count only live runs and held ship starts, not a plan request's or schedule's start that has not journaled yet, while the round-robin share already counted it as holding a slot. The daemon's own resume of an interrupted run (daemon.Resumable) starts with no slot check and later picks in the same poll do not count it. The milestone request's plan run starts with no free slot by design. rhiza health only reports the number of live runs, not the cap. The planner asked whether plan runs share maxRuns or get their own cap, whether daemon resumes count, whether the milestone exception stays, and how health shows runs against the cap. The arbiter decided (plan-runs-share-max-runs): one machine-wide cap counting live runs plus every unjournaled start within daemonStartGrace across projects; resumes take a slot and go first; a milestone request's plan run takes the next free slot ahead of everything but waits at the cap, the rest of milestone-interview-starts-at-once standing; health shows a runs line such as 'runs: 3/4 live, 1 starting', bad when live plus starting exceeds maxRuns, and daemon status shows the same count.",
+          "title": "Plan runs over maxRuns: autonomous plan interview"
+        },
+        "handle": "plan-runs-cap-interview",
+        "id": "01M6XVF222WXPGK7T09A0V41PP",
+        "key": null,
+        "kind": "source",
+        "node": "01M6XVF222WXPGK7T099EYXCSH",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XVF22SEWK7PS3TFVE36R7H",
+  "type": "ops",
+  "v": 1
+}

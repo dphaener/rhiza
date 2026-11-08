@@ -1,0 +1,51 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6XW0NYM677GVE1WG8K8A4R4"
+  ],
+  "at": "2026-11-08T15:25:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (missing-acceptance on daemon-starts-within-max-runs): Only created capabilities are leaves (internal/api/change.go changeLeavesIn skips updates), so the new acceptance checks written on the updated milestone-request-starts-at-once (milestone request waits at --max-runs 1 with one live run; starts ahead of a resume) and request-slot-kept (milestone request plus one ship run, never three) are never run by any builder or verifier. This leaf's statement covers the milestone request's plan run waiting at the cap, but its acceptance tests only feature-request, ship and schedule starts; it should name daemon-milestone-request.txtar and daemon-request-slot.txtar with those milestone-at-cap cases (or the milestone change needs its own created leaf). The critic confirmed it: internal/api/change.go:455 changeLeavesIn takes only node-create ops of capabilities, and change_indexed.go:287 builds the change set's leaves from it, so the updated milestone-request-starts-at-once and request-slot-kept are not leaves and their new acceptance checks are never given to a builder or verifier. daemon-starts-within-max-runs's statement lists 'a queued milestone request's plan run' among the starts held at the cap, but its acceptance tests only a feature request, ship picks and a schedule, and its -run pattern leaves out daemon-milestone-request. The milestone-at-cap behaviour has no check a build would run. How should it be settled?"
+        },
+        "handle": "review-01m6xv4tr07qx5x8xpxh8z9m6z-r3-f1",
+        "id": "01M6XW7W0TT8W64R7569E8BKME",
+        "key": null,
+        "kind": "question",
+        "node": "01M6XW7W0TT8W64R75667JDHZS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XW7W0TT8W64R75667JDHZS",
+        "id": "01M6XW7W1M3KCPWCWE6TFR0DWE",
+        "link": "01M6XW7W1M3KCPWCWE6QBB49V4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVG9DK25PFK9BHJCBDQHQ6",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on milestone-interview-starts-at-once): The plan rewrites this landed decision's statement to say a milestone interview waits at maxRuns, but leaves its reasoning ('it costs little compute and need not compete for a slot') and wording unchanged, so the decision now contradicts its own reasoning and attributes the new rule to the earlier ruling. The supersession belongs in plan-runs-share-max-runs (which already says it supersedes that part); this decision's statement should keep its original text, or its reasoning must be updated to match and point at plan-runs-share-max-runs. The critic confirmed it: In the what-if view milestone-interview-starts-at-once's statement now says the interview waits at rhiza.daemon.maxRuns, while its unchanged reasoning still argues it 'costs little compute and need not compete for a slot'. The decision's reasoning contradicts its own statement. Of the two fixes the finding offers, reverting the statement would bring back round 1's f1, so the reasoning should be updated to say plan-runs-share-max-runs superseded that part. How should it be settled?"
+        },
+        "handle": "review-01m6xv4tr07qx5x8xpxh8z9m6z-r3-f2",
+        "id": "01M6XW7W29EAN8MHAK7FS48BYK",
+        "key": null,
+        "kind": "question",
+        "node": "01M6XW7W29EAN8MHAK7CJJSX60",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XW7W769FYKBT7K0V57WTPE",
+  "type": "ops",
+  "v": 1
+}

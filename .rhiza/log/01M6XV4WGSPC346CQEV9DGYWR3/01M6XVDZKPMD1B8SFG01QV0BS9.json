@@ -1,0 +1,41 @@
+{
+  "actor": "01M6XVC5GSEVJH3TRTM5571D5B",
+  "after": [
+    "01M6XVBJEADAWDWVM58986KAYH"
+  ],
+  "at": "2026-11-08T15:11:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent is the owner's own report: load 23 on a 4-core VM with 5 runs at cap 3 and 4, and it states plan runs 'should count against the machine-wide cap' and a waiting request 'may reserve the next free slot (#226) but must not exceed the cap'; it offers a separate plan cap only as an alternative, and one shared cap is simpler, matches 'machine-wide' and is what bounds load, which is the harm. The question's root cause (daemon_projects.go counts pending starts within daemonStartGrace per project, while plan starts from request.go were not seen by the other picks) means the fix is to count every unjournaled start everywhere, not a new cap. A resume of an interrupted run (daemon.go:827, daemon.Resumable) is a full run using agents and CPU like any other, so leaving it uncapped and uncounted repeats the same overshoot; resuming first keeps interrupted work ahead of new work. The milestone exception was itself an arbiter assumption (wording assumed), reasoned on the interview costing 'little compute'; but a plan run still starts agents, it was one of the plan runs in the reported burst, and the owner's later explicit words 'must not exceed the cap' outrank that assumption. Giving the interview first claim on the next slot keeps the point of that decision (an owner interview is not queued behind build picks) without breaking the cap. Health already reports per-part ok/warn/bad lines (health_schedules.go); live/max with starts listed separately is what the intent asks for ('show live runs against the cap') and makes this bug visible as bad when it recurs.",
+          "statement": "Every run the daemon starts counts against the one machine-wide rhiza.daemon.maxRuns, and nothing it starts may take running past it. (1) Plan runs share maxRuns; there is no separate plan cap. Every pick (ship picks, continuations, queued starts, request plan runs, schedules) counts live runs plus every start it or another project made that has not journaled yet and is still within daemonStartGrace, across all projects of the daemon, so a plan run started at 13:16:15 holds its slot when the 13:16:36 picks run. A waiting request keeps reserving the next free slot (#226) but never exceeds the cap. (2) The daemon's resume of an interrupted run (daemon.Resumable) counts against maxRuns: it starts only when a slot is free, resumes go first among the poll's starts, and each resume counts as a pending start for later picks in the same poll; a resume that finds no slot waits for a later poll. (3) This supersedes the part of milestone-interview-starts-at-once that let a milestone interview start without a free slot: a queued milestone request's plan run takes the next free slot ahead of every other start (resumes included) and every other request, but waits while running is at the cap. The rest of that decision stands: one milestone interview live at a time, not held by a usage-reserve hold, held by pause and disk-low, waiting status and inbox item at launch. (4) rhiza health shows a runs line: live/max with pending starts shown separately (e.g. 'runs: 3/4 live, 1 starting'), summed across the daemon's projects; the part is ok at or under the cap and bad when live plus starting exceeds maxRuns, naming the runs over the cap. The daemon status (daemonapp/web) shows the same live/max count.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "plan-runs-share-max-runs",
+        "id": "01M6XVDZHN24987TJWZ95KZYZC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6XVDZHN24987TJWZ6FNEHXD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XVDZHN24987TJWZ6FNEHXD",
+        "id": "01M6XVDZJV40528T648834N7R1",
+        "link": "01M6XVDZJV40528T6485NTTF59",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVBG8ZBCCBNAE97KP82RC0",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XVDZKPMD1B8SFG01QV0BS9",
+  "type": "ops",
+  "v": 1
+}

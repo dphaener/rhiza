@@ -163,13 +163,27 @@ func TestOpenOpensACentredModalAndFollowsItsContent(t *testing.T) {
 }
 
 // TestOpenWithoutAKnownBlockUsesTheActiveWindow checks a block no window
-// holds opens the modal in the active window.
+// holds opens the modal in the active window. The modal's block_closed is
+// sent only once Open takes a size, so after the modal's handle exists: sent
+// earlier, the surface's watcher could read it before new_layer and drop it,
+// and Open would never return.
 func TestOpenWithoutAKnownBlockUsesTheActiveWindow(t *testing.T) {
 	f := newFake()
+	sizes := make(chan client.Size)
+	done := make(chan error, 1)
+	go func() {
+		done <- Open(context.Background(), f, Request{SessionID: "s", BlockID: "gone", Label: "x",
+			Argv: []string{"x"}, Cols: 10, Rows: 5, Sizes: sizes})
+	}()
+	sizes <- client.Size{Columns: 10, Rows: 5} // the first size again: no resize
 	f.close()
-	if err := Open(context.Background(), f, Request{SessionID: "s", BlockID: "gone", Label: "x",
-		Argv: []string{"x"}, Cols: 10, Rows: 5}); err != nil {
-		t.Fatal(err)
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("Open did not return once the modal was gone")
 	}
 	if w := f.opened[0].WindowID; w != "w2" {
 		t.Errorf("window %q, want the active w2", w)
