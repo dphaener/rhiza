@@ -57,12 +57,12 @@ rm $WORK/next.ran
 exec sh -c 'echo none > $WORK/mode'
 ! exec rhiza run start --foreground --workflow plan --permission-mode manual --autonomous
 stdout '^Run [0-9A-Z]{26} failed$'
-stdout 'arbiter failed on question review-[0-9a-z]{8}-r3-f1 \([0-9A-Z]{26}\): no live Decision answers question'
+stdout 'arbiter failed on question review-[0-9a-z]{26}-r3-f1 \([0-9A-Z]{26}\): no live Decision answers question'
 stderr 'step review: arbiter fail on question [0-9A-Z]{26}'
 ! exists $WORK/next.ran
 exec sh -c 'rhiza run status $(ls -t .git/rhiza/runs | head -1 | sed "s/\.jsonl$//")'
 stdout 'failed'
-stdout 'arbiter failed on question review-[0-9a-z]{8}-r3-f1'
+stdout 'arbiter failed on question review-[0-9a-z]{26}-r3-f1'
 exec cat $WORK/arbiter.log
 stdout -count=2 '^Decide question'
 
