@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6WCD1G35NGHSWEDWD77YFGH"
+  ],
+  "at": "2026-11-08T01:31:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Leaf bugfix-workflow-autonomous failed all 3 attempts of round 2: attempt 4 builder failed: no new commit since 5242ecefc99a; attempt 5 verifier failed: verifier found 1 problem(s) (f1 Acceptance not met at 36d24c64: the attempt-5 commit only adds model notes (.rhiza/log JSON) recording that workflow dispatch (change set 01M6VY7G6HPJC3V0Q18E8…); attempt 6 verifier failed: verifier found 1 problem(s) (f1 Acceptance not met at 3e4c472d: the attempt-6 commit adds only .rhiza/log model records (a note that workflow dispatch is still unlanded plus actor records), n…). How should it be built, or should it change?"
+        },
+        "handle": "leaf-failed-01m6w86n-2",
+        "id": "01M6WCFVHRN3QSVM50RNEHXVEF",
+        "key": null,
+        "kind": "question",
+        "node": "01M6WCFVHRN3QSVM50RKQ9A8VP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WCFVHRN3QSVM50RKQ9A8VP",
+        "id": "01M6WCG09PJ87SPWPY1QD8TT46",
+        "link": "01M6WCG09PJ87SPWPY1NC700SZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPW4D8366CNFT3EH72465",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WCG24W0D5HH2WAW28EE7FE",
+  "type": "ops",
+  "v": 1
+}
