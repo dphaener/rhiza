@@ -1,0 +1,60 @@
+{
+  "actor": "01M6W7H118ZVMHV0NN1PJCCVX2",
+  "after": [
+    "01M6W7QGEYF3F1CERFA81CHSBT"
+  ],
+  "at": "2026-11-08T00:08:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6W7P61Z5C2BECZF7K9RV4KF",
+        "id": "01M6W7QGWDNMTBX6ZP2SWKT622",
+        "link": "01M6W7QGWDNMTBX6ZP2QHE9R4S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W7Q7V0T5NYNNDYC1DHZ13Q",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api and the run-review-check testscript(s) covering it: two runs whose IDs share their first 8 characters each reach round 3 with a confirmed finding f1 and leave questions with different handles carrying their full IDs; with the full-ID handle already taken by an unrelated node, review-check adds review-<id>-r3-f1-2, journals that handle, a second review-check adds nothing, and the autonomous gate finds the question left for the finding.",
+          "statement": "rhiza run review-check names each question it leaves review-<full run ID, lower-cased>-r<round>-<finding>, so runs started in the same second never share a handle; when that handle is already taken by a node that is not this run's question for this finding, it takes the first free one (base-2, base-3, ...), journals the handle it used in the asked entry, and the run's later checks (a repeated review-check, the autonomous accept gate) find its questions by the journalled entry instead of rebuilding the handle."
+        },
+        "handle": "review-question-handle-unique",
+        "id": "01M6W7QGXS2VNCJ3KMFT4EYXAH",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M6W7QGXS2VNCJ3KMFRMW78XE",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M6W7QGXS2VNCJ3KMFRMW78XE",
+        "id": "01M6W7QGZA47P27226AG4J3AN0",
+        "link": "01M6W7QGZA47P27226ADB2HV6P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W7P61Z5C2BECZF7K9RV4KF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6W7QGXS2VNCJ3KMFRMW78XE",
+        "id": "01M6W7QH0TPENSFAQZ137W6PY9",
+        "link": "01M6W7QH0TPENSFAQZ11PFHKFH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGDAB8W8BWQX6VEWR1FVY",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6W7G8YBXBX090SSZC3Y60H2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6W7QH20JCVTE7CJ8SYDSP57",
+  "type": "ops",
+  "v": 1
+}
