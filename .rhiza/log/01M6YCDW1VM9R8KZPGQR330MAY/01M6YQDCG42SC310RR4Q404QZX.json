@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YNGNS5RMYHYQBYJTVV7GQ7",
+  "after": [
+    "01M6YMQJ2ZNVATW8D156GQJN8C"
+  ],
+  "at": "2026-11-08T23:20:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-5a166b01 at e6319c2b (attempt 2). Read the diff: ship-change.toml now has a rhiza ship gate step before every pushing step (local-gate->open-pr, gate-rebase->rebase, gate-land->land, gate-rebase-merge->rebase-merge, and merge on.fail now goes to gate-rebase-merge), each on.fail to gate-fix; ship rebase also gates the rebased head before its forced push and puts the branch back on failure; .rhiza/settings.json commits rhiza.ship.localGate = make check. Ran in a clean env (env -i; this session's RHIZA_* vars made the testscripts' rhiza init resolve the enclosing repo, at the parent commit too): go test -trimpath ./internal/api -run TestShipLocalGate PASS (unstable runs in the worktree, stable skips, no gate skips, failing gate fails with output, plus TestShipLocalGateOncePerHead, TestShipLocalGateSettingsFile); go test -trimpath ./internal/workflow PASS (TestShipChangeLocalGate checks every way into each push step goes through its gate); go test -trimpath ./cmd/rhiza -run 'TestScripts/(ship-local-gate|run-ship-change|run-ship-change-rebase|run-ship-ci-fix|describe-golden)$' ok. Full ./internal/api -v: 0 failing tests; the package's root-state guard flagged only ~/code/.rhiza-root/usage.live.json, which the live root daemon rewrites on its own (seen changing outside any test). A binary built from e6319c2b, run in this checkout, prints rhiza daemon settings --json {key: rhiza.ship.localGate, value: make check, source: .rhiza/settings.json, scope: project}; git config has no such key. Both attempt-1 findings are fixed."
+        },
+        "handle": "ship-local-gate-verified",
+        "id": "01M6YQDCC4BM9HH988AQ1KYRRM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YQDCC4BM9HH988AKH67J4W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YQDCC4BM9HH988AKH67J4W",
+        "id": "01M6YQDCE45B16EKDNNFGBZRPF",
+        "link": "01M6YQDCE45B16EKDNNC0J5NH1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YQDCG42SC310RR4Q404QZX",
+  "type": "ops",
+  "v": 1
+}
