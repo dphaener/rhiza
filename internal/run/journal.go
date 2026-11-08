@@ -212,7 +212,27 @@ type Started struct {
 	// MilestonePlan is true for the plan run of a milestone request: its
 	// interview session waits on the owner from launch.
 	MilestonePlan bool `json:"milestone_plan,omitempty"`
+	// Autonomy is the autonomy each stage had when the run started and
+	// where it came from, in stage order; empty for a run started before
+	// it was recorded.
+	Autonomy []StageAutonomy `json:"autonomy,omitempty"`
 }
+
+// StageAutonomy is one stage's autonomy mode (auto or owner) and its
+// source: SourceWorkflow, the declaration of the workflow named Workflow,
+// or SourceSetting, the rhiza.autonomy.<stage> setting.
+type StageAutonomy struct {
+	Stage    string `json:"stage"`
+	Mode     string `json:"mode"`
+	Source   string `json:"source"`
+	Workflow string `json:"workflow,omitempty"`
+}
+
+// The sources of a stage's autonomy.
+const (
+	SourceWorkflow = "workflow"
+	SourceSetting  = "setting"
+)
 
 // Block is what a blocked agent step waits on: the kind of block and the
 // question, as the session's blocked report gave them, and the tab its
@@ -1030,6 +1050,8 @@ type State struct {
 	Milestone string
 	// MilestonePlan is the started entry's MilestonePlan.
 	MilestonePlan bool
+	// Autonomy is the started entry's Autonomy.
+	Autonomy []StageAutonomy
 	// Current is the step entered and not ended, or the next step to
 	// enter. Empty when the run is finished.
 	Current      string
@@ -1316,6 +1338,7 @@ func (j Journal) State() State {
 				st.Autonomous = s.Autonomous
 				st.Milestone = s.Milestone
 				st.MilestonePlan = s.MilestonePlan
+				st.Autonomy = s.Autonomy
 			}
 		case TypeProcess:
 			if e.Process != nil {

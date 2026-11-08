@@ -163,35 +163,53 @@ type RunResponse struct {
 
 // RunInfo is a run folded from its journal.
 type RunInfo struct {
-	ID             string          `json:"id" desc:"The run ID"`
-	Workflow       string          `json:"workflow" desc:"The workflow's name"`
-	Change         string          `json:"change" desc:"The change set it runs on"`
-	Title          string          `json:"title" desc:"The change set's title"`
-	Worktree       string          `json:"worktree" desc:"The worktree every step runs in"`
-	Autonomous     bool            `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
-	State          string          `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
-	Current        string          `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
-	Detail         string          `json:"detail,omitempty" desc:"Why it stopped or failed"`
-	Steps          []RunStep       `json:"steps" desc:"The steps done, in order"`
-	StartedAt      string          `json:"started_at" desc:"When it started, RFC 3339 UTC"`
-	Blocked        *RunBlocked     `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
-	Stalled        *RunStalled     `json:"stalled,omitempty" desc:"A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise"`
-	Amendments     []RunAmendment  `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
-	Messages       []RunMessage    `json:"messages" desc:"The messages its sessions sent each other, in order"`
-	Sessions       []RunSession    `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
-	Totals         SessionTokenUse `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
-	Retries        []RunRetry      `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
-	Accepts        []RunAccept     `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
-	Questions      []RunQuestion   `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
-	Rounds         []RunRound      `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
-	Waiting        []RunWaiting    `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
-	Leaves         []RunLeaf       `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
-	Checks         []RunCheck      `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
-	Fixes          []RunFix        `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
-	CodeChecks     []RunCodeCheck  `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
-	Signoffs       []RunSignoff    `json:"signoffs,omitempty" desc:"The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none"`
-	PR             string          `json:"pr,omitempty" desc:"While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise"`
-	SignoffWaiting bool            `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise"`
+	ID             string             `json:"id" desc:"The run ID"`
+	Workflow       string             `json:"workflow" desc:"The workflow's name"`
+	Change         string             `json:"change" desc:"The change set it runs on"`
+	Title          string             `json:"title" desc:"The change set's title"`
+	Worktree       string             `json:"worktree" desc:"The worktree every step runs in"`
+	Autonomous     bool               `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
+	Autonomy       []RunStageAutonomy `json:"autonomy,omitempty" desc:"The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded"`
+	State          string             `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
+	Current        string             `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
+	Detail         string             `json:"detail,omitempty" desc:"Why it stopped or failed"`
+	Steps          []RunStep          `json:"steps" desc:"The steps done, in order"`
+	StartedAt      string             `json:"started_at" desc:"When it started, RFC 3339 UTC"`
+	Blocked        *RunBlocked        `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
+	Stalled        *RunStalled        `json:"stalled,omitempty" desc:"A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise"`
+	Amendments     []RunAmendment     `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
+	Messages       []RunMessage       `json:"messages" desc:"The messages its sessions sent each other, in order"`
+	Sessions       []RunSession       `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
+	Totals         SessionTokenUse    `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
+	Retries        []RunRetry         `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
+	Accepts        []RunAccept        `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
+	Questions      []RunQuestion      `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
+	Rounds         []RunRound         `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
+	Waiting        []RunWaiting       `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
+	Leaves         []RunLeaf          `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
+	Checks         []RunCheck         `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
+	Fixes          []RunFix           `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
+	CodeChecks     []RunCodeCheck     `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
+	Signoffs       []RunSignoff       `json:"signoffs,omitempty" desc:"The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none"`
+	PR             string             `json:"pr,omitempty" desc:"While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise"`
+	SignoffWaiting bool               `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise"`
+}
+
+// RunStageAutonomy is one stage's autonomy as a run started.
+type RunStageAutonomy struct {
+	Stage    string `json:"stage" enum:"plan,accept,ship,signoff" desc:"The stage"`
+	Mode     string `json:"mode" enum:"auto,owner" desc:"auto or owner"`
+	Source   string `json:"source" enum:"workflow,setting" desc:"workflow (the workflow's declaration) or setting (rhiza.autonomy.<stage>)"`
+	Workflow string `json:"workflow,omitempty" desc:"With source workflow: the workflow that declares it"`
+}
+
+// runStageAutonomy is the response form of a journal's stage autonomy.
+func runStageAutonomy(in []run.StageAutonomy) []RunStageAutonomy {
+	var out []RunStageAutonomy
+	for _, a := range in {
+		out = append(out, RunStageAutonomy{Stage: a.Stage, Mode: a.Mode, Source: a.Source, Workflow: a.Workflow})
+	}
+	return out
 }
 
 // RunCodeCheck is one code check: rhiza check and build-check on the
@@ -596,7 +614,12 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 	}
+	stages, err := runAutonomy(ctx, def)
+	if err != nil {
+		return nil, err
+	}
 	started := run.Started{
+		Autonomy: stages,
 		Workflow: def.Name, WorkflowPath: path, Definition: string(data), Includes: def.Includes,
 		Change: t.cs.String(), Title: t.title, Worktree: t.worktree, Branch: t.branch,
 		PermissionMode: r.PermissionMode, Agent: r.Agent, Autonomous: r.Autonomous, Milestone: reqMilestone,
@@ -609,7 +632,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		return RunResponse{Run: RunInfo{
 			ID: rid, Workflow: def.Name, Change: started.Change, Title: t.title, Worktree: t.worktree,
 			Autonomous: r.Autonomous, Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
-			Messages: []RunMessage{}, Sessions: []RunSession{},
+			Messages: []RunMessage{}, Sessions: []RunSession{}, Autonomy: runStageAutonomy(stages),
 		}, DryRun: true, Queued: !r.Foreground}, nil
 	}
 	if ctx.Getenv != nil {
@@ -2578,6 +2601,7 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 		ID: st.ID, Workflow: st.Workflow, Change: st.Change, Title: st.Title, Worktree: st.Worktree,
 		Autonomous: st.Autonomous, Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
 		Amendments: []RunAmendment{}, Messages: []RunMessage{}, Sessions: []RunSession{},
+		Autonomy: runStageAutonomy(st.Autonomy),
 	}
 	switch {
 	case st.Ended:
@@ -3154,6 +3178,13 @@ func runLines(w io.Writer, r RunInfo) {
 	fmt.Fprintf(w, "- Worktree: %s\n", r.Worktree)
 	if r.Autonomous {
 		fmt.Fprintf(w, "- Autonomous: yes\n")
+	}
+	for _, a := range r.Autonomy {
+		if a.Source == run.SourceWorkflow {
+			fmt.Fprintf(w, "- Autonomy %s: %s from workflow %s\n", a.Stage, a.Mode, a.Workflow)
+		} else {
+			fmt.Fprintf(w, "- Autonomy %s: %s from rhiza.autonomy.%s\n", a.Stage, a.Mode, a.Stage)
+		}
 	}
 	fmt.Fprintf(w, "- Started: %s\n", r.StartedAt)
 	if r.Current != "" {

@@ -1,0 +1,37 @@
+# A run's started entry records, for each stage, its autonomy mode and where
+# it came from: the workflow's declaration (naming the workflow) or the
+# rhiza.autonomy.<stage> setting. run status shows one line per stage.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Autonomy source' --title 'Autonomy source' --json
+mkdir .rhiza/workflows
+cp $WORK/declares.toml .rhiza/workflows/declares.toml
+exec git config rhiza.autonomy.accept owner
+
+exec rhiza run start --foreground --workflow declares --permission-mode manual
+stdout '^- Autonomy plan: auto from workflow declares$'
+stdout '^- Autonomy accept: owner from rhiza.autonomy.accept$'
+stdout '^- Autonomy ship: auto from rhiza.autonomy.ship$'
+exec rhiza run status
+stdout '^- Autonomy plan: auto from workflow declares$'
+stdout '^- Autonomy accept: owner from rhiza.autonomy.accept$'
+exec rhiza run status --json
+stdout '"source": "workflow",\s+"stage": "plan",\s+"workflow": "declares"'
+stdout '"mode": "owner",\s+"source": "setting",\s+"stage": "accept"'
+exec sh -c 'cat .git/rhiza/runs/*.jsonl'
+stdout '"type":"started".*"autonomy":\[\{"stage":"plan","mode":"auto","source":"workflow","workflow":"declares"\},\{"stage":"accept","mode":"owner","source":"setting"\}'
+-- declares.toml --
+name = "declares"
+
+[autonomy]
+plan = "auto"
+
+[step.hello]
+kind = "command"
+run = "true"
+on.pass = "done"
