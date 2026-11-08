@@ -2,11 +2,11 @@ package api
 
 import (
 	"fmt"
-	"slices"
 	"testing"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/quiettest"
 )
 
 // changeShowBudget times rhiza change show of the in-flight change sets of
@@ -20,16 +20,16 @@ func changeShowBudget(t *testing.T, g generated, log func(string)) {
 	timeShow := func(label string, cs id.ID) {
 		t.Helper()
 		ok, err := timeWithinBudget(label, func() (readTiming, error) {
-			var times []time.Duration
+			var laps []quiettest.Lap
 			for range readBudgetRuns {
 				ctx := testCtx(g.root)
 				ctx.IndexPath = g.indexPath
 				ctx.ChangeRef = cs.String()
 				reads := countingCtx(ctx)
 				o, _ := Lookup("change.show")
-				start := time.Now()
+				sw := quiettest.Start()
 				resp, err := o.Run(ctx, ChangeShowRequest{})
-				times = append(times, time.Since(start))
+				laps = append(laps, sw.Stop())
 				if err != nil {
 					return readTiming{}, fmt.Errorf("%s: %w", label, err)
 				}
@@ -40,9 +40,7 @@ func changeShowBudget(t *testing.T, g generated, log func(string)) {
 					return readTiming{}, fmt.Errorf("%s read the log %d times", label, *reads)
 				}
 			}
-			slices.Sort(times)
-			median := (times[readBudgetRuns/2-1] + times[readBudgetRuns/2]) / 2
-			return readTiming{median, times[0], times[len(times)-1], 1}, nil
+			return readTiming{quiettest.Summarize(laps), 1}, nil
 		}, log)
 		if err != nil {
 			t.Fatal(err)

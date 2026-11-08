@@ -2099,6 +2099,10 @@ cmp stdout describe.golden.json
                         "description": "The run ID",
                         "type": "string"
                       },
+                      "queued": {
+                        "description": "For an interrupted run with a queued continuation that could start, its place in the project's continuation queue (1 for the oldest); absent otherwise",
+                        "type": "integer"
+                      },
                       "state": {
                         "description": "running or interrupted",
                         "type": "string"
@@ -2208,6 +2212,10 @@ cmp stdout describe.golden.json
                 "id": {
                   "description": "The run ID",
                   "type": "string"
+                },
+                "queued": {
+                  "description": "For an interrupted run with a queued continuation that could start, its place in the project's continuation queue (1 for the oldest); absent otherwise",
+                  "type": "integer"
                 },
                 "state": {
                   "description": "running or interrupted",

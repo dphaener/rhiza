@@ -591,6 +591,24 @@ func TestRetire(t *testing.T) {
 		wantExit(t, err, 3)
 	})
 
+	t.Run("AfterUpdateLands", func(t *testing.T) {
+		ctx, cs := writeCtx(t)
+		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"store","fields":["statement=Old"]}`)
+		n := nodeAt(t, ctx, "store")
+		mustWrite(t, ctx, "set", `{"ref":"store","fields":["acceptance=1","statement=New"],"handle":"stash"}`)
+		mustWrite(t, ctx, "retire", `{"ref":"stash","reason":"Gone"}`)
+		ops := opsOf(t, ctx, cs)
+		if len(ops) != 1 || ops[0].Type != op.TypeNodeRetire || ops[0].Base != n.Version {
+			t.Fatalf("ops = %+v", ops)
+		}
+		for _, s := range []string{"propose", "accept", "land"} {
+			move(t, ctx, s, `{}`)
+		}
+		if got, err := ctxWorkspace(t, ctx).model(cs).Resolve(n.ID.String()); err != nil || !got.Retired {
+			t.Errorf("node after land = %+v, %v", got, err)
+		}
+	})
+
 	t.Run("SupersedesPendingEdits", func(t *testing.T) {
 		ctx, cs := writeCtx(t)
 		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)

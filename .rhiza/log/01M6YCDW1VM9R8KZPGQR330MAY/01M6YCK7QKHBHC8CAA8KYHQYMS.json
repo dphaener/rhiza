@@ -1,0 +1,30 @@
+{
+  "actor": "01M6YCF3SVVWJPG3A6HWB25HNB",
+  "after": [
+    "01M6YCDW1VM9R8KZPGQTQAH20N"
+  ],
+  "at": "2026-11-08T20:11:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "25f669da-d907-4a8d-8044-01a1bcc76cfc",
+          "statement": "Change set 'Stop using CI as a debugger' serves no intent yet, and the daemon builds only change sets that serve a milestone. Which should it serve? (milestone-25 is 'the backlog is empty: the daemon builds and ships on its own'; its sibling 'Ship-change fixes red PR CI' served it.) / When does Rhiza count a repo's CI as unstable (which turns on the full local gate before each push and shows red in rhiza health)? / What is the 'full local gate' a ship-change run runs before pushing while CI is unstable? / When rhiza ship check sees a red PR that passes on its one rerun (a flake), what happens to the run and the flaky test?"
+        },
+        "handle": "question-25f669da-1",
+        "id": "01M6YCK5FPCMN68J174H6TJBKB",
+        "key": null,
+        "kind": "question",
+        "node": "01M6YCK5FPCMN68J174FVPHQ23",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YCK7QKHBHC8CAA8KYHQYMS",
+  "type": "ops",
+  "v": 1
+}

@@ -1448,6 +1448,7 @@ type DaemonRun struct {
 	ID     string `json:"id" desc:"The run ID"`
 	Change string `json:"change" desc:"The change set it runs on"`
 	State  string `json:"state" desc:"running or interrupted"`
+	Queued int    `json:"queued,omitempty" desc:"For an interrupted run with a queued continuation that could start, its place in the project's continuation queue (1 for the oldest); absent otherwise"`
 }
 
 // DaemonEvent is the last run the daemon started or resumed.
@@ -1607,7 +1608,11 @@ func humanPart(w io.Writer, indent string, runs []DaemonRun, started, resumed *D
 	} else {
 		fmt.Fprintf(w, "%sLive runs:\n", indent)
 		for _, d := range runs {
-			fmt.Fprintf(w, "%s- %s %s (change set %s)\n", indent, d.ID, d.State, d.Change)
+			state := d.State
+			if d.Queued > 0 {
+				state += fmt.Sprintf(", queued, waiting for a slot (place %d)", d.Queued)
+			}
+			fmt.Fprintf(w, "%s- %s %s (change set %s)\n", indent, d.ID, state, d.Change)
 		}
 	}
 	if e := started; e != nil {
@@ -1682,9 +1687,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 		if st, ok := daemon.ReadState(common); ok {
-			for _, d := range st.Runs {
-				part.Runs = append(part.Runs, DaemonRun{ID: d.ID, Change: d.Change, State: d.State})
-			}
+			part.Runs = daemonStatusRuns(common, st.Runs)
 			part.Starting = st.Starting
 			part.LastStarted, part.LastResumed = daemonEvent(st.LastStarted), daemonEvent(st.LastResumed)
 			for _, k := range st.Skips {
@@ -1708,6 +1711,41 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	}
 	resp.Live, resp.Starting = daemonRunsHeld(resp)
 	return resp, nil
+}
+
+// daemonStatusRuns are a project's live runs as status shows them: an
+// interrupted run with a queued continuation that could start carries its
+// place in the project's continuation queue.
+func daemonStatusRuns(common string, live []daemon.LiveRun) []DaemonRun {
+	out := make([]DaemonRun, 0, len(live))
+	for _, d := range live {
+		out = append(out, DaemonRun{ID: d.ID, Change: d.Change, State: d.State})
+	}
+	if len(out) == 0 {
+		return out
+	}
+	q, err := daemon.ReadContinues(common)
+	if err != nil || len(q) == 0 {
+		return out
+	}
+	rs := run.NewStore(run.Dir(common))
+	runs, err := rs.List()
+	if err != nil {
+		return out
+	}
+	place := 0
+	for _, c := range q {
+		if !daemonContinueCanStart(rs, runs, c) {
+			continue
+		}
+		place++
+		for i := range out {
+			if out[i].ID == c.Run && out[i].State == "interrupted" {
+				out[i].Queued = place
+			}
+		}
+	}
+	return out
 }
 
 func daemonStatusHome(ctx *Ctx) (any, error) {
@@ -1763,9 +1801,7 @@ func daemonStatusHome(ctx *Ctx) (any, error) {
 	for _, h := range st.Hooks {
 		resp.Hooks = append(resp.Hooks, HookRow{Name: h.Name, Command: h.Command, Source: h.Source})
 	}
-	for _, d := range st.Runs {
-		resp.Runs = append(resp.Runs, DaemonRun{ID: d.ID, Change: d.Change, State: d.State})
-	}
+	resp.Runs = daemonStatusRuns(common, st.Runs)
 	resp.Starting = st.Starting
 	resp.Live, resp.Starting = daemonRunsHeld(resp)
 	resp.LastStarted = daemonEvent(st.LastStarted)

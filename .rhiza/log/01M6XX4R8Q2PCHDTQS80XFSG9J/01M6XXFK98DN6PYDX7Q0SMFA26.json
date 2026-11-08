@@ -1,0 +1,41 @@
+{
+  "actor": "01M6XXBS4PTR1F4EFAXZ4V23WX",
+  "after": [
+    "01M6XXAP0ZZJYMCZ3G711NB739"
+  ],
+  "at": "2026-11-08T15:47:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The ship-change.toml workflow pairs every CI check as a wait step (`rhiza ship check --settled`, 2h timeout, 30s interval) whose on.pass is a command step (`rhiza ship check`), and Engine.Retry reopens at State.FailedStep, so a retry after a fresh push skips the poll and sees 'not settled'. The fix belongs in how retry picks its step, not in each workflow: a per-step retry_at field would need every built-in and custom workflow to opt in, and folding polling into the green command would duplicate the wait kind's timeout and interval and hide the wait from the daemon's step view. Re-entering the preceding wait costs nothing when CI already settled, and keeps 'pending is not failure' true on every path, including the nebari PR #83 case in the change set's intent. When a failed step has no wait predecessor, retry keeps today's behaviour.",
+          "statement": "A run retry whose failed step is entered from a wait step's on.pass reopens the run at that wait step, not at the failed step. The wait polls until the checks settle (it passes at its first poll when they already have), then the green step runs as usual and fails only on a real red. This is a generic engine rule, so ship-change's pr-green, rebased-green, landed-green and rebased-merge-green, plan's and plan-milestone's pr-green, and custom workflows with the same wait-then-check shape all get it without new workflow fields. Green commands stay plain `rhiza ship check` with no polling of their own.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "retry-reopens-at-the-wait",
+        "id": "01M6XXFK3NNFP29EST9GQ0TCXT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6XXFK3NNFP29EST9F4G2CBN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XXFK3NNFP29EST9F4G2CBN",
+        "id": "01M6XXFK607D8YT2Q141N3F5QJ",
+        "link": "01M6XXFK607D8YT2Q13ZEM858X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XXAH5Y23S06ZT8GJX7QTBY",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6XX4R8Q2PCHDTQS80XFSG9J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XXFK98DN6PYDX7Q0SMFA26",
+  "type": "ops",
+  "v": 1
+}

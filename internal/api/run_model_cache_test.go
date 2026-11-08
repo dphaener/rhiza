@@ -13,6 +13,7 @@ import (
 	"github.com/dphaener/rhiza/internal/gen"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
+	"github.com/dphaener/rhiza/internal/quiettest"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
@@ -209,6 +210,7 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 	measure := func(label string, budget time.Duration, runs int, between func()) {
 		t.Helper()
 		var per []time.Duration
+		var laps []quiettest.Lap
 		for range runs {
 			if between != nil {
 				between()
@@ -216,15 +218,24 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 			// A driver polls seconds apart: each poll's first call
 			// catches up, the rest of its calls take the index as it is.
 			time.Sleep(2 * pollDebounce)
+			sw := quiettest.Start()
 			start := cpuTime()
 			f.poll(t, "driver-leaf-a")
 			per = append(per, cpuTime()-start)
+			laps = append(laps, sw.Stop())
 		}
 		slices.Sort(per)
 		median := per[len(per)/2]
-		log(fmt.Sprintf("driver poll %-28s median %v CPU (min %v, max %v), budget %v", label, median, per[0], per[len(per)-1], budget))
-		if median > budget {
+		// CPU time leaves out waiting for a CPU, but a saturated machine
+		// still spends more of it on the same poll: over the budget only
+		// then (outside CI), the poll is inconclusive, not failed. Over is
+		// at or over its budget; the poll's has always been more than.
+		tm := quiettest.Timing{Own: median, Pressure: quiettest.Summarize(laps).Pressure}
+		log(fmt.Sprintf("driver poll %-28s median %v CPU (min %v, max %v), budget %v, cpu pressure %.0f%%", label, median, per[0], per[len(per)-1], budget, 100*tm.Pressure))
+		if over, why := tm.Over(budget + 1); over {
 			t.Errorf("driver poll %s: median %v of CPU over %v", label, median, budget)
+		} else if why != "" {
+			log("driver poll " + label + " " + why)
 		}
 	}
 	// Warm the answers and let the racy window pass, so the index holds

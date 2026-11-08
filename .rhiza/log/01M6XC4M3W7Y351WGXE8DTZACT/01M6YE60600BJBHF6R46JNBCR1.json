@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6XYC0MKWBRZQN9J151HMBBK"
+  ],
+  "at": "2026-11-08T20:39:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "f80a4380f44a18821f24771f909305cda847f7ae",
+          "pr": "https://github.com/dphaener/rhiza/pull/393",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #393 (https://github.com/dphaener/rhiza/pull/393) passed CI at f80a438",
+          "status": "verified"
+        },
+        "handle": "pr-393-fix-a-queued-continuation-can",
+        "id": "01M6YE5ZBF0CR2HBJ65CJPNMVA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YE5ZBC9QRP90CT93DWFQJH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YE5ZBC9QRP90CT93DWFQJH",
+        "id": "01M6YE5ZJT7T1K5NAY2X8AGSRB",
+        "link": "01M6YE5ZJT7T1K5NAY2SWST3KM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XCJN76SFKMEST71CGEA6VG",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6YE5ZBC9QRP90CT93DWFQJH",
+        "id": "01M6YE5ZT61Z3NK7R7WY5XKT90",
+        "link": "01M6YE5ZT61Z3NK7R7WXW38G7R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XCJNBA3Y2XBG39EKDVCRZ7",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6YE5ZBC9QRP90CT93DWFQJH",
+        "id": "01M6YE5ZWT629YCZFAHJKSHTFR",
+        "link": "01M6YE5ZWT629YCZFAHFM5MDHT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85B7BAZEZNH96W1P6D3A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XC4M3W7Y351WGXE8DTZACT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YE60600BJBHF6R46JNBCR1",
+  "type": "ops",
+  "v": 1
+}
