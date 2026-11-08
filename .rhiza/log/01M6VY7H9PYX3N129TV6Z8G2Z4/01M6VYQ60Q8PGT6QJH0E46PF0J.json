@@ -1,0 +1,39 @@
+{
+  "actor": "01M6VY8QXM0QV7VN35CRKN6307",
+  "after": [
+    "01M6VYPW7SEXZYJHY8ZDN1FPFN"
+  ],
+  "at": "2026-11-07T21:30:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Depends on workflow dispatch (change set 01M6VY7G6HPJC3V0Q18E8EF9ZA) for leaf bugfix-workflow-autonomous and for dispatch's default rule mapping milestone requests to plan-milestone, and waits on scheduling as policy (01M6VY7GRV7BAJ9MMFVAY9GPZ2) to be built with no milestone, per Decision autonomy-per-workflow-scope. Both are drafts on their own branches, not yet on main, so no depends-on link could be written; link them depends-on once they reach main."
+        },
+        "handle": "note-01m6vyq5tyh5ce",
+        "id": "01M6VYQ5TZF689D61CDZXBSZD2",
+        "key": null,
+        "kind": "note",
+        "node": "01M6VYQ5TYH5CEZ3W52DH0P6SZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6VYQ5TYH5CEZ3W52DH0P6SZ",
+        "id": "01M6VYQ5X65JR5240DABD61NRP",
+        "link": "01M6VYQ5X65JR5240DAA7ZK315",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYQ60Q8PGT6QJH0E46PF0J",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,30 @@
+{
+  "actor": "01M6VY8QXM0QV7VN35CRKN6307",
+  "after": [
+    "01M6VY7H9PYX3N129TV770F4W5"
+  ],
+  "at": "2026-11-07T21:25:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "e4df472e-8f7a-4104-8aa1-01a1b7e438c0",
+          "statement": "No milestone is open (rhiza health: roadmap 0 milestones; milestone 29's change sets have all landed), so change set 01M6VY7H (Autonomy per workflow) has nothing to serve, and the plan workflow's milestone-check step fails a plan whose change set serves no milestone. Its three sibling requests from decision workflows-are-the-rules (workflow dispatch 01M6VY7G6H, scheduling as policy 01M6VY7GRV, request --ref 01M6VY7JMM) are in the same spot. What should it serve? / Which workflow's autonomy declaration governs which stage of a change set? Today one plan run (plan workflow) covers plan and accept, and a later ship-change run covers ship and signoff; workflow dispatch (01M6VY7G6H) will record on the change set the workflow its request chose, so the ship pick follows it. / How does milestone planning get its owner-only default? Today milestone requests run the built-in 'plan' workflow with --milestone, and daemonStartPlan (internal/api/request.go:366-371) hard-codes that such a run is never autonomous."
+        },
+        "handle": "question-e4df472e-1",
+        "id": "01M6VYENVE0ZD9ZP8JYHBVB6QV",
+        "key": null,
+        "kind": "question",
+        "node": "01M6VYENVE0ZD9ZP8JYHATZQQY",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYERH0N29P67WGMB757NXM",
+  "type": "ops",
+  "v": 1
+}

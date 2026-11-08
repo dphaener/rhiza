@@ -1,0 +1,33 @@
+{
+  "actor": "01M6VY8QXM0QV7VN35CRKN6307",
+  "after": [
+    "01M6VYJHSFEKMW7YR2P1QAD54B"
+  ],
+  "at": "2026-11-07T21:29:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "ce6acdbb38fc12c9273540a1432c45cd91de5d12d8b8c318a18964418a884fc5",
+          "session": "e4df472e-8f7a-4104-8aa1-01a1b7e438c0",
+          "summary": "Autonomous plan run for change set 01M6VY7H (Autonomy per workflow). No owner took part. The planner read the autonomy code (autonomyStage in internal/api/autonomy.go, the daemon's plan, ship and signoff reads in request.go and daemon.go, the accept read at the plan gate, the milestone hard-codes in daemonStartPlan and run start's --autonomous refusal) and raised three questions: what the change set serves with no open milestone, which workflow's declaration governs each stage, and how milestone planning gets its owner-only default. The arbiter answered all three in Decision autonomy-per-workflow-scope: serve no milestone and wait on scheduling as policy (01M6VY7GRV); each stage takes its autonomy from the workflow of the run that performs it, falling back to rhiza.autonomy.<stage>; milestone planning gets a built-in plan-milestone workflow declaring autonomous = false and the hard-code goes. The planner then wrote six leaves: the declaration in the workflow file, stage resolution in the daemon and runs, the run record and run status showing each stage's source, health listing declaring workflows, the plan-milestone built-in replacing the milestone hard-codes, and the end-to-end bugfix check, which needs workflow dispatch (01M6VY7G6H).",
+          "title": "Autonomy per workflow: autonomous plan interview, answered by the arbiter"
+        },
+        "handle": "autonomy-per-workflow-interview",
+        "id": "01M6VYN0TMXZMDF553PM0QFZ6Q",
+        "key": null,
+        "kind": "source",
+        "node": "01M6VYN0TMXZMDF553PH6QCDFH",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6VYN0V1SWR958T4RSVSQ2H9",
+  "type": "ops",
+  "v": 1
+}
