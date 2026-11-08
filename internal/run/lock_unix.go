@@ -126,3 +126,12 @@ func PidAlive(pid int) bool {
 	err := syscall.Kill(pid, 0)
 	return err == nil || err == syscall.EPERM
 }
+
+// Terminate asks the process with the pid to stop; a process that is gone
+// is not an error.
+func Terminate(pid int) error {
+	if err := syscall.Kill(pid, syscall.SIGTERM); err != nil && err != syscall.ESRCH {
+		return err
+	}
+	return nil
+}

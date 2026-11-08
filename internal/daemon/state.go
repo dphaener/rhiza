@@ -73,6 +73,12 @@ type State struct {
 	// last, each as session@report-time, so a session still stalled at the
 	// same report is nudged once; a new report is a new stall.
 	Nudged []string `json:"nudged,omitempty"`
+	// Watchdog is what the watchdog keeps per live run: the progress it
+	// last acted at, whether it nudged, and the retry budget it spent.
+	Watchdog []WatchdogRun `json:"watchdog,omitempty"`
+	// WatchdogHolds are the stalled steps the last poll left to the owner
+	// (an attended run, or a spent budget), each an inbox item while it lasts.
+	WatchdogHolds []WatchdogHold `json:"watchdog_holds,omitempty"`
 	// Events are the IDs of the lifecycle moves the event command has been
 	// handled for, run or seeded; EventsSeeded says the first run recorded
 	// every move then in the log, so history is not replayed.
@@ -181,4 +187,24 @@ type ProjectSkip struct {
 	Reason  string `json:"reason"`
 	// Detail is the error behind a reason that has one.
 	Detail string `json:"detail,omitempty"`
+}
+
+// WatchdogRun is the watchdog's memory of one run.
+type WatchdogRun struct {
+	Run string `json:"run"`
+	// Progress is the last journal or session progress the watchdog saw;
+	// a later one resets Nudged.
+	Progress time.Time `json:"progress"`
+	Nudged   bool      `json:"nudged,omitempty"`
+	// Spent is the retries charged to the run's watchdog budget.
+	Spent int `json:"spent,omitempty"`
+}
+
+// WatchdogHold is a stalled step the watchdog only reports.
+type WatchdogHold struct {
+	Run    string    `json:"run"`
+	Change string    `json:"change"`
+	Step   string    `json:"step"`
+	Since  time.Time `json:"since"`
+	Detail string    `json:"detail"`
 }

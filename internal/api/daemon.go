@@ -365,6 +365,7 @@ func daemonStartState(common string, self daemon.Holder, version, commit string,
 		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
 		state.Notified = prev.Notified
 		state.Nudged = prev.Nudged
+		state.Watchdog, state.WatchdogHolds = prev.Watchdog, prev.WatchdogHolds
 		state.Hooked = prev.Hooked
 		state.Events, state.EventsSeeded = prev.Events, prev.EventsSeeded
 		state.Hooks = prev.Hooks
@@ -459,6 +460,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	// This poll's disk-low state, not the one saved after the last poll.
 	items = append(items, diskLowItems(state.DiskLow)...)
 	items = append(items, usageHoldItems(state.UsageHold)...)
+	items = append(items, watchdogHoldItems(state.WatchdogHolds)...)
 	if common, err := gitCommonDir(ctx); err == nil {
 		items = append(items, mainStaleItems(common)...)
 		items = append(items, workflowItems(common, state.Skips)...)
