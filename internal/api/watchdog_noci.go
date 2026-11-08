@@ -27,7 +27,7 @@ type watchdogMerge struct {
 // watchdogMergeMain merges origin/main into t's branch, checked out in t's
 // worktree, pushes it without force and records the pushed head in the ship
 // state. A conflicting merge is aborted, leaving the branch as it was.
-func watchdogMergeMain(ctx *Ctx, t shipTarget) (watchdogMerge, error) {
+func watchdogMergeMain(ctx *Ctx, t shipTarget, runID string) (watchdogMerge, error) {
 	var res watchdogMerge
 	if fi, err := os.Stat(t.worktree); err != nil || !fi.IsDir() {
 		return res, fmt.Errorf("the worktree %s is gone", t.worktree)
@@ -90,6 +90,9 @@ func watchdogMergeMain(ctx *Ctx, t shipTarget) (watchdogMerge, error) {
 		return res, err
 	}
 	st.Pushed, st.Head, st.Checks = res.Pushed, "", nil
+	if runID != "" {
+		st.Run = runID
+	}
 	return res, writeShipState(t.statePath(), st)
 }
 
