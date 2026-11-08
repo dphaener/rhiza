@@ -2781,7 +2781,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "parts": {
-            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, usage, then main, inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project",
+            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, usage, then main, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -2805,6 +2805,7 @@ cmp stdout describe.golden.json
                     "disk",
                     "usage",
                     "main",
+                    "schedules",
                     "inbox",
                     "requests",
                     "roadmap",
