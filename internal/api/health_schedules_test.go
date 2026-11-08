@@ -33,12 +33,12 @@ func schedRuns(t *testing.T, ctx *Ctx, rid string, ended bool, result string, wa
 
 // schedHealthCtx is a project whose rhiza check passes (its rendered
 // folder written), so no other part of health is bad and the exit code is
-// health's own over the schedules part. The disk minimum is off, so the
-// disk part never reads bad on a host (a CI runner) with little free space.
+// health's own over the schedules part. The disk part reads the pinned
+// 1 TiB, never the host's free space.
 func schedHealthCtx(t *testing.T, body string) *Ctx {
 	t.Helper()
 	f := newSessionFixture(t, "s")
-	f.git.out["config --get rhiza.daemon.minFree"] = "0\n"
+	pinFreeBytes(f.ctx)
 	f.ctx.Now = func() time.Time { return time.Date(2026, 11, 8, 10, 30, 0, 0, time.UTC) }
 	if body != "" {
 		writeDispatch(t, f.ctx.Root, body)

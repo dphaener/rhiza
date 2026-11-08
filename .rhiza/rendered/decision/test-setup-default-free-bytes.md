@@ -24,6 +24,7 @@ The testscript Setup in cmd/rhiza/main_test.go sets RHIZA_TEST_FREE_BYTES to a l
 ### In
 
 - decided-by [scripts-free-disk-hermetic](../capability/rhiza/integrity/self-check/scripts-free-disk-hermetic.md)
+- decided-by [api-tests-free-disk-hermetic](../capability/rhiza/integrity/self-check/api-tests-free-disk-hermetic.md)
 
 ## History
 
