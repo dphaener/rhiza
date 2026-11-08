@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 )
@@ -810,6 +811,46 @@ func TestApplyAspects(t *testing.T) {
 	} {
 		if got := overlaps(tc.a, tc.b); got != tc.want {
 			t.Errorf("overlaps(%v, %v) = %v, want %v", tc.a, tc.b, got, tc.want)
+		}
+	}
+}
+
+// TestOwnOpsOnOldBaseLand folds a change set of the 01M6WMCCRC0K shape: it
+// updates and renames a landed node, then retires it, every op on the
+// landed version. Its what-if view, the land gate, has no problem, and once
+// it lands the as-is view has none either. Another change set landing a
+// write to the node in between still makes the stale ops conflict.
+func TestOwnOpsOnOldBaseLand(t *testing.T) {
+	ops := []op.Op{set(2, 1, 1, "statement", `"x"`), rename(3, 1, 1, "pki"), retire(4, 1, 1)}
+	sets := []changeset.ChangeSet{
+		{ID: csA, State: changeset.StateLanded, Ops: []op.Op{mkDec(1, 1, "jwt")}},
+		{ID: csB, State: changeset.StateAccepted, Ops: ops},
+	}
+	if _, problems := WhatIf(sets, csB); problems != nil {
+		t.Fatalf("what-if problems = %v, want none", problems)
+	}
+	sets[1].State = changeset.StateLanded
+	m, problems := AsIs(sets)
+	if problems != nil {
+		t.Fatalf("as-is problems = %v, want none", problems)
+	}
+	if x := mustNode(t, m, 1); !x.Retired || x.Handle != "pki" || x.Version != fid(4) {
+		t.Errorf("node = %+v, want retired as pki at op 4", x)
+	}
+
+	// csC lands a statement rewrite on the landed version before csB.
+	sets = []changeset.ChangeSet{
+		{ID: csA, State: changeset.StateLanded, Ops: []op.Op{mkDec(1, 1, "jwt")}},
+		{ID: csC, State: changeset.StateLanded, Ops: []op.Op{set(5, 1, 1, "statement", `"y"`)}},
+		{ID: csB, State: changeset.StateAccepted, Ops: ops},
+	}
+	_, problems = WhatIf(sets, csB)
+	if len(problems) == 0 {
+		t.Fatal("what-if has no problem, want csB's stale statement update to conflict")
+	}
+	for _, p := range problems {
+		if p.ChangeSet != csB || !errors.Is(p.Err, ErrConflict) {
+			t.Errorf("problem = %v, want an ErrConflict on csB", p)
 		}
 	}
 }
