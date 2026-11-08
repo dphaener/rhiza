@@ -10,14 +10,17 @@ package api
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"os"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
@@ -31,7 +34,12 @@ type watchdogDeps struct {
 	send   func(sid, text string) error
 	stop   func(st run.State, sessions []string) error
 	resume func(runID string) error
-	log    func(format string, args ...any)
+	// ci reads the PR of st's change set: its head, its checks and the
+	// attempt of each Actions run on the head. rerun reruns the failed jobs
+	// of one Actions run of st's PR.
+	ci    func(st run.State) (watchdogPR, error)
+	rerun func(st run.State, actionsRun string) error
+	log   func(format string, args ...any)
 }
 
 // watchdogProgress is the latest sign of life of st's current step: the last
@@ -209,6 +217,19 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 	if err == nil {
 		err = terr
 	}
+	d.ci = func(st run.State) (watchdogPR, error) { return watchdogReadPR(ctx, st) }
+	d.rerun = func(st run.State, id string) error {
+		t, err := watchdogShipTarget(ctx, st)
+		if err != nil {
+			return err
+		}
+		_, err = gh(ctx, t.dir(), "run", "rerun", id, "--failed")
+		return err
+	}
+	mem, terr = watchdogCIRerun(pol, all, rs.Live, mem, d)
+	if err == nil {
+		err = terr
+	}
 	state.Watchdog, state.WatchdogHolds = mem, holds
 	return err
 }
@@ -312,4 +333,184 @@ func inboxWatchdog(ctx *Ctx) []InboxItem {
 		return nil
 	}
 	return watchdogHoldItems(st.WatchdogHolds)
+}
+
+// watchdogPR is a run's PR as the CI rerun sees it: Attempts is the attempt
+// of each Actions run on Head, by run ID (1 for a run never rerun).
+type watchdogPR struct {
+	Head     string
+	Checks   []ShipCheck
+	Attempts map[string]int
+}
+
+// watchdogShipTarget resolves the PR target of st's change set.
+func watchdogShipTarget(ctx *Ctx, st run.State) (shipTarget, error) {
+	cs, err := id.Parse(st.Change)
+	if err != nil {
+		return shipTarget{}, err
+	}
+	c := *ctx
+	c.ChangeSet = cs
+	return findShipTarget(&c)
+}
+
+// watchdogReadPR reads st's PR and the attempts of the Actions runs on its
+// head with gh. A change set with no open PR gives an empty head.
+func watchdogReadPR(ctx *Ctx, st run.State) (watchdogPR, error) {
+	t, err := watchdogShipTarget(ctx, st)
+	if err != nil {
+		return watchdogPR{}, err
+	}
+	out, err := gh(ctx, t.dir(), "pr", "view", t.branch, "--json", "number,url,state,headRefOid,body,mergeable,statusCheckRollup")
+	if noPR(err) {
+		return watchdogPR{}, nil
+	}
+	if err != nil {
+		return watchdogPR{}, err
+	}
+	v, err := parsePRView(out)
+	if err != nil {
+		return watchdogPR{}, err
+	}
+	if !strings.EqualFold(v.State, "OPEN") || !prOwnedBy(v.Body, t.cs) {
+		return watchdogPR{}, nil
+	}
+	pr := watchdogPR{Head: v.Head, Checks: v.Checks, Attempts: map[string]int{}}
+	out, err = gh(ctx, t.dir(), "run", "list", "--commit", v.Head, "--json", "databaseId,attempt")
+	if err != nil {
+		return watchdogPR{}, err
+	}
+	var runs []struct {
+		DatabaseID int64 `json:"databaseId"`
+		Attempt    int   `json:"attempt"`
+	}
+	if err := json.Unmarshal(out, &runs); err != nil {
+		return watchdogPR{}, fmt.Errorf("gh run list: %v", err)
+	}
+	for _, r := range runs {
+		pr.Attempts[strconv.FormatInt(r.DatabaseID, 10)] = r.Attempt
+	}
+	return pr, nil
+}
+
+// waitingOnCI reports whether the step of st that failed is a ship check on
+// the PR's CI: the step that waited for or required green checks, or the
+// triage that found no failing test to fix (an infra red). The open-PR probe
+// is not.
+func waitingOnCI(st run.State, step string) bool {
+	def, err := st.ParseDefinition()
+	if err != nil {
+		return false
+	}
+	s := def.Steps[step]
+	for _, cmd := range []string{s.Run, s.Until} {
+		if strings.HasPrefix(cmd, "rhiza ship check") && !strings.Contains(cmd, "--pr-open") && !strings.Contains(cmd, "--main") {
+			return true
+		}
+	}
+	return false
+}
+
+// watchdogCIRerun handles each failed run that ended waiting on its PR's CI
+// with red checks: it reruns the failed jobs once per PR head and, on a
+// later poll, resumes the run with --retry once the checks are green. A
+// head with an Actions run already at attempt above the policy's reruns
+// (the plan step's own rerun leaves one) counts as rerun, and a second red
+// on the head is left to the owner. It returns the memory after, and the
+// first error.
+func watchdogCIRerun(pol WatchdogPolicy, journals []run.Journal, live func(id string) bool, mem []daemon.WatchdogRun, d watchdogDeps) ([]daemon.WatchdogRun, error) {
+	var first error
+	fail := func(err error) {
+		if first == nil {
+			first = err
+		}
+	}
+	if pol.CIReruns <= 0 || d.ci == nil {
+		return mem, nil
+	}
+	for _, j := range journals {
+		st := j.State()
+		if live(j.ID) || !st.Ended || st.Result != run.Failed || st.Abandoned() {
+			continue
+		}
+		if !st.Autonomous && pol.AutonomousOnly {
+			continue
+		}
+		step, err := st.FailedStep()
+		if err != nil || !waitingOnCI(st, step) {
+			continue
+		}
+		i := slices.IndexFunc(mem, func(w daemon.WatchdogRun) bool { return w.Run == j.ID })
+		if i < 0 {
+			mem = append(mem, daemon.WatchdogRun{Run: j.ID})
+			i = len(mem) - 1
+		}
+		pr, err := d.ci(st)
+		if err != nil {
+			fail(fmt.Errorf("read the PR of run %s: %w", j.ID, err))
+			continue
+		}
+		if pr.Head == "" {
+			continue
+		}
+		settled, green, failed := checksVerdict(pr.Checks)
+		m := &mem[i]
+		if m.CIHead == pr.Head {
+			// Rerun by the watchdog: resume once, when the rerun passed.
+			if m.CIResumed || !green || m.Spent >= pol.RetryBudget {
+				continue
+			}
+			if err := d.resume(j.ID); err != nil {
+				fail(fmt.Errorf("resume run %s: %w", j.ID, err))
+				continue
+			}
+			m.Spent++
+			m.CIResumed = true
+			d.log("watchdog: run %s step %s: CI passed after the rerun on %s: resumed with --retry (budget %d of %d)", j.ID, step, shortSHA(pr.Head), m.Spent, pol.RetryBudget)
+			continue
+		}
+		if !settled || green {
+			continue
+		}
+		var runs []string
+		seen := map[string]bool{}
+		skip := false
+		for _, c := range pr.Checks {
+			if passingConclusions[strings.ToUpper(c.Conclusion)] {
+				continue
+			}
+			if c.RunID == "" {
+				skip = true
+				break
+			}
+			if !seen[c.RunID] {
+				seen[c.RunID] = true
+				runs = append(runs, c.RunID)
+			}
+		}
+		for id, n := range pr.Attempts {
+			if n > pol.CIReruns && seen[id] {
+				skip = true
+			}
+		}
+		if skip || len(runs) == 0 {
+			continue
+		}
+		// Record before rerunning: a crash between the two costs a missed
+		// rerun, never a second one.
+		m.CIHead, m.CIResumed = pr.Head, false
+		var errs int
+		for _, id := range runs {
+			if err := d.rerun(st, id); err != nil {
+				fail(fmt.Errorf("rerun CI run %s of run %s: %w", id, j.ID, err))
+				errs++
+			}
+		}
+		if errs == len(runs) {
+			m.CIHead = ""
+			continue
+		}
+		d.log("watchdog: run %s step %s failed on red CI (%s) at %s: reran the failed jobs of %s", j.ID, step, strings.Join(failed, ", "), shortSHA(pr.Head), shipPlural(len(runs), "run", "runs"))
+	}
+	return mem, first
 }

@@ -198,6 +198,11 @@ type WatchdogRun struct {
 	Nudged   bool      `json:"nudged,omitempty"`
 	// Spent is the retries charged to the run's watchdog budget.
 	Spent int `json:"spent,omitempty"`
+	// CIHead is the PR head whose failed CI jobs the watchdog reran, and
+	// CIResumed that the run was resumed once they passed: a head is
+	// rerun once.
+	CIHead    string `json:"ci_head,omitempty"`
+	CIResumed bool   `json:"ci_resumed,omitempty"`
 }
 
 // WatchdogHold is a stalled step the watchdog only reports.
