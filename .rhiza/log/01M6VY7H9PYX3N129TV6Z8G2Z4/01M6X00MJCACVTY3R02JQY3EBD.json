@@ -1,0 +1,155 @@
+{
+  "actor": "01M6WZGDYJ8S358KP27QAA44K2",
+  "after": [
+    "01M6WZD00GD36X610S7CZR6K1Z"
+  ],
+  "at": "2026-11-08T07:12:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, built binary in a scratch root with a fake rex that runs commands: run start --workflow plan --new 'Ship v3' --milestone --autonomous (with and without --dry-run) and run start --autonomous on a record change set each exit 2 with 'workflow plan-milestone (builtin:plan-milestone) declares the plan stage owner', no draft and no .git/rhiza/runs; the record start without --autonomous runs plan-milestone; an intention plan with --autonomous succeeds with autonomous true; a repo plan-milestone.toml with autonomous = false refuses naming the repo file; run resume of that run, edited to be journaled autonomous, exits 2 naming 'as run ... journaled it'; a repo plan-milestone.toml with autonomous = true lets the milestone --autonomous start succeed."
+        },
+        "handle": "milestone-plan-refuses-autonomous-qa-2-01m6vy7h",
+        "id": "01M6X00HYQN255FA1B57QBX3FG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X00HYQN255FA1B57EHVCD3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X00HYQN255FA1B57EHVCD3",
+        "id": "01M6X00J42XMGED19A9D4FCXR3",
+        "link": "01M6X00J42XMGED19A994S02K8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYGJT14RGWC73S0V3A5YEB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, built binary: workflow ls lists 'plan-milestone builtin builtin:plan-milestone'; a record change set's plan run journals workflow plan-milestone; rhiza daemon --once on a queued milestone request with rhiza.autonomy.plan auto detaches 'run start --foreground --workflow plan-milestone --pick default ... --milestone' with no --autonomous (RHIZA_TEST_DETACH_LOG); a repo plan-milestone.toml declaring autonomous = true makes the run autonomous."
+        },
+        "handle": "plan-milestone-workflow-qa-2-01m6vy7h",
+        "id": "01M6X00J681GF5KARE3RHYA304",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X00J681GF5KARE3P5GH09G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X00J681GF5KARE3P5GH09G",
+        "id": "01M6X00J9V372B3X3PP9RHYCPC",
+        "link": "01M6X00J9V372B3X3PP6P69QZV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVZJ3PB7QGSN9XZVP9GN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, built binary: a repo plan.toml with [autonomy] plan = 'auto' loads and runs; workflow check plan exits 1 for each bad file: both autonomous and [autonomy] ('autonomous and [autonomy] are both set'), autonomy.build ('unknown stage; want plan, accept, ship, signoff'), plan = 'yes' ('yes is not a mode; want \"auto\" or \"owner\"'), autonomous = 'auto' ('auto is not a boolean'); run start with the bad file is refused with the same message."
+        },
+        "handle": "workflow-autonomy-declaration-qa-2-01m6vy7h",
+        "id": "01M6X00JM7SP7WMK6RTRD26XW7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X00JM7SP7WMK6RTN23Q8VC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X00JM7SP7WMK6RTN23Q8VC",
+        "id": "01M6X00JXXFJZG37982ZCEBXW8",
+        "link": "01M6X00JXXFJZG37982WHSX6TM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVKA8H196XPZQX6BHQZK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, built binary: a plan run whose repo plan.toml declares only plan = auto, with rhiza.autonomy.accept owner, shows in run status 'Autonomy plan: auto from workflow plan', 'Autonomy accept: owner from rhiza.autonomy.accept', and ship/signoff from their settings; the journal's started entry carries an autonomy array of stage, mode, source and workflow; a plan-milestone run shows all four owner from workflow plan-milestone."
+        },
+        "handle": "run-autonomy-source-qa-2-01m6vy7h",
+        "id": "01M6X00K5TD50DRYAEVFE9VEN3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X00K5TD50DRYAEVF1T73K8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X00K5TD50DRYAEVF1T73K8",
+        "id": "01M6X00KBGSH2CHV9576TWJNJK",
+        "link": "01M6X00KBGSH2CHV9576PTQQYE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVTC8M1XMBKTDTGBX14K",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, built binary: rhiza health's autonomy part lists the four settings, then 'workflow plan-milestone (builtin:plan-milestone): plan owner, accept owner, ship owner, signoff owner' with no repo declaration, and 'workflow plan-milestone (.rhiza/workflows/plan-milestone.toml): plan auto, ...' once a repo override declares autonomous = true."
+        },
+        "handle": "health-workflow-autonomy-qa-2-01m6vy7h",
+        "id": "01M6X00KEJPYTQX61DXC7CF2ZK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X00KEJPYTQX61DXA6F3G6N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X00KEJPYTQX61DXA6F3G6N",
+        "id": "01M6X00KKRV1T6VFN0VVXTQQBV",
+        "link": "01M6X00KKRV1T6VFN0VS3EYVWA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVWZYB3NKSKBKACYXEXZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, built binary, plan stage: with rhiza.autonomy.plan owner and a repo plan.toml declaring autonomous = true, rhiza daemon --once on a feature request detaches 'run start --foreground --workflow plan --pick default --new Add exports ... --autonomous'; a milestone request with the setting auto starts plan-milestone without --autonomous. The ship and signoff stages were checked only through their testscripts (workflow-stage-autonomy, daemon-root-ship-workflow), which pass."
+        },
+        "handle": "stage-autonomy-from-workflow-qa-2-01m6vy7h",
+        "id": "01M6X00KTJQEKPWDJSH631E38Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X00KTJQEKPWDJSH5B42FPF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X00KTJQEKPWDJSH5B42FPF",
+        "id": "01M6X00M428KWEA4SMMGDVW4CN",
+        "link": "01M6X00M428KWEA4SMMFGEXAY1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6VYPVPYWCJVW98YSSNWHPDP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6X00MJCACVTY3R02JQY3EBD",
+  "type": "ops",
+  "v": 1
+}
