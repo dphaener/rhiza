@@ -52,18 +52,18 @@ rhiza run start --workflow mine --dry-run
 `ls` shows each layer and what it shadows. `new` forks a workflow into
 `.rhiza/workflows/mine.toml` (without `--from`, a skeleton) and never overwrites. `describe`
 shows the steps as the run resolves them. `check` reports every problem with the step it is in.
-`--dry-run` starts nothing. Edit the file, check, repeat.
+`--dry-run` starts nothing. Edit, check, repeat.
 
 ## Outside input
 
-`rhiza health` and `rhiza workflow check` warn when a workflow runs autonomously in
-`bypassPermissions` and outside input can reach it: a schedule, or a request, whose text and
-`--ref` go to agents with no permission checks. Every queued request counts. Rhiza cannot see
-what a scheduled command running `rhiza request` does. `rhiza request --ref` prints a note
-when its workflow is such a one. Nothing is refused.
+`rhiza health` and `rhiza workflow check` warn when a request's text and `--ref` reach an
+autonomous workflow in `bypassPermissions`. Every queued request counts. Rhiza cannot see
+what a scheduled `rhiza request` sends. Nothing is refused.
 
+`rhiza.autonomy.plan` `owner` does not gate intake: each request is planned at once under
+`rhiza.daemon.permissionMode`; the owner must only accept the plan before the rest runs.
 Mitigations:
 
-- A person gates intake: `rhiza.autonomy.plan` `owner`.
-- A narrower `permission_mode` on agent steps.
-- Owner sign-off: `rhiza.autonomy.signoff` `owner`.
+- Gate intake outside Rhiza: people, never a schedule, queue requests.
+- Narrow `rhiza.daemon.permissionMode`, or `permission_mode` on the plan workflow's steps.
+- `rhiza.autonomy.plan` `owner` and `rhiza.autonomy.signoff` `owner` for what runs after.
