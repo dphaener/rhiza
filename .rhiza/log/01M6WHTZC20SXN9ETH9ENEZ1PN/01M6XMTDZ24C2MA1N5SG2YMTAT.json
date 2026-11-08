@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6XMND3VM02XQZFRSBD7AZ76"
+  ],
+  "at": "2026-11-08T13:16:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/fix-the-plan-workflow-ends-a onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: internal/api/ship_test.go?"
+        },
+        "handle": "rebase-conflict-fix-the-plan-workflow-ends-a",
+        "id": "01M6XMTDKAXYTFM3T7MB3KCGTB",
+        "key": null,
+        "kind": "question",
+        "node": "01M6XMTDKAXYTFM3T7MAB9981D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XMTDKAXYTFM3T7MAB9981D",
+        "id": "01M6XMTDSZE4A5FV1MAJHRZK25",
+        "link": "01M6XMTDSZE4A5FV1MAJ165TFX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XMTDZ24C2MA1N5SG2YMTAT",
+  "type": "ops",
+  "v": 1
+}

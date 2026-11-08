@@ -22258,6 +22258,10 @@ cmp stdout describe.golden.json
             "description": "Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)",
             "type": "boolean"
           },
+          "reruns": {
+            "description": "How many times a head's failed jobs are rerun before its failure stands, at least 1; default 1",
+            "type": "integer"
+          },
           "settled": {
             "description": "Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it rebases the branch onto main as ship rebase does, then reports not settled, and exits 75 with a stop: line on a conflict in code",
             "type": "boolean"
@@ -22376,7 +22380,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "reran": {
-            "description": "The GitHub Actions run IDs whose failed jobs this check reran, once per head, instead of failing; the check then reports not settled",
+            "description": "The GitHub Actions run IDs whose failed jobs this check reran, up to --reruns times per head, instead of failing; the check then reports not settled",
             "items": {
               "type": "string"
             },
