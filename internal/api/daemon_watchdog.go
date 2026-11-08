@@ -265,6 +265,11 @@ func watchdogPasses(pol WatchdogPolicy, all []run.Journal, live func(id string) 
 	if err == nil {
 		err = terr
 	}
+	mem, nholds, terr = watchdogGreenUnmerged(pol, all, live, mem, d)
+	holds = append(holds, nholds...)
+	if err == nil {
+		err = terr
+	}
 	return mem, holds, err
 }
 
