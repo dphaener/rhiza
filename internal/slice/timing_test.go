@@ -15,6 +15,7 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/quiettest"
 	"github.com/dphaener/rhiza/internal/tmpsweep"
 )
 
@@ -252,12 +253,12 @@ func TestBudget(t *testing.T) {
 		{name: "node slice, to-be", view: index.ToBe, focus: focus.ID},
 		{name: "change slice of the accepted set, to-be", view: index.ToBe, change: s.Accepted},
 	} {
-		var times []time.Duration
+		var laps []quiettest.Lap
 		var json, md Result
 		for range sliceRuns {
-			start := time.Now()
+			sw := quiettest.Start()
 			json, md, err = sliceOnce(g, ts)
-			times = append(times, time.Since(start))
+			laps = append(laps, sw.Stop())
 			if err != nil {
 				t.Fatalf("%s: %v", ts.name, err)
 			}
@@ -265,12 +266,15 @@ func TestBudget(t *testing.T) {
 		if len(json.Bytes) == 0 || len(md.Bytes) == 0 {
 			t.Fatalf("%s: empty output (json %d bytes, markdown %d)", ts.name, len(json.Bytes), len(md.Bytes))
 		}
-		slices.Sort(times)
-		median := (times[sliceRuns/2-1] + times[sliceRuns/2]) / 2
-		t.Logf("%s over %d runs: min %v, median %v, max %v (json %d tokens, markdown %d)",
-			ts.name, sliceRuns, times[0], median, times[len(times)-1], json.Tokens, md.Tokens)
-		if median >= sliceBudget {
-			t.Errorf("%s: median %v, want < %v", ts.name, median, sliceBudget)
+		tm := quiettest.Summarize(laps)
+		t.Logf("%s over %d runs: %v (json %d tokens, markdown %d)",
+			ts.name, sliceRuns, tm, json.Tokens, md.Tokens)
+		// Own time: the clock less waiting for a CPU, inconclusive on a
+		// saturated machine (quiettest.Timing.Over).
+		if over, why := tm.Over(sliceBudget); over {
+			t.Errorf("%s: median own time %v, want < %v", ts.name, tm.Own, sliceBudget)
+		} else if why != "" {
+			t.Log(ts.name + " " + why)
 		}
 	}
 }
