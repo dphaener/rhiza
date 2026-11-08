@@ -1,0 +1,27 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6XGGV6BDK9XGVNH41BZWSHJ"
+  ],
+  "at": "2026-11-08T21:16:56Z",
+  "body": {
+    "drop": [
+      "01M6WMRS3TSKP9JJ9YBG836QMX",
+      "01M6WMSB34BK9ATX1SBERJVT7C"
+    ],
+    "ops": [
+      {
+        "base": "01M6A0NG1VRQKBM20M8GRJ3T9S",
+        "id": "01M6YGB02JGHC8HV35R02E1FM8",
+        "node": "01M6A0NG1VRQKBM20M8CSVTX3B",
+        "op": "node.retire",
+        "reason": "superseded by wait-merges-conflicting-pr: the wait merges main and hands a code conflict to the conflict fixer instead of stopping for the owner"
+      }
+    ]
+  },
+  "change_set": "01M6WMCCRC0KSCWEV17VY8KVQP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YGB066CC31298SMDH01EN1",
+  "type": "ops",
+  "v": 1
+}
