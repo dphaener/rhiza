@@ -210,7 +210,7 @@ func healthDaemon(ctx, home *Ctx, all bool) HealthPart {
 		if s.Stopped != "" {
 			p.Detail = append(p.Detail, "last daemon "+s.Process+" stopped "+s.Stopped)
 		}
-		return p
+		return healthWatchdogActions(p, s.WatchdogActions)
 	}
 	p := HealthPart{Part: HealthDaemon, State: HealthOK,
 		Summary: fmt.Sprintf("running, process %s, %d live runs", s.Process, len(s.Runs))}
@@ -225,7 +225,7 @@ func healthDaemon(ctx, home *Ctx, all bool) HealthPart {
 	if s.LastPoll != "" {
 		p.Detail = append(p.Detail, "last poll "+s.LastPoll)
 	}
-	return p
+	return healthWatchdogActions(healthPollBehind(p, s.PollBehind), s.WatchdogActions)
 }
 
 // healthAutonomy lists the autonomy settings and whether the daemon is

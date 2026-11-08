@@ -1763,7 +1763,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl or deployTimeout, or rhiza.autonomy.plan, accept, ship or signoff",
+            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl or deployTimeout, or rhiza.autonomy.plan, accept, ship or signoff",
             "type": "string"
           },
           "project": {
@@ -2015,6 +2015,10 @@ cmp stdout describe.golden.json
               "service",
               "tab"
             ],
+            "type": "string"
+          },
+          "poll_behind": {
+            "description": "Set while its last poll took longer than the watchdog's pollBehind multiple of the poll interval: how long it took and the limit; absent when polls keep up",
             "type": "string"
           },
           "process": {
@@ -2345,6 +2349,13 @@ cmp stdout describe.golden.json
           "version": {
             "description": "The version of the binary the daemon runs, as recorded when it started",
             "type": "string"
+          },
+          "watchdog_actions": {
+            "description": "The watchdog's last actions, newest first, each as its time and the log line: what it saw, what it did, the run or request; absent when it has done none",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "web": {
             "description": "The web UI as the daemon's last poll recorded it from rhiza.web.port: its URL (http://127.0.0.1:<port>), or off; it is the recorded setting, the listener is not probed; absent when none was recorded",

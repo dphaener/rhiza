@@ -22,6 +22,7 @@ func buildWorkflow(s Step, fs fileStep, fail func(string, ...any) (Step, error))
 		{"until", fs.Until != ""},
 		{"until_when", fs.UntilWhen != ""},
 		{"timeout", fs.Timeout != ""},
+		{"stall", fs.Stall != ""},
 		{"interval", fs.Interval != ""},
 		{"max_visits", fs.MaxVisits != 0},
 	}

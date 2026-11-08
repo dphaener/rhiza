@@ -32,3 +32,6 @@ func (s *Store) LockJournal(id string) (unlock func(), err error) {
 
 // PidAlive cannot look a process up here: it reports every pid as alive.
 func PidAlive(pid int) bool { return pid > 0 }
+
+// Terminate cannot signal a process here: it does nothing.
+func Terminate(pid int) error { return nil }

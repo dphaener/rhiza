@@ -1,0 +1,21 @@
+# rhiza health lists the watchdog's last actions, newest first, from the
+# journal a recovery left in the daemon state (a fixture: no daemon runs).
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+
+mkdir .git/rhiza
+cp ../state.json .git/rhiza/daemon.state.json
+exec sh -c 'rhiza health > ../health.txt; grep -q "last actions, newest first" ../health.txt; grep -n "run r2 step build" ../health.txt | cut -d: -f1 > ../l2; grep -n "run r1 step build" ../health.txt | cut -d: -f1 > ../l1; test $(cat ../l2) -lt $(cat ../l1)'
+exec grep '2030-01-01T00:02:00Z run r2 step build failed on a transient error' ../health.txt
+exec rhiza daemon status --json
+stdout '"watchdog_actions"'
+stdout 'run r1 step build'
+
+-- state.json --
+{"process":{"host":"h","pid":1,"started":"2030-01-01T00:00:00Z"},"last_poll":"2030-01-01T00:05:00Z","max_runs":2,"autonomous":false,"runs":[],"watchdog_actions":[{"at":"2030-01-01T00:02:00Z","line":"run r2 step build failed on a transient error (\"502\"): resumed with --retry (budget 1 of 2)"},{"at":"2030-01-01T00:01:00Z","line":"run r1 step build failed on a transient error (\"502\"): resumed with --retry (budget 1 of 2)"}]}

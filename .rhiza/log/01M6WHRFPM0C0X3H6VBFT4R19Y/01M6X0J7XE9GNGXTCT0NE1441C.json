@@ -1,0 +1,40 @@
+{
+  "actor": "01M6X0ES04MXCSW104XP7YPJ8S",
+  "after": [
+    "01M6X024X8XJFQ2YWC43BRB2NV"
+  ],
+  "at": "2026-11-08T07:22:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b86358b9 ran go test -trimpath -count=1 ./internal/api -run TestWatchdog (all PASS, incl. TestWatchdogPRNoCI 1.86s), go test ./internal/daemon (ok) and go vet on both. TestWatchdogPRNoCI uses local bare repos as fake git remotes and a fake gh PR read: a clean merge of origin/main is pushed with a plain push (no --force, no rebase; origin's branch equals the pushed merge commit on top of the old head) and recorded as Pushed in the ship state; a conflicting merge is aborted with HEAD, worktree and origin's branch unchanged and no ship state written; the pass resumes a run whose workflow has conflict handling and holds an InboxStalled item for one without. Read the diff: the attempt-1 finding (merge before budget/hold checks) is fixed: watchdogPRNoCI now keeps an earlier hold for the same PR head and journal end without fetching, merging or logging (NoCIHead/NoCIAt/NoCIConflicts in daemon.WatchdogRun), and with the budget spent holds without merging, logging once; the new test cases cover both and a new head merges again."
+        },
+        "handle": "watchdog-pr-no-ci-verified-2",
+        "id": "01M6X0J7PTDZ2GK3JYDFF9ZYJC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X0J7PTDZ2GK3JYDEJSQWJJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X0J7PTDZ2GK3JYDEJSQWJJ",
+        "id": "01M6X0J7T6ATNDBMKX1SYGAEE1",
+        "link": "01M6X0J7T6ATNDBMKX1SGTM765",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2D2ZAVPKEZVHFSTVKQCM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6X0J7XE9GNGXTCT0NE1441C",
+  "type": "ops",
+  "v": 1
+}

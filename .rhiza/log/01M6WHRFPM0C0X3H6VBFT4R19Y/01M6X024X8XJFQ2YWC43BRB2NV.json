@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WZYM1C4FD0TWSEDW7NPSW2",
+  "after": [
+    "01M6WZESPMVNW70176YNXH0AFE"
+  ],
+  "at": "2026-11-08T07:13:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 7420691c (attempt 2): go test -trimpath -count=1 ./internal/api -run 'TestWatchdogStalled|TestWatchdogPolicy' passes. TestWatchdogStalled, with a fixed clock, a temp session store and fake send/stop/resume, nudges both autonomous runs at 21m (none at 19m), stops and resumes only run A at 41m with exactly one 'stopped and resumed' log line and Spent=1, leaves run B alone after it reported progress at 30m, and gives owner-attended run O only a hold that becomes an InboxStalled item, never a stop or resume. The fix commit's diff: StallLimit now takes the step's timeout, and a wait step gets max(waitLimit, timeout+10m), covered by the new 'wait step outlives its timeout' subtest (2h -> 2h10m, 10m -> 90m, own stall wins). run.Terminate signals -pid when the pid leads its group; detached runs start with Setsid and step commands inherit that group. go test -trimpath -count=1 ./internal/run -run TestTerminateStopsGroup passes: a group leader's background sleep child dies with it. gofmt -l and go vet are clean on internal/api and internal/run."
+        },
+        "handle": "watchdog-stalled-step-verified-2",
+        "id": "01M6X024KQW3AW49HE4SSJFWRT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X024KQW3AW49HE4REH97S2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X024KQW3AW49HE4REH97S2",
+        "id": "01M6X024R0T10DRNZZVB50AJ7K",
+        "link": "01M6X024R0T10DRNZZV97ZYF5E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2CKKVZMZ0EMK7HYXK1WH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6X024X8XJFQ2YWC43BRB2NV",
+  "type": "ops",
+  "v": 1
+}

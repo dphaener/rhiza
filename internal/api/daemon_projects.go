@@ -313,7 +313,11 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 	if nerr := daemonNotify(ctx, p.rs, state, p.notifyCmd); err == nil {
 		err = nerr
 	}
-	if nerr := daemonNudge(ctx, p.rs, state); err == nil {
+	if pol := watchdogPolicyOf(t.conf.rows); pol.Enabled {
+		if werr := daemonWatchdog(ctx, p.rs, state, pol); err == nil {
+			err = werr
+		}
+	} else if nerr := daemonNudge(ctx, p.rs, state); err == nil {
 		err = nerr
 	}
 	if eerr := daemonEvents(ctx, state, p.eventCmd); err == nil {

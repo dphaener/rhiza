@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WV7P7TBF5WTKDY8Z1K3QMB",
+  "after": [
+    "01M6WWQS43QEB6BSF8XXW7X274"
+  ],
+  "at": "2026-11-08T06:19:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8cb18c39, go test -trimpath -count=1 ./internal/api -run TestWatchdog -v passed: TestWatchdogTransient shows the go $WORK, git index.lock and GitHub 502 failures each resumed once with --retry, a non-matching failure (FAIL: TestThing) and an attended run left to the owner, and a live run with a 503 output left alone; a second poll inside the budget of 1 resumes nothing. The new TestWatchdogTransientBudgetAcrossPolls runs whole polls through watchdogPasses (the stalled-step pass included, as daemonWatchdog now does) and shows a failed run on HTTP 502 resumed once over five polls with Spent 1, no resume or charge while its continue is already queued, and its memory forgotten once the run is gone. Read the diff: watchdogPasses carries prev memory over for runs that are not live, fixing attempt 1's finding f1 (budget dropped each poll), and the transient and CI passes skip a queued run before charging. go vet ./internal/api clean. A whole-package run hung only in TestReadBudget (roadmap read, plan.go link probe on the SQLite index, load ~20), code this change set does not touch; left to CI."
+        },
+        "handle": "watchdog-transient-failure-verified",
+        "id": "01M6WWZSBZMF8MMJXH24QR2ERY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WWZSBZMF8MMJXH22TQG8QH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WWZSBZMF8MMJXH22TQG8QH",
+        "id": "01M6WWZSFJ713XSCVMVWY490CN",
+        "link": "01M6WWZSFJ713XSCVMVT7Y3XAQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2CRTGK0ZMW94E2BA801H",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WWZSTXNCSJ0KN72K9J5XWX",
+  "type": "ops",
+  "v": 1
+}

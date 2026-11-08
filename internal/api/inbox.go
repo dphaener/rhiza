@@ -742,7 +742,7 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	items = sortInboxItems(append(append(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...), inboxWorkflow(ctx)...))
+	items = sortInboxItems(append(append(append(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...), inboxWorkflow(ctx)...), inboxWatchdog(ctx)...))
 	byRun := map[string]run.State{}
 	for _, j := range runs {
 		byRun[j.ID] = j.State()

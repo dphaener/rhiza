@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WT61HJ20V17MHE0QEVE05Z",
+  "after": [
+    "01M6WRNPAE089ACMWBYDKAXNMG"
+  ],
+  "at": "2026-11-08T05:32:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f5b15eab, go test -trimpath ./internal/api -run TestWatchdogCIRerun -count=1 -v passed. The test fakes the gh-backed deps (ci reads head, checks and Actions run attempts; rerun records gh run rerun --failed calls) and shows: a red head's failed run 7 rerun once; still red at attempt 2 gives no second rerun and no resume; once green the run is resumed with --retry exactly once (two polls, one resume, one log line per action); a fresh red head whose run is already at attempt 2 is not rerun; a new head bbbb222 gets its own rerun. Read the diff: watchdogCIRerun only acts on ended, failed, non-live, autonomous runs whose failed step runs or waits on rhiza ship check (not --pr-open/--main), records CIHead before rerunning, and charges the resume to the watchdog budget; the live path reads gh pr view and gh run list --commit <head> --json databaseId,attempt. All TestWatchdog* tests and go vet on internal/api and internal/daemon pass."
+        },
+        "handle": "watchdog-ci-rerun-verified",
+        "id": "01M6WT95B0ZPVKG3DQ9Q93JWFR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WT95B0ZPVKG3DQ9MVB80DH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WT95B0ZPVKG3DQ9MVB80DH",
+        "id": "01M6WT95JJQES84J12BQJVVEE0",
+        "link": "01M6WT95JJQES84J12BPKJP547",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2CXX5VYQ2236KG5ZEX7X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WT95VQ1XE1CTRCRKFYS99B",
+  "type": "ops",
+  "v": 1
+}

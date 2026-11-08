@@ -73,6 +73,18 @@ type State struct {
 	// last, each as session@report-time, so a session still stalled at the
 	// same report is nudged once; a new report is a new stall.
 	Nudged []string `json:"nudged,omitempty"`
+	// Watchdog is what the watchdog keeps per live run: the progress it
+	// last acted at, whether it nudged, and the retry budget it spent.
+	Watchdog []WatchdogRun `json:"watchdog,omitempty"`
+	// WatchdogHolds are the stalled steps the last poll left to the owner
+	// (an attended run, or a spent budget), each an inbox item while it lasts.
+	WatchdogHolds []WatchdogHold `json:"watchdog_holds,omitempty"`
+	// WatchdogActions are the watchdog's last actions, newest first: the
+	// journal behind its log lines and rhiza health.
+	WatchdogActions []WatchdogAction `json:"watchdog_actions,omitempty"`
+	// PollBehind is set while the last poll took longer than the watchdog's
+	// multiple of the poll interval, and absent once a poll is within it.
+	PollBehind *PollBehind `json:"poll_behind,omitempty"`
 	// Events are the IDs of the lifecycle moves the event command has been
 	// handled for, run or seeded; EventsSeeded says the first run recorded
 	// every move then in the log, so history is not replayed.
@@ -181,4 +193,66 @@ type ProjectSkip struct {
 	Reason  string `json:"reason"`
 	// Detail is the error behind a reason that has one.
 	Detail string `json:"detail,omitempty"`
+}
+
+// WatchdogRun is the watchdog's memory of one run.
+type WatchdogRun struct {
+	Run string `json:"run"`
+	// Progress is the last journal or session progress the watchdog saw;
+	// a later one resets Nudged.
+	Progress time.Time `json:"progress"`
+	Nudged   bool      `json:"nudged,omitempty"`
+	// Spent is the retries charged to the run's watchdog budget.
+	Spent int `json:"spent,omitempty"`
+	// Attempts journals each recovery charged to the budget, oldest first,
+	// so a restarted daemon still knows what was tried.
+	Attempts []WatchdogAttempt `json:"attempts,omitempty"`
+	// CIHead is the PR head whose failed CI jobs the watchdog reran, and
+	// CIResumed that the run was resumed once they passed: a head is
+	// rerun once.
+	CIHead    string `json:"ci_head,omitempty"`
+	CIResumed bool   `json:"ci_resumed,omitempty"`
+	// PRGone is the time of the run's last journal entry when the watchdog
+	// found its change set with no open PR: while the journal ends there,
+	// the watchdog's PR passes read that PR no more.
+	PRGone time.Time `json:"pr_gone,omitzero"`
+	// CIDone is the time of the run's last journal entry when the watchdog
+	// found CIHead red again after its rerun: the head is left to the owner,
+	// and while the journal ends there the PR passes read that PR no more.
+	CIDone time.Time `json:"ci_done,omitzero"`
+	// NoCIHead is the PR head the no-CI pass left to the owner (merging
+	// main conflicted in NoCIConflicts, or the budget was spent), and NoCIAt
+	// the run's last journal entry then: while both still hold, the pass
+	// keeps the hold without fetching, merging or logging again.
+	NoCIHead      string    `json:"noci_head,omitempty"`
+	NoCIAt        time.Time `json:"noci_at,omitzero"`
+	NoCIConflicts []string  `json:"noci_conflicts,omitempty"`
+}
+
+// WatchdogAttempt is one recovery the watchdog tried on a run.
+type WatchdogAttempt struct {
+	At     time.Time `json:"at"`
+	Action string    `json:"action"`
+}
+
+// WatchdogAction is one thing the watchdog did or saw, as logged.
+type WatchdogAction struct {
+	At   time.Time `json:"at"`
+	Line string    `json:"line"`
+}
+
+// WatchdogHold is a stalled step the watchdog only reports.
+type WatchdogHold struct {
+	Run    string    `json:"run"`
+	Change string    `json:"change"`
+	Step   string    `json:"step"`
+	Since  time.Time `json:"since"`
+	Detail string    `json:"detail"`
+}
+
+// PollBehind is a poll that ran past its limit.
+type PollBehind struct {
+	At    time.Time     `json:"at"`
+	Took  time.Duration `json:"took"`
+	Limit time.Duration `json:"limit"`
 }

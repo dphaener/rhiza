@@ -1,0 +1,40 @@
+{
+  "actor": "01M6WQ3EJTGHFG0R8XYXGKSV5Q",
+  "after": [
+    "01M6WK8P6RQDYT5NMRQANVPBAX"
+  ],
+  "at": "2026-11-08T04:49:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f73688bd I ran go test -trimpath -count=1 ./internal/api -run TestWatchdogPolicy -v: PASS, with subtests for the defaults (enabled, 20m/40m nudge/retry, 30m command, 90m wait, retryBudget 2, ciReruns 1, pollBehind 3, fileBugs and autonomousOnly true), a machine value under [daemon] in rhiza.toml, a rhiza.project.watchdog.* git config key over the machine key, a workflow step's stall field winning for that step, and invalid values rejected with their key named. go test -trimpath ./cmd/rhiza -run 'TestScripts/(watchdog-policy|describe-golden|daemon)': PASS. go test ./internal/workflow: PASS. With a scratch build in a fresh repo, rhiza daemon settings listed all 10 rhiza.daemon.watchdog.* keys as (default, machine) and the 9 rhiza.project.watchdog.* keys (no pollBehind) as (default, project). The settings, daemon-set and autonomy tests in internal/api pass. The whole internal/api package hit its 600s timeout at load 16, in an unrelated database/sql goroutine dump. I read the diff: the keys join settingDefs in init, the resolver takes project over machine over default, and stall is a positive step duration that a workflow-kind step rejects."
+        },
+        "handle": "watchdog-policy-verified",
+        "id": "01M6WQVCESZFKN6P09W7H31DZ2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WQVCESZFKN6P09W7CD4TSX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WQVCESZFKN6P09W7CD4TSX",
+        "id": "01M6WQVCG7WD80WZ3YKQH76MSE",
+        "link": "01M6WQVCG7WD80WZ3YKM8R7TEH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ2BR1XZB2E5F21H8TNBFH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHRFPM0C0X3H6VBFT4R19Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WQVCK4VF7YVBSYYYKKCBXH",
+  "type": "ops",
+  "v": 1
+}

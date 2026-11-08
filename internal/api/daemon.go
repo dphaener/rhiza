@@ -205,7 +205,9 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	lastTurn := ""
 	// atHome is told the home project's settings at each poll: the root-wide
 	// parts of the daemon follow them.
+	var homePol WatchdogPolicy
 	atHome := func(conf daemonConf) {
+		homePol = watchdogPolicyOf(conf.rows)
 		if webUI != nil {
 			if werr := webUI.Apply(conf.webHost, conf.webPort); werr != nil && ctx.Stderr != nil {
 				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", werr)
@@ -217,6 +219,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 	}
 	poll := func() error {
+		pollStart := ctx.Now()
 		reg, err := rootcfg.Load(root)
 		if err != nil {
 			return err
@@ -294,6 +297,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 				delete(projs, name)
 			}
 		}
+		if hp, ok := projs[homeName]; ok {
+			watchdogPollBehind(&hp.state, homePol, daemonPoll, ctx.Now().Sub(pollStart), ctx.Now(), func(line string) {
+				if ctx.Stderr != nil {
+					fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %s\n", line)
+				}
+				hp.state.WatchdogActions = watchdogRecord(hp.state.WatchdogActions, ctx.Now(), line)
+			})
+		}
 		// Every project's state says which of the others were skipped.
 		for _, p := range projs {
 			p.state.ProjectSkips = skipped
@@ -365,6 +376,9 @@ func daemonStartState(common string, self daemon.Holder, version, commit string,
 		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
 		state.Notified = prev.Notified
 		state.Nudged = prev.Nudged
+		state.Watchdog, state.WatchdogHolds = prev.Watchdog, prev.WatchdogHolds
+		state.WatchdogActions = prev.WatchdogActions
+		state.PollBehind = prev.PollBehind
 		state.Hooked = prev.Hooked
 		state.Events, state.EventsSeeded = prev.Events, prev.EventsSeeded
 		state.Hooks = prev.Hooks
@@ -459,6 +473,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	// This poll's disk-low state, not the one saved after the last poll.
 	items = append(items, diskLowItems(state.DiskLow)...)
 	items = append(items, usageHoldItems(state.UsageHold)...)
+	items = append(items, watchdogHoldItems(state.WatchdogHolds)...)
 	if common, err := gitCommonDir(ctx); err == nil {
 		items = append(items, mainStaleItems(common)...)
 		items = append(items, workflowItems(common, state.Skips)...)
@@ -1395,6 +1410,8 @@ type DaemonStatusResponse struct {
 	Commit          string                `json:"commit,omitempty" desc:"The git commit the daemon's binary was built from, as recorded when it started; absent when the build carried none"`
 	Started         string                `json:"started,omitempty" desc:"When the daemon started, RFC 3339 UTC"`
 	LastPoll        string                `json:"last_poll,omitempty" desc:"When it last polled, RFC 3339 UTC"`
+	WatchdogActions []string              `json:"watchdog_actions,omitempty" desc:"The watchdog's last actions, newest first, each as its time and the log line: what it saw, what it did, the run or request; absent when it has done none"`
+	PollBehind      string                `json:"poll_behind,omitempty" desc:"Set while its last poll took longer than the watchdog's pollBehind multiple of the poll interval: how long it took and the limit; absent when polls keep up"`
 	Stopped         string                `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
 	MaxRuns         int                   `json:"max_runs,omitempty" desc:"How many runs it keeps running at once"`
 	Autonomous      bool                  `json:"autonomous" desc:"True when it starts each run with --autonomous"`
@@ -1608,6 +1625,10 @@ func daemonStatusHome(ctx *Ctx) (any, error) {
 	resp.Commit = st.Commit
 	resp.Started = st.Process.Started.UTC().Format(time.RFC3339)
 	resp.LastPoll = st.LastPoll.UTC().Format(time.RFC3339)
+	if pb := st.PollBehind; pb != nil {
+		resp.PollBehind = pollBehindText(pb)
+	}
+	resp.WatchdogActions = watchdogActionLines(st.WatchdogActions)
 	if !st.Stopped.IsZero() && !resp.Running {
 		resp.Stopped = st.Stopped.UTC().Format(time.RFC3339)
 	}
