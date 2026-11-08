@@ -93,6 +93,11 @@ func shipCheckMainDispatch(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckR
 			return nil, err
 		}
 	}
+	if resp.Settled {
+		if err := recordSettledCI(ctx, t, st, resp, true); err != nil {
+			return nil, err
+		}
+	}
 	switch {
 	case !resp.Settled:
 		if resp.Detail == "" {

@@ -339,6 +339,10 @@ type shipState struct {
 	// CIFindings are the failing tests read from the logs of the failed
 	// runs of RerunHead, for the step that fixes them.
 	CIFindings []ShipFinding `json:"ci_findings,omitempty"`
+	// RerunTests are the failing tests read from the logs of the failed
+	// runs just before RerunHead was rerun: if the rerun passes they are
+	// the head's flakes, in the CI stability record.
+	RerunTests []string `json:"rerun_tests,omitempty"`
 	// DispatchCommit is the merge commit CI was dispatched on, and
 	// Dispatched the workflow files dispatched for it, once each.
 	DispatchCommit string   `json:"dispatch_commit,omitempty"`
@@ -628,6 +632,11 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 	}
+	if resp.Settled {
+		if err := recordSettledCI(ctx, t, st, resp, r.Main); err != nil {
+			return nil, err
+		}
+	}
 	if resp.Settled && !resp.Green {
 		if err := shipReadFailures(ctx, t, &st, &resp, path); err != nil {
 			return nil, err
@@ -730,6 +739,11 @@ func shipCheckMainTree(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckRespo
 		return shipCheckMainDispatch(ctx, t, st, resp, path, settled, budget)
 	}
 	resp.Settled, resp.Green, resp.Passed = true, true, true
+	// No CI ran: main has the tested head's tree, so the head's green
+	// result is main's.
+	if err := recordSettledCI(ctx, t, shipState{}, resp, true); err != nil {
+		return nil, err
+	}
 	return resp, nil
 }
 
@@ -798,6 +812,11 @@ func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckRespo
 	if st.RerunHead != resp.Commit {
 		st.Reruns = nil
 	}
+	if st.RerunHead != resp.Commit || count == 0 {
+		// The first attempt's failures, read while its logs are there; a
+		// later rerun's logs would replace them.
+		st.RerunTests = shipFailedTests(ctx, t, runs)
+	}
 	st.RerunHead, st.Reruns, st.RerunCount, st.CIFindings = resp.Commit, append(st.Reruns, runs...), count+1, nil
 	if err := writeShipState(path, *st); err != nil {
 		return err
@@ -812,6 +831,24 @@ func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckRespo
 	resp.Detail = fmt.Sprintf("not settled: reran the failed jobs of %s %s after %s failed", shipPlural(len(runs), "run", "runs"), strings.Join(runs, ", "), strings.Join(resp.Failed, ", "))
 	resp.Failed = nil
 	return nil
+}
+
+// shipFailedTests reads the failing tests out of the logs of the Actions
+// runs. A log gh cannot give adds nothing.
+func shipFailedTests(ctx *Ctx, t shipTarget, runs []string) []string {
+	var tests []string
+	for _, id := range runs {
+		out, err := gh(ctx, t.dir(), "run", "view", id, "--log-failed")
+		if err != nil {
+			continue
+		}
+		for _, name := range parseFailedTests(string(out)) {
+			if !slices.Contains(tests, name) {
+				tests = append(tests, name)
+			}
+		}
+	}
+	return tests
 }
 
 // failLine matches a Go test's failure line in a log, as go test prints it
