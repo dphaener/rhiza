@@ -418,7 +418,7 @@ func TestCommandPassFollowsOnPass(t *testing.T) {
 	if st.Steps[0].Next != "ship" || st.Steps[0].Detail != "exit 0" {
 		t.Errorf("first step = %+v", st.Steps[0])
 	}
-	want := []string{"RHIZA_CHANGE=CS1", "RHIZA_RUN=" + runID, "RHIZA_STEP=test"}
+	want := []string{"RHIZA_CHANGE=CS1", "RHIZA_RUN=" + runID, "RHIZA_STEP=test", "GOTMPDIR=" + e.Store.TmpDir(runID)}
 	if !reflect.DeepEqual(r.envs["test"], want) {
 		t.Errorf("env = %v, want %v", r.envs["test"], want)
 	}
@@ -1404,7 +1404,7 @@ func TestArbitratePasses(t *testing.T) {
 	if !reflect.DeepEqual(r.arbiters, []string{"decide Q1"}) || r.answerN["Q1"] != 1 {
 		t.Errorf("arbiters %v answers %v", r.arbiters, r.answerN)
 	}
-	if want := []string{"RHIZA_CHANGE=CS1", "RHIZA_RUN=" + runID, "RHIZA_STEP=decide"}; !reflect.DeepEqual(r.envs["decide"], want) {
+	if want := []string{"RHIZA_CHANGE=CS1", "RHIZA_RUN=" + runID, "RHIZA_STEP=decide", "GOTMPDIR=" + e.Store.TmpDir(runID)}; !reflect.DeepEqual(r.envs["decide"], want) {
 		t.Errorf("arbiter env %v, want %v", r.envs["decide"], want)
 	}
 	if want := []time.Duration{3 * time.Second}; !reflect.DeepEqual(c.sleeps, want) {

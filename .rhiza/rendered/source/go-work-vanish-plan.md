@@ -1,0 +1,35 @@
+# go-work-vanish-plan
+
+source · `01M6WGWZRXF2F1D4FFJT7970RC`
+
+## quotes
+
+```json
+[]
+```
+
+## raw_sha256
+
+66efcdc9c4db94a7d7bedda571a6877e5429168066b5c9a0ecb31f55ca583021
+
+## session
+
+457efc88-a06a-4e5e-afa5-01a1b907c681
+
+## summary
+
+Autonomous plan run, no owner present; the arbiter answered the planner's questions. Investigation: plan run 01M6W7G5J0M6 failed at step rebase (2026-11-08 00:20:00-00:20:32Z) when ship's head build (go build -o ... ./cmd/rhiza, internal/api/ship_build.go) lost its $WORK folder under TMPDIR=~/tmp mid-build ('open $WORK/bNNN/_pkg_.a: no such file or directory' across std packages). Ruled out: the daemon's gosweep removes only go-build* folders whose top-level mtime is over 2h old, and this one lived 32s; the daemon journal shows no sweep line and no re-exec in that window (re-execs at 23:58:46 and 00:24:55); tmpsweep and the budget TestMains remove only their own rhiza-* prefixes; testscripts give the daemon their own TMPDIR and GOCACHE, and Go unit-test clocks sit in the past, so their sweeps remove nothing real; no cron, user timer or tmpfiles rule covers ~/tmp; no agent transcript in the window removed go-build folders. The deleter stays unknown. Arbiter's ruling (Decision go-work-vanish-fix-shape): serve milestone-29; stop it by isolation: every process a run starts gets GOTMPDIR set to <git common dir>/rhiza/runs/<run id>/gotmp, created when a step starts and removed when the run ends, with gosweep unchanged; the retry lives in stepRunner.Command (internal/api/run.go): a command step that exits non-zero with go's vanished-$WORK signature is rerun once, with one stderr line, and the second result stands; the signature match is a small pure function with unit tests, and the engine stays language-agnostic.
+
+## title
+
+Plan interview: Fix A Go build inside a run (autonomous)
+
+## Links
+
+### In
+
+- derived-from [go-work-vanish-fix-shape](../decision/go-work-vanish-fix-shape.md)
+
+## History
+
+- `01M6WGEPSYWV8R14VGKJX9GGJM` Fix A Go build inside a run step fails when its $WORK temp folder vanishes mid-build, and the run ends: plan run 01M6W7G5J0M6 (change set 01M6W7G8YBXB) failed at step rebase on 2026-11-08 ~00:15Z with 'could not import io (open $WORK/b033/_pkg_.a: no such file or directory)' for many std packages while ~5 agents built and tested on the 4-core VM (load 28). The daemon's go build sweep (gosweep, TempMaxAge 2h) logged nothing in that window, so something else removed a live ~/tmp/go-build* folder: find what (candidates: a test's TestMain or tmpsweep removing TMPDIR entries by prefix, an agent's cleanup, go's own cleanup under a shared TMPDIR) and stop it. Also: a step whose command fails with this signature should retry once instead of ending the run. Unstuck by rhiza run resume --retry 01M6W7G5J0M6.
