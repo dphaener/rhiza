@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-08T05:04:08Z",
+  "body": {
+    "intent": "Record agent actor claude-code-beeca927 for session beeca927-5d87-4672-a35c-01a1b98aa43a",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6WRNNE4Y14HG204RCE9D6CG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WRNNE4Y14HG204RDDV25J7",
+  "type": "open",
+  "v": 1
+}
