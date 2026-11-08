@@ -6,10 +6,12 @@
 # off by rule autonomous. At no point does the owner's inbox hold an item.
 #
 # The repo's bugfix and bugfix-ship workflows are trimmed to the steps that
-# carry the autonomy (the planner's interview and the gate; one review check
-# and the sign-off): the PR, build and review machinery is covered by its own
-# scripts. Rex, claude and gh are fakes; the daemon's detached starts only
-# log, so the script runs each logged start by hand.
+# carry the autonomy (the planner's interview and the gate; one review check,
+# the sign-off, the push, the PR's check and the land): the build, review and
+# merge machinery is covered by its own scripts. Rex, claude and gh are fakes
+# (gh answers pr view from the bare origin: PR #7 open with every check
+# passed at the branch's head); the daemon's detached starts only log, so the
+# script runs each logged start by hand.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -19,9 +21,12 @@ env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 env CLAUDE_CONFIG_DIR=$WORK/claude
 env RHIZA_TEST_FREE_BYTES=1099511627776
 mkdir $HOME/.claude/projects/p
+exec git init -q --bare origin.git
+env ORIGIN=$WORK/origin.git
 mkdir repo
 cd repo
 exec git init -q
+exec git remote add origin $WORK/origin.git
 exec rhiza init
 exec sh -c 'printf "[request]\nbug = \"bugfix\"\n\n[ready]\nbug = \"bugfix-ship\"\n" > .rhiza/dispatch.toml'
 mkdir .rhiza/workflows
@@ -30,6 +35,7 @@ cp $WORK/bugfix-ship.toml .rhiza/workflows/bugfix-ship.toml
 exec rhiza add intent ms --field milestone=1 --record
 exec git add -A
 exec git commit -qm init
+exec git push -q -u origin main
 exec git config rhiza.autonomy.plan owner
 exec git config rhiza.autonomy.signoff owner
 
@@ -61,6 +67,7 @@ exec sh -c 'grep -c "\"type\":\"accepted\"" .git/rhiza/runs/*.jsonl'
 stdout '^1$'
 exec git clean -fdq
 exec git merge -q --no-edit cs/fix-crash
+exec git push -q origin main
 exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
 stdout '"rule": "autonomous"'
 exec rhiza inbox --json
@@ -68,7 +75,8 @@ exec rhiza inbox --json
 
 # The plan's change set is accepted, a bug's: the daemon starts its ship run
 # with the repo's bugfix-ship workflow, autonomous by the declaration though
-# rhiza.autonomy.signoff is owner.
+# rhiza.autonomy.signoff is owner. The run signs off by rule, pushes, sees
+# its PR green and lands the change set.
 exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
 stdout '"state": "accepted"'
 exec rm $WORK/detach.log
@@ -82,13 +90,21 @@ exec sh -c 'rhiza run start --foreground $(cat $WORK/cs) --workflow bugfix-ship 
 stdout '^exit=0$'
 exec cat $WORK/out2
 stdout '^Run [0-9A-Z]{26} succeeded$'
-stdout '^- signoff \(visit 1\): pass, then end: approved by rule autonomous$'
+stdout '^- signoff \(visit 1\): pass, then push: approved by rule autonomous$'
+stdout '^- land \(visit 1\): pass'
 exec cat $WORK/err2
 stdout 'step signoff: signed off under rule autonomous'
 exec sh -c 'grep -h "\"type\":\"signoff\"" .git/rhiza/runs/*.jsonl'
 stdout '"outcome":"approved"'
 stdout '"rule":"autonomous"'
 ! stdout '"actor"'
+exec grep -c '^pr view cs/fix-crash' $WORK/gh.log
+! stdout '^0$'
+# The land entry is committed and pushed on the run's branch, in its worktree.
+exec sh -c 'cd $WORK/repo.fix-crash && rhiza change show $(cat $WORK/cs) --json'
+stdout '"state": "landed"'
+exec sh -c 'git -C $WORK/repo.fix-crash rev-parse HEAD > $WORK/head; git -C $ORIGIN rev-parse cs/fix-crash > $WORK/pushed; cmp $WORK/head $WORK/pushed && echo same'
+stdout '^same$'
 exec rhiza inbox --json
 ! stdout '"kind"'
 fold-ok
@@ -132,8 +148,23 @@ prompt = "Verify {leaf}"
 
 [step.signoff]
 kind = "signoff"
-on.pass = "done"
+on.pass = "push"
 on.changes = "review"
+
+[step.push]
+kind = "command"
+run = "git push -q -u origin HEAD"
+on.pass = "pr-green"
+
+[step.pr-green]
+kind = "command"
+run = "rhiza ship check"
+on.pass = "land"
+
+[step.land]
+kind = "command"
+run = "rhiza ship land"
+on.pass = "done"
 -- leaf.json --
 {"writes":[
   {"op":"add","kind":"capability","handle":"fix-crash","fields":[
@@ -222,5 +253,17 @@ case "$last" in
 esac
 -- bin/gh --
 #!/bin/sh
-echo "fake gh: unexpected: $*" >&2
-exit 1
+echo "$@" >> "$WORK/gh.log"
+case "$1 $2" in
+"pr view")
+	if ! head=$(git -C "$ORIGIN" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	printf '{"body":"Change set '"$RHIZA_CHANGE"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac
