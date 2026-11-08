@@ -1,0 +1,46 @@
+{
+  "actor": "01M6XJWKGKKJ80QC2THQ5DC9PM",
+  "after": [
+    "01M6XJKC05F8NK1Y8XX7SS4NE8"
+  ],
+  "at": "2026-11-08T12:43:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "dc48b438eb47615f227d087a39da0a5fe8e8ad9e0546bc6029ec4e0456c33f73",
+          "session": "5d744c51-b515-4500-b578-01a1b91df18d",
+          "summary": "Autonomous plan run for change set 01M6WHT. The planner found that Nebari plan run 01M6VY5APJP9 (PR #78) failed at rebased-green twice, on two different rebased heads, each on a different flaky RSpec system spec, after ship check's existing once-per-head rerun of the failed Actions jobs had already fired and failed again (the ship record shows rerun_head and reruns for e893ad0); a manual third attempt passed. The planner asked four questions (which intent the change set serves, how the plan workflow gets an extra rerun, how the failure is named as unrelated to the plan, and whether a .rhiza-only PR that stays red still fails). With no owner, the arbiter answered all four with Decision plan-ci-flake-reruns: serve m27-nebari-on-rhiza; rhiza ship check gains --reruns <n> (default 1) with a per-head count in the ship record, and plan.toml passes --reruns 2 to its four ship check steps; once the reruns are spent, the error names the failed checks, adds ' after <n> reruns' when reruns were spent, and the parsed failing tests, and, when the PR's diff from its merge base touches only .rhiza/, appends that the PR changes only .rhiza/ (a fact, not a claim about the failure's cause); the run still fails on a persistent red. No owner words were given.",
+          "title": "Plan workflow CI flake reruns, autonomous plan interview"
+        },
+        "handle": "plan-ci-flake-reruns-interview",
+        "id": "01M6WJ6B8CAWDTWP2YT7AV6WBC",
+        "key": null,
+        "kind": "source",
+        "node": "01M6WJ6B8CAWDTWP2YT6NMESGW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api with a fake gh and a git repo shows a red head after 2 reruns failing with the detail 'failed: test after 2 reruns; failing tests: <parsed test>; the PR changes only .rhiza/' when the branch's diff touches only .rhiza/ paths, and the same detail without the .rhiza/ note when it also touches a file outside .rhiza/; a .rhiza-only head whose failing check reads .rhiza/ (a check named lint whose log reports a rhiza check problem on .rhiza/rendered/) gets 'failed: lint after 2 reruns; the PR changes only .rhiza/' and no detail in any case contains 'unrelated', 'flaky' or 'on main'; the existing assertions pass unchanged, including internal/api/ship_test.go's human line 'PR #7 at abc1234: failed: test, ci/x' (no rerun spent) and the testscript ship-check-ci-test-findings's stdout 'failed: test' (lines 39 and 51); run with go test -trimpath ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/ship-check-ci-test-findings' only",
+          "statement": "When a head's checks stay red, rhiza ship check's failure detail keeps today's form, 'failed: <checks>' then '; failing tests: <tests>' when it parsed any from the failed runs' logs (the human line already prefixes the PR and short head, 'PR #7 at abc1234: '), and extends it in two ways only: when one or more reruns were spent on the head it inserts ' after <n> reruns' right after the failed checks ('failed: test after 2 reruns; failing tests: ...'), and when the head's diff from its merge base with origin/main touches only paths under .rhiza/ it appends '; the PR changes only .rhiza/'. The note states only that fact and never claims the failure's cause: a check that reads .rhiza/ itself (Rhiza's own make check runs rhiza check and fails on stale .rhiza/rendered/ files) can go red on a .rhiza-only head because of the plan, so ship check never says a failure is unrelated to the plan or a flake on main. A head with no rerun spent (for example a check with no Actions run) gets no rerun count, and a diff touching any other path, or one that cannot be computed, gets no .rhiza/ note, so those details are byte-identical to today's"
+        },
+        "handle": "ship-check-failure-names-reruns-and-rhiza-only-diff",
+        "id": "01M6WJ6ZEEPYS69MVFGMKJEGZ7",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6WJ6ZEEPYS69MVFGK79HHKN",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      }
+    ]
+  },
+  "change_set": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XJYBW0JFJ4FW5TBDX0CZ27",
+  "type": "ops",
+  "v": 1
+}
