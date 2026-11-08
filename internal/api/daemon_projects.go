@@ -311,7 +311,7 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 	// daemon's resumes of interrupted runs (a usage hold stops all but the
 	// milestone request).
 	var ready []string
-	if daemonMilestoneWaits(ctx) {
+	if daemonMilestoneWaits(ctx, rs, runs, host) {
 		ready = append(ready, "milestone request")
 	}
 	if hold == nil {
@@ -417,8 +417,11 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 
 // daemonMilestoneWaits reports whether a queued milestone request could
 // start now: one with no run whose retry time has passed, and no other
-// milestone request's run in flight.
-func daemonMilestoneWaits(ctx *Ctx) bool {
+// milestone request's run live or unjournaled, as daemonPlanRequests'
+// milestoneLive counts them: a journaled run still running on host, or a
+// start not journaled yet within daemonStartGrace. A milestone request
+// whose run ended stays in the queue but blocks nothing.
+func daemonMilestoneWaits(ctx *Ctx, rs *run.Store, runs []run.Journal, host string) bool {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return false
@@ -433,10 +436,22 @@ func daemonMilestoneWaits(ctx *Ctx) bool {
 		if q.Kind != daemon.KindMilestone {
 			continue
 		}
-		if q.Run != "" {
+		if q.Run == "" {
+			wait = wait || !now.Before(q.RetryAt)
+			continue
+		}
+		if i := slices.IndexFunc(runs, func(j run.Journal) bool { return j.ID == q.Run }); i >= 0 {
+			if runs[i].State().Liveness(host, nil) == run.LiveRunning {
+				return false
+			}
+			continue
+		}
+		if _, err := rs.Read(q.Run); err == nil {
+			continue
+		}
+		if now.Sub(q.StartedAt) < daemonStartGrace {
 			return false
 		}
-		wait = wait || !now.Before(q.RetryAt)
 	}
 	return wait
 }
