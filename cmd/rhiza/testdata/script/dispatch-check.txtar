@@ -33,7 +33,12 @@ mkdir $WORK/xdg/rhiza/workflows
 cp $WORK/mine.toml $WORK/xdg/rhiza/workflows/personal-only.toml
 cp $WORK/dispatch-personal.toml .rhiza/dispatch.toml
 ! exec rhiza check
-stdout 'dispatch.toml: ready.milestone names workflow "personal-only"'
+stdout 'dispatch.toml: ready.feature names workflow "personal-only"'
+
+# a milestone key under [ready]
+cp $WORK/dispatch-ready-milestone.toml .rhiza/dispatch.toml
+! exec rhiza check
+stdout 'dispatch.toml: \[ready\] unknown key "milestone"'
 
 # an unknown table
 cp $WORK/dispatch-table.toml .rhiza/dispatch.toml
@@ -56,7 +61,10 @@ feature = "ship-change"
 bug = "nothing-here"
 -- dispatch-personal.toml --
 [ready]
-milestone = "personal-only"
+feature = "personal-only"
+-- dispatch-ready-milestone.toml --
+[ready]
+milestone = "plan"
 -- dispatch-table.toml --
 [reqest]
 bug = "plan"

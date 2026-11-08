@@ -32,11 +32,23 @@ const (
 	DefaultReady   = "ship-change"
 )
 
-// Kinds lists the kinds a table may name.
+// Kinds lists the kinds [request] may name.
 var Kinds = []string{KindFeature, KindBug, KindMilestone}
 
-// Rules maps each kind to a workflow name, per trigger. Every kind has an
-// entry in both maps.
+// ReadyKinds lists the kinds [ready] may name. A milestone never becomes a
+// ready change set, so a [ready] milestone rule would never fire.
+var ReadyKinds = []string{KindFeature, KindBug}
+
+// TableKinds is the kinds table may name.
+func TableKinds(table string) []string {
+	if table == TableReady {
+		return ReadyKinds
+	}
+	return Kinds
+}
+
+// Rules maps each kind to a workflow name, per trigger: Request has an entry
+// for every kind in Kinds, Ready for every kind in ReadyKinds.
 type Rules struct {
 	Request map[string]string
 	Ready   map[string]string
@@ -53,7 +65,7 @@ func (r Rules) RequestPick(kind string) (name, source string) {
 
 // ReadyPick is ForReady and where it came from.
 func (r Rules) ReadyPick(kind string) (name, source string) {
-	return r.Ready[kind], r.source(TableReady, kind)
+	return r.ForReady(kind), r.source(TableReady, kind)
 }
 
 func (r Rules) source(table, kind string) string {
@@ -68,6 +80,8 @@ func Defaults() Rules {
 	r := Rules{Request: map[string]string{}, Ready: map[string]string{}, Set: map[string]bool{}}
 	for _, k := range Kinds {
 		r.Request[k] = DefaultRequest
+	}
+	for _, k := range ReadyKinds {
 		r.Ready[k] = DefaultReady
 	}
 	return r
@@ -76,8 +90,14 @@ func Defaults() Rules {
 // ForRequest is the workflow for a queued request of kind.
 func (r Rules) ForRequest(kind string) string { return r.Request[kind] }
 
-// ForReady is the workflow for an accepted, ready change set of kind.
-func (r Rules) ForReady(kind string) string { return r.Ready[kind] }
+// ForReady is the workflow for an accepted, ready change set of kind. A kind
+// [ready] cannot name gets the default.
+func (r Rules) ForReady(kind string) string {
+	if name, ok := r.Ready[kind]; ok {
+		return name
+	}
+	return DefaultReady
+}
 
 // Load reads root's dispatch.toml. A missing file gives the defaults.
 func Load(root string) (Rules, error) {
@@ -97,7 +117,7 @@ func Load(root string) (Rules, error) {
 
 // Parse reads the file's content. Anything not [request] or [ready], any key
 // that is not a kind, and any value that is not a bare workflow name is an
-// error naming the table and key.
+// error naming the table and key; [ready] takes no milestone key.
 func Parse(data []byte) (Rules, error) {
 	var raw map[string]any
 	if _, err := toml.Decode(string(data), &raw); err != nil {
@@ -129,8 +149,8 @@ func Parse(data []byte) (Rules, error) {
 		}
 		sort.Strings(keys)
 		for _, k := range keys {
-			if !isKind(k) {
-				return Rules{}, fmt.Errorf("[%s] unknown key %q: want one of %s", t, k, strings.Join(Kinds, ", "))
+			if !isKind(t, k) {
+				return Rules{}, fmt.Errorf("[%s] unknown key %q: want one of %s", t, k, strings.Join(TableKinds(t), ", "))
 			}
 			s, ok := tbl[k].(string)
 			if !ok {
@@ -146,8 +166,8 @@ func Parse(data []byte) (Rules, error) {
 	return r, nil
 }
 
-func isKind(k string) bool {
-	for _, x := range Kinds {
+func isKind(table, k string) bool {
+	for _, x := range TableKinds(table) {
 		if x == k {
 			return true
 		}

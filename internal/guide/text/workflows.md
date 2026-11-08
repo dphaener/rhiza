@@ -54,9 +54,9 @@ overwriting. `check` reports every problem with its step. `--dry-run` starts not
 
 ## Dispatch
 
-`.rhiza/dispatch.toml` maps a kind (`feature`, `bug`, `milestone`) to a bare workflow name in
-`[request]` (a queued request's plan run) and `[ready]` (an accepted change set's run), e.g.
-`[ready]` then `bug = "bugfix"`. Any other table, key or value is an error naming it. Unset
+`.rhiza/dispatch.toml` maps a kind to a bare workflow name in `[request]` (a queued
+request's plan run: `feature`, `bug`, `milestone`) and `[ready]` (an accepted change set's
+run: `feature`, `bug`), e.g. `[ready]` then `bug = "bugfix"`. Any other table, key or value is an error naming it. Unset
 kinds, or no file: `plan` and `ship-change`. No kind is `feature`.
 
 `rhiza request --workflow <name>` is recorded, with the kind, on the change set the request

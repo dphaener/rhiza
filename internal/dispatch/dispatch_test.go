@@ -47,6 +47,7 @@ func TestParseErrors(t *testing.T) {
 	cases := []struct{ in, want string }{
 		{"[other]\nbug = \"x\"\n", "[other]"},
 		{"[request]\nchore = \"x\"\n", "[request] unknown key \"chore\""},
+		{"[ready]\nmilestone = \"x\"\n", "[ready] unknown key \"milestone\": want one of feature, bug"},
 		{"[ready]\nbug = 3\n", "[ready] bug"},
 		{"[ready]\nbug = \"a/b\"\n", "[ready] bug"},
 		{"[request]\nfeature = \"x.toml\"\n", "[request] feature"},

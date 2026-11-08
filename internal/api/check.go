@@ -537,7 +537,7 @@ func dispatchProblems(root string) []string {
 		table string
 		m     map[string]string
 	}{{dispatch.TableRequest, rules.Request}, {dispatch.TableReady, rules.Ready}} {
-		for _, k := range dispatch.Kinds {
+		for _, k := range dispatch.TableKinds(t.table) {
 			name := t.m[k]
 			if repoOrBuiltinWorkflow(root, name) {
 				continue
