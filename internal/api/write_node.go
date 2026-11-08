@@ -530,14 +530,23 @@ func knownFieldsOnly(cmd string, kind op.Kind, fields map[string]json.RawMessage
 	return nil
 }
 
-// staleRetire reports whether n is retired by the current change set on a
-// base other than its landed version: the change set's own earlier ops on n
-// sit between, so the retire cannot land. A retire written on the landed
-// version is not stale.
+// staleRetire reports whether n is retired by the current change set in a
+// way that cannot land: the change set also holds its own update or move on
+// n (as retire wrote before it dropped them, all on the landed version), or
+// the retire rests on a base other than the landed version. A lone retire on
+// the landed version is not stale.
 func staleRetire(b writeBase, n Node) bool {
 	rt, ok := b.pendingOp(n.Pending, op.TypeNodeRetire)
 	if !ok {
 		return false
 	}
-	return rt.Base != n.Version
+	if rt.Base != n.Version {
+		return true
+	}
+	for _, o := range b.ops {
+		if slices.Contains(n.Pending, o.ID) && (o.Type == op.TypeNodeUpdate || o.Type == op.TypeNodeMove) {
+			return true
+		}
+	}
+	return false
 }
