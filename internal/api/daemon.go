@@ -1166,8 +1166,12 @@ func repoFreeBytes(ctx *Ctx) (uint64, error) {
 	if v := getenv("RHIZA_TEST_FREE_BYTES"); v != "" && getenv("RHIZA_TEST_NOW") != "" {
 		return strconv.ParseUint(v, 10, 64)
 	}
-	return daemon.FreeBytes(ctx.Root)
+	return diskFreeBytes(ctx.Root)
 }
+
+// diskFreeBytes reads the real free space; the package's tests replace it with
+// a function that fails the test, so none reads the host's disk.
+var diskFreeBytes = daemon.FreeBytes
 
 // daemonSchedule is the repo's scheduling rule as daemonCandidates applies
 // it: Backlog is a policy backlog value, or "" when it is unknown, and then

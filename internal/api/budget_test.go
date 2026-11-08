@@ -80,6 +80,9 @@ var (
 func TestMain(m *testing.M) {
 	// A run killed by a go test timeout never reached the RemoveAll below.
 	tmpsweep.StaleTemp("rhiza-api-budget-")
+	diskFreeBytes = func(dir string) (uint64, error) {
+		panic("test read the host's real free disk space for " + dir + ": pin it with pinFreeBytes(ctx) or set RHIZA_TEST_FREE_BYTES beside RHIZA_TEST_NOW")
+	}
 	code := rootguard.Main(m.Run)
 	if genDir != "" {
 		os.RemoveAll(genDir)
