@@ -7,6 +7,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 // Entry types.
@@ -1792,6 +1794,26 @@ func (st State) FailedStep() (string, error) {
 		return st.Steps[n-1].Step, nil
 	}
 	return "", ErrNotFailed
+}
+
+// RetryStep is the step a retry of a run that failed at failed reopens it
+// at in def: when failed is the on.pass target of exactly one wait step,
+// that wait step, so a check that failed because what it checks had not
+// settled waits for it again; otherwise failed itself.
+func RetryStep(def *workflow.Definition, failed string) string {
+	wait := ""
+	for name, s := range def.Steps {
+		if s.Kind == workflow.KindWait && s.On[workflow.OutcomePass] == failed {
+			if wait != "" {
+				return failed
+			}
+			wait = name
+		}
+	}
+	if wait == "" {
+		return failed
+	}
+	return wait
 }
 
 func (st *State) clearBlock() {
