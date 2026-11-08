@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YHEH2AW2EQEH904NSNNHNP",
+  "after": [
+    "01M6YH8QVFRH5QNRH4C4DVZDNM"
+  ],
+  "at": "2026-11-08T21:37:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at d93f1b12: go test -trimpath -count=1 ./internal/workflow -run TestShipChangeCIFixPrompt passes; it asserts the ship-change ci-fix prompt carries reproduce-locally (repeat until it fails again or plainly passes, never push to see), fix or quarantine with a bug request filed and named at the skip, and commit only once the tests and touched packages pass locally, and that it names no go test/go vet/make/testscript/TestScripts/-trimpath. go test -trimpath -count=1 ./internal/api -run 'TestShipCheckRerunBudget|TestWatchdogCIRerun' passes (3 reruns ok; one earlier run tripped rootguard on a concurrent write to the enclosing root's state folder with every test PASS, not reproduced). TestWatchdogCIRerun pins one rerun at ciReruns 1; new TestWatchdogCIRerunBudgetN shows reruns exactly while attempt <= N for N=1..3 and none above; TestShipCheckRerunBudget shows --reruns 2 reruns twice then settles red, resetting on a new head (TestShipCheckRerunDefaultOnce, also passing, pins the default of 1). Diff read: prompt change in internal/workflow/builtin/ship-change.toml plus the two tests and the builder's actor record."
+        },
+        "handle": "ci-fix-reproduces-locally-verified",
+        "id": "01M6YHGW1KNZAC6ZSDHN0BP054",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YHGW1KNZAC6ZSDHMWBD4NK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YHGW1KNZAC6ZSDHMWBD4NK",
+        "id": "01M6YHGW9QW9BBGN05E6GGGZM0",
+        "link": "01M6YHGW9QW9BBGN05E3C8T4Z5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRM0GKZ3W3J2QDD87GWHQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YHGWC3W6NPGPH6YA6KPWM5",
+  "type": "ops",
+  "v": 1
+}
