@@ -1,0 +1,40 @@
+{
+  "actor": "01M6XEKPKG9XZDA5TTJ3T23JXZ",
+  "after": [
+    "01M6XBXAANNB80AWFZEF7DSCMB"
+  ],
+  "at": "2026-11-08T11:29:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 30ccbbc0 ran go test -trimpath ./internal/api -run 'TestShip.*Run|TestShipLand|TestWatchdogPRNoCI|TestShipOpenPR' -count=1: every test passed, including TestShipOpenPR (record Run=R1 under RHIZA_RUN), TestShipCheckNamesRun (01RUNA, then a second run's ship.check on the same change set takes it over as 01RUNB), TestShipLandNamesRun, TestShipRebaseNamesRun (01RUNA) and TestWatchdogPRNoCI (the no-CI merge of main records the watchdog's run 01RUNW). Read the diff: shipState gains Run; ship.open-pr, ship.check, ship.land, ship.rebase set it from RHIZA_RUN, and daemonWatchdog's merge passes st.ID to watchdogMergeMain. The package binary sometimes exits non-zero after PASS because rootguard flags .rhiza-root/usage.live.json, which live agent statuslines write, not these tests (the new tests alone passed on a rerun); filed as draft 01M6XEPTM57C88AEYN4SPME6M5."
+        },
+        "handle": "ship-record-names-run-verified",
+        "id": "01M6XEQR88XM64J5FNH8R8RGPC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XEQR88XM64J5FNH736NEAE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XEQR88XM64J5FNH736NEAE",
+        "id": "01M6XEQRAHCPW35TM6K5ESJ8HK",
+        "link": "01M6XEQRAHCPW35TM6K2KJGQXY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XBDT9GM17AEB5M6N0RB4KX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XB5KQ5CH2DT5NW7BKETMS8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XEQRFK5NFP7P1V9GE03BZ4",
+  "type": "ops",
+  "v": 1
+}
