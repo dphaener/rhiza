@@ -1,0 +1,116 @@
+{
+  "actor": "01M6WHW2WSGRB6MZG3FC8217VF",
+  "after": [
+    "01M6WJ6BBA9KKWB223W78BBAPE"
+  ],
+  "at": "2026-11-08T03:11:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6WJ4SM7KZVYHEW98G3KJG66",
+        "id": "01M6WJ6Z8YTVW8KBB1WP0R8RYP",
+        "link": "01M6WJ6Z8YTVW8KBB1WJ66J518",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ6B8CAWDTWP2YT6NMESGW",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api with a fake gh shows ship check with --reruns 2 rerunning a head's failed run twice, then failing on the third red, the ship record holding the count after each rerun; without the flag a head is rerun exactly once, as today; a new head resets the count; --reruns 0 is a usage error; the testscripts run-ship-rerun-pass and run-ship-rerun-fail still pass unchanged; describe-golden is regenerated for the new flag; run with go test -trimpath ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship-rerun|describe-golden)' only",
+          "statement": "rhiza ship check takes --reruns <n> (n >= 1, default 1, today's once-per-head behaviour): when a settled check of a head fails, it reruns the failed jobs of that head's failed Actions runs up to n times per head, recording each rerun and the head's rerun count in the ship record before calling gh run rerun --failed (so a crash costs a missed rerun, never an extra one), and reports not settled while reruns remain; a head whose n reruns are spent fails as today, and --reruns 0 or a negative n is a usage error"
+        },
+        "handle": "ship-check-rerun-budget",
+        "id": "01M6WJ6ZC52EWCYMSA2Y7SJSVG",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6WJ6ZC52EWCYMSA2WW63P4V",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ6ZC52EWCYMSA2WW63P4V",
+        "id": "01M6WJ6ZD790ZWZGRS3W1PJHZJ",
+        "link": "01M6WJ6ZD790ZWZGRS3TXBT08G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ4SM7KZVYHEW98G3KJG66",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api with a fake gh and a git repo shows a red head after its reruns failing with a detail naming the failed check, the short head, the reruns spent and the parsed failing test, plus the note that the PR changes only .rhiza/ when the branch's diff touches only .rhiza/ paths, and no such note when it also touches a file outside .rhiza/; the testscript ship-check-ci-test-findings still passes; run with go test -trimpath ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/ship-check-ci-test-findings' only",
+          "statement": "When a head's checks stay red once its reruns are spent, rhiza ship check's failure detail names each failed check, the head, the number of reruns spent and the failing tests it parsed from the failed runs' logs (or says none could be read), and, when the head's diff from its merge base with origin/main touches only paths under .rhiza/, adds that the PR changes only .rhiza/, so the failure is unrelated to the change set's plan; a diff touching any other path gets no such note"
+        },
+        "handle": "ship-check-names-unrelated-failure",
+        "id": "01M6WJ6ZEEPYS69MVFGMKJEGZ7",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6WJ6ZEEPYS69MVFGK79HHKN",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ6ZEEPYS69MVFGK79HHKN",
+        "id": "01M6WJ6ZJSDHP2QKG57RQPB41V",
+        "link": "01M6WJ6ZJSDHP2QKG57Q7NYHTB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ4SM7KZVYHEW98G3KJG66",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/workflow loads the built-in plan workflow and asserts wait-pr, wait-rebased (until) and pr-green, rebased-green (run) each call rhiza ship check with --reruns 2, with their on.pass, on.fail and max_visits unchanged, and that ship-change's ship check steps carry no --reruns; a testscript plan-workflow-ci-flake with a fake gh whose check fails twice on the PR head and passes on the second rerun shows the plan run merging and closing out with two 'run rerun' calls in gh.log, and a case red after both reruns fails the run with a detail saying the PR changes only .rhiza/; plan-workflow-pr still passes; run with go test -trimpath ./internal/workflow/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/plan-workflow' only",
+          "statement": "The built-in plan workflow passes --reruns 2 to rhiza ship check in wait-pr, pr-green, wait-rebased and rebased-green, so a plan PR head that goes red gets its failed Actions jobs rerun twice (three CI attempts) before the step fails and ends the run with ship check's unrelated-failure detail; no step, route or max_visits changes, and ship-change keeps the default single rerun"
+        },
+        "handle": "plan-run-reruns-ci-flakes",
+        "id": "01M6WJ6ZN7V3CXMEZYFCTMCRYX",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M6WJ6ZN7V3CXMEZYFA58HAYV",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ6ZN7V3CXMEZYFA58HAYV",
+        "id": "01M6WJ6ZQ09QSW2F818K4WNC54",
+        "link": "01M6WJ6ZQ09QSW2F818GXP6S2X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ4SM7KZVYHEW98G3KJG66",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ6ZN7V3CXMEZYFA58HAYV",
+        "id": "01M6WJ6ZSA20KC7VYWYR5R6831",
+        "link": "01M6WJ6ZSA20KC7VYWYMMQSFAT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ6ZC52EWCYMSA2WW63P4V",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6WJ6ZN7V3CXMEZYFA58HAYV",
+        "id": "01M6WJ6ZV9N8F9F3W5QCZEH8MC",
+        "link": "01M6WJ6ZV9N8F9F3W5QCH3276R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ6ZEEPYS69MVFGK79HHKN",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WJ6ZXMGTD0V5BFAA971C1A",
+  "type": "ops",
+  "v": 1
+}

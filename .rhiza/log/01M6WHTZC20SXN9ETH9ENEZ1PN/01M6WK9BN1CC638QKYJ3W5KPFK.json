@@ -1,0 +1,41 @@
+{
+  "actor": "01M6WK7Z38X131YS9TFFNWP4DA",
+  "after": [
+    "01M6WK7C6G69ZK5HAEHNQYPY8K"
+  ],
+  "at": "2026-11-08T03:29:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The leaf's statement says ship check 'never says a failure is unrelated to the plan' and its acceptance asserts no detail contains 'unrelated'; Decision plan-ci-flake-reruns chose a .rhiza-only fact over a cause claim because a check that reads .rhiza/ (Rhiza's own self-check) can fail on a plan's content, and Decision plan-ci-flake-source-summary-matches already corrected the Source to that design. Only the handle still names the rejected design, so a builder reading it, or plan-run-reruns-ci-flakes's dependency by handle, is pointed the wrong way. rhiza apply's set op takes a new handle on the same node, so the rename keeps the ID and every link; the dependency follows the node. The critic's suggested name describes exactly what the leaf adds: the rerun count and the .rhiza-only note. Changing the statement to match the handle instead would reintroduce the possibly false claim.",
+          "statement": "Rename leaf 01M6WJ6ZEEPYS69MVFGK79HHKN from ship-check-names-unrelated-failure to ship-check-failure-names-reruns-and-rhiza-only-diff (a set with a new handle on the same node, so its ID, fields, decided-by link to plan-ci-flake-reruns and plan-run-reruns-ci-flakes's depends-on link are kept). The leaf's statement and acceptance stay unchanged; any text that names the old handle is updated to the new one.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "ship-check-leaf-handle-renamed",
+        "id": "01M6WK9BGGAN6KG625GHSM25EW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6WK9BGGAN6KG625GFDBZJ7Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WK9BGGAN6KG625GFDBZJ7Y",
+        "id": "01M6WK9BJTMWFDXQZ3PJTQ1280",
+        "link": "01M6WK9BJTMWFDXQZ3PJ4X862J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WK5KK0ZXXJN489FHC7KJ27",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WK9BN1CC638QKYJ3W5KPFK",
+  "type": "ops",
+  "v": 1
+}
