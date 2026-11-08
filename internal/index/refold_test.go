@@ -6,12 +6,12 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"slices"
 	"testing"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/quiettest"
 	"github.com/dphaener/rhiza/internal/store"
 	"pgregory.net/rapid"
 )
@@ -171,12 +171,12 @@ func TestCatchUpBudget(t *testing.T) {
 	if err := x.catchUp(); err != nil {
 		t.Fatal(err)
 	}
-	var times []time.Duration
+	var laps []quiettest.Lap
 	for i := range 21 {
 		add(changeset.Note{Text: fmt.Sprintf("note %d", i)})
-		start := time.Now()
+		sw := quiettest.Start()
 		err := x.catchUp()
-		times = append(times, time.Since(start))
+		laps = append(laps, sw.Stop())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -184,10 +184,13 @@ func TestCatchUpBudget(t *testing.T) {
 			t.Fatalf("catch-up read %d folded %d asIs %v toBe %v, want one entry, one fold, no view", x.stats.read, x.stats.folded, x.stats.asIs, x.stats.toBe)
 		}
 	}
-	slices.Sort(times)
-	median := times[len(times)/2]
-	t.Logf("catch-up after one entry: min %v, median %v, max %v", times[0], median, times[len(times)-1])
-	if median >= 50*time.Millisecond {
-		t.Fatalf("catch-up median %v, want < 50ms", median)
+	tm := quiettest.Summarize(laps)
+	t.Logf("catch-up after one entry: %v", tm)
+	// Own time: the clock less waiting for a CPU, inconclusive on a
+	// saturated machine (quiettest.Timing.Over).
+	if over, why := tm.Over(50 * time.Millisecond); over {
+		t.Fatalf("catch-up median own time %v, want < 50ms", tm.Own)
+	} else if why != "" {
+		t.Log("catch-up " + why)
 	}
 }

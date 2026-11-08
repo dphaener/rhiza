@@ -24,8 +24,10 @@ exec rhiza accept --reason ok
 exec rhiza daemon --permission-mode manual --once
 stdout -count=1 '^Started a run of '
 
-# No Rex tab: Rex was asked for its session and nothing else.
-exec sh -c 'grep -c "window new" $WORK/rex.log || true'
+# No Rex tab for the run: the daemon opened no window to run it. The child
+# opens its builder agent's session (`rhiza session run`) in a window of its
+# own at its own pace, so only windows that run anything else count.
+exec sh -c 'grep "window new" $WORK/rex.log | grep -vc " session run " || true'
 stdout '^0$'
 
 # The child journals its run, and it outlives the daemon.

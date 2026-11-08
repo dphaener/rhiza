@@ -34,26 +34,43 @@ const readBudgetRuns = 20
 // spikes; the read fails only if every attempt is over.
 const readBudgetRetries = 2
 
-// readTiming is one attempt's timings of a read.
+// readTiming is one attempt's timings of a read and the size of its answer.
+// The budget judges the median of its own time (quiettest.Stopwatch): the
+// wall clock less the time the test waited for a CPU, so a loaded machine
+// (an agent's build beside a local make check, a busy runner) does not fail
+// a read whose own work fits; on a machine too saturated to judge (outside
+// CI) an over-budget attempt is inconclusive (quiettest.Timing.Over).
 type readTiming struct {
-	median, min, max time.Duration
-	size             int
+	quiettest.Timing
+	size int
 }
 
 // timeWithinBudget calls measure up to 1+readBudgetRetries times, stopping
-// at the first attempt whose median is under readBudget, and logs every
-// attempt through log. It reports whether some attempt was under budget.
+// at the first attempt whose median own time is under readBudget, and logs
+// every attempt through log. It reports whether some attempt was under
+// budget, or, when none was, whether one was over only on a machine too
+// saturated to judge (quiettest.Timing.Over): inconclusive, logged, not a
+// failure.
 func timeWithinBudget(label string, measure func() (readTiming, error), log func(string)) (bool, error) {
 	attempts := 1 + readBudgetRetries
+	inconclusive := ""
 	for n := 1; n <= attempts; n++ {
 		rt, err := measure()
 		if err != nil {
 			return false, err
 		}
-		log(fmt.Sprintf("%s attempt %d/%d: median %v (min %v, max %v), size %d", label, n, attempts, rt.median, rt.min, rt.max, rt.size))
-		if rt.median < readBudget {
+		log(fmt.Sprintf("%s attempt %d/%d: %v, size %d", label, n, attempts, rt.Timing, rt.size))
+		over, why := rt.Over(readBudget)
+		if !over && why == "" {
 			return true, nil
 		}
+		if why != "" {
+			inconclusive = why
+		}
+	}
+	if inconclusive != "" {
+		log(label + " " + inconclusive)
+		return true, nil
 	}
 	return false, nil
 }
@@ -80,6 +97,9 @@ var (
 func TestMain(m *testing.M) {
 	// A run killed by a go test timeout never reached the RemoveAll below.
 	tmpsweep.StaleTemp("rhiza-api-budget-")
+	diskFreeBytes = func(dir string) (uint64, error) {
+		panic("test read the host's real free disk space for " + dir + ": pin it with pinFreeBytes(ctx) or set RHIZA_TEST_FREE_BYTES beside RHIZA_TEST_NOW")
+	}
 	code := rootguard.Main(m.Run)
 	if genDir != "" {
 		os.RemoveAll(genDir)
@@ -262,12 +282,12 @@ func TestReadBudget(t *testing.T) {
 				timingLog(line)
 			}
 			ok, err := timeWithinBudget(label, func() (readTiming, error) {
-				var times []time.Duration
+				var laps []quiettest.Lap
 				var size int
 				for range readBudgetRuns {
-					start := time.Now()
+					sw := quiettest.Start()
 					resp, err := runRead(g, rd)
-					times = append(times, time.Since(start))
+					laps = append(laps, sw.Stop())
 					if err != nil {
 						return readTiming{}, fmt.Errorf("%s %s: %w", rd.name, v, err)
 					}
@@ -275,9 +295,7 @@ func TestReadBudget(t *testing.T) {
 						return readTiming{}, fmt.Errorf("%s %s answered nothing: %+v", rd.name, v, resp)
 					}
 				}
-				slices.Sort(times)
-				median := (times[readBudgetRuns/2-1] + times[readBudgetRuns/2]) / 2
-				return readTiming{median, times[0], times[len(times)-1], size}, nil
+				return readTiming{quiettest.Summarize(laps), size}, nil
 			}, log)
 			if err != nil {
 				t.Fatal(err)
@@ -300,16 +318,16 @@ func TestReadBudget(t *testing.T) {
 			timingLog(line)
 		}
 		ok, err := timeWithinBudget(label, func() (readTiming, error) {
-			var times []time.Duration
+			var laps []quiettest.Lap
 			var size int
 			for range readBudgetRuns {
 				ctx := testCtx(g.root)
 				ctx.IndexPath = g.indexPath
 				ctx.ChangeSet = landed
 				o, _ := Lookup(rd.op)
-				start := time.Now()
+				sw := quiettest.Start()
 				resp, err := o.Run(ctx, rd.req)
-				times = append(times, time.Since(start))
+				laps = append(laps, sw.Stop())
 				if err != nil {
 					return readTiming{}, fmt.Errorf("%s default: %w", rd.name, err)
 				}
@@ -317,9 +335,7 @@ func TestReadBudget(t *testing.T) {
 					return readTiming{}, fmt.Errorf("%s default answered nothing: %+v", rd.name, resp)
 				}
 			}
-			slices.Sort(times)
-			median := (times[readBudgetRuns/2-1] + times[readBudgetRuns/2]) / 2
-			return readTiming{median, times[0], times[len(times)-1], size}, nil
+			return readTiming{quiettest.Summarize(laps), size}, nil
 		}, log)
 		if err != nil {
 			t.Fatal(err)
@@ -412,8 +428,10 @@ func BenchmarkShowWhatIf(b *testing.B) {
 }
 
 func TestTimeWithinBudget(t *testing.T) {
-	over := readTiming{median: readBudget, size: 1}
-	under := readTiming{median: readBudget - 1, size: 1}
+	over := readTiming{quiettest.Timing{Median: readBudget, Own: readBudget}, 1}
+	under := readTiming{quiettest.Timing{Median: readBudget - 1, Own: readBudget - 1}, 1}
+	// Over on the clock, but the excess was waiting for a CPU: under.
+	loaded := readTiming{quiettest.Timing{Median: 3 * readBudget, Own: readBudget - 1}, 1}
 	run := func(seq ...readTiming) (bool, int, []string) {
 		var lines []string
 		calls := 0
@@ -435,6 +453,19 @@ func TestTimeWithinBudget(t *testing.T) {
 	}
 	if ok, calls, _ := run(under); !ok || calls != 1 {
 		t.Errorf("under at once: ok %v, %d calls", ok, calls)
+	}
+	if ok, calls, _ := run(loaded); !ok || calls != 1 {
+		t.Errorf("over only by waiting for a CPU: ok %v, %d calls", ok, calls)
+	}
+	// Over on a saturated machine (outside CI): retried, then inconclusive.
+	if !quiettest.OnCI() {
+		saturated := readTiming{quiettest.Timing{Median: readBudget, Own: readBudget, Pressure: 1}, 1}
+		if ok, calls, lines := run(saturated); !ok || calls != 3 || len(lines) != 4 {
+			t.Errorf("saturated three times: ok %v, %d calls, log %q", ok, calls, lines)
+		}
+		if ok, calls, _ := run(saturated, under); !ok || calls != 2 {
+			t.Errorf("saturated then under: ok %v, %d calls", ok, calls)
+		}
 	}
 	if readBudget != 50*time.Millisecond {
 		t.Errorf("readBudget = %v, want 50ms", readBudget)

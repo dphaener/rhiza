@@ -28,6 +28,7 @@ func newSchedHarness(t *testing.T, bodies ...string) *schedHarness {
 	h := &schedHarness{t: t, now: time.Date(2026, 11, 8, 10, 30, 0, 0, time.UTC), log: &strings.Builder{}}
 	for i, body := range bodies {
 		f := newSessionFixture(t, "s")
+		pinFreeBytes(f.ctx)
 		writeDispatch(t, f.ctx.Root, body)
 		f.ctx.Now = func() time.Time { return h.now }
 		f.ctx.Stderr = h.log
@@ -48,11 +49,11 @@ func newSchedHarness(t *testing.T, bodies ...string) *schedHarness {
 }
 
 // poll is one root poll over the projects with maxRuns machine-wide slots,
-// as runDaemon does it. The disk guard is off: it reads the host's real
-// free space, and a CI runner under the 10G default would hold every start.
+// as runDaemon does it. The disk guard is on, at its 10G default, over the
+// 1 TiB each project's ctx pins, never the host's real free space.
 func (h *schedHarness) poll(maxRuns int) {
 	h.t.Helper()
-	r := DaemonRequest{Autonomous: true, MinFree: "0"}
+	r := DaemonRequest{Autonomous: true}
 	turns := make([]daemonTurn, len(h.projs))
 	var picks []daemon.ProjectPick
 	running := 0

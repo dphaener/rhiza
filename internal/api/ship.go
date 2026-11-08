@@ -75,6 +75,37 @@ type ShipCheckRequest struct {
 	// that is still unresolved; it reads the state file and git, runs no
 	// gh and records nothing.
 	Conflicts bool `json:"conflicts,omitempty" flag:"conflicts" desc:"Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed or once the run has made 3 conflict fixes (merge commits on the branch with its Review: trailer); reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)"`
+	// Reruns is how many times a head's failed Actions runs are rerun.
+	Reruns ShipReruns `json:"reruns,omitempty" flag:"reruns" desc:"How many times a head's failed jobs are rerun before its failure stands, at least 1; default 1"`
+}
+
+// ShipReruns is the rerun budget per head: 0 when not given (one rerun).
+// An explicit 0 is kept as -1, so it is a usage error rather than the
+// default, as a negative number is.
+type ShipReruns int
+
+// UnmarshalJSON keeps an explicit 0 apart from an absent value.
+func (r *ShipReruns) UnmarshalJSON(b []byte) error {
+	var n int
+	if err := json.Unmarshal(b, &n); err != nil {
+		return err
+	}
+	if n == 0 {
+		n = -1
+	}
+	*r = ShipReruns(n)
+	return nil
+}
+
+// budget returns the reruns per head, or a usage error for below 1.
+func (r ShipReruns) budget() (int, error) {
+	switch {
+	case r == 0:
+		return 1, nil
+	case r < 0:
+		return 0, Usagef("--reruns takes a whole number of at least 1: a head's failed jobs are rerun that many times").WithNext(shipCheckNext)
+	}
+	return int(r), nil
 }
 
 // ShipCheckResponse is what ship.check found.
@@ -99,7 +130,7 @@ type ShipCheckResponse struct {
 	Stop          string             `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
 	Tests         []string           `json:"tests,omitempty" desc:"The failing tests the failed Actions runs' logs name, once the failed jobs were rerun and failed again: Go tests and testscripts (a '--- FAIL:' line, such as TestScripts/x), RSpec ('rspec ./spec/x_spec.rb:12'), Minitest ('bin/rails test test/x_test.rb:12') and pytest ('pytest tests/test_x.py::test_y'), each as its runner's rerun command"`
 	Findings      []ShipFinding      `json:"findings,omitempty" desc:"One finding, with no leaf, per failing test, for a fix step; recorded in the state file as well"`
-	Reran         []string           `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, once per head, instead of failing; the check then reports not settled"`
+	Reran         []string           `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, up to --reruns times per head, instead of failing; the check then reports not settled"`
 }
 
 // ShipFinding is a failing test read from a CI log, as a finding with no
@@ -308,6 +339,10 @@ type shipState struct {
 	// once, so a second failure on it fails.
 	RerunHead string   `json:"rerun_head,omitempty"`
 	Reruns    []string `json:"reruns,omitempty"`
+	// RerunCount is how many times RerunHead was rerun, recorded before
+	// each rerun is called. A state from before it counts a head with
+	// Reruns as rerun once.
+	RerunCount int `json:"rerun_count,omitempty"`
 	// CIFindings are the failing tests read from the logs of the failed
 	// runs of RerunHead, for the step that fixes them.
 	CIFindings []ShipFinding `json:"ci_findings,omitempty"`
@@ -516,6 +551,10 @@ func checksVerdict(checks []ShipCheck) (settled, green bool, failed []string) {
 // is open.
 func runShipCheck(ctx *Ctx, req any) (any, error) {
 	r := req.(ShipCheckRequest)
+	budget, err := r.Reruns.budget()
+	if err != nil {
+		return nil, err
+	}
 	if r.Conflicts {
 		if r.PROpen || r.Main || r.Settled || r.TestFailures {
 			return nil, Usagef("--conflicts asks only whether a merge of main is unresolved; it takes none of --pr-open, --main, --settled or --test-failures")
@@ -548,7 +587,7 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 				WithNext(shipMergeNext)
 		}
 		resp.PR, resp.URL, resp.Commit = st.PR, st.URL, st.MergeCommit
-		return shipCheckMainTree(ctx, t, st, resp, path, r.Settled)
+		return shipCheckMainTree(ctx, t, st, resp, path, r.Settled, budget)
 	} else {
 		out, err := gh(ctx, t.dir(), "pr", "view", t.branch, "--json", "number,url,state,headRefOid,body,mergeable,statusCheckRollup")
 		if noPR(err) {
@@ -606,7 +645,7 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		resp.Passed = resp.Green
 	}
 	if resp.Settled && !resp.Green {
-		if err := shipRerunFailed(ctx, t, &st, &resp, path); err != nil {
+		if err := shipRerunFailed(ctx, t, &st, &resp, path, budget); err != nil {
 			return nil, err
 		}
 	}
@@ -627,8 +666,14 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		}
 	} else if !resp.Green {
 		resp.Detail = "failed: " + strings.Join(resp.Failed, ", ")
+		if n := shipRerunsSpent(st, resp.Commit); n > 0 {
+			resp.Detail += fmt.Sprintf(" after %d reruns", n)
+		}
 		if len(resp.Tests) > 0 {
 			resp.Detail += "; failing tests: " + strings.Join(resp.Tests, ", ")
+		}
+		if shipDiffOnlyRhiza(ctx, t, resp.Commit) {
+			resp.Detail += "; the PR changes only .rhiza/"
 		}
 	}
 	if !resp.Passed || r.Settled {
@@ -731,7 +776,7 @@ func shipConflictFixes(ctx *Ctx, t shipTarget) int {
 // of it has the head's tree; a differing tree means main changed between
 // that check and the merge. Then main is not what the checks passed on, and
 // shipCheckMainDispatch runs CI on the merge commit instead.
-func shipCheckMainTree(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckResponse, path string, settled bool) (any, error) {
+func shipCheckMainTree(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckResponse, path string, settled bool, budget int) (any, error) {
 	if st.Head == "" {
 		return nil, Usagef("change set %s has no checked pull request head recorded: run rhiza ship check first", t.cs).
 			WithNext(shipCheckNext)
@@ -756,19 +801,58 @@ func shipCheckMainTree(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckRespo
 		return nil, err
 	}
 	if mt != ht {
-		return shipCheckMainDispatch(ctx, t, st, resp, path, settled)
+		return shipCheckMainDispatch(ctx, t, st, resp, path, settled, budget)
 	}
 	resp.Settled, resp.Green, resp.Passed = true, true, true
 	return resp, nil
 }
 
-// shipRerunFailed reruns, once per head, the failed jobs of the Actions
+// shipRerunsSpent is how many times the failed jobs of head were rerun: 0
+// for a head other than the recorded one. A state written before the count
+// existed holds Reruns alone and counts as one rerun.
+func shipRerunsSpent(st shipState, head string) int {
+	if st.RerunHead != head {
+		return 0
+	}
+	return max(st.RerunCount, min(len(st.Reruns), 1))
+}
+
+// shipDiffOnlyRhiza reports whether the diff from head's merge base with
+// origin/main touches paths under .rhiza/ only, and at least one. Any git
+// failure, or an empty diff, counts as no.
+func shipDiffOnlyRhiza(ctx *Ctx, t shipTarget, head string) bool {
+	if head == "" {
+		return false
+	}
+	base, err := gitAt(ctx, t.dir(), "merge-base", "refs/remotes/origin/"+shipMain, head)
+	if err != nil || strings.TrimSpace(base) == "" {
+		return false
+	}
+	out, err := gitAt(ctx, t.dir(), "diff", "--name-only", strings.TrimSpace(base), head)
+	if err != nil {
+		return false
+	}
+	n := 0
+	for _, p := range strings.Split(out, "\n") {
+		if p = strings.TrimSpace(p); p == "" {
+			continue
+		}
+		if !strings.HasPrefix(p, ".rhiza/") {
+			return false
+		}
+		n++
+	}
+	return n > 0
+}
+
+// shipRerunFailed reruns, up to budget times per head, the failed jobs of the Actions
 // runs of the settled checks that failed: it records the runs in the state
 // file and turns resp into not settled, so a wait keeps waiting for the
-// rerun. A head already rerun, and failed checks with no Actions run ID,
+// rerun. A head whose reruns are spent, and failed checks with no Actions run ID,
 // are left to fail as before.
-func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResponse, path string) error {
-	if st.RerunHead == resp.Commit && len(st.Reruns) > 0 {
+func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResponse, path string, budget int) error {
+	count := shipRerunsSpent(*st, resp.Commit)
+	if count >= budget {
 		return nil
 	}
 	var runs []string
@@ -785,7 +869,10 @@ func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckRespo
 	}
 	// Record before rerunning: a crash between the two then costs a
 	// missed rerun, never a second one.
-	st.RerunHead, st.Reruns, st.CIFindings = resp.Commit, runs, nil
+	if st.RerunHead != resp.Commit {
+		st.Reruns = nil
+	}
+	st.RerunHead, st.Reruns, st.RerunCount, st.CIFindings = resp.Commit, append(st.Reruns, runs...), count+1, nil
 	if err := writeShipState(path, *st); err != nil {
 		return err
 	}

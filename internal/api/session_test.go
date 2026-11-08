@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/store"
 )
@@ -527,7 +528,10 @@ func TestSessionRun(t *testing.T) {
 	if !agent.Terminal || agent.Dir != f.worktree {
 		t.Errorf("agent terminal %v, dir %q", agent.Terminal, agent.Dir)
 	}
-	wantEnv := []string{"RHIZA_CHANGE=" + s.Change, "RHIZA_ACTOR=" + s.Actor, "RHIZA_FOR=" + s.For, "RHIZA_SESSION=" + s.ID, "RHIZA_RUN=run-1"}
+	wantEnv := []string{"RHIZA_CHANGE=" + s.Change, "RHIZA_ACTOR=" + s.Actor, "RHIZA_FOR=" + s.For, "RHIZA_SESSION=" + s.ID, "RHIZA_RUN=run-1", "GOTMPDIR=" + run.TmpDir(run.Dir(f.common), "run-1")}
+	if fi, err := os.Stat(run.TmpDir(run.Dir(f.common), "run-1")); err != nil || !fi.IsDir() {
+		t.Errorf("the run's GOTMPDIR folder does not exist when the agent starts: %v", err)
+	}
 	if !slices.Equal(agent.Env, wantEnv) || !slices.Equal(agent.Unset, []string{"RHIZA_AUTONOMOUS", "RHIZA_MILESTONE", "RHIZA_LEAF", "RHIZA_ATTEMPT", "RHIZA_CHECK", "RHIZA_CYCLE", "RHIZA_ROLE", "RHIZA_COMMIT", "RHIZA_ROOT"}) {
 		t.Errorf("env %v unset %v, want %v", agent.Env, agent.Unset, wantEnv)
 	}

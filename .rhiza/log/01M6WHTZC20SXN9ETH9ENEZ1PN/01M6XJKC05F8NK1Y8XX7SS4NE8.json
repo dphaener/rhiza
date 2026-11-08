@@ -1,0 +1,86 @@
+{
+  "actor": "01M6XH31T9QXCGA38NMX79A9Y8",
+  "after": [
+    "01M6XGYK8T18CQF9Y6X6JJJVG2"
+  ],
+  "at": "2026-11-08T12:37:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, by hand with the built binary (go build -trimpath ./cmd/rhiza) in a scratch repo with a bare origin, a change set branch cs/qa-cs and a fake gh whose PR check 'test (4/5)' (Actions run 42) stays FAILURE. rhiza ship check --reruns 2 called four times on one head: calls 1 and 2 printed 'not settled: reran the failed jobs of run 42' and exited 1, with the ship record's rerun_count at 1 then 2 (written before gh run rerun); calls 3 and 4 failed with no further rerun; gh.log held exactly two 'run rerun 42 --failed'. A new head with no flag was rerun exactly once (rerun_count reset to 1), then failed. Flipping the check to SUCCESS passed ('1 check passed', exit 0). --reruns 0, --reruns -1 and api call ship.check with {\"reruns\":0} each gave the usage error '--reruns takes a whole number of at least 1' (exit 2); --reruns abc gave 'flag --reruns takes an integer' (exit 2). Scoped tests passed: go test ./internal/api -run Ship, ./internal/workflow/..., and TestScripts (plan-workflow|run-ship-rerun|ship-check-ci-test-findings|describe-golden)."
+        },
+        "handle": "ship-check-rerun-budget-qa-1",
+        "id": "01M6XJKBHTZNKZRJ3B91YB7B7E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XJKBHTZNKZRJ3B8YA9MX7M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XJKBHTZNKZRJ3B8YA9MX7M",
+        "id": "01M6XJKBKTANZG2HC2VD20XJX0",
+        "link": "01M6XJKBKTANZG2HC2VCNWH7MJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ6ZC52EWCYMSA2WW63P4V",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, by hand with the built binary and a fake gh: a head whose diff from origin/main touches only .rhiza/x/note, red after its two reruns, failed with 'PR #78 at 378f1f9: failed: test (4/5) after 2 reruns; the PR changes only .rhiza/'. A head that also touches app.go, red after one rerun with a failed-run log naming an RSpec test, failed with 'PR #78 at c06657e: failed: test (4/5) after 1 reruns; failing tests: rspec ./spec/system/garden_location_spec.rb:11' and no .rhiza/ note. A red check with no Actions run (no rerun spent) printed today's 'PR #78 at 0fb5524: failed: test (4/5)'. No detail said unrelated, flaky or on main."
+        },
+        "handle": "ship-check-names-unrelated-failure-qa-1",
+        "id": "01M6XJKBP2DAATHFH109YG9H8G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XJKBP2DAATHFH107E4ERHR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XJKBP2DAATHFH107E4ERHR",
+        "id": "01M6XJKBQE9559MHXWZ8F73N8M",
+        "link": "01M6XJKBQE9559MHXWZ5JRSMMY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ6ZEEPYS69MVFGK79HHKN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1: read internal/workflow/builtin/plan.toml (and plan-milestone.toml): wait-pr and wait-rebased until 'rhiza ship check --reruns 2 --settled', pr-green and rebased-green run 'rhiza ship check --reruns 2', routes and max_visits unchanged; ship-change untouched. Drove those exact commands by hand with the built binary against a fake gh: a red head was rerun twice and then failed with the reruns spent and the .rhiza-only note, which is the detail the failing step carries. Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/plan-workflow' (ci-flake, ci-flake-red, pr) and ./internal/workflow/...."
+        },
+        "handle": "plan-run-reruns-ci-flakes-qa-1",
+        "id": "01M6XJKBS4X4C6QYNXA3WD4EKN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XJKBS4X4C6QYNXA1GEFK1F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XJKBS4X4C6QYNXA1GEFK1F",
+        "id": "01M6XJKBWDY62G6D8R2HZPZYQE",
+        "link": "01M6XJKBWDY62G6D8R2HJC79J0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ6ZN7V3CXMEZYFA58HAYV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XJKC05F8NK1Y8XX7SS4NE8",
+  "type": "ops",
+  "v": 1
+}

@@ -61,6 +61,22 @@ exec rhiza daemon status --json
 stdout '"reason": "no-slot"'
 stdout 'waiting for a slot: kept for queued continuations or a plan request'
 
+# Interrupted runs with continuations queued show their place. One run
+# runs (a fixture journal naming this test's parent process, alive) and
+# max-runs is 1, so two interrupted runs queued with rhiza run resume wait.
+exec sh -c 'f=.git/rhiza/runs/$(cat $WORK/run).jsonl; head -1 $f > $WORK/started; for id in QUEUEDONE01 QUEUEDTWO02 PLAININT003 RUNNING0001; do pid=999999; [ $id = RUNNING0001 ] && pid=$PPID; (sed "s/\"change\":\"[^\"]*\"/\"change\":\"CH$id\"/" $WORK/started; printf "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"%s\",\"pid\":%s}}\n" "$(hostname)" $pid) > .git/rhiza/runs/$id.jsonl; done'
+exec rhiza run resume QUEUEDONE01
+exec rhiza run resume QUEUEDTWO02
+exec rhiza daemon --permission-mode manual --once --max-runs 1
+exec rhiza daemon status
+stdout '- QUEUEDONE01 interrupted, queued, waiting for a slot \(place 1\) \(change set CHQUEUEDONE01\)'
+stdout '- QUEUEDTWO02 interrupted, queued, waiting for a slot \(place 2\) \(change set CHQUEUEDTWO02\)'
+stdout '- PLAININT003 interrupted \(change set CHPLAININT003\)'
+exec rhiza daemon status --json
+stdout '"id": "QUEUEDONE01",\n *"queued": 1,\n *"state": "interrupted"'
+stdout '"id": "QUEUEDTWO02",\n *"queued": 2,\n *"state": "interrupted"'
+stdout '"id": "PLAININT003",\n *"state": "interrupted"'
+
 fold-ok
 
 -- flaky.toml --

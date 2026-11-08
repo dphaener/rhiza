@@ -1,0 +1,40 @@
+{
+  "actor": "01M6XSDR652MGHWTDWA49NVP1A",
+  "after": [
+    "01M6XSAHTAAYZ325K6F9MSBDGH"
+  ],
+  "at": "2026-11-08T14:40:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-5a427573 at 8aff029d. Built the binary (go build -trimpath) and ran it in a scratch repo: rhiza health reads the real disk through the new diskFreeBytes var ('39.9 GiB free, minimum 10.0 GiB', matching df's 40G); with RHIZA_TEST_NOW and RHIZA_TEST_FREE_BYTES=5368709120 the disk part is 'bad 5.0 GiB free, under the minimum'; RHIZA_TEST_FREE_BYTES without RHIZA_TEST_NOW is ignored (real 39.9 GiB). go test -trimpath ./internal/api -run for TestDaemonPollStartsEachProjectsSchedule, TestDaemonScheduleUnresolvedWorkflow, TestHealthSchedulesPart, TestFreeBytesOverride, TestDaemonWeb*, TestWebRootHandlerServesEveryProject and TestLearnedLimitRatchetsAtPoll: every test PASS (the package then reports the known rootguard failure on ~/code/.rhiza-root/usage.live.json, written by the live root service). go test -trimpath ./cmd/rhiza -run 'TestScripts/^(health|daemon-notify-disk-low)$' -> ok. Mutation: with the RHIZA_TEST_FREE_BYTES case renamed in pinFreeBytes, each of the three schedule/health tests run alone fails with the panic 'test read the host's real free disk space'; reverted."
+        },
+        "handle": "api-tests-free-disk-hermetic-qa-1",
+        "id": "01M6XSMGP7059RJ5E9YXWC0YQR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XSMGP7059RJ5E9YTYK1KRP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XSMGP7059RJ5E9YTYK1KRP",
+        "id": "01M6XSMGQX669D02Q3SKZZQ2QA",
+        "link": "01M6XSMGQX669D02Q3SG62RPPR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XENB2AST9TAX4MTWCDY0VK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XE6M6DXRA2DTC19CTHYYK9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XSMGSPPHEP53RQHJCBY4SN",
+  "type": "ops",
+  "v": 1
+}

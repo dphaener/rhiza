@@ -1535,6 +1535,72 @@ func TestShipCheckNoRunIDNotRerun(t *testing.T) {
 	}
 }
 
+const rerunRollup = `{"name":"test","status":"COMPLETED","conclusion":"FAILURE","detailsUrl":"https://github.com/o/r/actions/runs/42/job/1"}`
+
+// A budget of 2 reruns a head's failed run twice, recording the count
+// before each gh call, then fails on the third red; a new head starts over.
+func TestShipCheckRerunBudget(t *testing.T) {
+	f, g, state := shipFixture(t)
+	g.answers[shipPRView] = openPR(rerunRollup)
+	const rerun = "gh run rerun 42 --failed"
+	g.answers["run rerun 42 --failed"] = ""
+	count := func() int {
+		n := 0
+		for _, c := range g.calls {
+			if c == rerun {
+				n++
+			}
+		}
+		return n
+	}
+	for i := 1; i <= 2; i++ {
+		r := shipCheck(t, f, `{"settled":true,"reruns":2}`)
+		if r.Settled || len(r.Reran) != 1 || count() != i {
+			t.Fatalf("rerun %d: %+v, gh reruns %d", i, r, count())
+		}
+		if st, _ := readShipState(state); st.RerunCount != i || st.RerunHead != "abc1234def" {
+			t.Fatalf("state after rerun %d: %+v", i, st)
+		}
+	}
+	r := shipCheck(t, f, `{"settled":true,"reruns":2}`)
+	if !r.Settled || r.Green || len(r.Reran) != 0 || count() != 2 {
+		t.Errorf("third red: %+v, gh reruns %d", r, count())
+	}
+	// A new head resets the count.
+	g.answers[shipPRView] = strings.Replace(openPR(rerunRollup), "abc1234def", "def5678abc", 1)
+	r = shipCheck(t, f, `{"settled":true,"reruns":2}`)
+	if r.Settled || count() != 3 {
+		t.Errorf("new head: %+v, gh reruns %d", r, count())
+	}
+	if st, _ := readShipState(state); st.RerunCount != 1 || st.RerunHead != "def5678abc" {
+		t.Errorf("state after new head: %+v", st)
+	}
+}
+
+// Without the flag a head is rerun exactly once.
+func TestShipCheckRerunDefaultOnce(t *testing.T) {
+	f, g, _ := shipFixture(t)
+	g.answers[shipPRView] = openPR(rerunRollup)
+	g.answers["run rerun 42 --failed"] = ""
+	if r := shipCheck(t, f, `{"settled":true}`); r.Settled || len(r.Reran) != 1 {
+		t.Fatalf("first: %+v", r)
+	}
+	if r := shipCheck(t, f, `{"settled":true}`); !r.Settled || r.Green || len(r.Reran) != 0 {
+		t.Errorf("second: %+v", r)
+	}
+}
+
+func TestShipCheckRerunsUsage(t *testing.T) {
+	f, _, _ := shipFixture(t)
+	for _, req := range []string{`{"reruns":0}`, `{"reruns":-1}`} {
+		_, err := callOp(t, f.ctx, "ship.check", req)
+		var e *Error
+		if !errors.As(err, &e) || e.Code != CodeUsage {
+			t.Errorf("%s: err = %v, want a usage error", req, err)
+		}
+	}
+}
+
 func TestShipCloseOutRecordsStaleMain(t *testing.T) {
 	f, _, state := shipFixture(t)
 	if err := writeShipState(state, shipState{PR: 7, Head: "abc1234def", MergeCommit: "fff0000aaa"}); err != nil {
@@ -1768,6 +1834,51 @@ func TestShipCheckRefusesForeignPR(t *testing.T) {
 	}
 }
 
+const (
+	gitMergeBaseAbc = "git merge-base refs/remotes/origin/main abc1234def"
+	gitDiffAbc      = "git diff --name-only base111 abc1234def"
+)
+
+// A red head after its reruns names the count, the failing tests and, when
+// the diff is .rhiza-only, that fact: never a claim about the cause.
+func TestShipCheckFailureDetailNotes(t *testing.T) {
+	const logCall = "run view 42 --log-failed"
+	const testLog = "test\tRun\t--- FAIL: TestGarden (0.1s)\n"
+	cases := []struct{ name, diff, check, log, want string }{
+		{"rhiza only", ".rhiza/log/x.json\n.rhiza/rendered/a.md\n", "test", testLog,
+			"failed: test after 2 reruns; failing tests: TestGarden; the PR changes only .rhiza/"},
+		{"other path", ".rhiza/log/x.json\nmain.go\n", "test", testLog,
+			"failed: test after 2 reruns; failing tests: TestGarden"},
+		{"reads rhiza", ".rhiza/rendered/a.md\n", "lint", "lint\tRun\trhiza check: .rhiza/rendered/a.md is stale\n",
+			"failed: lint after 2 reruns; the PR changes only .rhiza/"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			f, g, _ := shipFixture(t)
+			roll := strings.Replace(rerunRollup, `"name":"test"`, `"name":"`+c.check+`"`, 1)
+			g.answers[shipPRView] = openPR(roll)
+			g.answers["run rerun 42 --failed"] = ""
+			g.answers[logCall] = c.log
+			g.answers[gitMergeBaseAbc] = "base111\n"
+			g.answers[gitDiffAbc] = c.diff
+			for i := 0; i < 2; i++ {
+				if r := shipCheck(t, f, `{"settled":true,"reruns":2}`); r.Settled {
+					t.Fatalf("rerun %d: %+v", i, r)
+				}
+			}
+			r := shipCheck(t, f, `{"settled":true,"reruns":2}`)
+			if r.Detail != c.want {
+				t.Errorf("detail = %q, want %q", r.Detail, c.want)
+			}
+			for _, bad := range []string{"unrelated", "flaky", "on main"} {
+				if strings.Contains(r.Detail, bad) {
+					t.Errorf("detail %q contains %q", r.Detail, bad)
+				}
+			}
+		})
+	}
+}
+
 func withRunEnv(f *sessionFixture, run *string) {
 	prev := f.ctx.Getenv
 	f.ctx.Getenv = func(k string) string {
@@ -1819,5 +1930,38 @@ func TestShipRebaseNamesRun(t *testing.T) {
 	shipRebase(t, f)
 	if st, _ := readShipState(state); st.Run != "01RUNA" {
 		t.Errorf("run = %q, want 01RUNA", st.Run)
+	}
+}
+
+func TestShipLandHeadBuildErrorDetail(t *testing.T) {
+	cases := []struct {
+		name, out string
+		err       error
+		want      []string
+	}{
+		{"json body", `{"error":{"code":"conflict","message":"cannot land change set X: node N changed"}}`,
+			errors.New("exit status 3"), []string{"conflict", "cannot land change set X: node N changed", "exit status 3"}},
+		{"stderr only", "", errors.New("rhiza land: boom on stderr"), []string{"boom on stderr"}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			f, x, bin := rhizaRepoFixture(t)
+			x.answers["go build -o "+bin+" ./cmd/rhiza"] = ""
+			f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+				if name == bin {
+					return []byte(c.out), c.err
+				}
+				return x.run(name, args, dir, env)
+			}
+			_, err := callOp(t, f.ctx, "ship.land", `{}`)
+			if err == nil {
+				t.Fatal("no error")
+			}
+			for _, w := range c.want {
+				if !strings.Contains(err.Error(), w) {
+					t.Errorf("err = %v, want %q", err, w)
+				}
+			}
+		})
 	}
 }

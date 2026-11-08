@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6XY8JS9HVQ04X77FPFBF6QM"
+  ],
+  "at": "2026-11-08T16:14:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/fix-a-change-set-that-updates onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: internal/api/write_node.go, internal/api/write_test.go?"
+        },
+        "handle": "rebase-conflict-fix-a-change-set-that-updates",
+        "id": "01M6XZ13VQRS1KAZB9PAQQDE0G",
+        "key": null,
+        "kind": "question",
+        "node": "01M6XZ13VQRS1KAZB9P8YT1E46",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XZ13VQRS1KAZB9P8YT1E46",
+        "id": "01M6XZ13Y7K7ZH3S06XWRY5M82",
+        "link": "01M6XZ13Y7K7ZH3S06XWR9P2F2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XMTZ6T3CVKWG5013HWA51F",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6XMTZ6T3CVKWG5013HWA51F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XZ143D6JKPXMKS8KT42N6B",
+  "type": "ops",
+  "v": 1
+}

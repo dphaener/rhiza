@@ -241,7 +241,7 @@ func (b *builder) applyOp(cs id.ID, o op.Op) error {
 		if !ok {
 			return fmt.Errorf("%w: node %s", ErrMissing, o.Node)
 		}
-		conflict, err := checkBase(o, r.v.ID, r.v.Retired, r.v.History, r.aspects)
+		conflict, err := checkBase(cs, o, r.v.ID, r.v.Retired, r.v.History, r.aspects)
 		if err != nil {
 			return err
 		}
@@ -265,7 +265,7 @@ func (b *builder) applyOp(cs id.ID, o op.Op) error {
 		if !ok {
 			return fmt.Errorf("%w: link %s", ErrMissing, o.Link)
 		}
-		conflict, err := checkBase(o, r.v.ID, r.v.Retired, r.v.History, r.aspects)
+		conflict, err := checkBase(cs, o, r.v.ID, r.v.Retired, r.v.History, r.aspects)
 		if err != nil {
 			return err
 		}
@@ -280,8 +280,9 @@ func (b *builder) applyOp(cs id.ID, o op.Op) error {
 
 // checkBase is step 2 for target t with the given history: it returns the
 // error that skips o, or else ErrConflict when o's base is stale and o
-// overlaps an operation applied after it.
-func checkBase(o op.Op, t id.ID, retired bool, history []Ref, written [][]string) (conflict, skip error) {
+// overlaps an operation of another change set applied after it. Operations
+// of cs itself, o's own change set, never make a base stale.
+func checkBase(cs id.ID, o op.Op, t id.ID, retired bool, history []Ref, written [][]string) (conflict, skip error) {
 	i := len(history) - 1
 	for i >= 0 && history[i].Op != o.Base {
 		i--
@@ -297,10 +298,19 @@ func checkBase(o op.Op, t id.ID, retired bool, history []Ref, written [][]string
 	}
 	mine := aspects(o)
 	for j := i + 1; j < len(history); j++ {
+		if history[j].ChangeSet == cs {
+			// An operation is never stale against its own change set's.
+			continue
+		}
 		if overlaps(mine, written[j]) {
 			return fmt.Errorf("%w: base %s of %s is stale: op %s of change set %s since wrote %s",
 				ErrConflict, o.Base, t, history[j].Op, history[j].ChangeSet, strings.Join(written[j], ", ")), nil
 		}
+	}
+	if retired {
+		// Only the change set's own operations came after the base, so a
+		// retirement among them is its own: a retired target takes no writes.
+		return nil, fmt.Errorf("%w: %s", ErrRetired, t)
 	}
 	return nil, nil
 }

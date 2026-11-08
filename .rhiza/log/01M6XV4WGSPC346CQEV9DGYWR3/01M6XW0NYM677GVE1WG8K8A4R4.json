@@ -1,0 +1,29 @@
+{
+  "actor": "01M6XVZ9KGFJPN5EGDE9B7QPXX",
+  "after": [
+    "01M6XVQYTQXNSV4C0F4ZX2Z578"
+  ],
+  "at": "2026-11-08T15:21:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6MZAZD28WGRG2PYTR2Z2RQJ",
+        "handle": null,
+        "id": "01M6XVG9KY0K6ZN7VD6KDE3FJG",
+        "node": "01M6HT09X1W6W89R5N272GJXMP",
+        "op": "node.update",
+        "set": {
+          "acceptance": "daemon-request-slot.txtar with a fake rex: with max-runs 2, two ready change sets and no request, daemon --once starts both ship runs; with one queued request and max-runs 1 it starts one ship run and the request stays queued; with max-runs 2 it starts one ship run and the request's plan run, and daemon status shows the other change set as no-slot with 'waiting for a slot: kept for queued continuations or a plan request'; with max-runs 2, two ready change sets and only a queued milestone request, daemon --once starts the milestone request's plan run and one ship run (two runs, never three), and daemon status shows the other change set as no-slot; go test -trimpath ./cmd/rhiza -run TestScripts/daemon-request-slot passes",
+          "statement": "While a queued feature or bug plan request could start (no run, its retry time passed) and max-runs is above 1, the daemon's ship picks leave one slot for the request's plan run (besides any kept for queued continuations); a ready change set held back by this shows in daemon status as no-slot with the detail 'waiting for a slot: kept for queued continuations or a plan request'. A queued milestone request keeps no reserved slot: it takes the next free slot ahead of every other start. With max-runs 1, or no feature or bug request waiting, picks are unchanged"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XW0NYM677GVE1WG8K8A4R4",
+  "type": "ops",
+  "v": 1
+}

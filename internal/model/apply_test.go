@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 )
@@ -386,6 +387,32 @@ var applyCases = []applyCase{
 		problems: []want{{csC, 3, ErrConflict}},
 	},
 	{
+		name: "a change set's own earlier ops never make its base stale",
+		steps: []step{a(mkDec(1, 1, "jwt")), b(set(2, 1, 1, "statement", `"x"`)), b(rename(3, 1, 1, "pki")),
+			b(retire(4, 1, 1))},
+		check: func(t *testing.T, m Model) {
+			if x := mustNode(t, m, 1); !x.Retired || x.Handle != "pki" || x.Version != fid(4) {
+				t.Errorf("node = %+v", x)
+			}
+		},
+	},
+	{
+		name: "another change set's op between a change set's own ops still conflicts",
+		steps: []step{a(mkDec(1, 1, "jwt")), b(set(2, 1, 1, "a", "1")), c(set(3, 1, 2, "statement", `"y"`)),
+			b(set(4, 1, 1, "statement", `"x"`))},
+		problems: []want{{csB, 4, ErrConflict}},
+	},
+	{
+		name:     "a change set writing a node again after retiring it on an older base is skipped",
+		steps:    []step{a(mkDec(1, 1, "jwt")), b(retire(2, 1, 1)), b(set(3, 1, 1, "a", "1"))},
+		problems: []want{{csB, 3, ErrRetired}},
+	},
+	{
+		name:     "a change set retiring a link twice on an older base is skipped",
+		steps:    []step{a(mkDec(1, 1, "jwt")), a(mkLink(2, 1, nd(1), csA)), b(retireLink(3, 1, 2)), b(retireLink(4, 1, 2))},
+		problems: []want{{csB, 4, ErrRetired}},
+	},
+	{
 		name:     "stale update after a retire conflicts and still applies",
 		steps:    []step{a(mkDec(1, 1, "jwt")), b(retire(2, 1, 1)), c(set(3, 1, 1, "a", "1"))},
 		problems: []want{{csC, 3, ErrConflict}},
@@ -475,10 +502,10 @@ var applyCases = []applyCase{
 			c(set(4, 1, 3, "statement", `"d"`)), a(set(5, 1, 4, "a", "2"))},
 	},
 	{
-		name: "a stale rewrite does not repair a conflict: it conflicts itself",
+		name: "a rewrite on a base only its own change set superseded does not repair a conflict",
 		steps: []step{a(mkDec(1, 1, "jwt")), b(set(2, 1, 1, "statement", `"b"`)), c(set(3, 1, 1, "statement", `"c"`)),
 			c(set(4, 1, 2, "statement", `"d"`))},
-		problems: []want{{csC, 3, ErrConflict}, {csC, 4, ErrConflict}},
+		problems: []want{{csC, 3, ErrConflict}},
 	},
 	{
 		name: "a handle conflict is repaired by a rename from the current version",
@@ -784,6 +811,46 @@ func TestApplyAspects(t *testing.T) {
 	} {
 		if got := overlaps(tc.a, tc.b); got != tc.want {
 			t.Errorf("overlaps(%v, %v) = %v, want %v", tc.a, tc.b, got, tc.want)
+		}
+	}
+}
+
+// TestOwnOpsOnOldBaseLand folds a change set of the 01M6WMCCRC0K shape: it
+// updates and renames a landed node, then retires it, every op on the
+// landed version. Its what-if view, the land gate, has no problem, and once
+// it lands the as-is view has none either. Another change set landing a
+// write to the node in between still makes the stale ops conflict.
+func TestOwnOpsOnOldBaseLand(t *testing.T) {
+	ops := []op.Op{set(2, 1, 1, "statement", `"x"`), rename(3, 1, 1, "pki"), retire(4, 1, 1)}
+	sets := []changeset.ChangeSet{
+		{ID: csA, State: changeset.StateLanded, Ops: []op.Op{mkDec(1, 1, "jwt")}},
+		{ID: csB, State: changeset.StateAccepted, Ops: ops},
+	}
+	if _, problems := WhatIf(sets, csB); problems != nil {
+		t.Fatalf("what-if problems = %v, want none", problems)
+	}
+	sets[1].State = changeset.StateLanded
+	m, problems := AsIs(sets)
+	if problems != nil {
+		t.Fatalf("as-is problems = %v, want none", problems)
+	}
+	if x := mustNode(t, m, 1); !x.Retired || x.Handle != "pki" || x.Version != fid(4) {
+		t.Errorf("node = %+v, want retired as pki at op 4", x)
+	}
+
+	// csC lands a statement rewrite on the landed version before csB.
+	sets = []changeset.ChangeSet{
+		{ID: csA, State: changeset.StateLanded, Ops: []op.Op{mkDec(1, 1, "jwt")}},
+		{ID: csC, State: changeset.StateLanded, Ops: []op.Op{set(5, 1, 1, "statement", `"y"`)}},
+		{ID: csB, State: changeset.StateAccepted, Ops: ops},
+	}
+	_, problems = WhatIf(sets, csB)
+	if len(problems) == 0 {
+		t.Fatal("what-if has no problem, want csB's stale statement update to conflict")
+	}
+	for _, p := range problems {
+		if p.ChangeSet != csB || !errors.Is(p.Err, ErrConflict) {
+			t.Errorf("problem = %v, want an ErrConflict on csB", p)
 		}
 	}
 }

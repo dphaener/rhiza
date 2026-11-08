@@ -51,8 +51,13 @@ func TestDaemonWebListenerFollowsPort(t *testing.T) {
 				return p + "\n", nil
 			}
 		}
+		if v, ok := noDiskReads(args); ok {
+			return v, nil
+		}
 		return "", errors.New("unset")
 	}
+	// No RHIZA_TEST_NOW, so the listener starts; nor any pinned free disk, so
+	// noDiskReads turns off the two daemon parts that would read it.
 	ctx.Getenv = func(string) string { return "" }
 	ticks := make(chan time.Time)
 	oldTicker := daemonTicker
@@ -157,6 +162,13 @@ func TestDaemonWebNoListenerOnceOrTestNow(t *testing.T) {
 	ctx, _ := daemonRepo(t)
 	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
 	ctx.Getenv = func(string) string { return "" }
+	git := ctx.Git
+	ctx.Git = func(args ...string) (string, error) {
+		if v, ok := noDiskReads(args); ok {
+			return v, nil
+		}
+		return git(args...)
+	}
 	if _, err := callOp(t, ctx, "daemon", `{"permission_mode":"manual","once":true}`); err != nil {
 		t.Fatal(err)
 	}
@@ -168,10 +180,27 @@ func TestDaemonWebNoListenerOnceOrTestNow(t *testing.T) {
 		}
 		return ""
 	}
+	pinFreeBytes(ctx)
 	if err := runDaemonTicks(t, ctx, 1, nil); err != nil {
 		t.Fatal(err)
 	}
 	if opened != 0 {
 		t.Fatalf("%d listeners opened", opened)
 	}
+}
+
+// noDiskReads answers the git config reads of rhiza.daemon.minFree (0, the
+// guard off) and rhiza.daemon.trimGoCache (false), for a daemon test that
+// must run without RHIZA_TEST_NOW and so cannot pin its free disk: with both
+// off, the daemon never reads the free space at all.
+func noDiskReads(args []string) (string, bool) {
+	if len(args) == 3 && args[0] == "config" {
+		switch args[2] {
+		case "rhiza.daemon.minFree":
+			return "0\n", true
+		case "rhiza.daemon.trimGoCache":
+			return "false\n", true
+		}
+	}
+	return "", false
 }

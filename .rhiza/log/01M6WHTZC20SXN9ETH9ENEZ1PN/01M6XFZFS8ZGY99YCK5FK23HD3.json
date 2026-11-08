@@ -1,0 +1,40 @@
+{
+  "actor": "01M6XCK35Y2AWPDBW1EGKQ4C5J",
+  "after": [
+    "01M6XFCPD5Q956A8K9W278CWQ9"
+  ],
+  "at": "2026-11-08T11:51:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 83447746. Read the diff: ShipCheckRequest gains --reruns (ShipReruns; an explicit 0 decodes to -1 so 0 and negatives are usage errors, absent means 1); shipRerunFailed counts reruns per head (RerunCount, legacy states with Reruns count as 1), resets on a new head, and writes the state file with the new count before calling gh run rerun --failed; the --main dispatch path gets the same budget. go test -trimpath ./internal/api/ -run TestShip -count=1: ok (TestShipCheckRerunBudget: --reruns 2 reruns run 42 twice with RerunCount 1 then 2 in the ship record, the third red settles failed with no third gh rerun, a new head reruns again with count reset to 1; TestShipCheckRerunDefaultOnce: no flag reruns once, then fails; TestShipCheckRerunsUsage: reruns 0 and -1 give CodeUsage). A scratch build run as rhiza ship check --reruns 0 and --reruns -2 both exit 2 with a usage message, so the argv path goes through the same decoding. go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship-rerun|describe-golden)': run-ship-rerun-pass, run-ship-rerun-fail (both unchanged by the diff) and describe-golden PASS; the golden carries the new reruns flag. A full ./internal/api run with Budget tests skipped had 0 failing tests; the package was marked FAIL only by the post-run guard on ~/code/.rhiza-root/usage.live.json (the live root daemon's usage file, unrelated to this diff), and TestReadBudget/TestReadBudgetApply timing failures came from load 11-17 on 4 cores and do not touch ship code."
+        },
+        "handle": "ship-check-rerun-budget-verified",
+        "id": "01M6XFZFKEJEZ5974VSXCFMNEA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XFZFKEJEZ5974VSSQM4VBJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XFZFKEJEZ5974VSSQM4VBJ",
+        "id": "01M6XFZFNPE8H84RB3FS5NVH91",
+        "link": "01M6XFZFNPE8H84RB3FRE42R80",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ6ZC52EWCYMSA2WW63P4V",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XFZFS8ZGY99YCK5FK23HD3",
+  "type": "ops",
+  "v": 1
+}

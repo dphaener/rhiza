@@ -29,7 +29,7 @@ type dispatchWorkflow struct {
 // the way a pull request's checks are: settled once every run finished
 // (settled asks only that), green once they all passed, a failed run
 // rerun once. It stops, never waits, when nothing can be dispatched.
-func shipCheckMainDispatch(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckResponse, path string, settled bool) (any, error) {
+func shipCheckMainDispatch(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckResponse, path string, settled bool, budget int) (any, error) {
 	mc := st.MergeCommit
 	dir := t.dir()
 	stop := func(format string, a ...any) (any, error) {
@@ -89,7 +89,7 @@ func shipCheckMainDispatch(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckR
 	}
 	resp.Settled, resp.Green, resp.Failed = checksVerdict(checks)
 	if resp.Settled && !resp.Green {
-		if err := shipRerunFailed(ctx, t, &st, &resp, path); err != nil {
+		if err := shipRerunFailed(ctx, t, &st, &resp, path, budget); err != nil {
 			return nil, err
 		}
 	}

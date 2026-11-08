@@ -1,0 +1,33 @@
+{
+  "actor": "01M6XM2K204MHFXJZT43ZD6QB2",
+  "after": [
+    "01M6XM97AV7DXV4MS0GDMX9TZ7"
+  ],
+  "at": "2026-11-08T13:07:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "b8afcebca9565c9342789bafc2bed097bc416933d7425948f0b01cbc78db173b",
+          "session": "470c2a7c-8cf3-416b-b3ff-01a1bb4128e2",
+          "summary": "Autonomous plan run, no owner. The intent said run 01M6X2EMMHKM failed at land because another change set landed an update to capability 01M68581Q6V7 after this one planned. The planner checked the log: the stale-base op 01M6WMRS1ZPY is change set 01M6WMCCRC0K's own node.update, and its later node.retire (01M6WMSB28CD) was based on the same landed version 01M68581Q6V7XS1VHP9Q4F011R. No other change set touched the node. Accepted change set 01M6XHCX already fixes that cause (leaf retire-supersedes-pending-edits), repairs PR 383 in its note, and adds land error detail (leaf ship-head-build-error-detail). The planner asked the arbiter what this change set should plan. The arbiter decided stale-land-superseded-by-retire-fix: no build leaves; mark it superseded by 01M6XHCX and withdraw it. A land-time fixer for real cross-change-set stale bases is not planned now. File it as its own draft only when such a failure is actually seen.",
+          "title": "Plan: Fix Ship-change fails at land, superseded (autonomous)"
+        },
+        "handle": "plan-fix-ship-change-fails-at-land",
+        "id": "01M6XMA429BMSVDSFB9VW8SK8V",
+        "key": null,
+        "kind": "source",
+        "node": "01M6XMA429BMSVDSFB9RKVCYXK",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6XM1F19MEG623D6829T9TPV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XMA439T0KM09RK5KB59M1C",
+  "type": "ops",
+  "v": 1
+}

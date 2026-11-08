@@ -1,0 +1,30 @@
+{
+  "actor": "01M6XMWKKHPH7YR8WE0A7RC1DH",
+  "after": [
+    "01M6XMTZ6T3CVKWG5014KPBP55"
+  ],
+  "at": "2026-11-08T13:20:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "8d4fbe69-c91e-4026-a866-01a1bb4e1527",
+          "statement": "Fix 01M6XMT, part 2: land/fold must accept a change set whose later op's base was superseded only by its own earlier op on the same target. How wide should that rule be? I recommend every op type on nodes and links, checked in model.checkBase: an op is never stale against ops of its own change set, while ops of other change sets after its base still conflict as today."
+        },
+        "handle": "question-8d4fbe69-1",
+        "id": "01M6XN209Z41PMP5P3K910MG6Y",
+        "key": null,
+        "kind": "question",
+        "node": "01M6XN209Z41PMP5P3K8S7DYEP",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6XMTZ6T3CVKWG5013HWA51F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XN2593HXAJG54PW628AH4W",
+  "type": "ops",
+  "v": 1
+}

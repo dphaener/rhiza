@@ -1,0 +1,162 @@
+{
+  "actor": "01M6XV5MK28CJRTAA5KNF0MM6F",
+  "after": [
+    "01M6XVG0CDS29MK589G41XH47K"
+  ],
+  "at": "2026-11-08T15:12:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6XVDZHN24987TJWZ6FNEHXD",
+        "id": "01M6XVG9C3VMM8B2BQKG8RWYEY",
+        "link": "01M6XVG9C3VMM8B2BQKCP10T13",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVF222WXPGK7T099EYXCSH",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "New testscript cmd/rhiza/testdata/script/daemon-max-runs-pending.txtar with a fake rex: with max-runs 2, one live run and a feature request whose plan run was started under 1 minute ago but has not journaled, and two ready change sets, daemon --once starts no ship run and daemon status shows both as no-slot; with max-runs 3 and the same state it starts exactly one ship run; with a due schedule started and not journaled and max-runs 1, a queued start stays queued. internal/daemon round-robin/pick unit tests cover a project share computed with unjournaled starts. go test -trimpath ./internal/daemon/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-max-runs-pending|daemon-request-slot|daemon-queued-start-slot|daemon-continue-slot|daemon-round-robin|daemon-picks)' pass",
+          "statement": "Every start the daemon makes in a poll (a queued milestone request's plan run, a resume of an interrupted run, a ship pick, a queued continuation, a queued start, a feature or bug request's plan run, a scheduled run) counts one machine-wide slot count against rhiza.daemon.maxRuns: runs live on the machine across every project of the daemon, plus every start in any project not yet journaled and still within daemonStartGrace (ship and queued starts held as pending, request plan runs, scheduled runs, resumes), plus the starts made earlier in the same poll; nothing starts while that count is at maxRuns. A waiting feature or bug request still keeps the next free slot (request-slot-kept, queued-start-request-slot-kept), never beyond the cap"
+        },
+        "handle": "daemon-starts-within-max-runs",
+        "id": "01M6XVG9DK25PFK9BHJFQ986J7",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6XVG9DK25PFK9BHJCBDQHQ6",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      },
+      {
+        "decision": null,
+        "from": "01M6XVG9DK25PFK9BHJCBDQHQ6",
+        "id": "01M6XVG9EMABGENH55A9FR1QB9",
+        "link": "01M6XVG9EMABGENH55A7VBASYH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVDZHN24987TJWZ6FNEHXD",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "cmd/rhiza/testdata/script/daemon-resume.txtar (or a new daemon-resume-slot.txtar) with a fake rex: with max-runs 1, one live run and one interrupted run, daemon --once resumes nothing and the run's journal has no daemon-resumed entry; with max-runs 2, one interrupted run and two ready change sets, daemon --once resumes the run and starts one ship run, not two; go test -trimpath ./cmd/rhiza -run 'TestScripts/daemon-resume' passes",
+          "statement": "The daemon resumes an interrupted run (daemon.Resumable) only while the machine-wide slot count is below rhiza.daemon.maxRuns; resumes go first among the poll's starts after a queued milestone request's plan run, each counts as a pending start for later picks in the same poll and later polls until it journals or daemonStartGrace passes, and a resume that finds no slot is left for a later poll (not journaled as resumed, so its one daemon resume is not spent)"
+        },
+        "handle": "daemon-resume-takes-slot",
+        "id": "01M6XVG9G43BHE7ZJHQ37XRJZQ",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6XVG9G0WNN7JX8ZNH1C5QPG",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      },
+      {
+        "decision": null,
+        "from": "01M6XVG9G0WNN7JX8ZNH1C5QPG",
+        "id": "01M6XVG9HF7HGH2F1HZR974RY0",
+        "link": "01M6XVG9HF7HGH2F1HZQB1YXYA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVDZHN24987TJWZ6FNEHXD",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M6MYSEB8N545M8M9AR38NG0M",
+        "handle": null,
+        "id": "01M6XVG9JFMB43HTY2VYD98EE7",
+        "node": "01M6MYSEB8N545M8M9APZTBXYS",
+        "op": "node.update",
+        "set": {
+          "acceptance": "cmd/rhiza/testdata/script/daemon-milestone-request.txtar (fake rex, rhiza.autonomy.plan owner) queues a feature then a milestone request: with --max-runs 1 and one run already live, daemon --once starts nothing and request ls shows both queued; with --max-runs 2 and one run live, daemon --once starts only the milestone request (run start --workflow plan --new ... --request <id> --milestone) and the feature stays queued; with one interrupted run and one free slot the milestone request starts and the run is not resumed; a second milestone request queued while the first's run is live is not started by the next --once; go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-milestone-request|plan-requests)' passes",
+          "statement": "The daemon starts the oldest queued milestone request's plan run in the next free run slot, ahead of every other start in the poll (resumes of interrupted runs included) and of every other queued request, but waits while the machine-wide slot count is at rhiza.daemon.maxRuns; once started it counts as a running run for later picks, and while one milestone request's plan run is live a second milestone request stays queued. A usage-reserve hold does not hold it; pause and low disk do"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6MYSEB8N545M8M9APZTBXYS",
+        "id": "01M6XVG9K8747PNH0JDMQGXN5C",
+        "link": "01M6XVG9K8747PNH0JDKXR09X0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVDZHN24987TJWZ6FNEHXD",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M6MZAZD28WGRG2PYTR2Z2RQJ",
+        "handle": null,
+        "id": "01M6XVG9KY0K6ZN7VD6KDE3FJG",
+        "node": "01M6HT09X1W6W89R5N272GJXMP",
+        "op": "node.update",
+        "set": {
+          "statement": "While a queued feature or bug plan request could start (no run, its retry time passed) and max-runs is above 1, the daemon's ship picks leave one slot for the request's plan run (besides any kept for queued continuations); a ready change set held back by this shows in daemon status as no-slot with the detail 'waiting for a slot: kept for queued continuations or a plan request'. A queued milestone request keeps no reserved slot: it takes the next free slot ahead of every other start. With max-runs 1, or no feature or bug request waiting, picks are unchanged"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6HT09X1W6W89R5N272GJXMP",
+        "id": "01M6XVG9NHENCC4B83A7X1Q4GY",
+        "link": "01M6XVG9NHENCC4B83A5BXJT01",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVDZHN24987TJWZ6FNEHXD",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "cmd/rhiza/testdata/script/health.txtar (or a new health-runs-cap.txtar) with a fake daemon state: with max-runs 4, three live runs and one unjournaled start, health shows 'runs: 3/4 live, 1 starting' and the daemon part ok; with max-runs 2 and three live runs it shows the part bad, names the three runs and health exits 1; health --json carries live, starting and max; go test -trimpath ./cmd/rhiza -run 'TestScripts/(health|health-projects|health-runs-cap)' passes",
+          "statement": "rhiza health's daemon part shows the runs against the cap, summed across the daemon's projects, as 'runs: <live>/<maxRuns> live, <n> starting' (starts not yet journaled within daemonStartGrace shown apart); the part is ok while live plus starting is at or under rhiza.daemon.maxRuns and bad when it exceeds it, with a detail line naming each live run (project, run, change set title)"
+        },
+        "handle": "health-runs-against-cap",
+        "id": "01M6XVG9PE300YRA4FA6EB0VWJ",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6XVG9PE300YRA4FA4A530WC",
+        "op": "node.create",
+        "parent": "01M6CS2B9S9YVY1WBBVAHWZFR9"
+      },
+      {
+        "decision": null,
+        "from": "01M6XVG9PE300YRA4FA4A530WC",
+        "id": "01M6XVG9Q1YMVQ1VE2VQ7S4MTE",
+        "link": "01M6XVG9Q1YMVQ1VE2VQ29CMHZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVDZHN24987TJWZ6FNEHXD",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "cmd/rhiza/testdata/script/daemon-status.txtar shows 'runs: <live>/<max> live, <n> starting' and the --json fields live, starting and max; internal/tui/daemonapp and internal/web unit tests render the same count from a daemon status with live runs and one starting; go test -trimpath ./internal/tui/daemonapp/... ./internal/web/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-status|daemon-status-projects)' pass",
+          "statement": "rhiza daemon status (human and --json), the Daemon app and the web monitor's daemon overview show the machine-wide runs against the cap in the same form as health: live runs of rhiza.daemon.maxRuns and the starts not yet journaled"
+        },
+        "handle": "daemon-status-runs-cap",
+        "id": "01M6XVG9R7SPC15Y2DKMRSRCDZ",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6XVG9R7SPC15Y2DKK5M3JEZ",
+        "op": "node.create",
+        "parent": "01M61R7NEEK19RP2QEHFRQ6W8S"
+      },
+      {
+        "decision": null,
+        "from": "01M6XVG9R7SPC15Y2DKK5M3JEZ",
+        "id": "01M6XVG9RT233CJYAQB6G9NX1F",
+        "link": "01M6XVG9RS18VW67HPXX818Z2P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVDZHN24987TJWZ6FNEHXD",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XVG9SD4ZPDTNCJJC9XYB4F",
+  "type": "ops",
+  "v": 1
+}

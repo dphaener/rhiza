@@ -1,0 +1,30 @@
+{
+  "actor": "01M6XV5MK28CJRTAA5KNF0MM6F",
+  "after": [
+    "01M6XV4WGSPC346CQEVBDJSTWG"
+  ],
+  "at": "2026-11-08T15:10:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "375c0132-d622-41bb-97c1-01a1bbb2b95d",
+          "statement": "Change set 01M6XV4 (plan runs exceed rhiza.daemon.maxRuns): the root cause found is that each project's ship picks, continuations and queued starts count only live runs, not a plan request's start that has not journaled yet (up to daemonStartGrace, 1m), while the round-robin share already assumed it holds a slot; at 13:16:15 a request's plan run started and at 13:16:36 two ship runs started before it journaled. Should plan runs share the machine-wide maxRuns, or get their own cap? / The daemon's own resume of an interrupted run (daemon.Resumable) starts without any slot check and is not counted by later picks in the same poll. Should it count against maxRuns? / A milestone request's plan run currently starts at once whether or not a slot is free (owner decision milestone-interview-starts-at-once, an interactive owner session). Keep that exception? / How should rhiza health show live runs against the cap?"
+        },
+        "handle": "question-375c0132-1",
+        "id": "01M6XVBG8ZBCCBNAE97M04599A",
+        "key": null,
+        "kind": "question",
+        "node": "01M6XVBG8ZBCCBNAE97KP82RC0",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XVBJEADAWDWVM58986KAYH",
+  "type": "ops",
+  "v": 1
+}

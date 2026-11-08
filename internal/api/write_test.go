@@ -581,7 +581,7 @@ func TestRetire(t *testing.T) {
 		mustWrite(t, ctx, "set", `{"ref":"store","fields":["acceptance=1"]}`)
 		r := mustWrite(t, ctx, "retire", `{"ref":"store","reason":"Gone"}`)
 		ops := opsOf(t, ctx, cs)
-		if len(ops) != 2 || ops[1].Type != op.TypeNodeRetire || ops[1].Base != n.Version || ops[1].Reason != "Gone" {
+		if len(ops) != 1 || ops[0].Type != op.TypeNodeRetire || ops[0].Base != n.Version || ops[0].Reason != "Gone" {
 			t.Fatalf("ops = %+v", ops)
 		}
 		if !slices.Equal(r.Nodes, []id.ID{n.ID}) {
@@ -590,6 +590,127 @@ func TestRetire(t *testing.T) {
 		_, err := callOp(t, ctx, "retire", `{"ref":"`+n.ID.String()+`","reason":"Again"}`)
 		wantExit(t, err, 3)
 	})
+
+	t.Run("AfterUpdateLands", func(t *testing.T) {
+		ctx, cs := writeCtx(t)
+		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"store","fields":["statement=Old"]}`)
+		n := nodeAt(t, ctx, "store")
+		mustWrite(t, ctx, "set", `{"ref":"store","fields":["acceptance=1","statement=New"],"handle":"stash"}`)
+		mustWrite(t, ctx, "retire", `{"ref":"stash","reason":"Gone"}`)
+		ops := opsOf(t, ctx, cs)
+		if len(ops) != 1 || ops[0].Type != op.TypeNodeRetire || ops[0].Base != n.Version {
+			t.Fatalf("ops = %+v", ops)
+		}
+		for _, s := range []string{"propose", "accept", "land"} {
+			move(t, ctx, s, `{}`)
+		}
+		if got, err := ctxWorkspace(t, ctx).model(cs).Resolve(n.ID.String()); err != nil || !got.Retired {
+			t.Errorf("node after land = %+v, %v", got, err)
+		}
+	})
+
+	t.Run("SupersedesPendingEdits", func(t *testing.T) {
+		ctx, cs := writeCtx(t)
+		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
+		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"log"}`)
+		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"api"}`)
+		landed := nodeAt(t, ctx, "store").Version
+		mustWrite(t, ctx, "set", `{"ref":"store","handle":"keep","fields":["acceptance=1"]}`)
+		mustWrite(t, ctx, "mv", `{"ref":"keep","parent":"api"}`)
+		mustWrite(t, ctx, "set", `{"ref":"log","fields":["acceptance=2"]}`)
+		r := mustWrite(t, ctx, "retire", `{"ref":"keep","reason":"Gone"}`)
+		n := r.Nodes[0]
+		var retires, edits int
+		for _, o := range opsOf(t, ctx, cs) {
+			switch {
+			case o.Node == n && o.Type == op.TypeNodeRetire:
+				retires++
+				if o.Base != landed {
+					t.Errorf("retire base = %s, want landed %s", o.Base, landed)
+				}
+			case o.Node == n:
+				t.Errorf("op left on the retired node: %+v", o)
+			default:
+				edits++
+			}
+		}
+		if retires != 1 || edits != 1 {
+			t.Errorf("retires = %d, other nodes' edits = %d", retires, edits)
+		}
+	})
+
+	// landClean proposes, accepts and lands the current change set, then
+	// checks the log still folds with no problems.
+	landClean := func(t *testing.T, ctx *Ctx) {
+		t.Helper()
+		move(t, ctx, "propose", `{}`)
+		move(t, ctx, "accept", `{"reason":"ok"}`)
+		move(t, ctx, "land", `{}`)
+		mustFoldClean(t, ctxWorkspace(t, ctx))
+	}
+
+	t.Run("SupersedesPendingEditsLands", func(t *testing.T) {
+		ctx, _ := writeCtx(t)
+		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
+		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"api"}`)
+		mustWrite(t, ctx, "set", `{"ref":"store","handle":"keep","fields":["statement=Kept"]}`)
+		mustWrite(t, ctx, "mv", `{"ref":"keep","parent":"api"}`)
+		mustWrite(t, ctx, "retire", `{"ref":"keep","reason":"Gone"}`)
+		landClean(t, ctx)
+	})
+
+	// A change set written before retire dropped pending edits: its own
+	// update (and move) on the node, then a retire. The old code wrote the
+	// retire on the landed version, beside the update on the same base, so
+	// land met a stale base; a hand-built retire on the update's ID is the
+	// other stale shape. Retire on the node again repairs both, and the
+	// change set lands.
+	for _, tc := range []struct {
+		name     string
+		mv       bool
+		onUpdate bool
+	}{
+		{name: "RepairsStaleRetire"},
+		{name: "RepairsStaleRetireAfterMove", mv: true},
+		{name: "RepairsRetireOnUpdate", onUpdate: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx, cs := writeCtx(t)
+			recordWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
+			recordWrite(t, ctx, "add", `{"kind":"capability","handle":"api"}`)
+			n := nodeAt(t, ctx, "store")
+			mustWrite(t, ctx, "set", `{"ref":"store","handle":"keep","fields":["statement=Kept"]}`)
+			if tc.mv {
+				mustWrite(t, ctx, "mv", `{"ref":"keep","parent":"api"}`)
+			}
+			ops := opsOf(t, ctx, cs)
+			base := n.Version
+			if tc.onUpdate {
+				base = ops[0].ID
+			}
+			for _, o := range ops {
+				if o.Base != n.Version {
+					t.Fatalf("pending edit %+v not on the landed version %s", o, n.Version)
+				}
+			}
+			w := ctxWorkspace(t, ctx)
+			stale := op.Op{ID: w.mustID(t), Type: op.TypeNodeRetire, Node: n.ID, Base: base, Reason: "Gone"}
+			actor := entriesOf(w.log(), cs)[0].Actor
+			if _, err := w.appendEntry(cs, changeset.Ops{Ops: []op.Op{stale}}, actor, actor); err != nil {
+				t.Fatal(err)
+			}
+			mustWrite(t, ctx, "retire", `{"ref":"`+n.ID.String()+`","reason":"Gone"}`)
+			got := onlyOp(t, opsOf(t, ctx, cs))
+			if got.Type != op.TypeNodeRetire || got.Base != n.Version || got.ID == stale.ID {
+				t.Errorf("ops = %+v; want one new retire on %s", got, n.Version)
+			}
+			// Now a lone retire on the landed version, a third run is a
+			// conflict again.
+			_, err := callOp(t, ctx, "retire", `{"ref":"`+n.ID.String()+`","reason":"Again"}`)
+			wantExit(t, err, 3)
+			landClean(t, ctx)
+		})
+	}
 
 	t.Run("CreatedHereIsDropped", func(t *testing.T) {
 		ctx, cs := writeCtx(t)
@@ -1012,7 +1133,7 @@ func TestStackedWrites(t *testing.T) {
 				}
 			}
 		}
-		if want := []op.Type{op.TypeNodeUpdate, op.TypeNodeMove, op.TypeNodeRetire}; !slices.Equal(kinds, want) {
+		if want := []op.Type{op.TypeNodeRetire}; !slices.Equal(kinds, want) {
 			t.Errorf("ops on base = %v, want %v", kinds, want)
 		}
 		// A's own view is unchanged.

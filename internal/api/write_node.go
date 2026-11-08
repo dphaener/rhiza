@@ -351,16 +351,26 @@ func buildMv(b writeBase, r MvRequest) (edit, error) {
 	return e, nil
 }
 
-// buildRetire adds a node.retire against the node's version. A node created
-// in this change set is dropped instead: its create, every other op on it,
-// and the links created here that end at it.
+// buildRetire adds a node.retire against the node's landed version. A node
+// created in this change set is dropped instead: its create, every other op
+// on it, and the links created here that end at it. On any other node the
+// change set's own pending updates, moves and earlier retire are dropped, so
+// the one retire rests on the landed version rather than on ops that never
+// land first; run again on a node already retired here, it repairs a retire
+// written on a stale base.
 func buildRetire(b writeBase, r RetireRequest) (edit, error) {
 	if strings.TrimSpace(r.Reason) == "" {
 		return edit{}, Usagef("retire needs a --reason").WithNext("rhiza describe retire")
 	}
-	n, err := writableNode(b, r.Ref)
+	n, err := b.m.Resolve(r.Ref)
 	if err != nil {
 		return edit{}, err
+	}
+	if n.Retired && !staleRetire(b, n) {
+		return edit{}, Conflictf("node %s (%s) is retired", n.ID, n.Handle)
+	}
+	if n.Conflict {
+		return edit{}, Conflictf("node %s (%s) has conflicting changes", n.ID, n.Handle).WithNext("rhiza check")
 	}
 	var e edit
 	e.touchNode(n.ID, n.Handle)
@@ -384,6 +394,11 @@ func buildRetire(b writeBase, r RetireRequest) (edit, error) {
 	opID, err := b.newID()
 	if err != nil {
 		return edit{}, err
+	}
+	for _, o := range b.ops {
+		if slices.Contains(n.Pending, o.ID) && o.Type != op.TypeNodeCreate {
+			e.drop = append(e.drop, o.ID)
+		}
 	}
 	e.ops = []op.Op{{ID: opID, Type: op.TypeNodeRetire, Node: n.ID, Base: n.Version, Reason: r.Reason}}
 	return e, nil
@@ -513,4 +528,25 @@ func knownFieldsOnly(cmd string, kind op.Kind, fields map[string]json.RawMessage
 		return Usagef("%s %s has no field %q (%s)", article(string(kind)), kind, name, known).WithNext("rhiza describe " + cmd)
 	}
 	return nil
+}
+
+// staleRetire reports whether n is retired by the current change set in a
+// way that cannot land: the change set also holds its own update or move on
+// n (as retire wrote before it dropped them, all on the landed version), or
+// the retire rests on a base other than the landed version. A lone retire on
+// the landed version is not stale.
+func staleRetire(b writeBase, n Node) bool {
+	rt, ok := b.pendingOp(n.Pending, op.TypeNodeRetire)
+	if !ok {
+		return false
+	}
+	if rt.Base != n.Version {
+		return true
+	}
+	for _, o := range b.ops {
+		if slices.Contains(n.Pending, o.ID) && (o.Type == op.TypeNodeUpdate || o.Type == op.TypeNodeMove) {
+			return true
+		}
+	}
+	return false
 }

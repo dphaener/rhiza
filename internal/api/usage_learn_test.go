@@ -254,6 +254,7 @@ func TestLearnedLimitRatchetsAtPoll(t *testing.T) {
 	setup := func(t *testing.T, recs []adapter.UsageRecord, learned int64) (*daemonProj, func(now time.Time) map[string]daemon.LearnedLimit) {
 		f, _, _ := limitFixture(t)
 		f.ctx.Getenv = func(string) string { return "" }
+		pinFreeBytes(f.ctx)
 		f.ctx.Wd = t.TempDir() // outside any root, so hits stay in this repo
 		holdFakeRecords = recs
 		t.Cleanup(func() { holdFakeRecords = nil })

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6XGS4KJ99S251K4QQ0VAN5B",
+  "after": [
+    "01M6XFZFS8ZGY99YCK5FK23HD3"
+  ],
+  "at": "2026-11-08T12:08:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 36bd98c8 I read the diff: plan.toml (and plan-milestone.toml) change only wait-pr/wait-rebased until and pr-green/rebased-green run to add --reruns 2 to rhiza ship check, with on.pass/on.fail/max_visits unchanged. TestPlanRerunsCIFlakes loads the built-in plan workflows, asserts those four steps carry --reruns 2 with pass routes, no fail route and max_visits 3, and asserts ship-change has at least one ship check step and none carries --reruns. go test -trimpath ./internal/workflow/... passed. go test -trimpath ./cmd/rhiza -run 'TestScripts/plan-workflow' passed all 8 scripts: plan-workflow-ci-flake (the fake gh fails test (4/5) until two 'run rerun 42 --failed' calls; the run succeeds, gh.log has exactly 2 reruns and 1 pr merge, merge and close-out pass), plan-workflow-ci-flake-red (stays red; the run fails at pr-green, no pr merge, status detail says 'failed: test (4/5) after 2 reruns' and 'the PR changes only .rhiza/'), and plan-workflow-pr still passes."
+        },
+        "handle": "plan-run-reruns-ci-flakes-verified",
+        "id": "01M6XGYK3PSTC54F2P9Y7SXF68",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XGYK3PSTC54F2P9WWDE7VE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XGYK3PSTC54F2P9WWDE7VE",
+        "id": "01M6XGYK5TYCX2D6CXGBDHENHA",
+        "link": "01M6XGYK5TYCX2D6CXG99804CE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ6ZN7V3CXMEZYFA58HAYV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XGYK8T18CQF9Y6X6JJJVG2",
+  "type": "ops",
+  "v": 1
+}

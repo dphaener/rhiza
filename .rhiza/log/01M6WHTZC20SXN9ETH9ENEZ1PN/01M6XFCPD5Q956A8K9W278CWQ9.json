@@ -1,0 +1,40 @@
+{
+  "actor": "01M6XD8YAVF174K0NZSA5XBCVZ",
+  "after": [
+    "01M6WKA4QXWH9617XS51JYHNHB"
+  ],
+  "at": "2026-11-08T11:41:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at fce29b5a: read the diff (internal/api/ship.go adds shipRerunsSpent, inserting ' after <n> reruns' after the failed checks when reruns were spent on the head, and shipDiffOnlyRhiza, appending '; the PR changes only .rhiza/' when git merge-base origin/main..head diff --name-only lists only .rhiza/ paths, any git error or empty diff giving no note). go test -trimpath -count=1 ./internal/api/ -run TestShipCheckFailureDetailNotes -v: PASS for all 3 cases (fake gh with git answered through the same fake Exec, as every ship test does): .rhiza-only gives 'failed: test after 2 reruns; failing tests: TestGarden; the PR changes only .rhiza/'; with main.go too it gives the same without the note; a lint check whose log reports a stale .rhiza/rendered/ file gives 'failed: lint after 2 reruns; the PR changes only .rhiza/'. Each case asserts no 'unrelated', 'flaky' or 'on main'. go test -run Ship ./internal/api/: ok, and ship_test.go:254's 'PR #7 at abc1234: failed: test, ci/x' is unchanged (the diff only adds to ship_test.go). go test -trimpath ./cmd/rhiza -run TestScripts/ship-check-ci-test-findings: ok, and lines 39 and 51 still read stdout 'failed: test'. The whole ./internal/api/... package went over its timeout at load average ~15 in TestReadBudget/TestInboxGateQuestionsBudget and the default 10m limit: those are timing tests this diff does not touch, and CI's make check covers them"
+        },
+        "handle": "ship-check-names-unrelated-failure-verified",
+        "id": "01M6XFCP155K214BAGZHVT52T6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XFCP155K214BAGZHV49CBR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XFCP155K214BAGZHV49CBR",
+        "id": "01M6XFCP7HYTG14XC6DXZEMF3J",
+        "link": "01M6XFCP7HYTG14XC6DXP9EZS8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ6ZEEPYS69MVFGK79HHKN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WHTZC20SXN9ETH9ENEZ1PN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XFCPD5Q956A8K9W278CWQ9",
+  "type": "ops",
+  "v": 1
+}

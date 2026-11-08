@@ -1,0 +1,40 @@
+{
+  "actor": "01M6XNN4KHZ5W5160D4SQE0362",
+  "after": [
+    "01M6XP2MZJ6J2079DJW3128S75"
+  ],
+  "at": "2026-11-08T13:58:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2bee5d01 ran go test -trimpath -count=1 ./internal/api -run 'TestVanishedGoWork|TestCommandRetriesVanishedGoWork' -v: PASS. TestVanishedGoWork accepts the 'could not import io (open $WORK/b033/_pkg_.a: no such file or directory)' and \"can't create $WORK/b094/_pkg_.a: open $WORK/b094/_pkg_.a: no such file or directory\" lines and rejects a compile error, a missing file outside $WORK and a non-ENOENT $WORK error. TestCommandRetriesVanishedGoWork drives stepRunner.Command with scripted fake processes: signature-then-pass returns exit 0 after 2 runs with exactly one 'running it once more' stderr line; signature twice returns the second failure's code 2 after 2 runs; a plain failure runs once with no retry line. Read the diff: Command reruns only when err is nil, the code is non-zero and not StopExit, and the output matches open \\$WORK/b\\d+/...: no such file or directory; tail and buf are reset so the second result's detail stands. gofmt and go vet are clean. The run_test, run_leaves, run_checks_panes and run_gowork tests pass from a scratch worktree outside ~/code; inside ~/code only the rootguard tripped, on usage.live.json that the live root daemon keeps rewriting. A full ./internal/api run timed out under load average ~17 (TestReadBudget 290s, known contention), in tests this change does not touch."
+        },
+        "handle": "step-retry-vanished-go-work-verified",
+        "id": "01M6XQ8SSEPWYKGCXTE8YWWNVY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XQ8SSD2ZFZMFA7A75ZJ0AE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XQ8SSD2ZFZMFA7A75ZJ0AE",
+        "id": "01M6XQ8SVWXJZXSKAST8J877BV",
+        "link": "01M6XQ8SVWXJZXSKAST5T1SJFA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WGXA821QDFHM5T4K3G3P2Q",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WGEPSYWV8R14VGKJX9GGJM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XQ8SY3XFTC960RKBP2HQ76",
+  "type": "ops",
+  "v": 1
+}

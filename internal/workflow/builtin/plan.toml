@@ -77,7 +77,7 @@ on.pass = "wait-pr"
 # set opens and merges its own PR.
 [step.wait-pr]
 kind = "wait"
-until = "rhiza ship check --settled"
+until = "rhiza ship check --reruns 2 --settled"
 timeout = "2h"
 interval = "30s"
 max_visits = 3
@@ -85,7 +85,7 @@ on.pass = "pr-green"
 
 [step.pr-green]
 kind = "command"
-run = "rhiza ship check"
+run = "rhiza ship check --reruns 2"
 max_visits = 3
 on.pass = "rebase"
 
@@ -97,7 +97,7 @@ on.pass = "wait-rebased"
 
 [step.wait-rebased]
 kind = "wait"
-until = "rhiza ship check --settled"
+until = "rhiza ship check --reruns 2 --settled"
 timeout = "2h"
 interval = "30s"
 max_visits = 3
@@ -105,7 +105,7 @@ on.pass = "rebased-green"
 
 [step.rebased-green]
 kind = "command"
-run = "rhiza ship check"
+run = "rhiza ship check --reruns 2"
 max_visits = 3
 on.pass = "merge"
 

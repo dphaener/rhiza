@@ -1,0 +1,40 @@
+{
+  "actor": "01M6XX5X5B2J71ZXHWB6QH8P12",
+  "after": [
+    "01M6XD24QTB1GGS1R3YQ67ZE8G"
+  ],
+  "at": "2026-11-08T15:48:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-bd671b3d at 2bde24d9: read the diff (internal/daemon/roundrobin.go fills slots in three tiers via ProjectPick.Continues/Queued; internal/api/daemon_projects.go daemonDemand reports the continuation and queued-start counts). Ran go test -trimpath -count=1 ./internal/daemon/...: ok, incl. TestRoundRobinContinuationsFirst (maxRuns 3, 2 running, A turn next with 2 ready, B 1 continuation -> [Bc]; 2 free slots, A queued start+ready, B continuation -> [Bc As]) and TestRoundRobinContinuationPerProjectMax, and the old cases TestRoundRobinAcrossProjects/PerProjectMax/RotatesAcrossPolls still pass unchanged. The repo test for 'else its start' only used a roadmap pick (Queued 0), so I checked it in a scratch copy of roundrobin.go: A at max with a continuation, B with a true queued start -> [B Bs]; with C also holding a continuation -> [C Cc]; the tier order holds whatever after is. go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-round-robin|daemon-continue-slot)$': both PASS (run with the run's RHIZA_* and GOTMPDIR unset, because GOTMPDIR under ~/code/rhiza/.git makes rhiza init in a script find the host repo; that is environmental, not caused by this change). go vet ./internal/api ./internal/daemon: clean."
+        },
+        "handle": "root-continuations-first-verified",
+        "id": "01M6XXJA6JGZSXHR2B891ZEJSD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XXJA6JGZSXHR2B87BM1HDR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XXJA6JGZSXHR2B87BM1HDR",
+        "id": "01M6XXJA84JG7F88B4DQDQH4X5",
+        "link": "01M6XXJA84JG7F88B4DP3FR96Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XCJN76SFKMEST71CGEA6VG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XC4M3W7Y351WGXE8DTZACT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XXJA9QMXXY59QBKFB2RJR0",
+  "type": "ops",
+  "v": 1
+}

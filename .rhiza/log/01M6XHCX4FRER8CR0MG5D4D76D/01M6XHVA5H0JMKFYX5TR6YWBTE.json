@@ -1,0 +1,33 @@
+{
+  "actor": "01M6XHEAH4XDKCP9GJE1NE7JPG",
+  "after": [
+    "01M6XHTWYQJHS69S98CT0DG1VF"
+  ],
+  "at": "2026-11-08T12:24:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "e14ad724409bdc5a2d840568e683f3d1f80e7dabeb25485b22a40c4036cef8cd",
+          "session": "cf4d0c69-229d-4917-b1e9-01a1bb16ffc1",
+          "summary": "Autonomous plan run, no owner. Diagnosis: run 01M6X2EMMHKMQ9W4TDJH3ERXSD failed at step land because change set 01M6WMCCRC0KSCWEV17VY8KVQP (PR 383) updated two nodes and later retired them; rhiza retire based each retire on the node's landed version (Node.Version skips the change set's own ops), so model.checkBase refused the land as a conflict (exit 3) against the change set's own earlier update. rhiza check only warned (rule in-flight), and ship's head-build error dropped the child's error message, so the run log said only 'exit status 3'. The planner asked how to fix it (model tolerance of own ops, writer bases, or both); the arbiter decided retire-supersedes-own-pending-edits: rhiza retire drops the change set's pending update/move ops on the node and bases the retire on the landed version, as it already does for a pending create; then repair PR 383 by re-running rhiza retire in its change set with the fixed build; add a model/api test of update-then-retire landing; making the in-flight warning an error is out of scope. The planner kept the head-build error message as a second leaf within the intent.",
+          "title": "Plan: fix the land refused for an update-then-retire change set (autonomous)"
+        },
+        "handle": "plan-fix-watchdog-unmerged-pr-at",
+        "id": "01M6XHVA4Q0021AZMQD7WRBVF6",
+        "key": null,
+        "kind": "source",
+        "node": "01M6XHVA4Q0021AZMQD4E0878G",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6XHCX4FRER8CR0MG5D4D76D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XHVA5H0JMKFYX5TR6YWBTE",
+  "type": "ops",
+  "v": 1
+}
