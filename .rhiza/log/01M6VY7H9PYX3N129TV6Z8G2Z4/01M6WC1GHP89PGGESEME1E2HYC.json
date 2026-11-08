@@ -1,0 +1,39 @@
+{
+  "actor": "01M6WBZPH7W9MGEY2JTJ79EN5V",
+  "after": [
+    "01M6WBX7J1NZSV5JXCT1M9K8JK"
+  ],
+  "at": "2026-11-08T01:23:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Round 2 attempt 2 (run attempt 5) of @{01M6VYPW4D8366CNFT3EH72465} found workflow dispatch still not on main on 2026-11-08: origin/main is b696b22c, it has no internal/dispatch, and PR #367 (cs/workflow-dispatch) is open and CONFLICTING with main, so it has no CI and cannot merge as it stands. Per decision @{01M6WBX7DB8E3B3EY78RTNRTT0} the leaf was not built and cs/workflow-dispatch was not merged here. Retrying this leaf cannot pass until #367 is brought up to date with main and lands; until then either pause this leaf or move it into a follow-up change set that depends on dispatch."
+        },
+        "handle": "bugfix-dispatch-still-unlanded-attempt5",
+        "id": "01M6WC1G8QEHHBJVJH4BW2YPJF",
+        "key": null,
+        "kind": "note",
+        "node": "01M6WC1G8QEHHBJVJH4834Q657",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WC1G8QEHHBJVJH4834Q657",
+        "id": "01M6WC1GCKXS1YY8692HAWXAX2",
+        "link": "01M6WC1GCKXS1YY8692GHVXKW9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WB3CJ5R7561BXEX3X6HP2N",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M6VY7H9PYX3N129TV6Z8G2Z4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WC1GHP89PGGESEME1E2HYC",
+  "type": "ops",
+  "v": 1
+}
