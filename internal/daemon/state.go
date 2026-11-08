@@ -79,6 +79,9 @@ type State struct {
 	// WatchdogHolds are the stalled steps the last poll left to the owner
 	// (an attended run, or a spent budget), each an inbox item while it lasts.
 	WatchdogHolds []WatchdogHold `json:"watchdog_holds,omitempty"`
+	// WatchdogActions are the watchdog's last actions, newest first: the
+	// journal behind its log lines and rhiza health.
+	WatchdogActions []WatchdogAction `json:"watchdog_actions,omitempty"`
 	// PollBehind is set while the last poll took longer than the watchdog's
 	// multiple of the poll interval, and absent once a poll is within it.
 	PollBehind *PollBehind `json:"poll_behind,omitempty"`
@@ -219,6 +222,12 @@ type WatchdogRun struct {
 type WatchdogAttempt struct {
 	At     time.Time `json:"at"`
 	Action string    `json:"action"`
+}
+
+// WatchdogAction is one thing the watchdog did or saw, as logged.
+type WatchdogAction struct {
+	At   time.Time `json:"at"`
+	Line string    `json:"line"`
 }
 
 // WatchdogHold is a stalled step the watchdog only reports.

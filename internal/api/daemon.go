@@ -302,6 +302,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 				if ctx.Stderr != nil {
 					fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %s\n", line)
 				}
+				hp.state.WatchdogActions = watchdogRecord(hp.state.WatchdogActions, ctx.Now(), line)
 			})
 		}
 		// Every project's state says which of the others were skipped.
@@ -376,6 +377,7 @@ func daemonStartState(common string, self daemon.Holder, version, commit string,
 		state.Notified = prev.Notified
 		state.Nudged = prev.Nudged
 		state.Watchdog, state.WatchdogHolds = prev.Watchdog, prev.WatchdogHolds
+		state.WatchdogActions = prev.WatchdogActions
 		state.PollBehind = prev.PollBehind
 		state.Hooked = prev.Hooked
 		state.Events, state.EventsSeeded = prev.Events, prev.EventsSeeded
@@ -1408,6 +1410,7 @@ type DaemonStatusResponse struct {
 	Commit          string                `json:"commit,omitempty" desc:"The git commit the daemon's binary was built from, as recorded when it started; absent when the build carried none"`
 	Started         string                `json:"started,omitempty" desc:"When the daemon started, RFC 3339 UTC"`
 	LastPoll        string                `json:"last_poll,omitempty" desc:"When it last polled, RFC 3339 UTC"`
+	WatchdogActions []string              `json:"watchdog_actions,omitempty" desc:"The watchdog's last actions, newest first, each as its time and the log line: what it saw, what it did, the run or request; absent when it has done none"`
 	PollBehind      string                `json:"poll_behind,omitempty" desc:"Set while its last poll took longer than the watchdog's pollBehind multiple of the poll interval: how long it took and the limit; absent when polls keep up"`
 	Stopped         string                `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
 	MaxRuns         int                   `json:"max_runs,omitempty" desc:"How many runs it keeps running at once"`
@@ -1625,6 +1628,7 @@ func daemonStatusHome(ctx *Ctx) (any, error) {
 	if pb := st.PollBehind; pb != nil {
 		resp.PollBehind = pollBehindText(pb)
 	}
+	resp.WatchdogActions = watchdogActionLines(st.WatchdogActions)
 	if !st.Stopped.IsZero() && !resp.Running {
 		resp.Stopped = st.Stopped.UTC().Format(time.RFC3339)
 	}
