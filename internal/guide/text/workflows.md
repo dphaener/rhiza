@@ -51,9 +51,9 @@ shows a `workflow-unresolved` skip.
 
 ## Schedules
 
-`[[schedules]]` in `.rhiza/dispatch.toml`: `name`; `every` (at least `1m`) or `cron` (five
-fields; a leading `CRON_TZ=<zone>`, else UTC); `workflow` or `command`; `catch_up` (`once` or
-`skip` a slot missed offline); `overlap` (`skip` or `queue` behind a live run).
+`[[schedules]]` in `.rhiza/dispatch.toml`: `name`; `every` (min `1m`) or `cron` (five
+fields, local time or a leading `CRON_TZ=<zone>`); `workflow` or `command`; `catch_up`
+(`once` or `skip` a slot missed offline); `overlap` (`skip` or `queue` behind a live run).
 
 A scheduled run has no change set: it runs on the main checkout, leaves it as it found it,
 and acts on the model only via paths such as `rhiza request`. `rhiza health` shows
