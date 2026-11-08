@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6YFT3CM11XBYH0BDH8G92Q2"
+  ],
+  "at": "2026-11-08T21:25:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "99b58b2ce30979da1fbbea59d55e457590916b19",
+          "pr": "https://github.com/dphaener/rhiza/pull/397",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #397 (https://github.com/dphaener/rhiza/pull/397) passed CI at 99b58b2",
+          "status": "verified"
+        },
+        "handle": "pr-397-fix-ship-change-s-landed-green",
+        "id": "01M6YGT5KXH897Y3RBS88ZWA9E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YGT5KXH897Y3RBS84T1ASC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YGT5KXH897Y3RBS84T1ASC",
+        "id": "01M6YGT5N82SEMZ20084JKTNHM",
+        "link": "01M6YGT5N82SEMZ20081PSD8PM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XXHNR6FZCKNSA3SC47TZZK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XX4R8Q2PCHDTQS80XFSG9J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YGT5VCWVMJA8W5DS5810TF",
+  "type": "ops",
+  "v": 1
+}

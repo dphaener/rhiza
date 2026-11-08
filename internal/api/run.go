@@ -1041,6 +1041,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		if _, ok := def.Steps[retryStep]; !ok {
 			return nil, Errorf("run %s: step %q is not in workflow %q", j.ID, retryStep, def.Name).WithNext("rhiza run status " + j.ID)
 		}
+		retryStep = run.RetryStep(def, retryStep)
 	}
 	if err := refuseLiveRun(rs, st.Change, j.ID); err != nil {
 		return nil, err

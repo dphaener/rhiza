@@ -1,0 +1,41 @@
+{
+  "actor": "01M6YGS8MMPHPXJWW9G4JPGFKZ",
+  "after": [
+    "01M6YGRJ401CYA60K3JHMQMYG5"
+  ],
+  "at": "2026-11-08T21:26:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent says an infra-only failure (no failing test) should send the run back to wait on CI rather than end it. In internal/workflow/builtin/ship-change.toml, ci-triage has only on.pass. The question notes that pointing on.fail straight at wait-pr would loop: `rhiza ship check --settled` passes at once on a settled red head, so the run would burn max_visits in seconds and end anyway. A wait that passes only when there is new CI (a rerun by the owner or by GitHub, or a new push) fixes that, and it covers exactly the PR #393 case: billing fixed, one rerun, green. It needs no human at the terminal. The timeout and max_visits still bound a run whose CI never recovers, so it fails there with a clear reason instead of hanging. Workflow edges are static, so the wait cannot return to the check that routed into ci-triage (pr-green or rebased-green). Routing to pr-green is the simplest correct target and matches the graph's existing rule that any re-entry after a red head goes back through signoff (ci-fix -> render-pr -> wait-pr -> pr-green -> signoff). The retry decision 01M6YGPS3 (resume --retry reopens at wait-pr or wait-rebased from the journal) is separate and still holds; with this on.fail in place, fewer runs reach a failed ci-triage at all.",
+          "statement": "In ship-change, ci-triage gets on.fail = a new wait step (wait-ci-rerun) instead of ending the run. Its until is `rhiza ship check --settled` with a new flag (e.g. --changed) that reports settled only once CI has moved past the state ci-triage judged: a new head SHA, or a check run/attempt newer than the one in the head's latest ship-check record, and that new CI has finished. So an infra-only failure never loops at once on the already-settled red head. The wait has a long timeout (6h, longer than the 2h CI waits, since an infra cause like billing needs a person) and max_visits = 3; its timeout outcome ends the run with a line naming the infra failure. Its on.pass goes to pr-green, which re-checks the head: green continues to signoff, red with failing tests goes to ci-triage/ci-fix, red without them waits again. A post-rebase run that comes back this way passes signoff again, the same as a ci-fix commit already sends it back through render-pr, open-pr and wait-pr.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "ci-triage-infra-waits-for-new-ci",
+        "id": "01M6YGVRV397Z6Q7B4202B1WBP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6YGVRV397Z6Q7B41Z7PXKN1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YGVRV397Z6Q7B41Z7PXKN1",
+        "id": "01M6YGVRZETEQ4QJNQXBQPH2AY",
+        "link": "01M6YGVRZETEQ4QJNQX99NQ51Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YGREJVNGXG1XFHEZPWXBFD",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6YGFGQT0A9VRZ4AZ9X6VSMJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YGVS26A7A4DVYN124F1CBX",
+  "type": "ops",
+  "v": 1
+}
