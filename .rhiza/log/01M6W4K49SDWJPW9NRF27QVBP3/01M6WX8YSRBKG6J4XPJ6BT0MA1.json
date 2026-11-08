@@ -1,0 +1,178 @@
+{
+  "actor": "01M6WWD68HY9THAW5197PEY8FN",
+  "after": [
+    "01M6WW80BKF5AHRE7XS0Z2Q9BB"
+  ],
+  "at": "2026-11-08T06:24:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 82b0f3e2 I built rhiza into a scratch dir and used it on a scratch git repo registered in a scratch Rhiza root, with RHIZA_ROOT/CHANGE/RUN unset. rhiza check reported 'cron \"0 0 * * * *\": want 5 fields', 'every \"30s\": must be at least 1m0s' and 'unknown time zone \"Mars/Base\"'; it accepted CRON_TZ=America/Denver 0 2 * * *. rhiza health showed next runs on the right boundaries at 06:13Z: every 15m gave 06:15:00Z, every 1m gave 06:14:00Z, @daily gave 2026-11-09T00:00:00Z, @hourly 07:00:00Z, @weekly 2026-11-15T00:00:00Z (a Sunday) and 0 3 * * * gave 2026-11-09T03:00:00Z."
+        },
+        "handle": "schedule-slots-qa-1",
+        "id": "01M6WX8VRJMMHXT14D0Q6043YF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WX8VRJMMHXT14D0MR55VQV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WX8VRJMMHXT14D0MR55VQV",
+        "id": "01M6WX8VYDEY6WWHZMT88GS3JV",
+        "link": "01M6WX8VYDEY6WWHZMT4FNXM68",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HTVXNGQK1CJ943THTJDB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 82b0f3e2 I built rhiza into a scratch dir and used it on a scratch git repo registered in a scratch Rhiza root, with RHIZA_ROOT/CHANGE/RUN unset. A dispatch.toml with [request] beside [[schedules]] read with no error. rhiza check named the schedule and key for: unknown key foo, a duplicate name, every and cron both set, catch_up = \"all\", a bad cron and every 30s. An unknown [bogus] table still failed, naming it."
+        },
+        "handle": "schedules-file-qa-1",
+        "id": "01M6WX8W1KRP6MSQK6HTZBB47V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WX8W1KRP6MSQK6HQNYWPNT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WX8W1KRP6MSQK6HQNYWPNT",
+        "id": "01M6WX8W69XZWYYT20181E6TSK",
+        "link": "01M6WX8W69XZWYYT20172MJYPF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HTZ9ZZ6PWNAJ739T6ASH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 82b0f3e2 I built rhiza into a scratch dir and used it on a scratch git repo registered in a scratch Rhiza root, with RHIZA_ROOT/CHANGE/RUN unset. rhiza check passed on a schedule naming the built-in ship-change, one naming a repo workflow (.rhiza/workflows/lw.toml) and a command schedule. It failed on workflow = \"missing-wf\" with 'schedule \"nightly\": workflow: names workflow \"missing-wf\", which is neither in .rhiza/workflows nor built in'."
+        },
+        "handle": "schedules-check-qa-1",
+        "id": "01M6WX8WCVB7P5NGE90PYNPM68",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WX8WCVB7P5NGE90N47JYVX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WX8WCVB7P5NGE90N47JYVX",
+        "id": "01M6WX8WJM1WV89Z2RCJDE3TJ9",
+        "link": "01M6WX8WJM1WV89Z2RCH1AZXK3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HV4DHZKJGNMDBNYDEBTN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 82b0f3e2 I built rhiza into a scratch dir and used it on a scratch git repo registered in a scratch Rhiza root, with RHIZA_ROOT/CHANGE/RUN unset. rhiza run start --schedule tick (a command) ran in the main checkout: no worktree was added, no change set was opened, and its output was printed. run start --json, run ls --json and run status --json all show change \"\", trigger schedule and trigger_name tick, and run ls says 'schedule tick'. A repo workflow copied from the built-in build ran under schedule leafy and failed with 'step \"build\" is a leaves step, which needs a change set, and this run has none'. For daemon-started runs, rhiza run log shows the command's output ('slow start', 'slow done'). Human run status prints 'Change set: : ' and leaves out the schedule name and the warnings (reported as a minor finding)."
+        },
+        "handle": "scheduled-run-qa-1",
+        "id": "01M6WX8WPS9CJAACQD6H7EGKRB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WX8WPS9CJAACQD6H6YGG4E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WX8WPS9CJAACQD6H6YGG4E",
+        "id": "01M6WX8WTD8B9EH51KYSCHPJET",
+        "link": "01M6WX8WTD8B9EH51KYRWAX4S1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HV83HMQEQ15319XERHJ6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 82b0f3e2 I built rhiza into a scratch dir and used it on a scratch git repo registered in a scratch Rhiza root, with RHIZA_ROOT/CHANGE/RUN unset. Each scheduled run ended in state succeeded. git checkout -b feature warned 'switched the main checkout's branch from main to feature'. A commit warned 'moved the main checkout's HEAD from b387179… to ae52673…'. Appending to tracked.txt warned 'changed uncommitted tracked files in the main checkout: tracked.txt'. Each warning was on stderr and in run start/status --json warnings. Nothing was reverted: the branch, the commit and the edit all stayed. A tick run in a checkout that was already dirty recorded no warning."
+        },
+        "handle": "main-checkout-change-warning-qa-1",
+        "id": "01M6WX8X032H0192FYF0HX7S3C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WX8X032H0192FYEWXYND2B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WX8X032H0192FYEWXYND2B",
+        "id": "01M6WX8XCRCSET72DZ0EGD2D3S",
+        "link": "01M6WX8XCRCSET72DZ0AM6WPXN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HVA0S11V8P7TJPCY6QH8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 82b0f3e2 I built rhiza into a scratch dir and used it on a scratch git repo registered in a scratch Rhiza root, with RHIZA_ROOT/CHANGE/RUN unset. rhiza health exited 0 every time, and its schedules part was always warn or ok, never bad. With no daemon it warned 'no daemon is running to fire them', with next 'rhiza daemon --autonomous'. Each schedule got a detail line with its last run time, run ID, result and next run, or 'none yet'. Three schedules that changed the checkout and one that failed were each named in the summary. With the daemon up and only failer failing, it warned 'failer failed', with next 'rhiza run log <that run>'. When a schedule earlier in the file had changed the checkout, next pointed at that schedule's run status, not at the failing run (reported as a minor finding)."
+        },
+        "handle": "health-schedules-part-qa-1",
+        "id": "01M6WX8XVJH69YD1T2J3C1EM7V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WX8XVJH69YD1T2J0PH6ZDE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WX8XVJH69YD1T2J0PH6ZDE",
+        "id": "01M6WX8Y3NT9KNJA25ABD9XAG5",
+        "link": "01M6WX8Y3NT9KNJA25AAMW06KR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HW3CJ9HJ6KKRS7G4CJXC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "At 82b0f3e2 I built rhiza into a scratch dir and used it on a scratch git repo registered in a scratch Rhiza root, with RHIZA_ROOT/CHANGE/RUN unset. I ran rhiza daemon --autonomous --max-runs 1 --min-free 0 --permission-mode manual for real, with a logging fake rex first on PATH. slow (every 1m, sleep 70) fired at 06:21. failer waited while slow held the only slot, then fired once for slot 06:22. slow's 06:22 slot came during its run and was dropped. A broken dispatch.toml logged 'schedules not read, none started'. workflow = \"vanished\" logged 'schedule nightly not started: no workflow \"vanished\"' and started nothing. The daemon log carried every start and every end, including 'run … of schedule failer failed: step \"command\" ended with outcome \"fail\"'. The fake rex CLI was never called. But the failed scheduled run also became an owner inbox item ('failed run …, change set , step command', next run resume --retry), and the daemon wrote an OSC 7501 state=blocked status reading 'a change set: a run failed' (reported as a major finding). Separately, with the default rhiza.daemon.trimGoCache each poll took about 80s on this VM."
+        },
+        "handle": "daemon-fires-schedules-qa-1",
+        "id": "01M6WX8YCX24HRCGGKPM8BMR6V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6WX8YCX24HRCGGKPKPV2GRM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WX8YCX24HRCGGKPKPV2GRM",
+        "id": "01M6WX8YP9B4JFBNDRPRH8N96X",
+        "link": "01M6WX8YP9B4JFBNDRPPRY41ZZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5HVM44MDKXV4ESTPX0KSX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W4K49SDWJPW9NRF27QVBP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WX8YSRBKG6J4XPJ6BT0MA1",
+  "type": "ops",
+  "v": 1
+}
