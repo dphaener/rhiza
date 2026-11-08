@@ -2398,6 +2398,7 @@ func TestCommandStopExitStopsRun(t *testing.T) {
 type fakeCondRunner struct {
 	*fakeRunner
 	cond []int
+	out  string
 }
 
 func (f *fakeCondRunner) Condition(step workflow.Step, env []string) (int, string, error) {
@@ -2410,7 +2411,31 @@ func (f *fakeCondRunner) Condition(step workflow.Step, env []string) (int, strin
 	if code == StopExit {
 		return code, "rebase conflict", nil
 	}
+	if code != 0 {
+		return code, f.out, nil
+	}
 	return code, "", nil
+}
+
+// A wait that times out keeps the until command's last output in its
+// detail.
+func TestWaitTimeoutDetailHoldsLastOutput(t *testing.T) {
+	e, r, _, _ := setup(t, waitWF)
+	e.Runner = &fakeCondRunner{fakeRunner: r, out: "not settled: red head abc1234 failed test with no failing test"}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "did not hold within 5s: not settled: red head abc1234 failed test with no failing test"
+	var got string
+	for _, s := range st.Steps {
+		if s.Step == "ci" {
+			got = s.Detail
+		}
+	}
+	if got != want {
+		t.Fatalf("detail = %q, want %q", got, want)
+	}
 }
 
 // A wait whose condition exits StopExit stops the run for the owner with

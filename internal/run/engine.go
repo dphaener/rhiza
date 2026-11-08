@@ -624,7 +624,8 @@ const (
 // Conditioner is a Runner that also reports a wait step's condition as its
 // exit code, so a wait can tell StopExit from a condition that does not
 // hold. detail is the last stop: line of the output when the code is
-// StopExit. A Runner without it reads every non-zero exit as not held.
+// StopExit, else (for a non-zero code) the tail of the output, which a
+// wait that times out adds to its detail. A Runner without it reads every non-zero exit as not held.
 type Conditioner interface {
 	Condition(step workflow.Step, env []string) (code int, detail string, err error)
 }
@@ -743,6 +744,7 @@ func (r *running) wait(step workflow.Step, env []string) result {
 		interval = workflow.DefaultInterval
 	}
 	began := c.Now()
+	last := ""
 	for polls := 1; ; polls++ {
 		held := false
 		if cr, ok := r.e.Runner.(Conditioner); ok {
@@ -757,6 +759,9 @@ func (r *running) wait(step workflow.Step, env []string) result {
 				return result{stopped: detail}
 			}
 			held = code == 0
+			if !held {
+				last = detail
+			}
 		} else {
 			var err error
 			if held, err = r.e.Runner.Holds(step, env); err != nil {
@@ -771,7 +776,11 @@ func (r *running) wait(step workflow.Step, env []string) result {
 		}
 		elapsed := c.Now().Sub(began)
 		if elapsed >= step.Timeout {
-			return result{outcome: workflow.OutcomeTimeout, detail: fmt.Sprintf("did not hold within %s", step.Timeout)}
+			d := fmt.Sprintf("did not hold within %s", step.Timeout)
+			if last != "" {
+				d += ": " + last
+			}
+			return result{outcome: workflow.OutcomeTimeout, detail: d}
 		}
 		// Sleep at most to the deadline, so the last check falls on it.
 		c.Sleep(min(interval, step.Timeout-elapsed))

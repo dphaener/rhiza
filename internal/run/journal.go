@@ -1797,8 +1797,8 @@ func (st State) FailedStep() (string, error) {
 }
 
 // RetryStep is the step a retry of a run that failed at failed reopens it
-// at in def: when failed is the on.pass target of exactly one wait step,
-// that wait step, so a check that failed because what it checks had not
+// at in def: when failed is the on.pass target of a wait step (of several, the one
+// the journal visited last), that wait step, so a check that failed because what it checks had not
 // settled waits for it again. Otherwise, when the last other step the
 // journal visited before the failed one (its own earlier visits, each
 // retry's included, skipped) is a command step whose on.fail routes into
@@ -1806,7 +1806,7 @@ func (st State) FailedStep() (string, error) {
 // exactly one wait step, that wait: a triage of a red check re-waits for CI, then re-runs the check.
 // Else failed itself.
 func RetryStep(def *workflow.Definition, st State, failed string) string {
-	if w := soleWaitFor(def, failed); w != "" {
+	if w := waitFor(def, st, failed); w != "" {
 		return w
 	}
 	// Walk back from the failed visit: each step before it that routes
@@ -1822,7 +1822,7 @@ func RetryStep(def *workflow.Definition, st State, failed string) string {
 		if !ok || s.Kind != workflow.KindCommand || s.On[workflow.OutcomeFail] != cur {
 			break
 		}
-		if w := soleWaitFor(def, prev); w != "" {
+		if w := waitFor(def, st, prev); w != "" {
 			return w
 		}
 		cur = prev
@@ -1830,19 +1830,29 @@ func RetryStep(def *workflow.Definition, st State, failed string) string {
 	return failed
 }
 
-// soleWaitFor is the one wait step whose on.pass is target, or "" when
-// there is none or several.
-func soleWaitFor(def *workflow.Definition, target string) string {
-	wait := ""
+// waitFor is the wait step whose on.pass is target: the one there is, or,
+// of several, the one the journal visited last (so a check fed by two
+// waits re-waits at the wait the run came through); "" when there is none,
+// or several and the journal visited none.
+func waitFor(def *workflow.Definition, st State, target string) string {
+	var waits []string
 	for name, s := range def.Steps {
 		if s.Kind == workflow.KindWait && s.On[workflow.OutcomePass] == target {
-			if wait != "" {
-				return ""
-			}
-			wait = name
+			waits = append(waits, name)
 		}
 	}
-	return wait
+	switch len(waits) {
+	case 0:
+		return ""
+	case 1:
+		return waits[0]
+	}
+	for i := len(st.Steps) - 1; i >= 0; i-- {
+		if slices.Contains(waits, st.Steps[i].Step) {
+			return st.Steps[i].Step
+		}
+	}
+	return ""
 }
 
 func (st *State) clearBlock() {
