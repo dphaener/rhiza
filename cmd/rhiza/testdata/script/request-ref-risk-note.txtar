@@ -1,0 +1,32 @@
+# rhiza request --ref queues as before and notes when it reaches a
+# bypass-mode workflow; a request without --ref gets no note.
+
+env REX_SESSION=
+env REX_SERVER=
+env XDG_CONFIG_HOME=$WORK/xdg
+mkdir repo
+cd repo
+exec git init -q -b main
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+
+exec git config rhiza.autonomy.plan auto
+exec git config rhiza.daemon.permissionMode bypassPermissions
+exec rhiza request --ref https://example.com/issues/1 'Add a thing'
+stdout 'Queued feature request'
+stdout -count=1 '^Note: .*workflow plan'
+stdout 'no permission checks'
+exec rhiza request ls
+stdout 'Add a thing'
+exec rhiza request --json --ref https://example.com/issues/2 'Another'
+stdout '"note": ".*plan'
+
+exec rhiza request 'No ref'
+! stdout 'Note:'
+
+exec git config rhiza.autonomy.plan owner
+exec git config rhiza.daemon.permissionMode acceptEdits
+exec rhiza request --ref https://example.com/issues/3 'Owner'
+! stdout 'Note:'

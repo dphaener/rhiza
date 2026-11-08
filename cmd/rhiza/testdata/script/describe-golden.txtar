@@ -7610,6 +7610,10 @@ cmp stdout describe.golden.json
             "description": "True if nothing was written",
             "type": "boolean"
           },
+          "note": {
+            "description": "A one-line risk note, only for a request with a --ref while the request-exposed list is not empty: it names the flagged workflows and says outside text reaches agents with no permission checks; never changes the outcome",
+            "type": "string"
+          },
           "request": {
             "additionalProperties": false,
             "description": "The request",

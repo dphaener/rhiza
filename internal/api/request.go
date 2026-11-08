@@ -65,11 +65,15 @@ type RequestInfo struct {
 type RequestResponse struct {
 	Request RequestInfo `json:"request" desc:"The request"`
 	DryRun  bool        `json:"dry_run,omitempty" desc:"True if nothing was written"`
+	Note    string      `json:"note,omitempty" desc:"A one-line risk note, only for a request with a --ref while the request-exposed list is not empty: it names the flagged workflows and says outside text reaches agents with no permission checks; never changes the outcome"`
 }
 
 // Human writes the response as text.
 func (r RequestResponse) Human(w io.Writer) {
 	fmt.Fprintf(w, "Queued %s request %s: %s\n", r.Request.Kind, r.Request.ID, r.Request.Text)
+	if r.Note != "" {
+		fmt.Fprintln(w, r.Note)
+	}
 }
 
 // RequestLsRequest takes nothing.
@@ -156,7 +160,29 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 	} else if err := daemon.UpdateRequests(common, queue); err != nil {
 		return nil, requestsErr(err)
 	}
-	return RequestResponse{Request: requestInfo(q, nil), DryRun: ctx.DryRun}, nil
+	return RequestResponse{Request: requestInfo(q, nil), DryRun: ctx.DryRun, Note: requestRiskNote(ctx, ref)}, nil
+}
+
+// requestRiskNote is the one-line note for a request with a ref while the
+// request-exposed list is not empty, else "". Settings that cannot be read
+// give none: rhiza health reports them.
+func requestRiskNote(ctx *Ctx, ref string) string {
+	if ref == "" {
+		return ""
+	}
+	settings, err := settingsOf(ctx, nil)
+	if err != nil {
+		return ""
+	}
+	exposed := requestExposedWorkflows(ctx, settings)
+	if len(exposed) == 0 {
+		return ""
+	}
+	names := make([]string, len(exposed))
+	for i, e := range exposed {
+		names[i] = e.Workflow
+	}
+	return fmt.Sprintf("Note: outside text reaches agents with no permission checks in workflow %s (rhiza guide workflows)", strings.Join(names, ", "))
 }
 
 // requestMilestone resolves ref, a milestone intent's handle or ID, to the
