@@ -1,6 +1,7 @@
 package api
 
 import (
+	"os"
 	"slices"
 	"strings"
 	"testing"
@@ -87,5 +88,59 @@ func TestRequestPlanRunArgsPassRef(t *testing.T) {
 	without := planRunArgs(daemon.Request{ID: "r2"}, "plan", "default", false, "manual")
 	if slices.ContainsFunc(without, func(a string) bool { return strings.HasPrefix(a, "--ref") }) {
 		t.Fatalf("without a ref: %q", without)
+	}
+}
+
+// A queued milestone request is demand while no other milestone request's
+// run is live or unjournaled: a started milestone request stays in the
+// queue after its run ends, and blocks the next one only while its run
+// runs, or while its start is within daemonStartGrace and not journaled.
+func TestDaemonMilestoneWaitsAfterEndedRun(t *testing.T) {
+	f := newSessionFixture(t, "req")
+	now := time.Date(2026, 11, 1, 12, 0, 0, 0, time.UTC)
+	f.ctx.Now = func() time.Time { return now }
+	host, _ := os.Hostname()
+	rs := run.NewStore(run.Dir(f.common))
+	const first = "01M6YRUNFIRST0000000000000"
+	write := func(firstRun string) {
+		t.Helper()
+		if err := daemon.WriteRequests(f.common, []daemon.Request{
+			{ID: "r1", Kind: daemon.KindMilestone, Text: "First", At: now.Add(-time.Hour), Run: firstRun, StartedAt: now.Add(-time.Second)},
+			{ID: "r2", Kind: daemon.KindMilestone, Text: "Second", At: now.Add(-time.Minute)},
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	waits := func() bool {
+		t.Helper()
+		runs, err := rs.List()
+		if err != nil {
+			t.Fatal(err)
+		}
+		return daemonMilestoneWaits(f.ctx, rs, runs, host)
+	}
+
+	// The first's start has not journaled, within the grace: it blocks.
+	write(first)
+	if waits() {
+		t.Fatal("first start unjournaled within the grace: second waits, want blocked")
+	}
+	// Its run journals and runs (a process on another host is running).
+	if err := rs.Create(first, run.Entry{Type: run.TypeStarted, At: now, Started: &run.Started{Workflow: "plan-milestone"}}); err != nil {
+		t.Fatal(err)
+	}
+	if err := rs.Append(first, run.Entry{Type: run.TypeProcess, At: now, Process: &run.Process{Host: host + "-elsewhere", Pid: 1}}); err != nil {
+		t.Fatal(err)
+	}
+	if waits() {
+		t.Fatal("first run live: second waits, want blocked")
+	}
+	// Its run ends: the request stays in the queue with its run set, and
+	// the second is demand again.
+	if err := rs.Append(first, run.Entry{Type: run.TypeFinished, At: now, End: run.Succeeded}); err != nil {
+		t.Fatal(err)
+	}
+	if !waits() {
+		t.Fatal("first run finished: second blocked, want it to wait for a slot")
 	}
 }

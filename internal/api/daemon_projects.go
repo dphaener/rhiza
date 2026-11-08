@@ -144,8 +144,24 @@ func (p *daemonProj) saveState() {
 	if runs, err := p.rs.List(); err == nil {
 		host, _ := os.Hostname()
 		p.state.Runs = daemon.LiveRuns(runs, host, nil)
+		p.state.Starting = p.startingCount(runs, host)
 	}
 	daemon.WriteState(p.common, p.state)
+}
+
+// startingCount is the runs the project's daemon started or resumed that
+// have not journaled yet, within daemonStartGrace.
+func (p *daemonProj) startingCount(runs []run.Journal, host string) int {
+	now := p.ctx.Now()
+	n := 0
+	for cs, pd := range p.pending {
+		if daemonRunsOf(runs, cs) <= pd.runs && now.Sub(pd.at) < daemonStartGrace {
+			n++
+		}
+	}
+	n += daemonRequestsStarting(p.ctx, p.rs, runs)
+	n += daemonResumesStarting(p.ctx, runs, host)
+	return n
 }
 
 // stop records that the daemon stopped working the project and releases
@@ -243,13 +259,17 @@ func (p *daemonProj) startSchedules(conf daemonConf, hold *usageHold, free int) 
 }
 
 // daemonDemand is what the project of ctx could start now, in the order
-// its own poll starts them, and how many run slots its runs hold. The
-// owner's queued work comes first, a placeholder each (a continuation that
-// could start, a queued start, a plan request that could start), then its ready
-// change sets in roadmap order. A paused or held project, or one on a
-// disk low on space, could start nothing. A slot is held by a running run,
-// by a start not yet journaled, as daemon.Pick counts them, and by a plan
-// request's start not yet journaled, as daemonPlanRequests counts them.
+// its own poll starts them, how many of those are in the first tier and the
+// second (see daemon.ProjectPick), and how many run slots its runs hold. A
+// placeholder each: the first tier is a queued milestone request that could
+// start, the daemon's resumes of interrupted runs and the continuations that
+// could start; the second the queued starts and the plan requests that could
+// start; then its ready change sets in roadmap order. A paused project, or
+// one on a disk low on space, could start nothing; a held one only its
+// milestone request. A slot is held by a running run, by a start not yet
+// journaled, as daemon.Pick counts them, by a plan request's start not yet
+// journaled, as daemonPlanRequests counts them, and by a resume not yet
+// journaled, as daemonResumesStarting counts them.
 func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemonPending, conf daemonConf, hold *usageHold) ([]string, int, int, int) {
 	runs, err := rs.List()
 	if err != nil {
@@ -283,13 +303,29 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 		}
 	}
 	running += daemonRequestsStarting(ctx, rs, runs)
-	if conf.paused || hold != nil || ferr != nil {
+	running += daemonResumesStarting(ctx, runs, host)
+	if conf.paused || ferr != nil {
 		return nil, 0, 0, running
 	}
 	if low, _ := daemonDiskLow(ctx, conf.minFree); low {
 		return nil, 0, 0, running
 	}
+	// A queued milestone request's plan run takes a slot first, then the
+	// daemon's resumes of interrupted runs (a usage hold stops all but the
+	// milestone request).
 	var ready []string
+	if daemonMilestoneWaits(ctx, rs, runs, host) {
+		ready = append(ready, "milestone request")
+	}
+	if hold == nil {
+		host, _ := os.Hostname()
+		for range daemonResumable(ctx, rs, runs, fold, host, false) {
+			ready = append(ready, "resume")
+		}
+	}
+	if hold != nil {
+		return ready, len(ready), 0, running
+	}
 	for range daemonContinuesWaiting(ctx, rs, runs) {
 		ready = append(ready, "continue")
 	}
@@ -335,7 +371,8 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 	minFree := conf.minFree
 	state.MaxRuns = maxRuns
 	var skips []daemon.Skip
-	started, resumed, planned, err := daemonPoll1(ctx, p.rs, p.pending, p.unjournaled, t.pick.Running+share, minFree, r.Autonomous, conf.mode, conf.paused, hold, &skips)
+	startRuns, _ := p.rs.List()
+	started, resumed, planned, err := daemonPoll1(ctx, p.rs, p.pending, p.unjournaled, p.scheds.startingCount(ctx.Now(), startRuns), t.pick.Running+share, minFree, r.Autonomous, conf.mode, conf.paused, hold, &skips)
 	resp.Planned = append(resp.Planned, planned...)
 	if err == nil {
 		// A schedule that does not start is in the daemon log; it never
@@ -381,6 +418,47 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 	}
 	p.saveState()
 	return err
+}
+
+// daemonMilestoneWaits reports whether a queued milestone request could
+// start now: one with no run whose retry time has passed, and no other
+// milestone request's run live or unjournaled, as daemonPlanRequests'
+// milestoneLive counts them: a journaled run still running on host, or a
+// start not journaled yet within daemonStartGrace. A milestone request
+// whose run ended stays in the queue but blocks nothing.
+func daemonMilestoneWaits(ctx *Ctx, rs *run.Store, runs []run.Journal, host string) bool {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return false
+	}
+	reqs, err := daemon.ReadRequests(common)
+	if err != nil {
+		return false
+	}
+	now := ctx.Now()
+	wait := false
+	for _, q := range reqs {
+		if q.Kind != daemon.KindMilestone {
+			continue
+		}
+		if q.Run == "" {
+			wait = wait || !now.Before(q.RetryAt)
+			continue
+		}
+		if i := slices.IndexFunc(runs, func(j run.Journal) bool { return j.ID == q.Run }); i >= 0 {
+			if runs[i].State().Liveness(host, nil) == run.LiveRunning {
+				return false
+			}
+			continue
+		}
+		if _, err := rs.Read(q.Run); err == nil {
+			continue
+		}
+		if now.Sub(q.StartedAt) < daemonStartGrace {
+			return false
+		}
+	}
+	return wait
 }
 
 // daemonRequestsStarting counts the plan requests whose start has not

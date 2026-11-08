@@ -1,0 +1,58 @@
+# A resume takes a slot of --max-runs: with one slot held by a live run an
+# interrupted run is not resumed (and not journaled as resumed); with two
+# slots, one interrupted run and two ready change sets, the poll resumes the
+# run and starts one ship run. Rex is faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+env RHIZA_TEST_FREE_BYTES=1099511627776
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new One --title One
+exec rhiza add capability one-leaf
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza change new Two --title Two
+exec rhiza add capability two-leaf
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza change new Three --title Three
+exec rhiza add capability three-leaf
+exec rhiza propose
+exec rhiza accept --reason ok
+
+mkdir .git/rhiza/runs
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGEF85Y185JZ2ZGCNH40N\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/INTERRUPTED1.jsonl'
+# A run on another host counts as running: it holds the one slot.
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGMARA1WR6BD0MEF4Y76P\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"elsewhere\",\"pid\":4242}}" > .git/rhiza/runs/LIVE0000001.jsonl'
+
+exec rhiza daemon --permission-mode manual --once --max-runs 1
+! stdout '^Resumed run'
+! stdout '^Started a run of '
+! exists $WORK/detach.log
+exec sh -c 'grep -c "daemon-resumed" .git/rhiza/runs/INTERRUPTED1.jsonl || true'
+stdout '^0$'
+
+# Two slots, no live run, one interrupted run and two ready change sets
+# (One is the interrupted run's): the resume takes one slot and one ship run
+# the other, not two.
+rm .git/rhiza/runs/LIVE0000001.jsonl
+exec rhiza daemon --permission-mode manual --once --max-runs 2
+stdout '^Resumed run INTERRUPTED1$'
+stdout -count=1 '^Started a run of '
+exec sh -c 'grep -c "\"type\":\"daemon-resumed\"" .git/rhiza/runs/INTERRUPTED1.jsonl'
+stdout '^1$'
+exec sh -c 'grep -c "run resume" $WORK/detach.log'
+stdout '^1$'
+exec sh -c 'grep -c "run start" $WORK/detach.log'
+stdout '^1$'
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

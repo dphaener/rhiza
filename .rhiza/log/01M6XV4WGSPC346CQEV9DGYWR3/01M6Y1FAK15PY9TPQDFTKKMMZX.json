@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Y07M9CPRM58XNVFTFJJJZW",
+  "after": [
+    "01M6Y17VVYSJE3P33NEZ9XNQTH"
+  ],
+  "at": "2026-11-08T16:57:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 685fd32d, cmd/rhiza/testdata/script/daemon-resume-slot.txtar with a fake rex checks both acceptance cases. Case 1: --max-runs 1, one live run (on another host) and one interrupted run. daemon --once prints no 'Resumed run' and no 'Started a run of', writes no detach.log, and INTERRUPTED1.jsonl has 0 daemon-resumed entries. Case 2: the live run is removed, then --max-runs 2 with interrupted INTERRUPTED1 (change set One) and two other ready change sets. It prints 'Resumed run INTERRUPTED1', exactly one 'Started a run of' line (stdout -count=1), one daemon-resumed journal entry, and one 'run resume' plus one 'run start' in detach.log. I ran go test -count=1 -trimpath ./cmd/rhiza -run 'TestScripts/daemon-resume' with RHIZA_ROOT/CHANGE/RUN unset and GOTMPDIR/TMPDIR in the session scratchpad: daemon-resume, daemon-resume-slot, daemon-resume-landed and daemon-resume-landed-plan all PASS. go test -trimpath -run 'Daemon|Resum|Hold' ./internal/api printed PASS. Rootguard then flagged ~/code/.rhiza-root/usage.live.json, which the live root daemon writes; that is the known usage leak, not this code. From the diff 5ba236d4..685fd32d of internal/api/daemon.go and daemon_projects.go: a queued milestone request's plan run is picked before the resumes. Each resume is skipped while used >= max, and that check runs before the daemon-resumed entry is journaled, so a resume with no slot leaves its one resume unspent. Each resume increments used and counts in the ship picks' extra. The new daemonResumesStarting keeps counting a resumed run in later polls (and in daemonDemand) until its process journals or daemonStartGrace passes."
+        },
+        "handle": "daemon-resume-takes-slot-verified",
+        "id": "01M6Y1FA81WN5NZ3C6PHSFCCXH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Y1FA81WN5NZ3C6PEJ7GPAR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Y1FA81WN5NZ3C6PEJ7GPAR",
+        "id": "01M6Y1FAEZV7AQYBD2RPX5S4JR",
+        "link": "01M6Y1FAEZV7AQYBD2RM7XGNGV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVG9G0WNN7JX8ZNH1C5QPG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Y1FAK15PY9TPQDFTKKMMZX",
+  "type": "ops",
+  "v": 1
+}

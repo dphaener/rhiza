@@ -658,6 +658,23 @@ func daemonHeld(pending map[string]daemonPending, unjournaled map[string]daemonP
 	return held
 }
 
+// daemonResumesStarting counts the runs the daemon resumed whose new process
+// has not journaled yet and is still within daemonStartGrace: each holds a
+// slot, as a start not journaled does.
+func daemonResumesStarting(ctx *Ctx, runs []run.Journal, host string) int {
+	n := 0
+	for _, j := range runs {
+		st := j.State()
+		if !st.DaemonResumed || ctx.Now().Sub(st.DaemonResumedAt) >= daemonStartGrace {
+			continue
+		}
+		if st.Liveness(host, nil) == run.LiveInterrupted && !st.ProcessAt.After(st.DaemonResumedAt) {
+			n++
+		}
+	}
+	return n
+}
+
 // daemonRunsOf counts the runs of change set cs.
 func daemonRunsOf(runs []run.Journal, cs string) int {
 	n := 0
@@ -704,6 +721,27 @@ func fetchMainWithin(ctx *Ctx, dir string, timeout time.Duration) error {
 		return fmt.Errorf("git fetch origin main: exit %d", code)
 	}
 	return nil
+}
+
+// daemonResumable is the interrupted runs the daemon resumes now, as
+// daemon.Resumable picks them, less those the owner queued a continuation
+// of. None when stopped (paused, on a low disk or under a usage hold).
+func daemonResumable(ctx *Ctx, rs *run.Store, runs []run.Journal, fold *daemonFolded, host string, stopped bool) []string {
+	if stopped {
+		return nil
+	}
+	resumable := daemon.Resumable(runs, host, nil, rs.Live, func(change string) string {
+		st, _ := fold.stateOf(change)
+		return st
+	}, ctx.Now())
+	if common, err := gitCommonDir(ctx); err == nil {
+		if q, err := daemon.ReadContinues(common); err == nil {
+			for _, c := range q {
+				resumable = slices.DeleteFunc(resumable, func(id string) bool { return id == c.Run })
+			}
+		}
+	}
+	return resumable
 }
 
 // daemonSlotKept details a no-slot skip whose slot is kept for a queued
@@ -800,9 +838,13 @@ func daemonShipOf(root string, fold *daemonFolded) daemon.Ship {
 // then plan runs of queued plan requests in the slots left (see
 // daemonPlanRequests). While a queued request could start, ship picks take
 // at most max-1 slots (when max > 1), so one is left for it. pending holds the change sets started; unjournaled
-// those whose start never journaled (see daemonHeld). It returns the
-// change sets started, the runs resumed and the requests started.
-func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, minFree uint64, autonomous bool, mode string, paused bool, hold *usageHold, skips *[]daemon.Skip) (started, resumed, planned []string, err error) {
+// those whose start never journaled (see daemonHeld). starting is how many
+// scheduled runs were started and have not journaled yet. Every start counts
+// one slot of max: the runs running, the starts not journaled (held change
+// sets, plan requests, schedules), and the starts made earlier in the poll
+// (resumes, milestone plan runs); nothing starts once they reach max. It
+// returns the change sets started, the runs resumed and the requests started.
+func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, starting, max int, minFree uint64, autonomous bool, mode string, paused bool, hold *usageHold, skips *[]daemon.Skip) (started, resumed, planned []string, err error) {
 	fold, err := daemonFoldOf(ctx)
 	if err != nil {
 		return nil, nil, nil, err
@@ -822,37 +864,50 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		st, ok := fold.stateOf(change)
 		return ok && st == string(changeset.StateAccepted)
 	}
-	var resumable []string
-	if !stopped && !paused {
-		resumable = daemon.Resumable(runs, host, nil, rs.Live, func(change string) string {
-			st, _ := fold.stateOf(change)
-			return st
-		}, ctx.Now())
-	}
-	// The owner's queued continuations are started below, within max; the
-	// daemon's own resume of an interrupted run leaves those runs to them.
-	var queuedRuns []string
-	if !stopped && !paused {
-		if common, err := gitCommonDir(ctx); err == nil {
-			if q, err := daemon.ReadContinues(common); err == nil {
-				for _, c := range q {
-					queuedRuns = append(queuedRuns, c.Run)
-				}
-			}
+	// Every start takes one slot of max: the runs running, the plan
+	// requests and schedules started and not journaled, and the change sets
+	// the daemon started and not journaled (held, below) are the slots
+	// already used. A queued milestone request's plan run goes first, then
+	// the resumes, each only in a free slot; the starts of this poll count
+	// for the starts after them.
+	held := daemonHeld(pending, unjournaled, runs, accepted, ctx.Now())
+	reqStarting := daemonRequestsStarting(ctx, rs, runs)
+	liveRunning := 0
+	for _, j := range runs {
+		if j.State().Liveness(host, nil) == run.LiveRunning {
+			liveRunning++
 		}
 	}
-	resumable = slices.DeleteFunc(resumable, func(id string) bool { return slices.Contains(queuedRuns, id) })
+	resStarting := daemonResumesStarting(ctx, runs, host)
+	used := liveRunning + len(held) + reqStarting + starting + resStarting
+	// A milestone request's plan run is the owner's own interactive start:
+	// it takes the next free slot ahead of every other start, resumes
+	// included, and waits while the slots are full; the later picks count
+	// it as a running run.
+	var milestoned []string
+	var reqSkips []daemon.Skip
+	if !paused && !low {
+		milestoned, err = daemonPlanRequests(ctx, rs, runs, used-reqStarting, max, mode, daemon.KindMilestone, &reqSkips)
+		if err != nil {
+			return nil, nil, milestoned, err
+		}
+	}
+	used += len(milestoned)
+	resumable := daemonResumable(ctx, rs, runs, fold, host, stopped || paused)
 	for _, id := range resumable {
+		if used >= max {
+			break
+		}
 		// Journal the resume before the tab opens: a resume is tried once.
 		if err := rs.Append(id, run.Entry{Type: run.TypeDaemonResumed, At: ctx.Now(), Detail: "resumed by the daemon"}); err != nil {
-			return nil, resumed, nil, Errorf("journal the resume of run %s: %v", id, err)
+			return nil, resumed, milestoned, Errorf("journal the resume of run %s: %v", id, err)
 		}
 		if err := daemonResume(ctx, id); err != nil {
-			return nil, resumed, nil, err
+			return nil, resumed, milestoned, err
 		}
 		resumed = append(resumed, id)
+		used++
 	}
-	held := daemonHeld(pending, unjournaled, runs, accepted, ctx.Now())
 	var unj []daemon.Skip
 	cands = slices.DeleteFunc(cands, func(cs string) bool {
 		_, ok := unjournaled[cs]
@@ -884,18 +939,6 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 			return nil, resumed, nil, modeErr
 		}
 	}
-	// A milestone request's plan run is the owner's own interactive start:
-	// it goes first, whether or not a run slot is free, and keeps no ship
-	// slot; the later picks (continuations, queued starts, plan requests)
-	// count it as a running run.
-	var milestoned []string
-	var reqSkips []daemon.Skip
-	if !paused && !low {
-		milestoned, err = daemonPlanRequests(ctx, rs, runs, 0, max, mode, daemon.KindMilestone, &reqSkips)
-		if err != nil {
-			return nil, resumed, milestoned, err
-		}
-	}
 	var picked []string
 	if paused {
 		var ps []daemon.Skip
@@ -925,7 +968,11 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		if max > 1 && daemonRequestWaits(ctx) {
 			kept++
 		}
-		shipMax := max - kept
+		// The starts of this poll so far (resumes, a milestone request's plan
+		// run) and the starts not journaled that daemon.Pick cannot see
+		// (plan requests, schedules) take slots from the picks too.
+		extra := reqStarting + starting + resStarting + len(resumed) + len(milestoned)
+		shipMax := max - kept - extra
 		if shipMax < 0 {
 			shipMax = 0
 		}
@@ -937,7 +984,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		picked = daemon.Pick(cands, runs, held, host, nil, shipMax, ship)
 		shipSkips := daemon.Skips(cands, runs, held, host, nil, shipMax, ship)
 		if shipMax < max {
-			full := daemon.Pick(cands, runs, held, host, nil, max, ship)
+			full := daemon.Pick(cands, runs, held, host, nil, max-extra, ship)
 			for i, sk := range shipSkips {
 				if sk.Reason == daemon.SkipNoSlot && slices.Contains(full, sk.Change) {
 					shipSkips[i].Detail = []string{daemonSlotKept}
@@ -967,30 +1014,31 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	if paused || low {
 		return started, resumed, nil, nil
 	}
-	running := len(held) + len(started) + len(milestoned)
-	for _, j := range runs {
-		if j.State().Liveness(host, nil) == run.LiveRunning {
-			running++
-		}
-	}
+	// daemonPlanRequests counts the plan requests started and not journaled
+	// itself, the milestone request's among them: running leaves them out.
+	running := liveRunning + len(held) + len(started) + len(resumed) + starting + resStarting
 	if hold != nil {
 		// A usage hold stops every launch but a milestone request's plan
 		// run, started above.
 		return started, resumed, milestoned, nil
 	}
-	continued, err := daemonQueuedContinues(ctx, rs, runs, running, max)
+	// The later picks count every start: the plan requests not journaled
+	// and the milestone request started above too.
+	allRunning := running + reqStarting + len(milestoned)
+	continued, err := daemonQueuedContinues(ctx, rs, runs, allRunning, max)
 	resumed = append(resumed, continued...)
 	if err != nil {
 		return started, resumed, nil, err
 	}
 	running += len(continued)
+	allRunning += len(continued)
 	// While a plan request could start, queued starts leave it one slot
 	// (when max > 1), as ship picks do.
 	startMax := max
 	if max > 1 && daemonRequestWaits(ctx) {
 		startMax--
 	}
-	queued, err := daemonQueuedStarts(ctx, rs, pending, runs, running, startMax, mode)
+	queued, err := daemonQueuedStarts(ctx, rs, pending, runs, allRunning, startMax, mode)
 	started = append(started, queued...)
 	if err != nil {
 		return started, resumed, nil, err
@@ -1388,6 +1436,7 @@ type DaemonStatusRequest struct {
 type DaemonProjectStatus struct {
 	Project     string        `json:"project" desc:"The project's name in the root"`
 	Runs        []DaemonRun   `json:"runs" desc:"The project's live runs (running or interrupted) as of its last poll"`
+	Starting    int           `json:"starting,omitempty" desc:"The project's starts and resumes not journaled yet, each holding a slot, as of its last poll"`
 	LastStarted *DaemonEvent  `json:"last_started,omitempty" desc:"The run the daemon last started in the project; absent if none"`
 	LastResumed *DaemonEvent  `json:"last_resumed,omitempty" desc:"The run the daemon last resumed in the project; absent if none"`
 	Skipped     []DaemonSkip  `json:"skipped" desc:"The project's accepted change sets not started at its last poll, each with its reason"`
@@ -1463,6 +1512,9 @@ type DaemonStatusResponse struct {
 	Web             string                `json:"web,omitempty" desc:"The web UI as the daemon's last poll recorded it from rhiza.web.port: its URL (http://127.0.0.1:<port>), or off; it is the recorded setting, the listener is not probed; absent when none was recorded"`
 	Settings        []Setting             `json:"settings" desc:"The settings as its last poll read them, each with its source: default, git config or flag"`
 	Runs            []DaemonRun           `json:"runs" desc:"The live runs (running or interrupted) as of its last poll"`
+	Live            int                   `json:"live" desc:"The machine-wide live runs holding a slot (running, not interrupted), summed over the daemon's projects"`
+	Starting        int                   `json:"starting" desc:"The machine-wide starts and resumes not journaled yet, each holding a slot, summed over the daemon's projects, as of its last poll"`
+	Max             int                   `json:"max" desc:"rhiza.daemon.maxRuns as the daemon's last poll recorded it: the cap live plus starting is counted against"`
 	LastStarted     *DaemonEvent          `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
 	LastResumed     *DaemonEvent          `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
 	Skipped         []DaemonSkip          `json:"skipped" desc:"The accepted change sets it did not start at its last poll, each with its reason"`
@@ -1509,6 +1561,9 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 	for _, h := range r.Hooks {
 		fmt.Fprintf(w, "Hook %s: %s\n", h.Name, h.text())
 	}
+	if r.Max > 0 {
+		fmt.Fprintf(w, "runs: %d/%d live, %d starting\n", r.Live, r.Max, r.Starting)
+	}
 	humanPart(w, "", r.Runs, r.LastStarted, r.LastResumed, r.Skipped)
 	for _, k := range r.SkippedProjects {
 		fmt.Fprintf(w, "Skipped project: %s: %s", k.Project, k.Reason)
@@ -1523,6 +1578,26 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 		humanPart(w, "  ", p.Runs, p.LastStarted, p.LastResumed, p.Skipped)
 		humanUnjournaled(w, "  ", p.Unjournaled)
 	}
+}
+
+// daemonRunsHeld is the machine-wide runs holding a slot: the live runs (an
+// interrupted one takes none) and the starts not journaled yet, over the
+// status's own runs and each project's part.
+func daemonRunsHeld(r DaemonStatusResponse) (live, starting int) {
+	count := func(runs []DaemonRun) {
+		for _, d := range runs {
+			if d.State != "interrupted" {
+				live++
+			}
+		}
+	}
+	count(r.Runs)
+	starting = r.Starting
+	for _, p := range r.Projects {
+		count(p.Runs)
+		starting += p.Starting
+	}
+	return live, starting
 }
 
 // humanPart writes the runs, last start and resume and skips of a status
@@ -1613,6 +1688,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 		}
 		if st, ok := daemon.ReadState(common); ok {
 			part.Runs = daemonStatusRuns(common, st.Runs)
+			part.Starting = st.Starting
 			part.LastStarted, part.LastResumed = daemonEvent(st.LastStarted), daemonEvent(st.LastResumed)
 			for _, k := range st.Skips {
 				part.Skipped = append(part.Skipped, DaemonSkip{Change: k.Change, Request: k.Request, Title: k.Title, Reason: k.Reason, Detail: append([]string{}, k.Detail...)})
@@ -1625,12 +1701,15 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	}
 	resp.Runs, resp.LastStarted, resp.LastResumed = []DaemonRun{}, nil, nil
 	resp.Skipped, resp.Unjournaled = []DaemonSkip{}, []DaemonEvent{}
+	resp.Starting = 0
 	if merged {
 		resp.Projects = parts
 	} else if len(parts) == 1 {
 		p := parts[0]
+		resp.Starting = p.Starting
 		resp.Runs, resp.LastStarted, resp.LastResumed, resp.Skipped, resp.Unjournaled = p.Runs, p.LastStarted, p.LastResumed, p.Skipped, p.Unjournaled
 	}
+	resp.Live, resp.Starting = daemonRunsHeld(resp)
 	return resp, nil
 }
 
@@ -1714,7 +1793,7 @@ func daemonStatusHome(ctx *Ctx) (any, error) {
 	if !st.Stopped.IsZero() && !resp.Running {
 		resp.Stopped = st.Stopped.UTC().Format(time.RFC3339)
 	}
-	resp.MaxRuns, resp.Autonomous = st.MaxRuns, st.Autonomous
+	resp.MaxRuns, resp.Max, resp.Autonomous = st.MaxRuns, st.MaxRuns, st.Autonomous
 	for _, v := range st.Settings {
 		resp.Settings = append(resp.Settings, Setting{Key: v.Key, Value: v.Value, Source: v.Source, Default: settingDefault(v.Key), Scope: settingScope(v.Key)})
 	}
@@ -1723,6 +1802,8 @@ func daemonStatusHome(ctx *Ctx) (any, error) {
 		resp.Hooks = append(resp.Hooks, HookRow{Name: h.Name, Command: h.Command, Source: h.Source})
 	}
 	resp.Runs = daemonStatusRuns(common, st.Runs)
+	resp.Starting = st.Starting
+	resp.Live, resp.Starting = daemonRunsHeld(resp)
 	resp.LastStarted = daemonEvent(st.LastStarted)
 	resp.LastResumed = daemonEvent(st.LastResumed)
 	for _, k := range st.Skips {

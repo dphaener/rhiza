@@ -2,7 +2,7 @@
   <div class="rz-panel-head"><div><p class="rz-kicker">Daemon</p><h2>{{.Heading}}</h2></div></div>
   <div class="rz-daemon">
     <div class="rz-stat"><p class="rz-kicker">State</p><div class="rz-stat-val">{{if and .Running (not .Paused)}}<span class="rz-live-dot" aria-hidden="true"></span>{{end}}{{.State}}</div></div>
-    <div class="rz-stat"><p class="rz-kicker">Run slots</p><div class="rz-stat-val">{{.Slots}}<small>/ {{.Limit}}</small></div><div class="rz-slots" aria-hidden="true">{{range .SlotCells}}<i{{if .}} class="on"{{end}}></i>{{end}}</div></div>
+    <div class="rz-stat"><p class="rz-kicker">Run slots</p><div class="rz-stat-val">{{.Slots}}<small>/ {{.Limit}}</small></div><div class="rz-slots" aria-hidden="true">{{range .SlotCells}}<i{{if .}} class="on"{{end}}></i>{{end}}</div>{{if gt .Limit 0}}<p class="rz-kicker">{{.RunsLine}}</p>{{end}}</div>
   </div>
   <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap">
     <p class="rz-kicker" style="margin-right:4px">Health</p>

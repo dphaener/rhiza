@@ -8,7 +8,7 @@ plan-requests.txtar with a fake rex: request queues an item shown queued by requ
 
 ## statement
 
-rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the clone's .git/rhiza/requests.json, rhiza request ls shows each request's state, and the daemon, when not paused and a slot is free, starts a plan run for the oldest queued feature or bug request, autonomous when rhiza.autonomy.plan is auto, marking the request with its run and later the change set it planned; a queued milestone request instead starts at the next poll, first and without a free slot (milestone-request-starts-at-once), and its plan run always waits on the owner, never autonomous
+rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the clone's .git/rhiza/requests.json, rhiza request ls shows each request's state, and the daemon, when not paused and a slot is free, starts a plan run for the oldest queued feature or bug request, autonomous when rhiza.autonomy.plan is auto, marking the request with its run and later the change set it planned; a queued milestone request instead takes the next free slot first, ahead of every other start and request, but waits while running is at rhiza.daemon.maxRuns (milestone-request-starts-at-once, plan-runs-share-max-runs), and its plan run always waits on the owner, never autonomous
 
 ## Links
 
@@ -17,6 +17,7 @@ rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the
 - decided-by [requests-queue-local](../../../../../decision/requests-queue-local.md)
 - decided-by [bug-intent-fix-no-colon](../../../../../decision/bug-intent-fix-no-colon.md)
 - decided-by [milestone-interview-starts-at-once](../../../../../decision/milestone-interview-starts-at-once.md)
+- decided-by [plan-runs-share-max-runs](../../../../../decision/plan-runs-share-max-runs.md)
 
 ### In
 
@@ -26,6 +27,7 @@ rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the
 - verifies [pr-289-milestone-planning-always](../../../../../evidence/pr-289-milestone-planning-always.md)
 - verifies [pr-291-a-milestone-request](../../../../../evidence/pr-291-a-milestone-request.md)
 - verifies [pr-301-delete-the-old-rex-apps](../../../../../evidence/pr-301-delete-the-old-rex-apps.md)
+- verifies [pr-398-fix-request-plan-runs-start](../../../../../evidence/pr-398-fix-request-plan-runs-start.md)
 
 ## History
 
@@ -34,3 +36,4 @@ rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the
 - `01M6MY8BMPFK9ZWD3TDQHKT64J` Milestone planning always needs a human: a plan run for a milestone (a record change set, or a request of kind milestone) never runs autonomously, even when the daemon or run is autonomous (rhiza.autonomy.plan=auto); it waits for the owner's interview instead of the arbiter answering. Owner, 2026-11-05: "milestone planning should never be autonomous even in autonomous mode. that always requires a human."
 - `01M6MYFH4QYGSKDATBH509SEJF` A milestone request automatically launches an interactive Claude planning session for the owner: when a request of kind milestone is queued (from the CLI or the Request app), the daemon opens a Rex tab running a Claude session in the plan step with the owner as interviewer, not an autonomous plan, and notifies the owner that it is waiting. Builds on change set 01M6MY8BMPFK9ZWD3TDQHKT64J (milestone planning always needs a human). Owner, 2026-11-05: "a milestone request should automatically launch a Claude session to begin the planning"
 - `01M6MYNZJSMEXAE5Y3P3S9FB6F` Delete the old apps: remove changesapp, healthapp, modelapp, readapps, roadmapapp and writeapps with their Rex actions, keys and testscripts, and retire their capabilities; rhiza rex install registers exactly the five apps Inbox, Request, Runs, Daemon and Autonomy; the CLI keeps every command
+- `01M6XV4WGSPC346CQEV9DGYWR3` Fix Request plan runs start outside rhiza.daemon.maxRuns, so the machine runs far more agents than its cap: on 2026-11-08 ~13:05Z, with maxRuns 4 (then 3), the root daemon started the plan runs of requests 01M6XHDV2P65 and 01M6XKT75PHW in the same burst as ship runs of 01M6XHCX4FRE and 01M6WGEPSYWV, leaving 5 running and 1 interrupted (daemon status) and load at 23 on the 4-core VM. Earlier the same day 5 ran at cap 3. Plan runs should count against the machine-wide cap (or a small separate plan cap in rhiza.toml, as policy): a waiting request may reserve the next free slot (#226) but must not exceed the cap. rhiza health should show live runs against the cap.

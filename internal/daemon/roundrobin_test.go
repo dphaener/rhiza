@@ -92,6 +92,19 @@ func TestRoundRobinRotatesAcrossPolls(t *testing.T) {
 	}
 }
 
+// A project's Running counts the starts not journaled yet along with its
+// live runs, so they hold slots: two live-or-unjournaled runs fill two slots
+// and a third slot gives exactly one pick.
+func TestRoundRobinCountsUnjournaledStarts(t *testing.T) {
+	ps := []ProjectPick{{Project: "a", Ready: []string{"c1", "c2"}, Running: 2}}
+	if got := RoundRobin(ps, 2, 2, ""); len(got) != 0 {
+		t.Errorf("max 2: picked %v, want none", got)
+	}
+	if got := RoundRobin(ps, 2, 3, ""); len(got) != 1 || got[0].Change != "c1" {
+		t.Errorf("max 3: picked %v, want c1 alone", got)
+	}
+}
+
 // A queued continuation takes a freed slot ahead of another project's
 // turn, starts or ready change sets.
 func TestRoundRobinContinuationsFirst(t *testing.T) {

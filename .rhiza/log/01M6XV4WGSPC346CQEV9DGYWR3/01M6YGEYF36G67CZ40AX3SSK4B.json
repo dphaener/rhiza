@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6YF5ACRA4BNSED7YA2KHBJZ"
+  ],
+  "at": "2026-11-08T21:19:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/fix-request-plan-runs-start onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: internal/api/daemon_projects.go, internal/daemon/roundrobin_test.go?"
+        },
+        "handle": "rebase-conflict-fix-request-plan-runs-start",
+        "id": "01M6YGEY8PPE5H9N40NJV13WVZ",
+        "key": null,
+        "kind": "question",
+        "node": "01M6YGEY8PPE5H9N40NG4N93NT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YGEY8PPE5H9N40NG4N93NT",
+        "id": "01M6YGEYAVZ0EMAVEK19MTV9TE",
+        "link": "01M6YGEYAVZ0EMAVEK16VV76S3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XV4WGSPC346CQEV9DGYWR3",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YGEYF36G67CZ40AX3SSK4B",
+  "type": "ops",
+  "v": 1
+}

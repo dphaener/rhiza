@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YEX3AXBXKY5E3FS4R3NMK0",
+  "after": [
+    "01M6YEYP00KV2DY1M7SD8X66QB"
+  ],
+  "at": "2026-11-08T20:56:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier (claude-code, session f767cf47) at ba2674a7, the review fixer commit for quality f1. Diff read: daemonMilestoneWaits (internal/api/daemon_projects.go) now takes the run store, run list and host, and blocks a queued milestone request only while another milestone request's run is journaled and LiveRunning on host, or its start is unjournaled within daemonStartGrace. That is the same rule as daemonPlanRequests' milestoneLive in internal/api/request.go, so a milestone request whose run ended stays queued but no longer blocks later ones. The new TestDaemonMilestoneWaitsAfterEndedRun covers three steps: unjournaled start blocks, live run blocks, finished run makes the second request demand again. With RHIZA_ROOT/CHANGE/RUN unset and GOTMPDIR/TMPDIR in the session scratchpad, these pass: go test -count=1 -trimpath ./internal/daemon/... (ok); go test -trimpath ./internal/api -run '^TestDaemonScheduledStartHoldsSlotForQueuedStart$' (ok) and -run '^TestDaemonMilestoneWaitsAfterEndedRun$' (ok); go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-max-runs-pending|daemon-request-slot|daemon-queued-start-slot|daemon-continue-slot|daemon-round-robin|daemon-picks|daemon-milestone-request)' (all PASS, ok). A broader -run TestDaemon over internal/api passed every test, but the package's state-folder guard then flagged ~/code/.rhiza-root/usage.live.json as changed. This commit does not touch usage code, and the targeted runs are clean, so that comes from the environment (the live root daemon or the known usage leak). Quality f2 (minor: unresolvable milestone requests still counted as demand) is left as it was; it is not part of this leaf's acceptance."
+        },
+        "handle": "daemon-starts-within-max-runs-verified-r2",
+        "id": "01M6YF5A9D8G0R5YDTMXSWCEC2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YF5A9D8G0R5YDTMVKZ91AB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YF5A9D8G0R5YDTMVKZ91AB",
+        "id": "01M6YF5AB5GGRWE9FTEGRYVDY5",
+        "link": "01M6YF5AB5GGRWE9FTEF5EY0W1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XVG9DK25PFK9BHJCBDQHQ6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YF5ACRA4BNSED7YA2KHBJZ",
+  "type": "ops",
+  "v": 1
+}

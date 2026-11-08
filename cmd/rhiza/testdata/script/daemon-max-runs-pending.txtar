@@ -1,0 +1,86 @@
+# Every start the daemon makes holds a machine-wide slot until it journals:
+# with --max-runs 2, one live run and a feature request's plan run started
+# under a minute ago and not journaled, two ready change sets start no ship
+# run and status says no-slot for both; with --max-runs 3 exactly one starts.
+# A queued milestone request's plan run waits while the slots are full.
+# A scheduled run started and not journaled holds a slot too, but a daemon
+# --once process never fires a schedule (it fires on a poll after the one
+# that first saw it): internal/api's
+# TestDaemonScheduledStartHoldsSlotForQueuedStart checks that at max runs 1
+# a queued start stays queued behind it. Rex is faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+env RHIZA_TEST_FREE_BYTES=1099511627776
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new One --title One
+exec rhiza add capability one-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+exec rhiza change new Two --title Two
+exec rhiza add capability two-leaf
+exec rhiza link 01M5PWGS702G3VYA781BNZ0K7Q serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# One live run (a process on another host counts as running).
+mkdir .git/rhiza/runs
+cp $WORK/live.jsonl .git/rhiza/runs/01M5PWGZZZZZZZZZZZZZZZZZZZ.jsonl
+
+# The request's plan run starts in the first poll (one live run, one slot of
+# two); it has not journaled by the next.
+exec rhiza request 'Add exports'
+exec rhiza daemon --permission-mode manual --once --max-runs 2
+stdout -count=1 '^Started the plan run of request '
+! stdout '^Started a run of '
+exec rm $WORK/detach.log
+
+# Two slots held (the live run and the plan run): no ship run starts.
+exec rhiza daemon --permission-mode manual --once --max-runs 2
+! stdout '^Started '
+! exists $WORK/detach.log
+exec rhiza daemon status --json
+stdout -count=2 '"reason": "no-slot"'
+
+# A third slot lets exactly one ship run start.
+exec rhiza daemon --permission-mode manual --once --max-runs 3
+stdout -count=1 '^Started a run of '
+exec sh -c 'grep -c "run start --foreground 01M5PWG" $WORK/detach.log'
+stdout '^1$'
+exec rm $WORK/detach.log
+
+# A queued milestone request waits while the slots are full.
+exec rhiza request --kind milestone 'Backlog empty'
+exec rhiza daemon --permission-mode manual --once --max-runs 2
+! stdout 'Started'
+exec rhiza request ls
+stdout 'milestone queued: Backlog empty$'
+
+fold-ok
+
+-- plan.toml --
+name = "plan"
+
+[step.interview]
+kind = "agent"
+prompt = "Plan {change}"
+on.pass = "done"
+-- live.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":""}}
+{"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"elsewhere","pid":999999}}
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

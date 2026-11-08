@@ -46,12 +46,14 @@ stdout '^1$'
 exec sh -c 'grep -c "Add exports" $WORK/detach.log || true'
 stdout '^0$'
 
-# A milestone request starts at once, ahead of the queue and without a free
-# slot: in a second repo with --max-runs 1 and one run already started, a
-# feature then a milestone request are queued; a poll starts only the
-# milestone request. A second milestone request waits while the first's run
-# is live. The second repo is in a root of its own: run slots are
-# machine-wide, and the first repo's milestone start still holds one.
+# A milestone request's plan run takes the next free slot ahead of every
+# other start, but never one past --max-runs. In a second repo with
+# --max-runs 1 and one run live, a feature then a milestone request are
+# queued: a poll starts nothing and both stay queued. With one interrupted
+# run and one free slot the milestone request starts and the run is not
+# resumed. A second milestone request waits while the first's run is live.
+# The second repo is in a root of its own: run slots are machine-wide, and
+# the first repo's milestone start still holds one.
 cd ..
 env RHIZA_TEST_DETACH_LOG=$WORK/detach2.log
 env CLAUDE_CONFIG_DIR=$WORK/none
@@ -60,35 +62,52 @@ exec sh -c 'printf "[projects.repo2]\npath = \"repo2\"\n" > root2/rhiza.toml'
 cd root2/repo2
 exec git init -q
 exec rhiza init
-exec rhiza add intent m --field milestone=1 --record
 mkdir .rhiza/workflows
 cp $WORK/plan.toml .rhiza/workflows/plan.toml
 exec git add -A
 exec git commit -qm init
 exec rhiza change new One --title One
 exec rhiza add capability one-leaf
-exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
 exec rhiza propose
 exec rhiza accept --reason ok
-exec rhiza daemon --permission-mode manual --once --max-runs 1
-stdout -count=1 '^Started a run of '
 
+# One live run (a process on another host counts as running) holds the one
+# slot: nothing starts.
+mkdir .git/rhiza/runs
+cp $WORK/live.jsonl .git/rhiza/runs/LIVE0000001.jsonl
 exec rhiza request 'Add exports'
 exec rhiza request --kind milestone 'First milestone'
 exec rhiza daemon --permission-mode manual --once --max-runs 1
+! stdout 'Started'
+! stdout 'Resumed'
+exec rhiza request ls
+stdout 'milestone queued: First milestone'
+stdout 'feature queued: Add exports'
+! exists $WORK/detach2.log
+
+# One interrupted run (the change set's, on this host, its process gone) and
+# one free slot of two: the milestone request takes it, the run is not
+# resumed and the feature stays queued.
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGEF85Y185JZ2ZGCNH40N\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/INTERRUPTED1.jsonl'
+exec rhiza daemon --permission-mode manual --once --max-runs 2
 stdout -count=1 '^Started the plan run of request '
+! stdout '^Resumed run'
+! stdout '^Started a run of '
+exec sh -c 'grep -c "daemon-resumed" .git/rhiza/runs/INTERRUPTED1.jsonl || true'
+stdout '^0$'
 exec rhiza request ls
 stdout 'milestone planning: First milestone'
 stdout 'feature queued: Add exports'
-exec sh -c 'grep -c "run start --foreground --workflow plan-milestone --pick default --new First milestone .* --milestone" $WORK/detach2.log'
+exec sh -c 'grep -c "run start --foreground --workflow plan-milestone --pick default --new First milestone" $WORK/detach2.log'
 stdout '^1$'
 
+# A second milestone request waits while the first's run is live, even with
+# slots free.
+rm .git/rhiza/runs/INTERRUPTED1.jsonl
 exec rhiza request --kind milestone 'Second milestone'
-exec rhiza daemon --permission-mode manual --once --max-runs 1
-! stdout 'plan run'
+exec rhiza daemon --permission-mode manual --once --max-runs 5
 exec rhiza request ls
 stdout 'milestone queued: Second milestone'
-stdout 'feature queued: Add exports'
 exec sh -c 'grep -c "Second milestone" $WORK/detach2.log || true'
 stdout '^0$'
 
@@ -101,6 +120,9 @@ prompt = "Plan {change}"
 on.pass = "done"
 -- claude/projects/p/s.jsonl --
 {"type":"assistant","isSidechain":false,"timestamp":"2026-10-24T11:30:00Z","message":{"id":"m1","usage":{"input_tokens":2000,"output_tokens":0,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}}}
+-- live.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":""}}
+{"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"elsewhere","pid":999999}}
 -- bin/rex --
 #!/bin/sh
 echo "rex $*" >> "$WORK/rex.log"

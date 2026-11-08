@@ -13,7 +13,10 @@ type DaemonView struct {
 	Paused  bool
 	// Slots is how many runs hold a slot, of Limit.
 	Slots, Limit int
-	Health       []HealthPill
+	// Live and Starting split Slots: the live runs and the starts not
+	// journaled yet, as `rhiza daemon status` counts them.
+	Live, Starting int
+	Health         []HealthPill
 	// HealthPending is set until the first health report has landed.
 	HealthPending bool
 }
@@ -42,6 +45,11 @@ func (d DaemonView) Heading() string {
 		return "Not running"
 	}
 	return fmt.Sprintf("%s, %d of %d slots in use", d.State(), d.Slots, d.Limit)
+}
+
+// RunsLine is the count in the form of daemon status and health.
+func (d DaemonView) RunsLine() string {
+	return fmt.Sprintf("runs: %d/%d live, %d starting", d.Live, d.Limit, d.Starting)
 }
 
 // SlotCells is one entry per slot, true where a run holds it.
