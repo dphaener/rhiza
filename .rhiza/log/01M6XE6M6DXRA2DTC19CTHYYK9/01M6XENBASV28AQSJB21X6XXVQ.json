@@ -1,0 +1,60 @@
+{
+  "actor": "01M6XE8GMYBSV8EX8HHKX87BJZ",
+  "after": [
+    "01M6XENAJMS6HZFJR74WP1MQ29"
+  ],
+  "at": "2026-11-08T11:28:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "internal/api tests reach repoFreeBytes only through a Ctx (or one shared test helper building it) whose Getenv pins RHIZA_TEST_FREE_BYTES=1099511627776 beside RHIZA_TEST_NOW, and the package's test setup makes consulting the real daemon.FreeBytes fail the test; go test -trimpath ./internal/api -run 'TestDaemonPollStartsEachProjectsSchedule|TestDaemonScheduleUnresolvedWorkflow|TestHealthSchedulesPart' -count=1 passes, as do the internal/api tests of the disk guard and health's disk part, which set a low figure themselves; with the pinned figure removed from the helper, those three tests fail on the real-disk guard rather than passing on the host's disk",
+          "statement": "Every internal/api Go test sees a fixed 1 TiB of free disk unless it sets its own figure, so the daemon's minFree guard and health's disk part never read the CI host's real free space, and a runner short on disk no longer turns PRs red"
+        },
+        "handle": "api-tests-free-disk-hermetic",
+        "id": "01M6XENB2AST9TAX4MTYZWV1JV",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6XENB2AST9TAX4MTWCDY0VK",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6XENB2AST9TAX4MTWCDY0VK",
+        "id": "01M6XENB3SF4Q3AGP899Y0KBPH",
+        "link": "01M6XENB3SF4Q3AGP896VPJE1R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XEKESD34G4P39FM1NFECZ3",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6XENB2AST9TAX4MTWCDY0VK",
+        "id": "01M6XENB611MC9Q9FNNY0KQTQQ",
+        "link": "01M6XENB611MC9Q9FNNT65784S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GGJXKR6VPWTH7BVJN87SRP",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6XEKESD34G4P39FM1NFECZ3",
+        "id": "01M6XENB8Y4FR6BPA2GY0J54C5",
+        "link": "01M6XENB8Y4FR6BPA2GXAWGPPP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XEMX4KANVKMW49X4XJMNSW",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6XE6M6DXRA2DTC19CTHYYK9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XENBASV28AQSJB21X6XXVQ",
+  "type": "ops",
+  "v": 1
+}
