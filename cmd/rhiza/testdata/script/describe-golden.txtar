@@ -22259,7 +22259,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "settled": {
-            "description": "Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it rebases the branch onto main as ship rebase does, then reports not settled, and exits 75 with a stop: line on a conflict in code",
+            "description": "Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it merges main into the branch as ship rebase does: a clean merge is pushed and reported not settled, a conflict in code is left in progress and reported settled (exit 0) with the conflict in its detail",
             "type": "boolean"
           },
           "test_failures": {
@@ -22312,7 +22312,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "conflicts": {
-            "description": "With --settled on a conflicting pull request: the files whose conflict outside the rendered files stopped the rebase; the command exits 75",
+            "description": "The files of an unresolved merge of main (a conflict in code left in progress): with --settled the check reports settled, without it the check fails while the merge is unresolved",
             "items": {
               "type": "string"
             },

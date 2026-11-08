@@ -192,6 +192,9 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 	st.PR, st.URL, st.Branch, st.Pushed = v.Number, v.URL, t.branch, sha
 	// A merge commit left by an earlier PR (a plan's) is not this PR's.
 	st.Head, st.Checks, st.MergeCommit, st.Main = "", nil, "", nil
+	if !shipConflictUnresolved(ctx, t, st.MergeConflict) {
+		st.MergeConflict = nil
+	}
 	if err := writeShipState(filepath.Clean(path), st); err != nil {
 		return nil, err
 	}
