@@ -1,0 +1,40 @@
+{
+  "actor": "01M6XVYX2QN3VZ2QGV78C2DECH",
+  "after": [
+    "01M6XP1E0MT9QM6YKD5E7M93DA"
+  ],
+  "at": "2026-11-08T15:21:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1e23bd85, read the diff from 5d4cc959: checkBase in internal/model/apply.go now skips history entries of the op's own change set when looking for stale overlaps, and returns ErrRetired when only own ops (including its own retire) follow the base. Ran go test -trimpath -count=1 -v ./internal/model/...: all pass, including TestOwnOpsOnOldBaseLand (01M6WMCCRC0K shape: update, rename, retire on the landed base; WhatIf has no problems, as-is after landing has none, node retired as pki; with another change set's landed statement write before it, WhatIf reports ErrConflict on csB), TestApplyCases 'a change set's own earlier ops never make its base stale', 'another change set's op between a change set's own ops still conflicts' (ErrConflict), 'a change set writing a node again after retiring it on an older base is skipped' (ErrRetired) and 'a change set retiring a link twice on an older base is skipped' (ErrRetired). go vet and gofmt -l on internal/model are clean."
+        },
+        "handle": "own-change-set-ops-not-stale-verified",
+        "id": "01M6XW1191E42JD8Z6QN6VM00X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6XW1191E42JD8Z6QMZ50G7Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6XW1191E42JD8Z6QMZ50G7Q",
+        "id": "01M6XW119T1F7858DTH35HV6M0",
+        "link": "01M6XW119T1F7858DTH1GW6QMZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XN774723KQDY2E0HZ0HXFJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XMTZ6T3CVKWG5013HWA51F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XW11AXWQP7B3QH96C7D9EV",
+  "type": "ops",
+  "v": 1
+}
