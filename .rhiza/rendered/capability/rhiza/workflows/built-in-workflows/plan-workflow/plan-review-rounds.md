@@ -23,6 +23,7 @@ rhiza run review-check passes when the latest round's critic confirmed no findin
 ### In
 
 - depends-on [plan-gate](plan-gate.md)
+- depends-on [review-question-handle-unique](review-question-handle-unique.md)
 - verifies [plan-review-rounds-verified](../../../../../evidence/plan-review-rounds-verified.md)
 - verifies [pr-40-the-plan-workflow](../../../../../evidence/pr-40-the-plan-workflow.md)
 
