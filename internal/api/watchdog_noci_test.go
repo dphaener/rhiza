@@ -74,7 +74,7 @@ func TestWatchdogPRNoCI(t *testing.T) {
 	// A clean merge is pushed (never forced) and recorded.
 	tc := setup("b.txt", "main\n")
 	before := run1(tc.worktree, "rev-parse", "HEAD")
-	res, err := watchdogMergeMain(ctx, tc)
+	res, err := watchdogMergeMain(ctx, tc, "01RUNW")
 	if err != nil || res.Pushed == "" || len(res.Conflicts) > 0 {
 		t.Fatalf("clean merge: %+v, %v", res, err)
 	}
@@ -85,10 +85,10 @@ func TestWatchdogPRNoCI(t *testing.T) {
 		t.Error("want a merge commit on top of the branch's old head")
 	}
 	st, err := readShipState(tc.statePath())
-	if err != nil || st.Pushed != res.Pushed || st.Head != "" {
+	if err != nil || st.Pushed != res.Pushed || st.Head != "" || st.Run != "01RUNW" {
 		t.Errorf("ship state %+v, %v", st, err)
 	}
-	if again, err := watchdogMergeMain(ctx, tc); err != nil || again.Pushed != "" {
+	if again, err := watchdogMergeMain(ctx, tc, ""); err != nil || again.Pushed != "" {
 		t.Errorf("second merge %+v, %v: want nothing to do", again, err)
 	}
 
@@ -96,7 +96,7 @@ func TestWatchdogPRNoCI(t *testing.T) {
 	tx := setup("a.txt", "main\n")
 	before = run1(tx.worktree, "rev-parse", "HEAD")
 	remoteBefore := run1(tx.main, "ls-remote", "origin", "refs/heads/cs/x")
-	res, err = watchdogMergeMain(ctx, tx)
+	res, err = watchdogMergeMain(ctx, tx, "")
 	if err != nil || res.Pushed != "" || strings.Join(res.Conflicts, ",") != "a.txt" {
 		t.Fatalf("conflict: %+v, %v", res, err)
 	}

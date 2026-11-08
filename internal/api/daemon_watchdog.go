@@ -254,7 +254,7 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 		if err != nil {
 			return watchdogMerge{}, err
 		}
-		return watchdogMergeMain(ctx, t)
+		return watchdogMergeMain(ctx, t, st.ID)
 	}
 	d.log = watchdogJournalLog(d.log, state, ctx.Now)
 	mem, holds, err := watchdogPasses(pol, all, rs.Live, ctx.Now(), state.Watchdog, d)
@@ -533,7 +533,10 @@ func watchdogShipTarget(ctx *Ctx, st run.State) (shipTarget, error) {
 }
 
 // watchdogReadPR reads st's PR and the attempts of the Actions runs on its
-// head with gh. A change set with no open PR gives an empty head.
+// head with gh. A change set with no open PR gives an empty head, and so
+// does a PR the change set's ship record does not name st's run as the owner
+// of (decision watchdog-pr-owned-by-ship-record-run): a record naming
+// another run, or none, matches no run.
 func watchdogReadPR(ctx *Ctx, st run.State) (watchdogPR, error) {
 	t, err := watchdogShipTarget(ctx, st)
 	if err != nil {
@@ -551,6 +554,13 @@ func watchdogReadPR(ctx *Ctx, st run.State) (watchdogPR, error) {
 		return watchdogPR{}, err
 	}
 	if !strings.EqualFold(v.State, "OPEN") || !prOwnedBy(v.Body, t.cs) {
+		return watchdogPR{}, nil
+	}
+	rec, err := readShipState(t.statePath())
+	if err != nil {
+		return watchdogPR{}, err
+	}
+	if rec.Run == "" || rec.Run != st.ID {
 		return watchdogPR{}, nil
 	}
 	pr := watchdogPR{Head: v.Head, Checks: v.Checks, Attempts: map[string]int{}, Mergeable: v.Mergeable}

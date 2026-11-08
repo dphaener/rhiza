@@ -1670,3 +1670,57 @@ func TestShipCheckRefusesForeignPR(t *testing.T) {
 		}
 	}
 }
+
+func withRunEnv(f *sessionFixture, run *string) {
+	prev := f.ctx.Getenv
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return *run
+		}
+		if prev != nil {
+			return prev(k)
+		}
+		return ""
+	}
+}
+
+func TestShipCheckNamesRun(t *testing.T) {
+	f, g, state := shipFixture(t)
+	run := "01RUNA"
+	withRunEnv(f, &run)
+	g.answers[shipPRView] = openPR(greenRollup)
+	shipCheck(t, f, `{}`)
+	if st, _ := readShipState(state); st.Run != "01RUNA" {
+		t.Errorf("run = %q, want 01RUNA", st.Run)
+	}
+	// A second run's check on the same change set takes the record over.
+	run = "01RUNB"
+	shipCheck(t, f, `{}`)
+	if st, _ := readShipState(state); st.Run != "01RUNB" {
+		t.Errorf("run = %q, want 01RUNB", st.Run)
+	}
+}
+
+func TestShipLandNamesRun(t *testing.T) {
+	f, state, _ := shipLandFixture(t)
+	run := "01RUNA"
+	withRunEnv(f, &run)
+	if _, err := callOp(t, f.ctx, "ship.land", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	if st, _ := readShipState(state); st.Run != "01RUNA" {
+		t.Errorf("run = %q, want 01RUNA", st.Run)
+	}
+}
+
+func TestShipRebaseNamesRun(t *testing.T) {
+	f, state := shipRebaseFixture(t)
+	f.git.out["rebase "+rebaseOnto] = ""
+	f.git.out[rebasePush] = ""
+	run := "01RUNA"
+	withRunEnv(f, &run)
+	shipRebase(t, f)
+	if st, _ := readShipState(state); st.Run != "01RUNA" {
+		t.Errorf("run = %q, want 01RUNA", st.Run)
+	}
+}
