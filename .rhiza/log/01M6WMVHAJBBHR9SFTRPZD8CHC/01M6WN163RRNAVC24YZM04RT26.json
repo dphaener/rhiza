@@ -1,0 +1,30 @@
+{
+  "actor": "01M6WMWN3EAWTQMV1216G1PB3B",
+  "after": [
+    "01M6WMVHAJBBHR9SFTRQGBM0BW"
+  ],
+  "at": "2026-11-08T04:00:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "a06e7f9a-f18c-4eab-837f-01a1b94e2e29",
+          "statement": "When `rhiza run resume --retry` restarts a failed leaves (build) step, which failed leaves should get a fresh round of MaxAttempts attempts? Today only a leaf whose own failure question has an answering Decision gets one, so a leaf that used up its attempts while blocked on another question stays failed, and the retry fails at once."
+        },
+        "handle": "question-a06e7f9a-1",
+        "id": "01M6WN114Z4VXB5DE9T4QF06N1",
+        "key": null,
+        "kind": "question",
+        "node": "01M6WN114Z4VXB5DE9T1HFSXGM",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6WMVHAJBBHR9SFTRPZD8CHC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WN163RRNAVC24YZM04RT26",
+  "type": "ops",
+  "v": 1
+}

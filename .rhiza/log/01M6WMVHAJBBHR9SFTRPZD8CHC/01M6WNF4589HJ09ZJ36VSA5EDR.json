@@ -1,0 +1,44 @@
+{
+  "actor": "01M6WNDR397JRMTY1S7V26MT4M",
+  "after": [
+    "01M6WN5CYRD9PC5GRCM8WK7MKK"
+  ],
+  "at": "2026-11-08T04:08:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "A retry is an explicit request from a person to try the failed step again, so a leaf that is still out of attempts makes the retry fail at once and do nothing. That is exactly the bug this change set's intent reports: the leaf bugfix-workflow-autonomous spent its attempts while blocked on bugfix-needs-workflow-dispatch, that question was answered elsewhere and main was merged in, and the retry still failed with no builder started. Today reviveLeaf only gives a fresh round when an answering Decision exists on the leaf's own failure question. The intent asks for a fresh budget 'at least' when a blocker was answered or the branch moved. Trying to work out which question really blocked a leaf, or comparing branch heads, would be brittle and would still miss cases. Making the retry itself the trigger is simple and predictable, and it costs little: each retry adds at most one bounded round of MaxAttempts per failed leaf, and each round needs a person to run another retry. The autonomous rule (arbitrate a leaf once) stays as it is, so a retry never starts arbitration loops.",
+          "statement": "When `rhiza run resume --retry` restarts a failed leaves step, every leaf of that step that failed gets one fresh round of MaxAttempts attempts, and the step's skipped leaves reopen with them. A failed leaf whose own question a Decision answers by then gets that Decision's round, as on any resume, with the Decision in its builder's prompt; every other failed leaf gets a round marked as given by the retry, not by a Decision, so no leaf gets two rounds from one retry. The retry's round does not wait on the leaf's own question, or some other blocking question, being answered, or on the branch having moved. A failure in a round the retry gave is not arbitrated again, the same as any other round after the first.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "retry-revives-every-failed-leaf",
+        "id": "01M6WN3EQ39HAZGMCZ67FGHXY6",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6WN3EQ24GGSKCPVWF623BKV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "An engine test in internal/run where a leaf fails both rounds of an autonomous run with its question unanswered, then Retry: the leaf gets a leaf-round marked as the retry's, a fresh builder starts at the next attempt, its skipped dependent is built after it passes and the run succeeds; a second case where it fails again ends the run failed with no new arbitration; a third case where the leaf's own question is answered before the Retry: the leaf gets exactly one leaf-round, carrying that Decision, and no retry round; internal/api tests show run status and the builder prompt naming the retry round with no empty decision, and the answered case's builder prompt naming the Decision; go test -trimpath ./internal/run/... ./internal/api/... passes",
+          "statement": "rhiza run resume --retry on a run that failed at a leaves step gives every failed leaf of that step one fresh round of 3 attempts: a failed leaf whose own question a Decision answers by then gets that Decision's round, as on any resume, with the Decision in its builder's prompt; every other failed leaf gets a round journalled as a leaf-round given by the retry rather than by a Decision; no leaf gets two rounds from one retry; the step's skipped leaves reopen with them, a retry round's builder prompt and run status name the round as the retry's, and a failure in a retry round is not arbitrated again"
+        },
+        "handle": "retry-revives-failed-leaves",
+        "id": "01M6WN5CRPVBSVTZ8CPHWZ114V",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M6WN5CRPVBSVTZ8CPGDM6AST",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      }
+    ]
+  },
+  "change_set": "01M6WMVHAJBBHR9SFTRPZD8CHC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WNF4589HJ09ZJ36VSA5EDR",
+  "type": "ops",
+  "v": 1
+}

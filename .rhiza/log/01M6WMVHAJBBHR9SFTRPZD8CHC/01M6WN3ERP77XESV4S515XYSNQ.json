@@ -1,0 +1,41 @@
+{
+  "actor": "01M6WN1W22KDB5YE6Q097P23XE",
+  "after": [
+    "01M6WN163RRNAVC24YZM04RT26"
+  ],
+  "at": "2026-11-08T04:01:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "A retry is an explicit request from a person to try the failed step again, so a leaf that is still out of attempts makes the retry fail at once and do nothing. That is exactly the bug this change set's intent reports: the leaf bugfix-workflow-autonomous spent its attempts while blocked on bugfix-needs-workflow-dispatch, that question was answered elsewhere and main was merged in, and the retry still failed with no builder started. Today reviveLeaf only gives a fresh round when an answering Decision exists on the leaf's own failure question. The intent asks for a fresh budget 'at least' when a blocker was answered or the branch moved. Trying to work out which question really blocked a leaf, or comparing branch heads, would be brittle and would still miss cases. Making the retry itself the trigger is simple and predictable, and it costs little: each retry adds at most one bounded round of MaxAttempts per failed leaf, and each round needs a person to run another retry. The autonomous rule (arbitrate a leaf once) stays as it is, so a retry never starts arbitration loops.",
+          "statement": "When `rhiza run resume --retry` restarts a failed leaves step, every leaf of that step that failed gets one fresh round of MaxAttempts attempts (a leaf-round entry marked as given by the retry, not by a Decision), and the step's skipped leaves reopen with them. The retry does not first check whether the leaf's own question, or some other blocking question, has been answered, or whether the branch has moved. A failure in a round the retry gave is not arbitrated again, the same as any other round after the first.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "retry-revives-every-failed-leaf",
+        "id": "01M6WN3EQ39HAZGMCZ67FGHXY6",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6WN3EQ24GGSKCPVWF623BKV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6WN3EQ24GGSKCPVWF623BKV",
+        "id": "01M6WN3EQNRRJX8TME7SYH3TQ7",
+        "link": "01M6WN3EQNRRJX8TME7QN7F76G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WN114Z4VXB5DE9T1HFSXGM",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6WMVHAJBBHR9SFTRPZD8CHC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6WN3ERP77XESV4S515XYSNQ",
+  "type": "ops",
+  "v": 1
+}
