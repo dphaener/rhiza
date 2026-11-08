@@ -1,0 +1,48 @@
+{
+  "actor": "01M6XCTVHJBGHHR8P9T95C3WZB",
+  "after": [
+    "01M6XCJNHFS1H5Y7GT4C736HT6"
+  ],
+  "at": "2026-11-08T10:57:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6RN85B7BAZEZNH96YATH066",
+        "handle": null,
+        "id": "01M6XCVTY2W8E3S3SEHRSTY187",
+        "node": "01M6RN85B7BAZEZNH96W1P6D3A",
+        "op": "node.update",
+        "set": {
+          "statement": "The root daemon fills the machine-wide maxRuns round-robin across projects, each turn taking that project's next ready change set in its own roadmap order, except that every project's queued continuations take freed slots first (see root-continuations-first), and never runs more of a project's change sets at once than its optional per-project max."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6RN85B7BAZEZNH96W1P6D3A",
+        "id": "01M6XCVV25YDMDHV9H0EQ8FEPA",
+        "link": "01M6XCVV25YDMDHV9H0EA6PJ5K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XCGGE44R8KVNVM9PX33SDQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6XCGGE44R8KVNVM9PX33SDQ",
+        "id": "01M6XCVV77B1FDDGZ8SPZ1A2JE",
+        "link": "01M6XCVV77B1FDDGZ8SKJ3314P",
+        "note": "Refines the owner-picked round-robin: rotation and roadmap order stay, but queued continuations, then queued starts and plan requests, go ahead of ready change sets machine-wide.",
+        "op": "link.create",
+        "to": "01M6RN37DJY5DVAKMTK7R1PWX0",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M6XC4M3W7Y351WGXE8DTZACT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6XCVVEKQVTKXFH47KBMKZQ6",
+  "type": "ops",
+  "v": 1
+}
