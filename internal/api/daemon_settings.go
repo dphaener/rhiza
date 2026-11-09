@@ -40,6 +40,10 @@ type settingDef struct {
 	key      string
 	def      string
 	validate func(v string) error
+	// typ names the kind of value and desc says what the setting does; the
+	// generated reference prints both.
+	typ  string
+	desc string
 	// flag names the daemon flag that overrides the key, if any.
 	flag string
 	// project marks a project setting; the rest are machine settings.
@@ -58,11 +62,11 @@ func validateChoice(opts ...string) func(string) error {
 }
 
 var settingDefs = []settingDef{
-	{key: "rhiza.daemon.paused", def: "false", validate: validateChoice("true", "false")},
+	{key: "rhiza.daemon.paused", def: "false", typ: "boolean", desc: "Pause the whole daemon: no project is worked while true", validate: validateChoice("true", "false")},
 	// The project's own pause and run cap: the project is not worked while
 	// either pause holds, and runs at most this many at once.
-	{project: true, key: "rhiza.project.paused", def: "false", validate: validateChoice("true", "false")},
-	{project: true, key: "rhiza.project.maxRuns", def: "", validate: func(v string) error {
+	{project: true, key: "rhiza.project.paused", def: "false", typ: "boolean", desc: "Pause this project: it is not worked while true", validate: validateChoice("true", "false")},
+	{project: true, key: "rhiza.project.maxRuns", def: "", typ: "whole number", desc: "The most runs this project has at once; unset means only the daemon's cap applies", validate: func(v string) error {
 		n, err := strconv.Atoi(v)
 		if err != nil || n < 1 {
 			return fmt.Errorf("must be a whole number of at least 1")
@@ -70,22 +74,22 @@ var settingDefs = []settingDef{
 		return nil
 	}},
 	// The hook commands run through sh -c, per project.
-	{project: true, key: "rhiza.eventCommand", def: "", validate: validateCommand},
-	{project: true, key: "rhiza.notifyCommand", def: "", validate: validateCommand},
-	{key: "rhiza.daemon.selfUpdate", def: "false", validate: validateChoice("true", "false")},
-	{key: "rhiza.daemon.maxRuns", def: strconv.Itoa(daemon.DefaultMaxRuns), flag: "--max-runs", validate: func(v string) error {
+	{project: true, key: "rhiza.eventCommand", def: "", typ: "shell command", desc: "A command run through sh -c for each event; unset means none", validate: validateCommand},
+	{project: true, key: "rhiza.notifyCommand", def: "", typ: "shell command", desc: "A command run through sh -c to notify the owner; unset means none", validate: validateCommand},
+	{key: "rhiza.daemon.selfUpdate", def: "false", typ: "boolean", desc: "Let the daemon update and restart itself when main has a newer build", validate: validateChoice("true", "false")},
+	{key: "rhiza.daemon.maxRuns", def: strconv.Itoa(daemon.DefaultMaxRuns), flag: "--max-runs", typ: "whole number", desc: "The most runs the daemon works at once, across all projects", validate: func(v string) error {
 		n, err := strconv.Atoi(v)
 		if err != nil || n < 1 {
 			return fmt.Errorf("must be a whole number of at least 1")
 		}
 		return nil
 	}},
-	{key: "rhiza.daemon.minFree", def: "10G", flag: "--min-free", validate: func(v string) error {
+	{key: "rhiza.daemon.minFree", def: "10G", flag: "--min-free", typ: "size", desc: "The free disk space below which the daemon starts no run, such as 10G", validate: func(v string) error {
 		_, err := daemon.ParseSize(v)
 		return err
 	}},
-	{key: "rhiza.daemon.trimGoCache", def: "true", validate: validateChoice("true", "false")},
-	{key: "rhiza.daemon.permissionMode", def: "", flag: "--permission-mode", validate: func(v string) error {
+	{key: "rhiza.daemon.trimGoCache", def: "true", typ: "boolean", desc: "Trim the Go build cache when disk space runs low", validate: validateChoice("true", "false")},
+	{key: "rhiza.daemon.permissionMode", def: "", flag: "--permission-mode", typ: "one word", desc: "The permission mode agents run in; unset leaves the agent's own default", validate: func(v string) error {
 		if strings.TrimSpace(v) == "" || strings.ContainsAny(v, " \t\r\n") {
 			return fmt.Errorf("must be one word")
 		}
@@ -94,9 +98,9 @@ var settingDefs = []settingDef{
 	// The usage governor's windows: a limit is a token count, unset by
 	// default (a window with no known limit never holds); the reserve is the
 	// percent of a limit kept back.
-	{key: "rhiza.daemon.usage.session", def: "", validate: validateTokenLimit},
-	{key: "rhiza.daemon.usage.weekly", def: "", validate: validateTokenLimit},
-	{key: "rhiza.daemon.usage.reserve", def: "20", validate: func(v string) error {
+	{key: "rhiza.daemon.usage.session", def: "", typ: "token count", desc: "The token limit of the usage session window; unset means no known limit, so the window never holds", validate: validateTokenLimit},
+	{key: "rhiza.daemon.usage.weekly", def: "", typ: "token count", desc: "The token limit of the usage weekly window; unset means no known limit, so the window never holds", validate: validateTokenLimit},
+	{key: "rhiza.daemon.usage.reserve", def: "20", typ: "percent, 0 to 100", desc: "The percent of a usage limit kept back before the governor holds runs", validate: func(v string) error {
 		n, err := strconv.Atoi(v)
 		if err != nil || n < 0 || n > 100 {
 			return fmt.Errorf("must be a whole number from 0 to 100")
@@ -104,32 +108,32 @@ var settingDefs = []settingDef{
 		return nil
 	}},
 	// The web UI's address: a literal IP, 127.0.0.1 by default.
-	{key: web.HostKey, def: web.DefaultHost, validate: func(v string) error {
+	{key: web.HostKey, def: web.DefaultHost, typ: "IP address", desc: "The address the web UI is served on, a literal IP", validate: func(v string) error {
 		_, err := web.ParseHost(v)
 		return err
 	}},
 	// The web UI's port, or off.
-	{key: web.PortKey, def: web.DefaultPort, validate: func(v string) error {
+	{key: web.PortKey, def: web.DefaultPort, typ: "port or off", desc: "The port the web UI is served on, or off to serve none", validate: func(v string) error {
 		_, err := web.ParsePort(v)
 		return err
 	}},
 	// The ship deploy check: the health URL ship-change waits on after a
 	// merge (unset means no deploy check) and how long it waits.
-	{project: true, key: DeployURLKey, def: "", validate: validateDeployURL},
-	{project: true, key: DeployTimeoutKey, def: DefaultDeployTimeout, validate: validateDeployTimeout},
+	{project: true, key: DeployURLKey, def: "", typ: "http or https URL", desc: "The health URL ship-change waits on after a merge; unset means no deploy check", validate: validateDeployURL},
+	{project: true, key: DeployTimeoutKey, def: DefaultDeployTimeout, typ: "duration", desc: "How long ship-change waits for the deploy check, such as 15m", validate: validateDeployTimeout},
 	// The CI stability window: how many of the latest settled CI runs in the
 	// stability record are checked for flakes.
-	{project: true, key: CIWindowKey, def: strconv.Itoa(DefaultCIWindow), validate: validateWholeFrom(1)},
+	{project: true, key: CIWindowKey, def: strconv.Itoa(DefaultCIWindow), typ: "whole number", desc: "How many of the latest settled CI runs are checked for flakes when judging CI stability", validate: validateWholeFrom(1)},
 	// The local gate: the command ship-change runs in the run's worktree
 	// before every push while CI is unstable (unset means none).
-	{project: true, key: LocalGateKey, def: "", validate: validateCommand},
-	{project: true, key: "rhiza.autonomy.plan", def: AutonomyOwner, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
+	{project: true, key: LocalGateKey, def: "", typ: "shell command", desc: "The command ship-change runs in the run's worktree before every push while CI is unstable; unset means none", validate: validateCommand},
+	{project: true, key: "rhiza.autonomy.plan", def: AutonomyOwner, typ: "auto or owner", desc: "Who plans: auto lets an agent plan a request, owner waits for the owner", validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	// accept governs every plan run's gate, autonomous or owner-run, which
 	// accepts once the review passed unless it is owner; other change sets
 	// always wait for the owner.
-	{project: true, key: "rhiza.autonomy.accept", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
-	{project: true, key: "rhiza.autonomy.ship", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
-	{project: true, key: "rhiza.autonomy.signoff", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
+	{project: true, key: "rhiza.autonomy.accept", def: AutonomyAuto, typ: "auto or owner", desc: "Who accepts a change set once its review passed: auto accepts a plan run's change set, owner waits for the owner", validate: validateChoice(AutonomyAuto, AutonomyOwner)},
+	{project: true, key: "rhiza.autonomy.ship", def: AutonomyAuto, typ: "auto or owner", desc: "Who ships an accepted change set: auto merges it, owner waits for the owner", validate: validateChoice(AutonomyAuto, AutonomyOwner)},
+	{project: true, key: "rhiza.autonomy.signoff", def: AutonomyAuto, typ: "auto or owner", desc: "Who signs off a shipped change set: auto signs off, owner waits for the owner", validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 }
 
 // The CI stability window's key and default.

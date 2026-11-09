@@ -31,7 +31,7 @@ type DocsResponse struct {
 func init() {
 	register(Operation{
 		Name:     "docs",
-		Summary:  "Write the generated reference (CLI commands) under docs/reference",
+		Summary:  "Write the generated reference (CLI commands, settings) under docs/reference",
 		Request:  reflect.TypeFor[DocsRequest](),
 		Response: reflect.TypeFor[DocsResponse](),
 		Run:      runDocs,
@@ -49,7 +49,7 @@ func runDocs(ctx *Ctx, req any) (any, error) {
 	} else if !filepath.IsAbs(dir) {
 		dir = filepath.Join(ctx.Root, dir)
 	}
-	files := map[string][]byte{"cli.md": docs.CLI(docsCommands())}
+	files := map[string][]byte{"cli.md": docs.CLI(docsCommands()), "config.md": docs.Config(docsSettings())}
 	names := make([]string, 0, len(files))
 	for n := range files {
 		names = append(names, n)
@@ -150,4 +150,13 @@ func (r DocsResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "- wrote `%s`\n", p)
 	}
 	fmt.Fprintf(w, "%d unchanged\n", r.Unchanged)
+}
+
+// docsSettings turns the settings definitions into the renderer's settings.
+func docsSettings() []docs.Setting {
+	out := make([]docs.Setting, 0, len(settingDefs))
+	for _, d := range settingDefs {
+		out = append(out, docs.Setting{Key: d.key, Type: d.typ, Default: d.def, Scope: d.scope(), Desc: d.desc, Flag: d.flag})
+	}
+	return out
 }

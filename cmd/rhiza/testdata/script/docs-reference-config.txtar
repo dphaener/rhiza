@@ -1,0 +1,14 @@
+# rhiza docs writes the settings reference from the settings definitions.
+exec rhiza docs --out $WORK/out
+stdout 'config.md'
+grep '^### `rhiza.autonomy.plan`$' out/config.md
+grep '^- Type: auto or owner$' out/config.md
+grep '^- Default: `owner`$' out/config.md
+grep '^### `rhiza.daemon.maxRuns`$' out/config.md
+grep 'rhiza daemon --max-runs' out/config.md
+
+# Same definitions, same bytes.
+cp out/config.md first.md
+exec rhiza docs --out $WORK/out
+! stdout 'wrote'
+cmp out/config.md first.md
