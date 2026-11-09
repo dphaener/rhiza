@@ -1,0 +1,33 @@
+{
+  "actor": "01M6ZT8GMNG41Z0VKGV1K5RSJ4",
+  "after": [
+    "01M6ZTCHJ6H2DQ8Q4HEGXSYHHR"
+  ],
+  "at": "2026-11-09T09:32:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "ba83644b627efe93231c8a2018bc46ef09832751cd5da84c6b91cfd44f717176",
+          "session": "e5dcdc72-7dbf-4e17-9520-01a1bfa42f36",
+          "summary": "Autonomous plan run for change set 01M6ZT7 (bug: review/code fails every run that edits CLI help, settings or the workflow format). The planner read internal/api/run_codecheck.go (checkIn runs runCheck in-process) and internal/api/check.go (DocsWant from docsFiles() and Commands from Operations(), both the running binary's), and found the docs-command rule has the same flaw as the reference staleness check: both judge the branch with the installed binary. One question went to the arbiter: which intent to serve, and how to fix it (skip both rules in the code check; build the worktree's rhiza; or skip only when the build differs). The arbiter decided (code-check-leaves-reference-to-self-check): serve m30-reference, since #412 introduced the regression; the code check turns off the generated-reference comparison and the docs-command rule through an explicit CheckRequest option, plain rhiza check and make self-check keep both, and the code check does not build the worktree's binary. The planner wrote one leaf for that behaviour.",
+          "title": "Plan: code check leaves the generated reference to self-check"
+        },
+        "handle": "plan-code-check-reference",
+        "id": "01M6ZTD50JQ9GWCB71EW7NH5AJ",
+        "key": null,
+        "kind": "source",
+        "node": "01M6ZTD50JQ9GWCB71EVRG3CSY",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6ZT7VZZWD3R8F5HVWXRN1TP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZTD516W666ECWVCT2M5HMG",
+  "type": "ops",
+  "v": 1
+}

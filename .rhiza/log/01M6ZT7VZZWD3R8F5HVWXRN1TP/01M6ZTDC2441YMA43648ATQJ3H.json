@@ -1,0 +1,60 @@
+{
+  "actor": "01M6ZT8GMNG41Z0VKGV1K5RSJ4",
+  "after": [
+    "01M6ZTD516W666ECWVCT2M5HMG"
+  ],
+  "at": "2026-11-09T09:32:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6ZTCHFZNN7V7KTVN25KBDPW",
+        "id": "01M6ZTDBZNA0FVCG3TTR2RMW5H",
+        "link": "01M6ZTDBZNA0FVCG3TTQ1DZ6YP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZTD50JQ9GWCB71EVRG3CSY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript in a repo whose rhiza-written docs/reference is stale and whose docs name a command the registry lacks sees rhiza check fail on both, and rhiza run code-check on a run there pass with neither among its causes; a test of the check op shows the option off keeps both rules (go test ./internal/api/... and the touched testscripts; describe-golden regenerated)",
+          "statement": "rhiza run code-check runs rhiza check with the generated-reference comparison (docs/reference against rhiza docs) and the docs-command rule turned off, through an explicit CheckRequest option, so a run whose change edits CLI help, settings or the workflow format, or adds a documented command, is not failed by the installed binary's reference; plain rhiza check and make self-check keep both rules"
+        },
+        "handle": "code-check-skips-reference",
+        "id": "01M6ZTDC04JYQN7GT0XNK7RCTP",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M6ZTDC04JYQN7GT0XNB3MKFV",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M6ZTDC04JYQN7GT0XNB3MKFV",
+        "id": "01M6ZTDC0SSXF33VJ68ZHZTDRB",
+        "link": "01M6ZTDC0SSXF33VJ68YBKT6S3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZTCHFZNN7V7KTVN25KBDPW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6ZTDC04JYQN7GT0XNB3MKFV",
+        "id": "01M6ZTDC1C5KMQTRBBRTMHSN6K",
+        "link": "01M6ZTDC1C5KMQTRBBRRWFBT93",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EKX3DVJHR6SVG5QX87J1",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6ZT7VZZWD3R8F5HVWXRN1TP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZTDC2441YMA43648ATQJ3H",
+  "type": "ops",
+  "v": 1
+}

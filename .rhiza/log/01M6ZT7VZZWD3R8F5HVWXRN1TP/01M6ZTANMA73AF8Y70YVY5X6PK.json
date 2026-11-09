@@ -1,0 +1,30 @@
+{
+  "actor": "01M6ZT8GMNG41Z0VKGV1K5RSJ4",
+  "after": [
+    "01M6ZT7VZZWD3R8F5HVYCNS25Q"
+  ],
+  "at": "2026-11-09T09:30:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "e5dcdc72-7dbf-4e17-9520-01a1bfa42f36",
+          "statement": "Change set 01M6ZT7 (review/code check fails every run that edits CLI help, settings or the workflow format, because the in-process rhiza check compares docs/reference with the installed binary's rhiza docs): which intent should it serve? It is a regression from #412, the generated reference. / How should run code-check stop judging the branch's docs/reference (and the docs-command rule, which has the same flaw for a newly added, documented command) with the installed binary instead of the branch's build?"
+        },
+        "handle": "question-e5dcdc72-1",
+        "id": "01M6ZTAKPAXQ86RT3PX9F519PV",
+        "key": null,
+        "kind": "question",
+        "node": "01M6ZTAKPAXQ86RT3PX7CQZECJ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6ZT7VZZWD3R8F5HVWXRN1TP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZTANMA73AF8Y70YVY5X6PK",
+  "type": "ops",
+  "v": 1
+}
