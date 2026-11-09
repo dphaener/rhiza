@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZWDH08Y1MB2QY8NJPC0GQ3",
+  "after": [
+    "01M6ZWAV8F9EN64F6331F3J00R"
+  ],
+  "at": "2026-11-09T10:09:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the branch build (go build -trimpath ./cmd/rhiza) in a scratch root and repo, hermetic HOME: started a run on a wait-step workflow, committed leaf alpha in the run worktree with verifier Evidence; rhiza run code-check passed. Then ran rhiza docs, appended a stray line to docs/reference/cli.md and wrote a README naming `rhiza no-such-command`: plain rhiza check failed with 'fail render docs/reference/cli.md: differs from what rhiza docs writes' and 'fail docs-command README.md', exit 1; rhiza check --skip-reference was ok, exit 0, and printed the same bytes as rhiza api call check '{\"skip_reference\":true}'; rhiza run code-check still passed with neither among its causes. A stale .rhiza/rendered/index.md still failed code-check with the render cause. go test ./internal/api -run TestCheck and TestScripts/review-code-check and describe-golden pass."
+        },
+        "handle": "code-check-skips-reference-qa-1",
+        "id": "01M6ZWGRS0X2053Z2WZCPM5MDX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZWGRS0X2053Z2WZ9FCEVJN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZWGRS0X2053Z2WZ9FCEVJN",
+        "id": "01M6ZWGRXD62M7A28301BNMXVR",
+        "link": "01M6ZWGRXD62M7A282ZZG7K0DM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZTDC04JYQN7GT0XNB3MKFV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ZT7VZZWD3R8F5HVWXRN1TP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZWGS5JQEA5MG8N3436R33P",
+  "type": "ops",
+  "v": 1
+}
