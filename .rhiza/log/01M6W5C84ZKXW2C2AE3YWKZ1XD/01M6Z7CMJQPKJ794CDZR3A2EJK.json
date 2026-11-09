@@ -1,0 +1,86 @@
+{
+  "actor": "01M6Z72TMDTG1C7WWRN7ZFKW39",
+  "after": [
+    "01M6Z6Z00CHQJRTE81HD8GYDZQ"
+  ],
+  "at": "2026-11-09T03:59:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 527292df with GoReleaser v2.20.0 in a scratch worktree: goreleaser check exited 0; goreleaser release --snapshot --clean exited 0 and wrote rhiza_0.0.0-SNAPSHOT-527292df_{linux,darwin}_{amd64,arm64}.tar.gz plus checksums.txt (4 sha256 lines), and the workflow's four-archive ls loop passed. In a separate clone tagged v0.1.0, goreleaser release --clean --skip=publish,validate exited 0 and wrote rhiza_0.1.0_* for all four targets plus checksums.txt; the extracted linux_amd64 binary is static, stripped and runs (rhiza version, rhiza --help). YAML parse: release.yml triggers only on push (tags v*) with contents: write; release-snapshot.yml and go-install.yml trigger on pull_request only. Publishing to a real GitHub release was not exercised."
+        },
+        "handle": "release-goreleaser-qa-1",
+        "id": "01M6Z7CM84AQ7334BCCWV9YY37",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Z7CM84AQ7334BCCSQ3WCY1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Z7CM84AQ7334BCCSQ3WCY1",
+        "id": "01M6Z7CM94VAX40NVZ4K79NTGG",
+        "link": "01M6Z7CM94VAX40NVZ4FQSJ8DN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5GZ1GA5NPS1AP0QYYSKTA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 527292df: the GoReleaser build from a clone tagged v0.1.0 prints 'rhiza v0.1.0' (ldflags -X main.version={{ .Tag }}); go install github.com/dphaener/rhiza/cmd/rhiza@v0.1.0 through a local file GOPROXY serving a v0.1.0 module zip (git archive of the tag) prints 'rhiza v0.1.0' from the module version, and go version -m shows mod github.com/dphaener/rhiza v0.1.0. go test -trimpath ./cmd/rhiza -run TestVersion -count=1 passed (TestVersion, TestVersionGoReleaserStamp)."
+        },
+        "handle": "release-version-stamp-qa-1",
+        "id": "01M6Z7CMB1NY6AHH4TE1YPRFE0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Z7CMB1NY6AHH4TDZVFW2XB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Z7CMB1NY6AHH4TDZVFW2XB",
+        "id": "01M6Z7CME1M3BC08T36KEGR6N4",
+        "link": "01M6Z7CME1M3BC08T36HZDHXYZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5GZ804XVRFGSN0V242MST",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 527292df: go.mod's module is github.com/dphaener/rhiza and the CI replace grep finds no replace directive. go install github.com/dphaener/rhiza/cmd/rhiza@v0.1.0 with a fresh GOBIN and an empty GOMODCACHE, GOPROXY=file://<local proxy holding only this module>,https://proxy.golang.org, GOSUMDB off, exited 0: every dependency came from the public proxy, and the binary printed 'rhiza v0.1.0'. The go-install.yml step run by hand (fresh GOBIN, go install -mod=readonly ./cmd/rhiza, then rhiza version) exited 0."
+        },
+        "handle": "release-go-install-qa-1",
+        "id": "01M6Z7CMF9Y3K9ZXC32FA596AK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Z7CMF9Y3K9ZXC32F47WG2S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Z7CMF9Y3K9ZXC32F47WG2S",
+        "id": "01M6Z7CMGCMHRQN9D3SK0HRZ62",
+        "link": "01M6Z7CMGCMHRQN9D3SGKYMWWB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5GZC2YS53M8KZWFQK4E00",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5C84ZKXW2C2AE3YWKZ1XD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Z7CMJQPKJ794CDZR3A2EJK",
+  "type": "ops",
+  "v": 1
+}
