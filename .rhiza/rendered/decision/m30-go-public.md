@@ -23,6 +23,7 @@ Go public with a license, picked by the owner
 ### In
 
 - decided-by [m30-public](../intent/milestone-30/m30-public.md)
+- decided-by [publish-audit](../capability/rhiza/documentation/publish-audit.md)
 
 ## History
 

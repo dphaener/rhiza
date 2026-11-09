@@ -66,7 +66,7 @@ chime on the Mac, but no macOS notification banner appears. Owner, 2026-11-03:
   api: revision 10 (supports 0 to 10)
   ```
 - VM: host `rhiza`, Ubuntu 26.04, Rex server account `rhiza`, reached over
-  Tailscale (`rex.tail721b54.ts.net`, HTTPS available, tailnet members not
+  Tailscale (a tailnet HTTPS name, tailnet members not
   allowed). Agent tabs run Claude Code under a `rhiza session run` wrapper.
 - The Mac runs the Rex app attached to the VM as a remote host (`rex -S rhiza`).
   The Mac runs no daemon and no agents.

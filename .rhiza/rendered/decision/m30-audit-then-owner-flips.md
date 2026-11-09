@@ -23,6 +23,7 @@ Audit, then you flip it: a change set audits history and .rhiza/ and fixes what 
 ### In
 
 - decided-by [m30-public](../intent/milestone-30/m30-public.md)
+- decided-by [publish-audit](../capability/rhiza/documentation/publish-audit.md)
 
 ## History
 

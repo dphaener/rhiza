@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZQDQGCHR6XCVKQVNPC70XB",
+  "after": [
+    "01M6ZQBRK43QY0J78ZHDP1VQ20"
+  ],
+  "at": "2026-11-09T08:41:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier (attempt 2) at 504acaeb. Read the diff: textref.go doc comment and two textref_test.go inputs now use ada@example.com instead of the owner's short hey.com address; publish-audit-report Evidence amended to list it as finding 3 (FIXED in Go source; ACCEPTED in 8 .rhiza/log entries of change set 01M6HNNWFR1J2AHQRNKFTPME46 and 5 renders, removable only by a history rewrite), alongside the scanner (gitleaks 8.18.4 over full history, clean), the manual sweep of tree/.rhiza log/Sources/session notes, findings 1-6 with dispositions, the history-rewrite-only list, and a note that the owner reads it before flipping visibility; it links verifies publish-audit. Re-ran: `git grep -l` for that address at HEAD lists exactly the 8 log entries and 5 renders the Evidence names, none in Go source; `git grep -hoE <email regex> HEAD | sort | uniq -c` shows no other owner address beyond the two accepted commit identities; `git grep ts.net HEAD` finds no tailnet hostname; `git log --all -p` grepped for ghp_/github_pat_/sk-ant-/AKIA/xox/PRIVATE KEY patterns found none (gitleaks itself is not installed on this host; attempt-1 verifier's gitleaks rerun was clean); `go test -trimpath ./internal/textref/...` ok; `rhiza check` in a clean worktree at HEAD: ok (render failures in the run checkout came only from untracked actor records)."
+        },
+        "handle": "publish-audit-verified",
+        "id": "01M6ZQH8377SKQH6TGXH9DHGD4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZQH8377SKQH6TGXH0480RT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZQH8377SKQH6TGXH0480RT",
+        "id": "01M6ZQH84X1HJ27G5GQXYT6S25",
+        "link": "01M6ZQH84X1HJ27G5GQXGWJWP8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H42YADPD9H92ZZFBH54D",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5F0ZPYJ050A3826ARE92T",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZQH868N25R29YTKJCGA8TF",
+  "type": "ops",
+  "v": 1
+}

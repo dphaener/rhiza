@@ -401,12 +401,13 @@ Output (`--json` fields):
 Check the log, the links and the rendered markdown.
 
 ```
-rhiza check [--base <base>]
+rhiza check [--base <base>] [--skip-reference]
 ```
 
 Arguments and flags:
 
 - `--base`: The git revision the log may only have grown since; default the merge-base of HEAD with origin/HEAD, origin/main or main
+- `--skip-reference`: Leave out the generated-reference comparison (docs/reference against rhiza docs) and the docs-command rule, which judge by this binary's registry; run code-check sets it, make self-check does not
 
 Output (`--json` fields):
 

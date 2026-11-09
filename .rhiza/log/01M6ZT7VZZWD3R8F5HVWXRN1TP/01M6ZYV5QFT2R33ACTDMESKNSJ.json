@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZY4ZDVX4WFJS3YFJ6PH8KH",
+  "after": [
+    "01M6ZWGS5JQEA5MG8N3436R33P"
+  ],
+  "at": "2026-11-09T10:49:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 48896560 (attempt 3): read the diff (CheckRequest.SkipReference with flag skip-reference gates DocsWant/Commands/Docs in runCheck; checkIn passes SkipReference:true; cli.md regenerated). go test -trimpath ./internal/api/... ok; TestCheckSkipReference PASS (default check 2 reference findings, skip_reference 0); TestScripts/review-code-check PASS (rhiza check fails on stale docs/reference/cli.md and `rhiza no-such-command`, run code-check passes with neither among its causes); TestScripts/describe-golden PASS with skip_reference. Branch build's rhiza docs leaves docs/reference unchanged (3 unchanged) and rhiza check reports no docs/reference or docs-command failure; its only fails are .rhiza/rendered actor files for this run's untracked actor records."
+        },
+        "handle": "code-check-skips-reference-verified-3",
+        "id": "01M6ZYV5PC142WNTHZKJY0YEFR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZYV5PC142WNTHZKGHSWEYR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZYV5PC142WNTHZKGHSWEYR",
+        "id": "01M6ZYV5PYTQZRDX44EY03EAX8",
+        "link": "01M6ZYV5PYTQZRDX44EXPJC17K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZTDC04JYQN7GT0XNB3MKFV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ZT7VZZWD3R8F5HVWXRN1TP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZYV5QFT2R33ACTDMESKNSJ",
+  "type": "ops",
+  "v": 1
+}

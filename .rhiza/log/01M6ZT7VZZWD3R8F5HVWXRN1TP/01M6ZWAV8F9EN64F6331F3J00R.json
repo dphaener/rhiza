@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZVT5TTBK5R3W02FMYRGBHK",
+  "after": [
+    "01M6ZTHS0XSAQ4ASHXZPK2RDB4"
+  ],
+  "at": "2026-11-09T10:05:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 94281d07 I read the diff: CheckRequest gains SkipReference (json skip_reference), runCheck leaves DocsWant, Commands and Docs unset when it is true, run code-check's checkIn passes SkipReference: true, and the only other caller (health) and plain rhiza check keep the default false, so both rules stay for rhiza check and make self-check. go test -trimpath ./internal/api/... passed, including TestCheckSkipReference (default check has 2 fail findings, on docs/reference/cli.md and README.md; skip_reference has 0). go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(review-code-check|describe-golden)$' passed: review-code-check makes docs/reference stale and a README naming rhiza no-such-command, sees rhiza check fail naming both, then rhiza run code-check pass with exit 0 and neither in its output; describe-golden includes skip_reference."
+        },
+        "handle": "code-check-skips-reference-verified",
+        "id": "01M6ZWAV649GHJ3TKP9XPKEQPR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZWAV649GHJ3TKP9VCK4PYF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZWAV649GHJ3TKP9VCK4PYF",
+        "id": "01M6ZWAV75SHK03RCE3T2Z48MA",
+        "link": "01M6ZWAV75SHK03RCE3T1ETZJ9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZTDC04JYQN7GT0XNB3MKFV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ZT7VZZWD3R8F5HVWXRN1TP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZWAV8F9EN64F6331F3J00R",
+  "type": "ops",
+  "v": 1
+}

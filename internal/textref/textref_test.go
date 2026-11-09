@@ -44,15 +44,15 @@ func handleOf(id string) (string, bool) {
 
 func TestFind(t *testing.T) {
 	for text, want := range map[string][]string{
-		"see @alpha.":               {"alpha"},
-		"(@alpha) [@beta-two]":      {"alpha", "beta-two"},
-		"@01M6HP0C and @" + idB:     {"01M6HP0C", idB},
-		"@{" + idA + "} @{BOGUS}":   {idA, "BOGUS"},
-		"darin@hey.com checkout@v7": nil,
-		"quoted '@key'":             nil,
-		"@@alpha":                   nil,
-		"@Alpha @foo_bar @foo- @{}": nil,
-		"@ABC @{ @{x":               nil,
+		"see @alpha.":                 {"alpha"},
+		"(@alpha) [@beta-two]":        {"alpha", "beta-two"},
+		"@01M6HP0C and @" + idB:       {"01M6HP0C", idB},
+		"@{" + idA + "} @{BOGUS}":     {idA, "BOGUS"},
+		"ada@example.com checkout@v7": nil,
+		"quoted '@key'":               nil,
+		"@@alpha":                     nil,
+		"@Alpha @foo_bar @foo- @{}":   nil,
+		"@ABC @{ @{x":                 nil,
 	} {
 		var got []string
 		for _, r := range Find(text) {
@@ -106,7 +106,7 @@ func TestFormat(t *testing.T) {
 		"(@{<26-character ID>})":              "(@@{<26-character ID>})",
 		"@word":                               "@@word",
 		"@@word":                              "@@@word",
-		"darin@hey.com checkout@v7 '@key'":    "darin@hey.com checkout@v7 '@key'",
+		"ada@example.com checkout@v7 '@key'":  "ada@example.com checkout@v7 '@key'",
 		"@ alone @":                           "@ alone @",
 		"no refs":                             "no refs",
 	} {
