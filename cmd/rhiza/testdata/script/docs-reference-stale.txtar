@@ -1,0 +1,30 @@
+# rhiza check fails when a generated reference file is missing or differs
+# from what rhiza docs writes, naming it, and passes after rhiza docs. A
+# repo without docs/reference is not checked.
+exec rhiza init
+exec rhiza render
+exec rhiza check
+
+exec rhiza docs
+exec rhiza check
+
+# Editing a generated file makes check fail naming that file alone.
+exec sh -c 'echo stray >> docs/reference/config.md'
+! exec rhiza check
+stdout 'docs/reference/config.md'
+! stdout 'docs/reference/cli.md'
+stdout 'differs from what rhiza docs writes'
+stdout 'next: rhiza docs'
+exec rhiza docs
+exec rhiza check
+
+# A deleted generated file is missing.
+rm docs/reference/cli.md
+! exec rhiza check
+stdout 'docs/reference/cli.md: missing'
+exec rhiza docs
+exec rhiza check
+
+# Other files in the folder are the author's own.
+exec sh -c 'echo notes > docs/reference/notes.md'
+exec rhiza check

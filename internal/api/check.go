@@ -117,6 +117,11 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 	if fi, err := os.Stat(rendered); err == nil && fi.IsDir() {
 		in.Rendered = os.DirFS(rendered)
 	}
+	in.DocsWant = docsFiles()
+	docsPath := filepath.Join(ctx.Root, filepath.FromSlash(docsDir))
+	if fi, err := os.Stat(docsPath); err == nil && fi.IsDir() {
+		in.Docs = os.DirFS(docsPath)
+	}
 	base, from, skipped, err := checkBase(ctx.Git, r.Base)
 	if err != nil {
 		return nil, err

@@ -51,7 +51,7 @@ func runDocs(ctx *Ctx, req any) (any, error) {
 	} else if !filepath.IsAbs(dir) {
 		dir = filepath.Join(ctx.Root, dir)
 	}
-	files := map[string][]byte{"cli.md": docs.CLI(docsCommands()), "config.md": docs.Config(docsSettings()), "workflow-file.md": docs.Workflow(docsWorkflow())}
+	files := docsFiles()
 	names := make([]string, 0, len(files))
 	for n := range files {
 		names = append(names, n)
@@ -74,6 +74,11 @@ func runDocs(ctx *Ctx, req any) (any, error) {
 		resp.Written = append(resp.Written, filepath.ToSlash(shown))
 	}
 	return resp, nil
+}
+
+// docsFiles is every generated reference file, by name.
+func docsFiles() map[string][]byte {
+	return map[string][]byte{"cli.md": docs.CLI(docsCommands()), "config.md": docs.Config(docsSettings()), "workflow-file.md": docs.Workflow(docsWorkflow())}
 }
 
 // docsCommands turns the registry into the renderer's commands.
