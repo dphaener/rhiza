@@ -395,7 +395,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "wait-pr", "pr-green", "ci-triage", "ci-fix", "signoff", "gate-rebase", "rebase", "wait-rebased", "rebased-green", "gate-land", "land", "wait-landed", "landed-green",
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "wait-pr", "pr-green", "ci-triage", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "wait-landed", "landed-green",
 		"gate-rebase-merge", "rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
@@ -1771,6 +1771,16 @@ func TestShipChangeLocalGate(t *testing.T) {
 		if got := def.Steps[n].Stall; got <= time.Hour {
 			t.Errorf("%s stall = %v; want over the gate's 1h timeout", n, got)
 		}
+	}
+	// ship rebase fails on a conflict or on the gate failing on the
+	// rebased head; only the second goes on, to gate-fix.
+	for _, n := range []string{"rebase", "rebase-merge"} {
+		if got := def.Steps[n].On[OutcomeFail]; got != "rebase-gate-failed" {
+			t.Errorf("%s on.fail = %q; want rebase-gate-failed", n, got)
+		}
+	}
+	if s := def.Steps["rebase-gate-failed"]; s.Kind != KindCommand || s.Run != "rhiza ship gate --failed" || s.On[OutcomePass] != "gate-fix" || len(s.On) != 1 {
+		t.Errorf("rebase-gate-failed = %+v; want ship gate --failed, pass to gate-fix, no on.fail", s)
 	}
 	if s := def.Steps["render-pr"]; s.On["pass"] != "local-gate" {
 		t.Errorf("render-pr on.pass = %q, want local-gate", s.On["pass"])

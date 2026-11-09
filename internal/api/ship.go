@@ -326,6 +326,10 @@ type shipState struct {
 	// Gated is the last head the local gate (ship.gate) passed on, with a
 	// clean worktree, so a later gate on that same head passes at once.
 	Gated string `json:"gated,omitempty"`
+	// GateFailed is the unpushed head ship.rebase left on the branch after
+	// the local gate failed on its rebased head (origin's main merged into
+	// the branch as it was), so ship gate --failed routes it to a fixer.
+	GateFailed string `json:"gate_failed,omitempty"`
 	// Run is the run the last step that opened, checked or pushed the PR
 	// ran for (RHIZA_RUN, or the run the watchdog acted for), so the
 	// record names the run that owns the PR.

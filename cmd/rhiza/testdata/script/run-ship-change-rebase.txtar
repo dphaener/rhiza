@@ -156,14 +156,16 @@ exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode m
 stdout '"signoff_waiting": true'
 ! exec rhiza run approve --foreground
 stdout '^Run \S+ failed$'
-stdout '^- Detail: step "rebase" ended with outcome "fail"$'
+stdout '^- Detail: step "rebase-gate-failed" ended with outcome "fail"$'
 stderr '^Rebasing cs/ship-two onto origin/main at [0-9a-f]{7} conflicts in:$'
 stderr '^- feature\.txt$'
 stderr '^- @shipping$'
 stderr '^Raised question rebase-conflict-ship-two\.$'
 
 exec rhiza run status
-stdout '^- rebase \(visit 1\): fail, then end: exit 1$'
+stdout '^- rebase \(visit 1\): fail, then rebase-gate-failed: exit 1$'
+stdout '^- rebase-gate-failed \(visit 1\): fail, then end: exit 1$'
+! stdout '^- gate-fix '
 ! stdout '^- land '
 ! grep '^pr merge' $WORK/gh.log
 
@@ -340,11 +342,12 @@ exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode m
 stdout '"signoff_waiting": true'
 ! exec rhiza run approve --foreground
 stdout '^Run \S+ failed$'
-stdout '^- Detail: step "rebase-merge" ended with outcome "fail"$'
+stdout '^- Detail: step "rebase-gate-failed" ended with outcome "fail"$'
 stderr '^- feature\.txt$'
 stderr '^Raised question rebase-conflict-ship-it\.$'
 exec rhiza run status
-stdout '^- rebase-merge \(visit 1\): fail, then end: exit 1$'
+stdout '^- rebase-merge \(visit 1\): fail, then rebase-gate-failed: exit 1$'
+stdout '^- rebase-gate-failed \(visit 1\): fail, then end: exit 1$'
 ! grep '^pr merge' $WORK/gh.log
 cd $WORK/repo4.ship-it
 exec git status

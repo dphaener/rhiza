@@ -22609,7 +22609,12 @@ cmp stdout describe.golden.json
       "name": "ship.gate",
       "request": {
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "failed": {
+            "description": "Run no gate: exit 0 only if the last ship rebase left an unpushed head the local gate failed on and the branch is still at it, else exit 1 (a conflict or another failure); reads the state file only (for a step that routes a gate failing on a rebased head to a fixer)",
+            "type": "boolean"
+          }
+        },
         "required": [],
         "type": "object"
       },
@@ -22622,6 +22627,10 @@ cmp stdout describe.golden.json
           },
           "error": {
             "description": "How a failing gate failed: its exit status or a timeout",
+            "type": "string"
+          },
+          "failed": {
+            "description": "With --failed: the unpushed head ship rebase left after the gate failed on it, when the branch is still at it",
             "type": "string"
           },
           "head": {
@@ -22868,7 +22877,7 @@ cmp stdout describe.golden.json
           },
           "gate": {
             "additionalProperties": false,
-            "description": "The local gate run on the rebased head before the push, while CI is unstable; a failing gate put the branch back and pushed nothing",
+            "description": "The local gate run on the rebased head before the push, while CI is unstable; a failing gate pushed nothing",
             "properties": {
               "command": {
                 "description": "The gate command (rhiza.ship.localGate); empty if none is set",
@@ -22876,6 +22885,10 @@ cmp stdout describe.golden.json
               },
               "error": {
                 "description": "How a failing gate failed: its exit status or a timeout",
+                "type": "string"
+              },
+              "failed": {
+                "description": "With --failed: the unpushed head ship rebase left after the gate failed on it, when the branch is still at it",
                 "type": "string"
               },
               "head": {
@@ -22904,6 +22917,10 @@ cmp stdout describe.golden.json
               "skipped"
             ],
             "type": "object"
+          },
+          "kept": {
+            "description": "After a failing gate, the unpushed head left on the branch: origin's main merged into the branch as it was, for the gate's fixer",
+            "type": "string"
           },
           "onto": {
             "description": "The commit of origin's main the branch was compared with",

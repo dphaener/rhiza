@@ -40,10 +40,14 @@ on.pass = "local-gate"
 # stable, or no gate set, the step passes at once. The same gate runs
 # before every other push too (gate-rebase, gate-land, gate-rebase-merge),
 # and ship rebase runs it again on a head it rebased, before pushing that;
-# a head the gate already passed on passes at once. A running gate writes
-# no progress and may take up to its own hour (it can queue behind other
-# worktrees' suites), so every step that runs it sets a stall above that,
-# or the watchdog's command limit would stop and retry it mid-run.
+# a head the gate already passed on passes at once. When the gate fails on
+# the rebased head, ship rebase pushes nothing and leaves main merged into
+# the branch, unpushed, and fails through rebase-gate-failed to gate-fix:
+# the fixer's ship gate fails on that merge, and the fix pushes through
+# open-pr without forcing. A running gate writes no progress and may take
+# up to its own hour (it can queue behind other worktrees' suites), so
+# every step that runs it sets a stall above that, or the watchdog's
+# command limit would stop and retry it mid-run.
 [step.local-gate]
 kind = "command"
 run = "rhiza ship gate"
@@ -121,6 +125,16 @@ run = "rhiza ship rebase"
 stall = "70m"
 max_visits = 3
 on.pass = "wait-rebased"
+on.fail = "rebase-gate-failed"
+
+# ship rebase fails on a conflict (it raised a question; the run ends here)
+# or on a gate failing on the rebased head. Only the second passes this
+# step: the branch is at the unpushed merge ship rebase left for gate-fix.
+[step.rebase-gate-failed]
+kind = "command"
+run = "rhiza ship gate --failed"
+max_visits = 3
+on.pass = "gate-fix"
 
 [step.wait-rebased]
 kind = "wait"
@@ -176,6 +190,7 @@ run = "rhiza ship rebase"
 stall = "70m"
 max_visits = 3
 on.pass = "wait-rebased-merge"
+on.fail = "rebase-gate-failed"
 
 [step.wait-rebased-merge]
 kind = "wait"

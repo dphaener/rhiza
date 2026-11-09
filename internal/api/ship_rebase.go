@@ -8,9 +8,10 @@ package api
 // rebase, leaves the branch as it was, and raises a question naming the
 // files. While CI is unstable, the project's local gate runs on the
 // rebased head before the push (the gate step before this one saw only the
-// head before main was brought in); a failing gate puts the branch back and
-// pushes nothing. A rebased branch is pushed with a lease, and the pushed
-// head is recorded so the next ship check waits for CI on it.
+// head before main was brought in); a failing gate pushes nothing and
+// leaves main merged into the branch, unpushed, for the gate's fixer. A
+// rebased branch is pushed with a lease, and the pushed head is recorded
+// so the next ship check waits for CI on it.
 
 import (
 	"errors"
@@ -66,7 +67,8 @@ type ShipRebaseResponse struct {
 	Rendered       []string          `json:"rendered,omitempty" desc:"The rendered files written or removed by rendering after the rebase"`
 	Commit         string            `json:"commit,omitempty" desc:"The commit of that rendering; empty if it changed nothing"`
 	Pushed         string            `json:"pushed,omitempty" desc:"The rebased head pushed to the PR branch"`
-	Gate           *ShipGateResponse `json:"gate,omitempty" desc:"The local gate run on the rebased head before the push, while CI is unstable; a failing gate put the branch back and pushed nothing"`
+	Gate           *ShipGateResponse `json:"gate,omitempty" desc:"The local gate run on the rebased head before the push, while CI is unstable; a failing gate pushed nothing"`
+	Kept           string            `json:"kept,omitempty" desc:"After a failing gate, the unpushed head left on the branch: origin's main merged into the branch as it was, for the gate's fixer"`
 	Detail         string            `json:"detail,omitempty" desc:"Why the rebase stopped; the command exits 1 then"`
 }
 
@@ -204,8 +206,7 @@ func runShipRebase(ctx *Ctx, _ any) (any, error) {
 			return nil, Errorf("%v; and could not put %s back at %s: %v", err, t.branch, shortSHA(orig), rerr)
 		}
 		if errors.Is(err, errShipGateFailed) {
-			resp.Detail = fmt.Sprintf("the local gate (%s) failed on %s rebased onto origin/%s; the branch is as it was and nothing was pushed", resp.Gate.Command, t.branch, shipMain)
-			return resp, nil
+			return shipKeepGateFailure(ctx, t, orig, rendered, resp)
 		}
 		return nil, err
 	}
@@ -223,6 +224,50 @@ func runShipRebase(ctx *Ctx, _ any) (any, error) {
 	if err := writeShipState(t.statePath(), st); err != nil {
 		return nil, err
 	}
+	return resp, nil
+}
+
+// shipKeepGateFailure leaves the branch, put back at orig after the local
+// gate failed on its rebased head, with origin's main merged into it and
+// rendered again, unpushed: the gate's fixer then sees the failure on the
+// code it failed on (orig itself already passed the gate), and the fix
+// pushes without forcing, since the merge descends from the pushed head.
+// A merge that conflicts or fails puts the branch back at orig again.
+func shipKeepGateFailure(ctx *Ctx, t shipTarget, orig, rendered string, resp ShipRebaseResponse) (any, error) {
+	failed := fmt.Sprintf("the local gate (%s) failed on %s with origin/%s brought in; nothing was pushed", resp.Gate.Command, t.branch, shipMain)
+	putBack := func(why string) (any, error) {
+		ctx.Git("merge", "--abort")
+		if _, err := ctx.Git("reset", "-q", "--keep", orig); err != nil {
+			return nil, Errorf("%s; and could not put %s back at %s: %v", why, t.branch, shortSHA(orig), err)
+		}
+		resp.Detail = failed + "; the branch is as it was (" + why + ")"
+		return resp, nil
+	}
+	conflicts, err := shipMergeOnto(ctx, t, resp.Onto, rendered, &resp)
+	if err != nil {
+		return putBack(err.Error())
+	}
+	if len(conflicts) > 0 {
+		return putBack("merging origin/" + shipMain + " conflicts in " + strings.Join(conflicts, ", "))
+	}
+	if resp.Rendered, err = shipRender(ctx, t); err != nil {
+		return putBack(err.Error())
+	}
+	if resp.Commit, err = shipCommitRendered(ctx, t, rendered, shipRebaseMessage); err != nil {
+		return putBack(err.Error())
+	}
+	if resp.Kept, err = gitHead(ctx); err != nil {
+		return nil, err
+	}
+	st, err := readShipState(t.statePath())
+	if err != nil {
+		return nil, err
+	}
+	st.GateFailed = resp.Kept
+	if err := writeShipState(t.statePath(), st); err != nil {
+		return nil, err
+	}
+	resp.Detail = failed + "; origin/" + shipMain + " is merged into the branch, unpushed, for the gate's fixer"
 	return resp, nil
 }
 
@@ -496,7 +541,12 @@ func (r ShipRebaseResponse) Human(w io.Writer) {
 		return
 	case r.Gate != nil && !r.Gate.Passed:
 		r.Gate.Human(w)
-		fmt.Fprintf(w, "Rebased %s onto origin/%s at %s, but the local gate failed on it: the branch is as it was and nothing was pushed.\n", r.Branch, shipMain, shortSHA(r.Onto))
+		fmt.Fprintf(w, "Rebased %s onto origin/%s at %s, but the local gate failed on it: nothing was pushed.\n", r.Branch, shipMain, shortSHA(r.Onto))
+		if r.Kept != "" {
+			fmt.Fprintf(w, "Left origin/%s merged into %s at %s, unpushed, for the gate's fixer.\n", shipMain, r.Branch, shortSHA(r.Kept))
+		} else {
+			fmt.Fprintln(w, "The branch is as it was.")
+		}
 		return
 	case len(r.Conflicts) > 0:
 		fmt.Fprintf(w, "Rebasing %s onto origin/%s at %s conflicts in:\n", r.Branch, shipMain, shortSHA(r.Onto))

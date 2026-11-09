@@ -37,8 +37,11 @@ const (
 	shipGateTail    = 16 << 10
 )
 
-// ShipGateRequest takes nothing: the gate is a project setting.
-type ShipGateRequest struct{}
+// ShipGateRequest takes nothing to run the gate, which is a project
+// setting; Failed asks a routing question instead.
+type ShipGateRequest struct {
+	Failed bool `json:"failed,omitempty" flag:"failed" desc:"Run no gate: exit 0 only if the last ship rebase left an unpushed head the local gate failed on and the branch is still at it, else exit 1 (a conflict or another failure); reads the state file only (for a step that routes a gate failing on a rebased head to a fixer)"`
+}
 
 // ShipGateResponse is how the gate went.
 type ShipGateResponse struct {
@@ -49,10 +52,19 @@ type ShipGateResponse struct {
 	Output  string `json:"output,omitempty" desc:"The end of the gate's combined output, when it ran"`
 	Error   string `json:"error,omitempty" desc:"How a failing gate failed: its exit status or a timeout"`
 	Head    string `json:"head,omitempty" desc:"The commit the gate passed on"`
+	Failed  string `json:"failed,omitempty" desc:"With --failed: the unpushed head ship rebase left after the gate failed on it, when the branch is still at it"`
+	// asked is true for --failed, whose exit code says whether Failed is set.
+	asked bool
 }
 
 // ExitCode is 0 when the gate passed or was skipped, else 1.
 func (r ShipGateResponse) ExitCode() int {
+	if r.asked {
+		if r.Failed != "" {
+			return 0
+		}
+		return 1
+	}
 	if r.Skipped || r.Passed {
 		return 0
 	}
@@ -62,6 +74,10 @@ func (r ShipGateResponse) ExitCode() int {
 // Human says how the gate stands, with a failing gate's output.
 func (r ShipGateResponse) Human(w io.Writer) {
 	switch {
+	case r.asked && r.Failed != "":
+		fmt.Fprintf(w, "The local gate failed on %s, which ship rebase left unpushed with origin/%s merged in: run rhiza ship gate there to see the failure.\n", shortSHA(r.Failed), shipMain)
+	case r.asked:
+		fmt.Fprintln(w, "No head the local gate failed on after a rebase is on the branch.")
 	case r.Skipped:
 		fmt.Fprintf(w, "Local gate skipped: %s.\n", r.Reason)
 	case r.Passed:
@@ -74,11 +90,34 @@ func (r ShipGateResponse) Human(w io.Writer) {
 	}
 }
 
-func runShipGate(ctx *Ctx, _ any) (any, error) {
+func runShipGate(ctx *Ctx, req any) (any, error) {
+	if req.(ShipGateRequest).Failed {
+		return shipGateFailed(ctx)
+	}
 	if err := refuseShipDryRun(ctx, "ship.gate"); err != nil {
 		return nil, err
 	}
 	return shipLocalGate(ctx, nil)
+}
+
+// shipGateFailed answers ship gate --failed: whether the branch is at the
+// head ship rebase left after the gate failed on it, so the step after a
+// failed rebase sends that to the gate's fixer and a conflict ends the run.
+func shipGateFailed(ctx *Ctx) (any, error) {
+	t, err := findShipTarget(ctx)
+	if err != nil {
+		return nil, err
+	}
+	st, err := readShipState(t.statePath())
+	if err != nil {
+		return nil, err
+	}
+	resp := ShipGateResponse{asked: true}
+	head, _ := gitAt(ctx, t.dir(), "rev-parse", "HEAD")
+	if h := strings.TrimSpace(head); h != "" && h == st.GateFailed {
+		resp.Failed = h
+	}
+	return resp, nil
 }
 
 // shipLocalGate runs the local gate in the change set's worktree (t, or
