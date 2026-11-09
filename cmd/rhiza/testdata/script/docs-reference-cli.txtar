@@ -2,8 +2,10 @@
 exec rhiza docs --out $WORK/out
 stdout 'cli.md'
 grep '^## rhiza request$' out/cli.md
-grep '[-][-]kind`: feature, bug or milestone' out/cli.md
-grep '[-][-]milestone`: ' out/cli.md
+# Both flags sit in the request command's own section: no heading line
+# comes between "## rhiza request" and them.
+grep '(?s)^## rhiza request\n(?:[^\n]|\n[^#])*\n- `--kind`: feature, bug or milestone' out/cli.md
+grep '(?s)^## rhiza request\n(?:[^\n]|\n[^#])*\n- `--milestone`: ' out/cli.md
 grep '^- `4`: Not found' out/cli.md
 
 # Same registry, same bytes; the second run changes nothing.
