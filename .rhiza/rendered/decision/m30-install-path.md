@@ -23,6 +23,8 @@ go install + releases: go install documented now, plus tagged GitHub releases wi
 ### In
 
 - decided-by [m30-install](../intent/milestone-30/m30-install.md)
+- decided-by [release-goreleaser](../capability/rhiza/distribution/release-goreleaser.md)
+- decided-by [release-go-install](../capability/rhiza/distribution/release-go-install.md)
 
 ## History
 

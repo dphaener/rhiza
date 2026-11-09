@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Z6MC5H6VGT4EAV674ZR6PZ",
+  "after": [
+    "01M6Z6JMT2MT2PE2E24H2352AR"
+  ],
+  "at": "2026-11-09T03:48:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 397aa710 read the diff: new .github/workflows/go-install.yml runs on PRs to main touching go.mod/go.sum/cmd/internal; it fails if go.mod has a replace directive (grep '^[[:space:]]*replace[[:space:]]', which also catches a 'replace (' block, checked), then sets GOBIN=$RUNNER_TEMP/gobin, rm -rf it, runs go install -mod=readonly ./cmd/rhiza and \"$GOBIN/rhiza\" version. Workflow YAML parses; runner and action versions match ci.yml. go.mod module is github.com/dphaener/rhiza (matches origin) and has no replace directives. Ran the same steps locally with a fresh GOBIN in a scratch dir: the replace check passed, go install -mod=readonly succeeded and rhiza version printed a version, exit 0."
+        },
+        "handle": "release-go-install-verified",
+        "id": "01M6Z6QJJ3MVRZ4Z6NH8TR6734",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Z6QJJ3MVRZ4Z6NH5V62F43",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Z6QJJ3MVRZ4Z6NH5V62F43",
+        "id": "01M6Z6QJP3WZVFGVX0H5YKH45A",
+        "link": "01M6Z6QJP3WZVFGVX0H2CDJMYK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5GZC2YS53M8KZWFQK4E00",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5C84ZKXW2C2AE3YWKZ1XD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Z6QJS993ZBESS8QNVZAS1T",
+  "type": "ops",
+  "v": 1
+}

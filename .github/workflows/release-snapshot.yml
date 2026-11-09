@@ -1,0 +1,47 @@
+name: Release snapshot
+
+# Dry-runs the release on pull requests that touch its config: all four
+# archives must build. Nothing is published.
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - .goreleaser.yaml
+      - .github/workflows/release.yml
+      - .github/workflows/release-snapshot.yml
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-26.04
+
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v7
+      with:
+        go-version-file: go.mod
+        cache: true
+        cache-dependency-path: go.sum
+
+    - name: Check config
+      uses: goreleaser/goreleaser-action@v7
+      with:
+        distribution: goreleaser
+        version: "~> v2"
+        args: check
+
+    - name: Build snapshot
+      uses: goreleaser/goreleaser-action@v7
+      with:
+        distribution: goreleaser
+        version: "~> v2"
+        args: release --snapshot --clean
+
+    - name: Require all four archives
+      run: |
+        for t in linux_amd64 linux_arm64 darwin_amd64 darwin_arm64; do
+          ls dist/rhiza_*_"$t".tar.gz >/dev/null
+        done
