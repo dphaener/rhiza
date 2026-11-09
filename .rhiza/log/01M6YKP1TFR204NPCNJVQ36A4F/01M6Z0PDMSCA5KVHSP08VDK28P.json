@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Z0HXEDWRAP62JPFYE8YCGX",
+  "after": [
+    "01M6YM7A2DVJ3A36JZ32ZJMSYB"
+  ],
+  "at": "2026-11-09T02:02:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-a4d2d949 at 5596c942: read the diff (ShowFieldValue now encodes with canon.Marshal minus the trailing newline). go test -trimpath ./internal/model -run ShowField passes; TestShowFieldValueCanonical feeds a statement with an ID reference with <branch>, a & b, x > y and U+2028 (bytes checked), asserts equality with canon.Marshal of the shown text minus newline and canon.Check. go test -trimpath ./cmd/rhiza -run TestScripts/change-show-canonical-text passes (with GOTMPDIR and the run's RHIZA_* env unset; under the run env every script, incl. existing change-show-serves, fails at rhiza init by resolving /home/rhiza/code/rhiza): check, change show, change show --json, change diff, show mine --json print literal < > &, and change show of the landed change set succeeds. With the two tests on the parent commit both fail: canon not canonical in the unit test, and rhiza check's next step change show rejects the op as canon: not canonical. Whole internal/model package and change-show*/change-diff*/show* scripts pass."
+        },
+        "handle": "shown-text-canonical-verified",
+        "id": "01M6Z0PDG1C8VYCDN04AAR4VJG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Z0PDG1C8VYCDN048XSAAV1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Z0PDG1C8VYCDN048XSAAV1",
+        "id": "01M6Z0PDJKZCVM6X3D3CCAYMRS",
+        "link": "01M6Z0PDJKZCVM6X3D3B0H1V59",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YM01FKQKHVJ1VCA63B6T2J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YKP1TFR204NPCNJVQ36A4F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Z0PDMSCA5KVHSP08VDK28P",
+  "type": "ops",
+  "v": 1
+}
