@@ -25,6 +25,9 @@ README + quickstart, Concepts, Agents, runs & daemon, Reference, picked by the o
 - decided-by [m30-docs](../intent/milestone-30/m30-docs.md)
 - decided-by [m30-readme](../intent/milestone-30/m30-readme.md)
 - decided-by [m30-reference](../intent/milestone-30/m30-reference.md)
+- decided-by [docs-concepts-model](../capability/rhiza/documentation/docs-concepts-model.md)
+- decided-by [docs-concepts-change-sets](../capability/rhiza/documentation/docs-concepts-change-sets.md)
+- decided-by [docs-concepts-why](../capability/rhiza/documentation/docs-concepts-why.md)
 
 ## History
 
