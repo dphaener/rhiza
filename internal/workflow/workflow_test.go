@@ -1930,3 +1930,24 @@ func TestShipChangeLocalGate(t *testing.T) {
 		}
 	}
 }
+
+// Every step kind the parser knows has a doc, and the reverse: the generated
+// reference cannot miss one.
+func TestKindDocsCoverKinds(t *testing.T) {
+	for _, k := range []string{KindAgent, KindWait, KindCommand, KindArbiter, KindLeaves, KindChecks, KindSignoff, KindWorkflow} {
+		if _, ok := kindOutcomes[k]; !ok {
+			t.Errorf("kind %s has no outcomes", k)
+		}
+		if !slices.Contains(Kinds, k) {
+			t.Errorf("kind %s is missing from Kinds", k)
+		}
+	}
+	if len(Kinds) != len(kindOutcomes) {
+		t.Errorf("Kinds has %d kinds, kindOutcomes %d", len(Kinds), len(kindOutcomes))
+	}
+	for _, d := range KindDocs() {
+		if d.Summary == "" || len(d.Outcomes) == 0 {
+			t.Errorf("kind %s has no summary or outcomes", d.Kind)
+		}
+	}
+}

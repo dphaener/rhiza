@@ -75,10 +75,9 @@ func usage() string {
 	for _, o := range api.Operations() {
 		rows = append(rows, row{api.CommandPath(o.Name), o.Summary})
 	}
-	rows = append(rows,
-		row{"api call", "Call an operation with a JSON request; prints JSON"},
-		row{"tui app", "Run an app: a read app, or a write app that previews before it writes (--once prints its JSON)"},
-		row{"version", "Print the rhiza version"})
+	for _, f := range api.FrameCommands {
+		rows = append(rows, row{f.Name, f.Summary})
+	}
 	width := 0
 	for _, r := range rows {
 		width = max(width, len(r.name))

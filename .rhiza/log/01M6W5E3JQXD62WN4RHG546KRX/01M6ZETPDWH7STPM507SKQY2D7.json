@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZDVDHH9KNA650MFY637NRB",
+  "after": [
+    "01M6ZC5KQY3CHNYWQYH07QRG0E"
+  ],
+  "at": "2026-11-09T06:09:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 33da0496. go test -trimpath ./cmd/rhiza -run 'TestScripts/(docs-commands-exist|describe-golden)$' passes; docs-commands-exist.txtar puts a README naming `rhiza no-such-command` in backticks and a docs/guide.md naming `rhiza change nosuch` in a code block, and sees rhiza check fail naming each file, and pass for real commands, groups, paths and prose. The attempt-1 finding is fixed: a scratchpad build in a fresh init+render repo passes rhiza check with a README naming `rhiza version`, `rhiza api call check`, `rhiza tui app overview` (exit 0), and fails with `rhiza no-such-command` (exit 1, fail docs-command README.md). api.FrameCommands now feeds both check and the help text, so the two cannot drift (help still lists the three). go test ./internal/check/... and ./internal/api -run 'Check|Docs' pass. The rule runs inside rhiza check, which make check calls through self-check; make self-check on this repo shows no docs-command finding (only expected mid-run stale-render fails). The wider internal/api suite failed here only on the known usage-state leak into ~/code/.rhiza-root, unrelated to this diff."
+        },
+        "handle": "docs-commands-exist-verified",
+        "id": "01M6ZETPA50RNDHTMP3BPA99YT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZETPA50RNDHTMP38B263VD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZETPA50RNDHTMP38B263VD",
+        "id": "01M6ZETPBX2PV0NRG1EKGSM055",
+        "link": "01M6ZETPBX2PV0NRG1EHXNFTG3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H01JDC5QZZECFJSXQSTK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5E3JQXD62WN4RHG546KRX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZETPDWH7STPM507SKQY2D7",
+  "type": "ops",
+  "v": 1
+}

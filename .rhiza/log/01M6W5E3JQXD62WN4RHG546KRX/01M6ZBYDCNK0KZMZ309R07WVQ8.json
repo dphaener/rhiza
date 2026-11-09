@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZBVQGS1Y0E0HZ299T5V9ES",
+  "after": [
+    "01M6ZB4GFQ4H6BR4SVXBD4C8WX"
+  ],
+  "at": "2026-11-09T05:19:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ae8ad5d3: go test -trimpath ./internal/docs/... passes; go test -trimpath ./cmd/rhiza -run 'TestScripts/(docs-reference-cli|describe-golden)$' -count=1 passes. The docs-reference-cli testscript runs rhiza docs --out into $WORK, checks the '## rhiza request' section lists --kind and --milestone with a pattern whose lines may not start with '#', so it cannot run into a later section, checks the exit codes, checks a fixture whose request section lacks --milestone fails, and checks a second run is byte-identical. I built the binary, ran rhiza docs --out into a scratch dir, and read the request section: usage line, arguments, flags with descriptions, --json output fields; the doc has 114 command sections and a shared Exit codes section. Mutation check for the attempt-2 finding: I deleted the request section's --milestone line from the generated cli.md and ran the testscript's --milestone regexp (Go regexp, with (?m)) on it: no match (it matches the unedited file), and the --kind regexp still matches. So the finding is fixed."
+        },
+        "handle": "docs-reference-cli-verified",
+        "id": "01M6ZBYD7QDFRG87HHHHZT7JB9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZBYD7QDFRG87HHHHKRVNFS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZBYD7QDFRG87HHHHKRVNFS",
+        "id": "01M6ZBYD9MV38RF7DTKRN7S7NG",
+        "link": "01M6ZBYD9MV38RF7DTKRA6CJ8Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5GZVA1QCBXVCK83RMHFW8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5E3JQXD62WN4RHG546KRX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZBYDCNK0KZMZ309R07WVQ8",
+  "type": "ops",
+  "v": 1
+}

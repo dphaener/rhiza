@@ -82,7 +82,15 @@
 //     personal layer, so every machine and CI agree.
 //   - render fails on each rendered file that differs from what
 //     render.Render writes, is missing or is extra, and on a missing
-//     rendered folder.
+//     rendered folder. It also fails, under the same rule, on each file
+//     rhiza docs writes (Input.DocsWant) that is missing from an existing
+//     docs/reference or differs, naming it and rhiza docs; other files there are ignored.
+//     Only a docs/reference holding a file rhiza docs wrote is checked
+//     (Input.Docs is nil otherwise), so another project's own reference
+//     folder is left alone.
+//   - docs-command fails on each rhiza command that README.md or a markdown
+//     file under docs/ names in backticks or a code block (Input.Commands
+//     are the real ones, Input.Tree the files) and that is not one.
 //   - policy fails once when .rhiza/policy.toml (Input.Tree) does not parse
 //     or sets schedule.backlog to anything but "after", "before" or "skip";
 //     the message names the file and the bad value. A missing file or key is
@@ -107,6 +115,7 @@ import (
 	"io/fs"
 	"maps"
 	"slices"
+	"sort"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/changeset"
@@ -137,6 +146,7 @@ const (
 	RuleTextRef       = "text-ref"
 	RuleDispatch      = "dispatch"
 	RuleRender        = "render"
+	RuleDocsCommand   = "docs-command"
 	RulePolicy        = "policy"
 	RuleAppendOnly    = "append-only"
 )
@@ -144,7 +154,7 @@ const (
 // Rules returns the rules in report order.
 func Rules() []string {
 	return []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleEvidenceActor, RuleUnclaimed, RuleAnchor,
-		RuleTextRef, RuleDispatch, RuleRender, RulePolicy, RuleAppendOnly}
+		RuleTextRef, RuleDispatch, RuleRender, RuleDocsCommand, RulePolicy, RuleAppendOnly}
 }
 
 // Paths in findings are relative to the project root.
@@ -160,6 +170,14 @@ type Input struct {
 	// Rendered is rooted at .rhiza/rendered; nil when the folder is
 	// missing.
 	Rendered fs.FS
+	// DocsWant are the generated reference files rhiza docs writes, by
+	// name; nil skips the docs check. Docs is rooted at docs/reference, nil
+	// when the folder is missing or holds no file rhiza docs wrote.
+	DocsWant map[string][]byte
+	Docs     fs.FS
+	// Commands are the command paths the registry has ("change new"); nil
+	// skips the docs-command rule.
+	Commands []string
 	// Rev is the base revision used, "" when the append-only rule was
 	// skipped.
 	Rev string
@@ -253,6 +271,8 @@ func Run(in Input) Report {
 		c.findings = append(c.findings, Finding{Severity: SeverityFail, Rule: RuleDispatch, Path: ".rhiza/dispatch.toml", Message: m})
 	}
 	c.render(asIs, sets)
+	c.docs()
+	c.docsCommands()
 	c.policy()
 	c.appendOnly()
 
@@ -691,6 +711,35 @@ func (c *checker) render(m model.Model, sets []changeset.ChangeSet) {
 			fail(renderedPath(p), "cannot read: "+err.Error())
 		case !bytes.Equal(got, b):
 			fail(renderedPath(p), "differs from what render writes")
+		}
+	}
+}
+
+// docs fails on each generated reference file that is missing from an
+// existing docs/reference or differs from what rhiza docs writes. Other files there
+// are the author's own and are left alone. It reports under the render rule.
+func (c *checker) docs() {
+	if c.in.DocsWant == nil || c.in.Docs == nil {
+		return
+	}
+	names := make([]string, 0, len(c.in.DocsWant))
+	for n := range c.in.DocsWant {
+		names = append(names, n)
+	}
+	sort.Strings(names)
+	for _, n := range names {
+		path := "docs/reference/" + n
+		fail := func(msg string) {
+			c.add(Finding{Severity: SeverityFail, Rule: RuleRender, Path: path, Message: msg, Next: "rhiza docs"})
+		}
+		got, err := fs.ReadFile(c.in.Docs, n)
+		switch {
+		case errors.Is(err, fs.ErrNotExist):
+			fail("missing: rhiza docs writes this file")
+		case err != nil:
+			fail("cannot read: " + err.Error())
+		case !bytes.Equal(got, c.in.DocsWant[n]):
+			fail("differs from what rhiza docs writes")
 		}
 	}
 }

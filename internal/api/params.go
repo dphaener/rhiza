@@ -171,3 +171,15 @@ func UsageLine(o Operation) string {
 func CommandPath(name string) string {
 	return strings.ReplaceAll(name, ".", " ")
 }
+
+// FrameCommand is a command the CLI frame serves itself, outside the
+// registry.
+type FrameCommand struct{ Name, Summary string }
+
+// FrameCommands are the CLI frame's own commands: its help lists them
+// after the operations, and check accepts them in the docs.
+var FrameCommands = []FrameCommand{
+	{"api call", "Call an operation with a JSON request; prints JSON"},
+	{"tui app", "Run an app: a read app, or a write app that previews before it writes (--once prints its JSON)"},
+	{"version", "Print the rhiza version"},
+}
