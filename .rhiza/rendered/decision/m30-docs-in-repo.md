@@ -24,6 +24,8 @@ Markdown in docs/: README as the front door linking into docs/*.md on GitHub; th
 
 - decided-by [m30-docs](../intent/milestone-30/m30-docs.md)
 - decided-by [m30-readme](../intent/milestone-30/m30-readme.md)
+- decided-by [readme-front-door](../capability/rhiza/documentation/readme-front-door.md)
+- decided-by [docs-links-resolve](../capability/rhiza/documentation/docs-links-resolve.md)
 
 ## History
 

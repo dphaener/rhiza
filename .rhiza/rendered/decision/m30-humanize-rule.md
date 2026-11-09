@@ -24,6 +24,8 @@ Rule for doc prose: a constraint that every human-facing doc is drafted or revis
 
 - decided-by [m30-docs](../intent/milestone-30/m30-docs.md)
 - decided-by [m30-readme](../intent/milestone-30/m30-readme.md)
+- decided-by [readme-front-door](../capability/rhiza/documentation/readme-front-door.md)
+- decided-by [quickstart-doc](../capability/rhiza/documentation/quickstart-doc.md)
 
 ## History
 
