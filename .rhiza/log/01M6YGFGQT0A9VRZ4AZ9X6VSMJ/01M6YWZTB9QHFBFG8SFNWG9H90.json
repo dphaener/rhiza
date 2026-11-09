@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YT1RVGR903Q4B1A09WQ29Q",
+  "after": [
+    "01M6YSZPN1G3WN2KMHT1VM56PJ"
+  ],
+  "at": "2026-11-09T00:58:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2, at 3ef516fe (a fixer commit that only changes the model). Read the diff: ship-change-ci-fix-step now says ci-triage on.fail goes to wait-ci-rerun, which matches internal/workflow/builtin/ship-change.toml:103. retry-reopens-at-wait now says the retry reopens at the wait the journal visited last, and at the failed step only when the journal visited none, which matches waitFor in internal/run/journal.go:1837. That resolves model findings f1 and f2. Re-ran the acceptance with the run's RHIZA_* and GOTMPDIR unset: go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship-rerun-fail|run-ship-infra-wait|run-ship-ci-fix|run-ship-change-fail)' ok; ./internal/run ok; ./internal/workflow ok; ./internal/api: every test PASS, including TestShipCheckFailed, TestShipCheckSettledChanged, TestShipCheckTestFailures and TestShipCheckSettledReadsNoLog. Two failures are environment-only, neither caused by this change. (1) The package-exit guard flagged ~/code/.rhiza-root/usage.live.json changing; usage files are not touched by this change. (2) TestReadBudget (budget_test.go, not touched by this change set) ran past the timeout at VM load average about 14. make self-check fails only on the verifier's own untracked actor record, which needs render."
+        },
+        "handle": "ci-triage-infra-waits-verified-2",
+        "id": "01M6YWZT7BZFC6G8MMA6CT09R5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YWZT7BZFC6G8MMA53FTWBS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YWZT7BZFC6G8MMA53FTWBS",
+        "id": "01M6YWZT94GPDG7W18QAM5QBHT",
+        "link": "01M6YWZT94GPDG7W18Q7C83BAA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YGXMGVZQBYW9NX74P1TQ4W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YGFGQT0A9VRZ4AZ9X6VSMJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YWZTB9QHFBFG8SFNWG9H90",
+  "type": "ops",
+  "v": 1
+}
