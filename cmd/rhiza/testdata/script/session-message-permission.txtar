@@ -1,0 +1,80 @@
+# A session blocked on a permission prompt gets no hook when the prompt is
+# answered, so the hook's block would stand forever. Once Rex reports the
+# session idle after that block, the session is idle again: a message's
+# pointer is typed once, then Enter.
+#
+# The hook reports the block at the test clock; the session's wrapper
+# (session run) then follows a fake `rex events` that reports block:b1 idle,
+# a minute later. The fake agent stays up until $WORK/done, so no exit
+# outranks the reports.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza change new 'Pick a palette for the dashboard' --title Palette --json
+exec git add -A
+exec git commit -qm init
+
+exec rhiza session start --permission-mode manual --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+stdout '"block": "block:b1"'
+
+# The agent blocks on a permission prompt.
+stdin $WORK/permission.json
+exec rhiza session hook Notification
+exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988
+stdout '^- Status: blocked permission: Claude needs your permission to use Bash at \S+ \(from hook\)$'
+
+# The prompt is answered and the agent goes idle: Rex reports it, later
+# than the hook's block.
+env REX_BLOCK=block:b1
+env REX_SESSION=session:s1
+env RHIZA_TEST_NOW=2026-10-24T12:01:00Z
+exec rhiza session run 158fe87f-5cf3-4ff0-ae50-01a16dc84988 &
+env REX_BLOCK=
+env REX_SESSION=
+env RHIZA_TEST_NOW=2026-10-24T12:00:00Z
+exec sh -c 'i=0; until grep -q "\"rex\"" .git/rhiza/sessions/158fe87f-5cf3-4ff0-ae50-01a16dc84988.json; do i=$((i+1)); [ $i -gt 400 ] && exit 1; sleep 0.025; done'
+exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988
+stdout '^- Status: idle: Waiting for input at \S+ \(from rex\)$'
+stdout '^- hook: blocked permission: Claude needs your permission to use Bash at '
+
+# The message's pointer is typed once, then Enter.
+exec rhiza session message 158fe87f-5cf3-4ff0-ae50-01a16dc84988 'Use the blue palette'
+stdout '^Sent session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 a message from test$'
+exec grep -c '^send -b block:b1 rhiza: message from test: read .rhiza/local/messages/158fe87f-5cf3-4ff0-ae50-01a16dc84988/0001.md and act on it.$' $WORK/rex.log
+stdout '^1$'
+exec grep -c '^send-key -b block:b1 enter$' $WORK/rex.log
+stdout '^1$'
+exec grep -c '^send' $WORK/rex.log
+stdout '^2$'
+
+# The agent exits; the wrapper ends.
+exec touch $WORK/done
+wait
+
+fold-ok
+
+-- permission.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","hook_event_name":"Notification","notification_type":"permission_prompt","message":"Claude needs your permission to use Bash"}
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+if [ "$1" = events ]; then
+	echo '{"type":"session_event","payload":{"session_id":"session:s1","event":{"type":"block_event","payload":{"block_id":"block:b1","creator_name":"com.superlogical.terminal","name":"program_status_changed","payload":{"id":"","record":{"state":"idle","msg":"Waiting for input","updated_at":"2026-10-24T12:01:00Z"},"reason":"report"}}}}}'
+	sleep 30
+	exit 0
+fi
+case "$1 $2" in
+"window new") echo '{"window_id":"window:w1","block_ids":["block:b1"]}' ;;
+esac
+-- bin/claude --
+#!/bin/sh
+# A fake agent that stays up until $WORK/done.
+i=0
+until [ -e "$WORK/done" ] || [ $i -gt 1200 ]; do i=$((i + 1)); sleep 0.025; done
+exit 0
