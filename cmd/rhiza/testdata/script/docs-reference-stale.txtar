@@ -1,9 +1,18 @@
 # rhiza check fails when a generated reference file is missing or differs
-# from what rhiza docs writes, naming it, and passes after rhiza docs. A
-# repo without docs/reference is not checked.
+# from what rhiza docs writes, naming it, and passes after rhiza docs. Only
+# a docs/reference holding a file rhiza docs wrote is checked.
 exec rhiza init
 exec rhiza render
 exec rhiza check
+
+# A project's own docs/reference is not Rhiza's: check leaves it alone and
+# rhiza docs will not write into it.
+exec sh -c 'mkdir -p docs/reference && echo own > docs/reference/architecture.md'
+exec rhiza check
+! exec rhiza docs
+stderr 'holds no file rhiza docs wrote'
+! exists docs/reference/cli.md
+rm docs/reference/architecture.md
 
 exec rhiza docs
 exec rhiza check

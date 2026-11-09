@@ -21,7 +21,7 @@ const docsDir = "docs/reference"
 
 // DocsRequest names where the reference goes.
 type DocsRequest struct {
-	Out string `json:"out,omitempty" desc:"The folder to write into; default docs/reference in the project root"`
+	Out string `json:"out,omitempty" desc:"The folder to write into; default docs/reference in the project root, unless it holds files but none rhiza docs wrote"`
 }
 
 // DocsResponse says what docs wrote.
@@ -48,6 +48,11 @@ func runDocs(ctx *Ctx, req any) (any, error) {
 	dir := r.Out
 	if dir == "" {
 		dir = filepath.Join(ctx.Root, filepath.FromSlash(docsDir))
+		// A docs/reference holding files but none rhiza docs wrote is the
+		// project's own: writing Rhiza's reference into it would mix the two.
+		if ents, err := os.ReadDir(dir); err == nil && len(ents) > 0 && !docs.Generated(os.DirFS(dir)) {
+			return nil, Usagef("docs: %s holds no file rhiza docs wrote; it is this project's own reference", docsDir).WithNext("rhiza docs --out <folder>")
+		}
 	} else if !filepath.IsAbs(dir) {
 		dir = filepath.Join(ctx.Root, dir)
 	}

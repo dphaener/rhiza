@@ -2542,7 +2542,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "out": {
-            "description": "The folder to write into; default docs/reference in the project root",
+            "description": "The folder to write into; default docs/reference in the project root, unless it holds files but none rhiza docs wrote",
             "type": "string"
           }
         },

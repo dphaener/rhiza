@@ -50,6 +50,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/check"
 	"github.com/dphaener/rhiza/internal/dispatch"
+	"github.com/dphaener/rhiza/internal/docs"
 	"github.com/dphaener/rhiza/internal/store"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
@@ -125,9 +126,10 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 	for _, f := range FrameCommands {
 		in.Commands = append(in.Commands, f.Name)
 	}
-	docsPath := filepath.Join(ctx.Root, filepath.FromSlash(docsDir))
-	if fi, err := os.Stat(docsPath); err == nil && fi.IsDir() {
-		in.Docs = os.DirFS(docsPath)
+	// Only a docs/reference rhiza docs already wrote into is checked: another
+	// project's own docs/reference is not Rhiza's reference.
+	if fsys := os.DirFS(filepath.Join(ctx.Root, filepath.FromSlash(docsDir))); docs.Generated(fsys) {
+		in.Docs = fsys
 	}
 	base, from, skipped, err := checkBase(ctx.Git, r.Base)
 	if err != nil {

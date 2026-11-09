@@ -84,7 +84,10 @@
 //     render.Render writes, is missing or is extra, and on a missing
 //     rendered folder. It also fails, under the same rule, on each file
 //     rhiza docs writes (Input.DocsWant) that is missing from an existing
-//     docs/reference or differs (a repo without the folder is not checked), naming it and rhiza docs; other files there are ignored.
+//     docs/reference or differs, naming it and rhiza docs; other files there are ignored.
+//     Only a docs/reference holding a file rhiza docs wrote is checked
+//     (Input.Docs is nil otherwise), so another project's own reference
+//     folder is left alone.
 //   - docs-command fails on each rhiza command that README.md or a markdown
 //     file under docs/ names in backticks or a code block (Input.Commands
 //     are the real ones, Input.Tree the files) and that is not one.
@@ -169,7 +172,7 @@ type Input struct {
 	Rendered fs.FS
 	// DocsWant are the generated reference files rhiza docs writes, by
 	// name; nil skips the docs check. Docs is rooted at docs/reference, nil
-	// when the folder is missing.
+	// when the folder is missing or holds no file rhiza docs wrote.
 	DocsWant map[string][]byte
 	Docs     fs.FS
 	// Commands are the command paths the registry has ("change new"); nil
