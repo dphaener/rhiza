@@ -22,6 +22,7 @@ Testscripts find code-check passing on a change set whose leaves have verifier E
 ### In
 
 - depends-on [review-workflow-file](review-workflow-file.md)
+- depends-on [code-check-skips-reference](code-check-skips-reference.md)
 - blocks [review-code-check-fails](../../../../../question/review-code-check-fails.md)
 - verifies [review-code-check-verified](../../../../../evidence/review-code-check-verified.md)
 - verifies [pr-45-the-review-workflow](../../../../../evidence/pr-45-the-review-workflow.md)

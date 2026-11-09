@@ -67,7 +67,8 @@ const legacyDir = ".genesis"
 
 // CheckRequest names the base of the append-only rule.
 type CheckRequest struct {
-	Base string `json:"base,omitempty" desc:"The git revision the log may only have grown since; default the merge-base of HEAD with origin/HEAD, origin/main or main"`
+	Base          string `json:"base,omitempty" desc:"The git revision the log may only have grown since; default the merge-base of HEAD with origin/HEAD, origin/main or main"`
+	SkipReference bool   `json:"skip_reference,omitempty" flag:"skip-reference" desc:"Leave out the generated-reference comparison (docs/reference against rhiza docs) and the docs-command rule, which judge by this binary's registry; run code-check sets it, make self-check does not"`
 }
 
 // CheckResponse is the check report.
@@ -118,18 +119,20 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 	if fi, err := os.Stat(rendered); err == nil && fi.IsDir() {
 		in.Rendered = os.DirFS(rendered)
 	}
-	in.DocsWant = docsFiles()
-	in.Commands = []string{}
-	for _, o := range Operations() {
-		in.Commands = append(in.Commands, CommandPath(o.Name))
-	}
-	for _, f := range FrameCommands {
-		in.Commands = append(in.Commands, f.Name)
-	}
-	// Only a docs/reference rhiza docs already wrote into is checked: another
-	// project's own docs/reference is not Rhiza's reference.
-	if fsys := os.DirFS(filepath.Join(ctx.Root, filepath.FromSlash(docsDir))); docs.Generated(fsys) {
-		in.Docs = fsys
+	if !r.SkipReference {
+		in.DocsWant = docsFiles()
+		in.Commands = []string{}
+		for _, o := range Operations() {
+			in.Commands = append(in.Commands, CommandPath(o.Name))
+		}
+		for _, f := range FrameCommands {
+			in.Commands = append(in.Commands, f.Name)
+		}
+		// Only a docs/reference rhiza docs already wrote into is checked: another
+		// project's own docs/reference is not Rhiza's reference.
+		if fsys := os.DirFS(filepath.Join(ctx.Root, filepath.FromSlash(docsDir))); docs.Generated(fsys) {
+			in.Docs = fsys
+		}
 	}
 	base, from, skipped, err := checkBase(ctx.Git, r.Base)
 	if err != nil {
