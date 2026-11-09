@@ -1,0 +1,30 @@
+{
+  "actor": "01M6ZQQ21W62VJYER12KRX0KSA",
+  "after": [
+    "01M6ZQFFDNGYVEFFK20F6PY2NC"
+  ],
+  "at": "2026-11-09T08:46:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A new inbox-permission.txtar: a live run journal whose current step's session record has a hook blocked/permission report with a detail message gives one item of kind permission in rhiza inbox --json (session, run, step, detail, tab, next naming rhiza inbox open) in both an owner-run and an autonomous run, none once a newer Rex idle report is recorded, and an autonomous run's question block still gives none; in the same script, as inbox-open.txtar does, rhiza inbox open <permission item> focuses the blocked session's own tab, not the run's journalled tab (itemTab in internal/api/inbox.go); daemon-notify-hook.txtar gains a permission-item fixture and its notify command gets one line of kind permission with the detail in its RHIZA_INBOX_* text; go test -trimpath ./internal/tui/inboxapp -run 'TestRowPerItemInOrder|TestOtherKindShowsDetailAndOpensTab' covers a permission row showing its detail and Enter opening its tab; go test -trimpath ./internal/api -run TestWebInbox shows the permission item with its owner-facing label (the webInboxKinds filter in internal/api/web_inbox.go); inbox-stalled.txtar still passes",
+          "statement": "rhiza inbox lists each session of a live run that resolves as blocked on a permission prompt as an item of kind permission as soon as it blocks, in autonomous runs too, naming the run, step, session, the prompt's message and its tab, with rhiza inbox open <item> as the next step to answer it there; the notify hook, the inbox app and the web UI show it like the other kinds, and autonomous runs still list no questions"
+        },
+        "handle": "inbox-permission-items",
+        "id": "01M6ZQFF9QA1CMC83FCRBS84M6",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6ZQFF9QA1CMC83FCNZAJDXN",
+        "op": "node.create",
+        "parent": "01M61R7Q0JX5BXJP6M3P1SJXTG"
+      }
+    ]
+  },
+  "change_set": "01M6ZQ588DTHT2T3MHK7STGR3Q",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZQRSGQ78S0P9DYQQJYC6JB",
+  "type": "ops",
+  "v": 1
+}

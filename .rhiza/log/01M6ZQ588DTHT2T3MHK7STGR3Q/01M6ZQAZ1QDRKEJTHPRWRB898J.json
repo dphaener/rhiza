@@ -1,0 +1,30 @@
+{
+  "actor": "01M6ZQ60CR817SGNDFCBJY91PA",
+  "after": [
+    "01M6ZQ588DTHT2T3MHKB1K0SBQ"
+  ],
+  "at": "2026-11-09T08:38:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "779f56da-f75a-421d-a31c-01a1bf72ebf8",
+          "statement": "Change set 01M6ZQ5 (permission-blocked run missing from inbox; session message hangs): which intent should it serve? / Should a session of a live run that is blocked on a permission prompt (hook kind=permission) be listed in rhiza inbox as soon as it blocks, including in autonomous runs, where the inbox lists no questions today? / Answering a permission prompt fires no Claude Code hook, so the session's hook status stays 'blocked permission' and session message waits until its timeout. How should a stale permission block clear? / While session message waits on a blocked session, what should it say?"
+        },
+        "handle": "question-779f56da-1",
+        "id": "01M6ZQAWWE7K6CFRXKS3NTT2RE",
+        "key": null,
+        "kind": "question",
+        "node": "01M6ZQAWWE7K6CFRXKS16XA7QB",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6ZQ588DTHT2T3MHK7STGR3Q",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZQAZ1QDRKEJTHPRWRB898J",
+  "type": "ops",
+  "v": 1
+}
