@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZHAT4CCG6K0PQ6YFW92K5V",
+  "after": [
+    "01M6Z5PB4AYAPSV5K47R7NGKYN"
+  ],
+  "at": "2026-11-09T06:55:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 06da5bad, read docs/agents.md and the diff: it covers installing the guide and skills (rhiza guide, guide ls, guide install --agent claude, --project, --force), the read-slice/work/apply/commit/land loop, and the Change:/Actor:/Leaf: trailers with Co-Authored-By in one paragraph; the rules section matches `rhiza guide`. docs-links-resolve: go test -trimpath -count=1 ./internal/doclinks/... passes over the real README and docs/ (new links to quickstart.md, concepts/change-sets.md, concepts/why.md, concepts/model.md, agents.md resolve). docs-commands-exist has no automated check in the tree yet, so checked by hand with a scratch build: every rhiza command the page names (guide, guide ls, guide build, guide install, slice, ready, apply, land, render, check, accept) answers --help, and guide install's flags match the page. TestScripts/quickstart still passes after the quickstart.md edit. Prose reads plain and unpadded, consistent with doc-prose-humanized; the owner's read is left to the owner."
+        },
+        "handle": "docs-agents-verified",
+        "id": "01M6ZHEB0MWJJFM8YCWFTV6MB8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZHEB0MWJJFM8YCWDPCDEEZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZHEB0MWJJFM8YCWDPCDEEZ",
+        "id": "01M6ZHEB2HX13H4WNJHTSM50B8",
+        "link": "01M6ZHEB2HX13H4WNJHPTWPZF1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H2NVXGP81PQ31Y2VKKKK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5ETVXHS9EJQ2KH7STXY50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZHEB44EYYNPA3JM5Y9V3AD",
+  "type": "ops",
+  "v": 1
+}
