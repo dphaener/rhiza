@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YVMD2RTWFSWVXJZMFZQNJD",
+  "after": [
+    "01M6YSSKZ7GQN9CPKVYFH4SMZH"
+  ],
+  "at": "2026-11-09T00:38:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-40c7ef9f, attempt 2 at a1dc9868. go test -trimpath ./internal/api -run TestShipLocalGate -v: PASS (unstable runs the gate in the worktree, stable skips, no gate skips, failing gate fails with its output, plus OncePerHead). go test -trimpath ./internal/workflow: ok (local-gate, gate-rebase, gate-land, gate-rebase-merge before the push steps of ship-change.toml, on.fail = gate-fix). go test -trimpath ./cmd/rhiza -run 'TestScripts/(ship-local-gate|describe-golden)$': PASS; the script's own repo shows daemon settings --json with rhiza.ship.localGate project-scoped, empty default, source default, then daemon set to make check reading value make check from git config. The scripts had to run with TMPDIR set outside the repo and GOTMPDIR/RHIZA_ROOT unset: the run's GOTMPDIR sits under ~/code/rhiza/.git, so rhiza init in the script found the outer .rhiza (an environment issue, not the leaf). Diff read: removes the .rhiza/settings.json source, its test and golden wording, per Decision ship-local-gate-acceptance-from-commit; no leftover references; gofmt and vet clean on internal/api."
+        },
+        "handle": "ship-local-gate-verified-2",
+        "id": "01M6YVWVFCQN6QGXFZXG84EG7J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YVWVFCQN6QGXFZXCW8GEHQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YVWVFCQN6QGXFZXCW8GEHQ",
+        "id": "01M6YVWVMDCXV66Q7DKQQBBKRM",
+        "link": "01M6YVWVMDCXV66Q7DKN14QG9T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YVWVY671PFN0VV05X1C177",
+  "type": "ops",
+  "v": 1
+}
