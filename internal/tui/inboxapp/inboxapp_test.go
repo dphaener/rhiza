@@ -23,7 +23,8 @@ const full = `{"items":[
 {"id":"c3","kind":"failed","change":"C3","change_title":"Three","step":"verify","run":"R3","detail":"boom"},
 {"id":"h8","kind":"stalled","change":"C9","change_title":"Nine","step":"build","run":"R9","session":"S1","detail":"the session is silent"},
 {"id":"i9","kind":"disk-low","detail":"1.0 GiB free"},
-{"id":"j1","kind":"accept","change":"C7","change_title":"Seven","detail":"ready to accept"}
+{"id":"j1","kind":"accept","change":"C7","change_title":"Seven","detail":"ready to accept"},
+{"id":"k2","kind":"permission","change":"C8","change_title":"Eight","step":"build","run":"R8","session":"S8","detail":"Allow the hook command?","tab":"build tab","tab_block":"block:sess","tab_session":"session:s2"}
 ]}`
 
 type call struct {
@@ -73,10 +74,10 @@ func TestRowPerItemInOrder(t *testing.T) {
 	var calls []call
 	m := NewModel(fake(full, &calls))
 	rows := m.Rows()
-	if len(rows) != 6 {
+	if len(rows) != 7 {
 		t.Fatalf("rows = %d: %q", len(rows), rows)
 	}
-	for i, want := range []string{"question · One · build  Which db?", "signoff · Two · signoff  signoff-wait", "failed · Three · verify  boom", "stalled · Nine · build", "disk-low · Daemon holds starts  1.0 GiB free", "accept · Seven  ready to accept"} {
+	for i, want := range []string{"question · One · build  Which db?", "signoff · Two · signoff  signoff-wait", "failed · Three · verify  boom", "stalled · Nine · build", "disk-low · Daemon holds starts  1.0 GiB free", "accept · Seven  ready to accept", "permission · Eight · build  Allow the hook command?"} {
 		if !strings.HasPrefix(rows[i], want) {
 			t.Errorf("row %d = %q, want prefix %q", i, rows[i], want)
 		}
@@ -239,6 +240,27 @@ func TestOtherKindShowsDetailAndOpensTab(t *testing.T) {
 	}
 	v := m.View().Content
 	for _, w := range []string{"stalled", "Nine", "the session is silent"} {
+		if !strings.Contains(v, w) {
+			t.Errorf("detail lacks %q:\n%s", w, v)
+		}
+	}
+	if p, _ := m.Picked(); p.Action != ActionShow {
+		t.Errorf("pick = %+v", p)
+	}
+}
+
+func TestOtherKindShowsDetailAndOpensTabPermission(t *testing.T) {
+	var calls []call
+	m := NewModel(fake(full, &calls))
+	for range 6 {
+		press(m, "down")
+	}
+	enter(m)
+	if last := calls[len(calls)-1]; !slices.Equal(last.args, []string{"k2"}) || last.op != "inbox.open" {
+		t.Fatalf("calls: %+v", calls)
+	}
+	v := m.View().Content
+	for _, w := range []string{"permission", "Eight", "Allow the hook command?"} {
 		if !strings.Contains(v, w) {
 			t.Errorf("detail lacks %q:\n%s", w, v)
 		}

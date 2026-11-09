@@ -27,7 +27,7 @@ type InboxSource func() []InboxItemView
 
 var inboxLabels = map[string]string{
 	"question": "question", "signoff": "sign-off", "failed": "failed",
-	"gave-up": "gave up", "stalled": "stalled", "open": "open question",
+	"gave-up": "gave up", "stalled": "stalled", "permission": "permission", "open": "open question",
 }
 
 // inboxRows is the items as dense rows, oldest first, each marked in the

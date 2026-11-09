@@ -3094,7 +3094,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "detail": {
-                  "description": "A failed run: why it failed; a sign-off: what it waits for",
+                  "description": "A failed run: why it failed; a sign-off: what it waits for; a permission item: the prompt's message",
                   "type": "string"
                 },
                 "handle": {
@@ -3106,7 +3106,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale, accept, interview or workflow",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, main-stale, accept, interview or workflow",
                   "type": "string"
                 },
                 "next": {
@@ -3184,7 +3184,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "session": {
-                  "description": "A question: the asking session; an interview: the interview's session; a stalled item: the stalled session",
+                  "description": "A question: the asking session; an interview: the interview's session; a stalled item: the stalled session; a permission item: the blocked session",
                   "type": "string"
                 },
                 "step": {
@@ -3192,15 +3192,15 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "tab": {
-                  "description": "A question or an interview: the title of the session's tab",
+                  "description": "A question, an interview or a permission item: the title of the session's tab",
                   "type": "string"
                 },
                 "tab_block": {
-                  "description": "A question or an interview: the Rex block of the session's tab",
+                  "description": "A question, an interview or a permission item: the Rex block of the session's tab",
                   "type": "string"
                 },
                 "tab_session": {
-                  "description": "A question or an interview: the Rex session of the session's tab",
+                  "description": "A question, an interview or a permission item: the Rex session of the session's tab",
                   "type": "string"
                 },
                 "target": {
@@ -3228,7 +3228,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted and stalled sessions of live runs, and the daemon's low disk space, oldest first",
+      "summary": "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted, stalled sessions of live runs and sessions of live runs blocked on a permission prompt, and the daemon's low disk space, oldest first",
       "write": false
     },
     {

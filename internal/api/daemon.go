@@ -28,6 +28,7 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/policy"
 	"github.com/dphaener/rhiza/internal/run"
+	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/web"
 )
 
@@ -468,7 +469,14 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 			overlaps = append(overlaps, ov)
 		}
 	}
-	items := inboxItems(runs, host, nil, rs.Live, stateOf, nil, nil)
+	// A session blocked on a permission prompt notifies like any other
+	// item; it needs the session records, so the repository's common dir.
+	var blocked func(st run.State) []RunPermission
+	var tabOf func(sid string) session.Tab
+	if common, err := gitCommonDir(ctx); err == nil {
+		blocked, tabOf = inboxBlockedOf(ctx, common), inboxTabOf(ctx, common)
+	}
+	items := inboxItems(runs, host, nil, rs.Live, stateOf, nil, blocked, tabOf)
 	items = append(items, overlaps...)
 	// This poll's disk-low state, not the one saved after the last poll.
 	items = append(items, diskLowItems(state.DiskLow)...)
@@ -563,6 +571,12 @@ func inboxNotice(what string, it InboxItem) string {
 		return what + ": a plan waits for your acceptance"
 	case InboxStalled:
 		return what + ": a session stalled"
+	case InboxPermission:
+		msg := what + ": a session waits on a permission prompt"
+		if d := strings.TrimSpace(it.Detail); d != "" {
+			msg += ": " + d
+		}
+		return msg
 	case InboxFailed:
 		return what + ": a run failed"
 	case InboxSkipped:

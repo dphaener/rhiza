@@ -481,6 +481,40 @@ func runStalledAll(st run.State, live bool, sessions *session.Store, now time.Ti
 	return out
 }
 
+// RunPermission is a session blocked on a permission prompt.
+type RunPermission struct {
+	Step    string
+	Session string
+	Detail  string
+	Since   string
+}
+
+// runPermissionAll is every session of the current step of a live,
+// unfinished run whose status resolves, by its hook, as blocked on a
+// permission prompt: not once Rex has reported it idle or working since.
+func runPermissionAll(st run.State, live bool, sessions *session.Store) []RunPermission {
+	if !live || st.Ended || sessions == nil {
+		return nil
+	}
+	var out []RunPermission
+	for _, sid := range stepSessions(st) {
+		rec, err := sessions.Read(sid)
+		if err != nil {
+			continue
+		}
+		rep, src := session.Resolve(rec)
+		if src != session.SourceHook || rep.State != session.StateBlocked || rep.Kind != session.KindPermission {
+			continue
+		}
+		detail := strings.TrimSpace(rep.Detail)
+		if detail == "" {
+			detail = "blocked on a permission prompt"
+		}
+		out = append(out, RunPermission{Step: st.Current, Session: sid, Detail: detail, Since: rfc3339(rep.At)})
+	}
+	return out
+}
+
 // stepSessions are the sessions of the run's current step that can still
 // be working, in the order runStalledAll checks them. A session whose pane
 // is closed is gone.
