@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YYJPGB7JBD7S23XB1P2MKA",
+  "after": [
+    "01M6YYARCFC8VW48BPYC77DHHW"
+  ],
+  "at": "2026-11-09T01:28:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-ffbf3f20 at 96e14104 (attempt 8): go test -trimpath ./internal/api -run TestShipLocalGate -v passes its subtests unstable_runs_the_gate_in_the_worktree, stable_skips, no_gate_skips, failing_gate_fails_with_its_output (plus TestShipLocalGateOncePerHead); go test -trimpath ./internal/workflow passes, including TestShipChangeLocalGate, which checks a gate step before every push of ship-change.toml with on.fail to a fixer, and (new in this attempt) that gate-rebase-merge and rebase-merge fail through rebase-merge-gate-failed to gate-fix-merge, whose loop render-merge -> gate-push-merge -> push-merge (ship open-pr) -> wait-rebased-merge never returns to land or any pre-land step, sets max_visits on every step, and walks repeated gate failures ending only at gate-fix-merge's cap, which addresses quality cycle-3 f1 (land went over max_visits 1). go test -trimpath ./cmd/rhiza -run 'TestScripts/(ship-local-gate|run-ship-change-rebase|run-ship-change)$' passes (ship-local-gate shows rhiza.ship.localGate as a project setting with an empty default, then make check from git config after daemon set; run-ship-change-rebase now ends the post-land conflict at rebase-merge-gate-failed). Note: the scripts fail in the run's raw env only because GOTMPDIR puts the test binary under ~/code/rhiza, so rhiza init sees that repo; with RHIZA_* unset and GOTMPDIR/TMPDIR in the session scratchpad they pass. Read the diff of ship-change.toml, workflow_test.go and the txtar."
+        },
+        "handle": "ship-local-gate-verified-8",
+        "id": "01M6YYQ72PM6BHR485XQF760ZD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YYQ72PM6BHR485XNRBNWTN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YYQ72PM6BHR485XNRBNWTN",
+        "id": "01M6YYQ74B00KGE56VJQM1BV9B",
+        "link": "01M6YYQ74B00KGE56VJN2Q1HGH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YYQ7665P3SVX1N500KSYJQ",
+  "type": "ops",
+  "v": 1
+}
