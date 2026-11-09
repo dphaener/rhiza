@@ -9,10 +9,14 @@ package api
 // A conflict in code leaves the merge in progress in the worktree and
 // records the conflicted files and main's commits in the ship state, for
 // a fixer session to resolve and commit; the next call finds that merge
-// and pushes it. A pushed head is recorded so the next ship check waits
-// for CI on it.
+// and pushes it. While CI is unstable, the project's local gate runs on the
+// merged head before the push (the gate step before this one saw only the
+// head before main was brought in); a failing gate pushes nothing and
+// leaves main merged into the branch, unpushed, for the gate's fixer. A
+// pushed head is recorded so the next ship check waits for CI on it.
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"reflect"
@@ -55,6 +59,8 @@ type ShipRebaseResponse struct {
 	Rendered      []string           `json:"rendered,omitempty" desc:"The rendered files written or removed by rendering after the merge"`
 	Commit        string             `json:"commit,omitempty" desc:"The commit of that rendering; empty if it changed nothing"`
 	Pushed        string             `json:"pushed,omitempty" desc:"The merged head pushed to the PR branch"`
+	Gate          *ShipGateResponse  `json:"gate,omitempty" desc:"The local gate run on the merged head before the push, while CI is unstable; a failing gate pushed nothing"`
+	Kept          string             `json:"kept,omitempty" desc:"After a failing gate, the unpushed head left on the branch: origin's main merged into it, for the gate's fixer"`
 	Detail        string             `json:"detail,omitempty" desc:"Why the merge stopped; the command exits 1 then"`
 }
 
@@ -75,9 +81,10 @@ type ShipMergeConflict struct {
 	MainCommits []ShipMergeCommit `json:"main_commits,omitempty" desc:"origin/main's commits since the merge-base, with their change sets"`
 }
 
-// ExitCode is 1 when a conflict stopped the rebase, else 0.
+// ExitCode is 1 when a conflict or a failing local gate stopped the
+// rebase, else 0.
 func (r ShipRebaseResponse) ExitCode() int {
-	if len(r.Conflicts) > 0 {
+	if len(r.Conflicts) > 0 || (r.Gate != nil && r.Gate.ExitCode() != 0) {
 		return 1
 	}
 	return 0
@@ -208,10 +215,15 @@ func runShipRebase(ctx *Ctx, _ any) (any, error) {
 	}
 	resp.Rebased = true
 
-	// Render once more on the merged head, commit what changed, and push.
-	// If any of that fails, the branch goes back to where it was, so a
-	// retried step merges again rather than finding an unpushed head.
+	// Render once more on the merged head, commit what changed, run the
+	// local gate, and push. If any of that fails, the branch goes back to
+	// where it was, so a retried step merges again rather than finding an
+	// unpushed head; only a failing gate keeps the merged head, unpushed,
+	// for the gate's fixer.
 	if err := shipFinishRebase(ctx, t, rendered, &resp); err != nil {
+		if errors.Is(err, errShipGateFailed) {
+			return shipKeepGateFailure(ctx, t, resp)
+		}
 		if _, rerr := ctx.Git("reset", "-q", "--keep", orig); rerr != nil {
 			return nil, Errorf("%v; and could not put %s back at %s: %v", err, t.branch, shortSHA(orig), rerr)
 		}
@@ -233,6 +245,33 @@ func runShipRebase(ctx *Ctx, _ any) (any, error) {
 	}
 	return resp, nil
 }
+
+// shipKeepGateFailure leaves the merged head the local gate failed on on
+// the branch, unpushed, and records it in the ship state: the gate's fixer
+// then sees the failure on the code it failed on (the head before the
+// merge already passed the gate), and the fix pushes without forcing,
+// since the merge descends from the pushed head. ship gate --failed finds
+// it there.
+func shipKeepGateFailure(ctx *Ctx, t shipTarget, resp ShipRebaseResponse) (any, error) {
+	var err error
+	if resp.Kept, err = gitHead(ctx); err != nil {
+		return nil, err
+	}
+	st, err := readShipState(t.statePath())
+	if err != nil {
+		return nil, err
+	}
+	st.GateFailed = resp.Kept
+	if err := writeShipState(t.statePath(), st); err != nil {
+		return nil, err
+	}
+	resp.Detail = fmt.Sprintf("the local gate (%s) failed on %s with origin/%s merged in; nothing was pushed, and the merge is left on the branch, unpushed, for the gate's fixer", resp.Gate.Command, t.branch, shipMain)
+	return resp, nil
+}
+
+// errShipGateFailed is shipFinishRebase's error when the local gate failed
+// on the merged head.
+var errShipGateFailed = errors.New("the local gate failed")
 
 // shipLeaveConflict records the context of a merge that conflicts in code
 // in the ship state and returns the response. The merge stays in progress.
@@ -271,10 +310,11 @@ func shipLeaveConflict(ctx *Ctx, t shipTarget, rendered string, conflicts []stri
 	return resp, nil
 }
 
-// shipFinishRebase renders the merged head, commits what that changed, and
-// pushes it to the change set's branch on origin with a plain push: never
-// forced, so it fails rather than drop a head it has not seen, and never to
-// main.
+// shipFinishRebase renders the merged head, commits what that changed,
+// runs the local gate on it while CI is unstable (errShipGateFailed when it
+// fails), and pushes it to the change set's branch on origin with a plain
+// push: never forced, so it fails rather than drop a head it has not seen,
+// and never to main.
 func shipFinishRebase(ctx *Ctx, t shipTarget, rendered string, resp *ShipRebaseResponse) error {
 	var err error
 	if resp.Rendered, err = shipRender(ctx, t); err != nil {
@@ -282,6 +322,16 @@ func shipFinishRebase(ctx *Ctx, t shipTarget, rendered string, resp *ShipRebaseR
 	}
 	if resp.Commit, err = shipCommitRendered(ctx, t, rendered, shipRebaseMessage); err != nil {
 		return err
+	}
+	gate, err := shipLocalGate(ctx, &t)
+	if err != nil {
+		return err
+	}
+	if !gate.Skipped {
+		resp.Gate = &gate
+		if !gate.Passed {
+			return errShipGateFailed
+		}
 	}
 	if _, err := ctx.Git("push", "origin", "HEAD:refs/heads/"+t.branch); err != nil {
 		return Errorf("%v", err)
@@ -375,6 +425,15 @@ func (r ShipRebaseResponse) Human(w io.Writer) {
 	case !r.Behind:
 		fmt.Fprintf(w, "%s already holds origin/%s at %s; nothing to merge.\n", r.Branch, shipMain, shortSHA(r.Onto))
 		return
+	case r.Gate != nil && !r.Gate.Passed:
+		r.Gate.Human(w)
+		fmt.Fprintf(w, "Merged origin/%s at %s into %s, but the local gate failed on it: nothing was pushed.\n", shipMain, shortSHA(r.Onto), r.Branch)
+		if r.Kept != "" {
+			fmt.Fprintf(w, "Left origin/%s merged into %s at %s, unpushed, for the gate's fixer.\n", shipMain, r.Branch, shortSHA(r.Kept))
+		} else {
+			fmt.Fprintln(w, "The branch is as it was.")
+		}
+		return
 	case len(r.Conflicts) > 0:
 		fmt.Fprintf(w, "Merging origin/%s at %s into %s conflicts in:\n", shipMain, shortSHA(r.Onto), r.Branch)
 		for _, c := range r.Conflicts {
@@ -389,6 +448,9 @@ func (r ShipRebaseResponse) Human(w io.Writer) {
 	}
 	if r.Commit != "" {
 		fmt.Fprintf(w, "Committed %s.\n", shortSHA(r.Commit))
+	}
+	if r.Gate != nil {
+		fmt.Fprintf(w, "Local gate passed on it (%s).\n", r.Gate.Command)
 	}
 	fmt.Fprintf(w, "Pushed %s.\n", shortSHA(r.Pushed))
 }

@@ -1763,7 +1763,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl or deployTimeout, or rhiza.autonomy.plan, accept, ship or signoff",
+            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout or ciWindow, or rhiza.autonomy.plan, accept, ship or signoff",
             "type": "string"
           },
           "project": {
@@ -2808,7 +2808,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "parts": {
-            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, usage, then main, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project",
+            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, usage, then main, ci, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -2840,6 +2840,7 @@ cmp stdout describe.golden.json
                     "disk",
                     "usage",
                     "main",
+                    "ci",
                     "schedules",
                     "inbox",
                     "requests",
@@ -2896,7 +2897,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Report the daemon, autonomy settings, the machine trust, free disk, the usage hold, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
+      "summary": "Report the daemon, autonomy settings, the machine trust, free disk, the usage hold, the main checkout, CI stability, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
       "write": false
     },
     {
@@ -22310,7 +22311,7 @@ cmp stdout describe.golden.json
             "type": "integer"
           },
           "settled": {
-            "description": "Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it merges main into the branch as ship rebase does: a clean merge is pushed and reported not settled, a conflict in code is left in progress and reported settled (exit 0) with the conflict in its detail",
+            "description": "Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it merges main into the branch as ship rebase does: a clean merge is pushed and reported not settled, a conflict in code is left in progress and reported settled (exit 0) with the conflict in its detail, and so is a clean merge the local gate failed on, left unpushed",
             "type": "boolean"
           },
           "test_failures": {
@@ -22701,6 +22702,64 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "ship.gate",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "failed": {
+            "description": "Run no gate: exit 0 only if the last ship rebase left an unpushed head the local gate failed on and the branch is still at it, else exit 1 (a conflict or another failure); reads the state file only (for a step that routes a gate failing on a rebased head to a fixer)",
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "description": "The gate command (rhiza.ship.localGate); empty if none is set",
+            "type": "string"
+          },
+          "error": {
+            "description": "How a failing gate failed: its exit status or a timeout",
+            "type": "string"
+          },
+          "failed": {
+            "description": "With --failed: the unpushed head ship rebase left after the gate failed on it, when the branch is still at it",
+            "type": "string"
+          },
+          "head": {
+            "description": "The commit the gate passed on",
+            "type": "string"
+          },
+          "output": {
+            "description": "The end of the gate's combined output, when it ran",
+            "type": "string"
+          },
+          "passed": {
+            "description": "True if the gate ran and exited 0",
+            "type": "boolean"
+          },
+          "reason": {
+            "description": "Why it ran (why CI is unstable) or why it was skipped",
+            "type": "string"
+          },
+          "skipped": {
+            "description": "True if the gate did not run: CI is stable, or no gate is set",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "passed",
+          "skipped"
+        ],
+        "type": "object"
+      },
+      "summary": "Before a push, while CI is unstable, run the project's local gate command (rhiza.ship.localGate) in the change set's worktree and fail if it does; with CI stable or no gate set, do nothing",
+      "write": false
+    },
+    {
       "name": "ship.land",
       "request": {
         "additionalProperties": false,
@@ -22910,6 +22969,53 @@ cmp stdout describe.golden.json
           },
           "detail": {
             "description": "Why the merge stopped; the command exits 1 then",
+            "type": "string"
+          },
+          "gate": {
+            "additionalProperties": false,
+            "description": "The local gate run on the merged head before the push, while CI is unstable; a failing gate pushed nothing",
+            "properties": {
+              "command": {
+                "description": "The gate command (rhiza.ship.localGate); empty if none is set",
+                "type": "string"
+              },
+              "error": {
+                "description": "How a failing gate failed: its exit status or a timeout",
+                "type": "string"
+              },
+              "failed": {
+                "description": "With --failed: the unpushed head ship rebase left after the gate failed on it, when the branch is still at it",
+                "type": "string"
+              },
+              "head": {
+                "description": "The commit the gate passed on",
+                "type": "string"
+              },
+              "output": {
+                "description": "The end of the gate's combined output, when it ran",
+                "type": "string"
+              },
+              "passed": {
+                "description": "True if the gate ran and exited 0",
+                "type": "boolean"
+              },
+              "reason": {
+                "description": "Why it ran (why CI is unstable) or why it was skipped",
+                "type": "string"
+              },
+              "skipped": {
+                "description": "True if the gate did not run: CI is stable, or no gate is set",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "passed",
+              "skipped"
+            ],
+            "type": "object"
+          },
+          "kept": {
+            "description": "After a failing gate, the unpushed head left on the branch: origin's main merged into it, for the gate's fixer",
             "type": "string"
           },
           "merge_conflict": {

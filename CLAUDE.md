@@ -43,6 +43,12 @@ Agents in runs test only what their change touches, and never run
   testscript;
 - `make self-check` for model or `.rhiza/` changes.
 
+While CI is unstable (main's CI is not reliably green, or a red is not
+explained by your change: a flaky test, an infra error, a red that passes on
+rerun), do not push or rerun CI to see. Reproduce the failing test locally,
+repeatedly if it is a flake, fix it or quarantine it with a bug filed, and
+push only after it and the touched packages pass locally.
+
 Outside a run (a person at a terminal), run `make check` before calling a
 change done.
 

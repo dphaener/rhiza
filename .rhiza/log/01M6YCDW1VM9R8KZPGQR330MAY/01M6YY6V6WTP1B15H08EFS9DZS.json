@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6YXN2G8FJV5M6EDF03Y5NAH"
+  ],
+  "at": "2026-11-09T01:19:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Review check quality still fails after 3 cycles: finding f1 (major at internal/workflow/builtin/ship-change.toml:193) on leaf ship-local-gate: A gate failing after land still cannot reach a working fix. rebase-merge's new on.fail (rebase-gate-failed -> gate-fix), like gate-rebase-merge's on.fail = gat…. Its last cycle: cycle 3: confirmed f1 (major). How should it be fixed, or should leaf ship-local-gate change?"
+        },
+        "handle": "leaf-failed-01m6ygg6-1",
+        "id": "01M6YY6J9N4W6WEN6M5K3K5YWR",
+        "key": null,
+        "kind": "question",
+        "node": "01M6YY6J9N4W6WEN6M5J07TN8B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YY6J9N4W6WEN6M5J07TN8B",
+        "id": "01M6YY6QTT99NYS9BBMEZ3286C",
+        "link": "01M6YY6QTT99NYS9BBMDS0RAFJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YY6V6WTP1B15H08EFS9DZS",
+  "type": "ops",
+  "v": 1
+}

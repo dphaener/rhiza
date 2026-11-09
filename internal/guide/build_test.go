@@ -38,6 +38,11 @@ func TestBuildText(t *testing.T) {
 			"scoped commands", "never the repo's full\nsuite",
 			"the PR's CI runs it before merge",
 		},
+		"unstable-ci": {
+			"While CI is unstable", "not explained by your change",
+			"do not push or rerun CI to see", "Reproduce the\nfailing test locally",
+			"push only after it and the\ntouched packages pass locally",
+		},
 	})
 	for _, banned := range []string{"go test", "make check", "make test", "testscript"} {
 		if strings.Contains(build.Body, banned) {

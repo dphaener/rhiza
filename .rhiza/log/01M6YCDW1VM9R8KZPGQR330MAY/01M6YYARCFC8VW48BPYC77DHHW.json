@@ -1,0 +1,41 @@
+{
+  "actor": "01M6YY7BFYZ7A8WDTQ4X6EQZKA",
+  "after": [
+    "01M6YY6V6WTP1B15H08EFS9DZS"
+  ],
+  "at": "2026-11-09T01:21:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "I read the finding's full text in the run journal, internal/workflow/builtin/ship-change.toml and internal/api/ship_rebase.go and ship_openpr.go. The defect is real. gate-fix only returns through render-pr -> local-gate -> open-pr -> wait-pr -> pr-green -> signoff -> gate-rebase -> rebase -> ... -> gate-land -> land, and land has no max_visits (cap 1) and was already entered, so any gate failure after land fails the run at land's second visit. Raising land's cap would re-run rhiza ship land on a landed change set and a second owner sign-off for a fix to an already-signed-off change, so I rejected it. Reusing gate-rebase-merge -> rebase-merge as the return path would not push: runShipRebase returns before pushing when origin/main is already an ancestor of HEAD, which it is after shipKeepGateFailure's merge or once main has not moved. ship open-pr pushes any descendant of the pushed head and does not depend on model land state, so it is the right push step after land. A dedicated post-land loop keeps the leaf's statement (a failing gate goes to a fixer, like a red CI, before every push) true for the two post-land gates. It also keeps the change to the workflow file and its test, within this change set's intent.",
+          "statement": "Keep leaf @{01M6YCRKT22SQQH70HYX1GPFZW} as written and fix f1 in ship-change.toml with a separate fix loop for gate failures after land, which never re-enters the pre-land path or land. gate-rebase-merge's on.fail goes to a new agent step gate-fix-merge (same prompt as gate-fix, max_visits = 2). rebase-merge's on.fail goes to a new rebase-merge-gate-failed step (rhiza ship gate --failed, max_visits = 3, on.pass = gate-fix-merge) instead of the shared rebase-gate-failed. gate-fix-merge goes to render-merge (the render-pr command), then gate-push-merge (rhiza ship gate, stall 70m; on.fail = gate-fix-merge), then push-merge (rhiza ship open-pr, which pushes without forcing because the fix descends from the pushed head or the kept merge), then the existing wait-rebased-merge -> rebased-merge-green -> merge. The push goes through ship open-pr, not back through rebase-merge, because ship rebase pushes nothing when the branch already holds origin/main. Every new step sets max_visits so that a third failing gate fails the run cleanly, with the gate's output, rather than hitting land's cap of 1. No second sign-off after land, matching merge's existing on.fail to gate-rebase-merge. Tests: TestShipChangeLocalGate asserts that no step reachable from land routes back to land or to a pre-land step, and that both post-land gate failures reach gate-fix-merge.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "ship-local-gate-post-land-fix-loop",
+        "id": "01M6YYAR61GBW4PAYA0AAFBX9C",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6YYAR61GBW4PAYA09P25W1N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YYAR61GBW4PAYA09P25W1N",
+        "id": "01M6YYAR8CVCBPC6REGB7NHE4E",
+        "link": "01M6YYAR8CVCBPC6REG9JNTA0C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YY6J9N4W6WEN6M5J07TN8B",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YYARCFC8VW48BPYC77DHHW",
+  "type": "ops",
+  "v": 1
+}

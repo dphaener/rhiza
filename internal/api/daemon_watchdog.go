@@ -52,6 +52,8 @@ type watchdogDeps struct {
 	// run's journal of the poll, for reading which requests are still open.
 	file func(text string) error
 	all  []run.Journal
+	// flakes reads the CI stability record's runs; nil is none.
+	flakes func() ([]CIRun, error)
 	// now is the clock stamping journalled attempts; nil stamps none.
 	now func() time.Time
 	log func(format string, args ...any)
@@ -231,6 +233,10 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 		return err == nil && slices.ContainsFunc(q, func(c daemon.Continue) bool { return c.Run == id })
 	}
 	d.requests = func() ([]daemon.Request, error) { return daemon.ReadRequests(common) }
+	d.flakes = func() ([]CIRun, error) {
+		rec, err := readCIStability(ciStabilityPath(common))
+		return rec.Runs, err
+	}
 	d.file = func(text string) error {
 		return daemon.UpdateRequests(common, func(reqs []daemon.Request) ([]daemon.Request, error) {
 			rid, err := newRequestID(ctx, reqs)
@@ -302,6 +308,9 @@ func watchdogPasses(pol WatchdogPolicy, all []run.Journal, live func(id string) 
 		if err == nil {
 			err = rerr
 		}
+	}
+	if ferr := watchdogFlakyTests(pol, d); err == nil {
+		err = ferr
 	}
 	mem, nholds, terr := watchdogPRNoCI(pol, all, live, mem, d)
 	holds = append(holds, nholds...)

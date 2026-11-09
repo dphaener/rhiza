@@ -18,6 +18,11 @@ func TestClaudeMDScopedTests(t *testing.T) {
 		"TestScripts/<name>",
 		"make self-check",
 		"never run `make check`, `make test` or a bare `go test ./...`",
+		"While CI is unstable",
+		"not explained by your change",
+		"do not push or rerun CI to see",
+		"Reproduce the failing test locally",
+		"push only after it and the touched packages pass locally",
 	} {
 		if !strings.Contains(doc, want) {
 			t.Errorf("CLAUDE.md lacks %q", want)

@@ -18,6 +18,7 @@ Agents in runs run only the tests covering what their change touches and never t
 
 ### In
 
+- relates-to [no-ci-as-debugger](no-ci-as-debugger.md) — Refines ci-runs-full-suite for unstable CI; does not replace it
 - decided-by [guides-scoped-tests](../capability/rhiza/guide/guides-scoped-tests.md)
 - decided-by [plan-acceptance-scoped](../capability/rhiza/guide/plan-acceptance-scoped.md)
 - decided-by [role-prompts-scoped-tests](../capability/rhiza/workflows/built-in-workflows/role-prompts-scoped-tests.md)

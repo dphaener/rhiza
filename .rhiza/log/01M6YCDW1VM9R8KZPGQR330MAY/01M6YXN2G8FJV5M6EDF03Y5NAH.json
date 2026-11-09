@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YXG5EEBY4J18S18GBKXN50",
+  "after": [
+    "01M6YVWVY671PFN0VV05X1C177"
+  ],
+  "at": "2026-11-09T01:09:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-f835634e at c0cba816 (attempt 5): go test -trimpath ./internal/api -run TestShipLocalGate -v passes its subtests: unstable runs the gate in the worktree, stable skips, no gate skips, a failing gate fails with its output. TestShipRebaseRunsLocalGate, TestShipGateFailed and the TestShipRebase* tests pass too. go test -trimpath ./internal/workflow passes, including TestShipChangeLocalGate: a gate step before each push step, on.fail to gate-fix, and rebase and rebase-merge failing to rebase-gate-failed (rhiza ship gate --failed, on.pass to gate-fix). go test -trimpath ./cmd/rhiza -run TestScripts/ship-local-gate passes: in its own repo, daemon settings --json lists rhiza.ship.localGate with an empty default (source default), and after daemon set 'make check' it shows make check from git config. describe-golden, run-ship-change, run-ship-change-fail and run-ship-change-rebase pass. The scripts were run with RHIZA_* unset and GOTMPDIR/TMPDIR in a scratch dir, because the run's GOTMPDIR sits inside the main repo's .git, where rhiza init finds the outer repo. The diff fixes the quality finding: a gate that fails on the rebased head leaves main merged in, unpushed, and records gate_failed so gate-fix sees the failure. .rhiza/settings.json and the project settings file layer are gone, which resolves the scope and model findings."
+        },
+        "handle": "ship-local-gate-verified-5",
+        "id": "01M6YXN2BGK6SZCQ4EC0FDB857",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YXN2BGK6SZCQ4EC068VAYA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YXN2BGK6SZCQ4EC068VAYA",
+        "id": "01M6YXN2DF39ZD4RXH8M38CMM7",
+        "link": "01M6YXN2DF39ZD4RXH8GAEP2YC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YXN2G8FJV5M6EDF03Y5NAH",
+  "type": "ops",
+  "v": 1
+}

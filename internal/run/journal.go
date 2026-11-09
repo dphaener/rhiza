@@ -1811,7 +1811,8 @@ func RetryStep(def *workflow.Definition, st State, failed string) string {
 	}
 	// Walk back from the failed visit: each step before it that routes
 	// into the one after it by on.fail (ship-change's pr-green, then
-	// conflict-triage, then ci-triage) is a check whose wait comes first.
+	// conflict-triage, gate-triage and ci-triage) is a check whose wait
+	// comes first.
 	cur := failed
 	for i := len(st.Steps) - 1; i >= 0; i-- {
 		prev := st.Steps[i].Step

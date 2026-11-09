@@ -309,6 +309,42 @@ func TestWatchdogCIRerun(t *testing.T) {
 	}
 }
 
+// With ciReruns N the watchdog reruns a head's failed jobs while an attempt
+// is at most N, and never once an attempt is above N.
+func TestWatchdogCIRerunBudgetN(t *testing.T) {
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	const def = "name = \"w\"\n[step.wait]\nkind = \"command\"\nrun = \"rhiza ship check --settled\"\n"
+	j := run.Journal{ID: "r", Entries: []run.Entry{
+		{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true, Definition: def}},
+		{Type: run.TypeEntered, At: t0, Step: "wait", Visit: 1},
+		{Type: run.TypeEnded, At: t0, Step: "wait", Visit: 1, Outcome: "fail", Detail: "failed: test"},
+		{Type: run.TypeFinished, At: t0, Step: "wait", End: "failed", Detail: "step wait failed"},
+	}}
+	for _, n := range []int{1, 2, 3} {
+		for attempt := 1; attempt <= n+1; attempt++ {
+			pr := watchdogPR{Head: "aaaa111", Checks: []ShipCheck{{Name: "test", Status: "COMPLETED", Conclusion: "FAILURE", RunID: "7"}}, Attempts: map[string]int{"7": attempt}}
+			var reran []string
+			d := watchdogDeps{
+				ci:     func(run.State) (watchdogPR, error) { return pr, nil },
+				rerun:  func(_ run.State, id string) error { reran = append(reran, id); return nil },
+				resume: func(string) error { return nil },
+				log:    func(string, ...any) {},
+			}
+			pol := WatchdogPolicy{Enabled: true, RetryBudget: 2, CIReruns: n, AutonomousOnly: true}
+			if _, err := watchdogCIRerun(pol, []run.Journal{j}, func(string) bool { return false }, nil, d); err != nil {
+				t.Fatal(err)
+			}
+			want := 0
+			if attempt <= n {
+				want = 1
+			}
+			if len(reran) != want {
+				t.Errorf("ciReruns %d, attempt %d: reran %v, want %d reruns", n, attempt, reran, want)
+			}
+		}
+	}
+}
+
 // TestWatchdogCIReadsBounded checks the PR reads of the CI passes through
 // watchdogPasses: a run's PR is read at most once per poll by the three
 // passes together, and not at all while its journal stays where the PR was

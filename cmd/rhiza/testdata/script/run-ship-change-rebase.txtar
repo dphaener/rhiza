@@ -91,7 +91,7 @@ stderr '^Settled 1 rendered file by rendering again\.$'
 exec rhiza run status
 stdout '^- rebase \(visit 1\): pass, then wait-rebased: exit 0$'
 stdout '^- land \(visit 1\): pass, then wait-landed: exit 0$'
-stdout '^- landed-green \(visit 1\): pass, then rebase-merge: exit 0$'
+stdout '^- landed-green \(visit 1\): pass, then gate-rebase-merge: exit 0$'
 stdout '^- rebase-merge \(visit 1\): pass, then wait-rebased-merge: exit 0$'
 stdout '^- wait-rebased-merge \(visit 1\): pass, then rebased-merge-green: held after [0-9]+ checks?$'
 stdout '^- rebased-merge-green \(visit 1\): pass, then merge: exit 0$'

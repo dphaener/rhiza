@@ -65,7 +65,7 @@ const shipDir = "rhiza/ship"
 // ShipCheckRequest asks about the change set's PR, or with Main about the
 // merge commit on main.
 type ShipCheckRequest struct {
-	Settled bool `json:"settled,omitempty" flag:"settled" desc:"Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it merges main into the branch as ship rebase does: a clean merge is pushed and reported not settled, a conflict in code is left in progress and reported settled (exit 0) with the conflict in its detail"`
+	Settled bool `json:"settled,omitempty" flag:"settled" desc:"Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it merges main into the branch as ship rebase does: a clean merge is pushed and reported not settled, a conflict in code is left in progress and reported settled (exit 0) with the conflict in its detail, and so is a clean merge the local gate failed on, left unpushed"`
 	Main    bool `json:"main,omitempty" flag:"main" desc:"Check that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, locally with git and no wait on CI, instead of checking the pull request; a differing tree dispatches CI on the merge commit (once) and checks its runs as it does a pull request's, and a stop that cannot be waited out exits 75 with a stop: line"`
 	PROpen  bool `json:"pr_open,omitempty" flag:"pr-open" desc:"Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)"`
 	// TestFailures asks only whether the head's latest check recorded
@@ -373,6 +373,13 @@ type shipState struct {
 	// head before. ship.rebase also clears Head and Checks, so nothing
 	// lands or merges until ship.check records the rebased head's CI.
 	Pushed string `json:"pushed,omitempty"`
+	// Gated is the last head the local gate (ship.gate) passed on, with a
+	// clean worktree, so a later gate on that same head passes at once.
+	Gated string `json:"gated,omitempty"`
+	// GateFailed is the unpushed head ship.rebase left on the branch after
+	// the local gate failed on it (origin's main merged into the branch),
+	// so ship gate --failed routes it to a fixer and ship check fails on it.
+	GateFailed string `json:"gate_failed,omitempty"`
 	// MergeConflict is the context of a merge of main that conflicts in
 	// code, left in progress in the worktree for a fixer.
 	MergeConflict *ShipMergeConflict `json:"merge_conflict,omitempty"`
@@ -392,6 +399,10 @@ type shipState struct {
 	// CIFindings are the failing tests read from the logs of the failed
 	// runs of RerunHead, for the step that fixes them.
 	CIFindings []ShipFinding `json:"ci_findings,omitempty"`
+	// RerunTests are the failing tests read from the logs of the failed
+	// runs just before RerunHead was rerun: if the rerun passes they are
+	// the head's flakes, in the CI stability record.
+	RerunTests []string `json:"rerun_tests,omitempty"`
 	// DispatchCommit is the merge commit CI was dispatched on, and
 	// Dispatched the workflow files dispatched for it, once each.
 	DispatchCommit string   `json:"dispatch_commit,omitempty"`
@@ -691,6 +702,14 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 			resp.Detail = fmt.Sprintf("failed: merging origin/%s into %s is unresolved, conflicts in %s", shipMain, t.branch, strings.Join(st.MergeConflict.Files, ", "))
 			return resp, nil
 		}
+		if st.GateFailed != "" && !r.Settled {
+			if h, _ := gitAt(ctx, t.dir(), "rev-parse", "HEAD"); strings.TrimSpace(h) == st.GateFailed {
+				// origin/main merged into the branch, left unpushed for the
+				// gate's fixer: the PR's checks say nothing about it.
+				resp.Detail = fmt.Sprintf("failed: the local gate failed on %s, origin/%s merged into %s and left unpushed for the gate's fixer", shortSHA(st.GateFailed), shipMain, t.branch)
+				return resp, nil
+			}
+		}
 		if st.Pushed != "" && v.Head != st.Pushed {
 			// Someone else may have pushed on top of the run's head:
 			// follow a head that contains the pushed one.
@@ -722,6 +741,11 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 	}
 	if resp.Settled && !resp.Green {
 		if err := shipRerunFailed(ctx, t, &st, &resp, path, budget); err != nil {
+			return nil, err
+		}
+	}
+	if resp.Settled {
+		if err := recordSettledCI(ctx, t, st, resp, r.Main); err != nil {
 			return nil, err
 		}
 	}
@@ -892,6 +916,11 @@ func shipCheckMainTree(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckRespo
 		return shipCheckMainDispatch(ctx, t, st, resp, path, settled, budget)
 	}
 	resp.Settled, resp.Green, resp.Passed = true, true, true
+	// No CI ran: main has the tested head's tree, so the head's green
+	// result is main's.
+	if err := recordSettledCI(ctx, t, shipState{}, resp, true); err != nil {
+		return nil, err
+	}
 	return resp, nil
 }
 
@@ -960,6 +989,11 @@ func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckRespo
 	if st.RerunHead != resp.Commit {
 		st.Reruns = nil
 	}
+	if st.RerunHead != resp.Commit || count == 0 {
+		// The first attempt's failures, read while its logs are there; a
+		// later rerun's logs would replace them.
+		st.RerunTests = shipFailedTests(ctx, t, runs)
+	}
 	st.RerunHead, st.Reruns, st.RerunCount, st.CIFindings = resp.Commit, append(st.Reruns, runs...), count+1, nil
 	if err := writeShipState(path, *st); err != nil {
 		return err
@@ -974,6 +1008,24 @@ func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckRespo
 	resp.Detail = fmt.Sprintf("not settled: reran the failed jobs of %s %s after %s failed", shipPlural(len(runs), "run", "runs"), strings.Join(runs, ", "), strings.Join(resp.Failed, ", "))
 	resp.Failed = nil
 	return nil
+}
+
+// shipFailedTests reads the failing tests out of the logs of the Actions
+// runs. A log gh cannot give adds nothing.
+func shipFailedTests(ctx *Ctx, t shipTarget, runs []string) []string {
+	var tests []string
+	for _, id := range runs {
+		out, err := gh(ctx, t.dir(), "run", "view", id, "--log-failed")
+		if err != nil {
+			continue
+		}
+		for _, name := range parseFailedTests(string(out)) {
+			if !slices.Contains(tests, name) {
+				tests = append(tests, name)
+			}
+		}
+	}
+	return tests
 }
 
 // failLine matches a Go test's failure line in a log, as go test prints it
@@ -1089,7 +1141,9 @@ func shipReadFailures(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResp
 // reports CONFLICTING: a push is reported not settled, so the next check
 // sees the new head; a conflict in code leaves the merge in progress and
 // is reported settled (exit 0) with the conflict in the detail, so the run
-// goes on to triage it. It raises no question.
+// goes on to triage it. A clean merge the local gate failed on is left
+// unpushed and reported settled (exit 0) too: the next ship check fails on
+// it, and the run routes it to the gate's fixer. It raises no question.
 func shipSettleConflict(ctx *Ctx, resp ShipCheckResponse) (any, error) {
 	out, err := runShipRebase(ctx, ShipRebaseRequest{})
 	if err != nil {
@@ -1099,6 +1153,9 @@ func shipSettleConflict(ctx *Ctx, resp ShipCheckResponse) (any, error) {
 	switch {
 	case len(rb.Conflicts) > 0:
 		resp.Conflicts, resp.MergeConflict, resp.Detail = rb.Conflicts, rb.MergeConflict, rb.Detail
+		resp.Settled, resp.Passed = true, true
+	case rb.Gate != nil && !rb.Gate.Passed:
+		resp.Detail = rb.Detail
 		resp.Settled, resp.Passed = true, true
 	case rb.Pushed != "":
 		resp.Rebased = rb.Pushed

@@ -19,8 +19,8 @@ name = "ship-change"
 # conflict-fix then resolves and commits the merge (or, on a real design
 # clash, asks one blocking question in its session; its until fails a fixer
 # that ends with the merge still in progress), and the run pushes it
-# plainly through render-pr and open-pr, or through rebase-merge after
-# land, and goes on. Every other failure of those steps ends the run as before.
+# plainly through render-pr, local-gate and open-pr, or through
+# gate-rebase-merge and rebase-merge after land, and goes on. Every other failure of those steps ends the run as before.
 [step.build]
 kind = "workflow"
 workflow = "build"
@@ -44,7 +44,42 @@ git add -A -- .rhiza/rendered .rhiza/log &&
   git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
 """
 max_visits = 10
+on.pass = "local-gate"
+
+# While CI is unstable (rhiza health shows why) and the project sets a
+# local gate (rhiza.ship.localGate), the gate runs here, on the run
+# worktree, before the push: open-pr pushes only once it exits 0. A failing
+# gate goes to one fixer, then back through render-pr and the gate. With CI
+# stable, or no gate set, the step passes at once. The same gate runs
+# before every other push too (gate-rebase, gate-land, gate-rebase-merge),
+# and ship rebase runs it again on a head it merged, before pushing that;
+# a head the gate already passed on passes at once. When the gate fails on
+# the merged head, ship rebase pushes nothing and leaves main merged into
+# the branch, unpushed, and fails through rebase-triage and
+# rebase-gate-failed (or, from a wait that found the PR conflicting,
+# through pr-green, conflict-triage and gate-triage) to gate-fix: the
+# fixer's ship gate fails on that merge, and the fix pushes through
+# open-pr without forcing. After land, gate-rebase-merge and rebase-merge
+# fail to their own loop instead (gate-fix-merge, below), which never
+# reaches land again. A running gate writes no progress and may take
+# up to its own hour (it can queue behind other worktrees' suites), so
+# every step that runs it sets a stall above that, or the watchdog's
+# command limit would stop and retry it mid-run.
+[step.local-gate]
+kind = "command"
+run = "rhiza ship gate"
+stall = "70m"
+max_visits = 10
 on.pass = "open-pr"
+on.fail = "gate-fix"
+
+[step.gate-fix]
+kind = "agent"
+prompt = "/rhiza-review Fix the failing local gate of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. CI is unstable, so the project's local gate (rhiza.ship.localGate) runs before the push, and it failed: run `rhiza ship gate` to see its output. Reproduce the failure locally with the failing test's own scoped command, repeating it until you see it fail again or plainly pass, then fix it or quarantine it (skip it) with a bug request filed and named at the skip. Commit only once the failing tests and the packages you touched pass locally. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
+until = "true"
+until_when = "done"
+max_visits = 2
+on.pass = "render-pr"
 
 [step.open-pr]
 kind = "command"
@@ -68,13 +103,24 @@ on.pass = "signoff"
 on.fail = "conflict-triage"
 
 # The PR's merge with main conflicts in code and waits for a fixer: only
-# then does this pass. Anything else (red CI, an infra failure, a fourth
-# conflict) goes on to ci-triage as a failed check always did.
+# then does this pass. Anything else goes on to gate-triage.
 [step.conflict-triage]
 kind = "command"
 run = "rhiza ship check --conflicts"
 max_visits = 8
 on.pass = "conflict-fix"
+on.fail = "gate-triage"
+
+# A ship check --settled that found the PR conflicting merged main into the
+# branch cleanly, but the local gate failed on that merge: it is left
+# unpushed, and ship check fails on it. Only that passes here, to gate-fix;
+# anything else (red CI, an infra failure, a fourth conflict) goes on to
+# ci-triage as a failed check always did.
+[step.gate-triage]
+kind = "command"
+run = "rhiza ship gate --failed"
+max_visits = 8
+on.pass = "gate-fix"
 on.fail = "ci-triage"
 
 # One fixer on the run worktree, with the merge of origin/main into the
@@ -118,7 +164,7 @@ on.pass = "pr-green"
 
 [step.ci-fix]
 kind = "agent"
-prompt = "/rhiza-review Fix the failing CI tests of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. Read the failing tests from `rhiza ship check --json` (its tests, and its findings, which name no leaf). Re-run only those tests or scripts and their packages, never the repo's full suite: the PR's CI runs it again after your push. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
+prompt = "/rhiza-review Fix the failing CI tests of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. Read the failing tests from `rhiza ship check --json` (its tests, and its findings, which name no leaf). Reproduce each failing test locally first, with the repo's own scoped test command from its contributor guide, repeating it until it fails again or plainly passes: never push to see what CI does. A test that fails locally: fix it. One that does not reproduce is a flake: fix it, or quarantine it (skip it) with a bug request filed and named at the skip. Commit only once those tests and the packages you touched pass locally, never the repo's full suite: the PR's CI runs it again after your push. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
 until = "true"
 until_when = "done"
 max_visits = 2
@@ -127,23 +173,42 @@ on.pass = "render-pr"
 [step.signoff]
 kind = "signoff"
 max_visits = 8
-on.pass = "rebase"
+on.pass = "gate-rebase"
 on.changes = "review/review"
+
+[step.gate-rebase]
+kind = "command"
+run = "rhiza ship gate"
+stall = "70m"
+max_visits = 6
+on.pass = "rebase"
+on.fail = "gate-fix"
 
 [step.rebase]
 kind = "command"
 run = "rhiza ship rebase"
+stall = "70m"
 max_visits = 6
 on.pass = "wait-rebased"
 on.fail = "rebase-triage"
 
-# A rebase that failed on a conflict in code goes to the fixer; one that
-# failed on a fetch, push, hook or refusal has no on.fail and ends the run.
+# ship rebase fails on a conflict in code (the merge of main is left in
+# progress), on a gate failing on the merged head, or on a fetch, push, hook
+# or refusal. A conflict goes to the conflict fixer; a failing gate passes
+# rebase-gate-failed (the branch is at the unpushed merge ship rebase left)
+# and goes to gate-fix; anything else ends the run there.
 [step.rebase-triage]
 kind = "command"
 run = "rhiza ship check --conflicts"
 max_visits = 6
 on.pass = "conflict-fix"
+on.fail = "rebase-gate-failed"
+
+[step.rebase-gate-failed]
+kind = "command"
+run = "rhiza ship gate --failed"
+max_visits = 3
+on.pass = "gate-fix"
 
 [step.wait-rebased]
 kind = "wait"
@@ -157,8 +222,16 @@ on.pass = "rebased-green"
 kind = "command"
 run = "rhiza ship check"
 max_visits = 6
-on.pass = "land"
+on.pass = "gate-land"
 on.fail = "conflict-triage"
+
+[step.gate-land]
+kind = "command"
+run = "rhiza ship gate"
+stall = "70m"
+max_visits = 6
+on.pass = "land"
+on.fail = "gate-fix"
 
 [step.land]
 kind = "command"
@@ -175,17 +248,28 @@ on.pass = "landed-green"
 [step.landed-green]
 kind = "command"
 run = "rhiza ship check"
-on.pass = "rebase-merge"
+on.pass = "gate-rebase-merge"
 on.fail = "conflict-triage-landed"
 
-# After land the same fixer resolves a conflict, and the merge is pushed by
-# rebase-merge, so nothing lands twice. A red CI or any other failure still
-# ends the run here, and so does a fourth conflict.
+[step.gate-rebase-merge]
+kind = "command"
+run = "rhiza ship gate"
+stall = "70m"
+max_visits = 6
+on.pass = "rebase-merge"
+on.fail = "gate-fix-merge"
+
+# After land the same fixer resolves a conflict, and the merge goes through
+# gate-rebase-merge and is pushed by rebase-merge, so nothing lands twice. A failure that is no conflict passes on to rebase-merge-gate-failed,
+# which passes only for a gate that failed on the head ship rebase merged
+# (below); a red CI or any other failure still ends the run there, and so
+# does a fourth conflict.
 [step.conflict-triage-landed]
 kind = "command"
 run = "rhiza ship check --conflicts"
 max_visits = 6
 on.pass = "conflict-fix-landed"
+on.fail = "rebase-merge-gate-failed"
 
 [step.conflict-fix-landed]
 kind = "agent"
@@ -193,14 +277,63 @@ prompt = "/rhiza-review Resolve the merge conflicts of change set {change} in ru
 until = "! git rev-parse --verify --quiet MERGE_HEAD"
 until_when = "done"
 max_visits = 3
-on.pass = "rebase-merge"
+on.pass = "gate-rebase-merge"
 
 [step.rebase-merge]
 kind = "command"
 run = "rhiza ship rebase"
+stall = "70m"
 max_visits = 6
 on.pass = "wait-rebased-merge"
 on.fail = "conflict-triage-landed"
+
+# After land a failing gate has its own fix loop, which never goes back
+# through the pre-land path, the sign-off or land (land runs once: the
+# change set is landed). A gate failing on the merged head passes
+# rebase-merge-gate-failed, and either failure goes to gate-fix-merge, then
+# render-merge, the gate and push-merge. The push is ship open-pr, not ship
+# rebase: the branch already holds origin/main, and the fix descends from
+# the pushed head or the kept merge, so it pushes without forcing. Every
+# step here sets max_visits: a third failing gate fails the run at
+# gate-fix-merge's cap, with the gate's output, and no sign-off follows.
+[step.rebase-merge-gate-failed]
+kind = "command"
+run = "rhiza ship gate --failed"
+max_visits = 3
+on.pass = "gate-fix-merge"
+
+[step.gate-fix-merge]
+kind = "agent"
+prompt = "/rhiza-review Fix the failing local gate of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. CI is unstable, so the project's local gate (rhiza.ship.localGate) runs before the push, and it failed: run `rhiza ship gate` to see its output. Reproduce the failure locally with the failing test's own scoped command, repeating it until you see it fail again or plainly pass, then fix it or quarantine it (skip it) with a bug request filed and named at the skip. Commit only once the failing tests and the packages you touched pass locally. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
+until = "true"
+until_when = "done"
+max_visits = 2
+on.pass = "render-merge"
+
+[step.render-merge]
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
+  git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+"""
+max_visits = 3
+on.pass = "gate-push-merge"
+
+[step.gate-push-merge]
+kind = "command"
+run = "rhiza ship gate"
+stall = "70m"
+max_visits = 3
+on.pass = "push-merge"
+on.fail = "gate-fix-merge"
+
+[step.push-merge]
+kind = "command"
+run = "rhiza ship open-pr"
+max_visits = 3
+on.pass = "wait-rebased-merge"
 
 [step.wait-rebased-merge]
 kind = "wait"
@@ -218,13 +351,13 @@ on.pass = "merge"
 on.fail = "conflict-triage-landed"
 
 # Merges nothing when origin/main moved after the head's checks passed:
-# the step fails and the run rebases and waits on the new head again.
+# the step fails and the run gates, rebases and waits on the new head again.
 [step.merge]
 kind = "command"
 run = "rhiza ship merge"
 max_visits = 6
 on.pass = "wait-main"
-on.fail = "rebase-merge"
+on.fail = "gate-rebase-merge"
 
 # Main is confirmed locally with git, not by waiting for CI on it, when the
 # merge commit's tree equals the tested head's: the wait passes at its first

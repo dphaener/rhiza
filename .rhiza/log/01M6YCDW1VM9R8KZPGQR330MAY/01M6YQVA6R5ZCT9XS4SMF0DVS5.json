@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YQPJ9QGFP09RFPQ1S54GR7",
+  "after": [
+    "01M6YQDCG42SC310RR4Q404QZX"
+  ],
+  "at": "2026-11-08T23:28:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-06740f04 at 6e998eb0: go test -trimpath ./internal/api -run TestHealthCI passes (clean record ok/stable; flakes warn with each test and count, TestGarden 1 flake, TestPond 2 flakes; main red warns naming main's latest CI result red; no-local-gate warning plus next pointer to rhiza.ship.localGate only when unstable and the gate is unset, absent when stable or gated). go test -trimpath ./cmd/rhiza -run 'TestScripts/(health-ci|health-projects|health|init|describe-golden)$' passes with a clean env (env -i): health-ci shows 'ok ci stable' and the warn line, flake detail and next in both rhiza health and health --json. Read the diff (health_ci.go, health.go ci part after main, golden and health-projects counts). The scripts fail under the run's inherited session env (rhiza init sees /home/rhiza/code/rhiza) for every init-based script on this machine, unrelated to the change."
+        },
+        "handle": "health-ci-stability-verified",
+        "id": "01M6YQVA2KSS3MFH4XWF81QX71",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YQVA2DWJ671YE80V9VCJ19",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YQVA2DWJ671YE80V9VCJ19",
+        "id": "01M6YQVA5ESV0TSJ9XHPK04D88",
+        "link": "01M6YQVA5ESV0TSJ9XHMYJ8QXQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKNPNZY0F0BTDCXQAP74",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YQVA6R5ZCT9XS4SMF0DVS5",
+  "type": "ops",
+  "v": 1
+}

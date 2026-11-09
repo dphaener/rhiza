@@ -13,12 +13,14 @@
 # off again, then lands and merges.
 # Case 2: after land, main moves (conflict 1, seen at landed-green), and
 # the fixer's own work lets main move again, so rebase-merge conflicts
-# (conflict 2): conflict-triage-landed and conflict-fix-landed lead back to
-# rebase-merge, which pushes the fixer's merge; one land, and the run merges.
-# Case 3: a rebase that fails on a push origin refuses, with no conflict,
-# ends the run at rebase-triage and no fixer starts.
+# (conflict 2): conflict-triage-landed and conflict-fix-landed lead back,
+# through gate-rebase-merge, to rebase-merge, which pushes the fixer's
+# merge; one land, and the run merges.
+# Case 3: a rebase that fails on a push origin refuses, with no conflict and
+# no failing local gate, ends the run at rebase-gate-failed (after
+# rebase-triage) and no fixer starts.
 # Case 4: a fourth conflict, after two fixes before land and one after,
-# fails the run at conflict-triage-landed.
+# fails the run at conflict-triage-landed and rebase-merge-gate-failed.
 # Case 5: autonomous, the fixer finds a design clash: it leaves the merge in
 # progress and asks in its session; the run adds the question to its change
 # set, the arbiter decides it, the same session gets the answer, commits
@@ -108,10 +110,10 @@ exec rhiza run status
 stdout '^- land \(visit 1\): pass'
 ! stdout '^- land \(visit 2\)'
 stdout '^- conflict-triage-landed \(visit 1\): pass, then conflict-fix-landed: '
-stdout '^- conflict-fix-landed \(visit 1\): pass, then rebase-merge'
+stdout '^- conflict-fix-landed \(visit 1\): pass, then gate-rebase-merge'
 stdout '^- rebase-merge \(visit 1\): fail, then conflict-triage-landed'
 stdout '^- conflict-triage-landed \(visit 2\): pass, then conflict-fix-landed: '
-stdout '^- conflict-fix-landed \(visit 2\): pass, then rebase-merge'
+stdout '^- conflict-fix-landed \(visit 2\): pass, then gate-rebase-merge'
 stdout '^- rebase-merge \(visit 2\): pass, then wait-rebased-merge'
 stdout '^- merge \(visit 1\): pass, then wait-main'
 exec sh -c 'wc -l < $WORK/fixes.log'
@@ -132,7 +134,9 @@ exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$
 stdout '^Run \S+ failed$'
 exec rhiza run status
 stdout '^- rebase \(visit 1\): fail, then rebase-triage'
-stdout '^- rebase-triage \(visit 1\): fail'
+stdout '^- rebase-triage \(visit 1\): fail, then rebase-gate-failed'
+stdout '^- rebase-gate-failed \(visit 1\): fail'
+! stdout '^- gate-fix'
 ! stdout '^- conflict-fix'
 ! exists $WORK/fixes.log
 
@@ -151,7 +155,9 @@ stdout '^Run \S+ failed$'
 exec rhiza run status
 stdout '^- conflict-fix \(visit 2\)'
 stdout '^- conflict-fix-landed \(visit 1\)'
-stdout '^- conflict-triage-landed \(visit 2\): fail'
+stdout '^- conflict-triage-landed \(visit 2\): fail, then rebase-merge-gate-failed'
+stdout '^- rebase-merge-gate-failed \(visit 1\): fail'
+! stdout '^- gate-fix-merge'
 ! stdout '^- conflict-fix-landed \(visit 2\)'
 exec rhiza run status --json
 stdout '"state": "failed"'

@@ -31,10 +31,11 @@ stdout '"signoff_waiting": true'
 stdout '^exit=0$'
 exec rhiza run status
 stdout '^- pr-green \(visit 1\): fail, then conflict-triage'
-stdout '^- conflict-triage \(visit 1\): fail, then ci-triage'
+stdout '^- conflict-triage \(visit 1\): fail, then gate-triage'
+stdout '^- gate-triage \(visit 1\): fail, then ci-triage'
 stdout '^- ci-triage \(visit 1\): pass, then ci-fix: '
 stdout '^- ci-fix \(visit 1\): pass, then render-pr'
-stdout '^- render-pr \(visit 2\): pass, then open-pr'
+stdout '^- render-pr \(visit 2\): pass, then local-gate'
 stdout '^- pr-green \(visit 2\): pass, then signoff'
 stdout '^- Current step: signoff$'
 # The one fixer's commit carries a Review: trailer naming the run, with
@@ -55,7 +56,8 @@ exec sh -c 'rhiza run approve --foreground --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 exec rhiza run status
 stdout '^- rebased-green \(visit 1\): fail, then conflict-triage'
-stdout '^- conflict-triage \(visit 2\): fail, then ci-triage'
+stdout '^- conflict-triage \(visit 2\): fail, then gate-triage'
+stdout '^- gate-triage \(visit 2\): fail, then ci-triage'
 stdout '^- ci-triage \(visit 2\): pass, then ci-fix'
 stdout '^- ci-fix \(visit 2\): pass, then render-pr'
 stdout '^- Current step: signoff$'
@@ -67,7 +69,7 @@ stdout '^Run \S+ succeeded$'
 cd $WORK/repo
 exec rhiza run status
 stdout '^- rebase \(visit 2\): pass, then wait-rebased'
-stdout '^- rebased-green \(visit 2\): pass, then land'
+stdout '^- rebased-green \(visit 2\): pass, then gate-land'
 stdout '^- land \(visit 1\): pass'
 exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
 stdout '^- State: landed'
