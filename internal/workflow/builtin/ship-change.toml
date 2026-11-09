@@ -40,10 +40,14 @@ on.pass = "local-gate"
 # stable, or no gate set, the step passes at once. The same gate runs
 # before every other push too (gate-rebase, gate-land, gate-rebase-merge),
 # and ship rebase runs it again on a head it rebased, before pushing that;
-# a head the gate already passed on passes at once.
+# a head the gate already passed on passes at once. A running gate writes
+# no progress and may take up to its own hour (it can queue behind other
+# worktrees' suites), so every step that runs it sets a stall above that,
+# or the watchdog's command limit would stop and retry it mid-run.
 [step.local-gate]
 kind = "command"
 run = "rhiza ship gate"
+stall = "70m"
 max_visits = 5
 on.pass = "open-pr"
 on.fail = "gate-fix"
@@ -106,6 +110,7 @@ on.changes = "review/review"
 [step.gate-rebase]
 kind = "command"
 run = "rhiza ship gate"
+stall = "70m"
 max_visits = 3
 on.pass = "rebase"
 on.fail = "gate-fix"
@@ -113,6 +118,7 @@ on.fail = "gate-fix"
 [step.rebase]
 kind = "command"
 run = "rhiza ship rebase"
+stall = "70m"
 max_visits = 3
 on.pass = "wait-rebased"
 
@@ -134,6 +140,7 @@ on.fail = "ci-triage"
 [step.gate-land]
 kind = "command"
 run = "rhiza ship gate"
+stall = "70m"
 max_visits = 3
 on.pass = "land"
 on.fail = "gate-fix"
@@ -158,6 +165,7 @@ on.pass = "gate-rebase-merge"
 [step.gate-rebase-merge]
 kind = "command"
 run = "rhiza ship gate"
+stall = "70m"
 max_visits = 4
 on.pass = "rebase-merge"
 on.fail = "gate-fix"
@@ -165,6 +173,7 @@ on.fail = "gate-fix"
 [step.rebase-merge]
 kind = "command"
 run = "rhiza ship rebase"
+stall = "70m"
 max_visits = 3
 on.pass = "wait-rebased-merge"
 

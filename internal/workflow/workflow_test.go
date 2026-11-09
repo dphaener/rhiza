@@ -1765,6 +1765,13 @@ func TestShipChangeLocalGate(t *testing.T) {
 			}
 		}
 	}
+	// The gate writes no progress and may run up to an hour, and ship
+	// rebase runs it too: each such step's stall outlasts it.
+	for _, n := range []string{"local-gate", "gate-rebase", "rebase", "gate-land", "gate-rebase-merge", "rebase-merge"} {
+		if got := def.Steps[n].Stall; got <= time.Hour {
+			t.Errorf("%s stall = %v; want over the gate's 1h timeout", n, got)
+		}
+	}
 	if s := def.Steps["render-pr"]; s.On["pass"] != "local-gate" {
 		t.Errorf("render-pr on.pass = %q, want local-gate", s.On["pass"])
 	}
