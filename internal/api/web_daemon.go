@@ -12,6 +12,10 @@ import (
 // before a request starts a new refresh in the background.
 const healthRefreshEvery = 30 * time.Second
 
+// healthRefreshing counts the refreshes in flight across every healthCache,
+// so a test can wait for them before its temp folders are removed.
+var healthRefreshing sync.WaitGroup
+
 // healthCache holds the last health report the web UI has, refreshed in the
 // background: never on a request's path, and no more than one at a time.
 type healthCache struct {
@@ -33,6 +37,7 @@ func (h *healthCache) get() (pills []web.HealthPill, have bool) {
 	defer h.mu.Unlock()
 	if !h.refreshes && (!h.have || h.now().Sub(h.at) >= h.every) {
 		h.refreshes = true
+		healthRefreshing.Add(1)
 		go h.refresh()
 	}
 	return h.pills, h.have
@@ -48,6 +53,7 @@ func (h *healthCache) fingerprint() string {
 }
 
 func (h *healthCache) refresh() {
+	defer healthRefreshing.Done()
 	pills := h.read()
 	h.mu.Lock()
 	h.pills, h.have, h.at, h.refreshes = pills, true, h.now(), false
