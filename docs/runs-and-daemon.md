@@ -15,10 +15,11 @@ Runs start agents in terminals, and Rhiza uses Rex for those. The agents are Cla
 
   ```text
   rhiza root init ~/code
+  cd ~/code
   rhiza project add ~/code/myapp
   ```
 
-  `project add` takes a checkout directly under the root, or a git URL to clone there.
+  `project add` finds the root from the directory you run it in, so run it inside the root. It takes a checkout directly under the root, or a git URL to clone there.
 
 Then connect Rhiza to Rex:
 
@@ -48,10 +49,10 @@ rhiza workflow ls
 To start one on an accepted change set:
 
 ```text
-rhiza run start <change> --workflow ship-change
+rhiza run start <change> --workflow ship-change --permission-mode acceptEdits
 ```
 
-That queues the run and returns. The daemon, below, picks it up. Leave the workflow off and you get `ship-change`. `--foreground` drives the run in your own terminal instead, which is handy once, to see how it behaves.
+That queues the run and returns. `--permission-mode` is the Claude Code permission mode the run's agent steps get when the workflow doesn't set one. The built-in workflows' builders set none, so without it `run start` stops and asks for one. A mode that bypasses permission checks, such as `bypassPermissions`, is refused unless the machine's `machine.toml` sets `trust = "dedicated"`. The daemon, below, picks it up. Leave the workflow off and you get `ship-change`. `--foreground` drives the run in your own terminal instead, which is handy once, to see how it behaves.
 
 Each agent step runs in its own Rex tab, inside a git worktree of its own, so runs on different change sets never touch each other or your checkout. While one is going:
 
@@ -106,7 +107,7 @@ rhiza daemon stop
 - `rhiza.daemon.paused` stops it starting anything new.
 - `rhiza.daemon.minFree` holds everything when the disk gets low.
 - `rhiza.daemon.usage.session` and `rhiza.daemon.usage.weekly` are token limits for your plan, with `rhiza.daemon.usage.reserve` the share to keep back. The daemon holds new runs when it gets near them.
-- `rhiza.daemon.permissionMode` is the permission mode agent steps get when they don't set one.
+- `rhiza.daemon.permissionMode` is the permission mode agent steps get when they don't set one, in the runs the daemon starts itself, such as `plan` runs for requests. A run you queue with `rhiza run start` takes its own `--permission-mode` instead.
 
 ### Requests
 
@@ -192,7 +193,7 @@ When the built-ins aren't what you want, copy one and change it:
 rhiza workflow new mine --from ship-change
 rhiza workflow describe mine
 rhiza workflow check mine
-rhiza run start --workflow mine --dry-run
+rhiza run start --workflow mine --permission-mode acceptEdits --dry-run
 ```
 
 `workflow new` writes `.rhiza/workflows/mine.toml`. `describe` shows it as a run would resolve it, and `check` reports every problem and the step it's in, and starts nothing. A name resolves to your personal `$XDG_CONFIG_HOME/rhiza/workflows/`, then the repo's `.rhiza/workflows/`, then a built-in. The step kinds and their keys are in `rhiza guide workflows`.
