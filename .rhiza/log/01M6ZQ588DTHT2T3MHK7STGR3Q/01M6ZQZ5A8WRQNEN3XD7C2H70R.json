@@ -1,0 +1,38 @@
+{
+  "actor": "01M6ZQY9VF2HNHQWXZNVCKBZP7",
+  "after": [
+    "01M6ZQRSGQ78S0P9DYQQJYC6JB"
+  ],
+  "at": "2026-11-09T08:49:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5TYCYW9FJ42M36KXPYR3MGF",
+        "handle": null,
+        "id": "01M6ZQZ5808AST5XDPRPXDPEQR",
+        "node": "01M5TYCYW9FJ42M36KXMA9BT99",
+        "op": "node.update",
+        "set": {
+          "statement": "A session's status comes from Claude Code's hooks first, then the status in Rex's events, then the process exiting; the one exception is a hook report blocked on a permission prompt, which a newer Rex report of idle or working outranks (permission-block-clears)."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCYW9FJ42M36KXMA9BT99",
+        "id": "01M6ZQZ58TVZZ9F91N0YSJ1DSD",
+        "link": "01M6ZQZ58TVZZ9F91N0TX0ATPX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZQDYSJAT1RMJBA2DGAHWCA",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6ZQ588DTHT2T3MHK7STGR3Q",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZQZ5A8WRQNEN3XD7C2H70R",
+  "type": "ops",
+  "v": 1
+}
