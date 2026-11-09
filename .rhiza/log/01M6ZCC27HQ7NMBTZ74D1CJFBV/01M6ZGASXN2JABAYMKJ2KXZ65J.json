@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZG8SQXGYN5Z1G974W10VF0",
+  "after": [
+    "01M6ZG632VVANXE2YSF2Z862AJ"
+  ],
+  "at": "2026-11-09T06:36:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 741b9b74: built the branch (go build -trimpath) into a scratch binary; 'rhiza guide build' and 'rhiza guide review' each print 'Reproduce a timing flake by injecting a delay at the suspected race, never by busy loops or parallel stress on the host.' directly after the unstable-CI reproduce-locally rule; 'rhiza guide install --agent claude' with a scratch HOME wrote skills/rhiza-build/SKILL.md and skills/rhiza-review/SKILL.md, both containing that sentence. CLAUDE.md adds the inject-a-delay / never-busy-loops paragraph right after the unchanged unstable-CI rule. go test -count=1 -trimpath ./internal/guide/... PASS; go test -count=1 -trimpath ./cmd/rhiza -run TestClaudeMDScopedTests PASS."
+        },
+        "handle": "delay-repro-guidance-qa-1",
+        "id": "01M6ZGASJXTJCJ3SF8KC2J2VGD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZGASJXTJCJ3SF8KA7TXSRR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZGASJXTJCJ3SF8KA7TXSRR",
+        "id": "01M6ZGASP8Z8JF7F9MMXRCFQAR",
+        "link": "01M6ZGASP8Z8JF7F9MMW6HEQY0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZCM35BZXJ8X5SQ96639XZ4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ZCC27HQ7NMBTZ74D1CJFBV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZGASXN2JABAYMKJ2KXZ65J",
+  "type": "ops",
+  "v": 1
+}

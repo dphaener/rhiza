@@ -23,6 +23,8 @@ func TestClaudeMDScopedTests(t *testing.T) {
 		"do not push or rerun CI to see",
 		"Reproduce the failing test locally",
 		"push only after it and the touched packages pass locally",
+		"inject a delay at the suspected race",
+		"Never use busy loops, CPU stress or parallel stress runs on the host",
 	} {
 		if !strings.Contains(doc, want) {
 			t.Errorf("CLAUDE.md lacks %q", want)

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZG4JWC029TZ9VS4K1FJA3Q",
+  "after": [
+    "01M6ZCSSCBNR3XWCB8FH8VHB1G"
+  ],
+  "at": "2026-11-09T06:33:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 06ceae92: go test -count=1 -trimpath ./internal/guide -run 'TestBuildText|TestReviewText' PASS (and the whole guide package incl. token caps PASS); the new delay-repro groups assert 'injecting a delay at the suspected race' and 'never by busy loops or parallel stress on the host', and the diff puts that sentence in build.md and review.md directly after the unstable-CI reproduce-locally rule. go test -count=1 -trimpath ./cmd/rhiza -run TestClaudeMDScopedTests PASS, asserting 'inject a delay at the suspected race' and 'Never use busy loops, CPU stress or parallel stress runs on the host'; the CLAUDE.md diff only adds that paragraph right after the unstable-CI rule, which is unchanged. Other build/review wording was trimmed to stay under the token caps; review.md dropped 'leaf is optional' and 'A verifier re-run follows rhiza guide build', outside the acceptance."
+        },
+        "handle": "delay-repro-guidance-verified",
+        "id": "01M6ZG631E7PGQCGSJ1NCRBNKH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZG631E7PGQCGSJ1KZ60G2T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZG631E7PGQCGSJ1KZ60G2T",
+        "id": "01M6ZG6324H8ERZCS0CSDS3SJA",
+        "link": "01M6ZG6324H8ERZCS0CPYQHPJG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZCM35BZXJ8X5SQ96639XZ4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ZCC27HQ7NMBTZ74D1CJFBV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZG632VVANXE2YSF2Z862AJ",
+  "type": "ops",
+  "v": 1
+}

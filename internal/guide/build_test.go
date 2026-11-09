@@ -43,6 +43,9 @@ func TestBuildText(t *testing.T) {
 			"do not push or rerun CI to see", "Reproduce the\nfailing test locally",
 			"push only after it and the\ntouched packages pass locally",
 		},
+		"delay-repro": {
+			"injecting a delay at the suspected race", "never by busy loops or parallel stress on the host",
+		},
 	})
 	for _, banned := range []string{"go test", "make check", "make test", "testscript"} {
 		if strings.Contains(build.Body, banned) {

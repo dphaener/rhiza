@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6ZGASXN2JABAYMKJ2KXZ65J"
+  ],
+  "at": "2026-11-09T06:44:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "be7cb76cba4a6218feb8a71baff4421ce2580386",
+          "pr": "https://github.com/dphaener/rhiza/pull/411",
+          "result": "11 checks passed: lint SUCCESS, go-install SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #411 (https://github.com/dphaener/rhiza/pull/411) passed CI at be7cb76",
+          "status": "verified"
+        },
+        "handle": "pr-411-builders-and-fixers-reproduce",
+        "id": "01M6ZGSF9HBFQ4CA7P1HMM24CB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZGSF9HBFQ4CA7P1H3WJ5S5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZGSF9HBFQ4CA7P1H3WJ5S5",
+        "id": "01M6ZGSFAGVE1XAHDYAFXQ8DND",
+        "link": "01M6ZGSFAGVE1XAHDYAD0S6PZ7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZCM35BZXJ8X5SQ96639XZ4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ZCC27HQ7NMBTZ74D1CJFBV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZGSFDKN8NKAD8QRC78FCVZ",
+  "type": "ops",
+  "v": 1
+}
