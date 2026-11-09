@@ -1,0 +1,34 @@
+# GoReleaser config: `goreleaser release` on a v* tag publishes the archives
+# and a checksums file to a GitHub release. See .github/workflows/release.yml.
+version: 2
+
+project_name: rhiza
+
+builds:
+  - id: rhiza
+    main: ./cmd/rhiza
+    binary: rhiza
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+
+archives:
+  - id: rhiza
+    formats: [tar.gz]
+    name_template: "rhiza_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  disable: true
+
+release:
+  github:
+    owner: dphaener
+    name: rhiza
