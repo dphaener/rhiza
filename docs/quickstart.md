@@ -103,6 +103,4 @@ Commit the log and the rendered files along with your code. From then on the rea
 
 ## Where next
 
-- [Concepts](concepts/why.md) explains why the model is shaped this way.
-- [Agents](agents.md) covers running Rhiza with Claude Code.
 - `rhiza guide` prints the short reference that agents read, and `rhiza --help` lists every command.
