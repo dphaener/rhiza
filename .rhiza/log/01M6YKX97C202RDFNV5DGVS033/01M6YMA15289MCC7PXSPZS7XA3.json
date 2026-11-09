@@ -1,0 +1,50 @@
+{
+  "actor": "01M6YKYAV3HNXAD1BRK0HY71PE",
+  "after": [
+    "01M6YMA0JDPEEQPNNP1YFMW2HJ"
+  ],
+  "at": "2026-11-08T22:26:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "healthCache tracks each refresh healthCache.get starts with an unexported WaitGroup or in-flight counter, and TestWebRootHandlerServesEveryProject (plus any other internal/api test serving a page that reaches WebDaemonSource) waits for in-flight refreshes in a t.Cleanup registered after its t.TempDir calls, with no sleep, retry, exported API, synchronous refresh or change to WebRootHandler's signature; go test -trimpath -count=50 -run TestWebRootHandlerServesEveryProject ./internal/api/ passes, and go test -trimpath ./internal/api -run 'TestWebRoot|TestWebDaemon|TestWebHealth' -count=1 and go test -trimpath ./internal/web -count=1 pass",
+          "statement": "internal/api's web tests that serve pages wait for every background health refresh the web UI started before their temp folders are removed, so TestWebRootHandlerServesEveryProject no longer fails with 'TempDir RemoveAll cleanup: directory not empty'; the web UI still answers at once from the held report and refreshes in the background"
+        },
+        "handle": "web-tests-drain-health-refresh",
+        "id": "01M6YMA101E06VZYTZ494ZJKJR",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6YMA101E06VZYTZ470T5WER",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6YMA101E06VZYTZ470T5WER",
+        "id": "01M6YMA11MRJFCAM8STD40Z0HR",
+        "link": "01M6YMA11MRJFCAM8STA055DQH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YM87Q7DQJ2JRS7DVB5DJ15",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YMA101E06VZYTZ470T5WER",
+        "id": "01M6YMA12ZPS0KBVNZWKS7Q35V",
+        "link": "01M6YMA12ZPS0KBVNZWJZ879PQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YM9KRGT5QZ3CWRHBWC5Y6T",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6YKX97C202RDFNV5DGVS033",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YMA15289MCC7PXSPZS7XA3",
+  "type": "ops",
+  "v": 1
+}
