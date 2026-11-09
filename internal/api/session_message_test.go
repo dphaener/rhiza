@@ -182,7 +182,7 @@ func TestSessionMessageTimeout(t *testing.T) {
 	wantExit(t, err, 3)
 	e := AsError(err)
 	file := f.messageFile("0001.md")
-	if !strings.Contains(e.Message, "did not reach its prompt within 1s; the message is in "+file) || e.Next != "rhiza session show "+f.sid {
+	if !strings.Contains(e.Message, "did not reach its prompt within 1s (last status: blocked on a question); the message is in "+file) || e.Next != "rhiza session show "+f.sid {
 		t.Errorf("error %+v", e)
 	}
 	if c.sleeps != 4 {
@@ -313,5 +313,30 @@ func TestSessionMessageAfterPermissionBlockCleared(t *testing.T) {
 	}
 	if !slices.EqualFunc(f.rex.calls, want, slices.Equal) {
 		t.Fatalf("rex calls %q, want %q", f.rex.calls, want)
+	}
+}
+
+// A blocked session gets one stderr line naming the kind, the detail and
+// rhiza inbox open; the timeout error names the last status.
+func TestSessionMessageSaysWhyWaiting(t *testing.T) {
+	f := newMessageFixture(t)
+	f.setHook(t, session.StateBlocked, session.KindPermission)
+	var errOut strings.Builder
+	f.ctx.Stderr = &errOut
+	c := &scriptClock{t: t}
+	for range 4 {
+		c.script = append(c.script, func() {})
+	}
+	useClock(t, c)
+	_, err := callOp(t, f.ctx, "session.message", `{"session":"`+f.sid+`","text":"hello","timeout":"1s"}`)
+	wantExit(t, err, 3)
+	if n := strings.Count(errOut.String(), "waiting for session"); n != 1 {
+		t.Errorf("want one line, got %d: %q", n, errOut.String())
+	}
+	if !strings.Contains(errOut.String(), "blocked on a permission") || !strings.Contains(errOut.String(), "rhiza inbox open") {
+		t.Errorf("stderr %q", errOut.String())
+	}
+	if !strings.Contains(AsError(err).Message, "last status: blocked on a permission") {
+		t.Errorf("error %q", AsError(err).Message)
 	}
 }
