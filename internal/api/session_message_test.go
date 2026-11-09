@@ -290,3 +290,28 @@ func TestQueuePointerLeavesNonWorkingSessions(t *testing.T) {
 		})
 	}
 }
+
+// A permission block the hook reported clears once Rex reports the session
+// idle afterwards: the pointer is typed once, then Enter.
+func TestSessionMessageAfterPermissionBlockCleared(t *testing.T) {
+	f := newMessageFixture(t)
+	f.setHook(t, session.StateBlocked, session.KindPermission)
+	if _, err := f.st.Update(f.sid, func(r *session.Record) {
+		r.Status.Rex = &session.Report{State: session.StateIdle, At: r.Status.Hook.At.Add(time.Second)}
+	}); err != nil {
+		t.Fatal(err)
+	}
+	useClock(t, &scriptClock{t: t, now: time.Date(2026, 10, 24, 12, 0, 0, 0, time.UTC)})
+	resp, err := callOp(t, f.ctx, "session.message", `{"session":"`+f.sid+`","text":"Use blue"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pointer := resp.(SessionMessageResponse).Pointer
+	want := [][]string{
+		{"rex", "send", "-b", "block:b1", pointer},
+		{"rex", "send-key", "-b", "block:b1", "enter"},
+	}
+	if !slices.EqualFunc(f.rex.calls, want, slices.Equal) {
+		t.Fatalf("rex calls %q, want %q", f.rex.calls, want)
+	}
+}

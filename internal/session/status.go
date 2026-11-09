@@ -90,17 +90,36 @@ func ValidState(state string) bool {
 // has exited, the exit is the status: no hook or Rex report outranks it.
 // While the session is live, hooks come first, then Rex events, then a bare
 // starting report when no source has spoken. Precedence is strict: a present
-// lower source never overrides a higher one, whatever the times say.
+// lower source never overrides a higher one, whatever the times say, except
+// that a hook's permission block gives way to a newer Rex idle or working
+// report (see permissionCleared).
 func Resolve(r Record) (Report, Source) {
 	switch {
 	case r.Status.Exit != nil:
 		return *r.Status.Exit, SourceExit
+	case r.Status.Hook != nil && permissionCleared(r.Status):
+		return *r.Status.Rex, SourceRex
 	case r.Status.Hook != nil:
 		return *r.Status.Hook, SourceHook
 	case r.Status.Rex != nil:
 		return *r.Status.Rex, SourceRex
 	}
 	return Report{State: StateStarting, At: r.StartedAt}, SourceDefault
+}
+
+// permissionCleared reports whether a hook report that blocks on a permission
+// prompt has been overtaken: Rex reported the session idle or working after
+// it. No hook fires when a prompt is answered, so the hook's block would stand
+// forever. Question and auth blocks keep strict hook precedence.
+func permissionCleared(s Status) bool {
+	h, x := s.Hook, s.Rex
+	if h == nil || x == nil || h.State != StateBlocked || h.Kind != KindPermission {
+		return false
+	}
+	if x.State != StateIdle && x.State != StateWorking {
+		return false
+	}
+	return x.At.After(h.At)
 }
 
 // StallAfter is how long a working session may go without a report before
