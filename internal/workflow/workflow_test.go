@@ -395,7 +395,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "open-pr", "wait-pr", "pr-green", "conflict-triage", "conflict-fix", "ci-triage", "ci-fix", "signoff", "rebase", "rebase-triage", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "open-pr", "wait-pr", "pr-green", "conflict-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "rebase", "rebase-triage", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
 		"conflict-triage-landed", "conflict-fix-landed", "rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
@@ -442,8 +442,12 @@ func TestShipChangeBuiltin(t *testing.T) {
 		}
 	}
 	triage := def.Steps["ci-triage"]
-	if triage.Kind != KindCommand || triage.Run != "rhiza ship check --test-failures" || triage.On[OutcomePass] != "ci-fix" || len(triage.On) != 1 {
-		t.Errorf("ci-triage = %+v; want a command step running ship check --test-failures, pass to ci-fix, no on.fail", triage)
+	if triage.Kind != KindCommand || triage.Run != "rhiza ship check --test-failures" || triage.On[OutcomePass] != "ci-fix" || triage.On[OutcomeFail] != "wait-ci-rerun" || len(triage.On) != 2 {
+		t.Errorf("ci-triage = %+v; want a command step running ship check --test-failures, pass to ci-fix, fail to wait-ci-rerun", triage)
+	}
+	rerun := def.Steps["wait-ci-rerun"]
+	if rerun.Kind != KindWait || rerun.Until != "rhiza ship check --settled --changed" || rerun.Timeout != 6*time.Hour || rerun.MaxVisits != 3 || rerun.On[OutcomePass] != "pr-green" {
+		t.Errorf("wait-ci-rerun = %+v; want a wait on ship check --settled --changed, 6h, max_visits 3, pass to pr-green", rerun)
 	}
 	fix := def.Steps["ci-fix"]
 	if fix.Kind != KindAgent || fix.On[OutcomePass] != "render-pr" || !strings.Contains(fix.Prompt, "Review: {run}") || !strings.Contains(fix.Prompt, "rhiza ship check --json") {

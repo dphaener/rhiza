@@ -77,6 +77,9 @@ type ShipCheckRequest struct {
 	Conflicts bool `json:"conflicts,omitempty" flag:"conflicts" desc:"Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed or once the run has made 3 conflict fixes (merge commits on the branch with its Review: trailer); reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)"`
 	// Reruns is how many times a head's failed Actions runs are rerun.
 	Reruns ShipReruns `json:"reruns,omitempty" flag:"reruns" desc:"How many times a head's failed jobs are rerun before its failure stands, at least 1; default 1"`
+	// Changed makes Settled wait for CI to move past the red head a failing
+	// ship check recorded.
+	Changed bool `json:"changed,omitempty" flag:"changed" desc:"With --settled: also wait for CI to move past the red head the last failing ship check recorded (red_head, red_checks in the state file): settled only once the head is another one, or a check run's ID or attempt is not among the recorded ones, and that new CI has finished; until then not settled, naming the infra failure; with no red head recorded it is --settled alone (for a wait after an infra failure with no failing test)"`
 }
 
 // ShipReruns is the rerun budget per head: 0 when not given (one rerun).
@@ -150,6 +153,49 @@ type ShipCheck struct {
 	// (from the check's detailsUrl, or a workflow run's databaseId). It
 	// is what a rerun needs; checks without one are never rerun.
 	RunID string `json:"-"`
+	// JobID and Attempt are the check run's job ID and Actions attempt,
+	// when its details URL names them: a rerun check run has another job ID
+	// (and, where GitHub says it, a higher attempt).
+	JobID   string `json:"-"`
+	Attempt string `json:"-"`
+}
+
+// ShipRedCheck is a check run of a red head as the state file records it.
+type ShipRedCheck struct {
+	Name    string `json:"name"`
+	ID      string `json:"id"`
+	Attempt string `json:"attempt,omitempty"`
+}
+
+// redID is the identity of a check run: its job ID, else its Actions run
+// ID, else its name.
+func (c ShipCheck) redID() string {
+	return cmp.Or(c.JobID, c.RunID, c.Name)
+}
+
+// redChecks is checks as recorded for a red head.
+func redChecks(checks []ShipCheck) []ShipRedCheck {
+	out := make([]ShipRedCheck, 0, len(checks))
+	for _, c := range checks {
+		out = append(out, ShipRedCheck{Name: c.Name, ID: c.redID(), Attempt: c.Attempt})
+	}
+	return out
+}
+
+// shipCIMoved reports whether CI moved past the red head the state
+// records: another head, or a check run whose ID or attempt is not among
+// the recorded ones. With no red head recorded there is no baseline, and CI
+// counts as moved.
+func shipCIMoved(st shipState, head string, checks []ShipCheck) bool {
+	if st.RedHead == "" || head != st.RedHead {
+		return true
+	}
+	for _, c := range checks {
+		if !slices.Contains(st.RedChecks, ShipRedCheck{Name: c.Name, ID: c.redID(), Attempt: c.Attempt}) {
+			return true
+		}
+	}
+	return false
 }
 
 // ShipMergeRequest takes nothing: the PR and its head come from the state
@@ -350,6 +396,12 @@ type shipState struct {
 	// Dispatched the workflow files dispatched for it, once each.
 	DispatchCommit string   `json:"dispatch_commit,omitempty"`
 	Dispatched     []string `json:"dispatched,omitempty"`
+	// RedHead and RedChecks are the head whose settled CI failed, and its
+	// check runs' IDs and attempts, as the last failing ship check saw them
+	// (whatever Head and Checks, which only a green check records, hold).
+	// ship check --settled --changed waits past them.
+	RedHead   string         `json:"red_head,omitempty"`
+	RedChecks []ShipRedCheck `json:"red_checks,omitempty"`
 }
 
 // shipRunID is the run the ship step runs for: RHIZA_RUN, or empty outside
@@ -450,7 +502,7 @@ func parsePRView(b []byte) (prView, error) {
 			v.Checks = append(v.Checks, c)
 			continue
 		}
-		v.Checks = append(v.Checks, ShipCheck{Name: r.Name, Status: r.Status, Conclusion: r.Conclusion, RunID: actionsRunID(r.DetailsURL)})
+		v.Checks = append(v.Checks, ShipCheck{Name: r.Name, Status: r.Status, Conclusion: r.Conclusion, RunID: actionsRunID(r.DetailsURL), JobID: urlNumber(actionsJobRe, r.DetailsURL), Attempt: urlNumber(actionsAttemptRe, r.DetailsURL)})
 	}
 	return v, nil
 }
@@ -487,6 +539,19 @@ func requirePROwned(t shipTarget, v prView) error {
 // actionsRunRe finds the run ID in an Actions details URL such as
 // https://github.com/o/r/actions/runs/42/job/9.
 var actionsRunRe = regexp.MustCompile(`/actions/runs/([0-9]+)`)
+
+var (
+	actionsJobRe     = regexp.MustCompile(`/job/([0-9]+)`)
+	actionsAttemptRe = regexp.MustCompile(`/attempts/([0-9]+)`)
+)
+
+// urlNumber is the first capture of re in url, or "".
+func urlNumber(re *regexp.Regexp, url string) string {
+	if m := re.FindStringSubmatch(url); m != nil {
+		return m[1]
+	}
+	return ""
+}
 
 // actionsRunID is the GitHub Actions run ID in a check's details URL, or
 // "" when the URL is not an Actions one.
@@ -554,6 +619,9 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 	budget, err := r.Reruns.budget()
 	if err != nil {
 		return nil, err
+	}
+	if r.Changed && (!r.Settled || r.Main || r.PROpen || r.Conflicts || r.TestFailures) {
+		return nil, Usagef("--changed goes with --settled alone: it waits for CI to move past a recorded red head").WithNext(shipCheckNext)
 	}
 	if r.Conflicts {
 		if r.PROpen || r.Main || r.Settled || r.TestFailures {
@@ -638,6 +706,14 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		}
 	}
 	resp.Settled, resp.Green, resp.Failed = checksVerdict(resp.Checks)
+	if r.Changed && resp.Settled && !resp.Green && !shipCIMoved(st, resp.Commit, resp.Checks) {
+		// The same settled red CI the last failing check recorded: an
+		// infra failure with no failing test, waiting for a rerun or a push.
+		resp.Settled = false
+		resp.Detail = fmt.Sprintf("not settled: CI on head %s failed (%s) with no failing test: an infra failure; waiting for a new head or a rerun", shortSHA(resp.Commit), strings.Join(resp.Failed, ", "))
+		resp.Failed = nil
+		return resp, nil
+	}
 	switch {
 	case r.Settled:
 		resp.Passed = resp.Settled
@@ -676,6 +752,17 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 			resp.Detail += "; the PR changes only .rhiza/"
 		}
 	}
+	if resp.Settled && !resp.Green && !r.Settled && !r.Main {
+		// Record the red head and its check runs, never as Head and
+		// Checks, which stay the last green ones.
+		st.RedHead, st.RedChecks = resp.Commit, redChecks(resp.Checks)
+		if id := shipRunID(ctx); id != "" {
+			st.Run = id
+		}
+		if err := writeShipState(path, st); err != nil {
+			return nil, err
+		}
+	}
 	if !resp.Passed || r.Settled {
 		return resp, nil
 	}
@@ -683,6 +770,7 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		st.Main = resp.Checks
 	} else {
 		st.PR, st.URL, st.Branch, st.Head, st.Checks = resp.PR, resp.URL, t.branch, resp.Commit, resp.Checks
+		st.RedHead, st.RedChecks = "", nil
 	}
 	if id := shipRunID(ctx); id != "" {
 		st.Run = id

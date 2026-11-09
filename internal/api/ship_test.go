@@ -254,8 +254,71 @@ func TestShipCheckFailed(t *testing.T) {
 	if got := human(t, r); got != "PR #7 at abc1234: failed: test, ci/x\n" {
 		t.Errorf("human = %q", got)
 	}
-	if _, err := os.Stat(state); !errors.Is(err, os.ErrNotExist) {
-		t.Errorf("state file written: %v", err)
+	// The red head is recorded, with no green head or checks.
+	st, err := readShipState(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.RedHead != "abc1234def" || len(st.RedChecks) != 3 || st.Head != "" || len(st.Checks) != 0 {
+		t.Errorf("state: %+v", st)
+	}
+}
+
+const infraRollup = `{"name":"test","status":"COMPLETED","conclusion":"FAILURE","detailsUrl":"https://github.com/o/r/actions/runs/42/job/9"},{"context":"lint","state":"SUCCESS"}`
+
+// --settled --changed does not settle on the red head the failing check
+// recorded, names the infra failure, and settles on a new head or on a
+// newer attempt of a check run once it finishes; with no baseline it is
+// --settled.
+func TestShipCheckSettledChanged(t *testing.T) {
+	f, g, state := shipFixture(t)
+	g.answers[shipPRView] = openPR(infraRollup)
+	g.answers["run rerun 42 --failed"] = ""
+	// No baseline: as --settled (the head's one rerun is spent first).
+	if r := shipCheck(t, f, `{"settled":true,"changed":true}`); r.Passed || len(r.Reran) != 1 {
+		t.Fatalf("no baseline, first: %+v", r)
+	}
+	if r := shipCheck(t, f, `{"settled":true,"changed":true}`); !r.Passed || !r.Settled {
+		t.Fatalf("no baseline: %+v", r)
+	}
+	if r := shipCheck(t, f, `{}`); r.Passed || r.Written {
+		t.Fatalf("failing check: %+v", r)
+	}
+	st, err := readShipState(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []ShipRedCheck{{Name: "test", ID: "9"}, {Name: "lint", ID: "lint"}}
+	if st.RedHead != "abc1234def" || !slices.Equal(st.RedChecks, want) || st.Head != "" || st.Checks != nil {
+		t.Fatalf("state: %+v", st)
+	}
+	r := shipCheck(t, f, `{"settled":true,"changed":true}`)
+	if r.Passed || r.Settled || r.ExitCode() != 1 || !strings.Contains(r.Detail, "abc1234") || !strings.Contains(r.Detail, "test") || !strings.Contains(r.Detail, "no failing test") {
+		t.Errorf("unchanged red head: %+v", r)
+	}
+	// A rerun of the check run (a new job ID) that is still going.
+	g.answers[shipPRView] = openPR(`{"name":"test","status":"IN_PROGRESS","detailsUrl":"https://github.com/o/r/actions/runs/42/job/10"},{"context":"lint","state":"SUCCESS"}`)
+	if r := shipCheck(t, f, `{"settled":true,"changed":true}`); r.Passed {
+		t.Errorf("rerun running: %+v", r)
+	}
+	// Finished: settled, green or not.
+	g.answers[shipPRView] = openPR(`{"name":"test","status":"COMPLETED","conclusion":"SUCCESS","detailsUrl":"https://github.com/o/r/actions/runs/42/job/10"},{"context":"lint","state":"SUCCESS"}`)
+	if r := shipCheck(t, f, `{"settled":true,"changed":true}`); !r.Passed || !r.Settled {
+		t.Errorf("rerun finished: %+v", r)
+	}
+	// A newer attempt, same job ID.
+	g.answers[shipPRView] = openPR(`{"name":"test","status":"COMPLETED","conclusion":"FAILURE","detailsUrl":"https://github.com/o/r/actions/runs/42/attempts/2/job/9"},{"context":"lint","state":"SUCCESS"}`)
+	if r := shipCheck(t, f, `{"settled":true,"changed":true}`); !r.Passed {
+		t.Errorf("new attempt: %+v", r)
+	}
+	// A new head.
+	g.answers[shipPRView] = strings.Replace(openPR(greenRollup), "abc1234def", "def5678abc", 1)
+	if r := shipCheck(t, f, `{"settled":true,"changed":true}`); !r.Passed {
+		t.Errorf("new head: %+v", r)
+	}
+	// --changed takes --settled.
+	if _, err := callOp(t, f.ctx, "ship.check", `{"changed":true}`); err == nil {
+		t.Error("--changed without --settled: no error")
 	}
 }
 

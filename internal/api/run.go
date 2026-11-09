@@ -1041,7 +1041,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		if _, ok := def.Steps[retryStep]; !ok {
 			return nil, Errorf("run %s: step %q is not in workflow %q", j.ID, retryStep, def.Name).WithNext("rhiza run status " + j.ID)
 		}
-		retryStep = run.RetryStep(def, retryStep)
+		retryStep = run.RetryStep(def, st, retryStep)
 	}
 	if err := refuseLiveRun(rs, st.Change, j.ID); err != nil {
 		return nil, err
@@ -1841,12 +1841,18 @@ func lastStopLine(out string) string {
 }
 
 // Condition runs the wait step's condition once and returns its exit code;
-// on run.StopExit, detail is the last stop: line of its output.
+// on run.StopExit, detail is the last stop: line of its output, else for
+// a non-zero code the tail of its output.
 func (r *stepRunner) Condition(step workflow.Step, env []string) (int, string, error) {
 	var buf bytes.Buffer
 	code, err := r.sh("exec 2>&1\n"+step.Until, env, &buf)
-	if err != nil || code != run.StopExit {
+	if err != nil || code == 0 {
 		return code, "", err
+	}
+	if code != run.StopExit {
+		tail := &tailWriter{}
+		tail.Write(buf.Bytes())
+		return code, tail.String(), nil
 	}
 	io.WriteString(r.ctx.Stderr, buf.String())
 	return code, lastStopLine(buf.String()), nil

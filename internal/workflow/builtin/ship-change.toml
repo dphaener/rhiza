@@ -91,14 +91,30 @@ on.pass = "render-pr"
 # A red PR whose CI logs named failing tests goes to one fixer on the run
 # worktree, then back through render-pr, the push and CI. ci-triage passes
 # only when the head's latest ship check recorded a failing test; an infra
-# or unparsable failure has no on.fail and ends the run there. ci-fix runs
-# at most twice, so a third red head with failing tests fails the run, and
-# ci-triage's output names the failing tests.
+# or unparsable failure (no failing test) goes to wait-ci-rerun instead of
+# ending the run. ci-fix runs at most twice, so a third red head with
+# failing tests fails the run, and ci-triage's output names the failing
+# tests.
 [step.ci-triage]
 kind = "command"
 run = "rhiza ship check --test-failures"
 max_visits = 3
 on.pass = "ci-fix"
+on.fail = "wait-ci-rerun"
+
+# The failing ship check recorded the red head and its check runs (red_head,
+# red_checks). This wait passes only once CI moved past them (another head,
+# or a check run with a new ID or attempt, such as a rerun by hand) and has
+# finished, then pr-green checks the head again, and signoff follows (after
+# a rebase, the rebased-green path). While it waits, its output names the
+# infra failure; on timeout the run ends with that line in its detail.
+[step.wait-ci-rerun]
+kind = "wait"
+until = "rhiza ship check --settled --changed"
+timeout = "6h"
+interval = "30s"
+max_visits = 3
+on.pass = "pr-green"
 
 [step.ci-fix]
 kind = "agent"
