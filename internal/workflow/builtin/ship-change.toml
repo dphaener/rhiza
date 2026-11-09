@@ -44,7 +44,9 @@ on.pass = "local-gate"
 # the rebased head, ship rebase pushes nothing and leaves main merged into
 # the branch, unpushed, and fails through rebase-gate-failed to gate-fix:
 # the fixer's ship gate fails on that merge, and the fix pushes through
-# open-pr without forcing. A running gate writes no progress and may take
+# open-pr without forcing. After land, gate-rebase-merge and rebase-merge
+# fail to their own loop instead (gate-fix-merge, below), which never
+# reaches land again. A running gate writes no progress and may take
 # up to its own hour (it can queue behind other worktrees' suites), so
 # every step that runs it sets a stall above that, or the watchdog's
 # command limit would stop and retry it mid-run.
@@ -182,7 +184,7 @@ run = "rhiza ship gate"
 stall = "70m"
 max_visits = 4
 on.pass = "rebase-merge"
-on.fail = "gate-fix"
+on.fail = "gate-fix-merge"
 
 [step.rebase-merge]
 kind = "command"
@@ -190,7 +192,56 @@ run = "rhiza ship rebase"
 stall = "70m"
 max_visits = 3
 on.pass = "wait-rebased-merge"
-on.fail = "rebase-gate-failed"
+on.fail = "rebase-merge-gate-failed"
+
+# After land a failing gate has its own fix loop, which never goes back
+# through the pre-land path, the sign-off or land (land runs once: the
+# change set is landed). A gate failing on the rebased head passes
+# rebase-merge-gate-failed (a conflict fails it and ends the run), and
+# either failure goes to gate-fix-merge, then render-merge, the gate and
+# push-merge. The push is ship open-pr, not ship rebase: the branch already
+# holds origin/main, so ship rebase would push nothing, and the fix descends
+# from the pushed head or the kept merge, so it pushes without forcing.
+# Every step here sets max_visits: a third failing gate fails the run at
+# gate-fix-merge's cap, with the gate's output, and no sign-off follows.
+[step.rebase-merge-gate-failed]
+kind = "command"
+run = "rhiza ship gate --failed"
+max_visits = 3
+on.pass = "gate-fix-merge"
+
+[step.gate-fix-merge]
+kind = "agent"
+prompt = "/rhiza-review Fix the failing local gate of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. CI is unstable, so the project's local gate (rhiza.ship.localGate) runs before the push, and it failed: run `rhiza ship gate` to see its output. Reproduce the failure locally with the failing test's own scoped command, repeating it until you see it fail again or plainly pass, then fix it or quarantine it (skip it) with a bug request filed and named at the skip. Commit only once the failing tests and the packages you touched pass locally. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
+until = "true"
+until_when = "done"
+max_visits = 2
+on.pass = "render-merge"
+
+[step.render-merge]
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
+  git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+"""
+max_visits = 3
+on.pass = "gate-push-merge"
+
+[step.gate-push-merge]
+kind = "command"
+run = "rhiza ship gate"
+stall = "70m"
+max_visits = 3
+on.pass = "push-merge"
+on.fail = "gate-fix-merge"
+
+[step.push-merge]
+kind = "command"
+run = "rhiza ship open-pr"
+max_visits = 3
+on.pass = "wait-rebased-merge"
 
 [step.wait-rebased-merge]
 kind = "wait"
