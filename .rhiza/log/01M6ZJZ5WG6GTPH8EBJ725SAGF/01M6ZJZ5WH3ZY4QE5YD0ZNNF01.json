@@ -1,0 +1,15 @@
+{
+  "actor": "01M6ZJWAA233G9X7WYMBM1XW4W",
+  "after": [],
+  "at": "2026-11-09T07:22:12Z",
+  "body": {
+    "intent": "Link the generated workflow-file reference from docs/custom-workflows.md: once rhiza docs writes docs/reference/workflow-file.md (leaf docs-reference-workflow of Generated reference 01M6W5E3JQXD62), turn the plain path at docs/custom-workflows.md:66 into a Markdown link, as decision custom-workflow-doc-reference-plain-path hands that follow-up to Generated reference; docs-reference-workflow's statement and acceptance do not carry it today",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6ZJZ5WG6GTPH8EBJ725SAGF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZJZ5WH3ZY4QE5YD0ZNNF01",
+  "type": "open",
+  "v": 1
+}
