@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZT1RMKF6AVFQGYEM5T9GD3",
+  "after": [
+    "01M6ZSSA1KGYKQVPSXD0NVERQT"
+  ],
+  "at": "2026-11-09T09:27:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2ce01c1d: go test -trimpath ./internal/session -run TestResolve -v passes TestResolvePermissionBlockClears' 8 cases: hook blocked/permission at T with Rex idle or working at T+1s resolves from rex; Rex idle at T-1s or at T, a Rex blocked report, or no Rex report keeps the hook's blocked; hook blocked/question and blocked/auth with Rex idle at T+1s stay blocked from the hook. go test -trimpath ./cmd/rhiza -run TestScripts/session-message (GOTMPDIR outside the repo, -count=1, three runs) passes all four session-message scripts, including the new session-message-permission.txtar: a Notification permission_prompt hook, then session run following a fake rex events that reports block:b1 idle a minute later; session show reads idle from rex, and session message logs exactly one `send -b block:b1 <pointer>` and one `send-key -b block:b1 enter` (2 sends total). In a scratch worktree with internal/session/status.go reverted to before dfdc577e, that script fails, so it covers the fix. Diff read: permissionCleared applies only to a hook blocked/permission report overtaken by a strictly newer Rex idle/working report; exit still outranks everything."
+        },
+        "handle": "permission-block-clears-verified",
+        "id": "01M6ZT4HHZ5Q1M2KJ0QQ6CKQ6V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZT4HHZ5Q1M2KJ0QKT3FXJJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZT4HHZ5Q1M2KJ0QKT3FXJJ",
+        "id": "01M6ZT4HK538HXZBGDXB8H7W1X",
+        "link": "01M6ZT4HK538HXZBGDX9WDB9CE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZQFF7C7AZMBBHAW8RPC69G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ZQ588DTHT2T3MHK7STGR3Q",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZT4HKSX80EYQR8EPJK2BDD",
+  "type": "ops",
+  "v": 1
+}
