@@ -23,6 +23,7 @@ GoReleaser on tag: a .goreleaser.yaml and a GitHub Actions job on v* tags buildi
 ### In
 
 - decided-by [m30-install](../intent/milestone-30/m30-install.md)
+- decided-by [release-goreleaser](../capability/rhiza/distribution/release-goreleaser.md)
 
 ## History
 
