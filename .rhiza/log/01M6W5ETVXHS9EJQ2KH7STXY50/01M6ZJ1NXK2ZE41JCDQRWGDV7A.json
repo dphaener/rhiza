@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6ZHSA32AY33C98S135QV9XN"
+  ],
+  "at": "2026-11-09T07:06:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Leaf docs-custom-workflow failed all 3 attempts of round 1: attempt 1 verifier failed: verifier ended with neither Evidence nor findings; attempt 2 verifier failed: verifier found 1 problem(s) (f1 The leaf statement requires docs/custom-workflows.md to link the generated workflow-file reference, but at 23bb2b24 the doc names docs/reference/workflow-file.…); attempt 3 verifier failed: verifier found 1 problem(s) (f1 At 25b33817 the leaf statement's requirement that docs/custom-workflows.md link the generated workflow-file reference is still unmet: line 66 names docs/refere…). How should it be built, or should it change?"
+        },
+        "handle": "leaf-failed-01m6zh70-1",
+        "id": "01M6ZJ1DT6QK81EEY6V57JMWXY",
+        "key": null,
+        "kind": "question",
+        "node": "01M6ZJ1DT6QK81EEY6V297APJB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZJ1DT6QK81EEY6V297APJB",
+        "id": "01M6ZJ1JPV1CR9GPTRS1ZKFFCX",
+        "link": "01M6ZJ1JPV1CR9GPTRRZC5K37V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H323RTT12VV3R6F2AZW4",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6W5ETVXHS9EJQ2KH7STXY50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZJ1NXK2ZE41JCDQRWGDV7A",
+  "type": "ops",
+  "v": 1
+}

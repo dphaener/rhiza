@@ -1,0 +1,41 @@
+{
+  "actor": "01M6ZJ21T3N5EPR5P0F7AHDRMT",
+  "after": [
+    "01M6ZJ1NXK2ZE41JCDQRWGDV7A"
+  ],
+  "at": "2026-11-09T07:06:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "All three attempts failed only on the reference link. docs/reference/workflow-file.md does not exist: rhiza docs writes it in the docs-reference-workflow leaf of the accepted but unlanded Generated reference change set. A real link now fails internal/doclinks TestRepoDocsLinksResolve, so no builder can meet the literal statement, and builders 2 and 3 correctly refused to guess at the open question custom-workflow-doc-reference-link. Making this docs change set depend on Generated reference would hold the whole Agents, runs and daemon docs set back for one link, and the reference is already reachable through rhiza guide workflows, which the doc also names. The rest of the doc (the bugfix example, the check and describe walkthrough) is done. The producer of a file is the natural owner of links to it, so the plain-text path plus a follow-up link in Generated reference keeps doclinks green and the leaf's intent intact. This also settles question custom-workflow-doc-reference-link the same way (its second option).",
+          "statement": "docs-custom-workflow ships with the generated workflow-file reference named in plain text (docs/reference/workflow-file.md, alongside rhiza guide workflows), not as a Markdown link. That satisfies the leaf's 'links the generated workflow-file reference' for this change set, and verifiers accept it as is. The Generated reference change set (leaf docs-reference-workflow) turns the plain path into a link in docs/custom-workflows.md when it writes the file. This change set does not take a dependency on Generated reference.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "custom-workflow-doc-reference-plain-path",
+        "id": "01M6ZJ34KZTYH3HXGGQVN3AAME",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6ZJ34KYNGHQ7ZWYA5A8X97G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZJ34KYNGHQ7ZWYA5A8X97G",
+        "id": "01M6ZJ34N0G6HAEYK8A51BXW1J",
+        "link": "01M6ZJ34N0G6HAEYK8A21B0XB2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZJ1DT6QK81EEY6V297APJB",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6W5ETVXHS9EJQ2KH7STXY50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZJ34PRCX24SSMCEQ93TDJZ",
+  "type": "ops",
+  "v": 1
+}
