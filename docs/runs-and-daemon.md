@@ -11,6 +11,14 @@ Runs start agents in terminals, and Rhiza uses Rex for those. The agents are Cla
 - `rex` is installed and its server is running, and you start Rhiza from inside it.
 - `claude` is installed and logged in.
 - Rhiza's skills are in Claude Code: `rhiza guide install --agent claude`.
+- Your repository is a project under a Rhiza root. Runs, requests and the daemon work only inside one, and otherwise stop with `is not inside a Rhiza root`. A root is a folder holding your checkouts, with a `rhiza.toml`:
+
+  ```text
+  rhiza root init ~/code
+  rhiza project add ~/code/myapp
+  ```
+
+  `project add` takes a checkout directly under the root, or a git URL to clone there.
 
 Then connect Rhiza to Rex:
 
@@ -61,11 +69,11 @@ A run that stops, because you restarted the daemon or the machine went down, pic
 
 ```text
 rhiza run approve <run>
-rhiza run request-changes <run>
+rhiza run request-changes <findings.json> <run>
 rhiza run send-back <run> --note "..."
 ```
 
-Approving lets a `ship-change` run go on to merge. The other two send it back to a fixer.
+Approving lets a `ship-change` run go on to merge. The other two send it back to a fixer. `request-changes` takes a JSON file of your findings (`-` reads stdin); `rhiza describe run.request-changes` shows its shape.
 
 ### Questions
 
@@ -115,7 +123,7 @@ Which workflow handles what lives in `.rhiza/dispatch.toml`. Its `[request]` tab
 
 ## Autonomy
 
-By default the daemon asks you at every gate. Autonomy is how you take some of those away. There's a setting per stage, each either `auto` or `owner`:
+Autonomy decides which gates wait for you. There's a setting per stage, each either `auto` or `owner`. Out of the box only `plan` is `owner`. `accept`, `signoff` and `ship` are `auto`, so a change set that passed its review is accepted, a run carries on past sign-off, and `ship-change` merges without you. Set them yourself if you want to be asked:
 
 ```text
 rhiza daemon set rhiza.autonomy.plan owner
@@ -132,6 +140,18 @@ rhiza daemon set rhiza.autonomy.signoff owner
 An autonomous run is one started with `--autonomous`. It skips the owner's gates and questions and records each one it skipped, so you can see afterward what was decided for you. It never changes agent permissions. Those are the permission mode's job.
 
 If you'd rather stay in the loop, set `owner` on `plan` and `signoff`. You still get the unattended building and the fixing. You just decide what goes in and what goes out.
+
+### Per workflow
+
+A workflow file can declare its own autonomy, one of two ways. A top-level `autonomous = true` (or `false`) sets all four stages to `auto` (or `owner`). An `[autonomy]` table sets only the stages it names:
+
+```toml
+[autonomy]
+signoff = "owner"
+ship = "owner"
+```
+
+Declare one or the other, not both. A stage the workflow declares overrides `rhiza.autonomy.<stage>` for runs of that workflow, and a stage it leaves out follows the setting. `rhiza run start --dry-run` prints each stage's mode and where it came from.
 
 ## Schedules
 
