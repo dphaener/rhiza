@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6W72T3K8N0HP6S0KQAVF6BR"
+  ],
+  "at": "2026-11-09T03:29:50Z",
+  "body": {
+    "reason": "Owner planned milestone 30 (docs and release) and put CI stability first; CI is stable on both repos as of 2026-11-09, so its change sets go to the daemon. Accepted by the orchestrator under rhiza.autonomy.accept=auto (gate bug 01M6PQTF left them proposed).",
+    "rule": "owner"
+  },
+  "change_set": "01M6W5E3JQXD62WN4RHG546KRX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Z5NRFJERWP9TZEC1S5N7Q4",
+  "type": "accept",
+  "v": 1
+}
