@@ -63,7 +63,7 @@ Here's how this one reads:
 - **test** runs a plain command. Pass moves on, fail loops back to `fix`. A loop needs a bound, so `max_visits = 3` fails the run on the fourth visit instead of letting the two steps trade blows all night. Swap `make test` for your repo's own scoped command.
 - **ci** waits. It runs `gh pr checks` every 30 seconds until it exits cleanly, and gives up after 30 minutes. Passing there ends the run.
 
-Every step kind and its keys, including the ones this example doesn't use (`leaves`, `checks`, `signoff`, `arbiter`, and `workflow` to include another workflow), are in the generated workflow-file reference under `docs/reference/` and in `rhiza guide workflows`. Prompts can use `{change}`, `{slug}`, `{title}`, `{run}` and `{step}`, plus a few more in the `leaves` and `checks` steps.
+Every step kind and its keys, including the ones this example doesn't use (`leaves`, `checks`, `signoff`, `arbiter`, and `workflow` to include another workflow), are in the generated workflow-file reference, `docs/reference/workflow-file.md`, and in `rhiza guide workflows`. Prompts can use `{change}`, `{slug}`, `{title}`, `{run}` and `{step}`, plus a few more in the `leaves` and `checks` steps.
 
 ## Check it, then look at it
 
