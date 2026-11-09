@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Z6E89CMV2AEW8R0NQTBJ3M",
+  "after": [
+    "01M6Z5NK94SN9P78KRBYWNAZV8"
+  ],
+  "at": "2026-11-09T03:45:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7310d511, go test -trimpath ./cmd/rhiza -run TestVersion -v -count=1 passed: TestVersion's table covers the ldflags path (v0.1.0 wins, including over a module v0.2.0), the go install module-version path (v0.1.0) and the dev fallback for (devel) and empty; TestVersionGoReleaserStamp passed. .goreleaser.yaml line 18 sets -s -w -X main.version={{ .Tag }}. A build with -ldflags \"-X main.version=v0.1.0\" prints 'rhiza v0.1.0'. gofmt and go vet on cmd/rhiza are clean."
+        },
+        "handle": "release-version-stamp-verified",
+        "id": "01M6Z6JMM449V6TPEMAP35DSN0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Z6JMM449V6TPEMAJ42FDP3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Z6JMM449V6TPEMAJ42FDP3",
+        "id": "01M6Z6JMPR09FX08FCWNASH8AZ",
+        "link": "01M6Z6JMPR09FX08FCWJX4SKXJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5GZ804XVRFGSN0V242MST",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5C84ZKXW2C2AE3YWKZ1XD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Z6JMT2MT2PE2E24H2352AR",
+  "type": "ops",
+  "v": 1
+}
