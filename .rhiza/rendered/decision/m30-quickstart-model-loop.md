@@ -23,6 +23,7 @@ Model loop, no agents: init, a capability and a decision, open/propose/accept/la
 ### In
 
 - decided-by [m30-readme](../intent/milestone-30/m30-readme.md)
+- decided-by [quickstart-doc](../capability/rhiza/documentation/quickstart-doc.md)
 
 ## History
 

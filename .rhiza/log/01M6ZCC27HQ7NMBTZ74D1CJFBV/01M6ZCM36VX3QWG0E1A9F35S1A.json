@@ -1,0 +1,50 @@
+{
+  "actor": "01M6ZCD4REPHFXCFB2QQTE110E",
+  "after": [
+    "01M6ZCM2QW35KNH3NEX1A8SDJS"
+  ],
+  "at": "2026-11-09T05:31:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6ZCJWW14QZ3FM14X8EGG7V0",
+        "id": "01M6ZCM33Y29T2BTTZQVF4E6RC",
+        "link": "01M6ZCM33Y29T2BTTZQQWEJ7F7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZCKVQ9GM1J8TG067QZT57X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestBuildText|TestReviewText' finds the delay-injection rule (inject a delay at the suspected race; never busy loops or parallel stress on the host) in both the build and review topics beside the unstable-CI rule; go test -trimpath ./cmd/rhiza -run TestClaudeMDScopedTests finds the same rule in CLAUDE.md beside the unstable-CI reproduce-locally rule, with that rule unchanged",
+          "statement": "The rhiza-build and rhiza-review guide topics (so the rhiza-build and rhiza-review skills) and this repo's CLAUDE.md tell builders, verifiers, checks and fixers to reproduce a timing flake by injecting a delay at the suspected race, and never by busy loops, CPU stress or parallel stress runs on the shared host"
+        },
+        "handle": "delay-repro-guidance",
+        "id": "01M6ZCM35BZXJ8X5SQ97VCVNKZ",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M6ZCM35BZXJ8X5SQ96639XZ4",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6ZCM35BZXJ8X5SQ96639XZ4",
+        "id": "01M6ZCM369KM5J8A40YPSKP1RX",
+        "link": "01M6ZCM369KM5J8A40YKA2M0WV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZCJWW14QZ3FM14X8EGG7V0",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6ZCC27HQ7NMBTZ74D1CJFBV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZCM36VX3QWG0E1A9F35S1A",
+  "type": "ops",
+  "v": 1
+}

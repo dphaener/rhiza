@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZETJ9MCXY40B482SEYDTX2",
+  "after": [
+    "01M6ZERE4T80PQJX562JSYP6AS"
+  ],
+  "at": "2026-11-09T06:11:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified docs/concepts/why.md at bb07b7b3 (attempt 2, fixing qa f2). go test -trimpath -count=1 ./internal/doclinks/... passes, TestRepoDocsLinksResolve included (docs-links-resolve). docs-commands-exist has no check built yet, so I checked every rhiza command the page names (apply, accept/reject --reason/--rule, add, link, question answer, change new, set, source add --raw/--raw-sha256/--raw-session, why --view, slice) against --help on a scratch build: all exist. Ran the fixed Questions example as written in a fresh scratch repo with RHIZA_* unset: add capability export-csv --record, add question csv-delimiter --record, link csv-delimiter blocks export-csv --record, change new, set export-csv, question answer csv-delimiter. The answer is accepted and writes answer-csv-delimiter plus its link. Also checked the doc's negative claim: a question added and linked unlanded inside the same change set is refused ('not an open question blocking this change set'). The diff only touches the Questions section, the new prose reads plainly with no AI tells, and the page still covers decisions and owner quotes, questions, sources and scrubbing, evidence, and why/slice. The owner-reads part of the acceptance is left to the owner."
+        },
+        "handle": "docs-concepts-why-verified-2",
+        "id": "01M6ZEXD5HAQW3VW1TRCE6MK1H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZEXD5HAQW3VW1TRB58YWKN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZEXD5HAQW3VW1TRB58YWKN",
+        "id": "01M6ZEXD900BZWPBR7KQMBZNQS",
+        "link": "01M6ZEXD900BZWPBR7KNG9YQZW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H9VZ7KK36MZPHB97X9EB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5EM5J6KCHFB3SKS29JJ7M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZEXDC9SDJ694D9QD3P2AN5",
+  "type": "ops",
+  "v": 1
+}

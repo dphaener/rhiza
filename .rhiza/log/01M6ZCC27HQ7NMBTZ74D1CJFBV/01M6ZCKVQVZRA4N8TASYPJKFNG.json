@@ -1,0 +1,33 @@
+{
+  "actor": "01M6ZCD4REPHFXCFB2QQTE110E",
+  "after": [
+    "01M6ZCJWYSNDSZJ85YWKMZAFA1"
+  ],
+  "at": "2026-11-09T05:31:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "316971058618220be8d3642b50dee3799c746d8b5b576a68bed6df46cb164d38",
+          "session": "d5c3217c-51fd-4fba-9e9f-01a1bec67441",
+          "summary": "Autonomous plan run for change set 01M6ZCC (Builders and fixers reproduce). The intent: two nebari runs on 2026-11-09 reproduced a flaky test by starting 8 and 14 busy loops on the shared 4-core VM, holding load at 16-22 for 15-30+ minutes and slowing every other live run, while load-based repro barely worked (45/45 passed) and a 500 ms injected delay on the suspected request reproduced 10/10. No owner was present; the planner asked three questions, which the arbiter decided in decision-delay-repro-scope: the change set serves milestone-25 (empty backlog: bugs and polish), like the earlier unstable-CI guidance and flaky-test fixes; it is guidance only, putting the rule 'reproduce timing flakes by injecting a delay at the suspected race, never by busy loops or parallel stress on the host' into the build and review guide topics (the source of the rhiza-build and rhiza-review skills) and into this repo's CLAUDE.md beside the unstable-CI reproduce-locally rule; the optional watchdog flagging runs' descendant processes at 100% CPU is left out, to be planned as its own change set later. Planned: one leaf, delay-repro-guidance, under self-check next to unstable-ci-guidance, checked by the guide text tests and the CLAUDE.md test.",
+          "title": "Plan interview: builders and fixers reproduce flakes by delay, not CPU load"
+        },
+        "handle": "delay-repro-plan-interview",
+        "id": "01M6ZCKVQ9GM1J8TG0687AJAFC",
+        "key": null,
+        "kind": "source",
+        "node": "01M6ZCKVQ9GM1J8TG067QZT57X",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6ZCC27HQ7NMBTZ74D1CJFBV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZCKVQVZRA4N8TASYPJKFNG",
+  "type": "ops",
+  "v": 1
+}

@@ -19,6 +19,7 @@ While CI is unstable, or a red is not explained by your change,
 do not push or rerun CI to see. Reproduce the
 failing test locally, fix it, and push only after it and the
 touched packages pass locally.
+Reproduce a timing flake by injecting a delay at the suspected race, never by busy loops or parallel stress on the host.
 
 - `compliance`: each leaf's `acceptance`, met as written.
 - `quality`: correctness, tests, the repo's conventions.
@@ -46,13 +47,13 @@ rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'
 EOF
 ```
 
-`leaf` is optional. Severities: `blocker` (broken; cannot ship), `major` (must be
-fixed), `minor` and `nit` (reported, never fixed). Schema: `rhiza describe run.findings`.
+Severities: `blocker` (cannot ship), `major` (must be
+fixed), `minor` and `nit` (never fixed). Schema: `rhiza describe run.findings`.
 
 ## Critic
 
-Read the check's latest round in `rhiza run status --json`. Confirm or drop each blocker
-and major against the code. Never add a finding. Record on stdin:
+Read the check's latest round (`rhiza run status --json`). Confirm or drop each blocker
+and major. Never add a finding. Record on stdin:
 
 ```
 rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'
@@ -64,12 +65,11 @@ EOF
 
 ## Fixer
 
-Your prompt names the confirmed findings to fix. Fix only those, in one new
+Fix only the confirmed findings your prompt names, in one new
 commit with the `Change:` and `Actor:` trailers plus `Leaf: <leaf>` for a leaf fixer, or
 `Review: <run>` ($RHIZA_RUN) for the change set's fixer. Keep every trailer, `Co-Authored-By:`
-included, in the commit's one final paragraph, with no blank line between them.
+included, in the one final paragraph, with no blank line between them.
 Never rewrite earlier commits.
-A verifier re-run follows `rhiza guide build`.
 
 ## Outside work
 

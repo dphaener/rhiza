@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZDPVQYKFFYYBTPNJCD8V5Z",
+  "after": [
+    "01M6ZDGBYADT94FEZT9EHX5VM0"
+  ],
+  "at": "2026-11-09T05:51:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e3cb612c, docs/concepts/why.md covers each point the leaf asks for: decisions and verbatim owner quotes (decided-by, supersedes, accept/reject --reason/--rule), questions (blocks, rhiza question answer), sources and scrubbing (source add with --raw/--raw-sha256/--raw-session, hash-only, derived-from), evidence (verifies, observes) and reading back with rhiza why and rhiza slice. I checked every command, flag and link type it names against `rhiza <cmd> --help`, and they all match. docs-links-resolve: go test -trimpath -count=1 ./internal/doclinks/... passes, including TestRepoDocsLinksResolve over the real docs. docs-commands-exist is not landed in this tree, so I built its commit ffea5bfb into the scratchpad and ran its rhiza check here. It reports no docs-command failure for why.md (the only one is README's `rhiza version`, which is outside this leaf). As a negative control I added `rhiza no-such-command` to a copy of why.md, and that check flagged it. The prose reads plain and human, with no AI tells I could find. The owner's read is left to the owner."
+        },
+        "handle": "docs-concepts-why-verified",
+        "id": "01M6ZDSMEMK134T6CCC6AMZ5P7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZDSMEKG72NH3RTV0CBD9PW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZDSMEKG72NH3RTV0CBD9PW",
+        "id": "01M6ZDSMFCT451RJ4PPXRAXHDF",
+        "link": "01M6ZDSMFCT451RJ4PPWG4QC93",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H9VZ7KK36MZPHB97X9EB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5EM5J6KCHFB3SKS29JJ7M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZDSMG0W0RC4JFRA143QSZ1",
+  "type": "ops",
+  "v": 1
+}

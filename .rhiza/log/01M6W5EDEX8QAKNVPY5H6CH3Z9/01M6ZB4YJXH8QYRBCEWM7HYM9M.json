@@ -1,0 +1,30 @@
+{
+  "actor": "01M6ZB3FQWJR2A92QGVVYBQ7X2",
+  "after": [
+    "01M6ZATQ54MQBR16M54BNE6Q8E"
+  ],
+  "at": "2026-11-09T05:05:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "the owner reads it and signs off; every relative link resolves (docs-links-resolve). Prose written with the humanize skill (constraint doc-prose-humanized).",
+          "statement": "README.md is Rhiza's front door: what Rhiza is and why in a few paragraphs, install by go install or release binaries, a link to the quickstart, the concepts, agents and reference pages named as coming (each page's README link lands with that page), and a link to the MIT license"
+        },
+        "handle": "readme-front-door",
+        "id": "01M6W5H0QXCSXEQHC10M96T8PC",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6W5H0QXCSXEQHC10HVVTF1W",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      }
+    ]
+  },
+  "change_set": "01M6W5EDEX8QAKNVPY5H6CH3Z9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZB4YJXH8QYRBCEWM7HYM9M",
+  "type": "ops",
+  "v": 1
+}

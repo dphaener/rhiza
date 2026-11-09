@@ -1,0 +1,18 @@
+# docs/quickstart.md is run, not just read: every command in its bash blocks
+# runs here, in order, in a fresh git repo. If the doc and the CLI drift
+# apart, this fails. The repo is a subdirectory, so the script's own home
+# (HOME and XDG_CACHE_HOME live under $WORK/home) stays out of the doc's
+# `git add -A`.
+mkdir repo
+cd repo
+quickstart-doc
+stdout 'ran [0-9]+ commands'
+fold-ok
+
+# What the walkthrough ends with.
+exec rhiza ls --kind capability
+stdout 'export-csv'
+exec rhiza change ls
+stdout 'landed intention: Export reports as CSV'
+exec git status --short
+! stdout '^ M'

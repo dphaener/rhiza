@@ -1,0 +1,86 @@
+{
+  "actor": "01M6ZF07B6F51J2JPYYCNRYSXY",
+  "after": [
+    "01M6ZEXDC9SDJ694D9QD3P2AN5"
+  ],
+  "at": "2026-11-09T06:15:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch build at f10165fc in a fresh scratch repo: checked the fixed handles paragraph. add capability export-csv under a second parent and add decision reports (a capability's handle) are both refused with 'handle ... is taken by node ...'. After retire tmp-h --reason gone, add capability tmp-h succeeds, so a retired node frees its handle. Matches docs/concepts/model.md as written. go test -trimpath ./internal/doclinks/... ok."
+        },
+        "handle": "docs-concepts-model-qa-2",
+        "id": "01M6ZF5T1P1NKR8047WXM3KTD9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZF5T1NG8XKTTYJENX4FVQW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZF5T1NG8XKTTYJENX4FVQW",
+        "id": "01M6ZF5T2P2C3SFAW7ARVK8DFZ",
+        "link": "01M6ZF5T2P2C3SFAW7APGP8VBH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H9S6GJNR5ZJWFCEQNAP2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch build at f10165fc in a fresh scratch repo: ran the Questions example from docs/concepts/why.md verbatim (add question csv-delimiter --record, link csv-delimiter blocks export-csv --record, change new, set export-csv, question answer csv-delimiter). The answer was written as decision answer-csv-delimiter with an answers link. The stated rule also holds: an unlanded question in the current change set is refused, a landed question blocking an untouched node is refused, and landed questions blocking an ancestor of a touched node or the change set itself are answered. why and slice export-csv print as described."
+        },
+        "handle": "docs-concepts-why-qa-2",
+        "id": "01M6ZF5T3J9GNCVVZ6GW2M385B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZF5T3J9GNCVVZ6GVE04H7D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZF5T3J9GNCVVZ6GVE04H7D",
+        "id": "01M6ZF5T4BTB0RSF68JMKH00DY",
+        "link": "01M6ZF5T4BTB0RSF68JM0BZJAN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H9VZ7KK36MZPHB97X9EB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch build at f10165fc: change-sets.md is unchanged since cycle 1. Re-ran change new, writes, propose, accept --reason (Rule: owner), land, retire --reason and --record (recorded and landed in one step) in a fresh scratch repo; all behave as the page says."
+        },
+        "handle": "docs-concepts-change-sets-qa-2",
+        "id": "01M6ZF5T50Q2N71N7TT3W4Q1HN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZF5T50Q2N71N7TT2YMKV2F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZF5T50Q2N71N7TT2YMKV2F",
+        "id": "01M6ZF5T6D6DKCCMMYNENDDDBV",
+        "link": "01M6ZF5T6D6DKCCMMYNE0JYK49",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H9TG178RSX38AEMFC34G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5EM5J6KCHFB3SKS29JJ7M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZF5T82FR5GHEBCV23HMJPV",
+  "type": "ops",
+  "v": 1
+}

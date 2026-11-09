@@ -49,6 +49,11 @@ rerun), do not push or rerun CI to see. Reproduce the failing test locally,
 repeatedly if it is a flake, fix it or quarantine it with a bug filed, and
 push only after it and the touched packages pass locally.
 
+To reproduce a timing flake, inject a delay at the suspected race (wrap the
+fetch, timer or job) and run the example normally a few times. Never use busy
+loops, CPU stress or parallel stress runs on the host: it is shared by every
+live run.
+
 Outside a run (a person at a terminal), run `make check` before calling a
 change done.
 
