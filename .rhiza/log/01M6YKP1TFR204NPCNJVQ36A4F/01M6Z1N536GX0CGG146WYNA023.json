@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6Z15YR3E2QWRKNGYP2396TR"
+  ],
+  "at": "2026-11-09T02:19:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "50617ee7367bca08ab1eb6c45e91b30cb44040b3",
+          "pr": "https://github.com/dphaener/rhiza/pull/404",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #404 (https://github.com/dphaener/rhiza/pull/404) passed CI at 50617ee",
+          "status": "verified"
+        },
+        "handle": "pr-404-fix-rhiza-change-show",
+        "id": "01M6Z1N4TZKVKRFXZ0RC287JPW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Z1N4TZKVKRFXZ0R8H5P9BB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Z1N4TZKVKRFXZ0R8H5P9BB",
+        "id": "01M6Z1N4VFXXWM1X1B5SWA9CBK",
+        "link": "01M6Z1N4VFXXWM1X1B5PBS78MV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YM01FKQKHVJ1VCA63B6T2J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YKP1TFR204NPCNJVQ36A4F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Z1N536GX0CGG146WYNA023",
+  "type": "ops",
+  "v": 1
+}
