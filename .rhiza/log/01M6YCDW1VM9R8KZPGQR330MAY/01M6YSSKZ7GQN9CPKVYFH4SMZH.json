@@ -1,0 +1,30 @@
+{
+  "actor": "01M6YSM9Z7B8H12610ZEVMX2YE",
+  "after": [
+    "01M6YR96T2WWDJJ88Q4G5ZN44N"
+  ],
+  "at": "2026-11-09T00:02:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestShipLocalGate shows the gate run in the run worktree when unstable, skipped when stable, skipped with no gate set, and a failing gate failing the step with its output; go test -trimpath ./internal/workflow passes with the gate step before each push step of ship-change.toml and its on.fail to a fixer; go test -trimpath ./cmd/rhiza -run TestScripts/ship-local-gate passes, showing in its own repo rhiza daemon settings --json listing rhiza.ship.localGate as a project setting with an empty default (source default), and rhiza daemon set rhiza.ship.localGate 'make check' then listing it with value make check from git config",
+          "statement": "While CI is unstable, the built-in ship-change workflow runs the project's local gate command (rhiza.ship.localGate; make check for Rhiza itself) in the run's worktree before every push and pushes only when it exits 0, sending a failing gate to a fixer like a red CI; while CI is stable, or with no gate set, the step passes at once and the run keeps its scoped tests"
+        },
+        "handle": "ship-local-gate",
+        "id": "01M6YCRKT22SQQH70HYXCEX3AF",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      }
+    ]
+  },
+  "change_set": "01M6YCDW1VM9R8KZPGQR330MAY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YSSKZ7GQN9CPKVYFH4SMZH",
+  "type": "ops",
+  "v": 1
+}

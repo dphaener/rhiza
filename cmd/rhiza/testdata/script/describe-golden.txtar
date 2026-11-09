@@ -1837,11 +1837,11 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "scope": {
-                  "description": "machine (kept in the root's rhiza.toml) or project (kept in the project's git config, or committed in .rhiza/settings.json)",
+                  "description": "machine (kept in the root's rhiza.toml) or project (kept in the project's git config)",
                   "type": "string"
                 },
                 "source": {
-                  "description": "Where the value comes from: default, rhiza.toml, .rhiza/settings.json, git config or flag",
+                  "description": "Where the value comes from: default, rhiza.toml, git config or flag",
                   "type": "string"
                 },
                 "value": {
@@ -2233,11 +2233,11 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "scope": {
-                  "description": "machine (kept in the root's rhiza.toml) or project (kept in the project's git config, or committed in .rhiza/settings.json)",
+                  "description": "machine (kept in the root's rhiza.toml) or project (kept in the project's git config)",
                   "type": "string"
                 },
                 "source": {
-                  "description": "Where the value comes from: default, rhiza.toml, .rhiza/settings.json, git config or flag",
+                  "description": "Where the value comes from: default, rhiza.toml, git config or flag",
                   "type": "string"
                 },
                 "value": {

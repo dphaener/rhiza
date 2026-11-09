@@ -113,48 +113,6 @@ func TestShipLocalGateOncePerHead(t *testing.T) {
 	}
 }
 
-// The gate can be committed in .rhiza/settings.json, which every checkout
-// shares; git config overrides it. A key in it that is no project setting
-// is refused.
-func TestShipLocalGateSettingsFile(t *testing.T) {
-	f := gateFixture(t, "", true)
-	file := filepath.Join(f.ctx.Root, ".rhiza", "settings.json")
-	if err := os.WriteFile(file, []byte(`{"rhiza.ship.localGate": "echo from-file"}`), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	r := shipGate(t, f)
-	if r.Command != "echo from-file" || !r.Passed || !strings.Contains(r.Output, "from-file") {
-		t.Errorf("gate = %+v", r)
-	}
-	rows, err := settingsOf(f.ctx, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, s := range rows {
-		if s.Key == LocalGateKey && (s.Value != "echo from-file" || s.Source != ".rhiza/settings.json" || s.Scope != ScopeProject) {
-			t.Errorf("setting = %+v", s)
-		}
-	}
-	f.git.out["config --get "+LocalGateKey] = "echo from-config\n"
-	if r = shipGate(t, f); r.Command != "echo from-config" {
-		t.Errorf("git config did not win: %+v", r)
-	}
-	for body, want := range map[string]string{
-		`{"rhiza.nope": "x"}`:            "not a setting",
-		`{"rhiza.daemon.maxRuns": "2"}`:  "machine setting",
-		`{"rhiza.ship.localGate": 3}`:    "settings.json",
-		`{"rhiza.ship.localGate": "  "}`: "must not be empty",
-	} {
-		if err := os.WriteFile(file, []byte(body), 0o644); err != nil {
-			t.Fatal(err)
-		}
-		_, err := callOp(t, f.ctx, "ship.gate", `{}`)
-		if err == nil || !strings.Contains(err.Error(), want) {
-			t.Errorf("%s: err = %v, want %q", body, err, want)
-		}
-	}
-}
-
 // ship rebase runs the gate on the head it rebased, before the push: the
 // gate step before it saw only the head without main's new commits. A
 // failing gate puts the branch back and pushes nothing.
