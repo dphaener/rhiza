@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Z0VTJHRV4W2EKR4F1W3P7D",
+  "after": [
+    "01M6Z0PDMSCA5KVHSP08VDK28P"
+  ],
+  "at": "2026-11-09T02:11:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 7c4c8dad with the built binary. On the real repo, the merge-base build fails rhiza change show 01M6WMCCRC0KSCWEV17VY8KVQP (op 01M6X6KYJY5EPC5BJT5R4EEBB6: canon: not canonical); the branch build prints it, text and --json, with literal <branch>. In a scratch repo, a capability statement with @other, <branch>, a & b, x > y and U+2028/U+2029: check passes; change show, change show --json (no u003c or u2028 escapes), change diff, show --json, slice and render succeed with literal text; after propose/accept/land, change show of the landed change set succeeds (the base build fails it as not canonical). go test -trimpath ./internal/model -run ShowField and ./cmd/rhiza -run TestScripts/change-show-canonical-text: ok."
+        },
+        "handle": "shown-text-canonical-qa-1",
+        "id": "01M6Z15YM0ASWDCAYMVGY4YMT2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Z15YM0ASWDCAYMVE3X711E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Z15YM0ASWDCAYMVE3X711E",
+        "id": "01M6Z15YP0FBBZQ8KYM2KWMSG3",
+        "link": "01M6Z15YP0FBBZQ8KYKZ14M13Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YM01FKQKHVJ1VCA63B6T2J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YKP1TFR204NPCNJVQ36A4F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Z15YR3E2QWRKNGYP2396TR",
+  "type": "ops",
+  "v": 1
+}

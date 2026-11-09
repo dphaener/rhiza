@@ -1,10 +1,12 @@
 package model
 
 import (
+	"bytes"
 	"encoding/json"
 	"maps"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/canon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/textref"
@@ -53,11 +55,11 @@ func ShowFieldValue(kind op.Kind, name string, raw json.RawMessage, handleOf Han
 	if shown == s {
 		return raw
 	}
-	b, err := json.Marshal(shown)
+	b, err := canon.Marshal(shown)
 	if err != nil {
 		return raw
 	}
-	return b
+	return bytes.TrimSuffix(b, []byte("\n"))
 }
 
 // ShowFields returns fields, those of a node of kind, with each text shown by
