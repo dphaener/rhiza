@@ -118,6 +118,10 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 		in.Rendered = os.DirFS(rendered)
 	}
 	in.DocsWant = docsFiles()
+	in.Commands = []string{}
+	for _, o := range Operations() {
+		in.Commands = append(in.Commands, CommandPath(o.Name))
+	}
 	docsPath := filepath.Join(ctx.Root, filepath.FromSlash(docsDir))
 	if fi, err := os.Stat(docsPath); err == nil && fi.IsDir() {
 		in.Docs = os.DirFS(docsPath)

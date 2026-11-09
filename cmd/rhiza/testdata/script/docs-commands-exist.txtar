@@ -1,0 +1,42 @@
+# rhiza check fails when README.md or docs/ names a rhiza command that does
+# not exist, in backticks or a code block, and passes when every one does.
+exec rhiza init
+exec rhiza render
+exec rhiza check
+
+# Real commands, a command group, arguments, paths and prose are fine.
+cp good.md README.md
+exec rhiza check
+
+# A made-up command in backticks fails, naming the file.
+cp bad-inline.md README.md
+! exec rhiza check
+stdout 'README.md'
+stdout 'rhiza no-such-command'
+
+# One in a code block under docs/ fails too.
+cp good.md README.md
+mkdir docs
+cp bad-block.md docs/guide.md
+! exec rhiza check
+stdout 'docs/guide.md'
+stdout 'rhiza change nosuch'
+! stdout 'README.md'
+
+rm docs/guide.md
+exec rhiza check
+
+-- good.md --
+Run `rhiza check` and `rhiza change new "x"`, see `.rhiza/log`, `rhiza.toml`
+and `rhiza --json`. Plain rhiza no-such-command prose is not code.
+
+```
+$ rhiza guide build
+rhiza render | cat
+```
+-- bad-inline.md --
+Try `rhiza no-such-command` now.
+-- bad-block.md --
+```sh
+rhiza change nosuch
+```
