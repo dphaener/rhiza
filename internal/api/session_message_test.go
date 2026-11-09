@@ -39,6 +39,16 @@ func (f *messageFixture) setHook(t *testing.T, state, kind string) {
 	}
 }
 
+// setBlock records a blocked hook report with a detail on the session.
+func (f *messageFixture) setBlock(t *testing.T, kind, detail string) {
+	t.Helper()
+	if _, err := f.st.Update(f.sid, func(r *session.Record) {
+		r.Status.Hook = &session.Report{State: session.StateBlocked, Kind: kind, Detail: detail, At: time.Now().UTC()}
+	}); err != nil {
+		t.Fatal(err)
+	}
+}
+
 // messageFile is the absolute path of message name in the session's folder.
 func (f *messageFixture) messageFile(name string) string {
 	return filepath.Join(f.worktree, ".rhiza", "local", "messages", f.sid, name)
@@ -320,7 +330,7 @@ func TestSessionMessageAfterPermissionBlockCleared(t *testing.T) {
 // rhiza inbox open; the timeout error names the last status.
 func TestSessionMessageSaysWhyWaiting(t *testing.T) {
 	f := newMessageFixture(t)
-	f.setHook(t, session.StateBlocked, session.KindPermission)
+	f.setBlock(t, session.KindPermission, "Bash")
 	var errOut strings.Builder
 	f.ctx.Stderr = &errOut
 	c := &scriptClock{t: t}
@@ -333,10 +343,42 @@ func TestSessionMessageSaysWhyWaiting(t *testing.T) {
 	if n := strings.Count(errOut.String(), "waiting for session"); n != 1 {
 		t.Errorf("want one line, got %d: %q", n, errOut.String())
 	}
-	if !strings.Contains(errOut.String(), "blocked on a permission") || !strings.Contains(errOut.String(), "rhiza inbox open") {
+	if !strings.Contains(errOut.String(), "blocked on a permission: Bash") || !strings.Contains(errOut.String(), "rhiza inbox open") {
 		t.Errorf("stderr %q", errOut.String())
 	}
-	if !strings.Contains(AsError(err).Message, "last status: blocked on a permission") {
+	if !strings.Contains(AsError(err).Message, "last status: blocked on a permission: Bash") {
+		t.Errorf("error %q", AsError(err).Message)
+	}
+}
+
+// A blocked session that starts working mid-wait gets a second line, and
+// only one: the timeout error names working as the last status.
+func TestSessionMessageSaysWhenStatusChanges(t *testing.T) {
+	f := newMessageFixture(t)
+	f.setBlock(t, session.KindPermission, "Bash")
+	var errOut strings.Builder
+	f.ctx.Stderr = &errOut
+	c := &scriptClock{t: t}
+	c.script = []func(){
+		func() { f.setHook(t, session.StateWorking, "") },
+		func() {},
+		func() {},
+		func() {},
+	}
+	useClock(t, c)
+	_, err := callOp(t, f.ctx, "session.message", `{"session":"`+f.sid+`","text":"hello","timeout":"1s"}`)
+	wantExit(t, err, 3)
+	lines := strings.Split(strings.TrimSpace(errOut.String()), "\n")
+	if len(lines) != 2 || strings.Count(errOut.String(), "waiting for session") != 2 {
+		t.Fatalf("want two lines, got %q", errOut.String())
+	}
+	if !strings.Contains(lines[0], "blocked on a permission: Bash") || !strings.Contains(lines[0], "rhiza inbox open") {
+		t.Errorf("first line %q", lines[0])
+	}
+	if !strings.Contains(lines[1], ": working;") || !strings.Contains(lines[1], "waiting up to 1s") {
+		t.Errorf("second line %q", lines[1])
+	}
+	if !strings.Contains(AsError(err).Message, "last status: working") {
 		t.Errorf("error %q", AsError(err).Message)
 	}
 }
