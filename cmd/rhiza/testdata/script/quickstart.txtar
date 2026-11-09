@@ -1,6 +1,10 @@
 # docs/quickstart.md is run, not just read: every command in its bash blocks
 # runs here, in order, in a fresh git repo. If the doc and the CLI drift
-# apart, this fails.
+# apart, this fails. The repo is a subdirectory, so the script's own home
+# (HOME and XDG_CACHE_HOME live under $WORK/home) stays out of the doc's
+# `git add -A`.
+mkdir repo
+cd repo
 quickstart-doc
 stdout 'ran [0-9]+ commands'
 fold-ok
