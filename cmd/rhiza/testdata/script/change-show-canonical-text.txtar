@@ -1,0 +1,34 @@
+# A text that refers to another node and holds <, > and & stays canonical when
+# shown: check, change show, change diff and show all read it, before and
+# after landing.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza add capability other --field statement=Other --record
+exec rhiza change new Canon
+exec rhiza add capability mine --field 'statement=Sees @other with <branch>, a & b, x > y'
+exec rhiza render
+exec rhiza check
+exec rhiza change show
+stdout '<branch>, a & b, x > y'
+! stdout 'u003c'
+exec rhiza change show --json
+stdout '<branch>, a & b, x > y'
+! stdout 'u003c'
+exec rhiza change diff
+stdout '<branch>, a & b, x > y'
+exec rhiza show mine --json
+stdout '<branch>, a & b, x > y'
+! stdout 'u003c'
+
+exec sh -c 'rhiza change show --json | grep -m1 "\"id\"" | cut -d\" -f4 > cs.txt'
+exec rhiza propose
+exec rhiza accept
+exec rhiza land
+exec sh -c 'rhiza change show $(cat cs.txt)'
+stdout '<branch>, a & b, x > y'
