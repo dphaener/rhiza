@@ -1,0 +1,41 @@
+{
+  "actor": "01M6ZCHQ8HDDAH31EPZ686CVPE",
+  "after": [
+    "01M6ZCH8877AREZZA3JJDTKNT4"
+  ],
+  "at": "2026-11-09T05:30:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Milestone-30 is about making Rhiza ready to share (install, README, docs, reference, public); agent build/fix discipline does not serve any of its parts. The closest precedents, #403 (Stop using CI as a debugger) and #405 (flaky test on main), served milestone-25, which explicitly covers bugs and polish of the daemon's autonomous building, and this rule is the same kind of guidance. #403 put its rule in both CLAUDE.md and the guides; CLAUDE.md already holds the reproduce-locally rule this one refines, and agents in this repo read CLAUDE.md first, so placing it there too keeps the two rules together and costs one paragraph. The watchdog is marked optional in the intent and is daemon code (process sampling, thresholds, settings) with its own design questions; bundling it would turn a small guidance change into a code change and delay the part that stops the harm now.",
+          "statement": "Change set 01M6ZCC serves milestone-25 (empty backlog: bugs and polish), not milestone-30. It is guidance only: the delay-injection rule ('reproduce timing flakes by injecting a delay at the suspected race, never by busy loops or parallel stress on the host') goes into the build and review guide topics (and so the rhiza-build and rhiza-review skills) and also into this repo's CLAUDE.md, beside the unstable-CI reproduce-locally rule. The optional watchdog for runs' descendant processes at 100% CPU is left out of this change set; it can be planned as its own change set later.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "decision-delay-repro-scope",
+        "id": "01M6ZCJWW2PGH4DC8CK2H2W2K5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6ZCJWW14QZ3FM14X8EGG7V0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZCJWW14QZ3FM14X8EGG7V0",
+        "id": "01M6ZCJWXH1PBQNM4NW2TMDFCF",
+        "link": "01M6ZCJWXH1PBQNM4NVZC2E4HM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZCH61HJRA2WPADKS4GY4BM",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6ZCC27HQ7NMBTZ74D1CJFBV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZCJWYSNDSZJ85YWKMZAFA1",
+  "type": "ops",
+  "v": 1
+}
