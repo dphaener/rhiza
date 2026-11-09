@@ -1,0 +1,19 @@
+# rhiza docs writes the workflow file reference from internal/workflow.
+exec rhiza docs --out $WORK/out
+stdout 'workflow-file.md'
+grep '^## agent step$' out/workflow-file.md
+grep '^## command step$' out/workflow-file.md
+grep '^## wait step$' out/workflow-file.md
+grep '^## leaves step$' out/workflow-file.md
+grep '^## checks step$' out/workflow-file.md
+grep '^## signoff step$' out/workflow-file.md
+grep '^## workflow step$' out/workflow-file.md
+grep '^## arbiter step$' out/workflow-file.md
+grep '^Outcomes: `pass`, `changes`.$' out/workflow-file.md
+grep '^- `until_when`' out/workflow-file.md
+
+# Same code, same bytes.
+cp out/workflow-file.md first.md
+exec rhiza docs --out $WORK/out
+! stdout 'wrote'
+cmp out/workflow-file.md first.md

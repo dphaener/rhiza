@@ -2570,7 +2570,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Write the generated reference (CLI commands, settings) under docs/reference",
+      "summary": "Write the generated reference (CLI commands, settings, workflow file) under docs/reference",
       "write": false
     },
     {

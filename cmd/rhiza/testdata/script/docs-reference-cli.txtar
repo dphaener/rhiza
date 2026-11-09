@@ -9,6 +9,6 @@ grep '^- `4`: Not found' out/cli.md
 # Same registry, same bytes; the second run changes nothing.
 cp out/cli.md first.md
 exec rhiza docs --out $WORK/out
-stdout '2 unchanged'
+stdout '3 unchanged'
 ! stdout 'wrote'
 cmp out/cli.md first.md

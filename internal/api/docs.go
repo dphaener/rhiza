@@ -10,8 +10,10 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
+	"strings"
 
 	"github.com/dphaener/rhiza/internal/docs"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 // docsDir is the generated reference folder, relative to the project root.
@@ -31,7 +33,7 @@ type DocsResponse struct {
 func init() {
 	register(Operation{
 		Name:     "docs",
-		Summary:  "Write the generated reference (CLI commands, settings) under docs/reference",
+		Summary:  "Write the generated reference (CLI commands, settings, workflow file) under docs/reference",
 		Request:  reflect.TypeFor[DocsRequest](),
 		Response: reflect.TypeFor[DocsResponse](),
 		Run:      runDocs,
@@ -49,7 +51,7 @@ func runDocs(ctx *Ctx, req any) (any, error) {
 	} else if !filepath.IsAbs(dir) {
 		dir = filepath.Join(ctx.Root, dir)
 	}
-	files := map[string][]byte{"cli.md": docs.CLI(docsCommands()), "config.md": docs.Config(docsSettings())}
+	files := map[string][]byte{"cli.md": docs.CLI(docsCommands()), "config.md": docs.Config(docsSettings()), "workflow-file.md": docs.Workflow(docsWorkflow())}
 	names := make([]string, 0, len(files))
 	for n := range files {
 		names = append(names, n)
@@ -159,4 +161,24 @@ func docsSettings() []docs.Setting {
 		out = append(out, docs.Setting{Key: d.key, Type: d.typ, Default: d.def, Scope: d.scope(), Desc: d.desc, Flag: d.flag})
 	}
 	return out
+}
+
+// docsWorkflow turns the workflow package's format description into the
+// renderer's.
+func docsWorkflow() docs.WorkflowFormat {
+	conv := func(ks []workflow.KeyDoc) []docs.WorkflowKey {
+		var out []docs.WorkflowKey
+		for _, k := range ks {
+			out = append(out, docs.WorkflowKey{Key: k.Key, Desc: k.Desc, Required: k.Required})
+		}
+		return out
+	}
+	f := docs.WorkflowFormat{File: conv(workflow.FileKeys), Shared: conv(workflow.SharedKeys), RoleKeys: conv(workflow.RoleKeys())}
+	for _, k := range workflow.KindDocs() {
+		f.Kinds = append(f.Kinds, docs.WorkflowKind{Kind: k.Kind, Summary: k.Summary, Keys: conv(k.Keys), Tables: conv(k.Tables), Outcomes: k.Outcomes})
+	}
+	for _, p := range workflow.PromptPlaceholders() {
+		f.Placeholders = append(f.Placeholders, docs.Field{Name: p.Prompt, Desc: "{" + strings.Join(p.Names, "}, {") + "}"})
+	}
+	return f
 }
