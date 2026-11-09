@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Z6AVE3EBSAZBVPKMZAFVAG",
+  "after": [
+    "01M6Z6QJS993ZBESS8QNVZAS1T"
+  ],
+  "at": "2026-11-09T03:52:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 18512e7e, with GoReleaser v2.20.0 (go install, scratch dir) in a detached worktree: goreleaser check on .goreleaser.yaml exited 0 (1 configuration file validated); goreleaser release --snapshot --clean exited 0 and produced rhiza_0.0.0-SNAPSHOT-18512e7e_{linux,darwin}_{amd64,arm64}.tar.gz plus checksums.txt, and the workflow's own four-archive ls loop passed; the extracted linux_amd64 binary ran 'rhiza version' -> 'rhiza 0.0.0-SNAPSHOT-18512e7e' (ldflags wire main.version). Read the diff: .github/workflows/release-snapshot.yml runs check, release --snapshot --clean and the four-archive check on pull_request to main with paths limited to .goreleaser.yaml and the two release workflows; .github/workflows/release.yml triggers only on push tags ['v*'] (YAML parse confirms 'on' has only push), contents: write, runs goreleaser release --clean with GITHUB_TOKEN publishing to dphaener/rhiza; /dist/ is gitignored. Runner and action versions match ci.yml."
+        },
+        "handle": "release-goreleaser-verified",
+        "id": "01M6Z6YZYF5EYBVV2SFNMJRTQF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Z6YZYF5EYBVV2SFMET0R2B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Z6YZYF5EYBVV2SFMET0R2B",
+        "id": "01M6Z6YZZC4G9Z41RPB4FV5835",
+        "link": "01M6Z6YZZC4G9Z41RPB3VB0CB0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5GZ1GA5NPS1AP0QYYSKTA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5C84ZKXW2C2AE3YWKZ1XD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Z6Z00CHQJRTE81HD8GYDZQ",
+  "type": "ops",
+  "v": 1
+}
