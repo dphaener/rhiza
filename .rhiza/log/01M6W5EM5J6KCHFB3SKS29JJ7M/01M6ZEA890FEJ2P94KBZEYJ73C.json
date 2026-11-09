@@ -1,0 +1,86 @@
+{
+  "actor": "01M6ZE29XJG48G98R94VCCD1KH",
+  "after": [
+    "01M6ZDYQ8B2HHT823W6G6XTB2Q"
+  ],
+  "at": "2026-11-09T06:00:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA cycle 1, scratch build of the branch head in a fresh scratch repo: ran the model.md examples (add capabilities reports/export-csv, rhiza link export-csv decided-by csv-streaming, rhiza tree, rhiza describe). The ten kinds and the fifteen link types with their endpoints match internal/check/endpoints.go; a wrong-endpoint link (decision verifies capability) is refused; a reference to reports is stored by ID, someone@example.com is left alone, a doubled at-sign becomes a literal one. One claim is wrong: line 64 says handles are unique among siblings, but `rhiza add capability export-csv` under a different parent, and `rhiza add decision reports`, are both refused with 'handle ... is taken' (handles are unique among all live nodes). go test ./internal/doclinks ok."
+        },
+        "handle": "docs-concepts-model-qa-1",
+        "id": "01M6ZEA7W608B7HG9NJT5MP5W0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZEA7W608B7HG9NJQWYC48A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZEA7W608B7HG9NJQWYC48A",
+        "id": "01M6ZEA7XVGA05H0W4TEP1N240",
+        "link": "01M6ZEA7XVGA05H0W4TB9HPBKX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H9S6GJNR5ZJWFCEQNAP2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, scratch build in a fresh scratch repo: ran change new (intention and --kind record), change use, --record write, propose, accept --reason --rule, reject, withdraw (writes refused afterwards), change ls/show, land, log, render then check (ok). depends-on between change sets: a loop is refused and land stops naming the draft dependency. carve access-roles --from/--to --with-children moved the node and its child with entries on both sides. reopen took a branch-landed change set back to accepted. All as documented. Small wording mismatch: rhiza log prints 'Carved from X into Y' on both sides rather than 'carved from'/'carved into'."
+        },
+        "handle": "docs-concepts-change-sets-qa-1",
+        "id": "01M6ZEA7YXC860PB2F4YY9EN4V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZEA7YXC860PB2F4W34PAKH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZEA7YXC860PB2F4W34PAKH",
+        "id": "01M6ZEA80HF5EDDWXDVWKZTEX5",
+        "link": "01M6ZEA80HF5EDDWXDVTENYZBE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H9TG178RSX38AEMFC34G",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA cycle 1, scratch build in a fresh scratch repo: ran every why.md example in order in one change set. apply decision.json, add question, link blocks, source add --raw-sha256, add evidence, link verifies, rhiza why (decisions, sources, change sets shown), rhiza slice and --view as-is (refused for an unlanded node, as stated) all work. But `rhiza question answer csv-delimiter ...` fails as the page sequences it ('not an open question blocking this change set'), even with the question also linked blocks to the change set. It succeeds only for a question that is already landed and blocks a node the current change set touches. accept/reject take --reason and --rule, and the source add raw flags exist."
+        },
+        "handle": "docs-concepts-why-qa-1",
+        "id": "01M6ZEA82PGMB4N1RZ4BK2ZR0V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZEA82PGMB4N1RZ4B532039",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZEA82PGMB4N1RZ4B532039",
+        "id": "01M6ZEA84WC6FMDWN9P5KHE30D",
+        "link": "01M6ZEA84WC6FMDWN9P2SZGV9G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H9VZ7KK36MZPHB97X9EB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5EM5J6KCHFB3SKS29JJ7M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZEA890FEJ2P94KBZEYJ73C",
+  "type": "ops",
+  "v": 1
+}

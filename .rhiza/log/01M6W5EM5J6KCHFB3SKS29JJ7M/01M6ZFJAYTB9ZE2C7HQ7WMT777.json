@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6ZF5T82FR5GHEBCV23HMJPV"
+  ],
+  "at": "2026-11-09T06:22:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "cbfb7cc930731f11b02aa332345ea9dfd2c4af29",
+          "pr": "https://github.com/dphaener/rhiza/pull/410",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #410 (https://github.com/dphaener/rhiza/pull/410) passed CI at cbfb7cc",
+          "status": "verified"
+        },
+        "handle": "pr-410-concepts-docs",
+        "id": "01M6ZFJAKK2KT58N26CZ0P64YM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZFJAKK2KT58N26CW94988C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZFJAKK2KT58N26CW94988C",
+        "id": "01M6ZFJAP2PCSQJ18V9999THFD",
+        "link": "01M6ZFJAP2PCSQJ18V97BJDRTN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H9S6GJNR5ZJWFCEQNAP2",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6ZFJAKK2KT58N26CW94988C",
+        "id": "01M6ZFJAQY9VGHMYWK7CM41Z6Z",
+        "link": "01M6ZFJAQY9VGHMYWK7AA3R8BA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H9TG178RSX38AEMFC34G",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6ZFJAKK2KT58N26CW94988C",
+        "id": "01M6ZFJASYX52EMNRNVF0RZZM4",
+        "link": "01M6ZFJASYX52EMNRNVBNA0EVJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H9VZ7KK36MZPHB97X9EB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5EM5J6KCHFB3SKS29JJ7M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZFJAYTB9ZE2C7HQ7WMT777",
+  "type": "ops",
+  "v": 1
+}
