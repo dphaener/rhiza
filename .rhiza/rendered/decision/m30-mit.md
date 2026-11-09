@@ -23,6 +23,7 @@ MIT, picked by the owner
 ### In
 
 - decided-by [m30-public](../intent/milestone-30/m30-public.md)
+- decided-by [license-mit](../capability/rhiza/documentation/license-mit.md)
 
 ## History
 
