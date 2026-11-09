@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZQYPYDG3P8BHGWY8PX7DFR",
+  "after": [
+    "01M6ZQWZNA34G81YWE9RWX9JSN"
+  ],
+  "at": "2026-11-09T08:50:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2, at 4fb28fe8 (review cycle 2 fix). Read the diff: the change set's new ops entry sets capability text-ref-syntax's acceptance to name ada@example.com in place of the owner's short hey.com address, matching internal/textref (`rhiza show text-ref-syntax --change` shows the new acceptance), and amends Evidence publish-audit-report. That Evidence still records the scanner (gitleaks 8.18.4 over full history plus a manual sweep of the tree, .rhiza/log, Sources and session notes), its clean result, and findings 1-6, each with a disposition, plus a list of what only a history rewrite removes. Finding 3 now says the acceptance is fixed going forward. Checked its counts with `git grep -l <short hey.com address> HEAD`: 8 .rhiza/log entries, all in change set 01M6HNNWFR1J2AHQRNKFTPME46; the 4 evidence renders it names (text-ref-syntax-qa-2, -verified, -verified-2, -verified-3); and the current text-ref-syntax capability render, which follows the new acceptance once this change set lands. None remain in Go source. `go test -trimpath ./internal/textref/...`: ok. `rhiza check` (this commit's build) on a clean detached worktree of HEAD: ok. This resolves the cycle-2 model finding f1."
+        },
+        "handle": "publish-audit-verified-2",
+        "id": "01M6ZR1GC2G0MMT46FX4SWZANK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZR1GC2G0MMT46FX4FAMDX9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZR1GC2G0MMT46FX4FAMDX9",
+        "id": "01M6ZR1GDWP5EVAQDACC50N86D",
+        "link": "01M6ZR1GDWP5EVAQDACA6746SQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H42YADPD9H92ZZFBH54D",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5F0ZPYJ050A3826ARE92T",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZR1GF56N0PTGNGTYAZRNEE",
+  "type": "ops",
+  "v": 1
+}

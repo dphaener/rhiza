@@ -1,0 +1,63 @@
+{
+  "actor": "01M6ZQM9ZWH4HMSFNBJ3493D03",
+  "after": [
+    "01M6ZQH868N25R29YTKJCGA8TF"
+  ],
+  "at": "2026-11-09T08:46:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 166d37c3: root LICENSE is the only license file, plain ASCII, 'MIT License' header with 'Copyright (c) 2026 Darin Haener'; its body (after the copyright line) is byte-identical to the MIT LICENSE of charm.land bubbles, bubbletea and lipgloss in the module cache, the standard text GitHub's licensee matches. README.md '## License' states '[MIT](LICENSE).'. GitHub's live detection on the PR branch was not queried: the branch is not pushed yet."
+        },
+        "handle": "license-mit-qa-1",
+        "id": "01M6ZQRVMQKQVRH10S0TR94RHJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZQRVMQKQVRH10S0R8EK2BD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZQRVMQKQVRH10S0R8EK2BD",
+        "id": "01M6ZQRVNM0D8BS5N130N36XBF",
+        "link": "01M6ZQRVNM0D8BS5N12ZFZ1EZ3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H3ZWYXBTMJ7W6132943Q",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 166d37c3: installed gitleaks v8.18.4 and ran `gitleaks detect --log-opts=--all` (892 commits) and `gitleaks detect --no-git` over the tree: no leaks found in either scan. git grep of HEAD for the tailnet HTTPS hostname pattern (tail<hex>.ts.net) finds nothing: the docs/rex-upstream fix holds. The short owner address is gone from internal/textref and remains only in the 8 text-references .rhiza/log entries and their 5 renders, exactly as the publish-audit-report Evidence lists and accepts. go test ./internal/textref passes. The built binary's `rhiza check` exits 0 with only pre-existing unclaimed-commit warnings. The publish-audit-report Evidence names the scanner, each finding with its disposition, and what only a history rewrite would remove."
+        },
+        "handle": "publish-audit-qa-1",
+        "id": "01M6ZQRVPH2MW2R644SK0N3WHA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZQRVPH2MW2R644SHS9GB93",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZQRVPH2MW2R644SHS9GB93",
+        "id": "01M6ZQRVQF3TM9P6R1WPQF319R",
+        "link": "01M6ZQRVQF3TM9P6R1WKZVSD9Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H42YADPD9H92ZZFBH54D",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5F0ZPYJ050A3826ARE92T",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZQRVRCMZED1SARHPECJBDM",
+  "type": "ops",
+  "v": 1
+}

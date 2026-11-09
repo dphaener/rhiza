@@ -3,7 +3,7 @@
 //
 // A reference is written @handle, @<ID or 4+ character ID prefix> or
 // @{<ID>}. It starts with @ at the start of the text or after whitespace or an
-// opening ( or [, so darin@hey.com, checkout@v7 and a quoted '@key' hold none.
+// opening ( or [, so ada@example.com, checkout@v7 and a quoted '@key' hold none.
 // @@ at such a position is an escape for a literal @ and is never a reference.
 //
 // Stored text holds each reference as @{<full 26-character ID>}. Only that

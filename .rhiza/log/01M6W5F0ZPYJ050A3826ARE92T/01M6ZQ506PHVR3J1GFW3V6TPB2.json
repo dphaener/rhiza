@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZMTRXQF13SSK49GQD4Z8ZB",
+  "after": [
+    "01M6ZMV8MXXTXV49TEH1R9PSS5"
+  ],
+  "at": "2026-11-09T08:35:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Pre-publish audit at 5d28d354 (main plus this branch). SCANNER: gitleaks 8.18.4 with default rules over full history (`gitleaks detect --log-opts=--all`, 887 commits, 6.9s): no leaks found. MANUAL SWEEP of HEAD (git grep over tree, .rhiza/log, .rhiza/rendered incl. Sources and session notes) for password/secret/api key/private key/ghp_/sk-/AKIA/xox tokens, emails, IPs, home paths, private hostnames, phone numbers; and history for deleted .env/.pem/.key/.db/credentials files and blobs over 1 MB: no secrets or credentials found (only hits: a GITHUB_TOKEN secret reference in release.yml, the word 'secret' in scrub docs and a test fixture SECRET-RAW; the two 1 MB blobs are describe-golden.txtar). FINDINGS: (1) docs/rex-upstream/notification-banner.md named the owner's private tailnet HTTPS hostname: FIXED in this commit (now 'a tailnet HTTPS name'); it remains in earlier history. (2) The owner's personal email addresses (two of them): ACCEPTED, no action; they are the git author/committer identity of 913 commits and appear in Actor records in .rhiza/log, so they are public once the repo is, removable only by a history rewrite. (3) A Tailscale CGNAT address and the owner's machine name in three session notes (and their log entries and renders): ACCEPTED as low risk (reachable only inside the owner's tailnet); not edited because .rhiza/log is append-only and renders derive from it. (4) The owner's macOS username in absolute home paths in several log entries, renders and evidence: ACCEPTED, discloses a username only. (5) Other IPs and hosts found (192.168.x test fixture, daemon.home file name, example.com/example.test/invalid addresses) are test fixtures or file names, not private hosts. ONLY A HISTORY REWRITE WOULD REMOVE: the owner emails in every commit's author/committer fields, the tailnet hostname in older versions of notification-banner.md, and findings 3 and 4 in .rhiza/log (append-only) and its history. Recommendation: none of these is a credential; the owner decides whether to publish as is. The owner reads this before flipping visibility."
+        },
+        "handle": "publish-audit-report",
+        "id": "01M6ZQ504CF3RY03CQF73GR697",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZQ504B8KYS3VAZA4FBP90T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZQ504B8KYS3VAZA4FBP90T",
+        "id": "01M6ZQ505AMVDZA5J6Q2VE3D60",
+        "link": "01M6ZQ505AMVDZA5J6Q12KQBF5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H42YADPD9H92ZZFBH54D",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5F0ZPYJ050A3826ARE92T",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZQ506PHVR3J1GFW3V6TPB2",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZMT8QT4RVXDB73Y3GX4ZSK",
+  "after": [
+    "01M6Z5PG9KX1SWZXY87WAC1DG0"
+  ],
+  "at": "2026-11-09T07:54:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5d28d354 (verifier, attempt 1): diffed root LICENSE against the choosealicense.com MIT template (the text GitHub's licensee matches); the only difference is the copyright line, filled as 'Copyright (c) 2026 Darin Haener'. LICENSE is the sole license file at the repo root, plain ASCII, so licensee's exact-match detection reports MIT. README.md line 31-33 '## License' states '[MIT](LICENSE).'. The leaf commit only adds the builder's actor record; no code changed. GitHub's live detection was not queried (no gh in verifier runs); the check rests on the exact template match."
+        },
+        "handle": "license-mit-verified",
+        "id": "01M6ZMV8JM36GFEYHGPD42AWJ4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZMV8JM36GFEYHGPAX060GS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZMV8JM36GFEYHGPAX060GS",
+        "id": "01M6ZMV8KMMGC7XSQ3Y77J8AAB",
+        "link": "01M6ZMV8KMMGC7XSQ3Y5EM8QP7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H3ZWYXBTMJ7W6132943Q",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5F0ZPYJ050A3826ARE92T",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZMV8MXXTXV49TEH1R9PSS5",
+  "type": "ops",
+  "v": 1
+}
