@@ -1,0 +1,63 @@
+{
+  "actor": "01M6YRVJN0PANY6YWFEYWVC497",
+  "after": [
+    "01M6YRRZ2WBWTHW49NADEVMTPH"
+  ],
+  "at": "2026-11-08T23:51:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 91617709 with a built binary in a scratch Rhiza root (outside ~/code, RHIZA_* unset) and a fake gh using real Actions detailsUrls (/actions/runs/42/job/N) that fails every job (log: billing message, no test), reruns turning job 9 into job 10. rhiza run start --foreground on ship-change (the built-in's middle, short timeouts): pr-green failed after 1 rerun, conflict-triage fail, ci-triage 'no failing test ... infra or unparsable failure' then wait-ci-rerun. The ship state held red_head=<head> and red_checks=[{test,id 10}] with no head/checks. rhiza ship check --settled --changed in the run worktree: exit 1, 'not settled: CI on head ab3bb9b failed (test) with no failing test: an infra failure; waiting for a new head or a rerun'. Switching gh to job 11 IN_PROGRESS: 'not settled: 0 of 1 checks finished'; to job 11 SUCCESS: wait-ci-rerun passed, pr-green (visit 2) pass, signoff, run succeeded, and the state then held head/checks green with red_head cleared. A second run left red with wait-ci-rerun timeout 3s ended 'wait-ci-rerun (visit 1): timeout, then end: did not hold within 3s: PR #7 at 5cb34b7: not settled: CI on head 5cb34b7 failed (test) with no failing test: an infra failure ...'. Pushing a new head there made --settled --changed settle (exit 0) once its CI finished. --changed without --settled, or with --main, is refused (exit 2). rhiza workflow check ship-change: valid; describe shows ci-triage on.fail -> wait-ci-rerun -> on.pass pr-green."
+        },
+        "handle": "ci-triage-infra-waits-qa-1",
+        "id": "01M6YS5THPHYYNMS22ARNQEQ2H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YS5THPHYYNMS22AQVFXVEW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YS5THPHYYNMS22AQVFXVEW",
+        "id": "01M6YS5TJVJCXKC7187MN4562H",
+        "link": "01M6YS5TJVJCXKC7187KBQ8AJ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YGXMGVZQBYW9NX74P1TQ4W",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 91617709 with a built binary in a scratch Rhiza root and a fake gh: a ship-change workflow (wait-pr, pr-green, conflict-triage, ci-triage with no on.fail) run with every job failing ended 'ci-triage (visit 1): fail, then end'. With gh switched to green, rhiza run resume --foreground <run> --retry walked back through conflict-triage and pr-green and reported 'retried at wait-pr, after: step \"ci-triage\" ended with outcome \"fail\"'; status showed wait-pr (visit 2, retried): pass, then pr-green; pr-green (visit 2): pass, then signoff; signoff pass, then end; the run succeeded."
+        },
+        "handle": "retry-ci-triage-at-wait-qa-1",
+        "id": "01M6YS5TKST2Z1Z2XM3CTZVEMB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YS5TKST2Z1Z2XM3ADN2AMS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YS5TKST2Z1Z2XM3ADN2AMS",
+        "id": "01M6YS5TMSDVDZC7Y9TQT860AP",
+        "link": "01M6YS5TMSDVDZC7Y9TQGHS3AW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YGXM7SRCDR03S5J1K60QVR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YGFGQT0A9VRZ4AZ9X6VSMJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YS5TNT2KM3DMQPXDN1AQRV",
+  "type": "ops",
+  "v": 1
+}
