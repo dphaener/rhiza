@@ -122,6 +122,9 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 	for _, o := range Operations() {
 		in.Commands = append(in.Commands, CommandPath(o.Name))
 	}
+	for _, f := range FrameCommands {
+		in.Commands = append(in.Commands, f.Name)
+	}
 	docsPath := filepath.Join(ctx.Root, filepath.FromSlash(docsDir))
 	if fi, err := os.Stat(docsPath); err == nil && fi.IsDir() {
 		in.Docs = os.DirFS(docsPath)

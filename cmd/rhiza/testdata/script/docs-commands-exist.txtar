@@ -29,6 +29,8 @@ exec rhiza check
 -- good.md --
 Run `rhiza check` and `rhiza change new "x"`, see `.rhiza/log`, `rhiza.toml`
 and `rhiza --json`. Plain rhiza no-such-command prose is not code.
+The frame's own commands count: `rhiza version`, `rhiza api call check` and
+`rhiza tui app overview`.
 
 ```
 $ rhiza guide build
