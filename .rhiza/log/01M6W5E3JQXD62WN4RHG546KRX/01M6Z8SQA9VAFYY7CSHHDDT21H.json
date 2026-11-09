@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Z8P917TTF4SNF8MCW1FC42",
+  "after": [
+    "01M6Z5NRFJERWP9TZEC1S5N7Q4"
+  ],
+  "at": "2026-11-09T04:24:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 23eab5f9 the verifier ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(docs-reference-config|docs-reference-cli|describe-golden)$': all PASS. docs-reference-config.txtar greps out/config.md for '### `rhiza.autonomy.plan`', 'Type: auto or owner' and 'Default: `owner`', and checks that a second run gives the same bytes. go test -trimpath ./internal/api -run TestSettingDefsDescribed passes. The test loops over every settingDefs entry, including the watchdog keys appended in init, and fails any entry with an empty desc or typ. go test ./internal/docs passes. A scratch build's rhiza docs --out wrote config.md with 42 settings (23 base + 10 machine watchdog + 9 project watchdog), each with type, default (unset when empty) and description, plus the --max-runs/--min-free/--permission-mode flag notes. The diff (docs.Config, docsSettings, typ/desc on settingDef and watchdogNames) reads correctly."
+        },
+        "handle": "docs-reference-config-verified",
+        "id": "01M6Z8SQ0SQPMKPYPT1RQXMRGP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Z8SQ0SQPMKPYPT1NJHVA8P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Z8SQ0SQPMKPYPT1NJHVA8P",
+        "id": "01M6Z8SQ3N74ZRGE9KEK8GF0CA",
+        "link": "01M6Z8SQ3N74ZRGE9KEGSMY7HC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5GZXB8YMB2G6142DGQTS7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5E3JQXD62WN4RHG546KRX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Z8SQA9VAFYY7CSHHDDT21H",
+  "type": "ops",
+  "v": 1
+}
