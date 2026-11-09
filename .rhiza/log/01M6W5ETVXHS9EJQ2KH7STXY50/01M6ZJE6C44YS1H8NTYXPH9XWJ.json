@@ -1,0 +1,86 @@
+{
+  "actor": "01M6ZJ8TARWYF8KG6MGNCB8Y04",
+  "after": [
+    "01M6ZJ6A8SYGCA0KNFF8N68MFV"
+  ],
+  "at": "2026-11-09T07:12:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d23439f6, built rhiza (go build -trimpath) into a scratch dir and, in a fresh git repo under a scratch Rhiza root with its own XDG_CONFIG_HOME: rhiza init; rhiza workflow new bugfix; workflow check bugfix (valid); ran the doc's two bash blocks extracted from docs/custom-workflows.md, which wrote .rhiza/workflows/bugfix.toml and .rhiza/dispatch.toml; rhiza workflow check bugfix printed 'workflow bugfix is valid' exit 0; workflow describe bugfix showed reproduce->fix->test (on.fail -> fix)->ci->done/failed; workflow new mine --from ship-change then check passed; workflow ls listed bugfix and mine as repo; with a current change set, rhiza run start --workflow bugfix --dry-run printed 'Run ... would start' at step reproduce, writing nothing. The reference is named as plain path docs/reference/workflow-file.md per decision custom-workflow-doc-reference-plain-path. go test ./cmd/rhiza -run TestScripts/custom-workflows-doc and ./internal/doclinks pass."
+        },
+        "handle": "docs-custom-workflow-qa-1",
+        "id": "01M6ZJE651XDST69KTXC7V9YYF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZJE651XDST69KTXBEZ35BH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZJE651XDST69KTXBEZ35BH",
+        "id": "01M6ZJE660X1X92E0QFS4FQTP5",
+        "link": "01M6ZJE660X1X92E0QFN7BMTKJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H323RTT12VV3R6F2AZW4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d23439f6, with the built binary: every rhiza command named in docs/agents.md exists (each answers --help); rhiza guide ls lists the topics and rhiza guide build prints; rhiza guide install --help shows --agent claude, --project (repo .claude/skills/) and --force exactly as the doc says; slice, ready, apply, land, render exist; its links (quickstart, concepts/change-sets.md, concepts/why.md) resolve (internal/doclinks TestRepoDocsLinksResolve passes). Trailer rules match rhiza guide build."
+        },
+        "handle": "docs-agents-qa-1",
+        "id": "01M6ZJE66YA7JJ59YSW0Y05W7A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZJE66YA7JJ59YSVXWTKBQ4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZJE66YA7JJ59YSVXWTKBQ4",
+        "id": "01M6ZJE67Y47V00V51BKHJB62F",
+        "link": "01M6ZJE67Y47V00V51BJHC4ZZ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H2NVXGP81PQ31Y2VKKKK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "At d23439f6, with the built binary in a scratch repo: every rhiza command in docs/runs-and-daemon.md exists (--help); guide install, rex install --force, run send-back --note, request --kind/--ref match; daemon settings lists every named setting; daemon set rhiza.autonomy.{plan,accept,ship,signoff} owner works; the doc's [[schedules]] weekly-deps block in dispatch.toml is accepted (rhiza health: '1 schedule ... next run 2026-11-09T09:00:00Z'). But: daemon settings shows defaults autonomy.accept/ship/signoff = auto, contradicting the doc's 'By default the daemon asks you at every gate'; rhiza request and run start fail 'is not inside a Rhiza root / next: rhiza root init' until rhiza root init + project add, which the doc's setup never mentions; and workflow-file autonomy (autonomous = true|false or [autonomy] table, internal/workflow/workflow.go parseAutonomy) is not described, though the leaf names per-workflow autonomy."
+        },
+        "handle": "docs-runs-daemon-qa-1",
+        "id": "01M6ZJE698JKGYKNACNN1M19SW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZJE698JKGYKNACNMGV7BQ8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZJE698JKGYKNACNMGV7BQ8",
+        "id": "01M6ZJE6AXMT2ZV8X4Z67JEDWM",
+        "link": "01M6ZJE6AXMT2ZV8X4Z4HSBRMX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H2V93Q1KMDAA0VVMANFX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5ETVXHS9EJQ2KH7STXY50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZJE6C44YS1H8NTYXPH9XWJ",
+  "type": "ops",
+  "v": 1
+}
