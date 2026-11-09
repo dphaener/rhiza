@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZACDD5GXEDAREFD0A8S9MF",
+  "after": [
+    "01M6ZAAHH3BEZBHB8D5FNPHNVW"
+  ],
+  "at": "2026-11-09T04:53:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 46fd24d1, `go test -trimpath -count=3 ./cmd/rhiza -run 'TestScripts/quickstart$'` (GOTMPDIR outside the repo) passed on all 3 runs. The quickstart-doc command runs every line of docs/quickstart.md's bash blocks in order in a fresh subdirectory repo: init, change new, apply a capability and a decision, propose, accept, land, show, why, slice, tree, render, check, git commit. The tree ends clean. I checked drift in a scratch copy: changing a doc command to `rhiza show no-such-node` failed the script (exit status 4), and replacing one with `ls -la` failed with 'cannot run'. Attempt 2's finding is fixed: the 'Where next' section now links only ../README.md, and `go test -trimpath ./internal/doclinks/...` (TestRepoDocsLinksResolve over the real docs) passes. The prose is plain and natural, and covers every step in the statement."
+        },
+        "handle": "quickstart-doc-verified",
+        "id": "01M6ZAFN5KHZXKJRPKYXNABK36",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZAFN5KHZXKJRPKYVPEP7ZY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZAFN5KHZXKJRPKYVPEP7ZY",
+        "id": "01M6ZAFN6ET69GMA740P4M1AXN",
+        "link": "01M6ZAFN6ET69GMA740KE6ARQ6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H11AZV166CP6M6R0F9SX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5EDEX8QAKNVPY5H6CH3Z9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZAFN795H79G6RXDV1TWSXR",
+  "type": "ops",
+  "v": 1
+}

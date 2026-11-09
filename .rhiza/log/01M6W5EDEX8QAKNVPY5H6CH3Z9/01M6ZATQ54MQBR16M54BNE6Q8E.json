@@ -1,0 +1,86 @@
+{
+  "actor": "01M6ZAN1W4C85CZBWNVQG9HBXH",
+  "after": [
+    "01M6ZAFN795H79G6RXDV1TWSXR"
+  ],
+  "at": "2026-11-09T04:59:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at b92987bf with a built binary (go build -trimpath ./cmd/rhiza), by hand: in a fresh scratch git repo with its own HOME and every RHIZA_* variable unset, typed each docs/quickstart.md bash block in order (git init, init, change new, apply --dry-run, apply intent.json, propose, accept, land, show/why/slice export-csv, tree, render, check, git add/commit). Every command exited 0; show listed decided-by csv-streaming, why showed the quote and the landed change set, tree showed reports > export-csv, render wrote 5 files, check printed ok, and git status was clean after the commit. go test -trimpath ./cmd/rhiza -run TestScripts/quickstart passes, and fails (unknown command treee, quickstart.txtar:8) after I changed the doc's rhiza tree to rhiza treee, so doc drift is caught."
+        },
+        "handle": "quickstart-doc-qa-1",
+        "id": "01M6ZATP9S7X2YAXRM3CJYEABA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZATP9S7X2YAXRM3AEX1QB3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZATP9S7X2YAXRM3AEX1QB3",
+        "id": "01M6ZATPFR898SD4Y9XYTPX08A",
+        "link": "01M6ZATPFR898SD4Y9XX418ND6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H11AZV166CP6M6R0F9SX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at b92987bf: go test -trimpath -count=1 ./internal/doclinks/... passes over the real README.md and docs/. With README's quickstart link changed to docs/quickstart-nope.md it fails with README.md:23 docs/quickstart-nope.md does not exist; with the quickstart's ../README.md#install changed to #installing it fails with docs/quickstart.md:3 no heading #installing in README.md. Both edits reverted afterwards."
+        },
+        "handle": "docs-links-resolve-qa-1",
+        "id": "01M6ZATPM1X5Y61C44AN1PS78G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZATPM1X5Y61C44AMBX27GY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZATPM1X5Y61C44AMBX27GY",
+        "id": "01M6ZATPRDZWRM89JG89AYN176",
+        "link": "01M6ZATPRDZWRM89JG8860DYD6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H182FRSXES06CH1P6V9E",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at b92987bf: read README.md. It covers what and why, install via go install github.com/dphaener/rhiza/cmd/rhiza@latest (matches go.mod's module and go 1.25) or release binaries for linux/darwin amd64/arm64 with checksums.txt (matches .goreleaser.yaml), a link to docs/quickstart.md, a note that the concepts, agents and reference pages are still to come, and an MIT LICENSE file. The built binary's version, --help, guide and describe commands that it points to all run. Its relative links resolve (doclinks test). The owner still has to sign off."
+        },
+        "handle": "readme-front-door-qa-1",
+        "id": "01M6ZATPVAHJPFVZR1AQ1MXVB6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZATPVAHJPFVZR1APDK9KRF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZATPVAHJPFVZR1APDK9KRF",
+        "id": "01M6ZATPY35SF7VHQ1FKXK600A",
+        "link": "01M6ZATPY35SF7VHQ1FJN5EX78",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H0QXCSXEQHC10HVVTF1W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5EDEX8QAKNVPY5H6CH3Z9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZATQ54MQBR16M54BNE6Q8E",
+  "type": "ops",
+  "v": 1
+}

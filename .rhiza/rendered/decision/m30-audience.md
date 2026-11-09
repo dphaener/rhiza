@@ -23,6 +23,7 @@ Try it on their repo: developers who install Rhiza, init it in their own repo, a
 ### In
 
 - decided-by [milestone-30](../intent/milestone-30.md)
+- decided-by [readme-front-door](../capability/rhiza/documentation/readme-front-door.md)
 
 ## History
 

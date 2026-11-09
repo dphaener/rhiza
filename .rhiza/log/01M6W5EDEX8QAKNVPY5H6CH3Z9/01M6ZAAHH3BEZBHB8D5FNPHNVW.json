@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZA6W3N1R00ZZP6AZCD6YMS",
+  "after": [
+    "01M6Z9Y479SFWT1PGFM287B0F3"
+  ],
+  "at": "2026-11-09T04:51:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 3c6b4c07 as the verifier. Ran go test -trimpath -count=1 -v ./internal/doclinks/...: TestBrokenLinksFail (fixture with a missing file, a missing anchor in another doc, a missing self-anchor and a missing sibling file; each is reported with file:line, while valid file, anchor, self, ../ and external links and fenced code are not flagged), TestCleanFixturePasses, and TestRepoDocsLinksResolve (Check over the real README.md and docs/, which includes docs/quickstart.md#..README.md#install and README's docs/quickstart.md and LICENSE links) all PASS. The test is a plain go test in internal/doclinks, so make check runs it through make test (test-rest covers every package but internal/api, and doclinks is not a budget test). Read the diff: the quickstart lost two links to concepts/why.md and agents.md, files that do not exist in docs/; the new check would otherwise fail on them. The quickstart testscript (go test -trimpath ./cmd/rhiza -run TestScripts/quickstart, with GOTMPDIR moved out of the repo's .git) still PASSes."
+        },
+        "handle": "docs-links-resolve-verified",
+        "id": "01M6ZAAH5RQYHVC4HC712ZECNJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZAAH5RQYHVC4HC6XYE4Y1Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZAAH5RQYHVC4HC6XYE4Y1Z",
+        "id": "01M6ZAAHCHJV2WDX1HXK8CAJWT",
+        "link": "01M6ZAAHCHJV2WDX1HXGMQZFQF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H182FRSXES06CH1P6V9E",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5EDEX8QAKNVPY5H6CH3Z9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZAAHH3BEZBHB8D5FNPHNVW",
+  "type": "ops",
+  "v": 1
+}

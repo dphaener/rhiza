@@ -53,7 +53,7 @@ func TestScripts(t *testing.T) {
 		Dir:           dir,
 		Files:         files,
 		Setup:         setup,
-		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "chtimes": chtimes, "health-server": healthServer, "run-lock": runLock, "root-daemon-lock": rootDaemonLock},
+		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "quickstart-doc": quickstartDoc, "chtimes": chtimes, "health-server": healthServer, "run-lock": runLock, "root-daemon-lock": rootDaemonLock},
 		UpdateScripts: *update,
 	})
 }

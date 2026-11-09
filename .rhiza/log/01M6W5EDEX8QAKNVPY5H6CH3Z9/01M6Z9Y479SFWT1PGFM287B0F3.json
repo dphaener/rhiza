@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Z9VJV22HJZ4BHSWDYN1KPV",
+  "after": [
+    "01M6Z5NXFRY96FRWP4Z4SHSR8W"
+  ],
+  "at": "2026-11-09T04:44:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4f10cea8 I read README.md and the diff from ddd443fa. The README explains what Rhiza is and why in a few paragraphs, covers install by go install (Go 1.25+, matching go.mod's go 1.25.14) or release binaries (linux/darwin, amd64/arm64 and checksums.txt, matching .goreleaser.yaml), links the quickstart, and ends with the MIT license. The concepts, agents and CLI reference pages are named as coming, not linked, which fixes attempt 1's dead-link finding. I pulled every link with grep: the relative targets are docs/quickstart.md and LICENSE, and test -e finds both (there are no anchors); the only other link is the GitHub releases URL. The docs-links-resolve check is not built at this commit, so I checked the links by hand. A scratch build runs `rhiza version`, `rhiza describe` and `rhiza --help` as the README says. The prose reads natural, with no AI tells I could find. The owner's sign-off is left to the signoff stage."
+        },
+        "handle": "readme-front-door-verified",
+        "id": "01M6Z9Y43XS2AEW1Y3FMJXMTTF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Z9Y43XS2AEW1Y3FGZ2E49Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Z9Y43XS2AEW1Y3FGZ2E49Q",
+        "id": "01M6Z9Y45J0TM5VV0YSKF9JCF3",
+        "link": "01M6Z9Y45J0TM5VV0YSH32JD0S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H0QXCSXEQHC10HVVTF1W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5EDEX8QAKNVPY5H6CH3Z9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Z9Y479SFWT1PGFM287B0F3",
+  "type": "ops",
+  "v": 1
+}

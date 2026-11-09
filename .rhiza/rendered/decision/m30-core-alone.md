@@ -23,6 +23,7 @@ Core works alone: docs lead with the CLI model, then a separate section for runs
 ### In
 
 - decided-by [m30-docs](../intent/milestone-30/m30-docs.md)
+- decided-by [readme-front-door](../capability/rhiza/documentation/readme-front-door.md)
 
 ## History
 

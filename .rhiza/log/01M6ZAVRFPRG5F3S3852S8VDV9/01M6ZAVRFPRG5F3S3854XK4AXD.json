@@ -1,0 +1,15 @@
+{
+  "actor": "01M6ZAQDFTQDPB02SEP8YPB63S",
+  "after": [],
+  "at": "2026-11-09T05:00:34Z",
+  "body": {
+    "intent": "README links each docs page as it lands: readme-front-door promises links to the concepts, agents and reference docs, but README.md only names them as on the way, and no leaf of the Concepts, Agents/runs or Generated reference change sets (docs-concepts-model, docs-agents, docs-runs-daemon, docs-reference-cli) requires adding its README link; add that to each leaf's acceptance, or a constraint that README.md's Where next links every page under docs/",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6ZAVRFPRG5F3S3852S8VDV9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZAVRFPRG5F3S3854XK4AXD",
+  "type": "open",
+  "v": 1
+}
