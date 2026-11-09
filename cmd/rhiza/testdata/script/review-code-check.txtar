@@ -90,6 +90,21 @@ exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check; echo exit=$?'
 stdout '^code-check passed: rhiza check is ok and 2 leaves have Evidence by a verifier$'
 stdout '^exit=0$'
 
+# The generated reference and the docs-command rule are judged by the
+# installed binary, not the run's change: a stale docs/reference and a
+# README naming a command the registry lacks fail rhiza check, and the
+# code check passes with neither among its causes.
+exec sh -c 'cd $WORK/repo.code-check && rhiza docs && echo stray >> docs/reference/cli.md && echo "Try \`rhiza no-such-command\`." > README.md'
+! exec sh -c 'cd $WORK/repo.code-check && rhiza check'
+stdout 'docs/reference/cli.md'
+stdout 'rhiza no-such-command'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check; echo exit=$?'
+stdout '^code-check passed: '
+! stdout 'docs/reference'
+! stdout 'no-such-command'
+stdout '^exit=0$'
+exec sh -c 'cd $WORK/repo.code-check && rm -rf docs README.md'
+
 # --dry-run journals nothing.
 exec sh -c 'grep -c . .git/rhiza/runs/$(cat $WORK/runid).jsonl > $WORK/lines1; RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check --dry-run --json; grep -c . .git/rhiza/runs/$(cat $WORK/runid).jsonl > $WORK/lines2'
 stdout '"dry_run": true'

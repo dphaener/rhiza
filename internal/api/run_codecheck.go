@@ -129,7 +129,7 @@ func checkIn(ctx *Ctx, worktree string) (CheckResponse, error) {
 			return string(out), err
 		}
 	}
-	r, err := runCheck(&c, CheckRequest{})
+	r, err := runCheck(&c, CheckRequest{SkipReference: true})
 	if err != nil {
 		return CheckResponse{}, err
 	}

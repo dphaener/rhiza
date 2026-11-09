@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/dphaener/rhiza/internal/check"
+	"github.com/dphaener/rhiza/internal/docs"
 )
 
 // fakeGit answers git calls from a table keyed by the space-joined
@@ -445,5 +446,40 @@ func TestGitCommits(t *testing.T) {
 	want := []check.Commit{{Hash: "abc", Actors: []string{"x"}, Subject: "Subject"}}
 	if got := gitCommits(g.run); !reflect.DeepEqual(got, want) {
 		t.Errorf("gitCommits = %+v, want %+v (calls %q)", got, want, g.calls)
+	}
+}
+
+// skip_reference leaves out the generated-reference comparison and the
+// docs-command rule; without it both fail.
+func TestCheckSkipReference(t *testing.T) {
+	ctx := initCtx(t)
+	renderOK(t, ctx)
+	if _, err := callOp(t, ctx, "docs", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	stale := filepath.Join(ctx.Root, filepath.FromSlash(docsDir), "cli.md")
+	if err := os.WriteFile(stale, []byte(docs.Marker+"\nstale\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(ctx.Root, "README.md"), []byte("Try `rhiza no-such-command`.\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	reference := func(req string) (n int) {
+		resp, err := callOp(t, ctx, "check", req)
+		if err != nil && resp == nil {
+			t.Fatal(err)
+		}
+		for _, f := range resp.(CheckResponse).Findings {
+			if f.Severity == check.SeverityFail && (f.Path == "docs/reference/cli.md" || f.Path == "README.md") {
+				n++
+			}
+		}
+		return n
+	}
+	if n := reference(`{}`); n != 2 {
+		t.Errorf("default check has %d reference findings, want 2", n)
+	}
+	if n := reference(`{"skip_reference":true}`); n != 0 {
+		t.Errorf("skip_reference check has %d reference findings, want 0", n)
 	}
 }
