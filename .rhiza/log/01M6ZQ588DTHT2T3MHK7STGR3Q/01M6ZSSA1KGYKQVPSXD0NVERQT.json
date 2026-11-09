@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZS9D1X41CA8M76Z6DM6K4F",
+  "after": [
+    "01M6ZSKW5TGH2P69RTQ9S1FDWY"
+  ],
+  "at": "2026-11-09T09:21:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 56d15968: read the diff (inboxItems lists live runs' permission-blocked sessions via runPermissionAll over session.Resolve, including autonomous runs; itemTab now uses the session tab for kind permission; daemonNotify passes blocked/tabOf and inboxNotice adds the detail; webInboxKinds and the web labels include permission). Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(inbox-permission|daemon-notify-hook|inbox-stalled|inbox-open|describe-golden)$' -count=1: all PASS. inbox-permission.txtar covers the permission item (session, run, step, detail, tab, next=rhiza inbox open) in an owner run and an autonomous run, no item after a newer Rex idle report, no question for an autonomous run's question block, and inbox open focusing block:sess in session:s2 rather than block:root. daemon-notify-hook writes one permission line with the detail in RHIZA_INBOX_TITLE. go test -trimpath ./internal/tui/inboxapp -run 'TestRowPerItemInOrder|TestOtherKindShowsDetailAndOpensTab': PASS, including the permission row with its detail and Enter calling inbox.open k2. go test -trimpath ./internal/api -run 'TestWebInbox|TestInbox': every test PASS, including TestWebInboxViewsPermission. The package then failed only on the root-state guard, because the live root daemon rewrote ~/code/.rhiza-root/usage.live.json; its mtime also changes with no test running, so this is unrelated to the change. go test ./internal/web: PASS."
+        },
+        "handle": "inbox-permission-items-verified",
+        "id": "01M6ZSS9Z1FK24N92E97R6W5ZM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZSS9Z1FK24N92E9480RX6A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZSS9Z1FK24N92E9480RX6A",
+        "id": "01M6ZSSA0JQ55FTMWV1H0HWRV5",
+        "link": "01M6ZSSA0JQ55FTMWV1GBH2JF4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZQFF9QA1CMC83FCNZAJDXN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ZQ588DTHT2T3MHK7STGR3Q",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZSSA1KGYKQVPSXD0NVERQT",
+  "type": "ops",
+  "v": 1
+}
