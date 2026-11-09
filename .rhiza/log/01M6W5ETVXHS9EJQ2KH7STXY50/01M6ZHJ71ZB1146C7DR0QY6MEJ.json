@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZHFJ1KKPPCBW4QFHHZ9JG1",
+  "after": [
+    "01M6ZHEB44EYYNPA3JM5Y9V3AD"
+  ],
+  "at": "2026-11-09T06:57:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At eb28791e read docs/runs-and-daemon.md (184 lines): it covers Rex and Claude Code as requirements (rex install, guide install), workflows and runs, sign-off, questions/inbox, the daemon and its settings, requests and .rhiza/dispatch.toml [request]/[ready], per-stage autonomy (plan/accept/signoff/ship), [[schedules]] (every/cron/CRON_TZ/workflow/command/catch_up/overlap) and the bypassPermissions risk warnings. go test -trimpath ./internal/doclinks/... passes (TestRepoDocsLinksResolve over the real docs, incl. agents.md and concepts/change-sets.md). docs-commands-exist has no check in the tree yet, so with a scratch build I ran --help on all 28 rhiza commands the doc names (rex install, workflow ls/new/describe/check, run start/ls/status/tail/resume/abandon/approve/request-changes/send-back, inbox, question answer, daemon start/status/stop/install/settings/set, health, request, request ls, guide install/workflows, describe): all exit 0 (an unknown command exits 2). Flags named exist (run start --workflow/--foreground/--autonomous, global --dry-run, request --kind/--ref, rex install --force, workflow new --from, run send-back --note). Settings keys match daemon settings output; dispatch defaults plan/ship-change, schedule keys, 1m minimum and CRON_TZ match internal/dispatch and internal/schedule; the warnings match internal/api/request_exposure.go (health and workflow check warn, nothing refuses). Prose reads in the owner's plain voice. Owner read-through is left to the owner."
+        },
+        "handle": "docs-runs-daemon-verified",
+        "id": "01M6ZHJ6ZQZGQEFQ4F0B8E5B8T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZHJ6ZQZGQEFQ4F08GDHBR5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZHJ6ZQZGQEFQ4F08GDHBR5",
+        "id": "01M6ZHJ70ZAND7V545PSMVFHED",
+        "link": "01M6ZHJ70ZAND7V545PR4EJHKH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H2V93Q1KMDAA0VVMANFX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5ETVXHS9EJQ2KH7STXY50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZHJ71ZB1146C7DR0QY6MEJ",
+  "type": "ops",
+  "v": 1
+}
