@@ -1,0 +1,86 @@
+{
+  "actor": "01M701J8ZBABCTBNBBMQP423PX",
+  "after": [
+    "01M6ZT4HKSX80EYQR8EPJK2BDD"
+  ],
+  "at": "2026-11-09T11:42:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, built binary at 73540a2d in a scratch root with fake rex/claude shims: rhiza run start --foreground (owner-run) whose agent hook reported Notification permission_prompt 'Allow Bash: echo secret@example.com?' showed at once in rhiza inbox / --json as kind permission with run, step build, session, detail, tab, tab_block, tab_session and next 'rhiza inbox open <id>'; rhiza inbox open <id> focused the session's block (rex focus -s session:s1 block:b1); rhiza daemon --once --notify-command ran the hook once with kind permission JSON and RHIZA_INBOX_TITLE '...: a session waits on a permission prompt: Allow Bash: ...'; a newer rex idle report in the session record cleared it (Nothing waits on you); an --autonomous run listed the permission item too. Scoped tests inboxapp, api TestWebInbox, scripts inbox-permission/daemon-notify-hook/inbox-stalled/inbox-open pass."
+        },
+        "handle": "inbox-permission-items-qa-1",
+        "id": "01M701V792PTVRA5C46C4BXA3M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M701V792PTVRA5C46AM1XA19",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M701V792PTVRA5C46AM1XA19",
+        "id": "01M701V7AKVP7V29KTVQWA8MMK",
+        "link": "01M701V7AKVP7V29KTVQKT2DGX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZQFF9QA1CMC83FCNZAJDXN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, built binary: rhiza session message <sid> 'Use blue' --timeout 3s to a session whose hook reported a permission prompt printed one stderr line 'waiting for session <sid>: blocked on a permission: Claude needs your permission to use Bash; answer it with rhiza inbox open (or rhiza session show <sid>); waiting up to 3s' and after 3.1s failed (exit 3) with 'did not reach its prompt within 3s (last status: blocked on a permission: ...)', next rhiza session show. Scoped api TestSessionMessage passes."
+        },
+        "handle": "message-says-why-waiting-qa-1",
+        "id": "01M701V7CG9R26AN330S7SFXYC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M701V7CG9R26AN330PRNHZFG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M701V7CG9R26AN330PRNHZFG",
+        "id": "01M701V7EBWSFYFWCTD3Y4WHJ8",
+        "link": "01M701V7EBWSFYFWCTD13Q19DW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZQFFBV7TQ3R919MJNZ6QCJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, built binary: after a hook permission block, rhiza session run with a fake rex events stream reporting block:b1 idle 12s later made rhiza session show give 'Status: idle ... (from rex)' with the hook block kept underneath, and rhiza session message then delivered at once (Waited 0s): exactly one rex send of the pointer and one send-key enter. Scoped internal/session tests and session-message-permission.txtar pass."
+        },
+        "handle": "permission-block-clears-qa-1",
+        "id": "01M701V7FYJ9W10Z9AXZQN2JS3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M701V7FYJ9W10Z9AXXMH30DP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M701V7FYJ9W10Z9AXXMH30DP",
+        "id": "01M701V7H0AQG3YCRN4Z3Q0MTB",
+        "link": "01M701V7H0AQG3YCRN4YQ3VH78",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZQFF7C7AZMBBHAW8RPC69G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ZQ588DTHT2T3MHK7STGR3Q",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M701V7JP9VDN1TT5CF58R6A0",
+  "type": "ops",
+  "v": 1
+}
