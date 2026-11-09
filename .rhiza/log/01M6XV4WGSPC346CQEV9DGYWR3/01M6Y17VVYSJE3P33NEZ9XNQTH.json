@@ -1,0 +1,30 @@
+{
+  "actor": "01M6Y13HV8MV19S1XBJADHSTA1",
+  "after": [
+    "01M6XZ222F7PRVTBV3CCWMK45N"
+  ],
+  "at": "2026-11-08T16:53:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "New testscript cmd/rhiza/testdata/script/daemon-max-runs-pending.txtar with a fake rex: with max-runs 2, one live run and a feature request whose plan run was started under 1 minute ago but has not journaled, and two ready change sets, daemon --once starts no ship run and daemon status shows both as no-slot; with max-runs 3 and the same state it starts exactly one ship run. internal/api TestDaemonScheduledStartHoldsSlotForQueuedStart: with a due schedule started and not journaled and max-runs 1, a queued start stays queued (a Go test, not a testscript: a daemon fires a schedule only on a poll after the one that first saw it, so a daemon --once process never fires one). cmd/rhiza/testdata/script/daemon-milestone-request.txtar: with --max-runs 1 and one run live, daemon --once starts nothing and the milestone and feature requests stay queued; with one interrupted run and one free slot the milestone request starts and the run is not resumed. cmd/rhiza/testdata/script/daemon-request-slot.txtar: with max-runs 2, two ready change sets and only a queued milestone request, daemon --once starts the milestone request's plan run and one ship run, never three, and daemon status shows the other as no-slot. internal/daemon round-robin/pick unit tests cover a project share computed with unjournaled starts. go test -trimpath ./internal/daemon/..., go test -trimpath ./internal/api -run TestDaemonScheduledStartHoldsSlotForQueuedStart and go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-max-runs-pending|daemon-request-slot|daemon-queued-start-slot|daemon-continue-slot|daemon-round-robin|daemon-picks|daemon-milestone-request)' pass",
+          "statement": "Every start the daemon makes in a poll (a queued milestone request's plan run, a resume of an interrupted run, a ship pick, a queued continuation, a queued start, a feature or bug request's plan run, a scheduled run) counts one machine-wide slot count against rhiza.daemon.maxRuns: runs live on the machine across every project of the daemon, plus every start in any project not yet journaled and still within daemonStartGrace (ship and queued starts held as pending, request plan runs, scheduled runs, resumes), plus the starts made earlier in the same poll; nothing starts while that count is at maxRuns. A waiting feature or bug request still keeps the next free slot (request-slot-kept, queued-start-request-slot-kept), never beyond the cap"
+        },
+        "handle": "daemon-starts-within-max-runs",
+        "id": "01M6XVG9DK25PFK9BHJFQ986J7",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6XVG9DK25PFK9BHJCBDQHQ6",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Y17VVYSJE3P33NEZ9XNQTH",
+  "type": "ops",
+  "v": 1
+}

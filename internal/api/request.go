@@ -289,9 +289,10 @@ func requestInfo(q daemon.Request, runs []run.Journal) RequestInfo {
 // that start. The run is autonomous when plan autonomy is auto. Every read
 // and write of the queue holds its lock (daemon.UpdateRequests), the tab's
 // opening does not. With onlyKind milestone it starts only the oldest
-// queued milestone request, whether or not a slot is free and none while
-// another milestone request's run is live or unjournaled: the owner's own
-// interactive start. Any other call leaves milestone requests to that one.
+// queued milestone request, and none while another milestone request's run
+// is live or unjournaled: the owner's own interactive start, which takes the
+// next free slot ahead of the other starts but, as they do, waits while
+// max runs run. Any other call leaves milestone requests to that one.
 // It returns the requests started.
 func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, max int, mode string, onlyKind string, skips *[]daemon.Skip) ([]string, error) {
 	common, err := gitCommonDir(ctx)
@@ -368,7 +369,7 @@ func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, ma
 			}
 		}
 	}
-	for milestone && !milestoneLive || !milestone && running < max {
+	for running < max && (!milestone || !milestoneLive) {
 		var q daemon.Request
 		err := daemon.UpdateRequests(common, func(reqs []daemon.Request) ([]daemon.Request, error) {
 			for i := range reqs {

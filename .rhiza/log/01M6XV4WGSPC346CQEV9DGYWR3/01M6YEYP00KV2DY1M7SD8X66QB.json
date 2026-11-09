@@ -1,0 +1,29 @@
+{
+  "actor": "01M6YEXQ7NMEDHB0RCV59X4PF5",
+  "after": [
+    "01M6YEGHZFM7NS4TE5YKC2EMCQ"
+  ],
+  "at": "2026-11-08T20:52:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6MYP9D5XEFXQ5DHG00Y7WHH",
+        "handle": null,
+        "id": "01M6XVQYJDN0TPN4PFMM1531RZ",
+        "node": "01M6MYP9D5XEFXQ5DHFXZQ8JDZ",
+        "op": "node.update",
+        "set": {
+          "reasoning": "The change set's intent is that a milestone request 'automatically launches' an interactive session and 'notifies the owner that it is waiting', and milestone planning always needs a human: an interview queued behind build runs (daemonPlanRequests only starts requests while running < max, after ship picks and queued starts) defeats that, so the interview takes first claim on the next free slot rather than waiting behind build picks; one at a time because there is one owner to interview. plan-runs-share-max-runs superseded the earlier start without a free slot: a plan run still starts agents, and the owner's words 'must not exceed the cap' outrank the earlier assumption that an interview could run past it. Notifying only at the first AskUserQuestion leaves the owner unaware of a tab that already waits on them, and Rex has no notify API (notifications follow the program's OSC 7501 status), so the status must say waiting at launch and the inbox must list it. internal/api/usage_hold.go says the governor holds what the daemon would launch while 'live runs and the owner's own starts are untouched'; a milestone request is the owner's own, attended start, and the reserve exists to keep usage for exactly that kind of owner-driven work, so it is not held. Pause is the owner's explicit stop and disk-low is a safety guard (a run needs a worktree), so neither is changed by this answer.",
+          "statement": "A queued milestone request's plan run takes the next free run slot ahead of every other start in the poll (resumes included) and every other queued request, but waits while running is at rhiza.daemon.maxRuns (plan-runs-share-max-runs superseded the earlier start without a free slot): it is the owner's own interactive start, not a pick. It counts as a running run once started, so later picks see it, and only one milestone interview is live at a time; a second milestone request waits for the first to end. The owner is told the moment the interview's tab opens: the plan session's status goes to waiting-on-the-owner at launch (so Rex's notification fires from the OSC 7501 status) and the inbox lists the live milestone interview as an item from launch until the run ends, not from the first AskUserQuestion. A usage-reserve hold does not hold a milestone interview's start; it keeps holding build, review and other autonomous launches. Pause and the disk-low guard are unchanged and still hold it."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6XV4WGSPC346CQEV9DGYWR3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YEYP00KV2DY1M7SD8X66QB",
+  "type": "ops",
+  "v": 1
+}

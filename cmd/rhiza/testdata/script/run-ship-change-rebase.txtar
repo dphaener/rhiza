@@ -1,27 +1,30 @@
-# The built-in ship-change run rebases a PR that main has moved past:
-# before landing and again before merging, rhiza ship rebase fetches
-# origin and, when origin's main has commits the branch lacks, rebases the
-# branch onto it.
+# The built-in ship-change run merges main into a PR that main has moved
+# past: before landing and again before merging, rhiza ship rebase fetches
+# origin and, when origin's main has commits the branch lacks, merges it
+# into the branch (never rebases) and pushes with a plain push.
 #
 # Case 1: main moves after the land commit is pushed (another change set
 # landed and rendered there), so the land commit's rendered index.md
 # conflicts. Conflicts only under .rhiza/rendered/ are settled by
-# rendering again; the run pushes the rebased head with a lease, waits for
+# rendering again; the run pushes the merged head (main and the branch's
+# old head are its parents; origin's branch only fast-forwards), waits for
 # CI on it and merges it.
 #
 # Case 2: main moves while the builder builds, with a commit that adds the
 # same files the builder adds. That conflict is not a rendered one: the
-# rebase is aborted, the step and the run fail, and a question in the
-# change set names the files. One file is named @shipping, so the
-# question's statement refers to the shipping capability: it is stored by
-# ID, and raising the same conflict again still writes nothing.
+# merge is left in progress in the worktree, no question is raised, the
+# step and the run fail, and ship check --json names the conflicted files
+# and main's commits with their change sets. A merge committed by hand on
+# top (what a fixer does) is pushed and recorded by the next ship rebase.
 #
 # Case 3: the branch already holds a merge of main. The builder merges
 # main, which also added feature.txt, resolving the conflict; main then
-# moves with an unrelated commit. Rebasing would replay the builder's
-# commit onto it and bring the conflict back, so rhiza merges main into the
-# branch instead: no question, the earlier merge stays in the pushed
-# head's history, and the run merges.
+# moves with an unrelated commit. The run merges again: no question, the
+# earlier merge stays in the pushed head's history.
+#
+# Case 4: as case 3, but main's new commit changes feature.txt again, so
+# the merge conflicts outside the rendered files: no question, the merge
+# is left in progress.
 #
 # The fakes and the repo's review are run-ship-change.txtar's, except that
 # the builder commits feature.txt, gh finds origin from the checkout it runs
@@ -80,8 +83,8 @@ stdout '^exit=0$'
 stdout '^Run \S+ succeeded$'
 # Main had not moved before the land; it had before the merge, and the
 # rendered conflict was settled.
-stderr '^cs/ship-it already holds origin/main at [0-9a-f]{7}; nothing to rebase\.$'
-stderr '^Rebased cs/ship-it onto origin/main at [0-9a-f]{7}\.$'
+stderr '^cs/ship-it already holds origin/main at [0-9a-f]{7}; nothing to merge\.$'
+stderr '^Merged origin/main at [0-9a-f]{7} into cs/ship-it\.$'
 stderr '^Settled 1 rendered file by rendering again\.$'
 ! exists $WORK/move-main
 
@@ -104,6 +107,8 @@ exec sh -c 'test "$(cat $WORK/landed.sha)" != "$(cat $WORK/before.sha)" && echo 
 stdout '^moved$'
 exec sh -c 'git -C $WORK/origin.git merge-base --is-ancestor $(cat $WORK/other.sha) $(cat $WORK/landed.sha) && echo rebased'
 stdout '^rebased$'
+exec sh -c 'git -C $WORK/origin.git rev-list --parents -n1 $(cat $WORK/landed.sha) | wc -w'
+stdout '^3$'
 
 # Main now holds both change sets, rendered from the model: the index
 # names both capabilities, and rhiza check finds nothing stale.
@@ -149,87 +154,64 @@ cd $WORK/other2
 exec sh -c 'echo theirs > feature.txt'
 exec sh -c 'echo theirs > @shipping'
 exec git add feature.txt @shipping
-exec git commit -qm 'Add a feature on main'
+exec git commit -qm 'Add a feature on main' -m 'Change: 01M5PWGEF85Y185JZ2ZGCNH40M'
 cd $WORK/repo2
 
 exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json
 stdout '"signoff_waiting": true'
 ! exec rhiza run approve --foreground
 stdout '^Run \S+ failed$'
-stdout '^- Detail: step "rebase-gate-failed" ended with outcome "fail"$'
-stderr '^Rebasing cs/ship-two onto origin/main at [0-9a-f]{7} conflicts in:$'
+stdout '^- Detail: step "conflict-fix" ended with outcome "fail"$'
+stderr '^Merging origin/main at [0-9a-f]{7} into cs/ship-two conflicts in:$'
 stderr '^- feature\.txt$'
 stderr '^- @shipping$'
-stderr '^Raised question rebase-conflict-ship-two\.$'
+stderr 'left in progress'
+! stderr 'Raised question'
 
 exec rhiza run status
-stdout '^- rebase \(visit 1\): fail, then rebase-gate-failed: exit 1$'
-stdout '^- rebase-gate-failed \(visit 1\): fail, then end: exit 1$'
-! stdout '^- gate-fix '
+stdout '^- rebase \(visit 1\): fail, then rebase-triage: exit 1$'
+stdout '^- conflict-fix \(visit 1\): fail, then end, session '
 ! stdout '^- land '
 ! grep '^pr merge' $WORK/gh.log
 
-# The branch is as open-pr pushed it, plus the question's commit, which is
-# not pushed; no rebase is left in progress.
+# The merge is left in progress in the worktree, not aborted; no question
+# was written.
 cd $WORK/repo2.ship-two
 exec git status
-! stdout 'rebase'
-exec git log -1 --format=%s
-stdout '^Raise a question on the rebase conflicts$'
-exec sh -c 'test "$(git rev-parse HEAD~1)" = "$(git -C $WORK/origin2.git rev-parse refs/heads/cs/ship-two)" && echo unpushed'
-stdout '^unpushed$'
-exec cat feature.txt
-stdout '^built$'
-
-# The question is in the change set and names the conflicting file.
+stdout 'You have unmerged paths'
+exec git rev-parse --verify MERGE_HEAD
 exec rhiza ls --kind question --json
-stdout '"handle": "rebase-conflict-ship-two"'
-exec rhiza show rebase-conflict-ship-two
-stdout 'feature\.txt'
-stdout '@shipping'
-! stdout '@@shipping|@\{'
-stdout 'cs/ship-two onto origin/main'
-exec sh -c 'cat .rhiza/log/*/*.json'
-stdout '"statement": "Rebasing branch cs/ship-two .*@\{[0-9A-Z]{26}\}'
+! stdout 'rebase-conflict'
 fold-ok
 
-# The question blocks the change set: the inbox lists it as a blocker.
-exec rhiza show rebase-conflict-ship-two --json
-stdout '"type": "blocks"'
-exec rhiza inbox --json
-stdout '"kind": "blocker"'
-stdout '"handle": "rebase-conflict-ship-two"'
-stdout '"blocks": "this change set"'
+# ship check --json shows the conflicted files, main's commits and their
+# change sets, and the branch's change set.
+exec sh -c 'RHIZA_CHANGE=01M5PWGEF85Y185JZ2ZGCNH40N rhiza ship check --json --settled; true'
+stdout '"merge_conflict"'
+stdout '"feature\.txt"'
+stdout '"@shipping"'
+stdout '"subject": "Add a feature on main"'
+stdout '"01M5PWGEF85Y185JZ2ZGCNH40M"'
+stdout '"change": "01M5PWGEF85Y185JZ2ZGCNH40N"'
 
-# Raising it again on the same conflict writes nothing.
-exec sh -c 'find .rhiza/log -type f | sort | xargs cat | wc -c > $WORK/log.before'
+# Run again while it is still conflicted: the same report, nothing merged.
 ! exec rhiza ship rebase
-stdout '^Raised question rebase-conflict-ship-two\.$'
-exec sh -c 'find .rhiza/log -type f | sort | xargs cat | wc -c > $WORK/log.after'
-exec cmp $WORK/log.before $WORK/log.after
-exec rhiza ls --kind question --json
-stdout '"handle": "rebase-conflict-ship-two"'
+stdout '^- feature\.txt$'
+exec git rev-parse --verify MERGE_HEAD
 
-# A question raised before it blocked its change set (no blocks link)
-# gains the link when the conflict is raised again; no second question is
-# added.
-exec sh -c 'rhiza unlink $(rhiza show rebase-conflict-ship-two --json | grep -A2 "\"links_out\"" | sed -n "s/.*\"id\": \"\\([0-9A-Z]*\\)\".*/\\1/p") --change 01M5PWGEF85Y185JZ2ZGCNH40N'
-stdout '^- link [0-9A-Z]{26}$'
-exec rhiza show rebase-conflict-ship-two --json
-! stdout '"type": "blocks"'
-! exec rhiza ship rebase
-stdout '^Raised question rebase-conflict-ship-two\.$'
-exec rhiza show rebase-conflict-ship-two --json
-stdout '"type": "blocks"'
-exec rhiza ls --kind question --json
-stdout -count=1 '"handle": "rebase-conflict-ship-two'
-exec rhiza inbox --json
-stdout '"blocks": "this change set"'
-fold-ok
-
-# The owner answers it with --change.
-exec rhiza question answer rebase-conflict-ship-two 'Keep main' --change 01M5PWGEF85Y185JZ2ZGCNH40N
-fold-ok
+# A merge committed by hand on top is pushed, plainly, and recorded.
+exec sh -c 'echo resolved > feature.txt; echo resolved > @shipping; git add feature.txt @shipping; git commit -q --no-edit'
+exec git rev-parse HEAD
+cp stdout $WORK/fixed.sha
+exec rhiza ship rebase
+stdout '^Pushed [0-9a-f]{7}\.$'
+# The pushed head is the hand-made merge, or that plus a render commit.
+exec sh -c 'git -C $WORK/origin2.git merge-base --is-ancestor $(cat $WORK/fixed.sha) refs/heads/cs/ship-two && echo pushed'
+stdout '^pushed$'
+exec sh -c 'grep -q "\"pushed\": \"$(git -C $WORK/origin2.git rev-parse refs/heads/cs/ship-two)\"" "$(git rev-parse --git-common-dir)"/rhiza/ship/*.json && echo recorded'
+stdout '^recorded$'
+! exec sh -c 'grep -q merge_conflict "$(git rev-parse --git-common-dir)"/rhiza/ship/*.json'
+exec git -C $WORK/origin2.git merge-base --is-ancestor main refs/heads/cs/ship-two
 
 rm $WORK/gh.log
 rm $WORK/pr.created
@@ -278,7 +260,7 @@ stdout '"signoff_waiting": true'
 exec sh -c 'rhiza run approve --foreground; echo exit=$?'
 stdout '^exit=0$'
 stdout '^Run \S+ succeeded$'
-stderr '^Rebased cs/ship-it onto origin/main at [0-9a-f]{7}\.$'
+stderr '^Merged origin/main at [0-9a-f]{7} into cs/ship-it\.$'
 ! exists $WORK/move-main
 ! stderr 'Raised question'
 
@@ -342,16 +324,18 @@ exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode m
 stdout '"signoff_waiting": true'
 ! exec rhiza run approve --foreground
 stdout '^Run \S+ failed$'
-stdout '^- Detail: step "rebase-merge-gate-failed" ended with outcome "fail"$'
+stdout '^- Detail: step "conflict-fix-landed" ended with outcome "fail"$'
 stderr '^- feature\.txt$'
-stderr '^Raised question rebase-conflict-ship-it\.$'
+stderr 'left in progress'
+! stderr 'Raised question'
 exec rhiza run status
-stdout '^- rebase-merge \(visit 1\): fail, then rebase-merge-gate-failed: exit 1$'
-stdout '^- rebase-merge-gate-failed \(visit 1\): fail, then end: exit 1$'
+stdout '^- rebase-merge \(visit 1\): fail, then conflict-triage-landed: exit 1$'
+stdout '^- conflict-fix-landed \(visit 1\): fail, then end, session '
 ! grep '^pr merge' $WORK/gh.log
 cd $WORK/repo4.ship-it
-exec git status
-! stdout 'rebase|merge'
+exec git rev-parse --verify MERGE_HEAD
+exec rhiza ls --kind question --json
+! stdout 'rebase-conflict'
 fold-ok
 
 -- review.toml --
@@ -402,6 +386,7 @@ done
 echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 -- bin/claude --
 #!/bin/sh
+for a; do last=$a; done
 case "$RHIZA_ROLE" in
 builder)
 	files=feature.txt
@@ -430,6 +415,13 @@ verifier)
 check)
 	echo '{"findings":[]}' > "$WORK/empty-round.json"
 	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+	;;
+*)
+	# The conflict fixer: this script leaves the merge in progress, so the
+	# fixer gives up without committing and the run fails.
+	case "$last" in
+	*"Resolve the merge conflicts"*) exit 1 ;;
+	esac
 	;;
 esac
 exit 0

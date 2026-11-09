@@ -30,22 +30,25 @@ exec git add -A
 exec git commit -qm 'Start shipping'
 exec git push -q -u origin main
 
-! exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
-stdout '^Run \S+ failed$'
-stdout '^- Detail: step "ci-triage" ended with outcome "fail"$'
+# An infra failure (no failing test) goes to wait-ci-rerun, where --no-wait
+# stops the run instead of waiting 6h for CI to move.
+exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --no-wait
+stdout 'waiting: rhiza ship check --settled --changed'
 # The check names the failed check in the step's output.
 stderr '^PR #7 at [0-9a-f]{7}: failed: test$'
 
 exec rhiza run status --json
 stdout '"workflow": "ship-change"'
-stdout '"state": "failed"'
+! stdout '"state": "failed"'
 exec rhiza run status
 stdout '^- build/build \(visit 1\): pass, then build/render: 1 of 1 leaves passed$'
 stdout '^- review/review \(visit 1\): pass, then render-pr'
 stdout '^- open-pr \(visit 1\): pass, then wait-pr: '
 stdout '^- wait-pr \(visit 1\): pass, then pr-green: held after [0-9]+ checks?$'
-stdout '^- pr-green \(visit 1\): fail, then ci-triage: exit 1$'
-stdout '^- ci-triage \(visit 1\): fail, then end: exit 1$'
+stdout '^- pr-green \(visit 1\): fail, then conflict-triage: exit 1$'
+stdout '^- conflict-triage \(visit 1\): fail, then gate-triage: exit 1$'
+stdout '^- gate-triage \(visit 1\): fail, then ci-triage: exit 1$'
+stdout '^- ci-triage \(visit 1\): fail, then wait-ci-rerun: exit 1$'
 ! stdout '^- signoff '
 ! stdout '^- rebase '
 ! stdout '^- land '
@@ -61,7 +64,9 @@ exec git rev-parse --verify --quiet refs/heads/cs/ship-it
 exec git -C $WORK/origin.git rev-parse --verify --quiet refs/heads/cs/ship-it
 fold-ok
 
-# The repo replaces the built-in by name.
+# The stopped run is abandoned, then the repo replaces the built-in by name.
+exec sh -c 'rhiza run ls --json | grep -o "\"id\": \"[0-9A-Z]*\"" | head -1 | tr -dc 0-9A-Z > $WORK/runid'
+exec sh -c 'rhiza run abandon $(cat $WORK/runid)'
 cp $WORK/ship-change.toml .rhiza/workflows/ship-change.toml
 exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
 stdout '^Run \S+ succeeded$'

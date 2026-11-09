@@ -1,0 +1,83 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6YXB57THD3SHMKMXGEM6PMG"
+  ],
+  "at": "2026-11-09T01:25:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "eba2e25cae48bbbf41cfe38293cb454932b008b1",
+          "pr": "https://github.com/dphaener/rhiza/pull/402",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #402 (https://github.com/dphaener/rhiza/pull/402) passed CI at eba2e25",
+          "status": "verified"
+        },
+        "handle": "pr-402-fix-rhiza-run-resume-retry-01m6ygfgqt0a",
+        "id": "01M6YYHPCP43Q841EPZ1KKTF2Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YYHPCNFFVDPZ42X291AR2J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YYHPCNFFVDPZ42X291AR2J",
+        "id": "01M6YYHPF57YH0Q1QD6XEPRVDC",
+        "link": "01M6YYHPF57YH0Q1QD6VYPVNQR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YGXM7SRCDR03S5J1K60QVR",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6YYHPCNFFVDPZ42X291AR2J",
+        "id": "01M6YYHPN4MZKNJDZ90KSEFVZ7",
+        "link": "01M6YYHPN4MZKNJDZ90GMYDGRX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YGXMGVZQBYW9NX74P1TQ4W",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6YYHPCNFFVDPZ42X291AR2J",
+        "id": "01M6YYHPSCK3C9RRFNY5G4TC0Z",
+        "link": "01M6YYHPSCK3C9RRFNY4Q9C4AQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MC56XH2VTXCYDT1G5WD55E",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6YYHPCNFFVDPZ42X291AR2J",
+        "id": "01M6YYHPXW4PGWXVC5WM1GEBMH",
+        "link": "01M6YYHPXW4PGWXVC5WKBFCPSV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XXHNR6FZCKNSA3SC47TZZK",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6YYHPCNFFVDPZ42X291AR2J",
+        "id": "01M6YYHQ0H3MQS9BBVA8M1688M",
+        "link": "01M6YYHQ0H3MQS9BBVA8F77DM0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WMRS4TPPTR6N3JKP0F7HQJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YGFGQT0A9VRZ4AZ9X6VSMJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YYHQ7C9TP1ANVB1Y3MS8V9",
+  "type": "ops",
+  "v": 1
+}

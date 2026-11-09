@@ -1,0 +1,40 @@
+{
+  "actor": "01M6X3XPE4Q2B550RWSE54C2KQ",
+  "after": [
+    "01M6WNX8YR4FZ4GDYMWYHP82AA"
+  ],
+  "at": "2026-11-08T09:07:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at d1a0eabb by a verifier session (claude-code, Opus 5.5). Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship-change-rebase|ship-check-settles-conflict|text-refs-engine-writes|describe-golden)$' -count=1: ok. run-ship-change-rebase.txtar covers each acceptance point: case 1 main moves with an unrelated change set's commit, the pushed head has 3 words in rev-list --parents (main and the old head as parents), the push is plain so origin's branch only fast-forwards, and the rendered index.md conflict is settled by rendering ('Settled 1 rendered file') and pushed; case 2 a code conflict fails the rebase step with exit 1, MERGE_HEAD present and git status showing unmerged paths, no rebase-conflict question, ship check --json shows merge_conflict with feature.txt, @{01M5SWTCBZ9E5DEKJT4EZ8MBX6}, main's commit subject and its Change: 01M5PWGEF85Y185JZ2ZGCNH40M and the branch's change; a merge committed by hand is then pushed by ship rebase and recorded as pushed in .git/rhiza/ship/*.json, with merge_conflict cleared. go test -trimpath ./internal/api/ -run TestShip -count=1: ok (TestShipRebaseClean asserts no force/lease/rebase calls; CodeConflict, FixerMerge, RenderedConflict, PushFails, Refusals). Ran the whole internal/api package with -skip Budget: every test passes; the package reports FAIL only for the pre-existing guard on .rhiza-root/usage.live.json writes, which this commit does not touch. A run without the skip also failed only TestReadBudget/TestReadBudgetApply timing at load average 16. Read the diff of ship_rebase.go: git merge --no-edit, plain git push origin HEAD:refs/heads/<branch>, merge left in progress (no merge --abort) on a code conflict. Nit: the comment on shipSettleConflict in ship.go still says a code conflict raises the rebase-conflict question."
+        },
+        "handle": "ship-rebase-merges-only-verified",
+        "id": "01M6X6KYJY5EPC5BJT5R4EEBB6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6X6KYJXNJA5F6EAFSEVJA19",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6X6KYJXNJA5F6EAFSEVJA19",
+        "id": "01M6X6KZ2W7V83GA1VMB8FDQKR",
+        "link": "01M6X6KZ2W7V83GA1VM8B0ZF3D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WMSB5S57K6QW44F90TEDEZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6WMCCRC0KSCWEV17VY8KVQP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6X6KZF330CCCPACGP2GBDKK",
+  "type": "ops",
+  "v": 1
+}

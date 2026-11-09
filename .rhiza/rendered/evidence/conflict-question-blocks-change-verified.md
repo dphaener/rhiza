@@ -14,7 +14,7 @@ At 9394ffd1 ran go test ./cmd/rhiza -run TestScripts/run-ship-change-rebase -cou
 
 ### Out
 
-- verifies [conflict-question-blocks-change](../capability/rhiza/workflows/workflow-runs/rebase-when-behind/conflict-question-blocks-change.md)
+- verifies conflict-question-blocks-change (retired)
 
 ## History
 

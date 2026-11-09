@@ -1,0 +1,41 @@
+{
+  "actor": "01M6YKWPJSNFWKK9CV0NRA29ZA",
+  "after": [
+    "01M6YKW8F8K7BTVF4Y34BFBSAS"
+  ],
+  "at": "2026-11-08T22:19:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read internal/model/textshow.go, internal/canon/canon.go and op.Encode. ShowFieldValue is the only place the shown text is re-encoded, and it uses json.Marshal, whose default HTML and line-separator escaping differs from canon's emitString; canon.Marshal already exists for exactly this (SetEscapeHTML(false) then Canonicalize) and is what op.Encode uses. Fixing the shared helper covers all six callers named in the question and keeps the canonical check strict, which the change set's intent (every read path accepts what check and land accept) needs; loosening the check or patching callers one by one would leave other paths broken or weaken log integrity.",
+          "statement": "Fix it at the one shared helper: model.ShowFieldValue encodes the shown string with canon.Marshal instead of json.Marshal, so a shown text value is always canonical JSON (no HTML escaping of < > &, no forced U+2028/U+2029 escapes) and passes op.Encode's canonical check. Every read path that uses the helper (change show and its indexed path, change diff, show, slice, render) is fixed by that one change, with no per-caller workaround and no relaxing of the canonical check; a regression test covers a referenced text field holding < > & and U+2028, plus a testscript that runs change show on such an op.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "shown-text-canonical-encoding",
+        "id": "01M6YKY44M04D82GEPRWDAYXVA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6YKY44M04D82GEPRW690QR9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YKY44M04D82GEPRW690QR9",
+        "id": "01M6YKY45WXNPEYG2ZHYBZ0MCG",
+        "link": "01M6YKY45WXNPEYG2ZHWVYP3DS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YKW68VV73QQHSM7XMYNJK6",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6YKP1TFR204NPCNJVQ36A4F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YKY476YHNS7G7A353EVG1W",
+  "type": "ops",
+  "v": 1
+}

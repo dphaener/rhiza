@@ -37,8 +37,11 @@ stdout '"tests": \['
 stdout '"TestScripts/x"'
 stdout '"findings"'
 stdout 'failed: test'
+# The log is read twice: once at the rerun, for the tests that failed
+# before it (the CI stability record's flakes, should the rerun pass), and
+# once now.
 exec sh -c 'grep -c "run view 42 --log-failed" $WORK/gh.log'
-stdout '^1$'
+stdout '^2$'
 exec sh -c 'cat $(git rev-parse --git-common-dir)/rhiza/ship/*.json'
 stdout '"ci_findings"'
 stdout 'TestScripts/x'

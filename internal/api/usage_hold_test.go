@@ -258,7 +258,7 @@ func TestUsageHoldStopsLaunches(t *testing.T) {
 	f := usageFix(t)
 	hold := &usageHold{Kind: "session", Used: 900, Projected: 900, Limit: 1000, Reserve: 20, Reset: f.clock.Add(time.Hour)}
 	var skips []daemon.Skip
-	started, resumed, planned, err := daemonPoll1(f.ctx, f.rs, f.pending, f.unj, 4, 0, false, "", false, hold, &skips)
+	started, resumed, planned, err := daemonPoll1(f.ctx, f.rs, f.pending, f.unj, 0, 4, 0, false, "", false, hold, &skips)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -276,7 +276,7 @@ func TestUsageHoldStopsLaunches(t *testing.T) {
 	}
 
 	skips = nil
-	started, _, _, err = daemonPoll1(f.ctx, f.rs, f.pending, f.unj, 4, 0, false, "", false, nil, &skips)
+	started, _, _, err = daemonPoll1(f.ctx, f.rs, f.pending, f.unj, 0, 4, 0, false, "", false, nil, &skips)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -344,7 +344,7 @@ func TestUsageHoldStopsEveryLaunch(t *testing.T) {
 
 	hold := &usageHold{Kind: "session", Used: 900, Projected: 900, Limit: 1000, Reserve: 20, Reset: f.clock.Add(time.Hour)}
 	var skips []daemon.Skip
-	started, resumed, planned, err := daemonPoll1(f.ctx, f.rs, f.pending, f.unj, 8, 0, false, "", false, hold, &skips)
+	started, resumed, planned, err := daemonPoll1(f.ctx, f.rs, f.pending, f.unj, 0, 8, 0, false, "", false, hold, &skips)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -376,7 +376,7 @@ func TestUsageHoldStopsEveryLaunch(t *testing.T) {
 
 	// The hold clears: the next poll launches each of them.
 	skips = nil
-	started, resumed, planned, err = daemonPoll1(f.ctx, f.rs, f.pending, f.unj, 8, 0, false, "", false, nil, &skips)
+	started, resumed, planned, err = daemonPoll1(f.ctx, f.rs, f.pending, f.unj, 0, 8, 0, false, "", false, nil, &skips)
 	if err != nil {
 		t.Fatal(err)
 	}

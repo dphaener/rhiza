@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YQA314MMCHQ1FSTTHVP2MC",
+  "after": [
+    "01M6YR97ZB5FA5FWE5QTWAMQZR"
+  ],
+  "at": "2026-11-08T23:44:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 92ba3601. Read the diff: a failing ship check (no --settled/--main) records red_head and red_checks (job ID or run ID or name, plus the attempt from the details URL) and leaves Head and Checks unset; --test-failures stays read-only; --settled --changed reports not settled while the head and check IDs/attempts match the recorded baseline, and its detail names the head, the failed checks and 'no failing test: an infra failure'; with no baseline it acts as --settled; --changed is refused without --settled. In the run engine a wait keeps the until command's last non-zero output and appends it to the timeout detail. ship-change.toml routes ci-triage on.fail to wait-ci-rerun (until 'rhiza ship check --settled --changed', 6h, max_visits 3, on.pass pr-green). RetryStep now picks the last-visited wait when two waits feed pr-green. Ran (RHIZA_* and GOTMPDIR unset, from a scratch worktree outside ~/code so the rootguard does not trip on the live daemon's usage.live.json): go test -trimpath ./internal/api/... ./internal/workflow/... gave ok (TestShipCheckFailed and TestShipCheckSettledChanged pass: baseline recorded, unchanged red head not settled and named, new job ID running not settled, then finished settled, newer attempt settled, new head settled, no baseline acts as --settled). go test -trimpath ./internal/run/... gave ok (TestWaitTimeoutDetailHoldsLastOutput: 'did not hold within 5s: <last output>'; Retry* tests pass). go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship-rerun-fail|run-ship-infra-wait|run-ship-ci-fix)' gave PASS for all three. run-ship-infra-wait drives ci-triage fail to wait-ci-rerun, which passes on a rerun to pr-green (visit 2) to signoff to end."
+        },
+        "handle": "ci-triage-infra-waits-verified",
+        "id": "01M6YRRZ18V164N661H6XGQEFA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YRRZ17846ZM5DWH9PJYMXZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YRRZ17846ZM5DWH9PJYMXZ",
+        "id": "01M6YRRZ22C02ABPHNVW59059G",
+        "link": "01M6YRRZ22C02ABPHNVRAAC5VE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YGXMGVZQBYW9NX74P1TQ4W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YGFGQT0A9VRZ4AZ9X6VSMJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YRRZ2WBWTHW49NADEVMTPH",
+  "type": "ops",
+  "v": 1
+}

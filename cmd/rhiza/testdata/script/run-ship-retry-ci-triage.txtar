@@ -1,0 +1,93 @@
+# run resume --retry on a ship-change run failed at ci-triage after the PR
+# head turned green reopens at wait-pr, then passes wait-pr and pr-green on.
+#
+# The repo's .rhiza/workflows/ship-change.toml replaces the built-in by name
+# with its middle: wait-pr, pr-green, and a ci-triage that always fails. The
+# fake gh answers red first (the test check failed), then green.
+
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/ship-change.toml .rhiza/workflows/ship-change.toml
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec git push -q origin main:cs/ship-it
+
+cp $WORK/red.queue $WORK/checks
+! exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
+stdout '^- Detail: step "ci-triage" ended with outcome "fail"$'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec rhiza run status
+stdout '^- pr-green \(visit 1\): fail, then ci-triage'
+
+# The head is green now: the retry waits again, re-checks and passes.
+cp $WORK/green.queue $WORK/checks
+exec sh -c 'rhiza run resume --foreground $(cat $WORK/runid) --retry --dry-run'
+stdout 'would be retried at step wait-pr$'
+exec sh -c 'rhiza run resume --foreground $(cat $WORK/runid) --retry'
+stdout 'succeeded$'
+exec rhiza run status
+stdout '^- wait-pr \(visit 2, retried\): pass, then pr-green'
+stdout '^- pr-green \(visit 2\): pass, then end'
+fold-ok
+
+-- ship-change.toml --
+name = "ship-change"
+start = "wait-pr"
+
+[step.wait-pr]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "30s"
+interval = "50ms"
+on.pass = "pr-green"
+
+[step.pr-green]
+kind = "command"
+run = "rhiza ship check"
+on.pass = "done"
+on.fail = "ci-triage"
+
+[step.ci-triage]
+kind = "command"
+run = "exit 1"
+on.pass = "done"
+-- red.queue --
+FAILURE
+-- green.queue --
+SUCCESS
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+case "$1 $2" in
+"pr view")
+	q="$WORK/checks"
+	c=$(head -1 "$q")
+	if [ "$(wc -l < "$q")" -gt 1 ]; then
+		sed -i 1d "$q"
+	fi
+	head=$(git -C "$WORK/origin.git" rev-parse "refs/heads/$3")
+	case "$c" in
+	SUCCESS) test='{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}' ;;
+	FAILURE) test='{"name":"test","status":"COMPLETED","conclusion":"FAILURE"}' ;;
+	*) test='{"name":"test","status":"IN_PROGRESS","conclusion":""}' ;;
+	esac
+	printf '{"body":"Change set %s","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[%s]}\n' "$RHIZA_CHANGE" "$head" "$test"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

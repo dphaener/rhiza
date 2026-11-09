@@ -1,0 +1,111 @@
+# A ship-change run whose CI fails with no failing test (an infra failure)
+# goes from ci-triage to wait-ci-rerun instead of ending, waits while the red
+# head's check runs are unchanged, and passes pr-green on once a rerun (a
+# new job) turns the head green.
+#
+# The repo's .rhiza/workflows/ship-change.toml replaces the built-in by name
+# with its middle (the built-in's own steps and wait). The fake gh has no
+# Actions run IDs, so nothing is rerun by ship check itself.
+
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/ship-change.toml .rhiza/workflows/ship-change.toml
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec git push -q origin main:cs/ship-it
+
+cp $WORK/queue $WORK/checks
+exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
+stdout 'succeeded$'
+exec rhiza run status
+stdout '^- pr-green \(visit 1\): fail, then conflict-triage'
+stdout '^- ci-triage \(visit 1\): fail, then wait-ci-rerun'
+stdout '^- wait-ci-rerun \(visit 1\): pass, then pr-green'
+stdout '^- pr-green \(visit 2\): pass, then signoff'
+stdout '^- signoff \(visit 1\): pass, then end'
+fold-ok
+
+-- ship-change.toml --
+name = "ship-change"
+start = "wait-pr"
+
+[step.wait-pr]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "30s"
+interval = "50ms"
+on.pass = "pr-green"
+
+[step.pr-green]
+kind = "command"
+run = "rhiza ship check"
+max_visits = 3
+on.pass = "signoff"
+on.fail = "conflict-triage"
+
+[step.conflict-triage]
+kind = "command"
+run = "rhiza ship check --conflicts"
+on.pass = "done"
+on.fail = "ci-triage"
+
+[step.ci-triage]
+kind = "command"
+run = "rhiza ship check --test-failures"
+on.pass = "done"
+on.fail = "wait-ci-rerun"
+
+[step.wait-ci-rerun]
+kind = "wait"
+until = "rhiza ship check --settled --changed"
+timeout = "30s"
+interval = "50ms"
+max_visits = 3
+on.pass = "pr-green"
+
+[step.signoff]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- queue --
+RED
+RED
+RED
+RED
+RED
+RERUN
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+case "$1 $2" in
+"pr view")
+	q="$WORK/checks"
+	c=$(head -1 "$q")
+	if [ "$(wc -l < "$q")" -gt 1 ]; then
+		sed -i 1d "$q"
+	fi
+	head=$(git -C "$WORK/origin.git" rev-parse "refs/heads/$3")
+	case "$c" in
+	RERUN) test='{"name":"test","status":"COMPLETED","conclusion":"SUCCESS","detailsUrl":"https://ci.example/job/10"}' ;;
+	*) test='{"name":"test","status":"COMPLETED","conclusion":"FAILURE","detailsUrl":"https://ci.example/job/9"}' ;;
+	esac
+	printf '{"body":"Change set %s","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[%s]}\n' "$RHIZA_CHANGE" "$head" "$test"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

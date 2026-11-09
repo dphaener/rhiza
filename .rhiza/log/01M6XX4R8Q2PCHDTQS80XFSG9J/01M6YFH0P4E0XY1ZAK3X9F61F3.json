@@ -1,0 +1,40 @@
+{
+  "actor": "01M6YDGBC7ZKEK4SEA28HXHV5K",
+  "after": [
+    "01M6XXTBPAMK058R2HYYXTB5AH"
+  ],
+  "at": "2026-11-08T21:02:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at fe0e16f4. Diff: run.RetryStep(def, failed) returns the single wait step whose on.pass is the failed step, otherwise (none, or more than one) the failed step itself. Both the engine's retry (engine.go, which journals TypeRetried at that step) and api runRunResume (response Retry plus the dry-run fold) call it. Built-in ship-change (pr-green, rebased-green, landed-green, rebased-merge-green, main-green), plan and plan-milestone (pr-green, rebased-green) each have exactly one wait leading to each green step. Ran in a clean env (env -i, because the run session's env makes scripts' rhiza init hit the enclosing repo): go test -trimpath ./internal/run/... ok. TestRetryReopensAtWait: the retry reopens at wait, the wait fails one poll then holds (3 polls), outcomes are wait:pass green:fail wait:pass green:pass, the run succeeds. TestRetryStepChoice: a step with two wait predecessors and a step with none are retried at themselves. go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-resume-retry|run-ship)': all 18 scripts PASS. run-ship-retry-pending: a fake gh fails landed-green on pending checks, the retry dry-run says wait-landed, and the retry holds after several checks, then landed-green passes. run-resume-retry-wait: a failure with no wait before it is retried at solo. go test -trimpath ./internal/api/...: Resume/Retry tests PASS. The only failures were TestReadBudget (read medians just over 50ms with the VM load at 7-10; the diff does not touch the read path) and the known .rhiza-root/usage.live.json leak guard, both unrelated to this change."
+        },
+        "handle": "retry-reopens-at-wait-verified",
+        "id": "01M6YFH0KGVY24M32PYYWJCW6J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6YFH0KGVY24M32PYYGY8RAX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YFH0KGVY24M32PYYGY8RAX",
+        "id": "01M6YFH0MH6ZA8F0Z5AFYWWJ3Q",
+        "link": "01M6YFH0MH6ZA8F0Z5AEJ8NAV9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6XXHNR6FZCKNSA3SC47TZZK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6XX4R8Q2PCHDTQS80XFSG9J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YFH0P4E0XY1ZAK3X9F61F3",
+  "type": "ops",
+  "v": 1
+}

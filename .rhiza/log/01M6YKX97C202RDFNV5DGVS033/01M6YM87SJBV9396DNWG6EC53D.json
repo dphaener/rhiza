@@ -1,0 +1,41 @@
+{
+  "actor": "01M6YM6MBKE21HYRD2TKQ3TJDG",
+  "after": [
+    "01M6YM64ZZE0QMMQENXACKNS8P"
+  ],
+  "at": "2026-11-08T22:25:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question names the cause: healthCache.get (internal/api/web_daemon.go) fires `go h.refresh()`, which runs runHealth over the project under t.TempDir and can still be writing when the test returns, so TempDir's RemoveAll finds a non-empty dir. The background refresh is deliberate product behaviour (the comments on healthCache, WebHealth and fingerprint: the page answers from memory and the /events stream moves when a report lands), so the fix must not change it. WebRootHandler and WebProjectHandler build their WebHealth internally, so a test cannot reach the cache directly; a package-internal tracker of in-flight refreshes, drained by the test in a LIFO cleanup that runs before TempDir's, removes the race at its root and satisfies the change set's intent ('fix the root cause so -count=50 passes; don't add retries'). It stays inside internal/api, touches no request/response types (describe-golden unaffected), and also covers TestOverviewReadsDaemonFromRepo-style tests that use NewWebHealth over a TempDir.",
+          "statement": "Fix the flake in internal/api, at the health cache: track each background health refresh healthCache.get starts (an unexported WaitGroup or in-flight counter, package-internal), and have the web tests that serve pages wait for in-flight refreshes in a t.Cleanup registered after their t.TempDir calls, so the refresh finishes before the TempDir is removed. Production behaviour stays as is: GET / and the Overview still return the held report at once and refresh in the background, with no new exported API, no sleeps and no retries. Don't make the refresh synchronous and don't change WebRootHandler's signature just for the test.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "health-refresh-drained-in-tests",
+        "id": "01M6YM87Q8HYPME7J20BD2142C",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6YM87Q7DQJ2JRS7DVB5DJ15",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6YM87Q7DQJ2JRS7DVB5DJ15",
+        "id": "01M6YM87RA1MNCCQS63W5D8MSW",
+        "link": "01M6YM87RA1MNCCQS63RQ6YCRT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YM62WARWNNJ9BB48AY58M3",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6YKX97C202RDFNV5DGVS033",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YM87SJBV9396DNWG6EC53D",
+  "type": "ops",
+  "v": 1
+}

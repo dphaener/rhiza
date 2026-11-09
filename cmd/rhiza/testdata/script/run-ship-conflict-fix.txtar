@@ -1,0 +1,489 @@
+# A code conflict with main goes to a fixer instead of the owner. The
+# built-in ship-change run merges origin/main into the branch (ship rebase,
+# or ship check --settled on a PR GitHub reports conflicting) and leaves a
+# conflict in code as a merge in progress; conflict-triage (ship check
+# --conflicts) routes it to conflict-fix, a fixer session on the run
+# worktree that commits the merge with a Review: trailer and never pushes.
+# The run then pushes it plainly (render-pr, open-pr), waits for CI again
+# and goes on. Nothing is forced, no question is raised.
+#
+# Case 1: main moves during wait-pr (conflict 1), and again after the
+# sign-off, at rebase (conflict 2). Each is fixed once; pr-green passes on
+# the fixer's merge with no second triage or fixer session; the run signs
+# off again, then lands and merges.
+# Case 2: after land, main moves (conflict 1, seen at landed-green), and
+# the fixer's own work lets main move again, so rebase-merge conflicts
+# (conflict 2): conflict-triage-landed and conflict-fix-landed lead back,
+# through gate-rebase-merge, to rebase-merge, which pushes the fixer's
+# merge; one land, and the run merges.
+# Case 3: a rebase that fails on a push origin refuses, with no conflict and
+# no failing local gate, ends the run at rebase-gate-failed (after
+# rebase-triage) and no fixer starts.
+# Case 4: a fourth conflict, after two fixes before land and one after,
+# fails the run at conflict-triage-landed and rebase-merge-gate-failed.
+# Case 5: autonomous, the fixer finds a design clash: it leaves the merge in
+# progress and asks in its session; the run adds the question to its change
+# set, the arbiter decides it, the same session gets the answer, commits
+# the merge, and the run pushes and merges, with one fixer session.
+# Case 6: not autonomous, the same question: the run reads blocked at
+# conflict-fix with kind question and nothing is pushed while it waits; the
+# owner's answer lets the same session finish.
+# Case 7: a fixer that says done without committing the merge fails the
+# step's until: the run fails and nothing is pushed.
+#
+# The fakes are run-ship-ci-fix.txtar's. gh reports CONFLICTING while the
+# PR's head lacks origin's main, and pushes prepared commits to main from
+# $WORK/other when a PR head's subject matches a line of $WORK/triggers
+# (subject=branch). The fixer resolves every conflicted file, commits the
+# merge, and pops $WORK/fixer-pushes: a branch it then pushes to main.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+
+# Case 1.
+exec sh -c 'printf "%s\n" "*=m1" > $WORK/triggers; printf "%s\n" - - > $WORK/fixer-pushes'
+cd $WORK
+exec sh $WORK/setup.sh
+cd repo
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+stdout '^exit=0$'
+exec rhiza run status
+stdout '^- pr-green \(visit 1\): fail, then conflict-triage'
+stdout '^- conflict-triage \(visit 1\): pass, then conflict-fix: '
+stdout '^- conflict-fix \(visit 1\): pass, then render-pr'
+stdout '^- open-pr \(visit 2\): pass, then wait-pr'
+stdout '^- pr-green \(visit 2\): pass, then signoff'
+! stdout 'ci-triage'
+stdout '^- Current step: signoff$'
+exec sh -c 'wc -l < $WORK/fixes.log'
+stdout '^1$'
+# The fixer's merge was pushed plainly on top of origin's branch.
+exec git -C $WORK/origin.git log -1 --merges --format=%B cs/ship-it
+stdout '^Resolve conflict 1$'
+stdout '^Review: \S+$'
+exec git -C $WORK/origin.git merge-base --is-ancestor main cs/ship-it
+exec rhiza ls --kind question --json
+! stdout 'conflict'
+
+# Main moves again before the rebase.
+exec git -C $WORK/other push -q origin m2:main
+cd $WORK/repo.ship-it
+exec sh -c 'rhiza run approve --foreground --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+exec rhiza run status
+stdout '^- rebase \(visit 1\): fail, then rebase-triage'
+stdout '^- rebase-triage \(visit 1\): pass, then conflict-fix: '
+stdout '^- conflict-fix \(visit 2\): pass, then render-pr'
+stdout '^- pr-green \(visit 3\): pass, then signoff'
+stdout '^- Current step: signoff$'
+exec sh -c 'wc -l < $WORK/fixes.log'
+stdout '^2$'
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
+stdout '^exit=0$'
+stdout '^Run \S+ succeeded$'
+cd $WORK/repo
+exec rhiza run status
+stdout '^- rebase \(visit 2\): pass, then wait-rebased'
+stdout '^- land \(visit 1\): pass'
+! stdout '^- conflict-fix-landed'
+exec sh -c 'wc -l < $WORK/fixes.log'
+stdout '^2$'
+exec git -C $WORK/origin.git log main --format=%s
+stdout 'Ship it \(#7\)'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: landed'
+
+# Case 2: conflicts after land.
+exec sh -c 'printf "%s\n" "Land the change set and record its CI=m1" > $WORK/triggers; printf "%s\n" m2 > $WORK/fixer-pushes'
+cd $WORK
+exec sh $WORK/setup.sh
+cd repo
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$?'
+stdout '^exit=0$'
+stdout '^Run \S+ succeeded$'
+exec rhiza run status
+stdout '^- land \(visit 1\): pass'
+! stdout '^- land \(visit 2\)'
+stdout '^- conflict-triage-landed \(visit 1\): pass, then conflict-fix-landed: '
+stdout '^- conflict-fix-landed \(visit 1\): pass, then gate-rebase-merge'
+stdout '^- rebase-merge \(visit 1\): fail, then conflict-triage-landed'
+stdout '^- conflict-triage-landed \(visit 2\): pass, then conflict-fix-landed: '
+stdout '^- conflict-fix-landed \(visit 2\): pass, then gate-rebase-merge'
+stdout '^- rebase-merge \(visit 2\): pass, then wait-rebased-merge'
+stdout '^- merge \(visit 1\): pass, then wait-main'
+exec sh -c 'wc -l < $WORK/fixes.log'
+stdout '^2$'
+exec git -C $WORK/origin.git log main --format=%s
+stdout 'Ship it \(#7\)'
+
+# Case 3: a push origin refuses is no conflict.
+exec sh -c 'rm -f $WORK/triggers; : > $WORK/fixer-pushes'
+cd $WORK
+exec sh $WORK/setup.sh
+cd repo
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+exec git -C $WORK/other push -q origin n1:main
+exec touch $WORK/refuse
+exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$?'
+stdout '^Run \S+ failed$'
+exec rhiza run status
+stdout '^- rebase \(visit 1\): fail, then rebase-triage'
+stdout '^- rebase-triage \(visit 1\): fail, then rebase-gate-failed'
+stdout '^- rebase-gate-failed \(visit 1\): fail'
+! stdout '^- gate-fix'
+! stdout '^- conflict-fix'
+! exists $WORK/fixes.log
+
+# Case 4: a fourth conflict fails the run.
+exec sh -c 'rm -f $WORK/refuse; printf "%s\n" "*=m1" "Land the change set and record its CI=m3" > $WORK/triggers; printf "%s\n" - - m4 > $WORK/fixer-pushes'
+cd $WORK
+exec sh $WORK/setup.sh
+cd repo
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+exec git -C $WORK/other push -q origin m2:main
+exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$?'
+stdout '^Run \S+ failed$'
+exec rhiza run status
+stdout '^- conflict-fix \(visit 2\)'
+stdout '^- conflict-fix-landed \(visit 1\)'
+stdout '^- conflict-triage-landed \(visit 2\): fail, then rebase-merge-gate-failed'
+stdout '^- rebase-merge-gate-failed \(visit 1\): fail'
+! stdout '^- gate-fix-merge'
+! stdout '^- conflict-fix-landed \(visit 2\)'
+exec rhiza run status --json
+stdout '"state": "failed"'
+exec sh -c 'wc -l < $WORK/fixes.log'
+stdout '^3$'
+! grep '^pr merge' $WORK/gh.log
+
+# Case 5: autonomous, a design clash is asked, arbitrated and resolved.
+exec sh -c 'printf "%s\n" "*=m1" > $WORK/triggers; : > $WORK/fixer-pushes; echo clash > $WORK/fixer-mode; echo bg > $WORK/bg; echo > $WORK/stop'
+cd $WORK
+exec sh $WORK/setup.sh
+cd repo
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --autonomous; echo exit=$?'
+stdout '^Run \S+ succeeded$'
+stderr 'step conflict-fix: blocked on question'
+stderr 'step conflict-fix: session [0-9a-f-]+ asked question question-[0-9a-f]{8}-1 \([0-9A-Z]{26}\); the arbiter answers it'
+stderr 'step conflict-fix: arbiter pass on question [0-9A-Z]{26}: answered by clash-ruling'
+exec rhiza run status
+stdout '^- conflict-fix \(visit 1\): pass, then render-pr'
+! stdout '^- conflict-fix \(visit 2\)'
+exec sh -c 'wc -l < $WORK/clash.log'
+stdout '^1$'
+exec sh -c 'wc -l < $WORK/fixes.log'
+stdout '^1$'
+exec sh -c 'grep "\"type\":\"asked\"" .git/rhiza/runs/*.jsonl | grep "\"step\":\"conflict-fix\"" | grep -c "Design clash"'
+stdout '^1$'
+exec sh -c 'grep -c "\"type\":\"answered\"" .git/rhiza/runs/*.jsonl'
+stdout '^1$'
+exec cat $WORK/typed.log
+stdout -count=1 '^send-key -b block:b1 enter$'
+exec grep '^pr merge' $WORK/gh.log
+exec git -C $WORK/origin.git log main --format=%s
+stdout 'Ship it \(#7\)'
+
+# Case 6: not autonomous, the run waits blocked, and pushes nothing.
+exec sh -c 'printf "%s\n" "*=m1" > $WORK/triggers; : > $WORK/fixer-pushes; echo clash > $WORK/fixer-mode; echo bg > $WORK/bg; rm -f $WORK/stop'
+cd $WORK
+exec sh $WORK/setup.sh
+cd repo
+env REX_BLOCK=block:root
+env REX_SESSION=session:s1
+exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual &
+exec sh -c 'i=0; while [ $i -lt 800 ]; do rhiza run status | grep -q "^Run .* blocked$" && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+exec rhiza run status --json
+stdout '"state": "blocked"'
+stdout '"kind": "question"'
+stdout 'Design clash'
+exec rhiza run status
+stdout '^- Current step: conflict-fix$'
+! exists $WORK/fixes.log
+! exec git -C $WORK/origin.git merge-base --is-ancestor main cs/ship-it
+exec rhiza ls --kind question --json
+! stdout 'Design clash'
+exec sh -c 'echo > $WORK/answer'
+wait
+exec rhiza run status
+stdout '^- conflict-fix \(visit 1\): pass, then render-pr'
+exec sh -c 'wc -l < $WORK/clash.log'
+stdout '^1$'
+env REX_BLOCK=
+env REX_SESSION=
+
+# Case 7: done without committing the merge fails the until.
+exec sh -c 'printf "%s\n" "*=m1" > $WORK/triggers; : > $WORK/fixer-pushes; echo nocommit > $WORK/fixer-mode; rm -f $WORK/bg $WORK/answer'
+cd $WORK
+exec sh $WORK/setup.sh
+cd repo
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual; echo exit=$?'
+stdout '^Run \S+ failed$'
+exec rhiza run status
+stdout '^- conflict-fix \(visit 1\): fail'
+stdout 'until did not hold'
+! stdout '^- render-pr \(visit 2\)'
+! exists $WORK/fixes.log
+! exec git -C $WORK/origin.git merge-base --is-ancestor main cs/ship-it
+! grep '^pr merge' $WORK/gh.log
+-- setup.sh --
+#!/bin/sh
+# A fresh bare origin that refuses pushes while $WORK/refuse exists, a repo
+# with an accepted change set pushed to it, and a clone, other, holding
+# unpushed commits: m1..m4 in a line, each changing feature.txt, and n1,
+# touching an unrelated file.
+set -e
+rm -rf "$WORK/origin.git" "$WORK/repo" "$WORK/repo.ship-it" "$WORK/other"
+rm -f "$WORK/gh.log" "$WORK/pr.created" "$WORK/fixes.log" "$WORK/ship.log" "$WORK/refuse" "$WORK/typed.log" "$WORK/answer" "$WORK/clash.log" "$WORK/tab.out" "$WORK/arbiter.log"
+git init -q --bare "$WORK/origin.git"
+cat > "$WORK/origin.git/hooks/pre-receive" <<'EOF'
+#!/bin/sh
+if [ -f "$WORK/refuse" ]; then
+	echo "push refused" >&2
+	exit 1
+fi
+EOF
+chmod 755 "$WORK/origin.git/hooks/pre-receive"
+mkdir "$WORK/repo"
+cd "$WORK/repo"
+git init -q
+git remote add origin "$WORK/origin.git"
+rhiza init > /dev/null
+mkdir .rhiza/workflows
+cp "$WORK/ship.sh" .rhiza/workflows/ship.sh
+cp "$WORK/review.toml" .rhiza/workflows/review.toml
+rhiza change new 'Ship it' --title 'Ship it' --json > /dev/null
+rhiza add capability first --field 'statement=Does first' > /dev/null
+rhiza propose > /dev/null
+rhiza accept --reason ok > /dev/null
+git add -A
+git commit -qm 'Start shipping'
+git push -q -u origin main
+git clone -q "$WORK/origin.git" "$WORK/other"
+cd "$WORK/other"
+git checkout -q -b n1
+echo unrelated > unrelated.txt
+git add unrelated.txt
+git commit -qm 'Add something unrelated' -m 'Change: 01M5PWGEF85Y185JZ2ZGCNH40M'
+git checkout -q main
+git checkout -q -b m0
+for n in 1 2 3 4; do
+	git checkout -q -b m$n
+	echo "main $n" > feature.txt
+	git add feature.txt
+	git commit -qm "Main $n" -m 'Change: 01M5PWGEF85Y185JZ2ZGCNH40M'
+done
+-- review.toml --
+# The repo's own review, as the built-in one but with two fake checks.
+# Its code step runs rhiza check, which passes only because ship-change
+# rendered and committed what build's sessions wrote.
+[step.code]
+kind = "command"
+run = "rhiza run code-check"
+on.pass = "review"
+
+[step.review]
+kind = "checks"
+interval = "50ms"
+max_visits = 3
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "beta"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 3
+on.pass = "done"
+on.changes = "review"
+-- ship.sh --
+#!/bin/sh
+echo shipped >> "$WORK/ship.log"
+echo shipped >> "$WORK/order.log"
+-- bin/rex --
+#!/bin/sh
+case "$1" in
+send | send-key)
+	echo "$*" >> "$WORK/typed.log"
+	exit 0
+	;;
+esac
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		if [ -f "$WORK/bg" ]; then
+			(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		else
+			(cd "$dir" && "$@") >&2 || true
+		fi
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+sid=
+for a; do last=$a; done
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+case "$last" in
+*'rhiza guide arbiter'*)
+	q=$(printf '%s\n' "$last" | sed -n 's/^Decide question \([0-9A-Z]*\):.*/\1/p')
+	printf '{"writes":[{"op":"add","kind":"decision","handle":"clash-ruling","fields":["statement=Keep main behaviour","wording=(assumed, would have escalated)","reasoning=Main moved first"]},{"op":"link","from":"clash-ruling","type":"answers","to":"%s"}]}\n' "$q" > "$WORK/decision.json"
+	rhiza apply "$WORK/decision.json" --json >&2 || exit 7
+	rhiza session done >&2 || exit 6
+	exit 0
+	;;
+esac
+case "$RHIZA_ROLE" in
+builder)
+	echo built > feature.txt
+	git add feature.txt
+	git commit -q -m "build $RHIZA_LEAF" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: $RHIZA_LEAF" -- feature.txt || exit 1
+	;;
+verifier)
+	rhiza add evidence "$RHIZA_LEAF-verified" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-verified" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+check)
+	echo '{"findings":[]}' > "$WORK/empty-round.json"
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+	;;
+*)
+	# The conflict-fix agent steps: no role. The merge is in progress and
+	# ship check --json shows its context; resolve every conflicted file,
+	# commit the merge with the run's Review: trailer (from the prompt),
+	# never push, then maybe let main move.
+	case "$last" in
+	*"Resolve the merge conflicts"*) ;;
+	*) exit 0 ;;
+	esac
+	rhiza ship check --json > "$WORK/fix-input.json" 2>&1
+	grep -q '"merge_conflict"' "$WORK/fix-input.json" || exit 1
+	grep -q '"feature.txt"' "$WORK/fix-input.json" || exit 1
+	git rev-parse --verify --quiet MERGE_HEAD > /dev/null || exit 1
+	mode=$(cat "$WORK/fixer-mode" 2>/dev/null)
+	if [ "$mode" = nocommit ]; then
+		rhiza session done >&2 || exit 1
+		exit 0
+	fi
+	if [ "$mode" = clash ]; then
+		echo asked >> "$WORK/clash.log"
+		echo '{"session_id":"'$sid'","hook_event_name":"PreToolUse","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Design clash between change sets Ship it and Main in feature.txt: main writes main N, the branch writes built"}]}}' | rhiza session hook PreToolUse >> "$WORK/hook.out" || exit 8
+		# An autonomous run's denied question leaves the session idle; the
+		# owner's pending one does not.
+		if [ -f "$WORK/stop" ]; then
+			echo '{"session_id":"'$sid'","hook_event_name":"Stop"}' | rhiza session hook Stop >> "$WORK/hook.out" || exit 8
+		fi
+		i=0
+		until grep -q '^send-key ' "$WORK/typed.log" 2>/dev/null || [ -f "$WORK/answer" ]; do
+			i=$((i + 1))
+			[ $i -gt 4000 ] && exit 9
+			sleep 0.025
+		done
+		git rev-parse --verify --quiet MERGE_HEAD > /dev/null || exit 1
+	fi
+	run=$(printf '%s' "$last" | sed -n 's/.*in run \([^:]*\):.*/\1/p')
+	n=$(( $(cat "$WORK/fixes.log" 2>/dev/null | wc -l) + 1 ))
+	for f in $(git diff --name-only --diff-filter=U); do
+		echo "resolved $n" > "$f"
+		git add "$f"
+	done
+	git add -A -- .rhiza/rendered .rhiza/log
+	git commit -q -m "Resolve conflict $n" -m "Change: $RHIZA_CHANGE
+Review: $run" || exit 1
+	echo "$run" >> "$WORK/fixes.log"
+	next=$(head -1 "$WORK/fixer-pushes" 2>/dev/null)
+	sed -i 1d "$WORK/fixer-pushes" 2>/dev/null
+	case "$next" in
+	m*) git -C "$WORK/other" push -q origin "$next:main" || exit 1 ;;
+	esac
+	rhiza session done >&2 || exit 1
+	;;
+esac
+exit 0
+-- bin/gh --
+#!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ "$3" = 7 ]; then
+		printf '{"mergeCommit":{"oid":"%s"},"state":"MERGED"}\n' "$(cat "$WORK/merge.sha")"
+		exit 0
+	fi
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3") || [ ! -f "$WORK/pr.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	# Main moves when a head's subject matches a trigger line.
+	if [ -s "$WORK/triggers" ]; then
+		subj=$(git -C "$o" log -1 --format=%s "$head")
+		while IFS== read -r s b; do
+			if [ "$s" = "*" ] || [ "$s" = "$subj" ]; then
+				git -C "$WORK/other" push -q origin "$b:main" || exit 1
+				grep -v -x -F -- "$s=$b" "$WORK/triggers" > "$WORK/triggers.new"
+				mv "$WORK/triggers.new" "$WORK/triggers"
+			fi
+		done < "$WORK/triggers"
+	fi
+	m=MERGEABLE
+	if ! git -C "$o" merge-base --is-ancestor main "$head"; then
+		m=CONFLICTING
+	fi
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","mergeable":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"},{"context":"lint","state":"SUCCESS"}]}\n' "$head" "$m"
+	;;
+"pr create")
+	touch "$WORK/pr.created"
+	;;
+"pr edit")
+	;;
+"pr merge")
+	head=$(git -C "$o" rev-parse refs/heads/cs/ship-it)
+	if [ "$6" != "$head" ]; then
+		echo "head branch was modified" >&2
+		exit 1
+	fi
+	sha=$(git -C "$o" commit-tree "$head^{tree}" -p refs/heads/main -m 'Ship it (#7)')
+	git -C "$o" update-ref refs/heads/main "$sha"
+	echo "$sha" > "$WORK/merge.sha"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

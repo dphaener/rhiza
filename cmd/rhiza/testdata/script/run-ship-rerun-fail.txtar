@@ -1,5 +1,6 @@
-# The same failed check still failing after the one rerun fails the run at
-# pr-green, with exactly one rerun in gh.log.
+# The same failed check still failing after the one rerun goes from
+# ci-triage (no failing test in the log) to wait-ci-rerun, where --no-wait
+# stops the run, with exactly one rerun in gh.log.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -22,8 +23,13 @@ exec git add -A
 exec git commit -qm 'Start shipping'
 exec git push -q -u origin main
 
-! exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
-stdout '^- Detail: step "ci-triage" ended with outcome "fail"$'
+# The first wait stops with the rerun in flight; resumed, the head is red again.
+exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'rhiza run resume --foreground $(cat $WORK/runid) --no-wait'
+stdout 'waiting: rhiza ship check --settled --changed'
+exec rhiza run status
+stdout '^- ci-triage \(visit 1\): fail, then wait-ci-rerun'
 exec sh -c 'grep -c -x "run rerun 42 --failed" $WORK/gh.log'
 stdout '^1$'
 -- bin/rex --

@@ -1,0 +1,30 @@
+{
+  "actor": "01M6YGGF8YMS502Q4X4W26NKR8",
+  "after": [
+    "01M6YGPS49VHJKM1KWXSDCKACZ"
+  ],
+  "at": "2026-11-08T21:24:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "bc50c2e7-c330-4961-babf-01a1bd082164",
+          "statement": "In ship-change, ci-triage (`rhiza ship check --test-failures`) has no on.fail. So a red PR head whose CI logs name no failing test (an infra or unparsable failure, e.g. GitHub refusing every job for billing, after `rhiza ship check` has used its rerun budget) ends the run. The change set's intent says such a failure should send the run back to wait on CI instead. Sending it straight to wait-pr would loop at once, because the head is already settled red, until max_visits ends the run. What should ci-triage do on an infra-only failure?"
+        },
+        "handle": "question-bc50c2e7-2",
+        "id": "01M6YGREJVNGXG1XFHF0SX2CWW",
+        "key": null,
+        "kind": "question",
+        "node": "01M6YGREJVNGXG1XFHEZPWXBFD",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6YGFGQT0A9VRZ4AZ9X6VSMJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YGRJ401CYA60K3JHMQMYG5",
+  "type": "ops",
+  "v": 1
+}

@@ -24,6 +24,9 @@ func (f *fake) run(op string, args []string) ([]byte, error) {
 	if op == "daemon.settings" {
 		return []byte(fmt.Sprintf(`{"settings":[{"key":"rhiza.daemon.paused","value":%q,"default":"false","source":"default"},{"key":"rhiza.daemon.maxRuns","value":"3","default":"4","source":"git config"}]}`, f.paused)), nil
 	}
+	if op == "daemon.status" {
+		return []byte(`{"running":true,"max":4,"max_runs":4,"live":2,"starting":1,"runs":[{"id":"R1","change":"C1","state":"running"},{"id":"R2","change":"C2","state":"running"}]}`), nil
+	}
 	return []byte(`{"ok":true}`), nil
 }
 
@@ -216,5 +219,14 @@ func TestNoProjectFieldsWithoutProject(t *testing.T) {
 	}
 	if v := a.Render(); strings.Contains(v, "Pause project") {
 		t.Errorf("project field shown with no project:\n%s", v)
+	}
+}
+
+// The app shows the machine-wide runs against the cap as health does.
+func TestShowsRunsAgainstCap(t *testing.T) {
+	_, s := open(t, "false")
+	want := "runs: 2/4 live, 1 starting"
+	if got := s.Component().(*App).RunsLine(); got != want {
+		t.Errorf("RunsLine() = %q, want %q", got, want)
 	}
 }

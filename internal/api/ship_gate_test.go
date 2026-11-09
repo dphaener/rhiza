@@ -113,26 +113,23 @@ func TestShipLocalGateOncePerHead(t *testing.T) {
 	}
 }
 
-// ship rebase runs the gate on the head it rebased, before the push: the
+// ship rebase runs the gate on the head it merged, before the push: the
 // gate step before it saw only the head without main's new commits. A
-// failing gate pushes nothing and leaves main merged into the branch as it
-// was, unpushed and recorded, for the gate's fixer: the head before the
-// rebase already passed the gate, so a fixer there would see no failure.
+// failing gate pushes nothing and leaves main merged into the branch,
+// unpushed and recorded, for the gate's fixer: the head before the merge
+// already passed the gate, so a fixer there would see no failure.
 func TestShipRebaseRunsLocalGate(t *testing.T) {
 	setup := func(t *testing.T, gate string) (*sessionFixture, string) {
 		f, state := shipRebaseFixture(t)
-		f.git.out["rebase "+rebaseOnto] = ""
 		f.git.out["config --get "+LocalGateKey] = gate + "\n"
 		if err := writeAtomic(ciStabilityPath(f.common), []byte(`{"runs":[{"head":"a","result":"green","time":"x","flakes":["TestPond"]}]}`)); err != nil {
 			t.Fatal(err)
 		}
 		return f, state
 	}
-	const merge = "merge --no-edit -m Merge origin/main into cs/ship-it " + rebaseOnto
 	t.Run("failing", func(t *testing.T) {
 		f, state := setup(t, "echo FAIL TestMerged; exit 1")
-		f.git.out["reset -q --keep beef000111"] = ""
-		f.git.out[merge] = ""
+		f.git.out[rebaseMerge] = ""
 		r := shipRebase(t, f)
 		if r.ExitCode() != 1 || r.Gate == nil || r.Gate.Passed || r.Pushed != "" || r.Kept != "beef000111" || !strings.Contains(r.Detail, "nothing was pushed") {
 			t.Fatalf("rebase = %+v", r)
@@ -141,10 +138,12 @@ func TestShipRebaseRunsLocalGate(t *testing.T) {
 			if strings.HasPrefix(c, "push") {
 				t.Errorf("pushed after a failing gate: %q", c)
 			}
+			if strings.HasPrefix(c, "reset") || strings.HasPrefix(c, "merge --abort") {
+				t.Errorf("the merge the gate failed on was not kept: %q", c)
+			}
 		}
-		i := slices.Index(f.git.calls, "reset -q --keep beef000111")
-		if i < 0 || !slices.Contains(f.git.calls[i:], merge) {
-			t.Errorf("main was not merged into the branch as it was; calls %q", f.git.calls)
+		if !slices.Contains(f.git.calls, rebaseMerge) {
+			t.Errorf("main was not merged into the branch; calls %q", f.git.calls)
 		}
 		if st, _ := readShipState(state); st.GateFailed != "beef000111" || st.Pushed != "" {
 			t.Errorf("state = %+v; want the kept head recorded, nothing pushed", st)
@@ -153,24 +152,20 @@ func TestShipRebaseRunsLocalGate(t *testing.T) {
 			t.Errorf("human = %q", got)
 		}
 	})
-	t.Run("failing, and the merge conflicts", func(t *testing.T) {
-		f, state := setup(t, "exit 1")
-		f.git.out["reset -q --keep beef000111"] = ""
-		f.git.out["merge --abort"] = ""
+	t.Run("a conflict runs no gate", func(t *testing.T) {
+		f, state := setup(t, "touch "+filepath.Join(t.TempDir(), "ran"))
 		f.git.out[rebaseConflict] = "feature.txt\n"
 		r := shipRebase(t, f)
-		if r.ExitCode() != 1 || r.Kept != "" || !strings.Contains(r.Detail, "the branch is as it was") {
+		if r.ExitCode() != 1 || r.Gate != nil || r.Kept != "" || !slices.Equal(r.Conflicts, []string{"feature.txt"}) {
 			t.Fatalf("rebase = %+v", r)
 		}
-		if n := strings.Count(strings.Join(f.git.calls, "\n"), "reset -q --keep beef000111"); n != 2 {
-			t.Errorf("put back %d times; want 2; calls %q", n, f.git.calls)
-		}
-		if st, _ := readShipState(state); st.GateFailed != "" {
-			t.Errorf("state = %+v; want no kept head", st)
+		if st, _ := readShipState(state); st.GateFailed != "" || st.MergeConflict == nil {
+			t.Errorf("state = %+v; want the conflict recorded, no kept head", st)
 		}
 	})
 	t.Run("passing", func(t *testing.T) {
-		f, _ := setup(t, "echo gate-ok")
+		f, state := setup(t, "echo gate-ok")
+		f.git.out[rebaseMerge] = ""
 		f.git.out[rebasePush] = ""
 		r := shipRebase(t, f)
 		if r.ExitCode() != 0 || r.Gate == nil || !r.Gate.Passed || r.Pushed != "beef000111" {
@@ -178,6 +173,9 @@ func TestShipRebaseRunsLocalGate(t *testing.T) {
 		}
 		if !slices.Contains(f.git.calls, rebasePush) {
 			t.Errorf("not pushed; calls %q", f.git.calls)
+		}
+		if st, _ := readShipState(state); st.GateFailed != "" || st.Pushed != "beef000111" {
+			t.Errorf("state = %+v", st)
 		}
 	})
 }
@@ -215,5 +213,29 @@ func TestShipGateFailed(t *testing.T) {
 	g.answers["git rev-parse HEAD"] = "cafe000222\n"
 	if r := ask(); r.ExitCode() != 1 {
 		t.Errorf("a fixed head still counts as the failure: %+v", r)
+	}
+}
+
+// While the branch is at the merge ship rebase left after the gate failed
+// on it, ship check fails, whatever the PR's CI on the pushed head says:
+// the run routes that to the gate's fixer. A wait (--settled) is not held
+// by it, and a new head on the branch ends it.
+func TestShipCheckFailsOnGateFailedHead(t *testing.T) {
+	f, g, state := shipFixture(t)
+	g.answers[shipPRView] = openPR(greenRollup)
+	g.answers["git rev-parse HEAD"] = "beef000111\n"
+	if err := writeShipState(state, shipState{GateFailed: "beef000111"}); err != nil {
+		t.Fatal(err)
+	}
+	r := shipCheck(t, f, `{}`)
+	if r.ExitCode() != 1 || r.Passed || !strings.Contains(r.Detail, "local gate failed on beef000") {
+		t.Errorf("check on the kept head = %+v", r)
+	}
+	if r := shipCheck(t, f, `{"settled":true}`); r.ExitCode() != 0 {
+		t.Errorf("settled check on the kept head = %+v", r)
+	}
+	g.answers["git rev-parse HEAD"] = "cafe000222\n"
+	if r := shipCheck(t, f, `{}`); r.ExitCode() != 0 || !r.Passed {
+		t.Errorf("check after a fix = %+v", r)
 	}
 }

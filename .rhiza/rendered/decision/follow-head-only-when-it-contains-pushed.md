@@ -19,7 +19,7 @@ A run follows a PR head it did not push only when that head contains the head th
 ### In
 
 - decided-by [follow-moved-pr-head](../capability/rhiza/orchestration/shipping/wait-green-pr/follow-moved-pr-head.md)
-- decided-by [rebase-keeps-branch-merges](../capability/rhiza/workflows/workflow-runs/rebase-when-behind/rebase-keeps-branch-merges.md)
+- decided-by rebase-keeps-branch-merges (retired)
 - decided-by [ship-worktree-follows-pr](../capability/rhiza/orchestration/shipping/ship-worktree-follows-pr.md)
 
 ## History

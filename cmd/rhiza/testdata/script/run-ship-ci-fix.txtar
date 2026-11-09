@@ -10,8 +10,8 @@
 # Case 2: green at pr-green, red at rebased-green (a new test fails on the
 # rebased head): a second fix, sign-off again, rebase again, then it lands.
 # Case 3: still red after two fixes: the run fails, naming the tests.
-# Case 4: red with a log naming no test (infra): the run fails at ci-triage
-# and ci-fix never runs.
+# Case 4: red with a log naming no test (infra): ci-triage sends the run to
+# wait-ci-rerun (--no-wait stops it there) and ci-fix never runs.
 #
 # The fakes are run-ship-change.txtar's, except that gh's PR is red until
 # the branch holds as many fix-N.txt files as $WORK/need says, and its
@@ -30,7 +30,9 @@ exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission
 stdout '"signoff_waiting": true'
 stdout '^exit=0$'
 exec rhiza run status
-stdout '^- pr-green \(visit 1\): fail, then ci-triage'
+stdout '^- pr-green \(visit 1\): fail, then conflict-triage'
+stdout '^- conflict-triage \(visit 1\): fail, then gate-triage'
+stdout '^- gate-triage \(visit 1\): fail, then ci-triage'
 stdout '^- ci-triage \(visit 1\): pass, then ci-fix: '
 stdout '^- ci-fix \(visit 1\): pass, then render-pr'
 stdout '^- render-pr \(visit 2\): pass, then local-gate'
@@ -53,7 +55,9 @@ cd $WORK/repo.ship-it
 exec sh -c 'rhiza run approve --foreground --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 exec rhiza run status
-stdout '^- rebased-green \(visit 1\): fail, then ci-triage'
+stdout '^- rebased-green \(visit 1\): fail, then conflict-triage'
+stdout '^- conflict-triage \(visit 2\): fail, then gate-triage'
+stdout '^- gate-triage \(visit 2\): fail, then ci-triage'
 stdout '^- ci-triage \(visit 2\): pass, then ci-fix'
 stdout '^- ci-fix \(visit 2\): pass, then render-pr'
 stdout '^- Current step: signoff$'
@@ -97,12 +101,14 @@ cd $WORK
 exec sh $WORK/setup.sh
 exec sh -c 'touch $WORK/infra'
 cd repo
-exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --no-wait --json; echo exit=$?'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'rhiza run resume --foreground $(cat $WORK/runid) --no-wait'
 exec rhiza run status
-stdout '^- ci-triage \(visit 1\): fail'
+stdout '^- ci-triage \(visit 1\): fail, then wait-ci-rerun'
 ! stdout '^- ci-fix'
 exec rhiza run status --json
-stdout '"state": "failed"'
+! stdout '"state": "failed"'
 ! exists $WORK/fixes.log
 -- setup.sh --
 #!/bin/sh

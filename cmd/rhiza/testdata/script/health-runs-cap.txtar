@@ -1,0 +1,56 @@
+# rhiza health's daemon part shows the runs against rhiza.daemon.maxRuns,
+# summed across the daemon's projects: live runs and starts not yet
+# journaled. It is ok while they fit the cap and bad, naming each live run,
+# when they exceed it. Rex is never dialled.
+
+env REX_SESSION=
+env REX_SERVER=
+env RHIZA_TEST_FREE_BYTES=1099511627776
+
+exec sh -c 'printf "[projects.alpha]\npath = \"alpha\"\n[projects.beta]\npath = \"beta\"\n" > $WORK/rhiza.toml'
+mkdir alpha beta
+cd alpha
+exec git init -q -b main
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+cd ../beta
+exec git init -q -b main
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+cd $WORK
+
+mkdir .rhiza-root alpha/.git/rhiza beta/.git/rhiza
+exec sh -c 'echo alpha > .rhiza-root/daemon.home'
+root-daemon-lock .
+
+# Max 4: two live runs in alpha, one in beta, one start not journaled yet.
+cp alpha-ok.json alpha/.git/rhiza/daemon.state.json
+cp beta-ok.json beta/.git/rhiza/daemon.state.json
+exec rhiza health
+stdout '^ok   daemon +running'
+stdout 'runs: 3/4 live, 1 starting'
+exec rhiza health --json
+stdout '"live": 3'
+stdout '"starting": 1'
+stdout '"max": 4'
+
+# Max 2 with three live runs: bad, naming the three, exit 1.
+cp alpha-over.json alpha/.git/rhiza/daemon.state.json
+cp beta-ok.json beta/.git/rhiza/daemon.state.json
+! exec rhiza health
+stdout '^bad  daemon +running'
+stdout 'runs: 3/2 live, 1 starting'
+stdout 'live run: alpha, RUNA1'
+stdout 'live run: alpha, RUNA2'
+stdout 'live run: beta, RUNB1'
+
+-- alpha-ok.json --
+{"process":{},"last_poll":"2030-01-01T00:10:00Z","max_runs":4,"autonomous":false,"runs":[{"id":"RUNA1","change":"CSA","state":"building"},{"id":"RUNA2","change":"CSB","state":"building"}],"starting":1}
+-- alpha-over.json --
+{"process":{},"last_poll":"2030-01-01T00:10:00Z","max_runs":2,"autonomous":false,"runs":[{"id":"RUNA1","change":"CSA","state":"building"},{"id":"RUNA2","change":"CSB","state":"building"}],"starting":1}
+-- beta-ok.json --
+{"process":{},"last_poll":"2030-01-01T00:10:00Z","max_runs":4,"autonomous":false,"runs":[{"id":"RUNB1","change":"CSC","state":"building"}]}
