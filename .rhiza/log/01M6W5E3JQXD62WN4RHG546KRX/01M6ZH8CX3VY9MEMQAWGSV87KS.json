@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZGQ3SM1FTJHVVYKS3P5GRP",
+  "after": [
+    "01M6ZF4QBNXA41RVZBJ29061EB"
+  ],
+  "at": "2026-11-09T06:52:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e7eac5e7 I ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(docs-reference-stale|describe-golden|docs)$' -count=1: docs-reference-stale passes. It appends to a generated docs/reference/config.md, sees rhiza check fail naming config.md (not cli.md) as differing with next: rhiza docs, then pass after rhiza docs; a deleted cli.md is reported missing; extra files and a project's own docs/reference without the generated marker are left alone, and rhiza docs refuses to write into it. internal/docs, internal/check and internal/api tests pass. make self-check on this repo reports no docs/reference failure, so the committed generated reference is fresh; its only failures are .rhiza/rendered staleness from the run's own record commits. Diff read: docs.Generated gates the check on the Marker, shared by all three generators."
+        },
+        "handle": "docs-reference-stale-verified-2",
+        "id": "01M6ZH8CV8N2F602PD6S1C9EYG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZH8CV8N2F602PD6Q49JBTS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZH8CV8N2F602PD6Q49JBTS",
+        "id": "01M6ZH8CW5FB0VS2KRAH1MY4JS",
+        "link": "01M6ZH8CW5FB0VS2KRAEF18PEB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H0026NYNDG8X1JYS6R7C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5E3JQXD62WN4RHG546KRX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZH8CX3VY9MEMQAWGSV87KS",
+  "type": "ops",
+  "v": 1
+}

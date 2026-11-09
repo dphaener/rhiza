@@ -46,26 +46,28 @@ var watchdogNames = []struct {
 	def         string
 	validate    func(string) error
 	machineOnly bool
+	typ         string
+	desc        string
 }{
-	{"enabled", "true", validateChoice("true", "false"), false},
-	{"agentNudge", "20m", validateDeployTimeout, false},
-	{"agentRetry", "40m", validateDeployTimeout, false},
-	{"commandLimit", "30m", validateDeployTimeout, false},
-	{"waitLimit", "90m", validateDeployTimeout, false},
-	{"retryBudget", strconv.Itoa(DefaultRetryBudget), validateWholeFrom(0), false},
-	{"ciReruns", strconv.Itoa(DefaultCIReruns), validateWholeFrom(0), false},
-	{"pollBehind", strconv.Itoa(DefaultPollBehind), validateWholeFrom(1), true},
-	{"fileBugs", "true", validateChoice("true", "false"), false},
-	{"autonomousOnly", "true", validateChoice("true", "false"), false},
+	{"enabled", "true", validateChoice("true", "false"), false, "boolean", "Run the watchdog, which nudges and retries stalled agents and commands"},
+	{"agentNudge", "20m", validateDeployTimeout, false, "duration", "How long an agent may be silent before the watchdog nudges it"},
+	{"agentRetry", "40m", validateDeployTimeout, false, "duration", "How long an agent may be silent before the watchdog retries its step"},
+	{"commandLimit", "30m", validateDeployTimeout, false, "duration", "How long a command step may run before the watchdog stops it"},
+	{"waitLimit", "90m", validateDeployTimeout, false, "duration", "How long a wait step may wait before the watchdog gives up on it"},
+	{"retryBudget", strconv.Itoa(DefaultRetryBudget), validateWholeFrom(0), false, "whole number", "How many times the watchdog retries a stalled step before it gives up"},
+	{"ciReruns", strconv.Itoa(DefaultCIReruns), validateWholeFrom(0), false, "whole number", "How many times the watchdog reruns a failed CI check"},
+	{"pollBehind", strconv.Itoa(DefaultPollBehind), validateWholeFrom(1), true, "whole number", "How many daemon polls a run may fall behind before the watchdog acts"},
+	{"fileBugs", "true", validateChoice("true", "false"), false, "boolean", "File a bug when the watchdog gives up on a step"},
+	{"autonomousOnly", "true", validateChoice("true", "false"), false, "boolean", "Watch only autonomous runs, never ones an owner drives"},
 }
 
 func init() {
 	for _, w := range watchdogNames {
-		settingDefs = append(settingDefs, settingDef{key: watchdogMachinePrefix + w.name, def: w.def, validate: w.validate})
+		settingDefs = append(settingDefs, settingDef{key: watchdogMachinePrefix + w.name, def: w.def, validate: w.validate, typ: w.typ, desc: w.desc})
 	}
 	for _, w := range watchdogNames {
 		if !w.machineOnly {
-			settingDefs = append(settingDefs, settingDef{project: true, key: watchdogProjectPrefix + w.name, def: w.def, validate: w.validate})
+			settingDefs = append(settingDefs, settingDef{project: true, key: watchdogProjectPrefix + w.name, def: w.def, validate: w.validate, typ: w.typ, desc: w.desc})
 		}
 	}
 }

@@ -23,6 +23,11 @@ Generated, CI-checked: a rhiza docs command renders docs/reference/*.md from the
 ### In
 
 - decided-by [m30-reference](../intent/milestone-30/m30-reference.md)
+- decided-by [docs-reference-cli](../capability/rhiza/documentation/docs-reference-cli.md)
+- decided-by [docs-reference-config](../capability/rhiza/documentation/docs-reference-config.md)
+- decided-by [docs-reference-workflow](../capability/rhiza/documentation/docs-reference-workflow.md)
+- decided-by [docs-reference-stale](../capability/rhiza/documentation/docs-reference-stale.md)
+- decided-by [docs-commands-exist](../capability/rhiza/documentation/docs-commands-exist.md)
 
 ## History
 
