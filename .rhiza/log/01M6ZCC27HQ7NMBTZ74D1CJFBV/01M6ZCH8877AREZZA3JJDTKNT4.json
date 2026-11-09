@@ -1,0 +1,30 @@
+{
+  "actor": "01M6ZCD4REPHFXCFB2QQTE110E",
+  "after": [
+    "01M6ZCC27JP0MQ2ZC6JGH14WC0"
+  ],
+  "at": "2026-11-09T05:29:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "d5c3217c-51fd-4fba-9e9f-01a1bec67441",
+          "statement": "Change set 01M6ZCC (Builders and fixers reproduce) serves no intent yet, and milestone-30 (ready to share) is the only open milestone on the roadmap. Recent guidance and flake fixes (#403 Stop using CI as a debugger, #405 Fix flaky test on main) served milestone-25 (empty backlog: bugs and polish). What should this change set serve? / The intent's watchdog part is optional: the daemon flags a run's descendant processes that sit at 100% CPU for minutes. How should change set 01M6ZCC handle it? / Should the rule 'reproduce timing flakes by injecting a delay at the suspected race, never by busy loops or parallel stress on the host' go only into the build and review guide topics (the source of the rhiza-build and rhiza-review skills), or also into this repo's CLAUDE.md?"
+        },
+        "handle": "question-d5c3217c-1",
+        "id": "01M6ZCH61HJRA2WPADKSBGSGA4",
+        "key": null,
+        "kind": "question",
+        "node": "01M6ZCH61HJRA2WPADKS4GY4BM",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6ZCC27HQ7NMBTZ74D1CJFBV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZCH8877AREZZA3JJDTKNT4",
+  "type": "ops",
+  "v": 1
+}
