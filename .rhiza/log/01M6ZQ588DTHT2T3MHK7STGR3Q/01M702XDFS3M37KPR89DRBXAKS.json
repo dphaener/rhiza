@@ -1,0 +1,73 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M701V7JP9VDN1TT5CF58R6A0"
+  ],
+  "at": "2026-11-09T12:00:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "e45689667029691dd5930547670fe801333ef96b",
+          "pr": "https://github.com/dphaener/rhiza/pull/418",
+          "result": "11 checks passed: lint SUCCESS, go-install SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #418 (https://github.com/dphaener/rhiza/pull/418) passed CI at e456896",
+          "status": "verified"
+        },
+        "handle": "pr-418-fix-a-run-blocked-on-a",
+        "id": "01M702XD8086RNEC5TXRE0JQDC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M702XD8086RNEC5TXNB9AMN7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M702XD8086RNEC5TXNB9AMN7",
+        "id": "01M702XD91PJ4JA4YDFKG3ZYNN",
+        "link": "01M702XD91PJ4JA4YDFFXW6STB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZQFF7C7AZMBBHAW8RPC69G",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M702XD8086RNEC5TXNB9AMN7",
+        "id": "01M702XD9S3CT8VJ6XQ79JYTY0",
+        "link": "01M702XD9S3CT8VJ6XQ6HZ5DJA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZQFF9QA1CMC83FCNZAJDXN",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M702XD8086RNEC5TXNB9AMN7",
+        "id": "01M702XDAVHPN2G7N1QCZ1GF9X",
+        "link": "01M702XDAVHPN2G7N1QAFDFVAS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZQFFBV7TQ3R919MJNZ6QCJ",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M702XD8086RNEC5TXNB9AMN7",
+        "id": "01M702XDBQDBV60NQF3NTJ7JDJ",
+        "link": "01M702XDBQDBV60NQF3M610W3H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYCYW9FJ42M36KXMA9BT99",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ZQ588DTHT2T3MHK7STGR3Q",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M702XDFS3M37KPR89DRBXAKS",
+  "type": "ops",
+  "v": 1
+}

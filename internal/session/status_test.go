@@ -124,3 +124,34 @@ func TestStalled(t *testing.T) {
 		}
 	}
 }
+
+func TestResolvePermissionBlockClears(t *testing.T) {
+	at := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	hook := func(kind string) *Report {
+		return &Report{State: StateBlocked, Kind: kind, Detail: "Bash", At: at}
+	}
+	rex := func(state string, d time.Duration) *Report { return &Report{State: state, At: at.Add(d)} }
+	cases := []struct {
+		name   string
+		status Status
+		state  string
+		src    Source
+	}{
+		{"idle after", Status{Hook: hook(KindPermission), Rex: rex(StateIdle, time.Second)}, StateIdle, SourceRex},
+		{"working after", Status{Hook: hook(KindPermission), Rex: rex(StateWorking, time.Second)}, StateWorking, SourceRex},
+		{"idle before", Status{Hook: hook(KindPermission), Rex: rex(StateIdle, -time.Second)}, StateBlocked, SourceHook},
+		{"idle at the same time", Status{Hook: hook(KindPermission), Rex: rex(StateIdle, 0)}, StateBlocked, SourceHook},
+		{"rex blocked after", Status{Hook: hook(KindPermission), Rex: rex(StateBlocked, time.Second)}, StateBlocked, SourceHook},
+		{"no rex", Status{Hook: hook(KindPermission)}, StateBlocked, SourceHook},
+		{"question stays", Status{Hook: hook(KindQuestion), Rex: rex(StateIdle, time.Second)}, StateBlocked, SourceHook},
+		{"auth stays", Status{Hook: hook(KindAuth), Rex: rex(StateIdle, time.Second)}, StateBlocked, SourceHook},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got, src := Resolve(Record{StartedAt: at, Status: c.status})
+			if got.State != c.state || src != c.src {
+				t.Errorf("Resolve = %s from %s, want %s from %s", got.State, src, c.state, c.src)
+			}
+		})
+	}
+}

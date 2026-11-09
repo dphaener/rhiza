@@ -35,7 +35,7 @@ func init() {
 	register(Operation{
 		Name:     "inbox",
 		ReadOnly: true,
-		Summary:  "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted and stalled sessions of live runs, and the daemon's low disk space, oldest first",
+		Summary:  "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted, stalled sessions of live runs and sessions of live runs blocked on a permission prompt, and the daemon's low disk space, oldest first",
 		Request:  reflect.TypeFor[InboxRequest](),
 		Response: reflect.TypeFor[InboxResponse](),
 		Run:      runInbox,
@@ -80,6 +80,7 @@ const (
 	InboxBlocker      = "blocker"
 	InboxOverlap      = "overlap"
 	InboxStalled      = "stalled"
+	InboxPermission   = "permission"
 	InboxDiskLow      = "disk-low"
 	InboxUsageReserve = "usage-reserve"
 	InboxMainStale    = "main-stale"
@@ -97,17 +98,17 @@ type InboxRequest struct {
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string              `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale, accept, interview or workflow"`
+	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, main-stale, accept, interview or workflow"`
 	At             string              `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string              `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
 	Change         string              `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
 	ChangeTitle    string              `json:"change_title,omitempty" desc:"The change set's title; absent when the log has no such change set"`
 	Step           string              `json:"step,omitempty" desc:"The step: the asking session's, the sign-off's, the failed step, or where the run was interrupted"`
 	Question       string              `json:"question,omitempty" desc:"A question: what the agent asked; a blocker: the question's statement"`
-	Tab            string              `json:"tab,omitempty" desc:"A question or an interview: the title of the session's tab"`
-	TabBlock       string              `json:"tab_block,omitempty" desc:"A question or an interview: the Rex block of the session's tab"`
-	TabSession     string              `json:"tab_session,omitempty" desc:"A question or an interview: the Rex session of the session's tab"`
-	Session        string              `json:"session,omitempty" desc:"A question: the asking session; an interview: the interview's session; a stalled item: the stalled session"`
+	Tab            string              `json:"tab,omitempty" desc:"A question, an interview or a permission item: the title of the session's tab"`
+	TabBlock       string              `json:"tab_block,omitempty" desc:"A question, an interview or a permission item: the Rex block of the session's tab"`
+	TabSession     string              `json:"tab_session,omitempty" desc:"A question, an interview or a permission item: the Rex session of the session's tab"`
+	Session        string              `json:"session,omitempty" desc:"A question: the asking session; an interview: the interview's session; a stalled item: the stalled session; a permission item: the blocked session"`
 	Recommendation string              `json:"recommendation,omitempty" desc:"A question or a blocker: what the advisor recommends answering; absent while it has not, or when it failed"`
 	Reasons        string              `json:"reasons,omitempty" desc:"A question or a blocker: why the advisor recommends it"`
 	Restatement    string              `json:"restatement,omitempty" desc:"A blocker: what is asked in plain words, as the advisor restated it; absent until it has"`
@@ -119,7 +120,7 @@ type InboxItem struct {
 	OtherTitle     string              `json:"other_title,omitempty" desc:"An overlap: the second change set's title; absent when the log has no such change set"`
 	Target         string              `json:"target,omitempty" desc:"An overlap: the node or link both change sets write, its handle when it has one"`
 	TargetTitle    string              `json:"target_title,omitempty" desc:"An overlap: the target node's statement; absent when it has none"`
-	Detail         string              `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for"`
+	Detail         string              `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for; a permission item: the prompt's message"`
 	Next           string              `json:"next,omitempty" desc:"The command that clears it, when one does"`
 	Project        string              `json:"project,omitempty" desc:"The registered project the item belongs to, on an inbox that covers every project; absent for the daemon's machine-wide items (low disk, usage hold) and on a single project's inbox"`
 }
@@ -275,9 +276,13 @@ func (r InboxResponse) Human(w io.Writer) {
 // request's plan run, not autonomous, is an interview item from the
 // interview session's launch until the run ends.
 //
+// blocked gives each session of a run blocked on a permission prompt; a nil
+// blocked lists none. Such an item is the owner's in an autonomous run too:
+// no arbiter can answer a prompt.
+//
 // stalled gives the stalled session of a run, nil when it has none; a nil
 // stalled lists none. Only a run another process holds can have one.
-func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool), stalled func(st run.State) []RunStalled, tabOf func(sid string) session.Tab) []InboxItem {
+func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool), stalled func(st run.State) []RunStalled, blocked func(st run.State) []RunPermission, tabOf func(sid string) session.Tab) []InboxItem {
 	// gone reports a change set that is landed, withdrawn, rejected or
 	// superseded: a failed or given-up run on one is left out, as its next
 	// command could only fail.
@@ -365,6 +370,19 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 					})
 				}
 			}
+			if live && blocked != nil {
+				for _, b := range blocked(st) {
+					it := InboxItem{Step: b.Step, Session: b.Session, Detail: b.Detail}
+					if tabOf != nil {
+						t := tabOf(b.Session)
+						it.Tab, it.TabBlock, it.TabSession = t.Title, t.Block, t.Session
+					}
+					at, _ := time.Parse(time.RFC3339, b.Since)
+					add(InboxPermission, b.Session, at, it)
+					last := &items[len(items)-1]
+					last.Next = "rhiza inbox open " + last.ID
+				}
+			}
 			if sid := st.Session[milestoneInterviewStep]; live && st.MilestonePlan && !st.Autonomous && sid != "" {
 				it := InboxItem{
 					Step: milestoneInterviewStep, Session: sid,
@@ -420,6 +438,13 @@ func inboxStalledOf(ctx *Ctx, common string) func(st run.State) []RunStalled {
 	sessions := session.NewStore(session.Dir(common))
 	now := ctx.Now()
 	return func(st run.State) []RunStalled { return runStalledAll(st, true, sessions, now) }
+}
+
+// inboxBlockedOf reads each live run's session records for every session of
+// the run's current step that resolves as blocked on a permission prompt.
+func inboxBlockedOf(ctx *Ctx, common string) func(st run.State) []RunPermission {
+	sessions := session.NewStore(session.Dir(common))
+	return func(st run.State) []RunPermission { return runPermissionAll(st, true, sessions) }
 }
 
 // inboxTabOf reads a session's Rex tab from its record; the zero tab when
@@ -738,7 +763,7 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 	host, _ := os.Hostname()
 	fold := newInboxFold(ctx)
 	defer fold.close()
-	items := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxTabOf(ctx, common))
+	items := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxTabOf(ctx, common))
 	blockers, err := inboxBlockers(ctx, questionAdvice(runs))
 	if err != nil {
 		return nil, err
@@ -1022,13 +1047,13 @@ func (r InboxOpenResponse) Human(w io.Writer) {
 	}
 }
 
-// itemTab is where item's tab is: a question's session tab, else the run's
+// itemTab is where item's tab is: a question's, interview's or permission item's session tab, else the run's
 // journalled tab, scoped by the Rex session it records: Rex finds a block
 // only within its session, so the owner's shell may be in another. The
 // Rex session is empty when the journal has none (one written before it
 // was recorded, or by a process with no REX_SESSION).
 func itemTab(item InboxItem, st run.State) (rexSession, block string) {
-	if item.Kind == InboxQuestion || item.Kind == InboxInterview {
+	if item.Kind == InboxQuestion || item.Kind == InboxInterview || item.Kind == InboxPermission {
 		return item.TabSession, item.TabBlock
 	}
 	if st.Process != nil {
@@ -1098,7 +1123,7 @@ func findInboxItems(ctx *Ctx, ref string) ([]InboxItem, map[string]run.State, er
 	var found []InboxItem
 	fold := newInboxFold(ctx)
 	defer fold.close()
-	all := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxTabOf(ctx, common))
+	all := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxTabOf(ctx, common))
 	blockers, err := inboxBlockers(ctx, questionAdvice(runs))
 	if err != nil {
 		return nil, nil, err

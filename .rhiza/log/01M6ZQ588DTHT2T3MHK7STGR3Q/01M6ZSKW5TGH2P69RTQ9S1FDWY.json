@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZSJ4ZVGFM4B7XE1T9RJ05C",
+  "after": [
+    "01M6ZR68DKCQFEBPBDP2EZR56Y"
+  ],
+  "at": "2026-11-09T09:18:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier (Opus) at c7fc3245: go test -trimpath -count=1 ./internal/api -run 'TestSessionMessage|TestTypePointer|TestQueuePointer' passes, including TestSessionMessageSaysWhyWaiting (a permission-blocked session gets exactly one stderr line with 'blocked on a permission: Bash' and 'rhiza inbox open'; the timeout error names 'last status: blocked on a permission: Bash') and TestSessionMessageSaysWhenStatusChanges (blocked then working mid-wait gives exactly two lines, the second ': working;' with 'waiting up to 1s'; the timeout names 'last status: working'). With GOTMPDIR in a scratch dir and RHIZA_ROOT/CHANGE/RUN unset, go test ./cmd/rhiza -run TestScripts/(session-message|session-message-busy|session-message-idle-fallback|session-hook-message|run-status-messages) passes; the leaf's commits touch no testscript or golden, so stdout and --json are unchanged. Diff read: typePointer prints only when the resolved status changes, to ctx.Stderr, and defaultMessageTimeout is still 10 * time.Minute."
+        },
+        "handle": "message-says-why-waiting-verified",
+        "id": "01M6ZSKW2D1RNN8ZK4WNT3B9TV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZSKW2D1RNN8ZK4WNP3H6A9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZSKW2D1RNN8ZK4WNP3H6A9",
+        "id": "01M6ZSKW485SDCMNSY6VG7EKM9",
+        "link": "01M6ZSKW485SDCMNSY6S9RT4WS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZQFFBV7TQ3R919MJNZ6QCJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ZQ588DTHT2T3MHK7STGR3Q",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZSKW5TGH2P69RTQ9S1FDWY",
+  "type": "ops",
+  "v": 1
+}

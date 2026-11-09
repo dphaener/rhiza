@@ -755,7 +755,7 @@ Exit code: set by the result, besides the shared codes.
 
 ## rhiza inbox
 
-List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted and stalled sessions of live runs, and the daemon's low disk space, oldest first.
+List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted, stalled sessions of live runs and sessions of live runs blocked on a permission prompt, and the daemon's low disk space, oldest first.
 
 ```
 rhiza inbox [--project <project>] [--all]

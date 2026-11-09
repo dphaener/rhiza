@@ -336,6 +336,7 @@ func typePointer(ctx *Ctx, st *session.Store, sid, line string, timeout time.Dur
 	}
 	clock := runClock
 	start := clock.Now()
+	last, told := "", ""
 	for {
 		rec, err := st.Read(sid)
 		if err != nil {
@@ -349,15 +350,50 @@ func typePointer(ctx *Ctx, st *session.Store, sid, line string, timeout time.Dur
 			return clock.Now().Sub(start), Conflictf("session %s has no open tab", sid).WithNext("rhiza session show " + sid)
 		}
 		waited := clock.Now().Sub(start)
-		if rep, _ := session.Resolve(rec); rep.State == session.StateIdle {
+		rep, _ := session.Resolve(rec)
+		if rep.State == session.StateIdle {
 			return waited, sendPointer(ctx, rec, line)
 		}
+		last = waitingStatus(rep)
+		if told != last {
+			told = last
+			if ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: waiting for session %s: %s; %s\n", sid, last, waitingHint(rep, sid, timeout))
+			}
+		}
 		if waited >= timeout {
-			return waited, Conflictf("session %s did not reach its prompt within %s", sid, timeout).
+			return waited, Conflictf("session %s did not reach its prompt within %s (last status: %s)", sid, timeout, last).
 				WithNext("rhiza session show " + sid)
 		}
 		clock.Sleep(min(messagePoll, timeout-waited))
 	}
+}
+
+// waitingStatus describes a resolved status that is not idle, for the wait
+// line and the timeout error.
+func waitingStatus(rep session.Report) string {
+	if rep.State == session.StateBlocked {
+		s := "blocked on a " + rep.Kind
+		if rep.Kind == "" {
+			s = "blocked"
+		}
+		if rep.Detail != "" {
+			s += ": " + rep.Detail
+		}
+		return s
+	}
+	if rep.State == "" {
+		return "starting"
+	}
+	return rep.State
+}
+
+// waitingHint says what the wait is for and how to end it.
+func waitingHint(rep session.Report, sid string, timeout time.Duration) string {
+	if rep.State == session.StateBlocked {
+		return fmt.Sprintf("answer it with rhiza inbox open (or rhiza session show %s); waiting up to %s", sid, timeout)
+	}
+	return fmt.Sprintf("waiting up to %s for it to reach its prompt", timeout)
 }
 
 // sendPointer types line into the session's block, then presses Enter.

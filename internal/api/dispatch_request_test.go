@@ -118,7 +118,7 @@ func TestInboxKeepsPlanRunUnderOtherWorkflow(t *testing.T) {
 			{Type: run.TypeStarted, At: time.Now(), Step: "one", Started: &run.Started{Workflow: "bugfix", Change: "CS1", Plan: plan}},
 			{Type: run.TypeProcess, Process: &run.Process{Host: "h", Pid: 1}},
 		}}
-		return len(inboxItems([]run.Journal{j}, "h", func(int) bool { return false }, func(string) bool { return false }, landed, nil, nil))
+		return len(inboxItems([]run.Journal{j}, "h", func(int) bool { return false }, func(string) bool { return false }, landed, nil, nil, nil))
 	}
 	if got := items(true); got != 0 {
 		t.Errorf("plan run under bugfix: %d items, want 0 (resumable, not skipped)", got)

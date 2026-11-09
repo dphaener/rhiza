@@ -30,7 +30,7 @@ func TestInboxMilestoneInterview(t *testing.T) {
 		return session.Tab{Session: "rs", Block: "blk", Title: "interview " + sid}
 	}
 	items := func(j run.Journal, live bool) []InboxItem {
-		return inboxItems([]run.Journal{j}, "h", nil, func(string) bool { return live }, func(string) (string, bool) { return "", false }, nil, tab)
+		return inboxItems([]run.Journal{j}, "h", nil, func(string) bool { return live }, func(string) (string, bool) { return "", false }, nil, nil, tab)
 	}
 	ms := run.Started{Change: "CS1", MilestonePlan: true}
 	got := items(interviewJournal("R1", ms, false), true)

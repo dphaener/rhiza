@@ -74,6 +74,30 @@ env RHIZA_TEST_NOW=2026-01-03T00:00:00Z RHIZA_TEST_NOTIFY_TIMEOUT=200ms
 exec rhiza daemon --permission-mode manual --once --notify-command 'sleep 30'
 stderr -count=4 'notify command for item .*timed out after 200ms'
 
+# A session of a live run blocked on a permission prompt notifies too, with
+# the prompt's message in the text: its run is live, so a fixture journal is
+# not enough.
+exec rm -f .git/rhiza/runs/QUESTIONRUN.jsonl .git/rhiza/runs/SIGNOFFRUN01.jsonl .git/rhiza/runs/FAILEDRUN001.jsonl .git/rhiza/runs/FAILEDRUN002.jsonl .git/rhiza/runs/GAVEUPRUN001.jsonl .git/rhiza/daemon.state.json
+rm $WORK/hook.out
+chmod 755 $WORK/bin/rex
+chmod 755 $WORK/bin/claude
+env PATH=$WORK/bin:$PATH
+env REX_BLOCK=block:root
+env REX_SESSION=session:s1
+mkdir .rhiza/workflows
+cp $WORK/work.toml .rhiza/workflows/work.toml
+exec rhiza change new 'Blocked run' --title 'Blocked run' --json
+exec rhiza run start --foreground --workflow work --permission-mode manual &
+exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"hook\"" "$WORK"/repo/.git/rhiza/sessions/*.json && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"state\": \")working\"/\${1}blocked\", \"kind\": \"permission\", \"detail\": \"Allow the hook command?\"/s; s/(\"hook\": \{.*?\"at\": \")[^\"]*/\${1}2030-01-01T00:00:00Z/s; s/\"tab\": \{[^}]*\}/\"tab\": {\"title\": \"build tab\", \"block\": \"block:sess\", \"session\": \"session:s2\"}/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+exec rhiza daemon --permission-mode manual --once --notify-command $WORK/hook.sh
+exec sh -c 'wc -l < $HOOKOUT'
+stdout '^ *1$'
+exec grep -c '"kind":"permission"' $HOOKOUT
+exec grep -c 'env=permission:.*:Blocked run: a session waits on a permission prompt: Allow the hook command?' $HOOKOUT
+exec sh -c 'echo > $WORK/go'
+wait
+
 -- question.jsonl --
 {"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSQUESTION"}}
 {"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
@@ -104,3 +128,49 @@ exit 1
 #!/bin/sh
 in=$(cat)
 echo "$in env=$RHIZA_INBOX_KIND:$RHIZA_INBOX_ID:$RHIZA_INBOX_CHANGE:$RHIZA_INBOX_TITLE" >> "$HOOKOUT"
+-- work.toml --
+name = "work"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change}"
+interval = "50ms"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+if [ "$1" = events ]; then
+	exit 0
+fi
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+sid=
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+echo '{"session_id":"'$sid'","hook_event_name":"UserPromptSubmit"}' | rhiza session hook UserPromptSubmit >> "$WORK/hook.out" || exit 8
+i=0
+until [ -f "$WORK/go" ]; do
+	i=$((i + 1))
+	if [ $i -gt 800 ]; then
+		exit 9
+	fi
+	sleep 0.025
+done
+exit 0
