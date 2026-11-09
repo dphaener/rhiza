@@ -52,7 +52,7 @@ Because the log is plain files in the repo, it travels with git. A branch brings
 Sometimes a change set grows past its intent. You started on CSV export and ended up with half of an access-control model in it. `rhiza carve` moves nodes from one change set to another and keeps their IDs.
 
 ```bash
-rhiza carve access-roles --from export-csv-change --to roles-change --with-children
+rhiza carve access-roles --from <source-id> --to <target-id> --with-children
 ```
 
 It takes the node's creation, every write made on it and every link that starts or ends at it. Both change sets get an entry saying what moved where, so `rhiza log` shows "carved from" on one side and "carved into" on the other. If what's left behind rests on what moved, the source picks up a `depends-on` link to the target, so it still sees those nodes.
