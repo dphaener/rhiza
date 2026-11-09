@@ -31,13 +31,15 @@ Accepting a change set records a decision too. `rhiza accept` and `rhiza reject`
 A question is something nobody knows yet. Writing it down is better than guessing and moving on, because a guess looks exactly like knowledge by the time it's in the code.
 
 ```bash
-rhiza add question csv-delimiter --field "statement=Which delimiter do exports use for locales that write decimals with a comma?"
-rhiza link csv-delimiter blocks export-csv
+rhiza add question csv-delimiter --field "statement=Which delimiter do exports use for locales that write decimals with a comma?" --record
+rhiza link csv-delimiter blocks export-csv --record
 ```
 
-`blocks` means the question stops that capability or change set until somebody answers. Agents that hit one stop and wait instead of choosing for you. When you have the answer, `rhiza question answer` writes it as a decision quoting your words and links it `answers` to the question. It works on a question that blocks the current change set, which is how a run's questions get answered:
+`blocks` means the question stops that capability or change set until somebody answers. Agents that hit one stop and wait instead of choosing for you. When you have the answer, `rhiza question answer` writes it as a decision quoting your words and links it `answers` to the question. It only answers an open question that has already landed (hence the [`--record`](change-sets.md) above) and that blocks the current change set: through a `blocks` link to the change set itself, to a node the change set touches, or to an ancestor of one. A question still unlanded in the change set you're working in can't be answered from it. This is how a run's questions get answered. Here a change set that touches `export-csv` answers the question blocking it:
 
 ```bash
+rhiza change new "Locale-aware CSV export"
+rhiza set export-csv --field "statement=Export reports as CSV, with the delimiter chosen by locale"
 rhiza question answer csv-delimiter "Semicolon there, comma everywhere else."
 ```
 
