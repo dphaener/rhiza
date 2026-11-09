@@ -19,16 +19,24 @@ import (
 // version is set at build time with -ldflags "-X main.version=...".
 var version string
 
-// versionString reports the ldflags version, else the module version from
-// the build info, else "dev".
+// versionString reports the ldflags version (the release tag, e.g. v0.1.0),
+// else the module version from the build info (go install), else "dev".
 func versionString() string {
-	if version != "" {
-		return version
-	}
+	mod := ""
 	if info, ok := debug.ReadBuildInfo(); ok {
-		if v := info.Main.Version; v != "" && v != "(devel)" {
-			return v
-		}
+		mod = info.Main.Version
+	}
+	return pickVersion(version, mod)
+}
+
+// pickVersion prefers the ldflags version, then a real module version, and
+// falls back to "dev" (a "(devel)" module version is a local build).
+func pickVersion(ldflags, module string) string {
+	if ldflags != "" {
+		return ldflags
+	}
+	if module != "" && module != "(devel)" {
+		return module
 	}
 	return "dev"
 }
