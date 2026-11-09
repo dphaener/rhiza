@@ -2,11 +2,15 @@
 exec rhiza docs --out $WORK/out
 stdout 'cli.md'
 grep '^## rhiza request$' out/cli.md
-# Both flags sit in the request command's own section: no heading line
-# comes between "## rhiza request" and them.
-grep '(?s)^## rhiza request\n(?:[^\n]|\n[^#])*\n- `--kind`: feature, bug or milestone' out/cli.md
-grep '(?s)^## rhiza request\n(?:[^\n]|\n[^#])*\n- `--milestone`: ' out/cli.md
+# Both flags sit in the request command's own section: every line between
+# "## rhiza request" and them is blank or does not start with '#', so the
+# match cannot run on into a later command's section.
+grep '^## rhiza request\n(?:[^#\n][^\n]*\n|\n)*- `--kind`: feature, bug or milestone' out/cli.md
+grep '^## rhiza request\n(?:[^#\n][^\n]*\n|\n)*- `--milestone`: ' out/cli.md
 grep '^- `4`: Not found' out/cli.md
+# A request section without --milestone fails the check, even when a
+# later section has one.
+! grep '^## rhiza request\n(?:[^#\n][^\n]*\n|\n)*- `--milestone`: ' no-milestone.md
 
 # Same registry, same bytes; the second run changes nothing.
 cp out/cli.md first.md
@@ -14,3 +18,17 @@ exec rhiza docs --out $WORK/out
 stdout '3 unchanged'
 ! stdout 'wrote'
 cmp out/cli.md first.md
+
+-- no-milestone.md --
+## rhiza request
+
+Arguments and flags:
+
+- `--kind`: feature, bug or milestone
+
+## rhiza run start
+
+Arguments and flags:
+
+- `--change`: A change set
+- `--milestone`: A milestone
