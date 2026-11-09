@@ -1,0 +1,41 @@
+name: Go install
+
+# `go install github.com/dphaener/rhiza/cmd/rhiza@<version>` must build a
+# working rhiza: no replace directives, no private dependencies.
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - go.mod
+      - go.sum
+      - cmd/**
+      - internal/**
+      - .github/workflows/go-install.yml
+
+jobs:
+  go-install:
+    runs-on: ubuntu-26.04
+
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Set up Go
+      uses: actions/setup-go@v7
+      with:
+        go-version-file: go.mod
+        cache: true
+        cache-dependency-path: go.sum
+
+    - name: Require no replace directives
+      run: |
+        if grep -Eq '^[[:space:]]*replace[[:space:]]' go.mod; then
+          echo "go.mod has a replace directive" >&2
+          exit 1
+        fi
+
+    - name: Install into a fresh GOBIN
+      run: |
+        export GOBIN="$RUNNER_TEMP/gobin"
+        rm -rf "$GOBIN"
+        go install -mod=readonly ./cmd/rhiza
+        "$GOBIN/rhiza" version
