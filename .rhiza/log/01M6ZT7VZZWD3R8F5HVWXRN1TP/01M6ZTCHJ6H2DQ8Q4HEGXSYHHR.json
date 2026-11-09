@@ -1,0 +1,41 @@
+{
+  "actor": "01M6ZTAZNGMRJAJWXM20G9V4MK",
+  "after": [
+    "01M6ZTANMA73AF8Y70YVY5X6PK"
+  ],
+  "at": "2026-11-09T09:31:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "m30-reference says the docs/reference files are generated from the code and make check fails when they are stale; #412 (pr-412-generated-reference evidence) served it, and this change set's intent names that regression, so the fix belongs to the same intent rather than an older run-reliability intent like m4-runs-hold-up. Both rules compare the repo against the binary's own registry (docsFiles() and Operations() in internal/api/check.go), so they are only correct when the binary is the branch's build; the daemon's in-process check is the installed binary, which is why a run that edits CLI help, settings or the workflow format, or adds a documented command, can never pass review/code until merged and installed. Building the worktree's binary inside the code check was weighed and rejected: the code check is generic across projects under the root, only Rhiza's own repo has a rhiza-generated docs/reference, and a go build per check adds Go-toolchain and CPU cost on the shared VM. make self-check already builds this commit and runs in CI (make check) before every merge, so turning the two rules off in the code check loses no coverage on the merge path, and an explicit request option keeps the default rhiza check unchanged for people and CI.",
+          "statement": "Change set 01M6ZT7 serves intent m30-reference (01M6W5BP8JF2): it repairs a regression from #412, the change set that served that intent. The run code check (internal/api/run_codecheck.go checkIn/runCheck) stops judging the tool's own reference: it runs rhiza check with the generated-reference comparison (DocsWant/Docs, the render failure 'differs from what rhiza docs writes') and the docs-command rule (Commands) turned off, through an explicit CheckRequest option the code check sets, so plain rhiza check and make self-check keep both. Those two rules are judged only by make self-check, which builds the branch and runs in the PR's CI before every merge. The code check does not build the run worktree's binary.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "code-check-leaves-reference-to-self-check",
+        "id": "01M6ZTCHFZNN7V7KTVN4F15RHW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6ZTCHFZNN7V7KTVN25KBDPW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZTCHFZNN7V7KTVN25KBDPW",
+        "id": "01M6ZTCHGXEVDKY5FFR4Q9GA3P",
+        "link": "01M6ZTCHGXEVDKY5FFR23FZBTG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZTAKPAXQ86RT3PX7CQZECJ",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6ZT7VZZWD3R8F5HVWXRN1TP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZTCHJ6H2DQ8Q4HEGXSYHHR",
+  "type": "ops",
+  "v": 1
+}
