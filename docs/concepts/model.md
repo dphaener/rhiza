@@ -61,7 +61,7 @@ A node can be named three ways, and any command that takes a node takes any of t
 - **An ID prefix.** The first four or more characters are enough, as long as they're unique in the repo.
 - **A handle.** A short name you choose, lower-case words joined by dashes, like `export-csv`. It's only for people, so you can rename it later. The ID stays the same.
 
-Handles are unique among siblings. Two capabilities under the same parent can't share one, and neither can two nodes of a kind that has no tree, like decisions. Rhiza reports a clash rather than quietly picking one.
+Handles are unique among live nodes across the whole repo, whatever their kind or parent. Two capabilities under different parents can't both be `export-csv`, and a decision can't take a capability's handle. Rhiza refuses a taken handle rather than quietly picking one. A retired node frees its handle for reuse.
 
 Free text can point at other nodes too. Write `@export-csv` in a statement or a note and Rhiza stores the reference by ID, so it still works after the handle changes. A reference starts with `@` at the beginning of the text or after a space or an opening bracket, which is why an email address like `someone@example.com` is left alone. To write a literal `@` where a reference would start, double it: `@@`.
 
