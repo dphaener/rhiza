@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZDDTF4754NR4J3MNH3QYTP",
+  "after": [
+    "01M6Z5P2NXQKS0R3VDPWXXRA8H"
+  ],
+  "at": "2026-11-09T05:46:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified docs/concepts/model.md at 29db9d88 as verifier claude-code-0e066796. docs-links-resolve: go test -trimpath -count=1 ./internal/doclinks/... passes (TestRepoDocsLinksResolve covers README.md and docs/, incl. the ../quickstart.md links). docs-commands-exist has no check built yet (its leaf is in another change set), so I checked by hand: every rhiza command the page names (describe, add, link, tree, slice) answers --help, and rhiza link has --note and --decision as described. Facts checked against code: ten node kinds and fifteen link types match op.Kinds()/op.LinkTypes(); the endpoint table matches internal/check/endpoints.go rows; only capability and intent have parents (op.HasParent); handles unique per parent, or per kind for flat kinds (model/apply.go finish); 4+ char ID prefixes (index minPrefix); @ reference start rules and the @ escape match internal/textref. Prose reads plain and unpadded, consistent with doc-prose-humanized. The owner read is left to the owner at review."
+        },
+        "handle": "docs-concepts-model-verified",
+        "id": "01M6ZDGBWE3RXVAFMNGBB2RBV1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZDGBWE3RXVAFMNGB1JSKX9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZDGBWE3RXVAFMNGB1JSKX9",
+        "id": "01M6ZDGBX7J2V09AC0JEB8C6N9",
+        "link": "01M6ZDGBX7J2V09AC0JD6MJ7A4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H9S6GJNR5ZJWFCEQNAP2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5EM5J6KCHFB3SKS29JJ7M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZDGBYADT94FEZT9EHX5VM0",
+  "type": "ops",
+  "v": 1
+}
