@@ -11,11 +11,11 @@ rhiza slice --change "$RHIZA_CHANGE" --json
 rhiza show "$RHIZA_LEAF" --json
 ```
 
-The leaf's `acceptance` field is the bar. Build that leaf, nothing else.
+The leaf's `acceptance` is the bar. Build that leaf only.
 
 ## Builder
 
-Write the code and its tests to the leaf's acceptance. End with exactly one new commit
+Write the code and tests to the leaf's acceptance. End with exactly one new commit
 whose trailers name the leaf as well as the change set and you:
 
 ```
@@ -30,8 +30,8 @@ Co-Authored-By: Agent Name <agent@example.com>
 Keep every trailer, `Co-Authored-By:` included, in the one final paragraph, with no
 blank line between them.
 
-Your own actor record sits untracked in `.rhiza/log` until you commit it. Stage it with
-your work, so the `Actor:` trailer names an actor whose record is tracked:
+Your actor record sits untracked in `.rhiza/log`. Stage it with your work, so the
+`Actor:` trailer names a tracked actor:
 
 ```
 git add $(grep -l "Record agent actor $RHIZA_ACTOR " .rhiza/log/*/*.json | xargs -n1 dirname | sort -u)
@@ -53,6 +53,7 @@ While CI is unstable, or a red is not explained by your change,
 do not push or rerun CI to see. Reproduce the
 failing test locally, fix it, and push only after it and the
 touched packages pass locally.
+Reproduce a timing flake by injecting a delay at the suspected race, never by busy loops or parallel stress on the host.
 
 ## Outside work
 
