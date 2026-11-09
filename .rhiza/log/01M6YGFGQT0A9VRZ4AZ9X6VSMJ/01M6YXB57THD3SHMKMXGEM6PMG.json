@@ -1,0 +1,28 @@
+{
+  "actor": "01M6YX9KXD0VMXJ56W6FQNTDNG",
+  "after": [
+    "01M6YWZTB9QHFBFG8SFNWG9H90"
+  ],
+  "at": "2026-11-09T01:04:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6WMRS4TPPTR6N3JKSAMBGEF",
+        "handle": null,
+        "id": "01M6YXB50X4496BZ5ACVASWRK8",
+        "node": "01M6WMRS4TPPTR6N3JKP0F7HQJ",
+        "op": "node.update",
+        "set": {
+          "statement": "The built-in ship-change workflow sends a code conflict to a fixer instead of the owner, through a triage that tells a conflict from any other failure: rhiza ship check --conflicts passes only when the ship state records an unresolved merge conflict and the run has made fewer than 3 conflict fixes, counted run-wide as the merge commits on the branch carrying this run's Review: trailer, so the cap is one count shared by every fixer step, before and after land; with no recorded conflict, or with 3 fixes already made, it fails and names why. rebase fails (on.fail) to a command step rebase-triage running rhiza ship check --conflicts, which passes to conflict-fix and has no on.fail, so a fetch, push, hook or refusal failure of rebase ends the run as today instead of launching a fixer; pr-green and rebased-green fail to a command step conflict-triage running the same check, which passes to conflict-fix and fails to ci-triage as before; conflict-fix is an agent step on the run worktree whose prompt gives the fixer both sides' commits and change sets from rhiza ship check --json and tells it to resolve the conflicts, regenerate golden files and rendered output, run only the touched packages' tests and scripts, and commit the merge with Change:, Actor: and a Review: <run> trailer, never pushing, then rhiza session done; it passes to render-pr, so open-pr pushes plainly and records the head and the run waits for CI again. After land, rebase-merge fails to conflict-triage-landed (the same check, no on.fail), which passes to conflict-fix-landed, the same fixer, which passes back to rebase-merge so the fixer's merge is pushed there and nothing lands twice; landed-green and rebased-merge-green fail to conflict-triage-landed too, so a red CI or a non-conflict failure after land still ends the run. A fourth conflict in one run, before or after land, fails its triage and so fails the run: after land at once, as conflict-triage-landed has no on.fail; before land later and by a cap, since conflict-triage fails to ci-triage, which finds no failing test and fails to wait-ci-rerun, whose ship check --settled --changed settles a conflicting pull request (shipSettleConflict) before its --changed baseline and so passes back to pr-green, and the loop pr-green, conflict-triage, ci-triage, wait-ci-rerun repeats until ci-triage or wait-ci-rerun exceeds its max_visits 3 and fails the run over the cap; conflict-fix and conflict-fix-landed keep max_visits 3 only as a backstop, and the steps they re-enter get max_visits raised so 3 conflict fixes and 2 CI fixes fit"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6YGFGQT0A9VRZ4AZ9X6VSMJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6YXB57THD3SHMKMXGEM6PMG",
+  "type": "ops",
+  "v": 1
+}
