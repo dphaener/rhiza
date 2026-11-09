@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6ZKGP5XXKDA0GQ27C85TTHM"
+  ],
+  "at": "2026-11-09T07:46:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "74265216ca0340a748db7c59e7982156c1757ec0",
+          "pr": "https://github.com/dphaener/rhiza/pull/413",
+          "result": "11 checks passed: lint SUCCESS, go-install SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #413 (https://github.com/dphaener/rhiza/pull/413) passed CI at 7426521",
+          "status": "verified"
+        },
+        "handle": "pr-413-agents",
+        "id": "01M6ZMAYAHQJADA87RVV876EW0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZMAYAHQJADA87RVS5XVYD5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZMAYAHQJADA87RVS5XVYD5",
+        "id": "01M6ZMAYC8Q9KZJ9WBK22WADJE",
+        "link": "01M6ZMAYC8Q9KZJ9WBK1JJ6EEZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H2NVXGP81PQ31Y2VKKKK",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6ZMAYAHQJADA87RVS5XVYD5",
+        "id": "01M6ZMAYE8J94KZ2A4VX0J5MBD",
+        "link": "01M6ZMAYE8J94KZ2A4VT7YHCQH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H2V93Q1KMDAA0VVMANFX",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6ZMAYAHQJADA87RVS5XVYD5",
+        "id": "01M6ZMAYFTFSFYGXMSV2SVRC90",
+        "link": "01M6ZMAYFTFSFYGXMSV09T76HW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H323RTT12VV3R6F2AZW4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5ETVXHS9EJQ2KH7STXY50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZMAYK1EZH9NEJ0ZYEEWFKQ",
+  "type": "ops",
+  "v": 1
+}

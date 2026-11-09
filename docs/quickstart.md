@@ -106,4 +106,4 @@ Commit the log and the rendered files along with your code. From then on the rea
 - The [README](../README.md) says what Rhiza is for and how to install it.
 - `rhiza guide` prints the short reference that agents read, and `rhiza --help` lists every command.
 
-Pages on the concepts behind the model and on running Rhiza with agents are on the way. Until they land, `rhiza guide` and `rhiza describe` are the fullest reference.
+Pages on the concepts behind the model are in [concepts](concepts/model.md); [working with coding agents](agents.md) covers the agent side. The rest are on the way.

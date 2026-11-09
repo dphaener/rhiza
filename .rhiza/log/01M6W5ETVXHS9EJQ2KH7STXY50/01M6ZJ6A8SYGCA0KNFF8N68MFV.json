@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZJ55EAH6KCPN0Q3V0SY723",
+  "after": [
+    "01M6ZJ34PRCX24SSMCEQ93TDJZ"
+  ],
+  "at": "2026-11-09T07:08:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 040f5f6c, verified docs/custom-workflows.md against the leaf's acceptance. With GOTMPDIR outside the repo, `go test -trimpath ./cmd/rhiza -run TestScripts/custom-workflows-doc -count=1` passes. That testscript runs the doc's bash blocks, which write .rhiza/workflows/bugfix.toml and .rhiza/dispatch.toml (bug = \"bugfix\"). Then `rhiza workflow check bugfix` reports 'workflow bugfix is valid' and describe shows the fix/test loop. `go test -trimpath ./internal/doclinks/... -count=1` passes. The doc walks through writing a bugfix workflow with reproduce, fix, test (bounded by max_visits) and ci steps, maps bug requests to it through dispatch.toml, and names the generated workflow-file reference as the plain path docs/reference/workflow-file.md, alongside `rhiza guide workflows`. Decision custom-workflow-doc-reference-plain-path accepts the plain path for this change set, and Generated reference adds the link once it writes the file. The prose reads naturally, in a direct second-person voice with no stock LLM phrasing, which meets doc-prose-humanized. The owner's read is still to come and is outside a verifier's reach."
+        },
+        "handle": "docs-custom-workflow-verified",
+        "id": "01M6ZJ6A5GKSCJYXVYN8DRGJEE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZJ6A5GKSCJYXVYN5T2PP1Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZJ6A5GKSCJYXVYN5T2PP1Z",
+        "id": "01M6ZJ6A73KFK9BBZKCCC9WXH0",
+        "link": "01M6ZJ6A73KFK9BBZKC9W7QJ1H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H323RTT12VV3R6F2AZW4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5ETVXHS9EJQ2KH7STXY50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZJ6A8SYGCA0KNFF8N68MFV",
+  "type": "ops",
+  "v": 1
+}

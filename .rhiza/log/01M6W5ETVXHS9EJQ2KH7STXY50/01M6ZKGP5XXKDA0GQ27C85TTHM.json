@@ -1,0 +1,86 @@
+{
+  "actor": "01M6ZKCB6ZA6792HWFA0F55A1G",
+  "after": [
+    "01M6ZKATAA9W09AKABZZ239J11"
+  ],
+  "at": "2026-11-09T07:31:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3b5eb86c, with the built binary in a scratch root: rhiza root init <root>, cd <root>, rhiza project add <root>/myapp registers the project (from outside the root it still fails, as the doc now warns). run start <change> --workflow ship-change --dry-run without --permission-mode stops asking for one, even with rhiza.daemon.permissionMode set; with --permission-mode acceptEdits it prints the run; bypassPermissions is refused without trust = \"dedicated\" in machine.toml, as the doc says. daemon settings shows plan=owner and accept/ship/signoff=auto, matching the Autonomy section. A workflow copied with workflow new mine --from ship-change plus an [autonomy] table (signoff, ship = owner) passes workflow check, and run start --workflow mine --permission-mode acceptEdits --dry-run prints ship and signoff as 'owner from workflow mine', the rest from rhiza.autonomy.<stage>. run request-changes <file> [<run>] matches the doc. Every rhiza command the page names answers --help; internal/doclinks passes."
+        },
+        "handle": "docs-runs-daemon-qa-3",
+        "id": "01M6ZKGNYJWA6W8C7AMQ1FGBX1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZKGNYJWA6W8C7AMPDXWJ8Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZKGNYJWA6W8C7AMPDXWJ8Q",
+        "id": "01M6ZKGNZMYTBS34AD7K92SE17",
+        "link": "01M6ZKGNZMYTBS34AD7GRDEEJ1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H2V93Q1KMDAA0VVMANFX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3b5eb86c, with the built binary in a scratch project: rhiza workflow new bugfix, then the doc's cat > .rhiza/workflows/bugfix.toml heredoc; rhiza workflow check bugfix says valid (exit 0), workflow describe bugfix shows reproduce -> fix -> test (fail -> fix) -> ci as described, and run start --workflow bugfix --dry-run with a current change set prints the run. The [ready] bug = \"bugfix\" dispatch.toml is accepted. The reference is named as the plain path docs/reference/workflow-file.md, per decision custom-workflow-doc-reference-plain-path. TestScripts/custom-workflows-doc and internal/doclinks pass."
+        },
+        "handle": "docs-custom-workflow-qa-3",
+        "id": "01M6ZKGP0ME4H6KW62J9M9WV4Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZKGP0ME4H6KW62J67DD6MC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZKGP0ME4H6KW62J67DD6MC",
+        "id": "01M6ZKGP1KBVNY3KR4HMJQX0N7",
+        "link": "01M6ZKGP1KBVNY3KR4HM70WZW5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H323RTT12VV3R6F2AZW4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3b5eb86c, with the built binary: every rhiza command named in docs/agents.md answers --help, and internal/doclinks TestRepoDocsLinksResolve passes on its links."
+        },
+        "handle": "docs-agents-qa-3",
+        "id": "01M6ZKGP2XK59GMG8VA3EZCSJ8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZKGP2XK59GMG8V9ZJ1VGMN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZKGP2XK59GMG8V9ZJ1VGMN",
+        "id": "01M6ZKGP4AGG69XSFH8DZHPG5E",
+        "link": "01M6ZKGP4AGG69XSFH8CA9A1SE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H2NVXGP81PQ31Y2VKKKK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5ETVXHS9EJQ2KH7STXY50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZKGP5XXKDA0GQ27C85TTHM",
+  "type": "ops",
+  "v": 1
+}

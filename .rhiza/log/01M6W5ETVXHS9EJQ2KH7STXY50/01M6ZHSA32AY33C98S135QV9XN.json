@@ -1,0 +1,39 @@
+{
+  "actor": "01M6ZHQ6MEHVC4JVWA0M1QT4KJ",
+  "after": [
+    "01M6ZHJ71ZB1146C7DR0QY6MEJ"
+  ],
+  "at": "2026-11-09T07:01:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "@{01M6W5H323RTT12VV3R6F2AZW4} must link the generated workflow-file reference, docs/reference/workflow-file.md, but that file comes from the docs-reference-workflow leaf of the Generated reference change set (01M6W5E3JQXD62WN4RHG546KRX), which is accepted and not landed, and this change set does not depend on it. A link now fails internal/doclinks TestRepoDocsLinksResolve. Should this change set depend on Generated reference and add the link once it lands, or ship with the path named in plain text and the link added by Generated reference when it writes the file?"
+        },
+        "handle": "custom-workflow-doc-reference-link",
+        "id": "01M6ZHSA0Q992EDPRM69GZKGD6",
+        "key": null,
+        "kind": "question",
+        "node": "01M6ZHSA0Q992EDPRM65Q12PEP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZHSA0Q992EDPRM65Q12PEP",
+        "id": "01M6ZHSA1T8HH5PBGNE8W0MXDQ",
+        "link": "01M6ZHSA1T8HH5PBGNE6HAFAJJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H323RTT12VV3R6F2AZW4",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6W5ETVXHS9EJQ2KH7STXY50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZHSA32AY33C98S135QV9XN",
+  "type": "ops",
+  "v": 1
+}

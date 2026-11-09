@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ZJR7HZPH3162JH0KAN5SH4",
+  "after": [
+    "01M6ZJR7VRSZTVBZ2BF153FGFW"
+  ],
+  "at": "2026-11-09T07:19:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 5d26135b: go test -trimpath ./cmd/rhiza -run TestScripts/custom-workflows-doc$ passes; it extracts docs/custom-workflows.md's bash blocks, writes the bugfix workflow (reproduce/fix agents, test command with max_visits and on.fail loop, ci wait step) and dispatch.toml [ready] bug = \"bugfix\", and rhiza workflow check bugfix reports valid. go test ./internal/doclinks passes. The doc walks through workflow new/check/describe and mapping bug requests, and names the generated reference docs/reference/workflow-file.md in plain text plus rhiza guide workflows, which decision custom-workflow-doc-reference-plain-path accepts for this change set. Spot-checked keys (until/timeout/interval/max_visits, --from, dispatch tables ready/request) against internal/workflow and internal/dispatch. Prose reads human; owner read remains with the owner."
+        },
+        "handle": "docs-custom-workflow-verified-2",
+        "id": "01M6ZJSGTBQFHT7P1ZSR8FWR10",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZJSGTBQFHT7P1ZSPRXWEXF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZJSGTBQFHT7P1ZSPRXWEXF",
+        "id": "01M6ZJSGVMDYTJ9CTRR1M7ZKNZ",
+        "link": "01M6ZJSGVMDYTJ9CTRR01JCAJM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H323RTT12VV3R6F2AZW4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5ETVXHS9EJQ2KH7STXY50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZJSGX67Y7N7M9EES25CB30",
+  "type": "ops",
+  "v": 1
+}

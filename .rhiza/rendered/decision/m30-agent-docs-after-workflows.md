@@ -23,6 +23,9 @@ After the workflow work: the agents/runs/daemon docs change set depends on the w
 ### In
 
 - decided-by [m30-docs](../intent/milestone-30/m30-docs.md)
+- decided-by [docs-agents](../capability/rhiza/documentation/docs-agents.md)
+- decided-by [docs-runs-daemon](../capability/rhiza/documentation/docs-runs-daemon.md)
+- decided-by [docs-custom-workflow](../capability/rhiza/documentation/docs-custom-workflow.md)
 
 ## History
 

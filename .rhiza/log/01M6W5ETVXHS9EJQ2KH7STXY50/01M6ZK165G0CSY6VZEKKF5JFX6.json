@@ -1,0 +1,86 @@
+{
+  "actor": "01M6ZJVNE3JXCS06S4RZC8BE9F",
+  "after": [
+    "01M6ZJSGX67Y7N7M9EES25CB30"
+  ],
+  "at": "2026-11-09T07:23:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "At 91524236, built rhiza (go build -trimpath) and in a scratch HOME/root: the cycle-1 fixes hold. rhiza daemon settings shows plan=owner, accept/ship/signoff=auto as the page now says; rhiza request fails 'is not inside a Rhiza root' until rhiza root init + project add, then queues; in a copy of ship-change, autonomous = true / false gives all four stages 'auto/owner from workflow mine' in run start --dry-run, an [autonomy] signoff/ship = owner table overrides only those two (the rest 'from rhiza.autonomy.<stage>'), and both together make workflow check report 'autonomous and [autonomy] are both set'; run request-changes <file> [<run>] matches; the commands named answer --help; doclinks passes. But rhiza run start --workflow ship-change (and --workflow mine --dry-run, the page's own example) fails 'step \"build/build\" is a leaves step whose builder runs with no permission mode: give --permission-mode', even after rhiza daemon set rhiza.daemon.permissionMode acceptEdits; it gets past the check only with --permission-mode, which the page never mentions. Also project add ~/code/myapp fails 'not inside a Rhiza root' when run from outside the root."
+        },
+        "handle": "docs-runs-daemon-qa-2",
+        "id": "01M6ZK15VNC19B6CMVEAVE6MJZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZK15VNC19B6CMVE8DA0E3G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZK15VNC19B6CMVE8DA0E3G",
+        "id": "01M6ZK15XECA91F55MTFRK2WJ6",
+        "link": "01M6ZK15XECA91F55MTDVF352H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H2V93Q1KMDAA0VVMANFX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 91524236 with the built binary: go test -trimpath ./cmd/rhiza -run TestScripts/custom-workflows-doc$ (extracts the doc's bash blocks, writes bugfix.toml and dispatch.toml, rhiza workflow check bugfix valid) and ./internal/doclinks pass; the doc's steps set permission_mode, so its run start --dry-run is not hit by the missing-permission-mode refusal; the generated reference is named as plain path per decision custom-workflow-doc-reference-plain-path."
+        },
+        "handle": "docs-custom-workflow-qa-2",
+        "id": "01M6ZK15ZGW9PW4D5C87JXBRYZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZK15ZGW9PW4D5C86YB8YZK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZK15ZGW9PW4D5C86YB8YZK",
+        "id": "01M6ZK160JC55SGTFSBR1BAAK9",
+        "link": "01M6ZK160JC55SGTFSBNADZ4RY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H323RTT12VV3R6F2AZW4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 91524236 with the built binary: docs/agents.md unchanged since cycle 1; guide install, slice, apply, land, render, rex install answer --help; internal/doclinks TestRepoDocsLinksResolve and TestScripts/quickstart pass."
+        },
+        "handle": "docs-agents-qa-2",
+        "id": "01M6ZK1622ECH6P5NN822NNSHC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ZK1622ECH6P5NN7ZNWH6VH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ZK1622ECH6P5NN7ZNWH6VH",
+        "id": "01M6ZK163ADPXKW49BN6BFVQTZ",
+        "link": "01M6ZK163ADPXKW49BN2JNMZ3M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H2NVXGP81PQ31Y2VKKKK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6W5ETVXHS9EJQ2KH7STXY50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ZK165G0CSY6VZEKKF5JFX6",
+  "type": "ops",
+  "v": 1
+}
