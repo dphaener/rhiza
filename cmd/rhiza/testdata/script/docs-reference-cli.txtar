@@ -1,0 +1,14 @@
+# rhiza docs writes the CLI reference from the op registry.
+exec rhiza docs --out $WORK/out
+stdout 'cli.md'
+grep '^## rhiza request$' out/cli.md
+grep '[-][-]kind`: feature, bug or milestone' out/cli.md
+grep '[-][-]milestone`: ' out/cli.md
+grep '^- `4`: Not found' out/cli.md
+
+# Same registry, same bytes; the second run changes nothing.
+cp out/cli.md first.md
+exec rhiza docs --out $WORK/out
+stdout '0 unchanged|1 unchanged'
+! stdout 'wrote'
+cmp out/cli.md first.md

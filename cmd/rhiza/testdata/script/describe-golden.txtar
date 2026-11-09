@@ -2537,6 +2537,43 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "docs",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "out": {
+            "description": "The folder to write into; default docs/reference in the project root",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "unchanged": {
+            "description": "How many files were already current",
+            "type": "integer"
+          },
+          "written": {
+            "description": "The files written: new, or different from what was on disk",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "unchanged",
+          "written"
+        ],
+        "type": "object"
+      },
+      "summary": "Write the generated reference (CLI commands) under docs/reference",
+      "write": false
+    },
+    {
       "name": "feed",
       "request": {
         "additionalProperties": false,
