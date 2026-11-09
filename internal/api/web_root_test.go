@@ -33,6 +33,8 @@ func TestWebRootHandlerServesEveryProject(t *testing.T) {
 			home = c
 		}
 	}
+	// Registered after the temp folders, so it runs before they are removed.
+	t.Cleanup(healthRefreshing.Wait)
 	if err := os.WriteFile(filepath.Join(root, "rhiza.toml"), []byte("[projects.alpha]\npath = \"alpha\"\n[projects.beta]\npath = \"beta\"\n[projects.bare]\npath = \"bare\"\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}

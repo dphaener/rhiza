@@ -1,0 +1,40 @@
+{
+  "actor": "01M6Z3Z63F6X4MB88WAQ4JHAJD",
+  "after": [
+    "01M6YMFZZCVZCJX3JXEVD1C1KY"
+  ],
+  "at": "2026-11-09T03:03:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-61be03b0 at 0e2f1c19. Diff: healthCache.get calls an unexported package-level sync.WaitGroup (healthRefreshing) Add(1) before go h.refresh(), and refresh defers Done(). TestWebRootHandlerServesEveryProject registers t.Cleanup(healthRefreshing.Wait) after all its t.TempDir calls. There is no sleep, retry, exported API or synchronous refresh, and WebRootHandler's signature is unchanged. The other internal/api tests reaching WebDaemonSource (web_daemon_test.go) use fake read funcs that never touch disk, so they need no drain. Run from a scratch worktree outside ~/code with RHIZA_ROOT unset, because under ~/code the live root daemon changes .rhiza-root/usage.live.json and trips the state-folder guard: go test -trimpath -count=50 -run TestWebRootHandlerServesEveryProject ./internal/api/ ok; go test -trimpath ./internal/api -run 'TestWebRoot|TestWebDaemon|TestWebHealth' -count=1 ok; go test -trimpath ./internal/web -count=1 ok; the same api subset under -race -count=5 ok."
+        },
+        "handle": "web-tests-drain-health-refresh-verified",
+        "id": "01M6Z44VXV1Q5G3S32VS3CXKT9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6Z44VXV1Q5G3S32VQ9D096J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6Z44VXV1Q5G3S32VQ9D096J",
+        "id": "01M6Z44W1XXEETS9FNCABXKKW7",
+        "link": "01M6Z44W1XXEETS9FNC8MGS8JA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YMA101E06VZYTZ470T5WER",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6YKX97C202RDFNV5DGVS033",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6Z44W6A8AV1EJ8VRWZ5821Z",
+  "type": "ops",
+  "v": 1
+}
