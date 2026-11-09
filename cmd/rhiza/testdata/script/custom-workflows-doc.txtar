@@ -1,0 +1,17 @@
+# docs/custom-workflows.md is run, not just read: its bash blocks write the
+# example workflow and dispatch file and run `rhiza workflow check` on it.
+env XDG_CONFIG_HOME=$WORK/xdg
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+fold-ok
+quickstart-doc ../../docs/custom-workflows.md
+stdout 'ran [0-9]+ commands'
+exists .rhiza/workflows/bugfix.toml
+exists .rhiza/dispatch.toml
+exec rhiza workflow check bugfix
+stdout '^workflow bugfix is valid'
+exec rhiza workflow describe bugfix
+stdout 'on\.fail -> fix'
+fold-ok
