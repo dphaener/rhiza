@@ -1,0 +1,40 @@
+{
+  "actor": "01M73VCWGK2N9K2AP1XF7T99EQ",
+  "after": [
+    "01M73VA6HSG5MMRKSM36BP0T3J"
+  ],
+  "at": "2026-11-10T23:11:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Hands-on with built binaries at 58750e43 against a clone of this repo's real log (change set 01M71G4G92, whose pin entry 01M731FQPE is format 5), each with its own XDG_CACHE_HOME. I built four binaries: this branch and its merge-base b4130875, each at entry.FormatVersion 5 and patched to 4 (standing for the pre-#424 binary). Merge-base: the FV4 binary's rhiza change show 01M71G4G92 --json gives accepted with 6 problems ('entry out of order: after names 01M731FQPE9PY5EYQTA9H0C4CF...'), and the upgraded FV5 binary over that same index still gives accepted with 6 problems, twice, so the bug reproduces. This branch: FV4 gives the same 6 problems, then FV5 over the same index gives landed with 0 problems, and again on a second open. The index db's meta entry_format row reads 5 after that and user_version 6. Downgrading to FV4 rewrites it to 4 (6 problems again), and FV5 afterwards gives landed with 0 problems. A schema-5 index left by the merge-base binary, opened by this branch's FV5 binary, is rebuilt (user_version 6, entry_format 5) and folds landed. rhiza ready no longer lists 01M71G4G92. A warm open takes about 0.1s. go test -trimpath ./internal/index/... ok."
+        },
+        "handle": "index-rebuilds-on-entry-format-change-cap-qa-1",
+        "id": "01M73VNAW0GEFVVEA8JKJ4EVK1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73VNAW0GEFVVEA8JKBQGHHY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73VNAW0GEFVVEA8JKBQGHHY",
+        "id": "01M73VNAXXFGTEDKZPB460KWBN",
+        "link": "01M73VNAXXFGTEDKZPB2GCZG6N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73T8SB2AFFX66MC9CZ2PYDC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M73T319T5VT2Q37MFXTDP8T6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73VNAZQ5KTS7KG39ABX0GVH",
+  "type": "ops",
+  "v": 1
+}
