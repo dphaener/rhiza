@@ -1,0 +1,33 @@
+{
+  "actor": "01M71HKG6RDND946BWJ0XV7SZE",
+  "after": [
+    "01M71HJW9W123PXWWAH0W90MVM"
+  ],
+  "at": "2026-11-10T01:39:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "d1daa7821174203e4577ff9a2a84717307c399d198278f04ba4b32b795909e60",
+          "session": "18dbf710-94cc-4128-97fb-01a1c319ade1",
+          "summary": "Autonomous plan run for change set 01M71HJW (rhiza inbox printed 'Nothing waits on you' while plan-milestone run 01M71E6F15HMTME3KKF96NJC5R was stopped at step gate on open question review-01m71e6f15hmtme3kkf96njc5r-r3-f1). No owner was asked. The planner read internal/api/inbox.go: inboxItems lists a stopped plan run as an 'open' item only when the run is not live (the run lock is not held), no newer run exists on its change set, and its stop detail starts with run.OpenStop; inboxOne then fills the item's Questions from the run worktree (inboxGateQuestions). The run's journal (.git/rhiza/runs/01M71E6F15HMTME3KKF96NJC5R.jsonl) shows a 'gated' entry at 01:33:01Z, then 'stopped' at step gate at 01:33:07Z with detail 'open questions: review-01m71e6f15hmtme3kkf96njc5r-r3-f1; answer each with a Decision, then rhiza run resume ...', no newer run on change set 01M71E6H2N1CYFN0F2NGAWWBG8, and the resume's 'process' entry at 01:35:39Z. So the detail matched OpenStop and the run was not retried. The likely causes are that the run was read as live (its lock still held after the stop) or that the inbox scope it was read from missed the project. The root cause is left to the builder: the leaf asks for a test that reproduces this run's shape and fails before the fix. The change set is linked to serve milestone-25 (the bugs-and-polish backlog milestone), which earlier bug-fix change sets in this repo also serve.",
+          "title": "Plan: inbox missed a plan run stopped at its gate"
+        },
+        "handle": "plan-inbox-gate-stop-missed",
+        "id": "01M71HS5X5VV90SA8EV0GZ4ERZ",
+        "key": null,
+        "kind": "source",
+        "node": "01M71HS5X5VV90SA8EV07KWCAB",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M71HJW9W123PXWWAGZTHGE6Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71HS5XNWWQ3QRJ4HQTHDBR3",
+  "type": "ops",
+  "v": 1
+}

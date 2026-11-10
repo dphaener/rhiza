@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-10T01:36:27Z",
+  "body": {
+    "intent": "Fix rhiza inbox said 'Nothing waits on you' while plan run 01M71E6F15HMTME3KKF96NJC5R (plan-milestone, owner autonomy) was stopped at step gate on open question review-01m71e6f15hmtme3kkf96njc5r-r3-f1 (left by record 01M71HBAFK92B6EQR0FGKN9H8M, plan review round 3). It was found only because rhiza run send-back refused with 'stopped at step gate: open questions'. Expected: the inbox lists the stopped run and its question, worded as what is asked. Unstuck by asking the owner, recording a Decision answering the question (record change set, commit 0ef646e in the run worktree), then rhiza run resume; the run went on to open PR #419. Daemon f7c85e91, 2026-11-10 ~01:35Z.",
+    "kind": "intention",
+    "request_kind": "bug",
+    "sources": []
+  },
+  "change_set": "01M71HJW9W123PXWWAGZTHGE6Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71HJW9W123PXWWAH0W90MVM",
+  "type": "open",
+  "v": 4
+}

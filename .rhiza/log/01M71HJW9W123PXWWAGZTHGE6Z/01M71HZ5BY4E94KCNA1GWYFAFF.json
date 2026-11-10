@@ -1,0 +1,30 @@
+{
+  "actor": "01M71HY5YD4000XH3SRCS0NYHH",
+  "after": [
+    "01M71HSF98Y24T714WH1EMCZP6"
+  ],
+  "at": "2026-11-10T01:43:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api builds the shape of plan-milestone run 01M71E6F15HMTME3KKF96NJC5R (owner autonomy, a gated entry naming proposed or draft change sets, then stopped at step gate with an 'open questions: <handle>; ...' detail, the question in a planned change set of the run worktree) under the condition the builder finds made the inbox say 'Nothing waits on you'; the test fails before the fix, and after it rhiza inbox lists one open item for the run whose questions carry the question's statement and handle, both for the project's inbox and for the merged inbox the root reads. go test -trimpath ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/inbox-gate-questions' pass.",
+          "statement": "A plan run stopped at its gate on open questions is always listed by rhiza inbox as an open item, from the project's own inbox and from the root's merged inbox, until the run is resumed, abandoned or ended. rhiza inbox's human text and --json name the run, its change set and each open question by its full statement and handle; the Inbox app and the web UI show the same item with each open question's full text and name the run and change set by title, with no handles or IDs."
+        },
+        "handle": "inbox-lists-gate-stopped-plan-run",
+        "id": "01M71HSF7GVD9YRPGVAZ6G1KHT",
+        "key": "zzzzzzzzz",
+        "kind": "capability",
+        "node": "01M71HSF7GVD9YRPGVAZ0F63N6",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      }
+    ]
+  },
+  "change_set": "01M71HJW9W123PXWWAGZTHGE6Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71HZ5BY4E94KCNA1GWYFAFF",
+  "type": "ops",
+  "v": 1
+}
