@@ -1,0 +1,43 @@
+{
+  "actor": "01M71GMFW2C8P4RHS7S63J4B8E",
+  "after": [
+    "01M71G7QQR5V0WRGXH1WCJRRM8"
+  ],
+  "at": "2026-11-10T01:20:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/doclinks/... passes (no broken relative link in the real README.md and docs/) and make self-check passes (rhiza check's docs-commands rule finds no rhiza command in README.md or docs/ that does not exist), and the owner approves docs/agents.md at the run's sign-off",
+          "statement": "docs/agents.md reads in the owner's voice and shows model writes as plain rhiza add, link or set commands"
+        },
+        "handle": "agents-doc-voice",
+        "id": "01M71G7QJ4GW14BQ3D4ARDMQX9",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M71G7QJ4GW14BQ3D485XGYZ1",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/doclinks/... passes (no broken relative link in the real README.md and docs/) and make self-check passes (rhiza check's docs-commands rule finds no rhiza command in README.md or docs/ that does not exist), and the owner approves docs/runs-and-daemon.md at the run's sign-off",
+          "statement": "docs/runs-and-daemon.md reads in the owner's voice, and its examples prefer plain commands (rhiza run send-back --note over a findings JSON file where either works)"
+        },
+        "handle": "runs-daemon-doc-voice",
+        "id": "01M71G7QMC5NKK7T0TNMSYBH49",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M71G7QMC5NKK7T0TNKBPKFQ7",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      }
+    ]
+  },
+  "change_set": "01M71G4MMC4VGT41WVM4A33ZWM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71GP3VANNNMH87DWN1FKY6N",
+  "type": "ops",
+  "v": 1
+}

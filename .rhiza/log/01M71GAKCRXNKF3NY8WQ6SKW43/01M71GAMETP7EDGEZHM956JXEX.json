@@ -1,0 +1,173 @@
+{
+  "actor": "01M71E75QHR2FVDPHXKWJ92RT1",
+  "after": [
+    "01M71GAKCRXNKF3NY8WT98H17S"
+  ],
+  "at": "2026-11-10T01:14:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "Plain commands (Recommended)",
+            "Commands + nicer CLI",
+            "Keep apply, trim it"
+          ],
+          "picked": "Plain commands (Recommended)",
+          "question": "Examples: the quickstart and concepts/why.md write the model through `rhiza apply` with a hand-written JSON file, and why.md hand-writes a Source JSON too. How should the docs show writes?",
+          "session": "97c939ee-4270-4def-bfd2-01a1c2e382d4",
+          "statement": "Examples: the quickstart and concepts/why.md write the model through `rhiza apply` with a hand-written JSON file, and why.md hand-writes a Source JSON too. How should the docs show writes? — Plain commands (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 97c939ee-4270-4def-bfd2-01a1c2e382d4"
+        },
+        "handle": "answer-97c939ee-1",
+        "id": "01M71G9FW1394XCA0FEBJ2S546",
+        "key": null,
+        "kind": "decision",
+        "node": "01M71G9FW1394XCA0FE7K659RM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M71G9FW1394XCA0FE7K659RM",
+        "id": "01M71G9KFX4M78JZRYQ7S95634",
+        "link": "01M71G9KFX4M78JZRYQ4M8DW32",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G37GPD4RWWNN6JNBF8HJC",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Owner sign-off per page (Recommended)",
+            "Write them with me live",
+            "Agent voice review"
+          ],
+          "picked": "Owner sign-off per page (Recommended)",
+          "question": "Voice: milestone 30 already had a rule (constraint doc-prose-humanized) that every doc is drafted with the humanize skill, and the result still doesn't read like you. Builders work unattended and nobody checks the voice before merge. How should this milestone make sure it lands?",
+          "session": "97c939ee-4270-4def-bfd2-01a1c2e382d4",
+          "statement": "Voice: milestone 30 already had a rule (constraint doc-prose-humanized) that every doc is drafted with the humanize skill, and the result still doesn't read like you. Builders work unattended and nobody checks the voice before merge. How should this milestone make sure it lands? — Owner sign-off per page (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 97c939ee-4270-4def-bfd2-01a1c2e382d4"
+        },
+        "handle": "answer-97c939ee-2",
+        "id": "01M71G9Q4XC8CAQQ8ZBH7YJ1Z5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M71G9Q4XC8CAQQ8ZBFJWRK2P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M71G9Q4XC8CAQQ8ZBFJWRK2P",
+        "id": "01M71G9V99QBM6NDZEJQ3N87NB",
+        "link": "01M71G9V99QBM6NDZEJNC3024V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G37GPD4RWWNN6JNBF8HJC",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "README + quickstart",
+            "Concepts",
+            "Agents, runs, workflows",
+            "CLI help wording"
+          ],
+          "picked": "README + quickstart, Concepts, CLI help wording",
+          "question": "Scope: which docs does this milestone rewrite? (pick all that belong)",
+          "quote": "\"Agents, runs, workflows\"",
+          "quote_where": "session 97c939ee-4270-4def-bfd2-01a1c2e382d4, answering \"Scope: which docs does this milestone rewrite? (pick all that belong)\"",
+          "session": "97c939ee-4270-4def-bfd2-01a1c2e382d4",
+          "statement": "Scope: which docs does this milestone rewrite? (pick all that belong) — README + quickstart, Concepts, CLI help wording, \"Agents, runs, workflows\"",
+          "wording": "the agent's option, picked by the owner in session 97c939ee-4270-4def-bfd2-01a1c2e382d4"
+        },
+        "handle": "answer-97c939ee-3",
+        "id": "01M71G9Z5K5YH1SSEBC2JGXN4Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M71G9Z5K5YH1SSEBC23EJ1M6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M71G9Z5K5YH1SSEBC23EJ1M6",
+        "id": "01M71GA2X401X3YBW3T4YKNZYD",
+        "link": "01M71GA2X401X3YBW3T36M07B5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G37GPD4RWWNN6JNBF8HJC",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Docs workflow (Recommended)",
+            "Flip it globally"
+          ],
+          "picked": "Docs workflow (Recommended)",
+          "question": "Sign-off mechanism: global rhiza.autonomy.signoff is auto, so runs carry on past sign-off. How should only the doc change sets stop for your read?",
+          "session": "97c939ee-4270-4def-bfd2-01a1c2e382d4",
+          "statement": "Sign-off mechanism: global rhiza.autonomy.signoff is auto, so runs carry on past sign-off. How should only the doc change sets stop for your read? — Docs workflow (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 97c939ee-4270-4def-bfd2-01a1c2e382d4"
+        },
+        "handle": "answer-97c939ee-4",
+        "id": "01M71GA6EJFHBH9HJ9T0ND5ZFF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M71GA6EJFHBH9HJ9SZNWSVKC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M71GA6EJFHBH9HJ9SZNWSVKC",
+        "id": "01M71GAA14AZESEKRM8S8GVHQT",
+        "link": "01M71GAA14AZESEKRM8PXDWM7Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G37GPD4RWWNN6JNBF8HJC",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "All five now (Recommended)",
+            "Only (1) and (5) now"
+          ],
+          "picked": "All five now (Recommended)",
+          "question": "Breakdown: I'd split it into five change sets. (1) Docs sign-off workflow: a repo workflow `docs` (ship-change with signoff = owner), plus `rhiza change new --workflow` / setting it on a draft, since today only `rhiza request --workflow` can pin a change set's workflow. (2) README + quickstart, (3) Concepts, (4) Agents, runs, workflows: each depends on (1) and is pinned to `docs`. (5) CLI help wording: plain, consistent desc tags, normal unattended review. Which do I plan leaves for now?",
+          "session": "97c939ee-4270-4def-bfd2-01a1c2e382d4",
+          "statement": "Breakdown: I'd split it into five change sets. (1) Docs sign-off workflow: a repo workflow `docs` (ship-change with signoff = owner), plus `rhiza change new --workflow` / setting it on a draft, since today only `rhiza request --workflow` can pin a change set's workflow. (2) README + quickstart, (3) Concepts, (4) Agents, runs, workflows: each depends on (1) and is pinned to `docs`. (5) CLI help wording: plain, consistent desc tags, normal unattended review. Which do I plan leaves for now? — All five now (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 97c939ee-4270-4def-bfd2-01a1c2e382d4"
+        },
+        "handle": "answer-97c939ee-5",
+        "id": "01M71GADNVJT8WMGPY8F0XYB61",
+        "key": null,
+        "kind": "decision",
+        "node": "01M71GADNVJT8WMGPY8EZFR096",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M71GADNVJT8WMGPY8EZFR096",
+        "id": "01M71GAHAV0PX6AYXS4X2ZTDH9",
+        "link": "01M71GAHAV0PX6AYXS4WQ7NJVY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G37GPD4RWWNN6JNBF8HJC",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M71GAKCRXNKF3NY8WQ6SKW43",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71GAMETP7EDGEZHM956JXEX",
+  "type": "ops",
+  "v": 1
+}

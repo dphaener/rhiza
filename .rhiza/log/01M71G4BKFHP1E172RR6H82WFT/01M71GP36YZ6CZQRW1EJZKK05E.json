@@ -1,0 +1,30 @@
+{
+  "actor": "01M71GMFW2C8P4RHS7S63J4B8E",
+  "after": [
+    "01M71G7PKNT8KG9XSGDBRFVT07"
+  ],
+  "at": "2026-11-10T01:20:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/doclinks/... passes (no broken relative link in the real README.md and docs/) and make self-check passes (rhiza check's docs-commands rule finds no rhiza command in README.md or docs/ that does not exist), README.md no longer says pages are on the way, and the owner approves the page at the run's sign-off",
+          "statement": "README.md reads in the owner's voice (drafted with the humanize skill) and its where-next section links the docs that exist (quickstart, concepts, agents, runs and the daemon, custom workflows, the generated reference) instead of saying they are on the way"
+        },
+        "handle": "readme-owner-voice",
+        "id": "01M71G7PH3S3AB0X96JGX86QE5",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M71G7PH3S3AB0X96JD4H94BY",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      }
+    ]
+  },
+  "change_set": "01M71G4BKFHP1E172RR6H82WFT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71GP36YZ6CZQRW1EJZKK05E",
+  "type": "ops",
+  "v": 1
+}

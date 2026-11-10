@@ -1,0 +1,16 @@
+{
+  "actor": "01M71E75QHR2FVDPHXKWJ92RT1",
+  "after": [],
+  "at": "2026-11-10T01:11:12Z",
+  "body": {
+    "intent": "Agents, runs and workflows pages in the owner's voice: docs/agents.md, runs-and-daemon.md and custom-workflows.md rewritten with humanize, examples as plain commands, signed off by the owner",
+    "kind": "intention",
+    "sources": [],
+    "title": "Agents and runs docs polish"
+  },
+  "change_set": "01M71G4MMC4VGT41WVM4A33ZWM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71G4MMC4VGT41WVM4WGXS4Y",
+  "type": "open",
+  "v": 2
+}

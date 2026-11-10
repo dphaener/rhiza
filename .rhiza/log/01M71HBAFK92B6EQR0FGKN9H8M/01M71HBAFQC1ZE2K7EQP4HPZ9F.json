@@ -1,0 +1,29 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M71HBAFK92B6EQR0FKH8YPZ3"
+  ],
+  "at": "2026-11-10T01:32:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on m31-pages): The done point m31-pages says the pages are rewritten 'with every write shown as plain rhiza add/link/set commands', but its own leaves and the constraint say otherwise: agents-doc-voice (01M71G4MMC4VGT41WVM4A33ZWM) keeps the agent loop's write-back as one 'rhiza apply <file> --json' (its acceptance greps for it), concepts-why-voice (01M71G4G92NEJ33C04DSKC4RMK) shows the Source written by the rhiza-scrub skill via rhiza source add, and doc-examples-plain-commands keeps rhiza apply as the batch and agent path. The done point should say a person's writes are shown as plain add/link/set commands, with rhiza apply only as the batch and agent path, matching doc-examples-plain-commands. The critic confirmed it: m31-pages says the pages show 'every write' as plain rhiza add/link/set commands, but constraint doc-examples-plain-commands keeps rhiza apply <file> as the batch and agent path, the agents-doc-voice leaf's acceptance greps docs/agents.md for 'rhiza apply' in the agent loop's write-back step, and the concepts-why leaf has the Source written by the rhiza-scrub skill via rhiza source add. The done point's absolute wording contradicts its own leaves and the constraint; it should limit plain add/link/set to a person's writes, with apply as the batch/agent path. How should it be settled?"
+        },
+        "handle": "review-01m71e6f15hmtme3kkf96njc5r-r3-f1",
+        "id": "01M71HBAE37M7Z736T7AAX7Q60",
+        "key": null,
+        "kind": "question",
+        "node": "01M71HBAE37M7Z736T7940NHP2",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M71HBAFK92B6EQR0FGKN9H8M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71HBAFQC1ZE2K7EQP4HPZ9F",
+  "type": "ops",
+  "v": 1
+}

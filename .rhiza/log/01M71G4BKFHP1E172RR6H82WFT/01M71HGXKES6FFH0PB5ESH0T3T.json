@@ -1,0 +1,53 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M71HC32WRGJ1EM8WW5BTTAKV"
+  ],
+  "at": "2026-11-10T01:35:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "just pronunciation of rhiza. rise-ah",
+          "statement": "The README says how to say Rhiza: rise-ah"
+        },
+        "handle": "readme-pronunciation-rise-ah",
+        "id": "01M71HGXGC3FESXMM7TQXFKPA7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M71HGXGC3FESXMM7TNC9WSFK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "grep -i 'rise-ah' README.md matches a line in the README's opening section, and the owner approves the page at the run's sign-off",
+          "statement": "README.md says how to pronounce Rhiza (rise-ah) near the top, where the name is introduced"
+        },
+        "handle": "readme-pronunciation",
+        "id": "01M71HGXH205HYJX4K0C22BGY8",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M71HGXH205HYJX4K0AE89RXW",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M71HGXH205HYJX4K0AE89RXW",
+        "id": "01M71HGXHPTAP8P3FKERKNNYDE",
+        "link": "01M71HGXHPTAP8P3FKEQVA5B9G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71HGXGC3FESXMM7TNC9WSFK",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M71G4BKFHP1E172RR6H82WFT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71HGXKES6FFH0PB5ESH0T3T",
+  "type": "ops",
+  "v": 1
+}

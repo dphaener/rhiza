@@ -1,0 +1,16 @@
+{
+  "actor": "01M71E75QHR2FVDPHXKWJ92RT1",
+  "after": [],
+  "at": "2026-11-10T01:10:58Z",
+  "body": {
+    "intent": "Docs sign-off workflow: a repo workflow named docs (ship-change with signoff = owner, builders and fixers told to write with the humanize skill) builds doc change sets, and rhiza change new --workflow and a command for an existing draft pin a change set's workflow",
+    "kind": "intention",
+    "sources": [],
+    "title": "Docs sign-off workflow"
+  },
+  "change_set": "01M71G46Q5378CYYVEHFF2EMP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71G46Q5378CYYVEHHHVSS99",
+  "type": "open",
+  "v": 2
+}

@@ -1,0 +1,16 @@
+{
+  "actor": "01M71E75QHR2FVDPHXKWJ92RT1",
+  "after": [],
+  "at": "2026-11-10T01:11:08Z",
+  "body": {
+    "intent": "Concepts pages in the owner's voice: docs/concepts/model.md, change-sets.md and why.md rewritten with humanize, every write shown as plain commands (no hand-written apply or Source JSON), signed off by the owner",
+    "kind": "intention",
+    "sources": [],
+    "title": "Concepts polish"
+  },
+  "change_set": "01M71G4G92NEJ33C04DSKC4RMK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71G4G92NEJ33C04DTD04NDV",
+  "type": "open",
+  "v": 2
+}

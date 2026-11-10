@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-10T00:37:17Z",
+  "body": {
+    "intent": "Documentation polish milestone for Rhiza. Owner, 2026-11-10: \"some of the examples are a little rough (using giant json blobs in cli commands, etc) and it does not look like it was all humanized using my voice\"",
+    "kind": "record",
+    "request_kind": "milestone",
+    "sources": []
+  },
+  "change_set": "01M71E6H2N1CYFN0F2NGAWWBG8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71E6H2N1CYFN0F2NK5TZC3H",
+  "type": "open",
+  "v": 4
+}
