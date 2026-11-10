@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/workflow"
 )
@@ -249,5 +250,88 @@ func TestSignoffReentryKeepsFixHistory(t *testing.T) {
 	l, ok := st.Leaf("review", a.ID)
 	if !ok || len(l.Sessions) != 4 || len(l.Attempts) != 4 {
 		t.Errorf("leaf-a across the re-entry: %d sessions, %d attempts (%v); want 4 and 4", len(l.Sessions), len(l.Attempts), ok)
+	}
+}
+
+// signoffRun starts an autonomous run of src with the given recorded
+// stage autonomy, over fakes.
+func signoffRun(t *testing.T, src string, aut []StageAutonomy) (*Engine, *fakeRunner) {
+	t.Helper()
+	def, err := workflow.Parse("wf", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	store := newStore(t)
+	if err := Start(store, runID, Started{Workflow: "wf", Definition: src, Change: "CS1", Title: "Sign", Autonomous: true, Autonomy: aut}, t0, def); err != nil {
+		t.Fatal(err)
+	}
+	r := newFakeRunner()
+	r.store = store
+	c := &fakeClock{now: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)}
+	return &Engine{Store: store, Runner: r, Clock: c, Now: func() time.Time { return at(1) }}, r
+}
+
+// An autonomous run whose workflow declared signoff owner waits for the
+// owner at the signoff step, journalling no sign-off of rule autonomous;
+// the owner's approval then passes it.
+func TestSignoffWorkflowOwnerBeatsAutonomous(t *testing.T) {
+	e, r := signoffRun(t, signoffWF, []StageAutonomy{{Stage: "signoff", Mode: "owner", Source: SourceWorkflow, Workflow: "docs"}})
+	passChecks(r, 1, "alpha", "beta")
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Ended || st.Stopped != SignoffWait {
+		t.Fatalf("ended %v stopped %q", st.Ended, st.Stopped)
+	}
+	if got := signoffEntries(t, e); len(got) != 0 {
+		t.Fatalf("signoff entries %+v", got)
+	}
+	appendSignoff(t, e, 1, SignoffApproved)
+	if st, err = e.Run(runID); err != nil || !st.Ended || st.Result != Succeeded {
+		t.Fatalf("after approve: %+v, %v", st, err)
+	}
+}
+
+// A workflow declaring signoff auto, or the setting (even owner), still
+// signs off under rule autonomous in an autonomous run.
+func TestSignoffAutoAndSettingSignOffAutonomously(t *testing.T) {
+	for name, aut := range map[string][]StageAutonomy{
+		"workflow auto":  {{Stage: "signoff", Mode: "auto", Source: SourceWorkflow, Workflow: "docs"}},
+		"setting auto":   {{Stage: "signoff", Mode: "auto", Source: SourceSetting}},
+		"setting owner":  {{Stage: "signoff", Mode: "owner", Source: SourceSetting}},
+		"other workflow": {{Stage: "ship", Mode: "owner", Source: SourceWorkflow, Workflow: "docs"}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			e, r := signoffRun(t, signoffWF, aut)
+			passChecks(r, 1, "alpha", "beta")
+			st, err := e.Run(runID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !st.Ended || st.Result != Succeeded {
+				t.Fatalf("ended %v stopped %q", st.Ended, st.Stopped)
+			}
+			if got := signoffEntries(t, e); len(got) != 1 || got[0].Rule != RuleAutonomous {
+				t.Fatalf("signoff entries %+v", got)
+			}
+		})
+	}
+}
+
+// A journal without the autonomy record falls back to the started
+// definition's declaration.
+func TestSignoffOwnerFallsBackToDefinition(t *testing.T) {
+	e, r := signoffRun(t, "[autonomy]\nsignoff = \"owner\"\n\n"+signoffWF, nil)
+	passChecks(r, 1, "alpha", "beta")
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Ended || st.Stopped != SignoffWait {
+		t.Fatalf("ended %v stopped %q", st.Ended, st.Stopped)
+	}
+	if got := signoffEntries(t, e); len(got) != 0 {
+		t.Fatalf("signoff entries %+v", got)
 	}
 }
