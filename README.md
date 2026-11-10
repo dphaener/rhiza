@@ -20,9 +20,15 @@ Then `rhiza version` should print what you installed.
 
 ## Where next
 
-Start with the [quickstart](docs/quickstart.md). It inits Rhiza in a repo and walks the model loop by hand, no agents needed.
+Start with the [quickstart](docs/quickstart.md). It sets Rhiza up in a repo and walks the model loop by hand, no agents needed.
 
-Agents come later. Runs, the daemon and the apps need Rex and Claude Code; the model itself doesn't. Pages on the concepts, on running Rhiza with agents, and a CLI reference generated from the code are on the way. Until they land, `rhiza --help` and `rhiza describe` cover the commands.
+After that, read what you need:
+
+- [Concepts](docs/concepts/model.md): the model, [change sets](docs/concepts/change-sets.md), and [why Rhiza works this way](docs/concepts/why.md).
+- [Working with coding agents](docs/agents.md): how an agent reads the model and hands its work back.
+- [Runs and the daemon](docs/runs-and-daemon.md): letting Rhiza start agents for you and keep several going while you're away. This is the part that needs Rex and Claude Code; the model itself doesn't.
+- [Writing a custom workflow](docs/custom-workflows.md): changing what a run does.
+- Reference, generated from the code: the [CLI](docs/reference/cli.md), [config](docs/reference/config.md) and [workflow file](docs/reference/workflow-file.md).
 
 ## Development
 
