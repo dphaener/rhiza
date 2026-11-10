@@ -1,0 +1,41 @@
+{
+  "actor": "01M73CYEZXSA7JA1CRC2N0DGBE",
+  "after": [
+    "01M72YS60H7V34YRVS6PS6K4GF",
+    "01M731FQPE9PY5EYQTA9H0C4CF"
+  ],
+  "at": "2026-11-10T19:01:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3f87eb6d: go test -trimpath ./internal/doclinks/... passed; make self-check printed ok (exit 0) in a clean detached worktree at that commit (no docs-commands or link failure; the only failure in the run checkout was this verifier's own untracked actor record needing a render). Read the docs/concepts/model.md diff: the prose is plain and direct, and every model write shown is a plain rhiza command (rhiza add capability export-csv --field, rhiza set export-csv --field, rhiza add decision csv-streaming --field, rhiza link export-csv decided-by csv-streaming), checked against rhiza add/set/link --help. No apply/JSON writes appear. Owner approval of the page is left to the run's sign-off."
+        },
+        "handle": "concepts-model-voice-verified",
+        "id": "01M73DBMQHFTCZVJJTB1ADH5F5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73DBMQHFTCZVJJTB03ZBC78",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73DBMQHFTCZVJJTB03ZBC78",
+        "id": "01M73DBMTXJ802DFM2HGSD0N08",
+        "link": "01M73DBMTXJ802DFM2HG4KQBRA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7Q16ZYKM7C53RTWJF5AG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4G92NEJ33C04DSKC4RMK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73DBN12V9QWEYY25C1JVHGG",
+  "type": "ops",
+  "v": 1
+}

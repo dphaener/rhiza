@@ -9,15 +9,10 @@ Four kinds of node carry this: decisions, questions, sources and evidence. They'
 A decision is a choice somebody made. Its `statement` says what was chosen, and its `quote` keeps the words of whoever made the call.
 
 ```bash
-cat > decision.json <<'EOF'
-{"writes":[
-  {"op":"add","kind":"decision","handle":"csv-streaming",
-   "fields":["statement=Stream CSV rows instead of building the file in memory",
-             "quote=\"Stream it, reports get huge\" (owner, 2026-10-20)"]},
-  {"op":"link","from":"export-csv","type":"decided-by","to":"csv-streaming"}
-]}
-EOF
-rhiza apply decision.json
+rhiza add decision csv-streaming \
+  --field "statement=Stream CSV rows instead of building the file in memory" \
+  --field 'quote="Stream it, reports get huge" (owner, 2026-10-20)'
+rhiza link export-csv decided-by csv-streaming
 ```
 
 The quote is verbatim. If the owner said something, write down what they said, not your summary of it. A summary has already been through your reading of it, and that's the part somebody will want to check later. It matters most when an agent is the one writing: the quote is how you tell a decision the owner made from one an agent made up.
@@ -47,20 +42,17 @@ The answer goes in as given. Rhiza doesn't tidy it.
 
 ## Sources
 
-Decisions often come out of a long conversation: a planning chat, a call, an email thread. A source holds that conversation in a form the repo can keep. It has a title, a short summary and the exact quotes that mattered.
+Decisions often come out of a long conversation: a planning chat, a call, an email thread. A source holds that conversation in a form the repo can keep: a title, a short summary and the exact quotes that mattered.
 
-```bash
-cat > source.json <<'EOF'
-{"title":"CSV export planning",
- "summary":"Reports can reach millions of rows, so the owner wants export streamed. Locale handling is left open.",
- "quotes":[{"text":"Stream it, reports get huge","by":"owner","where":"planning chat, 2026-10-20"}]}
-EOF
-rhiza source add csv-planning source.json --raw-sha256 a34bb6c0bbacc3adca0cb8cf388cd5955381bdb6c896103669217955bd86010a
+You don't write one by hand. Ask your agent to scrub the conversation with the `rhiza-scrub` skill. It reads the transcript, writes the summary, copies the owner's words in verbatim, cuts out secrets and personal details, saves the result to a file and runs `rhiza source add` for you.
+
+```text
+Scrub this planning chat with the rhiza-scrub skill and add it as the source csv-planning.
 ```
 
-The raw material itself doesn't go in. You give `rhiza source add` one of `--raw` (a file, which it hashes), `--raw-sha256` (a hash you already have) or `--raw-session` (an agent session, hashed the same way). Only the hash is stored, so if the original turns up later you can show it's the one the summary came from, and nothing private has to live in the repo.
+The raw material itself doesn't go in. `rhiza source add` takes one of `--raw` (a file, which it hashes), `--raw-sha256` (a hash you already have) or `--raw-session` (an agent session, hashed the same way). Only the hash is stored, so if the original turns up later you can show it's the one the summary came from, and nothing private has to live in the repo.
 
-That's also why you scrub first. A transcript has secrets, personal details and a lot of "um" in it. The summary and the quotes are what you keep, so go through them before you add the source and take out anything that shouldn't be in a public repo. Quotes stay exact, and everything around them gets shorter.
+That's also why the scrub matters. A transcript has secrets, personal details and a lot of "um" in it, and the summary and quotes are what stay in a public repo. Quotes stay exact and everything around them gets shorter. It's worth a read before you commit it.
 
 Nodes that came out of a source get a `derived-from` link to it, which is how a decision points back at the conversation it was made in.
 
