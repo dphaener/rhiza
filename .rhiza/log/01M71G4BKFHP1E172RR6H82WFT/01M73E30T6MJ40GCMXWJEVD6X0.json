@@ -1,0 +1,86 @@
+{
+  "actor": "01M73DQS51VT0H0BDF74T5NKDK",
+  "after": [
+    "01M73DGEWAGTDSPJGMC0M51YPH"
+  ],
+  "at": "2026-11-10T19:13:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8e8c092d I built rhiza with go build -trimpath and walked docs/quickstart.md by hand in a fresh scratch git repo (own HOME, RHIZA_* unset): git init, rhiza init, change new, rhiza add capability reports, add capability export-csv --parent reports, add decision csv-streaming with the quoted quote field, rhiza link export-csv decided-by csv-streaming, propose, accept, land, show, why, tree, render, check (ok), git commit. Every command succeeded. show export-csv lists decided-by csv-streaming, show csv-streaming keeps the quote verbatim, tree nests export-csv under reports, why lists the decision and the landed change set. The page's rhiza set mention works too: set export-csv --field ... --dry-run then real updated the statement. grep finds no {\"writes in the page; rhiza apply gets one sentence. go test -trimpath ./cmd/rhiza -run TestScripts/quickstart passes."
+        },
+        "handle": "quickstart-plain-commands-qa-1",
+        "id": "01M73E309JRB5Z7F59K0Q8WYTM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73E309JRB5Z7F59JZX7PATE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73E309JRB5Z7F59JZX7PATE",
+        "id": "01M73E30B6EQ0A1EJM3A002WA9",
+        "link": "01M73E30B6EQ0A1EJM38YAFBSB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7PJCFCV4867656A3HKHP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8e8c092d README.md no longer says pages are on the way (grep finds no 'on the way' in README.md or docs/quickstart.md). Its Where next links the quickstart, concepts (model, change-sets, why), agents, runs-and-daemon, custom-workflows and the generated reference (cli, config, workflow-file); every target file exists. go test -trimpath ./internal/doclinks/... passes, and make self-check in a clean detached worktree at HEAD prints ok (in the run checkout it fails only on this QA session's own untracked actor record). The owner's approval is left to sign-off."
+        },
+        "handle": "readme-owner-voice-qa-1",
+        "id": "01M73E30EJK447DWYCSDSWFB3R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73E30EJK447DWYCSB58B90H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73E30EJK447DWYCSB58B90H",
+        "id": "01M73E30GBY2S2V5B0VDDP171A",
+        "link": "01M73E30GBY2S2V5B0VD488186",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7PH3S3AB0X96JD4H94BY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8e8c092d grep -n -i rise-ah README.md matches line 3, the opening paragraph under # Rhiza where the name is introduced: Rhiza (it's said rise-ah) keeps a living model... The owner's approval is left to sign-off."
+        },
+        "handle": "readme-pronunciation-qa-1",
+        "id": "01M73E30JY5K13NZ83Q77DAY4Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73E30JY5K13NZ83Q6J4Q2NN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73E30JY5K13NZ83Q6J4Q2NN",
+        "id": "01M73E30NGMQKCBJFA5C2KJQ93",
+        "link": "01M73E30NGMQKCBJFA5BVT3P3T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71HGXH205HYJX4K0AE89RXW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4BKFHP1E172RR6H82WFT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73E30T6MJ40GCMXWJEVD6X0",
+  "type": "ops",
+  "v": 1
+}
