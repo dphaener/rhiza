@@ -1,6 +1,7 @@
 package run
 
 import (
+	"cmp"
 	"fmt"
 	"slices"
 	"strings"
@@ -34,6 +35,10 @@ func (r *running) signoff(step workflow.Step) (result, error) {
 		}
 		return result{outcome: workflow.OutcomePass, detail: "approved by " + who}, nil
 	}
+	if wf, owner := ownerDeclared(st); owner {
+		r.log("step %s: waiting for the owner: workflow %s declares autonomy signoff owner", step.Name, wf)
+		return result{stopped: SignoffWait}, nil
+	}
 	if st.Autonomous {
 		if err := r.append(Entry{
 			Type: TypeSignoff, Step: step.Name, Visit: st.CurrentVisit, Rule: RuleAutonomous, Outcome: SignoffApproved,
@@ -44,6 +49,31 @@ func (r *running) signoff(step workflow.Step) (result, error) {
 		return result{outcome: workflow.OutcomePass, detail: "approved by rule autonomous"}, nil
 	}
 	return result{stopped: SignoffWait}, nil
+}
+
+// ownerDeclared reports whether the run's workflow declares the signoff
+// stage owner, and the name of the workflow that does. It reads the run's
+// recorded stage autonomy (the top-level workflow's, so a signoff step of
+// a nested workflow obeys it too); a journal that predates that record
+// falls back to the started definition's declaration. A signoff that is
+// owner only by the rhiza.autonomy.signoff setting is not a declaration.
+func ownerDeclared(st State) (string, bool) {
+	if len(st.Autonomy) > 0 {
+		for _, a := range st.Autonomy {
+			if a.Stage == workflow.StageSignoff && a.Source == SourceWorkflow && a.Mode == workflow.AutonomyOwner {
+				return cmp.Or(a.Workflow, st.Workflow), true
+			}
+		}
+		return "", false
+	}
+	def, err := st.ParseDefinition()
+	if err != nil {
+		return "", false
+	}
+	if m, ok := def.Autonomy(workflow.StageSignoff); ok && m == workflow.AutonomyOwner {
+		return st.Workflow, true
+	}
+	return "", false
 }
 
 // plural is one when n is 1, else many.

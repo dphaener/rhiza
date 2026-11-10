@@ -15,7 +15,16 @@ rhiza change new "Export reports as CSV"
 rhiza change new "Record the existing login flow" --kind record
 ```
 
-`rhiza change new` makes the new change set the current one, and every write after that goes into it. `--change <id>` on a command overrides that, and so does `RHIZA_CHANGE` in the environment. `rhiza change use` switches the current one by hand.
+`rhiza change new` makes the new change set the current one, and every write after that goes into it:
+
+```bash
+rhiza add capability export-csv --field "statement=Reports can be exported as CSV"
+rhiza add decision csv-streaming --field "statement=Export CSV as a stream, not a buffered file"
+rhiza link export-csv decided-by csv-streaming
+rhiza set export-csv --field "acceptance=A 10,000 row report exports in under a second"
+```
+
+`--change <id>` on a command overrides the current one, and so does `RHIZA_CHANGE` in the environment. `rhiza change use` switches it by hand.
 
 If you only want to write down one thing that already exists, `--record` on a write skips the ceremony. It opens a record change set, applies the write and lands it in one go.
 
@@ -67,13 +76,13 @@ A landed change set is final once it's on main. Before that, if it's landed only
 rhiza reopen --change <id>
 ```
 
-It goes from landed back to accepted, takes more writes and lands again. This is the fix for a review that asked for something small, or a node you missed. It's better than opening a second change set for the same intent.
+It goes from landed back to accepted, takes more writes and lands again. This is the fix for a review that asked for something small, or a node you missed. Probably better than opening a second change set for the same intent.
 
 Once the land is in main's history, reopen refuses. Landed work on main stays as it is. If it needs changing, open a new change set and link it to the old one with `discovered-from`.
 
 ## Rendering
 
-The log is the source of truth, but nobody enjoys reading it. `rhiza render` writes the model as it is now, from landed change sets only, into markdown under `.rhiza/rendered/`, one file per node. Commit those files with the change so the model shows up in diffs and in review.
+The log is the source of truth, but it's not much fun to read. `rhiza render` writes the model as it is now, from landed change sets only, into markdown under `.rhiza/rendered/`, one file per node. Commit those files with the change so the model shows up in diffs and in review.
 
 `rhiza check` compares the log, the links and the rendered files. After you land something, run `rhiza render` before you run `rhiza check`, or the check fails on stale files.
 

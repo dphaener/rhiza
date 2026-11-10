@@ -1,0 +1,40 @@
+{
+  "actor": "01M73HFSXRRMH1AF9N67PQ0TH4",
+  "after": [
+    "01M73G8ZZJE0TV5VQ61MB79MWN"
+  ],
+  "at": "2026-11-10T20:14:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At aee97577 I read the diff from 3502ad9d: signoff.go adds ownerDeclared, checked after an existing sign-off and before the Autonomous branch, which reads the recorded stage autonomy (stage signoff, source workflow, mode owner) and falls back to the started definition's [autonomy] when the journal has no record; a setting-sourced owner is not a declaration. go test -trimpath -count=1 ./internal/run/ -run TestSignoff passed all 9, including TestSignoffWorkflowOwnerBeatsAutonomous (waits with SignoffWait, no signoff entry, then approve succeeds), TestSignoffAutoAndSettingSignOffAutonomously (workflow auto, setting auto, setting owner and a ship-only declaration each sign off under rule autonomous), TestSignoffOwnerFallsBackToDefinition (no record) and TestSignoffWorkflowOwnerChangesGoBack (request-changes goes back to review, then waits again on visit 2). go test -trimpath ./internal/run/... passed. go test -trimpath -count=1 ./cmd/rhiza -run TestScripts/(run-signoff-workflow-owner|review-signoff-autonomous|workflow-stage-autonomy|run-autonomy-source) passed all four. The new script runs run start --autonomous on a workflow with [autonomy] signoff = owner and fake rex/claude, sees the log line naming the workflow's declaration, state stopped at signoff with signoff_waiting true and no rule autonomous sign-off, then rhiza run approve succeeds with rule owner. The other three scripts are unchanged in the diff"
+        },
+        "handle": "signoff-owner-beats-autonomous-verified",
+        "id": "01M73HJ2F0W3BDJ7TWQBBY88Y7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73HJ2EZSSYF7BN65GKB0T62",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73HJ2EZSSYF7BN65GKB0T62",
+        "id": "01M73HJ2GJH0Y5067HK2SP22BS",
+        "link": "01M73HJ2GJH0Y5067HK2JVZKKG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73G3PK7RGKSX1K0NEM0MFB2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M73FYE2PAG9E034MPBTTJ12D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73HJ2JCHMY3S1STXRR5CGZB",
+  "type": "ops",
+  "v": 1
+}

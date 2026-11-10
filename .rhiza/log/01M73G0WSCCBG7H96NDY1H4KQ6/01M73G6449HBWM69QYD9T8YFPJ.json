@@ -1,0 +1,30 @@
+{
+  "actor": "01M73G1ZHZGX5ZECPH76X6XC6D",
+  "after": [
+    "01M73G0WSCCBG7H96NDY6W1HG4"
+  ],
+  "at": "2026-11-10T19:50:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "b8f88971-6f9a-4c0c-b545-01a1c700dbf9",
+          "statement": "Run 01M73CQ4 looped merge -> gate-rebase-merge until max_visits because PR #426 had been converted to draft after ship opened it (gh: 'Pull Request is still a draft'), while ship check still called it green. When rhiza ship merge finds the run's PR is a draft, what should it do?"
+        },
+        "handle": "question-b8f88971-1",
+        "id": "01M73G61GENMB6SV7YM1G8GFV4",
+        "key": null,
+        "kind": "question",
+        "node": "01M73G61GENMB6SV7YM0PCCZ56",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M73G0WSCCBG7H96NDY1H4KQ6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73G6449HBWM69QYD9T8YFPJ",
+  "type": "ops",
+  "v": 1
+}
