@@ -2642,7 +2642,7 @@ Exit code: set by the result, besides the shared codes.
 
 ## rhiza workflow describe
 
-Show a workflow as run start resolves it: where it comes from, the layers it shadows, its start step, each step with its targets and roles, and the workflows it includes; starts nothing.
+Show a workflow as run start resolves it: where it comes from, the layers it shadows, its start step, its declared autonomy, each step with its targets and roles, and the workflows it includes; starts nothing.
 
 ```
 rhiza workflow describe <workflow>
@@ -2654,6 +2654,7 @@ Arguments and flags:
 
 Output (`--json` fields):
 
+- `autonomy` (array of object): The autonomy the workflow declares, by stage in order; a stage it leaves out follows rhiza.autonomy.<stage>; empty when it declares none
 - `includes` (array of string): The workflows it includes, directly or through another, sorted
 - `layer` (string): personal, repo, builtin or file
 - `name` (string): The workflow's name

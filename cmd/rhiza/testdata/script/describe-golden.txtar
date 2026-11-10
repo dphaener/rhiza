@@ -25200,6 +25200,28 @@ cmp stdout describe.golden.json
       "response": {
         "additionalProperties": false,
         "properties": {
+          "autonomy": {
+            "description": "The autonomy the workflow declares, by stage in order; a stage it leaves out follows rhiza.autonomy.<stage>; empty when it declares none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "mode": {
+                  "description": "auto or owner",
+                  "type": "string"
+                },
+                "stage": {
+                  "description": "plan, accept, ship or signoff",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "mode",
+                "stage"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "includes": {
             "description": "The workflows it includes, directly or through another, sorted",
             "items": {
@@ -25308,6 +25330,7 @@ cmp stdout describe.golden.json
           }
         },
         "required": [
+          "autonomy",
           "includes",
           "layer",
           "name",
@@ -25318,7 +25341,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Show a workflow as run start resolves it: where it comes from, the layers it shadows, its start step, each step with its targets and roles, and the workflows it includes; starts nothing",
+      "summary": "Show a workflow as run start resolves it: where it comes from, the layers it shadows, its start step, its declared autonomy, each step with its targets and roles, and the workflows it includes; starts nothing",
       "write": false
     },
     {
