@@ -1,0 +1,16 @@
+{
+  "actor": "01M73T3NM37YM1KS5D1AN4NKYD",
+  "after": [],
+  "at": "2026-11-10T22:46:52Z",
+  "body": {
+    "intent": "Prune persistent index databases of worktrees that no longer exist: ~/.cache/rhiza/index held 1580 dbs (14G), mostly from test and run worktrees long gone, and nothing removes them. Found while planning 01M73T319T5VT2Q37MFXTDP8T6 (stale newer-format index entries); the arbiter ruled pruning out of that change set (Decision index-rebuilds-on-entry-format-change).",
+    "kind": "intention",
+    "sources": [],
+    "title": "Prune orphan index databases"
+  },
+  "change_set": "01M73T928ZZSVDS2A22NM82VT9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73T928ZZSVDS2A22R098GDC",
+  "type": "open",
+  "v": 2
+}
