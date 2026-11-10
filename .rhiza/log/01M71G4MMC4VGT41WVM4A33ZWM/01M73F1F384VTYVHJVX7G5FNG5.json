@@ -1,0 +1,86 @@
+{
+  "actor": "01M73EV5H24QP7DDXB83B5TCPR",
+  "after": [
+    "01M73EPFP56EXVCJTW8MVHGYGC"
+  ],
+  "at": "2026-11-10T19:30:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 89bc7981 with a build of the branch in a scratch git repo (RHIZA_* unset, own HOME): ran the docs/agents.md commands by hand. rhiza guide ls and rhiza guide build print the topics; rhiza guide install --agent claude writes the skills to ~/.claude/skills/ and --project to .claude/skills/. The by-hand example rhiza add question export-size-cap --field statement=\"Do exports need a size cap?\" exits 0 and writes the node into the current change set; the agent write-back path rhiza apply <file> --json with an add write exits 0 with a JSON entry. grep finds rhiza apply <file> --json in step 3 of the loop. go test -trimpath ./internal/doclinks/... ok, and make self-check in a clean worktree at HEAD exits 0 (warns only on old unclaimed main commits). The owner's approval is left to sign-off."
+        },
+        "handle": "agents-doc-voice-qa-1",
+        "id": "01M73F1E8XQ76ZV2B2P5KNRMCK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73F1E8XQ76ZV2B2P4E53AT9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73F1E8XQ76ZV2B2P4E53AT9",
+        "id": "01M73F1EDH5N95S6BBK5XQF085",
+        "link": "01M73F1EDH5N95S6BBK2GVA376",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7QJ4GW14BQ3D485XGYZ1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 89bc7981 with a build of the branch: rhiza run send-back --help shows rhiza run send-back [<run>] --note <note>, matching the page's new example; in a scratch repo rhiza run send-back --note \"The retry loop needs a cap\" and rhiza run approve both parse and exit 2 with 'works on a run waiting at a sign-off step: no runs yet', as documented. rhiza run request-changes --help and rhiza describe run.request-changes --json exist as the page's fallback paragraph says. go test -trimpath ./internal/doclinks/... ok and make self-check in a clean worktree at HEAD exits 0. The owner's approval is left to sign-off."
+        },
+        "handle": "runs-daemon-doc-voice-qa-1",
+        "id": "01M73F1EJTQZSEN83EACY269J6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73F1EJTQZSEN83EACHANM60",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73F1EJTQZSEN83EACHANM60",
+        "id": "01M73F1ERQPKBX5N0MZ4803GBM",
+        "link": "01M73F1ERQPKBX5N0MZ0KK25NH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7QMC5NKK7T0TNKBPKFQ7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 89bc7981 with a build of the branch in a scratch repo: rhiza workflow new bugfix and rhiza workflow check bugfix succeed; rhiza change new \"Totals are wrong on the invoice page\" --workflow bugfix exits 0 and rhiza change show lists Workflow: bugfix; rhiza change workflow --clear prints that the dispatch rules choose again, and rhiza change workflow bugfix pins it again, all exit 0. go test -trimpath ./cmd/rhiza -run 'TestScripts/(custom-workflows-doc|docs-)' passes (GOTMPDIR outside the repo). The owner's approval is left to sign-off."
+        },
+        "handle": "custom-workflows-doc-voice-qa-1",
+        "id": "01M73F1ETMTC9RGHHA7HD42E2W",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73F1ETMTC9RGHHA7H0CKYBQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73F1ETMTC9RGHHA7H0CKYBQ",
+        "id": "01M73F1EY82BTXCE5Z35SWM2ET",
+        "link": "01M73F1EY82BTXCE5Z3341KH8M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7QP4AN4V4DF7G9S8R1SA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4MMC4VGT41WVM4A33ZWM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73F1F384VTYVHJVX7G5FNG5",
+  "type": "ops",
+  "v": 1
+}

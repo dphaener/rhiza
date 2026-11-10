@@ -70,11 +70,10 @@ A run that stops, because you restarted the daemon or the machine went down, pic
 
 ```text
 rhiza run approve <run>
-rhiza run request-changes <findings.json> <run>
-rhiza run send-back <run> --note "..."
+rhiza run send-back <run> --note "The retry loop needs a cap"
 ```
 
-Approving lets a `ship-change` run go on to merge. The other two send it back to a fixer. `request-changes` takes a JSON file of your findings (`-` reads stdin); `rhiza describe run.request-changes` shows its shape.
+Approving lets a `ship-change` run go on to merge. `send-back` hands it to a fixer with your note as the finding, so say what you want changed in a sentence or two. If you have several findings with their own severities, `rhiza run request-changes <findings.json> <run>` takes them as a JSON file (`-` reads stdin), and `rhiza describe run.request-changes` shows its shape. Most of the time the note is enough.
 
 ### Questions
 
@@ -140,7 +139,7 @@ rhiza daemon set rhiza.autonomy.signoff owner
 
 An autonomous run is one started with `--autonomous`. It skips the owner's gates and questions and records each one it skipped, so you can see afterward what was decided for you. It never changes agent permissions. Those are the permission mode's job.
 
-If you'd rather stay in the loop, set `owner` on `plan` and `signoff`. You still get the unattended building and the fixing. You just decide what goes in and what goes out.
+If you'd rather stay in the loop, set `owner` on `plan` and `signoff`. You still get the unattended building and fixing, and you decide what goes in and what goes out.
 
 ### Per workflow
 
