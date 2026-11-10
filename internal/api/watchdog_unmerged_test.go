@@ -170,12 +170,16 @@ run = "rhiza ship merge"
 	}
 }
 
+// watchdogPRView is the watchdog's own PR read, which asks for no isDraft
+// field, unlike ship check's shipPRView.
+const watchdogPRView = "pr view cs/ship-it --json number,url,state,headRefOid,body,mergeable,statusCheckRollup"
+
 // TestWatchdogReadPR checks the shared PR read gives a run the PR only when
 // the change set's ship record names that run: another run's, or none, is no
 // PR, and the owning run still reads it.
 func TestWatchdogReadPR(t *testing.T) {
 	f, g, state := shipFixture(t)
-	g.answers[shipPRView] = openPR(greenRollup)
+	g.answers[watchdogPRView] = openPR(greenRollup)
 	g.answers["run list --commit abc1234def --json databaseId,attempt"] = `[]`
 	cs := strings.TrimSuffix(filepath.Base(state), ".json")
 	read := func(runID string) watchdogPR {

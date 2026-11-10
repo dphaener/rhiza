@@ -22975,6 +22975,10 @@ cmp stdout describe.golden.json
           "pr": {
             "description": "The pull request merged",
             "type": "integer"
+          },
+          "stop": {
+            "description": "Why nothing was merged and the run should stop, not fail: the pull request is a draft, to be marked ready before resuming; the command exits 75",
+            "type": "string"
           }
         },
         "required": [

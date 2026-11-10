@@ -1,0 +1,355 @@
+# When the PR turns draft after sign-off, rhiza ship merge stops the run
+# (exit 75, a stop: line) instead of failing back into rebase-merge: no
+# gh pr merge, no gh pr ready, and merge is visited once. After the fake PR
+# is marked ready, rhiza run resume merges it.
+#
+# The repo overrides ship-change with the built-in's text, except that its
+# rebased-merge-green step also turns the PR into a draft, once, right
+# after the checks passed (draft.sh). The fakes are run-ship-change.txtar's.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/ship.sh .rhiza/workflows/ship.sh
+cp $WORK/review.toml .rhiza/workflows/review.toml
+cp $WORK/ship-change.toml .rhiza/workflows/ship-change.toml
+
+# An accepted change set of two leaves, second depending on first,
+# committed on main and pushed, as a reviewed change set would be.
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability second --field 'statement=Does second'
+exec rhiza add capability first --field 'statement=Does first'
+exec rhiza link second depends-on first
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+exec sh -c 'rhiza run approve --foreground 2>&1; echo exit=$?'
+! stdout '^Run \S+ succeeded$'
+stdout 'stop: pull request #7 is a draft'
+
+# Stopped at merge, not failed: merge ran once, nothing merged or readied.
+exists $WORK/drafted
+exec rhiza run status
+stdout '^- Current step: merge$'
+stdout '^- Detail: pull request #7 is a draft'
+stdout '^- rebased-merge-green \(visit 1\)'
+! stdout 'merge \(visit 2\)'
+! stdout 'gate-rebase-merge'
+exec sh -c 'grep -c "^pr merge" $WORK/gh.log || true'
+stdout '^0$'
+! grep '^pr ready' $WORK/gh.log
+
+# The owner marks it ready and resumes: the run merges it.
+exec rm $WORK/draft
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'rhiza run resume --foreground "$(cat $WORK/runid)"; echo exit=$?'
+stdout '^Run \S+ succeeded$'
+exec sh -c 'grep -c "^pr merge" $WORK/gh.log'
+stdout '^1$'
+! grep '^pr ready' $WORK/gh.log
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: landed'
+fold-ok
+
+-- draft.sh --
+#!/bin/sh
+[ -e "$WORK/drafted" ] && exit 0
+touch "$WORK/drafted" "$WORK/draft"
+-- ship-change.toml --
+name = "ship-change"
+
+# Ship a change set through Rhiza's own build and review: the build
+# workflow's leaves and its render of what the sessions wrote, the review
+# workflow's code check and checks with its sign-off skipped, the pull
+# request opened with the review's summary, CI, and then the owner's
+# sign-off here. rhiza run request-changes goes back into
+# review's checks step (review/review); render-pr then renders again,
+# ship open-pr pushes and replaces the PR body, and the run waits for CI
+# and signs off again.
+[step.build]
+kind = "workflow"
+workflow = "build"
+on.pass = "review"
+
+[step.review]
+kind = "workflow"
+workflow = "review"
+skip = ["signoff"]
+on.pass = "render-pr"
+
+# Render again right before every push: review's fixers and verifiers,
+# and its checks, write records too, here and after each
+# request-changes, so the pushed branch still passes rhiza check.
+[step.render-pr]
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
+  git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+"""
+max_visits = 3
+on.pass = "open-pr"
+
+[step.open-pr]
+kind = "command"
+run = "rhiza ship open-pr"
+max_visits = 3
+on.pass = "wait-pr"
+
+[step.wait-pr]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+max_visits = 3
+on.pass = "pr-green"
+
+[step.pr-green]
+kind = "command"
+run = "rhiza ship check"
+max_visits = 3
+on.pass = "signoff"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 3
+on.pass = "rebase"
+on.changes = "review/review"
+
+[step.rebase]
+kind = "command"
+run = "rhiza ship rebase"
+on.pass = "wait-rebased"
+
+[step.wait-rebased]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+on.pass = "rebased-green"
+
+[step.rebased-green]
+kind = "command"
+run = "rhiza ship check"
+on.pass = "land"
+
+[step.land]
+kind = "command"
+run = "rhiza ship land"
+on.pass = "wait-landed"
+
+[step.wait-landed]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+on.pass = "landed-green"
+
+[step.landed-green]
+kind = "command"
+run = "rhiza ship check"
+on.pass = "rebase-merge"
+
+[step.rebase-merge]
+kind = "command"
+run = "rhiza ship rebase"
+max_visits = 3
+on.pass = "wait-rebased-merge"
+
+[step.wait-rebased-merge]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+max_visits = 3
+on.pass = "rebased-merge-green"
+
+[step.rebased-merge-green]
+kind = "command"
+run = "rhiza ship check && sh $WORK/draft.sh"
+max_visits = 3
+on.pass = "merge"
+
+# Stops when the PR is a draft; merges nothing when origin/main moved after the head's checks passed:
+# the step fails and the run rebases and waits on the new head again.
+[step.merge]
+kind = "command"
+run = "rhiza ship merge"
+max_visits = 3
+on.pass = "wait-main"
+on.fail = "rebase-merge"
+
+# Main is confirmed locally with git, not by waiting for CI on it: the
+# merge commit's tree must equal the tested head's tree, else the step
+# fails with a stop: line. The wait passes at its first check.
+[step.wait-main]
+kind = "wait"
+until = "rhiza ship check --main --settled"
+timeout = "1h"
+interval = "30s"
+on.pass = "main-green"
+
+[step.main-green]
+kind = "command"
+run = "rhiza ship check --main"
+on.pass = "close-out"
+
+[step.close-out]
+kind = "command"
+run = "rhiza ship close-out"
+on.pass = "ship"
+
+[step.ship]
+kind = "command"
+run = "rhiza ship command"
+-- review.toml --
+# The repo's own review, as the built-in one but with two fake checks.
+# Its code step runs rhiza check, which passes only because ship-change
+# rendered and committed what build's sessions wrote.
+[step.code]
+kind = "command"
+run = "rhiza run code-check"
+on.pass = "review"
+
+[step.review]
+kind = "checks"
+interval = "50ms"
+max_visits = 3
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "beta"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 3
+on.pass = "done"
+on.changes = "review"
+-- want.log --
+role=builder leaf=first
+role=verifier leaf=first
+role=builder leaf=second
+role=verifier leaf=second
+-- ship.sh --
+#!/bin/sh
+echo shipped >> "$WORK/ship.log"
+echo shipped >> "$WORK/order.log"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+echo "role=$RHIZA_ROLE leaf=$RHIZA_LEAF" >> "$WORK/claude.log"
+case "$RHIZA_ROLE" in
+builder)
+	echo "$RHIZA_LEAF" > "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt"
+	git commit -q -m "build $RHIZA_LEAF" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
+	;;
+verifier)
+	rhiza add evidence "$RHIZA_LEAF-verified" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-verified" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+check)
+	echo '{"findings":[]}' > "$WORK/empty-round.json"
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+	;;
+esac
+exit 0
+-- bin/gh --
+#!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ "$3" = 7 ]; then
+		if [ -e "$WORK/draft" ]; then
+			printf '{"isDraft":true,"state":"OPEN"}\n'
+			exit 0
+		fi
+		printf '{"mergeCommit":{"oid":"%s"},"state":"MERGED"}\n' "$(cat "$WORK/merge.sha")"
+		exit 0
+	fi
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	if [ ! -f "$WORK/pr.created" ]; then
+		printf '{"body":"Change set '"$csid"'","number":3,"url":"https://github.test/o/r/pull/3","state":"MERGED","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
+		exit 0
+	fi
+	echo "$head" > "$WORK/landed.sha"
+	d=false
+	[ -e "$WORK/draft" ] && d=true
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","isDraft":%s,"headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"},{"context":"lint","state":"SUCCESS"}]}\n' "$d" "$head"
+	;;
+"pr create")
+	while [ $# -gt 0 ]; do
+		if [ "$1" = --body-file ]; then
+			cp "$2" "$WORK/pr-body.md"
+		fi
+		shift
+	done
+	touch "$WORK/pr.created"
+	;;
+"pr edit")
+	;;
+"pr merge")
+	head=$(git -C "$o" rev-parse refs/heads/cs/ship-it)
+	if [ "$6" != "$head" ]; then
+		echo "head branch was modified" >&2
+		exit 1
+	fi
+	sha=$(git -C "$o" commit-tree "$head^{tree}" -p refs/heads/main -m 'Ship it (#7)')
+	git -C "$o" update-ref refs/heads/main "$sha"
+	echo "$sha" > "$WORK/merge.sha"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

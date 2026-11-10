@@ -2366,6 +2366,7 @@ Output (`--json` fields):
 - `merge_commit` (string): The squash commit on main
 - `moved` (boolean): True if nothing was merged because origin/main is not in the checked head: another change set merged after its checks; the command exits 1 and the run goes back to rebase and check again
 - `pr` (integer): The pull request merged
+- `stop` (string): Why nothing was merged and the run should stop, not fail: the pull request is a draft, to be marked ready before resuming; the command exits 75
 
 Exit code: set by the result, besides the shared codes.
 

@@ -1,0 +1,40 @@
+{
+  "actor": "01M73J1Q199SMEJB9CGH2YY44P",
+  "after": [
+    "01M73GEQXVW7KXHE2WFQBMQETR"
+  ],
+  "at": "2026-11-10T20:23:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 49db34e1: go test -trimpath ./internal/api -run 'TestShipCheck|TestShipMerge' -count=1 passes, including new TestShipCheckDraftStops (fake gh isDraft true on a green PR, plain and --settled: exit 75, stop: line naming #7 as a draft, Passed false, no checked head recorded) and TestShipMergeDraftStops (recorded head, pr view 7 --json isDraft,state reports draft: exit 75, stop line, no gh pr merge or pr ready call, state head kept, no merge commit); existing ready-PR green and merge tests still pass with the isDraft field added. go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship-merge-draft|describe-golden|run-ship-change)$' passes: run-ship-merge-draft turns the fake PR draft after rebased-merge-green, the run stops at merge with 'stop: pull request #7 is a draft', status shows current step merge, no merge visit 2 and no gate-rebase-merge, zero pr merge and no pr ready in gh.log; after removing the draft flag rhiza run resume succeeds, merges once and the change set lands. describe-golden was regenerated for the new ShipMergeResponse.stop field. Diff read: draft checked in ship check after the merged short-circuit and in ship merge before fetch/merge; Rhiza never calls gh pr ready."
+        },
+        "handle": "ship-draft-pr-stops-verified",
+        "id": "01M73J37SJS6X1YNSEXV0J22A9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73J37SGGC19TNX946Y1849R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73J37SGGC19TNX946Y1849R",
+        "id": "01M73J37TD9XN4K37TW1KCD940",
+        "link": "01M73J37TD9XN4K37TVZ77DDTZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73G9RGRGPCPWM9M1RVJDAF5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M73G0WSCCBG7H96NDY1H4KQ6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73J37V2KNVND4PQPWY1NRPQ",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M73J7251XPZ5ACQB1FSRPBT1",
+  "after": [
+    "01M73J37V2KNVND4PQPWY1NRPQ"
+  ],
+  "at": "2026-11-10T20:30:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from the branch head (go build ./cmd/rhiza) and drove a real ship-change run with it in a scratch Rhiza root, using run-ship-merge-draft.txtar's fake gh/rex/claude and its draft.sh step that turns PR #7 draft after rebased-merge-green. rhiza run approve --foreground stopped the run (Run ... stopped) at merge visit 1 with 'stop: pull request #7 is a draft: mark it ready for review, then resume the run'; run status showed Current step merge, no gate-rebase-merge/rebase-merge revisit, and gh.log had no pr merge and no pr ready. Directly, rhiza ship merge and ship merge --json exited 75 with that stop line; rhiza ship check exited 75 with the same stop and --json showed green false, stop set, pr 7. After removing the draft flag, rhiza run resume --foreground continued merge visit 1, made exactly one pr merge 7 --squash --match-head-commit <head>, never pr ready, and the run succeeded with the change set landed. Scoped tests: go test ./internal/api -run 'TestShipCheck|TestShipMerge' and TestScripts/(run-ship-merge-draft|run-ship-change|describe-golden) pass."
+        },
+        "handle": "ship-draft-pr-stops-qa-1",
+        "id": "01M73JG4MJTSGB3T094GCSMMHV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73JG4MJTSGB3T094F3RQ3Z2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73JG4MJTSGB3T094F3RQ3Z2",
+        "id": "01M73JG4NR4BH55AYJPAWJ5XZK",
+        "link": "01M73JG4NR4BH55AYJP9FTCDR6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73G9RGRGPCPWM9M1RVJDAF5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M73G0WSCCBG7H96NDY1H4KQ6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73JG4R18N9R70XCW4TNG963",
+  "type": "ops",
+  "v": 1
+}
