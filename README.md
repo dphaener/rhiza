@@ -1,6 +1,6 @@
 # Rhiza
 
-Rhiza keeps a living model of your product inside your repo: what it is, why it's that way, and what's planned next. You change the model through change sets, small reviewed steps that land in git alongside the code, so the reasons behind a decision don't live in somebody's head or a chat thread that scrolled away.
+Rhiza (it's said rise-ah) keeps a living model of your product inside your repo: what it is, why it's that way, and what's planned next. You change the model through change sets, small reviewed steps that land in git alongside the code, so the reasons behind a decision don't live in somebody's head or a chat thread that scrolled away.
 
 It's built for working with coding agents. An agent that can read the model knows what the product is supposed to do and which constraints it can't break, and it can propose changes to the model the same way you do. You can also ignore agents entirely: the CLI works on plain files, with no daemon, and that's how you'll start.
 
