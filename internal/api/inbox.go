@@ -338,7 +338,12 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 			add(InboxFailed, "", st.EndedAt, InboxItem{
 				Step: step, Detail: failedDetail(st, step), Next: "rhiza run resume --retry " + j.ID,
 			})
-		case !live && strings.HasPrefix(st.Stopped, run.OpenStop):
+		case strings.HasPrefix(st.Stopped, run.OpenStop) && (!live || !st.ProcessAt.After(st.StoppedAt)):
+			// The engine returns right after it journals the stop, so a
+			// process still holding the run's lock then (one lingering
+			// after the run, a pane left open) is not advancing it: the
+			// questions wait on the owner all the same. A process that
+			// journalled itself after the stop is a resume under way.
 			add(InboxOpen, st.Stopped, st.StoppedAt, InboxItem{
 				Step: st.Current, Detail: st.Stopped, Next: "rhiza run resume " + j.ID,
 			})
@@ -1344,7 +1349,15 @@ func inboxGateRead(ctx *Ctx, st run.State, handles []string) ([]InboxGateQuestio
 	for _, h := range handles {
 		q := InboxGateQuestion{Handle: h}
 		asker := h
-		for _, cs := range plan {
+		// The planned change sets first; a question a record change set
+		// left (the review's) is in the one that creates it.
+		candidates := slices.Clone(plan)
+		for _, cs := range sets {
+			if !slices.ContainsFunc(plan, func(p changeset.ChangeSet) bool { return p.ID == cs.ID }) && createsQuestion(cs, h) {
+				candidates = append(candidates, cs)
+			}
+		}
+		for _, cs := range candidates {
 			m := modelOf(cs.ID)
 			n, err := m.Resolve(h)
 			if err != nil || n.Kind != op.KindQuestion {
@@ -1361,6 +1374,13 @@ func inboxGateRead(ctx *Ctx, st run.State, handles []string) ([]InboxGateQuestio
 		askers = append(askers, asker)
 	}
 	return out, askers
+}
+
+// createsQuestion reports whether cs's ops create a question named h.
+func createsQuestion(cs changeset.ChangeSet, h string) bool {
+	return slices.ContainsFunc(cs.Ops, func(o op.Op) bool {
+		return o.Type == op.TypeNodeCreate && o.Kind == op.KindQuestion && o.Handle == h
+	})
 }
 
 // inboxWorkflow is one item per skip the daemon's last poll made because the
