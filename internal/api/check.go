@@ -67,8 +67,9 @@ const legacyDir = ".genesis"
 
 // CheckRequest names the base of the append-only rule.
 type CheckRequest struct {
-	Base          string `json:"base,omitempty" desc:"The git revision the log may only have grown since; default the merge-base of HEAD with origin/HEAD, origin/main or main"`
-	SkipReference bool   `json:"skip_reference,omitempty" flag:"skip-reference" desc:"Leave out the generated-reference comparison (docs/reference against rhiza docs) and the docs-command rule, which judge by this binary's registry; run code-check sets it, make self-check does not"`
+	Base              string `json:"base,omitempty" desc:"The git revision the log may only have grown since; default the merge-base of HEAD with origin/HEAD, origin/main or main"`
+	SkipReference     bool   `json:"skip_reference,omitempty" flag:"skip-reference" desc:"Leave out the generated-reference comparison (docs/reference against rhiza docs) and the docs-command rule, which judge by this binary's registry; run code-check sets it, make self-check does not"`
+	BranchNewerFormat bool   `json:"branch_newer_format,omitempty" flag:"branch-newer-format" desc:"Report a log entry of a newer format than this binary reads as a warning when the branch added it since the base; one at the base, and every other bad entry, still fails; run code-check sets it, make self-check does not"`
 }
 
 // CheckResponse is the check report.
@@ -145,6 +146,18 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 		}
 		if in.Current, err = currentEntries(ctx.Root); err != nil {
 			return nil, Errorf("read the log: %v", err)
+		}
+		if r.BranchNewerFormat {
+			atBase := map[string]bool{}
+			for _, e := range in.Base {
+				atBase[e.Path] = true
+			}
+			in.NewerOK = map[string]bool{}
+			for _, p := range in.Log.Problems {
+				if !atBase[store.Dir+"/"+p.Path] {
+					in.NewerOK[p.Path] = true
+				}
+			}
 		}
 	}
 	in.Tree = os.DirFS(ctx.Root)

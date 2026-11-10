@@ -1502,6 +1502,10 @@ cmp stdout describe.golden.json
             "description": "The git revision the log may only have grown since; default the merge-base of HEAD with origin/HEAD, origin/main or main",
             "type": "string"
           },
+          "branch_newer_format": {
+            "description": "Report a log entry of a newer format than this binary reads as a warning when the branch added it since the base; one at the base, and every other bad entry, still fails; run code-check sets it, make self-check does not",
+            "type": "boolean"
+          },
           "skip_reference": {
             "description": "Leave out the generated-reference comparison (docs/reference against rhiza docs) and the docs-command rule, which judge by this binary's registry; run code-check sets it, make self-check does not",
             "type": "boolean"

@@ -1,0 +1,40 @@
+{
+  "actor": "01M735H48TQW3WZVEV3739RYZ7",
+  "after": [
+    "01M735BFHFXAK97QD5CMF12M99"
+  ],
+  "at": "2026-11-10T16:57:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 53b5c153: read the branch diff (CheckRequest.BranchNewerFormat flag; runCheck marks log problems not in the merge-base ls-tree as NewerOK; check.log downgrades only store.ErrNewerFormat on NewerOK paths to warn; run code-check sets it, plain check and self-check do not; describe-golden and docs/reference regenerated). review-code-check.txtar now commits an entry with v 5 (entry.FormatVersion is 4) on the run branch: plain rhiza check fails naming it, rhiza run code-check passes with exit 0 and no cause naming it, --json shows severity warn; then the same entry committed on main and merged into the branch (so it sits at the merge-base) makes run code-check fail with 1 cause naming the file. TestCheckBranchNewerFormat shows option off still fails the branch-added entry. Ran: go test -trimpath ./internal/api -run 'TestCheck|TestRunCodeCheck' -v (all PASS incl. TestCheckBranchNewerFormat), go test -trimpath ./internal/check/... (ok), go test -trimpath ./cmd/rhiza -run 'TestScripts/(review-code-check|describe-golden)$' (both PASS). The full ./internal/api/... run had every test PASS but the package was flagged only by the root-state guard on ~/code/.rhiza-root/usage.live.json, written by the live root daemon, unrelated to this change."
+        },
+        "handle": "code-check-tolerates-branch-newer-format-verified-2",
+        "id": "01M7368R7784QKSTW6TKTYN5A9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7368R7784QKSTW6TKT2VYS8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7368R7784QKSTW6TKT2VYS8",
+        "id": "01M7368R863DHN6RREQT468VSM",
+        "link": "01M7368R863DHN6RREQT0CBV2H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M732H1JKD0T0FBRMTQN1RY33",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M732D2EZSS20MWDHZGG66BJ5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7368R91JQ20GA6AD1DP029J",
+  "type": "ops",
+  "v": 1
+}
