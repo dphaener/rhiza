@@ -1,0 +1,16 @@
+{
+  "actor": "01M71E75QHR2FVDPHXKWJ92RT1",
+  "after": [],
+  "at": "2026-11-10T01:11:03Z",
+  "body": {
+    "intent": "README and quickstart in the owner's voice: rewritten with humanize, the quickstart writes the model with plain rhiza add/link commands instead of an apply JSON file, the README's stale 'on the way' lines go, signed off by the owner",
+    "kind": "intention",
+    "sources": [],
+    "title": "README and quickstart polish"
+  },
+  "change_set": "01M71G4BKFHP1E172RR6H82WFT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71G4BKFHP1E172RR73FDSE1",
+  "type": "open",
+  "v": 2
+}

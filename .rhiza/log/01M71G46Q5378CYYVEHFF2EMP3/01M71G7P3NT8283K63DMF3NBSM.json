@@ -1,0 +1,96 @@
+{
+  "actor": "01M71E75QHR2FVDPHXKWJ92RT1",
+  "after": [
+    "01M71G46Q5378CYYVEHHHVSS99"
+  ],
+  "at": "2026-11-10T01:12:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript (go test ./cmd/rhiza -run TestScripts/<its name>) opens a change set with change new --workflow, shows the workflow in change show --json, shows run start --dry-run picking it, shows an unknown name refused, and folds with fold-ok",
+          "statement": "rhiza change new --workflow <name> opens a change set pinned to that workflow, recorded as a request's workflow is, so its ready pick is that workflow; a name that does not resolve is refused as rhiza request --workflow refuses it"
+        },
+        "handle": "change-new-workflow-flag",
+        "id": "01M71G7NY758150RA0128J2580",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M71G7NY758150RA00YZ080MV",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      },
+      {
+        "decision": null,
+        "from": "01M71G7NY758150RA00YZ080MV",
+        "id": "01M71G7NZKY5ZTGBGWG7K6ND8Z",
+        "link": "01M71G7NZKY5ZTGBGWG70RRAHK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript pins a draft change set to a workflow and shows change show --json and run start --dry-run picking it, clears it back to the dispatch rules, refuses an unknown name and a landed change set, and folds with fold-ok; internal/api tests cover the operation",
+          "statement": "A command pins or clears the workflow of an existing change set that has not landed and has no live run (for example rhiza change workflow <name> | --clear), so a change set opened by a milestone plan can be built with a chosen workflow"
+        },
+        "handle": "change-workflow-pin",
+        "id": "01M71G7P0PSQXY5RZ89TRQZ6Z1",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M71G7P0PSQXY5RZ89TE5NV9W",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      },
+      {
+        "decision": null,
+        "from": "01M71G7P0PSQXY5RZ89TE5NV9W",
+        "id": "01M71G7P1BPFTWG3T1AJY5YXA3",
+        "link": "01M71G7P1BPFTWG3T1AGRY0Y9F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "rhiza workflow check docs passes, rhiza workflow describe docs shows signoff owner, change show --json of each of the three page change sets shows workflow docs, and make self-check passes",
+          "statement": "This repo has a workflow named docs (.rhiza/workflows/docs.toml, forked from ship-change) whose autonomy sets signoff = owner, whose builder and fixer prompts write doc prose with the owner's humanize skill under constraints doc-prose-humanized and doc-examples-plain-commands, and the milestone's three page change sets (README and quickstart polish, Concepts polish, Agents and runs docs polish) are pinned to it"
+        },
+        "handle": "docs-signoff-workflow",
+        "id": "01M71G7P1XK0DKX0N1JZDDBQ39",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M71G7P1XK0DKX0N1JXMP8T4B",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M71G7P1XK0DKX0N1JXMP8T4B",
+        "id": "01M71G7P2M9MR5YQ6FPC3RNNSQ",
+        "link": "01M71G7P2M9MR5YQ6FPB0HMM4C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M71G7P1XK0DKX0N1JXMP8T4B",
+        "id": "01M71G7P37K554ARNDZGPFWVBG",
+        "link": "01M71G7P37K554ARNDZGCH9A2R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7P0PSQXY5RZ89TE5NV9W",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M71G46Q5378CYYVEHFF2EMP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71G7P3NT8283K63DMF3NBSM",
+  "type": "ops",
+  "v": 1
+}
