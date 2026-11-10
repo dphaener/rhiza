@@ -1,0 +1,33 @@
+{
+  "actor": "01M73G1ZHZGX5ZECPH76X6XC6D",
+  "after": [
+    "01M73G84FF5QEDXEAGNNJYFDTG"
+  ],
+  "at": "2026-11-10T19:52:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "e3788d692b4888adddfe97d3406118736e26153350e875ae093e9ca01bfb0221",
+          "session": "b8f88971-6f9a-4c0c-b545-01a1c700dbf9",
+          "summary": "Autonomous plan of the watchdog bug from run 01M73CQ4D71CW038ZBNSQB1SJF. The planner read the run log: every merge visit failed with gh's 'Pull Request is still a draft' on PR #426, and merge's on.fail sent the run back to gate-rebase-merge until it went over max_visits 6; the watchdog then retried twice from the same step. The PR timeline shows it was converted to draft at 2026-11-10T19:28Z, after ship opened it ready, while rhiza ship check (which reads no isDraft) still reported it green. The planner raised one question (stop for the owner, or mark the PR ready and merge); with no owner present, the arbiter answered with Decision decision-draft-pr-is-a-hold: a draft PR is a hold, ship merge and ship check end the run with a stop: line naming the draft PR and never mark it ready. The change set serves m4-runs-hold-up and has one leaf, ship-draft-pr-stops.",
+          "title": "Draft PR merge loop, planned autonomously"
+        },
+        "handle": "draft-pr-merge-loop-plan",
+        "id": "01M73G9F36A10TYCW9CC9W3M91",
+        "key": null,
+        "kind": "source",
+        "node": "01M73G9F36A10TYCW9C8ZSAPWH",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M73G0WSCCBG7H96NDY1H4KQ6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73G9F40XTW3KGTW0F02VPFS",
+  "type": "ops",
+  "v": 1
+}
