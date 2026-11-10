@@ -1,0 +1,15 @@
+{
+  "actor": "01M731CR45HWSGQEZJ0978NKY7",
+  "after": [
+    "01M71HC8WKBEM345S83ACA4H3Z"
+  ],
+  "at": "2026-11-10T15:33:36Z",
+  "body": {
+    "workflow": "docs"
+  },
+  "change_set": "01M71G4G92NEJ33C04DSKC4RMK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M731FQPE9PY5EYQTA9H0C4CF",
+  "type": "pin",
+  "v": 5
+}
