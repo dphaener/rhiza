@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M73HWH4F0JX3EMRT36ZCQ2QN"
+  ],
+  "at": "2026-11-10T20:34:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "94a9b51b2363adbfa92ffac8ab8b7655babe6230",
+          "pr": "https://github.com/dphaener/rhiza/pull/431",
+          "result": "11 checks passed: lint SUCCESS, go-install SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #431 (https://github.com/dphaener/rhiza/pull/431) passed CI at 94a9b51",
+          "status": "verified"
+        },
+        "handle": "pr-431-fix-a-workflow-that-declares",
+        "id": "01M73JPV60J912194NH360TSW8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73JPV60J912194NH0DAD1D5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73JPV60J912194NH0DAD1D5",
+        "id": "01M73JPV6WS2S5K5N7X561Y4Z1",
+        "link": "01M73JPV6WS2S5K5N7X416QJQ1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73G3PK7RGKSX1K0NEM0MFB2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M73FYE2PAG9E034MPBTTJ12D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73JPVAA6DYC1JP109SCT9P9",
+  "type": "ops",
+  "v": 1
+}
