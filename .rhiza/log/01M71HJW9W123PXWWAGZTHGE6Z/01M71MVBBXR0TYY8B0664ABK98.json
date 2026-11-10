@@ -1,0 +1,40 @@
+{
+  "actor": "01M71MN13DVYRBMG0A5S1XHVYE",
+  "after": [
+    "01M71MJ7XSRZ7B15J1YEBWZ6E6"
+  ],
+  "at": "2026-11-10T02:33:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-88b6eb03 at 264c0bbf, by hand with the built binary (go build -trimpath) and the merge base's build, in a scratch repo outside ~/code with RHIZA_* unset. Setup copying run 01M71E6F15HMTME3KKF96NJC5R: a record change set 'Review round' adds question review-r3-f1 ('Should the pages show plain commands?'); a plan change set 'Milestone plan' adds an intent; a hand-written journal has started (plan-milestone, plan+milestone_plan), process, entered gate, gated naming the plan set, and stopped at gate with 'open questions: review-r3-f1; ...'. With the run's lock held via flock .git/rhiza/runs/.<id>.lock, the merge base printed 'Nothing waits on you' (the bug, reproduced). With the lock free it listed the run, but as 'question:  (review-r3-f1)' with no statement. The new binary, lock held or free, lists 'open run <id>, change set <id>, step gate' plus 'question: Should the pages show plain commands? (review-r3-f1)' and the resume command; --json has kind open, change_title 'Milestone plan' and questions [{handle, statement}]. After rhiza root init and project add, the root's merged inbox shows the same: the merge base says 'Nothing waits on you', the new binary lists the item with 'project: proj' and the question's statement. With a process entry appended after the stop (a resume) and the lock held, both the root and the project print 'Nothing waits on you'. go test -trimpath ./internal/api -run TestInbox passes, TestInboxListsGateStoppedPlanRun included (one earlier attempt tripped the root guard on .rhiza-root/usage.live.json, an environment effect). go test -trimpath ./cmd/rhiza -run TestScripts/inbox-gate-questions passes. Not exercised: the Inbox app and web UI (this diff does not touch them)."
+        },
+        "handle": "inbox-lists-gate-stopped-plan-run-qa-1",
+        "id": "01M71MVBA82VY3X3ZB580S6WWM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M71MVBA82VY3X3ZB5475M5GF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M71MVBA82VY3X3ZB5475M5GF",
+        "id": "01M71MVBAYH5VKW0YM9V41EQ8V",
+        "link": "01M71MVBAYH5VKW0YM9Q9617RB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71HSF7GVD9YRPGVAZ0F63N6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71HJW9W123PXWWAGZTHGE6Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71MVBBXR0TYY8B0664ABK98",
+  "type": "ops",
+  "v": 1
+}
