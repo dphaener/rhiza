@@ -211,10 +211,21 @@ type ShipMergeResponse struct {
 	Head          string `json:"head" desc:"The head commit the merge was pinned to"`
 	MergeCommit   string `json:"merge_commit" desc:"The squash commit on main"`
 	AlreadyMerged bool   `json:"already_merged,omitempty" desc:"True if an earlier ship merge had merged it and recorded the merge commit"`
+	Stop          string `json:"stop,omitempty" desc:"Why nothing was merged and the run should stop, not fail: the pull request is a draft, to be marked ready before resuming; the command exits 75"`
 }
 
-// ExitCode is 1 when ship merge merged nothing because main moved.
+// shipDraftStop is the stop: line for a draft pull request. Rhiza never
+// marks it ready: that is the owner's call.
+func shipDraftStop(pr int) string {
+	return fmt.Sprintf("pull request #%d is a draft: mark it ready for review, then resume the run", pr)
+}
+
+// ExitCode is run.StopExit when the pull request is a draft, 1 when ship
+// merge merged nothing because main moved.
 func (r ShipMergeResponse) ExitCode() int {
+	if r.Stop != "" {
+		return run.StopExit
+	}
 	if r.Moved {
 		return 1
 	}
@@ -476,7 +487,9 @@ type prView struct {
 	Body string
 	// Mergeable is GitHub's verdict: MERGEABLE, CONFLICTING or UNKNOWN.
 	Mergeable string
-	Checks    []ShipCheck
+	// Draft is true while the pull request is a draft.
+	Draft  bool
+	Checks []ShipCheck
 }
 
 // parsePRView parses gh pr view's JSON. Rollup items are check runs
@@ -491,6 +504,7 @@ func parsePRView(b []byte) (prView, error) {
 		HeadRefOid string `json:"headRefOid"`
 		Body       string `json:"body"`
 		Mergeable  string `json:"mergeable"`
+		IsDraft    bool   `json:"isDraft"`
 		Rollup     []struct {
 			Name       string `json:"name"`
 			Status     string `json:"status"`
@@ -503,7 +517,7 @@ func parsePRView(b []byte) (prView, error) {
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return prView{}, fmt.Errorf("gh pr view: %v", err)
 	}
-	v := prView{Number: raw.Number, URL: raw.URL, State: raw.State, Head: raw.HeadRefOid, Body: raw.Body, Mergeable: raw.Mergeable, Checks: []ShipCheck{}}
+	v := prView{Number: raw.Number, URL: raw.URL, State: raw.State, Head: raw.HeadRefOid, Body: raw.Body, Mergeable: raw.Mergeable, Draft: raw.IsDraft, Checks: []ShipCheck{}}
 	for _, r := range raw.Rollup {
 		if r.Context != "" || (r.Status == "" && r.State != "") {
 			c := ShipCheck{Name: r.Context, Status: "COMPLETED", Conclusion: r.State}
@@ -668,7 +682,7 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		resp.PR, resp.URL, resp.Commit = st.PR, st.URL, st.MergeCommit
 		return shipCheckMainTree(ctx, t, st, resp, path, r.Settled, budget)
 	} else {
-		out, err := gh(ctx, t.dir(), "pr", "view", t.branch, "--json", "number,url,state,headRefOid,body,mergeable,statusCheckRollup")
+		out, err := gh(ctx, t.dir(), "pr", "view", t.branch, "--json", "number,url,state,isDraft,headRefOid,body,mergeable,statusCheckRollup")
 		if noPR(err) {
 			resp.Detail = fmt.Sprintf("no open pull request for branch %s", t.branch)
 			return resp, nil
@@ -690,6 +704,10 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		}
 		if r.PROpen {
 			resp.Passed = true
+			return resp, nil
+		}
+		if v.Draft {
+			resp.Stop = shipDraftStop(v.Number)
 			return resp, nil
 		}
 		if r.Settled && strings.EqualFold(v.Mergeable, "CONFLICTING") {
@@ -1235,6 +1253,23 @@ func runShipMerge(ctx *Ctx, _ any) (any, error) {
 	}
 	pr := fmt.Sprint(st.PR)
 	dir := t.dir()
+	// A draft cannot be merged and is not for Rhiza to mark ready: stop the
+	// run (not fail it, which would loop back through rebase and check).
+	if out, err := gh(ctx, dir, "pr", "view", pr, "--json", "isDraft,state"); err != nil {
+		return nil, Errorf("%v", err)
+	} else {
+		var d struct {
+			IsDraft bool   `json:"isDraft"`
+			State   string `json:"state"`
+		}
+		if err := json.Unmarshal(out, &d); err != nil {
+			return nil, Errorf("gh pr view: %v", err)
+		}
+		if d.IsDraft && !strings.EqualFold(d.State, "MERGED") {
+			resp.Stop = shipDraftStop(st.PR)
+			return resp, nil
+		}
+	}
 	// A head that lacks origin/main would squash to a tree nobody tested:
 	// merge nothing and let the run rebase and wait on the new head.
 	if _, err := gitAt(ctx, dir, "fetch", "-q", "origin"); err != nil {
@@ -1322,6 +1357,10 @@ func shipPlural(n int, one, many string) string {
 
 // Human is one line naming the PR, its head and the merge commit.
 func (r ShipMergeResponse) Human(w io.Writer) {
+	if r.Stop != "" {
+		fmt.Fprintf(w, "stop: %s\n", r.Stop)
+		return
+	}
 	if r.Moved {
 		fmt.Fprintf(w, "Not merged: origin/%s has moved past PR #%d's checked head %s; rebase and check again.\n", shipMain, r.PR, shortSHA(r.Head))
 		return

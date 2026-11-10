@@ -131,8 +131,9 @@ func (f *fakeGH) run(name string, args []string, dir string, _ []string) ([]byte
 }
 
 const (
-	shipPRView   = "pr view cs/ship-it --json number,url,state,headRefOid,body,mergeable,statusCheckRollup"
+	shipPRView   = "pr view cs/ship-it --json number,url,state,isDraft,headRefOid,body,mergeable,statusCheckRollup"
 	shipMergeArg = "pr merge 7 --squash --match-head-commit abc1234def"
+	shipDraftPR  = "pr view 7 --json isDraft,state"
 	shipMergedPR = "pr view 7 --json mergeCommit,state"
 
 	// What ship merge asks git before it merges, and ship check --main
@@ -149,6 +150,7 @@ func mainHeld(g *fakeGH) {
 	g.answers[gitFetch] = ""
 	g.answers[gitOriginMain] = "0123456789abcdef"
 	g.answers[gitHoldsMain] = ""
+	g.answers[shipDraftPR] = `{"isDraft":false,"state":"OPEN"}`
 }
 
 // shipFixture is a session fixture with the change set "Ship it" current
@@ -358,6 +360,7 @@ func TestShipCheckGreenThenMerge(t *testing.T) {
 	g.answers[gitFetch] = ""
 	g.answers[gitOriginMain] = "0123456789abcdef"
 	g.answers[gitHoldsMain] = "!exit status 1"
+	g.answers[shipDraftPR] = `{"isDraft":false,"state":"OPEN"}`
 	resp, err := callOp(t, f.ctx, "ship.merge", `{}`)
 	if err != nil {
 		t.Fatal(err)
@@ -2026,5 +2029,53 @@ func TestShipLandHeadBuildErrorDetail(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestShipCheckDraftStops(t *testing.T) {
+	for _, req := range []string{`{}`, `{"settled":true}`} {
+		f, g, state := shipFixture(t)
+		g.answers[shipPRView] = strings.Replace(openPR(greenRollup), `"state":"OPEN"`, `"state":"OPEN","isDraft":true`, 1)
+		resp, err := callOp(t, f.ctx, "ship.check", req)
+		if err != nil {
+			t.Fatalf("%s: %v", req, err)
+		}
+		c := resp.(ShipCheckResponse)
+		if c.ExitCode() != 75 || !strings.Contains(c.Stop, "#") || !strings.Contains(c.Stop, "draft") || c.Passed {
+			t.Errorf("%s: check = %+v", req, c)
+		}
+		var b strings.Builder
+		c.Human(&b)
+		if !strings.HasPrefix(b.String(), "stop: ") {
+			t.Errorf("%s: human = %q", req, b.String())
+		}
+		if st, _ := readShipState(state); st.Head != "" {
+			t.Errorf("%s: recorded head: %+v", req, st)
+		}
+	}
+}
+
+func TestShipMergeDraftStops(t *testing.T) {
+	f, g, state := shipFixture(t)
+	if err := writeShipState(state, shipState{PR: 7, Branch: "cs/ship-it", Head: "abc1234def"}); err != nil {
+		t.Fatal(err)
+	}
+	mainHeld(g)
+	g.answers[shipDraftPR] = `{"isDraft":true,"state":"OPEN"}`
+	resp, err := callOp(t, f.ctx, "ship.merge", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := resp.(ShipMergeResponse)
+	if m.ExitCode() != 75 || !strings.Contains(m.Stop, "draft") || m.MergeCommit != "" {
+		t.Errorf("merge = %+v", m)
+	}
+	for _, c := range g.calls {
+		if strings.Contains(c, "pr merge") || strings.Contains(c, "pr ready") {
+			t.Errorf("gh call %q on a draft", c)
+		}
+	}
+	if st, _ := readShipState(state); st.MergeCommit != "" || st.Head != "abc1234def" {
+		t.Errorf("state = %+v", st)
 	}
 }

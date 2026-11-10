@@ -146,7 +146,7 @@ exec cat $WORK/landed.sha
 exec sh -c 'grep -c -x "pr merge 7 --squash --match-head-commit $(cat $WORK/landed.sha)" $WORK/gh.log'
 stdout '^1$'
 ! grep '[-]-admin|[-]-auto|[-]-delete-branch' $WORK/gh.log
-grep '^pr view cs/ship-it --json number,url,state,headRefOid,body,mergeable,statusCheckRollup$' $WORK/gh.log
+grep '^pr view cs/ship-it --json number,url,state,isDraft,headRefOid,body,mergeable,statusCheckRollup$' $WORK/gh.log
 grep '^pr view 7 --json mergeCommit,state$' $WORK/gh.log
 # Main was confirmed by git alone: no step asked gh for CI runs.
 ! grep '^run ' $WORK/gh.log
