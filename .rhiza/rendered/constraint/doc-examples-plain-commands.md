@@ -10,6 +10,7 @@ Human-facing docs show model writes as plain rhiza add, link and set commands; r
 
 ### Out
 
+- constrains [documentation](../capability/rhiza/documentation.md)
 - derived-from [m31-planning](../source/m31-planning.md)
 
 ## History
