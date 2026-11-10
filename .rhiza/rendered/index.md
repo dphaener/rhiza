@@ -667,6 +667,7 @@
   - [leaf-fix-retry-in-cycle](capability/fixer-retry-in-cycle/leaf-fix-retry-in-cycle.md)
 - [fixer-exhaustion-spends-cycle](capability/fixer-exhaustion-spends-cycle.md)
   - [leaf-fix-exhaustion-spends-cycle](capability/fixer-exhaustion-spends-cycle/leaf-fix-exhaustion-spends-cycle.md)
+- [code-check-tolerates-branch-newer-format](capability/code-check-tolerates-branch-newer-format.md)
 
 ## Intents
 
@@ -967,6 +968,7 @@
 - [close-out-fast-forwards-main](decision/close-out-fast-forwards-main.md)
 - [close-out-untracked-log-and-retry](decision/close-out-untracked-log-and-retry.md)
 - [co-locate-run-panes](decision/co-locate-run-panes.md)
+- [code-check-leaves-newer-format-to-self-check](decision/code-check-leaves-newer-format-to-self-check.md)
 - [code-check-leaves-reference-to-self-check](decision/code-check-leaves-reference-to-self-check.md)
 - [code-checks-first](decision/code-checks-first.md)
 - [commit-actor-record-entries](decision/commit-actor-record-entries.md)
@@ -2086,6 +2088,9 @@
 - [code-check-skips-reference-qa-1](evidence/code-check-skips-reference-qa-1.md)
 - [code-check-skips-reference-verified](evidence/code-check-skips-reference-verified.md)
 - [code-check-skips-reference-verified-3](evidence/code-check-skips-reference-verified-3.md)
+- [code-check-tolerates-branch-newer-format-qa-1](evidence/code-check-tolerates-branch-newer-format-qa-1.md)
+- [code-check-tolerates-branch-newer-format-verified](evidence/code-check-tolerates-branch-newer-format-verified.md)
+- [code-check-tolerates-branch-newer-format-verified-2](evidence/code-check-tolerates-branch-newer-format-verified-2.md)
 - [command-step-keeps-output-qa-1](evidence/command-step-keeps-output-qa-1.md)
 - [command-step-keeps-output-verified](evidence/command-step-keeps-output-verified.md)
 - [command-step-tested](evidence/command-step-tested.md)
@@ -2820,6 +2825,7 @@
 - [pr-418-fix-a-run-blocked-on-a](evidence/pr-418-fix-a-run-blocked-on-a.md)
 - [pr-421-fix-rhiza-inbox-said-nothing](evidence/pr-421-fix-rhiza-inbox-said-nothing.md)
 - [pr-422-cli-help-wording](evidence/pr-422-cli-help-wording.md)
+- [pr-424-fix-a-run-whose-change-bumps](evidence/pr-424-fix-a-run-whose-change-bumps.md)
 - [pr-44-the-build-workflow](evidence/pr-44-the-build-workflow.md)
 - [pr-45-the-review-workflow](evidence/pr-45-the-review-workflow.md)
 - [pr-50-a-change-set-has-at-most-one](evidence/pr-50-a-change-set-has-at-most-one.md)
@@ -3569,6 +3575,7 @@
 - [ci-speed-plan-interview](source/ci-speed-plan-interview.md)
 - [ci-triage-runners-plan](source/ci-triage-runners-plan.md)
 - [close-out-fix-plan](source/close-out-fix-plan.md)
+- [code-check-newer-format-plan](source/code-check-newer-format-plan.md)
 - [commit-idle-check-actors-plan](source/commit-idle-check-actors-plan.md)
 - [constraint-plan-interview](source/constraint-plan-interview.md)
 - [cpu-drivers-plan-interview](source/cpu-drivers-plan-interview.md)

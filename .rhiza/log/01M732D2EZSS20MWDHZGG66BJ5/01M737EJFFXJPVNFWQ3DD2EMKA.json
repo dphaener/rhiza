@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7368R91JQ20GA6AD1DP029J"
+  ],
+  "at": "2026-11-10T17:17:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "3d5fe2393dcc116e86f0f5ceb681179e5af895bd",
+          "pr": "https://github.com/dphaener/rhiza/pull/424",
+          "result": "11 checks passed: lint SUCCESS, go-install SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #424 (https://github.com/dphaener/rhiza/pull/424) passed CI at 3d5fe23",
+          "status": "verified"
+        },
+        "handle": "pr-424-fix-a-run-whose-change-bumps",
+        "id": "01M737EJBDPMG7NK5ZQM3CQFPN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M737EJBDPMG7NK5ZQKDDVYJ9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M737EJBDPMG7NK5ZQKDDVYJ9",
+        "id": "01M737EJCC6Q4QW8NS3P39MHG8",
+        "link": "01M737EJCC6Q4QW8NS3KERPXT5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M732H1JKD0T0FBRMTQN1RY33",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M732D2EZSS20MWDHZGG66BJ5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M737EJFFXJPVNFWQ3DD2EMKA",
+  "type": "ops",
+  "v": 1
+}

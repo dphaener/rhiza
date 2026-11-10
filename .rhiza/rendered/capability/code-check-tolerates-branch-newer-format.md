@@ -1,0 +1,28 @@
+# code-check-tolerates-branch-newer-format
+
+capability · `01M732H1JKD0T0FBRMTQN1RY33`
+
+## acceptance
+
+A testscript in a run worktree whose branch commits an entry with v one above entry.FormatVersion sees rhiza check fail on it and rhiza run code-check pass with no cause naming it; the same entry committed before the merge-base makes run code-check fail naming it; a test of the check op shows the option off still fails the branch's newer-format entry (go test -trimpath ./internal/api/... ./internal/check/... and the touched testscripts; describe-golden regenerated if CheckRequest changes)
+
+## statement
+
+rhiza run code-check does not fail a log entry of a newer format than the installed binary reads when the run's branch adds it since its merge-base, reporting it as a warning instead, through an explicit CheckRequest option, so a run whose change bumps the entry format can pass review/code; newer-format entries at the merge-base and every other bad entry still fail, and plain rhiza check and make self-check keep failing every newer-format entry
+
+## Links
+
+### Out
+
+- decided-by [code-check-leaves-newer-format-to-self-check](../decision/code-check-leaves-newer-format-to-self-check.md)
+
+### In
+
+- verifies [code-check-tolerates-branch-newer-format-verified](../evidence/code-check-tolerates-branch-newer-format-verified.md)
+- verifies [code-check-tolerates-branch-newer-format-qa-1](../evidence/code-check-tolerates-branch-newer-format-qa-1.md)
+- verifies [code-check-tolerates-branch-newer-format-verified-2](../evidence/code-check-tolerates-branch-newer-format-verified-2.md)
+- verifies [pr-424-fix-a-run-whose-change-bumps](../evidence/pr-424-fix-a-run-whose-change-bumps.md)
+
+## History
+
+- `01M732D2EZSS20MWDHZGG66BJ5` Fix A run whose change bumps the log entry format can never pass review/code. Run 01M72YSG33J9JB66SYG9AD0Z0F (Docs sign-off workflow, change set 01M71G46Q5378CYYVEHFF2EMP3) failed at review/code with three causes like: 'rhiza check: fail log .rhiza/log/01M71G4BKFHP1E172RR6H82WFT/01M731FHDC43E8XR3XAPNAFE1Y.json: entry: newer format: field "v": 5, this Rhiza reads 4'. The builder's own binary wrote v5 entries (pinning a change set's workflow), but run code-check runs rhiza check in-process with the installed daemon binary (internal/api/run_codecheck.go runCheck; entry.ErrNewerFormat at internal/entry/entry.go:43), which reads only v4. #417 (01M6ZT7P) skipped the reference rules for the same root cause but not this one. Expected: code-check checks a run's worktree with that worktree's own build (or otherwise accepts the format its change introduces), so format bumps can ship through the daemon. Unstick: once fixed and merged (daemon self-updates), rhiza run resume --retry 01M72YSG33J9JB66SYG9AD0Z0F.
