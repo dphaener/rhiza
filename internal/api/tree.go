@@ -30,7 +30,7 @@ type TreeRequest struct {
 	Kind    string `json:"kind,omitempty" enum:"capability,intent" desc:"Which tree: capability or intent; default capability, or the node's own kind with a ref"`
 	Depth   int    `json:"depth,omitempty" desc:"How many levels below the top to show; 0 for all"`
 	Retired bool   `json:"retired,omitempty" desc:"Show retired nodes too, and what is under them"`
-	View    string `json:"view,omitempty" desc:"as-is, to-be or what-if:<change set>; default follows the effective change set"`
+	View    string `json:"view,omitempty" desc:"One of as-is, to-be or what-if:<change set>; default follows the effective change set"`
 }
 
 // TreeResponse is the tree in pre-order, siblings by key.

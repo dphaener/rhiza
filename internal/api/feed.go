@@ -54,7 +54,7 @@ type FeedRequest struct {
 	Cursor string `json:"cursor,omitempty" desc:"Where to go on: the next_cursor of the page before"`
 	Since  string `json:"since,omitempty" desc:"Keep the change sets landed at or after this time, RFC 3339"`
 	All    bool   `json:"all,omitempty" flag:"all" desc:"Include the change sets whose ops only create or update actor nodes, which are left out by default"`
-	Follow bool   `json:"follow,omitempty" flag:"follow" desc:"Stream each change set as it lands until interrupted: with neither cursor nor since only those landing after the start, else the backlog after that point first; one FeedItem per line with --json; limit then stops after that many, default unlimited"`
+	Follow bool   `json:"follow,omitempty" flag:"follow" desc:"Stream each change set as it lands until interrupted: with neither cursor nor since only those landing after the start, else the backlog after that point first; one FeedItem per line with --json; limit then stops after that many; default unlimited"`
 }
 
 // FeedResponse is one page of the feed.

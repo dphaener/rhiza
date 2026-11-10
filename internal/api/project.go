@@ -44,7 +44,7 @@ func init() {
 // ProjectAddRequest names the checkout.
 type ProjectAddRequest struct {
 	Path string `json:"path" arg:"0" desc:"The git checkout to register (a folder directly under the root), or a git URL to clone under the root"`
-	Name string `json:"name,omitempty" flag:"name" desc:"The project's name (default: the folder's name, or the URL's last part)"`
+	Name string `json:"name,omitempty" flag:"name" desc:"The project's name; default the folder's name, or the URL's last part"`
 }
 
 // ProjectAddResponse reports the registered project.

@@ -45,7 +45,7 @@ type LsRequest struct {
 	Retired bool     `json:"retired,omitempty" desc:"Keep retired nodes too"`
 	Limit   int      `json:"limit,omitempty" desc:"The most nodes to return, 1 to 1000; default 100"`
 	Cursor  string   `json:"cursor,omitempty" desc:"Where to go on: the next_cursor of the page before"`
-	View    string   `json:"view,omitempty" desc:"as-is, to-be or what-if:<change set>; default follows the effective change set"`
+	View    string   `json:"view,omitempty" desc:"One of as-is, to-be or what-if:<change set>; default follows the effective change set"`
 }
 
 // LsResponse is one page of nodes.

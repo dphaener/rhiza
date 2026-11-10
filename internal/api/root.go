@@ -32,7 +32,7 @@ func init() {
 
 // RootInitRequest names the directory.
 type RootInitRequest struct {
-	Dir string `json:"dir,omitempty" arg:"0" desc:"The directory to make a root; created if missing (default: the working directory)"`
+	Dir string `json:"dir,omitempty" arg:"0" desc:"The directory to make a root; created if missing; default the working directory"`
 }
 
 // RootInitResponse reports the new root.

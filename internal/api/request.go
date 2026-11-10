@@ -44,7 +44,7 @@ func init() {
 // RequestRequest is a plan request to queue.
 type RequestRequest struct {
 	Text      string `json:"text" arg:"0" desc:"What to plan, in one line"`
-	Kind      string `json:"kind,omitempty" enum:"feature,bug,milestone" desc:"feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed 'Fix ' (so its title names the bug), a milestone's a record change set"`
+	Kind      string `json:"kind,omitempty" enum:"feature,bug,milestone" desc:"One of feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed 'Fix ' (so its title names the bug), a milestone's a record change set"`
 	Milestone string `json:"milestone,omitempty" flag:"milestone" desc:"A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)"`
 	Workflow  string `json:"workflow,omitempty" flag:"workflow" desc:"A workflow, by name, for the change set the request's plan run opens: it overrides that change set's ready pick only, not the plan run's own workflow; default none (the dispatch rules choose)"`
 	Ref       string `json:"ref,omitempty" flag:"ref" desc:"An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none"`
