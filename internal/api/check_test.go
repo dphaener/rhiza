@@ -483,3 +483,63 @@ func TestCheckSkipReference(t *testing.T) {
 		t.Errorf("skip_reference check has %d reference findings, want 0", n)
 	}
 }
+
+// branch_newer_format downgrades a newer-format entry to a warning only when
+// the branch added it since the base; one at the base, or with the option
+// off, still fails.
+func TestCheckBranchNewerFormat(t *testing.T) {
+	const (
+		cs    = "01M7334KGW8V1N426E536GSPGM"
+		added = "01M731FHDC43E8XR3XAPNAFE1Y"
+		old   = "01M731FHDC43E8XR3XAPNAFE1Z"
+	)
+	newer := "{\n  \"v\": 99\n}\n"
+	run := func(t *testing.T, baseHas bool, req string) CheckResponse {
+		t.Helper()
+		ctx := initCtx(t)
+		addedPath := ".rhiza/log/" + cs + "/" + added + ".json"
+		oldPath := ".rhiza/log/" + cs + "/" + old + ".json"
+		writeEntry(t, ctx, addedPath, newer)
+		writeEntry(t, ctx, oldPath, newer)
+		tree := "100644 blob " + gitBlob([]byte(newer)) + "\t" + oldPath + "\x00"
+		if baseHas {
+			tree += "100644 blob " + gitBlob([]byte(newer)) + "\t" + addedPath + "\x00"
+		}
+		g := &fakeGit{out: map[string]string{
+			gitWorkTree:                  "true\n",
+			verifyArgs("main"):           "m\n",
+			"merge-base HEAD main":       "abc\n",
+			lsTreeArgs + "abc" + logSpec: tree,
+		}}
+		ctx.Git = g.run
+		resp, err := callOp(t, ctx, "check", req)
+		if err != nil {
+			wantExit(t, err, 1)
+		}
+		return resp.(CheckResponse)
+	}
+	sev := func(r CheckResponse, entry string) string {
+		for _, f := range r.Findings {
+			if f.Rule == check.RuleLog && strings.Contains(f.Path, entry) {
+				return f.Severity
+			}
+		}
+		return ""
+	}
+	r := run(t, false, `{"branch_newer_format":true}`)
+	if got := sev(r, added); got != "warn" {
+		t.Errorf("branch-added entry: severity %q, want warn", got)
+	}
+	if got := sev(r, old); got != "fail" {
+		t.Errorf("entry at the base: severity %q, want fail", got)
+	}
+	if r.OK {
+		t.Error("check ok with a newer-format entry at the base")
+	}
+	if r = run(t, false, `{}`); sev(r, added) != "fail" {
+		t.Errorf("option off: severity %q, want fail", sev(r, added))
+	}
+	if r = run(t, true, `{"branch_newer_format":true}`); sev(r, added) != "fail" {
+		t.Errorf("entry at the base: severity %q, want fail", sev(r, added))
+	}
+}

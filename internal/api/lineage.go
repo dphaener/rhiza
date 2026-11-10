@@ -85,7 +85,7 @@ const lineageAtLayout = "2006-01-02T15:04:05Z"
 // WhyRequest names the node to explain.
 type WhyRequest struct {
 	Ref    string `json:"ref" arg:"0" desc:"The node: an ID, a unique ID prefix of 4+ characters, or a handle"`
-	View   string `json:"view,omitempty" desc:"as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is"`
+	View   string `json:"view,omitempty" desc:"One of as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is"`
 	Limit  int    `json:"limit,omitempty" desc:"The most entries to return across decisions, sources and change sets, 1 to 1000; default 100"`
 	Cursor string `json:"cursor,omitempty" desc:"Where to go on: the next_cursor of the page before"`
 	All    bool   `json:"all,omitempty" flag:"all" desc:"Return every entry, ignoring --limit and --cursor"`
@@ -732,7 +732,7 @@ func lineageHumanFields(w io.Writer, fs map[string]json.RawMessage) {
 // LogRequest names the node or link whose history to list.
 type LogRequest struct {
 	Ref    string `json:"ref" arg:"0" desc:"The node or link: an ID, a unique ID prefix of 4+ characters, or a node's handle"`
-	View   string `json:"view,omitempty" desc:"as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is"`
+	View   string `json:"view,omitempty" desc:"One of as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is"`
 	Limit  int    `json:"limit,omitempty" desc:"The most change sets to return, 1 to 1000; default 100"`
 	Cursor string `json:"cursor,omitempty" desc:"Where to go on: the next_cursor of the page before"`
 	All    bool   `json:"all,omitempty" flag:"all" desc:"Return every change set, ignoring --limit and --cursor"`

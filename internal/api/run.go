@@ -115,7 +115,7 @@ type RunStartRequest struct {
 	Milestone      bool   `json:"milestone,omitempty" desc:"With --new: open a record change set, to plan a milestone in; without it an intention"`
 	Ref            string `json:"ref,omitempty" desc:"With --new: an opaque external reference for the opened change set, such as an issue URL, at most 2048 bytes; Rhiza never interprets it. The daemon passes the request's"`
 	Request        string `json:"request,omitempty" desc:"With --new: the plan request this run plans; the run takes the ID the daemon drew for it. The daemon passes it"`
-	Pick           string `json:"pick,omitempty" desc:"With --workflow: which dispatch pick named it (rule ready.bug, default, request), recorded on the run instead of explicit. The daemon passes it"`
+	Pick           string `json:"pick,omitempty" desc:"With --workflow: which dispatch pick named it (the ready.bug rule, the request, or the plain default pick), recorded on the run instead of explicit. The daemon passes it"`
 	Foreground     bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
 	Schedule       string `json:"schedule,omitempty" desc:"Start a run for the [[schedules]] entry of this name in .rhiza/dispatch.toml: no change set, no worktree, every step in the main checkout, autonomous, driven in this process; its journal records the schedule as the trigger"`
 }

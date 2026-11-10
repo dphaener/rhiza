@@ -22,7 +22,9 @@
 //
 // The rules, and what each fails and warns on:
 //
-//   - log fails on each problem store.ReadLog reported.
+//   - log fails on each problem store.ReadLog reported, but warns on a
+//     newer-format entry the branch added since its base when Input.NewerOK
+//     says so (run code-check).
 //   - fold fails on each changeset.FoldLog problem but only warns on a
 //     concurrent pair (ErrConcurrent). Fold problems are permanent, since
 //     the log is append-only, and a concurrent pair is what an honest merge
@@ -185,6 +187,10 @@ type Input struct {
 	Skipped string
 	// Base are the log entries at Rev, Current those in the work tree.
 	Base, Current []Entry
+	// NewerOK are the log problem paths (as store.Problem.Path) whose
+	// newer-format error is a warning, not a failure: entries a branch
+	// added since its merge-base, written by a newer build than this one.
+	NewerOK map[string]bool
 	// Tree is the working tree rooted at the project; nil means the anchor
 	// rule is skipped.
 	Tree fs.FS
@@ -308,7 +314,11 @@ func str(i id.ID) string {
 
 func (c *checker) log() {
 	for _, p := range c.in.Log.Problems {
-		c.add(Finding{Severity: SeverityFail, Rule: RuleLog, Path: rhizaDir + p.Path, Message: p.Err.Error()})
+		sev := SeverityFail
+		if c.in.NewerOK[p.Path] && errors.Is(p.Err, store.ErrNewerFormat) {
+			sev = SeverityWarn
+		}
+		c.add(Finding{Severity: sev, Rule: RuleLog, Path: rhizaDir + p.Path, Message: p.Err.Error()})
 	}
 }
 

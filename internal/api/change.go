@@ -69,7 +69,7 @@ const changeLsNext = "rhiza change ls"
 // ChangeNewRequest opens a change set.
 type ChangeNewRequest struct {
 	Intent   string   `json:"intent" arg:"0" desc:"What the change set is for, in a sentence"`
-	Kind     string   `json:"kind,omitempty" enum:"intention,record" desc:"intention (reviewed before it lands) or record (lands as is); default intention"`
+	Kind     string   `json:"kind,omitempty" enum:"intention,record" desc:"Either intention (reviewed before it lands) or record (lands as is); default intention"`
 	Sources  []string `json:"sources,omitempty" flag:"source" desc:"A source node the change set comes from: an ID, ID prefix or handle"`
 	Title    string   `json:"title,omitempty" desc:"A short name for the change set, one line of at most 30 characters; default the intent's first clause"`
 	Ref      string   `json:"ref,omitempty" desc:"An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none"`

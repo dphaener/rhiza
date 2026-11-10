@@ -1,0 +1,33 @@
+{
+  "actor": "01M732DZ9DFAQA24XFK00KCNZP",
+  "after": [
+    "01M732D2EZSS20MWDHZKM4MD99"
+  ],
+  "at": "2026-11-10T15:51:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "d06054e2d1c671633f431bfbf92dd4063b9330e08fe1203c7baa49c3acfab282",
+          "session": "5799f95c-eaa5-4624-8bd3-01a1c626e0d0",
+          "summary": "Autonomous plan run (no owner) for change set 01M732D2. Run 01M72YSG (change set 01M71G46) failed review/code because its builder's binary wrote v5 log entries and the code check runs rhiza check in-process with the installed binary, which reads v4. Following the #417 decision (code-check-leaves-reference-to-self-check: no worktree build in the code check; make self-check in CI judges with the branch build), the planner settled that the change set serves m4-runs-hold-up and that the code check stops failing newer-format entries the run's branch adds since its merge-base, through an explicit check option, leaving them to make self-check. Nothing was asked of the owner.",
+          "title": "Code check and newer-format log entries, autonomous plan"
+        },
+        "handle": "code-check-newer-format-plan",
+        "id": "01M732GG4GWNEN36YE7VVH7V4H",
+        "key": null,
+        "kind": "source",
+        "node": "01M732GG4GWNEN36YE7R7025QS",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M732D2EZSS20MWDHZGG66BJ5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M732GG5NKBB8JP57WJPD82Z1",
+  "type": "ops",
+  "v": 1
+}

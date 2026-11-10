@@ -325,7 +325,7 @@ Appends to the log.
 Arguments and flags:
 
 - `<intent>`: What the change set is for, in a sentence (required)
-- `--kind`: intention (reviewed before it lands) or record (lands as is); default intention (one of intention, record)
+- `--kind`: Either intention (reviewed before it lands) or record (lands as is); default intention (one of intention, record)
 - `--source`: A source node the change set comes from: an ID, ID prefix or handle (repeatable)
 - `--title`: A short name for the change set, one line of at most 30 characters; default the intent's first clause
 - `--ref`: An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none
@@ -428,13 +428,14 @@ Output (`--json` fields):
 Check the log, the links and the rendered markdown.
 
 ```
-rhiza check [--base <base>] [--skip-reference]
+rhiza check [--base <base>] [--skip-reference] [--branch-newer-format]
 ```
 
 Arguments and flags:
 
 - `--base`: The git revision the log may only have grown since; default the merge-base of HEAD with origin/HEAD, origin/main or main
 - `--skip-reference`: Leave out the generated-reference comparison (docs/reference against rhiza docs) and the docs-command rule, which judge by this binary's registry; run code-check sets it, make self-check does not
+- `--branch-newer-format`: Report a log entry of a newer format than this binary reads as a warning when the branch added it since the base; one at the base, and every other bad entry, still fails; run code-check sets it, make self-check does not
 
 Output (`--json` fields):
 
@@ -478,8 +479,8 @@ Arguments and flags:
 - `--autonomous`: Start each run with --autonomous: it goes on without the owner
 - `--min-free`: Start and resume nothing while the repo's filesystem has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 10G; 0 turns the guard off
 - `--permission-mode`: Start each run with this --permission-mode, for its agent steps that set none; checked against ship-change before the daemon starts
-- `--event-command`: Run this command through sh -c in the repo root once per change set lifecycle move (proposed, accepted, rejected, withdrawn, superseded, landed, reopened) it has not handled, in log order, with the move as JSON on stdin and RHIZA_EVENT, RHIZA_EVENT_CHANGE, RHIZA_EVENT_ENTRY and RHIZA_EVENT_TITLE set; default: git config rhiza.eventCommand. The first run only records the moves already in the log. A failing or timed-out (10 s) command is logged and not retried
-- `--notify-command`: Run this command through sh -c in the repo root once per new inbox item, with the item's JSON on stdin and RHIZA_INBOX_KIND, RHIZA_INBOX_ID, RHIZA_INBOX_CHANGE and RHIZA_INBOX_TITLE set; default: git config rhiza.notifyCommand. A failing or timed-out (10 s) command is logged and not retried
+- `--event-command`: Run this command through sh -c in the repo root once per change set lifecycle move (proposed, accepted, rejected, withdrawn, superseded, landed, reopened) it has not handled, in log order, with the move as JSON on stdin and RHIZA_EVENT, RHIZA_EVENT_CHANGE, RHIZA_EVENT_ENTRY and RHIZA_EVENT_TITLE set; default the git config rhiza.eventCommand. The first run only records the moves already in the log. A failing or timed-out (10 s) command is logged and not retried
+- `--notify-command`: Run this command through sh -c in the repo root once per new inbox item, with the item's JSON on stdin and RHIZA_INBOX_KIND, RHIZA_INBOX_ID, RHIZA_INBOX_CHANGE and RHIZA_INBOX_TITLE set; default the git config rhiza.notifyCommand. A failing or timed-out (10 s) command is logged and not retried
 
 Output (`--json` fields):
 
@@ -666,7 +667,7 @@ Arguments and flags:
 - `--cursor`: Where to go on: the next_cursor of the page before
 - `--since`: Keep the change sets landed at or after this time, RFC 3339
 - `--all`: Include the change sets whose ops only create or update actor nodes, which are left out by default
-- `--follow`: Stream each change set as it lands until interrupted: with neither cursor nor since only those landing after the start, else the backlog after that point first; one FeedItem per line with --json; limit then stops after that many, default unlimited
+- `--follow`: Stream each change set as it lands until interrupted: with neither cursor nor since only those landing after the start, else the backlog after that point first; one FeedItem per line with --json; limit then stops after that many; default unlimited
 
 Output (`--json` fields):
 
@@ -953,7 +954,7 @@ rhiza log <ref> [--view <view>] [--limit <limit>] [--cursor <cursor>] [--all]
 Arguments and flags:
 
 - `<ref>`: The node or link: an ID, a unique ID prefix of 4+ characters, or a node's handle (required)
-- `--view`: as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is
+- `--view`: One of as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is
 - `--limit`: The most change sets to return, 1 to 1000; default 100
 - `--cursor`: Where to go on: the next_cursor of the page before
 - `--all`: Return every change set, ignoring --limit and --cursor
@@ -980,7 +981,7 @@ Arguments and flags:
 - `--retired`: Keep retired nodes too
 - `--limit`: The most nodes to return, 1 to 1000; default 100
 - `--cursor`: Where to go on: the next_cursor of the page before
-- `--view`: as-is, to-be or what-if:<change set>; default follows the effective change set
+- `--view`: One of as-is, to-be or what-if:<change set>; default follows the effective change set
 
 Output (`--json` fields):
 
@@ -1081,7 +1082,7 @@ rhiza project add <path> [--name <name>]
 Arguments and flags:
 
 - `<path>`: The git checkout to register (a folder directly under the root), or a git URL to clone under the root (required)
-- `--name`: The project's name (default: the folder's name, or the URL's last part)
+- `--name`: The project's name; default the folder's name, or the URL's last part
 
 Output (`--json` fields):
 
@@ -1260,7 +1261,7 @@ rhiza request <text> [--kind <kind>] [--milestone <milestone>] [--workflow <work
 Arguments and flags:
 
 - `<text>`: What to plan, in one line (required)
-- `--kind`: feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed 'Fix ' (so its title names the bug), a milestone's a record change set (one of feature, bug, milestone)
+- `--kind`: One of feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed 'Fix ' (so its title names the bug), a milestone's a record change set (one of feature, bug, milestone)
 - `--milestone`: A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)
 - `--workflow`: A workflow, by name, for the change set the request's plan run opens: it overrides that change set's ready pick only, not the plan run's own workflow; default none (the dispatch rules choose)
 - `--ref`: An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none
@@ -1372,7 +1373,7 @@ rhiza root init [<dir>]
 
 Arguments and flags:
 
-- `<dir>`: The directory to make a root; created if missing (default: the working directory)
+- `<dir>`: The directory to make a root; created if missing; default the working directory
 
 Output (`--json` fields):
 
@@ -1781,7 +1782,7 @@ Arguments and flags:
 - `--milestone`: With --new: open a record change set, to plan a milestone in; without it an intention
 - `--ref`: With --new: an opaque external reference for the opened change set, such as an issue URL, at most 2048 bytes; Rhiza never interprets it. The daemon passes the request's
 - `--request`: With --new: the plan request this run plans; the run takes the ID the daemon drew for it. The daemon passes it
-- `--pick`: With --workflow: which dispatch pick named it (rule ready.bug, default, request), recorded on the run instead of explicit. The daemon passes it
+- `--pick`: With --workflow: which dispatch pick named it (the ready.bug rule, the request, or the plain default pick), recorded on the run instead of explicit. The daemon passes it
 - `--foreground`: Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts
 - `--schedule`: Start a run for the [[schedules]] entry of this name in .rhiza/dispatch.toml: no change set, no worktree, every step in the main checkout, autonomous, driven in this process; its journal records the schedule as the trigger
 
@@ -1919,7 +1920,7 @@ Arguments and flags:
 - `--kind`: Keep the nodes of this kind; repeat for several; default every kind (repeatable; one of intent, capability, constraint, decision, question, evidence, source, actor, anchor, note)
 - `--limit`: The most hits to return, 1 to 200; default 20
 - `--cursor`: Where to go on: the next_cursor of the page before
-- `--view`: as-is, to-be or what-if:<change set>; default follows the effective change set
+- `--view`: One of as-is, to-be or what-if:<change set>; default follows the effective change set
 
 Output (`--json` fields):
 
@@ -2426,7 +2427,7 @@ rhiza show <ref> [--view <view>]
 Arguments and flags:
 
 - `<ref>`: The node or link: an ID, a unique ID prefix of 4+ characters, or a live node's handle (required)
-- `--view`: as-is, to-be or what-if:<change set>; default follows the effective change set
+- `--view`: One of as-is, to-be or what-if:<change set>; default follows the effective change set
 
 Output (`--json` fields):
 
@@ -2536,7 +2537,7 @@ Arguments and flags:
 - `--kind`: Which tree: capability or intent; default capability, or the node's own kind with a ref (one of capability, intent)
 - `--depth`: How many levels below the top to show; 0 for all
 - `--retired`: Show retired nodes too, and what is under them
-- `--view`: as-is, to-be or what-if:<change set>; default follows the effective change set
+- `--view`: One of as-is, to-be or what-if:<change set>; default follows the effective change set
 
 Output (`--json` fields):
 
@@ -2583,7 +2584,7 @@ rhiza why <ref> [--view <view>] [--limit <limit>] [--cursor <cursor>] [--all]
 Arguments and flags:
 
 - `<ref>`: The node: an ID, a unique ID prefix of 4+ characters, or a handle (required)
-- `--view`: as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is
+- `--view`: One of as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is
 - `--limit`: The most entries to return across decisions, sources and change sets, 1 to 1000; default 100
 - `--cursor`: Where to go on: the next_cursor of the page before
 - `--all`: Return every entry, ignoring --limit and --cursor

@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M71HCJNY6545Q9K8NZV0KZB4"
+  ],
+  "at": "2026-11-10T14:46:41Z",
+  "body": {
+    "reason": "Owner accepted all five docs polish change sets, 2026-11-10",
+    "rule": "owner"
+  },
+  "change_set": "01M71G4RTMS00MVHJ8D9WMD273",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M72YSRWTXDDSEYJ18BGVJ65J",
+  "type": "accept",
+  "v": 1
+}
