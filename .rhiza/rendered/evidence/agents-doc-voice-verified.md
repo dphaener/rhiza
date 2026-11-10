@@ -1,0 +1,21 @@
+# agents-doc-voice-verified
+
+evidence · `01M73DC0136NNMRH4XRZKM7PFJ` · actor [claude-code-4c31b4d2](../actor/claude-code-4c31b4d2.md)
+
+## result
+
+PASS
+
+## statement
+
+I verified commit e847d9ba (Polish docs/agents.md voice). go test -trimpath ./internal/doclinks/... passed. make self-check (RHIZA_ROOT/CHANGE/RUN unset) passed with rc=0 in a clean detached worktree at e847d9ba, so the docs-commands rule found no unknown rhiza command and render is current. In this checkout it failed only on my own untracked verifier actor record (claude-code-4c31b4d2), which the commit does not contain. grep finds 'rhiza apply <file> --json' in step 3 of the loop in docs/agents.md, the write-back step, and that step calls apply the batch path for agents. The only plain command is the by-hand example 'rhiza add question export-size-cap --field statement=...', which matches rhiza add's documented syntax. I read the diff: it changes only the voice (shorter sentences, no bold step labels), and the loop, rules and trailers are unchanged in substance. The owner's approval of docs/agents.md is left to the run's sign-off.
+
+## Links
+
+### Out
+
+- verifies [agents-doc-voice](../capability/rhiza/documentation/agents-doc-voice.md)
+
+## History
+
+- `01M71G4MMC4VGT41WVM4A33ZWM` Agents, runs and workflows pages in the owner's voice: docs/agents.md, runs-and-daemon.md and custom-workflows.md rewritten with humanize, examples as plain commands, signed off by the owner

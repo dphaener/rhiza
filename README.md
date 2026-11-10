@@ -1,6 +1,6 @@
 # Rhiza
 
-Rhiza keeps a living model of your product inside your repo: what it is, why it's that way, and what's planned next. You change the model through change sets, small reviewed steps that land in git alongside the code, so the reasons behind a decision don't live in somebody's head or a chat thread that scrolled away.
+Rhiza (it's said rise-ah) keeps a living model of your product inside your repo: what it is, why it's that way, and what's planned next. You change the model through change sets, small reviewed steps that land in git alongside the code, so the reasons behind a decision don't live in somebody's head or a chat thread that scrolled away.
 
 It's built for working with coding agents. An agent that can read the model knows what the product is supposed to do and which constraints it can't break, and it can propose changes to the model the same way you do. You can also ignore agents entirely: the CLI works on plain files, with no daemon, and that's how you'll start.
 
@@ -20,9 +20,15 @@ Then `rhiza version` should print what you installed.
 
 ## Where next
 
-Start with the [quickstart](docs/quickstart.md). It inits Rhiza in a repo and walks the model loop by hand, no agents needed.
+Start with the [quickstart](docs/quickstart.md). It sets Rhiza up in a repo and walks the model loop by hand, no agents needed.
 
-Agents come later. Runs, the daemon and the apps need Rex and Claude Code; the model itself doesn't. Pages on the concepts, on running Rhiza with agents, and a CLI reference generated from the code are on the way. Until they land, `rhiza --help` and `rhiza describe` cover the commands.
+After that, read what you need:
+
+- [Concepts](docs/concepts/model.md): the model, [change sets](docs/concepts/change-sets.md), and [why Rhiza works this way](docs/concepts/why.md).
+- [Working with coding agents](docs/agents.md): how an agent reads the model and hands its work back.
+- [Runs and the daemon](docs/runs-and-daemon.md): letting Rhiza start agents for you and keep several going while you're away. This is the part that needs Rex and Claude Code; the model itself doesn't.
+- [Writing a custom workflow](docs/custom-workflows.md): changing what a run does.
+- Reference, generated from the code: the [CLI](docs/reference/cli.md), [config](docs/reference/config.md) and [workflow file](docs/reference/workflow-file.md).
 
 ## Development
 

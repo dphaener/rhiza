@@ -1,0 +1,40 @@
+{
+  "actor": "01M73CY3CX300CSDFBE4F3YPCZ",
+  "after": [
+    "01M73D823Z5Y6HKP7RHC0GSDR7"
+  ],
+  "at": "2026-11-10T18:59:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b2718cb5: go test -trimpath -count=1 ./internal/doclinks/... passed; make self-check in a clean detached worktree at the same commit printed ok with exit 0 (no docs-commands or render failure; in the run checkout it only failed on the verifier's own untracked actor record). README.md no longer says pages are on the way: its Where next section links docs/quickstart.md, concepts (model, change-sets, why), agents.md, runs-and-daemon.md, custom-workflows.md and the generated reference (cli, config, workflow-file), all of which exist. The prose reads in plain first-person-to-reader voice. Owner approval is left to the run's sign-off."
+        },
+        "handle": "readme-owner-voice-verified",
+        "id": "01M73D9BGTBVCEHSKGP9JY1KYM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73D9BGTBVCEHSKGP5PW3DFE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73D9BGTBVCEHSKGP5PW3DFE",
+        "id": "01M73D9BMCDE45DDBWDJNPW5NB",
+        "link": "01M73D9BMCDE45DDBWDF20244Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7PH3S3AB0X96JD4H94BY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4BKFHP1E172RR6H82WFT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73D9BVQGSPY48SHVWFK3F34",
+  "type": "ops",
+  "v": 1
+}

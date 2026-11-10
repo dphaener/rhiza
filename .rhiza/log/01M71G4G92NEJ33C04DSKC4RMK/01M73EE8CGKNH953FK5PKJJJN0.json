@@ -1,0 +1,86 @@
+{
+  "actor": "01M73E5EMPYF3DB7MH5QTKPDM9",
+  "after": [
+    "01M73DZKC3MKF3V3S6BNV5NCYQ"
+  ],
+  "at": "2026-11-10T19:19:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 5074bbfb with a binary built from the branch, in a fresh git repo after rhiza init and rhiza change new: ran docs/concepts/model.md's commands as written (rhiza add capability export-csv --field statement=..., rhiza set export-csv --field acceptance=..., rhiza add decision csv-streaming --field statement=..., rhiza link export-csv decided-by csv-streaming); each wrote an entry and rhiza show export-csv listed both fields and the decided-by link. go test -trimpath ./internal/doclinks/... passes, and rhiza check on a clean clone at the branch head prints ok with no docs-commands finding. Owner approval is left to the run's sign-off."
+        },
+        "handle": "concepts-model-voice-qa-1",
+        "id": "01M73EE825YEX6HWDEGAXM85YA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73EE825YEX6HWDEG9RRY929",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73EE825YEX6HWDEG9RRY929",
+        "id": "01M73EE83EMB7BBDBQNVSZF0JS",
+        "link": "01M73EE83EMB7BBDBQNTJ5X615",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7Q16ZYKM7C53RTWJF5AG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 5074bbfb with a binary built from the branch, in a fresh repo: ran docs/concepts/change-sets.md's new block (add capability, add decision, link decided-by, set acceptance) in the current change set opened by rhiza change new; all four wrote into it. Checked the surrounding claims by hand: --change <id> wrote into the named change set rather than the current one, RHIZA_CHANGE did the same, a plain write went to the current one, and rhiza change use switched it back. go test -trimpath ./internal/doclinks/... passes; rhiza check on a clean clone at the branch head prints ok. Owner approval is left to the run's sign-off."
+        },
+        "handle": "concepts-change-sets-voice-qa-1",
+        "id": "01M73EE861J1TP3SCHWNA7N2ZB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73EE861J1TP3SCHWM8YGAVJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73EE861J1TP3SCHWM8YGAVJ",
+        "id": "01M73EE87767QHGBMR0VHFNCCX",
+        "link": "01M73EE87767QHGBMR0SF2X437",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7Q2AXY67KQS8MP979WZW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 5074bbfb with a binary built from the branch, in a fresh repo: ran docs/concepts/why.md's decision block as written (rhiza add decision with a multi-line --field statement and a single-quoted --field quote containing double quotes, then rhiza link export-csv decided-by); rhiza show printed the quote verbatim with its quotes and the decides link. rhiza source add <handle> <file> --raw <file> added a source node as the page describes, and the rhiza-scrub skill the page points to exists. go test -trimpath ./internal/doclinks/... passes; rhiza check on a clean clone at the branch head prints ok. Owner approval is left to the run's sign-off."
+        },
+        "handle": "concepts-why-voice-qa-1",
+        "id": "01M73EE88NJJA4YB0P2CYV6CGT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73EE88NJJA4YB0P291K2ZNV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73EE88NJJA4YB0P291K2ZNV",
+        "id": "01M73EE8A59B62THGEJBNKK3Z4",
+        "link": "01M73EE8A59B62THGEJBHP4KXZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7Q3G8SDGPGR4W6ZEQBSV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4G92NEJ33C04DSKC4RMK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73EE8CGKNH953FK5PKJJJN0",
+  "type": "ops",
+  "v": 1
+}

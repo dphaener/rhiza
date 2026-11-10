@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M73EE8CGKNH953FK5PKJJJN0"
+  ],
+  "at": "2026-11-10T19:28:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "bd57720e94f00f381967d9ede36141b14533840f",
+          "pr": "https://github.com/dphaener/rhiza/pull/426",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #426 (https://github.com/dphaener/rhiza/pull/426) passed CI at bd57720",
+          "status": "verified"
+        },
+        "handle": "pr-426-concepts-polish",
+        "id": "01M73EXM3XS5N6QK0DCC8Z24D8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73EXM3XS5N6QK0DC8YHRWK0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73EXM3XS5N6QK0DC8YHRWK0",
+        "id": "01M73EXM80WZYA4DZD7NFVJHEX",
+        "link": "01M73EXM80WZYA4DZD7JR115H1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7Q16ZYKM7C53RTWJF5AG",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M73EXM3XS5N6QK0DC8YHRWK0",
+        "id": "01M73EXMB9HHXPA869VXVEC1J9",
+        "link": "01M73EXMB9HHXPA869VT5JA3KX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7Q2AXY67KQS8MP979WZW",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M73EXM3XS5N6QK0DC8YHRWK0",
+        "id": "01M73EXMGMNTHA53Q6HF0NVHPX",
+        "link": "01M73EXMGMNTHA53Q6HBRVKQHV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7Q3G8SDGPGR4W6ZEQBSV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4G92NEJ33C04DSKC4RMK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73EXMSNN60G15J3BHBTZ330",
+  "type": "ops",
+  "v": 1
+}

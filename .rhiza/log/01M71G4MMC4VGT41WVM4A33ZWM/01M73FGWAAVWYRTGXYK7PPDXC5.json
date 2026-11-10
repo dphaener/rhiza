@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M73F1F384VTYVHJVX7G5FNG5"
+  ],
+  "at": "2026-11-10T19:38:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "49d310e3130c8e72720a8063d4166938e94af3c7",
+          "pr": "https://github.com/dphaener/rhiza/pull/428",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #428 (https://github.com/dphaener/rhiza/pull/428) passed CI at 49d310e",
+          "status": "verified"
+        },
+        "handle": "pr-428-agents-and-runs-docs-polish",
+        "id": "01M73FGVYRCHQCBM3VC0K9T60C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73FGVYQ2WZ6D32FFFY7PV8Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73FGVYQ2WZ6D32FFFY7PV8Y",
+        "id": "01M73FGW1BMY88QSTWCMTJACN4",
+        "link": "01M73FGW1BMY88QSTWCJADQJ1C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7QJ4GW14BQ3D485XGYZ1",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M73FGVYQ2WZ6D32FFFY7PV8Y",
+        "id": "01M73FGW4510ZFMVQRVYJ3FYXH",
+        "link": "01M73FGW4510ZFMVQRVTPRRWS4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7QMC5NKK7T0TNKBPKFQ7",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M73FGVYQ2WZ6D32FFFY7PV8Y",
+        "id": "01M73FGW5VDX6TDXWJ1SH59DF0",
+        "link": "01M73FGW5VDX6TDXWJ1RRV625A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7QP4AN4V4DF7G9S8R1SA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4MMC4VGT41WVM4A33ZWM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73FGWAAVWYRTGXYK7PPDXC5",
+  "type": "ops",
+  "v": 1
+}

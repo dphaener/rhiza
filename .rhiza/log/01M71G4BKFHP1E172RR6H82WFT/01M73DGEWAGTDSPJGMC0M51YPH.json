@@ -1,0 +1,40 @@
+{
+  "actor": "01M73D8ZN0JSP9A87CTPCQCMYN",
+  "after": [
+    "01M73D9BVQGSPY48SHVWFK3F34"
+  ],
+  "at": "2026-11-10T19:03:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 9da2ffc7, grep -n -i 'rise-ah' README.md matches line 3, the opening paragraph right under '# Rhiza' where the name is introduced: 'Rhiza (it's said rise-ah) keeps a living model...'. The diff changes only that README line, plus the builder's actor record. That fits decision readme-pronunciation-rise-ah ('just pronunciation of rhiza. rise-ah'). make self-check fails only on the run's not-yet-rendered actor files (this leaf's actor and the previous leaf's), which close-out renders. The owner's approval of the page is left to the run's sign-off."
+        },
+        "handle": "readme-pronunciation-verified",
+        "id": "01M73DGEQ38VWTZ98MXJFFQ89D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73DGEQ2EV5K9SY583X4TVYK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73DGEQ2EV5K9SY583X4TVYK",
+        "id": "01M73DGESSSJT45NF9SSFQWJ6Z",
+        "link": "01M73DGESSSJT45NF9SPWBBD6H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71HGXH205HYJX4K0AE89RXW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4BKFHP1E172RR6H82WFT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73DGEWAGTDSPJGMC0M51YPH",
+  "type": "ops",
+  "v": 1
+}

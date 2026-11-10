@@ -1,0 +1,94 @@
+# A workflow declaring [autonomy] signoff = owner is signed off by the
+# owner even in an autonomous run: the signoff step waits, with no sign-off
+# of rule autonomous in the journal, and rhiza run approve lets it finish.
+#
+# The fake rex runs the tab's command synchronously; the fake claude, as
+# check alpha, records an empty findings round and passes.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Owner signs' --title 'Owner signs'
+exec rhiza add capability thing
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+exec git add -A
+exec git commit -qm review
+
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/err
+stdout 'step signoff: waiting for the owner: workflow review declares autonomy signoff owner'
+! stdout 'signed off under rule autonomous'
+exec rhiza run status --json
+stdout '"state": "stopped"'
+stdout '"current": "signoff"'
+stdout '"signoff_waiting": true'
+! stdout '"rule": "autonomous"'
+! stdout '"signoffs"'
+exec sh -c 'grep -c "\"type\":\"signoff\"" .git/rhiza/runs/*.jsonl; true'
+stdout '^0$'
+
+exec rhiza run approve --foreground
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exec rhiza run status --json
+stdout '"state": "succeeded"'
+stdout '"rule": "owner"'
+! stdout '"rule": "autonomous"'
+
+fold-ok
+
+-- empty-round.json --
+{"findings":[]}
+-- review.toml --
+[autonomy]
+signoff = "owner"
+
+[step.review]
+kind = "checks"
+interval = "50ms"
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+on.pass = "done"
+on.changes = "review"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+exit 0

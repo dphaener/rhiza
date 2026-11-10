@@ -1,6 +1,6 @@
 # Writing a custom workflow
 
-The built-in workflows cover the usual path: plan, build, review, ship. Sooner or later you'll want a run to do something else. Maybe bugs shouldn't get the full feature treatment, or you want a command to run before an agent starts. A workflow is a small TOML file, so changing one is mostly a matter of copying and editing.
+The built-in workflows cover the usual path: plan, build, review, ship. Sooner or later you'll want a run to do something else. Maybe bugs shouldn't get the full feature treatment, or you want a command to run before an agent starts. A workflow is a small TOML file, so changing one is mostly copying and editing.
 
 This page builds one from scratch: a `bugfix` workflow that reproduces a bug first, fixes it, runs the tests and waits for CI, and then points bug requests at it. If you haven't read how [workflows and runs](runs-and-daemon.md) work yet, skim the first half of that page.
 
@@ -11,7 +11,7 @@ rhiza workflow new bugfix
 rhiza workflow check bugfix
 ```
 
-`workflow new` writes `.rhiza/workflows/bugfix.toml` and never overwrites a file that's there. Add `--from ship-change` to fork a built-in instead of starting empty, which is the better move when you only want to tweak one. A skeleton already passes `check`, so you can run that after every edit and see what you broke.
+`workflow new` writes `.rhiza/workflows/bugfix.toml` and never overwrites a file that's there. Add `--from ship-change` to fork a built-in instead of starting empty, which is the better move when you only want to tweak one. A skeleton already passes `check`, so you can run it after every edit and see what you broke.
 
 ## The workflow
 
@@ -60,7 +60,7 @@ Here's how this one reads:
 
 - **reproduce** starts an agent with a prompt. `{change}` and `{title}` are filled in from the change set, and the agent ends with `rhiza session done`, which is what makes the step pass. Asking for a failing test first keeps the agent from "fixing" something it never saw break.
 - **fix** is a second agent step, so a fresh agent session. It sees the committed test and makes it pass.
-- **test** runs a plain command. Pass moves on, fail loops back to `fix`. A loop needs a bound, so `max_visits = 3` fails the run on the fourth visit instead of letting the two steps trade blows all night. Swap `make test` for your repo's own scoped command.
+- **test** runs a plain command. Pass moves on, fail loops back to `fix`. A loop needs a bound, so `max_visits = 3` fails the run on the fourth visit instead of letting the two steps go back and forth all night. Swap `make test` for your repo's own scoped command.
 - **ci** waits. It runs `gh pr checks` every 30 seconds until it exits cleanly, and gives up after 30 minutes. Passing there ends the run.
 
 Every step kind and its keys, including the ones this example doesn't use (`leaves`, `checks`, `signoff`, `arbiter`, and `workflow` to include another workflow), are in the generated workflow-file reference, `docs/reference/workflow-file.md`, and in `rhiza guide workflows`. Prompts can use `{change}`, `{slug}`, `{title}`, `{run}` and `{step}`, plus a few more in the `leaves` and `checks` steps.
@@ -93,9 +93,26 @@ EOF
 
 Now a change set that came in as a bug (`rhiza request "Totals are wrong on the invoice page" --kind bug`) gets built by `bugfix` once you've accepted its plan. Features still get `ship-change`. The `[request]` table in the same file does the same for the planning run, if you want a different workflow on that side too. Both default to the built-ins, and a name that doesn't resolve is never swapped for a default: `rhiza daemon status` shows the run as skipped.
 
+## Pin one change set to it
+
+Sometimes you don't want a rule, just this one change set on this one workflow. Name it when you open the change set:
+
+```text
+rhiza change new "Totals are wrong on the invoice page" --workflow bugfix
+```
+
+Or pin one that already exists, and clear the pin later if you change your mind:
+
+```text
+rhiza change workflow bugfix
+rhiza change workflow --clear
+```
+
+A pinned change set gets that workflow as its ready pick and skips `dispatch.toml` entirely. Clear the pin and the dispatch rules choose again.
+
 ## Where it lives
 
-A name resolves to your personal `$XDG_CONFIG_HOME/rhiza/workflows/` first, then the repo's `.rhiza/workflows/`, then a built-in. So a repo file named `ship-change` replaces the built-in for everyone on the repo, and a personal one replaces both just for you. That's handy, and also an easy way to lose track of which file ran. `rhiza workflow describe <name>` says which one won.
+A name resolves to your personal `$XDG_CONFIG_HOME/rhiza/workflows/` first, then the repo's `.rhiza/workflows/`, then a built-in. So a repo file named `ship-change` replaces the built-in for everyone on the repo, and a personal one replaces both just for you. That's handy, but it's also easy to lose track of which file ran. `rhiza workflow describe <name>` says which one won.
 
 If you build a workflow that runs without anyone at the keyboard, watch for an agent step in `bypassPermissions` that a request's text can reach. `rhiza workflow check` warns about it, and [what can go wrong](runs-and-daemon.md#what-can-go-wrong) has the details.
 
