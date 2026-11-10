@@ -1,0 +1,40 @@
+{
+  "actor": "01M73DK6TQP5YM37WVG4JGJ6BX",
+  "after": [
+    "01M73DJTJ3D6X78VK05T0SA71H"
+  ],
+  "at": "2026-11-10T19:11:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 90b5eedf: go test -trimpath ./internal/doclinks/... ok. make self-check reports no docs-command (or docs) finding; check.go runs docsCommands unconditionally. Its only fails are outside this leaf: a fold error in the run's chore evidence entry 01M73DBN12V9QWEYY25C1JVHGG (from 06285a98), whose after names an entry not committed in the leaf checkout, and stale .rhiza/rendered for new actor records, which the run renders at close-out. grep -nE '\\{\"writes|\"quotes\"' docs/concepts/why.md finds nothing. The diff replaces the apply JSON with rhiza add decision --field ... and rhiza link export-csv decided-by csv-streaming. The Source section asks the agent to use the rhiza-scrub skill, which writes the file and runs rhiza source add, and names --raw, --raw-sha256 and --raw-session in prose. The prose is plain and in the owner's voice. The commit adds only the builder's actor record under .rhiza. Owner approval is left to the run's sign-off."
+        },
+        "handle": "concepts-why-voice-verified",
+        "id": "01M73DZK66NR3WTEGQN46E8MNP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73DZK66NR3WTEGQN1HM000V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73DZK66NR3WTEGQN1HM000V",
+        "id": "01M73DZK9M2K1V8NX01XVJKGG6",
+        "link": "01M73DZK9M2K1V8NX01T9EJNMN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7Q3G8SDGPGR4W6ZEQBSV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4G92NEJ33C04DSKC4RMK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73DZKC3MKF3V3S6BNV5NCYQ",
+  "type": "ops",
+  "v": 1
+}
