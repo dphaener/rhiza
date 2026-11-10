@@ -30,6 +30,9 @@ Polish the docs: examples show plain commands, not JSON blobs, and the prose rea
 - decided-by [concepts-model-voice](../capability/rhiza/documentation/concepts-model-voice.md)
 - decided-by [concepts-change-sets-voice](../capability/rhiza/documentation/concepts-change-sets-voice.md)
 - decided-by [concepts-why-voice](../capability/rhiza/documentation/concepts-why-voice.md)
+- decided-by [agents-doc-voice](../capability/rhiza/documentation/agents-doc-voice.md)
+- decided-by [runs-daemon-doc-voice](../capability/rhiza/documentation/runs-daemon-doc-voice.md)
+- decided-by [custom-workflows-doc-voice](../capability/rhiza/documentation/custom-workflows-doc-voice.md)
 - decided-by [cli-help-style](../capability/rhiza/documentation/cli-help-style.md)
 
 ## History
