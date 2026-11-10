@@ -1,0 +1,40 @@
+{
+  "actor": "01M73HQG2WKH0C7TZ2KFJS2B1W",
+  "after": [
+    "01M73HJ2JCHMY3S1STXRR5CGZB"
+  ],
+  "at": "2026-11-10T20:20:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 at 375f9198: built the branch with go build -trimpath into a scratch dir and ran it by hand (not through testscript) in fresh scratch Rhiza roots, with RHIZA_* unset and only rex and claude faked. (1) A workflow with [autonomy] signoff = owner, rhiza run start --foreground --autonomous: log 'step signoff: waiting for the owner: workflow review declares autonomy signoff owner', run status state stopped, current signoff, signoff_waiting true, no signoffs and no signoff journal entry; rhiza run approve --foreground then succeeded with one signoff of rule owner. (2) The same workflow declaring signoff = auto, and one with no [autonomy] at all: each signed off under rule autonomous and succeeded. (3) Nested: a top-level workflow declaring signoff = owner whose only step runs an inner workflow holding the signoff step: inner/signoff waited, and the log named workflow review's declaration. (4) request-changes on an owner-declared run (max_visits raised): it went back to review (visit 2), then stopped at signoff waiting again, with only the owner's changes signoff in the journal and none of rule autonomous. run status showed 'Autonomy signoff: owner from workflow review'"
+        },
+        "handle": "signoff-owner-beats-autonomous-qa-1",
+        "id": "01M73HWH1A03E10TW7KHYR8VD4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73HWH1A03E10TW7KDZQ0AY5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73HWH1A03E10TW7KDZQ0AY5",
+        "id": "01M73HWH2XMBAC2BVSYPCP4SBX",
+        "link": "01M73HWH2XMBAC2BVSYK75KNYW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73G3PK7RGKSX1K0NEM0MFB2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M73FYE2PAG9E034MPBTTJ12D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73HWH4F0JX3EMRT36ZCQ2QN",
+  "type": "ops",
+  "v": 1
+}
