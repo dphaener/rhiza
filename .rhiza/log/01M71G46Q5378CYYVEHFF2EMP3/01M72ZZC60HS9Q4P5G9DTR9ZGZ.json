@@ -1,0 +1,40 @@
+{
+  "actor": "01M72Z7BEJMBCP636NT8V6CJB5",
+  "after": [
+    "01M72YRNA8733AQFN5R49WHEXE"
+  ],
+  "at": "2026-11-10T15:07:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at fc3c7176: go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(change-new-workflow-flag|describe-golden)$' passes. The new change-new-workflow-flag.txtar opens a change set with change new --workflow docs (repo workflow), sees \"workflow\": \"docs\" in change new --json and change show --json, sees run start --dry-run print '- Workflow: docs', sees --workflow nonesuch refused ('no such workflow', no stdout, no change set opened), sees a plain change new carry no workflow, and passes fold-ok. Read the diff: runChangeNew resolves the name through the shared lookupWorkflow and refuses an unresolved name with the same Usagef message as request --workflow, then records it on changeset.Open.Workflow (the field a request's workflow uses). describe-golden and docs/reference/cli.md were updated to match. Scoped go test ./internal/api -run 'ChangeNew|Workflow|Request' passes; the unscoped package run timed out at 600s with host load average 27, which is not caused by this change."
+        },
+        "handle": "change-new-workflow-flag-verified",
+        "id": "01M72ZZBDMM3WWJRKR9DKH6M84",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M72ZZBDMM3WWJRKR9CPG7CPB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M72ZZBDMM3WWJRKR9CPG7CPB",
+        "id": "01M72ZZBRP4NSSBQ65P5859M16",
+        "link": "01M72ZZBRP4NSSBQ65P2XBA3TE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7NY758150RA00YZ080MV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G46Q5378CYYVEHFF2EMP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M72ZZC60HS9Q4P5G9DTR9ZGZ",
+  "type": "ops",
+  "v": 1
+}
