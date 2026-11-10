@@ -1,0 +1,40 @@
+{
+  "actor": "01M73DA3WERARNY2ZH3GPASS3D",
+  "after": [
+    "01M73DBN12V9QWEYY25C1JVHGG"
+  ],
+  "at": "2026-11-10T19:04:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6204d340: go test -trimpath ./internal/doclinks/... passes. make self-check reports no docs-commands finding (no unknown rhiza command in README.md or docs/); its only failures are stale .rhiza/rendered actor pages and index.md from the run's agent actor records, the same systemic render staleness the passed concepts-model-voice leaf had, not from the docs change. Read the diff of docs/concepts/change-sets.md: it now shows model writes as plain rhiza add capability/decision, rhiza link ... decided-by ... and rhiza set ... --field commands, whose syntax matches rhiza add/link/set --help, and the prose keeps the owner's plain voice. Owner approval is left to the run's sign-off."
+        },
+        "handle": "concepts-change-sets-voice-verified",
+        "id": "01M73DJT7KNB4D1A8JCCXG2P6Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73DJT7KNB4D1A8JCA265TFH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73DJT7KNB4D1A8JCA265TFH",
+        "id": "01M73DJTDR7MJ26TCWMWAHR5G4",
+        "link": "01M73DJTDR7MJ26TCWMT9W3Y2Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7Q2AXY67KQS8MP979WZW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4G92NEJ33C04DSKC4RMK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73DJTJ3D6X78VK05T0SA71H",
+  "type": "ops",
+  "v": 1
+}
