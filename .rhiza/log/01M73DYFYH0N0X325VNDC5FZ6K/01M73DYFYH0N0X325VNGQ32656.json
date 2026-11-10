@@ -1,0 +1,15 @@
+{
+  "actor": "01M73DVCEFSRJT2G0SBM9AMQNS",
+  "after": [],
+  "at": "2026-11-10T19:11:26Z",
+  "body": {
+    "intent": "docs/concepts/why.md shows the csv-streaming decision with plain rhiza add decision and rhiza link commands instead of an apply JSON file (constraint doc-examples-plain-commands)",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M73DYFYH0N0X325VNDC5FZ6K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73DYFYH0N0X325VNGQ32656",
+  "type": "open",
+  "v": 1
+}
