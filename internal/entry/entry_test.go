@@ -84,6 +84,7 @@ var goldenCases = []struct {
 	{TypeLand, false, "{\n  \"commit\": \"abc\"\n}", "{\n    \"commit\": \"abc\"\n  }"},
 	{TypeReopen, true, `{}`, `{}`},
 	{TypeNote, true, "{\n  \"ζ\": 9223372036854775807\n}", "{\n    \"ζ\": 9223372036854775807\n  }"},
+	{TypePin, false, "{\n  \"workflow\": \"docs\"\n}", "{\n    \"workflow\": \"docs\"\n  }"},
 }
 
 func goldenEntry(t testing.TB, i int) (Entry, string) {
@@ -97,16 +98,21 @@ func goldenEntry(t testing.TB, i int) (Entry, string) {
 		after = twoAfter
 	}
 	d := doc(after, string(tc.typ), tc.bodyInDoc)
-	// A reopen entry needs format 3; every other type is spelled in format 1.
+	// A reopen entry needs format 3 and a pin entry format 5; every other
+	// type is spelled in format 1.
 	if tc.typ == TypeReopen {
 		e.V = 3
 		d = strings.Replace(d, `"v": 1`, `"v": 3`, 1)
+	}
+	if tc.typ == TypePin {
+		e.V = 5
+		d = strings.Replace(d, `"v": 1`, `"v": 5`, 1)
 	}
 	return e, d
 }
 
 func TestTypes(t *testing.T) {
-	want := []Type{"open", "ops", "propose", "accept", "reject", "withdraw", "supersede", "land", "reopen", "note"}
+	want := []Type{"open", "ops", "propose", "accept", "reject", "withdraw", "supersede", "land", "reopen", "note", "pin"}
 	if got := Types(); !slices.Equal(got, want) {
 		t.Fatalf("Types() = %v, want %v", got, want)
 	}
@@ -138,8 +144,8 @@ func TestGolden(t *testing.T) {
 }
 
 func TestVersions(t *testing.T) {
-	if FormatVersion != 4 {
-		t.Fatalf("FormatVersion = %d, want 4", FormatVersion)
+	if FormatVersion != 5 {
+		t.Fatalf("FormatVersion = %d, want 5", FormatVersion)
 	}
 	// Every format reads and writes; the envelope is the same in each.
 	for v := 1; v <= FormatVersion; v++ {
@@ -254,9 +260,9 @@ var decodeFailures = []struct {
 	{"v negative", swap(`"v": 1`, `"v": -1`), ErrInvalid, "v", ""},
 	{"v string", swap(`"v": 1`, `"v": "1"`), ErrInvalid, "v", ""},
 	{"v missing", swap(`,`+"\n"+`  "v": 1`, ``), ErrInvalid, "v", ""},
-	{"v 5", swap(`"v": 1`, `"v": 5`), ErrNewerFormat, "v", ""},
-	{"v 5 with unknown keys", "{\n  \"future\": [],\n  \"v\": 5\n}\n", ErrNewerFormat, "v", ""},
-	{"reopen v 5", strings.Replace(swap(`"type": "note"`, `"type": "reopen"`), `"v": 1`, `"v": 5`, 1), ErrNewerFormat, "v", ""},
+	{"v 6", swap(`"v": 1`, `"v": 6`), ErrNewerFormat, "v", ""},
+	{"v 6 with unknown keys", "{\n  \"future\": [],\n  \"v\": 6\n}\n", ErrNewerFormat, "v", ""},
+	{"reopen v 6", strings.Replace(swap(`"type": "note"`, `"type": "reopen"`), `"v": 1`, `"v": 6`, 1), ErrNewerFormat, "v", ""},
 	{"missing for", swap(`  "for": "`+sFor+`",`+"\n", ``), ErrInvalid, "for", "missing"},
 	{"extra key", swap(`  "for"`, `  "extra": 1,`+"\n"+`  "for"`), ErrInvalid, "extra", "unknown"},
 	{"lower-case id", swap(sID, strings.ToLower(sID)), ErrInvalid, "id", ""},
@@ -351,7 +357,7 @@ func TestEncodeFailures(t *testing.T) {
 		field  string
 	}{
 		{"v 0", func(e *Entry) { e.V = 0 }, "v"},
-		{"v 5", func(e *Entry) { e.V = 5 }, "v"},
+		{"v 6", func(e *Entry) { e.V = 6 }, "v"},
 		{"reopen v 1", func(e *Entry) { e.Type = TypeReopen }, "type"},
 		{"reopen v 2", func(e *Entry) { e.Type, e.V = TypeReopen, 2 }, "type"},
 		{"v negative", func(e *Entry) { e.V = -1 }, "v"},
@@ -486,6 +492,9 @@ func genEntry() *rapid.Generator[Entry] {
 		low := 1
 		if typ == TypeReopen {
 			low = 3
+		}
+		if typ == TypePin {
+			low = 5
 		}
 		return Entry{
 			V:         rapid.IntRange(low, FormatVersion).Draw(t, "v"),

@@ -33,9 +33,12 @@ func corpusCases(t *testing.T) []string {
 	return cases
 }
 
-// firstFormat names the earliest format that can spell typ: reopen came
-// with format 3, every other type with format 1.
+// firstFormat names the earliest format that can spell typ: pin came with
+// format 5, reopen with format 3, every other type with format 1.
 func firstFormat(typ entry.Type) string {
+	if typ == entry.TypePin {
+		return "format-5"
+	}
 	if typ == entry.TypeReopen {
 		return "format-3"
 	}

@@ -11,6 +11,7 @@ Rhiza's README and docs/ tell a new developer what Rhiza is, how to install it a
 ### In
 
 - constrains [doc-prose-humanized](../../constraint/doc-prose-humanized.md)
+- constrains [doc-examples-plain-commands](../../constraint/doc-examples-plain-commands.md)
 
 ## History
 

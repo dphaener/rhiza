@@ -18,6 +18,7 @@ import (
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
 )
 
@@ -36,6 +37,14 @@ func init() {
 		Request:  reflect.TypeFor[ChangeUseRequest](),
 		Response: reflect.TypeFor[ChangeUseResponse](),
 		Run:      runChangeUse,
+	})
+	register(Operation{
+		Name:     "change.workflow",
+		Summary:  "Pin a change set to a workflow, or clear the pin",
+		Write:    true,
+		Request:  reflect.TypeFor[ChangeWorkflowRequest](),
+		Response: reflect.TypeFor[ChangeWorkflowResponse](),
+		Run:      runChangeWorkflow,
 	})
 	register(Operation{
 		Name:     "change.show",
@@ -59,11 +68,12 @@ const changeLsNext = "rhiza change ls"
 
 // ChangeNewRequest opens a change set.
 type ChangeNewRequest struct {
-	Intent  string   `json:"intent" arg:"0" desc:"What the change set is for, in a sentence"`
-	Kind    string   `json:"kind,omitempty" enum:"intention,record" desc:"Either intention (reviewed before it lands) or record (lands as is); default intention"`
-	Sources []string `json:"sources,omitempty" flag:"source" desc:"A source node the change set comes from: an ID, ID prefix or handle"`
-	Title   string   `json:"title,omitempty" desc:"A short name for the change set, one line of at most 30 characters; default the intent's first clause"`
-	Ref     string   `json:"ref,omitempty" desc:"An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none"`
+	Intent   string   `json:"intent" arg:"0" desc:"What the change set is for, in a sentence"`
+	Kind     string   `json:"kind,omitempty" enum:"intention,record" desc:"Either intention (reviewed before it lands) or record (lands as is); default intention"`
+	Sources  []string `json:"sources,omitempty" flag:"source" desc:"A source node the change set comes from: an ID, ID prefix or handle"`
+	Title    string   `json:"title,omitempty" desc:"A short name for the change set, one line of at most 30 characters; default the intent's first clause"`
+	Ref      string   `json:"ref,omitempty" desc:"An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none"`
+	Workflow string   `json:"workflow,omitempty" flag:"workflow" desc:"A workflow, by name, pinned to the change set: its ready pick is that workflow; default none (the dispatch rules choose)"`
 }
 
 // ChangeNewResponse names the new change set and its open entry.
@@ -75,6 +85,7 @@ type ChangeNewResponse struct {
 	Title     string         `json:"title" desc:"The change set's title, else its intent's first clause"`
 	Sources   []id.ID        `json:"sources,omitempty" desc:"The source node IDs, sorted"`
 	Ref       string         `json:"ref,omitempty" desc:"The change set's opaque external reference, if any"`
+	Workflow  string         `json:"workflow,omitempty" desc:"The workflow pinned to the change set, if any"`
 	Actor     id.ID          `json:"actor,omitzero" desc:"Who opened it; absent in a dry run before any actor is recorded"`
 	DryRun    bool           `json:"dry_run,omitempty" desc:"True if nothing was written"`
 }
@@ -115,7 +126,17 @@ func runChangeNew(ctx *Ctx, req any) (any, error) {
 	}
 	slices.SortFunc(sources, id.Compare)
 	sources = slices.Compact(sources)
-	open := changeset.Open{Kind: kind, Intent: r.Intent, Sources: sources, Title: r.Title, Ref: strings.TrimSpace(r.Ref)}
+	wf := strings.TrimSpace(r.Workflow)
+	if wf != "" {
+		_, _, found, err := lookupWorkflow(ctx.Root, wf)
+		if err != nil {
+			return nil, Errorf("workflow %q: %v", wf, err)
+		}
+		if !found {
+			return nil, Usagef("--workflow %q: there is no such workflow in %s, your personal workflows or built in", wf, workflowsDir).WithNext("rhiza workflow ls")
+		}
+	}
+	open := changeset.Open{Kind: kind, Intent: r.Intent, Sources: sources, Title: r.Title, Ref: strings.TrimSpace(r.Ref), Workflow: wf}
 	if err := open.Validate(); err != nil {
 		return nil, Usagef("%s", err.Error()).WithNext("rhiza describe change.new")
 	}
@@ -131,7 +152,7 @@ func runChangeNew(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	resp := ChangeNewResponse{ChangeSet: cs, Entry: e.ID, Kind: kind, Intent: r.Intent,
-		Title: open.DisplayTitle(), Sources: sources, Ref: open.Ref, Actor: actor, DryRun: ctx.DryRun}
+		Title: open.DisplayTitle(), Sources: sources, Ref: open.Ref, Workflow: wf, Actor: actor, DryRun: ctx.DryRun}
 	if ctx.DryRun {
 		resp.Entry = id.ID{}
 	}
@@ -147,6 +168,105 @@ func (r ChangeNewResponse) Human(w io.Writer) {
 	}
 	fmt.Fprintf(w, "Opened change set %s (%s): %s\n\n", r.ChangeSet, r.Kind, r.Intent)
 	fmt.Fprintf(w, "It is now the current change set; writes go into it.\n")
+}
+
+// ChangeWorkflowRequest pins a change set to a workflow, or clears the pin.
+type ChangeWorkflowRequest struct {
+	Name  string `json:"name,omitempty" arg:"0" desc:"The workflow, by name, the change set's ready pick is; omit it with --clear"`
+	Clear bool   `json:"clear,omitempty" desc:"Clear the pin instead: the dispatch rules choose the workflow again"`
+}
+
+// ChangeWorkflowResponse is the change set's pin after the call.
+type ChangeWorkflowResponse struct {
+	ChangeSet id.ID  `json:"change_set" desc:"The change set"`
+	Entry     id.ID  `json:"entry,omitzero" desc:"The pin entry's ID; absent in a dry run"`
+	Workflow  string `json:"workflow,omitempty" desc:"The workflow now pinned to the change set; absent when cleared"`
+	Previous  string `json:"previous,omitempty" desc:"The workflow pinned before, if any"`
+	Actor     id.ID  `json:"actor,omitzero" desc:"Who wrote it"`
+	DryRun    bool   `json:"dry_run,omitempty" desc:"True if nothing was written"`
+}
+
+// runChangeWorkflow pins the effective change set to a workflow that
+// resolves, or clears the pin, by appending a pin entry. A landed or
+// otherwise finished change set, and one with a live run, is refused.
+func runChangeWorkflow(ctx *Ctx, req any) (any, error) {
+	r := req.(ChangeWorkflowRequest)
+	name := strings.TrimSpace(r.Name)
+	switch {
+	case r.Clear && name != "":
+		return nil, Usagef("give a workflow or --clear, not both").WithNext("rhiza describe change.workflow")
+	case !r.Clear && name == "":
+		return nil, Usagef("name a workflow to pin, or pass --clear").WithNext("rhiza workflow ls")
+	}
+	if name != "" {
+		_, _, found, err := lookupWorkflow(ctx.Root, name)
+		if err != nil {
+			return nil, Errorf("workflow %q: %v", name, err)
+		}
+		if !found {
+			return nil, Usagef("%q: there is no such workflow in %s, your personal workflows or built in", name, workflowsDir).WithNext("rhiza workflow ls")
+		}
+	}
+	body := changeset.Pin{Workflow: name}
+	if err := body.Validate(); err != nil {
+		return nil, Usagef("%s", err.Error()).WithNext("rhiza describe change.workflow")
+	}
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return nil, err
+	}
+	cs, err := w.effectiveChangeSet(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if cs.IsZero() {
+		return nil, Usagef("no change set: pass --change or make one current with change use").WithNext(changeLsNext)
+	}
+	c, ok := w.changeSet(cs)
+	if !ok {
+		return nil, NotFoundf("no change set %s", cs).WithNext(changeLsNext)
+	}
+	if c.State.Terminal() || c.State == "" {
+		return nil, Conflictf("change set %s is %s: only one that has not landed can be pinned to a workflow", cs, c.State).WithNext(changeLsNext)
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := refuseLiveRun(run.NewStore(run.Dir(common)), cs.String(), ""); err != nil {
+		return nil, err
+	}
+	actor, forID, err := w.resolveActor(cs, ctx)
+	if err != nil {
+		return nil, err
+	}
+	e, err := w.appendEntry(cs, body, actor, forID)
+	if err != nil {
+		return nil, err
+	}
+	resp := ChangeWorkflowResponse{ChangeSet: cs, Entry: e.ID, Workflow: name, Previous: c.Open.Workflow, Actor: actor, DryRun: ctx.DryRun}
+	if ctx.DryRun {
+		resp.Entry = id.ID{}
+	}
+	return resp, nil
+}
+
+// Human reports the pin.
+func (r ChangeWorkflowResponse) Human(w io.Writer) {
+	prefix := ""
+	if r.DryRun {
+		prefix = "Would "
+	}
+	switch {
+	case r.Workflow == "" && r.DryRun:
+		fmt.Fprintf(w, "%sclear the workflow of change set %s. This was a dry run: nothing was written.\n", prefix, r.ChangeSet)
+	case r.Workflow == "":
+		fmt.Fprintf(w, "Cleared the workflow of change set %s: the dispatch rules choose it again.\n", r.ChangeSet)
+	case r.DryRun:
+		fmt.Fprintf(w, "Would pin change set %s to workflow %s. This was a dry run: nothing was written.\n", r.ChangeSet, r.Workflow)
+	default:
+		fmt.Fprintf(w, "Pinned change set %s to workflow %s.\n", r.ChangeSet, r.Workflow)
+	}
 }
 
 // ChangeUseRequest names the change set to make current, or asks to clear

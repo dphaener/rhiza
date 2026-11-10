@@ -1,0 +1,15 @@
+{
+  "actor": "01M6TY2GF8R04H7R1ACFJCYMSD",
+  "after": [],
+  "at": "2026-11-07T12:00:01Z",
+  "body": {
+    "intent": "Let people tag reports",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6TY2GF8R04H7R1ACREQ0EQ0",
+  "for": "01M6TY2GF8R04H7R1ACFJCYMSD",
+  "id": "01M6TY2GF8R04H7R1ACSNMXEWP",
+  "type": "open",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7321B8VRAWDBDGB0FR6G108",
+  "after": [
+    "01M731BRRRRQFF8M1Z46TF1VDP"
+  ],
+  "at": "2026-11-10T15:45:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fbda8fda, built cmd/rhiza (-trimpath) and ran it in this checkout with RHIZA_ROOT unset: `rhiza workflow check docs` reports workflow docs is valid; `rhiza workflow describe docs` prints 'autonomy signoff owner' and --json gives autonomy [{\"mode\":\"owner\",\"stage\":\"signoff\"}] (fixing attempt 1's finding); `change show --json` of 01M71G4BKFHP1E172RR6H82WFT, 01M71G4G92NEJ33C04DSKC4RMK and 01M71G4MMC4VGT41WVM4A33ZWM (README/quickstart, Concepts, Agents and runs pages) each shows workflow docs. docs.toml matches builtin ship-change apart from name, [autonomy] signoff = owner and the docs-build/docs-review includes, whose builder and fixer prompts load the humanize skill under constraints doc-prose-humanized and doc-examples-plain-commands. go test ./cmd/rhiza -run TestScripts/(workflow-describe|describe-golden) and go test ./internal/api -run Workflow pass. make self-check passes in a clean worktree at the commit with the run's untracked entry 01M72YRNA8733AQFN5R49WHEXE added (in the run checkout it fails only on untracked run/actor entries, not on the commit)."
+        },
+        "handle": "docs-signoff-workflow-verified",
+        "id": "01M7325VNM06SGG8YPHAN5Z49S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7325VNM06SGG8YPH7N638WT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7325VNM06SGG8YPH7N638WT",
+        "id": "01M7325VPE4VN18V82G2W8HGEQ",
+        "link": "01M7325VPE4VN18V82G1M6WJDQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7P1XK0DKX0N1JXMP8T4B",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G46Q5378CYYVEHFF2EMP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7325VQ90XPM3086SGER8CKQ",
+  "type": "ops",
+  "v": 1
+}

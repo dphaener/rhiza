@@ -1,0 +1,40 @@
+{
+  "actor": "01M739C1ZG3Z6TF71X1C2XKWX9",
+  "after": [
+    "01M7398V63SCFDQM6MRYMGK0FR"
+  ],
+  "at": "2026-11-10T17:53:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The pin entry is a new log entry type in format 5: only pin entries carry v 5, so formats 1 to 4 stay byte-identical. A pin applies only while its change set is in flight, and readers built before format 5 refuse a log holding one with ErrNewerFormat.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "pin-format-five",
+        "id": "01M739GHYM7Z506MEACE5W04BQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M739GHYM7Z506MEACDWYCMFE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M71G7P0PSQXY5RZ89TE5NV9W",
+        "id": "01M739GHZNG520FYDY9F0R9GB9",
+        "link": "01M739GHZNG520FYDY9B3J4EDV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M739GHYM7Z506MEACDWYCMFE",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M71G46Q5378CYYVEHFF2EMP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M739GJ0RN685HQB7E7K7CQ2M",
+  "type": "ops",
+  "v": 1
+}

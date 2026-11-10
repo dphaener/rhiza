@@ -1,0 +1,40 @@
+{
+  "actor": "01M730R15XGD0YA7MK26DN4KCY",
+  "after": [
+    "01M72ZZC60HS9Q4P5G9DTR9ZGZ"
+  ],
+  "at": "2026-11-10T15:31:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f82e440f, go test -trimpath ./cmd/rhiza -run 'TestScripts/(change-workflow-pin|describe-golden)$' passes. The change-workflow-pin testscript pins a draft change set with rhiza change workflow docs. Then change show --json shows \"workflow\": \"docs\" and run start --dry-run prints '- Workflow: docs'. --clear returns previous=docs, after which change show has no workflow and run start --dry-run falls back to the dispatch rules. The script refuses an unknown name ('no such workflow'), a name together with --clear, no name at all, and a landed change set ('landed'). Each stage passes fold-ok. go test -run TestChangeWorkflow ./internal/api passes; it covers the change.workflow operation's refusals (exit 2), dry run, pin, clear and the landed refusal (exit 3). internal/changeset, entry, store and render all pass, including the format-5 pin corpus. I read the diff: the pin entry is format 5, the fold applies it only in flight, and the operation refuses a live run through refuseLiveRun. The full internal/api run failed only on things this change does not touch: the driver poll idle CPU budget (5.7ms over 5ms on the shared host) and the existing .rhiza-root/usage.live.json leak check from the run-start tests."
+        },
+        "handle": "change-workflow-pin-verified",
+        "id": "01M731BRPMBAAKZ3WYXXB4ZXDY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M731BRPMBAAKZ3WYXTACBNFF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M731BRPMBAAKZ3WYXTACBNFF",
+        "id": "01M731BRQQC7JNDT3C4YBNN2KP",
+        "link": "01M731BRQQC7JNDT3C4Y3A42RD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7P0PSQXY5RZ89TE5NV9W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G46Q5378CYYVEHFF2EMP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M731BRRRRQFF8M1Z46TF1VDP",
+  "type": "ops",
+  "v": 1
+}

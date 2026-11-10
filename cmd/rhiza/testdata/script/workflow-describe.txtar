@@ -14,6 +14,7 @@ stdout '^build \(builtin\) builtin:build$'
 stdout '^start '
 stdout 'on\.pass ->'
 stdout 'role builder models'
+! stdout '^autonomy '
 
 # the same bytes as the api
 exec rhiza workflow describe build --json
@@ -55,6 +56,17 @@ cp stdout inc.json
 exec rhiza api call workflow.describe '{"workflow":"inc.toml"}'
 cmp stdout inc.json
 
+# a workflow's declared autonomy, by stage in order
+cp $WORK/aut.toml aut.toml
+exec rhiza workflow describe aut.toml
+stdout '^autonomy ship auto$'
+stdout '^autonomy signoff owner$'
+! stdout '^autonomy (plan|accept) '
+exec rhiza workflow describe aut.toml --json
+stdout '"mode": "owner",\n\s*"stage": "signoff"'
+exec rhiza workflow describe build --json
+stdout '"autonomy": \[\]'
+
 # nothing was written: no runs, and the model still folds
 exec rhiza run ls
 ! stdout 'inc|build'
@@ -73,3 +85,10 @@ run = "true"
 [step.go]
 kind = "workflow"
 workflow = "build"
+-- aut.toml --
+[autonomy]
+signoff = "owner"
+ship = "auto"
+[step.only]
+kind = "command"
+run = "true"

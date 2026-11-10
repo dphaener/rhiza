@@ -64,6 +64,11 @@ var corpusExpect = map[string][]corpusWant{
 		{intent: "Let people tag reports", state: changeset.StateLanded,
 			handles: []string{"tags"}, decided: entry.TypeAccept},
 	},
+	"format-5/pin": {
+		{intent: "Record actor ada@example.com", state: changeset.StateLanded, handles: []string{"ada"}},
+		{intent: "Let people tag reports", state: changeset.StateLanded,
+			handles: []string{"tags"}, decided: entry.TypeAccept},
+	},
 }
 
 func TestCorpusFolds(t *testing.T) {
@@ -149,6 +154,8 @@ func TestCorpusFolds(t *testing.T) {
 				checkReopen(t, l.Entries, got[1])
 			case "format-4/ref":
 				checkRef(t, l.Entries, got)
+			case "format-5/pin":
+				checkPin(t, l.Entries, got)
 			}
 		})
 	}
@@ -238,6 +245,27 @@ func checkRef(t *testing.T, entries []entry.Entry, sets []changeset.ChangeSet) {
 	}
 	if got, want := sets[1].Open.Ref, "https://example.com/issues/42"; got != want {
 		t.Errorf("%s: ref %q, want %q", sets[1].ID, got, want)
+	}
+}
+
+// checkPin checks the pin case in detail: the one pin entry is v5, every
+// other entry is v1, and the pin's workflow shows on the folded open.
+func checkPin(t *testing.T, entries []entry.Entry, sets []changeset.ChangeSet) {
+	t.Helper()
+	for _, e := range entries {
+		want := 1
+		if e.Type == entry.TypePin {
+			want = 5
+		}
+		if e.V != want {
+			t.Errorf("entry %s: v%d %s, want v%d", e.ID, e.V, e.Type, want)
+		}
+	}
+	if got := sets[0].Open.Workflow; got != "" {
+		t.Errorf("%s: workflow %q, want none", sets[0].ID, got)
+	}
+	if got, want := sets[1].Open.Workflow, "docs"; got != want {
+		t.Errorf("%s: workflow %q, want %q", sets[1].ID, got, want)
 	}
 }
 

@@ -1,0 +1,40 @@
+{
+  "actor": "01M739K9K7PSPVDXGKBXASM7CE",
+  "after": [
+    "01M739GJ0RN685HQB7E7K7CQ2M"
+  ],
+  "at": "2026-11-10T17:57:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At bb5b5ce8 (leaf commits f82e440f and bb5b5ce8): go test -trimpath ./cmd/rhiza -run 'TestScripts/(change-workflow-pin|describe-golden)$' -count=1 -v passed both scripts. change-workflow-pin.txtar pins a draft change set to docs, then change show --json shows \"workflow\": \"docs\" and run start --dry-run prints '- Workflow: docs'. It clears with --clear (previous docs, no workflow, dry run falls back to the dispatch rules), refuses nonesuch with 'no such workflow' and a landed change set with 'landed', and passes fold-ok after each step. go test -trimpath ./internal/api -run TestChangeWorkflow passed, as did internal/changeset, entry, store and render. I read the diff: change.workflow validates the name via lookupWorkflow, refuses terminal states and live runs (refuseLiveRun), and appends a format-5 pin entry. bb5b5ce8 adds Decision pin-format-five, decided-by link. make self-check has only stale rendered actor/index files from this run's own session actors, which no leaf commit causes."
+        },
+        "handle": "change-workflow-pin-verified-2",
+        "id": "01M739PRTK7PPB0JWBPAXH5KDT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M739PRTK7PPB0JWBP7TBMC09",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M739PRTK7PPB0JWBP7TBMC09",
+        "id": "01M739PRVJPJGXY3RW45JJ2QHE",
+        "link": "01M739PRVJPJGXY3RW43WAMA2P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7P0PSQXY5RZ89TE5NV9W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G46Q5378CYYVEHFF2EMP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M739PRWKZHR530BHWYGSFQ08",
+  "type": "ops",
+  "v": 1
+}

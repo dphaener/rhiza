@@ -1,0 +1,92 @@
+name = "docs-review"
+
+# A review of a built change set. code-check runs rhiza check and
+# build-check in the run's worktree. With no on.fail, a failed code check
+# ends the run failed at once; a repo override may route it elsewhere.
+[step.code]
+kind = "command"
+run = "rhiza run code-check"
+on.pass = "review"
+
+# The checks step runs every check at once, each a fresh session in a
+# throwaway checkout of the branch head, told only the change set, its
+# check and the cycle. A check with a blocker or major gets a critic; what
+# the critic confirms goes to a fixer per leaf, one at a time, each
+# followed by that leaf's verifier, then to one fixer for findings naming
+# no leaf. Only the failed checks re-run, for at most 2 fix cycles; what
+# still fails then becomes questions. max_visits lets the owner's
+# requests for changes re-enter the step.
+[step.review]
+kind = "checks"
+split = "auto"
+max_visits = 3
+on.pass = "render"
+
+[[step.review.check]]
+name = "compliance"
+models = ["opus"]
+prompt = "/rhiza-review Run the {check} check of change set {change} (cycle {cycle}): follow `rhiza guide review`. Record one round with `rhiza run findings --check {check}`. Your very last action is to run `rhiza session done`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+
+[[step.review.check]]
+name = "quality"
+models = ["opus"]
+prompt = "/rhiza-review Run the {check} check of change set {change} (cycle {cycle}): follow `rhiza guide review`. Record one round with `rhiza run findings --check {check}`. Your very last action is to run `rhiza session done`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+
+[[step.review.check]]
+name = "qa"
+models = ["opus"]
+prompt = "/rhiza-review Run the {check} check of change set {change} (cycle {cycle}): follow `rhiza guide review`. Record one round with `rhiza run findings --check {check}`. Your very last action is to run `rhiza session done`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+
+[[step.review.check]]
+name = "scope"
+models = ["opus"]
+prompt = "/rhiza-review Run the {check} check of change set {change} (cycle {cycle}): follow `rhiza guide review`. Record one round with `rhiza run findings --check {check}`. Your very last action is to run `rhiza session done`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+
+[[step.review.check]]
+name = "model"
+models = ["opus"]
+prompt = "/rhiza-review Run the {check} check of change set {change} (cycle {cycle}): follow `rhiza guide review`. Record one round with `rhiza run findings --check {check}`. Your very last action is to run `rhiza session done`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+
+# A critic confirms or drops each blocker and major of its check's latest
+# round, and never adds a finding.
+[step.review.critic]
+models = ["opus"]
+prompt = "/rhiza-review Criticise the latest round of the {check} check of change set {change} (cycle {cycle}), as its critic: follow `rhiza guide review`. Record your verdicts with `rhiza run verdict --check {check}`; never add a finding. Your very last action is to run `rhiza session done`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+
+# A fixer is told the confirmed findings (appended to this prompt) and
+# fixes them in one new commit: a leaf's with `Leaf: {leaf}`, the change
+# set's ({leaf} empty) with `Review: <run>`.
+[step.review.fixer]
+models = ["opus"]
+prompt = "/rhiza-review Fix the findings below for change set {change} in review cycle {cycle}: follow `rhiza guide review`. Your very last action, once your one new commit is made, is to run `rhiza session done`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge. This is a doc change: draft or revise every line of doc prose with the owner's humanize skill (load it with the Skill tool) before you commit, under constraints doc-prose-humanized and doc-examples-plain-commands: show model writes as plain `rhiza add`, `link` and `set` commands, never `rhiza apply` with a JSON file as a reader's first write. Generated reference tables are exempt."
+
+# A fixed leaf's verifier works in a detached checkout at the fixer's
+# commit ($RHIZA_COMMIT) and passes only with Evidence written as itself.
+[step.review.verifier]
+models = ["opus"]
+prompt = "/rhiza-build Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT, as the verifier: follow `rhiza guide build`. Never edit code. End with Evidence written as yourself that verifies {leaf}, or with findings recorded by `rhiza run findings --leaf {leaf}`, then run `rhiza session done` as your very last action. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+
+# Fixers, verifiers and checks write records (actors, Evidence), which
+# leaves .rhiza/rendered stale. Render and commit the rendered folder on
+# the branch after the last of them, with the .rhiza/log entries they
+# left uncommitted, so rhiza check passes on it; nothing to render
+# commits nothing. Each request for changes comes back through here.
+[step.render]
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
+  git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+"""
+max_visits = 3
+on.pass = "signoff"
+
+# The run waits for the owner: `rhiza run approve` ends it done, and the
+# change set stays accepted, as landing is left to the owner or a ship
+# run; `rhiza run request-changes` sends named checks back to review.
+[step.signoff]
+kind = "signoff"
+max_visits = 3
+on.pass = "done"
+on.changes = "review"

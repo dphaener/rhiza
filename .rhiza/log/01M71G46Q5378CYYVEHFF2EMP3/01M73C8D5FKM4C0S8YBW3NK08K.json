@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M739PRWKZHR530BHWYGSFQ08"
+  ],
+  "at": "2026-11-10T18:41:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "3757085058c5fe293caca1778ad05da05b0ed855",
+          "pr": "https://github.com/dphaener/rhiza/pull/425",
+          "result": "11 checks passed: lint SUCCESS, go-install SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #425 (https://github.com/dphaener/rhiza/pull/425) passed CI at 3757085",
+          "status": "verified"
+        },
+        "handle": "pr-425-docs-sign-off-workflow",
+        "id": "01M73C8CZ3AGERDK3JQ2VSWHJY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73C8CZ3AGERDK3JPZM4M2HS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73C8CZ3AGERDK3JPZM4M2HS",
+        "id": "01M73C8CZS5D4RR628RYBJTZCH",
+        "link": "01M73C8CZS5D4RR628RX7BV6VD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7NY758150RA00YZ080MV",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M73C8CZ3AGERDK3JPZM4M2HS",
+        "id": "01M73C8D0C0SPM1T9XT9J77J50",
+        "link": "01M73C8D0C0SPM1T9XT5NFE803",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7P0PSQXY5RZ89TE5NV9W",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M73C8CZ3AGERDK3JPZM4M2HS",
+        "id": "01M73C8D1920WP4C0AT5CJGKJR",
+        "link": "01M73C8D1920WP4C0AT1PYYBXX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7P1XK0DKX0N1JXMP8T4B",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G46Q5378CYYVEHFF2EMP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73C8D5FKM4C0S8YBW3NK08K",
+  "type": "ops",
+  "v": 1
+}

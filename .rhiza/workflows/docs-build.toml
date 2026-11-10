@@ -1,0 +1,46 @@
+name = "docs-build"
+
+# The build step takes the change set's leaves one at a time, in leaf
+# order: a fresh builder session, then a fresh verifier session at the
+# builder's commit. A failed attempt goes to a fresh builder on the next
+# model of the ladder. Panes split along the longer side of the window.
+# The step passes when every leaf passed; it fails otherwise, and with
+# no on.fail the run fails.
+[step.build]
+kind = "leaves"
+split = "auto"
+on.pass = "render"
+
+# A builder passes only with a new commit whose Leaf: trailer names its
+# leaf.
+[step.build.builder]
+models = ["sonnet", "opus", "opus"]
+prompt = "/rhiza-build Build leaf {leaf} of change set {change} ({title}), attempt {attempt}, as the builder: follow `rhiza guide build`. End with exactly one new commit whose trailers name the change set, you and `Leaf: {leaf}`. Your very last action, once that commit is made, is to run `rhiza session done`: this run moves on only then, never because you sit idle. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge. This is a doc change: draft or revise every line of doc prose with the owner's humanize skill (load it with the Skill tool) before you commit, under constraints doc-prose-humanized and doc-examples-plain-commands: show model writes as plain `rhiza add`, `link` and `set` commands, never `rhiza apply` with a JSON file as a reader's first write. Generated reference tables are exempt."
+
+# A verifier works in a detached checkout at the builder's commit
+# ($RHIZA_COMMIT) and passes only with Evidence written as itself.
+[step.build.verifier]
+models = ["opus"]
+prompt = "/rhiza-build Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT, as the verifier: follow `rhiza guide build`. Never edit code. End with Evidence written as yourself that verifies {leaf}, or with findings recorded by `rhiza run findings --leaf {leaf}`, then run `rhiza session done` as your very last action. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+
+# Build's sessions register actors and write Evidence, which leaves
+# .rhiza/rendered stale. Render and commit the rendered folder on the
+# branch, with the .rhiza/log entries the sessions left uncommitted
+# (their actor records), so rhiza check passes on it; nothing to render
+# commits nothing.
+[step.render]
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
+  git commit -q -m 'Render after the build' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+"""
+on.pass = "check"
+
+# build-check: every leaf has Evidence by an actor who wrote none of its
+# commits. The run then ends done; the change set stays accepted, as
+# landing is left to the owner or a ship run.
+[step.check]
+kind = "command"
+run = "rhiza run build-check"

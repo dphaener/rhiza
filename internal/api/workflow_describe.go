@@ -18,7 +18,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "workflow.describe",
-		Summary:  "Show a workflow as run start resolves it: where it comes from, the layers it shadows, its start step, each step with its targets and roles, and the workflows it includes; starts nothing",
+		Summary:  "Show a workflow as run start resolves it: where it comes from, the layers it shadows, its start step, its declared autonomy, each step with its targets and roles, and the workflows it includes; starts nothing",
 		Request:  reflect.TypeFor[WorkflowDescribeRequest](),
 		Response: reflect.TypeFor[WorkflowDescribeResponse](),
 		Run:      runWorkflowDescribe,
@@ -54,6 +54,13 @@ type WorkflowDescribeResponse struct {
 	Start    string             `json:"start" desc:"The step a run enters first"`
 	Steps    []WorkflowStepView `json:"steps" desc:"Every step in order"`
 	Includes []string           `json:"includes" desc:"The workflows it includes, directly or through another, sorted"`
+	Autonomy []WorkflowAutonomy `json:"autonomy" desc:"The autonomy the workflow declares, by stage in order; a stage it leaves out follows rhiza.autonomy.<stage>; empty when it declares none"`
+}
+
+// WorkflowAutonomy is one stage's declared autonomy.
+type WorkflowAutonomy struct {
+	Stage string `json:"stage" desc:"plan, accept, ship or signoff"`
+	Mode  string `json:"mode" desc:"auto or owner"`
 }
 
 // Human writes the workflow as text.
@@ -65,6 +72,9 @@ func (r WorkflowDescribeResponse) Human(w io.Writer) {
 	fmt.Fprintf(w, "start %s\n", r.Start)
 	if len(r.Includes) > 0 {
 		fmt.Fprintf(w, "includes %s\n", strings.Join(r.Includes, ", "))
+	}
+	for _, a := range r.Autonomy {
+		fmt.Fprintf(w, "autonomy %s %s\n", a.Stage, a.Mode)
 	}
 	for _, s := range r.Steps {
 		fmt.Fprintf(w, "%s %s\n", s.Name, s.Kind)
@@ -147,7 +157,12 @@ func runWorkflowDescribe(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	out := WorkflowDescribeResponse{Name: def.Name, Path: path, Start: def.Start, Shadows: []WorkflowLayer{}, Steps: []WorkflowStepView{}, Includes: []string{}}
+	out := WorkflowDescribeResponse{Name: def.Name, Path: path, Start: def.Start, Shadows: []WorkflowLayer{}, Steps: []WorkflowStepView{}, Includes: []string{}, Autonomy: []WorkflowAutonomy{}}
+	for _, st := range workflow.AutonomyStages {
+		if m, ok := def.Autonomy(st); ok {
+			out.Autonomy = append(out.Autonomy, WorkflowAutonomy{Stage: st, Mode: m})
+		}
+	}
 	switch {
 	case isWorkflowPath(ref):
 		out.Layer = "file"

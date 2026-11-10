@@ -1,0 +1,29 @@
+{
+  "actor": "01M6TY2GF8R04H7R1ACFJCYMSD",
+  "after": [
+    "01M6TY2K3GXH5AXG9P7R4WQ2ZT"
+  ],
+  "at": "2026-11-07T12:00:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "People can tag a report."
+        },
+        "handle": "tags",
+        "id": "01M6TY2MC8MVZ1H5AXG69X6B7V",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6TY2MC8MVZ1H5AXG5VQ0BY9",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6TY2GF8R04H7R1ACREQ0EQ0",
+  "for": "01M6TY2GF8R04H7R1ACFJCYMSD",
+  "id": "01M6TY2MC8MVZ1H5AXG95WXKV2",
+  "type": "ops",
+  "v": 1
+}

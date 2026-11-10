@@ -977,6 +977,10 @@ cmp stdout describe.golden.json
           "title": {
             "description": "A short name for the change set, one line of at most 30 characters; default the intent's first clause",
             "type": "string"
+          },
+          "workflow": {
+            "description": "A workflow, by name, pinned to the change set: its ready pick is that workflow; default none (the dispatch rules choose)",
+            "type": "string"
           }
         },
         "required": [
@@ -1028,6 +1032,10 @@ cmp stdout describe.golden.json
           },
           "title": {
             "description": "The change set's title, else its intent's first clause",
+            "type": "string"
+          },
+          "workflow": {
+            "description": "The workflow pinned to the change set, if any",
             "type": "string"
           }
         },
@@ -1492,6 +1500,62 @@ cmp stdout describe.golden.json
       },
       "summary": "Set or clear the current change set",
       "write": false
+    },
+    {
+      "name": "change.workflow",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "clear": {
+            "description": "Clear the pin instead: the dispatch rules choose the workflow again",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "The workflow, by name, the change set's ready pick is; omit it with --clear",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "actor": {
+            "description": "Who wrote it",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "change_set": {
+            "description": "The change set",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The pin entry's ID; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "previous": {
+            "description": "The workflow pinned before, if any",
+            "type": "string"
+          },
+          "workflow": {
+            "description": "The workflow now pinned to the change set; absent when cleared",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_set"
+        ],
+        "type": "object"
+      },
+      "summary": "Pin a change set to a workflow, or clear the pin",
+      "write": true
     },
     {
       "name": "check",
@@ -25140,6 +25204,28 @@ cmp stdout describe.golden.json
       "response": {
         "additionalProperties": false,
         "properties": {
+          "autonomy": {
+            "description": "The autonomy the workflow declares, by stage in order; a stage it leaves out follows rhiza.autonomy.<stage>; empty when it declares none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "mode": {
+                  "description": "auto or owner",
+                  "type": "string"
+                },
+                "stage": {
+                  "description": "plan, accept, ship or signoff",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "mode",
+                "stage"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "includes": {
             "description": "The workflows it includes, directly or through another, sorted",
             "items": {
@@ -25248,6 +25334,7 @@ cmp stdout describe.golden.json
           }
         },
         "required": [
+          "autonomy",
           "includes",
           "layer",
           "name",
@@ -25258,7 +25345,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Show a workflow as run start resolves it: where it comes from, the layers it shadows, its start step, each step with its targets and roles, and the workflows it includes; starts nothing",
+      "summary": "Show a workflow as run start resolves it: where it comes from, the layers it shadows, its start step, its declared autonomy, each step with its targets and roles, and the workflows it includes; starts nothing",
       "write": false
     },
     {
