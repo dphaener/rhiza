@@ -1,0 +1,40 @@
+{
+  "actor": "01M7353PPXQQPBNH04YJCF1HQ5",
+  "after": [
+    "01M73501NSZNS5WTC68SBTQA7K"
+  ],
+  "at": "2026-11-10T16:41:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-7a553445 at 2aa167c9 with a scratch build (go build -trimpath ./cmd/rhiza) in a hermetic HOME and Rhiza root: rhiza init, a change set with leaf alpha, a code workflow (wait gate then command step rhiza run code-check), rhiza run start --foreground. In the run worktree a builder commit (Leaf: alpha) and verifier Evidence; baseline code-check passed. (a) Committed on the run branch a real log entry with v=5 (FormatVersion+1, id matching its file name): plain rhiza check exits 1 'fail log ...: entry: newer format: field \"v\": 5, this Rhiza reads 4'; rhiza run code-check exits 0 'code-check passed', and --json lists it under rule log at severity warn. (c) A branch-added corrupt (invalid JSON) entry: code-check exits 1 with cause 'rhiza check: fail log ... invalid JSON'. (b) The same v5 entry committed on main and merged into the branch, so it is at the merge-base: code-check exits 1 with cause 'rhiza check: fail log ... newer format', while the branch-added v5 entry still only warns. Then, with only the branch-added v5 entry, released the gate and rhiza run resume --foreground: step code passes and the run succeeds. Scoped tests: go test -trimpath ./internal/api -run TestCheck ok, ./internal/check/... ok, cmd/rhiza TestScripts/(review-code-check|describe-golden) ok (with GOTMPDIR outside the repo)."
+        },
+        "handle": "code-check-tolerates-branch-newer-format-qa-1",
+        "id": "01M735BFFRV31PKP6876SDP6GZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M735BFFRV31PKP68730CVN4V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M735BFFRV31PKP68730CVN4V",
+        "id": "01M735BFGR6C6G7AR3207GTSNH",
+        "link": "01M735BFGR6C6G7AR31Y3PS81R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M732H1JKD0T0FBRMTQN1RY33",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M732D2EZSS20MWDHZGG66BJ5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M735BFHFXAK97QD5CMF12M99",
+  "type": "ops",
+  "v": 1
+}
