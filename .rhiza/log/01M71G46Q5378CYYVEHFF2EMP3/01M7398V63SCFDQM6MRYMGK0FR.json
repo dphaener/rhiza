@@ -1,0 +1,86 @@
+{
+  "actor": "01M738ZT9W8NJM48GH259Z9J97",
+  "after": [
+    "01M7325VQ90XPM3086SGER8CKQ"
+  ],
+  "at": "2026-11-10T17:49:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 0e35c5a8 with the branch binary in a scratch Rhiza root and repo carrying this repo's docs workflows: change new 'Docs pass' --workflow docs --json printed \"workflow\": \"docs\" and change show --json showed it; run start --dry-run --permission-mode manual on it printed '- Workflow: docs' and '- Autonomy signoff: owner from workflow docs'; change new --workflow nonesuch exited 2 with 'no such workflow' and opened no change set; a plain change new carried no workflow; rhiza check passed after render (open entry stays format 4)."
+        },
+        "handle": "change-new-workflow-flag-qa-1",
+        "id": "01M7398TVBV2XE0WEN8W9TQFJE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7398TVBV2XE0WEN8SY3YBTC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7398TVBV2XE0WEN8SY3YBTC",
+        "id": "01M7398TX45WV93EK0SCWZ1SCA",
+        "link": "01M7398TX45WV93EK0SA8TDBZ1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7NY758150RA00YZ080MV",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 0e35c5a8 with the branch binary in a scratch repo: change workflow docs --dry-run said 'Would pin' and wrote nothing; change workflow docs pinned it (change show --json \"workflow\": \"docs\", run start --dry-run '- Workflow: docs'); change workflow --clear --json reported previous docs, change show lost the workflow and run start --dry-run fell back to ship-change (build/build); nonesuch, no name, and name plus --clear each exited 2 with clear messages; after propose/accept/land, change workflow --clear --change <it> exited 3 'is landed'; --json and api call change.workflow printed identical bytes; only pin entries are format 5; rhiza check passed."
+        },
+        "handle": "change-workflow-pin-qa-1",
+        "id": "01M7398TZDSG25VVSBCASF8760",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7398TZDSG25VVSBC7CS31P0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7398TZDSG25VVSBC7CS31P0",
+        "id": "01M7398V0FVXGF4QFBC8NB2XDP",
+        "link": "01M7398V0FVXGF4QFBC5YR4S3C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7P0PSQXY5RZ89TE5NV9W",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 0e35c5a8 with the branch binary in this repo: rhiza workflow check docs is valid; workflow describe docs shows 'autonomy signoff owner' (and --json autonomy [{stage signoff, mode owner}]), includes docs-build and docs-review; docs-build's builder and docs-review's fixer prompts name the humanize skill and the doc-prose-humanized / doc-examples-plain-commands constraints; change show --json of README and quickstart polish, Concepts polish and Agents and runs docs polish each shows workflow docs; make self-check passes in a clean worktree at HEAD."
+        },
+        "handle": "docs-signoff-workflow-qa-1",
+        "id": "01M7398V2HMGJ7A150RSSV8KDP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7398V2HMGJ7A150RSGTVYBY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7398V2HMGJ7A150RSGTVYBY",
+        "id": "01M7398V45K7MFW2K6KKCHYH88",
+        "link": "01M7398V45K7MFW2K6KGJQQRQA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7P1XK0DKX0N1JXMP8T4B",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G46Q5378CYYVEHFF2EMP3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7398V63SCFDQM6MRYMGK0FR",
+  "type": "ops",
+  "v": 1
+}
