@@ -233,6 +233,9 @@ func genLog(t *rapid.T) fstest.MapFS {
 			if typ == entry.TypeReopen {
 				e.V = 3
 			}
+			if typ == entry.TypePin {
+				e.V = 5
+			}
 			b, err := entry.Encode(e)
 			if err != nil {
 				t.Fatal(err)

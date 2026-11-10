@@ -1,0 +1,68 @@
+# change workflow pins a draft change set to a workflow, as change new
+# --workflow does: change show --json records it and run start --dry-run
+# picks it. --clear returns it to the dispatch rules. An unknown name and a
+# landed change set are refused.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/docs.toml .rhiza/workflows/docs.toml
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Docs pass' --json
+! stdout '"workflow"'
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cs'
+
+! exec rhiza change workflow nonesuch
+! stdout .
+stderr 'no such workflow'
+! exec rhiza change workflow
+stderr 'name a workflow'
+! exec rhiza change workflow docs --clear
+stderr 'not both'
+exec rhiza change show --json
+! stdout '"workflow"'
+
+exec rhiza change workflow docs --dry-run
+stdout 'Would pin'
+exec rhiza change show --json
+! stdout '"workflow"'
+
+exec rhiza change workflow docs --json
+stdout '"workflow": "docs"'
+exec rhiza change show --json
+stdout '"workflow": "docs"'
+exec sh -c 'rhiza run start --dry-run $(cat $WORK/cs)'
+stdout '^- Workflow: docs$'
+fold-ok
+
+exec rhiza change workflow --clear --json
+stdout '"previous": "docs"'
+! stdout '"workflow": "docs",'
+exec rhiza change show --json
+! stdout '"workflow"'
+! exec sh -c 'rhiza run start --dry-run $(cat $WORK/cs)'
+! stdout '^- Workflow: docs$'
+stderr 'leaves step'
+fold-ok
+
+exec rhiza change workflow docs
+stdout 'Pinned change set'
+exec rhiza change show --json
+stdout '"workflow": "docs"'
+exec rhiza propose
+exec rhiza accept
+exec rhiza land
+! exec sh -c 'rhiza change workflow --clear --change $(cat $WORK/cs)'
+stderr 'landed'
+fold-ok
+-- docs.toml --
+name = "docs"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"

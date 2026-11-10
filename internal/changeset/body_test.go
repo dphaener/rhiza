@@ -107,6 +107,9 @@ func golden(t testing.TB) []struct {
 		{entry.TypeNote, `{
   "text": "Line one\nline \"two\""
 }`, Note{Text: "Line one\nline \"two\""}},
+		{entry.TypePin, `{
+  "workflow": "docs"
+}`, Pin{Workflow: "docs"}},
 	}
 }
 
@@ -598,8 +601,8 @@ func TestCarveNeedsFormat2(t *testing.T) {
 
 func TestVersionsWithoutCarve(t *testing.T) {
 	for _, g := range golden(t) {
-		if g.typ == entry.TypeReopen {
-			continue // format 3 only; see TestReopenNeedsFormat3
+		if g.typ == entry.TypeReopen || g.typ == entry.TypePin {
+			continue // format 3 and 5 only; see TestReopenNeedsFormat3, TestPinNeedsFormat5
 		}
 		for _, v := range []int{1, 2, 3} {
 			b, err := DecodeBody(entry.Entry{V: v, Type: g.typ, Body: json.RawMessage(g.doc)})
@@ -649,6 +652,33 @@ func TestReopenNeedsFormat3(t *testing.T) {
   "x": 1
 }`)})
 	checkErr(t, err, "x", nil)
+}
+
+func TestPinNeedsFormat5(t *testing.T) {
+	doc := json.RawMessage(`{
+  "workflow": "docs"
+}`)
+	for _, canonical := range []bool{false, true} {
+		for _, v := range []int{1, 2, 3, 4} {
+			_, err := decodeBody(entry.Entry{V: v, Type: entry.TypePin, Body: doc}, canonical)
+			checkErr(t, err, "type", nil)
+		}
+		b, err := decodeBody(entry.Entry{V: 5, Type: entry.TypePin, Body: doc}, canonical)
+		if err != nil || b != (Pin{Workflow: "docs"}) {
+			t.Fatalf("v5 pin = %#v, %v", b, err)
+		}
+	}
+	for _, w := range []string{"a/b", "x.toml", "..", "a b"} {
+		if err := (Pin{Workflow: w}).Validate(); err == nil {
+			t.Errorf("Pin{%q} validated", w)
+		}
+	}
+	if err := (Pin{}).Validate(); err != nil {
+		t.Errorf("empty pin: %v", err)
+	}
+	if got := EntryVersion(Pin{}); got != 5 {
+		t.Errorf("EntryVersion(Pin) = %d, want 5", got)
+	}
 }
 
 // setCarve sets fields on an ops body's carve object.
@@ -738,7 +768,7 @@ func TestCarveInvalid(t *testing.T) {
 // of them.
 func TestDecodeBodyCanonicalMatches(t *testing.T) {
 	for _, g := range golden(t) {
-		e := entry.Entry{V: 3, Type: g.typ, Body: json.RawMessage(g.doc)}
+		e := entry.Entry{V: 5, Type: g.typ, Body: json.RawMessage(g.doc)}
 		want, err := DecodeBody(e)
 		if err != nil {
 			t.Fatalf("%s: %v", g.typ, err)

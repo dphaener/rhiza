@@ -666,3 +666,78 @@ func TestChangeShowLeavesLanded(t *testing.T) {
 		t.Errorf("leaves after retire = %v", got)
 	}
 }
+
+// TestChangeWorkflow pins a draft change set to a workflow, clears the pin,
+// and refuses an unknown name, both or neither of name and --clear, and a
+// landed change set.
+func TestChangeWorkflow(t *testing.T) {
+	ctx := initCtx(t)
+	common := t.TempDir()
+	ctx.Git = func(args ...string) (string, error) { return common + "\n", nil }
+	dir := filepath.Join(ctx.Root, filepath.FromSlash(workflowsDir))
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "docs.toml"), []byte("name = \"docs\"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	cs := newChange(t, ctx, `{"intent":"Docs pass","kind":"record"}`).ChangeSet
+	shown := func() string {
+		t.Helper()
+		resp, err := callOp(t, ctx, "change.show", `{}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return resp.(ChangeShowResponse).Workflow
+	}
+
+	for _, req := range []string{`{"name":"nonesuch"}`, `{}`, `{"name":"docs","clear":true}`} {
+		_, err := callOp(t, ctx, "change.workflow", req)
+		wantExit(t, err, 2)
+	}
+	if got := shown(); got != "" {
+		t.Fatalf("workflow after refusals = %q, want none", got)
+	}
+
+	ctx.DryRun = true
+	resp, err := callOp(t, ctx, "change.workflow", `{"name":"docs"}`)
+	ctx.DryRun = false
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := resp.(ChangeWorkflowResponse); !r.DryRun || !r.Entry.IsZero() {
+		t.Fatalf("dry run response = %+v", r)
+	}
+	if got := shown(); got != "" {
+		t.Fatalf("workflow after dry run = %q, want none", got)
+	}
+
+	resp, err = callOp(t, ctx, "change.workflow", `{"name":"docs"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := resp.(ChangeWorkflowResponse); r.ChangeSet != cs || r.Workflow != "docs" || r.Entry.IsZero() {
+		t.Fatalf("pin response = %+v", r)
+	}
+	if got := shown(); got != "docs" {
+		t.Fatalf("workflow after pin = %q, want docs", got)
+	}
+
+	resp, err = callOp(t, ctx, "change.workflow", `{"clear":true}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := resp.(ChangeWorkflowResponse); r.Previous != "docs" || r.Workflow != "" {
+		t.Fatalf("clear response = %+v", r)
+	}
+	if got := shown(); got != "" {
+		t.Fatalf("workflow after clear = %q, want none", got)
+	}
+
+	if _, err := callOp(t, ctx, "land", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	ctx.ChangeSet = cs
+	_, err = callOp(t, ctx, "change.workflow", `{"name":"docs"}`)
+	wantExit(t, err, 3)
+}

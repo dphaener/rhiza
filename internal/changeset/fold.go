@@ -614,6 +614,11 @@ func (f *folder) apply(out *ChangeSet, rev *revision, n *node) error {
 		}
 		out.State = StateAccepted
 		out.TerminalEntry = id.ID{}
+	case Pin:
+		if !from.inFlight() {
+			return transition(n.e.Type, from)
+		}
+		out.Open.Workflow = b.Workflow
 	case Note:
 	}
 	return nil

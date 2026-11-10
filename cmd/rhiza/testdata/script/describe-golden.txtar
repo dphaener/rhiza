@@ -1502,6 +1502,62 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "change.workflow",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "clear": {
+            "description": "Clear the pin instead: the dispatch rules choose the workflow again",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "The workflow, by name, the change set's ready pick is; omit it with --clear",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "actor": {
+            "description": "Who wrote it",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "change_set": {
+            "description": "The change set",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The pin entry's ID; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "previous": {
+            "description": "The workflow pinned before, if any",
+            "type": "string"
+          },
+          "workflow": {
+            "description": "The workflow now pinned to the change set; absent when cleared",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_set"
+        ],
+        "type": "object"
+      },
+      "summary": "Pin a change set to a workflow, or clear the pin",
+      "write": true
+    },
+    {
       "name": "check",
       "request": {
         "additionalProperties": false,

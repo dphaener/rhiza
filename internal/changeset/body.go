@@ -7,8 +7,8 @@
 //     is never edited in place; everything that happens to it is appended to
 //     the log as an entry naming that ID.
 //   - An entry is one appended fact about a change set: its envelope (see
-//     package entry) plus a typed body. There are ten entry types: open,
-//     ops, propose, accept, reject, withdraw, supersede, land, reopen and
+//     package entry) plus a typed body. There are eleven entry types: open,
+//     ops, propose, accept, reject, withdraw, supersede, land, reopen, pin and
 //     note.
 //   - An operation (see package op) is one change to the model. An ops entry
 //     carries operations and the IDs of operations it drops.
@@ -45,7 +45,8 @@
 // entry is still written as format 1. A reopen body needs format 3, the
 // first with a reopen entry: DecodeBody refuses one in an earlier format.
 // An open body's ref, request_kind and workflow need format 4; in an earlier
-// format they are unknown fields.
+// format they are unknown fields. A pin body needs format 5, the first with
+// a pin entry: DecodeBody refuses one in an earlier format.
 package changeset
 
 import (
@@ -190,6 +191,14 @@ type Land struct{}
 // back to accepted.
 type Reopen struct{}
 
+// Pin is the body of a pin entry: {workflow}. It sets the workflow the change
+// set's ready pick names, replacing the one its open entry or an earlier pin
+// gave; an empty workflow clears it, back to the dispatch rules. It needs
+// format 5.
+type Pin struct {
+	Workflow string
+}
+
 // Note is the body of a note entry: {text}.
 type Note struct {
 	Text string
@@ -205,6 +214,7 @@ func (Supersede) Type() entry.Type { return entry.TypeSupersede }
 func (Land) Type() entry.Type      { return entry.TypeLand }
 func (Reopen) Type() entry.Type    { return entry.TypeReopen }
 func (Note) Type() entry.Type      { return entry.TypeNote }
+func (Pin) Type() entry.Type       { return entry.TypePin }
 
 // shapes lists each entry type's body fields in the order DecodeBody checks
 // them.
@@ -219,6 +229,7 @@ var shapes = map[entry.Type][]string{
 	entry.TypeLand:      {},
 	entry.TypeReopen:    {},
 	entry.TypeNote:      {"text"},
+	entry.TypePin:       {"workflow"},
 }
 
 // carveShape lists a carve's fields in the order DecodeBody checks them;
@@ -230,6 +241,8 @@ var carveShape = []string{"entry", "from", "to"}
 // 1 for every other body. A writer stamps it as the entry's v.
 func EntryVersion(b Body) int {
 	switch b := b.(type) {
+	case Pin:
+		return 5
 	case Reopen:
 		return 3
 	case Ops:
@@ -418,6 +431,18 @@ func (Land) Validate() error { return nil }
 // Validate always succeeds: a reopen body has no fields.
 func (Reopen) Validate() error { return nil }
 
+// Validate reports the first rule p breaks: the workflow is empty or a bare
+// name, as an open body's is.
+func (p Pin) Validate() error { return validWorkflowName(p.Workflow) }
+
+// validWorkflowName checks a workflow name: empty (none) or a bare name.
+func validWorkflowName(w string) error {
+	if w != "" && (strings.ContainsAny(w, "/\\ \t\r\n") || w == "." || w == ".." || strings.HasSuffix(w, ".toml")) {
+		return invalid("workflow", "%q is not a bare workflow name", w)
+	}
+	return text("workflow", w, false)
+}
+
 // Validate reports the first rule n breaks.
 func (n Note) Validate() error { return text("text", n.Text, true) }
 
@@ -454,6 +479,8 @@ func EncodeBody(b Body) (json.RawMessage, error) {
 		if b.Ref != "" {
 			m["ref"] = b.Ref
 		}
+	case Pin:
+		m = map[string]any{"workflow": b.Workflow}
 	case Ops:
 		ops := make([]json.RawMessage, 0, len(b.Ops))
 		for i, x := range b.Ops {
@@ -517,6 +544,9 @@ func decodeBody(e entry.Entry, canonical bool) (Body, error) {
 	}
 	if e.Type == entry.TypeReopen && e.V < 3 {
 		return nil, invalid("type", "%q needs format 3, entry is format %d", e.Type, e.V)
+	}
+	if e.Type == entry.TypePin && e.V < 5 {
+		return nil, invalid("type", "%q needs format 5, entry is format %d", e.Type, e.V)
 	}
 	data := []byte(e.Body)
 	if !canonical {
@@ -594,6 +624,12 @@ func decodeBody(e entry.Entry, canonical bool) (Body, error) {
 		b = Land{}
 	case entry.TypeReopen:
 		b = Reopen{}
+	case entry.TypePin:
+		var s string
+		if s, err = str(fields["workflow"]); err != nil {
+			return nil, invalidWrap("workflow", err)
+		}
+		b = Pin{Workflow: s}
 	case entry.TypeNote:
 		var s string
 		if s, err = str(fields["text"]); err != nil {

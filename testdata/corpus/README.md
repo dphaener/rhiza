@@ -24,6 +24,8 @@ format-3/
   <case>/        (same layout)
 format-4/
   <case>/        (same layout)
+format-5/
+  <case>/        (same layout)
 ```
 
 ## Rules
@@ -41,7 +43,7 @@ format-4/
 `internal/store/corpus_test.go` opens every case, reads its log and expects
 zero problems, checks every `.json` file is canonical, and checks that every
 entry type is used by some case of the earliest format that has it: reopen
-in format 3, every other type in format 1.
+in format 3, pin in format 5, every other type in format 1.
 
 Format 2 adds the optional `carve` field on an ops entry. Only carve entries
 are written as v2; every other entry in a format-2 case is still v1, as in a
@@ -55,6 +57,11 @@ Format 4 adds the optional `ref` field on an open entry: an opaque external
 reference, such as an issue URL. Only an open with a ref is written as v4;
 the format-4 case opens one change set with a ref and lands it, and every
 other entry in it is v1.
+
+Format 5 adds the pin entry type, which sets or clears the workflow a change
+set's ready pick names. Only pin entries are written as v5; the format-5
+case pins a change set to a workflow and lands it, and every other entry in
+it is v1.
 
 `internal/changeset/corpus_test.go` folds every case with
 `changeset.FoldLog`, expects zero problems, and checks each change set's

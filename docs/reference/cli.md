@@ -34,6 +34,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza change new`](#rhiza-change-new)
 - [`rhiza change show`](#rhiza-change-show)
 - [`rhiza change use`](#rhiza-change-use)
+- [`rhiza change workflow`](#rhiza-change-workflow)
 - [`rhiza check`](#rhiza-check)
 - [`rhiza ci install`](#rhiza-ci-install)
 - [`rhiza daemon`](#rhiza-daemon)
@@ -397,6 +398,30 @@ Output (`--json` fields):
 - `change_set` (string): The current change set; absent when cleared
 - `dry_run` (boolean): True if the current change set was left unchanged
 - `intent` (string): Its intent
+
+## rhiza change workflow
+
+Pin a change set to a workflow, or clear the pin.
+
+```
+rhiza change workflow [<name>] [--clear]
+```
+
+Appends to the log.
+
+Arguments and flags:
+
+- `<name>`: The workflow, by name, the change set's ready pick is; omit it with --clear
+- `--clear`: Clear the pin instead: the dispatch rules choose the workflow again
+
+Output (`--json` fields):
+
+- `actor` (string): Who wrote it
+- `change_set` (string): The change set
+- `dry_run` (boolean): True if nothing was written
+- `entry` (string): The pin entry's ID; absent in a dry run
+- `previous` (string): The workflow pinned before, if any
+- `workflow` (string): The workflow now pinned to the change set; absent when cleared
 
 ## rhiza check
 

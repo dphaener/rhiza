@@ -31,7 +31,7 @@ import (
 
 // FormatVersion is the newest entry format this package reads and writes.
 // Every format from 1 through FormatVersion is read and written.
-const FormatVersion = 4
+const FormatVersion = 5
 
 // ErrInvalid is wrapped by every error for an entry that is not a valid
 // entry of a format from 1 through FormatVersion.
@@ -45,8 +45,8 @@ var ErrNewerFormat = errors.New("entry: newer format")
 // Type names what an entry records.
 type Type string
 
-// The ten entry types. Every format has all of them but reopen, which
-// format 3 adds.
+// The eleven entry types. Every format has all of them but reopen, which
+// format 3 adds, and pin, which format 5 adds.
 const (
 	TypeOpen      Type = "open"
 	TypeOps       Type = "ops"
@@ -58,11 +58,12 @@ const (
 	TypeLand      Type = "land"
 	TypeReopen    Type = "reopen"
 	TypeNote      Type = "note"
+	TypePin       Type = "pin"
 )
 
-// Types returns the ten entry types in their documented order.
+// Types returns the eleven entry types in their documented order.
 func Types() []Type {
-	return []Type{TypeOpen, TypeOps, TypePropose, TypeAccept, TypeReject, TypeWithdraw, TypeSupersede, TypeLand, TypeReopen, TypeNote}
+	return []Type{TypeOpen, TypeOps, TypePropose, TypeAccept, TypeReject, TypeWithdraw, TypeSupersede, TypeLand, TypeReopen, TypeNote, TypePin}
 }
 
 // timeLayout is how at is spelled: RFC 3339 in UTC, to the second, with Z.
@@ -140,6 +141,9 @@ func (e Entry) validate(canonical bool) error {
 	}
 	if e.Type == TypeReopen && e.V < 3 {
 		return invalid("type", "%q needs format 3, entry is format %d", e.Type, e.V)
+	}
+	if e.Type == TypePin && e.V < 5 {
+		return invalid("type", "%q needs format 5, entry is format %d", e.Type, e.V)
 	}
 	if len(e.Body) == 0 || e.Body[0] != '{' {
 		return invalid("body", "not an object")
