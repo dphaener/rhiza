@@ -1,0 +1,151 @@
+{
+  "actor": "01M71E75QHR2FVDPHXKWJ92RT1",
+  "after": [
+    "01M71G37HNAR1PZ223AQ9ZZKQR"
+  ],
+  "at": "2026-11-10T01:10:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "some of the examples are a little rough (using giant json blobs in cli commands, etc) and it doesn't look like it was all humanized using my voice",
+          "statement": "Polish the docs: examples show plain commands, not JSON blobs, and the prose reads in the owner's voice"
+        },
+        "handle": "m31-polish-request",
+        "id": "01M71G3TJG51NBQMDH6ZMV749K",
+        "key": null,
+        "kind": "decision",
+        "node": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "id": "01M71G3TKD7ZWSZDCH768T0A5Y",
+        "link": "01M71G3TKD7ZWSZDCH729XQ97X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G37GPD4RWWNN6JNBF8HJC",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "milestone": 31,
+          "statement": "Rhiza's docs read like the owner wrote them: every human-facing page is in the owner's voice and signed off by the owner, examples show plain CLI commands instead of JSON blobs, and the CLI help behind the generated reference is plain and consistent."
+        },
+        "handle": "milestone-31",
+        "id": "01M71G3TMR6DA0HHP3HCH8W0HW",
+        "key": "zzzzzzy",
+        "kind": "intent",
+        "node": "01M71G3TMR6DA0HHP3HBRYJXY8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M71G3TMR6DA0HHP3HBRYJXY8",
+        "id": "01M71G3TN93PF17Z0DH1V6TWJ2",
+        "link": "01M71G3TN93PF17Z0DGYHKN20J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A repo workflow named docs builds doc change sets with an owner sign-off before merge, and a change set can be pinned to a workflow from rhiza change new or on an existing draft."
+        },
+        "handle": "m31-signoff",
+        "id": "01M71G3TNY03RA8G3QN5YGK59Z",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M71G3TNY03RA8G3QN580VGKM",
+        "op": "node.create",
+        "parent": "01M71G3TMR6DA0HHP3HBRYJXY8"
+      },
+      {
+        "fields": {
+          "statement": "The README, quickstart, concepts pages and the agents, runs and custom-workflows pages are rewritten in the owner's voice, signed off by the owner, with every write shown as plain rhiza add/link/set commands."
+        },
+        "handle": "m31-pages",
+        "id": "01M71G3TPTED39B48HDJN20BZ9",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M71G3TPTED39B48HDF3GJW3C",
+        "op": "node.create",
+        "parent": "01M71G3TMR6DA0HHP3HBRYJXY8"
+      },
+      {
+        "fields": {
+          "statement": "The desc tags behind rhiza --help and docs/reference read plainly and consistently: one style for command, argument and flag descriptions."
+        },
+        "handle": "m31-cli-help",
+        "id": "01M71G3TQPV367NGTFXHWDXB7V",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M71G3TQPV367NGTFXH22DR2X",
+        "op": "node.create",
+        "parent": "01M71G3TMR6DA0HHP3HBRYJXY8"
+      },
+      {
+        "decision": null,
+        "from": "01M71G3TNY03RA8G3QN580VGKM",
+        "id": "01M71G3TRFBR1E5VEX9Y0NQE12",
+        "link": "01M71G3TRFBR1E5VEX9WS4TTPD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M71G3TPTED39B48HDF3GJW3C",
+        "id": "01M71G3TRZ1ZWE5FZS5PJE9SJW",
+        "link": "01M71G3TRZ1ZWE5FZS5NK18P8S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M71G3TQPV367NGTFXH22DR2X",
+        "id": "01M71G3TSG4WBQ0ZNS3DYAYC8Y",
+        "link": "01M71G3TSG4WBQ0ZNS3CR2AXKD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Human-facing docs show model writes as plain rhiza add, link and set commands; rhiza apply with a JSON file appears only as the batch and agent path, never as the way a reader first writes the model."
+        },
+        "handle": "doc-examples-plain-commands",
+        "id": "01M71G3TTGGGQNMKEKKRWK0M71",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M71G3TTGGGQNMKEKKNVVRV0R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M71G3TTGGGQNMKEKKNVVRV0R",
+        "id": "01M71G3TVXZ04K2DGPZ2GRMKMV",
+        "link": "01M71G3TVXZ04K2DGPYYNHF5Z2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G37GPD4RWWNN6JNBF8HJC",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M71E6H2N1CYFN0F2NGAWWBG8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71G3TWT8CN83255J1E662NW",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M71E75QHR2FVDPHXKWJ92RT1",
+  "after": [
+    "01M71G4RTMS00MVHJ8DD53C52A"
+  ],
+  "at": "2026-11-10T01:12:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test over the registry fails on a description breaking the style's mechanical rules (capital first letter, no trailing period, defaults written as '; default <x>'), describe-golden is regenerated and TestScripts/describe-golden passes, rhiza docs output is regenerated and go test ./cmd/rhiza -run 'TestScripts/docs-reference' passes",
+          "statement": "Every command, argument and flag description (the desc tags of the request structs) follows one plain style: a capitalised sentence with no trailing period, saying what it does in everyday words, with defaults and choices in one consistent form, so rhiza --help and the generated docs/reference read alike"
+        },
+        "handle": "cli-help-style",
+        "id": "01M71G7R77J51ATRS08M04H34J",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M71G7R77J51ATRS08H1X485G",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M71G7R77J51ATRS08H1X485G",
+        "id": "01M71G7R7XTGFBWS26YXBX0EWK",
+        "link": "01M71G7R7XTGFBWS26YXB0B9A9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M71G4RTMS00MVHJ8D9WMD273",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71G7R8FN38HW5R57D2VC19S",
+  "type": "ops",
+  "v": 1
+}

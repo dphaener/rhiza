@@ -1,0 +1,86 @@
+{
+  "actor": "01M71E75QHR2FVDPHXKWJ92RT1",
+  "after": [
+    "01M71G4MMC4VGT41WVM4WGXS4Y"
+  ],
+  "at": "2026-11-10T01:12:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test ./cmd/rhiza -run 'TestScripts/docs-' passes and the owner approves the page at the run's sign-off",
+          "statement": "docs/agents.md reads in the owner's voice and shows model writes as plain rhiza add, link or set commands"
+        },
+        "handle": "agents-doc-voice",
+        "id": "01M71G7QJ4GW14BQ3D4ARDMQX9",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M71G7QJ4GW14BQ3D485XGYZ1",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M71G7QJ4GW14BQ3D485XGYZ1",
+        "id": "01M71G7QJY76WNF002KW3BJB0J",
+        "link": "01M71G7QJY76WNF002KVYQTP9V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test ./cmd/rhiza -run 'TestScripts/docs-' passes and the owner approves the page at the run's sign-off",
+          "statement": "docs/runs-and-daemon.md reads in the owner's voice, and its examples prefer plain commands (rhiza run send-back --note over a findings JSON file where either works)"
+        },
+        "handle": "runs-daemon-doc-voice",
+        "id": "01M71G7QMC5NKK7T0TNMSYBH49",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M71G7QMC5NKK7T0TNKBPKFQ7",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M71G7QMC5NKK7T0TNKBPKFQ7",
+        "id": "01M71G7QNDJ64H087F5CY2W911",
+        "link": "01M71G7QNDJ64H087F5AJQT69V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test ./cmd/rhiza -run 'TestScripts/custom-workflows-doc|TestScripts/docs-' passes and the owner approves the page at the run's sign-off",
+          "statement": "docs/custom-workflows.md reads in the owner's voice, its commands still run, and it mentions pinning one change set to a workflow with change new --workflow and the pin command"
+        },
+        "handle": "custom-workflows-doc-voice",
+        "id": "01M71G7QP4AN4V4DF7GDBNEQ0J",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M71G7QP4AN4V4DF7G9S8R1SA",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M71G7QP4AN4V4DF7G9S8R1SA",
+        "id": "01M71G7QPV421ARFW2Q9EK1E6K",
+        "link": "01M71G7QPV421ARFW2Q6D19DM9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M71G4MMC4VGT41WVM4A33ZWM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71G7QQR5V0WRGXH1WCJRRM8",
+  "type": "ops",
+  "v": 1
+}

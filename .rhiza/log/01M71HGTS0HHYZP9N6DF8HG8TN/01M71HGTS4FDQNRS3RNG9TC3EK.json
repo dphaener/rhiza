@@ -1,0 +1,62 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M71HGTS0HHYZP9N6DHCFYDS9"
+  ],
+  "at": "2026-11-10T01:35:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "question": "The docs polish plan is stopped on one review question. The milestone's done point says every write in the docs is shown as a plain rhiza add/link/set command, but the agent guide keeps `rhiza apply <file>` for agents writing in batches. How should it read?",
+          "statement": "The docs show a person's writes as plain rhiza add/link/set commands; rhiza apply with a file stays only as the batch and agent path, as @{01M71G3TTGGGQNMKEKKNVVRV0R} says",
+          "wording": "People plain, apply for agents: a person's writes are shown as plain add/link/set commands, rhiza apply with a file stays only as the batch and agent path. Picked by the owner from the orchestrator's options"
+        },
+        "handle": "m31-writes-people-plain",
+        "id": "01M71HGTM0357YJCRJBV5X3Z6M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M71HGTM0357YJCRJBRNNV40A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M71HGTM0357YJCRJBRNNV40A",
+        "id": "01M71HGTN0T8Q3JAAYMQM6V5HW",
+        "link": "01M71HGTN0T8Q3JAAYMPRKZNHA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71HBAE37M7Z736T7940NHP2",
+        "type": "answers"
+      },
+      {
+        "base": "01M71G3TPTED39B48HDJN20BZ9",
+        "handle": null,
+        "id": "01M71HGTP2AV0JQZZSWT8P0SYB",
+        "node": "01M71G3TPTED39B48HDF3GJW3C",
+        "op": "node.update",
+        "set": {
+          "statement": "The README, quickstart, concepts pages and the agents, runs and custom-workflows pages are rewritten in the owner's voice, signed off by the owner, with a person's writes shown as plain rhiza add/link/set commands and rhiza apply only as the batch and agent path."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M71G3TPTED39B48HDF3GJW3C",
+        "id": "01M71HGTPSRC5QVAZKM4PCGS01",
+        "link": "01M71HGTPSRC5QVAZKM2JPCTBN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71HGTM0357YJCRJBRNNV40A",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M71HGTS0HHYZP9N6DF8HG8TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71HGTS4FDQNRS3RNG9TC3EK",
+  "type": "ops",
+  "v": 1
+}

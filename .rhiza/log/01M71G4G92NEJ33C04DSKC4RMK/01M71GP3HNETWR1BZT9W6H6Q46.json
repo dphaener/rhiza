@@ -1,0 +1,56 @@
+{
+  "actor": "01M71GMFW2C8P4RHS7S63J4B8E",
+  "after": [
+    "01M71G7Q4RVRJJZXKGD8K1M37G"
+  ],
+  "at": "2026-11-10T01:20:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/doclinks/... passes (no broken relative link in the real README.md and docs/) and make self-check passes (rhiza check's docs-commands rule finds no rhiza command in README.md or docs/ that does not exist), and the owner approves docs/concepts/model.md at the run's sign-off",
+          "statement": "docs/concepts/model.md reads in the owner's voice and shows any model write as plain rhiza add, link or set commands"
+        },
+        "handle": "concepts-model-voice",
+        "id": "01M71G7Q16ZYKM7C53RYKMEHTQ",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M71G7Q16ZYKM7C53RTWJF5AG",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/doclinks/... passes (no broken relative link in the real README.md and docs/) and make self-check passes (rhiza check's docs-commands rule finds no rhiza command in README.md or docs/ that does not exist), and the owner approves docs/concepts/change-sets.md at the run's sign-off",
+          "statement": "docs/concepts/change-sets.md reads in the owner's voice and shows any model write as plain rhiza add, link or set commands"
+        },
+        "handle": "concepts-change-sets-voice",
+        "id": "01M71G7Q2AXY67KQS8MQ30T1M1",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M71G7Q2AXY67KQS8MP979WZW",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/doclinks/... passes (no broken relative link in the real README.md and docs/) and make self-check passes (rhiza check's docs-commands rule finds no rhiza command in README.md or docs/ that does not exist), docs/concepts/why.md contains no {\"writes\" JSON, and the owner approves the page at the run's sign-off",
+          "statement": "docs/concepts/why.md reads in the owner's voice and writes the decision and its link with plain rhiza add and rhiza link commands instead of an apply JSON file; the Source example keeps a short JSON file because rhiza source add only takes one, trimmed to the fewest lines"
+        },
+        "handle": "concepts-why-voice",
+        "id": "01M71G7Q3G8SDGPGR4W9764E4W",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M71G7Q3G8SDGPGR4W6ZEQBSV",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      }
+    ]
+  },
+  "change_set": "01M71G4G92NEJ33C04DSKC4RMK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71GP3HNETWR1BZT9W6H6Q46",
+  "type": "ops",
+  "v": 1
+}

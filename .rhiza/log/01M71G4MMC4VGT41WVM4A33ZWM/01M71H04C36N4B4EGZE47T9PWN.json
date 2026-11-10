@@ -1,0 +1,30 @@
+{
+  "actor": "01M71GY5GHCVVTYW6NXRQQFZ0R",
+  "after": [
+    "01M71GP3VANNNMH87DWN1FKY6N"
+  ],
+  "at": "2026-11-10T01:26:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/doclinks/... passes (no broken relative link in the real README.md and docs/) and make self-check passes (rhiza check's docs-commands rule finds no rhiza command in README.md or docs/ that does not exist), grep finds 'rhiza apply' in the agent loop's write-back step of docs/agents.md, and the owner approves docs/agents.md at the run's sign-off",
+          "statement": "docs/agents.md reads in the owner's voice; its agent loop keeps writing back with one rhiza apply <file> --json, the batch and agent path that constraint doc-examples-plain-commands and the rhiza skill prescribe, and only an example of a person writing the model by hand uses plain rhiza add, link or set commands"
+        },
+        "handle": "agents-doc-voice",
+        "id": "01M71G7QJ4GW14BQ3D4ARDMQX9",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M71G7QJ4GW14BQ3D485XGYZ1",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      }
+    ]
+  },
+  "change_set": "01M71G4MMC4VGT41WVM4A33ZWM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71H04C36N4B4EGZE47T9PWN",
+  "type": "ops",
+  "v": 1
+}

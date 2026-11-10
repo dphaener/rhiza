@@ -1,0 +1,86 @@
+{
+  "actor": "01M71E75QHR2FVDPHXKWJ92RT1",
+  "after": [
+    "01M71G4G92NEJ33C04DTD04NDV"
+  ],
+  "at": "2026-11-10T01:12:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test ./cmd/rhiza -run 'TestScripts/docs-' passes and the owner approves the page at the run's sign-off",
+          "statement": "docs/concepts/model.md reads in the owner's voice and shows any model write as plain rhiza add, link or set commands"
+        },
+        "handle": "concepts-model-voice",
+        "id": "01M71G7Q16ZYKM7C53RYKMEHTQ",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M71G7Q16ZYKM7C53RTWJF5AG",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M71G7Q16ZYKM7C53RTWJF5AG",
+        "id": "01M71G7Q1RKP3D61C3VC31XA42",
+        "link": "01M71G7Q1RKP3D61C3V8H02EE6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test ./cmd/rhiza -run 'TestScripts/docs-' passes and the owner approves the page at the run's sign-off",
+          "statement": "docs/concepts/change-sets.md reads in the owner's voice and shows any model write as plain rhiza add, link or set commands"
+        },
+        "handle": "concepts-change-sets-voice",
+        "id": "01M71G7Q2AXY67KQS8MQ30T1M1",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M71G7Q2AXY67KQS8MP979WZW",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M71G7Q2AXY67KQS8MP979WZW",
+        "id": "01M71G7Q2Y0FRKQ7WCPDH53NJ0",
+        "link": "01M71G7Q2Y0FRKQ7WCPCP0C347",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test ./cmd/rhiza -run 'TestScripts/docs-' passes, docs/concepts/why.md contains no {\"writes\" JSON, and the owner approves the page at the run's sign-off",
+          "statement": "docs/concepts/why.md reads in the owner's voice and writes the decision and its link with plain rhiza add and rhiza link commands instead of an apply JSON file; the Source example keeps a short JSON file because rhiza source add only takes one, trimmed to the fewest lines"
+        },
+        "handle": "concepts-why-voice",
+        "id": "01M71G7Q3G8SDGPGR4W9764E4W",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M71G7Q3G8SDGPGR4W6ZEQBSV",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M71G7Q3G8SDGPGR4W6ZEQBSV",
+        "id": "01M71G7Q46YNA422V1FM1KJZFW",
+        "link": "01M71G7Q46YNA422V1FKPQYJYB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M71G4G92NEJ33C04DSKC4RMK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71G7Q4RVRJJZXKGD8K1M37G",
+  "type": "ops",
+  "v": 1
+}

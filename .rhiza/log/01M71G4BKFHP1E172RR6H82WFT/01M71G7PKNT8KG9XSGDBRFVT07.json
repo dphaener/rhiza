@@ -1,0 +1,63 @@
+{
+  "actor": "01M71E75QHR2FVDPHXKWJ92RT1",
+  "after": [
+    "01M71G4BKFHP1E172RR73FDSE1"
+  ],
+  "at": "2026-11-10T01:12:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test ./cmd/rhiza -run 'TestScripts/docs-' passes (links resolve, named commands exist), README.md no longer says pages are on the way, and the owner approves the page at the run's sign-off",
+          "statement": "README.md reads in the owner's voice (drafted with the humanize skill) and its where-next section links the docs that exist (quickstart, concepts, agents, runs and the daemon, custom workflows, the generated reference) instead of saying they are on the way"
+        },
+        "handle": "readme-owner-voice",
+        "id": "01M71G7PH3S3AB0X96JGX86QE5",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M71G7PH3S3AB0X96JD4H94BY",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M71G7PH3S3AB0X96JD4H94BY",
+        "id": "01M71G7PHK75VWDW2XZ9TK1A5E",
+        "link": "01M71G7PHK75VWDW2XZ8YXDVSY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test ./cmd/rhiza -run TestScripts/quickstart passes with the page's new commands, docs/quickstart.md contains no {\"writes\" JSON, and the owner approves the page at the run's sign-off",
+          "statement": "docs/quickstart.md reads in the owner's voice and writes the capabilities, the decision and the decided-by link with plain rhiza add and rhiza link commands; rhiza apply gets one short mention as the way to write several things at once or from an agent, with no JSON file in the walkthrough"
+        },
+        "handle": "quickstart-plain-commands",
+        "id": "01M71G7PJCFCV486765A4DNG08",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M71G7PJCFCV4867656A3HKHP",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M71G7PJCFCV4867656A3HKHP",
+        "id": "01M71G7PJXCN3NNBSHVFV5AKCP",
+        "link": "01M71G7PJXCN3NNBSHVC7C15XK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G3TJG51NBQMDH6XP3KVA9",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M71G4BKFHP1E172RR6H82WFT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71G7PKNT8KG9XSGDBRFVT07",
+  "type": "ops",
+  "v": 1
+}

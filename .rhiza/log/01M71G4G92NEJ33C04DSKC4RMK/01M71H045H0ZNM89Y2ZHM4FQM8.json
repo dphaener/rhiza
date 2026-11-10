@@ -1,0 +1,30 @@
+{
+  "actor": "01M71GY5GHCVVTYW6NXRQQFZ0R",
+  "after": [
+    "01M71GP3HNETWR1BZT9W6H6Q46"
+  ],
+  "at": "2026-11-10T01:26:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/doclinks/... passes (no broken relative link in the real README.md and docs/) and make self-check passes (rhiza check's docs-commands rule finds no rhiza command in README.md or docs/ that does not exist), grep finds neither {\"writes\" nor \"quotes\" in docs/concepts/why.md, and the owner approves the page at the run's sign-off",
+          "statement": "docs/concepts/why.md reads in the owner's voice and writes the decision and its link with plain rhiza add and rhiza link commands instead of an apply JSON file; the Source example shows no hand-written JSON either: it has the agent scrub the conversation with the rhiza scrub skill, which writes the file and runs rhiza source add, and the page names rhiza source add and its --raw, --raw-sha256 and --raw-session flags in prose"
+        },
+        "handle": "concepts-why-voice",
+        "id": "01M71G7Q3G8SDGPGR4W9764E4W",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M71G7Q3G8SDGPGR4W6ZEQBSV",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      }
+    ]
+  },
+  "change_set": "01M71G4G92NEJ33C04DSKC4RMK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71H045H0ZNM89Y2ZHM4FQM8",
+  "type": "ops",
+  "v": 1
+}

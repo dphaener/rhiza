@@ -1,0 +1,16 @@
+{
+  "actor": "01M71E75QHR2FVDPHXKWJ92RT1",
+  "after": [],
+  "at": "2026-11-10T01:11:17Z",
+  "body": {
+    "intent": "CLI help wording: the desc tags of every request struct read plainly and in one style, so rhiza --help and the generated docs/reference are consistent",
+    "kind": "intention",
+    "sources": [],
+    "title": "CLI help wording"
+  },
+  "change_set": "01M71G4RTMS00MVHJ8D9WMD273",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M71G4RTMS00MVHJ8DD53C52A",
+  "type": "open",
+  "v": 2
+}
