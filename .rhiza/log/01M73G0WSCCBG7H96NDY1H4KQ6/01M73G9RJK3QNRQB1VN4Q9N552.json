@@ -1,0 +1,60 @@
+{
+  "actor": "01M73G1ZHZGX5ZECPH76X6XC6D",
+  "after": [
+    "01M73G9R5EWQJCSEK7WD5PHT2K"
+  ],
+  "at": "2026-11-10T19:52:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M73G84DARF6DHW7YREZ73H44",
+        "id": "01M73G9RFYHH2K4807T4KF31K2",
+        "link": "01M73G9RFYHH2K4807T2YSRDYG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73G9F36A10TYCW9C8ZSAPWH",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestShipCheck|TestShipMerge' passes with new tests where a fake gh reports isDraft true: ship check on a green draft PR exits 75 with a stop: line naming the PR as a draft and records no checked head; ship merge on a recorded head whose PR is now a draft exits 75 with that stop: line and never calls gh pr merge or gh pr ready; a ready PR still checks green and merges as before. go test -trimpath ./cmd/rhiza -run 'TestScripts/run-ship-merge-draft' passes: a ship-change run whose PR turns draft after sign-off stops at merge (not failed, no visit past 1 at gate-rebase-merge from merge), and after the fake PR is marked ready, rhiza run resume merges it. describe-golden is regenerated if a response type changes.",
+          "statement": "When a ship-change run's pull request is a draft, rhiza ship check and rhiza ship merge stop the run (exit 75) with a stop: line naming the PR as a draft to mark ready before resuming; they never report it green, never merge it, never mark it ready (no gh pr ready) and never fail merge into gate-rebase-merge, so the merge -> gate-rebase-merge loop cannot reach max_visits."
+        },
+        "handle": "ship-draft-pr-stops",
+        "id": "01M73G9RGRGPCPWM9M1S0XYS0N",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M73G9RGRGPCPWM9M1RVJDAF5",
+        "op": "node.create",
+        "parent": "01M5Z8XQC9YFR1TWS0QNGF2HZC"
+      },
+      {
+        "decision": null,
+        "from": "01M73G9RGRGPCPWM9M1RVJDAF5",
+        "id": "01M73G9RH85HJMA3J6NVW70NSD",
+        "link": "01M73G9RH85HJMA3J6NTAC4B4R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73G84DARF6DHW7YREZ73H44",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M73G9RGRGPCPWM9M1RVJDAF5",
+        "id": "01M73G9RJ3QMW17QV0ZKE7N94R",
+        "link": "01M73G9RJ3QMW17QV0ZGC1411N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73G9F36A10TYCW9C8ZSAPWH",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M73G0WSCCBG7H96NDY1H4KQ6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73G9RJK3QNRQB1VN4Q9N552",
+  "type": "ops",
+  "v": 1
+}
