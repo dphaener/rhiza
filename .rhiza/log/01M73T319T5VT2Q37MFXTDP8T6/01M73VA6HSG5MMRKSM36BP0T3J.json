@@ -1,0 +1,40 @@
+{
+  "actor": "01M73V7W4E6J303DDRKYD1KEGC",
+  "after": [
+    "01M73TE5PW44N0YE6J5P0BEFY0"
+  ],
+  "at": "2026-11-10T23:04:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7ea02cb9 I ran go test -trimpath -count=1 ./internal/index/... (ok) and TestEntryFormatChangeRebuilds -v (PASS). The test bumps the Propose entry's v to entry.FormatVersion+1 in a log with Propose/Accept/Land after it. On the first open it asserts exactly one newer-format log problem on that path, that the change set is stored as draft (later entries left out), and checkModel. It writes the entry back in place and asserts the open at the old version is statFresh with read 0. Then it bumps entryFormat and asserts a rebuild (read 4), no problems, checkModel (equal to changeset.FoldLog over the log) and state landed. A further open asserts read 0 and fresh. In a scratch worktree, disabling the meta entry_format comparison in open() makes the test fail with stats statFresh:true rebuilt:false read:0, so the fast stat-fingerprint path is what gets covered. The package doc in internal/index/index.go names a change of entry format version (entry.FormatVersion) among the rebuild causes. Both attempt-1 findings (f1 stat path, f2 problem/left-out assertions) are fixed."
+        },
+        "handle": "index-rebuilds-on-entry-format-change-cap-verified",
+        "id": "01M73VA6G5HDYMRAAM4FMFKVQY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73VA6G5HDYMRAAM4C00FN68",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73VA6G5HDYMRAAM4C00FN68",
+        "id": "01M73VA6GWG8P8AS679K92R4F1",
+        "link": "01M73VA6GWG8P8AS679J4JBKAN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73T8SB2AFFX66MC9CZ2PYDC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M73T319T5VT2Q37MFXTDP8T6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73VA6HSG5MMRKSM36BP0T3J",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M73VNAZQ5KTS7KG39ABX0GVH"
+  ],
+  "at": "2026-11-10T23:16:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "57b017356dba3bd792516016fab4579e79145e7d",
+          "pr": "https://github.com/dphaener/rhiza/pull/434",
+          "result": "11 checks passed: lint SUCCESS, go-install SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #434 (https://github.com/dphaener/rhiza/pull/434) passed CI at 57b0173",
+          "status": "verified"
+        },
+        "handle": "pr-434-fix-the-persistent-index-keeps",
+        "id": "01M73W04NTESQZFZ7AD06S8X2Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73W04NTESQZFZ7ACWH30ZA5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73W04NTESQZFZ7ACWH30ZA5",
+        "id": "01M73W04PGH598M4WBDZXF3RER",
+        "link": "01M73W04PGH598M4WBDWABY113",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73T8SB2AFFX66MC9CZ2PYDC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M73T319T5VT2Q37MFXTDP8T6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73W04RE74CDQH4HY8SRBMRA",
+  "type": "ops",
+  "v": 1
+}
