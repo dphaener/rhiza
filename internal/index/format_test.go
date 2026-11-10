@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/entry"
@@ -42,17 +41,31 @@ func TestEntryFormatChangeRebuilds(t *testing.T) {
 	db := f.dbPath()
 	openFresh(t, f, db)
 	x := openT(t, f, db, nil)
-	if len(storedProblems(t, x, sourceLog)) == 0 {
-		t.Fatalf("no newer-format problem stored")
+	ps := storedProblems(t, x, sourceLog)
+	if len(ps) != 1 || ps[0].Sentinel != "newer-format" || ps[0].Path != f.paths[pin] {
+		t.Fatalf("want one newer-format problem on %s, got %+v", f.paths[pin], ps)
 	}
+	// The Propose entry and those after it are left out: the change set
+	// stays a draft.
+	sets := storedChangeSets(t, x)
+	if len(sets) != 1 || sets[0].State != "draft" {
+		t.Fatalf("change sets with the newer entry left out: %+v", sets)
+	}
+	checkModel(t, x, f.gdir)
 	x.Close()
 
 	// The binary is upgraded; the log's files are as the new binary reads
-	// them, and the stat fingerprint still matches.
+	// them. Writing the entry back in place leaves the folders' stats
+	// alone, so the stat fingerprint still matches: at the old version
+	// the open is fresh by stats and reads nothing.
 	if err := os.WriteFile(pinPath, good, 0o644); err != nil {
 		t.Fatal(err)
 	}
-	ageLog(t, f, time.Hour)
+	x = openT(t, f, db, nil)
+	if !x.stats.statFresh || x.stats.read != 0 {
+		t.Fatalf("not fresh by stats at the old version: %+v", x.stats)
+	}
+	x.Close()
 	prev := entryFormat
 	entryFormat = prev + 1
 	t.Cleanup(func() { entryFormat = prev })
@@ -65,7 +78,7 @@ func TestEntryFormatChangeRebuilds(t *testing.T) {
 		t.Fatalf("problems after rebuild: %+v", p)
 	}
 	checkModel(t, x, f.gdir)
-	sets := storedChangeSets(t, x)
+	sets = storedChangeSets(t, x)
 	if len(sets) != 1 || sets[0].State != "landed" {
 		t.Fatalf("change sets %+v", sets)
 	}
