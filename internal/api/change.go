@@ -59,11 +59,12 @@ const changeLsNext = "rhiza change ls"
 
 // ChangeNewRequest opens a change set.
 type ChangeNewRequest struct {
-	Intent  string   `json:"intent" arg:"0" desc:"What the change set is for, in a sentence"`
-	Kind    string   `json:"kind,omitempty" enum:"intention,record" desc:"intention (reviewed before it lands) or record (lands as is); default intention"`
-	Sources []string `json:"sources,omitempty" flag:"source" desc:"A source node the change set comes from: an ID, ID prefix or handle"`
-	Title   string   `json:"title,omitempty" desc:"A short name for the change set, one line of at most 30 characters; default the intent's first clause"`
-	Ref     string   `json:"ref,omitempty" desc:"An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none"`
+	Intent   string   `json:"intent" arg:"0" desc:"What the change set is for, in a sentence"`
+	Kind     string   `json:"kind,omitempty" enum:"intention,record" desc:"intention (reviewed before it lands) or record (lands as is); default intention"`
+	Sources  []string `json:"sources,omitempty" flag:"source" desc:"A source node the change set comes from: an ID, ID prefix or handle"`
+	Title    string   `json:"title,omitempty" desc:"A short name for the change set, one line of at most 30 characters; default the intent's first clause"`
+	Ref      string   `json:"ref,omitempty" desc:"An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none"`
+	Workflow string   `json:"workflow,omitempty" flag:"workflow" desc:"A workflow, by name, pinned to the change set: its ready pick is that workflow; default none (the dispatch rules choose)"`
 }
 
 // ChangeNewResponse names the new change set and its open entry.
@@ -75,6 +76,7 @@ type ChangeNewResponse struct {
 	Title     string         `json:"title" desc:"The change set's title, else its intent's first clause"`
 	Sources   []id.ID        `json:"sources,omitempty" desc:"The source node IDs, sorted"`
 	Ref       string         `json:"ref,omitempty" desc:"The change set's opaque external reference, if any"`
+	Workflow  string         `json:"workflow,omitempty" desc:"The workflow pinned to the change set, if any"`
 	Actor     id.ID          `json:"actor,omitzero" desc:"Who opened it; absent in a dry run before any actor is recorded"`
 	DryRun    bool           `json:"dry_run,omitempty" desc:"True if nothing was written"`
 }
@@ -115,7 +117,17 @@ func runChangeNew(ctx *Ctx, req any) (any, error) {
 	}
 	slices.SortFunc(sources, id.Compare)
 	sources = slices.Compact(sources)
-	open := changeset.Open{Kind: kind, Intent: r.Intent, Sources: sources, Title: r.Title, Ref: strings.TrimSpace(r.Ref)}
+	wf := strings.TrimSpace(r.Workflow)
+	if wf != "" {
+		_, _, found, err := lookupWorkflow(ctx.Root, wf)
+		if err != nil {
+			return nil, Errorf("workflow %q: %v", wf, err)
+		}
+		if !found {
+			return nil, Usagef("--workflow %q: there is no such workflow in %s, your personal workflows or built in", wf, workflowsDir).WithNext("rhiza workflow ls")
+		}
+	}
+	open := changeset.Open{Kind: kind, Intent: r.Intent, Sources: sources, Title: r.Title, Ref: strings.TrimSpace(r.Ref), Workflow: wf}
 	if err := open.Validate(); err != nil {
 		return nil, Usagef("%s", err.Error()).WithNext("rhiza describe change.new")
 	}
@@ -131,7 +143,7 @@ func runChangeNew(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	resp := ChangeNewResponse{ChangeSet: cs, Entry: e.ID, Kind: kind, Intent: r.Intent,
-		Title: open.DisplayTitle(), Sources: sources, Ref: open.Ref, Actor: actor, DryRun: ctx.DryRun}
+		Title: open.DisplayTitle(), Sources: sources, Ref: open.Ref, Workflow: wf, Actor: actor, DryRun: ctx.DryRun}
 	if ctx.DryRun {
 		resp.Entry = id.ID{}
 	}

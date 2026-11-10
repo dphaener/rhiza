@@ -1,0 +1,37 @@
+# change new --workflow pins a workflow to the change set, as a request's
+# --workflow does: change show --json records it and run start --dry-run
+# picks it. A name no layer resolves is refused and opens nothing.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/docs.toml .rhiza/workflows/docs.toml
+exec git add -A
+exec git commit -qm init
+
+! exec rhiza change new 'Docs pass' --workflow nonesuch
+! stdout .
+stderr 'no such workflow'
+exec rhiza change ls
+! stdout 'Docs pass'
+
+exec rhiza change new 'Docs pass' --workflow docs --json
+stdout '"workflow": "docs"'
+exec rhiza change show --json
+stdout '"workflow": "docs"'
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cs'
+exec sh -c 'rhiza run start --dry-run $(cat $WORK/cs)'
+stdout '^- Workflow: docs$'
+
+exec rhiza change new 'Plain pass' --json
+! stdout '"workflow"'
+fold-ok
+-- docs.toml --
+name = "docs"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"

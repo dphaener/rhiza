@@ -316,7 +316,7 @@ Output (`--json` fields):
 Open a change set and make it current.
 
 ```
-rhiza change new <intent> [--kind <kind>] [--source <source>]... [--title <title>] [--ref <ref>]
+rhiza change new <intent> [--kind <kind>] [--source <source>]... [--title <title>] [--ref <ref>] [--workflow <workflow>]
 ```
 
 Appends to the log.
@@ -328,6 +328,7 @@ Arguments and flags:
 - `--source`: A source node the change set comes from: an ID, ID prefix or handle (repeatable)
 - `--title`: A short name for the change set, one line of at most 30 characters; default the intent's first clause
 - `--ref`: An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none
+- `--workflow`: A workflow, by name, pinned to the change set: its ready pick is that workflow; default none (the dispatch rules choose)
 
 Output (`--json` fields):
 
@@ -340,6 +341,7 @@ Output (`--json` fields):
 - `ref` (string): The change set's opaque external reference, if any
 - `sources` (array of string): The source node IDs, sorted
 - `title` (string): The change set's title, else its intent's first clause
+- `workflow` (string): The workflow pinned to the change set, if any
 
 ## rhiza change show
 

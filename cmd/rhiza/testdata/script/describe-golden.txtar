@@ -977,6 +977,10 @@ cmp stdout describe.golden.json
           "title": {
             "description": "A short name for the change set, one line of at most 30 characters; default the intent's first clause",
             "type": "string"
+          },
+          "workflow": {
+            "description": "A workflow, by name, pinned to the change set: its ready pick is that workflow; default none (the dispatch rules choose)",
+            "type": "string"
           }
         },
         "required": [
@@ -1028,6 +1032,10 @@ cmp stdout describe.golden.json
           },
           "title": {
             "description": "The change set's title, else its intent's first clause",
+            "type": "string"
+          },
+          "workflow": {
+            "description": "The workflow pinned to the change set, if any",
             "type": "string"
           }
         },
