@@ -1,0 +1,30 @@
+{
+  "actor": "01M73T3NM37YM1KS5D1AN4NKYD",
+  "after": [
+    "01M73T319T5VT2Q37MFZJ0WZQV"
+  ],
+  "at": "2026-11-10T22:45:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "76c5b90e-6c38-4e2c-838f-01a1c7a1c416",
+          "statement": "When the binary's entry FormatVersion is higher than the one a persistent index was built with, how should the index recover entries it stored with a newer-format problem? / Should this change set also prune index databases of worktrees that no longer exist (~/.cache/rhiza/index holds 1580 dbs, 14G)?"
+        },
+        "handle": "question-76c5b90e-1",
+        "id": "01M73T6P7W2CYE8M9RD6RGQW92",
+        "key": null,
+        "kind": "question",
+        "node": "01M73T6P7W2CYE8M9RD5NWVXGM",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M73T319T5VT2Q37MFXTDP8T6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73T6R1VH08JRDVC9Y5KG8H6",
+  "type": "ops",
+  "v": 1
+}

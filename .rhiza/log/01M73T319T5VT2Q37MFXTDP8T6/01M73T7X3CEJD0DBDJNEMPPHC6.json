@@ -1,0 +1,41 @@
+{
+  "actor": "01M73T729ZZBGG8V38FCN3TJJN",
+  "after": [
+    "01M73T6R1VH08JRDVC9Y5KG8H6"
+  ],
+  "at": "2026-11-10T22:46:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "internal/index/index.go already has one recovery mechanism: a rebuild that empties every table and catches up from nothing, triggered by a vanished path or a schema-version mismatch, and the package doc calls the index disposable. Keying a rebuild on the decoded FormatVersion reuses that path with one stored value and one comparison, so it cannot drift from FoldLog the way a partial re-decode of only newer-format problem rows could (re-decoding would also have to refold every touched change set and recompute both views, i.e. most of a rebuild anyway). Format bumps are rare (one per release like #424), so a full rebuild's cost is paid seldom. Rebuilding on any difference, not only a rise, also covers a downgrade then upgrade, where a lower binary stored problems for entries it could not read. It meets the intent's acceptance test: write a v(N+1) entry, open with FormatVersion N (problem stored), then N+1 (rebuilt, folds clean). The 14G of orphan dbs is a real but separate issue (cache hygiene across worktrees, not wrong folds); the intent lists it only as a side note, and widening this fix would delay unsticking landed change sets, so it is left for its own change set.",
+          "statement": "The persistent index stores the entry.FormatVersion it decoded with (a meta row beside the listing fingerprint) and, on Open, treats a stored version different from the binary's as stale and rebuilds from nothing, the same path a vanished file or another schema version takes; it does not selectively re-decode problem rows. Pruning index databases of worktrees that no longer exist is out of this change set's scope and is not done here; it belongs to a separate change set.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "index-rebuilds-on-entry-format-change",
+        "id": "01M73T7X227V5V26TS8PZN9JQ5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M73T7X227V5V26TS8KX1ADAD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73T7X227V5V26TS8KX1ADAD",
+        "id": "01M73T7X2P5NW4XTZ7VXHZM6NY",
+        "link": "01M73T7X2P5NW4XTZ7VXBSY80V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73T6P7W2CYE8M9RD5NWVXGM",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M73T319T5VT2Q37MFXTDP8T6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73T7X3CEJD0DBDJNEMPPHC6",
+  "type": "ops",
+  "v": 1
+}

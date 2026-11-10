@@ -1,0 +1,60 @@
+{
+  "actor": "01M73T3NM37YM1KS5D1AN4NKYD",
+  "after": [
+    "01M73T8RXEQYD5PM67AGDZWKBX"
+  ],
+  "at": "2026-11-10T22:46:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M73T7X227V5V26TS8KX1ADAD",
+        "id": "01M73T8S9F8RVY0KFCXHSNAKDN",
+        "link": "01M73T8S9F8RVY0KFCXE34D3JN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73T8GJ1J9NY3AYTT3Q9X4DV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/index/... : a Go test writes a log whose change set has an entry of format N+1 followed by later entries (a land included), opens the index with the entry format version seen as N and asserts the newer-format problem and the left-out entries, then opens the same index file (unchanged log, so the stat fingerprint matches) with the version seen as N+1 and asserts the change set folds landed with no problems, equal to changeset.FoldLog over the log; a second open at the same version does not rebuild; the package doc in internal/index/index.go lists an entry format change among the rebuild causes",
+          "statement": "The persistent index records the entry format version it decoded the log with, and an Open by a binary whose entry.FormatVersion differs (the fast stat-fingerprint path included) rebuilds it from nothing, so entries stored with a newer-format problem by an older binary are decoded again and their change sets fold as the log says"
+        },
+        "handle": "index-rebuilds-on-entry-format-change-cap",
+        "id": "01M73T8SB2AFFX66MC9GDQKXEW",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M73T8SB2AFFX66MC9CZ2PYDC",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M73T8SB2AFFX66MC9CZ2PYDC",
+        "id": "01M73T8SC8Z4GDV7V9XTPDFP1X",
+        "link": "01M73T8SC8Z4GDV7V9XRXWN7Q5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73T7X227V5V26TS8KX1ADAD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M73T8SB2AFFX66MC9CZ2PYDC",
+        "id": "01M73T8SDB7MRJFDG64PJ2G8HN",
+        "link": "01M73T8SDB7MRJFDG64MMR3599",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73T8GJ1J9NY3AYTT3Q9X4DV",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M73T319T5VT2Q37MFXTDP8T6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73T8SDZKPZB2PV6M3HT7D5R",
+  "type": "ops",
+  "v": 1
+}

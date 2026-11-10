@@ -1,0 +1,33 @@
+{
+  "actor": "01M73T3NM37YM1KS5D1AN4NKYD",
+  "after": [
+    "01M73T7X3CEJD0DBDJNEMPPHC6"
+  ],
+  "at": "2026-11-10T22:46:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "32381d8cda42b22cf73784b7eea4a89e0921414dca44d31b4332c43b32205d51",
+          "session": "76c5b90e-6c38-4e2c-838f-01a1c7a1c416",
+          "summary": "Autonomous plan run for change set 01M73T31 (the persistent index keeps an entry's newer-format problem after the binary learns that format). No owner was present. The planner placed it under intent m4-runs-hold-up (runs finish without hand repair), as the sibling format-bump fix 01M732D2 was, and raised one question to the arbiter: full rebuild vs re-decoding only newer-format files, and whether pruning orphan index databases is in scope. The arbiter ruled (Decision index-rebuilds-on-entry-format-change): store the decoded entry.FormatVersion and rebuild on any difference; pruning orphan dbs belongs to a separate change set. One leaf planned under fast-reads; pruning left as a separate draft change set.",
+          "title": "Plan of the stale newer-format index fix (autonomous)"
+        },
+        "handle": "stale-index-format-plan",
+        "id": "01M73T8GJ1J9NY3AYTT5CQTKHJ",
+        "key": null,
+        "kind": "source",
+        "node": "01M73T8GJ1J9NY3AYTT3Q9X4DV",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M73T319T5VT2Q37MFXTDP8T6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73T8GJHQ45M9FWGA9W30MP1",
+  "type": "ops",
+  "v": 1
+}
