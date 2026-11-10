@@ -41,7 +41,10 @@
 //     when a path the index has seen is no longer listed (the log is
 //     append-only, so a vanished file means something rewrote it), and,
 //     as a new file, when the database file is unreadable, not a database,
-//     or of another schema version.
+//     or of another schema version, or was written by a binary of another
+//     entry format version (entry.FormatVersion): an entry stored with a
+//     newer-format problem by an older binary is decoded again, even when
+//     the stat fingerprint says the log is unchanged.
 //
 // What is stored: every listed entry file with its problem if it has one;
 // each good entry's canonical bytes; each change set's folded state and the
@@ -88,18 +91,25 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
 	"modernc.org/sqlite"
 
+	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/store"
 )
 
 // SchemaVersion is the schema this package writes, kept in PRAGMA
 // user_version. Bump it on any change to the tables or what they hold: an
 // index of another version is deleted and rebuilt.
-const SchemaVersion = 5
+const SchemaVersion = 6
+
+// entryFormat is the entry format version this binary decodes with, stored
+// in meta (metaEntryFormat) when an index is created. Tests change it to
+// stand for another binary.
+var entryFormat = entry.FormatVersion
 
 // busyTimeout is how long a connection waits for a lock another connection
 // holds. Tests shorten it.
@@ -183,6 +193,13 @@ func open(dbPath string, fsys fs.FS) (*Index, error) {
 		return nil, fmt.Errorf("open index: %w", err)
 	}
 	db, err := openDB(dbPath)
+	if err == nil {
+		stored, merr := metaOf(db, metaEntryFormat)
+		if merr == nil && stored != strconv.Itoa(entryFormat) {
+			db.Close()
+			err = fmt.Errorf("%w: entry format %q, want %d", errStale, stored, entryFormat)
+		}
+	}
 	if errors.Is(err, errStale) {
 		if err := removeDB(dbPath); err != nil {
 			return nil, fmt.Errorf("open index: %w", err)
@@ -304,6 +321,9 @@ func ensureSchema(db *sql.DB) error {
 		if _, err := tx.Exec(s); err != nil {
 			return fmt.Errorf("create schema: %w", err)
 		}
+	}
+	if _, err := tx.Exec(`INSERT INTO meta (key, value) VALUES (?, ?)`, metaEntryFormat, strconv.Itoa(entryFormat)); err != nil {
+		return err
 	}
 	if _, err := tx.Exec(fmt.Sprintf("PRAGMA user_version = %d", SchemaVersion)); err != nil {
 		return err

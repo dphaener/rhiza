@@ -29,6 +29,9 @@ import (
 const (
 	metaListing = "listing"
 	metaStats   = "stats"
+	// metaEntryFormat holds the entry format version the index was made
+	// with; a rebuild keeps it.
+	metaEntryFormat = "entry_format"
 )
 
 // Problem sources, as stored in problems.source; the view names double as
@@ -175,7 +178,11 @@ func (x *Index) catchUpTx(tx *sql.Tx, sp statPrint) error {
 	}
 	if x.stats.rebuilt {
 		for _, t := range []string{"meta", "files", "entries", "change_sets", "folded", "nodes", "links", "problems", "landed_links"} {
-			if _, err := tx.Exec(`DELETE FROM ` + t); err != nil {
+			q := `DELETE FROM ` + t
+			if t == "meta" {
+				q += ` WHERE key <> '` + metaEntryFormat + `'`
+			}
+			if _, err := tx.Exec(q); err != nil {
 				return err
 			}
 		}
