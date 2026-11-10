@@ -1,0 +1,74 @@
+{
+  "actor": "01M73FZF0XNW23PX92HHJS5NRB",
+  "after": [
+    "01M73G3NY6SVCYK0SAN4R8ANFB"
+  ],
+  "at": "2026-11-10T19:49:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Run 01M73CQ4D71CW038ZBNSQB1SJF journalled signoff owner (source workflow docs) and still signed off under rule autonomous: internal/run/signoff.go checks only State.Autonomous. Guarding at the step covers every start path (daemon dispatch, queued run start, run start --autonomous, nested review workflows), which is what the milestone's owner-signs-each-page Decisions need. A signoff stage that is owner only by the rhiza.autonomy.signoff setting keeps today's behaviour, out of this bug's scope.",
+          "statement": "The signoff step itself honours the workflow's declared signoff stage: when the run recorded signoff = owner from its workflow, it waits for the owner even in an autonomous run, rather than relying on the daemon dropping --autonomous at start",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "signoff-step-reads-workflow-stage",
+        "id": "01M73G3PG7CCXGNJ9F2SZDGW7S",
+        "key": null,
+        "kind": "decision",
+        "node": "01M73G3PG7CCXGNJ9F2P1512ZD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73G3PG7CCXGNJ9F2P1512ZD",
+        "id": "01M73G3PHJQ8XFC75H6977RR3A",
+        "link": "01M73G3PHJQ8XFC75H663J8ZXP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73G39FKE09Q8PVGNRNYJ42N",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run/... covers the signoff step with Autonomous set and the recorded signoff stage owner from a workflow (waits, no autonomous signoff entry), auto from a workflow and from the setting (signs off under rule autonomous), and a journal without the record; a new testscript cmd/rhiza/testdata/script/run-signoff-workflow-owner.txtar runs run start --autonomous on a workflow declaring [autonomy] signoff = owner with fake agents, sees the run stop at signoff with no rule-autonomous sign-off in rhiza run status --json, then rhiza run approve lets it finish; review-signoff-autonomous, workflow-stage-autonomy and run-autonomy-source scripts pass unchanged",
+          "statement": "A signoff step waits for the owner whenever its run's workflow declares the signoff stage owner, even when the run is autonomous: it journals no sign-off of rule autonomous, stops with the owner's sign-off wait naming the workflow's declaration, and passes only on rhiza run approve (or goes back on request-changes); a run whose workflow declares signoff auto or nothing still signs off under rule autonomous; the declaration is read from the run's recorded stage autonomy, from the top-level workflow, so a signoff step in a nested workflow obeys it too, and a journal that predates that record falls back to the started workflow definition's declaration"
+        },
+        "handle": "signoff-owner-beats-autonomous",
+        "id": "01M73G3PK7RGKSX1K0NHTDX4X9",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M73G3PK7RGKSX1K0NEM0MFB2",
+        "op": "node.create",
+        "parent": "01M5SWTCJQP64M9ZDHGT7GS7PT"
+      },
+      {
+        "decision": null,
+        "from": "01M73G3PK7RGKSX1K0NEM0MFB2",
+        "id": "01M73G3PM45D4M5J87BRFZ69MF",
+        "link": "01M73G3PM45D4M5J87BP6QHBDP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73G3PG7CCXGNJ9F2P1512ZD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M73G3PK7RGKSX1K0NEM0MFB2",
+        "id": "01M73G3PMY0T3RZXCTX3WNT9HR",
+        "link": "01M73G3PMY0T3RZXCTX21J9C61",
+        "note": "",
+        "op": "link.create",
+        "to": "01M73G39FKE09Q8PVGNRNYJ42N",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M73FYE2PAG9E034MPBTTJ12D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73G3PNXEQ8YDQ28S1KMZ0D5",
+  "type": "ops",
+  "v": 1
+}
