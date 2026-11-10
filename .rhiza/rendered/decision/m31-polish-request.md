@@ -22,6 +22,7 @@ Polish the docs: examples show plain commands, not JSON blobs, and the prose rea
 - decided-by [m31-signoff](../intent/milestone-31/m31-signoff.md)
 - decided-by [m31-pages](../intent/milestone-31/m31-pages.md)
 - decided-by [m31-cli-help](../intent/milestone-31/m31-cli-help.md)
+- decided-by [cli-help-style](../capability/rhiza/documentation/cli-help-style.md)
 
 ## History
 

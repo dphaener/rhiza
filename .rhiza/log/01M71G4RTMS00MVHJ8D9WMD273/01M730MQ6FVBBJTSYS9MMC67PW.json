@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7301KEMW0J5VVT2EV4MTT96"
+  ],
+  "at": "2026-11-10T15:18:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "a64fa7d05ca788131508857c7c2bfad3c6925a1d",
+          "pr": "https://github.com/dphaener/rhiza/pull/422",
+          "result": "11 checks passed: lint SUCCESS, go-install SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #422 (https://github.com/dphaener/rhiza/pull/422) passed CI at a64fa7d",
+          "status": "verified"
+        },
+        "handle": "pr-422-cli-help-wording",
+        "id": "01M730MQ12TWEV9Z3TQPYS7NQ8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M730MQ12TWEV9Z3TQPRY5G2A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M730MQ12TWEV9Z3TQPRY5G2A",
+        "id": "01M730MQ1Y2SNHJQ1BJA3D4EKX",
+        "link": "01M730MQ1Y2SNHJQ1BJ6VMV07K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7R77J51ATRS08H1X485G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4RTMS00MVHJ8D9WMD273",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M730MQ6FVBBJTSYS9MMC67PW",
+  "type": "ops",
+  "v": 1
+}
