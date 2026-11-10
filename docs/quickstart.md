@@ -28,25 +28,23 @@ The new change set is a draft, and it's now the current one, so the commands tha
 
 ## Add a capability and a decision
 
-A capability says what the product does. A decision says why it's done that way, and who decided. The usual way to write several things at once is a file for `rhiza apply`, so they go in together:
+A capability says what the product does. A decision says why it's done that way, and who decided. Add them one command at a time, starting with a capability:
 
 ```bash
-cat > intent.json <<'EOF'
-{"writes":[
-  {"op":"add","kind":"capability","handle":"reports",
-   "fields":["statement=Users see their reports"]},
-  {"op":"add","kind":"capability","handle":"export-csv","parent":"reports",
-   "fields":["statement=Users export any report as CSV"]},
-  {"op":"add","kind":"decision","handle":"csv-streaming",
-   "fields":["statement=Stream CSV rows instead of building the file in memory",
-             "quote=\"Stream it, reports get huge\" (owner, 2026-10-20)"]},
-  {"op":"link","from":"export-csv","type":"decided-by","to":"csv-streaming"}
-]}
-EOF
-rhiza apply intent.json
+rhiza add capability reports --field "statement=Users see their reports"
+rhiza add capability export-csv --parent reports --field "statement=Users export any report as CSV"
 ```
 
-A few things in there. A handle is a short name you can use in place of an ID. `parent` puts `export-csv` under `reports` in the capability tree. The `decided-by` link ties the capability to its decision. And the decision keeps the owner's own words in `quote`: if someone made the call, write down what they said, not your summary of it.
+The name after the kind is the handle, a short name you can use in place of an ID. `--parent` puts `export-csv` under `reports` in the capability tree. The decision comes next, and it keeps the owner's own words in `quote`. If someone made the call, write down what they said, not your summary of it.
+
+```bash
+rhiza add decision csv-streaming --field "statement=Stream CSV rows instead of building the file in memory" --field 'quote="Stream it, reports get huge" (owner, 2026-10-20)'
+rhiza link export-csv decided-by csv-streaming
+```
+
+That `decided-by` link is what ties the capability to its decision. `rhiza set` changes a field on a node later if you get the wording wrong.
+
+When you have a lot to write, or an agent is doing the writing, `rhiza apply` takes a file of writes and puts them all in at once. You won't need it here.
 
 Add `--dry-run` to a write to see what it would do first.
 
@@ -105,5 +103,4 @@ Commit the log and the rendered files along with your code. From then on the rea
 
 - The [README](../README.md) says what Rhiza is for and how to install it.
 - `rhiza guide` prints the short reference that agents read, and `rhiza --help` lists every command.
-
-Pages on the concepts behind the model are in [concepts](concepts/model.md); [working with coding agents](agents.md) covers the agent side. The rest are on the way.
+- The [model](concepts/model.md) and [change sets](concepts/change-sets.md) pages cover the concepts behind all this, and [working with coding agents](agents.md) covers the agent side.

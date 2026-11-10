@@ -1,0 +1,41 @@
+{
+  "actor": "01M73D4JKTN9CD77M7EM8ED6X4",
+  "after": [
+    "01M72YRX0T4W1Y46E0572M2C5Y",
+    "01M731FHDC43E8XR3XAPNAFE1Y"
+  ],
+  "at": "2026-11-10T18:59:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 37b4d067, GOTMPDIR= go test -trimpath -count=1 ./cmd/rhiza -run TestScripts/quickstart passes (quickstart-doc ran 19 commands from the page's bash blocks; output shows csv-streaming created and export-csv decided-by csv-streaming). grep finds no {\"writes JSON in docs/quickstart.md. The diff replaces the apply heredoc with rhiza add capability (x2), rhiza add decision with quote, and rhiza link export-csv decided-by csv-streaming; rhiza apply gets one short sentence (several writes at once or by an agent). The new Where next link docs/concepts/change-sets.md exists. The commit also stages only its own actor record. Owner approval of the page is left to the run's sign-off."
+        },
+        "handle": "quickstart-plain-commands-verified",
+        "id": "01M73D81W04Z1SY3006MEFSE27",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73D81VZW0320B8S99DCXF4B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73D81VZW0320B8S99DCXF4B",
+        "id": "01M73D81ZGC0E3N4GANC0EJJPK",
+        "link": "01M73D81ZGC0E3N4GANB44DQP4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7PJCFCV4867656A3HKHP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4BKFHP1E172RR6H82WFT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73D823Z5Y6HKP7RHC0GSDR7",
+  "type": "ops",
+  "v": 1
+}

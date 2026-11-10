@@ -1,0 +1,28 @@
+{
+  "actor": "01M73EB8A9KYX9J14ZGJ4XX8T3",
+  "after": [
+    "01M73E30T6MJ40GCMXWJEVD6X0"
+  ],
+  "at": "2026-11-10T19:19:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6W5H0QXCSXEQHC10M96T8PC",
+        "handle": null,
+        "id": "01M73ED0MN3B76CQRV9C5MSYAX",
+        "node": "01M6W5H0QXCSXEQHC10HVVTF1W",
+        "op": "node.update",
+        "set": {
+          "statement": "README.md is Rhiza's front door: what Rhiza is and why in a few paragraphs, install by go install or release binaries, a link to the quickstart, links to the concepts, agents, runs and daemon, custom workflow and generated reference pages, and a link to the MIT license"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M71G4BKFHP1E172RR6H82WFT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73ED0QDHYEPCZCMTX4YZB16",
+  "type": "ops",
+  "v": 1
+}

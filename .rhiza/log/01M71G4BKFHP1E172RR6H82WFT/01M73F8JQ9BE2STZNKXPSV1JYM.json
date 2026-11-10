@@ -1,0 +1,73 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M73EMGPNSFACM8VHW7RW8VZ0"
+  ],
+  "at": "2026-11-10T19:34:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "c62044bacf94cd1092ecbc54b7445956612c4a9c",
+          "pr": "https://github.com/dphaener/rhiza/pull/427",
+          "result": "10 checks passed: lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #427 (https://github.com/dphaener/rhiza/pull/427) passed CI at c62044b",
+          "status": "verified"
+        },
+        "handle": "pr-427-readme-and-quickstart-polish",
+        "id": "01M73F8JGQ9J4B84WBWJ3QES4G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73F8JGPH4Y6CRWZVPMQ8DJ0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73F8JGPH4Y6CRWZVPMQ8DJ0",
+        "id": "01M73F8JHM4J0232Y8MXASQR4A",
+        "link": "01M73F8JHM4J0232Y8MTGRY3YF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7PH3S3AB0X96JD4H94BY",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M73F8JGPH4Y6CRWZVPMQ8DJ0",
+        "id": "01M73F8JJMQ5ZBDC51S85QV8DG",
+        "link": "01M73F8JJMQ5ZBDC51S7CQP15T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7PJCFCV4867656A3HKHP",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M73F8JGPH4Y6CRWZVPMQ8DJ0",
+        "id": "01M73F8JKAX4V2220Z7S2PV9JZ",
+        "link": "01M73F8JKAX4V2220Z7PJSR27G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71HGXH205HYJX4K0AE89RXW",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M73F8JGPH4Y6CRWZVPMQ8DJ0",
+        "id": "01M73F8JMBB6FHDFY4DN7JD4DY",
+        "link": "01M73F8JMBB6FHDFY4DKE89RYW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6W5H0QXCSXEQHC10HVVTF1W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4BKFHP1E172RR6H82WFT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73F8JQ9BE2STZNKXPSV1JYM",
+  "type": "ops",
+  "v": 1
+}

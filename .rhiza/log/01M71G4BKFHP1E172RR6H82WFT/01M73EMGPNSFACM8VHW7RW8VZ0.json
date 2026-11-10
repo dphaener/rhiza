@@ -1,0 +1,40 @@
+{
+  "actor": "01M73EGR3ZYDERR0RWHME4D5ER",
+  "after": [
+    "01M73ED0QDHYEPCZCMTX4YZB16"
+  ],
+  "at": "2026-11-10T19:23:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at a65f04ec (attempt 2): go test -trimpath ./internal/doclinks/... passes; make self-check passes on a clean detached worktree of the commit (exit 0, ok; only pre-existing unclaimed-commit warnings). README.md has no 'on the way' or 'coming' wording; its Where next section links docs/quickstart.md, docs/concepts/{model,change-sets,why}.md, docs/agents.md, docs/runs-and-daemon.md, docs/custom-workflows.md and docs/reference/{cli,config,workflow-file}.md, all present. The fix commit sets readme-front-door's statement to match the README, resolving the confirmed model finding. The prose reads in a plain first-person-to-reader voice. Owner approval is left to the run's sign-off."
+        },
+        "handle": "readme-owner-voice-verified-2",
+        "id": "01M73EMGJ8PDNMB72CCDBD0FBC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M73EMGJ8PDNMB72CCD1SW9TS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M73EMGJ8PDNMB72CCD1SW9TS",
+        "id": "01M73EMGKPTSNHQCYZXRDKWWDZ",
+        "link": "01M73EMGKPTSNHQCYZXPA4Q3JA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7PH3S3AB0X96JD4H94BY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4BKFHP1E172RR6H82WFT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M73EMGPNSFACM8VHW7RW8VZ0",
+  "type": "ops",
+  "v": 1
+}
