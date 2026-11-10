@@ -105,6 +105,21 @@ stdout '^code-check passed: '
 stdout '^exit=0$'
 exec sh -c 'cd $WORK/repo.code-check && rm -rf docs README.md'
 
+# A log entry of a newer format than this binary reads, added by the
+# run's branch, fails plain rhiza check but only warns in the code check:
+# a run whose change bumps the entry format can still pass. The same entry
+# at the merge-base would fail the code check (the unit test covers it).
+exec sh -c 'cd $WORK/repo.code-check && mkdir -p .rhiza/log/01M7334KGW8V1N426E536GSPGM && printf "{\n  \"v\": 99\n}\n" > .rhiza/log/01M7334KGW8V1N426E536GSPGM/01M731FHDC43E8XR3XAPNAFE1Y.json'
+! exec sh -c 'cd $WORK/repo.code-check && rhiza check'
+stdout 'newer format'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check; echo exit=$?'
+stdout '^code-check passed: '
+! stdout 'newer format'
+stdout '^exit=0$'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check --json'
+stdout '"severity": "warn"'
+exec sh -c 'cd $WORK/repo.code-check && rm -rf .rhiza/log/01M7334KGW8V1N426E536GSPGM'
+
 # --dry-run journals nothing.
 exec sh -c 'grep -c . .git/rhiza/runs/$(cat $WORK/runid).jsonl > $WORK/lines1; RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check --dry-run --json; grep -c . .git/rhiza/runs/$(cat $WORK/runid).jsonl > $WORK/lines2'
 stdout '"dry_run": true'
