@@ -1,0 +1,40 @@
+{
+  "actor": "01M72ZCG18708DY9TCTBEXCNB7",
+  "after": [
+    "01M72YSRWTXDDSEYJ18BGVJ65J"
+  ],
+  "at": "2026-11-10T15:00:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 5086a123. go test -trimpath ./internal/api -run TestHelpStyle passes; in a scratch git-archive copy, mutating RootInitRequest.Dir's desc to a lowercase start, a trailing period, and '(default: cwd)' each made TestHelpStyle fail with the matching message (capital, period, default form), so the test enforces all three mechanical rules over every operation summary and every desc reachable from Operations() request types. go test ./cmd/rhiza -run 'TestScripts/(describe-golden|docs-reference)' passes (describe-golden, docs-reference-cli, -config, -workflow, -stale), so describe-golden and docs/reference/cli.md are regenerated and current. Diff read: 15 descs reworded (choices as 'One of a, b or c' / 'Either a or b', defaults as '; default <x>'); remaining lowercase descs are only on response types, outside the leaf's request-struct scope. Note: rendered help appends the frame's own '(one of feature, bug, milestone)' after a desc already starting 'One of ...', a cosmetic repeat, not an acceptance failure"
+        },
+        "handle": "cli-help-style-verified",
+        "id": "01M72ZJB99EY84YZZG8HR2PZKJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M72ZJB99EY84YZZG8H9JZA9Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M72ZJB99EY84YZZG8H9JZA9Q",
+        "id": "01M72ZJBB9ATVK58YJ98S994WM",
+        "link": "01M72ZJBB9ATVK58YJ98CET6BN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7R77J51ATRS08H1X485G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4RTMS00MVHJ8D9WMD273",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M72ZJBC7028Q59TWY9X5WY5W",
+  "type": "ops",
+  "v": 1
+}

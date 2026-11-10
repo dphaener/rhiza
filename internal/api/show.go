@@ -41,7 +41,7 @@ const (
 // ShowRequest names the node or link to show.
 type ShowRequest struct {
 	Ref  string `json:"ref" arg:"0" desc:"The node or link: an ID, a unique ID prefix of 4+ characters, or a live node's handle"`
-	View string `json:"view,omitempty" desc:"as-is, to-be or what-if:<change set>; default follows the effective change set"`
+	View string `json:"view,omitempty" desc:"One of as-is, to-be or what-if:<change set>; default follows the effective change set"`
 }
 
 // ShowResponse is one node or one link: Kind says which, and only that

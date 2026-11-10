@@ -1,0 +1,40 @@
+{
+  "actor": "01M72ZRPTRVH9QGZ1NFW9N82DK",
+  "after": [
+    "01M72ZJBC7028Q59TWY9X5WY5W"
+  ],
+  "at": "2026-11-10T15:08:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 88c941b6 with a binary built from the branch: rhiza request/show/root init/project add/change new/feed/daemon --help print the reworded descs (choices as 'One of ...'/'Either ...', defaults as '; default <x>', capitalised, no trailing period). rhiza docs in a scratch repo wrote cli.md byte-identical to docs/reference/cli.md. go test ./internal/api -run TestHelpStyle passes, and mutating RootInitRequest.Dir's desc to 'the directory (default: cwd).' made it fail with 4 errors. go test ./cmd/rhiza -run 'TestScripts/(describe-golden|docs-reference)' passes (5 scripts) with GOTMPDIR outside .git. Cosmetic: enum flags show the choices twice, e.g. request --kind 'One of feature, bug or milestone; ... (one of feature, bug, milestone)'"
+        },
+        "handle": "cli-help-style-qa-1",
+        "id": "01M7301K9G9WV21XXD7MV4NX7F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7301K9G9WV21XXD7JQA3NK8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7301K9G9WV21XXD7JQA3NK8",
+        "id": "01M7301KC0Q5Z5PSGT5X9AZW2P",
+        "link": "01M7301KC0Q5Z5PSGT5WG5WDCN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M71G7R77J51ATRS08H1X485G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M71G4RTMS00MVHJ8D9WMD273",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7301KEMW0J5VVT2EV4MTT96",
+  "type": "ops",
+  "v": 1
+}

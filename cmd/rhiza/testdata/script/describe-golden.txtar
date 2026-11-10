@@ -956,7 +956,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "kind": {
-            "description": "intention (reviewed before it lands) or record (lands as is); default intention",
+            "description": "Either intention (reviewed before it lands) or record (lands as is); default intention",
             "enum": [
               "intention",
               "record"
@@ -1660,7 +1660,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "event_command": {
-            "description": "Run this command through sh -c in the repo root once per change set lifecycle move (proposed, accepted, rejected, withdrawn, superseded, landed, reopened) it has not handled, in log order, with the move as JSON on stdin and RHIZA_EVENT, RHIZA_EVENT_CHANGE, RHIZA_EVENT_ENTRY and RHIZA_EVENT_TITLE set; default: git config rhiza.eventCommand. The first run only records the moves already in the log. A failing or timed-out (10 s) command is logged and not retried",
+            "description": "Run this command through sh -c in the repo root once per change set lifecycle move (proposed, accepted, rejected, withdrawn, superseded, landed, reopened) it has not handled, in log order, with the move as JSON on stdin and RHIZA_EVENT, RHIZA_EVENT_CHANGE, RHIZA_EVENT_ENTRY and RHIZA_EVENT_TITLE set; default the git config rhiza.eventCommand. The first run only records the moves already in the log. A failing or timed-out (10 s) command is logged and not retried",
             "type": "string"
           },
           "max_runs": {
@@ -1672,7 +1672,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "notify_command": {
-            "description": "Run this command through sh -c in the repo root once per new inbox item, with the item's JSON on stdin and RHIZA_INBOX_KIND, RHIZA_INBOX_ID, RHIZA_INBOX_CHANGE and RHIZA_INBOX_TITLE set; default: git config rhiza.notifyCommand. A failing or timed-out (10 s) command is logged and not retried",
+            "description": "Run this command through sh -c in the repo root once per new inbox item, with the item's JSON on stdin and RHIZA_INBOX_KIND, RHIZA_INBOX_ID, RHIZA_INBOX_CHANGE and RHIZA_INBOX_TITLE set; default the git config rhiza.notifyCommand. A failing or timed-out (10 s) command is logged and not retried",
             "type": "string"
           },
           "once": {
@@ -2591,7 +2591,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "follow": {
-            "description": "Stream each change set as it lands until interrupted: with neither cursor nor since only those landing after the start, else the backlog after that point first; one FeedItem per line with --json; limit then stops after that many, default unlimited",
+            "description": "Stream each change set as it lands until interrupted: with neither cursor nor since only those landing after the start, else the backlog after that point first; one FeedItem per line with --json; limit then stops after that many; default unlimited",
             "type": "boolean"
           },
           "limit": {
@@ -6735,7 +6735,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "view": {
-            "description": "as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is",
+            "description": "One of as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is",
             "type": "string"
           }
         },
@@ -6969,7 +6969,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "view": {
-            "description": "as-is, to-be or what-if:<change set>; default follows the effective change set",
+            "description": "One of as-is, to-be or what-if:<change set>; default follows the effective change set",
             "type": "string"
           }
         },
@@ -7309,7 +7309,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "name": {
-            "description": "The project's name (default: the folder's name, or the URL's last part)",
+            "description": "The project's name; default the folder's name, or the URL's last part",
             "type": "string"
           },
           "path": {
@@ -7822,7 +7822,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "kind": {
-            "description": "feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed 'Fix ' (so its title names the bug), a milestone's a record change set",
+            "description": "One of feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed 'Fix ' (so its title names the bug), a milestone's a record change set",
             "enum": [
               "feature",
               "bug",
@@ -8330,7 +8330,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "dir": {
-            "description": "The directory to make a root; created if missing (default: the working directory)",
+            "description": "The directory to make a root; created if missing; default the working directory",
             "type": "string"
           }
         },
@@ -17252,7 +17252,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "pick": {
-            "description": "With --workflow: which dispatch pick named it (rule ready.bug, default, request), recorded on the run instead of explicit. The daemon passes it",
+            "description": "With --workflow: which dispatch pick named it (the ready.bug rule, the request, or the plain default pick), recorded on the run instead of explicit. The daemon passes it",
             "type": "string"
           },
           "ref": {
@@ -20402,7 +20402,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "view": {
-            "description": "as-is, to-be or what-if:<change set>; default follows the effective change set",
+            "description": "One of as-is, to-be or what-if:<change set>; default follows the effective change set",
             "type": "string"
           }
         },
@@ -23169,7 +23169,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "view": {
-            "description": "as-is, to-be or what-if:<change set>; default follows the effective change set",
+            "description": "One of as-is, to-be or what-if:<change set>; default follows the effective change set",
             "type": "string"
           }
         },
@@ -24558,7 +24558,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "view": {
-            "description": "as-is, to-be or what-if:<change set>; default follows the effective change set",
+            "description": "One of as-is, to-be or what-if:<change set>; default follows the effective change set",
             "type": "string"
           }
         },
@@ -24734,7 +24734,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "view": {
-            "description": "as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is",
+            "description": "One of as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is",
             "type": "string"
           }
         },
