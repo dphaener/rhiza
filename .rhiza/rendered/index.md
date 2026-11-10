@@ -1174,6 +1174,7 @@
 - [m30-quickstart-model-loop](decision/m30-quickstart-model-loop.md)
 - [m30-v0-1-0](decision/m30-v0-1-0.md)
 - [m31-polish-request](decision/m31-polish-request.md)
+- [m31-writes-people-plain](decision/m31-writes-people-plain.md)
 - [m5-built-by-daemon](decision/m5-built-by-daemon.md)
 - [m5-other-apps-stay](decision/m5-other-apps-stay.md)
 - [m5-roadmap-inbox-first](decision/m5-roadmap-inbox-first.md)

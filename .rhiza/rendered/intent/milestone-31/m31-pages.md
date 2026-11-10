@@ -4,13 +4,14 @@ intent · `01M71G3TPTED39B48HDF3GJW3C` · parent [milestone-31](../milestone-31.
 
 ## statement
 
-The README, quickstart, concepts pages and the agents, runs and custom-workflows pages are rewritten in the owner's voice, signed off by the owner, with every write shown as plain rhiza add/link/set commands.
+The README, quickstart, concepts pages and the agents, runs and custom-workflows pages are rewritten in the owner's voice, signed off by the owner, with a person's writes shown as plain rhiza add/link/set commands and rhiza apply only as the batch and agent path.
 
 ## Links
 
 ### Out
 
 - decided-by [m31-polish-request](../../decision/m31-polish-request.md)
+- decided-by [m31-writes-people-plain](../../decision/m31-writes-people-plain.md)
 
 ### In
 
@@ -21,3 +22,4 @@ The README, quickstart, concepts pages and the agents, runs and custom-workflows
 ## History
 
 - `01M71E6H2N1CYFN0F2NGAWWBG8` Documentation polish milestone for Rhiza. Owner, 2026-11-10: "some of the examples are a little rough (using giant json blobs in cli commands, etc) and it does not look like it was all humanized using my voice"
+- `01M71HGTS0HHYZP9N6DF8HG8TN` apply /home/rhiza/tmp/claude-1000/-home-rhiza-code-rhiza/823cd4a5-db47-4770-9e31-1f8134228fec/scratchpad/m31-answer.json
