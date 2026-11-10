@@ -335,3 +335,38 @@ func TestSignoffOwnerFallsBackToDefinition(t *testing.T) {
 		t.Fatalf("signoff entries %+v", got)
 	}
 }
+
+// Under a workflow-declared owner, the owner's request for changes sends
+// an autonomous run back to the checks step, and its next signoff visit
+// waits for the owner again rather than signing off under rule
+// autonomous.
+func TestSignoffWorkflowOwnerChangesGoBack(t *testing.T) {
+	e, r := signoffRun(t, signoffWF, []StageAutonomy{{Stage: "signoff", Mode: "owner", Source: SourceWorkflow, Workflow: "docs"}})
+	r.leaves = fixLeaves
+	a := fixLeaves[0]
+	passChecks(r, 1, "alpha", "beta")
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Stopped != SignoffWait {
+		t.Fatalf("stopped %q, outcomes %v", st.Stopped, outcomes(st))
+	}
+	appendSignoff(t, e, 1, SignoffChanges, onLeaf(Finding{ID: "f1", Check: "alpha", Severity: SeverityMajor, Place: "a.go:1", Reason: "the owner wants it"}, a))
+	passFixes(r, 2, a)
+	passChecks(r, 2, "alpha")
+	if st, err = e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	if st.Ended || st.Stopped != SignoffWait || st.Current != "signoff" || st.CurrentVisit != 2 {
+		t.Fatalf("after changes: ended %v stopped %q current %s visit %d, outcomes %v", st.Ended, st.Stopped, st.Current, st.CurrentVisit, outcomes(st))
+	}
+	if got, want := outcomes(st), []string{"review:pass", "signoff:changes", "review:pass"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("outcomes = %v, want %v", got, want)
+	}
+	for _, s := range signoffEntries(t, e) {
+		if s.Rule == RuleAutonomous {
+			t.Errorf("autonomous sign-off %+v", s)
+		}
+	}
+}
