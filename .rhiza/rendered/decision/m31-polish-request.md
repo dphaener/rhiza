@@ -25,6 +25,9 @@ Polish the docs: examples show plain commands, not JSON blobs, and the prose rea
 - decided-by [change-new-workflow-flag](../capability/rhiza/workflows/workflow-dispatch/change-new-workflow-flag.md)
 - decided-by [change-workflow-pin](../capability/rhiza/workflows/workflow-dispatch/change-workflow-pin.md)
 - decided-by [docs-signoff-workflow](../capability/rhiza/documentation/docs-signoff-workflow.md)
+- decided-by [concepts-model-voice](../capability/rhiza/documentation/concepts-model-voice.md)
+- decided-by [concepts-change-sets-voice](../capability/rhiza/documentation/concepts-change-sets-voice.md)
+- decided-by [concepts-why-voice](../capability/rhiza/documentation/concepts-why-voice.md)
 - decided-by [cli-help-style](../capability/rhiza/documentation/cli-help-style.md)
 
 ## History
