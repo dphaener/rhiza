@@ -2201,7 +2201,7 @@ Output (`--json` fields):
 Check that a change set's pull request has every CI check passed, or that main after its merge has the tested head's tree; with --settled, rebase a pull request GitHub reports conflicting.
 
 ```
-rhiza ship check [--settled] [--main] [--pr-open] [--test-failures] [--conflicts] [--reruns <reruns>] [--changed]
+rhiza ship check [--settled] [--main] [--pr-open] [--test-failures] [--conflicts] [--reruns <reruns>] [--infra] [--rerun-infra] [--changed]
 ```
 
 Appends to the log.
@@ -2214,6 +2214,8 @@ Arguments and flags:
 - `--test-failures`: Exit 0 only if the head's latest ship check recorded at least one failing test read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)
 - `--conflicts`: Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed or once the run has made 3 conflict fixes (merge commits on the branch with its Review: trailer); reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)
 - `--reruns`: How many times a head's failed jobs are rerun before its failure stands, at least 1; default 1
+- `--infra`: Exit 0 only if the head's latest failing ship check recorded a red head (red_head) with no failing test read from a CI log: an infra failure; exit 1 for a green head, a red with failing tests, or any other failure; reads the state file only and records nothing (for a step that routes an infra red to a wait)
+- `--rerun-infra`: With --settled --changed: while the red head stays red with no failing test, rerun its failed jobs itself with backoff (first after 5m, then 10m, 20m, then every 30m; the last rerun's time and count are kept in the state file) and report not settled, naming the infra failure and the next rerun's time; settled once CI moved past the red head and finished green, finished red with a failing test, or a new head's CI finished
 - `--changed`: With --settled: also wait for CI to move past the red head the last failing ship check recorded (red_head, red_checks in the state file): settled only once the head is another one, or a check run's ID or attempt is not among the recorded ones, and that new CI has finished; until then not settled, naming the infra failure; with no red head recorded it is --settled alone (for a wait after an infra failure with no failing test)
 
 Output (`--json` fields):

@@ -1,0 +1,40 @@
+{
+  "actor": "01M75XGRBB043XD8F3YRZ9QRF4",
+  "after": [
+    "01M75WACD1MYEVR8BTS4GEV6H2"
+  ],
+  "at": "2026-11-11T18:25:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At be216e8c (leaf commits d898ca6d and be216e8c): rhiza workflow check plan and plan-milestone are valid. workflow describe for both shows pr-green on.fail -> pr-green-infra -> pr-green-infra-wait -> pr-green, and the same loop for rebased-green. The infra wait steps use rhiza ship check --settled --changed --rerun-infra with a 6h timeout, a 30s interval and max_visits 3. go test -trimpath ./internal/workflow/... passes, including TestPlanBuiltin and TestPlanRerunsCIFlakes, which assert this routing. go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/plan-workflow-ci' passes all four scripts. plan-workflow-ci-infra-wait runs the built-in plan workflow with a fake gh. wait-pr spends both --reruns 2 (run rerun 42 --failed appears twice in gh.log). The run view log has no failing test. pr-green fails into pr-green-infra, which passes into pr-green-infra-wait. The wait passes once the fake's new job is green, and pr-green passes on visit 2. The run then goes through rebase, rebased-green, merge (pr merge appears once in gh.log) and close-out, and succeeds. plan-workflow-ci-infra-timeout ends the run on a pr-green-infra-wait timeout, and run status names an infra failure. plan-workflow-ci-flake-red's log now has a FAIL line, so a red with a failing test still ends the run. The diff fixes attempt 1's finding f1. One limit: under the fixed test clock the wait's own backoff rerun is never due, so the green comes from the fake's new job, not from a rerun the wait issued."
+        },
+        "handle": "plan-ci-infra-wait-verified",
+        "id": "01M75XPN2J2W8XDR723JHD1S1C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M75XPN2J2W8XDR723JCRBW0N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75XPN2J2W8XDR723JCRBW0N",
+        "id": "01M75XPN77DBY77184BP2TNGSK",
+        "link": "01M75XPN77DBY77184BNSK88HM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RHSENQJ88C8SBDYFDFMZY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75R7FN9PWNCC5XFXWV3NVQR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75XPND277KW5ZDJ7RWD0NQ0",
+  "type": "ops",
+  "v": 1
+}
