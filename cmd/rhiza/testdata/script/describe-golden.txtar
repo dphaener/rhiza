@@ -22407,12 +22407,20 @@ cmp stdout describe.golden.json
             "description": "Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed or once the run has made 3 conflict fixes (merge commits on the branch with its Review: trailer); reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)",
             "type": "boolean"
           },
+          "infra": {
+            "description": "Exit 0 only if the head's latest failing ship check recorded a red head (red_head) with no failing test read from a CI log: an infra failure; exit 1 for a green head, a red with failing tests, or any other failure; reads the state file only and records nothing (for a step that routes an infra red to a wait)",
+            "type": "boolean"
+          },
           "main": {
             "description": "Check that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, locally with git and no wait on CI, instead of checking the pull request; a differing tree dispatches CI on the merge commit (once) and checks its runs as it does a pull request's, and a stop that cannot be waited out exits 75 with a stop: line",
             "type": "boolean"
           },
           "pr_open": {
             "description": "Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)",
+            "type": "boolean"
+          },
+          "rerun_infra": {
+            "description": "With --settled --changed: while the red head stays red with no failing test, rerun its failed jobs itself with backoff (first after 5m, then 10m, 20m, then every 30m; the last rerun's time and count are kept in the state file) and report not settled, naming the infra failure and the next rerun's time; settled once CI moved past the red head and finished green, finished red with a failing test, or a new head's CI finished",
             "type": "boolean"
           },
           "reruns": {

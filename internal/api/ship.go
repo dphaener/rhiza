@@ -27,6 +27,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
@@ -79,7 +80,10 @@ type ShipCheckRequest struct {
 	Reruns ShipReruns `json:"reruns,omitempty" flag:"reruns" desc:"How many times a head's failed jobs are rerun before its failure stands, at least 1; default 1"`
 	// Changed makes Settled wait for CI to move past the red head a failing
 	// ship check recorded.
-	Changed bool `json:"changed,omitempty" flag:"changed" desc:"With --settled: also wait for CI to move past the red head the last failing ship check recorded (red_head, red_checks in the state file): settled only once the head is another one, or a check run's ID or attempt is not among the recorded ones, and that new CI has finished; until then not settled, naming the infra failure; with no red head recorded it is --settled alone (for a wait after an infra failure with no failing test)"`
+	Infra bool `json:"infra,omitempty" flag:"infra" desc:"Exit 0 only if the head's latest failing ship check recorded a red head (red_head) with no failing test read from a CI log: an infra failure; exit 1 for a green head, a red with failing tests, or any other failure; reads the state file only and records nothing (for a step that routes an infra red to a wait)"`
+	// RerunInfra makes the changed wait rerun the red head's failed jobs.
+	RerunInfra bool `json:"rerun_infra,omitempty" flag:"rerun-infra" desc:"With --settled --changed: while the red head stays red with no failing test, rerun its failed jobs itself with backoff (first after 5m, then 10m, 20m, then every 30m; the last rerun's time and count are kept in the state file) and report not settled, naming the infra failure and the next rerun's time; settled once CI moved past the red head and finished green, finished red with a failing test, or a new head's CI finished"`
+	Changed    bool `json:"changed,omitempty" flag:"changed" desc:"With --settled: also wait for CI to move past the red head the last failing ship check recorded (red_head, red_checks in the state file): settled only once the head is another one, or a check run's ID or attempt is not among the recorded ones, and that new CI has finished; until then not settled, naming the infra failure; with no red head recorded it is --settled alone (for a wait after an infra failure with no failing test)"`
 }
 
 // ShipReruns is the rerun budget per head: 0 when not given (one rerun).
@@ -424,6 +428,12 @@ type shipState struct {
 	// ship check --settled --changed waits past them.
 	RedHead   string         `json:"red_head,omitempty"`
 	RedChecks []ShipRedCheck `json:"red_checks,omitempty"`
+	// RedAt is when RedHead was first seen red; InfraReruns and
+	// InfraRerunAt are how many times --rerun-infra reran its failed jobs,
+	// and when last: the backoff's state, kept across polls and restarts.
+	RedAt        string `json:"red_at,omitempty"`
+	InfraReruns  int    `json:"infra_reruns,omitempty"`
+	InfraRerunAt string `json:"infra_rerun_at,omitempty"`
 }
 
 // shipRunID is the run the ship step runs for: RHIZA_RUN, or empty outside
@@ -648,6 +658,15 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 	if r.Changed && (!r.Settled || r.Main || r.PROpen || r.Conflicts || r.TestFailures) {
 		return nil, Usagef("--changed goes with --settled alone: it waits for CI to move past a recorded red head").WithNext(shipCheckNext)
 	}
+	if r.RerunInfra && (!r.Changed || !r.Settled) {
+		return nil, Usagef("--rerun-infra goes with --settled --changed: it reruns the red head's failed jobs while waiting").WithNext(shipCheckNext)
+	}
+	if r.Infra {
+		if r.PROpen || r.Main || r.Settled || r.TestFailures || r.Conflicts || r.Changed {
+			return nil, Usagef("--infra asks only whether the last failing check recorded an infra red; it takes no other check flag")
+		}
+		return runShipInfra(ctx)
+	}
 	if r.Conflicts {
 		if r.PROpen || r.Main || r.Settled || r.TestFailures {
 			return nil, Usagef("--conflicts asks only whether a merge of main is unresolved; it takes none of --pr-open, --main, --settled or --test-failures")
@@ -743,6 +762,15 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		}
 	}
 	resp.Settled, resp.Green, resp.Failed = checksVerdict(resp.Checks)
+	if r.RerunInfra && resp.Settled && !resp.Green && st.RedHead != "" && resp.Commit == st.RedHead {
+		waiting, err := shipInfraWait(ctx, t, &st, &resp, path)
+		if err != nil {
+			return nil, err
+		}
+		if waiting {
+			return resp, nil
+		}
+	}
 	if r.Changed && resp.Settled && !resp.Green && !shipCIMoved(st, resp.Commit, resp.Checks) {
 		// The same settled red CI the last failing check recorded: an
 		// infra failure with no failing test, waiting for a rerun or a push.
@@ -797,6 +825,9 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 	if resp.Settled && !resp.Green && !r.Settled && !r.Main {
 		// Record the red head and its check runs, never as Head and
 		// Checks, which stay the last green ones.
+		if st.RedHead != resp.Commit {
+			st.RedAt, st.InfraReruns, st.InfraRerunAt = ctx.Now().UTC().Format(time.RFC3339), 0, ""
+		}
 		st.RedHead, st.RedChecks = resp.Commit, redChecks(resp.Checks)
 		if id := shipRunID(ctx); id != "" {
 			st.Run = id
@@ -813,6 +844,7 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 	} else {
 		st.PR, st.URL, st.Branch, st.Head, st.Checks = resp.PR, resp.URL, t.branch, resp.Commit, resp.Checks
 		st.RedHead, st.RedChecks = "", nil
+		st.RedAt, st.InfraReruns, st.InfraRerunAt = "", 0, ""
 	}
 	if id := shipRunID(ctx); id != "" {
 		st.Run = id
@@ -845,6 +877,105 @@ func runShipTestFailures(ctx *Ctx) (any, error) {
 	}
 	resp.Passed = true
 	return resp, nil
+}
+
+// runShipInfra passes only when the state file holds a red head and no
+// failing test read from its logs: an infra failure.
+func runShipInfra(ctx *Ctx) (any, error) {
+	t, err := findShipTarget(ctx)
+	if err != nil {
+		return nil, err
+	}
+	st, err := readShipState(t.statePath())
+	if err != nil {
+		return nil, err
+	}
+	resp := ShipCheckResponse{Change: t.cs.String(), Branch: t.branch, Checks: []ShipCheck{}, Commit: st.RedHead, Findings: st.CIFindings}
+	switch {
+	case st.RedHead == "":
+		resp.Detail = "no red head was recorded: the head's CI is green or was not checked"
+	case len(st.CIFindings) > 0:
+		for _, f := range st.CIFindings {
+			resp.Tests = append(resp.Tests, f.Test)
+		}
+		resp.Detail = "the red head has failing tests: not an infra failure"
+	default:
+		resp.Passed = true
+	}
+	return resp, nil
+}
+
+// infraBackoff is the wait before the nth infra rerun (0-based): 5m,
+// doubling to a 30m cap.
+func infraBackoff(n int) time.Duration {
+	d := 5 * time.Minute
+	for i := 0; i < n && d < 30*time.Minute; i++ {
+		d *= 2
+	}
+	return min(d, 30*time.Minute)
+}
+
+// shipInfraWait handles a settled red CI on the recorded red head under
+// --rerun-infra. It reports waiting when the red is still an infra failure
+// (resp then says not settled, naming the next rerun), after rerunning the
+// failed jobs if the backoff is due; false when it should settle: the
+// attempt failed a test.
+func shipInfraWait(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResponse, path string) (bool, error) {
+	now := ctx.Now().UTC()
+	moved := shipCIMoved(*st, resp.Commit, resp.Checks)
+	if moved {
+		// A rerun's attempt: a failing test in its logs settles; none is
+		// still the outage.
+		var runs []string
+		for _, c := range resp.Checks {
+			if c.RunID != "" && !passingConclusions[strings.ToUpper(c.Conclusion)] && !slices.Contains(runs, c.RunID) {
+				runs = append(runs, c.RunID)
+			}
+		}
+		if len(shipFailedTests(ctx, t, runs)) > 0 {
+			return false, nil
+		}
+		st.RedChecks = redChecks(resp.Checks)
+	} else if len(st.CIFindings) > 0 {
+		return false, nil
+	}
+	base, err := time.Parse(time.RFC3339, st.RedAt)
+	if st.InfraReruns > 0 {
+		base, err = time.Parse(time.RFC3339, st.InfraRerunAt)
+	}
+	if err != nil {
+		base, st.RedAt = now, now.Format(time.RFC3339)
+	}
+	next := base.Add(infraBackoff(st.InfraReruns))
+	var runs []string
+	for _, c := range resp.Checks {
+		if c.RunID != "" && !passingConclusions[strings.ToUpper(c.Conclusion)] && !slices.Contains(runs, c.RunID) {
+			runs = append(runs, c.RunID)
+		}
+	}
+	note := ""
+	if !now.Before(next) && len(runs) > 0 {
+		st.InfraReruns++
+		st.InfraRerunAt = now.Format(time.RFC3339)
+		st.RerunHead, st.Reruns, st.RerunCount = resp.Commit, append(st.Reruns, runs...), shipRerunsSpent(*st, resp.Commit)+1
+		if err := writeShipState(path, *st); err != nil {
+			return false, err
+		}
+		for _, id := range runs {
+			if _, err := gh(ctx, t.dir(), "run", "rerun", id, "--failed"); err != nil {
+				return false, Errorf("%v", err)
+			}
+		}
+		resp.Reran = runs
+		next = now.Add(infraBackoff(st.InfraReruns))
+		note = fmt.Sprintf("reran the failed jobs of %s (rerun %d); ", shipPlural(len(runs), "run", "runs"), st.InfraReruns)
+	} else if err := writeShipState(path, *st); err != nil {
+		return false, err
+	}
+	resp.Settled, resp.Green, resp.Passed = false, false, false
+	resp.Detail = fmt.Sprintf("not settled: CI on head %s failed (%s) with no failing test: an infra failure; %snext rerun at %s", shortSHA(resp.Commit), strings.Join(resp.Failed, ", "), note, next.Format(time.RFC3339))
+	resp.Failed = nil
+	return true, nil
 }
 
 // runShipConflicts passes only while the ship state records a merge of
