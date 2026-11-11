@@ -1,0 +1,30 @@
+{
+  "actor": "01M76B5JZGES62GECTD6101B5C",
+  "after": [
+    "01M76B50FYAFEWQS29R0EB7XYZ"
+  ],
+  "at": "2026-11-11T22:22:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "b5d43cfb-5283-4ba3-a002-01a1ccb2baa0",
+          "statement": "Change set 01M76B50 (ship-change sends non-test CI failures to wait-ci-rerun): when the head's failed jobs have been rerun once and fail again, how should rhiza ship check decide that a failure with no failing test is fixable (route it to ci-fix) and not infra (wait-ci-rerun)? / Change set 01M76B50: how should build and review runs keep checked-in generated files (Rhiza's docs/reference from rhiza docs) current, so stale generated reference never reaches CI? / Change set 01M76B50, part 3 (wait-ci-rerun waiting forever): PR #441 (ship-change-infra-wait-reruns, landed) already makes wait-ci-rerun rerun the failed jobs itself with backoff over its 6h window and then end the run naming the failure. What more should this change set do for part 3?"
+        },
+        "handle": "question-b5d43cfb-1",
+        "id": "01M76B9HFC55PASR4NZXPN0W87",
+        "key": null,
+        "kind": "question",
+        "node": "01M76B9HFC55PASR4NZW499ATF",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76B50FYAFEWQS29QZCGMTPN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76B9K9V9GG57JVBDN0THVC4",
+  "type": "ops",
+  "v": 1
+}

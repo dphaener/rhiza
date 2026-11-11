@@ -110,6 +110,11 @@ func setup(env *testscript.Env) error {
 	env.Setenv("RHIZA_TEST_NOW", testNow)
 	env.Setenv("RHIZA_TEST_SEED", testSeed)
 	env.Setenv("RHIZA_TEST_FREE_BYTES", testFreeBytes)
+	// An idle machine with 1 TiB available: no script reads the host's load
+	// or memory. A script that wants other readings sets them itself.
+	env.Setenv("RHIZA_TEST_LOAD1", "0")
+	env.Setenv("RHIZA_TEST_LOAD5", "0")
+	env.Setenv("RHIZA_TEST_MEM_AVAILABLE", testFreeBytes)
 	// RHIZA_TEST_BIN is the directory holding the in-process rhiza, so a
 	// script can set PATH to it alone and hide the host's programs (e.g.
 	// systemctl) from rhiza.

@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
@@ -2077,5 +2078,126 @@ func TestShipMergeDraftStops(t *testing.T) {
 	}
 	if st, _ := readShipState(state); st.MergeCommit != "" || st.Head != "abc1234def" {
 		t.Errorf("state = %+v", st)
+	}
+}
+
+func attemptRollup(job string, conclusion string) string {
+	status := "COMPLETED"
+	if conclusion == "" {
+		status = "IN_PROGRESS"
+	}
+	return `{"name":"test","status":"` + status + `","conclusion":"` + conclusion + `","detailsUrl":"https://github.com/o/r/actions/runs/42/job/` + job + `"},{"context":"lint","state":"SUCCESS"}`
+}
+
+// --infra passes only on a recorded red head with no failing test.
+func TestShipCheckInfra(t *testing.T) {
+	f, g, _ := shipFixture(t)
+	if r := shipCheck(t, f, `{"infra":true}`); r.Passed || r.ExitCode() != 1 {
+		t.Errorf("no red recorded: %+v", r)
+	}
+	g.answers[shipPRView] = openPR(infraRollup)
+	g.answers["run rerun 42 --failed"] = ""
+	g.answers["run view 42 --log-failed"] = "setup\tapt\tTemporary failure resolving archive.ubuntu.com\n"
+	shipCheck(t, f, `{"settled":true}`) // spends the head's one rerun
+	if r := shipCheck(t, f, `{}`); r.Passed {
+		t.Fatalf("failing check: %+v", r)
+	}
+	if r := shipCheck(t, f, `{"infra":true}`); !r.Passed || r.ExitCode() != 0 {
+		t.Errorf("infra red: %+v", r)
+	}
+	g.answers["run view 42 --log-failed"] = "test\tRun\t--- FAIL: TestGarden (0.1s)\n"
+	if r := shipCheck(t, f, `{}`); r.Passed {
+		t.Fatalf("failing check: %+v", r)
+	}
+	if r := shipCheck(t, f, `{"infra":true}`); r.Passed || r.ExitCode() != 1 {
+		t.Errorf("red with a failing test: %+v", r)
+	}
+	g.answers[shipPRView] = openPR(greenRollup)
+	if r := shipCheck(t, f, `{}`); !r.Passed {
+		t.Fatalf("green: %+v", r)
+	}
+	if r := shipCheck(t, f, `{"infra":true}`); r.Passed {
+		t.Errorf("green head: %+v", r)
+	}
+	if _, err := callOp(t, f.ctx, "ship.check", `{"infra":true,"settled":true}`); err == nil {
+		t.Error("--infra with --settled: no error")
+	}
+}
+
+// --settled --changed --rerun-infra reruns with backoff from the state
+// file, and settles on a green attempt, a failing test or a new head.
+func TestShipCheckRerunInfraBackoff(t *testing.T) {
+	f, g, _ := shipFixture(t)
+	now := time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
+	f.ctx.Now = func() time.Time { return now }
+	g.answers["run rerun 42 --failed"] = ""
+	g.answers["run view 42 --log-failed"] = "setup\tapt\tTemporary failure resolving archive.ubuntu.com\n"
+	g.answers[shipPRView] = openPR(attemptRollup("9", "FAILURE"))
+	shipCheck(t, f, `{}`) // spends the head's one rerun
+	if r := shipCheck(t, f, `{}`); r.Passed {
+		t.Fatalf("record red: %+v", r)
+	}
+	g.calls = nil
+	const req = `{"settled":true,"changed":true,"rerun_infra":true}`
+	reruns := func() int {
+		n := 0
+		for _, c := range g.calls {
+			if c == "gh run rerun 42 --failed" {
+				n++
+			}
+		}
+		return n
+	}
+	job := 9
+	for i, wait := range []time.Duration{5, 10, 20, 30, 30} {
+		d := wait * time.Minute
+		now = now.Add(d - time.Second)
+		before := reruns()
+		r := shipCheck(t, f, req)
+		if r.Passed || r.Settled || reruns() != before || !strings.Contains(r.Detail, "infra failure") || !strings.Contains(r.Detail, "next rerun at") {
+			t.Fatalf("step %d early: %+v", i, r)
+		}
+		now = now.Add(time.Second)
+		r = shipCheck(t, f, req)
+		if r.Passed || reruns() != before+1 || len(r.Reran) != 1 {
+			t.Fatalf("step %d due: %+v", i, r)
+		}
+		// The rerun attempt fails on infra again (a new job ID).
+		job++
+		g.answers[shipPRView] = openPR(attemptRollup(strconv.Itoa(job), "FAILURE"))
+		now = now.Add(time.Second)
+		if r := shipCheck(t, f, req); r.Passed || r.Settled {
+			t.Fatalf("step %d attempt: %+v", i, r)
+		}
+		now = now.Add(-time.Second)
+	}
+	if n := reruns(); n != 5 {
+		t.Fatalf("reruns = %d", n)
+	}
+	// The backoff survives a fresh process: it is in the state file.
+	f.ctx.Now = func() time.Time { return now.Add(time.Minute) }
+	if r := shipCheck(t, f, req); r.Passed || reruns() != 5 {
+		t.Errorf("fresh process: %+v", r)
+	}
+	// A running attempt is not settled.
+	g.answers[shipPRView] = openPR(attemptRollup("99", ""))
+	if r := shipCheck(t, f, req); r.Passed {
+		t.Errorf("running: %+v", r)
+	}
+	// Green attempt settles.
+	g.answers[shipPRView] = openPR(attemptRollup("99", "SUCCESS"))
+	if r := shipCheck(t, f, req); !r.Passed || !r.Settled {
+		t.Errorf("green: %+v", r)
+	}
+	// Attempt red with a failing test settles.
+	g.answers[shipPRView] = openPR(attemptRollup("100", "FAILURE"))
+	g.answers["run view 42 --log-failed"] = "test\tRun\t--- FAIL: TestGarden (0.1s)\n"
+	if r := shipCheck(t, f, req); !r.Passed || !r.Settled {
+		t.Errorf("failing test: %+v", r)
+	}
+	// A new head settles.
+	g.answers[shipPRView] = strings.Replace(openPR(greenRollup), "abc1234def", "def5678abc", 1)
+	if r := shipCheck(t, f, req); !r.Passed {
+		t.Errorf("new head: %+v", r)
 	}
 }

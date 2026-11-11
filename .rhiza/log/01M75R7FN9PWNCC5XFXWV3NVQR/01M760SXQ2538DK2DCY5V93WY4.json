@@ -1,0 +1,52 @@
+{
+  "actor": "01M760HA7K5R4V0RBW8V605C7Y",
+  "after": [
+    "01M7607B41DM3NKJDT1Y0R0E2H"
+  ],
+  "at": "2026-11-11T19:19:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "rhiza workflow check passes on plan and plan-milestone and describe shows pr-green and rebased-green routing through their infra triage and wait back to themselves; testscript plan-workflow-ci-flake-red (or a new plan-workflow-ci-infra-wait with a fake gh) drives a plan run whose CI fails with no failing test past --reruns 2 into the infra wait, which reruns, and the run merges once a rerun is green; a second run whose wait times out ends failed naming the infra failure; run with go test -trimpath ./internal/workflow/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/plan-workflow-ci' only",
+          "statement": "In the plan and plan-milestone workflows, pr-green and rebased-green each get on.fail to their own infra triage step (rhiza ship check --infra, max_visits 4) whose on.pass is an infra wait step (until rhiza ship check --settled --changed --rerun-infra, timeout 6h, interval 30s, max_visits 3) passing back to that same green step, and their max_visits goes from 3 to 4 so a green step can be visited again after the infra wait, so a plan PR red on an infra outage reruns with backoff until CI settles and continues to rebase or merge; a red with a failing test fails the triage and ends the run as today, and the wait's timeout ends the run with a line naming the infra failure, which reaches the inbox"
+        },
+        "handle": "plan-ci-infra-wait",
+        "id": "01M75RHSENQJ88C8SBDYNTDW8G",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M75RHSENQJ88C8SBDYFDFMZY",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "base": "01M6WJ6ZN7V3CXMEZYFCTMCRYX",
+        "handle": null,
+        "id": "01M760SX3W684DCA7S5620XF3T",
+        "node": "01M6WJ6ZN7V3CXMEZYFA58HAYV",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A Go test in internal/workflow loads the built-in plan workflow and asserts wait-pr, wait-rebased (until) and pr-green, rebased-green (run) each call rhiza ship check with --reruns 2, with their on.pass and max_visits as plan-ci-infra-wait sets them and their on.fail to their infra triage, and that ship-change's ship check steps carry no --reruns; a testscript plan-workflow-ci-flake with a fake gh whose check fails twice on the PR head and passes on the second rerun shows the plan run merging and closing out with two 'run rerun' calls in gh.log, and a case red with a failing test after both reruns fails the run with a detail saying the PR changes only .rhiza/; plan-workflow-pr still passes; run with go test -trimpath ./internal/workflow/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/plan-workflow' only",
+          "statement": "The built-in plan workflow passes --reruns 2 to rhiza ship check in wait-pr, pr-green, wait-rebased and rebased-green, so a plan PR head that goes red gets its failed Actions jobs rerun twice (three CI attempts) before the step fails with ship check's failure detail (the failing tests, the reruns spent and, for a .rhiza-only diff, that the PR changes only .rhiza/); a red with a failing test then ends the run, while a red with no failing test goes to the infra triage and wait of plan-ci-infra-wait; ship-change keeps the default single rerun"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M75RHSENQJ88C8SBDYFDFMZY",
+        "id": "01M760SXHWKNHZS71W7XXFENQ9",
+        "link": "01M760SXHWKNHZS71W7VYE3CTZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WJ6ZN7V3CXMEZYFA58HAYV",
+        "type": "supersedes"
+      }
+    ]
+  },
+  "change_set": "01M75R7FN9PWNCC5XFXWV3NVQR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M760SXQ2538DK2DCY5V93WY4",
+  "type": "ops",
+  "v": 1
+}

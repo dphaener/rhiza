@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-11T21:20:20Z",
+  "body": {
+    "intent": "Record agent actor claude-code-ffa395ee for session ffa395ee-eb6c-49e3-a51d-01a1cc7b6e5e",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M767Q8MEQFF76ZJW6ZH8HKPA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M767Q8MEQFF76ZJW72DZPEFF",
+  "type": "open",
+  "v": 1
+}

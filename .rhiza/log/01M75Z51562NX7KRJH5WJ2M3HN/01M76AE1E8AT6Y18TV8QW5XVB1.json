@@ -1,0 +1,40 @@
+{
+  "actor": "01M769ZZVBNEFYVB6DC83073JJ",
+  "after": [
+    "01M7602B68APKJHQ6GKDD7DRD5"
+  ],
+  "at": "2026-11-11T22:07:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 40c4123c: read the diff (stepPattern now repeats /segment any number of times, maxStep 120). go test -trimpath -count=1 ./internal/api -run TestStartStepNestedPaths passes: it accepts build, ship-change/build, ship-change/build/build, a/b/c/d and a 120-char three-segment path, and rejects a//b, /a, a/, a/b/, upper case, double dashes, trailing/leading dash and a 121-char path. All internal/api tests passed; the package reported FAIL only because the test run changed ~/code/.rhiza-root/usage.live.json, a known leak from running under ~/code that this change does not touch. go test -trimpath -count=1 ./cmd/rhiza -run TestScripts/run-nested-workflow-session passes: a repo workflow wrap with a workflow step wrapping ship-change runs with fake rex/claude/gh, the fake builder starts (role=builder leaf=only), no step-pattern usage error appears, and both rhiza run status and the run journal under .git/rhiza/runs record step ship-change/build/build."
+        },
+        "handle": "nested-step-session-start-verified",
+        "id": "01M76AE1D2VX7ZXZ7P6NDCNBCD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76AE1D2VX7ZXZ7P6M4E1VQK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76AE1D2VX7ZXZ7P6M4E1VQK",
+        "id": "01M76AE1DRKR720ES0MW38BA2B",
+        "link": "01M76AE1DRKR720ES0MVZV3JJH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75ZJKQBWS387RP6CCVZHM4Y",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75Z51562NX7KRJH5WJ2M3HN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76AE1E8AT6Y18TV8QW5XVB1",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M75XXGM5B2J9Q0QSN8FH4EZD",
+  "after": [
+    "01M75XPND277KW5ZDJ7RWD0NQ0"
+  ],
+  "at": "2026-11-11T18:31:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 17be6dbf (attempt 2). rhiza workflow check ship-change: valid (builtin), and the built-in's wait-ci-rerun until is 'rhiza ship check --settled --changed --rerun-infra' (internal/workflow/builtin/ship-change.toml:162, asserted in workflow_test.go:457). go test -trimpath ./internal/workflow/... ok. go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/run-ship-(infra-wait|rerun-fail)': both PASS. Read the diff: run-ship-infra-wait's fake gh now gives Actions run 42 (detailsUrl .../actions/runs/42/job/N), run view logs with no failing test, and turns green only after the second 'run rerun'; the script itself never reruns. A bin/rhiza shim only backdates red_at (the test clock is fixed) and logs --rerun-infra polls; the script asserts two 'run rerun 42 --failed' lines and that the second directly follows a 'rhiza ship check --settled --changed --rerun-infra' poll, so the wait issued it. Run status shows ci-triage fail -> wait-ci-rerun pass -> pr-green (visit 2) pass -> signoff. Attempt 1's finding (rerun simulated by the fake's queue) is fixed."
+        },
+        "handle": "ship-change-infra-wait-reruns-verified",
+        "id": "01M75Y21E9A1D02C2F28B2GWCA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M75Y21E9A1D02C2F26AH4BDS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75Y21E9A1D02C2F26AH4BDS",
+        "id": "01M75Y21J8Y62CH1ZQTSFM9Y9A",
+        "link": "01M75Y21J8Y62CH1ZQTPMDTT7V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RHSQEVEXEYYNDCVJ5BKHS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75R7FN9PWNCC5XFXWV3NVQR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75Y21QVRA71K2JGSEZME52A",
+  "type": "ops",
+  "v": 1
+}

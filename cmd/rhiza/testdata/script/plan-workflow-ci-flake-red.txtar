@@ -177,6 +177,9 @@ case "$1 $2" in
 	;;
 "run rerun")
 	;;
+"run view")
+	printf 'test\tRun\t--- FAIL: TestGarden (0.1s)\n'
+	;;
 "pr merge")
 	b=$(git -C "$o" for-each-ref --format='%(refname:short)' 'refs/heads/cs/*')
 	git -C "$o" rev-parse "refs/heads/$b" > "$WORK/merged-head"

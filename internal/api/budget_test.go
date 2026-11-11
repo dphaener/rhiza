@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/dphaener/rhiza/internal/daemon"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -99,6 +100,9 @@ func TestMain(m *testing.M) {
 	tmpsweep.StaleTemp("rhiza-api-budget-")
 	diskFreeBytes = func(dir string) (uint64, error) {
 		panic("test read the host's real free disk space for " + dir + ": pin it with pinFreeBytes(ctx) or set RHIZA_TEST_FREE_BYTES beside RHIZA_TEST_NOW")
+	}
+	machineReading = func() daemon.Reading {
+		return daemon.Reading{MemAvail: 1 << 40, MemOK: true, LoadOK: true}
 	}
 	code := rootguard.Main(m.Run)
 	if genDir != "" {

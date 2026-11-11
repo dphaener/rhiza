@@ -1,0 +1,49 @@
+{
+  "actor": "01M7671NKWEPGABMGVKBQEDT46",
+  "after": [
+    "01M76799T76TV4PMTZ3PVEQ5VP"
+  ],
+  "at": "2026-11-11T21:12:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M7677NAX95EK183R1B84B5EY",
+        "id": "01M7679A9ZDC14P5Z7S713NAMN",
+        "link": "01M7679A9ZDC14P5Z7S4WCHV0G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7678ZK6T2FQHD4MYTNWKWRE",
+        "type": "derived-from"
+      },
+      {
+        "base": "01M6XVG9JFMB43HTY2VYD98EE7",
+        "handle": null,
+        "id": "01M7679AB4EC5JVAH3B665CPGK",
+        "node": "01M6MYSEB8N545M8M9APZTBXYS",
+        "op": "node.update",
+        "set": {
+          "acceptance": "cmd/rhiza/testdata/script/daemon-milestone-request.txtar (fake rex, rhiza.autonomy.plan owner) queues a feature then a milestone request: with --max-runs 1 and one run already live, daemon --once starts nothing and request ls shows both queued; with --max-runs 2 and one run live, daemon --once starts only the milestone request (run start --workflow plan --new ... --request <id> --milestone) and the feature stays queued; with one interrupted run and one free slot the milestone request starts and the run is not resumed; a second milestone request queued while the first's run is live at its interview step is not started by the next --once; once the first run's journal has ended the interview step and it is live at a later step (e.g. milestone-check or review), the next --once starts the second milestone request's plan run, with --max-runs still capping it; a unit test in internal/api/request_test.go covers daemonMilestoneWaits for a live milestone run at the interview step (waits), live at a later step (does not wait) and stopped at a sign-off wait (waits); go test -trimpath ./internal/api -run MilestoneWaits and go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-milestone-request|plan-requests)' pass",
+          "statement": "The daemon starts the oldest queued milestone request's plan run in the next free run slot, ahead of every other start in the poll (resumes of interrupted runs included) and of every other queued request, but waits while the machine-wide slot count is at rhiza.daemon.maxRuns; once started it counts as a running run for later picks. A second milestone request stays queued only while another milestone request's plan run holds the owner: its start is not journaled yet and is within daemonStartGrace, or the run is live at its interview (start) step, or it waits on the owner at a gate or sign-off step under owner autonomy; a milestone plan run past its interview on any other step (milestone-check, review, critic, check, revise, open-pr, wait-pr, CI, rebase, merge, close-out) blocks nothing, and daemonMilestoneWaits and daemonPlanRequests' milestoneLive apply this one rule. A usage-reserve hold does not hold it; pause and low disk do"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6MYSEB8N545M8M9APZTBXYS",
+        "id": "01M7679AERS5QM9NTP2PHNKQ6B",
+        "link": "01M7679AERS5QM9NTP2MYJH08N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7677NAX95EK183R1B84B5EY",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M767125EJM98D7H4ME2T67H5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7679AGG3JK65WJ0TFZWXP3Q",
+  "type": "ops",
+  "v": 1
+}

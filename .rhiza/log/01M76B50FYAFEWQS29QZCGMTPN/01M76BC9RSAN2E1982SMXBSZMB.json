@@ -1,0 +1,41 @@
+{
+  "actor": "01M76BA0EY25WTNY4JR27GN0YS",
+  "after": [
+    "01M76B9K9V9GG57JVBDN0THVC4"
+  ],
+  "at": "2026-11-11T22:24:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read internal/api/ship.go and the built-in ship-change, build and review workflows. Ship check already reruns a red head's failed jobs once (shipRerunFailed). After that, shipReadFailures records findings only from parseFailedTests, so a lint or self-check red gets no finding: ci-triage fails and the run waits in wait-ci-rerun. That is the 2026-11-11 run. A failure that repeats after a rerun and prints a recognisable deterministic cause is fixable. Reusing the existing ci_findings and ci-triage route keeps the workflow unchanged. The change set's intent lists exactly these patterns, and says that only failures with no recognisable cause should count as infra. The make Error fallback catches project-specific targets without per-language parsing. For (2), build and review already have a deterministic render step that commits regenerated .rhiza/rendered. Running a project-configured generate command there makes generated files as dependable as rendered output, with no agent judgement involved. Keeping it a setting follows milestone 32's language-neutral settings: Rhiza's own rhiza docs stays project config, not built-in behaviour. For (3), #441 already removed the indefinite wait: wait-ci-rerun reruns the jobs itself and ends at 6h, naming the failure. The rest of the problem was misclassification, which (1) fixes. Adding the recogniser to shipInfraWait covers a cause that first shows up only in a rerun.",
+          "statement": "(1) After the one same-head rerun fails again, rhiza ship check reads the failed jobs' logs (gh run view --log-failed) with a cause recogniser that runs alongside parseFailedTests. Any line it recognises becomes a CI finding, recorded in ci_findings just as a failing test is, so ship check --test-failures (ci-triage) passes and the run goes to ci-fix. Each finding names what failed (the job and step, or the command) and its reason quotes the failing lines. The recognised lines are: rhiza check/self-check 'fail ...' lines (e.g. 'fail render docs/reference/cli.md: differs from what rhiza docs writes'); gofmt/fmt-check file lists; go vet and compiler diagnostics ('file.go:line:col: ...'); and, as the fallback, 'make: *** [target] Error N' naming the target with the lines just before it. A red that repeats after the rerun with none of these lines, or whose log gh cannot give, stays infra and goes to wait-ci-rerun. wait-ci-rerun's attempt check (shipInfraWait) applies the same recogniser, so a recognised failure in a later attempt settles and goes to ci-fix too. ci-fix's prompt widens from 'failing tests' to 'CI findings': reproduce each finding locally with the repo's scoped command (here, make self-check, make fmt-check or go vet on the package), fix it or regenerate the files, and commit once that passes. (2) A language-neutral project setting, rhiza.ship.generate, holds a shell command that regenerates checked-in generated files. It is empty by default, and empty skips. The render steps of the built-in build and review workflows run it before rhiza render and stage and commit whatever it changes, in the same commit and with the same Change trailer. A command that fails fails the step. This repo sets it to a Makefile target (e.g. make docs) that builds the branch's binary in a temp folder and runs rhiza docs. (3) Nothing new for the wait itself: #441's self-rerun with backoff and the 6h end that names the failure stay as they are. Part 3 is met by (1): deterministic failures no longer reach wait-ci-rerun, and the recogniser also runs on its rerun attempts. One testscript replays the 2026-11-11 case: a lint job whose log has 'fail render ...' goes to ci-fix and never to wait-ci-rerun.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "arbiter-ci-nontest",
+        "id": "01M76BC9QXWXSR3K5B2XZ8EJBF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76BC9QXWXSR3K5B2XDDG2YE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76BC9QXWXSR3K5B2XDDG2YE",
+        "id": "01M76BC9RC3DPY7268A2T55MC4",
+        "link": "01M76BC9RC3DPY72689ZC2NAX8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B9HFC55PASR4NZW499ATF",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76B50FYAFEWQS29QZCGMTPN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76BC9RSAN2E1982SMXBSZMB",
+  "type": "ops",
+  "v": 1
+}

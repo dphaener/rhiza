@@ -1,0 +1,40 @@
+{
+  "actor": "01M75YKZJPNBQKSF7VH5AYNHSE",
+  "after": [
+    "01M75Y21QVRA71K2JGSEZME52A"
+  ],
+  "at": "2026-11-11T18:43:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 20947c77. go test -trimpath ./internal/workflow/... ok. go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/run-ship-(landed-)?infra-wait' PASS for run-ship-infra-wait and run-ship-landed-infra-wait. rhiza workflow check ship-change is valid (builtin). workflow describe shows rebase-merge-gate-failed on.fail -> landed-infra-triage (rhiza ship check --infra) -> landed-infra-wait -> landed-green; the built-in wait runs until 'rhiza ship check --settled --changed --rerun-infra' with timeout 6h, interval 30s and max_visits 3; gate-fix-merge stays on.pass. Read the diff of run-ship-landed-infra-wait.txtar. The fake gh's check is Actions run 42 with logs naming no failing test. wait-landed spends one rerun and the head is still red. landed-green, conflict-triage-landed and rebase-merge-gate-failed then fail through to landed-infra-triage and landed-infra-wait. The wait's own 'gh run rerun 42 --failed' comes right after a --rerun-infra poll, and the script never reruns. A bin/rhiza shim moves red_at back so that rerun is due. The head turns green, and the run goes on through gate-rebase-merge, rebase-merge, a squash merge pinned to the green head, wait-main, main-green and close-out (asserted in run status and gh.log). This fixes both earlier findings: merge and close-out are now reached, and the rerun now comes from the wait."
+        },
+        "handle": "ship-change-landed-infra-wait-verified",
+        "id": "01M75YR8XR3SW3M4TX5J4X88Y5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M75YR8XR3SW3M4TX5FK45G9G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75YR8XR3SW3M4TX5FK45G9G",
+        "id": "01M75YR90SKV7DPETZRNAK3EA7",
+        "link": "01M75YR90SKV7DPETZRHNH4HBM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RHSWYX0S5ZRZ3NEZTC8W8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75R7FN9PWNCC5XFXWV3NVQR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75YR95JTXF8FFX0P7WG9W0M",
+  "type": "ops",
+  "v": 1
+}

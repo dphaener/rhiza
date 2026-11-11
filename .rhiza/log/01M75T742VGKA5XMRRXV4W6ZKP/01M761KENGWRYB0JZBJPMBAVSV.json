@@ -1,0 +1,40 @@
+{
+  "actor": "01M760FA7808GQCSVJRDEQ8KYG",
+  "after": [
+    "01M75YZSA6EPXJPBD8R5A91BC3"
+  ],
+  "at": "2026-11-11T19:33:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 88cc562d: go test -trimpath ./cmd/rhiza -run TestScripts/(daemon-load-settings|describe-golden|daemon-settings|daemon-settings-scope|daemon-load-hold|daemon-load-status) passes (describe-golden matches the regenerated max_load/min_memory fields and the daemon.set key list). By hand with a scratch build in a fresh root + project: rhiza daemon settings --json lists rhiza.daemon.maxLoad default 3.0 and rhiza.daemon.minMemory default 2G (machine scope); daemon set maxLoad 2.5 and minMemory 4G write them to the root rhiza.toml [daemon]; daemon set maxLoad -- -1, maxLoad busy, minMemory lots and minMemory 4Q each exit 2 with a validation message and cmp shows rhiza.toml unchanged; maxLoad 0 and minMemory 0 are accepted. Diff read: DaemonRequest gains MaxLoad/MinMemory (--max-load/--min-memory), validated in daemonConfOf with Usagef, settingDefs map the flags. Scoped internal/api tests (TestDaemon|TestSettingDefsDescribed|Usage|Hold|Load) all PASS; the package's post-run guard flagged ~/code/.rhiza-root/usage.live.json changed, which is the live root daemon on the VM, not this diff."
+        },
+        "handle": "daemon-load-memory-settings-verified",
+        "id": "01M761KEB38E8NRCT9R13RKCEB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M761KEB38E8NRCT9R11EZWH2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M761KEB38E8NRCT9R11EZWH2",
+        "id": "01M761KEH7Z8JVM35R2TFH4FNM",
+        "link": "01M761KEH7Z8JVM35R2S0N7ZPA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75TJ86QSG1T40J67RXVCQTW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75T742VGKA5XMRRXV4W6ZKP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M761KENGWRYB0JZBJPMBAVSV",
+  "type": "ops",
+  "v": 1
+}

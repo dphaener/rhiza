@@ -220,7 +220,7 @@ func TestActionFor(t *testing.T) {
 		api.InboxFailed:  ActionResolve, api.InboxGaveUp: ActionResolve, api.InboxSkipped: ActionResolve,
 		api.InboxAccept:  ActionAccept,
 		api.InboxStalled: ActionShow, api.InboxOverlap: ActionShow, api.InboxDiskLow: ActionShow,
-		api.InboxUsageReserve: ActionShow, api.InboxMainStale: ActionShow,
+		api.InboxUsageReserve: ActionShow, api.InboxLoadHigh: ActionShow, api.InboxMemoryLow: ActionShow, api.InboxMainStale: ActionShow,
 	} {
 		if got := ActionFor(kind); got != want {
 			t.Errorf("ActionFor(%s) = %s, want %s", kind, got, want)
@@ -1036,5 +1036,23 @@ func TestMergedQuestionAnswerGoesToItsProject(t *testing.T) {
 	last := calls[len(calls)-1]
 	if last.project != "alpha" || last.op != "session.message" {
 		t.Fatalf("last call = %+v", last)
+	}
+}
+
+func TestMachineHoldItemsRender(t *testing.T) {
+	out := `{"items":[
+{"id":"l1","kind":"load-high","detail":"1-minute load 4.00 per core, over the limit of 3.00: held for 31m0s"},
+{"id":"m1","kind":"memory-low","detail":"1.0 GiB available, under the minimum of 2.0 GiB: held for 45m0s"}
+]}`
+	var calls []call
+	m := NewModel(fake(out, &calls))
+	rows := m.Rows()
+	if len(rows) != 2 {
+		t.Fatalf("rows = %d: %q", len(rows), rows)
+	}
+	for i, want := range []string{"load-high · Machine load high  1-minute load 4.00", "memory-low · Memory low  1.0 GiB available"} {
+		if !strings.HasPrefix(rows[i], want) {
+			t.Errorf("row %d = %q, want prefix %q", i, rows[i], want)
+		}
 	}
 }
