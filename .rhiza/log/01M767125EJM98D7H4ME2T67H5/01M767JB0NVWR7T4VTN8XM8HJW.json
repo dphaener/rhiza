@@ -1,0 +1,29 @@
+{
+  "actor": "01M767H7SM6AX70B0MJFA8QK6J",
+  "after": [
+    "01M767A0R4PSDJ32G3JQWNFEKF"
+  ],
+  "at": "2026-11-11T21:17:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6XVG9JFMB43HTY2VYD98EE7",
+        "handle": null,
+        "id": "01M7679AB4EC5JVAH3B665CPGK",
+        "node": "01M6MYSEB8N545M8M9APZTBXYS",
+        "op": "node.update",
+        "set": {
+          "acceptance": "cmd/rhiza/testdata/script/daemon-milestone-request.txtar (fake rex, rhiza.autonomy.plan owner) queues a feature then a milestone request: with --max-runs 1 and one run already live, daemon --once starts nothing and request ls shows both queued; with --max-runs 2 and one run live, daemon --once starts only the milestone request (run start --workflow plan --new ... --request <id> --milestone) and the feature stays queued; with one interrupted run and one free slot the milestone request starts and the run is not resumed; a second milestone request queued while the first's plan run holds the owner (its start unjournaled within daemonStartGrace, or at its interview step) is not started by the next --once; go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-milestone-request|plan-requests)' passes",
+          "statement": "The daemon starts the oldest queued milestone request's plan run in the next free run slot, ahead of every other start in the poll (resumes of interrupted runs included) and of every other queued request, but waits while the machine-wide slot count is at rhiza.daemon.maxRuns; once started it counts as a running run for later picks, and a second milestone request stays queued while the first's plan run holds the owner (see milestone-wait-owner-steps). A usage-reserve hold does not hold it; pause and low disk do"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M767125EJM98D7H4ME2T67H5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M767JB0NVWR7T4VTN8XM8HJW",
+  "type": "ops",
+  "v": 1
+}
