@@ -1,22 +1,32 @@
 # After land, a ship-change run whose landed head's CI fails with no failing
 # test (an infra failure) goes from landed-green through conflict-triage-landed
 # and rebase-merge-gate-failed to landed-infra-triage and landed-infra-wait
-# instead of ending, waits while the red head's check runs are unchanged, and
-# passes landed-green on once a rerun (a new job) turns the head green. From
+# instead of ending, waits while the red head's check runs are unchanged,
+# reruns the failed jobs itself once its backoff is due, and passes
+# landed-green on once that rerun (a new job) turns the head green. From
 # there the run goes on as any landed run: gate-rebase-merge, rebase-merge
 # (main has not moved), wait-rebased-merge, rebased-merge-green, a squash
 # merge pinned to the green head, wait-main and main-green (the merge
 # commit's tree is the head's), and close-out.
 #
 # The repo's .rhiza/workflows/ship-change.toml replaces the built-in by name
-# with its post-land steps (the built-in's own steps and routes, waits with a
-# short interval and timeout; its wait carries --rerun-infra, which
-# internal/workflow's tests check on the built-in). The fake gh has no
-# Actions run IDs and the test clock is fixed, so no rerun is due: the wait
-# only sees CI move. Its merge squashes the branch onto main in origin
-# (refusing any head but the branch's), and the merged PR names that commit.
+# with its post-land steps from wait-landed on (the built-in's own steps and
+# routes, waits with a short interval and timeout; its wait carries
+# --rerun-infra, which internal/workflow's tests check on the built-in). The
+# fake gh's check is Actions run 42 and its logs name no failing test.
+# wait-landed's ship check spends its one rerun on it, still red (the
+# outage); only the second rerun, landed-infra-wait's own
+# `gh run rerun 42 --failed`, turns it green: the script never reruns. The
+# test clock is fixed, so bin/rhiza (which runs the real rhiza further down
+# PATH) moves the red_at landed-green recorded an hour back before each of
+# the wait's polls until it has rerun: its first rerun (due 5m after) is due
+# on its first poll. It logs those polls to gh.log, so the second rerun is
+# seen to come from one. The fake gh's merge squashes the branch onto main
+# in origin (refusing any head but the branch's), and the merged PR names
+# that commit.
 
 chmod 755 bin/gh
+chmod 755 bin/rhiza
 env PATH=$WORK/bin:$PATH
 exec git init -q --bare origin.git
 mkdir repo
@@ -36,10 +46,10 @@ exec git commit -qm 'Start shipping'
 exec git push -q -u origin main
 exec git push -q origin main:cs/ship-it
 
-cp $WORK/queue $WORK/checks
 exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
 stdout 'succeeded$'
 exec rhiza run status
+stdout '^- wait-landed \(visit 1\): pass, then landed-green'
 stdout '^- landed-green \(visit 1\): fail, then conflict-triage-landed'
 stdout '^- conflict-triage-landed \(visit 1\): fail, then rebase-merge-gate-failed'
 stdout '^- rebase-merge-gate-failed \(visit 1\): fail, then landed-infra-triage'
@@ -55,6 +65,12 @@ stdout '^- wait-main \(visit 1\): pass, then main-green'
 stdout '^- main-green \(visit 1\): pass, then close-out'
 stdout '^- close-out \(visit 1\): pass, then end'
 
+# wait-landed spent the head's one rerun; the second came from a
+# landed-infra-wait poll, and the run merged after it.
+grep -count=2 '^run rerun 42 --failed$' $WORK/gh.log
+grep '\nrhiza ship check --settled --changed --rerun-infra\npr view cs/ship-it [^\n]*\nrun rerun 42 --failed\n' $WORK/gh.log
+grep '\nrun rerun 42 --failed\n(.*\n)*pr merge 7 --squash' $WORK/gh.log
+
 # The merge was a squash pinned to the green head, and close-out removed
 # the branch on origin.
 exec sh -c 'grep -c -x "pr merge 7 --squash --match-head-commit $(cat $WORK/landed.sha)" $WORK/gh.log'
@@ -64,7 +80,14 @@ fold-ok
 
 -- ship-change.toml --
 name = "ship-change"
-start = "landed-green"
+start = "wait-landed"
+
+[step.wait-landed]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "30s"
+interval = "50ms"
+on.pass = "landed-green"
 
 [step.landed-green]
 kind = "command"
@@ -151,33 +174,30 @@ on.pass = "close-out"
 [step.close-out]
 kind = "command"
 run = "rhiza ship close-out"
--- queue --
-RED
-RED
-RED
-RED
-RED
-RERUN
 -- bin/gh --
 #!/bin/sh
 echo "$@" >> "$WORK/gh.log"
 case "$1 $2" in
 "pr view")
-	q="$WORK/checks"
 	if [ "$3" = 7 ]; then
 		printf '{"mergeCommit":{"oid":"%s"},"state":"MERGED"}\n' "$(cat "$WORK/merge.sha")"
 		exit 0
 	fi
-	c=$(head -1 "$q")
-	if [ "$(wc -l < "$q")" -gt 1 ]; then
-		sed -i 1d "$q"
-	fi
+	n=$(grep -c '^run rerun' "$WORK/gh.log")
 	head=$(git -C "$WORK/origin.git" rev-parse "refs/heads/$3")
-	case "$c" in
-	RERUN) test='{"name":"test","status":"COMPLETED","conclusion":"SUCCESS","detailsUrl":"https://ci.example/job/10"}' ;;
-	*) test='{"name":"test","status":"COMPLETED","conclusion":"FAILURE","detailsUrl":"https://ci.example/job/9"}' ;;
+	# Red on job 9, still red on rerun 1's job 11, green on rerun 2's job 12.
+	case "$n" in
+	0) concl=FAILURE job=9 ;;
+	1) concl=FAILURE job=11 ;;
+	*) concl=SUCCESS job=12 ;;
 	esac
+	test='{"name":"test","status":"COMPLETED","conclusion":"'$concl'","detailsUrl":"https://github.test/o/r/actions/runs/42/job/'$job'"}'
 	printf '{"body":"Change set %s","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[%s]}\n' "$RHIZA_CHANGE" "$head" "$test"
+	;;
+"run view")
+	printf 'test\tRun\tError: The runner lost communication with the server.\n'
+	;;
+"run rerun")
 	;;
 "pr merge")
 	head=$(git -C "$WORK/origin.git" rev-parse refs/heads/cs/ship-it)
@@ -195,3 +215,17 @@ case "$1 $2" in
 	exit 1
 	;;
 esac
+-- bin/rhiza --
+#!/bin/sh
+self=$(cd "$(dirname "$0")" && pwd)
+real=$(PATH=$(echo "$PATH" | tr : '\n' | grep -vx "$self" | paste -sd: -) command -v rhiza)
+case " $* " in
+*" --rerun-infra "*)
+	echo "rhiza $*" >> "$WORK/gh.log"
+	st="$WORK/repo/.git/rhiza/ship/$RHIZA_CHANGE.json"
+	if ! grep -qs '"infra_reruns"' "$st"; then
+		sed -i 's/"red_at": "[^"]*"/"red_at": "2000-01-01T00:00:00Z"/' "$st"
+	fi
+	;;
+esac
+exec "$real" "$@"
