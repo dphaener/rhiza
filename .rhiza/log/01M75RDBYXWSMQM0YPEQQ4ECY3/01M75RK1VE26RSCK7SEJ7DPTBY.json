@@ -1,0 +1,129 @@
+{
+  "actor": "01M75REVQB7BW39WNCSZCKC2VD",
+  "after": [
+    "01M75RK079YD964GH4RQF0DKVQ"
+  ],
+  "at": "2026-11-11T16:55:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rhiza's own bug workflows serve m4-orchestrated-by-rhiza: they take the owner out of planning and shipping a bug, as recent fixes to Rhiza's own runs serve milestone 4's intents",
+          "wording": "(assumed by the planner in an autonomous run, no owner to ask)"
+        },
+        "handle": "bug-workflows-serve-m4",
+        "id": "01M75RK10JHEXK5AHEDXSWMQVD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M75RK10JHEXK5AHEDTK8TMVR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75RK10JHEXK5AHEDTK8TMVR",
+        "id": "01M75RK11X4R5XCGT6F1A2A36E",
+        "link": "01M75RK11X4R5XCGT6F0WEA6J4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RJJ1ZKJH3SB2FKBAHHWFV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The note on how bug requests flow in this repo goes in CLAUDE.md, not docs/: docs/runs-and-daemon.md and docs/custom-workflows.md already explain dispatch for every repo, and this note is about Rhiza's own repo only",
+          "wording": "(assumed by the planner in an autonomous run, no owner to ask)"
+        },
+        "handle": "bug-flow-note-in-claude-md",
+        "id": "01M75RK13500RFD1B0MGN7ZV8Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M75RK13500RFD1B0MD34PWSP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75RK13500RFD1B0MD34PWSP",
+        "id": "01M75RK14QMQBBX5MTBJZHH74M",
+        "link": "01M75RK14QMQBBX5MTBHSYEE22",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RJJ1ZKJH3SB2FKBAHHWFV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "rhiza workflow check plan-bug and rhiza workflow check bugfix pass (a warning about autonomous runs with bypassed permissions is expected), rhiza workflow describe plan-bug and bugfix each show the repo layer and autonomous, rhiza workflow ls lists both from .rhiza/workflows, and make self-check passes",
+          "statement": "This repo dispatches bug requests to autonomous workflows: .rhiza/dispatch.toml sets [request] bug = \"plan-bug\" and [ready] bug = \"bugfix\" with no schedules, .rhiza/workflows/plan-bug.toml wraps the built-in plan and .rhiza/workflows/bugfix.toml wraps the built-in ship-change, each as one workflow step with autonomous = true, so a bug is planned and shipped with no owner step whatever rhiza.autonomy.* says; there is no GitHub intake script, no rhiza.eventCommand hook and no issue label"
+        },
+        "handle": "own-repo-bug-workflows",
+        "id": "01M75RK16E77QY68C4GY011BED",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M75RK16E77QY68C4GTVWBE19",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      },
+      {
+        "decision": null,
+        "from": "01M75RK16E77QY68C4GTVWBE19",
+        "id": "01M75RK1BSARNKMBSRRYJATSRQ",
+        "link": "01M75RK1BSARNKMBSRRW0AT5BJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RK10JHEXK5AHEDTK8TMVR",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M75RK16E77QY68C4GTVWBE19",
+        "id": "01M75RK1G7XXVJE4FVD8PJNG3M",
+        "link": "01M75RK1G7XXVJE4FVD6YS9EE4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RJJ1ZKJH3SB2FKBAHHWFV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "CLAUDE.md names rhiza request --kind bug, .rhiza/dispatch.toml, plan-bug and bugfix, says both run autonomous with no owner step and that bugs do not come from GitHub issues; every command it names exists (rhiza request --help, rhiza workflow describe plan-bug and bugfix succeed)",
+          "statement": "CLAUDE.md has a short section on how a bug reaches and moves through this repo: queued as rhiza request --kind bug (CLI, the Request app, the orchestrator, the watchdog), planned by plan-bug and shipped by bugfix with no owner step, and never from GitHub issues"
+        },
+        "handle": "own-repo-bug-flow-note",
+        "id": "01M75RK1M7WBHR4ND59MSB94TJ",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M75RK1M7WBHR4ND59KFBG8JT",
+        "op": "node.create",
+        "parent": "01M6VYTAAZ3666PP9D4N9HTVSQ"
+      },
+      {
+        "decision": null,
+        "from": "01M75RK1M7WBHR4ND59KFBG8JT",
+        "id": "01M75RK1RJA61AMG6S1K6GTZ21",
+        "link": "01M75RK1RJA61AMG6S1FBJ4NEP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RK13500RFD1B0MD34PWSP",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M75RK1M7WBHR4ND59KFBG8JT",
+        "id": "01M75RK1SYKTE98Y7XFZF9WES2",
+        "link": "01M75RK1SYKTE98Y7XFY0X6HFD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RK16E77QY68C4GTVWBE19",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M75RDBYXWSMQM0YPEQQ4ECY3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75RK1VE26RSCK7SEJ7DPTBY",
+  "type": "ops",
+  "v": 1
+}
