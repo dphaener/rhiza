@@ -1,0 +1,33 @@
+{
+  "actor": "01M76B5JZGES62GECTD6101B5C",
+  "after": [
+    "01M76BC9RSAN2E1982SMXBSZMB"
+  ],
+  "at": "2026-11-11T22:24:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "89180d2d075cb3d02085ce233472d16be3f20b8c281021faf37ed6ed4632da75",
+          "session": "b5d43cfb-5283-4ba3-a002-01a1ccb2baa0",
+          "summary": "Autonomous plan run (no owner present). The planner read the change set's intent (2026-11-11, run 01M75WRZ / PR #442: CI's lint job failed in self-check on stale docs/reference, ci-triage called it infra and the run sat in wait-ci-rerun 45+ minutes), the wait-green-pr leaves (ship-check-ci-test-findings, ship-check-runner-test-failures, ship-change-ci-fix-step, ci-triage-infra-waits, ship-change-infra-wait-reruns from PR #441) and internal/api/ship.go (parseFailedTests, shipReadFailures, runShipTestFailures, shipInfraWait), the built-in build/review/ship-change workflows and the Makefile. It raised three questions to the arbiter: how to classify a non-test red as fixable, how runs keep checked-in generated files current, and what part 3 (wait-ci-rerun waiting forever) still needs given #441. The arbiter answered with Decision arbiter-ci-nontest: a cause recogniser beside parseFailedTests (rhiza check 'fail ...' lines, gofmt/fmt-check listings, vet and compiler 'file.go:line:col:' diagnostics, and as a fallback 'make: *** [target] Error N' with the lines before it) records CI findings so ci-triage passes to ci-fix, also on wait-ci-rerun's attempts; ci-fix's prompt widens to CI findings; a language-neutral project setting rhiza.ship.generate run by the build and review render steps, set here to a make docs target; nothing new for the wait itself, met by the recogniser, with one testscript replaying the 2026-11-11 case. The change set serves m4-runs-hold-up, as the sibling CI-infra change set 01M75R7F does. No owner words were quoted: there are none in an autonomous run.",
+          "title": "Plan of change set 01M76B50: ship-change routes deterministic non-test CI failures to ci-fix"
+        },
+        "handle": "ci-nontest-failures-plan",
+        "id": "01M76BDAQD86NK9DS656W8ZECG",
+        "key": null,
+        "kind": "source",
+        "node": "01M76BDAQD86NK9DS654CM8YCM",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76B50FYAFEWQS29QZCGMTPN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76BDAR87Z08YYYBADTPHYRP",
+  "type": "ops",
+  "v": 1
+}
