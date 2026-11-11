@@ -1,0 +1,117 @@
+# After land, a ship-change run whose landed head's CI fails with no failing
+# test (an infra failure) goes from landed-green through conflict-triage-landed
+# and rebase-merge-gate-failed to landed-infra-triage and landed-infra-wait
+# instead of ending, waits while the red head's check runs are unchanged, and
+# passes landed-green on once a rerun (a new job) turns the head green.
+#
+# The repo's .rhiza/workflows/ship-change.toml replaces the built-in by name
+# with its post-land middle (the built-in's own steps and routes; its wait
+# carries --rerun-infra, which internal/workflow's tests check on the built-in).
+# The fake gh has no Actions run IDs and the test clock is fixed, so no rerun
+# is due: the wait only sees CI move.
+
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/ship-change.toml .rhiza/workflows/ship-change.toml
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec git push -q origin main:cs/ship-it
+
+cp $WORK/queue $WORK/checks
+exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
+stdout 'succeeded$'
+exec rhiza run status
+stdout '^- landed-green \(visit 1\): fail, then conflict-triage-landed'
+stdout '^- conflict-triage-landed \(visit 1\): fail, then rebase-merge-gate-failed'
+stdout '^- rebase-merge-gate-failed \(visit 1\): fail, then landed-infra-triage'
+stdout '^- landed-infra-triage \(visit 1\): pass, then landed-infra-wait'
+stdout '^- landed-infra-wait \(visit 1\): pass, then landed-green'
+stdout '^- landed-green \(visit 2\): pass, then gate-rebase-merge'
+stdout '^- gate-rebase-merge \(visit 1\): pass, then end'
+fold-ok
+
+-- ship-change.toml --
+name = "ship-change"
+start = "landed-green"
+
+[step.landed-green]
+kind = "command"
+run = "rhiza ship check"
+max_visits = 3
+on.pass = "gate-rebase-merge"
+on.fail = "conflict-triage-landed"
+
+[step.conflict-triage-landed]
+kind = "command"
+run = "rhiza ship check --conflicts"
+max_visits = 6
+on.pass = "done"
+on.fail = "rebase-merge-gate-failed"
+
+[step.rebase-merge-gate-failed]
+kind = "command"
+run = "rhiza ship gate --failed"
+max_visits = 3
+on.pass = "done"
+on.fail = "landed-infra-triage"
+
+[step.landed-infra-triage]
+kind = "command"
+run = "rhiza ship check --infra"
+max_visits = 3
+on.pass = "landed-infra-wait"
+
+[step.landed-infra-wait]
+kind = "wait"
+until = "rhiza ship check --settled --changed --rerun-infra"
+timeout = "30s"
+interval = "50ms"
+max_visits = 3
+on.pass = "landed-green"
+
+[step.gate-rebase-merge]
+kind = "command"
+run = "rhiza ship gate"
+max_visits = 3
+-- queue --
+RED
+RED
+RED
+RED
+RED
+RERUN
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+case "$1 $2" in
+"pr view")
+	q="$WORK/checks"
+	c=$(head -1 "$q")
+	if [ "$(wc -l < "$q")" -gt 1 ]; then
+		sed -i 1d "$q"
+	fi
+	head=$(git -C "$WORK/origin.git" rev-parse "refs/heads/$3")
+	case "$c" in
+	RERUN) test='{"name":"test","status":"COMPLETED","conclusion":"SUCCESS","detailsUrl":"https://ci.example/job/10"}' ;;
+	*) test='{"name":"test","status":"COMPLETED","conclusion":"FAILURE","detailsUrl":"https://ci.example/job/9"}' ;;
+	esac
+	printf '{"body":"Change set %s","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[%s]}\n' "$RHIZA_CHANGE" "$head" "$test"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

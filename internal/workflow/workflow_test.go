@@ -396,7 +396,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 		t.Error("review's signoff step is not skipped")
 	}
 	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "wait-landed", "landed-green",
-		"gate-rebase-merge", "conflict-triage-landed", "conflict-fix-landed", "rebase-merge", "rebase-merge-gate-failed", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
+		"gate-rebase-merge", "conflict-triage-landed", "conflict-fix-landed", "rebase-merge", "rebase-merge-gate-failed", "landed-infra-triage", "landed-infra-wait", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
 	}
@@ -430,7 +430,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 	for n, want := range map[string]struct{ pass, fail string }{
 		"gate-triage":              {"gate-fix", "ci-triage"},
 		"rebase-gate-failed":       {"gate-fix", ""},
-		"rebase-merge-gate-failed": {"gate-fix-merge", ""},
+		"rebase-merge-gate-failed": {"gate-fix-merge", "landed-infra-triage"},
 	} {
 		st := def.Steps[n]
 		if st.Kind != KindCommand || st.Run != "rhiza ship gate --failed" || st.On[OutcomePass] != want.pass || st.On[OutcomeFail] != want.fail {
@@ -1855,10 +1855,21 @@ func TestShipChangeLocalGate(t *testing.T) {
 			t.Errorf("%s on.fail = %q; want %s", hop.triage, got, hop.failed)
 		}
 	}
-	for failed, fix := range map[string]string{"rebase-gate-failed": "gate-fix", "rebase-merge-gate-failed": "gate-fix-merge"} {
-		if s := def.Steps[failed]; s.Kind != KindCommand || s.Run != "rhiza ship gate --failed" || s.On[OutcomePass] != fix || len(s.On) != 1 {
-			t.Errorf("%s = %+v; want ship gate --failed, pass to %s, no on.fail", failed, s, fix)
-		}
+	if s := def.Steps["rebase-gate-failed"]; s.Kind != KindCommand || s.Run != "rhiza ship gate --failed" || s.On[OutcomePass] != "gate-fix" || len(s.On) != 1 {
+		t.Errorf("rebase-gate-failed = %+v; want ship gate --failed, pass to gate-fix, no on.fail", s)
+	}
+	// After land, a failure that is no conflict and no failing gate goes to
+	// the infra triage: a red with no failing test waits out the outage
+	// (reruns with backoff) and returns to landed-green; anything else ends
+	// the run.
+	if s := def.Steps["rebase-merge-gate-failed"]; s.Kind != KindCommand || s.Run != "rhiza ship gate --failed" || s.On[OutcomePass] != "gate-fix-merge" || s.On[OutcomeFail] != "landed-infra-triage" || len(s.On) != 2 {
+		t.Errorf("rebase-merge-gate-failed = %+v; want ship gate --failed, pass to gate-fix-merge, fail to landed-infra-triage", s)
+	}
+	if tri := def.Steps["landed-infra-triage"]; tri.Kind != KindCommand || tri.Run != "rhiza ship check --infra" || tri.On[OutcomePass] != "landed-infra-wait" || len(tri.On) != 1 || tri.MaxVisits != 3 {
+		t.Errorf("landed-infra-triage = %+v; want ship check --infra passing to landed-infra-wait, no fail, max_visits 3", tri)
+	}
+	if w := def.Steps["landed-infra-wait"]; w.Kind != KindWait || w.Until != "rhiza ship check --settled --changed --rerun-infra" || w.Timeout != 6*time.Hour || w.Interval != 30*time.Second || w.MaxVisits != 3 || w.On[OutcomePass] != "landed-green" || len(w.On) != 1 {
+		t.Errorf("landed-infra-wait = %+v; want the 6h rerun-infra wait back to landed-green", w)
 	}
 	if s := def.Steps["render-pr"]; s.On["pass"] != "local-gate" {
 		t.Errorf("render-pr on.pass = %q, want local-gate", s.On["pass"])
@@ -1913,7 +1924,7 @@ func TestShipChangeLocalGate(t *testing.T) {
 			}
 		}
 	}
-	for _, n := range []string{"rebase-merge-gate-failed", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge"} {
+	for _, n := range []string{"rebase-merge-gate-failed", "landed-infra-triage", "landed-infra-wait", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge"} {
 		if !after[n] {
 			t.Errorf("%s is not reached after land", n)
 		}
