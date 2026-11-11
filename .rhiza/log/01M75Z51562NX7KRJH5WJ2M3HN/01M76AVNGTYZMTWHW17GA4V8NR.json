@@ -1,0 +1,40 @@
+{
+  "actor": "01M76AFTFK56QKDJHBKSA0FFH2",
+  "after": [
+    "01M76AE1E8AT6Y18TV8QW5XVB1"
+  ],
+  "at": "2026-11-11T22:15:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 845b4c92: read the leaf's diffs (1137b1cc, 845b4c92) and the session-start pattern change (40c4123c); grep found no remaining code cutting a run's step at its first '/' (remaining strings.Cut on '/' are workflow-definition targets that keep the whole remainder, or unrelated paths). Ran go test -trimpath -count=1 -v: TestWatchdogNestedStep (watchdog hold and its inbox item keep ship-change/build/build whole, detail names it), TestTabTitleNestedStep (TabTitle and RunTabTitle carry ship-change/build/build), TestNestedWorkflowStepResumesAtFullPath (failure at mid/inner/two is named whole and retry resumes there), TestStartStepNestedPaths: all PASS. go test -trimpath ./cmd/rhiza -run TestScripts/run-nested-workflow-session: ok (run status text and --json show ship-change/build/build and ship-change/review/review). Package runs: internal/run, internal/session, internal/daemon ok; internal/api's tests all PASS but its enclosing-root guard flagged ~/code/.rhiza-root/usage.live.json changed, which the live rhiza-root.service rewrote at 22:14:58 after the run, not the tests (the leaf adds only test code)."
+        },
+        "handle": "nested-step-paths-shown-verified",
+        "id": "01M76AVNF6R18D143H6KASVGEA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76AVNF6R18D143H6K0B5E04",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76AVNF6R18D143H6K0B5E04",
+        "id": "01M76AVNG02MQVM2CR4YEJMD7Z",
+        "link": "01M76AVNG02MQVM2CR4TMNQHQA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75ZJM0M4319FSK1RE1XPXGE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75Z51562NX7KRJH5WJ2M3HN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76AVNGTYZMTWHW17GA4V8NR",
+  "type": "ops",
+  "v": 1
+}
