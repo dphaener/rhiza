@@ -1,0 +1,63 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [
+    "01M763Z8TGV8GJK2E622D4MK2N"
+  ],
+  "at": "2026-11-11T20:16:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "The workflow-new testscript shows the skeleton with no make test, the examples present, and workflow check flagging the placeholder, then passing once it is replaced.",
+          "statement": "rhiza workflow new without --from writes a skeleton whose test command is a placeholder, with comments on every field and example commands for Go, Ruby, JavaScript/TypeScript, Python and Rust, plus a commented cleanup step and environment example; rhiza workflow check flags the placeholder until it is replaced."
+        },
+        "handle": "workflow-new-placeholder",
+        "id": "01M7642ND4H8MY27X1Y8NF95VA",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M7642ND4H8MY27X1Y6D2CZ2K",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      },
+      {
+        "decision": null,
+        "from": "01M7642ND4H8MY27X1Y6D2CZ2K",
+        "id": "01M7642NDS2JEP5JT41MQRC459",
+        "link": "01M7642NDS2JEP5JT41K36XNQ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BJ9AR4V9ZKB533VC998",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test runs rhiza workflow check on every example workflow under docs and passes.",
+          "statement": "The custom-workflows docs explain the cleanup phase and workflow environment, and the docs carry example workflows for Go, Ruby, JavaScript/TypeScript and Python, each one a file that passes rhiza workflow check."
+        },
+        "handle": "workflow-docs-examples",
+        "id": "01M7642NEC2XPB8ACSE0S1C0SN",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M7642NEC2XPB8ACSDXKCMJAE",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      },
+      {
+        "decision": null,
+        "from": "01M7642NEC2XPB8ACSDXKCMJAE",
+        "id": "01M7642NEV1KDM2J0NJA3NA2HG",
+        "link": "01M7642NEV1KDM2J0NJ6H671FV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BJ9AR4V9ZKB533VC998",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M763Z8TGV8GJK2E621JS6HYZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7642NFACPAEACP049K6N2R4",
+  "type": "ops",
+  "v": 1
+}

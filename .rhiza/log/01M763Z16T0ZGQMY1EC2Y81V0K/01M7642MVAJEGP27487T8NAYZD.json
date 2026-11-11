@@ -1,0 +1,176 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [
+    "01M763Z16T0ZGQMY1EC47HF8FN"
+  ],
+  "at": "2026-11-11T20:16:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "internal/daemon self-update tests with fake git and make cover off, main with a Rhiza checkout, and main with none (logged, nothing updated); the daemon-settings testscript shows autoUpdate=off by default.",
+          "statement": "rhiza.daemon.autoUpdate takes off (the default) or main: with main the daemon finds the registered project that is Rhiza's own source checkout by its module path, fast-forwards it when origin/main moves and runs make update, as self-update does today; off never updates."
+        },
+        "handle": "daemon-auto-update",
+        "id": "01M7642MMAZSKZD27546VS11A5",
+        "key": "zzzzzzz",
+        "kind": "capability",
+        "node": "01M7642MMAZSKZD27543JQ79D8",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M7642MMAZSKZD27543JQ79D8",
+        "id": "01M7642MMQQYJJVSTT7AMFH31S",
+        "link": "01M7642MMQQYJJVSTT76S8EKDC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BS6K2P3Q0FB5PZVWM09",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7642MMAZSKZD27543JQ79D8",
+        "id": "01M7642MNAQQZNAFZEEXQA5KZ2",
+        "link": "01M7642MNAQQZNAFZEET40MFRX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BXVEM10G34R5NGD4CVB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7642MMAZSKZD27543JQ79D8",
+        "id": "01M7642MNTZKBGX4NVFVW4X2GA",
+        "link": "01M7642MNTZKBGX4NVFS1XC2NV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640C9GAA4HM1HVVEBZXHV3",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7642MMAZSKZD27543JQ79D8",
+        "id": "01M7642MP75ZGJMG3NCVY2N87M",
+        "link": "01M7642MP75ZGJMG3NCVVQFVNQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640C0ZSMG5H5V1R43J184F",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/rootcfg and daemon-settings tests show the old key and self_update_project reported with the autoUpdate hint.",
+          "statement": "rhiza.daemon.selfUpdate and rhiza.toml's self_update_project are removed: a root that still sets either gets a message naming rhiza.daemon.autoUpdate instead of a silent no-op."
+        },
+        "handle": "self-update-settings-removed",
+        "id": "01M7642MPQYFWZPE8HSGZNBD6Q",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M7642MPQYFWZPE8HSGANKMTJ",
+        "op": "node.create",
+        "parent": "01M6CS1WF6WPPJTPC8X1DHYGD8"
+      },
+      {
+        "decision": null,
+        "from": "01M7642MPQYFWZPE8HSGANKMTJ",
+        "id": "01M7642MQ538KTC4JDA9DJ0Y9E",
+        "link": "01M7642MQ538KTC4JDA88TBR0Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BS6K2P3Q0FB5PZVWM09",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7642MPQYFWZPE8HSGANKMTJ",
+        "id": "01M7642MQHV7D0CQ5ND3ABNNGR",
+        "link": "01M7642MQHV7D0CQ5ND2FM0X6W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BXVEM10G34R5NGD4CVB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7642MPQYFWZPE8HSGANKMTJ",
+        "id": "01M7642MQY7BKDXD63HKVGHJSE",
+        "link": "01M7642MQY7BKDXD63HHNNFV5S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640C9GAA4HM1HVVEBZXHV3",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7642MPQYFWZPE8HSGANKMTJ",
+        "id": "01M7642MRDRTN9GEWZEV1SFMJ1",
+        "link": "01M7642MRDRTN9GEWZES0B6WGM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640C0ZSMG5H5V1R43J184F",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "The generated reference is regenerated and shows autoUpdate; the docs page on runs and the daemon describes it.",
+          "statement": "rhiza.daemon.autoUpdate and its channels are described in daemon settings, the generated settings reference and the user docs on the daemon, with latest and release named as coming with the release channels milestone."
+        },
+        "handle": "auto-update-documented",
+        "id": "01M7642MRZ4256B2ECYY211WW8",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M7642MRZ4256B2ECYVG4D4SH",
+        "op": "node.create",
+        "parent": "01M6CS1WF6WPPJTPC8X1DHYGD8"
+      },
+      {
+        "decision": null,
+        "from": "01M7642MRZ4256B2ECYVG4D4SH",
+        "id": "01M7642MSCQNVFKZ1Q8G36QDQE",
+        "link": "01M7642MSCQNVFKZ1Q8FAXJR81",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BS6K2P3Q0FB5PZVWM09",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7642MRZ4256B2ECYVG4D4SH",
+        "id": "01M7642MSTWB1XJKBE9TZB9DWW",
+        "link": "01M7642MSTWB1XJKBE9QCAKDKN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BXVEM10G34R5NGD4CVB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7642MRZ4256B2ECYVG4D4SH",
+        "id": "01M7642MTC0G695E07TRYXSPQG",
+        "link": "01M7642MTC0G695E07TQACA2N8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640C9GAA4HM1HVVEBZXHV3",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7642MRZ4256B2ECYVG4D4SH",
+        "id": "01M7642MTWXTFQYR049J30HDZ2",
+        "link": "01M7642MTWXTFQYR049FRV312N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640C0ZSMG5H5V1R43J184F",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M763Z16T0ZGQMY1EC2Y81V0K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7642MVAJEGP27487T8NAYZD",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,43 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [
+    "01M763YS09X76VRD0JVKCWHP7B"
+  ],
+  "at": "2026-11-11T20:16:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript runs a workflow whose step fails and shows its cleanup step ran and the run still failed, and a workflow whose cleanup step exits 1 still ending done with the failure in the journal; internal/workflow parse tests cover the new section.",
+          "statement": "A workflow file may declare cleanup steps, command steps that run once, in order, when a run of the workflow ends done, failed or abandoned, in the run's worktree with the run's environment; a failing cleanup step is journalled and logged and never changes the run's result; the built-in workflows declare none."
+        },
+        "handle": "workflow-cleanup-steps",
+        "id": "01M7642M6E55R7WVH660MCNH0B",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M7642M6E55R7WVH65XV9BKET",
+        "op": "node.create",
+        "parent": "01M5TYGH047RKA27R0RBS38HKM"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/workflow and workflow-check testscripts cover a valid and an invalid cleanup section; describe-golden and the generated reference are regenerated.",
+          "statement": "rhiza workflow check and workflow describe cover cleanup steps: check rejects a cleanup step that is not a command step or names a next step, and describe and the generated workflow-file reference show the cleanup section."
+        },
+        "handle": "workflow-check-cleanup",
+        "id": "01M7642M6S0FA2TZGYT3797KXK",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M7642M6S0FA2TZGYSZT6X311",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      }
+    ]
+  },
+  "change_set": "01M763YS08ZM13JZ065Q95YA2E",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7642M77QKG18H89YN6A8EP2",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [],
+  "at": "2026-11-11T20:14:30Z",
+  "body": {
+    "intent": "Workflow cleanup phase: a workflow file declares command steps that run once when a run of it ends, done, failed or abandoned; a failing cleanup step is logged and never changes the run's result; workflow check and describe cover it.",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M763YS08ZM13JZ065Q95YA2E",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M763YS09X76VRD0JVKCWHP7B",
+  "type": "open",
+  "v": 1
+}

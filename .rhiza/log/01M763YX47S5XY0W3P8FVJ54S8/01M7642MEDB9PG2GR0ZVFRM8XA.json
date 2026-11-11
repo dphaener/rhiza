@@ -1,0 +1,69 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [
+    "01M763YX47S5XY0W3P8KF208EM"
+  ],
+  "at": "2026-11-11T20:16:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript runs a workflow setting FOO={run_tmp} and shows a command step sees it and the folder is gone after the run; a workflow without env sees no GOTMPDIR set by Rhiza.",
+          "statement": "A workflow file may set environment variables for every process its steps start, with {run_tmp} filled in as the run's own temp folder, which Rhiza creates when a step starts and removes when the run ends; Rhiza itself no longer sets GOTMPDIR (run-private-gotmpdir is replaced by this and retired)."
+        },
+        "handle": "workflow-env",
+        "id": "01M7642MCFVAH4VXGAY2SHX011",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M7642MCFVAH4VXGAXZNTW4S7",
+        "op": "node.create",
+        "parent": "01M5TYGH047RKA27R0RBS38HKM"
+      },
+      {
+        "fields": {
+          "acceptance": "rhiza workflow check passes on .rhiza/workflows and make self-check passes; a run of the cleanup command against a fake cache in a scratch dir removes only the stale entries.",
+          "statement": "Rhiza's own repo carries workflows in .rhiza/workflows that set GOTMPDIR to the run's temp folder and whose cleanup phase trims Go build cache entries unused for three hours, go-build temp folders older than two hours and rhiza test temp folders (rhiza-*) older than an hour."
+        },
+        "handle": "rhiza-own-workflows-go-cleanup",
+        "id": "01M7642MCX86XXCXQ0FHNFPBJF",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M7642MCX86XXCXQ0FG85CM1T",
+        "op": "node.create",
+        "parent": "01M5SWT9GPK3F87HZRV8V9XY8D"
+      },
+      {
+        "fields": {
+          "acceptance": "The daemon-settings testscript lists no trimGoCache; internal/api daemon tests show no Go cache sweep; the generated reference is regenerated.",
+          "statement": "The daemon no longer trims the Go build cache: rhiza.daemon.trimGoCache is removed from daemon settings and the reference, and the daemon no longer calls gosweep (daemon-trims-go-cache and go-build-cache-sweep are retired)."
+        },
+        "handle": "daemon-no-go-cache-trim",
+        "id": "01M7642MDEKRSQERY6KR926K9W",
+        "key": "zzzzzzz",
+        "kind": "capability",
+        "node": "01M7642MDEKRSQERY6KR37594J",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/api ship tests show a repo whose ship-change names a head build renders with it and one that names none renders in-process, with isRhizaRepo gone from ship; Rhiza's workflows pass rhiza workflow check.",
+          "statement": "Ship no longer checks whether the repo is Rhiza's own: Rhiza's own ship-change workflow builds rhiza from the PR head in a step and ship's render and land use the binary that step names, while every other repo renders and lands in-process."
+        },
+        "handle": "ship-head-build-step",
+        "id": "01M7642MDWX73CXGPSKFPJN8DK",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M7642MDWX73CXGPSKBXQCJK4",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      }
+    ]
+  },
+  "change_set": "01M763YX47S5XY0W3P8FVJ54S8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7642MEDB9PG2GR0ZVFRM8XA",
+  "type": "ops",
+  "v": 1
+}

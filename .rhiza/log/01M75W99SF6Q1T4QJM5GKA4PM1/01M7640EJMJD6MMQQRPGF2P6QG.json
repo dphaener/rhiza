@@ -1,0 +1,478 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [
+    "01M763Y5DJHZ5YH3G9WPJED3JM"
+  ],
+  "at": "2026-11-11T20:15:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "32",
+          "statement": "Runs clean up after themselves and Rhiza's shipped defaults are language-neutral: no Go-, make- or Rhiza-specific behaviour ships to users, Rhiza keeps its own in its own workflows, and auto-update is a documented setting with channels."
+        },
+        "handle": "milestone-32",
+        "id": "01M7640BA83BXBMSEMZNTMJ5G9",
+        "key": "zzzzzzz",
+        "kind": "intent",
+        "node": "01M7640BA83BXBMSEMZNC4K97G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Disk use no longer grows with runs: a finished run leaves no agent scratch folders and no index database for its removed worktree behind, and the daemon prunes orphans."
+        },
+        "handle": "m32-leftovers-cleaned",
+        "id": "01M7640BBADP9F9SG2AYZ442HY",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M7640BBADP9F9SG2AVA3CJYR",
+        "op": "node.create",
+        "parent": "01M7640BA83BXBMSEMZNC4K97G"
+      },
+      {
+        "fields": {
+          "statement": "A workflow declares an end-of-run cleanup phase that runs whether the run ends done, failed or abandoned, and never fails the run."
+        },
+        "handle": "m32-cleanup-phase",
+        "id": "01M7640BC582M4EH4NQVXGGN23",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M7640BC582M4EH4NQVWEQF58",
+        "op": "node.create",
+        "parent": "01M7640BA83BXBMSEMZNC4K97G"
+      },
+      {
+        "fields": {
+          "statement": "Rhiza's Go- and Rhiza-specific behaviour (Go cache trim, GOTMPDIR, the PR-head build in ship) lives in Rhiza's own workflows, not in the shipped product."
+        },
+        "handle": "m32-go-in-own-workflows",
+        "id": "01M7640BCVRHRSCQYVTSHDRAAN",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M7640BCVRHRSCQYVTQX29SSW",
+        "op": "node.create",
+        "parent": "01M7640BA83BXBMSEMZNC4K97G"
+      },
+      {
+        "fields": {
+          "statement": "Auto-update is a documented setting, rhiza.daemon.autoUpdate, with channels: off and main now, latest and release once the release channels milestone publishes builds."
+        },
+        "handle": "m32-auto-update",
+        "id": "01M7640BD7VV6DC2F6NSNDYP6S",
+        "key": "y",
+        "kind": "intent",
+        "node": "01M7640BD7VV6DC2F6NSBAEQZR",
+        "op": "node.create",
+        "parent": "01M7640BA83BXBMSEMZNC4K97G"
+      },
+      {
+        "fields": {
+          "statement": "Whether a failure is transient is decided by a configurable LLM command, not by language-specific patterns, and fix agents read the failed CI logs themselves."
+        },
+        "handle": "m32-failures-classified",
+        "id": "01M7640BEF2N168VC80M2MWNYG",
+        "key": "z",
+        "kind": "intent",
+        "node": "01M7640BEF2N168VC80HNT903R",
+        "op": "node.create",
+        "parent": "01M7640BA83BXBMSEMZNC4K97G"
+      },
+      {
+        "fields": {
+          "statement": "A developer in any popular language writes a workflow from the scaffold's comments and examples, and the docs show the cleanup phase and per-language example workflows."
+        },
+        "handle": "m32-scaffold-docs",
+        "id": "01M7640BG23TZXS94WDDGZEMJH",
+        "key": "zi",
+        "kind": "intent",
+        "node": "01M7640BG23TZXS94WDAXFKRPT",
+        "op": "node.create",
+        "parent": "01M7640BA83BXBMSEMZNC4K97G"
+      },
+      {
+        "fields": {
+          "statement": "Rhiza's own runs keep shipping through the change, and make check stays green."
+        },
+        "handle": "m32-still-healthy",
+        "id": "01M7640BGZBJ1CH22938S6A9J4",
+        "key": "zr",
+        "kind": "intent",
+        "node": "01M7640BGZBJ1CH22938CARK30",
+        "op": "node.create",
+        "parent": "01M7640BA83BXBMSEMZNC4K97G"
+      },
+      {
+        "fields": {
+          "quote": "Placeholder only. The scaffold should have extensive comments for each item with multiple examples for popular languages so the developer can easily scan through and create the workflow without having to jump around in documentation.",
+          "statement": "rhiza workflow new scaffolds a placeholder test command with extensive comments on every item and examples for popular languages, so no trip to the docs is needed"
+        },
+        "handle": "d-scaffold-placeholder",
+        "id": "01M7640BJ9AR4V9ZKB53X11C5B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7640BJ9AR4V9ZKB533VC998",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7640BJ9AR4V9ZKB533VC998",
+        "id": "01M7640BKAR35J4T65DEAC52JF",
+        "link": "01M7640BKAR35J4T65DBWAZ1XS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M763Y5C2KHYR9MXYA5FVZ5SA",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7640BG23TZXS94WDAXFKRPT",
+        "id": "01M7640BMGCB2NMJ3E8Z03T9Q7",
+        "link": "01M7640BMGCB2NMJ3E8YXZ5EAC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BJ9AR4V9ZKB533VC998",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Number 1, but we have to be aware that users can bring their own LLM so we need to leave that open. I think global configuration is a good place for things like this. ",
+          "statement": "A headless LLM call (Haiku by default) classifies a failure as transient or real; which model or command runs is a machine-wide (global) setting so users can bring their own LLM; the hard-coded signature list goes; when the call cannot run there is no retry"
+        },
+        "handle": "d-llm-classifier",
+        "id": "01M7640BNMBDWE0CRW0Y8Y0ZX9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7640BNMBDWE0CRW0XZJ5P2V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7640BNMBDWE0CRW0XZJ5P2V",
+        "id": "01M7640BPD2JSJ5C4ZN8JZTA7V",
+        "link": "01M7640BPD2JSJ5C4ZN64EN2AD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M763Y5C2KHYR9MXYA5FVZ5SA",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7640BEF2N168VC80HNT903R",
+        "id": "01M7640BQGE0GRZ1162XWHDQMX",
+        "link": "01M7640BQGE0GRZ1162VZKZ5W6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BNMBDWE0CRW0XZJ5P2V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "I think that should all get cleaned up. Rhiza is the only self update candidate moving forward. Self update project is a useless setting at this point. Any non Rhiza projects that want self update can do so through their own custom workflow.",
+          "statement": "self_update_project is removed: Rhiza is the only self-update candidate; other projects redeploy themselves through their own custom workflows"
+        },
+        "handle": "d-no-self-update-project",
+        "id": "01M7640BS6K2P3Q0FB5SC3S6CW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7640BS6K2P3Q0FB5PZVWM09",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7640BS6K2P3Q0FB5PZVWM09",
+        "id": "01M7640BTH0SZ3NHMNQS4VWKRH",
+        "link": "01M7640BTH0SZ3NHMNQQXVMQGN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M763Y5C2KHYR9MXYA5FVZ5SA",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7640BD7VV6DC2F6NSBAEQZR",
+        "id": "01M7640BWTB2B7XH9PWNRK5P26",
+        "link": "01M7640BWTB2B7XH9PWKW83HHV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BS6K2P3Q0FB5PZVWM09",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "I think it can and should show up in the generated reference and user docs.",
+          "statement": "The auto-update setting appears in daemon settings, the generated reference and the user docs"
+        },
+        "handle": "d-auto-update-documented",
+        "id": "01M7640BXVEM10G34R5Q7B511P",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7640BXVEM10G34R5NGD4CVB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7640BXVEM10G34R5NGD4CVB",
+        "id": "01M7640BYMS9CS743G1J5PJZQC",
+        "link": "01M7640BYMS9CS743G1HSG8DTN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M763Y5C2KHYR9MXYA5FVZ5SA",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7640BD7VV6DC2F6NSBAEQZR",
+        "id": "01M7640BZJMYTB5G6M9DNMFPPV",
+        "link": "01M7640BZJMYTB5G6M9CBF0XCB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BXVEM10G34R5NGD4CVB",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Self update SHOULD be a setting. I.E. if I am just a user of Rhiza, I should be able to turn on auto update and get the latest official release. It can also be just set to MAIN, which is what we would want here. For now I understand that main will always be the latest official release, but I will be adding a new release milestone soon that will change that so that the auto update can watch for actual releases and not just new builds.",
+          "statement": "Auto-update is a user setting with channels: release (latest official release) and main (Rhiza's VM); main is the latest release until the release milestone adds real releases"
+        },
+        "handle": "d-auto-update-channels",
+        "id": "01M7640C0ZSMG5H5V1R7F3T33W",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7640C0ZSMG5H5V1R43J184F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7640C0ZSMG5H5V1R43J184F",
+        "id": "01M7640C23E5AHE57WZEH91EAH",
+        "link": "01M7640C23E5AHE57WZC373SQQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M763Y5C2KHYR9MXYA5FVZ5SA",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7640BD7VV6DC2F6NSBAEQZR",
+        "id": "01M7640C3V33BDZYCGZH3M8CEP",
+        "link": "01M7640C3V33BDZYCGZD7RNM9H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640C0ZSMG5H5V1R43J184F",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "How about we also add 'latest' or similar. We should have incremental builds available between builds that brave users can use. ",
+          "statement": "Auto-update gains a latest channel for incremental builds between releases"
+        },
+        "handle": "d-auto-update-latest",
+        "id": "01M7640C561CATF14TE6F134RA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7640C561CATF14TE4XC9PW5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7640C561CATF14TE4XC9PW5",
+        "id": "01M7640C6Q2ERG0DMWEFG91AC4",
+        "link": "01M7640C6Q2ERG0DMWEDJEK74T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M763Y5C2KHYR9MXYA5FVZ5SA",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7640BD7VV6DC2F6NSBAEQZR",
+        "id": "01M7640C7Z3KDBBVKPCDMRBV8K",
+        "link": "01M7640C7Z3KDBBVKPCCWACKPJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640C561CATF14TE4XC9PW5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "This should also be alled 'autoUpdate' and not 'selfUpdate', so it makes sense and aligns with the rest of the world",
+          "statement": "The setting is named rhiza.daemon.autoUpdate, not selfUpdate"
+        },
+        "handle": "d-auto-update-name",
+        "id": "01M7640C9GAA4HM1HVVF1P51GW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7640C9GAA4HM1HVVEBZXHV3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7640C9GAA4HM1HVVEBZXHV3",
+        "id": "01M7640CB2ARF28KAW0191H28Y",
+        "link": "01M7640CB2ARF28KAVZYN8K2BW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M763Y5C2KHYR9MXYA5FVZ5SA",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7640BD7VV6DC2F6NSBAEQZR",
+        "id": "01M7640CC5RH0SKTV2TW0T2YRA",
+        "link": "01M7640CC5RH0SKTV2TV3QZGNG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640C9GAA4HM1HVVEBZXHV3",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "We can include all of the release channels in the plan, but it will rely on the release milestone. This planning needs to wrap up before we can begin the planning and execution of the release milestone.",
+          "statement": "All release channels are planned in this milestone; latest and release rely on the release channels milestone, planned after this one"
+        },
+        "handle": "d-channels-planned-now",
+        "id": "01M7640CD758QEYQH1GB3E8K4K",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7640CD758QEYQH1GAMQPVWH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7640CD758QEYQH1GAMQPVWH",
+        "id": "01M7640CEPGCX9P4G15SRKAA0X",
+        "link": "01M7640CEPGCX9P4G15PZHRK46",
+        "note": "",
+        "op": "link.create",
+        "to": "01M763Y5C2KHYR9MXYA5FVZ5SA",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7640BD7VV6DC2F6NSBAEQZR",
+        "id": "01M7640CHY13NC3GRZDKW3MQB6",
+        "link": "01M7640CHY13NC3GRZDGFYZ9D2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640CD758QEYQH1GAMQPVWH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M763YK58RWNJ35P9S8BSFKVQ",
+        "id": "01M7640CMCFGEMX5G3ESDGDT4D",
+        "link": "01M7640CMCFGEMX5G3EPGBZ3SY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BBADP9F9SG2AVA3CJYR",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M763YS08ZM13JZ065Q95YA2E",
+        "id": "01M7640CPRJPW8FH859YFTZMVJ",
+        "link": "01M7640CPRJPW8FH859XANC8NJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BC582M4EH4NQVWEQF58",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M763YX47S5XY0W3P8FVJ54S8",
+        "id": "01M7640CS41AH8HQQ67C9BT39D",
+        "link": "01M7640CS41AH8HQQ679W1CFKS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BCVRHRSCQYVTQX29SSW",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M763Z16T0ZGQMY1EC2Y81V0K",
+        "id": "01M7640CV02AXB0B2GQ3FTTM5B",
+        "link": "01M7640CV02AXB0B2GQ1V1T8RY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BD7VV6DC2F6NSBAEQZR",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M763Z4X9Q90ASH2K1BF7PZPS",
+        "id": "01M7640CWDR90BYXAS7QM6KF02",
+        "link": "01M7640CWDR90BYXAS7MDW3MCC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BEF2N168VC80HNT903R",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M763Z8TGV8GJK2E621JS6HYZ",
+        "id": "01M7640CXSK29YVV3E02VDRVFP",
+        "link": "01M7640CXSK29YVV3DZZ1NBZV4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BG23TZXS94WDAXFKRPT",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M763ZDJBN7QKR3AAST5FTR6A",
+        "id": "01M7640D25YZF7R8F5PSGMTARA",
+        "link": "01M7640D25YZF7R8F5PS14Y5K0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BD7VV6DC2F6NSBAEQZR",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M763YX47S5XY0W3P8FVJ54S8",
+        "id": "01M7640DNEDGTCZ2S7CJ0JTA5G",
+        "link": "01M7640DNEDGTCZ2S7CEZS348D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M763YS08ZM13JZ065Q95YA2E",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M763Z8TGV8GJK2E621JS6HYZ",
+        "id": "01M7640E2ZY3GJPV9893X8MZ4E",
+        "link": "01M7640E2ZY3GJPV98934JZ15C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M763YS08ZM13JZ065Q95YA2E",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M763ZDJBN7QKR3AAST5FTR6A",
+        "id": "01M7640EJ2EPNEZYDZXARRNVD2",
+        "link": "01M7640EJ2EPNEZYDZX925WJBQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M763Z16T0ZGQMY1EC2Y81V0K",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M75W99SF6Q1T4QJM5GKA4PM1",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7640EJMJD6MMQQRPGF2P6QG",
+  "type": "ops",
+  "v": 1
+}
