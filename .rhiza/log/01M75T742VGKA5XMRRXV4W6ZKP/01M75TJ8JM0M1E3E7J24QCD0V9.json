@@ -1,0 +1,142 @@
+{
+  "actor": "01M75T8T0A1QCV06NR8FSEBJN4",
+  "after": [
+    "01M75THG0BZMEDSXZDBMPT6EP2"
+  ],
+  "at": "2026-11-11T17:30:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M75TGCCVXAFW35TVZT9JRAFK",
+        "id": "01M75TJ7ZEQ23EZR264BA30SSM",
+        "link": "01M75TJ7ZEQ23EZR264A6HFST5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75THFY0GAA5DT6JEB3Z13SF",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A new testscript daemon-load-hold.txtar injects the readings through test env vars honoured only with RHIZA_TEST_NOW set (like RHIZA_TEST_FREE_BYTES): with the 1-minute load per core over maxLoad, rhiza daemon --once starts and resumes nothing and daemon status --json shows skips with reason load-high; with the 1-minute load back under but the 5-minute still over, it stays held; with the 5-minute under, the same fixture starts its run; MemAvailable under minMemory holds with reason memory-low; maxLoad 0 and minMemory 0 each disable their check; cmd/rhiza's test Setup gives every script a default reading so no script reads the host's load or memory; go test -trimpath ./internal/daemon/... covers parsing /proc/loadavg and /proc/meminfo samples",
+          "statement": "Before starting or resuming any run (ready work, plan requests, schedules' runs, continuations) the daemon reads load and available memory and starts nothing new while held: a hold begins when the 1-minute load per core is over rhiza.daemon.maxLoad and ends only once the 5-minute load per core is back under it, or while MemAvailable is under rhiza.daemon.minMemory; each held candidate is skipped with reason load-high or memory-low naming the reading and the limit; running runs are never stopped or paused; a reading that cannot be taken (macOS memory, other platforms) never holds; maxRuns stays the upper bound"
+        },
+        "handle": "daemon-load-memory-hold",
+        "id": "01M75TJ828KDYB1XVYQCASV9FS",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M75TJ828KDYB1XVYQ99EQVBM",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      },
+      {
+        "decision": null,
+        "from": "01M75TJ828KDYB1XVYQ99EQVBM",
+        "id": "01M75TJ8516K5XJH6QJ159GYPY",
+        "link": "01M75TJ8516K5XJH6QJ02GVC3J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75TGCCVXAFW35TVZT9JRAFK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "The daemon settings testscript shows both defaults in rhiza daemon settings --json, rhiza daemon set accepts maxLoad 2.5 and minMemory 4G and rejects a negative or non-numeric maxLoad and a malformed size with exit 2 leaving rhiza.toml unchanged, and 0 is accepted for each; describe-golden.txtar is regenerated for the new request fields",
+          "statement": "rhiza.daemon.maxLoad (load per core, default 3.0) and rhiza.daemon.minMemory (a size, default 2G) are machine settings in the root's rhiza.toml beside minFree, with --max-load and --min-memory flags on rhiza daemon; 0 or empty turns each check off; rhiza daemon settings lists them and rhiza daemon set validates them"
+        },
+        "handle": "daemon-load-memory-settings",
+        "id": "01M75TJ86QSG1T40J67WPD016M",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M75TJ86QSG1T40J67RXVCQTW",
+        "op": "node.create",
+        "parent": "01M6CS1WF6WPPJTPC8X1DHYGD8"
+      },
+      {
+        "decision": null,
+        "from": "01M75TJ86QSG1T40J67RXVCQTW",
+        "id": "01M75TJ87HF90PAG1QRV17DR2S",
+        "link": "01M75TJ87HF90PAG1QRRHHT0YQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75TGCCVXAFW35TVZT9JRAFK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "daemon-load-hold.txtar checks rhiza daemon status (text and --json) for the readings, the held state with its reason and since time, and the unavailable reading when the test reading is set to unavailable, and checks the daemon log has exactly one hold line and one release line across a held poll, a still-held poll and a released poll",
+          "statement": "rhiza daemon status shows the last poll's load per core (1- and 5-minute), available memory, or that a reading is unavailable on this platform, and whether new runs are held, why and since when; the daemon log writes one line when a load or memory hold begins and one when it ends"
+        },
+        "handle": "daemon-status-load-memory",
+        "id": "01M75TJ88XZARYMCR7ZN3Y11AB",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M75TJ88XZARYMCR7ZM674GWF",
+        "op": "node.create",
+        "parent": "01M61R7NEEK19RP2QEHFRQ6W8S"
+      },
+      {
+        "decision": null,
+        "from": "01M75TJ88XZARYMCR7ZM674GWF",
+        "id": "01M75TJ8AC0RWVZ9T5AHW90V9W",
+        "link": "01M75TJ8AC0RWVZ9T5AESBDZX1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75TGCCVXAFW35TVZT9JRAFK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A health testscript with daemon state recording a load hold since 29 minutes before RHIZA_TEST_NOW shows the part ok; since 31 minutes shows it warn with the reading, limit and rhiza daemon set rhiza.daemon.maxLoad as next step; the same for a memory hold with minMemory",
+          "statement": "rhiza health reports a load or memory hold that has lasted 30 minutes or more as a warning naming the reading, the limit, how long it has held and the setting to change, and is ok with the readings otherwise"
+        },
+        "handle": "health-load-memory-hold",
+        "id": "01M75TJ8C15BJA7G951GZGWBC5",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M75TJ8C15BJA7G951FPJH4D8",
+        "op": "node.create",
+        "parent": "01M6D4RPTDYGEG48RYPD0557BA"
+      },
+      {
+        "decision": null,
+        "from": "01M75TJ8C15BJA7G951FPJH4D8",
+        "id": "01M75TJ8DJT2GXN7AZW8FVG4M0",
+        "link": "01M75TJ8DJT2GXN7AZW64C3MQV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75TGCCVXAFW35TVZT9JRAFK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "An inbox testscript with a daemon state recording a load hold since 31 minutes before RHIZA_TEST_NOW shows one load-high item in rhiza inbox --json, none for a hold since 29 minutes, one memory-low item for a memory hold since 31 minutes, and none once a later poll records the hold released; go test -trimpath ./internal/tui/inboxapp/... covers the item's rendering",
+          "statement": "rhiza inbox lists one load-high or memory-low item while the daemon's last poll records a hold that has lasted 30 minutes or more, naming the reading, the limit and how long it has held, and the inbox app shows it"
+        },
+        "handle": "inbox-load-memory-hold",
+        "id": "01M75TJ8FW01MJMA1HKDC1X9EX",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M75TJ8FW01MJMA1HKD3TGNN0",
+        "op": "node.create",
+        "parent": "01M61R7Q0JX5BXJP6M3P1SJXTG"
+      },
+      {
+        "decision": null,
+        "from": "01M75TJ8FW01MJMA1HKD3TGNN0",
+        "id": "01M75TJ8H298PW3NTQMJ1TJNWM",
+        "link": "01M75TJ8H298PW3NTQMHWZ7XHN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75TGCCVXAFW35TVZT9JRAFK",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M75T742VGKA5XMRRXV4W6ZKP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75TJ8JM0M1E3E7J24QCD0V9",
+  "type": "ops",
+  "v": 1
+}

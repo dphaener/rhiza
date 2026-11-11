@@ -1,0 +1,41 @@
+{
+  "actor": "01M75TEXMHCTVPNEZDXH86Q7EA",
+  "after": [
+    "01M75TE7DFXGC4RFQW022GZ3FT"
+  ],
+  "at": "2026-11-11T17:29:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "All four recommendations follow the change set's intent text, which the owner filed with \"yes file it\": it names maxLoad per core (about 3.0) and minMemory (about 2G) beside minFree, hysteresis that holds above the limit and resumes only when the 5-minute average is back under it, Linux /proc/loadavg and MemAvailable, macOS sysctl vm.loadavg or skipping the check where unsupported, and a health/inbox threshold of e.g. 30 minutes. m4-orchestrated-by-rhiza is the fitting intent: its statement is the daemon orchestrating with no orchestrator session, and the evidence is the orchestrator hand-tuning maxRuns eight times on 2026-11-08..10. Skipping memory on macOS avoids parsing vm_stat page counts for a check the VM (Linux) is what needs; the disk guard already skips off unix (internal/daemon/disk_other.go), so skipping where unsupported matches existing practice. A fixed 30-minute threshold keeps the settings surface small; it can become a setting later if needed. Memory needs no separate hysteresis window since MemAvailable is a point reading and the run-start cadence already damps flapping.",
+          "statement": "The change set serves @{01M61R4RCY7AE9N46F2YDNX0WD}. The daemon holds new runs when the 1-minute load per core is over rhiza.daemon.maxLoad (default 3.0) and releases only once the 5-minute load per core is back under it; it holds while MemAvailable is under rhiza.daemon.minMemory (default 2G) and releases once it is back at or over it; 0 or empty disables each. Linux reads /proc/loadavg and MemAvailable from /proc/meminfo; macOS reads load via sysctl vm.loadavg and skips the memory check; other platforms skip both, and rhiza daemon status says the reading is unavailable. rhiza daemon status and the daemon log show every hold and release at once; rhiza health and the inbox report a load or memory hold once it has lasted 30 minutes, a fixed threshold with no setting.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "daemon-load-memory-hold-shape",
+        "id": "01M75TGCCVXAFW35TVZX0GGJPF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M75TGCCVXAFW35TVZT9JRAFK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75TGCCVXAFW35TVZT9JRAFK",
+        "id": "01M75TGCE3Q8TNMH9ZXJTN0C2E",
+        "link": "01M75TGCE3Q8TNMH9ZXH5T3ABX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75TE1PB22WYBMMC4MMBAA46",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M75T742VGKA5XMRRXV4W6ZKP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75TGCFGCZJCDHHNCH8PC3PK",
+  "type": "ops",
+  "v": 1
+}
