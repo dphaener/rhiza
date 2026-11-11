@@ -1,0 +1,40 @@
+{
+  "actor": "01M7644Y7EBY570BSC0N5YE1W8",
+  "after": [
+    "01M763YSXZWNKWYD5FWNFGQHN9"
+  ],
+  "at": "2026-11-11T20:19:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at c57cac64 (review fix for the confirmed macOS finding). Read the diff: ReadMachine now takes load from readLoadavg, /proc/loadavg on !darwin (load_proc.go) and unix.SysctlRaw(\"vm.loadavg\") on darwin (load_darwin.go), parsed by ParseSysctlLoadavg (three uint32 fixed-point averages, padding, int64 fscale at offset 16, matching struct loadavg on 64-bit); memory stays /proc-only so macOS skips only the memory check, as the shape decision says; an unreadable sysctl leaves LoadOK false and never holds. go.mod moves golang.org/x/sys v0.47.0 from indirect to direct, same version. Ran: go test -trimpath ./internal/daemon/... ok (includes TestParseSysctlLoadavg: 2.5/1.25 at scale 2048, short and zero-scale inputs fail); GOOS=darwin GOARCH=arm64 go vet ./internal/daemon and go build ./cmd/rhiza ok; gofmt -l clean; go test -trimpath ./cmd/rhiza -run TestScripts/daemon-load: daemon-load-hold and daemon-load-settings PASS. The darwin path itself was not run on a Mac."
+        },
+        "handle": "daemon-load-memory-hold-macos-verified",
+        "id": "01M7648GPDWZJ1J1QTJMC4GZHG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7648GPC4HZD3169N595HJC0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7648GPC4HZD3169N595HJC0",
+        "id": "01M7648GQ9RMY64KRNXZ6S3SBH",
+        "link": "01M7648GQ9RMY64KRNXZ0ZDD69",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75TJ828KDYB1XVYQ99EQVBM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75T742VGKA5XMRRXV4W6ZKP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7648GR9GY14F02JDGK118T9",
+  "type": "ops",
+  "v": 1
+}

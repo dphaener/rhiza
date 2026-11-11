@@ -1731,12 +1731,20 @@ cmp stdout describe.golden.json
             "description": "Run this command through sh -c in the repo root once per change set lifecycle move (proposed, accepted, rejected, withdrawn, superseded, landed, reopened) it has not handled, in log order, with the move as JSON on stdin and RHIZA_EVENT, RHIZA_EVENT_CHANGE, RHIZA_EVENT_ENTRY and RHIZA_EVENT_TITLE set; default the git config rhiza.eventCommand. The first run only records the moves already in the log. A failing or timed-out (10 s) command is logged and not retried",
             "type": "string"
           },
+          "max_load": {
+            "description": "Start no run while the 1-minute load per core is over this, until the 5-minute load is back under it: a number; default 3.0; 0 turns the check off",
+            "type": "string"
+          },
           "max_runs": {
             "description": "Start runs until this many are running; default 2. An interrupted run takes no slot",
             "type": "integer"
           },
           "min_free": {
             "description": "Start and resume nothing while the repo's filesystem has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 10G; 0 turns the guard off",
+            "type": "string"
+          },
+          "min_memory": {
+            "description": "Start no run while the available memory is under this: bytes, or a number with K, M, G or T (powers of 1024); default 2G; 0 turns the check off",
             "type": "string"
           },
           "notify_command": {
@@ -1835,7 +1843,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout or ciWindow, or rhiza.autonomy.plan, accept, ship or signoff",
+            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout or ciWindow, or rhiza.autonomy.plan, accept, ship or signoff",
             "type": "string"
           },
           "project": {
@@ -2002,6 +2010,34 @@ cmp stdout describe.golden.json
             "description": "The git commit the daemon's binary was built from, as recorded when it started; absent when the build carried none",
             "type": "string"
           },
+          "hold": {
+            "additionalProperties": false,
+            "description": "Set while new runs are held for load or memory; absent when they are not",
+            "properties": {
+              "detail": {
+                "description": "The reading and the limit",
+                "type": "string"
+              },
+              "reason": {
+                "description": "Why new runs are held",
+                "enum": [
+                  "load-high",
+                  "memory-low"
+                ],
+                "type": "string"
+              },
+              "since": {
+                "description": "When the hold began, RFC 3339 UTC",
+                "type": "string"
+              }
+            },
+            "required": [
+              "detail",
+              "reason",
+              "since"
+            ],
+            "type": "object"
+          },
           "hooks": {
             "description": "The notify and event commands the daemon took at start, each with its source: daemon flag, git config or unset",
             "items": {
@@ -2081,6 +2117,30 @@ cmp stdout describe.golden.json
             "description": "The machine-wide live runs holding a slot (running, not interrupted), summed over the daemon's projects",
             "type": "integer"
           },
+          "load": {
+            "additionalProperties": false,
+            "description": "The last poll's load per core; absent before a poll recorded one",
+            "properties": {
+              "available": {
+                "description": "False when the platform gives no load reading",
+                "type": "boolean"
+              },
+              "load1": {
+                "description": "The 1-minute load average per core, to two decimals; empty when unavailable",
+                "type": "string"
+              },
+              "load5": {
+                "description": "The 5-minute load average per core, to two decimals; empty when unavailable",
+                "type": "string"
+              }
+            },
+            "required": [
+              "available",
+              "load1",
+              "load5"
+            ],
+            "type": "object"
+          },
           "max": {
             "description": "rhiza.daemon.maxRuns as the daemon's last poll recorded it: the cap live plus starting is counted against",
             "type": "integer"
@@ -2088,6 +2148,25 @@ cmp stdout describe.golden.json
           "max_runs": {
             "description": "How many runs it keeps running at once",
             "type": "integer"
+          },
+          "memory": {
+            "additionalProperties": false,
+            "description": "The last poll's available memory; absent before a poll recorded one",
+            "properties": {
+              "available": {
+                "description": "False when the platform gives no memory reading",
+                "type": "boolean"
+              },
+              "bytes": {
+                "description": "The available memory in bytes; 0 when unavailable",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "available",
+              "bytes"
+            ],
+            "type": "object"
           },
           "mode": {
             "description": "How this installation runs the daemon: service when daemon install wrote a systemd unit, else tab (the Rex tab 'rhiza daemon')",
@@ -2199,14 +2278,14 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "detail": {
-                        "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty",
+                        "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the load or memory reading and limit, when load-high or memory-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty",
                         "items": {
                           "type": "string"
                         },
                         "type": "array"
                       },
                       "reason": {
-                        "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve, ship-owner or workflow-unresolved",
+                        "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, load-high, memory-low, usage-reserve, ship-owner or workflow-unresolved",
                         "type": "string"
                       },
                       "request": {
@@ -2350,14 +2429,14 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "detail": {
-                  "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty",
+                  "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the load or memory reading and limit, when load-high or memory-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty",
                   "items": {
                     "type": "string"
                   },
                   "type": "array"
                 },
                 "reason": {
-                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve, ship-owner or workflow-unresolved",
+                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, load-high, memory-low, usage-reserve, ship-owner or workflow-unresolved",
                   "type": "string"
                 },
                 "request": {
@@ -2917,7 +2996,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "parts": {
-            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, usage, then main, ci, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project",
+            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, load, usage, then main, ci, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -2947,6 +3026,7 @@ cmp stdout describe.golden.json
                     "autonomy",
                     "machine",
                     "disk",
+                    "load",
                     "usage",
                     "main",
                     "ci",
@@ -3178,7 +3258,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, main-stale, accept, interview or workflow",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, accept, interview or workflow",
                   "type": "string"
                 },
                 "next": {

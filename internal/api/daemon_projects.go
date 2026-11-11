@@ -194,6 +194,9 @@ func (p *daemonProj) prepare(r DaemonRequest, onConf func(daemonConf)) daemonTur
 		p.saveState()
 		return daemonTurn{err: err}
 	}
+	reading := readMachine(ctx)
+	conf.machine = daemonMachineHold(ctx, conf, reading, state.MachineHold)
+	state.MachineHold, state.Machine = conf.machine, &reading
 	if onConf != nil {
 		onConf(conf)
 	}
@@ -229,7 +232,7 @@ func (p *daemonProj) prepare(r DaemonRequest, onConf func(daemonConf)) daemonTur
 // schedulesStopped says a paused or held project, or one on a disk low on
 // space, starts no scheduled run, as it starts nothing else.
 func (p *daemonProj) schedulesStopped(conf daemonConf, hold *usageHold) bool {
-	if conf.paused || hold != nil {
+	if conf.paused || hold != nil || conf.machine != nil {
 		return true
 	}
 	low, _ := daemonDiskLow(p.ctx, conf.minFree)
@@ -307,7 +310,7 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 	if conf.paused || ferr != nil {
 		return nil, 0, 0, running
 	}
-	if low, _ := daemonDiskLow(ctx, conf.minFree); low {
+	if low, _ := daemonDiskLow(ctx, conf.minFree); low || conf.machine != nil {
 		return nil, 0, 0, running
 	}
 	// A queued milestone request's plan run takes a slot first, then the
@@ -372,7 +375,7 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 	state.MaxRuns = maxRuns
 	var skips []daemon.Skip
 	startRuns, _ := p.rs.List()
-	started, resumed, planned, err := daemonPoll1(ctx, p.rs, p.pending, p.unjournaled, p.scheds.startingCount(ctx.Now(), startRuns), t.pick.Running+share, minFree, r.Autonomous, conf.mode, conf.paused, hold, &skips)
+	started, resumed, planned, err := daemonPoll1(ctx, p.rs, p.pending, p.unjournaled, p.scheds.startingCount(ctx.Now(), startRuns), t.pick.Running+share, minFree, r.Autonomous, conf.mode, conf.paused, hold, conf.machine, &skips)
 	resp.Planned = append(resp.Planned, planned...)
 	if err == nil {
 		// A schedule that does not start is in the daemon log; it never
