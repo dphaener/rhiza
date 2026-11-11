@@ -1,0 +1,39 @@
+{
+  "actor": "01M76F2SMCWE32BHBRYW030BK8",
+  "after": [
+    "01M76F8D2WDQZY3E930CAX745N"
+  ],
+  "at": "2026-11-11T23:32:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "I don't feel like we should ever have anything uncommitted on main like this. Everything should get it's own branch.",
+              "where": "2026-11-11, quoted in the change set's intent"
+            }
+          ],
+          "raw_sha256": "bdfc79e2acd7f40930b1933b02f78d45b2599eac3e5f078410cc39dcb386d337",
+          "session": "6d8a4c7d-979b-46f4-96ad-01a1ccf15531",
+          "summary": "Autonomous plan run, so no owner interview. The planner read the change set's intent, the code (newPlanChange in internal/api/run.go opens a plan request's change set in the main checkout before the run's worktree exists; workspace.writeEntry in internal/api/workspace.go is the one place model entries are written), and the earlier Decisions on main-clone entries (decision-run-carries-accept, close-out-untracked-log-and-retry). It raised four choices to the arbiter: which intent the change set serves, where a main-checkout write lives until main has it, how existing untracked entries move onto a branch, and how loudly health and check report them. The arbiter answered with Decision decision-main-writes-get-a-branch: serve milestone-25; a main-checkout write still lands in the main checkout's log and in the same operation is committed onto a short-lived model branch from origin/main in a temporary worktree, pushed and opened as a model-only PR that the daemon squash-merges on green, later writes to the same change set joining that branch; the daemon (each tick) and a CLI command move orphaned untracked entries onto model branches the same way; health reports an orphan as a problem and lists entries held by a model branch as pending; rhiza check warns in a main checkout only. The plan's leaves: run start --new opens the change set only in the run's worktree; writes for a change set with a live run also go into that run's worktree; main-checkout writes get a model branch and PR; the daemon merges model PRs; orphans are committed by the daemon and by rhiza model commit-untracked; health and check report orphans.",
+          "title": "Plan of change set 01M76F26: nothing Rhiza writes is left uncommitted in the main checkout"
+        },
+        "handle": "main-writes-branch-plan",
+        "id": "01M76F9M97Z9XNQND233W2J9KA",
+        "key": null,
+        "kind": "source",
+        "node": "01M76F9M97Z9XNQND231WG7SDJ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76F9M9R5WCKNT291ZQ15EMS",
+  "type": "ops",
+  "v": 1
+}
