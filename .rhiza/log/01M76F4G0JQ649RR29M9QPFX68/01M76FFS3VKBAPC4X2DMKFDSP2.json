@@ -1,0 +1,52 @@
+{
+  "actor": "01M76FDW9K58Q5B8ZG63PRV2FH",
+  "after": [
+    "01M76F8S91PNSZVG8YRN5MES05"
+  ],
+  "at": "2026-11-11T23:36:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test in internal/api (run_review_test.go) with a journal holding round 2 with a confirmed finding, then a revise step visit and no later round: review-check and review-check --fresh exit non-zero, the message names round 2 as predating the revise, and neither adds a question or asked entry, even when the round is 3; with a round 3 journaled after the revise visit both exit 0 for --fresh and review-check judges round 3 as before. An internal/workflow builtin test checks that plan and plan-milestone have the fresh step after critic running rhiza run review-check --fresh with on.pass = check and on.fail = review, and that critic's on.pass is fresh. The describe-golden testscript is regenerated for the new flag. Run: go test -trimpath ./internal/api ./internal/workflow/... -run <the new tests>, and go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden.",
+          "statement": "rhiza run review-check refuses to judge, exiting non-zero and writing nothing, when the run's latest findings round was journaled before its latest revise visit began, saying that round predates the revise and the review recorded no round since; rhiza run review-check --fresh makes only that test, exiting 0 when the latest round postdates the latest revise visit (or the run has none). The built-in plan and plan-milestone workflows run it as a command step fresh between critic and check, with on.pass = check and on.fail = review, so a stale round sends the run back to a fresh review, never to revise, and check judges only a fresh round."
+        },
+        "handle": "review-check-refuses-stale-round",
+        "id": "01M76F8RTCWVC288HQ1CZF3KBS",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M76F8RTCWVC288HQ1BJSJ2PE",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "base": "01M5WSGD28YB7NQC8BQRZBDJM1",
+        "handle": null,
+        "id": "01M76FFS2561N2BAX0VAJ9HX1A",
+        "node": "01M5WSGD28YB7NQC8BQR8MCVFM",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript with RHIZA_RUN set records two findings and a verdict confirming one and dropping the other: the journal holds both entries, and run status --json and its markdown show the round with one confirmed finding. A verdict naming a third finding, a finding of an unknown kind, or one naming an ID that is neither a node nor a link exits 2 with nothing written; with no RHIZA_RUN both commands exit 2. describe-golden is regenerated. Run: go test -trimpath ./cmd/rhiza -run 'TestScripts/(describe-golden|<the plan-review-journal script>)'.",
+          "statement": "A plan review round is journaled in its run: rhiza run findings <file> records the reviewer's findings, each naming a node or a link (a model link, or a link between change sets such as depends-on), one kind (missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction) and its reason; rhiza run verdict <file> records the critic's verdict on each, confirmed or dropped with a reason, and refuses a finding the round does not hold, so a critic can't add one; rhiza run status shows each round's findings and verdicts."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGD28YB7NQC8BQR8MCVFM",
+        "id": "01M76FFS2N3DDQBWE3P3J614TV",
+        "link": "01M76FFS2N3DDQBWE3P0QA7W0T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8RXV5A2W5SG2V08AY1HB",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76F4G0JQ649RR29M9QPFX68",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76FFS3VKBAPC4X2DMKFDSP2",
+  "type": "ops",
+  "v": 1
+}
