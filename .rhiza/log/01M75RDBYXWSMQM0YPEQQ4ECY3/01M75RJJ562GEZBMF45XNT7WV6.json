@@ -1,0 +1,33 @@
+{
+  "actor": "01M75REVQB7BW39WNCSZCKC2VD",
+  "after": [
+    "01M75RDBYXWSMQM0YPERN8191D"
+  ],
+  "at": "2026-11-11T16:55:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "ce08d45635388bf80bdc5c74aa02c2d983b4971d6e5ef9c265c5dcd47b970855",
+          "session": "ad605dc2-cc4e-4522-b7a2-01a1cb8746da",
+          "summary": "Autonomous plan run (no owner present) for change set 01M75RDBYXWSMQM0YPEQQ4ECY3. The change set's intent already carries the owner's request and scope, quoted there from 2026-11-11: copy Nebari's bug dispatch (nebari PR #94) into this repo, minus the GitHub issue intake. The planner read Nebari's .rhiza/dispatch.toml, plan-bug.toml and bugfix.toml, this repo's .rhiza/workflows (docs.toml, ship.sh; no ship-change override, no dispatch.toml), docs/runs-and-daemon.md and docs/custom-workflows.md (which already document dispatch in general). Assumptions taken without escalation: the change set serves m4-orchestrated-by-rhiza, as recent fixes to Rhiza's own runs serve milestone 4's intents; the config is one leaf (dispatch.toml and both workflows together, since dispatch naming missing workflows is broken); the docs note goes in CLAUDE.md, the repo's contributor and agent guidance, because the product docs already explain dispatch and this note is about this repo only. No questions parked.",
+          "title": "Autonomous plan of Rhiza's own bug workflows"
+        },
+        "handle": "bug-workflows-plan",
+        "id": "01M75RJJ1ZKJH3SB2FKEXFH3EH",
+        "key": null,
+        "kind": "source",
+        "node": "01M75RJJ1ZKJH3SB2FKBAHHWFV",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M75RDBYXWSMQM0YPEQQ4ECY3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75RJJ562GEZBMF45XNT7WV6",
+  "type": "ops",
+  "v": 1
+}
