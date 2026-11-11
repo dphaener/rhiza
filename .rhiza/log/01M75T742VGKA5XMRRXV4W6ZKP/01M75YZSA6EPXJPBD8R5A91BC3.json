@@ -1,0 +1,40 @@
+{
+  "actor": "01M75YV7FKMG3CMEER4E7NNRQD",
+  "after": [
+    "01M75TR5JVGEF9KPTN2Y5WH46B"
+  ],
+  "at": "2026-11-11T18:47:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at c6d5008c: go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(health-load-hold|describe-golden|health.*)$' passes. health-load-hold.txtar writes .git/rhiza/daemon.state.json with a load-high hold since RHIZA_TEST_NOW-29m (load part ok) and -31m (warn 'new runs held for 31m0s (load-high): 1-minute load 4.00 per core, over the limit of 3.00', next 'rhiza daemon set rhiza.daemon.maxLoad'), and the same for memory-low with rhiza.daemon.minMemory. Read the diff: healthLoad in internal/api/health.go warns at >=30m naming hold age, reason and the daemon's Detail (reading and limit, same format as daemon.Evaluate), with the matching setting as next step; otherwise ok with current load/memory readings and limits. A scratch-built binary in a scratch repo showed the warn with a 45m memory hold and the ok line with readings and limits without one."
+        },
+        "handle": "health-load-memory-hold-verified",
+        "id": "01M75YZRWPMXB11Q5ZGEHWNMHV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M75YZRWPMXB11Q5ZGC6WAX5K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75YZRWPMXB11Q5ZGC6WAX5K",
+        "id": "01M75YZS3ZW6HNB6PW68W6MHKW",
+        "link": "01M75YZS3ZW6HNB6PW65PD7STC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75TJ8C15BJA7G951FPJH4D8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75T742VGKA5XMRRXV4W6ZKP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75YZSA6EPXJPBD8R5A91BC3",
+  "type": "ops",
+  "v": 1
+}

@@ -52,6 +52,8 @@ type DaemonRequest struct {
 	Once           bool   `json:"once,omitempty" desc:"Poll once, start what is picked and stop"`
 	Autonomous     bool   `json:"autonomous,omitempty" desc:"Start each run with --autonomous: it goes on without the owner"`
 	MinFree        string `json:"min_free,omitempty" desc:"Start and resume nothing while the repo's filesystem has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 10G; 0 turns the guard off"`
+	MaxLoad        string `json:"max_load,omitempty" desc:"Start no run while the 1-minute load per core is over this, until the 5-minute load is back under it: a number; default 3.0; 0 turns the check off"`
+	MinMemory      string `json:"min_memory,omitempty" desc:"Start no run while the available memory is under this: bytes, or a number with K, M, G or T (powers of 1024); default 2G; 0 turns the check off"`
 	PermissionMode string `json:"permission_mode,omitempty" desc:"Start each run with this --permission-mode, for its agent steps that set none; checked against ship-change before the daemon starts"`
 	EventCommand   string `json:"event_command,omitempty" desc:"Run this command through sh -c in the repo root once per change set lifecycle move (proposed, accepted, rejected, withdrawn, superseded, landed, reopened) it has not handled, in log order, with the move as JSON on stdin and RHIZA_EVENT, RHIZA_EVENT_CHANGE, RHIZA_EVENT_ENTRY and RHIZA_EVENT_TITLE set; default the git config rhiza.eventCommand. The first run only records the moves already in the log. A failing or timed-out (10 s) command is logged and not retried"`
 	NotifyCommand  string `json:"notify_command,omitempty" desc:"Run this command through sh -c in the repo root once per new inbox item, with the item's JSON on stdin and RHIZA_INBOX_KIND, RHIZA_INBOX_ID, RHIZA_INBOX_CHANGE and RHIZA_INBOX_TITLE set; default the git config rhiza.notifyCommand. A failing or timed-out (10 s) command is logged and not retried"`
@@ -384,6 +386,8 @@ func daemonStartState(common string, self daemon.Holder, version, commit string,
 		state.Events, state.EventsSeeded = prev.Events, prev.EventsSeeded
 		state.Hooks = prev.Hooks
 		state.DiskLow = prev.DiskLow
+		state.MachineHold = prev.MachineHold
+		state.Machine = prev.Machine
 		state.UsageHold = prev.UsageHold
 		state.UsageWindows = prev.UsageWindows
 		state.Learned = prev.Learned
@@ -482,6 +486,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	items = append(items, diskLowItems(state.DiskLow)...)
 	items = append(items, usageHoldItems(state.UsageHold)...)
 	items = append(items, watchdogHoldItems(state.WatchdogHolds)...)
+	items = append(items, machineHoldItems(state.MachineHold, ctx.Now())...)
 	if common, err := gitCommonDir(ctx); err == nil {
 		items = append(items, mainStaleItems(common)...)
 		items = append(items, workflowItems(common, state.Skips)...)
@@ -585,6 +590,10 @@ func inboxNotice(what string, it InboxItem) string {
 		return "disk space is low: the daemon holds new starts and resumes"
 	case InboxUsageReserve:
 		return "usage reserve: the daemon holds new launches until the window resets"
+	case InboxLoadHigh:
+		return "machine load is high: the daemon holds new starts and resumes"
+	case InboxMemoryLow:
+		return "available memory is low: the daemon holds new starts and resumes"
 	case InboxWorkflow:
 		return it.Detail
 	case InboxMainStale:
@@ -858,7 +867,7 @@ func daemonShipOf(root string, fold *daemonFolded) daemon.Ship {
 // sets, plan requests, schedules), and the starts made earlier in the poll
 // (resumes, milestone plan runs); nothing starts once they reach max. It
 // returns the change sets started, the runs resumed and the requests started.
-func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, starting, max int, minFree uint64, autonomous bool, mode string, paused bool, hold *usageHold, skips *[]daemon.Skip) (started, resumed, planned []string, err error) {
+func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, starting, max int, minFree uint64, autonomous bool, mode string, paused bool, hold *usageHold, machine *daemon.MachineHold, skips *[]daemon.Skip) (started, resumed, planned []string, err error) {
 	fold, err := daemonFoldOf(ctx)
 	if err != nil {
 		return nil, nil, nil, err
@@ -872,7 +881,9 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	host, _ := os.Hostname()
 	low, free := daemonDiskLow(ctx, minFree)
 	// A usage hold stops everything the daemon would launch but a milestone
-	// request's plan run; low disk stops all.
+	// request's plan run; low disk, load and memory stop all.
+	diskLow := low
+	low = low || machine != nil
 	stopped := low || hold != nil
 	accepted := func(change string) bool {
 		st, ok := fold.stateOf(change)
@@ -961,10 +972,14 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		*skips = append(append(planSkips, unj...), ps...)
 	} else if low {
+		reason := daemon.SkipDiskLow
 		detail := fmt.Sprintf("%s free, under the minimum of %s", daemon.FormatSize(free), daemon.FormatSize(minFree))
+		if !diskLow {
+			reason, detail = machine.Reason, machine.Detail
+		}
 		var low []daemon.Skip
 		for _, cs := range cands {
-			low = append(low, daemon.Skip{Change: cs, Reason: daemon.SkipDiskLow, Detail: []string{detail}})
+			low = append(low, daemon.Skip{Change: cs, Reason: reason, Detail: []string{detail}})
 		}
 		*skips = append(append(planSkips, unj...), low...)
 	} else if hold != nil {
@@ -1478,8 +1493,8 @@ type DaemonSkip struct {
 	Change  string   `json:"change" desc:"The change set's ID; empty for a queued request that was not started"`
 	Request string   `json:"request,omitempty" desc:"The queued request's ID, when the skip is a request whose workflow does not resolve"`
 	Title   string   `json:"title" desc:"The change set's display title, or the request's text"`
-	Reason  string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve, ship-owner or workflow-unresolved"`
-	Detail  []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty"`
+	Reason  string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, load-high, memory-low, usage-reserve, ship-owner or workflow-unresolved"`
+	Detail  []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; the free space, when disk-low; the load or memory reading and limit, when load-high or memory-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty"`
 }
 
 // skipText is the words for a skip reason in the text status.
@@ -1494,6 +1509,8 @@ var skipText = map[string]string{
 	daemon.SkipUnjournaled:  "its start wrote no journal",
 	daemon.SkipNoSlot:       "waiting for a slot",
 	daemon.SkipDiskLow:      "disk space is low",
+	daemon.SkipLoadHigh:     "machine load is high",
+	daemon.SkipMemoryLow:    "available memory is low",
 	daemon.SkipUsageReserve: "usage reserve: held until the window resets",
 	daemon.SkipPaused:       "paused",
 	daemon.SkipShipOwner:    "ship is set to owner: only the owner starts its run",
@@ -1535,7 +1552,44 @@ type DaemonStatusResponse struct {
 	SkippedProjects []DaemonProjectSkip   `json:"skipped_projects" desc:"The registered projects the root daemon did not work at its last poll, each with its reason"`
 	Hooks           []HookRow             `json:"hooks" desc:"The notify and event commands the daemon took at start, each with its source: daemon flag, git config or unset"`
 	Unjournaled     []DaemonEvent         `json:"unjournaled" desc:"The runs it started that never wrote a journal, by change set and when; it starts these again 15 minutes after the start, or sooner when a run of the change set journals"`
+	Load            *DaemonLoad           `json:"load,omitempty" desc:"The last poll's load per core; absent before a poll recorded one"`
+	Memory          *DaemonMemory         `json:"memory,omitempty" desc:"The last poll's available memory; absent before a poll recorded one"`
+	Hold            *DaemonMachineHold    `json:"hold,omitempty" desc:"Set while new runs are held for load or memory; absent when they are not"`
 	Projects        []DaemonProjectStatus `json:"projects" desc:"At the root or with --all: each registered, initialised project's runs, last start and resume, skips and unjournaled starts, in name order, the top-level runs, skipped and unjournaled then being empty; empty for one project"`
+}
+
+// DaemonLoad is a poll's load reading.
+type DaemonLoad struct {
+	Available bool   `json:"available" desc:"False when the platform gives no load reading"`
+	Load1     string `json:"load1" desc:"The 1-minute load average per core, to two decimals; empty when unavailable"`
+	Load5     string `json:"load5" desc:"The 5-minute load average per core, to two decimals; empty when unavailable"`
+}
+
+// DaemonMemory is a poll's available-memory reading.
+type DaemonMemory struct {
+	Available bool   `json:"available" desc:"False when the platform gives no memory reading"`
+	Bytes     uint64 `json:"bytes" desc:"The available memory in bytes; 0 when unavailable"`
+}
+
+// DaemonMachineHold is a hold of new runs for load or memory.
+type DaemonMachineHold struct {
+	Reason string `json:"reason" enum:"load-high,memory-low" desc:"Why new runs are held"`
+	Since  string `json:"since" desc:"When the hold began, RFC 3339 UTC"`
+	Detail string `json:"detail" desc:"The reading and the limit"`
+}
+
+// machineStatus fills the readings and the hold from a state.
+func (r *DaemonStatusResponse) machineStatus(st daemon.State) {
+	if m := st.Machine; m != nil {
+		r.Load = &DaemonLoad{Available: m.LoadOK}
+		if m.LoadOK {
+			r.Load.Load1, r.Load.Load5 = fmt.Sprintf("%.2f", m.Load1), fmt.Sprintf("%.2f", m.Load5)
+		}
+		r.Memory = &DaemonMemory{Available: m.MemOK, Bytes: m.MemAvail}
+	}
+	if h := st.MachineHold; h != nil {
+		r.Hold = &DaemonMachineHold{Reason: h.Reason, Since: h.Since.UTC().Format(time.RFC3339), Detail: h.Detail}
+	}
 }
 
 // Human writes the status as text.
@@ -1574,6 +1628,25 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 	}
 	for _, h := range r.Hooks {
 		fmt.Fprintf(w, "Hook %s: %s\n", h.Name, h.text())
+	}
+	if l := r.Load; l != nil {
+		if l.Available {
+			fmt.Fprintf(w, "Load: %s per core (1 minute), %s (5 minutes)\n", l.Load1, l.Load5)
+		} else {
+			fmt.Fprintln(w, "Load: unavailable on this platform")
+		}
+	}
+	if m := r.Memory; m != nil {
+		if m.Available {
+			fmt.Fprintf(w, "Memory available: %s\n", daemon.FormatSize(m.Bytes))
+		} else {
+			fmt.Fprintln(w, "Memory available: unavailable on this platform")
+		}
+	}
+	if h := r.Hold; h != nil {
+		fmt.Fprintf(w, "New runs held: %s since %s: %s\n", h.Reason, h.Since, h.Detail)
+	} else if r.Load != nil {
+		fmt.Fprintln(w, "New runs held: no")
 	}
 	if r.Max > 0 {
 		fmt.Fprintf(w, "runs: %d/%d live, %d starting\n", r.Live, r.Max, r.Starting)
@@ -1815,6 +1888,7 @@ func daemonStatusHome(ctx *Ctx) (any, error) {
 	for _, h := range st.Hooks {
 		resp.Hooks = append(resp.Hooks, HookRow{Name: h.Name, Command: h.Command, Source: h.Source})
 	}
+	resp.machineStatus(st)
 	resp.Runs = daemonStatusRuns(common, st.Runs)
 	resp.Starting = st.Starting
 	resp.Live, resp.Starting = daemonRunsHeld(resp)
@@ -2025,4 +2099,45 @@ func daemonUnresolvedReady(ctx *Ctx, fold *daemonFolded, cands []string) ([]stri
 		ok = append(ok, cs)
 	}
 	return ok, skips
+}
+
+// machineReading reads the machine's load and available memory.
+// RHIZA_TEST_LOAD1 and RHIZA_TEST_LOAD5 (loads per core) and
+// RHIZA_TEST_MEM_AVAILABLE (bytes) stand in for it in tests; like
+// RHIZA_TEST_FREE_BYTES they apply only alongside RHIZA_TEST_NOW. The
+// package's tests replace the real reader so none reads the host.
+var machineReading = daemon.ReadMachine
+
+func readMachine(ctx *Ctx) daemon.Reading {
+	getenv := ctxGetenv(ctx)
+	if getenv("RHIZA_TEST_NOW") == "" {
+		return machineReading()
+	}
+	var r daemon.Reading
+	if l1, err := strconv.ParseFloat(getenv("RHIZA_TEST_LOAD1"), 64); err == nil {
+		if l5, err := strconv.ParseFloat(getenv("RHIZA_TEST_LOAD5"), 64); err == nil {
+			r.Load1, r.Load5, r.LoadOK = l1, l5, true
+		}
+	}
+	if m, err := strconv.ParseUint(getenv("RHIZA_TEST_MEM_AVAILABLE"), 10, 64); err == nil {
+		r.MemAvail, r.MemOK = m, true
+	}
+	return r
+}
+
+// daemonMachineHold is the hold of new runs for load or memory, nil for
+// none, given the previous poll's hold for the load hysteresis. It logs each
+// hold and release.
+func daemonMachineHold(ctx *Ctx, conf daemonConf, r daemon.Reading, prev *daemon.MachineHold) *daemon.MachineHold {
+	if conf.maxLoad == 0 && conf.minMemory == 0 {
+		return nil
+	}
+	h := daemon.Evaluate(r, conf.maxLoad, conf.minMemory, prev, ctx.Now())
+	switch {
+	case h != nil && (prev == nil || prev.Reason != h.Reason):
+		daemonLogf(ctx, "holding new runs: %s: %s", h.Reason, h.Detail)
+	case h == nil && prev != nil:
+		daemonLogf(ctx, "released the %s hold on new runs", prev.Reason)
+	}
+	return h
 }

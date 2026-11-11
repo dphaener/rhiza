@@ -1,0 +1,41 @@
+# rhiza.daemon.maxLoad and minMemory are machine settings: defaults listed,
+# set validates, 0 turns each off, a bad value exits 2 and writes nothing.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+
+exec rhiza daemon settings --json
+stdout '"key": "rhiza.daemon.maxLoad"'
+stdout '"value": "3.0"'
+stdout '"key": "rhiza.daemon.minMemory"'
+stdout '"value": "2G"'
+exec rhiza daemon settings
+stdout 'rhiza.daemon.maxLoad = 3.0 \(default, (machine|project)\)'
+stdout 'rhiza.daemon.minMemory = 2G \(default, (machine|project)\)'
+
+exec rhiza daemon set rhiza.daemon.maxLoad 2.5
+exec rhiza daemon set rhiza.daemon.minMemory 4G
+exec rhiza daemon settings
+stdout 'rhiza.daemon.maxLoad = 2.5 \(rhiza.toml, machine\)'
+stdout 'rhiza.daemon.minMemory = 4G \(rhiza.toml, machine\)'
+exec cp $WORK/rhiza.toml $WORK/before.toml
+
+! exec rhiza daemon set rhiza.daemon.maxLoad -1
+! exec rhiza daemon set rhiza.daemon.maxLoad busy
+! exec rhiza daemon set rhiza.daemon.minMemory lots
+! exec rhiza daemon set rhiza.daemon.minMemory 4Q
+exec cmp $WORK/rhiza.toml $WORK/before.toml
+
+exec rhiza daemon set rhiza.daemon.maxLoad 0
+exec rhiza daemon set rhiza.daemon.minMemory 0
+exec rhiza daemon settings
+stdout 'rhiza.daemon.maxLoad = 0 \(rhiza.toml, machine\)'
+stdout 'rhiza.daemon.minMemory = 0 \(rhiza.toml, machine\)'
+
+# The flags are validated too.
+! exec rhiza daemon --once --max-load -2
+stderr '--max-load'
+! exec rhiza daemon --once --min-memory lots
+stderr '--min-memory'

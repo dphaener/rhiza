@@ -88,6 +88,14 @@ var settingDefs = []settingDef{
 		_, err := daemon.ParseSize(v)
 		return err
 	}},
+	{key: "rhiza.daemon.maxLoad", def: "3.0", flag: "--max-load", typ: "number", desc: "The 1-minute load per core above which the daemon starts no run until the 5-minute load is back under it; 0 turns it off", validate: func(v string) error {
+		_, err := parseMaxLoad(v)
+		return err
+	}},
+	{key: "rhiza.daemon.minMemory", def: "2G", flag: "--min-memory", typ: "size", desc: "The available memory below which the daemon starts no run, such as 2G; 0 turns it off", validate: func(v string) error {
+		_, err := daemon.ParseSize(v)
+		return err
+	}},
 	{key: "rhiza.daemon.trimGoCache", def: "true", typ: "boolean", desc: "Trim the Go build cache when disk space runs low", validate: validateChoice("true", "false")},
 	{key: "rhiza.daemon.permissionMode", def: "", flag: "--permission-mode", typ: "one word", desc: "The permission mode agents run in; unset leaves the agent's own default", validate: func(v string) error {
 		if strings.TrimSpace(v) == "" || strings.ContainsAny(v, " \t\r\n") {
@@ -270,8 +278,12 @@ type daemonConf struct {
 	maxRuns int
 	// projectMax is the project's own cap on its running runs within the
 	// machine-wide maxRuns, 0 for none.
-	projectMax  int
-	minFree     uint64
+	projectMax int
+	minFree    uint64
+	maxLoad    float64
+	minMemory  uint64
+	// machine is the hold of new runs for load or memory this poll found.
+	machine     *daemon.MachineHold
 	mode        string
 	paused      bool
 	selfUpdate  bool
@@ -293,6 +305,18 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 		}
 		flags["rhiza.daemon.minFree"] = r.MinFree
 	}
+	if r.MaxLoad != "" {
+		if _, err := parseMaxLoad(r.MaxLoad); err != nil {
+			return daemonConf{}, Usagef("--max-load: %v", err)
+		}
+		flags["rhiza.daemon.maxLoad"] = r.MaxLoad
+	}
+	if r.MinMemory != "" {
+		if _, err := daemon.ParseSize(r.MinMemory); err != nil {
+			return daemonConf{}, Usagef("--min-memory: %v", err)
+		}
+		flags["rhiza.daemon.minMemory"] = r.MinMemory
+	}
 	if r.PermissionMode != "" {
 		flags["rhiza.daemon.permissionMode"] = r.PermissionMode
 	}
@@ -303,6 +327,8 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 	c := daemonConf{rows: rows}
 	c.maxRuns, _ = strconv.Atoi(settingValue(rows, "rhiza.daemon.maxRuns"))
 	c.minFree, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minFree"))
+	c.maxLoad, _ = parseMaxLoad(settingValue(rows, "rhiza.daemon.maxLoad"))
+	c.minMemory, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minMemory"))
 	c.paused = settingValue(rows, "rhiza.daemon.paused") == "true" || settingValue(rows, "rhiza.project.paused") == "true"
 	c.projectMax, _ = strconv.Atoi(settingValue(rows, "rhiza.project.maxRuns"))
 	c.selfUpdate = settingValue(rows, "rhiza.daemon.selfUpdate") == "true"
@@ -393,7 +419,7 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout or ciWindow, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout or ciWindow, or rhiza.autonomy.plan, accept, ship or signoff"`
 	Project string `json:"project,omitempty" flag:"project" desc:"The registered project a project setting is written to; default the current project"`
 	Value   string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes"`
 }
@@ -470,4 +496,13 @@ func settingDefault(key string) string {
 func settingScope(key string) string {
 	d, _ := findSetting(key)
 	return d.scope()
+}
+
+// parseMaxLoad reads rhiza.daemon.maxLoad: a load per core, 0 for off.
+func parseMaxLoad(v string) (float64, error) {
+	f, err := strconv.ParseFloat(strings.TrimSpace(v), 64)
+	if err != nil || f < 0 {
+		return 0, fmt.Errorf("must be a load per core of 0 or more, such as 3.0")
+	}
+	return f, nil
 }

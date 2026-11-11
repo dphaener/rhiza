@@ -14,6 +14,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
@@ -45,6 +46,7 @@ const (
 	HealthAutonomy  = "autonomy"
 	HealthMachine   = "machine"
 	HealthDisk      = "disk"
+	HealthLoad      = "load"
 	HealthUsage     = "usage"
 	HealthMain      = "main"
 	HealthCI        = "ci"
@@ -64,7 +66,7 @@ type HealthRequest struct {
 // HealthPart is one part of the system and its state.
 type HealthPart struct {
 	Project  string   `json:"project,omitempty" desc:"The registered project the part belongs to, on a report that covers every project; absent on the machine's parts and on a single project's report"`
-	Part     string   `json:"part" enum:"daemon,autonomy,machine,disk,usage,main,ci,schedules,inbox,requests,roadmap,check" desc:"The part"`
+	Part     string   `json:"part" enum:"daemon,autonomy,machine,disk,load,usage,main,ci,schedules,inbox,requests,roadmap,check" desc:"The part"`
 	State    string   `json:"state" enum:"ok,warn,bad" desc:"ok, warn (worth a look) or bad (rhiza health exits 1)"`
 	Summary  string   `json:"summary" desc:"One line on the part's state"`
 	Live     *int     `json:"live,omitempty" desc:"On the daemon part: the runs running now, summed across the daemon's projects; an interrupted run takes no slot"`
@@ -77,7 +79,7 @@ type HealthPart struct {
 // HealthResponse is the report.
 type HealthResponse struct {
 	State string       `json:"state" enum:"ok,warn,bad" desc:"The worst state of any part"`
-	Parts []HealthPart `json:"parts" desc:"Every part, in a fixed order: daemon, autonomy, machine, disk, usage, then main, ci, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project"`
+	Parts []HealthPart `json:"parts" desc:"Every part, in a fixed order: daemon, autonomy, machine, disk, load, usage, then main, ci, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project"`
 }
 
 // ExitCode is 1 when a part is bad, else 0.
@@ -176,6 +178,7 @@ func runHealth(ctx *Ctx, req any) (any, error) {
 		healthAutonomy(mctx, settings, serr),
 		healthMachine(mctx),
 		healthDisk(mctx, settings, serr),
+		healthLoad(mctx, settings, serr),
 		healthUsage(mctx, settings, serr),
 	}
 	daemonUp := false
@@ -378,6 +381,49 @@ func healthMachine(ctx *Ctx) HealthPart {
 			Detail: []string{"it would be " + path}}
 	}
 	return HealthPart{Part: HealthMachine, State: HealthOK, Summary: "trust " + c.Trust + " (from " + path + ")"}
+}
+
+// healthLoadWarnAfter is how long a load or memory hold may last before the
+// report warns of it.
+const healthLoadWarnAfter = 30 * time.Minute
+
+// healthLoad is warn when the daemon has held new runs for load or memory
+// for 30 minutes or more, and ok otherwise, with the current readings.
+func healthLoad(ctx *Ctx, settings []Setting, err error) HealthPart {
+	if err != nil {
+		return healthFailed(HealthLoad, err)
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return healthFailed(HealthLoad, err)
+	}
+	st, _ := daemon.ReadState(common)
+	maxKey, minKey := "rhiza.daemon.maxLoad", "rhiza.daemon.minMemory"
+	if h := st.MachineHold; h != nil {
+		held := ctx.Now().Sub(h.Since).Truncate(time.Minute)
+		if held >= healthLoadWarnAfter {
+			key := maxKey
+			if h.Reason == daemon.SkipMemoryLow {
+				key = minKey
+			}
+			return HealthPart{Part: HealthLoad, State: HealthWarn,
+				Summary: fmt.Sprintf("new runs held for %s (%s): %s", held, h.Reason, h.Detail),
+				Next:    "rhiza daemon set " + key + " <value>"}
+		}
+	}
+	r := readMachine(ctx)
+	var parts []string
+	if r.LoadOK {
+		parts = append(parts, fmt.Sprintf("load %.2f/%.2f per core (1m/5m)", r.Load1, r.Load5))
+	}
+	if r.MemOK {
+		parts = append(parts, daemon.FormatSize(r.MemAvail)+" memory available")
+	}
+	if len(parts) == 0 {
+		parts = append(parts, "no readings on this platform")
+	}
+	parts = append(parts, "limits "+settingValue(settings, maxKey)+" load, "+settingValue(settings, minKey)+" memory")
+	return HealthPart{Part: HealthLoad, State: HealthOK, Summary: strings.Join(parts, "; ")}
 }
 
 // healthDisk is bad when free space is under the daemon's minimum, so the
