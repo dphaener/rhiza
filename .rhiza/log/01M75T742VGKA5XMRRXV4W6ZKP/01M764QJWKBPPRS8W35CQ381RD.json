@@ -1,0 +1,40 @@
+{
+  "actor": "01M764MHY49T953D1GW13DVCN4",
+  "after": [
+    "01M7648GR9GY14F02JDGK118T9"
+  ],
+  "at": "2026-11-11T20:28:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7166e92d (fixer commit adding machineHoldItems to daemonNotify) I read the diff and ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(inbox-load-hold|health-load-hold|daemon-load-hold)$': ok. inbox-load-hold.txtar writes daemon state fixtures and checks rhiza inbox --json: a load hold since 29 minutes gives no item, since 31 minutes gives exactly one load-high item naming the reading, limit and 'held for 31m0s'; memory hold since 29 minutes gives none, since 31 minutes gives one memory-low item; a later poll state with no hold gives empty items. go test -trimpath ./internal/tui/inboxapp/...: ok (renders load-high 'Machine load high' and memory-low 'Memory low' rows). go test -trimpath ./internal/api -run TestDaemonNotifyMachineHold: ok, a 31-minute hold of either kind notifies once over two polls with the expected message. The api Inbox subset's tests all passed; the package-level root-state guard flagged ~/code/.rhiza-root/usage.live.json, which live Claude Code statuslines rewrite, so this change did not cause it."
+        },
+        "handle": "inbox-load-memory-hold-verified-2",
+        "id": "01M764QJS02ZEKPR6HY2WYY5M5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M764QJS02ZEKPR6HXZHP5Y4K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M764QJS02ZEKPR6HXZHP5Y4K",
+        "id": "01M764QJTM91BM481B81XW1GDS",
+        "link": "01M764QJTM91BM481B7XZHA3TS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75TJ8FW01MJMA1HKD3TGNN0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75T742VGKA5XMRRXV4W6ZKP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M764QJWKBPPRS8W35CQ381RD",
+  "type": "ops",
+  "v": 1
+}
