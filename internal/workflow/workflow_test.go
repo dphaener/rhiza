@@ -488,7 +488,7 @@ func TestPlanBuiltin(t *testing.T) {
 	if def.Name != "plan" || def.Start != "interview" {
 		t.Errorf("name %q, start %q; want plan, interview", def.Name, def.Start)
 	}
-	want := []string{"interview", "milestone-check", "review", "critic", "check", "revise", "gate", "open-pr", "wait-pr", "pr-green", "rebase", "wait-rebased", "rebased-green", "merge", "close-out"}
+	want := []string{"interview", "milestone-check", "review", "critic", "check", "revise", "gate", "open-pr", "wait-pr", "pr-green", "pr-green-infra", "pr-green-infra-wait", "rebase", "wait-rebased", "rebased-green", "rebased-green-infra", "rebased-green-infra-wait", "merge", "close-out"}
 	if !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
@@ -572,7 +572,7 @@ func TestPlanBuiltin(t *testing.T) {
 		}
 	}
 
-	caps := map[string]int{"rebase": 3, "wait-rebased": 3, "rebased-green": 3, "merge": 3, "interview": 1, "review": 3, "critic": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 3}
+	caps := map[string]int{"rebase": 3, "wait-rebased": 3, "rebased-green": 4, "merge": 3, "interview": 1, "review": 3, "critic": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 4}
 	for name, c := range caps {
 		if got := def.Steps[name].Cap(); got != c {
 			t.Errorf("%s cap = %d; want %d", name, got, c)
@@ -1718,8 +1718,23 @@ func TestPlanRerunsCIFlakes(t *testing.T) {
 			if !strings.Contains(cmd, "rhiza ship check") || !strings.Contains(cmd, "--reruns 2") {
 				t.Errorf("%s %s = %q; want rhiza ship check with --reruns 2", name, step, cmd)
 			}
-			if s.On["pass"] != pass || s.On["fail"] != "" || s.MaxVisits != 3 {
-				t.Errorf("%s %s routes = pass %q fail %q max_visits %d; want pass %q, no fail, 3", name, step, s.On["pass"], s.On["fail"], s.MaxVisits, pass)
+			wantFail, wantVisits := "", 3
+			if step == "pr-green" || step == "rebased-green" {
+				wantFail, wantVisits = step+"-infra", 4
+			}
+			if s.On["pass"] != pass || s.On["fail"] != wantFail || s.MaxVisits != wantVisits {
+				t.Errorf("%s %s routes = pass %q fail %q max_visits %d; want pass %q, fail %q, %d", name, step, s.On["pass"], s.On["fail"], s.MaxVisits, pass, wantFail, wantVisits)
+			}
+		}
+		// A red with no failing test waits out the infra outage and goes
+		// back to the same green step; a red with a failing test ends the run.
+		for _, green := range []string{"pr-green", "rebased-green"} {
+			tri, wait := def.Steps[green+"-infra"], def.Steps[green+"-infra-wait"]
+			if tri.Run != "rhiza ship check --infra" || tri.On["pass"] != green+"-infra-wait" || tri.On["fail"] != "" {
+				t.Errorf("%s %s-infra = %q routes %v; want ship check --infra passing to the wait, no fail", name, green, tri.Run, tri.On)
+			}
+			if wait.Kind != KindWait || wait.Until != "rhiza ship check --settled --changed --rerun-infra" || wait.Timeout != 6*time.Hour || wait.Interval != 30*time.Second || wait.MaxVisits != 3 || wait.On["pass"] != green {
+				t.Errorf("%s %s-infra-wait = %+v; want the 6h rerun-infra wait back to %s", name, green, wait, green)
 			}
 		}
 	}
