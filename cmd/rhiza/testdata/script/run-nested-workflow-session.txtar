@@ -1,0 +1,82 @@
+# A repo workflow whose workflow step wraps ship-change runs through to its
+# builder's session start: the builder's step is ship-change/build/build,
+# three levels deep from the wrapper, and the run journal records it. Nothing
+# reaches GitHub, Rex or Claude Code: gh always fails, so the run stops
+# after build, at the first step that needs the pull request.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/wrap.toml .rhiza/workflows/wrap.toml
+
+exec rhiza change new 'Wrap it' --title 'Wrap it' --json
+exec rhiza add capability only --field 'statement=Does only'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start wrapping'
+exec git push -q -u origin main
+
+exec sh -c 'rhiza run start --foreground --workflow wrap --permission-mode manual 2>&1; echo done'
+stdout '^done$'
+! stdout 'want lower-case words'
+
+# The builder started, under the nested step.
+exec sh -c 'cat $WORK/claude.log'
+stdout '^role=builder leaf=only$'
+exec rhiza run status
+stdout 'ship-change/build/build'
+exec sh -c 'cat .git/rhiza/runs/*'
+stdout 'ship-change/build/build'
+
+-- wrap.toml --
+name = "wrap"
+
+[step.ship]
+kind = "workflow"
+workflow = "ship-change"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+echo "role=$RHIZA_ROLE leaf=$RHIZA_LEAF" >> "$WORK/claude.log"
+case "$RHIZA_ROLE" in
+builder)
+	echo "$RHIZA_LEAF" > "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt"
+	git commit -q -m "build $RHIZA_LEAF" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
+	;;
+verifier)
+	rhiza add evidence "$RHIZA_LEAF-verified" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-verified" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+esac
+exit 0
+-- bin/gh --
+#!/bin/sh
+echo "fake gh: $*" >&2
+exit 1
