@@ -2,6 +2,7 @@ package run
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -88,5 +89,73 @@ func TestWorkflowStepInnerFailureResumesThere(t *testing.T) {
 	}
 	if r.commands["inner/one"] != 1 || r.commands["inner/three"] != 2 || r.commands["after"] != 1 {
 		t.Errorf("commands = %v", r.commands)
+	}
+}
+
+const includedMid = `
+name = "mid"
+[step.inner]
+kind = "workflow"
+workflow = "inner"
+on.pass = "done"
+`
+
+const includingWrap = `
+name = "wrap"
+[step.mid]
+kind = "workflow"
+workflow = "mid"
+on.pass = "done"
+`
+
+// A workflow two includes deep runs its steps under paths with two '/': a
+// failure stops the run there, its detail names the whole path, and a retry
+// resumes at that step, not at the first segment.
+func TestNestedWorkflowStepResumesAtFullPath(t *testing.T) {
+	read := func(name string) ([]byte, error) {
+		if name == "mid" {
+			return []byte(includedMid), nil
+		}
+		return []byte(includedInner), nil
+	}
+	def, err := workflow.ParseWith("wrap", []byte(includingWrap), read)
+	if err != nil {
+		t.Fatal(err)
+	}
+	store := newStore(t)
+	s := Started{Workflow: "wrap", Definition: includingWrap, Includes: def.Includes, Change: "CS1", Title: "Wrapping"}
+	if err := Start(store, runID, s, t0, def); err != nil {
+		t.Fatal(err)
+	}
+	r := newFakeRunner()
+	r.store = store
+	c := &fakeClock{now: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)}
+	e := &Engine{Store: store, Runner: r, Clock: c, Now: func() time.Time { return at(1) }}
+
+	const nested = "mid/inner/two"
+	if _, ok := def.Steps[nested]; !ok {
+		t.Fatalf("flat steps have no %s: %v", nested, def.Order)
+	}
+	r.codes[nested] = []int{1, 0}
+	st, err := e.Run(runID)
+	if err != nil || st.Result != Failed {
+		t.Fatalf("first run: %v, %q", err, st.Result)
+	}
+	if got, want := outcomes(st), []string{"mid/inner/one:pass", nested + ":fail"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("failed run outcomes = %v, want %v", got, want)
+	}
+	if !strings.Contains(st.Detail, nested) {
+		t.Errorf("failure detail %q does not name %s", st.Detail, nested)
+	}
+	st, err = e.Retry(runID)
+	if err != nil || st.Result != Succeeded {
+		t.Fatalf("retry: %v, %q (%s)", err, st.Result, st.Detail)
+	}
+	if r.commands["mid/inner/one"] != 1 || r.commands[nested] != 2 || r.commands["mid/inner/three"] != 1 {
+		t.Errorf("commands = %v", r.commands)
+	}
+	want := []string{"mid/inner/one:pass", nested + ":fail", nested + ":pass", "mid/inner/three:pass"}
+	if got := outcomes(st); !reflect.DeepEqual(got, want) {
+		t.Errorf("outcomes = %v, want %v", got, want)
 	}
 }

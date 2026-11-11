@@ -34,6 +34,9 @@ exec sh -c 'cat $WORK/claude.log'
 stdout '^role=builder leaf=only$'
 exec rhiza run status
 stdout 'ship-change/build/build'
+exec rhiza run status --json
+stdout '"step": "ship-change/review/review"'
+stdout '"step": "ship-change/build/build"'
 exec sh -c 'cat .git/rhiza/runs/*'
 stdout 'ship-change/build/build'
 
