@@ -1,0 +1,78 @@
+# The daemon starts and resumes nothing new while the machine is overloaded:
+# a hold begins when the 1-minute load per core is over rhiza.daemon.maxLoad
+# and ends only when the 5-minute load is back under it; MemAvailable under
+# rhiza.daemon.minMemory holds too. Readings come from test env vars (loads
+# per core, bytes); Setup gives every script an idle machine.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec sh -c 'printf "[schedule]\nbacklog = \"skip\"\n" > .rhiza/policy.toml'
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+exec rhiza change new Built --title Built
+exec rhiza add capability built-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# 1-minute load over the limit: nothing starts, status says why.
+env RHIZA_TEST_LOAD1=3.5
+env RHIZA_TEST_LOAD5=3.5
+exec rhiza daemon --permission-mode manual --once
+! stdout 'Started'
+! exists $WORK/detach.log
+exec rhiza daemon status --json
+stdout '"reason": "load-high"'
+stdout '1-minute load 3.50 per core, over the limit of 3.00'
+exec rhiza daemon status
+stdout 'machine load is high'
+
+# 1-minute back under, 5-minute still over: still held.
+env RHIZA_TEST_LOAD1=1
+exec rhiza daemon --permission-mode manual --once
+! stdout 'Started'
+! exists $WORK/detach.log
+exec rhiza daemon status --json
+stdout '"reason": "load-high"'
+stdout '5-minute load 3.50 per core, not yet under the limit of 3.00'
+
+# 5-minute under: the run starts.
+env RHIZA_TEST_LOAD5=2
+exec rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of '
+exec rm $WORK/detach.log
+
+# Low memory holds with its own reason; the load is fine.
+env RHIZA_TEST_LOAD1=0
+env RHIZA_TEST_LOAD5=0
+env RHIZA_TEST_MEM_AVAILABLE=1073741824
+exec rhiza daemon --permission-mode manual --once
+! stdout 'Started'
+! exists $WORK/detach.log
+exec rhiza daemon status --json
+stdout '"reason": "memory-low"'
+stdout '1.0 GiB available, under the minimum of 2.0 GiB'
+
+# A limit of 0 turns its check off.
+exec rhiza daemon set rhiza.daemon.minMemory 0
+exec rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of '
+exec rm $WORK/detach.log
+exec rhiza daemon set rhiza.daemon.minMemory 2G
+env RHIZA_TEST_MEM_AVAILABLE=1099511627776
+env RHIZA_TEST_LOAD1=9
+env RHIZA_TEST_LOAD5=9
+exec rhiza daemon set rhiza.daemon.maxLoad 0
+exec rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of '
+
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
