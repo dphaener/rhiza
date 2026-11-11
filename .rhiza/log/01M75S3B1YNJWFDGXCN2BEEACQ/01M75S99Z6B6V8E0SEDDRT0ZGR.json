@@ -1,0 +1,30 @@
+{
+  "actor": "01M75S61WP8GHS2BSENWMPV0SS",
+  "after": [
+    "01M75S3B1YNJWFDGXCN5VZQ0HC"
+  ],
+  "at": "2026-11-11T17:08:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "32e4ca1a-527d-4211-afc9-01a1cb92cf04",
+          "statement": "Change set 01M75S3 (inbox keeps a watchdog 'stalled run' item for an abandoned run): the core fix is that watchdog holds drop runs that are abandoned or whose change set is withdrawn/rejected (holds are recomputed every poll, so stale ones vanish on the next poll). The intent also suggests 'rhiza run abandon' should stop a live run cleanly instead of refusing with 'is running in another process' (today it takes kill-by-PID plus abandon racing the watchdog's resume). Should that second part be a leaf in this change set?"
+        },
+        "handle": "question-32e4ca1a-1",
+        "id": "01M75S96JF35VQ1R9EP3AQ5FXB",
+        "key": null,
+        "kind": "question",
+        "node": "01M75S96JF35VQ1R9EP05AAENT",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M75S3B1YNJWFDGXCN2BEEACQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75S99Z6B6V8E0SEDDRT0ZGR",
+  "type": "ops",
+  "v": 1
+}

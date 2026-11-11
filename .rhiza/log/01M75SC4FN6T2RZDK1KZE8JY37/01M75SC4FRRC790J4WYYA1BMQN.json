@@ -1,0 +1,16 @@
+{
+  "actor": "01M75S61WP8GHS2BSENWMPV0SS",
+  "after": [],
+  "at": "2026-11-11T17:09:33Z",
+  "body": {
+    "intent": "rhiza run abandon (or a request withdraw) stops a run that is live in another process cleanly, instead of refusing with 'run is running in another process': today stopping a request's plan run takes kill-by-PID plus abandon racing the daemon watchdog's resume (incident 2026-11-11, plan run 01M75R97, see change set 01M75S3B1YNJWFDGXCN2BEEACQ and Decision abandon-live-run-out-of-scope)",
+    "kind": "intention",
+    "sources": [],
+    "title": "Abandon stops a live run"
+  },
+  "change_set": "01M75SC4FN6T2RZDK1KZE8JY37",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75SC4FRRC790J4WYYA1BMQN",
+  "type": "open",
+  "v": 2
+}
