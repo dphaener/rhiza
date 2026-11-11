@@ -1,0 +1,33 @@
+{
+  "actor": "01M75ZAKQ782GK7S7DTX07ECGB",
+  "after": [
+    "01M75Z515D1J2N303KAZVTQMSN"
+  ],
+  "at": "2026-11-11T18:57:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "29f540e7e86a3168088f26d805f11d06253a1a5e9c8e7d01154bb753075ad865",
+          "session": "c37521a1-cb5f-48f3-b341-01a1cbf4a60c",
+          "summary": "Autonomous plan run (RHIZA_AUTONOMOUS=1), no owner present. The change set's intent names the bug: session.start's stepPattern (internal/api/session.go) accepts one '/' only and maxStep is 61, so a workflow wrapping ship-change (bugfix) fails at its builder with step \"ship-change/build/build\". The planner read session.go, internal/workflow/include.go (flattened inner steps are named <workflow>/<step>, so each wrapping level adds a segment) and the precedent change set 01M75RDB, whose bug workflows serve m4-orchestrated-by-rhiza. Planned two leaves under workflow-runs: session start accepts step paths of any depth (segments dashed lower-case words, at most 120 characters), proven by a testscript running a repo workflow wrapping ship-change to its builder session; and run status, inbox, watchdog, journal and Rex tab labels handle 2+ slash step paths. Choices taken as assumptions: serve m4-orchestrated-by-rhiza; 120-character limit as the intent suggests.",
+          "title": "Nested workflow step paths fix, planned autonomously"
+        },
+        "handle": "nested-step-paths-plan",
+        "id": "01M75ZJ0W5C0YTD9C3RFH1ST6D",
+        "key": null,
+        "kind": "source",
+        "node": "01M75ZJ0W5C0YTD9C3REHNY38R",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M75Z51562NX7KRJH5WJ2M3HN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75ZJ141HH5ZV14WT2G92V7V",
+  "type": "ops",
+  "v": 1
+}

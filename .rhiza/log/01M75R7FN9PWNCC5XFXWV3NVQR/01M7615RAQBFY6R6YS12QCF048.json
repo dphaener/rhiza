@@ -1,0 +1,40 @@
+{
+  "actor": "01M760Z461Y34JMKJRN73HX78T",
+  "after": [
+    "01M760SXQ2538DK2DCY5V93WY4"
+  ],
+  "at": "2026-11-11T19:25:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2 at 2b06f1f3: rhiza workflow check plan and plan-milestone pass, and describe shows pr-green on.fail -> pr-green-infra -> pr-green-infra-wait -> pr-green, and the same loop for rebased-green. The builtin plan.toml and plan-milestone.toml have the infra steps (ship check --infra, max_visits 4; wait until ship check --settled --changed --rerun-infra, 6h/30s, max_visits 3) and green steps at max_visits 4. go test -trimpath ./internal/workflow/... passes. go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/plan-workflow-ci' passes all 4 scripts. plan-workflow-ci-infra-wait uses a repo plan.toml that differs from the builtin only in wait timeout/interval (checked by diff). It fixes attempt 1's finding: the fake gh turns green only on the third rerun, gh.log shows that rerun right after a --rerun-infra poll, and the run passes through pr-green-infra-wait into rebase, merge and close-out. plan-workflow-ci-infra-timeout ends the run on the wait's timeout, with 'an infra failure' in the detail."
+        },
+        "handle": "plan-ci-infra-wait-verified-2",
+        "id": "01M7615QX74KCTXN8P43HK9F5K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7615QX74KCTXN8P4040QAWP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7615QX74KCTXN8P4040QAWP",
+        "id": "01M7615R6B09ACJYB8F4STX3SN",
+        "link": "01M7615R6B09ACJYB8F0ZXM938",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RHSENQJ88C8SBDYFDFMZY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75R7FN9PWNCC5XFXWV3NVQR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7615RAQBFY6R6YS12QCF048",
+  "type": "ops",
+  "v": 1
+}

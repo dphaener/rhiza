@@ -1,0 +1,40 @@
+{
+  "actor": "01M763J50BWX5SB8QDQWCW620M",
+  "after": [
+    "01M763575GWJ2MR6QCKXWD15MQ"
+  ],
+  "at": "2026-11-11T20:08:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e5d6c9a2 ran go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/daemon-(load-hold|status)': PASS. Read the diff: daemon-load-hold.txtar checks rhiza daemon status text and --json for the 1- and 5-minute load per core and available memory (idle, held, low-memory), the held state with reason load-high, a since time and detail, a still-held poll showing load-high, release to 'New runs held: no', and RHIZA_TEST_LOAD1/LOAD5/MEM_AVAILABLE=unavailable shown as 'unavailable on this platform' and \"available\": false with no hold. The daemon log (stderr) has exactly one 'holding new runs: load-high' line on the held poll, none on the still-held poll, and exactly one 'released the load-high hold' line on the released poll. The duplicate daemon-load-status.txtar is removed."
+        },
+        "handle": "daemon-status-load-memory-verified",
+        "id": "01M763KJEGHCYFCQ4CJMV86QCM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M763KJEGHCYFCQ4CJHEQJ7YP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M763KJEGHCYFCQ4CJHEQJ7YP",
+        "id": "01M763KJFXFZ1XYN2FNRTFC5YD",
+        "link": "01M763KJFXFZ1XYN2FNPPS6XW2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75TJ88XZARYMCR7ZM674GWF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75T742VGKA5XMRRXV4W6ZKP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M763KJGZ68SVDNN307ADAFAD",
+  "type": "ops",
+  "v": 1
+}

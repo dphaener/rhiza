@@ -127,3 +127,13 @@ func TestChangeSetSlug(t *testing.T) {
 		t.Errorf("alone = %q", got)
 	}
 }
+
+func TestTabTitleNestedStep(t *testing.T) {
+	const step = "ship-change/build/build"
+	if got, want := TabTitle("rhiza", "Fix it", step), "rhiza: Fix it · "+step; got != want {
+		t.Errorf("TabTitle = %q, want %q", got, want)
+	}
+	if got, want := RunTabTitle("rhiza", "Fix it", "r1", step, "builder leaf #1"), "rhiza: Fix it · run r1 · "+step+" · builder leaf #1"; got != want {
+		t.Errorf("RunTabTitle = %q, want %q", got, want)
+	}
+}

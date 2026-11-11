@@ -1010,3 +1010,21 @@ func TestRecordAgentActorReusesSession(t *testing.T) {
 		t.Errorf("a different session got %s, change sets %d", h3, len(ww.changeSets()))
 	}
 }
+
+func TestStartStepNestedPaths(t *testing.T) {
+	seg := func(n int) string { return strings.Repeat("a", n) }
+	long := seg(58) + "/" + seg(59)                // 118
+	max := seg(40) + "/" + seg(40) + "/" + seg(38) // 120
+	good := []string{"build", "ship-change/build", "ship-change/build/build", "a/b/c/d", max, long}
+	for _, s := range good {
+		if _, err := startStep(SessionStartRequest{Step: s}); err != nil {
+			t.Errorf("step %q refused: %v", s, err)
+		}
+	}
+	bad := []string{"a//b", "/a", "a/", "a/b/", "A/b", "a/B/c", "a--b/c", "a/b--c/d", "a/b-", "-a/b", seg(40) + "/" + seg(40) + "/" + seg(39)}
+	for _, s := range bad {
+		if _, err := startStep(SessionStartRequest{Step: s}); err == nil {
+			t.Errorf("step %q accepted", s)
+		}
+	}
+}

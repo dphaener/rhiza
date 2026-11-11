@@ -1,0 +1,43 @@
+{
+  "actor": "01M768Q50B5R43Q85P1CFF142S",
+  "after": [
+    "01M768E0W7STN0MZWADCFHP92A"
+  ],
+  "at": "2026-11-11T21:38:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/ciworkflow (go test -trimpath ./internal/ciworkflow/...) parse .github/workflows/ci.yml and assert: a `changes` job with an output code, computing it from git diff --name-only against the merge base on pull_request and setting it true on workflow_dispatch; lint, scripts, api, rest and budgets each needing changes with if on code == 'true'; a `model` job needing changes with if on code == 'false' that runs make self-check; check needing changes, model and the five Go jobs, if: always(), failing unless changes succeeded and every other result is success or skipped, and failing when none of model and the five Go jobs succeeded (an all-skipped run fails check); the existing triggers, concurrency, matrices and cache checks still pass. make check is unchanged. The change set's own PR touches Go code so runs everything; the next model-only PR's CI completes in a few minutes with check green, read from gh run view.",
+          "statement": "On a pull request whose changed paths all lie under .rhiza/, CI runs only a `model` job (setup-go, make self-check) and skips lint, scripts, api, rest and budgets, decided by a first `changes` job using plain git diff against the merge base (code=true when any path is outside .rhiza/, always true on workflow_dispatch); any other PR and every dispatched run on main runs everything as today, and the aggregate `check` job, needing changes, model and the five Go jobs with if: always(), fails unless changes succeeded and passes only when every other job is success or skipped with at least one of them succeeded."
+        },
+        "handle": "ci-model-only-pr",
+        "id": "01M768E0NH089HZ4WRR3N4WVSS",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M768E0NH089HZ4WRR0SBBDAB",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api (go test -trimpath ./internal/api -run 'ChecksVerdict|ShipRerunFailed|WatchdogCIRerun') feed checksVerdict a rollup of SKIPPED lint, scripts, api, rest and budgets plus SUCCESS changes, model and check and get settled and green with no failed names; run shipRerunFailed on such a head and assert it issues no gh run rerun; and, in a TestWatchdogCIRerun case in internal/api/daemon_watchdog_test.go, feed watchdogCIRerun a PR whose head has the Go jobs SKIPPED and changes, model and check SUCCESS and assert it issues no gh run rerun and that rerunSpent does not count the rerun spent.",
+          "statement": "ship check reads a model-only PR's CI as settled and green: a check rollup whose skipped jobs conclude SKIPPED and whose `check` and `model` jobs conclude SUCCESS is settled and green, and the CI rerun reruns nothing for SKIPPED jobs."
+        },
+        "handle": "ship-check-skipped-jobs-green",
+        "id": "01M768E0S5MMHEP3CNXQARPDQY",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M768E0S5MMHEP3CNXNJYBYPA",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      }
+    ]
+  },
+  "change_set": "01M7684F6CEBCS33NW5DDK1BVP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M768R7F1YDH5DGP269QZRKSR",
+  "type": "ops",
+  "v": 1
+}

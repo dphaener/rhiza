@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-11T16:50:35Z",
+  "body": {
+    "intent": "Rhiza's own repo fixes autofix-labelled GitHub issues with autonomous bug workflows, as Nebari does (nebari PR #94, change set 01M74GC7VCE4EK8A6FZHNCSHAR; copy its shape from ~/code/nebari: .rhiza/dispatch.toml, .rhiza/workflows/plan-bug.toml and bugfix.toml, script/rhiza/github-intake, script/rhiza/github-event, docs/ops.md section 8). Owner, 2026-11-11: \"i want to add a bugfix workflow like nebari has as well\". In this repo: (1) .rhiza/dispatch.toml sends bug requests' plan runs to plan-bug and their change sets to bugfix, plus a github-intake schedule every 10m (catch_up skip, overlap skip); (2) .rhiza/workflows/plan-bug.toml wraps the built-in plan and bugfix.toml wraps the built-in ship-change (Rhiza has no ship-change override), both autonomous = true; (3) script/rhiza/github-intake queues open issues labelled autofix and not rhiza-queued as rhiza request --kind bug --ref <issue url> (skipping refs already queued), marks the issue body as untrusted data in the request text, then labels the issue rhiza-queued; DRY_RUN=1 previews; (4) script/rhiza/github-event, the rhiza.eventCommand hook, comments and closes the issue on landed only when the ref exactly matches this repo's issue URL and the issue is open and labelled autofix; (5) a docs page section on how it works and the one-time setup. The repo is PUBLIC, so anyone can open an issue: only the owner adds autofix, after reading it, and the scripts must never act on an unlabelled issue. Scripts are shell and need gh, jq and rhiza on PATH; test them with a testscript or a fake gh/rhiza on PATH (no network, no real gh). rhiza workflow check is expected to warn about autonomous workflows with bypassed permissions. Out of scope: creating the labels and setting git config rhiza.eventCommand on the VM (the orchestrator does that after merge).",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M75R9CDF2TVR2CSQM99SS2P3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75R9CDGA16EM0ARJWJ6039Y",
+  "type": "open",
+  "v": 1
+}

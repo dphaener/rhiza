@@ -1,0 +1,10 @@
+# Which workflow the daemon starts, by request kind (`rhiza guide workflows`).
+# Bugs arrive as `rhiza request --kind bug` (CLI, the Request app, the
+# orchestrator, the watchdog); there is no GitHub issue intake here.
+
+# A bug request's plan run, and the change set it plans: both autonomous.
+[request]
+bug = "plan-bug"
+
+[ready]
+bug = "bugfix"

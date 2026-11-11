@@ -86,8 +86,27 @@ on.pass = "pr-green"
 [step.pr-green]
 kind = "command"
 run = "rhiza ship check --reruns 2"
-max_visits = 3
+max_visits = 4
 on.pass = "rebase"
+on.fail = "pr-green-infra"
+
+# A red with no failing test is a CI infra outage: wait for it to clear,
+# rerunning the failed jobs with backoff, then check the head again. A red
+# with a failing test fails the triage and ends the run. The wait's
+# timeout ends the run with the infra failure in its detail.
+[step.pr-green-infra]
+kind = "command"
+run = "rhiza ship check --infra"
+max_visits = 4
+on.pass = "pr-green-infra-wait"
+
+[step.pr-green-infra-wait]
+kind = "wait"
+until = "rhiza ship check --settled --changed --rerun-infra"
+timeout = "6h"
+interval = "30s"
+max_visits = 3
+on.pass = "pr-green"
 
 [step.rebase]
 kind = "command"
@@ -106,8 +125,27 @@ on.pass = "rebased-green"
 [step.rebased-green]
 kind = "command"
 run = "rhiza ship check --reruns 2"
-max_visits = 3
+max_visits = 4
 on.pass = "merge"
+on.fail = "rebased-green-infra"
+
+# A red with no failing test is a CI infra outage: wait for it to clear,
+# rerunning the failed jobs with backoff, then check the head again. A red
+# with a failing test fails the triage and ends the run. The wait's
+# timeout ends the run with the infra failure in its detail.
+[step.rebased-green-infra]
+kind = "command"
+run = "rhiza ship check --infra"
+max_visits = 4
+on.pass = "rebased-green-infra-wait"
+
+[step.rebased-green-infra-wait]
+kind = "wait"
+until = "rhiza ship check --settled --changed --rerun-infra"
+timeout = "6h"
+interval = "30s"
+max_visits = 3
+on.pass = "rebased-green"
 
 # Merges nothing when origin/main moved after the head's checks passed:
 # the step fails and the run rebases and waits on the new head again, up

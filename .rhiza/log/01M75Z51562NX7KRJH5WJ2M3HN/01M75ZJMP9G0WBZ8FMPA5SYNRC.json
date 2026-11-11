@@ -1,0 +1,129 @@
+{
+  "actor": "01M75ZAKQ782GK7S7DTX07ECGB",
+  "after": [
+    "01M75ZJHVY26J5GKT0CBCN1BDD"
+  ],
+  "at": "2026-11-11T18:57:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The nested workflow step paths fix serves m4-orchestrated-by-rhiza, as the bug workflows it unblocks do (change set 01M75RDB): without it every bug the daemon ships through bugfix fails at its first builder",
+          "wording": "(assumed by the planner in an autonomous run, no owner to ask)"
+        },
+        "handle": "nested-step-paths-serve-m4",
+        "id": "01M75ZJK72HFEDCD545QE5ZH0B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M75ZJK71NPPBEKGYDTPPDR5W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75ZJK71NPPBEKGYDTPPDR5W",
+        "id": "01M75ZJKAQRG55A2MEE6Y8Z46K",
+        "link": "01M75ZJKAQRG55A2MEE5KX14MG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75ZJ0W5C0YTD9C3REHNY38R",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A session's step is a path of one or more segments joined by '/', one per wrapping workflow level, each segment lower-case words joined by single dashes, at most 120 characters in all; no depth limit beyond the length",
+          "wording": "(assumed by the planner in an autonomous run, no owner to ask)"
+        },
+        "handle": "step-path-any-depth",
+        "id": "01M75ZJKF4ZKAZ5MK4RZMJ19V1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M75ZJKF4ZKAZ5MK4RZKRDCMD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75ZJKF4ZKAZ5MK4RZKRDCMD",
+        "id": "01M75ZJKMJKAD0KSN4T60R3QA8",
+        "link": "01M75ZJKMJKAD0KSN4T3901TQ6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75ZJ0W5C0YTD9C3REHNY38R",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/api tests accept step paths of one, two and three segments up to 120 characters and reject an empty segment, a leading or trailing '/', upper case, double dashes and 121 characters; a testscript in cmd/rhiza/testdata/script runs a repo workflow whose workflow step wraps ship-change, with a fake agent, through to the builder's session start for step ship-change/build/build, and the run journal records that step",
+          "statement": "An agent step of a workflow nested two or more levels deep (a workflow step wrapping a workflow that wraps another, such as bugfix wrapping ship-change wrapping build) starts its session: session.start accepts its step path, such as ship-change/build/build"
+        },
+        "handle": "nested-step-session-start",
+        "id": "01M75ZJKQBWS387RP6CDSCG6HE",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M75ZJKQBWS387RP6CCVZHM4Y",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M75ZJKQBWS387RP6CCVZHM4Y",
+        "id": "01M75ZJKWPMQMZDNKKJ89DTMNG",
+        "link": "01M75ZJKWPMQMZDNKKJ61Z9TMD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75ZJKF4ZKAZ5MK4RZKRDCMD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M75ZJKQBWS387RP6CCVZHM4Y",
+        "id": "01M75ZJKYMK13DZ1PRD4WXP7ND",
+        "link": "01M75ZJKYMK13DZ1PRD3SRKWKA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75ZJK71NPPBEKGYDTPPDR5W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests of the packages touched (internal/api, internal/daemon and any other place that splits a step on '/') feed a step path ship-change/build/build and see it kept whole: run status and the inbox show it, resume continues at it, the watchdog names it, and the session's tab title carries it; go test -trimpath on those packages and the nested testscript pass",
+          "statement": "Every place that reads, parses or shows a run's step handles step paths with two or more '/': rhiza run status, the run journal and resume, the inbox, the daemon watchdog, session messages and Rex tab titles name the full nested step and never cut it at the first '/'"
+        },
+        "handle": "nested-step-paths-shown",
+        "id": "01M75ZJM0M4319FSK1RG7TEEPC",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M75ZJM0M4319FSK1RE1XPXGE",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M75ZJM0M4319FSK1RE1XPXGE",
+        "id": "01M75ZJM6Q0QPWJWTMAQF63XYJ",
+        "link": "01M75ZJM6Q0QPWJWTMAKP4ZR3Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75ZJKF4ZKAZ5MK4RZKRDCMD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M75ZJM0M4319FSK1RE1XPXGE",
+        "id": "01M75ZJMBFJAEA1MM51FHK3Q01",
+        "link": "01M75ZJMBFJAEA1MM51DM3SQ2S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75ZJK71NPPBEKGYDTPPDR5W",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M75Z51562NX7KRJH5WJ2M3HN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75ZJMP9G0WBZ8FMPA5SYNRC",
+  "type": "ops",
+  "v": 1
+}

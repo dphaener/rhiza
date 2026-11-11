@@ -1,0 +1,40 @@
+{
+  "actor": "01M763ESA9VA4B3S3VRKHSCPSP",
+  "after": [
+    "01M763KJGZ68SVDNN307ADAFAD"
+  ],
+  "at": "2026-11-11T20:11:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at ab33bb96 (claude-opus verifier, attempt 2). Read the leaf diff (0df6bd6f + ab33bb96): internal/daemon/load.go parses /proc/loadavg and /proc/meminfo, Evaluate begins a load hold on the 1-minute load per core over maxLoad, keeps it until the 5-minute load is under (also beneath a memory-low hold), holds on MemAvailable under minMemory, 0 disables each, unknown readings never hold; daemonPoll1 treats a machine hold like disk-low (no plan requests, resumes, starts) with skips load-high/memory-low and their detail; schedules and demand stop too; running runs untouched; RHIZA_TEST_LOAD1/LOAD5/MEM_AVAILABLE apply only with RHIZA_TEST_NOW, and cmd/rhiza Setup sets idle defaults for every script. Ran: go test -trimpath ./internal/daemon/... -run 'TestParseLoadavg|TestParseMemAvailable|TestEvaluate' -v (PASS); go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-load-hold|describe-golden)$' (ok) - the script covers 1-minute over holds with load-high, 1-minute under/5-minute over stays held, 5-minute under starts the run, memory-low holds, minMemory 0 and maxLoad 0 each disable; go test -trimpath ./internal/api -run 'Daemon|Usage|Budget|Help' - all tests PASS, only TestMain's root-state guard reported ~/code/.rhiza-root/usage.live.json changed, which the live root daemon rewrites every few seconds (mtime 2s old), unrelated to this change."
+        },
+        "handle": "daemon-load-memory-hold-verified",
+        "id": "01M763RFPRANQBZ65RP1YV38HT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M763RFPQ7253TM67RSGP1SY7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M763RFPQ7253TM67RSGP1SY7",
+        "id": "01M763RFQFN120VPTRSJ47CZJR",
+        "link": "01M763RFQFN120VPTRSE58ZK3X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75TJ828KDYB1XVYQ99EQVBM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75T742VGKA5XMRRXV4W6ZKP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M763RFR82VGM53YVHTWD4BJQ",
+  "type": "ops",
+  "v": 1
+}

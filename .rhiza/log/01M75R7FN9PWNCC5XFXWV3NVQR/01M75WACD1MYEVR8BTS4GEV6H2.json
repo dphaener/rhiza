@@ -1,0 +1,40 @@
+{
+  "actor": "01M75TRCK93H8X0RG0TAV7VPX8",
+  "after": [
+    "01M75RS5DZB53CN538PWP1QSQM"
+  ],
+  "at": "2026-11-11T18:01:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified commit 19f7def9 (verifier, attempt 1). Ran go test -trimpath ./internal/api/... -run 'TestShipCheckInfra|TestShipCheckRerunInfraBackoff' -v -count=1: both PASS. TestShipCheckInfra uses fake gh: --infra fails with no red recorded, passes on a recorded infra red (setup log, no failing test), fails on a red whose log has --- FAIL: TestGarden, fails on a green head, and refuses --infra with --settled. TestShipCheckRerunInfraBackoff drives ctx.Now (no sleeps): under --settled --changed --rerun-infra, no rerun 1s before each due time, and exactly one gh run rerun 42 --failed at 5m, 10m, 20m, 30m, 30m (5 total). Each infra-red attempt stays not settled, and Detail names the infra failure and the next rerun at. A later clock with the backoff read back from the state file does not rerun early. Settles and passes on a green attempt, on an attempt red with a failing test, and on a new head. Read the diff: RedAt/InfraReruns/InfraRerunAt are in the ship state, reset on a new red head and cleared on a recorded green. infraBackoff gives 5m doubling to a 30m cap. Other flag combinations are rejected. The whole internal/api package (go test -trimpath ./internal/api/ -v -timeout 900s) ran 935 passing tests including all 88 TestShip*, with no FAIL. It hit the timeout inside the unrelated read-timing test TestReadBudgetApply on a host at load avg ~11. describe-golden testscript passes with the new infra/rerun_infra flags."
+        },
+        "handle": "ship-check-infra-rerun-backoff-verified",
+        "id": "01M75WAC8ZCM1SQ8Q120K385NT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M75WAC8ZCM1SQ8Q11XZ9NM73",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75WAC8ZCM1SQ8Q11XZ9NM73",
+        "id": "01M75WACAV11KMGTYNZ0Z3VB8J",
+        "link": "01M75WACAV11KMGTYNZ0QWK042",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RHS7JP9D0WKRPAJAMTR38",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75R7FN9PWNCC5XFXWV3NVQR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75WACD1MYEVR8BTS4GEV6H2",
+  "type": "ops",
+  "v": 1
+}

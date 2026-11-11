@@ -83,6 +83,8 @@ const (
 	InboxPermission   = "permission"
 	InboxDiskLow      = "disk-low"
 	InboxUsageReserve = "usage-reserve"
+	InboxLoadHigh     = "load-high"
+	InboxMemoryLow    = "memory-low"
 	InboxMainStale    = "main-stale"
 	InboxAccept       = "accept"
 	InboxInterview    = "interview"
@@ -98,7 +100,7 @@ type InboxRequest struct {
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string              `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, main-stale, accept, interview or workflow"`
+	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, accept, interview or workflow"`
 	At             string              `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string              `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
 	Change         string              `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
@@ -183,6 +185,11 @@ func (r InboxResponse) Human(w io.Writer) {
 		}
 		if it.Kind == InboxDiskLow {
 			fmt.Fprintf(w, "%s disk-low\n", it.ID)
+			fmt.Fprintf(w, "  %s\n", it.Detail)
+			continue
+		}
+		if it.Kind == InboxLoadHigh || it.Kind == InboxMemoryLow {
+			fmt.Fprintf(w, "%s %s\n", it.ID, it.Kind)
 			fmt.Fprintf(w, "  %s\n", it.Detail)
 			continue
 		}
@@ -704,7 +711,7 @@ func inboxScopes(ctx *Ctx, project string, all bool) (scopes []inboxScope, merge
 // inboxMachineWide says an item is the daemon's, the same in every
 // project: it is listed once, with no project.
 func inboxMachineWide(kind string) bool {
-	return kind == InboxDiskLow || kind == InboxUsageReserve
+	return kind == InboxDiskLow || kind == InboxUsageReserve || kind == InboxLoadHigh || kind == InboxMemoryLow
 }
 
 // mergeInbox is the items of every scope, tagged with their project and
@@ -777,7 +784,7 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	items = sortInboxItems(append(append(append(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...), inboxWorkflow(ctx)...), inboxWatchdog(ctx)...))
+	items = sortInboxItems(append(append(append(append(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMachineHold(ctx)...), inboxMainStale(ctx)...), inboxWorkflow(ctx)...), inboxWatchdog(ctx)...))
 	byRun := map[string]run.State{}
 	for _, j := range runs {
 		byRun[j.ID] = j.State()
@@ -999,6 +1006,40 @@ func usageHoldItems(h *daemon.UsageHold) []InboxItem {
 	}}
 }
 
+// inboxMachineHold is one load-high or memory-low item while the daemon's
+// last poll holds new runs for load or memory and the hold has lasted 30
+// minutes or more, and none once a later poll does not hold.
+func inboxMachineHold(ctx *Ctx) []InboxItem {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil
+	}
+	st, ok := daemon.ReadState(common)
+	if !ok {
+		return nil
+	}
+	return machineHoldItems(st.MachineHold, ctx.Now())
+}
+
+// machineHoldItems is one item for h once it has lasted healthLoadWarnAfter,
+// none when h is nil or younger.
+func machineHoldItems(h *daemon.MachineHold, now time.Time) []InboxItem {
+	if h == nil || now.Sub(h.Since) < healthLoadWarnAfter {
+		return nil
+	}
+	kind := InboxLoadHigh
+	if h.Reason == daemon.SkipMemoryLow {
+		kind = InboxMemoryLow
+	}
+	at := h.Since.UTC().Format(time.RFC3339)
+	sum := sha256.Sum256([]byte(strings.Join([]string{kind, at}, "\x00")))
+	held := now.Sub(h.Since).Truncate(time.Minute)
+	return []InboxItem{{
+		ID: hex.EncodeToString(sum[:])[:7], Kind: kind, At: at,
+		Detail: fmt.Sprintf("%s: held for %s, the daemon holds new starts and resumes", h.Detail, held),
+	}}
+}
+
 // inboxMainStale is one main-stale item while the last ship close-out could
 // not fast-forward the main checkout, and none once a later one did.
 func inboxMainStale(ctx *Ctx) []InboxItem {
@@ -1137,7 +1178,7 @@ func findInboxItems(ctx *Ctx, ref string) ([]InboxItem, map[string]run.State, er
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, it := range append(append(append(append(append(append(all, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...), inboxWorkflow(ctx)...) {
+	for _, it := range append(append(append(append(append(append(append(all, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMachineHold(ctx)...), inboxMainStale(ctx)...), inboxWorkflow(ctx)...) {
 		if strings.HasPrefix(it.ID, ref) {
 			found = append(found, it)
 		}
@@ -1161,6 +1202,9 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 	}
 	if item.Kind == InboxDiskLow {
 		return nil, Usagef("item %s is the daemon's low disk space: it has no tab to open", item.ID).WithNext("rhiza daemon status")
+	}
+	if item.Kind == InboxLoadHigh || item.Kind == InboxMemoryLow {
+		return nil, Usagef("item %s is the daemon's %s hold on new runs: it has no tab to open", item.ID, item.Kind).WithNext("rhiza daemon status")
 	}
 	if item.Kind == InboxUsageReserve {
 		return nil, Usagef("item %s is the daemon's usage hold: it has no tab to open", item.ID).WithNext("rhiza daemon status")

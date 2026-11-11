@@ -2,6 +2,7 @@ package workflow
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -10,6 +11,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/rogpeppe/go-internal/txtar"
 )
 
 func TestLoadValid(t *testing.T) {
@@ -396,7 +399,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 		t.Error("review's signoff step is not skipped")
 	}
 	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "wait-landed", "landed-green",
-		"gate-rebase-merge", "conflict-triage-landed", "conflict-fix-landed", "rebase-merge", "rebase-merge-gate-failed", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
+		"gate-rebase-merge", "conflict-triage-landed", "conflict-fix-landed", "rebase-merge", "rebase-merge-gate-failed", "landed-infra-triage", "landed-infra-wait", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
 	}
@@ -430,7 +433,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 	for n, want := range map[string]struct{ pass, fail string }{
 		"gate-triage":              {"gate-fix", "ci-triage"},
 		"rebase-gate-failed":       {"gate-fix", ""},
-		"rebase-merge-gate-failed": {"gate-fix-merge", ""},
+		"rebase-merge-gate-failed": {"gate-fix-merge", "landed-infra-triage"},
 	} {
 		st := def.Steps[n]
 		if st.Kind != KindCommand || st.Run != "rhiza ship gate --failed" || st.On[OutcomePass] != want.pass || st.On[OutcomeFail] != want.fail {
@@ -454,8 +457,8 @@ func TestShipChangeBuiltin(t *testing.T) {
 		t.Errorf("ci-triage = %+v; want a command step running ship check --test-failures, pass to ci-fix, fail to wait-ci-rerun", triage)
 	}
 	rerun := def.Steps["wait-ci-rerun"]
-	if rerun.Kind != KindWait || rerun.Until != "rhiza ship check --settled --changed" || rerun.Timeout != 6*time.Hour || rerun.MaxVisits != 3 || rerun.On[OutcomePass] != "pr-green" {
-		t.Errorf("wait-ci-rerun = %+v; want a wait on ship check --settled --changed, 6h, max_visits 3, pass to pr-green", rerun)
+	if rerun.Kind != KindWait || rerun.Until != "rhiza ship check --settled --changed --rerun-infra" || rerun.Timeout != 6*time.Hour || rerun.MaxVisits != 3 || rerun.On[OutcomePass] != "pr-green" {
+		t.Errorf("wait-ci-rerun = %+v; want a wait on ship check --settled --changed --rerun-infra, 6h, max_visits 3, pass to pr-green", rerun)
 	}
 	fix := def.Steps["ci-fix"]
 	if fix.Kind != KindAgent || fix.On[OutcomePass] != "render-pr" || !strings.Contains(fix.Prompt, "Review: {run}") || !strings.Contains(fix.Prompt, "rhiza ship check --json") {
@@ -488,7 +491,7 @@ func TestPlanBuiltin(t *testing.T) {
 	if def.Name != "plan" || def.Start != "interview" {
 		t.Errorf("name %q, start %q; want plan, interview", def.Name, def.Start)
 	}
-	want := []string{"interview", "milestone-check", "review", "critic", "check", "revise", "gate", "open-pr", "wait-pr", "pr-green", "rebase", "wait-rebased", "rebased-green", "merge", "close-out"}
+	want := []string{"interview", "milestone-check", "review", "critic", "check", "revise", "gate", "open-pr", "wait-pr", "pr-green", "pr-green-infra", "pr-green-infra-wait", "rebase", "wait-rebased", "rebased-green", "rebased-green-infra", "rebased-green-infra-wait", "merge", "close-out"}
 	if !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
@@ -572,7 +575,7 @@ func TestPlanBuiltin(t *testing.T) {
 		}
 	}
 
-	caps := map[string]int{"rebase": 3, "wait-rebased": 3, "rebased-green": 3, "merge": 3, "interview": 1, "review": 3, "critic": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 3}
+	caps := map[string]int{"rebase": 3, "wait-rebased": 3, "rebased-green": 4, "merge": 3, "interview": 1, "review": 3, "critic": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 4}
 	for name, c := range caps {
 		if got := def.Steps[name].Cap(); got != c {
 			t.Errorf("%s cap = %d; want %d", name, got, c)
@@ -1718,8 +1721,23 @@ func TestPlanRerunsCIFlakes(t *testing.T) {
 			if !strings.Contains(cmd, "rhiza ship check") || !strings.Contains(cmd, "--reruns 2") {
 				t.Errorf("%s %s = %q; want rhiza ship check with --reruns 2", name, step, cmd)
 			}
-			if s.On["pass"] != pass || s.On["fail"] != "" || s.MaxVisits != 3 {
-				t.Errorf("%s %s routes = pass %q fail %q max_visits %d; want pass %q, no fail, 3", name, step, s.On["pass"], s.On["fail"], s.MaxVisits, pass)
+			wantFail, wantVisits := "", 3
+			if step == "pr-green" || step == "rebased-green" {
+				wantFail, wantVisits = step+"-infra", 4
+			}
+			if s.On["pass"] != pass || s.On["fail"] != wantFail || s.MaxVisits != wantVisits {
+				t.Errorf("%s %s routes = pass %q fail %q max_visits %d; want pass %q, fail %q, %d", name, step, s.On["pass"], s.On["fail"], s.MaxVisits, pass, wantFail, wantVisits)
+			}
+		}
+		// A red with no failing test waits out the infra outage and goes
+		// back to the same green step; a red with a failing test ends the run.
+		for _, green := range []string{"pr-green", "rebased-green"} {
+			tri, wait := def.Steps[green+"-infra"], def.Steps[green+"-infra-wait"]
+			if tri.Run != "rhiza ship check --infra" || tri.On["pass"] != green+"-infra-wait" || tri.On["fail"] != "" {
+				t.Errorf("%s %s-infra = %q routes %v; want ship check --infra passing to the wait, no fail", name, green, tri.Run, tri.On)
+			}
+			if wait.Kind != KindWait || wait.Until != "rhiza ship check --settled --changed --rerun-infra" || wait.Timeout != 6*time.Hour || wait.Interval != 30*time.Second || wait.MaxVisits != 3 || wait.On["pass"] != green {
+				t.Errorf("%s %s-infra-wait = %+v; want the 6h rerun-infra wait back to %s", name, green, wait, green)
 			}
 		}
 	}
@@ -1840,10 +1858,27 @@ func TestShipChangeLocalGate(t *testing.T) {
 			t.Errorf("%s on.fail = %q; want %s", hop.triage, got, hop.failed)
 		}
 	}
-	for failed, fix := range map[string]string{"rebase-gate-failed": "gate-fix", "rebase-merge-gate-failed": "gate-fix-merge"} {
-		if s := def.Steps[failed]; s.Kind != KindCommand || s.Run != "rhiza ship gate --failed" || s.On[OutcomePass] != fix || len(s.On) != 1 {
-			t.Errorf("%s = %+v; want ship gate --failed, pass to %s, no on.fail", failed, s, fix)
-		}
+	if s := def.Steps["rebase-gate-failed"]; s.Kind != KindCommand || s.Run != "rhiza ship gate --failed" || s.On[OutcomePass] != "gate-fix" || len(s.On) != 1 {
+		t.Errorf("rebase-gate-failed = %+v; want ship gate --failed, pass to gate-fix, no on.fail", s)
+	}
+	// After land, a failure that is no conflict and no failing gate goes to
+	// the infra triage: a red with no failing test waits out the outage
+	// (reruns with backoff) and returns to landed-green; anything else ends
+	// the run.
+	if s := def.Steps["rebase-merge-gate-failed"]; s.Kind != KindCommand || s.Run != "rhiza ship gate --failed" || s.On[OutcomePass] != "gate-fix-merge" || s.On[OutcomeFail] != "landed-infra-triage" || len(s.On) != 2 {
+		t.Errorf("rebase-merge-gate-failed = %+v; want ship gate --failed, pass to gate-fix-merge, fail to landed-infra-triage", s)
+	}
+	if tri := def.Steps["landed-infra-triage"]; tri.Kind != KindCommand || tri.Run != "rhiza ship check --infra" || tri.On[OutcomePass] != "landed-infra-wait" || len(tri.On) != 1 || tri.MaxVisits != 3 {
+		t.Errorf("landed-infra-triage = %+v; want ship check --infra passing to landed-infra-wait, no fail, max_visits 3", tri)
+	}
+	if w := def.Steps["landed-infra-wait"]; w.Kind != KindWait || w.Until != "rhiza ship check --settled --changed --rerun-infra" || w.Timeout != 6*time.Hour || w.Interval != 30*time.Second || w.MaxVisits != 3 || w.On[OutcomePass] != "landed-green" || len(w.On) != 1 {
+		t.Errorf("landed-infra-wait = %+v; want the 6h rerun-infra wait back to landed-green", w)
+	}
+	// landed-green is entered once from wait-landed, then again on each of
+	// the wait's returns: its cap must cover them all, or the first return
+	// ends the run over max_visits.
+	if lg, w := def.Steps["landed-green"], def.Steps["landed-infra-wait"]; lg.Cap() != 4 || lg.Cap() < 1+w.Cap() {
+		t.Errorf("landed-green cap = %d; want 4 (1 from wait-landed + landed-infra-wait's %d)", lg.Cap(), w.Cap())
 	}
 	if s := def.Steps["render-pr"]; s.On["pass"] != "local-gate" {
 		t.Errorf("render-pr on.pass = %q, want local-gate", s.On["pass"])
@@ -1898,7 +1933,7 @@ func TestShipChangeLocalGate(t *testing.T) {
 			}
 		}
 	}
-	for _, n := range []string{"rebase-merge-gate-failed", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge"} {
+	for _, n := range []string{"rebase-merge-gate-failed", "landed-infra-triage", "landed-infra-wait", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge"} {
 		if !after[n] {
 			t.Errorf("%s is not reached after land", n)
 		}
@@ -1948,6 +1983,48 @@ func TestKindDocsCoverKinds(t *testing.T) {
 	for _, d := range KindDocs() {
 		if d.Summary == "" || len(d.Outcomes) == 0 {
 			t.Errorf("kind %s has no summary or outcomes", d.Kind)
+		}
+	}
+}
+
+// TestShipChangeLandedInfraWaitScript pins run-ship-landed-infra-wait's own
+// ship-change.toml to the built-in on the infra wait's loop: the copy's
+// caps and routes for landed-green, landed-infra-triage and
+// landed-infra-wait must be the built-in's, so a cap the built-in lacks
+// cannot make the script pass while the real workflow fails.
+func TestShipChangeLandedInfraWaitScript(t *testing.T) {
+	data, ok := Builtin("ship-change")
+	if !ok {
+		t.Fatal("no ship-change built-in")
+	}
+	builtin, err := ParseWith("ship-change", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ar, err := txtar.ParseFile(filepath.Join("..", "..", "cmd", "rhiza", "testdata", "script", "run-ship-landed-infra-wait.txtar"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var copied []byte
+	for _, f := range ar.Files {
+		if f.Name == "ship-change.toml" {
+			copied = f.Data
+		}
+	}
+	if copied == nil {
+		t.Fatal("run-ship-landed-infra-wait.txtar has no ship-change.toml")
+	}
+	script, err := Parse("ship-change", copied)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"landed-green", "landed-infra-triage", "landed-infra-wait"} {
+		b, s := builtin.Steps[name], script.Steps[name]
+		if s.Cap() != b.Cap() {
+			t.Errorf("script's %s cap = %d, built-in's = %d", name, s.Cap(), b.Cap())
+		}
+		if s.Kind != b.Kind || s.Run != b.Run || s.Until != b.Until || !maps.Equal(s.On, b.On) {
+			t.Errorf("script's %s = %+v; want the built-in's kind, command and routes %+v", name, s, b)
 		}
 	}
 }

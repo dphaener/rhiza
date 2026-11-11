@@ -1,0 +1,63 @@
+{
+  "actor": "01M75VPGDM5H9TQH7B7SZWY0TB",
+  "after": [
+    "01M75VJ3JGDHACWC8S2J4FAMF3"
+  ],
+  "at": "2026-11-11T17:55:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a binary built from the branch head (7ef51341): rhiza workflow check plan-bug and check bugfix each print valid with exit 0 and only the expected bypassed-permissions warning; rhiza workflow describe plan-bug shows (repo) .rhiza/workflows/plan-bug.toml, includes plan, autonomy plan/accept/ship/signoff auto; describe bugfix shows (repo) bugfix.toml, includes build, review, ship-change, all autonomy auto; rhiza workflow ls lists bugfix and plan-bug as repo from .rhiza/workflows; .rhiza/dispatch.toml has [request] bug = plan-bug and [ready] bug = bugfix with no schedules; make self-check in a clean worktree at HEAD prints ok, exit 0"
+        },
+        "handle": "own-repo-bug-workflows-qa-1",
+        "id": "01M75W09FQDDFPJB3ASE94N39B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M75W09FQDDFPJB3ASC0MDFQW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75W09FQDDFPJB3ASC0MDFQW",
+        "id": "01M75W09M5SWJHN2MWTK7CM7HS",
+        "link": "01M75W09M5SWJHN2MWTFC005AQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RK16E77QY68C4GTVWBE19",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at branch head 7ef51341: CLAUDE.md's Bug requests section names rhiza request --kind bug, .rhiza/dispatch.toml, plan-bug and bugfix, says both are autonomous with no owner step whatever rhiza.autonomy.* says and that bugs never come from GitHub issues; every command it names runs with the built binary: rhiza request --help shows --kind feature|bug|milestone, rhiza workflow describe plan-bug and describe bugfix exit 0, rhiza workflow check shows the warning the note calls expected"
+        },
+        "handle": "own-repo-bug-flow-note-qa-1",
+        "id": "01M75W09RC80ED2000HBKVEARN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M75W09RC80ED2000H7XN1XMW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75W09RC80ED2000H7XN1XMW",
+        "id": "01M75W09WFZRCSNFX4PDHSBBBA",
+        "link": "01M75W09WFZRCSNFX4PD14JXPN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RK1M7WBHR4ND59KFBG8JT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75RDBYXWSMQM0YPEQQ4ECY3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75W09YR41CJE6ESQ8G62E5N",
+  "type": "ops",
+  "v": 1
+}

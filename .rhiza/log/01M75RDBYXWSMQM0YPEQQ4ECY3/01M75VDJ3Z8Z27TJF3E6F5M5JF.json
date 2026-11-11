@@ -1,0 +1,40 @@
+{
+  "actor": "01M75V8CXM00TQ87YK4E57SZ1S",
+  "after": [
+    "01M75RS01ZVADPVAEZMEX2Y24E"
+  ],
+  "at": "2026-11-11T17:45:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 15e6a4da, with a fresh build (go build -trimpath ./cmd/rhiza) and RHIZA_ROOT/CHANGE/RUN unset: rhiza workflow check plan-bug and check bugfix exit 0 (valid, each with only the expected warning about autonomous runs with bypassed permissions); workflow describe plan-bug shows '(repo)' .rhiza/workflows/plan-bug.toml, includes plan, autonomy plan/accept/ship/signoff auto; describe bugfix shows '(repo)', includes build, review, ship-change, all autonomy auto; workflow ls lists bugfix and plan-bug as repo from .rhiza/workflows. make self-check in a clean detached worktree at 15e6a4da exits 0 (in the run checkout it fails only on render of the verifier's own untracked actor record). Diff read: .rhiza/dispatch.toml sets [request] bug = \"plan-bug\" and [ready] bug = \"bugfix\" with no schedules; each workflow is one kind = \"workflow\" step with autonomous = true; no intake script, eventCommand hook or issue label added."
+        },
+        "handle": "own-repo-bug-workflows-verified",
+        "id": "01M75VDHZX56G1G0N1BV6TQPG6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M75VDHZX56G1G0N1BS5Z9K1Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75VDHZX56G1G0N1BS5Z9K1Y",
+        "id": "01M75VDJ25E3WXYSY6R7HPHNC9",
+        "link": "01M75VDJ25E3WXYSY6R5PKTDJ2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RK16E77QY68C4GTVWBE19",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75RDBYXWSMQM0YPEQQ4ECY3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75VDJ3Z8Z27TJF3E6F5M5JF",
+  "type": "ops",
+  "v": 1
+}
