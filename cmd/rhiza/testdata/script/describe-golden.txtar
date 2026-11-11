@@ -22512,7 +22512,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "test_failures": {
-            "description": "Exit 0 only if the head's latest ship check recorded at least one failing test read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)",
+            "description": "Exit 0 only if the head's latest ship check recorded at least one failing test or recognised cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, a make target error) read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)",
             "type": "boolean"
           }
         },
@@ -22579,7 +22579,7 @@ cmp stdout describe.golden.json
             "type": "array"
           },
           "findings": {
-            "description": "One finding, with no leaf, per failing test, for a fix step; recorded in the state file as well",
+            "description": "One finding, with no leaf, per failing test or recognised CI cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, or a make target error), for a fix step; recorded in the state file as well",
             "items": {
               "additionalProperties": false,
               "properties": {

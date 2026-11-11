@@ -71,7 +71,7 @@ type ShipCheckRequest struct {
 	PROpen  bool `json:"pr_open,omitempty" flag:"pr-open" desc:"Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)"`
 	// TestFailures asks only whether the head's latest check recorded
 	// failing tests; it reads the state file and runs no gh.
-	TestFailures bool `json:"test_failures,omitempty" flag:"test-failures" desc:"Exit 0 only if the head's latest ship check recorded at least one failing test read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)"`
+	TestFailures bool `json:"test_failures,omitempty" flag:"test-failures" desc:"Exit 0 only if the head's latest ship check recorded at least one failing test or recognised cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, a make target error) read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)"`
 	// Conflicts asks only whether the ship state records a merge of main
 	// that is still unresolved; it reads the state file and git, runs no
 	// gh and records nothing.
@@ -136,7 +136,7 @@ type ShipCheckResponse struct {
 	MergeConflict *ShipMergeConflict `json:"merge_conflict,omitempty" desc:"A merge of main left in progress by a conflict in code: the files, origin/main's commits with their change sets and the branch's change set"`
 	Stop          string             `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
 	Tests         []string           `json:"tests,omitempty" desc:"The failing tests the failed Actions runs' logs name, once the failed jobs were rerun and failed again: Go tests and testscripts (a '--- FAIL:' line, such as TestScripts/x), RSpec ('rspec ./spec/x_spec.rb:12'), Minitest ('bin/rails test test/x_test.rb:12') and pytest ('pytest tests/test_x.py::test_y'), each as its runner's rerun command"`
-	Findings      []ShipFinding      `json:"findings,omitempty" desc:"One finding, with no leaf, per failing test, for a fix step; recorded in the state file as well"`
+	Findings      []ShipFinding      `json:"findings,omitempty" desc:"One finding, with no leaf, per failing test or recognised CI cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, or a make target error), for a fix step; recorded in the state file as well"`
 	Reran         []string           `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, up to --reruns times per head, instead of failing; the check then reports not settled"`
 }
 
@@ -411,7 +411,7 @@ type shipState struct {
 	// each rerun is called. A state from before it counts a head with
 	// Reruns as rerun once.
 	RerunCount int `json:"rerun_count,omitempty"`
-	// CIFindings are the failing tests read from the logs of the failed
+	// CIFindings are the failing tests and recognised causes read from the logs of the failed
 	// runs of RerunHead, for the step that fixes them.
 	CIFindings []ShipFinding `json:"ci_findings,omitempty"`
 	// RerunTests are the failing tests read from the logs of the failed
@@ -872,7 +872,7 @@ func runShipTestFailures(ctx *Ctx) (any, error) {
 		resp.Tests = append(resp.Tests, f.Test)
 	}
 	if len(resp.Tests) == 0 {
-		resp.Detail = "no failing test was recorded for the head: an infra or unparsable failure"
+		resp.Detail = "no failing test or recognised cause was recorded for the head: an infra or unparsable failure"
 		return resp, nil
 	}
 	resp.Passed = true
@@ -932,7 +932,7 @@ func shipInfraWait(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckRespons
 				runs = append(runs, c.RunID)
 			}
 		}
-		if len(shipFailedTests(ctx, t, runs)) > 0 {
+		if len(shipFailedTests(ctx, t, runs)) > 0 || len(shipFailedCauses(ctx, t, runs)) > 0 {
 			return false, nil
 		}
 		st.RedChecks = redChecks(resp.Checks)
@@ -1177,6 +1177,125 @@ func shipFailedTests(ctx *Ctx, t shipTarget, runs []string) []string {
 	return tests
 }
 
+// shipFailedCauses reads the recognised non-test causes (see
+// parseCICauses) out of the logs of the Actions runs. A log gh cannot give
+// adds nothing.
+func shipFailedCauses(ctx *Ctx, t shipTarget, runs []string) []ciCause {
+	var causes []ciCause
+	for _, id := range runs {
+		out, err := gh(ctx, t.dir(), "run", "view", id, "--log-failed")
+		if err != nil {
+			continue
+		}
+		causes = append(causes, parseCICauses(string(out))...)
+	}
+	return causes
+}
+
+// ciCause is a deterministic non-test failure read from a CI log: Name is
+// what failed (the job and step, or the command) and Lines the failing
+// lines, quoted.
+type ciCause struct {
+	Name  string
+	Lines []string
+}
+
+var (
+	// 'fail render docs/reference/cli.md: ...' from rhiza check or self-check.
+	checkFailLine = regexp.MustCompile(`^fail \S.*`)
+	// '<file>.go:<line>:<col>: ...' from go vet and the compiler.
+	goDiagLine = regexp.MustCompile(`^(?:\./)?[\w./-]+\.go:\d+:\d+: \S.*`)
+	// The header a fmt-check prints before the files gofmt lists.
+	fmtHeaderLine = regexp.MustCompile(`(?i)^(?:unformatted files|files? (?:not|need) (?:to be )?(?:gofmt|formatted)|gofmt)\b.*$`)
+	goFileLine    = regexp.MustCompile(`^(?:\./)?[\w./-]+\.go$`)
+	// 'make: *** [Makefile:186: self-check] Error 1', '[build] Error 2'.
+	makeErrLine = regexp.MustCompile(`^make(?:\[\d+\])?: \*\*\* \[(?:\S+:\d+: )?([^\]\s]+)\] Error \d+`)
+)
+
+// ciCauseLines caps the lines one cause quotes.
+const ciCauseLines = 10
+
+// parseCICauses returns the deterministic causes a gh run view --log-failed
+// output names besides a failing test, in order of first appearance: rhiza
+// check or self-check 'fail ...' lines, a gofmt file listing, go vet and
+// compiler diagnostics, each grouped by the job and step that printed it,
+// and, only when none of those or a failing test is in the log, the target
+// of a 'make: *** [<target>] Error N' line with the lines just before it.
+func parseCICauses(log string) []ciCause {
+	var causes []ciCause
+	add := func(name, line string) {
+		for i := range causes {
+			if causes[i].Name == name {
+				if len(causes[i].Lines) < ciCauseLines && !slices.Contains(causes[i].Lines, line) {
+					causes[i].Lines = append(causes[i].Lines, line)
+				}
+				return
+			}
+		}
+		causes = append(causes, ciCause{Name: name, Lines: []string{line}})
+	}
+	var before []string
+	inFmt, fmtWhere := false, ""
+	type makeFail struct {
+		name  string
+		lines []string
+	}
+	var makes []makeFail
+	for _, raw := range strings.Split(log, "\n") {
+		raw = strings.TrimRight(raw, "\r")
+		text := strings.TrimRight(logText(raw), " \t")
+		where := ""
+		if parts := strings.SplitN(ansiEscape.ReplaceAllString(raw, ""), "\t", 3); len(parts) == 3 {
+			where = strings.TrimSpace(parts[0]) + " / " + strings.TrimSpace(parts[1])
+		}
+		label := func(kind string) string {
+			if where == "" {
+				return kind
+			}
+			return where + ": " + kind
+		}
+		if inFmt {
+			if goFileLine.MatchString(text) && where == fmtWhere {
+				add(label("fmt-check"), text)
+				continue
+			}
+			inFmt = false
+		}
+		switch {
+		case checkFailLine.MatchString(text):
+			add(label("self-check"), text)
+		case fmtHeaderLine.MatchString(text):
+			inFmt, fmtWhere = true, where
+			add(label("fmt-check"), text)
+		case goDiagLine.MatchString(text):
+			add(label("go vet or compile"), text)
+		default:
+			if m := makeErrLine.FindStringSubmatch(text); m != nil {
+				name := "make " + m[1]
+				if where != "" {
+					name = where + ": " + name
+				}
+				if !slices.ContainsFunc(makes, func(o makeFail) bool { return o.name == name }) {
+					lines := before
+					if len(lines) > 5 {
+						lines = lines[len(lines)-5:]
+					}
+					makes = append(makes, makeFail{name, append([]string{}, lines...)})
+				}
+			}
+		}
+		if text != "" {
+			before = append(before, text)
+		}
+	}
+	if len(causes) == 0 && len(parseFailedTests(log)) == 0 {
+		for _, m := range makes {
+			causes = append(causes, ciCause{Name: m.name, Lines: m.lines})
+		}
+	}
+	return causes
+}
+
 // failLine matches a Go test's failure line in a log, as go test prints it
 // (possibly after a CI timestamp and indentation for a subtest).
 var failLine = regexp.MustCompile(`--- FAIL: (\S+)`)
@@ -1277,6 +1396,14 @@ func shipReadFailures(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResp
 			seen[name] = true
 			resp.Tests = append(resp.Tests, name)
 			resp.Findings = append(resp.Findings, ShipFinding{Test: name, Reason: fmt.Sprintf("Test %s failed in CI run %s (check %s) on %s; rerun it alone and fix it", name, c.RunID, c.Name, shortSHA(resp.Commit))})
+		}
+		for _, cause := range parseCICauses(string(out)) {
+			if seen[cause.Name] {
+				continue
+			}
+			seen[cause.Name] = true
+			resp.Tests = append(resp.Tests, cause.Name)
+			resp.Findings = append(resp.Findings, ShipFinding{Test: cause.Name, Reason: fmt.Sprintf("%s failed in CI run %s (check %s) on %s; reproduce it locally and fix it. Failing lines:\n%s", cause.Name, c.RunID, c.Name, shortSHA(resp.Commit), strings.Join(cause.Lines, "\n"))})
 		}
 	}
 	if slices.Equal(st.CIFindings, resp.Findings) {

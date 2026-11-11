@@ -2201,3 +2201,76 @@ func TestShipCheckRerunInfraBackoff(t *testing.T) {
 		t.Errorf("new head: %+v", r)
 	}
 }
+
+func TestParseCICauses(t *testing.T) {
+	selfCheck := "lint\tRun make lint\t2026-11-11T21:00:00Z fail render docs/reference/cli.md: differs from what rhiza docs writes\n" +
+		"lint\tRun make lint\t2026-11-11T21:00:00Z fail render docs/reference/config.md: differs from what rhiza docs writes\n" +
+		"lint\tRun make lint\t2026-11-11T21:00:01Z make: *** [Makefile:186: self-check] Error 1\n"
+	got := parseCICauses(selfCheck)
+	if len(got) != 1 || got[0].Name != "lint / Run make lint: self-check" || len(got[0].Lines) != 2 ||
+		got[0].Lines[0] != "fail render docs/reference/cli.md: differs from what rhiza docs writes" {
+		t.Errorf("self-check = %+v", got)
+	}
+	fmtLog := "lint\tfmt\t2026-11-11T21:00:00Z unformatted files:\nlint\tfmt\t2026-11-11T21:00:00Z internal/api/x.go\nlint\tfmt\t2026-11-11T21:00:00Z cmd/rhiza/y.go\nlint\tfmt\t2026-11-11T21:00:00Z make: *** [Makefile:163: fmt-check] Error 1\n"
+	got = parseCICauses(fmtLog)
+	if len(got) != 1 || got[0].Name != "lint / fmt: fmt-check" || !slices.Equal(got[0].Lines, []string{"unformatted files:", "internal/api/x.go", "cmd/rhiza/y.go"}) {
+		t.Errorf("fmt-check = %+v", got)
+	}
+	vet := "lint\tvet\t2026-11-11T21:00:00Z # example.com/x\nlint\tvet\t2026-11-11T21:00:00Z internal/api/x.go:12:3: undefined: foo\n"
+	got = parseCICauses(vet)
+	if len(got) != 1 || got[0].Name != "lint / vet: go vet or compile" || got[0].Lines[0] != "internal/api/x.go:12:3: undefined: foo" {
+		t.Errorf("vet = %+v", got)
+	}
+	bare := "build\tBuild\t2026-11-11T21:00:00Z compiling\nbuild\tBuild\t2026-11-11T21:00:00Z linker said no\nbuild\tBuild\t2026-11-11T21:00:01Z make: *** [build] Error 2\n"
+	got = parseCICauses(bare)
+	if len(got) != 1 || got[0].Name != "build / Build: make build" || !slices.Equal(got[0].Lines, []string{"compiling", "linker said no"}) {
+		t.Errorf("bare make = %+v", got)
+	}
+	for _, none := range []string{
+		"setup\tapt\t2026-11-11T21:00:00Z Temporary failure resolving archive.ubuntu.com\n",
+		"setup\tbilling\t2026-11-11T21:00:00Z The job was not started because recent account payments have failed or your spending limit needs to be increased.\n",
+		"test\tRun\t2026-11-11T21:00:00Z --- FAIL: TestX (0.1s)\ntest\tRun\t2026-11-11T21:00:00Z make: *** [test] Error 1\n",
+	} {
+		if got := parseCICauses(none); len(got) != 0 {
+			t.Errorf("parseCICauses(%q) = %+v; want none", none, got)
+		}
+	}
+}
+
+func TestShipCheckCIFindingsNonTest(t *testing.T) {
+	f, g, state := shipFixture(t)
+	g.answers[shipPRView] = openPR(infraRollup)
+	g.answers["run rerun 42 --failed"] = ""
+	g.answers["run view 42 --log-failed"] = "lint\tRun make lint\t2026-11-11T21:00:00Z fail render docs/reference/cli.md: differs from what rhiza docs writes\nlint\tRun make lint\t2026-11-11T21:00:01Z make: *** [Makefile:186: self-check] Error 1\n"
+	shipCheck(t, f, `{"settled":true}`) // spends the head's one rerun
+	r := shipCheck(t, f, `{"settled":true}`)
+	if len(r.Findings) != 1 || !strings.Contains(r.Findings[0].Reason, "fail render docs/reference/cli.md") || !strings.Contains(r.Findings[0].Test, "lint") {
+		t.Fatalf("findings = %+v", r.Findings)
+	}
+	st, err := readShipState(state)
+	if err != nil || len(st.CIFindings) != 1 {
+		t.Fatalf("state = %+v, %v", st, err)
+	}
+	if r := shipCheck(t, f, `{"test_failures":true}`); !r.Passed || r.ExitCode() != 0 {
+		t.Errorf("test-failures on a cause: %+v", r)
+	}
+	g.answers["run view 42 --log-failed"] = "setup\tapt\tTemporary failure resolving archive.ubuntu.com\n"
+	shipCheck(t, f, `{"settled":true}`)
+	if r := shipCheck(t, f, `{"test_failures":true}`); r.Passed || r.ExitCode() != 1 {
+		t.Errorf("test-failures on infra: %+v", r)
+	}
+}
+
+func TestShipInfraWaitSettlesOnCause(t *testing.T) {
+	f, g, _ := shipFixture(t)
+	g.answers[shipPRView] = openPR(infraRollup)
+	g.answers["run rerun 42 --failed"] = ""
+	g.answers["run view 42 --log-failed"] = "lint\tRun make lint\t2026-11-11T21:00:00Z fail render docs/reference/cli.md: differs\n"
+	req := `{"settled":true,"changed":true,"rerun_infra":true}`
+	shipCheck(t, f, `{"settled":true}`)
+	shipCheck(t, f, `{"settled":true}`)
+	g.answers[shipPRView] = strings.Replace(openPR(infraRollup), "42", "100", -1)
+	if r := shipCheck(t, f, req); !r.Passed || !r.Settled {
+		t.Errorf("attempt with a recognised cause: %+v", r)
+	}
+}
