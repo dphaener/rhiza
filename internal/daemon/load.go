@@ -42,6 +42,10 @@ type MachineHold struct {
 	Reason string `json:"reason"`
 	// Detail names the reading and the limit.
 	Detail string `json:"detail"`
+	// Load is true while the load hold is on, also under a memory-low hold:
+	// once memory recovers, the load hold still ends only on the 5-minute
+	// load.
+	Load bool `json:"load,omitempty"`
 }
 
 // ParseLoadavg reads the 1- and 5-minute averages from /proc/loadavg text.
@@ -102,9 +106,9 @@ func ReadMachine() Reading {
 
 // Evaluate decides the hold. Memory under minMem holds (0 turns that off).
 // A load hold begins when the 1-minute load per core is over maxLoad and,
-// once begun (prev is a load-high hold), ends only when the 5-minute load
-// per core is back under it (0 turns the check off). It returns nil for no
-// hold.
+// once begun (prev is a load-high hold, or a memory-low hold with Load set),
+// ends only when the 5-minute load per core is back under it (0 turns the
+// check off). It returns nil for no hold.
 func Evaluate(r Reading, maxLoad float64, minMem uint64, prev *MachineHold, now time.Time) *MachineHold {
 	since := func(reason string) time.Time {
 		if prev != nil && prev.Reason == reason {
@@ -112,19 +116,23 @@ func Evaluate(r Reading, maxLoad float64, minMem uint64, prev *MachineHold, now 
 		}
 		return now.UTC()
 	}
-	if minMem > 0 && r.MemOK && r.MemAvail < minMem {
-		return &MachineHold{Since: since(SkipMemoryLow), Reason: SkipMemoryLow,
-			Detail: fmt.Sprintf("%s available, under the minimum of %s", FormatSize(r.MemAvail), FormatSize(minMem))}
-	}
+	// The load hold: begun by the 1-minute load, kept until the 5-minute
+	// load is back under the limit.
+	wasLoad := prev != nil && (prev.Reason == SkipLoadHigh || prev.Load)
+	var load *MachineHold
 	if maxLoad > 0 && r.LoadOK {
-		if r.Load1 > maxLoad {
-			return &MachineHold{Since: since(SkipLoadHigh), Reason: SkipLoadHigh,
+		switch {
+		case r.Load1 > maxLoad:
+			load = &MachineHold{Since: since(SkipLoadHigh), Reason: SkipLoadHigh, Load: true,
 				Detail: fmt.Sprintf("1-minute load %.2f per core, over the limit of %.2f", r.Load1, maxLoad)}
-		}
-		if prev != nil && prev.Reason == SkipLoadHigh && r.Load5 >= maxLoad {
-			return &MachineHold{Since: prev.Since, Reason: SkipLoadHigh,
+		case wasLoad && r.Load5 >= maxLoad:
+			load = &MachineHold{Since: since(SkipLoadHigh), Reason: SkipLoadHigh, Load: true,
 				Detail: fmt.Sprintf("5-minute load %.2f per core, not yet under the limit of %.2f", r.Load5, maxLoad)}
 		}
 	}
-	return nil
+	if minMem > 0 && r.MemOK && r.MemAvail < minMem {
+		return &MachineHold{Since: since(SkipMemoryLow), Reason: SkipMemoryLow, Load: load != nil,
+			Detail: fmt.Sprintf("%s available, under the minimum of %s", FormatSize(r.MemAvail), FormatSize(minMem))}
+	}
+	return load
 }

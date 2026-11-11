@@ -55,6 +55,18 @@ func TestEvaluate(t *testing.T) {
 	if h := Evaluate(r(9, 9, gb), 0, 0, nil, now); h != nil {
 		t.Fatalf("disabled: %+v", h)
 	}
+	// A memory hold over a load hold keeps the load hold on beneath it:
+	// once memory recovers, the 5-minute load still has to come down.
+	m := Evaluate(r(1, 3.5, gb), 3, 2*gb, h, later)
+	if m == nil || m.Reason != SkipMemoryLow || !m.Load {
+		t.Fatalf("memory over load: %+v", m)
+	}
+	if h := Evaluate(r(1, 3.5, 8*gb), 3, 2*gb, m, later); h == nil || h.Reason != SkipLoadHigh {
+		t.Fatalf("load hold dropped after memory: %+v", h)
+	}
+	if m := Evaluate(r(1, 3.5, gb), 3, 2*gb, nil, now); m == nil || m.Load {
+		t.Fatalf("5-minute load began a load hold under memory: %+v", m)
+	}
 	if h := Evaluate(Reading{}, 3, 2*gb, nil, now); h != nil {
 		t.Fatalf("unknown reading held: %+v", h)
 	}

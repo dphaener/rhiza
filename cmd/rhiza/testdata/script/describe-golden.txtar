@@ -1732,7 +1732,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "max_load": {
-            "description": "Start no run while the 1-minute load per core is over this, until the 5-minute load is back under it; a number, default 3.0; 0 turns the check off",
+            "description": "Start no run while the 1-minute load per core is over this, until the 5-minute load is back under it: a number; default 3.0; 0 turns the check off",
             "type": "string"
           },
           "max_runs": {
