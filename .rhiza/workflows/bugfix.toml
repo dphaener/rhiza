@@ -1,0 +1,11 @@
+name = "bugfix"
+
+# A bug's planned change set (.rhiza/dispatch.toml [ready] bug): the built-in
+# ship-change (build, review, PR, CI, land, merge), autonomous whatever
+# rhiza.autonomy.* says, so the fix ships with no owner sign-off.
+autonomous = true
+
+[step.ship]
+kind = "workflow"
+workflow = "ship-change"
+on.pass = "done"
