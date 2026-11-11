@@ -555,6 +555,7 @@
         - [ship-record-names-run](capability/rhiza/orchestration/daemon/daemon-watchdog/ship-record-names-run.md)
         - [watchdog-pr-owned-by-run](capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-pr-owned-by-run.md)
         - [flaky-test-bugs](capability/rhiza/orchestration/daemon/daemon-watchdog/flaky-test-bugs.md)
+        - [watchdog-holds-skip-abandoned](capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-holds-skip-abandoned.md)
       - [root-continuations-first](capability/rhiza/orchestration/daemon/root-continuations-first.md)
     - [inbox](capability/rhiza/orchestration/inbox.md)
       - [inbox-list](capability/rhiza/orchestration/inbox/inbox-list.md)
@@ -806,6 +807,7 @@
 
 ## Decisions
 
+- [abandon-live-run-out-of-scope](decision/abandon-live-run-out-of-scope.md)
 - [abandon-removes-clean-worktree](decision/abandon-removes-clean-worktree.md)
 - [abandon-unpushed-branch-scope](decision/abandon-unpushed-branch-scope.md)
 - [actionable-roadmap-rebase-resolution](decision/actionable-roadmap-rebase-resolution.md)
@@ -1689,6 +1691,7 @@
 - [vm-move-notify-chime-and-marker](decision/vm-move-notify-chime-and-marker.md)
 - [wait-settles-conflict-rule](decision/wait-settles-conflict-rule.md)
 - [warn-dont-safeguard](decision/warn-dont-safeguard.md)
+- [watchdog-holds-end-with-the-run](decision/watchdog-holds-end-with-the-run.md)
 - [watchdog-pr-owned-by-ship-record-run](decision/watchdog-pr-owned-by-ship-record-run.md)
 - [watchdog-scope-and-defaults](decision/watchdog-scope-and-defaults.md)
 - [watchdog-settings-layout-follows-decision](decision/watchdog-settings-layout-follows-decision.md)
@@ -1774,6 +1777,7 @@
 - [question-29479c02-1](question/question-29479c02-1.md)
 - [question-298a341f-1](question/question-298a341f-1.md)
 - [question-3140003e-1](question/question-3140003e-1.md)
+- [question-32e4ca1a-1](question/question-32e4ca1a-1.md)
 - [question-33462c8e-1](question/question-33462c8e-1.md)
 - [question-375c0132-1](question/question-375c0132-1.md)
 - [question-37d69292-1](question/question-37d69292-1.md)
@@ -2923,6 +2927,7 @@
 - [pr-441-fix-a-run-that-fails-on-a-ci](evidence/pr-441-fix-a-run-that-fails-on-a-ci.md)
 - [pr-442-the-daemon-holds-new-runs](evidence/pr-442-the-daemon-holds-new-runs.md)
 - [pr-445-fix-01m75z51562n](evidence/pr-445-fix-01m75z51562n.md)
+- [pr-448-fix-the-inbox-keeps-a-watchdog](evidence/pr-448-fix-the-inbox-keeps-a-watchdog.md)
 - [pr-45-the-review-workflow](evidence/pr-45-the-review-workflow.md)
 - [pr-50-a-change-set-has-at-most-one](evidence/pr-50-a-change-set-has-at-most-one.md)
 - [pr-52-the-daemon](evidence/pr-52-the-daemon.md)
@@ -3529,6 +3534,8 @@
 - [watchdog-files-bugs-qa-2](evidence/watchdog-files-bugs-qa-2.md)
 - [watchdog-files-bugs-verified](evidence/watchdog-files-bugs-verified.md)
 - [watchdog-green-pr-unmerged-verified](evidence/watchdog-green-pr-unmerged-verified.md)
+- [watchdog-holds-skip-abandoned-qa-1](evidence/watchdog-holds-skip-abandoned-qa-1.md)
+- [watchdog-holds-skip-abandoned-verified](evidence/watchdog-holds-skip-abandoned-verified.md)
 - [watchdog-policy-qa-1](evidence/watchdog-policy-qa-1.md)
 - [watchdog-policy-verified](evidence/watchdog-policy-verified.md)
 - [watchdog-poll-behind-verified](evidence/watchdog-poll-behind-verified.md)
@@ -3679,6 +3686,7 @@
 ## Sources
 
 - [abandon-unpushed-plan](source/abandon-unpushed-plan.md)
+- [abandoned-run-hold-plan](source/abandoned-run-hold-plan.md)
 - [actor-once-per-run-plan](source/actor-once-per-run-plan.md)
 - [agents-never-start-runs-plan](source/agents-never-start-runs-plan.md)
 - [anchors-plan-session](source/anchors-plan-session.md)
