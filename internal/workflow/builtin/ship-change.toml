@@ -149,14 +149,17 @@ on.pass = "ci-fix"
 on.fail = "wait-ci-rerun"
 
 # The failing ship check recorded the red head and its check runs (red_head,
-# red_checks). This wait passes only once CI moved past them (another head,
-# or a check run with a new ID or attempt, such as a rerun by hand) and has
-# finished, then pr-green checks the head again, and signoff follows (after
-# a rebase, the rebased-green path). While it waits, its output names the
-# infra failure; on timeout the run ends with that line in its detail.
+# red_checks). With --rerun-infra the wait reruns the red head's failed jobs
+# itself, with backoff (5m, 10m, 20m, then every 30m), and passes once CI
+# moved past the red head (another head, or a check run with a new ID or
+# attempt) and has finished, then pr-green checks the head again, and
+# signoff follows (after a rebase, the rebased-green path). A failing test
+# in a rerun settles it too, and pr-green sends that to ci-fix. While it
+# waits, its output names the infra failure and the next rerun's time; on
+# the 6h timeout the run ends with that line in its detail.
 [step.wait-ci-rerun]
 kind = "wait"
-until = "rhiza ship check --settled --changed"
+until = "rhiza ship check --settled --changed --rerun-infra"
 timeout = "6h"
 interval = "30s"
 max_visits = 3
@@ -245,9 +248,12 @@ timeout = "2h"
 interval = "30s"
 on.pass = "landed-green"
 
+# landed-green is entered once from wait-landed and once more from each of
+# landed-infra-wait's returns (max_visits 3).
 [step.landed-green]
 kind = "command"
 run = "rhiza ship check"
+max_visits = 4
 on.pass = "gate-rebase-merge"
 on.fail = "conflict-triage-landed"
 
@@ -301,6 +307,29 @@ kind = "command"
 run = "rhiza ship gate --failed"
 max_visits = 3
 on.pass = "gate-fix-merge"
+on.fail = "landed-infra-triage"
+
+# After land, a red landed head (landed-green, rebased-merge-green) that is
+# no conflict and no failing gate comes here: a red with no failing test is
+# a CI infra outage, so the run waits for it to clear, rerunning the failed
+# jobs with backoff, then checks the head again at landed-green (which goes
+# on through gate-rebase-merge and rebase-merge to the merge). A red with a
+# failing test, or any other failure, fails the triage and ends the run as
+# before. The wait's timeout ends the run with the infra failure in its
+# detail.
+[step.landed-infra-triage]
+kind = "command"
+run = "rhiza ship check --infra"
+max_visits = 3
+on.pass = "landed-infra-wait"
+
+[step.landed-infra-wait]
+kind = "wait"
+until = "rhiza ship check --settled --changed --rerun-infra"
+timeout = "6h"
+interval = "30s"
+max_visits = 3
+on.pass = "landed-green"
 
 [step.gate-fix-merge]
 kind = "agent"
