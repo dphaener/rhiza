@@ -1,8 +1,13 @@
 package api
 
 import (
+	"bytes"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/run"
 )
 
 // TestInboxNoticeNamesNoHandleOrID has a case per inbox kind, each item
@@ -73,5 +78,38 @@ func TestInboxNoticeNamesNoHandleOrID(t *testing.T) {
 		if !kinds[k] {
 			t.Errorf("no case for kind %s", k)
 		}
+	}
+}
+
+// A load-high or memory-low hold that has lasted 31 minutes notifies the
+// owner once, however many polls see it.
+func TestDaemonNotifyMachineHold(t *testing.T) {
+	for _, tc := range []struct{ reason, msg string }{
+		{daemon.SkipLoadHigh, "machine load is high: the daemon holds new starts and resumes"},
+		{daemon.SkipMemoryLow, "available memory is low: the daemon holds new starts and resumes"},
+	} {
+		t.Run(tc.reason, func(t *testing.T) {
+			ctx := testCtx(t.TempDir())
+			var rex bytes.Buffer
+			ctx.Rex = &rex
+			rs := run.NewStore(t.TempDir())
+			state := daemon.State{MachineHold: &daemon.MachineHold{
+				Since: ctx.Now().Add(-31 * time.Minute), Reason: tc.reason, Detail: "reading over limit",
+			}}
+			for range 2 {
+				if err := daemonNotify(ctx, rs, &state, ""); err != nil {
+					t.Fatal(err)
+				}
+			}
+			var blocked []map[string]string
+			for _, r := range rexReports(t, rex.String()) {
+				if r["state"] == "blocked" {
+					blocked = append(blocked, r)
+				}
+			}
+			if len(blocked) != 1 || blocked[0]["msg"] != tc.msg {
+				t.Fatalf("blocked reports %v, want one %q", blocked, tc.msg)
+			}
+		})
 	}
 }

@@ -486,6 +486,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	items = append(items, diskLowItems(state.DiskLow)...)
 	items = append(items, usageHoldItems(state.UsageHold)...)
 	items = append(items, watchdogHoldItems(state.WatchdogHolds)...)
+	items = append(items, machineHoldItems(state.MachineHold, ctx.Now())...)
 	if common, err := gitCommonDir(ctx); err == nil {
 		items = append(items, mainStaleItems(common)...)
 		items = append(items, workflowItems(common, state.Skips)...)
