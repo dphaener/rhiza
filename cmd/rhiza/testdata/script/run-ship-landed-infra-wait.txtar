@@ -2,13 +2,19 @@
 # test (an infra failure) goes from landed-green through conflict-triage-landed
 # and rebase-merge-gate-failed to landed-infra-triage and landed-infra-wait
 # instead of ending, waits while the red head's check runs are unchanged, and
-# passes landed-green on once a rerun (a new job) turns the head green.
+# passes landed-green on once a rerun (a new job) turns the head green. From
+# there the run goes on as any landed run: gate-rebase-merge, rebase-merge
+# (main has not moved), wait-rebased-merge, rebased-merge-green, a squash
+# merge pinned to the green head, wait-main and main-green (the merge
+# commit's tree is the head's), and close-out.
 #
 # The repo's .rhiza/workflows/ship-change.toml replaces the built-in by name
-# with its post-land middle (the built-in's own steps and routes; its wait
-# carries --rerun-infra, which internal/workflow's tests check on the built-in).
-# The fake gh has no Actions run IDs and the test clock is fixed, so no rerun
-# is due: the wait only sees CI move.
+# with its post-land steps (the built-in's own steps and routes, waits with a
+# short interval and timeout; its wait carries --rerun-infra, which
+# internal/workflow's tests check on the built-in). The fake gh has no
+# Actions run IDs and the test clock is fixed, so no rerun is due: the wait
+# only sees CI move. Its merge squashes the branch onto main in origin
+# (refusing any head but the branch's), and the merged PR names that commit.
 
 chmod 755 bin/gh
 env PATH=$WORK/bin:$PATH
@@ -40,7 +46,20 @@ stdout '^- rebase-merge-gate-failed \(visit 1\): fail, then landed-infra-triage'
 stdout '^- landed-infra-triage \(visit 1\): pass, then landed-infra-wait'
 stdout '^- landed-infra-wait \(visit 1\): pass, then landed-green'
 stdout '^- landed-green \(visit 2\): pass, then gate-rebase-merge'
-stdout '^- gate-rebase-merge \(visit 1\): pass, then end'
+stdout '^- gate-rebase-merge \(visit 1\): pass, then rebase-merge'
+stdout '^- rebase-merge \(visit 1\): pass, then wait-rebased-merge'
+stdout '^- wait-rebased-merge \(visit 1\): pass, then rebased-merge-green'
+stdout '^- rebased-merge-green \(visit 1\): pass, then merge'
+stdout '^- merge \(visit 1\): pass, then wait-main'
+stdout '^- wait-main \(visit 1\): pass, then main-green'
+stdout '^- main-green \(visit 1\): pass, then close-out'
+stdout '^- close-out \(visit 1\): pass, then end'
+
+# The merge was a squash pinned to the green head, and close-out removed
+# the branch on origin.
+exec sh -c 'grep -c -x "pr merge 7 --squash --match-head-commit $(cat $WORK/landed.sha)" $WORK/gh.log'
+stdout '^1$'
+! exec git -C $WORK/origin.git rev-parse --verify --quiet refs/heads/cs/ship-it
 fold-ok
 
 -- ship-change.toml --
@@ -85,7 +104,53 @@ on.pass = "landed-green"
 [step.gate-rebase-merge]
 kind = "command"
 run = "rhiza ship gate"
-max_visits = 3
+max_visits = 6
+on.pass = "rebase-merge"
+
+[step.rebase-merge]
+kind = "command"
+run = "rhiza ship rebase"
+max_visits = 6
+on.pass = "wait-rebased-merge"
+on.fail = "conflict-triage-landed"
+
+[step.wait-rebased-merge]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "30s"
+interval = "50ms"
+max_visits = 6
+on.pass = "rebased-merge-green"
+
+[step.rebased-merge-green]
+kind = "command"
+run = "rhiza ship check"
+max_visits = 6
+on.pass = "merge"
+on.fail = "conflict-triage-landed"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship merge"
+max_visits = 6
+on.pass = "wait-main"
+on.fail = "gate-rebase-merge"
+
+[step.wait-main]
+kind = "wait"
+until = "rhiza ship check --main --settled"
+timeout = "30s"
+interval = "50ms"
+on.pass = "main-green"
+
+[step.main-green]
+kind = "command"
+run = "rhiza ship check --main"
+on.pass = "close-out"
+
+[step.close-out]
+kind = "command"
+run = "rhiza ship close-out"
 -- queue --
 RED
 RED
@@ -99,6 +164,10 @@ echo "$@" >> "$WORK/gh.log"
 case "$1 $2" in
 "pr view")
 	q="$WORK/checks"
+	if [ "$3" = 7 ]; then
+		printf '{"mergeCommit":{"oid":"%s"},"state":"MERGED"}\n' "$(cat "$WORK/merge.sha")"
+		exit 0
+	fi
 	c=$(head -1 "$q")
 	if [ "$(wc -l < "$q")" -gt 1 ]; then
 		sed -i 1d "$q"
@@ -109,6 +178,17 @@ case "$1 $2" in
 	*) test='{"name":"test","status":"COMPLETED","conclusion":"FAILURE","detailsUrl":"https://ci.example/job/9"}' ;;
 	esac
 	printf '{"body":"Change set %s","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[%s]}\n' "$RHIZA_CHANGE" "$head" "$test"
+	;;
+"pr merge")
+	head=$(git -C "$WORK/origin.git" rev-parse refs/heads/cs/ship-it)
+	if [ "$6" != "$head" ]; then
+		echo "head branch was modified" >&2
+		exit 1
+	fi
+	echo "$head" > "$WORK/landed.sha"
+	sha=$(git -C "$WORK/origin.git" commit-tree "$head^{tree}" -p refs/heads/main -m 'Ship it (#7)')
+	git -C "$WORK/origin.git" update-ref refs/heads/main "$sha"
+	echo "$sha" > "$WORK/merge.sha"
 	;;
 *)
 	echo "fake gh: unexpected: $*" >&2
