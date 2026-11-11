@@ -1,0 +1,40 @@
+{
+  "actor": "01M75VGKAAWZPSBAE95Q363Q88",
+  "after": [
+    "01M75VDJ3Z8Z27TJF3E6F5M5JF"
+  ],
+  "at": "2026-11-11T17:47:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code (opus) at da28284e: read the diff; CLAUDE.md gains a '## Bug requests' section naming `rhiza request --kind bug`, the CLI/Request app/orchestrator/watchdog, `.rhiza/dispatch.toml`, plan-bug and bugfix, says both are autonomous with no owner step whatever rhiza.autonomy.* says, and that bugs never come from GitHub issues. Matches .rhiza/dispatch.toml ([request] bug=plan-bug, [ready] bug=bugfix) and `autonomous = true` in both workflow files. With a scratch build of this commit (RHIZA_ROOT/CHANGE/RUN unset): `rhiza request --help` exit 0 and lists --kind feature|bug|milestone; `rhiza workflow describe plan-bug` and `rhiza workflow describe bugfix` exit 0 from this checkout's .rhiza/workflows, all autonomy auto; `rhiza workflow check plan-bug`/`bugfix` are valid with the bypassed-permissions warnings the note calls expected."
+        },
+        "handle": "own-repo-bug-flow-note-verified",
+        "id": "01M75VJ3DYWBK5B9AVXEQC4Q2F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M75VJ3DYWBK5B9AVXE9SNN27",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75VJ3DYWBK5B9AVXE9SNN27",
+        "id": "01M75VJ3GYYJ4A8EZKMVAS37QX",
+        "link": "01M75VJ3GYYJ4A8EZKMQMESPXP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RK1M7WBHR4ND59KFBG8JT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75RDBYXWSMQM0YPEQQ4ECY3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75VJ3JGDHACWC8S2J4FAMF3",
+  "type": "ops",
+  "v": 1
+}
