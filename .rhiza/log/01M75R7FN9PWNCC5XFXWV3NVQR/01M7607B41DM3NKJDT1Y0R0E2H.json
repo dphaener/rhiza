@@ -1,0 +1,109 @@
+{
+  "actor": "01M75Z8ASA0379SDQDM4MTZ0MR",
+  "after": [
+    "01M75YR95JTXF8FFX0P7WG9W0M"
+  ],
+  "at": "2026-11-11T19:09:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c7b756f9 with the built binary (go build -trimpath ./cmd/rhiza) in a scratch repo with a bare origin and a fake gh (Actions run 42, apt-mirror log, no failing test); clock moved by hand through RHIZA_TEST_NOW, each call a fresh process. ship check --infra: exit 1 with no red recorded; after --settled spent the head's one rerun and ship check recorded the red, --infra exit 0 and --test-failures exit 1. --settled --changed --rerun-infra: at red_at+4m not settled, naming the infra failure and next rerun at red_at+5m, no rerun; past it it ran gh run rerun 42 --failed (rerun 1) with next at +10m; reruns then fell at 10m, 20m, 30m, 30m after the previous one (state file red_at, infra_reruns 5, infra_rerun_at), with each new failed job ID (10..13) still not settled. An IN_PROGRESS attempt was not settled; a SUCCESS attempt settled (exit 0) and plain ship check passed and cleared red_at/infra_* from the state. On a new head: an attempt red with --- FAIL: TestGarden in its log settled the wait (exit 0), and --infra then failed with 'the red head has failing tests'. A push of another head mid-wait settled past the red head (new head's CI got its own rerun). A new red head reset red_at. Scoped tests TestShipCheckInfra and TestShipCheckRerunInfraBackoff pass. Nits: the rerun note omits the run ID ('reran the failed jobs of run (rerun 1)', ship.go:971), and a passing --infra prints only '.'."
+        },
+        "handle": "ship-check-infra-rerun-backoff-qa-1",
+        "id": "01M7607ADF4QZ3Q20V8ZDG941F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7607ADF4QZ3Q20V8W2206F7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7607ADF4QZ3Q20V8W2206F7",
+        "id": "01M7607AHJ1HV1CXDGV46PJ2HT",
+        "link": "01M7607AHJ1HV1CXDGV1SSCF5B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RHS7JP9D0WKRPAJAMTR38",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c7b756f9 with the built binary: rhiza workflow check plan and plan-milestone are valid (builtin); workflow describe for both shows pr-green on.fail -> pr-green-infra (rhiza ship check --infra) on.pass -> pr-green-infra-wait on.pass -> pr-green, and the same for rebased-green. The wait's until (--settled --changed --rerun-infra) was driven by hand against a fake gh (see ship-check-infra-rerun-backoff-qa-1). go test -trimpath ./internal/workflow/... and the plan-workflow-ci testscripts (infra-wait, infra-timeout, flake-red) pass."
+        },
+        "handle": "plan-ci-infra-wait-qa-1",
+        "id": "01M7607AM3Z4A12V4RCQJEYZ5R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7607AM3Z4A12V4RCKQAVXVV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7607AM3Z4A12V4RCKQAVXVV",
+        "id": "01M7607ARS4QRZWN9D6HMWY9KA",
+        "link": "01M7607ARS4QRZWN9D6DTPVD9E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RHSENQJ88C8SBDYFDFMZY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c7b756f9 with the built binary: rhiza workflow check ship-change is valid; describe shows ci-triage on.fail -> wait-ci-rerun, whose until is rhiza ship check --settled --changed --rerun-infra; that command, run by hand against a fake gh with an infra red, reran run 42's failed jobs itself on a 5/10/20/30/30m backoff and settled once a rerun went green. Testscripts run-ship-infra-wait and run-ship-rerun-fail pass."
+        },
+        "handle": "ship-change-infra-wait-reruns-qa-1",
+        "id": "01M7607AV6549FWN0XWHJ9GWKC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7607AV6549FWN0XWEMPVERK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7607AV6549FWN0XWEMPVERK",
+        "id": "01M7607AX249E3M4PCCM2BXES6",
+        "link": "01M7607AX249E3M4PCCJT0QTVY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RHSQEVEXEYYNDCVJ5BKHS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c7b756f9 with the built binary: workflow describe ship-change shows rebase-merge-gate-failed on.fail -> landed-infra-triage (rhiza ship check --infra) on.pass -> landed-infra-wait (--settled --changed --rerun-infra) on.pass -> landed-green. Hand runs of both commands against a fake gh: --infra passes only on a recorded infra red and fails on a red with a failing test or none recorded; the wait reruns with backoff and settles on green. Testscript run-ship-landed-infra-wait passes."
+        },
+        "handle": "ship-change-landed-infra-wait-qa-1",
+        "id": "01M7607AZ8CSQVYZA80904EXA5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7607AZ8CSQVYZA80633J0PS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7607AZ8CSQVYZA80633J0PS",
+        "id": "01M7607B1BT91FJWJARXH1P3KR",
+        "link": "01M7607B1BT91FJWJART9P7FS4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RHSWYX0S5ZRZ3NEZTC8W8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75R7FN9PWNCC5XFXWV3NVQR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7607B41DM3NKJDT1Y0R0E2H",
+  "type": "ops",
+  "v": 1
+}
