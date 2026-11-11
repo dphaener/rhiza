@@ -1,0 +1,40 @@
+{
+  "actor": "01M761P8PW68PGBX2HGBR9Q436",
+  "after": [
+    "01M7615RAQBFY6R6YS12QCF048"
+  ],
+  "at": "2026-11-11T19:36:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at fa388f90 (attempt 3). Built the binary in a scratch dir: `rhiza workflow check ship-change` is valid (builtin), and `workflow describe ship-change` shows landed-green and rebased-merge-green on.fail -> conflict-triage-landed -> rebase-merge-gate-failed, whose on.fail -> landed-infra-triage, on.pass -> landed-infra-wait, on.pass -> landed-green. The built-in's landed-infra-wait is `until rhiza ship check --settled --changed --rerun-infra`, 6h timeout, 30s interval, max_visits 3. The earlier finding is fixed: the built-in landed-green now has max_visits 4 (1 + the wait's 3 returns). TestShipChangeLocalGate asserts that cap, and TestShipChangeLandedInfraWaitScript pins the script's copy of landed-green, landed-infra-triage and landed-infra-wait (caps, commands, routes) to the built-in. `go test -trimpath ./internal/workflow/...` ok. `go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/run-ship-(landed-)?infra-wait'`: both PASS. run-ship-landed-infra-wait drives a landed run with a fake gh: landed-green fails, goes through conflict-triage-landed and rebase-merge-gate-failed to landed-infra-triage (pass), then landed-infra-wait, whose own --rerun-infra poll issues `run rerun 42 --failed` before the green. It then passes at landed-green visit 2, goes through gate-rebase-merge, rebase-merge, rebased-merge-green, merge (`pr merge 7 --squash --match-head-commit`), main-green and close-out, and the run succeeds. Read the diff: the code change is the cap, its test and the script comment; HEAD fa388f90 is an empty review commit."
+        },
+        "handle": "ship-change-landed-infra-wait-verified-3",
+        "id": "01M761SRQ3VM3632WGV2C9SF53",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M761SRQ3VM3632WGTYYJC3Z7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M761SRQ3VM3632WGTYYJC3Z7",
+        "id": "01M761SRXPCQX3KS6PFTFM22AY",
+        "link": "01M761SRXPCQX3KS6PFPKEMD3R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RHSWYX0S5ZRZ3NEZTC8W8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75R7FN9PWNCC5XFXWV3NVQR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M761SSDJFC6CC9BP728G16R0",
+  "type": "ops",
+  "v": 1
+}
