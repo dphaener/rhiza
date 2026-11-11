@@ -1,0 +1,40 @@
+{
+  "actor": "01M76CPYZDT22RRM62AQ3FZJJC",
+  "after": [
+    "01M76CJ1NSTPDJFV5P4GH1KQKC"
+  ],
+  "at": "2026-11-11T22:51:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dc287cd2d with the built binary: scratch Rhiza root (own HOME) with one registered project, four autonomous failed runs whose change sets are draft, draft, withdrawn (rhiza withdraw) and rejected (rhiza propose + reject), and a daemon state seeding each with a spent budget (2 of 2) and a saved hold; rhiza inbox listed 4 'stalled run' items. Ran rhiza run abandon on the second run (inbox still 4 until a poll, as specified), then rhiza daemon --once --max-runs 0: state watchdog_holds kept only the plain failed run, rhiza inbox showed 1 stalled item (that run, with its tried attempts), budget memory for all four kept; a second poll stayed at 1. Control: re-seeding the 4 holds and polling with a build of the merge-base kept all 4 stalled items; the change's build then dropped them back to 1. go test -trimpath ./internal/api -run 'TestWatchdog(Budget|Holds)' PASS."
+        },
+        "handle": "watchdog-holds-skip-abandoned-qa-1",
+        "id": "01M76CYJYJJPHDD90J988RDEKT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76CYJYJJPHDD90J95CGN83F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76CYJYJJPHDD90J95CGN83F",
+        "id": "01M76CYJZC8ASNV334HDJD2ZNN",
+        "link": "01M76CYJZC8ASNV334HCTND84C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75SBSK2CNYAQD72JT5MG1BZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75S3B1YNJWFDGXCN2BEEACQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76CYK08FP9AY3B40YK512BR",
+  "type": "ops",
+  "v": 1
+}
