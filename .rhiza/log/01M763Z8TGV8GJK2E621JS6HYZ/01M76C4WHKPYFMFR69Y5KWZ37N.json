@@ -1,0 +1,41 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M76C1MXG39MYF8TG9K3BKZ26"
+  ],
+  "at": "2026-11-11T22:37:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "Wait for the environment variable work",
+          "quote_where": "the owner, answering question review-01m75w8yt6m1f8w05gajzsec0h-r3-f2",
+          "statement": "Wait for the environment variable work"
+        },
+        "handle": "answer-review-01m75w8yt6m1f8w05gajzsec0h-r3-f2",
+        "id": "01M76C4WFNQYMRGWRRP3M6KN3X",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76C4WFNQYMRGWRRP0VETMQM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76C4WFNQYMRGWRRP0VETMQM",
+        "id": "01M76C4WG13AYHKWJAATQ7Q4FW",
+        "link": "01M76C4WG13AYHKWJAAR4PBHWS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7656JXFA5K23CPA9C6E2TE0",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M763Z8TGV8GJK2E621JS6HYZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76C4WHKPYFMFR69Y5KWZ37N",
+  "type": "ops",
+  "v": 1
+}
