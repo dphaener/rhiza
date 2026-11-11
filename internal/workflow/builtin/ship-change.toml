@@ -149,14 +149,17 @@ on.pass = "ci-fix"
 on.fail = "wait-ci-rerun"
 
 # The failing ship check recorded the red head and its check runs (red_head,
-# red_checks). This wait passes only once CI moved past them (another head,
-# or a check run with a new ID or attempt, such as a rerun by hand) and has
-# finished, then pr-green checks the head again, and signoff follows (after
-# a rebase, the rebased-green path). While it waits, its output names the
-# infra failure; on timeout the run ends with that line in its detail.
+# red_checks). With --rerun-infra the wait reruns the red head's failed jobs
+# itself, with backoff (5m, 10m, 20m, then every 30m), and passes once CI
+# moved past the red head (another head, or a check run with a new ID or
+# attempt) and has finished, then pr-green checks the head again, and
+# signoff follows (after a rebase, the rebased-green path). A failing test
+# in a rerun settles it too, and pr-green sends that to ci-fix. While it
+# waits, its output names the infra failure and the next rerun's time; on
+# the 6h timeout the run ends with that line in its detail.
 [step.wait-ci-rerun]
 kind = "wait"
-until = "rhiza ship check --settled --changed"
+until = "rhiza ship check --settled --changed --rerun-infra"
 timeout = "6h"
 interval = "30s"
 max_visits = 3

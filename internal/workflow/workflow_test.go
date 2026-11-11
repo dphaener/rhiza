@@ -454,8 +454,8 @@ func TestShipChangeBuiltin(t *testing.T) {
 		t.Errorf("ci-triage = %+v; want a command step running ship check --test-failures, pass to ci-fix, fail to wait-ci-rerun", triage)
 	}
 	rerun := def.Steps["wait-ci-rerun"]
-	if rerun.Kind != KindWait || rerun.Until != "rhiza ship check --settled --changed" || rerun.Timeout != 6*time.Hour || rerun.MaxVisits != 3 || rerun.On[OutcomePass] != "pr-green" {
-		t.Errorf("wait-ci-rerun = %+v; want a wait on ship check --settled --changed, 6h, max_visits 3, pass to pr-green", rerun)
+	if rerun.Kind != KindWait || rerun.Until != "rhiza ship check --settled --changed --rerun-infra" || rerun.Timeout != 6*time.Hour || rerun.MaxVisits != 3 || rerun.On[OutcomePass] != "pr-green" {
+		t.Errorf("wait-ci-rerun = %+v; want a wait on ship check --settled --changed --rerun-infra, 6h, max_visits 3, pass to pr-green", rerun)
 	}
 	fix := def.Steps["ci-fix"]
 	if fix.Kind != KindAgent || fix.On[OutcomePass] != "render-pr" || !strings.Contains(fix.Prompt, "Review: {run}") || !strings.Contains(fix.Prompt, "rhiza ship check --json") {

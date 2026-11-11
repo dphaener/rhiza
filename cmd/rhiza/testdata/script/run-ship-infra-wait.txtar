@@ -4,8 +4,10 @@
 # new job) turns the head green.
 #
 # The repo's .rhiza/workflows/ship-change.toml replaces the built-in by name
-# with its middle (the built-in's own steps and wait). The fake gh has no
-# Actions run IDs, so nothing is rerun by ship check itself.
+# with its middle (the built-in's own steps; its wait carries --rerun-infra,
+# which internal/workflow's tests check on the built-in). The fake gh has no
+# Actions run IDs and the test clock is fixed, so no rerun is due: the wait
+# only sees CI move.
 
 chmod 755 bin/gh
 env PATH=$WORK/bin:$PATH
@@ -70,7 +72,7 @@ on.fail = "wait-ci-rerun"
 
 [step.wait-ci-rerun]
 kind = "wait"
-until = "rhiza ship check --settled --changed"
+until = "rhiza ship check --settled --changed --rerun-infra"
 timeout = "30s"
 interval = "50ms"
 max_visits = 3
