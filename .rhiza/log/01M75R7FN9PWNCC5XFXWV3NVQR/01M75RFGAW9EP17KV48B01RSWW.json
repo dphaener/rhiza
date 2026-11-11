@@ -1,0 +1,41 @@
+{
+  "actor": "01M75RDVNJQG6AGQ3P8BPH1ECR",
+  "after": [
+    "01M75RCZV9Q6K9Q8CE6V7G6WXJ"
+  ],
+  "at": "2026-11-11T16:53:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent asks that an infra-classified red wait and retry with backoff over a longer window (up to a few hours) instead of ending, for plan and ship-change, and names pr-green, rebased-green and landed-green explicitly, so the post-land green steps belong in this change set; leaving them out would keep the exact failure mode the intent reports on the landed path. Of the two mechanisms the intent offers, the in-run wait is the smaller, more direct one: ship-change already has the shape (ci-triage routes a no-failing-test red to wait-ci-rerun with a 6h timeout and ship check --settled --changed), and its only gap is that it waits for someone else to rerun, so the fix is for the wait to rerun failed jobs itself with backoff. The watchdog path (watchdogCIRerun in internal/api/daemon_watchdog.go) reruns once per head and leaves a second red to the owner, and resuming an ended run with --retry is the recovery the orchestrator had to do by hand; extending it would make an outage still end and restart runs and spread retry state across the daemon memory. Reusing ci-triage's existing infra classification (no failing test recorded) keeps one definition of infra across workflows, and a bounded window keeps a permanently broken CI reaching the inbox.",
+          "statement": "A run rides out a CI infrastructure outage inside the run, not through the watchdog: whenever a green step's red head has no failing test recorded (ship check --test-failures fails), the workflow goes to an infra wait step that itself reruns the head's failed jobs with backoff (minutes at first, growing to tens of minutes) and passes as soon as CI moves past the red head and settles, back to the green step it came from; only once a bounded window (about 6h, the existing wait-ci-rerun timeout) expires does the run fail, naming the infra failure, and reach the inbox. A red with failing tests keeps its current path (ci-fix, or ending the run). This applies to every green step in this change set: plan's and plan-milestone's pr-green and rebased-green, ship-change's pr-green (wait-ci-rerun gains the reruns) and ship-change's post-land landed-green and rebased-merge-green, whose infra red goes to the same wait instead of through conflict-triage-landed and rebase-merge-gate-failed to the end of the run.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "ci-infra-red-waits-in-run",
+        "id": "01M75RFG35Z6HW5XA7HPW2RCK2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M75RFG35Z6HW5XA7HP2YNRTC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75RFG35Z6HW5XA7HP2YNRTC",
+        "id": "01M75RFG68P7EGFY3T2T0BZYAJ",
+        "link": "01M75RFG68P7EGFY3T2R7X82JF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RCW4H03EE02G5Y5FFNEPJ",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M75R7FN9PWNCC5XFXWV3NVQR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75RFGAW9EP17KV48B01RSWW",
+  "type": "ops",
+  "v": 1
+}

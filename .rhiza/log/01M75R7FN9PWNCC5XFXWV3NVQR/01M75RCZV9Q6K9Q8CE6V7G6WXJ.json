@@ -1,0 +1,30 @@
+{
+  "actor": "01M75R8Q8M004JMES5FQRRPCGY",
+  "after": [
+    "01M75R7FNASFKWFDH6XT85G6WY"
+  ],
+  "at": "2026-11-11T16:52:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "63b48d95-4c8c-4f2e-baf4-01a1cb842c3c",
+          "statement": "Change set 01M75R7 (CI infra outage leaves a run failed): ship-change already sends an infra-only red (no failing test) from ci-triage to wait-ci-rerun, but that wait only passes once someone else reruns CI or pushes, and plan/plan-milestone have no infra path at all (pr-green/rebased-green just end after --reruns 2). How should a run ride out a sustained outage? / Should ship-change's post-land green steps (landed-green, rebased-merge-green), which today send an infra red through conflict-triage-landed and rebase-merge-gate-failed to the end of the run, get the same infra wait in this change set?"
+        },
+        "handle": "question-63b48d95-1",
+        "id": "01M75RCW4H03EE02G5Y7ZJRKC1",
+        "key": null,
+        "kind": "question",
+        "node": "01M75RCW4H03EE02G5Y5FFNEPJ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M75R7FN9PWNCC5XFXWV3NVQR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75RCZV9Q6K9Q8CE6V7G6WXJ",
+  "type": "ops",
+  "v": 1
+}
