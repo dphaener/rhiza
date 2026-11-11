@@ -1,0 +1,30 @@
+{
+  "actor": "01M76C37J22BKWCFFN1721CTCP",
+  "after": [
+    "01M76B7DCT655NQBY57N64YZBZ"
+  ],
+  "at": "2026-11-11T22:37:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/install -run TestInstallScript runs the repo-root install.sh against a local fixture channel (base URL override): it installs a working rhiza for the host platform, --channel latest picks the latest manifest, and a tampered archive fails with nothing installed; the same test runs sh -n install.sh, so make check covers the script's syntax with no extra tool",
+          "statement": "install.sh, run as curl -fsSL <raw URL> | sh, installs the newest release (or --channel latest) for the running linux or darwin on amd64 or arm64 into ~/.local/bin or --dir, verifying the archive sha256 against the channel manifest and failing on a mismatch"
+        },
+        "handle": "install-script",
+        "id": "01M76B7DBYAAJRESBTJESK92A4",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M76B7DBYAAJRESBTJC5PHPB4",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      }
+    ]
+  },
+  "change_set": "01M76B00QSZVGA0E6X85JE2BYY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76C5E616P7QK9C41QA5RPSB",
+  "type": "ops",
+  "v": 1
+}

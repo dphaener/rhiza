@@ -1,0 +1,43 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [
+    "01M76AZ94M8HWY6GCD0AH36A5C"
+  ],
+  "at": "2026-11-11T22:21:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/release/... ./tools/release/... builds a manifest from a dist folder with the four archives and checksums.txt and checks every field and that the sha256s match checksums.txt; the release-snapshot job writes the manifest and fails unless all four platforms are in it",
+          "statement": "Every v* release publishes manifest.json beside its archives: channel (release), version, commit, and for each os/arch the archive URL and sha256, so releases/latest/download/manifest.json always names the newest release"
+        },
+        "handle": "release-channel-manifest",
+        "id": "01M76B7CPKY732RZT6D82EV1J0",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M76B7CPKY732RZT6D4H4N8ND",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "fields": {
+          "acceptance": "release.yml runs actions/attest-build-provenance over dist/*.tar.gz with id-token: write and attestations: write; goreleaser check and the release-snapshot job pass on the PR; after v0.1.0 is cut by hand, gh attestation verify passes on one of its archives (recorded as Evidence)",
+          "statement": "The release job publishes a GitHub build-provenance attestation for every archive, so gh attestation verify <archive> --repo dphaener/rhiza succeeds on a downloaded release"
+        },
+        "handle": "release-provenance",
+        "id": "01M76B7CPZ26NZ03MPCMY616Y5",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M76B7CPZ26NZ03MPCK9S55PA",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      }
+    ]
+  },
+  "change_set": "01M76AZ94M8HWY6GCD06H8ES46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76B7CQDFAASGJS69CX5W376",
+  "type": "ops",
+  "v": 1
+}

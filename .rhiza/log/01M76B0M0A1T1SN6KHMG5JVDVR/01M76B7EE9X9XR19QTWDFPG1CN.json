@@ -1,0 +1,85 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [
+    "01M76B0M0A1T1SN6KHMK9H1R16"
+  ],
+  "at": "2026-11-11T22:21:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/release/... -run TestCut with a fake git tags and pushes once when every gate passes, never for a major, never twice for one version and never when a gate fails; release.yml uses the tag annotation as the notes; the timer unit is in the repo and the VM runbook names it",
+          "statement": "A systemd user timer on the VM runs tools/release hourly in the root main checkout; when check passes for a minor or patch it pushes an annotated tag carrying the notes, and the release job publishes them as the release body"
+        },
+        "handle": "auto-release",
+        "id": "01M76B7EAW7JX0E9RNRFBM0333",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M76B7EAW7JX0E9RNRBMXM97G",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/release/... -run TestMajor holds a major until the sign-off is given and then cuts it once",
+          "statement": "A major candidate is never tagged by the tool: it waits for the owner sign-off, then tags and pushes as for a minor"
+        },
+        "handle": "major-release-signoff",
+        "id": "01M76B7EBC8W8NQW1GXF199X83",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M76B7EBC8W8NQW1GXBYYB3Z0",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "decision": null,
+        "from": "01M76B7EAW7JX0E9RNRBMXM97G",
+        "id": "01M76B7EC0G7MVW257SSHAMJ1Q",
+        "link": "01M76B7EC0G7MVW257SNVGNP6D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSXNBZYZEDCBQZF1TXZF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76B7EBC8W8NQW1GXBYYB3Z0",
+        "id": "01M76B7ECKK4STW26RS51YFRYM",
+        "link": "01M76B7ECKK4STW26RS142XA03",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSXNBZYZEDCBQZF1TXZF",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Release tooling is for this repo only, so a major release cannot raise a Rhiza inbox item: how does the owner see and sign off a major candidate (e.g. a draft GitHub release the owner publishes, a rhiza request, or a hand-pushed tag)?"
+        },
+        "handle": "major-signoff-channel",
+        "id": "01M76B7ED4HVPNVDBZR65DBAQ7",
+        "key": null,
+        "kind": "question",
+        "node": "01M76B7ED4HVPNVDBZR58WS9F1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76B7ED4HVPNVDBZR58WS9F1",
+        "id": "01M76B7EDQFPX2MTAKPENJMYBB",
+        "link": "01M76B7EDQFPX2MTAKPAP9YSPF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7EBC8W8NQW1GXBYYB3Z0",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M76B0M0A1T1SN6KHMG5JVDVR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76B7EE9X9XR19QTWDFPG1CN",
+  "type": "ops",
+  "v": 1
+}

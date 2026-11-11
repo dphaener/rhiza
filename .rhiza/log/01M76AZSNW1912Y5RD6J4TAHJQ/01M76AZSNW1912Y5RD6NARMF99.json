@@ -1,0 +1,15 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [],
+  "at": "2026-11-11T22:17:23Z",
+  "body": {
+    "intent": "Channel resolver: a Go package that fetches a channel manifest, picks this platform archive, downloads it and verifies its sha256, and a read-only rhiza version --channel release|latest that shows the newest version there",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M76AZSNW1912Y5RD6J4TAHJQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76AZSNW1912Y5RD6NARMF99",
+  "type": "open",
+  "v": 1
+}

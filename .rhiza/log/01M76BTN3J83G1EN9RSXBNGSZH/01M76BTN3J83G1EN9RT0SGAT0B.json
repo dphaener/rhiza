@@ -1,0 +1,15 @@
+{
+  "actor": "01M76BQPAV7XYBSPTRB8FYVJK2",
+  "after": [],
+  "at": "2026-11-11T22:32:02Z",
+  "body": {
+    "intent": "apply /home/rhiza/tmp/claude-1000/-home-rhiza-code-rhiza-release-channels-for-rhiza/caae6eb2-599d-4d98-9380-01a1ccbbc869/scratchpad/unlink.json",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M76BTN3J83G1EN9RSXBNGSZH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76BTN3J83G1EN9RT0SGAT0B",
+  "type": "open",
+  "v": 1
+}

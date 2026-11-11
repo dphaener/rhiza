@@ -1,0 +1,39 @@
+{
+  "actor": "01M76BQPAV7XYBSPTRB8FYVJK2",
+  "after": [
+    "01M76BTDHEM97JPD7C1G3TDNVQ"
+  ],
+  "at": "2026-11-11T22:32:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Intent correction (plan review f1): the release check is tools/release check, tooling for this repo only, not a rhiza subcommand, as @{01M76BBTW1A3C00G0VYQ1WBTKA} settled ('Rhiza repo only'). Read 'rhiza release check' in the intent as tools/release check; the leaves are authoritative."
+        },
+        "handle": "note-01m76bts0avhj0",
+        "id": "01M76BTS0AVHJ0G9CJKS6P6JYS",
+        "key": null,
+        "kind": "note",
+        "node": "01M76BTS0AVHJ0G9CJKR86BKFZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76BTS0AVHJ0G9CJKR86BKFZ",
+        "id": "01M76BTS13MPW0AHD8P6ERZEFF",
+        "link": "01M76BTS13MPW0AHD8P62DD4BK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B0FZA3N7ZHAYTBN76MVSV",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M76B0FZA3N7ZHAYTBN76MVSV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76BTS1VWN3Q7NNS60ZCW8EA",
+  "type": "ops",
+  "v": 1
+}

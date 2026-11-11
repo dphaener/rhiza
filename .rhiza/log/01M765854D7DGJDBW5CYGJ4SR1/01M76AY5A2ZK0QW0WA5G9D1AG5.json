@@ -1,0 +1,69 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [
+    "01M765854D7DGJDBW5D16H8TMN"
+  ],
+  "at": "2026-11-11T22:16:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "Let's chat about this one. We should have baked in release requirements. What triggers a release, etc.",
+              "where": "on how an official release is cut"
+            },
+            {
+              "by": "owner",
+              "text": "#1, and when does a major release happen?",
+              "where": "on what triggers a release; #1 is the agent's option 'every finished milestone is a minor release, fix-only patch releases in between'"
+            },
+            {
+              "by": "owner",
+              "text": "Fully automatic for minor and patch, owner gated for major releases",
+              "where": "on who tags a release once the gates pass"
+            },
+            {
+              "by": "owner",
+              "text": "If we're sticking to semver, then a breaking change is always a major release. Does semver allow for a major release that is NOT a breaking change?",
+              "where": "on when a major release happens"
+            },
+            {
+              "by": "owner",
+              "text": "Batched, unless the bugfix is marked as severe and needs to be released immediately.",
+              "where": "on when an automatic patch release is cut"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Rolling prerelease: one GitHub prerelease with a fixed tag (e.g. 'latest') that each merge to main replaces",
+              "where": "latest channel home"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Strict from v1: from v1.0.0 any release carrying a breaking change is a major, owner-gated; the owner may also declare a major without one. Before v1 breaking changes bump the minor, and v1.0.0 is cut when the owner says so.",
+              "where": "breaking changes and majors"
+            }
+          ],
+          "raw_sha256": "dac0ec51d5c1542176f1e4fd253a6a5dc2a6e4dd68d041e9564bc0fdf59f9caa",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "summary": "Planned milestone 33, release channels for Rhiza binaries (milestone 32's auto-update will rely on it). Channels: release (official v* GitHub releases) and latest (one rolling GitHub prerelease tagged 'latest', replaced on every merge to main); main stays the local build from main. A latest build reports the next patch as a semver prerelease, e.g. v0.1.1-main.42+abc1234 after v0.1.0 (the agent first offered a base that sorted before the release and corrected it). Clients find the newest build through a JSON manifest asset per channel at a fixed download URL, and verify the archive's sha256 against it; CI also publishes GitHub build-provenance attestations. Client side here: a resolver package and a read-only `rhiza version --channel`, plus an install.sh; milestone 32 owns the daemon's update mechanics. The owner asked for baked-in release requirements: every finished milestone is a minor release; bug fixes are batched into a patch at most once per 24h soak, unless a fix is marked severe, which releases as soon as it lands (skipping the soak, never CI). Gates: CI green on the commit, 24h soak of that commit's latest build on the VM daemon with no bug filed against it, the milestone closed, notes generated from the model. Minor and patch releases are fully automatic; majors are owner-gated. Semver is strict from v1.0.0 (a breaking change is a major; the owner may also declare one); before v1 breaking changes bump the minor and the owner decides when v1.0.0 is cut. A change is breaking when a change set is marked so at plan or review, or when the release check detects a breaking diff in API schemas, settings or log format. v0.1.0 is cut by hand once the release manifest lands. All eight change sets are planned now.",
+          "title": "Milestone 33 plan: release channels and release policy, with the owner"
+        },
+        "handle": "m33-release-interview",
+        "id": "01M76AY599871MGQ6E814CP2HC",
+        "key": null,
+        "kind": "source",
+        "node": "01M76AY599871MGQ6E7XCVAK6X",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M765854D7DGJDBW5CYGJ4SR1",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76AY5A2ZK0QW0WA5G9D1AG5",
+  "type": "ops",
+  "v": 1
+}

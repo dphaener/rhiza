@@ -1,0 +1,15 @@
+{
+    "actor": "01M7658PJ875K09N3V40BM2B05",
+    "after": [],
+    "at": "2026-11-11T22:17:16Z",
+    "body": {
+        "intent": "Latest channel: every merge to main builds the four archives as the next patch semver prerelease (vX.Y.Z+1-main.N+sha) and replaces one rolling latest GitHub prerelease with them, their checksums, manifest and attestations",
+        "kind": "intention",
+        "sources": []
+    },
+    "change_set": "01M76AZHGY605TXF68M27W4SZV",
+    "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+    "id": "01M76AZHGZGEZN4JP4X4MQKH5M",
+    "type": "open",
+    "v": 1
+}

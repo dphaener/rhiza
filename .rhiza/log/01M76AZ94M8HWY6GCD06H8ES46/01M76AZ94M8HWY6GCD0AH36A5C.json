@@ -1,0 +1,15 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [],
+  "at": "2026-11-11T22:17:07Z",
+  "body": {
+    "intent": "Release channel manifest and provenance: every v* release publishes a JSON manifest (channel, version, commit, per-platform archive URL and sha256) and GitHub build-provenance attestations alongside its archives and checksums",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M76AZ94M8HWY6GCD06H8ES46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76AZ94M8HWY6GCD0AH36A5C",
+  "type": "open",
+  "v": 1
+}
