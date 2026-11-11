@@ -1,0 +1,41 @@
+{
+  "actor": "01M76F734WB92E3AD85YYDJXKS",
+  "after": [
+    "01M76F6SBK6S39NAQPY3YHPW4N"
+  ],
+  "at": "2026-11-11T23:31:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Intent: the defect stops the daemon shipping plan requests and withdrawals on its own (close-out's pull fails on untracked log files), which is milestone-25's promise; decision-run-carries-accept, the main-clone fix this builds on, served milestone-25 for the same reason, and milestone-25 is open on the roadmap. milestone-32 is workflow cleanup and does not fit. Where the entry lives: the question itself notes the daemon and roadmap read change sets from the main checkout, so moving the entry elsewhere would need an overlay reader in every view; keeping the file in place and guaranteeing a branch and PR behind it meets the owner's words ('Everything should get it's own branch') with the least change, and reuses what exists: ship_close.go dropIncomingLogCopies already deletes untracked main copies that origin/main holds byte for byte, and log entries are immutable files named by ID, so committing the same bytes on a branch is safe and idempotent. A model-only PR keeps writes to origin's main inside PR and CI, which decision-run-carries-accept required (no direct push to main from apps), and model-only CI (01M764CJ / backlog 01M7684F) will make those PRs cheap. Migration through the same branch path avoids a second mechanism, and the daemon doing it fits the owner's goal that the daemon does all orchestration, with a CLI fallback for repos without one. Loudness: health is the place the owner and the Inbox look, so orphans are a problem there; an error in rhiza check would fail make check and self-check for unrelated work in the main checkout, and run worktrees legitimately hold untracked entries, so check warns and only in the main checkout.",
+          "statement": "(1) This change set serves milestone-25. (2) A model write made in the main checkout for a change set with no live run still writes its entry into the main checkout's .rhiza/log, so the daemon, the roadmap and the apps see it at once. In the same operation, Rhiza commits that entry on a short-lived branch (model/<change set short>-<entry short>) cut from origin/main in a temporary worktree, pushes it and opens a model-only PR; the daemon merges it (squash) once CI is green, and the close-out pull's dropIncomingLogCopies removes the main checkout's byte-identical untracked copy. Later writes to the same change set while its model PR is open go onto that same branch. The untracked copy is therefore only ever a pending write with a branch and PR behind it, never an orphan. (3) Existing untracked entries go through the same path: the daemon, on start and on each tick, finds untracked .rhiza/log entries in the main checkout that no pending model branch or live run holds and commits them onto one model branch per change set with a model-only PR; a CLI command (rhiza model commit-untracked, or a --fix on rhiza health) does the same without a daemon. The run start --new fix (open entry written only in the run's worktree) stops new ones. (4) rhiza health reports an untracked main-checkout entry that no pending model branch or live run holds as a problem (non-zero, shown in the Inbox and daemon status, naming the entry and its change set); one held by a pending model branch is listed as pending, not a problem. rhiza check run in a main checkout reports the same orphans as a warning, not an error, and says nothing in run worktrees, where untracked run entries are normal.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "decision-main-writes-get-a-branch",
+        "id": "01M76F8D1V8RPYFEH25B0E7YZ5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76F8D1V8RPYFEH258M0QAXY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76F8D1V8RPYFEH258M0QAXY",
+        "id": "01M76F8D2B6FEYHFK9SC6SABXC",
+        "link": "01M76F8D2B6FEYHFK9SC67KA00",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F6QK59ZTSE4SHSV186QSC",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76F8D2WDQZY3E930CAX745N",
+  "type": "ops",
+  "v": 1
+}

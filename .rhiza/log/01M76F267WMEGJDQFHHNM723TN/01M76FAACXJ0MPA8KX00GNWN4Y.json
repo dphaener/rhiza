@@ -1,0 +1,178 @@
+{
+  "actor": "01M76F2SMCWE32BHBRYW030BK8",
+  "after": [
+    "01M76FA9T9ZT40A4MGYZV2TXEQ"
+  ],
+  "at": "2026-11-11T23:33:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript (cmd/rhiza/testdata/script/run-start-new-main-clean.txtar) starts a --new plan run and a --milestone plan run and asserts git status in the main checkout shows no untracked .rhiza/log entry while the run's worktree holds and commits the open entry; go test ./internal/api -run 'TestNewPlanChange' covers a dry run still predicting the same change set ID and worktree",
+          "statement": "rhiza run start --new (a request's plan run, a milestone record) creates the run's branch and worktree first and writes the new change set's open entry only in that worktree, so the main checkout's .rhiza/log gains nothing"
+        },
+        "handle": "run-start-new-opens-in-worktree",
+        "id": "01M76FAA1QXNBQDGDWWR5DPPS8",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M76FAA1QXNBQDGDWWN6BS1KX",
+        "op": "node.create",
+        "parent": "01M5TYGJASX1Q1J7DV6DVHB0DZ"
+      },
+      {
+        "decision": null,
+        "from": "01M76FAA1QXNBQDGDWWN6BS1KX",
+        "id": "01M76FAA2CEDRJJ4Y7Y4Q9A70A",
+        "link": "01M76FAA2CEDRJJ4Y7Y0ZQR9YM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8D1V8RPYFEH258M0QAXY",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test ./internal/api -run 'TestLiveRunWrite' accepts a change set from the main checkout while its run's worktree exists and asserts the entry appears in the worktree's .rhiza/log and is committed by the run's next commit; a write for a change set with no live run is not copied to any worktree",
+          "statement": "A model write made in the main checkout (change new, withdraw, accept, propose, reject, apply, link, a gate answer, from the CLI, Inbox or web app) for a change set with a live run is also written into that run's worktree, where the run commits it on its branch at its next commit, so the main checkout's copy is held by the run and dropped by close-out"
+        },
+        "handle": "live-run-write-reaches-worktree",
+        "id": "01M76FAA3B1FNWA3CMWDXF1587",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M76FAA3B1FNWA3CMWCB4KQDD",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M76FAA3B1FNWA3CMWCB4KQDD",
+        "id": "01M76FAA46Y4ESRRXPNKA17A9M",
+        "link": "01M76FAA46Y4ESRRXPNFS346AB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8D1V8RPYFEH258M0QAXY",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test ./internal/api -run 'TestModelBranch' with a local bare origin and a fake gh: an accept in the main checkout yields a pushed model/<cs>-<entry> branch from origin/main holding exactly that entry and one PR request; a second write to the same change set adds a commit to the same branch and opens no second PR; the temporary worktree is removed; a dry run pushes nothing",
+          "statement": "A model write made in the main checkout for a change set with no live run still writes its entry into the main checkout's .rhiza/log and, in the same operation, commits it onto the short-lived branch model/<change set short>-<entry short> cut from origin/main in a temporary worktree, pushes it and opens a model-only PR; a later write to the same change set while its model PR is open goes onto that same branch and PR"
+        },
+        "handle": "main-write-model-branch",
+        "id": "01M76FAA4YDVZV5S8GZEP7FQXF",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M76FAA4YDVZV5S8GZB49W9M0",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M76FAA4YDVZV5S8GZB49W9M0",
+        "id": "01M76FAA5N84QG3N0Z65SJSF8A",
+        "link": "01M76FAA5N84QG3N0Z62JNFTZT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8D1V8RPYFEH258M0QAXY",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test ./internal/api -run 'TestDaemonModelPR' with a fake gh: a green model PR is squash-merged and its branch deleted, after which the main checkout's pull leaves no untracked copy of its entries; a red model PR is not merged and appears as an inbox item naming the change set",
+          "statement": "The daemon squash-merges each open model-only PR whose CI is green, deletes its branch, and the close-out pull then drops the main checkout's byte-identical untracked copies of its entries; a model PR whose CI fails or conflicts is listed in the inbox"
+        },
+        "handle": "daemon-merges-model-prs",
+        "id": "01M76FAA6HBKA3Y4P11RD5BEVX",
+        "key": "zzzzzzz",
+        "kind": "capability",
+        "node": "01M76FAA6HBKA3Y4P11P3CZF4C",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M76FAA6HBKA3Y4P11P3CZF4C",
+        "id": "01M76FAA764SBY7YZ105FDBJHE",
+        "link": "01M76FAA764SBY7YZ104TV7X49",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8D1V8RPYFEH258M0QAXY",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript (cmd/rhiza/testdata/script/model-commit-untracked.txtar) with a local bare origin and a fake gh leaves orphan entries of two change sets plus one entry held by a live run, runs rhiza model commit-untracked and asserts two model branches with one PR each and the held entry untouched; go test ./internal/api -run 'TestDaemonCommitsUntracked' asserts a daemon tick does the same",
+          "statement": "rhiza model commit-untracked finds the untracked .rhiza/log entries in the main checkout that no pending model branch or live run holds and commits them onto one model branch per change set with a model-only PR, as a main-checkout write does; the daemon does the same on start and on each tick"
+        },
+        "handle": "commit-untracked-log",
+        "id": "01M76FAA7V5KJWJPQSF4M1WGZ3",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M76FAA7V5KJWJPQSF2X7PCMD",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M76FAA7V5KJWJPQSF2X7PCMD",
+        "id": "01M76FAA8GC8Z757W0YZYVZ3S5",
+        "link": "01M76FAA8GC8Z757W0YZ08XZPT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8D1V8RPYFEH258M0QAXY",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test ./internal/api -run 'TestHealthMainOrphanLog' asserts an orphan entry makes the main part bad with the entry, change set and command named, and an entry held by a model branch or a live run leaves the part ok with the pending entry listed",
+          "statement": "rhiza health's main-checkout part reports each untracked .rhiza/log entry that no pending model branch or live run holds as a problem (bad, exit 1, shown in the Inbox and daemon status), naming the entry, its change set and rhiza model commit-untracked; an entry a pending model branch holds is listed as pending, not a problem"
+        },
+        "handle": "health-orphan-log-entries",
+        "id": "01M76FAA9ATEZ0372B4E0ST9WB",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M76FAA9ATEZ0372B4BZ9SRST",
+        "op": "node.create",
+        "parent": "01M6CS2B9S9YVY1WBBVAHWZFR9"
+      },
+      {
+        "decision": null,
+        "from": "01M76FAA9ATEZ0372B4BZ9SRST",
+        "id": "01M76FAAA8F0PF23EKBPNHBQW2",
+        "link": "01M76FAAA8F0PF23EKBM4CZT81",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8D1V8RPYFEH258M0QAXY",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript (cmd/rhiza/testdata/script/check-orphan-log.txtar) leaves an orphan entry in a main checkout and asserts rhiza check exits 0 with a warning naming it, and the same entry in a linked worktree gives no warning",
+          "statement": "rhiza check run in a main checkout warns, without failing, about each untracked .rhiza/log entry that no pending model branch or live run holds, naming rhiza model commit-untracked; in a run worktree or any other linked worktree it says nothing about untracked entries"
+        },
+        "handle": "check-warns-orphan-log",
+        "id": "01M76FAABBDGMZA9F3BBT8ZV27",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M76FAABBDGMZA9F3BBBA3H0D",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "decision": null,
+        "from": "01M76FAABBDGMZA9F3BBBA3H0D",
+        "id": "01M76FAAC6TCQVAME1RDB6X031",
+        "link": "01M76FAAC6TCQVAME1RD9BZPVQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8D1V8RPYFEH258M0QAXY",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76FAACXJ0MPA8KX00GNWN4Y",
+  "type": "ops",
+  "v": 1
+}
