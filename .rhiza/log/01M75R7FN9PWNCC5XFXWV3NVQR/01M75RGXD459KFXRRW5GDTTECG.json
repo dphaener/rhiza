@@ -1,0 +1,33 @@
+{
+  "actor": "01M75R8Q8M004JMES5FQRRPCGY",
+  "after": [
+    "01M75RFGAW9EP17KV48B01RSWW"
+  ],
+  "at": "2026-11-11T16:54:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "436a911ce5eff1f34ab32b720b5f0f2ec60fd4e359dcd3fbeda1a47d94d580c7",
+          "session": "63b48d95-4c8c-4f2e-baf4-01a1cb842c3c",
+          "summary": "Autonomous plan run for change set 01M75R7 (a run failed on a CI infra outage stays failed). The planner read the existing paths: ship-change's ci-triage already routes an infra-only red (no failing test) to wait-ci-rerun (6h), but that wait only passes once someone else reruns CI or pushes; plan and plan-milestone end at pr-green/rebased-green after --reruns 2; ship-change's landed-green and rebased-merge-green send an infra red through conflict-triage-landed and rebase-merge-gate-failed to the end of the run; the watchdog reruns CI once per head. Two questions (approach, and whether post-land green steps are in scope) went to the arbiter, which ruled (Decision ci-infra-red-waits-in-run): ride out the outage inside the run with an infra wait that reruns the red head's failed jobs itself with backoff over about 6h, returning to the green step, for every green step in plan, plan-milestone and ship-change including post-land; not through the watchdog. The planner then split the work into four leaves: the ship check rerun-with-backoff wait mode and infra triage flag, plan and plan-milestone infra paths, ship-change's pre-land wait-ci-rerun using it, and ship-change's post-land infra path.",
+          "title": "CI infra outage wait plan, autonomous run with the arbiter"
+        },
+        "handle": "ci-infra-outage-wait-plan",
+        "id": "01M75RGXB7N4XFBQ0MWGS9JZXQ",
+        "key": null,
+        "kind": "source",
+        "node": "01M75RGXB7N4XFBQ0MWDR39Z90",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M75R7FN9PWNCC5XFXWV3NVQR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75RGXD459KFXRRW5GDTTECG",
+  "type": "ops",
+  "v": 1
+}

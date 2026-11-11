@@ -1,0 +1,159 @@
+{
+  "actor": "01M75R8Q8M004JMES5FQRRPCGY",
+  "after": [
+    "01M75RGXYSA44GHA134QP7PQ9C"
+  ],
+  "at": "2026-11-11T16:55:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M75RFG35Z6HW5XA7HP2YNRTC",
+        "id": "01M75RHS61DBWJ1NKV1TD0M3GS",
+        "link": "01M75RHS61DBWJ1NKV1T0AA0ZS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RGXB7N4XFBQ0MWDR39Z90",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api with a fake gh show --infra passing on a recorded infra red and failing on green, on a red with a failing test and with no red recorded; --settled --changed --rerun-infra rerunning the red head's failed jobs at 5m, 10m, 20m, 30m, 30m (driven by RHIZA_TEST_NOW, no real sleeps), staying not settled across infra-red attempts with the infra failure and next rerun named in its output, keeping the backoff across a fresh process from the state file, and settling on a green attempt, on an attempt red with a failing test and on a new head; run with go test -trimpath ./internal/api/... only",
+          "statement": "rhiza ship check gains an infra triage and an infra wait mode: --infra passes only when the head's latest failing ship check recorded a red head (red_head) with no failing test, and fails for a green head, a red with failing tests or any other failure; and --settled --changed --rerun-infra, while the red head stays red with no failing test, reruns its failed jobs itself with backoff (first after 5m, then doubling to a 30m cap, the last rerun's time and count kept in the ship state so the backoff survives polls and daemon restarts) and reports not settled with a line naming the infra failure and the next rerun's time; it settles when CI moved past the red head and finished green, finished red with a failing test, or a new head's CI finished, so one wait visit spans the whole outage"
+        },
+        "handle": "ship-check-infra-rerun-backoff",
+        "id": "01M75RHS7JP9D0WKRPAM9ZST93",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M75RHS7JP9D0WKRPAJAMTR38",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M75RHS7JP9D0WKRPAJAMTR38",
+        "id": "01M75RHS8VY83KN3E7PKC0RH65",
+        "link": "01M75RHS8VY83KN3E7PHVFWCR1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RFG35Z6HW5XA7HP2YNRTC",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M75RHS7JP9D0WKRPAJAMTR38",
+        "id": "01M75RHSAG0ASBDWV7JSQV3HAS",
+        "link": "01M75RHSAG0ASBDWV7JPK8ZF1Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RGXB7N4XFBQ0MWDR39Z90",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "rhiza workflow check passes on plan and plan-milestone and describe shows pr-green and rebased-green routing through their infra triage and wait back to themselves; testscript plan-workflow-ci-flake-red (or a new plan-workflow-ci-infra-wait with a fake gh) drives a plan run whose CI fails with no failing test past --reruns 2 into the infra wait, which reruns, and the run merges once a rerun is green; a second run whose wait times out ends failed naming the infra failure; run with go test -trimpath ./internal/workflow/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/plan-workflow-ci' only",
+          "statement": "In the plan and plan-milestone workflows, pr-green and rebased-green each get on.fail to their own infra triage step (rhiza ship check --infra) whose on.pass is an infra wait step (until rhiza ship check --settled --changed --rerun-infra, timeout 6h, interval 30s, max_visits 3) passing back to that same green step, so a plan PR red on an infra outage reruns with backoff until CI settles and continues to rebase or merge; a red with a failing test fails the triage and ends the run as today, and the wait's timeout ends the run with a line naming the infra failure, which reaches the inbox"
+        },
+        "handle": "plan-ci-infra-wait",
+        "id": "01M75RHSENQJ88C8SBDYNTDW8G",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M75RHSENQJ88C8SBDYFDFMZY",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M75RHSENQJ88C8SBDYFDFMZY",
+        "id": "01M75RHSJSXG3FN0NF9B6QXP1C",
+        "link": "01M75RHSJSXG3FN0NF98WECHN9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RFG35Z6HW5XA7HP2YNRTC",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M75RHSENQJ88C8SBDYFDFMZY",
+        "id": "01M75RHSNSP31DN9G2YYPS7MYM",
+        "link": "01M75RHSNSP31DN9G2YWXTXGMZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RGXB7N4XFBQ0MWDR39Z90",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "rhiza workflow check ship-change is valid and wait-ci-rerun's until carries --rerun-infra; testscript run-ship-infra-wait drives a ship-change run whose CI fails with no failing test into wait-ci-rerun, where the wait itself reruns the failed jobs (no rerun by the script) and the run passes pr-green to signoff once a rerun is green; run with go test -trimpath ./internal/workflow/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/run-ship-(infra-wait|rerun-fail)' only",
+          "statement": "ship-change's wait-ci-rerun (reached from ci-triage when pr-green or rebased-green went red with no failing test) waits with rhiza ship check --settled --changed --rerun-infra, so it reruns the red head's failed jobs itself with backoff over its 6h window instead of waiting for a person or a push, and still passes on to pr-green once CI settles"
+        },
+        "handle": "ship-change-infra-wait-reruns",
+        "id": "01M75RHSQEVEXEYYNDCYFK9MY4",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M75RHSQEVEXEYYNDCVJ5BKHS",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M75RHSQEVEXEYYNDCVJ5BKHS",
+        "id": "01M75RHSRY1N07949KRD7XW8EX",
+        "link": "01M75RHSRY1N07949KRC56HM9E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RFG35Z6HW5XA7HP2YNRTC",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M75RHSQEVEXEYYNDCVJ5BKHS",
+        "id": "01M75RHSTTEHH8023V30T8P96W",
+        "link": "01M75RHSTTEHH8023V2XJAQZS1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RGXB7N4XFBQ0MWDR39Z90",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "rhiza workflow check ship-change is valid and describe shows rebase-merge-gate-failed's on.fail reaching the post-land infra triage and wait, passing to landed-green; a testscript (run-ship-infra-wait extended, or a new run-ship-landed-infra-wait with a fake gh) drives a landed ship-change run whose landed head's CI fails with no failing test into that wait, which reruns, and the run merges and closes out once a rerun is green; run with go test -trimpath ./internal/workflow/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/run-ship-(landed-)?infra-wait' only",
+          "statement": "After land, an infra red on ship-change's landed-green or rebased-merge-green no longer ends the run: rebase-merge-gate-failed gets on.fail to an infra triage step (rhiza ship check --infra) whose on.pass is an infra wait step (until rhiza ship check --settled --changed --rerun-infra, timeout 6h, interval 30s, max_visits 3) passing to landed-green, which re-checks the head and goes on through gate-rebase-merge and rebase-merge to merge; a conflict, a failing gate, a red with a failing test or any other failure keeps its path today, and the wait's timeout ends the run naming the infra failure"
+        },
+        "handle": "ship-change-landed-infra-wait",
+        "id": "01M75RHSWYX0S5ZRZ3NJR70XXK",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M75RHSWYX0S5ZRZ3NEZTC8W8",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M75RHSWYX0S5ZRZ3NEZTC8W8",
+        "id": "01M75RHSXTE3KPFZN4K6B795Q9",
+        "link": "01M75RHSXTE3KPFZN4K399QDM2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RFG35Z6HW5XA7HP2YNRTC",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M75RHSWYX0S5ZRZ3NEZTC8W8",
+        "id": "01M75RHSZMTCJTVFZAZYRZB348",
+        "link": "01M75RHSZMTCJTVFZAZXDHNMAD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RGXB7N4XFBQ0MWDR39Z90",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M75R7FN9PWNCC5XFXWV3NVQR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75RHT391VY80TH4292SQZ6H",
+  "type": "ops",
+  "v": 1
+}
