@@ -19,6 +19,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
@@ -54,6 +55,9 @@ type watchdogDeps struct {
 	all  []run.Journal
 	// flakes reads the CI stability record's runs; nil is none.
 	flakes func() ([]CIRun, error)
+	// changeState gives a change set's state and whether the log has it; nil
+	// knows none.
+	changeState func(change string) (string, bool)
 	// now is the clock stamping journalled attempts; nil stamps none.
 	now func() time.Time
 	log func(format string, args ...any)
@@ -228,6 +232,9 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 			}
 		},
 	}
+	fold := newInboxFold(ctx)
+	defer fold.close()
+	d.changeState = fold.stateOf
 	d.queued = func(id string) bool {
 		q, err := daemon.ReadContinues(common)
 		return err == nil && slices.ContainsFunc(q, func(c daemon.Continue) bool { return c.Run == id })
@@ -322,7 +329,24 @@ func watchdogPasses(pol WatchdogPolicy, all []run.Journal, live func(id string) 
 	if err == nil {
 		err = terr
 	}
-	return mem, watchdogBudgetHolds(pol, all, mem, holds), err
+	holds = watchdogBudgetHolds(pol, all, mem, holds)
+	return mem, watchdogLiveHolds(all, holds, d), err
+}
+
+// watchdogLiveHolds drops the holds on a run that is abandoned or whose
+// change set is withdrawn, rejected or superseded: the owner has settled it,
+// and its hold would stay in the inbox with nothing to dismiss it.
+func watchdogLiveHolds(all []run.Journal, holds []daemon.WatchdogHold, d watchdogDeps) []daemon.WatchdogHold {
+	return slices.DeleteFunc(holds, func(h daemon.WatchdogHold) bool {
+		if i := slices.IndexFunc(all, func(j run.Journal) bool { return j.ID == h.Run }); i >= 0 && all[i].State().Abandoned() {
+			return true
+		}
+		if d.changeState == nil || h.Change == "" {
+			return false
+		}
+		state, ok := d.changeState(h.Change)
+		return ok && changeset.Dropped(changeset.State(state))
+	})
 }
 
 // watchdogReadOnce wraps ci so each run's PR is read at most once per poll:

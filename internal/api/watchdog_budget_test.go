@@ -81,3 +81,50 @@ func TestWatchdogBudget(t *testing.T) {
 		t.Errorf("item changed across polls: %+v", again)
 	}
 }
+
+// TestWatchdogHolds: a run with its budget spent keeps its one hold, and
+// loses it once abandoned or once its change set is withdrawn or rejected.
+func TestWatchdogHolds(t *testing.T) {
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	journal := func(id, change, detail string) run.Journal {
+		return run.Journal{ID: id, Entries: []run.Entry{
+			{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true, Change: change}},
+			{Type: run.TypeEntered, At: t0, Step: "build", Visit: 1},
+			{Type: run.TypeEnded, At: t0, Step: "build", Visit: 1, Outcome: "fail", Detail: "exit 1\ngh: HTTP 502 Bad Gateway"},
+			{Type: run.TypeFinished, At: t0, Step: "build", End: "failed", Detail: detail},
+		}}
+	}
+	states := map[string]string{"c-ok": "accepted", "c-aband": "accepted", "c-with": "withdrawn", "c-rej": "rejected"}
+	js := []run.Journal{
+		journal("ok", "c-ok", "step build failed"),
+		journal("aband", "c-aband", run.AbandonedPrefix+"me"),
+		journal("with", "c-with", "step build failed"),
+		journal("rej", "c-rej", "step build failed"),
+	}
+	spent := func(ids ...string) []daemon.WatchdogRun {
+		var mem []daemon.WatchdogRun
+		for _, id := range ids {
+			mem = append(mem, daemon.WatchdogRun{Run: id, Spent: 2, Attempts: []daemon.WatchdogAttempt{
+				{At: t0, Action: "a"}, {At: t0.Add(time.Minute), Action: "b"}}})
+		}
+		return mem
+	}
+	d := watchdogDeps{
+		changeState: func(c string) (string, bool) { s, ok := states[c]; return s, ok },
+		now:         func() time.Time { return t0.Add(time.Hour) },
+		log:         func(string, ...any) {},
+	}
+	pol := WatchdogPolicy{Enabled: true, RetryBudget: 2, AutonomousOnly: true}
+	// A hold saved for each run before; the next poll drops all but one.
+	prev := spent("ok", "aband", "with", "rej")
+	_, holds, err := watchdogPasses(pol, js, func(string) bool { return false }, t0.Add(time.Hour), prev, d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(holds) != 1 || holds[0].Run != "ok" {
+		t.Fatalf("holds %+v, want only run ok's", holds)
+	}
+	if items := watchdogHoldItems(holds); len(items) != 1 {
+		t.Fatalf("items %+v", items)
+	}
+}
