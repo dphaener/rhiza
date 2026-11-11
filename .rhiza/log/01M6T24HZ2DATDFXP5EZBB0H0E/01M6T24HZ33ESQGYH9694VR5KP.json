@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-07T03:51:49Z",
+  "body": {
+    "intent": "list",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6T24HZ2DATDFXP5EZBB0H0E",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6T24HZ33ESQGYH9694VR5KP",
+  "type": "open",
+  "v": 1
+}
