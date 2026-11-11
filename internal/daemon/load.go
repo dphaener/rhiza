@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"encoding/binary"
 	"fmt"
 	"os"
 	"runtime"
@@ -86,15 +87,31 @@ func ParseMemAvailable(s string) (uint64, error) {
 	return 0, fmt.Errorf("meminfo has no MemAvailable")
 }
 
-// ReadMachine reads the machine's load and available memory from /proc. A
-// platform without them (macOS, others) gives a Reading with neither known.
+// ParseSysctlLoadavg reads the 1- and 5-minute averages from the bytes of
+// macOS's vm.loadavg sysctl, a struct loadavg: three uint32 fixed-point
+// averages, padding to 8 bytes, then the int64 scale, in host (little-endian)
+// byte order.
+func ParseSysctlLoadavg(b []byte) (l1, l5 float64, err error) {
+	if len(b) < 24 {
+		return 0, 0, fmt.Errorf("vm.loadavg has %d bytes, want 24", len(b))
+	}
+	scale := int64(binary.LittleEndian.Uint64(b[16:24]))
+	if scale <= 0 {
+		return 0, 0, fmt.Errorf("vm.loadavg has scale %d", scale)
+	}
+	l1 = float64(binary.LittleEndian.Uint32(b[0:4])) / float64(scale)
+	l5 = float64(binary.LittleEndian.Uint32(b[4:8])) / float64(scale)
+	return l1, l5, nil
+}
+
+// ReadMachine reads the machine's load per core and available memory: on
+// Linux both from /proc, on macOS the load from sysctl vm.loadavg and no
+// memory. A figure a platform does not give is left unknown.
 func ReadMachine() Reading {
 	var r Reading
-	if b, err := os.ReadFile("/proc/loadavg"); err == nil {
-		if l1, l5, err := ParseLoadavg(string(b)); err == nil {
-			cores := float64(max(runtime.NumCPU(), 1))
-			r.Load1, r.Load5, r.LoadOK = l1/cores, l5/cores, true
-		}
+	if l1, l5, ok := readLoadavg(); ok {
+		cores := float64(max(runtime.NumCPU(), 1))
+		r.Load1, r.Load5, r.LoadOK = l1/cores, l5/cores, true
 	}
 	if b, err := os.ReadFile("/proc/meminfo"); err == nil {
 		if m, err := ParseMemAvailable(string(b)); err == nil {

@@ -17,6 +17,25 @@ func TestParseLoadavg(t *testing.T) {
 	}
 }
 
+func TestParseSysctlLoadavg(t *testing.T) {
+	// struct loadavg {fixpt_t ldavg[3]; long fscale}: 2.5, 1.25, 0.5 at
+	// scale 2048.
+	b := []byte{
+		0x00, 0x14, 0, 0, 0x00, 0x0a, 0, 0, 0x00, 0x04, 0, 0, 0, 0, 0, 0,
+		0x00, 0x08, 0, 0, 0, 0, 0, 0,
+	}
+	l1, l5, err := ParseSysctlLoadavg(b)
+	if err != nil || l1 != 2.5 || l5 != 1.25 {
+		t.Fatalf("got %v %v %v", l1, l5, err)
+	}
+	if _, _, err := ParseSysctlLoadavg(b[:12]); err == nil {
+		t.Error("short vm.loadavg did not fail")
+	}
+	if _, _, err := ParseSysctlLoadavg(make([]byte, 24)); err == nil {
+		t.Error("zero scale did not fail")
+	}
+}
+
 func TestParseMemAvailable(t *testing.T) {
 	in := "MemTotal:       16000000 kB\nMemFree:          100000 kB\nMemAvailable:    2097152 kB\nBuffers: 1 kB\n"
 	n, err := ParseMemAvailable(in)
