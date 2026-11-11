@@ -100,6 +100,8 @@ type State struct {
 	// MachineHold is set while the last poll held new runs for load or
 	// memory, and absent once a poll no longer does.
 	MachineHold *MachineHold `json:"machine_hold,omitempty"`
+	// Machine is the load and memory reading of the last poll.
+	Machine *Reading `json:"machine,omitempty"`
 	// UsageHold is set while the last poll held the daemon's launches for
 	// usage, and absent once a poll no longer does.
 	UsageHold *UsageHold `json:"usage_hold,omitempty"`

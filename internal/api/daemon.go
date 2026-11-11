@@ -385,6 +385,7 @@ func daemonStartState(common string, self daemon.Holder, version, commit string,
 		state.Hooks = prev.Hooks
 		state.DiskLow = prev.DiskLow
 		state.MachineHold = prev.MachineHold
+		state.Machine = prev.Machine
 		state.UsageHold = prev.UsageHold
 		state.UsageWindows = prev.UsageWindows
 		state.Learned = prev.Learned
@@ -1544,7 +1545,44 @@ type DaemonStatusResponse struct {
 	SkippedProjects []DaemonProjectSkip   `json:"skipped_projects" desc:"The registered projects the root daemon did not work at its last poll, each with its reason"`
 	Hooks           []HookRow             `json:"hooks" desc:"The notify and event commands the daemon took at start, each with its source: daemon flag, git config or unset"`
 	Unjournaled     []DaemonEvent         `json:"unjournaled" desc:"The runs it started that never wrote a journal, by change set and when; it starts these again 15 minutes after the start, or sooner when a run of the change set journals"`
+	Load            *DaemonLoad           `json:"load,omitempty" desc:"The last poll's load per core; absent before a poll recorded one"`
+	Memory          *DaemonMemory         `json:"memory,omitempty" desc:"The last poll's available memory; absent before a poll recorded one"`
+	Hold            *DaemonMachineHold    `json:"hold,omitempty" desc:"Set while new runs are held for load or memory; absent when they are not"`
 	Projects        []DaemonProjectStatus `json:"projects" desc:"At the root or with --all: each registered, initialised project's runs, last start and resume, skips and unjournaled starts, in name order, the top-level runs, skipped and unjournaled then being empty; empty for one project"`
+}
+
+// DaemonLoad is a poll's load reading.
+type DaemonLoad struct {
+	Available bool   `json:"available" desc:"False when the platform gives no load reading"`
+	Load1     string `json:"load1" desc:"The 1-minute load average per core, to two decimals; empty when unavailable"`
+	Load5     string `json:"load5" desc:"The 5-minute load average per core, to two decimals; empty when unavailable"`
+}
+
+// DaemonMemory is a poll's available-memory reading.
+type DaemonMemory struct {
+	Available bool   `json:"available" desc:"False when the platform gives no memory reading"`
+	Bytes     uint64 `json:"bytes" desc:"The available memory in bytes; 0 when unavailable"`
+}
+
+// DaemonMachineHold is a hold of new runs for load or memory.
+type DaemonMachineHold struct {
+	Reason string `json:"reason" enum:"load-high,memory-low" desc:"Why new runs are held"`
+	Since  string `json:"since" desc:"When the hold began, RFC 3339 UTC"`
+	Detail string `json:"detail" desc:"The reading and the limit"`
+}
+
+// machineStatus fills the readings and the hold from a state.
+func (r *DaemonStatusResponse) machineStatus(st daemon.State) {
+	if m := st.Machine; m != nil {
+		r.Load = &DaemonLoad{Available: m.LoadOK}
+		if m.LoadOK {
+			r.Load.Load1, r.Load.Load5 = fmt.Sprintf("%.2f", m.Load1), fmt.Sprintf("%.2f", m.Load5)
+		}
+		r.Memory = &DaemonMemory{Available: m.MemOK, Bytes: m.MemAvail}
+	}
+	if h := st.MachineHold; h != nil {
+		r.Hold = &DaemonMachineHold{Reason: h.Reason, Since: h.Since.UTC().Format(time.RFC3339), Detail: h.Detail}
+	}
 }
 
 // Human writes the status as text.
@@ -1583,6 +1621,25 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 	}
 	for _, h := range r.Hooks {
 		fmt.Fprintf(w, "Hook %s: %s\n", h.Name, h.text())
+	}
+	if l := r.Load; l != nil {
+		if l.Available {
+			fmt.Fprintf(w, "Load: %s per core (1 minute), %s (5 minutes)\n", l.Load1, l.Load5)
+		} else {
+			fmt.Fprintln(w, "Load: unavailable on this platform")
+		}
+	}
+	if m := r.Memory; m != nil {
+		if m.Available {
+			fmt.Fprintf(w, "Memory available: %s\n", daemon.FormatSize(m.Bytes))
+		} else {
+			fmt.Fprintln(w, "Memory available: unavailable on this platform")
+		}
+	}
+	if h := r.Hold; h != nil {
+		fmt.Fprintf(w, "New runs held: %s since %s: %s\n", h.Reason, h.Since, h.Detail)
+	} else if r.Load != nil {
+		fmt.Fprintln(w, "New runs held: no")
 	}
 	if r.Max > 0 {
 		fmt.Fprintf(w, "runs: %d/%d live, %d starting\n", r.Live, r.Max, r.Starting)
@@ -1824,6 +1881,7 @@ func daemonStatusHome(ctx *Ctx) (any, error) {
 	for _, h := range st.Hooks {
 		resp.Hooks = append(resp.Hooks, HookRow{Name: h.Name, Command: h.Command, Source: h.Source})
 	}
+	resp.machineStatus(st)
 	resp.Runs = daemonStatusRuns(common, st.Runs)
 	resp.Starting = st.Starting
 	resp.Live, resp.Starting = daemonRunsHeld(resp)
@@ -2063,11 +2121,11 @@ func readMachine(ctx *Ctx) daemon.Reading {
 // daemonMachineHold is the hold of new runs for load or memory, nil for
 // none, given the previous poll's hold for the load hysteresis. It logs each
 // hold and release.
-func daemonMachineHold(ctx *Ctx, conf daemonConf, prev *daemon.MachineHold) *daemon.MachineHold {
+func daemonMachineHold(ctx *Ctx, conf daemonConf, r daemon.Reading, prev *daemon.MachineHold) *daemon.MachineHold {
 	if conf.maxLoad == 0 && conf.minMemory == 0 {
 		return nil
 	}
-	h := daemon.Evaluate(readMachine(ctx), conf.maxLoad, conf.minMemory, prev, ctx.Now())
+	h := daemon.Evaluate(r, conf.maxLoad, conf.minMemory, prev, ctx.Now())
 	switch {
 	case h != nil && (prev == nil || prev.Reason != h.Reason):
 		daemonLogf(ctx, "holding new runs: %s: %s", h.Reason, h.Detail)

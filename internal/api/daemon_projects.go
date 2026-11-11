@@ -194,8 +194,9 @@ func (p *daemonProj) prepare(r DaemonRequest, onConf func(daemonConf)) daemonTur
 		p.saveState()
 		return daemonTurn{err: err}
 	}
-	conf.machine = daemonMachineHold(ctx, conf, state.MachineHold)
-	state.MachineHold = conf.machine
+	reading := readMachine(ctx)
+	conf.machine = daemonMachineHold(ctx, conf, reading, state.MachineHold)
+	state.MachineHold, state.Machine = conf.machine, &reading
 	if onConf != nil {
 		onConf(conf)
 	}

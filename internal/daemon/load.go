@@ -27,10 +27,11 @@ const (
 // is the available memory in bytes, known when MemOK. A figure that cannot
 // be read is never held on.
 type Reading struct {
-	Load1, Load5 float64
-	LoadOK       bool
-	MemAvail     uint64
-	MemOK        bool
+	Load1    float64 `json:"load1,omitempty"`
+	Load5    float64 `json:"load5,omitempty"`
+	LoadOK   bool    `json:"load_ok,omitempty"`
+	MemAvail uint64  `json:"mem_avail,omitempty"`
+	MemOK    bool    `json:"mem_ok,omitempty"`
 }
 
 // MachineHold is a hold of new runs for load or memory found by a poll.

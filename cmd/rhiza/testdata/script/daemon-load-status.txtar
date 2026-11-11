@@ -1,0 +1,66 @@
+# rhiza daemon status shows the last poll's load per core and available
+# memory (or that a reading is unavailable), and whether new runs are held,
+# why and since when. The daemon log has one line when a hold begins and one
+# when it ends.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+# Idle: readings shown, no hold.
+exec rhiza daemon --permission-mode manual --once
+! stderr 'holding new runs'
+! stderr 'released'
+exec rhiza daemon status
+stdout 'Load: 0.00 per core \(1 minute\), 0.00 \(5 minutes\)'
+stdout 'Memory available: 1.0 TiB'
+stdout 'New runs held: no'
+exec rhiza daemon status --json
+stdout '"load1": "0.00"'
+stdout '"bytes": 1099511627776'
+! stdout '"hold"'
+
+# Held poll: one hold line.
+env RHIZA_TEST_LOAD1=3.5
+env RHIZA_TEST_LOAD5=3.5
+exec rhiza daemon --permission-mode manual --once
+stderr -count=1 'holding new runs: load-high'
+! stderr 'released'
+exec rhiza daemon status
+stdout 'Load: 3.50 per core \(1 minute\), 3.50 \(5 minutes\)'
+stdout 'New runs held: load-high since [0-9T:Z-]+: 1-minute load 3.50 per core, over the limit of 3.00'
+exec rhiza daemon status --json
+stdout '"reason": "load-high"'
+stdout '"since": "'
+stdout '"detail": "1-minute load 3.50 per core, over the limit of 3.00"'
+
+# Still held (1-minute back under, 5-minute not): no new line.
+env RHIZA_TEST_LOAD1=1
+exec rhiza daemon --permission-mode manual --once
+! stderr 'holding new runs'
+! stderr 'released'
+exec rhiza daemon status
+stdout 'New runs held: load-high'
+
+# Released: one release line.
+env RHIZA_TEST_LOAD5=2
+exec rhiza daemon --permission-mode manual --once
+stderr -count=1 'released the load-high hold'
+! stderr 'holding new runs'
+exec rhiza daemon status
+stdout 'New runs held: no'
+
+# Readings unavailable.
+env RHIZA_TEST_LOAD1=unavailable
+env RHIZA_TEST_LOAD5=unavailable
+env RHIZA_TEST_MEM_AVAILABLE=unavailable
+exec rhiza daemon --permission-mode manual --once
+exec rhiza daemon status
+stdout 'Load: unavailable on this platform'
+stdout 'Memory available: unavailable on this platform'
+stdout 'New runs held: no'
+exec rhiza daemon status --json
+stdout '"available": false'
