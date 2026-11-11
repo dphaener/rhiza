@@ -1,0 +1,63 @@
+{
+  "actor": "01M76AY303M27VX26DE9661S7Q",
+  "after": [
+    "01M76AVNGTYZMTWHW17GA4V8NR"
+  ],
+  "at": "2026-11-11T22:18:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at fb85ef0e with the built binary in a scratch Rhiza root (fake rex/claude/gh, hermetic HOME): rhiza run start --foreground on a repo workflow 'wrap' (kind=workflow over ship-change) started the builder and verifier at ship-change/build/build and ran on through render, check, code and review; on 'outer' wrapping 'wrap' (4 segments) the builder started at wrap/ship-change/build/build. rhiza session start --step accepted a 120-char 2-segment path and rejected a//b, /a, a/, A/b, a--b/c and a 121-char path with a usage error."
+        },
+        "handle": "nested-step-session-start-qa-1",
+        "id": "01M76B17D5CC4X11SD3ZDSWXAM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76B17D5CC4X11SD3W00H5NC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76B17D5CC4X11SD3W00H5NC",
+        "id": "01M76B17E50E6210M0X8GKTHYD",
+        "link": "01M76B17E50E6210M0X5Q21Z05",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75ZJKQBWS387RP6CCVZHM4Y",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at fb85ef0e with the built binary on the same scratch runs: rhiza run status listed steps and leaves at ship-change/build/build and wrap/ship-change/build/build whole; the run journal recorded the full paths; Rex tab titles (fake rex argv) carried 'ship-change/build/build · builder only #1' and 'wrap/ship-change/build/build · builder only #1'; rhiza inbox showed the failed run at step wrap/ship-change/review/review with 'rhiza run resume --retry' next; rhiza workflow describe bugfix in this repo lists ship-change/build/build as its start."
+        },
+        "handle": "nested-step-paths-shown-qa-1",
+        "id": "01M76B17EN22JCK7AT9BXEZR0T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76B17EN22JCK7AT9A3JYPPE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76B17EN22JCK7AT9A3JYPPE",
+        "id": "01M76B17FBY9ZX3XS47NTJKT7Z",
+        "link": "01M76B17FBY9ZX3XS47KYD9E0C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75ZJM0M4319FSK1RE1XPXGE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75Z51562NX7KRJH5WJ2M3HN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76B17GQKV78HS47ZK09WQHS",
+  "type": "ops",
+  "v": 1
+}
