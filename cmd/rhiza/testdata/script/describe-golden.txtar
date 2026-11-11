@@ -1731,12 +1731,20 @@ cmp stdout describe.golden.json
             "description": "Run this command through sh -c in the repo root once per change set lifecycle move (proposed, accepted, rejected, withdrawn, superseded, landed, reopened) it has not handled, in log order, with the move as JSON on stdin and RHIZA_EVENT, RHIZA_EVENT_CHANGE, RHIZA_EVENT_ENTRY and RHIZA_EVENT_TITLE set; default the git config rhiza.eventCommand. The first run only records the moves already in the log. A failing or timed-out (10 s) command is logged and not retried",
             "type": "string"
           },
+          "max_load": {
+            "description": "Start no run while the 1-minute load per core is over this, until the 5-minute load is back under it; a number, default 3.0; 0 turns the check off",
+            "type": "string"
+          },
           "max_runs": {
             "description": "Start runs until this many are running; default 2. An interrupted run takes no slot",
             "type": "integer"
           },
           "min_free": {
             "description": "Start and resume nothing while the repo's filesystem has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 10G; 0 turns the guard off",
+            "type": "string"
+          },
+          "min_memory": {
+            "description": "Start no run while the available memory is under this: bytes, or a number with K, M, G or T (powers of 1024); default 2G; 0 turns the check off",
             "type": "string"
           },
           "notify_command": {
@@ -1835,7 +1843,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout or ciWindow, or rhiza.autonomy.plan, accept, ship or signoff",
+            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout or ciWindow, or rhiza.autonomy.plan, accept, ship or signoff",
             "type": "string"
           },
           "project": {
