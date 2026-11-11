@@ -1,0 +1,40 @@
+{
+  "actor": "01M763EPYN4P3ETW0Q3QRTMQHN",
+  "after": [
+    "01M763BZ2W51KD3CNBK60JZWST"
+  ],
+  "at": "2026-11-11T20:07:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at ecec6df5. A build of this commit's rhiza ran `workflow check ship-change`: valid. `workflow describe ship-change` shows conflict-triage-landed on.fail -> rebase-merge-gate-failed, whose on.fail -> landed-infra-triage (rhiza ship check --infra), whose on.pass -> landed-infra-wait (until rhiza ship check --settled --changed --rerun-infra, 6h, 30s, max_visits 3), whose on.pass -> landed-green (max_visits 4). go test -trimpath ./internal/workflow/... passes, and TestShipChangeLocalGate pins landed-green's cap at 4 (>= 1 + the wait's cap). go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/run-ship-(landed-)?infra-wait' passes both scripts. GOTMPDIR was moved to the scratchpad and RHIZA_ROOT/CHANGE/RUN were unset, because the run's GOTMPDIR under the repo's .git makes rhiza init find the real repo. run-ship-landed-infra-wait drives a landed run through landed-green fail, conflict-triage-landed, rebase-merge-gate-failed, landed-infra-triage and landed-infra-wait, then landed-green visit 2 pass, gate-rebase-merge, rebase-merge, wait-rebased-merge, rebased-merge-green, merge, wait-main, main-green and close-out. It asserts the wait's own `run rerun 42 --failed` follows a --rerun-infra poll and comes before a `pr merge 7 --squash --match-head-commit <landed head>`, and that the branch is removed. The model's landed nodes ship-change-ci-fix-step and ship-change-conflict-fix-step now describe the post-land infra wait, and ship-change-landed-infra-wait supersedes both. Nit, not part of the acceptance: the comment above [step.conflict-triage-landed] (ship-change.toml:271) still says a red CI 'still ends the run there'."
+        },
+        "handle": "ship-change-landed-infra-wait-verified-5",
+        "id": "01M763J1C4HMCGND880RHRHMAP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M763J1C4HMCGND880QGF1EDR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M763J1C4HMCGND880QGF1EDR",
+        "id": "01M763J1DH3ZVYJTA65EHNK0JK",
+        "link": "01M763J1DH3ZVYJTA65EGHEKVT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75RHSWYX0S5ZRZ3NEZTC8W8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75R7FN9PWNCC5XFXWV3NVQR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M763J1HH89C7EHHX6BJ4CRMB",
+  "type": "ops",
+  "v": 1
+}
