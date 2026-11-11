@@ -22,6 +22,18 @@ Ruby, RSpec, Tailwind or ERB here.
   request structs' tags (`arg`, `flag`, `desc`). `rhiza <cmd> --json` and
   `rhiza api call <op>` reach the same handler and print the same bytes.
 
+## Bug requests
+
+A bug is queued with `rhiza request --kind bug "<text>"` (the CLI, the
+Request app, the orchestrator and the watchdog all do this). Bugs never come
+from GitHub issues: there is no issue intake here. `.rhiza/dispatch.toml`
+sends a bug request to the `plan-bug` workflow and the change set it plans
+to `bugfix`. Both are autonomous (`.rhiza/workflows/plan-bug.toml`,
+`bugfix.toml`), so a bug is planned and shipped with no owner step, whatever
+`rhiza.autonomy.*` says. `rhiza workflow check` warns about this; that is
+expected. Inspect them with `rhiza workflow describe plan-bug` and
+`rhiza workflow describe bugfix`.
+
 ## Commands
 
 ```bash

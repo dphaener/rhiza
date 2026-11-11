@@ -1,0 +1,41 @@
+{
+  "actor": "01M75S9SQ02EBXABQYZXE21H1W",
+  "after": [
+    "01M75S99Z6B6V8E0SEDDRT0ZGR"
+  ],
+  "at": "2026-11-11T17:08:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent names one defect, a stale 'stalled run' inbox item, and spells out its fix; abandoning a live run is introduced only as 'also worth a look'. That second part is a different behaviour with different risk: abandon today refuses with ErrLive ('run is running in another process', internal/run/engine.go:21, internal/api/run.go:1041/1187), so making it stop a live run means signalling or taking over another process's run lock and racing the watchdog's resume, which touches the run engine's locking rather than the daemon's hold computation. Bundling it would widen a small, testable fix into a concurrency change and hold the inbox fix back. The hold fix also stands alone: once holds drop abandoned runs, the kill-plus-abandon workaround still clears the inbox. No open change set already covers stopping a live run, so it should be opened as a separate discovered-from change set.",
+          "statement": "No: this change set builds only the hold fix (watchdog holds drop runs that are abandoned or whose change set is withdrawn/rejected, pruned on the next poll). Letting rhiza run abandon (or a request withdraw) stop a live run held by another process is not a leaf here; it belongs in its own change set, linked discovered-from this one.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "abandon-live-run-out-of-scope",
+        "id": "01M75SASV18015JAE3QARK335P",
+        "key": null,
+        "kind": "decision",
+        "node": "01M75SASV18015JAE3Q9A03FY2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M75SASV18015JAE3Q9A03FY2",
+        "id": "01M75SASVJQ6RW1QQPWQKEG38F",
+        "link": "01M75SASVJQ6RW1QQPWP0MG6AY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75S96JF35VQ1R9EP05AAENT",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M75S3B1YNJWFDGXCN2BEEACQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75SASW659091SVRGCC4SAP6",
+  "type": "ops",
+  "v": 1
+}

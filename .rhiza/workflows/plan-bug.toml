@@ -1,0 +1,12 @@
+name = "plan-bug"
+
+# A bug request's plan run (.rhiza/dispatch.toml [request] bug): the plan
+# workflow, autonomous whatever rhiza.autonomy.* says, so a bug is planned
+# with no owner step. The planner records its assumptions as Decisions and
+# an arbiter decides any question it raises.
+autonomous = true
+
+[step.plan]
+kind = "workflow"
+workflow = "plan"
+on.pass = "done"

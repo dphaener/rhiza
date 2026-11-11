@@ -1,0 +1,30 @@
+{
+  "actor": "01M75T8T0A1QCV06NR8FSEBJN4",
+  "after": [
+    "01M75T742VGKA5XMRRXYHYTG78"
+  ],
+  "at": "2026-11-11T17:28:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "942fa777-a2c8-422f-8fd6-01a1cba4265c",
+          "statement": "Which intent should change set 'The daemon holds new runs' (CPU load and memory hold) serve? I recommend m4-orchestrated-by-rhiza: hand-tuning maxRuns is orchestrator work the daemon should do itself. / How should the load hold trigger and release? I recommend: hold when the 1-minute load per core is over rhiza.daemon.maxLoad (default 3.0); release only once the 5-minute load per core is back under it. Memory: hold while MemAvailable is under rhiza.daemon.minMemory (default 2G), release once it is back at or over it. / Where unsupported, how is load/memory read? I recommend: Linux reads /proc/loadavg and MemAvailable; macOS reads load via sysctl vm.loadavg and skips the memory check; other platforms skip both, and daemon status says the reading is unavailable. / When does a load/memory hold reach rhiza health and the inbox? I recommend after it has lasted 30 minutes (a fixed threshold, no setting); daemon status and the daemon log show every hold and release at once."
+        },
+        "handle": "question-942fa777-1",
+        "id": "01M75TE1PB22WYBMMC4PHX9QAW",
+        "key": null,
+        "kind": "question",
+        "node": "01M75TE1PB22WYBMMC4MMBAA46",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M75T742VGKA5XMRRXV4W6ZKP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75TE7DFXGC4RFQW022GZ3FT",
+  "type": "ops",
+  "v": 1
+}
