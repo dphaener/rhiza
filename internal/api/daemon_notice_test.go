@@ -49,6 +49,8 @@ func TestInboxNoticeNamesNoHandleOrID(t *testing.T) {
 		{"overlap untitled", ids(InboxOverlap, InboxItem{}), "T: an overlap with another change set waits on you"},
 		{"stalled", ids(InboxStalled, InboxItem{}), "T: a session stalled"},
 		{"disk-low", ids(InboxDiskLow, InboxItem{}), "disk space is low: the daemon holds new starts and resumes"},
+		{"load-high", ids(InboxLoadHigh, InboxItem{}), "machine load is high: the daemon holds new starts and resumes"},
+		{"memory-low", ids(InboxMemoryLow, InboxItem{}), "available memory is low: the daemon holds new starts and resumes"},
 		{"usage-reserve", ids(InboxUsageReserve, InboxItem{}), "usage reserve: the daemon holds new launches until the window resets"},
 		{"main-stale", ids(InboxMainStale, InboxItem{Detail: "git pull failed"}), "T: main was not updated after the merge: git pull failed"},
 		{"accept", ids(InboxAccept, InboxItem{}), "T: a plan waits for your acceptance"},
@@ -67,7 +69,7 @@ func TestInboxNoticeNamesNoHandleOrID(t *testing.T) {
 			}
 		}
 	}
-	for _, k := range []string{InboxQuestion, InboxOpen, InboxSignoff, InboxFailed, InboxGaveUp, InboxSkipped, InboxBlocker, InboxOverlap, InboxStalled, InboxDiskLow, InboxUsageReserve, InboxMainStale, InboxAccept, InboxInterview} {
+	for _, k := range []string{InboxQuestion, InboxOpen, InboxSignoff, InboxFailed, InboxGaveUp, InboxSkipped, InboxBlocker, InboxOverlap, InboxStalled, InboxDiskLow, InboxUsageReserve, InboxLoadHigh, InboxMemoryLow, InboxMainStale, InboxAccept, InboxInterview} {
 		if !kinds[k] {
 			t.Errorf("no case for kind %s", k)
 		}

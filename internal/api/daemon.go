@@ -589,6 +589,10 @@ func inboxNotice(what string, it InboxItem) string {
 		return "disk space is low: the daemon holds new starts and resumes"
 	case InboxUsageReserve:
 		return "usage reserve: the daemon holds new launches until the window resets"
+	case InboxLoadHigh:
+		return "machine load is high: the daemon holds new starts and resumes"
+	case InboxMemoryLow:
+		return "available memory is low: the daemon holds new starts and resumes"
 	case InboxWorkflow:
 		return it.Detail
 	case InboxMainStale:

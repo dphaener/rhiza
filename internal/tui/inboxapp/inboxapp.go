@@ -614,6 +614,10 @@ func title(it api.InboxItem) string {
 		return "Main not updated"
 	case api.InboxUsageReserve:
 		return "Usage reserve"
+	case api.InboxLoadHigh:
+		return "Machine load high"
+	case api.InboxMemoryLow:
+		return "Memory low"
 	}
 	if it.ChangeTitle != "" {
 		return it.ChangeTitle
