@@ -1,0 +1,33 @@
+{
+  "actor": "01M75S61WP8GHS2BSENWMPV0SS",
+  "after": [
+    "01M75SBEWNC7XHPA3N8C187VTF"
+  ],
+  "at": "2026-11-11T17:09:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "cc3194d1bdaad6df2412ade95e4e7e1aa5b995d71d15815a898659c341df1e83",
+          "session": "32e4ca1a-527d-4211-afc9-01a1cb92cf04",
+          "summary": "Autonomous plan run on change set 01M75S3 (no owner present). The planner read internal/api/daemon_watchdog.go: watchdogBudgetHolds skips only runs that ended well, so an abandoned run (ended Failed) keeps its 'retry budget spent' hold, and rhiza inbox lists it with no way to dismiss it. Holds are recomputed every poll (state.WatchdogHolds = holds in the watchdog poll), so skipping abandoned runs, and runs whose change set is withdrawn or rejected, also prunes existing holds on the next poll. The planner asked whether letting rhiza run abandon stop a live run (today refused with 'is running in another process') belongs here; the arbiter ruled no (Decision abandon-live-run-out-of-scope): only the hold fix is built here, and stopping a live run goes to its own change set, linked discovered-from this one. The change set serves m4-runs-hold-up, like the earlier watchdog fix 01M73G0W.",
+          "title": "Plan of the abandoned-run watchdog hold fix (autonomous)"
+        },
+        "handle": "abandoned-run-hold-plan",
+        "id": "01M75SBF6DHCZDGE9PVWA8RGXQ",
+        "key": null,
+        "kind": "source",
+        "node": "01M75SBF6DHCZDGE9PVRVJSS99",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M75S3B1YNJWFDGXCN2BEEACQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75SBF73NB71RZXP1MVHVYEW",
+  "type": "ops",
+  "v": 1
+}
