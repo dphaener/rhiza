@@ -1,0 +1,40 @@
+{
+  "actor": "01M76CF5Q71FV1GE1CZNQS38CN",
+  "after": [
+    "01M75SHE8CGA5S2ZH76GET0PN8"
+  ],
+  "at": "2026-11-11T22:44:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 0e42aa383 ran go test -trimpath -count=1 ./internal/api -run 'TestWatchdog(Budget|Holds)': both PASS. TestWatchdogHolds polls (watchdogPasses) four spent-budget failed runs with a hold saved before: one abandoned, one with change set withdrawn, one rejected, one plain failed; the poll's holds (written to state.WatchdogHolds by daemonWatchdog) and watchdogHoldItems keep only the plain failed run's one hold/item. Mutation check in a scratch worktree (watchdogLiveHolds removed) makes the test fail with all four holds kept. Diff read: watchdogLiveHolds drops holds whose run State().Abandoned() or whose change set is changeset.Dropped (withdrawn/rejected/superseded), with change state from the inbox fold; go vet and gofmt clean."
+        },
+        "handle": "watchdog-holds-skip-abandoned-verified",
+        "id": "01M76CJ1K6167R1RC1HGWHRHA7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76CJ1K4SSX2RKZ68CZFFVC4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76CJ1K4SSX2RKZ68CZFFVC4",
+        "id": "01M76CJ1M7AJ8TSNT11545BCCY",
+        "link": "01M76CJ1M7AJ8TSNT113DVTZ5X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75SBSK2CNYAQD72JT5MG1BZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75S3B1YNJWFDGXCN2BEEACQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76CJ1NSTPDJFV5P4GH1KQKC",
+  "type": "ops",
+  "v": 1
+}
