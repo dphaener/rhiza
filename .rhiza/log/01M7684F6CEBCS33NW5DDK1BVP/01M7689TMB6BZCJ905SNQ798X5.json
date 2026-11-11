@@ -1,0 +1,30 @@
+{
+  "actor": "01M768640Y6G44XF82BEMJ8F6Y",
+  "after": [
+    "01M7684F6CEBCS33NW5EFF9DQT"
+  ],
+  "at": "2026-11-11T21:30:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "de19e88c-3c11-4405-aec4-01a1cc82df71",
+          "statement": "Which intent does change set 01M7684 (CI on a PR that changes only .rhiza/) serve? It serves none yet; there is no RHIZA_MILESTONE and no .rhiza/policy.toml. / How does ci.yml tell a model-only PR, and what runs then? / Should ship check get its own leaf proving a rollup with SKIPPED jobs and a green `check` reads as settled and green (it already treats SKIPPED as passing, untested), and that the watchdog's CI rerun ignores skipped jobs?"
+        },
+        "handle": "question-de19e88c-1",
+        "id": "01M7689NPS6HFMGEKXZRPD9VAB",
+        "key": null,
+        "kind": "question",
+        "node": "01M7689NPS6HFMGEKXZPB5MAPE",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7684F6CEBCS33NW5DDK1BVP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7689TMB6BZCJ905SNQ798X5",
+  "type": "ops",
+  "v": 1
+}
