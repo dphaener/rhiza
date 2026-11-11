@@ -12,7 +12,10 @@
 # The repo's .rhiza/workflows/ship-change.toml replaces the built-in by name
 # with its post-land steps from wait-landed on (the built-in's own steps and
 # routes, waits with a short interval and timeout; its wait carries
-# --rerun-infra, which internal/workflow's tests check on the built-in). The
+# --rerun-infra, which internal/workflow's tests check on the built-in;
+# TestShipChangeLandedInfraWaitScript pins this copy's landed-green,
+# landed-infra-triage and landed-infra-wait caps and routes to the
+# built-in's, so the copy cannot outrun the built-in's max_visits). The
 # fake gh's check is Actions run 42 and its logs name no failing test.
 # wait-landed's ship check spends its one rerun on it, still red (the
 # outage); only the second rerun, landed-infra-wait's own
@@ -92,7 +95,7 @@ on.pass = "landed-green"
 [step.landed-green]
 kind = "command"
 run = "rhiza ship check"
-max_visits = 3
+max_visits = 4
 on.pass = "gate-rebase-merge"
 on.fail = "conflict-triage-landed"
 

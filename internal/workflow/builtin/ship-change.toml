@@ -248,9 +248,12 @@ timeout = "2h"
 interval = "30s"
 on.pass = "landed-green"
 
+# landed-green is entered once from wait-landed and once more from each of
+# landed-infra-wait's returns (max_visits 3).
 [step.landed-green]
 kind = "command"
 run = "rhiza ship check"
+max_visits = 4
 on.pass = "gate-rebase-merge"
 on.fail = "conflict-triage-landed"
 

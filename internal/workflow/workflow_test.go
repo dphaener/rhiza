@@ -2,6 +2,7 @@ package workflow
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -10,6 +11,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/rogpeppe/go-internal/txtar"
 )
 
 func TestLoadValid(t *testing.T) {
@@ -1871,6 +1874,12 @@ func TestShipChangeLocalGate(t *testing.T) {
 	if w := def.Steps["landed-infra-wait"]; w.Kind != KindWait || w.Until != "rhiza ship check --settled --changed --rerun-infra" || w.Timeout != 6*time.Hour || w.Interval != 30*time.Second || w.MaxVisits != 3 || w.On[OutcomePass] != "landed-green" || len(w.On) != 1 {
 		t.Errorf("landed-infra-wait = %+v; want the 6h rerun-infra wait back to landed-green", w)
 	}
+	// landed-green is entered once from wait-landed, then again on each of
+	// the wait's returns: its cap must cover them all, or the first return
+	// ends the run over max_visits.
+	if lg, w := def.Steps["landed-green"], def.Steps["landed-infra-wait"]; lg.Cap() != 4 || lg.Cap() < 1+w.Cap() {
+		t.Errorf("landed-green cap = %d; want 4 (1 from wait-landed + landed-infra-wait's %d)", lg.Cap(), w.Cap())
+	}
 	if s := def.Steps["render-pr"]; s.On["pass"] != "local-gate" {
 		t.Errorf("render-pr on.pass = %q, want local-gate", s.On["pass"])
 	}
@@ -1974,6 +1983,48 @@ func TestKindDocsCoverKinds(t *testing.T) {
 	for _, d := range KindDocs() {
 		if d.Summary == "" || len(d.Outcomes) == 0 {
 			t.Errorf("kind %s has no summary or outcomes", d.Kind)
+		}
+	}
+}
+
+// TestShipChangeLandedInfraWaitScript pins run-ship-landed-infra-wait's own
+// ship-change.toml to the built-in on the infra wait's loop: the copy's
+// caps and routes for landed-green, landed-infra-triage and
+// landed-infra-wait must be the built-in's, so a cap the built-in lacks
+// cannot make the script pass while the real workflow fails.
+func TestShipChangeLandedInfraWaitScript(t *testing.T) {
+	data, ok := Builtin("ship-change")
+	if !ok {
+		t.Fatal("no ship-change built-in")
+	}
+	builtin, err := ParseWith("ship-change", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ar, err := txtar.ParseFile(filepath.Join("..", "..", "cmd", "rhiza", "testdata", "script", "run-ship-landed-infra-wait.txtar"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var copied []byte
+	for _, f := range ar.Files {
+		if f.Name == "ship-change.toml" {
+			copied = f.Data
+		}
+	}
+	if copied == nil {
+		t.Fatal("run-ship-landed-infra-wait.txtar has no ship-change.toml")
+	}
+	script, err := Parse("ship-change", copied)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"landed-green", "landed-infra-triage", "landed-infra-wait"} {
+		b, s := builtin.Steps[name], script.Steps[name]
+		if s.Cap() != b.Cap() {
+			t.Errorf("script's %s cap = %d, built-in's = %d", name, s.Cap(), b.Cap())
+		}
+		if s.Kind != b.Kind || s.Run != b.Run || s.Until != b.Until || !maps.Equal(s.On, b.On) {
+			t.Errorf("script's %s = %+v; want the built-in's kind, command and routes %+v", name, s, b)
 		}
 	}
 }
