@@ -1,0 +1,37 @@
+{
+  "actor": "01M764HTWRH8RAHKS5VQAMEH6Y",
+  "after": [
+    "01M7642MVAJEGP27487T8NAYZD"
+  ],
+  "at": "2026-11-11T20:26:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "The generated settings reference golden is regenerated and shows autoUpdate with off and main; a docs test (go test ./internal/doclinks -run TestDocsDescribeAutoUpdate) fails unless docs/runs-and-daemon.md names rhiza.daemon.autoUpdate with its off and main values and no longer names selfUpdate or self_update_project.",
+          "statement": "rhiza.daemon.autoUpdate and its channels are described in daemon settings, the generated settings reference and the user docs on the daemon, with latest and release named as coming with the release channels milestone."
+        },
+        "handle": "auto-update-documented",
+        "id": "01M7642MRZ4256B2ECYY211WW8",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M7642MRZ4256B2ECYVG4D4SH",
+        "op": "node.create",
+        "parent": "01M6CS1WF6WPPJTPC8X1DHYGD8"
+      },
+      {
+        "base": "01M6RN85F2T3NMVDRKV934GX4E",
+        "id": "01M764M3DAAPVMWGDR2EJZGKQV",
+        "node": "01M6RN85F2T3NMVDRKV706VSZB",
+        "op": "node.retire",
+        "reason": "Replaced by daemon-auto-update: rhiza.daemon.selfUpdate and rhiza.toml's self_update_project are removed; autoUpdate=main finds Rhiza's source checkout by its module path."
+      }
+    ]
+  },
+  "change_set": "01M763Z16T0ZGQMY1EC2Y81V0K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M764M3E8P2FEAMZA6WZM3N9A",
+  "type": "ops",
+  "v": 1
+}

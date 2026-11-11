@@ -1,0 +1,41 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7657TN19JN1S59J38XM6JCD"
+  ],
+  "at": "2026-11-11T22:37:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "Yes please link it, it has been planned and is in progress",
+          "quote_where": "the owner, answering question release-channels-milestone",
+          "statement": "Yes please link it, it has been planned and is in progress"
+        },
+        "handle": "answer-release-channels-milestone",
+        "id": "01M76C4X19S8MFPP8KYCVVGZYF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76C4X19S8MFPP8KYBFSA656",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76C4X19S8MFPP8KYBFSA656",
+        "id": "01M76C4X1Q385ZE5APFJRYJP4B",
+        "link": "01M76C4X1Q385ZE5APFFN0WNSK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642SJ9HWNTNY2B37W08274",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M763ZDJBN7QKR3AAST5FTR6A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76C4X365X2ZMQ76P94V83GG",
+  "type": "ops",
+  "v": 1
+}

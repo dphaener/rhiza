@@ -1,0 +1,135 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [
+    "01M763ZDJBN7QKR3AASXJHNWWN"
+  ],
+  "at": "2026-11-11T20:16:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "internal/daemon auto-update tests with a fake build feed show latest installing a newer incremental build and leaving an up-to-date install alone.",
+          "statement": "rhiza.daemon.autoUpdate=latest installs the newest published incremental build between releases and restarts the daemon on it."
+        },
+        "handle": "auto-update-latest",
+        "id": "01M7642SDGZMX8RYVYY94GSZ1W",
+        "key": "zzzzzzzi",
+        "kind": "capability",
+        "node": "01M7642SDGZMX8RYVYY562PFVR",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M7642SDGZMX8RYVYY562PFVR",
+        "id": "01M7642SE20B5E3RVMZZHJ9YBE",
+        "link": "01M7642SE20B5E3RVMZYVA69E8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640C561CATF14TE4XC9PW5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7642SDGZMX8RYVYY562PFVR",
+        "id": "01M7642SEHM8D2X3DJYEXZBQTC",
+        "link": "01M7642SEHM8D2X3DJYENPDX66",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640C0ZSMG5H5V1R43J184F",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7642SDGZMX8RYVYY562PFVR",
+        "id": "01M7642SF1CF5MVV9RGRK38HSF",
+        "link": "01M7642SF1CF5MVV9RGRJJ3SGG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640CD758QEYQH1GAMQPVWH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/daemon auto-update tests with a fake release feed show release installing a newer release and ignoring incremental builds.",
+          "statement": "rhiza.daemon.autoUpdate=release installs the newest official release and restarts the daemon on it."
+        },
+        "handle": "auto-update-release",
+        "id": "01M7642SFPZY7YR19WHT9YX7YD",
+        "key": "zzzzzzzr",
+        "kind": "capability",
+        "node": "01M7642SFPZY7YR19WHQ5V2Y5M",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M7642SFPZY7YR19WHQ5V2Y5M",
+        "id": "01M7642SG9EFE2594S57FT3HJQ",
+        "link": "01M7642SG9EFE2594S55RTJ37M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640C561CATF14TE4XC9PW5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7642SFPZY7YR19WHQ5V2Y5M",
+        "id": "01M7642SGRZC5G1GHRBAREAXAP",
+        "link": "01M7642SGRZC5G1GHRB8GWVX67",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640C0ZSMG5H5V1R43J184F",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7642SFPZY7YR19WHQ5V2Y5M",
+        "id": "01M7642SHBZ42GR281SMZ1ZSWW",
+        "link": "01M7642SHBZ42GR281SM9ESCWP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640CD758QEYQH1GAMQPVWH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Depends on the release channels milestone: link depends-on once it is planned."
+        },
+        "handle": "release-channels-milestone",
+        "id": "01M7642SJ9HWNTNY2B385F8HFN",
+        "key": null,
+        "kind": "question",
+        "node": "01M7642SJ9HWNTNY2B37W08274",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7642SJ9HWNTNY2B37W08274",
+        "id": "01M7642SK997X3RQPQ0Z4PZK3S",
+        "link": "01M7642SK997X3RQPQ0Y084YHQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642SDGZMX8RYVYY562PFVR",
+        "type": "blocks"
+      },
+      {
+        "decision": null,
+        "from": "01M7642SJ9HWNTNY2B37W08274",
+        "id": "01M7642SM95B65B3FDMXST1M8W",
+        "link": "01M7642SM95B65B3FDMVPQ489B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642SFPZY7YR19WHQ5V2Y5M",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M763ZDJBN7QKR3AAST5FTR6A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7642SNCFE1NKKWQ43PCEW4C",
+  "type": "ops",
+  "v": 1
+}

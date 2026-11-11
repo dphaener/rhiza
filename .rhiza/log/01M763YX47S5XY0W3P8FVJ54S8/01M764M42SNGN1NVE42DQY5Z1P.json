@@ -1,0 +1,45 @@
+{
+  "actor": "01M764HTWRH8RAHKS5VQAMEH6Y",
+  "after": [
+    "01M7642MEDB9PG2GR0ZVFRM8XA"
+  ],
+  "at": "2026-11-11T20:26:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5X3GC9S0ENG89Y22M1WKWXF",
+        "id": "01M764M3Z5GQHJCN8XH4VGR8JP",
+        "node": "01M5X3GC9S0ENG89Y22HF3KPFH",
+        "op": "node.retire",
+        "reason": "Replaced by ship-head-build-step: Rhiza's own ship-change workflow builds rhiza from the PR head in a step; the product's go.mod module check (isRhizaRepo) is gone."
+      },
+      {
+        "base": "01M6WGXA5QZV54A91F08YWYSTD",
+        "id": "01M764M3ZTBDCWZXPFS8G5FKRZ",
+        "node": "01M6WGXA5QZV54A91F061Y3KNQ",
+        "op": "node.retire",
+        "reason": "Replaced by workflow-env: Rhiza's own workflows set GOTMPDIR to the run's temp folder; the product no longer sets it."
+      },
+      {
+        "base": "01M6NRETPP5SJ8RMGV9148Q6VG",
+        "id": "01M764M40HDE9F1D9VTRBTHARJ",
+        "node": "01M6NRETPP5SJ8RMGV901X4G33",
+        "op": "node.retire",
+        "reason": "Replaced by daemon-no-go-cache-trim and rhiza-own-workflows-go-cleanup: the daemon no longer trims the Go build cache; Rhiza's cleanup phase does."
+      },
+      {
+        "base": "01M6NREHKHFKZWMXYWG2JA555M",
+        "id": "01M764M41BKVFCHPDBKYVVPWS1",
+        "node": "01M6NREHKHFKZWMXYWG2F38AM5",
+        "op": "node.retire",
+        "reason": "Replaced by rhiza-own-workflows-go-cleanup: Rhiza's own workflow cleanup phase trims the Go build cache and stale go-build folders; gosweep leaves the daemon."
+      }
+    ]
+  },
+  "change_set": "01M763YX47S5XY0W3P8FVJ54S8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M764M42SNGN1NVE42DQY5Z1P",
+  "type": "ops",
+  "v": 1
+}

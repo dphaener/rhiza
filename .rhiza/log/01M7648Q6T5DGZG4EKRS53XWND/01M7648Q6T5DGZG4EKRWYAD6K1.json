@@ -1,0 +1,15 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [],
+  "at": "2026-11-11T20:19:56Z",
+  "body": {
+    "intent": "Record the answers of session 70ee81c4-37df-450f-86ae-01a1cbc527f8, whose change set 01M75W99SF6Q1T4QJM5GKA4PM1 has landed",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7648Q6T5DGZG4EKRS53XWND",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7648Q6T5DGZG4EKRWYAD6K1",
+  "type": "open",
+  "v": 1
+}

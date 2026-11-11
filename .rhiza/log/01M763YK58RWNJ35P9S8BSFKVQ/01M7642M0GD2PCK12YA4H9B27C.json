@@ -1,0 +1,43 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [
+    "01M763YK58RWNJ35P9S8RN76RR"
+  ],
+  "at": "2026-11-11T20:16:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript (and internal/api or internal/index unit tests) ends a run whose fake agent sessions made scratch folders and whose worktree has an index database, and shows both gone afterwards, while a live run's scratch folders and index stay.",
+          "statement": "When a run ends (done, failed or abandoned) Rhiza removes the scratch folders of the agent sessions it started for that run, and when a run's worktree is removed Rhiza removes that worktree path's index database under the user cache dir (rhiza/index)."
+        },
+        "handle": "run-end-removes-leftovers",
+        "id": "01M7642KZP2AFAVV6DMQ5VGQ3Z",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7642KZP2AFAVV6DMMMDK8JR",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests in the package that implements the sweep build fake index and scratch trees with live and orphaned entries, inject the clock, and show only the orphans removed and the freed bytes logged; go test -trimpath on that package.",
+          "statement": "The daemon prunes orphaned leftovers at most once an hour: index databases whose worktree path no longer exists, and agent-session scratch folders of sessions that belong to no live run and are older than a day; it never touches a live run's files and logs what it freed."
+        },
+        "handle": "daemon-prunes-orphan-leftovers",
+        "id": "01M7642M03G0506XQ7B49PM7QW",
+        "key": "zzzzzzz",
+        "kind": "capability",
+        "node": "01M7642M03G0506XQ7B2G4S0VF",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      }
+    ]
+  },
+  "change_set": "01M763YK58RWNJ35P9S8BSFKVQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7642M0GD2PCK12YA4H9B27C",
+  "type": "ops",
+  "v": 1
+}
