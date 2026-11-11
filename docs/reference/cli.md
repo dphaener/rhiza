@@ -469,7 +469,7 @@ Output (`--json` fields):
 Run the daemon in the foreground: one per repository, held by a lock in the git common dir.
 
 ```
-rhiza daemon [--max-runs <max-runs>] [--once] [--autonomous] [--min-free <min-free>] [--permission-mode <permission-mode>] [--event-command <event-command>] [--notify-command <notify-command>]
+rhiza daemon [--max-runs <max-runs>] [--once] [--autonomous] [--min-free <min-free>] [--max-load <max-load>] [--min-memory <min-memory>] [--permission-mode <permission-mode>] [--event-command <event-command>] [--notify-command <notify-command>]
 ```
 
 Arguments and flags:
@@ -478,6 +478,8 @@ Arguments and flags:
 - `--once`: Poll once, start what is picked and stop
 - `--autonomous`: Start each run with --autonomous: it goes on without the owner
 - `--min-free`: Start and resume nothing while the repo's filesystem has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 10G; 0 turns the guard off
+- `--max-load`: Start no run while the 1-minute load per core is over this, until the 5-minute load is back under it: a number; default 3.0; 0 turns the check off
+- `--min-memory`: Start no run while the available memory is under this: bytes, or a number with K, M, G or T (powers of 1024); default 2G; 0 turns the check off
 - `--permission-mode`: Start each run with this --permission-mode, for its agent steps that set none; checked against ship-change before the daemon starts
 - `--event-command`: Run this command through sh -c in the repo root once per change set lifecycle move (proposed, accepted, rejected, withdrawn, superseded, landed, reopened) it has not handled, in log order, with the move as JSON on stdin and RHIZA_EVENT, RHIZA_EVENT_CHANGE, RHIZA_EVENT_ENTRY and RHIZA_EVENT_TITLE set; default the git config rhiza.eventCommand. The first run only records the moves already in the log. A failing or timed-out (10 s) command is logged and not retried
 - `--notify-command`: Run this command through sh -c in the repo root once per new inbox item, with the item's JSON on stdin and RHIZA_INBOX_KIND, RHIZA_INBOX_ID, RHIZA_INBOX_CHANGE and RHIZA_INBOX_TITLE set; default the git config rhiza.notifyCommand. A failing or timed-out (10 s) command is logged and not retried
@@ -513,7 +515,7 @@ rhiza daemon set <key> <value> [--project <project>]
 
 Arguments and flags:
 
-- `<key>`: The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout or ciWindow, or rhiza.autonomy.plan, accept, ship or signoff (required)
+- `<key>`: The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout or ciWindow, or rhiza.autonomy.plan, accept, ship or signoff (required)
 - `<value>`: The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes (required)
 - `--project`: The registered project a project setting is written to; default the current project
 
@@ -569,13 +571,16 @@ Output (`--json` fields):
 
 - `autonomous` (boolean): True when it starts each run with --autonomous
 - `commit` (string): The git commit the daemon's binary was built from, as recorded when it started; absent when the build carried none
+- `hold` (object): Set while new runs are held for load or memory; absent when they are not
 - `hooks` (array of object): The notify and event commands the daemon took at start, each with its source: daemon flag, git config or unset
 - `last_poll` (string): When it last polled, RFC 3339 UTC
 - `last_resumed` (object): The run it last resumed; absent if none
 - `last_started` (object): The run it last started; absent if none
 - `live` (integer): The machine-wide live runs holding a slot (running, not interrupted), summed over the daemon's projects
+- `load` (object): The last poll's load per core; absent before a poll recorded one
 - `max` (integer): rhiza.daemon.maxRuns as the daemon's last poll recorded it: the cap live plus starting is counted against
 - `max_runs` (integer): How many runs it keeps running at once
+- `memory` (object): The last poll's available memory; absent before a poll recorded one
 - `mode` (string): How this installation runs the daemon: service when daemon install wrote a systemd unit, else tab (the Rex tab 'rhiza daemon')
 - `poll_behind` (string): Set while its last poll took longer than the watchdog's pollBehind multiple of the poll interval: how long it took and the limit; absent when polls keep up
 - `process` (string): The daemon's process, as host:pid; absent when none ever ran
@@ -739,7 +744,7 @@ Arguments and flags:
 
 Output (`--json` fields):
 
-- `parts` (array of object): Every part, in a fixed order: daemon, autonomy, machine, disk, usage, then main, ci, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project
+- `parts` (array of object): Every part, in a fixed order: daemon, autonomy, machine, disk, load, usage, then main, ci, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project
 - `state` (string): The worst state of any part
 
 Exit code: set by the result, besides the shared codes.
