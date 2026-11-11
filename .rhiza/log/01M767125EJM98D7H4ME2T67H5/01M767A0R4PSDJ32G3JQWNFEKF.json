@@ -1,0 +1,62 @@
+{
+  "actor": "01M7671NKWEPGABMGVKBQEDT46",
+  "after": [
+    "01M7679AGG3JK65WJ0TFZWXP3Q"
+  ],
+  "at": "2026-11-11T21:13:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6XVG9JFMB43HTY2VYD98EE7",
+        "handle": null,
+        "id": "01M7679AB4EC5JVAH3B665CPGK",
+        "node": "01M6MYSEB8N545M8M9APZTBXYS",
+        "op": "node.update",
+        "set": {
+          "acceptance": "cmd/rhiza/testdata/script/daemon-milestone-request.txtar (fake rex, rhiza.autonomy.plan owner) queues a feature then a milestone request: with --max-runs 1 and one run already live, daemon --once starts nothing and request ls shows both queued; with --max-runs 2 and one run live, daemon --once starts only the milestone request (run start --workflow plan --new ... --request <id> --milestone) and the feature stays queued; with one interrupted run and one free slot the milestone request starts and the run is not resumed; a second milestone request queued while the first's run is live is not started by the next --once; go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-milestone-request|plan-requests)' passes",
+          "statement": "The daemon starts the oldest queued milestone request's plan run in the next free run slot, ahead of every other start in the poll (resumes of interrupted runs included) and of every other queued request, but waits while the machine-wide slot count is at rhiza.daemon.maxRuns; once started it counts as a running run for later picks, and a second milestone request stays queued while the first's plan run holds the owner (see milestone-wait-owner-steps). A usage-reserve hold does not hold it; pause and low disk do"
+        },
+        "unset": []
+      },
+      {
+        "fields": {
+          "acceptance": "A unit test in internal/api/request_test.go covers daemonMilestoneWaits with a queued milestone request and another milestone request's run: live at the interview step (waits), live at a later step such as milestone-check or review (does not wait), stopped at a sign-off wait (waits), unjournaled within daemonStartGrace (waits); cmd/rhiza/testdata/script/daemon-milestone-request.txtar adds a case where the first milestone request's run journal has ended its interview step and is live at a later step, and the next daemon --once starts the second milestone request's plan run, while with --max-runs full it still starts nothing; go test -trimpath ./internal/api -run MilestoneWaits and go test -trimpath ./cmd/rhiza -run 'TestScripts/daemon-milestone-request' pass",
+          "statement": "A queued milestone request waits only while another milestone request's plan run holds the owner: its start is not journaled yet and is within daemonStartGrace, or the run is live with its current step the interview (start) step, or it is stopped waiting on the owner at a gate or sign-off step under owner autonomy; a live milestone plan run on any other step (milestone-check, review, critic, check, revise, open-pr, wait-pr, CI, rebase, merge, close-out) blocks nothing, so the next milestone interview starts as soon as the previous one's interview step has ended. daemonMilestoneWaits and daemonPlanRequests' milestoneLive apply this one rule, and rhiza.daemon.maxRuns still caps every start"
+        },
+        "handle": "milestone-wait-owner-steps",
+        "id": "01M767A0H2FFW8H8DY4P0CBEPQ",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M767A0H2FFW8H8DY4N0DNY8Y",
+        "op": "node.create",
+        "parent": "01M6CS230463DT24PWBJCPWD9Q"
+      },
+      {
+        "decision": null,
+        "from": "01M767A0H2FFW8H8DY4N0DNY8Y",
+        "id": "01M767A0JJZRFC9QG182XYKMVW",
+        "link": "01M767A0JJZRFC9QG180JYBS65",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7677NAX95EK183R1B84B5EY",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M767A0H2FFW8H8DY4N0DNY8Y",
+        "id": "01M767A0NE7KS3M89G7RV5XM2V",
+        "link": "01M767A0NE7KS3M89G7PGTD0VC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7678ZK6T2FQHD4MYTNWKWRE",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M767125EJM98D7H4ME2T67H5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M767A0R4PSDJ32G3JQWNFEKF",
+  "type": "ops",
+  "v": 1
+}

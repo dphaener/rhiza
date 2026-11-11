@@ -1,0 +1,41 @@
+{
+  "actor": "01M768APZBDJCKG2HAPP1M4M9N",
+  "after": [
+    "01M7689TMB6BZCJ905SNQ798X5"
+  ],
+  "at": "2026-11-11T21:31:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Intents: `rhiza ls --kind intent` shows only milestone intents (m3 to m31: daemon, apps, Nebari, browser monitor, root, public docs, sign-off pages); none is about CI time, and the intent itself puts the general CI speed-up (request 01M6Q58) out of scope, so attaching it to a milestone would misstate the plan; a standalone request change set needs no intent. Detection: ci.yml already checks out with fetch-depth 0 and triggers only on pull_request and workflow_dispatch (no push trigger; Ship dispatches on main commits), so git diff against the merge base is enough and avoids a new action dependency, and forcing code=true on workflow_dispatch keeps main's CI full, as the intent requires. Today `check` is the aggregate branch protection and Ship read and it rejects anything but success; it must now accept skipped, but still fail when `changes` itself failed (otherwise a broken detector would skip everything and pass). A separate `model` job instead of lint avoids running self-check twice on code PRs, and matches the intent's \"builds rhiza and runs make self-check\". Ship: internal/api/ship.go passingConclusions already counts SKIPPED as passing in checksVerdict, and shipRerunFailed skips passing conclusions, so no code change is expected, but nothing tests it; the intent explicitly asks to check ship check and the watchdog rerun, and a leaf with an acceptance test is the cheap way to prove it.",
+          "statement": "(1) Change set 01M7684 serves no milestone intent: it is a standalone owner request (filed 2026-11-11, \"yes file it\"), like the bug and request change sets beside it. Plan its leaves under it with no serves link, and do not invent an intent or a policy.toml for it. (2) ci.yml gets a first job, `changes`, that decides with plain git (checkout already uses fetch-depth 0, no third-party action): on pull_request it lists `git diff --name-only <merge-base of base.sha and head>..<head>` and outputs code=true when any path lies outside .rhiza/, else code=false; on workflow_dispatch (Ship's runs on main commits) it always outputs code=true, so main keeps running everything. lint, scripts, api, rest and budgets run only when code=true. A new `model` job runs only when code=false: it sets up Go and runs `make self-check` (build this commit's rhiza in a temp dir, rhiza check including stale .rhiza/rendered). `check` stays the single required aggregate: it needs changes, model and the five Go jobs, runs if: always(), fails unless `changes` succeeded, and passes only when every other needed job is success or skipped, with at least one of `model` or the Go jobs having succeeded. make check stays the local entry point, unchanged. (3) Yes: ship check gets its own small leaf, a Go test in internal/api, proving a check rollup with SKIPPED jobs and a SUCCESS `check` is settled and green under checksVerdict, and that shipRerunFailed reruns nothing for SKIPPED runs.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "decision-model-only-ci",
+        "id": "01M768CNGSJCMZ4MAW5YK43ZXH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M768CNGSJCMZ4MAW5Y3SZ7SY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M768CNGSJCMZ4MAW5Y3SZ7SY",
+        "id": "01M768CNHN59X2ZMPNDV9ADT2Y",
+        "link": "01M768CNHN59X2ZMPNDT1SAYVP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7689NPS6HFMGEKXZPB5MAPE",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7684F6CEBCS33NW5DDK1BVP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M768CNJA752EDZQNZTEH7ZW8",
+  "type": "ops",
+  "v": 1
+}
