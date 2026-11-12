@@ -513,7 +513,51 @@ func gh(ctx *Ctx, dir string, args ...string) ([]byte, error) {
 	if ctx.Exec == nil {
 		return nil, Errorf("shipping needs gh, and no programs can be run here")
 	}
-	return ctx.Exec("gh", args, dir, nil)
+	return retryGH(ctx, func() ([]byte, error) { return ctx.Exec("gh", args, dir, nil) })
+}
+
+// ghWaits are the waits before the retries of a gh call that failed with a
+// transient GitHub error: up to three retries, each wait longer than the
+// last.
+var ghWaits = []time.Duration{2 * time.Second, 6 * time.Second, 18 * time.Second}
+
+var ghServerError = regexp.MustCompile(`HTTP 5\d\d`)
+
+// transientGH reports whether a gh failure is a GitHub blip worth a retry:
+// an HTTP 5xx, a timeout or a GraphQL "Something went wrong" error. Any
+// other failure (a 4xx, no pull request, a refused merge) is not.
+func transientGH(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	low := strings.ToLower(msg)
+	return ghServerError.MatchString(msg) ||
+		strings.Contains(low, "something went wrong") ||
+		strings.Contains(low, "timeout") ||
+		strings.Contains(low, "timed out")
+}
+
+// retryGH runs call, and reruns it after each wait of ghWaits while it
+// fails with a transient GitHub error. After the last retry it fails with
+// the last error. ctx.Sleep sleeps; nil is time.Sleep.
+func retryGH(ctx *Ctx, call func() ([]byte, error)) ([]byte, error) {
+	sleep := ctx.Sleep
+	if sleep == nil {
+		sleep = time.Sleep
+	}
+	out, err := call()
+	for _, wait := range ghWaits {
+		if !transientGH(err) {
+			return out, err
+		}
+		sleep(wait)
+		out, err = call()
+	}
+	if transientGH(err) {
+		return out, fmt.Errorf("%v (after %d retries)", err, len(ghWaits))
+	}
+	return out, err
 }
 
 // noPR reports whether a gh failure says there is no pull request.
