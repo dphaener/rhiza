@@ -52,13 +52,6 @@ The available memory below which the daemon starts no run, such as 2G; 0 turns i
 - Default: `2G`
 - Flag: `rhiza daemon --min-memory` overrides it for a run
 
-### `rhiza.daemon.trimGoCache`
-
-Trim the Go build cache when disk space runs low.
-
-- Type: boolean
-- Default: `true`
-
 ### `rhiza.daemon.permissionMode`
 
 The permission mode agents run in; unset leaves the agent's own default.

@@ -24,7 +24,6 @@ import (
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/dispatch"
-	"github.com/dphaener/rhiza/internal/gosweep"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/policy"
 	"github.com/dphaener/rhiza/internal/run"
@@ -201,7 +200,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		webUI = &web.Manager{Factory: webFactory, Handler: WebRootHandler(ctx, root, homeName, home)}
 		defer webUI.Close()
 	}
-	var sweep, leftSweep daemon.SweepSchedule
+	var leftSweep daemon.SweepSchedule
 	// lastTurn is the project that took the last run slot: the next poll's
 	// round-robin starts after it, so turns rotate across polls instead of
 	// restarting at the home project.
@@ -217,9 +216,6 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			}
 		}
 		selfUpdateOn = conf.selfUpdate
-		if conf.trimGoCache {
-			daemonSweepGoCache(homeCtx, &sweep, conf.minFree)
-		}
 		// Every served project's sessions and runs: a crashed run in any of
 		// them leaves scratch folders behind.
 		commons := make([]string, 0, len(projs))
@@ -1207,28 +1203,6 @@ func daemonQueuedContinues(ctx *Ctx, rs *run.Store, runs []run.Journal, running,
 		return continued, Errorf("read queued continuations: %v", err)
 	}
 	return continued, nil
-}
-
-// daemonSweepGoCache trims the Go build cache and stale go-build* temp
-// folders when the schedule says so, writing one stderr line with what was
-// freed, only when something was.
-func daemonSweepGoCache(ctx *Ctx, sched *daemon.SweepSchedule, minFree uint64) {
-	now := ctx.Now()
-	free, ferr := repoFreeBytes(ctx)
-	if !sched.Due(now, free, minFree, ferr == nil) {
-		return
-	}
-	sched.Done(now)
-	getenv := ctxGetenv(ctx)
-	tmp := getenv("TMPDIR")
-	if tmp == "" {
-		tmp = os.TempDir()
-	}
-	f := gosweep.SweepDirs(gosweep.CacheDirFrom(getenv), tmp, now)
-	if f.Any() && ctx.Stderr != nil {
-		fmt.Fprintf(ctx.Stderr, "rhiza: daemon: go build sweep freed %s: %d cache entries, %d temp folders\n",
-			daemon.FormatSize(uint64(f.Bytes())), f.CacheEntries, f.TempFolders)
-	}
 }
 
 // daemonDiskLow reports whether free space on the repo's filesystem is under

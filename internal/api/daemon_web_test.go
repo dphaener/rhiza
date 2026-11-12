@@ -190,16 +190,14 @@ func TestDaemonWebNoListenerOnceOrTestNow(t *testing.T) {
 }
 
 // noDiskReads answers the git config reads of rhiza.daemon.minFree (0, the
-// guard off) and rhiza.daemon.trimGoCache (false), for a daemon test that
-// must run without RHIZA_TEST_NOW and so cannot pin its free disk: with both
-// off, the daemon never reads the free space at all.
+// guard off), for a daemon test that must run without RHIZA_TEST_NOW and so
+// cannot pin its free disk: with it off, the daemon never reads the free
+// space at all.
 func noDiskReads(args []string) (string, bool) {
 	if len(args) == 3 && args[0] == "config" {
 		switch args[2] {
 		case "rhiza.daemon.minFree":
 			return "0\n", true
-		case "rhiza.daemon.trimGoCache":
-			return "false\n", true
 		}
 	}
 	return "", false
