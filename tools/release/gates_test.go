@@ -163,6 +163,18 @@ func TestGatesCheckReports(t *testing.T) {
 	writeAt(t, q, "CS7", "b", "ops", "2026-11-11T01:00:00Z", `{"ops":[{"op":"node.create","kind":"decision","node":"D1","handle":"this-way"},
 		{"op":"link.create","type":"answers","link":"L2","from":"D1","to":"Q1"}]}`)
 	want(check("success"), "milestone pass")
+
+	// CS6 lands m3's last change set in the log on disk, not yet committed:
+	// m3 is finished, but not in the candidate commit.
+	writeAt(t, q, "CS6", "b", "land", "2026-11-11T02:00:00Z", `{}`)
+	out = check("success")
+	want(out, "milestone finished: m2", "milestone finished: m3", "milestone FAIL  change sets not landed in "+head+": CS6")
+
+	// Committed, the candidate has every land of m2 and m3.
+	git("add", ".")
+	git("commit", "-q", "-m", "two")
+	head = git("rev-parse", "HEAD")
+	want(check("success"), "milestone pass")
 }
 
 func TestParseCheck(t *testing.T) {

@@ -99,6 +99,7 @@ type Landing struct {
 	RequestKind string // "bug", "milestone" or "" for a feature
 	Intent      string // what the change set set out to do
 	Kind        string // the change set's kind: "intention", or "record" for model bookkeeping
+	Entry       string // the land entry's path under the log directory, slash-separated
 }
 
 // History is what the log says about landings and milestones.
@@ -164,7 +165,11 @@ func ReadHistory(logDir string) (History, error) {
 			if err != nil {
 				return h, fmt.Errorf("%s: %w", f, err)
 			}
-			h.Landed[e.ChangeSet] = Landing{ID: e.ChangeSet, At: at}
+			rel, err := filepath.Rel(logDir, f)
+			if err != nil {
+				return h, err
+			}
+			h.Landed[e.ChangeSet] = Landing{ID: e.ChangeSet, At: at, Entry: filepath.ToSlash(rel)}
 		case "ops":
 			var o struct {
 				Ops []struct {

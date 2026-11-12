@@ -72,7 +72,7 @@ type GateInputs struct {
 	CI          string      // CI conclusion on Commit: "success" passes
 	Runs        RunHistory  // when the root daemon first ran each commit
 	BugRequests []time.Time // when bug requests were filed
-	InFlight    []string    // change sets serving the finished milestone not yet landed
+	InFlight    []string    // change sets serving a finished milestone not landed in Commit
 	Blocking    []string    // open questions blocking one of them
 	LastPatch   time.Time   // zero when no patch was released
 }
@@ -142,7 +142,7 @@ func gateMilestone(in GateInputs) Gate {
 	g := Gate{Name: "milestone"}
 	switch {
 	case len(in.InFlight) > 0:
-		g.Reason = "change sets still in flight: " + strings.Join(in.InFlight, ", ")
+		g.Reason = "change sets not landed in " + in.Commit + ": " + strings.Join(in.InFlight, ", ")
 	case len(in.Blocking) > 0:
 		g.Reason = "questions blocking the milestone: " + strings.Join(in.Blocking, ", ")
 	default:
@@ -248,14 +248,36 @@ func gateInputs(dir, logDir string, env CheckEnv, h History, in Inputs, kind Kin
 		serving = append(serving, h.Milestones[m]...)
 	}
 	sort.Strings(serving)
+	inCommit, err := logFiles(dir, commit)
+	if err != nil {
+		return g, err
+	}
 	for _, cs := range serving {
-		if _, ok := h.Landed[cs]; !ok {
+		if l, ok := h.Landed[cs]; !ok || !inCommit[l.Entry] {
 			g.InFlight = append(g.InFlight, cs)
 		}
 	}
 	g.Blocking = q.Blocking(serving)
 	g.LastPatch = lastPatch(dir)
 	return g, nil
+}
+
+// logFiles lists the log entries in commit's tree, as paths under
+// .rhiza/log. A milestone finished in the log read from disk is still in
+// flight for a candidate commit that lacks one of its land entries: an
+// uncommitted land, or an older --commit.
+func logFiles(dir, commit string) (map[string]bool, error) {
+	out, err := gitOut(dir, "ls-tree", "-r", "--name-only", "--full-tree", commit, "--", ".rhiza/log")
+	if err != nil {
+		return nil, fmt.Errorf("ls-tree %s: %w", commit, err)
+	}
+	files := map[string]bool{}
+	for _, l := range strings.Split(out, "\n") {
+		if rel, ok := strings.CutPrefix(l, ".rhiza/log/"); ok {
+			files[rel] = true
+		}
+	}
+	return files, nil
 }
 
 // lastPatch is when the latest vX.Y.Z tag with Z above 0 was made; zero for
