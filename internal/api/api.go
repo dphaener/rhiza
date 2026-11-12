@@ -135,6 +135,9 @@ type Ctx struct {
 	// failure is transient (worth one rerun). Nil, or any answer but a
 	// clear transient, means the failure is real: no rerun.
 	Classify func(output string) (transient bool)
+	// Verdict is Classify with the reason: the watchdog logs it. Nil
+	// classifies nothing.
+	Verdict func(output string) FailureVerdict
 	// IDs makes new IDs.
 	IDs *id.Generator
 	// readLog, when set, replaces the store's log read; tests count folds

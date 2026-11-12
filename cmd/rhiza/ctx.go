@@ -87,12 +87,18 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		ctx.Rex = os.Stderr
 	}
 	ctx.Git = gitIn(ctx.Root)
-	ctx.Classify = func(output string) bool {
+	ctx.Verdict = func(output string) api.FailureVerdict {
 		cmd := api.FailureClassifierCommand(ctx)
 		if cmd == "" {
+			return api.FailureVerdict{Reason: "classifier off"}
+		}
+		return api.ClassifyFailure(cmd, output, shellWithStdin)
+	}
+	ctx.Classify = func(output string) bool {
+		if api.FailureClassifierCommand(ctx) == "" {
 			return false
 		}
-		v := api.ClassifyFailure(cmd, output, shellWithStdin)
+		v := ctx.Verdict(output)
 		kind := "real"
 		if v.Transient {
 			kind = "transient"

@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"strings"
 	"testing"
 )
 
@@ -43,4 +44,16 @@ func TestClassifyFailureGivesOutputAndCommand(t *testing.T) {
 	if gotCmd != "mycmd" || gotIn != "the output" {
 		t.Errorf("shell got %q, %q", gotCmd, gotIn)
 	}
+}
+
+// fakeClassify stands in for the LLM classifier in watchdog tests: output
+// naming a network error, a held lock or a vanished build directory is
+// transient, with the matching text as its reason.
+func fakeClassify(output string) FailureVerdict {
+	for _, s := range []string{"502", "503", "index.lock", "go-build"} {
+		if strings.Contains(output, s) {
+			return FailureVerdict{Transient: true, Reason: s}
+		}
+	}
+	return FailureVerdict{Reason: "the test is failing"}
 }

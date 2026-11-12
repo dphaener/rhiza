@@ -26,9 +26,10 @@ func TestWatchdogBudget(t *testing.T) {
 	now := t0.Add(time.Hour)
 	var resumed []string
 	d := watchdogDeps{
-		resume: func(id string) error { resumed = append(resumed, id); return nil },
-		now:    func() time.Time { return now },
-		log:    func(string, ...any) {},
+		classify: fakeClassify,
+		resume:   func(id string) error { resumed = append(resumed, id); return nil },
+		now:      func() time.Time { return now },
+		log:      func(string, ...any) {},
 	}
 	pol := WatchdogPolicy{Enabled: true, RetryBudget: 2, AutonomousOnly: true}
 	nolive := func(string) bool { return false }

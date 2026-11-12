@@ -40,8 +40,9 @@ func TestWatchdogRequests(t *testing.T) {
 	}
 	var resumed, log []string
 	d := watchdogDeps{
-		resume: func(id string) error { resumed = append(resumed, id); return nil },
-		log:    func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
+		classify: fakeClassify,
+		resume:   func(id string) error { resumed = append(resumed, id); return nil },
+		log:      func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
 	}
 	pol := WatchdogPolicy{Enabled: true, RetryBudget: 1, AutonomousOnly: true}
 	live := func(id string) bool { return id == "alive" }

@@ -52,11 +52,14 @@ func watchdogRequests(pol WatchdogPolicy, reqs []daemon.Request, journals []run.
 			if err != nil {
 				continue
 			}
-			sig := transientSignature(failedDetail(st, step))
-			if sig == "" {
+			if d.classify == nil {
 				continue
 			}
-			why = fmt.Sprintf("its plan run failed at step %s on a transient error (%q)", step, sig)
+			v := d.classify(failedDetail(st, step))
+			if !v.Transient {
+				continue
+			}
+			why = fmt.Sprintf("its plan run failed at step %s on a transient error (%s)", step, v.Reason)
 		default:
 			continue
 		}
