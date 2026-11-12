@@ -165,7 +165,7 @@ func growLog(tb testing.TB, total int) func(string) {
 
 func sortStrings(s []string) { slices.Sort(s) }
 
-func newIdleFix(b *testing.B) *idleFix {
+func newIdleFix(b testing.TB) *idleFix {
 	b.Helper()
 	f := &idleFix{home: newDaemonFoldFixN(b, 98, growLog(b, idleChangeSets)), other: newDaemonFoldFixN(b, 50, nil)}
 	config := b.TempDir()
@@ -189,6 +189,9 @@ func newIdleFix(b *testing.B) *idleFix {
 			b.Fatal(err)
 		}
 		b.Cleanup(p.stop)
+		// What the project could start was started and is held: an idle
+		// poll starts nothing.
+		p.unjournaled[fx.target] = daemonPending{at: fx.ctx.Now()}
 		f.projs = append(f.projs, p)
 	}
 	// Runs in flight, each in the step that waits on an agent session.
@@ -216,7 +219,7 @@ func newIdleFix(b *testing.B) *idleFix {
 // rootPoll is one poll of the root daemon: both registered projects'
 // settings, usage and demand read, the slots shared round-robin, then each
 // project's own turn (daemonPoll1, notices, watchdog or nudge, events, state).
-func (f *idleFix) rootPoll(b *testing.B) {
+func (f *idleFix) rootPoll(b testing.TB) {
 	b.Helper()
 	turns := make([]daemonTurn, len(f.projs))
 	var picks []daemon.ProjectPick
@@ -244,7 +247,7 @@ func (f *idleFix) rootPoll(b *testing.B) {
 
 // driverPoll is one idle tick of a run driver waiting on an agent step: the
 // session's status, the runs in flight and what each is blocked on.
-func (f *idleFix) driverPoll(b *testing.B) {
+func (f *idleFix) driverPoll(b testing.TB) {
 	b.Helper()
 	st, err := f.step.AgentStatus(f.sid)
 	if err != nil || st.Done {
