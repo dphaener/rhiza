@@ -1415,6 +1415,130 @@ func TestShipCheckConflicts(t *testing.T) {
 
 // A fixer's merge, committed on top of origin's branch and holding main,
 // is rendered, pushed plainly and recorded.
+// headBuildRebase makes f's workflow name a head build and its command
+// (SHIP_HEAD_RHIZA, SHIP_HEAD_BUILD), and logs each program run into
+// f.git.calls as "exec <program> <args>", so a test sees the build's place
+// among the git calls. build is the build's answer, as a shipExec's.
+func headBuildRebase(t *testing.T, f *sessionFixture, build string) (bin, cmd string) {
+	t.Helper()
+	bin = filepath.Join(t.TempDir(), "rhiza")
+	if err := os.WriteFile(bin, []byte("#!/bin/sh\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	cmd = `go build -o "$SHIP_HEAD_RHIZA" ./cmd/rhiza`
+	prev := f.ctx.Getenv
+	f.ctx.Getenv = func(k string) string {
+		switch k {
+		case envShipRhiza:
+			return bin
+		case envShipBuild:
+			return cmd
+		}
+		if prev == nil {
+			return ""
+		}
+		return prev(k)
+	}
+	f.ctx.Exec = func(name string, args []string, dir string, _ []string) ([]byte, error) {
+		f.git.calls = append(f.git.calls, "exec "+name+" "+strings.Join(args, " "))
+		if dir != f.ctx.Root {
+			t.Errorf("%s ran in %s, not %s", name, dir, f.ctx.Root)
+		}
+		switch {
+		case name == "sh" && slices.Equal(args, []string{"-c", cmd}):
+			if msg, failed := strings.CutPrefix(build, "!"); failed {
+				return nil, errors.New(msg)
+			}
+			return []byte(build), nil
+		case name == bin && len(args) > 0 && args[0] == "render":
+			return []byte(`{"written":[],"removed":[],"unchanged":1}`), nil
+		}
+		return nil, errors.New(name + " " + strings.Join(args, " ") + ": unexpected call")
+	}
+	return bin, cmd
+}
+
+// execOrder is the order of the merge, the head build, the head build's
+// render and the push among f's calls.
+func execOrder(f *sessionFixture, bin string) []string {
+	var order []string
+	for _, c := range f.git.calls {
+		switch {
+		case c == rebaseMerge:
+			order = append(order, "merge")
+		case strings.HasPrefix(c, "exec sh -c"):
+			order = append(order, "build")
+		case strings.HasPrefix(c, "exec "+bin+" render"):
+			order = append(order, "render")
+		case c == "commit -q --no-edit":
+			order = append(order, "commit")
+		case c == rebasePush:
+			order = append(order, "push")
+		}
+	}
+	return order
+}
+
+// A merged head renders with its own build: ship rebase runs the
+// workflow's build command after merging main and before rendering, since
+// the step before it built the head without main.
+func TestShipRebaseBuildsMergedHead(t *testing.T) {
+	f, _ := shipRebaseFixture(t)
+	bin, _ := headBuildRebase(t, f, "")
+	f.git.out[rebaseMerge] = ""
+	f.git.out[rebasePush] = ""
+	r := shipRebase(t, f)
+	if !r.Rebased || r.Pushed != "beef000111" {
+		t.Fatalf("rebase = %+v", r)
+	}
+	if got := execOrder(f, bin); !slices.Equal(got, []string{"merge", "build", "render", "push"}) {
+		t.Errorf("order = %v; calls %q", got, f.git.calls)
+	}
+}
+
+// A rendered-only conflict is settled with the merged head's build too.
+func TestShipRebaseRenderedConflictBuildsMergedHead(t *testing.T) {
+	f, _ := shipRebaseFixture(t)
+	bin, _ := headBuildRebase(t, f, "")
+	f.git.out[rebaseConflict] = ".rhiza/rendered/index.md\n"
+	f.git.out["diff --cached --name-only"] = ".rhiza/rendered/index.md\n"
+	f.git.out["commit -q --no-edit"] = ""
+	f.git.out[rebasePush] = ""
+	r := shipRebase(t, f)
+	if !r.Rebased || len(r.Settled) != 1 {
+		t.Fatalf("rebase = %+v", r)
+	}
+	got := execOrder(f, bin)
+	if len(got) < 4 || got[0] != "merge" || got[1] != "build" || got[2] != "render" || got[3] != "commit" {
+		t.Errorf("order = %v; want the build after the merge and before the settling render", got)
+	}
+}
+
+// A merged head that does not build pushes nothing and puts the branch
+// back, so a retried step merges again.
+func TestShipRebaseMergedHeadBuildFails(t *testing.T) {
+	f, state := shipRebaseFixture(t)
+	headBuildRebase(t, f, "!cmd/rhiza/main.go:1:1: syntax error")
+	f.git.out[rebaseMerge] = ""
+	f.git.out["reset -q --keep beef000111"] = ""
+	_, err := callOp(t, f.ctx, "ship.rebase", `{}`)
+	wantExit(t, err, 1)
+	if !strings.Contains(err.Error(), "merged head") || !strings.Contains(err.Error(), "syntax error") {
+		t.Errorf("err = %v", err)
+	}
+	if !slices.Contains(f.git.calls, "reset -q --keep beef000111") {
+		t.Errorf("the branch was not put back; calls %q", f.git.calls)
+	}
+	for _, c := range f.git.calls {
+		if strings.HasPrefix(c, "push") {
+			t.Errorf("pushed after a failed build: %q", c)
+		}
+	}
+	if st, _ := readShipState(state); st.Pushed != "" {
+		t.Errorf("state = %+v", st)
+	}
+}
+
 func TestShipRebaseFixerMerge(t *testing.T) {
 	f, state := shipRebaseFixture(t)
 	f.git.out["merge-base --is-ancestor "+rebaseOnto+" HEAD"] = ""

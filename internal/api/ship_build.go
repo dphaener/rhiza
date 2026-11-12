@@ -6,7 +6,10 @@ package api
 // the workflow's [env] sets SHIP_HEAD_RHIZA to its path. Ship's land and
 // render then run with that binary, since the rhiza that runs ship (often
 // an installed one, older than the branch) would leave stale rendered
-// files. A repo that names none lands and renders in-process.
+// files. A repo that names none lands and renders in-process. Ship rebase
+// changes the head it renders (it merges main first), so the workflow
+// also names the build's command in SHIP_HEAD_BUILD, and ship rebase runs
+// it on the merged head before rendering it.
 
 import (
 	"bytes"
@@ -19,6 +22,31 @@ import (
 // envShipRhiza names the binary ship's land and render run with, built
 // from the PR head by a step of the repo's ship-change workflow.
 const envShipRhiza = "SHIP_HEAD_RHIZA"
+
+// envShipBuild names the shell command that builds SHIP_HEAD_RHIZA from
+// the head checked out in the worktree: the same command as the
+// workflow's head-build steps. Ship rebase runs it after merging main.
+const envShipBuild = "SHIP_HEAD_BUILD"
+
+// shipRebuildHead runs the workflow's head build command (SHIP_HEAD_BUILD)
+// in ctx.Root, so a head that just changed under ship (main merged into
+// it) renders with its own build rather than the one a step built before
+// the merge. With no command named it does nothing. A failed build is an
+// error carrying its output.
+func shipRebuildHead(ctx *Ctx) error {
+	getenv := ctxGetenv(ctx)
+	cmd := strings.TrimSpace(getenv(envShipBuild))
+	if cmd == "" {
+		return nil
+	}
+	if ctx.Exec == nil {
+		return Errorf("ship: %s cannot be run here: no programs can be run", envShipBuild)
+	}
+	if _, err := ctx.Exec("sh", []string{"-c", cmd}, ctx.Root, nil); err != nil {
+		return Errorf("ship: could not build rhiza from the merged head with %s (%s), so nothing was rendered or pushed: %v", envShipBuild, cmd, err)
+	}
+	return nil
+}
 
 // shipHeadBuild returns the head build the run's workflow names, or ""
 // when it names none. A named build that is missing is an error: the step
