@@ -1,0 +1,40 @@
+{
+  "actor": "01M77BKHG2GWKEA583KYJSFGQY",
+  "after": [
+    "01M77BN92FBKE4GPT9T07EK9KY"
+  ],
+  "at": "2026-11-12T07:50:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier (attempt 2) at 4497a579f: `go test -trimpath ./internal/api/ -run Ship -count=1` passes every test (TestShipLandWithHeadBuild renders/lands with the named SHIP_HEAD_RHIZA binary, TestShipRenderInProcess renders in-process when none is named, the new TestShipRebaseBuildsMergedHead / TestShipRebaseRenderedConflictBuildsMergedHead show SHIP_HEAD_BUILD runs after the merge and before render, TestShipRebaseMergedHeadBuildFails shows a failed build resets the branch and pushes nothing); the package's rootguard then flags ~/code/.rhiza-root/usage.live.json, which the live daemon rewrites about once a second with real usage, unrelated to the change (a short single-test run is ok). `grep -rn isRhizaRepo` finds nothing. `rhiza workflow check ship-change` and `docs` with the commit's build: both valid (only the expected bypassed-permissions warning). The diff addresses the attempt-1 qa/quality finding (pre-merge build rendering the merged head). go vet and gofmt are clean on internal/api."
+        },
+        "handle": "ship-head-build-step-verified-2",
+        "id": "01M77BRQ4WEZNJKDXTG5XJAR95",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77BRQ4WEZNJKDXTG4F3WB6T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77BRQ4WEZNJKDXTG4F3WB6T",
+        "id": "01M77BRQ7CXSHD9DHD61V903TS",
+        "link": "01M77BRQ7CXSHD9DHD61K6H0K6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MDWX73CXGPSKBXQCJK4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763YX47S5XY0W3P8FVJ54S8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77BRQA6792SK5MGBQ54MEZ2",
+  "type": "ops",
+  "v": 1
+}

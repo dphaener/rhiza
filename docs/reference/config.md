@@ -52,13 +52,6 @@ Whether the daemon keeps itself up to date: main follows the registered Rhiza so
 - Type: off or main
 - Default: `off`
 
-### `rhiza.daemon.trimGoCache`
-
-Trim the Go build cache when disk space runs low.
-
-- Type: boolean
-- Default: `true`
-
 ### `rhiza.daemon.permissionMode`
 
 The permission mode agents run in; unset leaves the agent's own default.

@@ -1,0 +1,30 @@
+{
+  "actor": "01M77CW80FWYCN83BQHE1S5SAP",
+  "after": [
+    "01M77CPNRY1XHA6Z8FQABADNKR"
+  ],
+  "at": "2026-11-12T08:11:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "internal/api ship tests show a repo whose ship-change names a head build renders with it and one that names none renders in-process, with isRhizaRepo gone from ship; TestShipRebaseBuildsMergedHead and its related tests show ship rebase merges origin/main, then runs SHIP_HEAD_BUILD, then renders, and that a failed build pushes nothing and resets the branch; the ship-land-branch-build testscript shows ship land landing and rendering with the SHIP_HEAD_RHIZA build and failing, with nothing landed or pushed, when that build is missing; Rhiza's workflows, bugfix included, set SHIP_HEAD_BUILD and pass rhiza workflow check.",
+          "statement": "Ship no longer checks whether the repo is Rhiza's own. A workflow names a build of the PR head in its [env]: SHIP_HEAD_RHIZA, the binary ship's render and land run with, and SHIP_HEAD_BUILD, the shell command that builds it. Rhiza's own workflows (ship-change, docs and bugfix, which includes ship-change) set both, and their head-build steps run SHIP_HEAD_BUILD before rebase, land and rebase-merge, failing when it is empty. Ship rebase changes the head it renders, so it runs SHIP_HEAD_BUILD itself (sh -c, in the worktree) after merging origin/main and before rendering, both when settling a rendered-only conflict and before its final render; a failed build pushes nothing and resets the branch. A named binary that is missing fails ship before it lands, renders or pushes anything. A workflow that names no head build renders and lands in-process."
+        },
+        "handle": "ship-head-build-step",
+        "id": "01M7642MDWX73CXGPSKFPJN8DK",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M7642MDWX73CXGPSKBXQCJK4",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      }
+    ]
+  },
+  "change_set": "01M763YX47S5XY0W3P8FVJ54S8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77CZ7HF0GM20A1AWM0CXQ1R",
+  "type": "ops",
+  "v": 1
+}

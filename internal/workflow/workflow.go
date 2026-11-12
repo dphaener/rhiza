@@ -176,6 +176,58 @@ type Definition struct {
 	// one never changes the run's result. Only the file's own: a workflow
 	// step's included workflow adds none.
 	Cleanup []Cleanup
+
+	// Env holds the file's [env] table: variables set for every process
+	// the run's steps start. {run_tmp} in a value is the run's own temp
+	// folder; see EnvPairs. Only the file's own.
+	Env map[string]string
+}
+
+// RunTmpToken stands for the run's own temp folder in an [env] value.
+const RunTmpToken = "{run_tmp}"
+
+// UsesRunTmp reports whether an [env] value names the run's temp folder.
+func (d *Definition) UsesRunTmp() bool {
+	for _, v := range d.Env {
+		if strings.Contains(v, RunTmpToken) {
+			return true
+		}
+	}
+	return false
+}
+
+// EnvPairs is the [env] table as KEY=value pairs in key order, with
+// {run_tmp} replaced by runTmp.
+func (d *Definition) EnvPairs(runTmp string) []string {
+	keys := make([]string, 0, len(d.Env))
+	for k := range d.Env {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	out := make([]string, 0, len(keys))
+	for _, k := range keys {
+		out = append(out, k+"="+strings.ReplaceAll(d.Env[k], RunTmpToken, runTmp))
+	}
+	return out
+}
+
+func buildEnv(in map[string]string) (map[string]string, error) {
+	for k := range in {
+		ok := k != ""
+		for i, c := range k {
+			if c == '_' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || i > 0 && c >= '0' && c <= '9' {
+				continue
+			}
+			ok = false
+		}
+		if !ok {
+			return nil, fmt.Errorf("env: %q is not a variable name (letters, digits and _, not starting with a digit)", k)
+		}
+		if strings.HasPrefix(k, "RHIZA_") {
+			return nil, fmt.Errorf("env: %s is Rhiza's own variable and cannot be set", k)
+		}
+	}
+	return in, nil
 }
 
 // Cleanup is one cleanup step of a workflow file, a [[cleanup]] table.
@@ -554,6 +606,8 @@ type fileDef struct {
 	Autonomy   any `toml:"autonomy"`
 	// Cleanup is the [[cleanup]] tables.
 	Cleanup []fileCleanup `toml:"cleanup"`
+	// Env is the [env] table.
+	Env map[string]string `toml:"env"`
 }
 
 type fileCleanup struct {
@@ -689,7 +743,11 @@ func parse(name string, data []byte, resolve Resolver, stack []string, includes 
 	if err != nil {
 		return nil, err
 	}
-	d := &Definition{Name: name, Steps: make(map[string]Step, len(f.Step)), autonomy: aut, Cleanup: cleanup}
+	env, err := buildEnv(f.Env)
+	if err != nil {
+		return nil, err
+	}
+	d := &Definition{Name: name, Steps: make(map[string]Step, len(f.Step)), autonomy: aut, Cleanup: cleanup, Env: env}
 	d.Order = stepOrder(md.Keys(), f.Step)
 	arbiter := ""
 	for _, n := range d.Order {

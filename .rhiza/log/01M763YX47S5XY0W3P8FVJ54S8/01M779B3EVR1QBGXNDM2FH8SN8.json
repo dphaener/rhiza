@@ -1,0 +1,40 @@
+{
+  "actor": "01M7796GMBQZ4ZBXAKG9S3PVN4",
+  "after": [
+    "01M7791P8WCTWMN7QFVPXTHS0C"
+  ],
+  "at": "2026-11-12T07:07:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 9bdbe8da6. go test -trimpath -count=1 ./internal/api -run Ship passes: TestShipLandWithHeadBuild (SHIP_HEAD_RHIZA names a build; land and render run with that binary, 2 exec calls, no go build, in-process landed nothing), TestShipLandHeadBuildMissing (a named but missing build fails naming SHIP_HEAD_RHIZA, nothing run or pushed), TestShipLandHeadBuildErrorDetail, and TestShipLand (no head build named: lands and renders in-process). isRhizaRepo, goModule and rhizaModule are gone from the tree (grep finds none); shipHeadBuild reads only SHIP_HEAD_RHIZA. .rhiza/workflows/ship-change.toml is the built-in plus [env] SHIP_HEAD_RHIZA={run_tmp}/rhiza-head and head-build-rebase/land/rebase-merge steps (go build -o $SHIP_HEAD_RHIZA ./cmd/rhiza) that are the only routes into rebase, land and rebase-merge, the only steps that call shipRender/shipHeadBuild; docs.toml mirrors it and bugfix.toml sets the env. rhiza workflow check (a build of this commit) reports valid, exit 0, for bugfix, docs, docs-build, docs-review, plan-bug and ship-change; the only warnings are the expected bypassed-permissions ones."
+        },
+        "handle": "ship-head-build-step-verified",
+        "id": "01M779B38GMYFZY4HNNE3PZA65",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M779B38GMYFZY4HNNDHZNP17",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M779B38GMYFZY4HNNDHZNP17",
+        "id": "01M779B3B7407PQW7HK9DC2R62",
+        "link": "01M779B3B7407PQW7HK8BTJNXP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MDWX73CXGPSKBXQCJK4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763YX47S5XY0W3P8FVJ54S8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M779B3EVR1QBGXNDM2FH8SN8",
+  "type": "ops",
+  "v": 1
+}

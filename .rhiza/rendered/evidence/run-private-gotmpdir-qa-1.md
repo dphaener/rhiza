@@ -14,7 +14,7 @@ Built rhiza at the branch head (go build -trimpath) and ran it by hand in a scra
 
 ### Out
 
-- verifies [run-private-gotmpdir](../capability/rhiza/workflows/workflow-runs/run-private-gotmpdir.md)
+- verifies run-private-gotmpdir (retired)
 
 ## History
 

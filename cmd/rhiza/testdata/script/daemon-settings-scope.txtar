@@ -31,7 +31,7 @@ stdout '^owner$'
 exec rhiza daemon settings
 stdout 'rhiza.daemon.maxRuns = 3 \(rhiza.toml, machine\)'
 stdout 'rhiza.autonomy.ship = owner \(git config, project\)'
-stdout 'rhiza.daemon.trimGoCache = true \(default, machine\)'
+! stdout 'trimGoCache'
 exec rhiza daemon settings --json
 stdout '"scope": "machine"'
 stdout '"scope": "project"'

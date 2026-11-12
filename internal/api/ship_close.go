@@ -188,7 +188,7 @@ func changedCapabilities(m Model, ops []op.Op) []id.ID {
 
 // runShipLand records the PR as Evidence, lands the change set, renders,
 // and commits and pushes to the PR branch. It runs in the change set's
-// worktree (ctx.Root) on its branch. In Rhiza's own repo the land and
+// worktree (ctx.Root) on its branch. With a head build the workflow names, the land and
 // render run with rhiza built from the PR head (see ship_build.go). Each
 // part is skipped when an earlier call did it, so a resumed run moves on.
 func runShipLand(ctx *Ctx, _ any) (any, error) {
@@ -218,7 +218,7 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 		return nil, err
 	}
 
-	// In Rhiza's own repo, build the PR head first: a branch that changes
+	// With a head build named, check it exists first: a branch that changes
 	// rendering lands with its own, and a failed build writes nothing.
 	bin, err := shipHeadBuild(ctx, t)
 	if err != nil {

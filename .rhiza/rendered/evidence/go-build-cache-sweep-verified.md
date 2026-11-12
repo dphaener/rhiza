@@ -14,7 +14,7 @@ At d5ab5678 ran go test -trimpath -count=1 -v ./internal/gosweep/...: all 4 test
 
 ### Out
 
-- verifies [go-build-cache-sweep](../capability/rhiza/orchestration/daemon/go-build-cache-sweep.md)
+- verifies go-build-cache-sweep (retired)
 
 ## History
 

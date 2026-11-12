@@ -1,0 +1,64 @@
+{
+  "actor": "01M77CBQWRF0DG9T63H9Y38W9N",
+  "after": [
+    "01M77BXNRZFC6MF5Q6QA4MCP9Z",
+    "01M77C9VNPSHF0J4MDCH2ZC6TM"
+  ],
+  "at": "2026-11-12T08:06:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at 3bda3170 with a -trimpath build, in a scratch repo with a bare origin and a fake gh: on a pushed change set branch behind a main that had landed and rendered other change sets, ran rhiza ship rebase with SHIP_HEAD_RHIZA and SHIP_HEAD_BUILD naming a logging build script. Clean merge: the build ran after the merge (its tree held main's new change set log), then render --json ran through SHIP_HEAD_RHIZA, the merged head was pushed and rhiza check printed ok. Rendered-only conflict (branch rewrote rendered/index.md): the build ran during the merge (MERGE_HEAD set, main's logs present) before the settling render, and again before the final render; Settled 1 rendered file, pushed, check ok. Failing SHIP_HEAD_BUILD: exit 1 with the build's stderr, the branch and origin's branch kept their head, no merge left in progress, clean tree. go test -trimpath ./internal/api -run 'TestShipRebase|TestSessionRun|TestShipLand' passes (only the known ~/code .rhiza-root usage guard trips). But TestScripts/ship-land-branch-build now FAILS: it still expects ship land to go build rhiza when go.mod names Rhiza's module, the isRhizaRepo path this change set removed."
+        },
+        "handle": "ship-head-build-step-qa-2",
+        "id": "01M77CPNGJGKFAB8V7S9NT4XSK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77CPNGJGKFAB8V7S7B3488Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77CPNGJGKFAB8V7S7B3488Y",
+        "id": "01M77CPNJZP281ZVJJZ0SWX7Y3",
+        "link": "01M77CPNJZP281ZVJJZ0BT541A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MDWX73CXGPSKBXQCJK4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 3bda3170: rhiza ship rebase run by hand with a workflow-style env (SHIP_HEAD_RHIZA, SHIP_HEAD_BUILD) used both; go test -trimpath ./cmd/rhiza -run TestScripts/workflow-env$ passes and internal/api TestSessionRun (incl. the new [env] case with {run_tmp} and a plain value) passes."
+        },
+        "handle": "workflow-env-qa-2",
+        "id": "01M77CPNMZXVC2Q218A910ATAX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77CPNMZXVC2Q218A6NEMD0N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77CPNMZXVC2Q218A6NEMD0N",
+        "id": "01M77CPNP1S7JS543ST19XH6ZE",
+        "link": "01M77CPNP1S7JS543ST0BXZJK0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MCFVAH4VXGAXZNTW4S7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763YX47S5XY0W3P8FVJ54S8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77CPNRY1XHA6Z8FQABADNKR",
+  "type": "ops",
+  "v": 1
+}

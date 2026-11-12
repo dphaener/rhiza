@@ -23,8 +23,8 @@ Change set 01M6NR6E serves milestone-25 (the backlog). The daemon sweeps once wh
 
 ### In
 
-- decided-by [go-build-cache-sweep](../capability/rhiza/orchestration/daemon/go-build-cache-sweep.md)
-- decided-by [daemon-trims-go-cache](../capability/rhiza/orchestration/daemon/daemon-trims-go-cache.md)
+- decided-by go-build-cache-sweep (retired)
+- decided-by daemon-trims-go-cache (retired)
 
 ## History
 
