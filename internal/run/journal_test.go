@@ -1087,3 +1087,25 @@ func TestPrePushFold(t *testing.T) {
 		t.Fatal("empty state has a latest")
 	}
 }
+
+// A downgraded verdict keeps the finding's original severity beside the
+// lower one; a finding downgraded below major no longer stands.
+func TestStandingDowngrade(t *testing.T) {
+	es := []Entry{
+		startedEntry("review", 0),
+		{Type: TypeFindings, At: at(1), Findings: []Finding{
+			{ID: "f1", Severity: SeverityMajor}, {ID: "f2", Severity: SeverityBlocker}, {ID: "f3", Severity: SeverityBlocker},
+		}},
+		{Type: TypeVerdict, At: at(2), Verdicts: []Verdict{
+			{Finding: "f1", Verdict: Downgraded, Reason: "small", Severity: SeverityMinor, Original: SeverityMajor},
+			{Finding: "f2", Verdict: Downgraded, Reason: "less", Severity: SeverityMajor, Original: SeverityBlocker},
+		}},
+	}
+	r := (Journal{Entries: es}).State().Rounds[0]
+	if v, ok := r.Verdict("f1"); !ok || v.Severity != SeverityMinor || v.Original != SeverityMajor {
+		t.Fatalf("f1 verdict = %+v, %v", v, ok)
+	}
+	if s := r.Standing(); len(s) != 2 || s[0].ID != "f2" || s[1].ID != "f3" {
+		t.Fatalf("standing = %+v, want f2, f3", s)
+	}
+}

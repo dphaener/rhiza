@@ -52,7 +52,7 @@ func init() {
 		Request:  reflect.TypeFor[RunVerdictRequest](),
 		Response: reflect.TypeFor[RunVerdictResponse](),
 		Input: &Input{
-			Summary: `{"verdicts":[{"finding":"f1","verdict":"confirmed"|"dropped","reason":...},...]}, at least one; each names a finding of the latest round (with --check, of the check's latest round)`,
+			Summary: `{"verdicts":[{"finding":"f1","verdict":"confirmed"|"dropped"|"downgraded","reason":...,"severity":...},...]}, at least one; each names a finding of the latest round (with --check, of the check's latest round)`,
 			Schema:  verdictFileSchema,
 		},
 		Run: runRunVerdict,
@@ -105,15 +105,17 @@ type RunFinding struct {
 	LeafHandle    string `json:"leaf_handle,omitempty" desc:"That leaf's handle when the finding was recorded"`
 	Place         string `json:"place,omitempty" desc:"A review check's finding: where, as file:line or a node"`
 	Reason        string `json:"reason" desc:"Why the reviewer found it"`
-	Verdict       string `json:"verdict,omitempty" desc:"The critic's latest verdict, confirmed or dropped; absent before one"`
+	Verdict       string `json:"verdict,omitempty" desc:"The critic's latest verdict, confirmed, dropped or downgraded; absent before one"`
 	VerdictReason string `json:"verdict_reason,omitempty" desc:"Why the critic gave it; absent before a verdict"`
 }
 
 // RunVerdict is one verdict a critic gave.
 type RunVerdict struct {
-	Finding string `json:"finding" desc:"The finding's ID in the round"`
-	Verdict string `json:"verdict" desc:"confirmed or dropped"`
-	Reason  string `json:"reason" desc:"Why"`
+	Finding  string `json:"finding" desc:"The finding's ID in the round"`
+	Verdict  string `json:"verdict" desc:"confirmed, dropped or downgraded"`
+	Reason   string `json:"reason" desc:"Why"`
+	Severity string `json:"severity,omitempty" desc:"A downgraded verdict: the lower severity the finding keeps"`
+	Original string `json:"original_severity,omitempty" desc:"A downgraded verdict: the finding's severity before it"`
 }
 
 // RunFindingsResponse is the round the findings opened, or the leaf
@@ -744,8 +746,23 @@ func runRunVerdict(ctx *Ctx, req any) (any, error) {
 			return nil, Usagef("verdict %d: finding %s is judged twice", n, v.Finding).WithNext(runVerdictNext)
 		}
 		seen[v.Finding] = true
-		if v.Verdict != run.Confirmed && v.Verdict != run.Dropped {
-			return nil, Usagef("verdict %d: verdict %q is not confirmed or dropped", n, v.Verdict).WithNext(runVerdictNext)
+		if v.Verdict != run.Confirmed && v.Verdict != run.Dropped && v.Verdict != run.Downgraded {
+			return nil, Usagef("verdict %d: verdict %q is not confirmed, dropped or downgraded", n, v.Verdict).WithNext(runVerdictNext)
+		}
+		if v.Verdict == run.Downgraded {
+			orig, _ := round.Finding(v.Finding)
+			if !run.Serious(orig.Severity) {
+				return nil, Usagef("verdict %d: finding %s has severity %q: only a blocker or major finding can be downgraded", n, v.Finding, orig.Severity).WithNext(runVerdictNext)
+			}
+			if !run.ValidSeverity(v.Severity) {
+				return nil, Usagef("verdict %d: a downgraded verdict needs a severity, one of %s", n, strings.Join(run.Severities, ", ")).WithNext(runVerdictNext)
+			}
+			if run.SeverityRank(v.Severity) <= run.SeverityRank(orig.Severity) {
+				return nil, Usagef("verdict %d: finding %s is %s: downgrade it to a lower severity than %s, not %s", n, v.Finding, orig.Severity, orig.Severity, v.Severity).WithNext(runVerdictNext)
+			}
+			f.Verdicts[i].Original = orig.Severity
+		} else if v.Severity != "" {
+			return nil, Usagef("verdict %d: only a downgraded verdict takes a severity", n).WithNext(runVerdictNext)
 		}
 		if strings.TrimSpace(v.Reason) == "" {
 			return nil, Usagef("verdict %d: no reason", n).WithNext(runVerdictNext)
@@ -753,7 +770,7 @@ func runRunVerdict(ctx *Ctx, req any) (any, error) {
 	}
 	resp := RunVerdictResponse{Run: rr.id, Round: round.Number, Check: check, Verdicts: make([]RunVerdict, 0, len(f.Verdicts)), DryRun: ctx.DryRun}
 	for _, v := range f.Verdicts {
-		resp.Verdicts = append(resp.Verdicts, RunVerdict{Finding: v.Finding, Verdict: v.Verdict, Reason: v.Reason})
+		resp.Verdicts = append(resp.Verdicts, RunVerdict{Finding: v.Finding, Verdict: v.Verdict, Reason: v.Reason, Severity: v.Severity, Original: v.Original})
 	}
 	e := run.Entry{Type: run.TypeVerdict, At: ctx.Now(), Verdicts: f.Verdicts}
 	if review {
@@ -818,9 +835,10 @@ func verdictFileSchema() map[string]any {
 				"items": map[string]any{
 					"type": "object",
 					"properties": map[string]any{
-						"finding": map[string]any{"type": "string", "description": "The finding's ID in the latest round: f1, f2, ..."},
-						"verdict": map[string]any{"enum": []any{run.Confirmed, run.Dropped}, "description": "confirmed or dropped"},
-						"reason":  map[string]any{"type": "string", "minLength": 1, "description": "Why"},
+						"finding":  map[string]any{"type": "string", "description": "The finding's ID in the latest round: f1, f2, ..."},
+						"verdict":  map[string]any{"enum": []any{run.Confirmed, run.Dropped, run.Downgraded}, "description": "confirmed, dropped or downgraded"},
+						"severity": map[string]any{"enum": stringsAny(run.Severities), "description": "Only with downgraded: the lower severity the finding keeps"},
+						"reason":   map[string]any{"type": "string", "minLength": 1, "description": "Why"},
 					},
 					"required":             []string{"finding", "reason", "verdict"},
 					"additionalProperties": false,

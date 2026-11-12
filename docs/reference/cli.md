@@ -1946,7 +1946,7 @@ rhiza run verdict <file> [--check <check>]
 
 Appends to the log.
 
-Input: {"verdicts":[{"finding":"f1","verdict":"confirmed"|"dropped","reason":...},...]}, at least one; each names a finding of the latest round (with --check, of the check's latest round). Its schema: `rhiza describe run.verdict --json`.
+Input: {"verdicts":[{"finding":"f1","verdict":"confirmed"|"dropped"|"downgraded","reason":...,"severity":...},...]}, at least one; each names a finding of the latest round (with --check, of the check's latest round). Its schema: `rhiza describe run.verdict --json`.
 
 Arguments and flags:
 

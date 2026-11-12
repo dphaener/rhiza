@@ -3835,7 +3835,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "verdict": {
-                                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                                  "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                                   "type": "string"
                                 },
                                 "verdict_reason": {
@@ -3864,12 +3864,20 @@ cmp stdout describe.golden.json
                                   "description": "The finding's ID in the round",
                                   "type": "string"
                                 },
+                                "original_severity": {
+                                  "description": "A downgraded verdict: the finding's severity before it",
+                                  "type": "string"
+                                },
                                 "reason": {
                                   "description": "Why",
                                   "type": "string"
                                 },
+                                "severity": {
+                                  "description": "A downgraded verdict: the lower severity the finding keeps",
+                                  "type": "string"
+                                },
                                 "verdict": {
-                                  "description": "confirmed or dropped",
+                                  "description": "confirmed, dropped or downgraded",
                                   "type": "string"
                                 }
                               },
@@ -4477,7 +4485,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -4682,7 +4690,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -5020,7 +5028,7 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "verdict": {
-                      "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                      "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                       "type": "string"
                     },
                     "verdict_reason": {
@@ -5644,7 +5652,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "verdict": {
-                                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                                  "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                                   "type": "string"
                                 },
                                 "verdict_reason": {
@@ -5673,12 +5681,20 @@ cmp stdout describe.golden.json
                                   "description": "The finding's ID in the round",
                                   "type": "string"
                                 },
+                                "original_severity": {
+                                  "description": "A downgraded verdict: the finding's severity before it",
+                                  "type": "string"
+                                },
                                 "reason": {
                                   "description": "Why",
                                   "type": "string"
                                 },
+                                "severity": {
+                                  "description": "A downgraded verdict: the lower severity the finding keeps",
+                                  "type": "string"
+                                },
                                 "verdict": {
-                                  "description": "confirmed or dropped",
+                                  "description": "confirmed, dropped or downgraded",
                                   "type": "string"
                                 }
                               },
@@ -6286,7 +6302,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -6491,7 +6507,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -6829,7 +6845,7 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "verdict": {
-                      "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                      "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                       "type": "string"
                     },
                     "verdict_reason": {
@@ -9354,7 +9370,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "verdict": {
-                                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                                  "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                                   "type": "string"
                                 },
                                 "verdict_reason": {
@@ -9383,12 +9399,20 @@ cmp stdout describe.golden.json
                                   "description": "The finding's ID in the round",
                                   "type": "string"
                                 },
+                                "original_severity": {
+                                  "description": "A downgraded verdict: the finding's severity before it",
+                                  "type": "string"
+                                },
                                 "reason": {
                                   "description": "Why",
                                   "type": "string"
                                 },
+                                "severity": {
+                                  "description": "A downgraded verdict: the lower severity the finding keeps",
+                                  "type": "string"
+                                },
                                 "verdict": {
-                                  "description": "confirmed or dropped",
+                                  "description": "confirmed, dropped or downgraded",
                                   "type": "string"
                                 }
                               },
@@ -9996,7 +10020,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -10201,7 +10225,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -11003,7 +11027,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "verdict": {
-                                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                                  "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                                   "type": "string"
                                 },
                                 "verdict_reason": {
@@ -11032,12 +11056,20 @@ cmp stdout describe.golden.json
                                   "description": "The finding's ID in the round",
                                   "type": "string"
                                 },
+                                "original_severity": {
+                                  "description": "A downgraded verdict: the finding's severity before it",
+                                  "type": "string"
+                                },
                                 "reason": {
                                   "description": "Why",
                                   "type": "string"
                                 },
+                                "severity": {
+                                  "description": "A downgraded verdict: the lower severity the finding keeps",
+                                  "type": "string"
+                                },
                                 "verdict": {
-                                  "description": "confirmed or dropped",
+                                  "description": "confirmed, dropped or downgraded",
                                   "type": "string"
                                 }
                               },
@@ -11645,7 +11677,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -11850,7 +11882,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -12188,7 +12220,7 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "verdict": {
-                      "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                      "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                       "type": "string"
                     },
                     "verdict_reason": {
@@ -12666,7 +12698,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "verdict": {
-                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                  "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                   "type": "string"
                 },
                 "verdict_reason": {
@@ -13606,7 +13638,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "verdict": {
-                                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                                  "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                                   "type": "string"
                                 },
                                 "verdict_reason": {
@@ -13635,12 +13667,20 @@ cmp stdout describe.golden.json
                                   "description": "The finding's ID in the round",
                                   "type": "string"
                                 },
+                                "original_severity": {
+                                  "description": "A downgraded verdict: the finding's severity before it",
+                                  "type": "string"
+                                },
                                 "reason": {
                                   "description": "Why",
                                   "type": "string"
                                 },
+                                "severity": {
+                                  "description": "A downgraded verdict: the lower severity the finding keeps",
+                                  "type": "string"
+                                },
                                 "verdict": {
-                                  "description": "confirmed or dropped",
+                                  "description": "confirmed, dropped or downgraded",
                                   "type": "string"
                                 }
                               },
@@ -14248,7 +14288,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -14453,7 +14493,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -14791,7 +14831,7 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "verdict": {
-                      "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                      "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                       "type": "string"
                     },
                     "verdict_reason": {
@@ -15295,7 +15335,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "verdict": {
-                                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                                  "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                                   "type": "string"
                                 },
                                 "verdict_reason": {
@@ -15324,12 +15364,20 @@ cmp stdout describe.golden.json
                                   "description": "The finding's ID in the round",
                                   "type": "string"
                                 },
+                                "original_severity": {
+                                  "description": "A downgraded verdict: the finding's severity before it",
+                                  "type": "string"
+                                },
                                 "reason": {
                                   "description": "Why",
                                   "type": "string"
                                 },
+                                "severity": {
+                                  "description": "A downgraded verdict: the lower severity the finding keeps",
+                                  "type": "string"
+                                },
                                 "verdict": {
-                                  "description": "confirmed or dropped",
+                                  "description": "confirmed, dropped or downgraded",
                                   "type": "string"
                                 }
                               },
@@ -15937,7 +15985,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -16142,7 +16190,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -16497,7 +16545,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "verdict": {
-                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                  "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                   "type": "string"
                 },
                 "verdict_reason": {
@@ -17054,7 +17102,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "verdict": {
-                                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                                  "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                                   "type": "string"
                                 },
                                 "verdict_reason": {
@@ -17083,12 +17131,20 @@ cmp stdout describe.golden.json
                                   "description": "The finding's ID in the round",
                                   "type": "string"
                                 },
+                                "original_severity": {
+                                  "description": "A downgraded verdict: the finding's severity before it",
+                                  "type": "string"
+                                },
                                 "reason": {
                                   "description": "Why",
                                   "type": "string"
                                 },
+                                "severity": {
+                                  "description": "A downgraded verdict: the lower severity the finding keeps",
+                                  "type": "string"
+                                },
                                 "verdict": {
-                                  "description": "confirmed or dropped",
+                                  "description": "confirmed, dropped or downgraded",
                                   "type": "string"
                                 }
                               },
@@ -17696,7 +17752,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -17901,7 +17957,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -18239,7 +18295,7 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "verdict": {
-                      "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                      "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                       "type": "string"
                     },
                     "verdict_reason": {
@@ -18777,7 +18833,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "verdict": {
-                                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                                  "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                                   "type": "string"
                                 },
                                 "verdict_reason": {
@@ -18806,12 +18862,20 @@ cmp stdout describe.golden.json
                                   "description": "The finding's ID in the round",
                                   "type": "string"
                                 },
+                                "original_severity": {
+                                  "description": "A downgraded verdict: the finding's severity before it",
+                                  "type": "string"
+                                },
                                 "reason": {
                                   "description": "Why",
                                   "type": "string"
                                 },
+                                "severity": {
+                                  "description": "A downgraded verdict: the lower severity the finding keeps",
+                                  "type": "string"
+                                },
                                 "verdict": {
-                                  "description": "confirmed or dropped",
+                                  "description": "confirmed, dropped or downgraded",
                                   "type": "string"
                                 }
                               },
@@ -19419,7 +19483,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -19624,7 +19688,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "verdict": {
-                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                             "type": "string"
                           },
                           "verdict_reason": {
@@ -20315,7 +20379,7 @@ cmp stdout describe.golden.json
                               "type": "string"
                             },
                             "verdict": {
-                              "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                              "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                               "type": "string"
                             },
                             "verdict_reason": {
@@ -20344,12 +20408,20 @@ cmp stdout describe.golden.json
                               "description": "The finding's ID in the round",
                               "type": "string"
                             },
+                            "original_severity": {
+                              "description": "A downgraded verdict: the finding's severity before it",
+                              "type": "string"
+                            },
                             "reason": {
                               "description": "Why",
                               "type": "string"
                             },
+                            "severity": {
+                              "description": "A downgraded verdict: the lower severity the finding keeps",
+                              "type": "string"
+                            },
                             "verdict": {
-                              "description": "confirmed or dropped",
+                              "description": "confirmed, dropped or downgraded",
                               "type": "string"
                             }
                           },
@@ -20957,7 +21029,7 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "verdict": {
-                        "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                        "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                         "type": "string"
                       },
                       "verdict_reason": {
@@ -21162,7 +21234,7 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "verdict": {
-                        "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                        "description": "The critic's latest verdict, confirmed, dropped or downgraded; absent before one",
                         "type": "string"
                       },
                       "verdict_reason": {
@@ -21527,11 +21599,21 @@ cmp stdout describe.golden.json
                   "minLength": 1,
                   "type": "string"
                 },
+                "severity": {
+                  "description": "Only with downgraded: the lower severity the finding keeps",
+                  "enum": [
+                    "blocker",
+                    "major",
+                    "minor",
+                    "nit"
+                  ]
+                },
                 "verdict": {
-                  "description": "confirmed or dropped",
+                  "description": "confirmed, dropped or downgraded",
                   "enum": [
                     "confirmed",
-                    "dropped"
+                    "dropped",
+                    "downgraded"
                   ]
                 }
               },
@@ -21597,12 +21679,20 @@ cmp stdout describe.golden.json
                   "description": "The finding's ID in the round",
                   "type": "string"
                 },
+                "original_severity": {
+                  "description": "A downgraded verdict: the finding's severity before it",
+                  "type": "string"
+                },
                 "reason": {
                   "description": "Why",
                   "type": "string"
                 },
+                "severity": {
+                  "description": "A downgraded verdict: the lower severity the finding keeps",
+                  "type": "string"
+                },
                 "verdict": {
-                  "description": "confirmed or dropped",
+                  "description": "confirmed, dropped or downgraded",
                   "type": "string"
                 }
               },

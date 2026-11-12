@@ -9,6 +9,7 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 // A check or critic session's RHIZA_CYCLE names its round's cycle when it
@@ -150,5 +151,80 @@ func TestReviewCheckRefusesStaleRound(t *testing.T) {
 	}
 	if _, err := callOp(t, f.ctx, "run.review-check", `{}`); err != nil {
 		t.Fatalf("review-check of a fresh round: %v", err)
+	}
+}
+
+// A critic may downgrade a blocker or major finding to a lower severity,
+// journalled with the finding's original; a downgrade to the same or a
+// higher severity, to none, or of a finding that is not serious is usage.
+func TestRunVerdictDowngrade(t *testing.T) {
+	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
+	t0 := time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
+	def, ok := workflow.Builtin("review")
+	if !ok {
+		t.Fatal("no built-in review workflow")
+	}
+	store := run.NewStore(run.Dir(f.common))
+	if err := store.Create("R9", run.Entry{
+		Type: run.TypeStarted, Step: "review", At: t0,
+		Started: &run.Started{Workflow: "review", Definition: string(def), Change: "01M76F4G0JQ649RR29M9QPFX68", Title: "Review it"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	app := func(e run.Entry) {
+		t.Helper()
+		e.At = t0
+		if err := store.Append("R9", e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	app(run.Entry{Type: run.TypeEntered, Step: "review"})
+	app(run.Entry{Type: run.TypeFindings, Step: "review", Check: "quality", Findings: []run.Finding{
+		{ID: "f1", Check: "quality", Severity: run.SeverityMajor, Reason: "a"},
+		{ID: "f2", Check: "quality", Severity: run.SeverityBlocker, Reason: "b"},
+		{ID: "f3", Check: "quality", Severity: run.SeverityMinor, Reason: "c"},
+	}})
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return "R9"
+		}
+		return ""
+	}
+	verdict := func(body string) error {
+		f.ctx.Stdin = strings.NewReader(body)
+		_, err := callOp(t, f.ctx, "run.verdict", `{"file":"-","check":"quality"}`)
+		return err
+	}
+	for name, body := range map[string]string{
+		"to the same severity":   `{"verdicts":[{"finding":"f1","verdict":"downgraded","severity":"major","reason":"r"}]}`,
+		"to a higher severity":   `{"verdicts":[{"finding":"f1","verdict":"downgraded","severity":"blocker","reason":"r"}]}`,
+		"of a blocker to major+": `{"verdicts":[{"finding":"f2","verdict":"downgraded","severity":"blocker","reason":"r"}]}`,
+		"with no severity":       `{"verdicts":[{"finding":"f1","verdict":"downgraded","reason":"r"}]}`,
+		"of a minor":             `{"verdicts":[{"finding":"f3","verdict":"downgraded","severity":"nit","reason":"r"}]}`,
+		"severity on confirmed":  `{"verdicts":[{"finding":"f1","verdict":"confirmed","severity":"minor","reason":"r"}]}`,
+	} {
+		err := verdict(body)
+		if e := AsError(err); e == nil || e.Code != CodeUsage {
+			t.Errorf("downgrade %s: err = %v, want usage", name, err)
+		}
+	}
+	if err := verdict(`{"verdicts":[{"finding":"f1","verdict":"downgraded","severity":"minor","reason":"small"},{"finding":"f2","verdict":"downgraded","severity":"major","reason":"less"}]}`); err != nil {
+		t.Fatal(err)
+	}
+	st, err := store.Read("R9")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cs, _ := st.State().Check("review", "quality")
+	rd, _ := cs.LatestRound()
+	want := []run.Verdict{
+		{Finding: "f1", Verdict: run.Downgraded, Reason: "small", Severity: "minor", Original: "major"},
+		{Finding: "f2", Verdict: run.Downgraded, Reason: "less", Severity: "major", Original: "blocker"},
+	}
+	if len(rd.Verdicts) != 2 || rd.Verdicts[0] != want[0] || rd.Verdicts[1] != want[1] {
+		t.Fatalf("verdicts = %+v, want %+v", rd.Verdicts, want)
+	}
+	if s := rd.Standing(); len(s) != 1 || s[0].ID != "f2" {
+		t.Fatalf("standing = %+v, want only f2 (a major still stands)", s)
 	}
 }

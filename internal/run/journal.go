@@ -189,9 +189,21 @@ func Serious(sev string) bool { return sev == SeverityBlocker || sev == Severity
 
 // Verdicts a critic gives a finding.
 const (
-	Confirmed = "confirmed"
-	Dropped   = "dropped"
+	Confirmed  = "confirmed"
+	Dropped    = "dropped"
+	Downgraded = "downgraded"
 )
+
+// SeverityRank is sev's place in Severities, 0 for the most serious, or -1
+// when it is not a severity.
+func SeverityRank(sev string) int {
+	for i, s := range Severities {
+		if s == sev {
+			return i
+		}
+	}
+	return -1
+}
 
 // Run results, used in Entry.End and State.Result.
 const (
@@ -489,11 +501,14 @@ type Finding struct {
 }
 
 // Verdict is a critic's verdict on the finding with ID Finding: confirmed
-// or dropped, for Reason.
+// or dropped, or downgraded to Severity (lower than the finding's
+// Original severity, journalled with it), for Reason.
 type Verdict struct {
-	Finding string `json:"finding"`
-	Verdict string `json:"verdict"`
-	Reason  string `json:"reason"`
+	Finding  string `json:"finding"`
+	Verdict  string `json:"verdict"`
+	Reason   string `json:"reason"`
+	Severity string `json:"severity,omitempty"`
+	Original string `json:"original_severity,omitempty"`
 }
 
 // Round is one plan review round: a findings entry, numbered from 1 in
@@ -558,7 +573,8 @@ func (r Round) Serious() []Finding {
 func (r Round) Standing() []Finding {
 	var out []Finding
 	for _, f := range r.Serious() {
-		if v, ok := r.Verdict(f.ID); !ok || v.Verdict != Dropped {
+		v, ok := r.Verdict(f.ID)
+		if !ok || (v.Verdict != Dropped && !(v.Verdict == Downgraded && !Serious(v.Severity))) {
 			out = append(out, f)
 		}
 	}

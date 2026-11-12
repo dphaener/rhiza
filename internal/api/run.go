@@ -2999,7 +2999,7 @@ func runCheckInfo(st run.State, c run.CheckState) RunCheck {
 			rr.Findings = append(rr.Findings, runFinding(f, rd))
 		}
 		for _, v := range rd.Verdicts {
-			rr.Verdicts = append(rr.Verdicts, RunVerdict{Finding: v.Finding, Verdict: v.Verdict, Reason: v.Reason})
+			rr.Verdicts = append(rr.Verdicts, RunVerdict{Finding: v.Finding, Verdict: v.Verdict, Reason: v.Reason, Severity: v.Severity, Original: v.Original})
 		}
 		rc.Rounds = append(rc.Rounds, rr)
 	}
