@@ -1,0 +1,76 @@
+# check warns, without failing, about each untracked .rhiza/log entry of a
+# main checkout that no pending model branch or live run holds. A linked
+# worktree says nothing about untracked entries, and a repo with no
+# origin/main is out of scope.
+
+# A repo with no origin: the untracked entry is not reported.
+mkdir plain
+cd plain
+exec git init -q
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'plain change'
+exec rhiza render
+exec git add .rhiza/rendered
+exec git commit -qm render
+exec rhiza check --json
+stdout '"ok": true'
+! stdout 'model commit-untracked'
+cd ..
+
+# A repo with origin/main: the entry is an orphan.
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+exec git remote add origin $WORK/origin.git
+exec git push -q origin HEAD:main
+exec git fetch -q origin
+exec rhiza change new 'orphan change'
+exec rhiza render
+exec git add .rhiza/rendered
+exec git commit -qm render
+exec rhiza check
+stdout '^ok$'
+stdout '^warn log \.rhiza/log/[0-9A-Z]+/[0-9A-Z]+\.json: untracked log entry that no model branch or live run holds$'
+stdout 'next: rhiza model commit-untracked'
+exec rhiza check --json
+stdout '"ok": true'
+stdout '"severity": "warn"'
+
+# A live run's worktree holds a copy: the main entry is held, and the
+# worktree itself says nothing about untracked entries.
+exec git worktree add -q ../wt
+exec sh -c 'cp -r .rhiza/log/. ../wt/.rhiza/log/'
+exec rhiza check
+! stdout 'commit-untracked'
+cd ../wt
+exec rhiza check
+stdout '^ok$'
+! stdout 'untracked'
+! stdout 'commit-untracked'
+cd ../repo
+
+# Without the worktree's copy the entry is an orphan again.
+exec git worktree remove --force ../wt
+exec rhiza check
+stdout 'untracked log entry'
+
+# A model branch holding the entry holds it too.
+exec git checkout -q -b model/x
+exec git add .rhiza/log
+exec git commit -qm 'model write'
+exec git checkout -q main
+exec git checkout -q model/x -- .rhiza/log
+exec git rm -rq --cached .rhiza/log
+exec git status --short
+stdout '^\?\? \.rhiza/log'
+exec rhiza check
+stdout '^ok$'
+! stdout 'untracked log entry'

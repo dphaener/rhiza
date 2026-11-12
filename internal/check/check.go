@@ -25,6 +25,9 @@
 //   - log fails on each problem store.ReadLog reported, but warns on a
 //     newer-format entry the branch added since its base when Input.NewerOK
 //     says so (run code-check).
+//     It also warns once on each Input.Orphans path: an untracked log entry in
+//     a main checkout that no pending model branch or live run holds, naming
+//     rhiza model commit-untracked.
 //   - fold fails on each changeset.FoldLog problem but only warns on a
 //     concurrent pair (ErrConcurrent). Fold problems are permanent, since
 //     the log is append-only, and a concurrent pair is what an honest merge
@@ -208,6 +211,10 @@ type Input struct {
 	// Unclaimed are the non-merge commits of UnclaimedSince..HEAD that change
 	// a file outside .rhiza/, newest first.
 	Unclaimed []Commit
+	// Orphans are the paths, relative to the project root, of the untracked
+	// log entries of a main checkout that no pending model branch or live run
+	// holds; nil outside a main checkout or without origin/main.
+	Orphans []string
 }
 
 // Commit is one git commit and the values of its trailers: Changes of its
@@ -319,6 +326,15 @@ func (c *checker) log() {
 			sev = SeverityWarn
 		}
 		c.add(Finding{Severity: sev, Rule: RuleLog, Path: rhizaDir + p.Path, Message: p.Err.Error()})
+	}
+	for _, p := range c.in.Orphans {
+		f := Finding{Severity: SeverityWarn, Rule: RuleLog, Path: p,
+			Message: "untracked log entry that no model branch or live run holds",
+			Next:    "rhiza model commit-untracked"}
+		if parts := strings.Split(p, "/"); len(parts) == 4 {
+			f.ChangeSet, f.Entry = parts[2], strings.TrimSuffix(parts[3], ".json")
+		}
+		c.add(f)
 	}
 }
 

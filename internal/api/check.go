@@ -169,6 +169,7 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 		in.Unclaimed = gitUnclaimed(ctx.Git, in.UnclaimedSince)
 	}
 	in.Dispatch = dispatchProblems(ctx.Root)
+	in.Orphans = orphanLogEntries(ctx)
 	rep := check.Run(in)
 	resp := CheckResponse{OK: rep.OK, Base: rep.Base, MergeBaseOf: from, Skipped: skipped,
 		Findings: make([]CheckFinding, 0, len(rep.Findings))}
@@ -592,4 +593,76 @@ func repoOrBuiltinWorkflow(root, name string) bool {
 	}
 	_, ok := workflow.Builtin(name)
 	return ok
+}
+
+// orphanLogEntries lists the untracked log entries of a main checkout that
+// no pending model branch or live run holds, as paths relative to the
+// project root. It is nil in a linked worktree (a run's untracked entries
+// are normal), in a repo without origin/main (nothing to commit them to) and
+// without git. A pending model branch holds an entry when a model/* branch,
+// local or on origin, has that path; a live run holds it when another
+// worktree has the file.
+func orphanLogEntries(ctx *Ctx) []string {
+	if !inWorkTree(ctx.Git) {
+		return nil
+	}
+	gitDir, err1 := ctx.Git("rev-parse", "--absolute-git-dir")
+	common, err2 := ctx.Git("rev-parse", "--path-format=absolute", "--git-common-dir")
+	if err1 != nil || err2 != nil || filepath.Clean(strings.TrimSpace(gitDir)) != filepath.Clean(strings.TrimSpace(common)) {
+		return nil
+	}
+	if _, err := ctx.Git("rev-parse", "--verify", "--quiet", "refs/remotes/origin/main"); err != nil {
+		return nil
+	}
+	prefix, _ := ctx.Git("rev-parse", "--show-prefix")
+	prefix = strings.TrimSpace(prefix)
+	out, err := ctx.Git("ls-files", "--others", "--exclude-standard", "-z", "--", store.Dir+"/"+store.LogDir)
+	if err != nil {
+		return nil
+	}
+	var files []string
+	for _, f := range strings.Split(out, "\x00") {
+		if parts := strings.Split(f, "/"); len(parts) == 4 && strings.HasSuffix(f, ".json") && !strings.HasPrefix(parts[3], ".") {
+			files = append(files, f)
+		}
+	}
+	if len(files) == 0 {
+		return nil
+	}
+	var branches []string
+	if refs, err := ctx.Git("for-each-ref", "--format=%(refname)", "refs/heads/model", "refs/remotes/origin/model"); err == nil {
+		branches = strings.Fields(refs)
+	}
+	var others []string
+	if wt, err := ctx.Git("worktree", "list", "--porcelain"); err == nil {
+		for _, l := range strings.Split(wt, "\n") {
+			if dir, ok := strings.CutPrefix(l, "worktree "); ok {
+				others = append(others, strings.TrimSpace(dir))
+			}
+		}
+		if len(others) > 0 {
+			others = others[1:] // the first is the main checkout
+		}
+	}
+	var orphans []string
+	for _, f := range files {
+		held := false
+		for _, b := range branches {
+			if _, err := ctx.Git("cat-file", "-e", b+":"+prefix+f); err == nil {
+				held = true
+				break
+			}
+		}
+		for _, d := range others {
+			if _, err := os.Stat(filepath.Join(d, filepath.FromSlash(prefix+f))); err == nil {
+				held = true
+				break
+			}
+		}
+		if !held {
+			orphans = append(orphans, f)
+		}
+	}
+	slices.Sort(orphans)
+	return orphans
 }
