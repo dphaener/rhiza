@@ -297,6 +297,14 @@ type UsageReader interface {
 	UsageRecords(getenv func(string) string, from, to time.Time) ([]UsageRecord, error)
 }
 
+// UsageReaderAt is a UsageReader that can throttle its directory walks by a
+// clock: UsageRecordsAt is UsageRecords at time now, and may leave a file
+// created since its last full walk for the next one.
+type UsageReaderAt interface {
+	UsageReader
+	UsageRecordsAt(getenv func(string) string, from, to, now time.Time) ([]UsageRecord, error)
+}
+
 // LiveWindow is one rate-limit window an agent reports about the account's
 // live use.
 type LiveWindow struct {
