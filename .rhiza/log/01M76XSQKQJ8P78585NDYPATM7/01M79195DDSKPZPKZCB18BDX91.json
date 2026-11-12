@@ -1,0 +1,40 @@
+{
+  "actor": "01M7917D9B975Q53WYEG5K544R",
+  "after": [
+    "01M7916C74VNB7YAHDDTAYSJCT"
+  ],
+  "at": "2026-11-12T23:25:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f95af36fd ran `go test -trimpath -count=1 ./internal/api -run SessionRunRexRetry`: TestSessionRunRexRetryRecovers (fake rex: a failed call, then output with no window_id, then a window) passes with 3 rex calls, a single successful tab open and two growing injected waits; TestSessionRunRexRetryGivesUp (four failures) passes with exit 1, 4 calls, 3 waits and a message holding Rex's last error 'rex is down'. Both use a scripted fake Exec and an injected Ctx.Sleep, so no real Rex, agent or wait runs. Read the diff: retryRex wraps only the new-window rex call in openSessionPane with waits of 1s/3s/9s, and parseRexWindow already rejects an empty window_id. Also ran -run 'Session|Pane' (ok), gofmt -l (clean) and go vet ./internal/api (ok)."
+        },
+        "handle": "rex-tab-launch-retry-verified",
+        "id": "01M79195A63V2NYKW1R006XPEW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79195A63V2NYKW1QYVABXR5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79195A63V2NYKW1QYVABXR5",
+        "id": "01M79195BKS26XBR72JAC3HEA0",
+        "link": "01M79195BKS26XBR72JABEXHED",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG799KFE9QRBJNYYZ7KG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79195DDSKPZPKZCB18BDX91",
+  "type": "ops",
+  "v": 1
+}
