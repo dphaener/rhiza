@@ -101,6 +101,9 @@ type workspace struct {
 	ix *writeIndex
 	// written counts the entries written to disk.
 	written int
+	// mirror copies each entry written to disk into the worktree of its
+	// change set's live run; nil copies nothing. See live_run_mirror.go.
+	mirror func(entry.Entry) error
 }
 
 // openWorkspace opens the repository in root. No repository is not_found
@@ -135,6 +138,7 @@ func openCtxWorkspace(ctx *Ctx) (*workspace, error) {
 		return nil, err
 	}
 	w.readLog = ctx.readLog
+	w.mirror = liveRunMirror(ctx)
 	return w, nil
 }
 
@@ -419,6 +423,9 @@ func (w *workspace) writeEntry(e entry.Entry) error {
 	w.written++
 	if w.ix != nil {
 		w.ix.stale = true
+	}
+	if w.mirror != nil {
+		return w.mirror(e)
 	}
 	return nil
 }
