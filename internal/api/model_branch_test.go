@@ -259,3 +259,29 @@ func TestDaemonCommitsUntracked(t *testing.T) {
 		t.Errorf("second tick shipped again: %d PRs", f.gh.creates)
 	}
 }
+
+// TestHealthMainOrphanLog: an untracked log entry no model branch or live
+// run holds makes health's main part bad, naming the entry, its change set
+// and the command that ships it; once a model branch holds it the part is
+// ok and the entry is listed as pending.
+func TestHealthMainOrphanLog(t *testing.T) {
+	f := modelBranchFixture(t, true)
+	f.ctx.Git = func(args ...string) (string, error) {
+		out, err := f.gh.exec("git", args, f.root, nil)
+		return string(out), err
+	}
+	detail := func(p HealthPart) string { return strings.Join(p.Detail, "\n") }
+
+	h := healthMain(f.ctx)
+	if h.State != HealthBad || h.Next != "rhiza model commit-untracked" ||
+		!strings.Contains(detail(h), f.cs) || !strings.Contains(detail(h), ".rhiza/log/"+f.cs+"/") ||
+		!strings.Contains(detail(h), "rhiza model commit-untracked") {
+		t.Fatalf("orphan entry: %+v", h)
+	}
+
+	daemonCommitUntracked(f.ctx)
+	h = healthMain(f.ctx)
+	if h.State != HealthOK || !strings.Contains(h.Summary, "pending") || !strings.Contains(detail(h), "pending entry") {
+		t.Fatalf("entry on a model branch: %+v", h)
+	}
+}

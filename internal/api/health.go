@@ -538,17 +538,43 @@ func healthMain(ctx *Ctx) HealthPart {
 			}
 		}
 	}
+	orphans, pending := classifyUntrackedLog(git)
+	if len(orphans) > 0 {
+		facts = append(facts, fmt.Sprintf("%d untracked log entries on no branch", len(orphans)))
+		p.State = HealthBad
+	}
+	if len(pending) > 0 {
+		facts = append(facts, fmt.Sprintf("%d untracked log entries pending on a model branch or run", len(pending)))
+	}
 	p.Summary = strings.Join(facts, ", ")
 	p.Detail = append(p.Detail, "checkout "+main)
+	for _, f := range orphans {
+		p.Detail = append(p.Detail, fmt.Sprintf("untracked entry %s of change set %s is on no branch: rhiza model commit-untracked", f, logEntryChange(f)))
+	}
+	for _, f := range pending {
+		p.Detail = append(p.Detail, fmt.Sprintf("pending entry %s of change set %s is held by a model branch or run", f, logEntryChange(f)))
+	}
 	if ms, ok := daemon.ReadMainStale(common); ok {
 		p.State = HealthWarn
 		p.Summary += "; the last close-out could not pull"
 		p.Detail = append(p.Detail, fmt.Sprintf("change set %s, since %s: %s", ms.Change, ms.Since.UTC().Format("2006-01-02T15:04:05Z"), ms.Detail))
 	}
-	if p.State == HealthWarn {
+	switch {
+	case len(orphans) > 0:
+		p.Next = "rhiza model commit-untracked"
+	case p.State == HealthWarn:
 		p.Next = "git -C " + main + " status"
 	}
 	return p
+}
+
+// logEntryChange names the change set a log entry path
+// (.rhiza/log/<change set>/<entry>.json) belongs to.
+func logEntryChange(f string) string {
+	if parts := strings.Split(f, "/"); len(parts) == 4 {
+		return parts[2]
+	}
+	return "?"
 }
 
 // healthInbox counts what waits on the owner by kind; anything waiting is

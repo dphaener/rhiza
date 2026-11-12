@@ -611,14 +611,22 @@ func orphanLogEntries(ctx *Ctx) []string {
 	if err1 != nil || err2 != nil || filepath.Clean(strings.TrimSpace(gitDir)) != filepath.Clean(strings.TrimSpace(common)) {
 		return nil
 	}
-	if _, err := ctx.Git("rev-parse", "--verify", "--quiet", "refs/remotes/origin/main"); err != nil {
-		return nil
+	orphans, _ := classifyUntrackedLog(ctx.Git)
+	return orphans
+}
+
+// classifyUntrackedLog sorts the untracked log entries of the checkout git
+// runs in: orphans are held by no model branch or other worktree, pending
+// ones are held by one. Both are paths relative to the project root.
+func classifyUntrackedLog(git func(args ...string) (string, error)) (orphans, pending []string) {
+	if _, err := git("rev-parse", "--verify", "--quiet", "refs/remotes/origin/main"); err != nil {
+		return nil, nil
 	}
-	prefix, _ := ctx.Git("rev-parse", "--show-prefix")
+	prefix, _ := git("rev-parse", "--show-prefix")
 	prefix = strings.TrimSpace(prefix)
-	out, err := ctx.Git("ls-files", "--others", "--exclude-standard", "-z", "--", store.Dir+"/"+store.LogDir)
+	out, err := git("ls-files", "--others", "--exclude-standard", "-z", "--", store.Dir+"/"+store.LogDir)
 	if err != nil {
-		return nil
+		return nil, nil
 	}
 	var files []string
 	for _, f := range strings.Split(out, "\x00") {
@@ -627,14 +635,14 @@ func orphanLogEntries(ctx *Ctx) []string {
 		}
 	}
 	if len(files) == 0 {
-		return nil
+		return nil, nil
 	}
 	var branches []string
-	if refs, err := ctx.Git("for-each-ref", "--format=%(refname)", "refs/heads/model", "refs/remotes/origin/model"); err == nil {
+	if refs, err := git("for-each-ref", "--format=%(refname)", "refs/heads/model", "refs/remotes/origin/model"); err == nil {
 		branches = strings.Fields(refs)
 	}
 	var others []string
-	if wt, err := ctx.Git("worktree", "list", "--porcelain"); err == nil {
+	if wt, err := git("worktree", "list", "--porcelain"); err == nil {
 		for _, l := range strings.Split(wt, "\n") {
 			if dir, ok := strings.CutPrefix(l, "worktree "); ok {
 				others = append(others, strings.TrimSpace(dir))
@@ -644,11 +652,10 @@ func orphanLogEntries(ctx *Ctx) []string {
 			others = others[1:] // the first is the main checkout
 		}
 	}
-	var orphans []string
 	for _, f := range files {
 		held := false
 		for _, b := range branches {
-			if _, err := ctx.Git("cat-file", "-e", b+":"+prefix+f); err == nil {
+			if _, err := git("cat-file", "-e", b+":"+prefix+f); err == nil {
 				held = true
 				break
 			}
@@ -659,10 +666,13 @@ func orphanLogEntries(ctx *Ctx) []string {
 				break
 			}
 		}
-		if !held {
+		if held {
+			pending = append(pending, f)
+		} else {
 			orphans = append(orphans, f)
 		}
 	}
 	slices.Sort(orphans)
-	return orphans
+	slices.Sort(pending)
+	return orphans, pending
 }
