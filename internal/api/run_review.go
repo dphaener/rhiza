@@ -96,6 +96,8 @@ type RunFinding struct {
 	Handle        string `json:"handle,omitempty" desc:"The node's handle when the finding was recorded; absent when it had none"`
 	Link          string `json:"link,omitempty" desc:"A plan review finding about a link: the link's ID, in place of node"`
 	LinkType      string `json:"link_type,omitempty" desc:"That link's type, e.g. depends-on or serves"`
+	LinkFrom      string `json:"link_from,omitempty" desc:"That link's from end, by ID"`
+	LinkTo        string `json:"link_to,omitempty" desc:"That link's to end, by ID"`
 	Kind          string `json:"kind,omitempty" desc:"What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding"`
 	Check         string `json:"check,omitempty" desc:"A review check's finding: the check that found it"`
 	Severity      string `json:"severity,omitempty" desc:"A review check's finding: blocker, major, minor or nit"`
@@ -378,7 +380,8 @@ func runRunFindings(ctx *Ctx, req any) (any, error) {
 		if err != nil {
 			if lk, ok := r2.resolveLink(ref); ok {
 				found = append(found, run.Finding{
-					ID: "f" + strconv.Itoa(n), Link: lk.ID.String(), LinkType: string(lk.Type), Kind: in.Kind, Reason: in.Reason,
+					ID: "f" + strconv.Itoa(n), Link: lk.ID.String(), LinkType: string(lk.Type),
+					LinkFrom: lk.From.String(), LinkTo: lk.To.String(), Kind: in.Kind, Reason: in.Reason,
 				})
 				continue
 			}
@@ -685,12 +688,12 @@ func (p *planResolver) resolveLink(ref string) (Link, bool) {
 }
 
 // findingTarget is what a plan finding is about, for a line: its node's
-// handle, else the node's ID, else "link <type> <id>".
-func findingTarget(handle, node, link, linkType string) string {
+// handle, else the node's ID, else "link <type> <id> from <from> to <to>".
+func findingTarget(handle, node, link, linkType, from, to string) string {
 	if t := cmp.Or(handle, node); t != "" {
 		return t
 	}
-	return "link " + linkType + " " + link
+	return "link " + linkType + " " + link + " from " + from + " to " + to
 }
 
 // runRunVerdict checks the run, its latest round, then each verdict: a
@@ -766,7 +769,7 @@ func runRunVerdict(ctx *Ctx, req any) (any, error) {
 // in round rd.
 func runFinding(f run.Finding, rd run.Round) RunFinding {
 	out := RunFinding{
-		ID: f.ID, Node: f.Node, Handle: f.Handle, Link: f.Link, LinkType: f.LinkType, Kind: f.Kind, Check: f.Check, Severity: f.Severity,
+		ID: f.ID, Node: f.Node, Handle: f.Handle, Link: f.Link, LinkType: f.LinkType, LinkFrom: f.LinkFrom, LinkTo: f.LinkTo, Kind: f.Kind, Check: f.Check, Severity: f.Severity,
 		Leaf: f.Leaf, LeafHandle: f.LeafHandle, Place: f.Place, Reason: f.Reason,
 	}
 	if v, ok := rd.Verdict(f.ID); ok {
@@ -909,7 +912,7 @@ func findingLine(f RunFinding) string {
 		}
 		return s
 	}
-	node := findingTarget(f.Handle, f.Node, f.Link, f.LinkType)
+	node := findingTarget(f.Handle, f.Node, f.Link, f.LinkType, f.LinkFrom, f.LinkTo)
 	s := f.ID + " " + f.Kind + " on " + node + ": " + oneLine(f.Reason)
 	if f.Verdict != "" {
 		s += " — " + f.Verdict + ": " + oneLine(f.VerdictReason)
@@ -993,7 +996,7 @@ func reviewNodeStatement(sets []changeset.ChangeSet, h string) string {
 // reviewQuestionText is the statement of the question left for finding
 // f, confirmed for reason, in round n.
 func reviewQuestionText(n int, f run.Finding, reason string) string {
-	node := findingTarget(f.Handle, f.Node, f.Link, f.LinkType)
+	node := findingTarget(f.Handle, f.Node, f.Link, f.LinkType, f.LinkFrom, f.LinkTo)
 	return fmt.Sprintf("Plan review round %d left finding %s (%s on %s): %s. The critic confirmed it: %s. How should it be settled?",
 		n, f.ID, f.Kind, node, strings.TrimRight(oneLine(f.Reason), "."), strings.TrimRight(oneLine(reason), "."))
 }

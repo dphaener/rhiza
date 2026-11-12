@@ -3806,6 +3806,14 @@ cmp stdout describe.golden.json
                                   "description": "A plan review finding about a link: the link's ID, in place of node",
                                   "type": "string"
                                 },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
                                 "link_type": {
                                   "description": "That link's type, e.g. depends-on or serves",
                                   "type": "string"
@@ -4396,6 +4404,14 @@ cmp stdout describe.golden.json
                             "description": "A plan review finding about a link: the link's ID, in place of node",
                             "type": "string"
                           },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
                           "link_type": {
                             "description": "That link's type, e.g. depends-on or serves",
                             "type": "string"
@@ -4591,6 +4607,14 @@ cmp stdout describe.golden.json
                           },
                           "link": {
                             "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
                             "type": "string"
                           },
                           "link_type": {
@@ -4921,6 +4945,14 @@ cmp stdout describe.golden.json
                     },
                     "link": {
                       "description": "A plan review finding about a link: the link's ID, in place of node",
+                      "type": "string"
+                    },
+                    "link_from": {
+                      "description": "That link's from end, by ID",
+                      "type": "string"
+                    },
+                    "link_to": {
+                      "description": "That link's to end, by ID",
                       "type": "string"
                     },
                     "link_type": {
@@ -5539,6 +5571,14 @@ cmp stdout describe.golden.json
                                   "description": "A plan review finding about a link: the link's ID, in place of node",
                                   "type": "string"
                                 },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
                                 "link_type": {
                                   "description": "That link's type, e.g. depends-on or serves",
                                   "type": "string"
@@ -6129,6 +6169,14 @@ cmp stdout describe.golden.json
                             "description": "A plan review finding about a link: the link's ID, in place of node",
                             "type": "string"
                           },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
                           "link_type": {
                             "description": "That link's type, e.g. depends-on or serves",
                             "type": "string"
@@ -6324,6 +6372,14 @@ cmp stdout describe.golden.json
                           },
                           "link": {
                             "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
                             "type": "string"
                           },
                           "link_type": {
@@ -6654,6 +6710,14 @@ cmp stdout describe.golden.json
                     },
                     "link": {
                       "description": "A plan review finding about a link: the link's ID, in place of node",
+                      "type": "string"
+                    },
+                    "link_from": {
+                      "description": "That link's from end, by ID",
+                      "type": "string"
+                    },
+                    "link_to": {
+                      "description": "That link's to end, by ID",
                       "type": "string"
                     },
                     "link_type": {
@@ -9038,6 +9102,14 @@ cmp stdout describe.golden.json
                                   "description": "A plan review finding about a link: the link's ID, in place of node",
                                   "type": "string"
                                 },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
                                 "link_type": {
                                   "description": "That link's type, e.g. depends-on or serves",
                                   "type": "string"
@@ -9628,6 +9700,14 @@ cmp stdout describe.golden.json
                             "description": "A plan review finding about a link: the link's ID, in place of node",
                             "type": "string"
                           },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
                           "link_type": {
                             "description": "That link's type, e.g. depends-on or serves",
                             "type": "string"
@@ -9823,6 +9903,14 @@ cmp stdout describe.golden.json
                           },
                           "link": {
                             "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
                             "type": "string"
                           },
                           "link_type": {
@@ -10619,6 +10707,14 @@ cmp stdout describe.golden.json
                                   "description": "A plan review finding about a link: the link's ID, in place of node",
                                   "type": "string"
                                 },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
                                 "link_type": {
                                   "description": "That link's type, e.g. depends-on or serves",
                                   "type": "string"
@@ -11209,6 +11305,14 @@ cmp stdout describe.golden.json
                             "description": "A plan review finding about a link: the link's ID, in place of node",
                             "type": "string"
                           },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
                           "link_type": {
                             "description": "That link's type, e.g. depends-on or serves",
                             "type": "string"
@@ -11404,6 +11508,14 @@ cmp stdout describe.golden.json
                           },
                           "link": {
                             "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
                             "type": "string"
                           },
                           "link_type": {
@@ -11734,6 +11846,14 @@ cmp stdout describe.golden.json
                     },
                     "link": {
                       "description": "A plan review finding about a link: the link's ID, in place of node",
+                      "type": "string"
+                    },
+                    "link_from": {
+                      "description": "That link's from end, by ID",
+                      "type": "string"
+                    },
+                    "link_to": {
+                      "description": "That link's to end, by ID",
                       "type": "string"
                     },
                     "link_type": {
@@ -12204,6 +12324,14 @@ cmp stdout describe.golden.json
                 },
                 "link": {
                   "description": "A plan review finding about a link: the link's ID, in place of node",
+                  "type": "string"
+                },
+                "link_from": {
+                  "description": "That link's from end, by ID",
+                  "type": "string"
+                },
+                "link_to": {
+                  "description": "That link's to end, by ID",
                   "type": "string"
                 },
                 "link_type": {
@@ -13138,6 +13266,14 @@ cmp stdout describe.golden.json
                                   "description": "A plan review finding about a link: the link's ID, in place of node",
                                   "type": "string"
                                 },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
                                 "link_type": {
                                   "description": "That link's type, e.g. depends-on or serves",
                                   "type": "string"
@@ -13728,6 +13864,14 @@ cmp stdout describe.golden.json
                             "description": "A plan review finding about a link: the link's ID, in place of node",
                             "type": "string"
                           },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
                           "link_type": {
                             "description": "That link's type, e.g. depends-on or serves",
                             "type": "string"
@@ -13923,6 +14067,14 @@ cmp stdout describe.golden.json
                           },
                           "link": {
                             "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
                             "type": "string"
                           },
                           "link_type": {
@@ -14253,6 +14405,14 @@ cmp stdout describe.golden.json
                     },
                     "link": {
                       "description": "A plan review finding about a link: the link's ID, in place of node",
+                      "type": "string"
+                    },
+                    "link_from": {
+                      "description": "That link's from end, by ID",
+                      "type": "string"
+                    },
+                    "link_to": {
+                      "description": "That link's to end, by ID",
                       "type": "string"
                     },
                     "link_type": {
@@ -14751,6 +14911,14 @@ cmp stdout describe.golden.json
                                   "description": "A plan review finding about a link: the link's ID, in place of node",
                                   "type": "string"
                                 },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
                                 "link_type": {
                                   "description": "That link's type, e.g. depends-on or serves",
                                   "type": "string"
@@ -15341,6 +15509,14 @@ cmp stdout describe.golden.json
                             "description": "A plan review finding about a link: the link's ID, in place of node",
                             "type": "string"
                           },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
                           "link_type": {
                             "description": "That link's type, e.g. depends-on or serves",
                             "type": "string"
@@ -15536,6 +15712,14 @@ cmp stdout describe.golden.json
                           },
                           "link": {
                             "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
                             "type": "string"
                           },
                           "link_type": {
@@ -15879,6 +16063,14 @@ cmp stdout describe.golden.json
                 },
                 "link": {
                   "description": "A plan review finding about a link: the link's ID, in place of node",
+                  "type": "string"
+                },
+                "link_from": {
+                  "description": "That link's from end, by ID",
+                  "type": "string"
+                },
+                "link_to": {
+                  "description": "That link's to end, by ID",
                   "type": "string"
                 },
                 "link_type": {
@@ -16430,6 +16622,14 @@ cmp stdout describe.golden.json
                                   "description": "A plan review finding about a link: the link's ID, in place of node",
                                   "type": "string"
                                 },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
                                 "link_type": {
                                   "description": "That link's type, e.g. depends-on or serves",
                                   "type": "string"
@@ -17020,6 +17220,14 @@ cmp stdout describe.golden.json
                             "description": "A plan review finding about a link: the link's ID, in place of node",
                             "type": "string"
                           },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
                           "link_type": {
                             "description": "That link's type, e.g. depends-on or serves",
                             "type": "string"
@@ -17215,6 +17423,14 @@ cmp stdout describe.golden.json
                           },
                           "link": {
                             "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
                             "type": "string"
                           },
                           "link_type": {
@@ -17545,6 +17761,14 @@ cmp stdout describe.golden.json
                     },
                     "link": {
                       "description": "A plan review finding about a link: the link's ID, in place of node",
+                      "type": "string"
+                    },
+                    "link_from": {
+                      "description": "That link's from end, by ID",
+                      "type": "string"
+                    },
+                    "link_to": {
+                      "description": "That link's to end, by ID",
                       "type": "string"
                     },
                     "link_type": {
@@ -18077,6 +18301,14 @@ cmp stdout describe.golden.json
                                   "description": "A plan review finding about a link: the link's ID, in place of node",
                                   "type": "string"
                                 },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
                                 "link_type": {
                                   "description": "That link's type, e.g. depends-on or serves",
                                   "type": "string"
@@ -18667,6 +18899,14 @@ cmp stdout describe.golden.json
                             "description": "A plan review finding about a link: the link's ID, in place of node",
                             "type": "string"
                           },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
                           "link_type": {
                             "description": "That link's type, e.g. depends-on or serves",
                             "type": "string"
@@ -18862,6 +19102,14 @@ cmp stdout describe.golden.json
                           },
                           "link": {
                             "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
                             "type": "string"
                           },
                           "link_type": {
@@ -19547,6 +19795,14 @@ cmp stdout describe.golden.json
                               "description": "A plan review finding about a link: the link's ID, in place of node",
                               "type": "string"
                             },
+                            "link_from": {
+                              "description": "That link's from end, by ID",
+                              "type": "string"
+                            },
+                            "link_to": {
+                              "description": "That link's to end, by ID",
+                              "type": "string"
+                            },
                             "link_type": {
                               "description": "That link's type, e.g. depends-on or serves",
                               "type": "string"
@@ -20137,6 +20393,14 @@ cmp stdout describe.golden.json
                         "description": "A plan review finding about a link: the link's ID, in place of node",
                         "type": "string"
                       },
+                      "link_from": {
+                        "description": "That link's from end, by ID",
+                        "type": "string"
+                      },
+                      "link_to": {
+                        "description": "That link's to end, by ID",
+                        "type": "string"
+                      },
                       "link_type": {
                         "description": "That link's type, e.g. depends-on or serves",
                         "type": "string"
@@ -20332,6 +20596,14 @@ cmp stdout describe.golden.json
                       },
                       "link": {
                         "description": "A plan review finding about a link: the link's ID, in place of node",
+                        "type": "string"
+                      },
+                      "link_from": {
+                        "description": "That link's from end, by ID",
+                        "type": "string"
+                      },
+                      "link_to": {
+                        "description": "That link's to end, by ID",
                         "type": "string"
                       },
                       "link_type": {

@@ -461,6 +461,8 @@ type Finding struct {
 	Handle     string `json:"handle,omitempty"`
 	Link       string `json:"link,omitempty"`
 	LinkType   string `json:"link_type,omitempty"`
+	LinkFrom   string `json:"link_from,omitempty"`
+	LinkTo     string `json:"link_to,omitempty"`
 	Kind       string `json:"kind,omitempty"`
 	Check      string `json:"check,omitempty"`
 	Severity   string `json:"severity,omitempty"`

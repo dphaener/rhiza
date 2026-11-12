@@ -80,8 +80,8 @@ func TestReviewVisitNeedsRound(t *testing.T) {
 func TestReviewFindingsNameLinks(t *testing.T) {
 	f := newSessionFixture(t, "links")
 	a := newChange(t, f.ctx, `{"intent":"Plan A"}`)
-	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"x"}`)
-	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"y"}`)
+	x := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"x"}`).Nodes[0]
+	y := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"y"}`).Nodes[0]
 	modelLink := mustWrite(t, f.ctx, "link", `{"from":"x","type":"depends-on","to":"y"}`).Links[0]
 	b := newChange(t, f.ctx, `{"intent":"Plan B"}`)
 	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"z"}`)
@@ -120,13 +120,18 @@ func TestReviewFindingsNameLinks(t *testing.T) {
 		t.Fatal("a refused finding journalled a round")
 	}
 
-	for i, c := range []struct{ link, typ string }{{csLink.String(), "depends-on"}, {modelLink.String(), "depends-on"}} {
+	type linkCase struct{ link, typ, from, to string }
+	cases := []linkCase{
+		{csLink.String(), "depends-on", a.ChangeSet.String(), b.ChangeSet.String()},
+		{modelLink.String(), "depends-on", x.String(), y.String()},
+	}
+	for i, c := range cases {
 		resp, err := findings(c.link)
 		if err != nil {
 			t.Fatalf("link %s: %v", c.link, err)
 		}
 		fd := resp.(RunFindingsResponse).Findings[0]
-		if fd.Link != c.link || fd.LinkType != c.typ || fd.Node != "" {
+		if fd.Link != c.link || fd.LinkType != c.typ || fd.LinkFrom != c.from || fd.LinkTo != c.to || fd.Node != "" {
 			t.Errorf("finding %+v", fd)
 		}
 		if st, _ := store.Read("R10"); len(st.State().Rounds) != i+1 {
@@ -139,8 +144,33 @@ func TestReviewFindingsNameLinks(t *testing.T) {
 	}
 	st, _ := store.Read("R10")
 	rd, _ := st.State().LatestRound()
-	if f1, _ := rd.Finding("f1"); f1.Link != modelLink.String() || f1.LinkType != "depends-on" {
+	if f1, _ := rd.Finding("f1"); f1.Link != modelLink.String() || f1.LinkType != "depends-on" || f1.LinkFrom != x.String() || f1.LinkTo != y.String() {
 		t.Fatalf("journalled finding %+v", f1)
+	}
+
+	// run status shows each round's finding with the link's type and ends,
+	// confirmed by the verdict.
+	stResp, err := callOp(t, f.ctx, "run.status", `{"run":"R10"}`)
+	if err != nil {
+		t.Fatalf("run status: %v", err)
+	}
+	info := stResp.(RunInfo)
+	if len(info.Rounds) != len(cases) {
+		t.Fatalf("status rounds %+v", info.Rounds)
+	}
+	for i, c := range cases {
+		rr := info.Rounds[i]
+		if len(rr.Findings) != 1 || rr.Confirmed != 1 {
+			t.Fatalf("status round %d %+v", i+1, rr)
+		}
+		fd := rr.Findings[0]
+		if fd.Link != c.link || fd.LinkType != c.typ || fd.LinkFrom != c.from || fd.LinkTo != c.to || fd.Verdict != "confirmed" {
+			t.Errorf("status round %d finding %+v", i+1, fd)
+		}
+	}
+	md := human(t, stResp)
+	if !strings.Contains(md, "link depends-on "+csLink.String()+" from "+a.ChangeSet.String()+" to "+b.ChangeSet.String()) {
+		t.Errorf("status markdown names no link and ends:\n%s", md)
 	}
 
 	// Round 3: the check leaves a question naming the link, blocking nothing.
@@ -162,7 +192,7 @@ func TestReviewFindingsNameLinks(t *testing.T) {
 	if !r.Passed || len(r.Questions) != 1 || r.Questions[0].Blocks != "" || r.Questions[0].ID == "" {
 		t.Fatalf("response %+v", r)
 	}
-	if got := r.Confirmed[0].Link; got != csLink.String() {
-		t.Errorf("confirmed link %q", got)
+	if got := r.Confirmed[0]; got.Link != csLink.String() || got.LinkFrom != a.ChangeSet.String() || got.LinkTo != b.ChangeSet.String() {
+		t.Errorf("confirmed %+v", got)
 	}
 }
