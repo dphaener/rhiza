@@ -13,12 +13,16 @@ import (
 
 // Entry types.
 const (
-	TypeStarted    = "started"
-	TypeEntered    = "entered"
-	TypeSession    = "session"
-	TypeEnded      = "ended"
-	TypeStopped    = "stopped"
-	TypeFinished   = "finished"
+	TypeStarted  = "started"
+	TypeEntered  = "entered"
+	TypeSession  = "session"
+	TypeEnded    = "ended"
+	TypeStopped  = "stopped"
+	TypeFinished = "finished"
+	// TypeCleanup is a cleanup step's result once the run has finished:
+	// Step the cleanup step's name, Outcome pass or fail, Detail its exit
+	// and output tail. It never changes the run's result.
+	TypeCleanup    = "cleanup"
 	TypeBlocked    = "blocked"
 	TypeUnblocked  = "unblocked"
 	TypeAmended    = "amended"

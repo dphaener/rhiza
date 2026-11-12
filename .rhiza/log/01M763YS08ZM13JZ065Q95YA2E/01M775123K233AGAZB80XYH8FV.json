@@ -1,0 +1,40 @@
+{
+  "actor": "01M774CZ4JAPMPA3JW18PVDXRJ",
+  "after": [
+    "01M774KRZVS0FW5CRXZAQTZB1C"
+  ],
+  "at": "2026-11-12T05:52:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 3f4897766: read the diff (workflow.Cleanup parse/validate, run engine cleanup after finish and on abandon, cleanup journal entry, describe/check). Ran go test -trimpath ./internal/workflow/... ./internal/run/... (ok, incl. TestParseCleanup covering names, default cleanup-<n>, missing/blank run, bad name, duplicate, unknown key, Validate) and go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-cleanup-steps|describe-golden)$' -count=1 -v (both PASS). run-cleanup-steps shows a failing step's run end failed with its cleanup journalled pass and run in the worktree with the run env, a cleanup exiting 1 journalled fail while the run still ends succeeded and the next cleanup still runs, an abandoned run running its cleanup, and check refusing a cleanup without run. git grep finds no [[cleanup]] in built-in or repo workflows."
+        },
+        "handle": "workflow-cleanup-steps-verified",
+        "id": "01M775122EPDAMZQK45HZGEY34",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M775122EPDAMZQK45HP1PRX4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M775122EPDAMZQK45HP1PRX4",
+        "id": "01M7751232E6FAZWTN0BVX2RCK",
+        "link": "01M7751232E6FAZWTN0AJXX0XN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642M6E55R7WVH65XV9BKET",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763YS08ZM13JZ065Q95YA2E",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M775123K233AGAZB80XYH8FV",
+  "type": "ops",
+  "v": 1
+}

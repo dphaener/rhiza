@@ -170,7 +170,25 @@ type Definition struct {
 	// autonomy is the autonomy the file declares, by stage; a stage it
 	// leaves out is absent. See Autonomy.
 	autonomy map[string]string
+
+	// Cleanup holds the file's cleanup steps, in file order: command steps
+	// that run once when a run ends done, failed or abandoned. A failing
+	// one never changes the run's result. Only the file's own: a workflow
+	// step's included workflow adds none.
+	Cleanup []Cleanup
 }
+
+// Cleanup is one cleanup step of a workflow file, a [[cleanup]] table.
+type Cleanup struct {
+	// Name is the step's name, unique in the file; "cleanup-<n>" (n from
+	// 1) when the file sets none.
+	Name string
+	// Run is the shell command.
+	Run string
+}
+
+// Step is the cleanup step as a command step, for a Runner.
+func (c Cleanup) Step() Step { return Step{Name: c.Name, Kind: KindCommand, Run: c.Run} }
 
 // The autonomy stages a workflow file may declare, and the two modes.
 const (
@@ -534,6 +552,38 @@ type fileDef struct {
 	// refused with a message naming the key.
 	Autonomous any `toml:"autonomous"`
 	Autonomy   any `toml:"autonomy"`
+	// Cleanup is the [[cleanup]] tables.
+	Cleanup []fileCleanup `toml:"cleanup"`
+}
+
+type fileCleanup struct {
+	Name string `toml:"name"`
+	Run  string `toml:"run"`
+}
+
+// buildCleanup validates the file's cleanup steps.
+func buildCleanup(in []fileCleanup) ([]Cleanup, error) {
+	var out []Cleanup
+	seen := map[string]bool{}
+	for i, c := range in {
+		name := c.Name
+		if name == "" {
+			name = fmt.Sprintf("cleanup-%d", i+1)
+		} else if err := checkName("cleanup step", name); err != nil {
+			return nil, err
+		} else if len(name) > MaxNameLen {
+			return nil, fmt.Errorf("cleanup step %q: the name is longer than %d characters", name, MaxNameLen)
+		}
+		if seen[name] {
+			return nil, fmt.Errorf("cleanup step %q is declared twice", name)
+		}
+		seen[name] = true
+		if strings.TrimSpace(c.Run) == "" {
+			return nil, fmt.Errorf("cleanup step %q: run is missing; a cleanup step is a shell command", name)
+		}
+		out = append(out, Cleanup{Name: name, Run: c.Run})
+	}
+	return out, nil
 }
 
 type fileStep struct {
@@ -635,7 +685,11 @@ func parse(name string, data []byte, resolve Resolver, stack []string, includes 
 	if err != nil {
 		return nil, err
 	}
-	d := &Definition{Name: name, Steps: make(map[string]Step, len(f.Step)), autonomy: aut}
+	cleanup, err := buildCleanup(f.Cleanup)
+	if err != nil {
+		return nil, err
+	}
+	d := &Definition{Name: name, Steps: make(map[string]Step, len(f.Step)), autonomy: aut, Cleanup: cleanup}
 	d.Order = stepOrder(md.Keys(), f.Step)
 	arbiter := ""
 	for _, n := range d.Order {
