@@ -1,0 +1,39 @@
+{
+  "actor": "01M78RP4EE824ZZX496G1JH8CQ",
+  "after": [
+    "01M78S757ZEZT7V9BK3GB0PJEN"
+  ],
+  "at": "2026-11-12T21:04:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "This change set builds on accepted 01M78FD0 (depends-on). Its leaves are new capabilities because 01M78FD0's nodes are not landed: ci-unstable-repeated-flake narrows ci-stability-state and 01M78FD0's local-gate-trigger-identified-flakes (2 flakes of one named test, not one identified flake); ship-gate-run-log replaces 01M78FD0's ship-gate-full-log log location (one file per gate run in the run dir, not rhiza/gate/<branch>.log replaced each run, except outside a run). Decision local-gate-repeated-named-flakes rules. Not breaking: ShipGateResponse and the CI stability record only gain fields."
+        },
+        "handle": "note-01m78s7bvr15xf",
+        "id": "01M78S7BVR15XFWJPYGB71TS6B",
+        "key": null,
+        "kind": "note",
+        "node": "01M78S7BVR15XFWJPYGAG0QSJF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78S7BVR15XFWJPYGAG0QSJF",
+        "id": "01M78S7BYT2F2QPH6TD8GZ43W8",
+        "link": "01M78S7BYT2F2QPH6TD5E3EMFT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78RM7PFF8KV94344XM3V8DH",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M78RM7PFF8KV94344XM3V8DH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78S7C0FHD4TNPKDQ63QV3TA",
+  "type": "ops",
+  "v": 1
+}
