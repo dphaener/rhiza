@@ -1772,6 +1772,24 @@ func TestTrimFailureLog(t *testing.T) {
 	if !slices.Equal(where, []string{"test / Run"}) {
 		t.Errorf("where = %v", where)
 	}
+	// A gofmt listing and GNU make's 'Makefile:N: target' form, as this
+	// repo's own fmt-check fails.
+	fmtLog := "lint\tfmt\t2026-11-11T21:00:00Z unformatted files:\nlint\tfmt\t2026-11-11T21:00:00Z internal/api/x.go\nlint\tfmt\t2026-11-11T21:00:00Z cmd/rhiza/y.go\nlint\tfmt\t2026-11-11T21:00:00Z make: *** [Makefile:163: fmt-check] Error 1\n"
+	got, where = trimFailureLog(fmtLog)
+	if !strings.Contains(got, "unformatted files:") || !strings.Contains(got, "internal/api/x.go") || !strings.Contains(got, "cmd/rhiza/y.go") || !strings.Contains(got, "[Makefile:163: fmt-check] Error 1") {
+		t.Errorf("fmt-check = %q", got)
+	}
+	if !slices.Equal(where, []string{"lint / fmt"}) {
+		t.Errorf("fmt-check where = %v", where)
+	}
+	makeOnly := "build\tBuild\t2026-11-11T21:00:00Z linker said no\nbuild\tBuild\t2026-11-11T21:00:01Z make: *** [Makefile:12: build] Error 2\n"
+	if got, _ := trimFailureLog(makeOnly); !strings.Contains(got, "linker said no") || !strings.Contains(got, "build] Error 2") {
+		t.Errorf("make = %q", got)
+	}
+	rspec := "test\tRun specs\t2026-11-04T10:00:00Z 3 examples, 1 failure\ntest\tRun specs\t2026-11-04T10:00:00Z Failed examples:\ntest\tRun specs\t2026-11-04T10:00:00Z rspec ./spec/x_spec.rb:12 # X works\n"
+	if got, _ := trimFailureLog(rspec); !strings.Contains(got, "rspec ./spec/x_spec.rb:12 # X works") {
+		t.Errorf("rspec = %q", got)
+	}
 	for _, none := range []string{"Error: setup-go failed\nprocess completed with exit code 1\n", p + "Temporary failure resolving archive.ubuntu.com\n", ""} {
 		if got, _ := trimFailureLog(none); got != "" {
 			t.Errorf("%q = %q, want nothing", none, got)

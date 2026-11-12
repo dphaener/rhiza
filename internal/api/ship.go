@@ -1174,9 +1174,11 @@ func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckRespo
 // failureMarker matches the lines of a CI log that mark a failure, whatever
 // the runner: Go ('--- FAIL:', 'FAIL', 'panic:', a compiler diagnostic),
 // Jest and Mocha ('FAIL src/x.test.js', '●', '✕'), RSpec, Minitest and
-// pytest ('Failures:', 'FAILED', 'AssertionError', 'Traceback'), rhiza
-// check ('fail ...') and make ('*** [target] Error').
-var failureMarker = regexp.MustCompile(`--- FAIL|^FAIL\b|^FAILED\b|^fail \S|^● |✕|panic:|Traceback \(|AssertionError|^Failures:|Tests:\s+\d+ failed|\.go:\d+:\d+: \S|\*\*\* \[\S+\] Error`)
+// pytest ('Failures:', 'Failed examples:', 'N examples, M failures',
+// 'FAILED', 'AssertionError', 'Traceback'), rhiza
+// check ('fail ...'), a gofmt listing ('unformatted files:') and make
+// ('*** [target] Error', '*** [Makefile:163: fmt-check] Error').
+var failureMarker = regexp.MustCompile(`--- FAIL|^FAIL\b|^FAILED\b|^fail \S|^● |✕|panic:|Traceback \(|AssertionError|^Failures:|^Failed examples:|\d+ examples?, [1-9]\d* failures?|Tests:\s+\d+ failed|\.go:\d+:\d+: \S|(?i:^unformatted files)|\*\*\* \[[^\]]+\] Error`)
 
 var (
 	ansiEscape   = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
