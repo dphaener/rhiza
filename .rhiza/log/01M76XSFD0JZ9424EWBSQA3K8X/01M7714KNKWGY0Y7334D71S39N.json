@@ -1,0 +1,51 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M76ZSWQR0M0SVCT8KE8EJ3M4"
+  ],
+  "at": "2026-11-12T04:44:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "go with the recommendation on the placeholder finding, and a documented recipe",
+          "quote_where": "owner, 2026-11-12, to the orchestrator in chat, answering the plan gate questions of run 01M76STX",
+          "statement": "Other projects get the since-last-green CI rule as a documented recipe in the user docs, with an example changes job, in language-neutral words; rhiza ci install does not write it"
+        },
+        "handle": "ci-since-green-recipe",
+        "id": "01M7714KH70Y0QXF7H923PG4DM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7714KH6RX4DE5NJXB8HNN6A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7714KH6RX4DE5NJXB8HNN6A",
+        "id": "01M7714KJDF6A4C4WKJZ9M4H44",
+        "link": "01M7714KJDF6A4C4WKJWN5X1AN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZFWK2JJH0EV5MZQ9FAS9",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M76XZFVQM9EKM6YN432SYK2V",
+        "id": "01M7714KK86ZCTP083EJ7W3PTQ",
+        "link": "01M7714KK86ZCTP083EHXTC4RC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7714KH6RX4DE5NJXB8HNN6A",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76XSFD0JZ9424EWBSQA3K8X",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7714KNKWGY0Y7334D71S39N",
+  "type": "ops",
+  "v": 1
+}

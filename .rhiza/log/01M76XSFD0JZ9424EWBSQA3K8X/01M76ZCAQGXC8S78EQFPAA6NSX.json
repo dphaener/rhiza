@@ -1,0 +1,19 @@
+{
+  "actor": "01M76ZARZH397PNXN41C608A5P",
+  "after": [
+    "01M76XZFXDNYSJXY81FMSD5EJK"
+  ],
+  "at": "2026-11-12T04:13:44Z",
+  "body": {
+    "drop": [
+      "01M76XZFTXPH8FB1B4JKHPRX3J",
+      "01M76XZFVBE4TRMKEST62CYAXB"
+    ],
+    "ops": []
+  },
+  "change_set": "01M76XSFD0JZ9424EWBSQA3K8X",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76ZCAQGXC8S78EQFPAA6NSX",
+  "type": "ops",
+  "v": 1
+}

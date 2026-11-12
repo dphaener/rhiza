@@ -1,0 +1,15 @@
+{
+  "actor": "01M76YT1NHG88ENZJFFPVCYQ6J",
+  "after": [],
+  "at": "2026-11-12T04:05:44Z",
+  "body": {
+    "intent": "apply -",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M76YXNTKWHGGAHF7MNH4G7GF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76YXNTKWHGGAHF7MRK3CJR0",
+  "type": "open",
+  "v": 1
+}

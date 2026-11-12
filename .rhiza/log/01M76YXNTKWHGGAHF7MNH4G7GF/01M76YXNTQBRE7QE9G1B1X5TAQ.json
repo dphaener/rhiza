@@ -1,0 +1,34 @@
+{
+  "actor": "01M76YT1NHG88ENZJFFPVCYQ6J",
+  "after": [
+    "01M76YXNTKWHGGAHF7MRK3CJR0"
+  ],
+  "at": "2026-11-12T04:05:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M76XMNNPW27705N7G91KBJ20",
+        "handle": null,
+        "id": "01M76YXNT2V4590AJKHA4J5MZJ",
+        "node": "01M76XMNNPW27705N7G6XFBDCH",
+        "op": "node.update",
+        "set": {
+          "statement": "Milestone 34 puts afk's prompts as shipped defaults and the guards first, then the CI-round cuts and the error sources behind held runs; the critic stays and may downgrade a finding, the verifier's model is tiered by leaf risk, and parallel leaves come later, after leaves name their files"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M76XV3BVDXVV0G7KSVK4BW5W",
+        "id": "01M76YXNTKWHGGAHF7MGG5TYYY",
+        "link": "01M76XV3BVDXVV0G7KST8Y1Z8S",
+        "op": "link.retire"
+      }
+    ]
+  },
+  "change_set": "01M76YXNTKWHGGAHF7MNH4G7GF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76YXNTQBRE7QE9G1B1X5TAQ",
+  "type": "ops",
+  "v": 1
+}

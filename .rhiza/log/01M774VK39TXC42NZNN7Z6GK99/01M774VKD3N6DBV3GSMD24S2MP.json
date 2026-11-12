@@ -1,0 +1,91 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M774VK39TXC42NZNNA22YF10"
+  ],
+  "at": "2026-11-12T05:49:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M76XMNA9ATHT77CB9HH2DQCX",
+        "handle": "milestone-35",
+        "id": "01M774VJZ6VZ2T9QA52GXR4BY3",
+        "node": "01M76XMNA9ATHT77CB9GCH44P3",
+        "op": "node.update",
+        "set": {
+          "milestone": 35
+        },
+        "unset": []
+      },
+      {
+        "base": "01M76XMNBAT0FWMMA5G1S0DKTP",
+        "handle": "m35-afk-prompts",
+        "id": "01M774VJZJ976EQKZ2SS8BQ7YA",
+        "node": "01M76XMNBAT0FWMMA5G09W751S",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      },
+      {
+        "base": "01M76XMNBZ01KFRMX1VWT4SAM2",
+        "handle": "m35-guards",
+        "id": "01M774VK060X2ZK5MKX55ZYVN5",
+        "node": "01M76XMNBZ01KFRMX1VT4B8FVS",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      },
+      {
+        "base": "01M76XMND0SMBMRC5Q6QRNDXWW",
+        "handle": "m35-rework-down",
+        "id": "01M774VK10V1X4CJM611YBVVDV",
+        "node": "01M76XMND0SMBMRC5Q6M02HYQ0",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      },
+      {
+        "base": "01M76XMNE3EDE1M1QDQ7V6DF64",
+        "handle": "m35-ci-rounds",
+        "id": "01M774VK1JN5ADGHJ55B4SYC8R",
+        "node": "01M76XMNE3EDE1M1QDQ6VP4KBZ",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      },
+      {
+        "base": "01M76XMNFNPVC0SYM06MM7RBHG",
+        "handle": "m35-holds",
+        "id": "01M774VK214JPG22CDMFE2WCZ2",
+        "node": "01M76XMNFNPVC0SYM06JR8GSCJ",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      },
+      {
+        "base": "01M76XMNGHCD7XX82ZCW90NA7P",
+        "handle": "m35-ship-40m",
+        "id": "01M774VK2N6SJ78JDPB4BDQFBB",
+        "node": "01M76XMNGHCD7XX82ZCSRPRGPC",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      },
+      {
+        "base": "01M76XMNHPHDNARC274ZYJFKNR",
+        "handle": "m35-still-healthy",
+        "id": "01M774VK38VZ3NVHXC732VFW9K",
+        "node": "01M76XMNHPHDNARC274WE1YAY8",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M774VK39TXC42NZNN7Z6GK99",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M774VKD3N6DBV3GSMD24S2MP",
+  "type": "ops",
+  "v": 1
+}

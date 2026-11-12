@@ -1,0 +1,86 @@
+{
+  "actor": "01M76SW1E13KTDYQ639HDXG331",
+  "after": [
+    "01M76XNMMENQCK9PZMGCPVA9ZS"
+  ],
+  "at": "2026-11-12T03:48:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api (go test -trimpath ./internal/api -run SessionDone) start a verifier session on a leaf attempt and assert: with nothing recorded, session done exits as a conflict naming rhiza run findings and writes no done mark; after rhiza run findings on that attempt it succeeds; with Evidence by the verifier's actor it succeeds; Evidence by another actor alone is still refused; a builder session is never refused for this.",
+          "statement": "rhiza session done from a build leaf's verifier session refuses, naming rhiza run findings and the Evidence recipe, while that leaf's attempt has neither journaled findings nor Evidence written by the verifier's actor, so a verifier cannot end an attempt with nothing recorded."
+        },
+        "handle": "done-refuses-unrecorded-verifier",
+        "id": "01M76XY3PYRWRTE99N45TVRN18",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M76XY3PYRWRTE99N44HPC2G1",
+        "op": "node.create",
+        "parent": "01M5X3GC1F8YT2560E864QREFK"
+      },
+      {
+        "decision": null,
+        "from": "01M76XY3PYRWRTE99N44HPC2G1",
+        "id": "01M76XY3QFHZQ00KTH2QCW9KV4",
+        "link": "01M76XY3QFHZQ00KTH2MHG507G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api (go test -trimpath ./internal/api -run SessionDone) assert: a check session with no round for its check and cycle is refused as a conflict naming rhiza run findings; after rhiza run findings --check with {\"findings\":[]} it succeeds; a critic session with one blocker unjudged is refused naming rhiza run verdict, and succeeds once every blocker and major has a verdict; a fixer session is never refused for this; the existing plan reviewer case still passes.",
+          "statement": "rhiza session done from a review check session refuses until a findings round (empty for a clean check) is journaled for its check and cycle, and from a critic session until a verdict is journaled for every blocker and major finding of its check's latest round, as plan reviewers already are."
+        },
+        "handle": "done-refuses-unrecorded-check",
+        "id": "01M76XY3QZ8A5JTZE1V5SG8Y8A",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M76XY3QZ8A5JTZE1V4EMAZMN",
+        "op": "node.create",
+        "parent": "01M5X3GC1F8YT2560E864QREFK"
+      },
+      {
+        "decision": null,
+        "from": "01M76XY3QZ8A5JTZE1V4EMAZMN",
+        "id": "01M76XY3RD31RVS70FHRH2V1RX",
+        "link": "01M76XY3RD31RVS70FHNRZPEXJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'Build|Review' asserts build.md and review.md each hold the own-command rule; go test -trimpath ./internal/workflow asserts no prompt in internal/workflow/builtin/*.toml contains '; rhiza session done' or '&& rhiza session done' and every prompt that names rhiza session done also says it is the very last action.",
+          "statement": "The build and review guide topics and every builtin workflow prompt that ends with rhiza session done say to run it as its own command, only after the recording command (rhiza run findings, rhiza run verdict, the Evidence write or the commit) succeeded, never chained after it with ; or &&."
+        },
+        "handle": "done-own-command-guide",
+        "id": "01M76XY3S1VF65NT8YXT5MS28P",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M76XY3S1VF65NT8YXQKZ4VZC",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "decision": null,
+        "from": "01M76XY3S1VF65NT8YXQKZ4VZC",
+        "id": "01M76XY3SNQJ9M76M0X53WWQCW",
+        "link": "01M76XY3SNQJ9M76M0X28FAPES",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76XNMMENQCK9PZMGC9YBG99",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76XY3T9NAYK38459THHPJCC",
+  "type": "ops",
+  "v": 1
+}
