@@ -316,6 +316,24 @@ func copyLink(l Link) Link {
 	return l
 }
 
+// StaleBaseError is the ErrConflict of an operation whose base is stale: Op
+// of ChangeSet, applied after Base on Node, wrote Aspects.
+type StaleBaseError struct {
+	Base      id.ID
+	Node      id.ID
+	Op        id.ID
+	ChangeSet id.ID
+	Aspects   []string
+}
+
+func (e *StaleBaseError) Error() string {
+	return fmt.Sprintf("%v: base %s of %s is stale: op %s of change set %s since wrote %s",
+		ErrConflict, e.Base, e.Node, e.Op, e.ChangeSet, strings.Join(e.Aspects, ", "))
+}
+
+// Unwrap makes it an ErrConflict.
+func (e *StaleBaseError) Unwrap() error { return ErrConflict }
+
 // Problem is one thing wrong with applying a change set's operations. Op is
 // zero for a problem with the change set as a whole. Err wraps exactly one
 // of the package's sentinels and is never nil.

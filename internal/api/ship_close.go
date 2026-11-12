@@ -238,8 +238,10 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 		return nil, err
 	}
 	if c, _ := w.changeSet(t.cs); c.State != changeset.StateLanded {
-		if err := shipLandWith(ctx, t, bin); err != nil {
-			return nil, err
+		lerr := shipLandWith(ctx, t, bin)
+		shipRecordModelConflict(ctx, t, &st, lerr)
+		if lerr != nil {
+			return nil, lerr
 		}
 		resp.Landed = true
 	}
