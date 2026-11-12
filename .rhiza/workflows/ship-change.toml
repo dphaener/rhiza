@@ -440,19 +440,19 @@ run = "rhiza ship deploy"
 
 [step.head-build-rebase]
 kind = "command"
-run = 'sh -c "$SHIP_HEAD_BUILD"'
+run = 'sh -c "${SHIP_HEAD_BUILD:?is not set: name the head build command in the workflow [env]}"'
 max_visits = 8
 on.pass = "rebase"
 
 [step.head-build-land]
 kind = "command"
-run = 'sh -c "$SHIP_HEAD_BUILD"'
+run = 'sh -c "${SHIP_HEAD_BUILD:?is not set: name the head build command in the workflow [env]}"'
 max_visits = 8
 on.pass = "land"
 
 [step.head-build-rebase-merge]
 kind = "command"
-run = 'sh -c "$SHIP_HEAD_BUILD"'
+run = 'sh -c "${SHIP_HEAD_BUILD:?is not set: name the head build command in the workflow [env]}"'
 max_visits = 8
 on.pass = "rebase-merge"
 

@@ -8,6 +8,9 @@ autonomous = true
 [env]
 GOTMPDIR = "{run_tmp}"
 SHIP_HEAD_RHIZA = "{run_tmp}/rhiza-head"
+# Only this file's [env] applies, not the included ship-change's, so its
+# head-build steps (which fail with no command) need SHIP_HEAD_BUILD here.
+SHIP_HEAD_BUILD = 'go build -o "$SHIP_HEAD_RHIZA" ./cmd/rhiza'
 
 [step.ship]
 kind = "workflow"
