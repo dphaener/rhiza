@@ -1754,7 +1754,7 @@ Exit code: set by the result, besides the shared codes.
 Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass.
 
 ```
-rhiza run review-check [--fresh]
+rhiza run review-check [--fresh] [--findings]
 ```
 
 Appends to the log.
@@ -1762,6 +1762,7 @@ Appends to the log.
 Arguments and flags:
 
 - `--fresh`: Only test that the latest round postdates the latest revise visit (or the run has none): exit 0 if so, non-zero if not; judges and writes nothing
+- `--findings`: Only test that the latest round holds at least one finding: exit 0 if so, non-zero for a clean round, which needs no critic; judges and writes nothing
 
 Output (`--json` fields):
 
@@ -2267,7 +2268,7 @@ Arguments and flags:
 - `--pr-open`: Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)
 - `--test-failures`: Exit 0 only if the head's latest ship check recorded at least one failing test or recognised cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, a make target error) read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)
 - `--conflicts`: Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed or once the run has made 3 conflict fixes (merge commits on the branch with its Review: trailer); reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)
-- `--model-conflict`: Exit 0 only if ship land recorded a refusal because the change set's own operation rests on a stale base (a node's fields rewritten by a landed change set) and the branch's head still has that conflict, else exit 1 (any other land failure, or the conflict repaired); reads the state file and the model only and records nothing (for a step that routes it to a fixer)
+- `--model-conflict`: Exit 0 only if the ship state records a land refused for a model conflict (a stale write another change set landed to the same node aspect), the branch is still at the head it was refused at, and the run has made fewer than 3 model-conflict fixes (commits on the branch carrying its Review: trailer and a Model-Conflict: trailer), else exit 1 naming why; with --json shows the conflict with both change sets' IDs and intents; reads the state file and git only and records nothing (for a step that routes a model conflict to a fixer)
 - `--reruns`: How many times a head's failed jobs are rerun before its failure stands, at least 1; default 1
 - `--infra`: Exit 0 only if the head's latest failing ship check recorded a red head (red_head) with no failing test read from a CI log: an infra failure; exit 1 for a green head, a red with failing tests, or any other failure; reads the state file only and records nothing (for a step that routes an infra red to a wait)
 - `--rerun-infra`: With --settled --changed: while the red head stays red with no failing test, rerun its failed jobs itself with backoff (first after 5m, then 10m, 20m, then every 30m; the last rerun's time and count are kept in the state file) and report not settled, naming the infra failure and the next rerun's time; settled once CI moved past the red head and finished green, finished red with a failing test, or a new head's CI finished
@@ -2286,7 +2287,7 @@ Output (`--json` fields):
 - `green` (boolean): True if settled and every check passed (success, neutral or skipped)
 - `main` (boolean): True if it checked the merge commit on main rather than the pull request
 - `merge_conflict` (object): A merge of main left in progress by a conflict in code: the files, origin/main's commits with their change sets and the branch's change set
-- `model_conflicts` (array of object): With --model-conflict: the operations of the change set resting on a stale base that still hold, each with its node, fields, stale base and the landed op and change set that rewrote them
+- `model_conflict` (object): With --model-conflict: the land's recorded model conflict, with both change sets' IDs and intents
 - `passed` (boolean): True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise
 - `pr` (integer): The pull request's number; 0 if none was found
 - `rebased` (string): With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main
@@ -2365,12 +2366,11 @@ Exit code: set by the result, besides the shared codes.
 Before a push, while CI is unstable, run the project's local gate command (rhiza.ship.localGate) in the change set's worktree and fail if it does; with CI stable or no gate set, do nothing.
 
 ```
-rhiza ship gate [--model-conflict] [--failed]
+rhiza ship gate [--failed]
 ```
 
 Arguments and flags:
 
-- `--model-conflict`: Before the gate runs, fail if the change set's own operations rest on a stale base (a landed change set rewrote the fields they write), naming the node and fields; conflicts of other in-flight change sets are ignored (the pre-land gate, so the run sends it to the model-conflict fixer)
 - `--failed`: Run no gate: exit 0 only if the branch is still at an unpushed head the local gate failed on (ship rebase left it) or the pre-push check failed on (ship open-pr or land), else exit 1 (a conflict or another failure); reads the state file only (for a step that routes a gate failing on a rebased head to a fixer)
 
 Output (`--json` fields):
@@ -2379,7 +2379,6 @@ Output (`--json` fields):
 - `error` (string): How a failing gate failed: its exit status or a timeout
 - `failed` (string): With --failed: the unpushed head ship rebase left after the gate failed on it, when the branch is still at it
 - `head` (string): The commit the gate passed on
-- `model_conflicts` (array of object): The change set's own operations resting on a stale base, each with its node, fields, stale base and the landed op and change set that rewrote them; the gate fails on them before running the project's gate (conflicts of other in-flight change sets are not counted)
 - `output` (string): The end of the gate's combined output, when it ran
 - `passed` (boolean): True if the gate ran and exited 0
 - `reason` (string): Why it ran (why CI is unstable) or why it was skipped
@@ -2424,7 +2423,6 @@ Output (`--json` fields):
 - `evidence_change` (string): The change set the Evidence was written into: the change set itself, or a record change set when it had already landed
 - `evidence_written` (boolean): True if this call wrote the Evidence; false if an earlier one had
 - `landed` (boolean): True if this call landed the change set; false if it had already landed
-- `model_conflicts` (array of object): The change set's own operations resting on a stale base, each with its node, fields, stale base and the landed op and change set that rewrote them; the land was refused, nothing was written, and the command exits 1
 - `pr` (integer): The pull request recorded
 - `pre_push_check` (object): The pre-push check that failed on the head, with its failing lines; nothing was pushed, and the command exits 1
 - `pushed` (string): The head pushed to the PR branch; empty if nothing needed pushing

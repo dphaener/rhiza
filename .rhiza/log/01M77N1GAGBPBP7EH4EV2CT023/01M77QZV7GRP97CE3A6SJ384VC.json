@@ -1,0 +1,63 @@
+{
+  "actor": "01M77QJRZ6DHM9TZM084FNXA4R",
+  "after": [
+    "01M77QEJT98YQPHBA7JZHB481M"
+  ],
+  "at": "2026-11-12T11:23:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a binary built from the branch head, in a scratch repo with a local bare origin and a fake gh: change set Ship it updated store's statement, then change set Other landed its own statement write. rhiza land --json exited 3 with error.conflict naming node, op, other change set and aspects [field:statement]; the human message is unchanged. rhiza ship check then rhiza ship land exited 3 with the same body and the ship state gained model_conflict (node, op, change_set, aspects, head). ship check --model-conflict --json passed (exit 0) with refused_change_set, intent 'Ship it', change_set and other_intent 'Other'; it failed with 'no model conflict is recorded' before any land, failed with 3 commits carrying Review: RUNX and Model-Conflict: when RHIZA_RUN=RUNX (passed for another run ID), failed once the branch moved past the recorded head, and refused --conflicts beside it (exit 2). After rhiza set store --rebase and a trailer commit, ship land landed, pushed and cleared model_conflict from the state. Scoped tests internal/api -run 'Ship|Land' (from a worktree outside ~/code) and internal/model pass. Minor: the passing human line reads 'open from cs/ship-it', not the conflict."
+        },
+        "handle": "ship-land-records-model-conflict-qa-1",
+        "id": "01M77QZV0JMEF9DC302ABRDZYC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77QZV0JMEF9DC302ABJ83SS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77QZV0JMEF9DC302ABJ83SS",
+        "id": "01M77QZV1TMQEKKXRME101GNK0",
+        "link": "01M77QZV1TMQEKKXRMDYZHFJC0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NA4P0Z0VX0NW4RM4J29Z5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a binary built from the branch head: rhiza workflow check ship-change reports the workflow valid (only the expected bypass warning, now naming model-conflict-fix); rhiza workflow describe ship-change shows land on.fail land-triage, land-triage on.fail land-conflict-triage, land-conflict-triage on.pass model-conflict-fix with no on.fail, and model-conflict-fix an agent step on.pass gate-land whose prompt names rhiza set --rebase and the Change:, Actor:, Review: and Model-Conflict: trailers; the repo's .rhiza/workflows copy matches the built-in from land to wait-landed. go test -trimpath ./internal/workflow/... and the run-ship-model-conflict and describe-golden testscripts pass (the fixer case goes land fail, land-triage fail, land-conflict-triage pass, one model-conflict-fix, gate-land, land pass and merges; a refused push ends at land-conflict-triage with no fixer)."
+        },
+        "handle": "ship-change-model-conflict-fix-step-qa-1",
+        "id": "01M77QZV2VRVZE4N2X6RQHHGWE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77QZV2VRVZE4N2X6Q3YZ4K0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77QZV2VRVZE4N2X6Q3YZ4K0",
+        "id": "01M77QZV5CPMGT8WT6V626H0DK",
+        "link": "01M77QZV5CPMGT8WT6V3X4SKNV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NA4TTXHP9DFK9NK1Z1453",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77N1GAGBPBP7EH4EV2CT023",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77QZV7GRP97CE3A6SJ384VC",
+  "type": "ops",
+  "v": 1
+}

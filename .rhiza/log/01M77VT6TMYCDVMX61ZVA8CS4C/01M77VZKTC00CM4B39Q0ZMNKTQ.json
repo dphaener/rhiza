@@ -1,0 +1,41 @@
+{
+  "actor": "01M77VYFAJTMMT7P8F41QCZSXZ",
+  "after": [
+    "01M77VY2KG7FMW14GN68NJXXQB"
+  ],
+  "at": "2026-11-12T12:33:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question asks which intent and what shape. Intent: m4-runs-hold-up says a run finishes without hand repair; here the orchestrator had to move a stray .github/workflows/rhiza.yml off main by hand, and the previous run-repair bug fix (#484) served the same intent, so it is the clear fit. Shape: the cause is run.TmpDir (internal/run/store.go:45) placing run tmp at <git common dir>/rhiza/runs/<id>/tmp and ship-change/bugfix/plan-bug/docs workflows setting GOTMPDIR={run_tmp}; go-internal testscript makes $WORK under GOTMPDIR, so scripts that run git/rhiza without their own repo resolve to ~/code/rhiza. Moving run tmp out of the repo fixes every workflow and any other tool that uses {run_tmp} at once without editing the .rhiza/workflows files, unlike per-workflow overrides. The Setup guard is the change set's second fix idea and is cheap defense in depth: it catches any other way $WORK lands in a repo (a hand-set GOTMPDIR, a future workflow), turning a silent write to main into a clear test failure. Both ideas come from the change set's own intent text; I kept the run tmp lifecycle (made at step start, removed at run end) unchanged so nothing else in the engine moves.",
+          "statement": "Change set 01M77VT6 serves m4-runs-hold-up. Fix it at the source and guard the tests: (1) a run's {run_tmp} moves outside every git repository, to a per-user cache dir (os.UserCacheDir()/rhiza/run-tmp/<run id>, falling back to os.TempDir()/rhiza-run-tmp-<uid>/<run id>), still made as a step starts and removed when the run ends, so GOTMPDIR and anything else a workflow points at {run_tmp} no longer sit under <git common dir>; run.TmpDir/Store.TmpDir and the {run_tmp} docs change accordingly and existing workflows need no edit. (2) cmd/rhiza's testscript Setup fails a script whose $WORK resolves inside a git work tree or git dir (git rev-parse from $WORK before the script runs), naming the path and saying to set GOTMPDIR outside the repo, so no script can reach a real repo again. A testscript or unit test covers each: {run_tmp} resolves outside the repo's common dir, and Setup refuses a $WORK under a git repo.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "decision-run-tmp-outside-repo",
+        "id": "01M77VZKS75A2ZFDRNFQWXM0NX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M77VZKS75A2ZFDRNFNYETS5E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77VZKS75A2ZFDRNFNYETS5E",
+        "id": "01M77VZKST8TKBMY6EPJ8CDZZD",
+        "link": "01M77VZKST8TKBMY6EPGB8G06E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77VY0DCQKZF713XEZRQ9DRG",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M77VT6TMYCDVMX61ZVA8CS4C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77VZKTC00CM4B39Q0ZMNKTQ",
+  "type": "ops",
+  "v": 1
+}

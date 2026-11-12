@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M77TYB7FN7AF083VC8T7T2P9"
+  ],
+  "at": "2026-11-12T12:55:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "6f30e305c976ad85408b03141575219424557150",
+          "pr": "https://github.com/dphaener/rhiza/pull/486",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #486 (https://github.com/dphaener/rhiza/pull/486) passed CI at 6f30e30",
+          "status": "verified"
+        },
+        "handle": "pr-486-fix-plan-workflows-visit",
+        "id": "01M77X8D7N8X5VPE1KDTQ4E7WQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77X8D7N8X5VPE1KDQ1F7YWH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77X8D7N8X5VPE1KDQ1F7YWH",
+        "id": "01M77X8D88EQ91T1GJ624Q6VF3",
+        "link": "01M77X8D88EQ91T1GJ60W0JZHS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NZCXG646BQB0FY09EKQPW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77NRZEXWM1MTHM3AWYJFMQE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77X8DAA5MK0TEB2N3G4000P",
+  "type": "ops",
+  "v": 1
+}

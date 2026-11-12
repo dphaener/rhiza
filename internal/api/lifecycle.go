@@ -419,7 +419,12 @@ func checkLand(sets []changeset.ChangeSet, cs id.ID) error {
 		if errors.Is(p.Err, gmodel.ErrConflict) {
 			next = "rhiza check"
 		}
-		return Conflictf("cannot land change set %s: %v", cs, p.Err).WithNext(next)
+		e := Conflictf("cannot land change set %s: %v", cs, p.Err).WithNext(next)
+		var sb *gmodel.StaleBaseError
+		if errors.As(p.Err, &sb) {
+			e.Conflict = &ModelConflict{Node: sb.Node.String(), Op: sb.Op.String(), ChangeSet: sb.ChangeSet.String(), Aspects: sb.Aspects}
+		}
+		return e
 	}
 	return nil
 }

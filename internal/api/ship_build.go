@@ -118,9 +118,25 @@ func shipActorFlags(ctx *Ctx) []string {
 func shipRunHead(ctx *Ctx, bin string, args ...string) ([]byte, error) {
 	out, err := ctx.Exec(bin, append(args, shipActorFlags(ctx)...), ctx.Root, nil)
 	if err != nil {
-		return nil, Errorf("ship: %s with the PR head's build: %s", args[0], headFailure(out, err))
+		e := Errorf("ship: %s with the PR head's build: %s", args[0], headFailure(out, err))
+		e.Conflict = headConflict(out)
+		return nil, e
 	}
 	return out, nil
+}
+
+// headConflict is the model conflict the child's --json error body carries
+// as structured fields, or nil when it carries none.
+func headConflict(out []byte) *ModelConflict {
+	var body ErrorResponse
+	if json.Unmarshal(bytes.TrimSpace(out), &body) != nil {
+		return nil
+	}
+	c := body.Error.Conflict
+	if c == nil || c.Node == "" || c.ChangeSet == "" {
+		return nil
+	}
+	return c
 }
 
 // headFailure describes a failed head-build run: err (which carries the

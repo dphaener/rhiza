@@ -1,0 +1,73 @@
+{
+  "actor": "01M77VTX0NEJ07A86XJVM0SFG3",
+  "after": [
+    "01M77W0YPMP4B6VAHWRVT9HE20"
+  ],
+  "at": "2026-11-12T12:34:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M77VZKS75A2ZFDRNFNYETS5E",
+        "id": "01M77W0Z8ATTDKCK6JWAD96ESM",
+        "link": "01M77W0Z8ATTDKCK6JW8KECKMM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77W0KWA2PE04QA93PQ5A08H",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests in internal/run and internal/api (go test -trimpath ./internal/run/... ./internal/api/... -run for the run-tmp tests, e.g. gotmp_test.go and run_abandon_gotmp_test.go) show run.TmpDir resolves outside the repo's git common dir, a step sees {run_tmp} at that path with the folder present, and after the run ends or is abandoned only that run's folder is removed (never the shared run-tmp parent nor another run's folder); the {run_tmp} wording in internal/workflow/spec.go and the workflow-env docs names the new location",
+          "statement": "A run's {run_tmp} folder lies outside every git repository, at os.UserCacheDir()/rhiza/run-tmp/<run id> (or os.TempDir()/rhiza-run-tmp-<uid>/<run id> when there is no user cache dir), made as a step starts and removed when the run finishes, fails or is abandoned, so GOTMPDIR and anything else a workflow points at {run_tmp} never sits under the repo's git dir; existing workflows need no edit"
+        },
+        "handle": "run-tmp-outside-repo",
+        "id": "01M77W0Z8V8WBNPS6AZD6J5GV1",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M77W0Z8V8WBNPS6AZAG67R86",
+        "op": "node.create",
+        "parent": "01M5TYGH047RKA27R0RBS38HKM"
+      },
+      {
+        "decision": null,
+        "from": "01M77W0Z8V8WBNPS6AZAG67R86",
+        "id": "01M77W0Z9DMD6KQMKKA1HD192W",
+        "link": "01M77W0Z9DMD6KQMKK9ZXMV89N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77VZKS75A2ZFDRNFNYETS5E",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in cmd/rhiza (go test -trimpath ./cmd/rhiza -run for it) calls the Setup check on a $WORK under a git work tree and under a .git dir and gets the error naming the path and GOTMPDIR, and on a $WORK outside any repo gets none; go test -trimpath ./cmd/rhiza -run TestScripts/ci-install passes",
+          "statement": "cmd/rhiza's testscript Setup fails a script before it runs when its $WORK resolves inside a git work tree or a git dir, with an error naming the path and saying to set GOTMPDIR outside the repository, so no script can write into a real repo"
+        },
+        "handle": "testscripts-refuse-work-in-repo",
+        "id": "01M77W0Z9YDVWCQT2RSZB51Y32",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M77W0Z9YDVWCQT2RSXGD8W91",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M77W0Z9YDVWCQT2RSXGD8W91",
+        "id": "01M77W0ZAF11H9HM2A7VJGS640",
+        "link": "01M77W0ZAF11H9HM2A7SBFF0JF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77VZKS75A2ZFDRNFNYETS5E",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M77VT6TMYCDVMX61ZVA8CS4C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77W0ZB08JP4MXWTS2P086TM",
+  "type": "ops",
+  "v": 1
+}

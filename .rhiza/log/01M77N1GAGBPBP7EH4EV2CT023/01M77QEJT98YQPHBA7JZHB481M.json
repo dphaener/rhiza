@@ -1,0 +1,40 @@
+{
+  "actor": "01M77QB7NR1SDP6PVY7TYX0CHN",
+  "after": [
+    "01M77PTD29PMXWVB0N0X83RGPN"
+  ],
+  "at": "2026-11-12T11:14:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 04706495d: go test -trimpath ./internal/workflow/... passed (TestShipChangeModelConflictFix asserts land-triage pass gate-fix-merge/fail land-conflict-triage/max_visits 4, land-conflict-triage running rhiza ship check --model-conflict with only on.pass model-conflict-fix and max_visits 4, model-conflict-fix an agent step passing only to gate-land with max_visits 3, land 4, gate-land 9, and the prompt naming rhiza set <node> --rebase and the Change/Actor/Review/Model-Conflict trailers). go test -trimpath ./cmd/rhiza -run TestScripts/run-ship-model-conflict passed: with a bare origin, fake gh and fake fixer, land is refused for the model conflict, the fixer commits one rebased update, the run returns through gate-land (visit 2), lands and merges; a refused push with no model conflict fails at land-conflict-triage with no fixer session. rhiza workflow check passed on every built-in toml and on the repo's ship-change, plan-bug and bugfix (only the expected bypass warnings). Read the diff: the repo's .rhiza/workflows/ship-change.toml carries the same steps and caps as the built-in."
+        },
+        "handle": "ship-change-model-conflict-fix-step-verified",
+        "id": "01M77QEJNYRTVS026M8Z0FBSTY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77QEJNYRTVS026M8W9Q5H7R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77QEJNYRTVS026M8W9Q5H7R",
+        "id": "01M77QEJRCV3EX1MAYF6PH9BDV",
+        "link": "01M77QEJRCV3EX1MAYF4CEX62G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NA4TTXHP9DFK9NK1Z1453",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77N1GAGBPBP7EH4EV2CT023",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77QEJT98YQPHBA7JZHB481M",
+  "type": "ops",
+  "v": 1
+}

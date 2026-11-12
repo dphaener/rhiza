@@ -1,0 +1,40 @@
+{
+  "actor": "01M77SKBYTN3GXMGGK71TZPHZT",
+  "after": [
+    "01M77SE7YC2BJZXSKX5FADQX6H"
+  ],
+  "at": "2026-11-12T11:54:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e520ec719 with the built binary (go build -trimpath into the session scratchpad): in a scratch Rhiza root and repo, with fake rex, claude and gh on PATH and a clean env, ran rhiza run start --foreground <record cs> --workflow plan (it runs plan-milestone). Run status showed review visit 1 (one finding) -> has-findings pass -> critic -> fresh -> check fail -> revise -> review visit 2 (clean {\"findings\":[]}) -> has-findings fail (exit 3: latest review round holds no finding, so it needs no critic) -> fresh -> check pass -> gate, with no critic visit 2, and prompts.log held exactly one critic prompt. Inside the live run, the fake reviewer ran rhiza run review-check --findings after each round: exit 0 after the round with a finding, exit 3 after the clean round. rhiza run verdict with {\"verdicts\":[]} on the clean round exited 2 ('at least one'). rhiza workflow describe plan and plan-milestone both show review on.pass -> has-findings. The run then failed at open-pr only because the hand-run fake gh lacks pr edit, which is outside this change."
+        },
+        "handle": "plan-clean-round-skips-critic-step-qa-1",
+        "id": "01M77SRQ4N82JB6AQQ325JZ7KQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77SRQ4N82JB6AQQ2YN1H1A6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77SRQ4N82JB6AQQ2YN1H1A6",
+        "id": "01M77SRQ5J0GSNK4W3076CYEQQ",
+        "link": "01M77SRQ5J0GSNK4W303MXGG85",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NZCXG646BQB0FY09EKQPW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77NRZEXWM1MTHM3AWYJFMQE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77SRQ66ZEBQD0F6HE0DS8GC",
+  "type": "ops",
+  "v": 1
+}

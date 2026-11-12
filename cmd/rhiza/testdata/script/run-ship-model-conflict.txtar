@@ -1,0 +1,268 @@
+# ship-change recovers from a land refused for a model conflict. Another
+# change set landed a write to the same node field (store's statement) that
+# the shipped change set also updates, so rhiza land refuses it. ship land
+# records the refusal; land-triage (ship gate --failed) fails, and
+# land-conflict-triage (ship check --model-conflict) passes it to
+# model-conflict-fix, a fixer session on the run worktree that moves the
+# stale update onto the landed version with rhiza set --rebase and commits,
+# never pushing. The run goes back through gate-land, which pushes the fix,
+# and lands once and merges.
+#
+# Case 1: the conflict is fixed by one fixer session; land runs twice (the
+# refused land, then the one that lands) and the PR merges.
+# Case 2: a land failing on a push origin refuses, with no model conflict,
+# ends the run at land-conflict-triage: no fixer session starts.
+#
+# The fakes are run-ship-conflict-fix.txtar's, with a fake fixer that
+# rebases the stale update.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+
+# Case 1.
+cd $WORK
+exec sh $WORK/setup.sh conflict
+cd repo
+exec sh -c 'rhiza run start --foreground $(cat $WORK/cs) --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$?'
+stdout '^exit=0$'
+stdout '^Run \S+ succeeded$'
+exec rhiza run status
+stdout '^- land \(visit 1\): fail, then land-triage'
+stdout '^- land-triage \(visit 1\): fail, then land-conflict-triage'
+stdout '^- land-conflict-triage \(visit 1\): pass, then model-conflict-fix: '
+stdout '^- model-conflict-fix \(visit 1\): pass, then gate-land'
+stdout '^- gate-land \(visit 2\): pass, then land'
+stdout '^- land \(visit 2\): pass, then wait-landed'
+! stdout '^- gate-fix-merge'
+! stdout '^- model-conflict-fix \(visit 2\)'
+exec sh -c 'wc -l < $WORK/fixes.log'
+stdout '^1$'
+exec grep '^pr merge' $WORK/gh.log
+exec git -C $WORK/origin.git log main --format=%s
+stdout 'Ship it \(#7\)'
+exec cat $WORK/fix-commit.log
+stdout '^Review: \S+$'
+stdout '^Model-Conflict: store$'
+exec sh -c 'rhiza change show $(cat $WORK/cs)'
+stdout '^- State: landed'
+
+# Case 2: a refused push is no model conflict.
+cd $WORK
+exec sh $WORK/setup.sh plain
+cd repo
+exec sh -c 'rhiza run start --foreground $(cat $WORK/cs) --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+exec touch $WORK/refuse
+exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$?'
+stdout '^Run \S+ failed$'
+exec rhiza run status
+stdout '^- land \(visit 1\): fail, then land-triage'
+stdout '^- land-triage \(visit 1\): fail, then land-conflict-triage'
+stdout '^- land-conflict-triage \(visit 1\): fail'
+! stdout '^- model-conflict-fix'
+! exists $WORK/fixes.log
+-- setup.sh --
+#!/bin/sh
+# A fresh bare origin that refuses pushes while $WORK/refuse exists, and a
+# repo with an accepted change set, Ship it, pushed to it. With "conflict",
+# Ship it updates store's statement and another change set then lands a
+# write to the same field, so Ship it's land is refused for a model conflict.
+set -e
+rm -rf "$WORK/origin.git" "$WORK/repo" "$WORK/repo.ship-it"
+rm -f "$WORK/gh.log" "$WORK/pr.created" "$WORK/fixes.log" "$WORK/fix-commit.log" "$WORK/ship.log" "$WORK/refuse" "$WORK/typed.log" "$WORK/tab.out" "$WORK/cs"
+git init -q --bare "$WORK/origin.git"
+cat > "$WORK/origin.git/hooks/pre-receive" <<'HOOK'
+#!/bin/sh
+if [ -f "$WORK/refuse" ]; then
+	echo "push refused" >&2
+	exit 1
+fi
+HOOK
+chmod 755 "$WORK/origin.git/hooks/pre-receive"
+mkdir "$WORK/repo"
+cd "$WORK/repo"
+git init -q
+git remote add origin "$WORK/origin.git"
+rhiza init > /dev/null
+mkdir .rhiza/workflows
+cp "$WORK/ship.sh" .rhiza/workflows/ship.sh
+cp "$WORK/review.toml" .rhiza/workflows/review.toml
+rhiza change new 'Base' --title 'Base' --json > /dev/null
+rhiza add capability store --field 'statement=Stores base' > /dev/null
+rhiza propose > /dev/null
+rhiza accept --reason ok > /dev/null
+rhiza land > /dev/null
+rhiza change new 'Ship it' --title 'Ship it' --json | grep -m1 '"change_set"' | sed 's/.*: "\(.*\)".*/\1/' > "$WORK/cs"
+rhiza add capability first --field 'statement=Does first' > /dev/null
+if [ "$1" = conflict ]; then
+	rhiza set store --field 'statement=Stores mine' > /dev/null
+fi
+rhiza propose > /dev/null
+rhiza accept --reason ok > /dev/null
+if [ "$1" = conflict ]; then
+	rhiza change new 'Other' --title 'Other' --json > /dev/null
+	rhiza set store --field 'statement=Stores theirs' > /dev/null
+	rhiza propose > /dev/null
+	rhiza accept --reason ok > /dev/null
+	rhiza land > /dev/null
+	rhiza change use "$(cat "$WORK/cs")" > /dev/null
+fi
+git add -A
+git commit -qm 'Start shipping'
+git push -q -u origin main
+-- review.toml --
+# The repo's own review, as the built-in one but with two fake checks.
+# Its code step runs rhiza check, which passes only because ship-change
+# rendered and committed what build's sessions wrote.
+[step.code]
+kind = "command"
+run = "rhiza run code-check"
+on.pass = "review"
+
+[step.review]
+kind = "checks"
+interval = "50ms"
+max_visits = 3
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "beta"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 3
+on.pass = "done"
+on.changes = "review"
+-- ship.sh --
+#!/bin/sh
+echo shipped >> "$WORK/ship.log"
+echo shipped >> "$WORK/order.log"
+-- bin/rex --
+#!/bin/sh
+case "$1" in
+send | send-key)
+	echo "$*" >> "$WORK/typed.log"
+	exit 0
+	;;
+esac
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		if [ -f "$WORK/bg" ]; then
+			(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		else
+			(cd "$dir" && "$@") >&2 || true
+		fi
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+case "$RHIZA_ROLE" in
+builder)
+	echo built > feature.txt
+	git add feature.txt
+	git commit -q -m "build $RHIZA_LEAF" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: $RHIZA_LEAF" -- feature.txt || exit 1
+	;;
+verifier)
+	rhiza add evidence "$RHIZA_LEAF-verified" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-verified" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+check)
+	echo '{"findings":[]}' > "$WORK/empty-round.json"
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+	;;
+*)
+	# The model-conflict-fix agent step: no role. ship check --json shows
+	# the conflict; rebase the stale update, render, commit with the run's
+	# Review: trailer (from the prompt), never push.
+	case "$last" in
+	*"Fix the model conflict"*) ;;
+	*) exit 0 ;;
+	esac
+	rhiza ship check --model-conflict --json > "$WORK/fix-input.json" 2>&1
+	grep -q '"model_conflict"' "$WORK/fix-input.json" || exit 1
+	grep -q '"other_intent"' "$WORK/fix-input.json" || exit 1
+	rhiza set store --rebase --field 'statement=Stores mine and theirs' >&2 || exit 1
+	rhiza render >&2 || exit 1
+	rhiza check >&2 || exit 1
+	run=$(printf '%s' "$last" | sed -n 's/.*in run \([^:]*\):.*/\1/p')
+	git add -A -- .rhiza/rendered .rhiza/log
+	git commit -q -m "Rebase store's statement" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Review: $run
+Model-Conflict: store" || exit 1
+	echo "$run" >> "$WORK/fixes.log"
+	git log -1 --format=%B > "$WORK/fix-commit.log"
+	rhiza session done >&2 || exit 1
+	;;
+esac
+exit 0
+-- bin/gh --
+#!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ "$3" = 7 ]; then
+		printf '{"mergeCommit":{"oid":"%s"},"state":"MERGED"}\n' "$(cat "$WORK/merge.sha")"
+		exit 0
+	fi
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3") || [ ! -f "$WORK/pr.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	m=MERGEABLE
+	if ! git -C "$o" merge-base --is-ancestor main "$head"; then
+		m=CONFLICTING
+	fi
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","mergeable":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"},{"context":"lint","state":"SUCCESS"}]}\n' "$head" "$m"
+	;;
+"pr create")
+	touch "$WORK/pr.created"
+	;;
+"pr edit")
+	;;
+"pr merge")
+	head=$(git -C "$o" rev-parse refs/heads/cs/ship-it)
+	if [ "$6" != "$head" ]; then
+		echo "head branch was modified" >&2
+		exit 1
+	fi
+	sha=$(git -C "$o" commit-tree "$head^{tree}" -p refs/heads/main -m 'Ship it (#7)')
+	git -C "$o" update-ref refs/heads/main "$sha"
+	echo "$sha" > "$WORK/merge.sha"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

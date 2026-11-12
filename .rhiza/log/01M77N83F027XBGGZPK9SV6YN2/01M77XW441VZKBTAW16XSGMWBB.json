@@ -1,0 +1,30 @@
+{
+  "actor": "01M77XPSRB872C293NZWNXW9NY",
+  "after": [
+    "01M77TQ4W3YJCZ98Y57TFP1A3W"
+  ],
+  "at": "2026-11-12T13:06:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "13d1ddd0-9d8d-4ad6-8dce-01a1cfdb4993",
+          "statement": "Merge clash: change set 01M77N83 (this branch, Decision ship-land-model-conflict-repair) and 01M77N1G (landed on main via #484, Decision ship-land-model-conflict-rebase) each implement `rhiza ship check --model-conflict` and a model-conflict fixer route, and the two are incompatible. Clashing files: internal/api/ship.go, internal/model/apply.go, both ship-change.toml, workflow_test.go, cli.md and describe-golden. Main: land records one conflict (StaleBaseError → api.Error.Conflict) in state.model_conflict. --model-conflict passes only if HEAD equals the refused head and the run has made fewer than 3 commits with a Model-Conflict: trailer. It prints model_conflict with both intents. Route: land-triage → land-conflict-triage → model-conflict-fix → gate-land. This branch: land checks WhatIf before writing anything and records a model_conflicts list. --model-conflict passes while the recorded conflicts still hold in the model. ship check and `ship gate --model-conflict` also fail before push. Route: model-conflict-triage, gate-model-conflict-triage and pr-model-conflict-fix → render-model-conflict. Which design should the merge keep?"
+        },
+        "handle": "question-13d1ddd0-1",
+        "id": "01M77XVZ8NDQW5V75QJ1EHG2M9",
+        "key": null,
+        "kind": "question",
+        "node": "01M77XVZ8NDQW5V75QHY9SDTK2",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M77N83F027XBGGZPK9SV6YN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77XW441VZKBTAW16XSGMWBB",
+  "type": "ops",
+  "v": 1
+}

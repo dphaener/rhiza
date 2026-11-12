@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"maps"
 	"slices"
-	"strings"
 
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
@@ -303,7 +302,7 @@ func checkBase(cs id.ID, o op.Op, t id.ID, retired bool, history []Ref, written 
 			continue
 		}
 		if overlaps(mine, written[j]) {
-			return &ConflictError{Target: t, Base: o.Base, LandedOp: history[j].Op, LandedChange: history[j].ChangeSet, Aspects: slices.Clone(written[j])}, nil
+			return &StaleBaseError{Base: o.Base, Node: t, Op: history[j].Op, ChangeSet: history[j].ChangeSet, Aspects: slices.Clone(written[j])}, nil
 		}
 	}
 	if retired {
@@ -313,25 +312,6 @@ func checkBase(cs id.ID, o op.Op, t id.ID, retired bool, history []Ref, written 
 	}
 	return nil, nil
 }
-
-// ConflictError is the ErrConflict of an operation whose base is stale: the
-// target, the base the operation rests on, and the operation of another
-// change set applied since that wrote an aspect the operation also writes.
-type ConflictError struct {
-	Target       id.ID
-	Base         id.ID
-	LandedOp     id.ID
-	LandedChange id.ID
-	Aspects      []string
-}
-
-func (e *ConflictError) Error() string {
-	return fmt.Sprintf("%v: base %s of %s is stale: op %s of change set %s since wrote %s",
-		ErrConflict, e.Base, e.Target, e.LandedOp, e.LandedChange, strings.Join(e.Aspects, ", "))
-}
-
-// Is makes the error match ErrConflict.
-func (e *ConflictError) Is(target error) bool { return target == ErrConflict }
 
 func (b *builder) exists(i id.ID) bool {
 	_, n := b.node(i)

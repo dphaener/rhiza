@@ -16420,6 +16420,10 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "findings": {
+            "description": "Only test that the latest round holds at least one finding: exit 0 if so, non-zero for a clean round, which needs no critic; judges and writes nothing",
+            "type": "boolean"
+          },
           "fresh": {
             "description": "Only test that the latest round postdates the latest revise visit (or the run has none): exit 0 if so, non-zero if not; judges and writes nothing",
             "type": "boolean"
@@ -23605,7 +23609,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "model_conflict": {
-            "description": "Exit 0 only if ship land recorded a refusal because the change set's own operation rests on a stale base (a node's fields rewritten by a landed change set) and the branch's head still has that conflict, else exit 1 (any other land failure, or the conflict repaired); reads the state file and the model only and records nothing (for a step that routes it to a fixer)",
+            "description": "Exit 0 only if the ship state records a land refused for a model conflict (a stale write another change set landed to the same node aspect), the branch is still at the head it was refused at, and the run has made fewer than 3 model-conflict fixes (commits on the branch carrying its Review: trailer and a Model-Conflict: trailer), else exit 1 naming why; with --json shows the conflict with both change sets' IDs and intents; reads the state file and git only and records nothing (for a step that routes a model conflict to a fixer)",
             "type": "boolean"
           },
           "pr_open": {
@@ -23782,50 +23786,55 @@ cmp stdout describe.golden.json
             ],
             "type": "object"
           },
-          "model_conflicts": {
-            "description": "With --model-conflict: the operations of the change set resting on a stale base that still hold, each with its node, fields, stale base and the landed op and change set that rewrote them",
-            "items": {
-              "additionalProperties": false,
-              "properties": {
-                "base": {
-                  "description": "The stale base: the operation the shipping operation was written on",
+          "model_conflict": {
+            "additionalProperties": false,
+            "description": "With --model-conflict: the land's recorded model conflict, with both change sets' IDs and intents",
+            "properties": {
+              "aspects": {
+                "description": "The aspects it wrote, such as field:statement",
+                "items": {
                   "type": "string"
                 },
-                "fields": {
-                  "description": "The aspects the landed operation rewrote that the operation also writes: field:<name>, handle, position or retired",
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
-                "landed_change": {
-                  "description": "The change set that landed it",
-                  "type": "string"
-                },
-                "landed_op": {
-                  "description": "The landed operation that rewrote them",
-                  "type": "string"
-                },
-                "node": {
-                  "description": "The node (or link) the operation writes",
-                  "type": "string"
-                },
-                "op": {
-                  "description": "The shipping change set's operation resting on the stale base",
-                  "type": "string"
-                }
+                "type": "array"
               },
-              "required": [
-                "base",
-                "fields",
-                "landed_change",
-                "landed_op",
-                "node",
-                "op"
-              ],
-              "type": "object"
+              "change_set": {
+                "description": "The other change set, which landed the conflicting operation",
+                "type": "string"
+              },
+              "head": {
+                "description": "The branch head the land was refused at",
+                "type": "string"
+              },
+              "intent": {
+                "description": "The refused change set's intent",
+                "type": "string"
+              },
+              "node": {
+                "description": "The node the stale write is on",
+                "type": "string"
+              },
+              "op": {
+                "description": "The conflicting operation, of the other change set",
+                "type": "string"
+              },
+              "other_intent": {
+                "description": "The other change set's intent",
+                "type": "string"
+              },
+              "refused_change_set": {
+                "description": "The change set the land was refused for",
+                "type": "string"
+              }
             },
-            "type": "array"
+            "required": [
+              "aspects",
+              "change_set",
+              "head",
+              "node",
+              "op",
+              "refused_change_set"
+            ],
+            "type": "object"
           },
           "passed": {
             "description": "True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise",
@@ -24064,10 +24073,6 @@ cmp stdout describe.golden.json
           "failed": {
             "description": "Run no gate: exit 0 only if the branch is still at an unpushed head the local gate failed on (ship rebase left it) or the pre-push check failed on (ship open-pr or land), else exit 1 (a conflict or another failure); reads the state file only (for a step that routes a gate failing on a rebased head to a fixer)",
             "type": "boolean"
-          },
-          "model_conflict": {
-            "description": "Before the gate runs, fail if the change set's own operations rest on a stale base (a landed change set rewrote the fields they write), naming the node and fields; conflicts of other in-flight change sets are ignored (the pre-land gate, so the run sends it to the model-conflict fixer)",
-            "type": "boolean"
           }
         },
         "required": [],
@@ -24091,51 +24096,6 @@ cmp stdout describe.golden.json
           "head": {
             "description": "The commit the gate passed on",
             "type": "string"
-          },
-          "model_conflicts": {
-            "description": "The change set's own operations resting on a stale base, each with its node, fields, stale base and the landed op and change set that rewrote them; the gate fails on them before running the project's gate (conflicts of other in-flight change sets are not counted)",
-            "items": {
-              "additionalProperties": false,
-              "properties": {
-                "base": {
-                  "description": "The stale base: the operation the shipping operation was written on",
-                  "type": "string"
-                },
-                "fields": {
-                  "description": "The aspects the landed operation rewrote that the operation also writes: field:<name>, handle, position or retired",
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
-                "landed_change": {
-                  "description": "The change set that landed it",
-                  "type": "string"
-                },
-                "landed_op": {
-                  "description": "The landed operation that rewrote them",
-                  "type": "string"
-                },
-                "node": {
-                  "description": "The node (or link) the operation writes",
-                  "type": "string"
-                },
-                "op": {
-                  "description": "The shipping change set's operation resting on the stale base",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "base",
-                "fields",
-                "landed_change",
-                "landed_op",
-                "node",
-                "op"
-              ],
-              "type": "object"
-            },
-            "type": "array"
           },
           "output": {
             "description": "The end of the gate's combined output, when it ran",
@@ -24245,51 +24205,6 @@ cmp stdout describe.golden.json
           "landed": {
             "description": "True if this call landed the change set; false if it had already landed",
             "type": "boolean"
-          },
-          "model_conflicts": {
-            "description": "The change set's own operations resting on a stale base, each with its node, fields, stale base and the landed op and change set that rewrote them; the land was refused, nothing was written, and the command exits 1",
-            "items": {
-              "additionalProperties": false,
-              "properties": {
-                "base": {
-                  "description": "The stale base: the operation the shipping operation was written on",
-                  "type": "string"
-                },
-                "fields": {
-                  "description": "The aspects the landed operation rewrote that the operation also writes: field:<name>, handle, position or retired",
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
-                "landed_change": {
-                  "description": "The change set that landed it",
-                  "type": "string"
-                },
-                "landed_op": {
-                  "description": "The landed operation that rewrote them",
-                  "type": "string"
-                },
-                "node": {
-                  "description": "The node (or link) the operation writes",
-                  "type": "string"
-                },
-                "op": {
-                  "description": "The shipping change set's operation resting on the stale base",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "base",
-                "fields",
-                "landed_change",
-                "landed_op",
-                "node",
-                "op"
-              ],
-              "type": "object"
-            },
-            "type": "array"
           },
           "pr": {
             "description": "The pull request recorded",
@@ -24535,51 +24450,6 @@ cmp stdout describe.golden.json
               "head": {
                 "description": "The commit the gate passed on",
                 "type": "string"
-              },
-              "model_conflicts": {
-                "description": "The change set's own operations resting on a stale base, each with its node, fields, stale base and the landed op and change set that rewrote them; the gate fails on them before running the project's gate (conflicts of other in-flight change sets are not counted)",
-                "items": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "base": {
-                      "description": "The stale base: the operation the shipping operation was written on",
-                      "type": "string"
-                    },
-                    "fields": {
-                      "description": "The aspects the landed operation rewrote that the operation also writes: field:<name>, handle, position or retired",
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
-                    "landed_change": {
-                      "description": "The change set that landed it",
-                      "type": "string"
-                    },
-                    "landed_op": {
-                      "description": "The landed operation that rewrote them",
-                      "type": "string"
-                    },
-                    "node": {
-                      "description": "The node (or link) the operation writes",
-                      "type": "string"
-                    },
-                    "op": {
-                      "description": "The shipping change set's operation resting on the stale base",
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "base",
-                    "fields",
-                    "landed_change",
-                    "landed_op",
-                    "node",
-                    "op"
-                  ],
-                  "type": "object"
-                },
-                "type": "array"
               },
               "output": {
                 "description": "The end of the gate's combined output, when it ran",

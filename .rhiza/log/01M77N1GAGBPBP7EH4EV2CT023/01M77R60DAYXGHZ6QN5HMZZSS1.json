@@ -1,0 +1,29 @@
+{
+  "actor": "01M77R4ZTK6RK9CQR7HMTZ0BXH",
+  "after": [
+    "01M77QZV7GRP97CE3A6SJ384VC"
+  ],
+  "at": "2026-11-12T11:27:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M76RT010NG76M92D8E44QJ9T",
+        "handle": null,
+        "id": "01M77R60BSMSNWP45HBC7YWSZG",
+        "node": "01M76RT010NG76M92D8AF73776",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/workflow/... passes, checking that ship-change.toml's open-pr, push-merge and land go on.fail to a ship gate --failed triage whose on.pass is gate-fix (gate-fix-merge for land), that open-pr's and push-merge's triages have no on.fail and land-triage's on.fail is land-conflict-triage, that rebase still reaches gate-fix through rebase-triage and rebase-gate-failed, and that gate-fix's and gate-fix-merge's max_visits are unchanged; go test -trimpath ./internal/api -run TestShipGate passes, showing ship gate --failed passing on a head the pre-push check failed on and failing after an open-pr or land failure that was not the pre-push check (a gh or push error); make self-check runs go test -trimpath ./internal/workflow -run TestRepoWorkflowsPrePushFix, which fails if a repo .rhiza/workflows/ship-change.toml lacks that routing (the ship gate --failed triages passing to gate-fix and gate-fix-merge), and any such copy on main carries it",
+          "statement": "In the built-in ship-change workflow (and its wrappers such as bugfix), open-pr, push-merge and land, which have no on.fail today, each go on.fail to a triage step running rhiza ship gate --failed, as rebase does through rebase-triage and rebase-gate-failed; it passes only on a head the pre-push check (or local gate) failed on and then goes to the existing gate-fix fixer (gate-fix-merge after land) within its cap, and any other failure of those steps (gh, network, git) fails the triage and ends the run as today: open-pr's and push-merge's triages have no on.fail, and land's (land-triage) goes on.fail only to land-conflict-triage (ship-change-model-conflict-fix-step), which passes only for a recorded model conflict, so a gh, network or git failure of land still ends the run; ship gate --failed reports a head the pre-push check failed on, and the fixers' prompt reads the failing pre-push lines as well as a failing local gate's"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M77N1GAGBPBP7EH4EV2CT023",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77R60DAYXGHZ6QN5HMZZSS1",
+  "type": "ops",
+  "v": 1
+}

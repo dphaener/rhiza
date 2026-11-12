@@ -78,14 +78,11 @@ type ShipLandResponse struct {
 	// PrePushCheck is set when the pre-push check failed on the land
 	// commit: nothing was pushed and the command exits 1.
 	PrePushCheck *ShipPrePushCheck `json:"pre_push_check,omitempty" desc:"The pre-push check that failed on the head, with its failing lines; nothing was pushed, and the command exits 1"`
-	// ModelConflicts is set when the land was refused: the change set's own
-	// operations rest on a stale base. Recorded in the ship state too.
-	ModelConflicts []ShipModelConflict `json:"model_conflicts,omitempty" desc:"The change set's own operations resting on a stale base, each with its node, fields, stale base and the landed op and change set that rewrote them; the land was refused, nothing was written, and the command exits 1"`
 }
 
 // ExitCode is 1 when the pre-push check failed.
 func (r ShipLandResponse) ExitCode() int {
-	if r.PrePushCheck != nil || len(r.ModelConflicts) > 0 {
+	if r.PrePushCheck != nil {
 		return 1
 	}
 	return 0
@@ -229,24 +226,6 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 	}
 
 	resp := ShipLandResponse{Change: t.cs.String(), PR: st.PR, Evidence: shipEvidenceHandle(st.PR, t.slug), Rendered: []string{}}
-	// A change set whose own operation rests on a stale base cannot land:
-	// say so distinctly and record it, before anything is written.
-	if w0, err := openCtxWorkspace(ctx); err != nil {
-		return nil, err
-	} else if c, _ := w0.changeSet(t.cs); c.State != changeset.StateLanded {
-		mcs, err := shipModelConflicts(ctx, t.cs)
-		if err != nil {
-			return nil, err
-		}
-		if len(mcs) > 0 {
-			st.ModelConflicts = mcs
-			if err := writeShipState(t.statePath(), st); err != nil {
-				return nil, err
-			}
-			resp.ModelConflicts = mcs
-			return resp, nil
-		}
-	}
 	if err := shipRecordEvidence(ctx, t, st, &resp); err != nil {
 		return nil, err
 	}
@@ -259,8 +238,10 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 		return nil, err
 	}
 	if c, _ := w.changeSet(t.cs); c.State != changeset.StateLanded {
-		if err := shipLandWith(ctx, t, bin); err != nil {
-			return nil, err
+		lerr := shipLandWith(ctx, t, bin)
+		shipRecordModelConflict(ctx, t, &st, lerr)
+		if lerr != nil {
+			return nil, lerr
 		}
 		resp.Landed = true
 	}
@@ -299,7 +280,6 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 			return nil, err
 		}
 		st.Pushed = resp.Pushed
-		st.ModelConflicts = nil
 		if !shipConflictUnresolved(ctx, t, st.MergeConflict) {
 			st.MergeConflict = nil
 		}
@@ -682,10 +662,6 @@ func shipCommandDir(ctx *Ctx) string {
 
 // Human lists what ship land did.
 func (r ShipLandResponse) Human(w io.Writer) {
-	if len(r.ModelConflicts) > 0 {
-		fmt.Fprintf(w, "Refused to land change set %s: its own operations rest on a stale base: %s.\n", r.Change, modelConflictText(r.ModelConflicts))
-		return
-	}
 	if r.EvidenceWritten {
 		fmt.Fprintf(w, "Recorded PR #%d as evidence %s, verifying %d %s.\n", r.PR, r.Evidence,
 			len(r.Verifies), shipPlural(len(r.Verifies), "capability", "capabilities"))

@@ -87,12 +87,14 @@ exec cat $WORK/done.out
 # Once a round was journaled, done passed and the step went to the critic,
 # visit 2's round being empty.
 exec sh -c 'rhiza run status $(cat $WORK/run2)'
-stdout '^- review \(visit 1\): pass, then critic, '
+stdout '^- review \(visit 1\): pass, then has-findings, '
+stdout '^- has-findings \(visit 1\): pass, then critic: exit 0$'
 stdout '^- check \(visit 1\): fail, then revise: exit 1$'
-stdout '^- review \(visit 2\): pass, then critic, '
+stdout '^- review \(visit 2\): pass, then has-findings, '
+stdout '^- has-findings \(visit 2\): fail, then fresh: exit 3'
 stdout '^- check \(visit 2\): pass, then gate: exit 0$'
 exec cat $WORK/prompts.log
-stdout -count=2 'as the critic'
+stdout -count=1 'as the critic'
 exec sh -c 'rhiza run status $(cat $WORK/run2) --json'
 stdout '"round": 2'
 fold-ok

@@ -1,0 +1,30 @@
+{
+  "actor": "01M77VTX0NEJ07A86XJVM0SFG3",
+  "after": [
+    "01M77VT6TMYCDVMX61ZYENJJWQ"
+  ],
+  "at": "2026-11-12T12:32:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "0dbe292c-3574-4c27-9bf7-01a1cfbd59e9",
+          "statement": "Change set 01M77VT6 (testscripts run inside a ship run write into ~/code/rhiza's main tree) serves no intent yet. The last run-repair bug fix (#484) served m4-runs-hold-up ('a run finishes without hand repair'), and the orchestrator had to move a stray file by hand here. Which intent should it serve? / How should the fix be shaped? Cause: workflows set GOTMPDIR={run_tmp} = <git common dir>/rhiza/runs/<id>/tmp, and go-internal testscript creates $WORK under $GOTMPDIR, so scripts that don't init their own repo reach ~/code/rhiza."
+        },
+        "handle": "question-0dbe292c-1",
+        "id": "01M77VY0DCQKZF713XF2Z5ZJBE",
+        "key": null,
+        "kind": "question",
+        "node": "01M77VY0DCQKZF713XEZRQ9DRG",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M77VT6TMYCDVMX61ZVA8CS4C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77VY2KG7FMW14GN68NJXXQB",
+  "type": "ops",
+  "v": 1
+}

@@ -110,16 +110,6 @@ kind = "command"
 run = "rhiza ship check"
 max_visits = 10
 on.pass = "signoff"
-on.fail = "pr-model-conflict-triage"
-
-# ship check also fails on a model conflict in the change set's own
-# operations (a stale base): the same fixer takes it, before sign-off. Any
-# other failure goes on to conflict-triage.
-[step.pr-model-conflict-triage]
-kind = "command"
-run = "rhiza ship check --model-conflict"
-max_visits = 10
-on.pass = "pr-model-conflict-fix"
 on.fail = "conflict-triage"
 
 # The PR's merge with main conflicts in code and waits for a fixer: only
@@ -250,81 +240,50 @@ on.fail = "conflict-triage"
 
 [step.gate-land]
 kind = "command"
-run = "rhiza ship gate --model-conflict"
+run = "rhiza ship gate"
 stall = "70m"
-max_visits = 6
+max_visits = 9
 on.pass = "land"
-on.fail = "gate-model-conflict-triage"
-
-# The pre-land gate fails on a model conflict in the change set's own
-# operations before it runs the project's gate: that goes to the model-conflict
-# fixer, any other gate failure to the gate's fixer.
-[step.gate-model-conflict-triage]
-kind = "command"
-run = "rhiza ship check --model-conflict"
-max_visits = 6
-on.pass = "model-conflict-fix"
 on.fail = "gate-fix"
 
 [step.land]
 kind = "command"
 run = "rhiza ship land"
-max_visits = 3
+max_visits = 4
 on.pass = "wait-landed"
 on.fail = "land-triage"
 
 # land fails on the pre-push check of its push (the change set is landed,
-# the head recorded), on a model conflict (one of the change set's own
-# operations rests on a base a landed change set has since rewritten:
-# nothing is written) or on gh, network or git. The first passes, to
-# gate-fix-merge; the second goes on to model-conflict-triage; anything
-# else ends the run there.
+# the head recorded), on a model conflict (rhiza land refused it because
+# another change set wrote the same node field first, recorded in the ship
+# state) or on gh, network or git. A failed pre-push check passes to
+# gate-fix-merge; anything else goes to land-conflict-triage, which passes
+# only for a recorded model conflict, so a gh, git or network failure still
+# ends the run.
 [step.land-triage]
 kind = "command"
 run = "rhiza ship gate --failed"
-max_visits = 3
+max_visits = 4
 on.pass = "gate-fix-merge"
-on.fail = "model-conflict-triage"
+on.fail = "land-conflict-triage"
 
-# Passes only for a refusal ship land recorded on the change set's own stale
-# base that the branch's head still has: to the fixer. Every other land
-# failure fails here and ends the run.
-[step.model-conflict-triage]
+# Passes only for a model conflict recorded at the current head with fewer
+# than 3 model-conflict fixes made: a 4th conflict ends the run here, on
+# ship check's "3 fixes made" reason, not on a cap.
+[step.land-conflict-triage]
 kind = "command"
 run = "rhiza ship check --model-conflict"
-max_visits = 3
+max_visits = 4
 on.pass = "model-conflict-fix"
 
-# One fixer restates each conflicting update on the landed version and
-# commits the rewritten log entry; the run goes back through render, the
-# gate and land. A conflict that returns after max_visits fixes ends the run
-# at the triage, naming the conflict.
+# One fixer on the run worktree: it moves each stale update onto the node's
+# landed version and commits, never pushing. The run goes back through
+# gate-land, which pushes the fix once and lands again.
 [step.model-conflict-fix]
 kind = "agent"
-prompt = "/rhiza-review Repair the model conflict that refused the land of change set {change} in run {run}: ship land refused because operations of this change set rest on a base that a landed change set has since rewritten. Read them from `rhiza ship check --model-conflict --json` (its model_conflicts: each op, node, fields, stale base, and the landed op and change set that rewrote them), and `rhiza show` the node and both change sets for their intent. For each conflicting update, restate it on the landed version with `rhiza set <ref> --rebase` (the CLI spells the rebase so; see its help for the update's fields): keep the landed change's work and add this change set's intent, so both hold. Then run `rhiza ship check --model-conflict` to see it exits 1, and `rhiza check` to see the model is sound. Stage the rewritten `.rhiza/log` entry (`git add -A -- .rhiza/log`) and commit it with a message whose final paragraph holds the `Change: {change}`, `Actor:` and `Review: {run}` trailers together with any Co-Authored-By. Never push, never rebase the branch and never force anything. If both sides cannot hold, ask one blocking question here in the session (AskUserQuestion) naming the node and both change sets. Then run `rhiza session done` as your very last action."
-until = "! rhiza ship check --model-conflict"
+prompt = "/rhiza-review Fix the model conflict that refused the land of change set {change} in run {run}: another change set landed a write to a node this change set also writes, so `rhiza land` refused this one. Read both change sets' intent and the conflict (node, op, other change set, aspects) from `rhiza ship check --model-conflict --json`, and `rhiza show` both change sets. For each stale update of this change set to that node, move it onto the node's landed version with `rhiza set <node> --rebase`, setting every field the update writes, so both sides' edits hold. Run `rhiza check`, stage `.rhiza/log` and `.rhiza/rendered` (`git add -A -- .rhiza/rendered .rhiza/log`) and commit with a message whose final paragraph holds the `Change: {change}`, `Actor:`, `Review: {run}` and `Model-Conflict:` trailers together with any Co-Authored-By. Never push. If an edit cannot be honoured on both sides by any statement, a real clash, commit nothing and ask one blocking question here in the session (AskUserQuestion) that names both change sets and the node, wait for the answer, then rebase following it. Then run `rhiza session done` as your very last action."
+until = "true"
 until_when = "done"
-max_visits = 3
-on.pass = "render-model-conflict"
-
-# Before sign-off the same repair goes back through render, the gate and
-# open-pr, which pushes it, so the PR is checked and signed off on the fix.
-[step.pr-model-conflict-fix]
-kind = "agent"
-prompt = "/rhiza-review Repair the model conflict that refused the check of change set {change} in run {run}: ship check failed before sign-off because operations of this change set rest on a base that a landed change set has since rewritten. Read them from `rhiza ship check --model-conflict --json` (its model_conflicts: each op, node, fields, stale base, and the landed op and change set that rewrote them), and `rhiza show` the node and both change sets for their intent. For each conflicting update, restate it on the landed version with `rhiza set <ref> --rebase` (the CLI spells the rebase so; see its help for the update's fields): keep the landed change's work and add this change set's intent, so both hold. Then run `rhiza ship check --model-conflict` to see it exits 1, and `rhiza check` to see the model is sound. Stage the rewritten `.rhiza/log` entry (`git add -A -- .rhiza/log`) and commit it with a message whose final paragraph holds the `Change: {change}`, `Actor:` and `Review: {run}` trailers together with any Co-Authored-By. Never push, never rebase the branch and never force anything. If both sides cannot hold, ask one blocking question here in the session (AskUserQuestion) naming the node and both change sets. Then run `rhiza session done` as your very last action."
-until = "! rhiza ship check --model-conflict"
-until_when = "done"
-max_visits = 3
-on.pass = "render-pr"
-
-[step.render-model-conflict]
-kind = "command"
-run = """
-rhiza render &&
-git add -A -- .rhiza/rendered .rhiza/log &&
-{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
-  git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
-"""
 max_visits = 3
 on.pass = "gate-land"
 
