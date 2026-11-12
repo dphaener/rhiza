@@ -88,7 +88,7 @@ mkdir .rhiza/workflows
 cp $WORK/work.toml .rhiza/workflows/work.toml
 exec rhiza change new 'Blocked run' --title 'Blocked run' --json
 exec rhiza run start --foreground --workflow work --permission-mode manual &
-exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"hook\"" "$WORK"/repo/.git/rhiza/sessions/*.json && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"hook\"" "$WORK"/repo/.git/rhiza/sessions/*.json && grep -q "block:b1" "$WORK"/repo/.git/rhiza/sessions/*.json && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
 edit-sessions hook-state blocked permission 'Allow the hook command?'
 edit-sessions hook-at 2030-01-01T00:00:00Z
 edit-sessions tab 'build tab' block:sess session:s2
