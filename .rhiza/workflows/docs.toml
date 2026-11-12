@@ -2,6 +2,7 @@ name = "docs"
 
 [env]
 GOTMPDIR = "{run_tmp}"
+SHIP_HEAD_RHIZA = "{run_tmp}/rhiza-head"
 
 # Doc change sets: ship-change with the owner signing off every PR, and
 # builders and fixers told to write prose with the humanize skill.
@@ -189,7 +190,7 @@ kind = "command"
 run = "rhiza ship gate"
 stall = "70m"
 max_visits = 6
-on.pass = "rebase"
+on.pass = "head-build-rebase"
 on.fail = "gate-fix"
 
 [step.rebase]
@@ -238,7 +239,7 @@ kind = "command"
 run = "rhiza ship gate"
 stall = "70m"
 max_visits = 6
-on.pass = "land"
+on.pass = "head-build-land"
 on.fail = "gate-fix"
 
 [step.land]
@@ -264,7 +265,7 @@ kind = "command"
 run = "rhiza ship gate"
 stall = "70m"
 max_visits = 6
-on.pass = "rebase-merge"
+on.pass = "head-build-rebase-merge"
 on.fail = "gate-fix-merge"
 
 # After land the same fixer resolves a conflict, and the merge goes through
@@ -401,6 +402,24 @@ on.pass = "deploy-check"
 [step.deploy-check]
 kind = "command"
 run = "rhiza ship deploy"
+
+[step.head-build-rebase]
+kind = "command"
+run = 'go build -o "$SHIP_HEAD_RHIZA" ./cmd/rhiza'
+max_visits = 8
+on.pass = "rebase"
+
+[step.head-build-land]
+kind = "command"
+run = 'go build -o "$SHIP_HEAD_RHIZA" ./cmd/rhiza'
+max_visits = 8
+on.pass = "land"
+
+[step.head-build-rebase-merge]
+kind = "command"
+run = 'go build -o "$SHIP_HEAD_RHIZA" ./cmd/rhiza'
+max_visits = 8
+on.pass = "rebase-merge"
 
 [[cleanup]]
 name = "go-cleanup"

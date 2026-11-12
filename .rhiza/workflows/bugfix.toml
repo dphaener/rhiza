@@ -7,6 +7,7 @@ autonomous = true
 
 [env]
 GOTMPDIR = "{run_tmp}"
+SHIP_HEAD_RHIZA = "{run_tmp}/rhiza-head"
 
 [step.ship]
 kind = "workflow"

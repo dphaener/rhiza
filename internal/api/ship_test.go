@@ -997,58 +997,24 @@ func TestShipCloseOutClosesTabs(t *testing.T) {
 	}
 }
 
-func TestGoModule(t *testing.T) {
-	for _, c := range []struct{ in, want string }{
-		{"module github.com/dphaener/rhiza\n\ngo 1.25\n", rhizaModule},
-		{"// a comment\nmodule github.com/dphaener/rhiza // Rhiza\n", rhizaModule},
-		{"module \"github.com/dphaener/rhiza\"\n", rhizaModule},
-		{"\tmodule   github.com/dphaener/rhiza  \r\n", rhizaModule},
-		{"module example.com/other\n", "example.com/other"},
-		{"module github.com/dphaener/rhiza/v2\n", "github.com/dphaener/rhiza/v2"},
-		{"modules x\ngo 1.25\n", ""},
-		{"// module github.com/dphaener/rhiza\n", ""},
-		{"", ""},
-	} {
-		if got := goModule([]byte(c.in)); got != c.want {
-			t.Errorf("goModule(%q) = %q, want %q", c.in, got, c.want)
-		}
-	}
-}
-
-func TestIsRhizaRepo(t *testing.T) {
-	for _, c := range []struct {
-		mod  string // "" writes no go.mod
-		want bool
-	}{
-		{"", false},
-		{"module github.com/dphaener/rhiza\n", true},
-		{"module example.com/other\n", false},
-		{"module github.com/dphaener/rhiza/v2\n", false},
-	} {
-		dir := t.TempDir()
-		if c.mod != "" {
-			if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte(c.mod), 0o644); err != nil {
-				t.Fatal(err)
-			}
-		}
-		got, err := isRhizaRepo(dir)
-		if err != nil || got != c.want {
-			t.Errorf("isRhizaRepo(%q) = %v, %v; want %v", c.mod, got, err, c.want)
-		}
-	}
-}
-
-// rhizaRepoFixture is a ship land fixture whose root is Rhiza's own repo,
-// with programs answered by a shipExec, and the head build's path.
+// rhizaRepoFixture is a ship land fixture whose workflow names a head
+// build (SHIP_HEAD_RHIZA), with programs answered by a shipExec, and the
+// head build's path.
 func rhizaRepoFixture(t *testing.T) (*sessionFixture, *shipExec, string) {
 	t.Helper()
 	f, _, _ := shipLandFixture(t)
-	if err := os.WriteFile(filepath.Join(f.ctx.Root, "go.mod"), []byte("module "+rhizaModule+"\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
 	x := &shipExec{answers: map[string]string{}}
 	f.ctx.Exec = x.run
-	bin := filepath.Join(f.common, "rhiza", "ship", currentOf(t, f.ctx).String(), "rhiza")
+	bin := filepath.Join(t.TempDir(), "rhiza")
+	if err := os.WriteFile(bin, []byte("#!/bin/sh\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	f.ctx.Getenv = func(k string) string {
+		if k == envShipRhiza {
+			return bin
+		}
+		return ""
+	}
 	return f, x, bin
 }
 
@@ -1058,12 +1024,14 @@ func TestShipLandWithHeadBuild(t *testing.T) {
 	f.ctx.ActorRef = shipTestActor
 	// Scripts and this fake have no model branch step: tests run with it off.
 	f.ctx.Getenv = func(k string) string {
-		if k == "RHIZA_TEST_NOW" {
+		switch k {
+		case "RHIZA_TEST_NOW":
 			return "1"
+		case envShipRhiza:
+			return bin
 		}
 		return ""
 	}
-	x.answers["go build -o "+bin+" ./cmd/rhiza"] = ""
 	x.answers[bin+" land --change "+cs.String()+" --json --actor "+shipTestActor] = `{}`
 	x.answers[bin+" render --json --actor "+shipTestActor] = `{"written":[".rhiza/rendered/a.md"],"removed":[".rhiza/rendered/stale.md"],"unchanged":3}`
 	resp, err := callOp(t, f.ctx, "ship.land", `{}`)
@@ -1075,7 +1043,7 @@ func TestShipLandWithHeadBuild(t *testing.T) {
 		!slices.Equal(r.Rendered, []string{".rhiza/rendered/a.md", ".rhiza/rendered/stale.md"}) {
 		t.Fatalf("land = %+v", r)
 	}
-	if len(x.calls) != 3 || !strings.HasPrefix(x.calls[0], "go build") {
+	if len(x.calls) != 2 {
 		t.Fatalf("calls = %q", x.calls)
 	}
 	for _, d := range x.dirs {
@@ -1083,25 +1051,24 @@ func TestShipLandWithHeadBuild(t *testing.T) {
 			t.Errorf("ran in %s, not %s", d, f.ctx.Root)
 		}
 	}
-	if fi, err := os.Stat(filepath.Dir(bin)); err != nil || !fi.IsDir() {
-		t.Errorf("head build folder: %v", err)
-	}
 	// The head build landed it; in-process nothing did.
 	if c, _ := ctxWorkspace(t, f.ctx).changeSet(cs); c.State != changeset.StateAccepted {
 		t.Errorf("change set is %s; only the head build should land it", c.State)
 	}
 }
 
-func TestShipLandHeadBuildFails(t *testing.T) {
+func TestShipLandHeadBuildMissing(t *testing.T) {
 	f, x, bin := rhizaRepoFixture(t)
 	cs := currentOf(t, f.ctx)
-	x.answers["go build -o "+bin+" ./cmd/rhiza"] = "!cmd/rhiza/main.go:1:1: syntax error"
+	if err := os.Remove(bin); err != nil {
+		t.Fatal(err)
+	}
 	_, err := callOp(t, f.ctx, "ship.land", `{}`)
 	wantExit(t, err, 1)
-	if !strings.Contains(err.Error(), "could not build rhiza from the PR head") || !strings.Contains(err.Error(), "syntax error") {
+	if !strings.Contains(err.Error(), envShipRhiza) || !strings.Contains(err.Error(), "not a built rhiza") {
 		t.Errorf("err = %v", err)
 	}
-	if len(x.calls) != 1 {
+	if len(x.calls) != 0 {
 		t.Errorf("calls = %q", x.calls)
 	}
 	for _, c := range f.git.calls {
@@ -2030,7 +1997,6 @@ func TestShipLandHeadBuildErrorDetail(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			f, x, bin := rhizaRepoFixture(t)
-			x.answers["go build -o "+bin+" ./cmd/rhiza"] = ""
 			f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
 				if name == bin {
 					return []byte(c.out), c.err
