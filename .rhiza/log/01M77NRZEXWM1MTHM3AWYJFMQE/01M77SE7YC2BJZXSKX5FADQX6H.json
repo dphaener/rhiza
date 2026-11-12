@@ -1,0 +1,40 @@
+{
+  "actor": "01M77S9662HNRZ8XV0Z9DHRW43",
+  "after": [
+    "01M77QBQ79R1M7YT3Q8A62J5TN"
+  ],
+  "at": "2026-11-12T11:49:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at cf18b5eb9: read the diff (plan.toml and plan-milestone.toml route review on.pass to a new has-findings command step running `rhiza run review-check --findings`, pass->critic, fail->fresh; run_review.go adds the --findings test). Ran go test -trimpath ./internal/api/... -run TestReviewCheckFindingsFlag (no round and a clean {\"findings\":[]} round fail --findings, a round with a finding passes, run verdict with {\"verdicts\":[]} still errors): PASS. go test -trimpath ./internal/workflow/... -run TestPlanCleanRoundSkipsCritic (reads both built-in plan and plan-milestone files): PASS. go test -trimpath ./cmd/rhiza -run TestScripts/(plan-review-visit-round|plan-workflow|plan-workflow-pr|plan-workflow-autonomous|plan-milestone-backlog|describe-golden): PASS; plan-workflow shows review visit 2 (clean round) -> has-findings fail -> fresh -> check pass -> gate with no critic visit 2 and one critic prompt, while visit 1 with findings still goes to the critic. describe-golden regenerated for the new flag."
+        },
+        "handle": "plan-clean-round-skips-critic-step-verified",
+        "id": "01M77SE7P5TRT5C3EDREPJMZS5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77SE7P5TRT5C3EDRDJ7P5B3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77SE7P5TRT5C3EDRDJ7P5B3",
+        "id": "01M77SE7SZ4270VN61SEAC64A2",
+        "link": "01M77SE7SZ4270VN61SCNGXMKP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NZCXG646BQB0FY09EKQPW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77NRZEXWM1MTHM3AWYJFMQE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77SE7YC2BJZXSKX5FADQX6H",
+  "type": "ops",
+  "v": 1
+}

@@ -483,7 +483,7 @@ func TestPlanBuiltin(t *testing.T) {
 	if def.Name != "plan" || def.Start != "interview" {
 		t.Errorf("name %q, start %q; want plan, interview", def.Name, def.Start)
 	}
-	want := []string{"interview", "milestone-check", "review", "critic", "fresh", "check", "revise", "gate", "open-pr", "prepush-triage", "prepush-fix", "wait-pr", "pr-green", "pr-green-infra", "pr-green-infra-wait", "rebase", "wait-rebased", "rebased-green", "rebased-green-infra", "rebased-green-infra-wait", "merge", "close-out"}
+	want := []string{"interview", "milestone-check", "review", "has-findings", "critic", "fresh", "check", "revise", "gate", "open-pr", "prepush-triage", "prepush-fix", "wait-pr", "pr-green", "pr-green-infra", "pr-green-infra-wait", "rebase", "wait-rebased", "rebased-green", "rebased-green-infra", "rebased-green-infra-wait", "merge", "close-out"}
 	if !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
@@ -540,7 +540,9 @@ func TestPlanBuiltin(t *testing.T) {
 		{"milestone-check", OutcomePass, "review", EndNone},
 		{"milestone-check", OutcomeFail, "", EndFailed},
 		{"interview", OutcomeFail, "", EndFailed},
-		{"review", OutcomePass, "critic", EndNone},
+		{"review", OutcomePass, "has-findings", EndNone},
+		{"has-findings", OutcomePass, "critic", EndNone},
+		{"has-findings", OutcomeFail, "fresh", EndNone},
 		{"critic", OutcomePass, "fresh", EndNone},
 		{"fresh", OutcomePass, "check", EndNone},
 		{"fresh", OutcomeFail, "review", EndNone},
@@ -2263,5 +2265,27 @@ func TestEnvTable(t *testing.T) {
 	bad := strings.Replace(src, "A = \"x\"", "RHIZA_RUN = \"x\"", 1)
 	if _, err := Parse("w", []byte(bad)); err == nil {
 		t.Error("RHIZA_ variable accepted")
+	}
+}
+
+// Both plan workflows send a review round to the critic only when it holds
+// a finding: a clean round goes straight to fresh.
+func TestPlanCleanRoundSkipsCritic(t *testing.T) {
+	for _, name := range []string{"plan", "plan-milestone"} {
+		data, ok := Builtin(name)
+		if !ok {
+			t.Fatalf("no %s built-in", name)
+		}
+		def, err := Parse(name, data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := def.Steps["review"].On[OutcomePass]; got != "has-findings" {
+			t.Errorf("%s review on.pass = %q; want has-findings", name, got)
+		}
+		hf := def.Steps["has-findings"]
+		if hf.Kind != KindCommand || hf.Run != "rhiza run review-check --findings" || hf.On[OutcomePass] != "critic" || hf.On[OutcomeFail] != "fresh" {
+			t.Errorf("%s has-findings = %+v; want a command running review-check --findings, pass critic, fail fresh", name, hf)
+		}
 	}
 }
