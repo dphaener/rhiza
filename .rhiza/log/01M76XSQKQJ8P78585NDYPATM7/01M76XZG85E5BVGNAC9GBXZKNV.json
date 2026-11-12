@@ -1,0 +1,132 @@
+{
+  "actor": "01M76SW1E13KTDYQ639HDXG331",
+  "after": [
+    "01M76XSQKQJ8P78585NE4WRVR6"
+  ],
+  "at": "2026-11-12T03:49:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api (go test -trimpath ./internal/api -run ShipGHRetry) with a fake Exec and an injected clock (no real sleep) assert: open-pr whose gh pr create fails twice with 'HTTP 502' then succeeds passes after three calls; a 'GraphQL: Something went wrong' error is retried the same way; four 5xx failures fail the step naming the last error; an HTTP 422 or 'no pull requests found' is not retried.",
+          "statement": "Ship steps retry a gh call that fails with a GitHub server error (HTTP 5xx), a timeout or a GraphQL 'Something went wrong' error up to three times with growing waits before failing the step, and fail at once on any other error, so a GitHub blip no longer holds a run."
+        },
+        "handle": "ship-gh-transient-retry",
+        "id": "01M76XZG3ZRYA9NTD3SJJ0STMK",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M76XZG3ZRYA9NTD3SF6QWY0K",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M76XZG3ZRYA9NTD3SF6QWY0K",
+        "id": "01M76XZG4CC5CW3K4E483DBDXJ",
+        "link": "01M76XZG4CC5CW3K4E44PCG0NZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api (go test -trimpath ./internal/api -run ShipPushDiverged) on scratch repos with a bare origin assert: open-pr and rebase, with origin's branch one commit ahead on a file the local branch did not touch, merge it and push, and origin's history keeps that commit; with a conflicting origin commit the step stops with a detail naming the commit and leaves no merge in progress; no call uses --force or rebase.",
+          "statement": "When a ship step's push is refused because the run's branch on origin holds commits the local branch lacks, the step fetches origin's branch and merges it (never force-pushes or rebases) when it merges cleanly, then pushes; a conflicting merge stops the run naming the origin commits."
+        },
+        "handle": "ship-push-merges-own-origin",
+        "id": "01M76XZG4SPZ8481AWNF8A36KQ",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M76XZG4SPZ8481AWNBER0JJS",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M76XZG4SPZ8481AWNBER0JJS",
+        "id": "01M76XZG5591JPQ863VRE3T78D",
+        "link": "01M76XZG5591JPQ863VPC910ZK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api (go test -trimpath ./internal/api -run ShipLand) assert a land whose head build exits 3 with 'cannot land change set X: node N changed' reports a conflict naming node N (not a plain failure), and a testscript (go test -trimpath ./cmd/rhiza -run TestScripts/<the ship land conflict script>) runs ship-change with a fake gh to the conflict-fix step after that land failure; any other land failure still fails land with the head build's detail (ship-head-build-error-detail).",
+          "statement": "A ship land that fails because the PR head's rhiza refuses to land (exit 3, a node the change set edits changed on main) merges origin/main into the branch and hands the conflict to the run's conflict fixer, instead of failing land and holding the run."
+        },
+        "handle": "land-conflict-to-fixer",
+        "id": "01M76XZG5J7ETYBRT4W67ENEBB",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M76XZG5J7ETYBRT4W550P79M",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M76XZG5J7ETYBRT4W550P79M",
+        "id": "01M76XZG60FHZNNC39SW63S724",
+        "link": "01M76XZG60FHZNNC39STV50E2B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api (go test -trimpath ./internal/api -run 'ActorRecord|SessionRun') assert: recording the actor of a session whose handle is already held by a landed actor writes no new node and returns the existing one; the same holds when an in-flight change set (another run's branch merged in) holds it; rhiza check on the result reports no duplicate handle.",
+          "statement": "Recording an agent actor for a session whose actor handle a landed or in-flight change set already holds reuses that actor instead of writing a second node with the same handle, so review's code check no longer fails on a duplicate actor handle."
+        },
+        "handle": "actor-record-no-duplicate",
+        "id": "01M76XZG6D3HR7G5Y6MME4YED3",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M76XZG6D3HR7G5Y6MHENHMB5",
+        "op": "node.create",
+        "parent": "01M5SWS5ATK0DPJDW0M2EW38FT"
+      },
+      {
+        "decision": null,
+        "from": "01M76XZG6D3HR7G5Y6MHENHMB5",
+        "id": "01M76XZG6V2RQC64WGYRS24KMC",
+        "link": "01M76XZG6V2RQC64WGYMZ9H2H1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api (go test -trimpath ./internal/api -run SessionRunRexRetry) with a fake rex and an injected clock assert: two failed tab opens then a success start the session with one tab; four failures fail naming Rex's last error; no test starts a real Rex or agent.",
+          "statement": "Opening a run session's Rex tab retries a failed rex call (Rex not answering, or no window ID returned) up to three times with growing waits before failing, so a Rex hiccup no longer holds a run."
+        },
+        "handle": "rex-tab-launch-retry",
+        "id": "01M76XZG799KFE9QRBJPAT0YQ0",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M76XZG799KFE9QRBJNYYZ7KG",
+        "op": "node.create",
+        "parent": "01M5TYCWXMBHC1V7Q27ZRG3JKQ"
+      },
+      {
+        "decision": null,
+        "from": "01M76XZG799KFE9QRBJNYYZ7KG",
+        "id": "01M76XZG7R8C0DZ9Q7B5VH7DKN",
+        "link": "01M76XZG7R8C0DZ9Q7B25S7VVC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76XZG85E5BVGNAC9GBXZKNV",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,18 @@
+{
+  "actor": "01M76SW1E13KTDYQ639HDXG331",
+  "after": [],
+  "at": "2026-11-12T03:45:50Z",
+  "body": {
+    "intent": "Build verifiers run on a cheaper model for low-risk leaves and on the strongest model for risky ones (test infrastructure, hooks, CI, workflow files, migrations, retries), still writing non-author Evidence. Evidence: the verifier is the largest single bucket, 16.9% of ship-change wall (prompt-gap rec 13).",
+    "kind": "intention",
+    "sources": [
+      "01M76XM73SV2HZ5FRGC8CMX965"
+    ],
+    "title": "Tiered verifier"
+  },
+  "change_set": "01M76XS745J8S0J74SZFEHQ17Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76XS745J8S0J74SZG8VYA70",
+  "type": "open",
+  "v": 2
+}

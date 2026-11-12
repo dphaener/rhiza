@@ -1,0 +1,18 @@
+{
+  "actor": "01M76SW1E13KTDYQ639HDXG331",
+  "after": [],
+  "at": "2026-11-12T03:43:53Z",
+  "body": {
+    "intent": "A verifier, review check or critic in a run cannot say done until it has recorded its result for this visit (Evidence or findings, a findings round, verdicts), and every role is told to run session done as its own command only after the recording command succeeded. Evidence: 23 of 491 build verifier attempts ended with neither Evidence nor findings, each costing a full builder and verifier retry (perf report 2026-11-12, prompt-gap rec 2).",
+    "kind": "intention",
+    "sources": [
+      "01M76XM73SV2HZ5FRGC8CMX965"
+    ],
+    "title": "Done needs a record"
+  },
+  "change_set": "01M76XNMMENQCK9PZMGC9YBG99",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76XNMMENQCK9PZMGCPVA9ZS",
+  "type": "open",
+  "v": 2
+}

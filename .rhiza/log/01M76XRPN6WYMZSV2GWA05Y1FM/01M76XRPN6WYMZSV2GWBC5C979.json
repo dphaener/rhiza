@@ -1,0 +1,18 @@
+{
+  "actor": "01M76SW1E13KTDYQ639HDXG331",
+  "after": [],
+  "at": "2026-11-12T03:45:34Z",
+  "body": {
+    "intent": "Plan roles get afk's shipit/forge prompts in Rhiza's words, one guide topic each on the six-section skeleton: planner (a codebase research pass before deciding, a self-check re-reading the slice after writing), plan reviewer (Crucible checklist, uncovered-intent and oversized-leaf kinds, nothing a deterministic check already checks), plan critic and reviser. Source: prompt-gap.md sections 2.1, 2.2 and 5 (CS1, rec 15).",
+    "kind": "intention",
+    "sources": [
+      "01M76XM73SV2HZ5FRGC8CMX965"
+    ],
+    "title": "Plan role topics"
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76XRPN6WYMZSV2GWBC5C979",
+  "type": "open",
+  "v": 2
+}

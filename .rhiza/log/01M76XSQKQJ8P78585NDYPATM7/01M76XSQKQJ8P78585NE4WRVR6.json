@@ -1,0 +1,18 @@
+{
+  "actor": "01M76SW1E13KTDYQ639HDXG331",
+  "after": [],
+  "at": "2026-11-12T03:46:07Z",
+  "body": {
+    "intent": "Remove the error sources that held ship-change runs: retry GitHub 5xx and GraphQL errors with backoff, stop once with GitHub's reason instead of looping on a refused merge, reconcile an origin branch that holds the run's own earlier pushes, and turn land's PR-head conflicts, duplicate actor handles and Rex tab failures into a retry or one clear stop. Evidence: 59 holds, 97.6h ALL; open-pr 13, gate-rebase-merge max_visits 9, land 6, code-check 4, Rex tab 4 (perf report section d, rec 3).",
+    "kind": "intention",
+    "sources": [
+      "01M76XM73SV2HZ5FRGC8CMX965"
+    ],
+    "title": "Held-run error sources"
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76XSQKQJ8P78585NE4WRVR6",
+  "type": "open",
+  "v": 2
+}

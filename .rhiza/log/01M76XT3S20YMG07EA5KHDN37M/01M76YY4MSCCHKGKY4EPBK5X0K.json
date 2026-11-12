@@ -1,0 +1,39 @@
+{
+  "actor": "01M76YT1NHG88ENZJFFPVCYQ6J",
+  "after": [
+    "01M76XT3S20YMG07EA5NX02030"
+  ],
+  "at": "2026-11-12T04:05:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Scope: Plan role topics (01M76XRPN6WYMZSV2GWA05Y1FM), which this change set depends on, owns the plan reviewer's uncovered-intent and oversized-leaf kinds. Leaf contract adds only the no-failure-case kind and moves mechanical checks to review-check; it does not re-add uncovered-intent or oversized-leaf."
+        },
+        "handle": "note-01m76yy4ffkjdx",
+        "id": "01M76YY4FFKJDXK759V05ZXSMK",
+        "key": null,
+        "kind": "note",
+        "node": "01M76YY4FFKJDXK759TXPSFNFR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76YY4FFKJDXK759TXPSFNFR",
+        "id": "01M76YY4JHM3BTHT42ERA73HC2",
+        "link": "01M76YY4JHM3BTHT42EMMAMKM0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XT3S20YMG07EA5KHDN37M",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M76XT3S20YMG07EA5KHDN37M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76YY4MSCCHKGKY4EPBK5X0K",
+  "type": "ops",
+  "v": 1
+}

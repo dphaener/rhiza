@@ -1,0 +1,18 @@
+{
+  "actor": "01M76SW1E13KTDYQ639HDXG331",
+  "after": [],
+  "at": "2026-11-12T03:46:37Z",
+  "body": {
+    "intent": "Leaves whose files are disjoint build in parallel within a run, with a lock per file and bounded by the daemon's load hold. Evidence: build grows 10-20m per leaf; 29 of 119 runs had 4 or more leaves (prompt-gap rec 12). Planned after the leaf contract, which gives leaves their files.",
+    "kind": "intention",
+    "sources": [
+      "01M76XM73SV2HZ5FRGC8CMX965"
+    ],
+    "title": "Parallel leaves"
+  },
+  "change_set": "01M76XTN06GSM9Z3V7CHKHFX7Q",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76XTN06GSM9Z3V7CJTE4PR6",
+  "type": "open",
+  "v": 2
+}

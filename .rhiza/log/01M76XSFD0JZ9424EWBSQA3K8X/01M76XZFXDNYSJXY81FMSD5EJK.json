@@ -1,0 +1,108 @@
+{
+  "actor": "01M76SW1E13KTDYQ639HDXG331",
+  "after": [
+    "01M76XSFD0JZ9424EWBVVGA6E4"
+  ],
+  "at": "2026-11-12T03:49:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "The changes job's decision is a script file that takes the earlier green commit as an input (the workflow finds it with the job's GITHUB_TOKEN; the test never touches the network). A Go test in internal/ciworkflow (go test -trimpath ./internal/ciworkflow) runs the script against scratch git repos and asserts code=false for a land-like commit changing only .rhiza/ after a green commit and for a merge of main bringing only .rhiza/ changes, and code=true for a code change since green, for a merge of main bringing code, and when no green commit is given and the PR diff from base leaves .rhiza/; and asserts ci.yml's changes job runs that script and the check job still aggregates the verdict.",
+          "statement": "Rhiza's own CI (.github/workflows/ci.yml) runs only the model job on a pull request push when no path outside .rhiza/ differs between the tree this run tests and the tree of the pull request's latest run whose check verdict succeeded; with no earlier green run, or any difference outside .rhiza/ (including code main brought in by a merge), it runs the Go jobs as today."
+        },
+        "handle": "ci-model-only-since-green",
+        "id": "01M76XZFT4TP194AK2Z2WGDYMG",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M76XZFT4TP194AK2Z1NCJH5A",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M76XZFT4TP194AK2Z1NCJH5A",
+        "id": "01M76XZFTG2GRTTYVTSBX829X8",
+        "link": "01M76XZFTG2GRTTYVTS83H4B1G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api (go test -trimpath ./internal/api -run 'ShipCheck|ChecksVerdict') feed ship check --settled a head whose rollup has changes, model and check SUCCESS and the Go jobs SKIPPED after an earlier green head of the same PR, and assert it is settled and green with no failed names and that --changed --rerun-infra reruns nothing; testscript cmd/rhiza/testdata/script/ship-*.txtar covering wait-landed (go test -trimpath ./cmd/rhiza -run TestScripts/<the affected ship script>) passes with a fake gh reporting that rollup.",
+          "statement": "A ship-change run's wait-landed, wait-rebased and wait-rebased-merge steps settle on a model-only CI run as green, so a land push that changes only .rhiza/ waits for the model job (about a minute) instead of a full CI round."
+        },
+        "handle": "wait-landed-model-only",
+        "id": "01M76XZFTXPH8FB1B4JKHPRX3J",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M76XZFTXPH8FB1B4JGV6C1XW",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M76XZFTXPH8FB1B4JGV6C1XW",
+        "id": "01M76XZFVBE4TRMKEST62CYAXB",
+        "link": "01M76XZFVBE4TRMKEST5V5XSBY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Set by the answer to question ci-since-green-shipped-form, as tests of the chosen form (a docs page check in go test -trimpath ./internal/api -run Docs, or a ci.install test in go test -trimpath ./internal/api -run CIInstall).",
+          "statement": "Projects other than Rhiza get the since-last-green rule in the form the owner chooses, in language-neutral words."
+        },
+        "handle": "ci-since-green-for-projects",
+        "id": "01M76XZFVQM9EKM6YN458671NK",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M76XZFVQM9EKM6YN432SYK2V",
+        "op": "node.create",
+        "parent": "01M5SWSJAS69692APWAEWGAZMW"
+      },
+      {
+        "decision": null,
+        "from": "01M76XZFVQM9EKM6YN432SYK2V",
+        "id": "01M76XZFW5XNG1NFPW6AAJFPGT",
+        "link": "01M76XZFW5XNG1NFPW67HNA47K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "rhiza ci install writes only a rhiza check workflow (.github/workflows/rhiza.yml), never a project's test jobs, so the since-last-green rule has no shipped CI template to go in. How should other projects get it: a documented recipe in the user docs with an example changes job, an optional changes job that rhiza ci install writes for the project's own jobs to gate on, or Rhiza's repo only?"
+        },
+        "handle": "ci-since-green-shipped-form",
+        "id": "01M76XZFWK2JJH0EV5N031WFRD",
+        "key": null,
+        "kind": "question",
+        "node": "01M76XZFWK2JJH0EV5MZQ9FAS9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76XZFWK2JJH0EV5MZQ9FAS9",
+        "id": "01M76XZFX0SGZ2XR20AVY82VY4",
+        "link": "01M76XZFX0SGZ2XR20ASN73KAF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZFVQM9EKM6YN432SYK2V",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M76XSFD0JZ9424EWBSQA3K8X",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76XZFXDNYSJXY81FMSD5EJK",
+  "type": "ops",
+  "v": 1
+}
