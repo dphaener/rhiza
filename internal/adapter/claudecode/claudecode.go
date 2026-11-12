@@ -232,6 +232,71 @@ func (Adapter) AskReply(event string, raw []byte, reason string) ([]byte, bool, 
 	return reply, true, nil
 }
 
+// editTools are the tools that write a file at a path given in their input.
+var editTools = map[string]bool{"Write": true, "Edit": true, "MultiEdit": true, "NotebookEdit": true}
+
+// editPayload is the part of a hook payload an edit tool's path is read from.
+type editPayload struct {
+	ToolName  string `json:"tool_name"`
+	Cwd       string `json:"cwd"`
+	ToolInput struct {
+		FilePath     string `json:"file_path"`
+		NotebookPath string `json:"notebook_path"`
+	} `json:"tool_input"`
+}
+
+// inLog reports whether path, absolute or relative to cwd, is under a
+// .rhiza/log directory.
+func inLog(path, cwd string) bool {
+	if path == "" {
+		return false
+	}
+	if !filepath.IsAbs(path) && cwd != "" {
+		path = filepath.Join(cwd, path)
+	}
+	parts := strings.Split(filepath.ToSlash(filepath.Clean(path)), "/")
+	for i := 0; i+2 < len(parts); i++ {
+		if parts[i] == ".rhiza" && parts[i+1] == "log" {
+			return true
+		}
+	}
+	return false
+}
+
+// GuardReply implements adapter.Adapter. A PreToolUse on Write, Edit,
+// MultiEdit or NotebookEdit for a path under .rhiza/log is denied.
+func (Adapter) GuardReply(event string, raw []byte, reason string) ([]byte, bool, error) {
+	if event != "PreToolUse" {
+		return nil, false, nil
+	}
+	var p editPayload
+	if err := json.Unmarshal(raw, &p); err != nil {
+		return nil, false, fmt.Errorf("%s hook payload: %w", event, err)
+	}
+	if !editTools[p.ToolName] {
+		return nil, false, nil
+	}
+	path := p.ToolInput.FilePath
+	if path == "" {
+		path = p.ToolInput.NotebookPath
+	}
+	if !inLog(path, p.Cwd) {
+		return nil, false, nil
+	}
+	type hookOutput struct {
+		HookEventName            string `json:"hookEventName"`
+		PermissionDecision       string `json:"permissionDecision"`
+		PermissionDecisionReason string `json:"permissionDecisionReason"`
+	}
+	reply, err := json.Marshal(struct {
+		HookSpecificOutput hookOutput `json:"hookSpecificOutput"`
+	}{hookOutput{event, "deny", reason}})
+	if err != nil {
+		return nil, false, err
+	}
+	return reply, true, nil
+}
+
 // ContextReply implements adapter.Adapter. A PostToolUse hook adds its
 // additionalContext to the agent's context at its next step.
 func (Adapter) ContextReply(event, context string) ([]byte, bool, error) {
