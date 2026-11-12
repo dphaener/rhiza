@@ -190,7 +190,12 @@ func Remove(root string) error {
 // is created when missing. It reads root's .rhiza folder and never
 // writes there.
 func Open(root, dbPath string) (*Index, error) {
-	return open(dbPath, os.DirFS(filepath.Join(root, store.Dir)))
+	x, err := open(dbPath, os.DirFS(filepath.Join(root, store.Dir)))
+	if err != nil {
+		return nil, err
+	}
+	recordRoot(x, root)
+	return x, nil
 }
 
 // open is Open over fsys, rooted at a .rhiza folder.
