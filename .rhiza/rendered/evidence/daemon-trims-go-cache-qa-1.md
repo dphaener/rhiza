@@ -14,7 +14,7 @@ QA at e129e9f1 with the built binary in a scratch repo: rhiza daemon settings li
 
 ### Out
 
-- verifies [daemon-trims-go-cache](../capability/rhiza/orchestration/daemon/daemon-trims-go-cache.md)
+- verifies daemon-trims-go-cache (retired)
 
 ## History
 

@@ -14,7 +14,7 @@ At 230826ed: go test -trimpath ./internal/daemon/... ./internal/gosweep/... pass
 
 ### Out
 
-- verifies [daemon-trims-go-cache](../capability/rhiza/orchestration/daemon/daemon-trims-go-cache.md)
+- verifies daemon-trims-go-cache (retired)
 
 ## History
 

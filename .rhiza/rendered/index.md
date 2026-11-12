@@ -238,6 +238,7 @@
     - [workflow-definitions](capability/rhiza/workflows/workflow-definitions.md)
       - [workflow-file](capability/rhiza/workflows/workflow-definitions/workflow-file.md)
         - [workflow-cleanup-steps](capability/rhiza/workflows/workflow-definitions/workflow-file/workflow-cleanup-steps.md)
+        - [workflow-env](capability/rhiza/workflows/workflow-definitions/workflow-file/workflow-env.md)
       - [agent-step](capability/rhiza/workflows/workflow-definitions/agent-step.md)
       - [command-step](capability/rhiza/workflows/workflow-definitions/command-step.md)
         - [command-step-keeps-output](capability/rhiza/workflows/workflow-definitions/command-step/command-step-keeps-output.md)
@@ -266,7 +267,6 @@
         - [review-code-check-in-rex](capability/rhiza/workflows/workflow-runs/run-program-status/review-code-check-in-rex.md)
         - [review-questions-in-rex](capability/rhiza/workflows/workflow-runs/run-program-status/review-questions-in-rex.md)
       - [agent-step-done-signal](capability/rhiza/workflows/workflow-runs/agent-step-done-signal.md)
-      - [land-with-branch-build](capability/rhiza/workflows/workflow-runs/land-with-branch-build.md)
       - [rebase-when-behind](capability/rhiza/workflows/workflow-runs/rebase-when-behind.md)
         - [ship-rebase-merges-only](capability/rhiza/workflows/workflow-runs/rebase-when-behind/ship-rebase-merges-only.md)
       - [resume-failed-run](capability/rhiza/workflows/workflow-runs/resume-failed-run.md)
@@ -284,7 +284,6 @@
       - [lost-session-judged](capability/rhiza/workflows/workflow-runs/lost-session-judged.md)
       - [rejoin-rex-unreachable](capability/rhiza/workflows/workflow-runs/rejoin-rex-unreachable.md)
       - [run-autonomy-source](capability/rhiza/workflows/workflow-runs/run-autonomy-source.md)
-      - [run-private-gotmpdir](capability/rhiza/workflows/workflow-runs/run-private-gotmpdir.md)
       - [step-retry-vanished-go-work](capability/rhiza/workflows/workflow-runs/step-retry-vanished-go-work.md)
       - [nested-step-session-start](capability/rhiza/workflows/workflow-runs/nested-step-session-start.md)
       - [run-end-removes-leftovers](capability/rhiza/workflows/workflow-runs/run-end-removes-leftovers.md)
@@ -357,6 +356,7 @@
       - [guides-stdin-findings](capability/rhiza/workflows/built-in-workflows/guides-stdin-findings.md)
       - [plan-milestone-workflow](capability/rhiza/workflows/built-in-workflows/plan-milestone-workflow.md)
     - [workflow-overrides](capability/rhiza/workflows/workflow-overrides.md)
+      - [rhiza-own-workflows-go-cleanup](capability/rhiza/workflows/workflow-overrides/rhiza-own-workflows-go-cleanup.md)
     - [autonomous-runs](capability/rhiza/workflows/autonomous-runs.md)
       - [run-start-autonomous](capability/rhiza/workflows/autonomous-runs/run-start-autonomous.md)
       - [autonomous-keeps-permissions](capability/rhiza/workflows/autonomous-runs/autonomous-keeps-permissions.md)
@@ -474,6 +474,7 @@
       - [ship-deploy-check](capability/rhiza/orchestration/shipping/ship-deploy-check.md)
       - [ship-tracks-own-pr](capability/rhiza/orchestration/shipping/ship-tracks-own-pr.md)
       - [ship-head-build-error-detail](capability/rhiza/orchestration/shipping/ship-head-build-error-detail.md)
+      - [ship-head-build-step](capability/rhiza/orchestration/shipping/ship-head-build-step.md)
       - [ship-check-skipped-jobs-green](capability/rhiza/orchestration/shipping/ship-check-skipped-jobs-green.md)
       - [live-run-write-reaches-worktree](capability/rhiza/orchestration/shipping/live-run-write-reaches-worktree.md)
       - [main-write-model-branch](capability/rhiza/orchestration/shipping/main-write-model-branch.md)
@@ -559,8 +560,6 @@
       - [daemon-resumes-landed-plan-run](capability/rhiza/orchestration/daemon/daemon-resumes-landed-plan-run.md)
       - [daemon-nudges-stalled](capability/rhiza/orchestration/daemon/daemon-nudges-stalled.md)
       - [run-driver-idle-poll-cheap](capability/rhiza/orchestration/daemon/run-driver-idle-poll-cheap.md)
-      - [go-build-cache-sweep](capability/rhiza/orchestration/daemon/go-build-cache-sweep.md)
-      - [daemon-trims-go-cache](capability/rhiza/orchestration/daemon/daemon-trims-go-cache.md)
       - [daemon-reaps-drivers](capability/rhiza/orchestration/daemon/daemon-reaps-drivers.md)
       - [root-daemon-lock](capability/rhiza/orchestration/daemon/root-daemon-lock.md)
       - [root-daemon-polls-projects](capability/rhiza/orchestration/daemon/root-daemon-polls-projects.md)
@@ -589,6 +588,7 @@
         - [watchdog-holds-skip-abandoned](capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-holds-skip-abandoned.md)
       - [root-continuations-first](capability/rhiza/orchestration/daemon/root-continuations-first.md)
       - [daemon-prunes-orphan-leftovers](capability/rhiza/orchestration/daemon/daemon-prunes-orphan-leftovers.md)
+      - [daemon-no-go-cache-trim](capability/rhiza/orchestration/daemon/daemon-no-go-cache-trim.md)
       - [daemon-auto-update](capability/rhiza/orchestration/daemon/daemon-auto-update.md)
       - [daemon-merges-model-prs](capability/rhiza/orchestration/daemon/daemon-merges-model-prs.md)
     - [inbox](capability/rhiza/orchestration/inbox.md)
@@ -2375,6 +2375,9 @@
 - [daemon-merges-model-prs-qa-1](evidence/daemon-merges-model-prs-qa-1.md)
 - [daemon-merges-model-prs-verified](evidence/daemon-merges-model-prs-verified.md)
 - [daemon-merges-model-prs-verified-5](evidence/daemon-merges-model-prs-verified-5.md)
+- [daemon-no-go-cache-trim-qa-1](evidence/daemon-no-go-cache-trim-qa-1.md)
+- [daemon-no-go-cache-trim-verified](evidence/daemon-no-go-cache-trim-verified.md)
+- [daemon-no-go-cache-trim-verified-2](evidence/daemon-no-go-cache-trim-verified-2.md)
 - [daemon-nudges-stalled-qa-1](evidence/daemon-nudges-stalled-qa-1.md)
 - [daemon-nudges-stalled-verified](evidence/daemon-nudges-stalled-verified.md)
 - [daemon-nudges-stalled-verified-2](evidence/daemon-nudges-stalled-verified-2.md)
@@ -3163,6 +3166,7 @@
 - [pr-469-every-run-checks-the-model-and](evidence/pr-469-every-run-checks-the-model-and.md)
 - [pr-473-auto-update-setting](evidence/pr-473-auto-update-setting.md)
 - [pr-474-fix-milestone-plans-running-at](evidence/pr-474-fix-milestone-plans-running-at.md)
+- [pr-475-rhiza-s-go-behaviour-moves](evidence/pr-475-rhiza-s-go-behaviour-moves.md)
 - [pr-476-release-channel-manifest-and](evidence/pr-476-release-channel-manifest-and.md)
 - [pr-50-a-change-set-has-at-most-one](evidence/pr-50-a-change-set-has-at-most-one.md)
 - [pr-52-the-daemon](evidence/pr-52-the-daemon.md)
@@ -3376,6 +3380,8 @@
 - [rex-tab-launch-test](evidence/rex-tab-launch-test.md)
 - [rhiza-on-vm-qa-1](evidence/rhiza-on-vm-qa-1.md)
 - [rhiza-on-vm-verified](evidence/rhiza-on-vm-verified.md)
+- [rhiza-own-workflows-go-cleanup-qa-1](evidence/rhiza-own-workflows-go-cleanup-qa-1.md)
+- [rhiza-own-workflows-go-cleanup-verified](evidence/rhiza-own-workflows-go-cleanup-verified.md)
 - [roadmap-across-projects-qa-1](evidence/roadmap-across-projects-qa-1.md)
 - [roadmap-across-projects-qa-2](evidence/roadmap-across-projects-qa-2.md)
 - [roadmap-across-projects-verified](evidence/roadmap-across-projects-verified.md)
@@ -3615,6 +3621,11 @@
 - [ship-draft-pr-stops-verified](evidence/ship-draft-pr-stops-verified.md)
 - [ship-head-build-error-detail-qa-1](evidence/ship-head-build-error-detail-qa-1.md)
 - [ship-head-build-error-detail-verified](evidence/ship-head-build-error-detail-verified.md)
+- [ship-head-build-step-qa-2](evidence/ship-head-build-step-qa-2.md)
+- [ship-head-build-step-qa-3](evidence/ship-head-build-step-qa-3.md)
+- [ship-head-build-step-verified](evidence/ship-head-build-step-verified.md)
+- [ship-head-build-step-verified-2](evidence/ship-head-build-step-verified-2.md)
+- [ship-head-build-step-verified-3](evidence/ship-head-build-step-verified-3.md)
 - [ship-local-gate-qa-1](evidence/ship-local-gate-qa-1.md)
 - [ship-local-gate-verified](evidence/ship-local-gate-verified.md)
 - [ship-local-gate-verified-2](evidence/ship-local-gate-verified-2.md)
@@ -3945,6 +3956,11 @@
 - [workflow-describe-qa-1](evidence/workflow-describe-qa-1.md)
 - [workflow-describe-verified](evidence/workflow-describe-verified.md)
 - [workflow-describe-verified-2](evidence/workflow-describe-verified-2.md)
+- [workflow-env-qa-1](evidence/workflow-env-qa-1.md)
+- [workflow-env-qa-2](evidence/workflow-env-qa-2.md)
+- [workflow-env-qa-3](evidence/workflow-env-qa-3.md)
+- [workflow-env-verified](evidence/workflow-env-verified.md)
+- [workflow-env-verified-2](evidence/workflow-env-verified-2.md)
 - [workflow-file-tested](evidence/workflow-file-tested.md)
 - [workflow-guide-topic-qa-1](evidence/workflow-guide-topic-qa-1.md)
 - [workflow-guide-topic-verified](evidence/workflow-guide-topic-verified.md)
@@ -8871,6 +8887,7 @@
 ## Retired
 
 - capability shipit-agent-step `01M5TYKPAXPA4NBWNPH5WENFNK` — ship-change no longer has an agent step running shipit: it runs Rhiza's own build and review workflows (answer-cb8bd934-5, Replace it)
+- capability land-with-branch-build `01M5X3GC9S0ENG89Y22HF3KPFH` — Replaced by ship-head-build-step: Rhiza's own ship-change workflow builds rhiza from the PR head in a step; the product's go.mod module check (isRhizaRepo) is gone.
 - capability build-panes `01M5YX3GT71M5KWXZYCZA684DF` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability daemon-lock `01M61R7J7KWQ20F4X22KTJ924R` — Superseded by root-daemon-lock: the daemon runs on the root with one lock in <root>/.rhiza-root/, never one per repo (m29-one-root-daemon).
 - capability daemon-run-tabs `01M61R7M41QVVEDQ5GWRXE7D7M` — Replaced by daemon-headless-run-drivers: the daemon no longer opens a Rex tab for a run's driver (m24-only-agent-tabs).
@@ -8911,6 +8928,9 @@
 - capability daemon-repo-session `01M6FES3PKQCSNG9SEECK4G1R7` — Superseded by root-daemon-rex-session: the session is named after the project's registered name, rhiza-<project>, not the main checkout's folder, and the root daemon creates and passes one per project (m29-rex-session-per-project).
 - capability daemon-self-update `01M6FES89JR3Z5XA751AGCD3RV` — Superseded by root-daemon-self-update: the root daemon self-updates from the project rhiza.toml names as self_update_project, with selfUpdate a machine setting in rhiza.toml (m29-settings-split).
 - capability requests-app-milestone `01M6JE40PG6Z1ZG27N7DMFH3FF` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): the old requests app and its milestone field are deleted; the new request form has no milestone field
+- capability go-build-cache-sweep `01M6NREHKHFKZWMXYWG2F38AM5` — Replaced by rhiza-own-workflows-go-cleanup: Rhiza's own workflow cleanup phase trims the Go build cache and stale go-build folders; gosweep leaves the daemon.
+- capability daemon-trims-go-cache `01M6NRETPP5SJ8RMGV901X4G33` — Replaced by daemon-no-go-cache-trim and rhiza-own-workflows-go-cleanup: the daemon no longer trims the Go build cache; Rhiza's cleanup phase does.
 - capability root-daemon-self-update `01M6RN85F2T3NMVDRKV706VSZB` — Replaced by daemon-auto-update: rhiza.daemon.selfUpdate and rhiza.toml's self_update_project are removed; autoUpdate=main finds Rhiza's source checkout by its module path.
+- capability run-private-gotmpdir `01M6WGXA5QZV54A91F061Y3KNQ` — Replaced by workflow-env: Rhiza's own workflows set GOTMPDIR to the run's temp folder; the product no longer sets it.
 - actor claude-code-a463ece8 `01M6HYXRR6ZXYF68BAC8X0KEEQ` — Duplicate of actor claude-code-a463ece8 (node 01M6HV8Y05D3EMPSARA4H5VJ15) that landed on main from another branch while this run was building; the same session recorded itself twice
 - actor claude-code-83858632 `01M6KFM58RDZ5KSG59GP1005QZ` — Duplicate actor record: session claude-code-83858632 recorded itself in a verifier checkout (change set 01M6KFMJ) after already recording in the run worktree (01M6KE23); keep the first
