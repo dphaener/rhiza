@@ -1,0 +1,178 @@
+{
+  "actor": "01M76V990VFMFJ4W8YM9VVJ1FV",
+  "after": [
+    "01M76V5ZQ3B2WNE9NNJ2RRMR7A"
+  ],
+  "at": "2026-11-12T03:06:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, hands-on with rhiza built from this branch (go build into the session scratchpad) in a scratch repo with a local bare origin, real git and a scripted gh standing in for GitHub (pr view/create/merge; merge squash-merges into the bare origin): rhiza change new left untracked entries in the main checkout; rhiza check printed 'warn log .rhiza/log/<cs>/<entry>.json: untracked log entry that no model branch or live run holds' with 'next: rhiza model commit-untracked' per entry (the run also failed only on the stale render, not on the warnings); after commit-untracked and in a live run's linked worktree, rhiza check printed no untracked-entry warning."
+        },
+        "handle": "check-warns-orphan-log-qa-1",
+        "id": "01M76VHT1BB19VGQHMM0WH2FPD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76VHT1BB19VGQHMKWY8A8Y8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76VHT1BB19VGQHMKWY8A8Y8",
+        "id": "01M76VHT21SNWKGZCDTF0S2P6S",
+        "link": "01M76VHT21SNWKGZCDTDG66T2W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAABBDGMZA9F3BBBA3H0D",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, hands-on with rhiza built from this branch (go build into the session scratchpad) in a scratch repo with a local bare origin, real git and a scripted gh standing in for GitHub (pr view/create/merge; merge squash-merges into the bare origin): with entries of two change sets untracked on main (a failed push left them on no branch), rhiza model commit-untracked printed 'committed 3 entries' and 'committed 1 entries on a model branch', pushed two model/<cs>-<entry> branches to origin and called gh pr create once each; the record branch carried the re-rendered .rhiza/rendered files and rhiza check passed on it. A later orphan was committed and PR'd by one rhiza daemon --once tick."
+        },
+        "handle": "commit-untracked-log-qa-1",
+        "id": "01M76VHT2QYEQE1VB4HCKA4327",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76VHT2QYEQE1VB4HC8NZX97",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76VHT2QYEQE1VB4HC8NZX97",
+        "id": "01M76VHT3F5K4DJG50EB09V6K8",
+        "link": "01M76VHT3F5K4DJG50E827APBJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA7V5KJWJPQSF2X7PCMD",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, hands-on with rhiza built from this branch (go build into the session scratchpad) in a scratch repo with a local bare origin, real git and a scripted gh standing in for GitHub (pr view/create/merge; merge squash-merges into the bare origin): rhiza daemon --once with one green and one red model PR: the green one was merged with gh pr merge --squash --match-head-commit, its branch deleted on origin, and main fast-forwarded with the untracked copies of its entries dropped (git status no longer listed them); the red one stayed open and rhiza inbox showed 'model PR ... has failing checks: ci' for its change set. TestSelfUpdate's self-update path was not exercised by hand."
+        },
+        "handle": "daemon-merges-model-prs-qa-1",
+        "id": "01M76VHT45H0AK4WG08YRHKBQG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76VHT45H0AK4WG08VMNAY2Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76VHT45H0AK4WG08VMNAY2Z",
+        "id": "01M76VHT4Z7BKW5FFSQ1R3GS2E",
+        "link": "01M76VHT4Z7BKW5FFSPZ69DC4H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA6HBKA3Y4P11P3CZF4C",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, hands-on with rhiza built from this branch (go build into the session scratchpad) in a scratch repo with a local bare origin, real git and a scripted gh standing in for GitHub (pr view/create/merge; merge squash-merges into the bare origin): rhiza health's main part was bad with '4 untracked log entries on no branch' and one line per entry naming entry, change set and rhiza model commit-untracked; once the entries sat on model branches or in a live run's worktree it was ok, listing each as 'pending ... held by a model branch or run'."
+        },
+        "handle": "health-orphan-log-entries-qa-1",
+        "id": "01M76VHT5VSJTJW5CJVTBDD98X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76VHT5VSJTJW5CJVS3A5E8T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76VHT5VSJTJW5CJVS3A5E8T",
+        "id": "01M76VHT6RCP947YXX0C66VYVZ",
+        "link": "01M76VHT6RCP947YXX0A05CYC1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA9ATEZ0372B4BZ9SRST",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, hands-on with rhiza built from this branch (go build into the session scratchpad) in a scratch repo with a local bare origin, real git and a scripted gh standing in for GitHub (pr view/create/merge; merge squash-merges into the bare origin): with a run of a sleep-40 command workflow live on a change set, rhiza apply --change <cs> in the main checkout wrote the entry there and copied it byte-for-byte into the run's worktree .rhiza/log (untracked there for the run's next commit); no model branch or gh call was made, health listed it as held and rhiza check in either checkout gave no warning. The run's next commit was not exercised by hand."
+        },
+        "handle": "live-run-write-reaches-worktree-qa-1",
+        "id": "01M76VHT7SE313T8VJ9YRBCAX1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76VHT7SE313T8VJ9X0NF999",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76VHT7SE313T8VJ9X0NF999",
+        "id": "01M76VHT8T8W849106W2HMABZF",
+        "link": "01M76VHT8T8W849106W0GCSTGM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA3B1FNWA3CMWCB4KQDD",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, hands-on with rhiza built from this branch (go build into the session scratchpad) in a scratch repo with a local bare origin, real git and a scripted gh standing in for GitHub (pr view/create/merge; merge squash-merges into the bare origin): rhiza change new and rhiza apply --change in the main checkout pushed model/<cs>-<entry> branches from origin/main holding exactly the written entries and opened one PR; a second write to the same change set added a commit to the same branch (gh pr view, no second pr create); no temporary worktree remained in git worktree list."
+        },
+        "handle": "main-write-model-branch-qa-1",
+        "id": "01M76VHT9ZJ0HV990C8Q02N0B6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76VHT9ZJ0HV990C8N1NGX8K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76VHT9ZJ0HV990C8N1NGX8K",
+        "id": "01M76VHTB43DK59M2J1BSKFKM7",
+        "link": "01M76VHTB43DK59M2J1BD8W0MN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA4YDVZV5S8GZB49W9M0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA cycle 1, hands-on with rhiza built from this branch (go build into the session scratchpad) in a scratch repo with a local bare origin, real git and a scripted gh standing in for GitHub (pr view/create/merge; merge squash-merges into the bare origin): rhiza run start --foreground --workflow plan --new 'QA plan reports' (and --milestone) opened the run's worktree, wrote the open entry there and committed it on cs/<slug>; rhiza change show worked from main and check/health called the main copy held. But the same run also pushed model/<cs>-<open entry> to origin and called gh pr create for it: the open entry is shipped as a model-only PR too, not only on the run's branch."
+        },
+        "handle": "run-start-new-opens-in-worktree-qa-1",
+        "id": "01M76VHTC0TWGCT59BPVHWRZ1C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76VHTC0TWGCT59BPSZ2V5TX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76VHTC0TWGCT59BPSZ2V5TX",
+        "id": "01M76VHTD0GJXYRJ3CN36Q37RA",
+        "link": "01M76VHTD0GJXYRJ3CMZF23MZ9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA1QXNBQDGDWWN6BS1KX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76VHTDXCGP71SPQNKPN9HDT",
+  "type": "ops",
+  "v": 1
+}

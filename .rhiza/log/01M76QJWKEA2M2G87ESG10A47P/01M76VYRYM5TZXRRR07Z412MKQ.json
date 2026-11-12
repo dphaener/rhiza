@@ -1,0 +1,40 @@
+{
+  "actor": "01M76VE2Q09X0Z8SHM31N2SEZ5",
+  "after": [
+    "01M76VG6XC843HSEDBJNEGT99F"
+  ],
+  "at": "2026-11-12T03:13:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-e738d61c at 2e51e76c6: go test -trimpath -count=1 ./internal/adapter/... passes; TestGuardReply denies Write (absolute and relative), Edit (absolute), MultiEdit (relative ../), NotebookEdit (relative notebook_path) under .rhiza/log/, and gives no reply for Write on /w/.rhiza/model.json, for Bash on a log path, for Read of a log path, and for PostToolUse. go test -trimpath ./cmd/rhiza -run TestScripts/session-hook-log-guard passes: rhiza session hook PreToolUse with a Write on .rhiza/log/x/y.json prints permissionDecision deny naming rhiza apply; Write elsewhere, Bash and Read print nothing. The session-related internal/api tests (-run Session|Hook|Ask|Deliver|Interview) pass. The full internal/api run failed only its guard against the enclosing root's .rhiza-root/usage.live.json changing, which the live root daemon writes; this change does not touch usage. Diff read: session_run.go adds logEditReason (says write through rhiza apply, read with rhiza show, rhiza slice or cat) and sets the hook reply from Adapter.GuardReply; claudecode GuardReply checks only the four file tools' file_path/notebook_path, cleans and resolves the path against cwd, and parses no shell commands."
+        },
+        "handle": "session-hook-denies-log-edits-verified",
+        "id": "01M76VYRW6ZQJKVS4M9FM9VXG8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76VYRW6ZQJKVS4M9EX3H2C5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76VYRW6ZQJKVS4M9EX3H2C5",
+        "id": "01M76VYRX5CJ8WPR25VS6PHH56",
+        "link": "01M76VYRX5CJ8WPR25VR63F2XZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QVD7QSJ8RV3YNK7YMZ01C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76QJWKEA2M2G87ESG10A47P",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76VYRYM5TZXRRR07Z412MKQ",
+  "type": "ops",
+  "v": 1
+}

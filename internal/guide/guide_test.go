@@ -150,3 +150,15 @@ func TestList(t *testing.T) {
 		t.Fatalf("List returned the package's own slice")
 	}
 }
+
+func TestGuideReadsLogSafely(t *testing.T) {
+	g, ok := Lookup("rhiza")
+	if !ok {
+		t.Fatal("no rhiza guide")
+	}
+	for _, want := range []string{"`rhiza show`", "`rhiza slice`", "`cat`", "`python -m json.tool`", "`sed -i`", "`rhiza repair`"} {
+		if !strings.Contains(g.Body, want) {
+			t.Errorf("rhiza guide lacks %q", want)
+		}
+	}
+}

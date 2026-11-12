@@ -1,0 +1,40 @@
+{
+  "actor": "01M76QG473NNPB5N1ZWGB63HBK",
+  "after": [
+    "01M76QEGNKW4B762HYPJ4BM7YB"
+  ],
+  "at": "2026-11-12T01:56:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2c86968ef, go test -trimpath -count=1 ./cmd/rhiza -run TestScripts/run-start-new-main-clean passes. The script starts a --new plan run and a --new --milestone run, each through a gate step (rhiza run gate). For each run, held.sh checks that every entry of the new change set in main's .rhiza/log is byte-identical in ../repo.<slug>, is committed at the run branch's HEAD with the same bytes, and that the worktree's status is clean (prints 'held and committed: 1'). rhiza change show <cs> from main prints the title. rhiza check prints no commit-untracked or untracked-log-entry warning. rhiza health prints 'ok main on main, clean' with no orphan or untracked. go test ./internal/api -run TestNewPlanChange passes: a dry run predicts the change set ID and worktree the real run then uses. The diff of internal/api/run.go draws the entry in a dry workspace, adds the branch and worktree, then writes the same entry to the worktree and main. Attempt 1's findings f1-f3 (no commit, no health, milestone run not checked) are all addressed."
+        },
+        "handle": "run-start-new-opens-in-worktree-verified",
+        "id": "01M76QHP7ZAZ2HPQA5AMM6KXMB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76QHP7ZAZ2HPQA5AM1C96YK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76QHP7ZAZ2HPQA5AM1C96YK",
+        "id": "01M76QHP8V8HCZGCPJJS2NXSC5",
+        "link": "01M76QHP8V8HCZGCPJJQ0N2VS3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA1QXNBQDGDWWN6BS1KX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76QHP9VN99ADPMFTD7PFJWF",
+  "type": "ops",
+  "v": 1
+}

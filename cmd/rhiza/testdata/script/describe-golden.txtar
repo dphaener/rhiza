@@ -3258,7 +3258,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, accept, interview or workflow",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview or workflow",
                   "type": "string"
                 },
                 "next": {
@@ -7430,6 +7430,55 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "model.commit-untracked",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "shipped": {
+            "description": "One row per change set with orphan entries",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "change_set": {
+                  "description": "The change set the entries belong to",
+                  "type": "string"
+                },
+                "entries": {
+                  "description": "The entry files, relative to the project root, committed onto the change set's model branch",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "error": {
+                  "description": "Why the entries are still untracked, when shipping them failed",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "change_set",
+                "entries"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "shipped"
+        ],
+        "type": "object"
+      },
+      "summary": "Commit the untracked .rhiza/log entries of a main checkout that no model branch or live run holds onto model branches, one per change set, each with a model-only PR",
+      "write": false
+    },
+    {
       "name": "mv",
       "request": {
         "additionalProperties": false,
@@ -8171,6 +8220,92 @@ cmp stdout describe.golden.json
       },
       "summary": "Reopen a change set landed only on its branch, so it takes writes and lands again",
       "write": true
+    },
+    {
+      "name": "repair",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True when nothing was written",
+            "type": "boolean"
+          },
+          "lost": {
+            "description": "The entries that cannot be restored, with why",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "Where the original bytes come from: HEAD or index; empty when there are none",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "The entry file, relative to the project root",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "What was wrong with it",
+                  "type": "string"
+                },
+                "why": {
+                  "description": "Why it cannot be restored; empty when it can",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "reason"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "restored": {
+            "description": "The entries restored, or with --dry-run the ones that would be",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "Where the original bytes come from: HEAD or index; empty when there are none",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "The entry file, relative to the project root",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "What was wrong with it",
+                  "type": "string"
+                },
+                "why": {
+                  "description": "Why it cannot be restored; empty when it can",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "reason"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "dry_run",
+          "lost",
+          "restored"
+        ],
+        "type": "object"
+      },
+      "summary": "Restore the damaged log entries render refuses, from HEAD or the persistent index",
+      "write": false
     },
     {
       "name": "request",

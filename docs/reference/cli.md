@@ -64,6 +64,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza log`](#rhiza-log)
 - [`rhiza ls`](#rhiza-ls)
 - [`rhiza machine show`](#rhiza-machine-show)
+- [`rhiza model commit-untracked`](#rhiza-model-commit-untracked)
 - [`rhiza mv`](#rhiza-mv)
 - [`rhiza note add`](#rhiza-note-add)
 - [`rhiza overlaps`](#rhiza-overlaps)
@@ -76,6 +77,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza reject`](#rhiza-reject)
 - [`rhiza render`](#rhiza-render)
 - [`rhiza reopen`](#rhiza-reopen)
+- [`rhiza repair`](#rhiza-repair)
 - [`rhiza request`](#rhiza-request)
 - [`rhiza request ls`](#rhiza-request-ls)
 - [`rhiza retire`](#rhiza-retire)
@@ -1010,6 +1012,18 @@ Output (`--json` fields):
 - `path` (string): The machine config file, whether or not it exists
 - `trust` (string): The machine's trust: dedicated when its config says so, else daily
 
+## rhiza model commit-untracked
+
+Commit the untracked .rhiza/log entries of a main checkout that no model branch or live run holds onto model branches, one per change set, each with a model-only PR.
+
+```
+rhiza model commit-untracked
+```
+
+Output (`--json` fields):
+
+- `shipped` (array of object): One row per change set with orphan entries
+
 ## rhiza mv
 
 Move a capability or intent to another parent or position.
@@ -1256,6 +1270,20 @@ Output (`--json` fields):
 - `reason` (string): The reason of an accept or reject
 - `rule` (string): The rule of an accept or reject
 - `to` (string): The state after the move
+
+## rhiza repair
+
+Restore the damaged log entries render refuses, from HEAD or the persistent index.
+
+```
+rhiza repair
+```
+
+Output (`--json` fields):
+
+- `dry_run` (boolean): True when nothing was written
+- `lost` (array of object): The entries that cannot be restored, with why
+- `restored` (array of object): The entries restored, or with --dry-run the ones that would be
 
 ## rhiza request
 

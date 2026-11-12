@@ -599,8 +599,19 @@ func (r *stepRunner) CommitEvidence(leaf run.Leaf, session string) (string, erro
 // message msg, through a temporary index read from HEAD, and moves HEAD
 // (its branch) to the new commit only if it has not moved meanwhile. The
 // real index is then updated for paths alone, so they show as committed
-// while every other staged or unstaged change stays as it was.
+// while every other staged or unstaged change stays as it was. The copies
+// of main-checkout writes that liveRunMirror left untracked in the
+// worktree (mirroredPaths) go in the same commit.
 func (r *stepRunner) commitOnly(paths []string, msg string) (string, error) {
+	mirrored, err := r.mirroredPaths()
+	if err != nil {
+		return "", err
+	}
+	for _, p := range mirrored {
+		if !slices.Contains(paths, p) {
+			paths = append(paths, p)
+		}
+	}
 	old, err := r.Head()
 	if err != nil {
 		return "", err

@@ -1,0 +1,41 @@
+{
+  "actor": "01M76ZJRBRXFX3PJG6YW9RQ0K5",
+  "after": [
+    "01M76ZJC3V8YNSQA5DEE0DQPSG"
+  ],
+  "at": "2026-11-12T04:17:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Finding f1 is a wording mismatch, not a behaviour defect. internal/api/daemon_projects.go:429 runs daemonCommitUntracked and daemonMergeModelPRs only when modelNetDue: first poll, then once a minute, under a 30s per-program bound. Commit e8e289be4 added that on purpose: a stalled ls-remote/fetch/push/gh on every 5s poll held up every project's poll and spent the gh token each tick, the same reason the self-update fetch is throttled. Reverting it to every tick would bring that back. The change set's intent (nothing left uncommitted on main) is still met with a one-minute delay, since orphans are picked up on start and within a minute after. So the leaf's text, not the code, should change; three review cycles failed only because the leaf still promises every tick.",
+          "statement": "Keep the throttle from e8e289be4 and change leaf @{01M76FAA7V5KJWJPQSF2X7PCMD} instead: its statement should say the daemon commits orphan entries on its first poll and then at most once a minute (modelNetEvery), each git/gh call bounded by modelNetTimeout, not 'on each tick'; the acceptance's daemon test asserts a due round (first poll) does the commit, not every tick",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "commit-untracked-throttled-cadence",
+        "id": "01M76ZKWCQ3ZMWYAG2605ZW03X",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76ZKWCQ3ZMWYAG25X9H3C11",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76ZKWCQ3ZMWYAG25X9H3C11",
+        "id": "01M76ZKWE95TCYZF2JCXAT07WF",
+        "link": "01M76ZKWE95TCYZF2JCSS5NJNZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76ZJ60MV31BZVR5SXWZANYP",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76ZKWG11Y4FK6T8A8Y93JMV",
+  "type": "ops",
+  "v": 1
+}

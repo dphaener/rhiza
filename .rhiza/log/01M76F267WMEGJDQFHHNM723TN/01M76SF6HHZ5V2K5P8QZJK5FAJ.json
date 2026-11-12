@@ -1,0 +1,40 @@
+{
+  "actor": "01M76SCJK2Z7JJD2Z2CRRTTCK7",
+  "after": [
+    "01M76S70N34ZM4VD1756A81FH9"
+  ],
+  "at": "2026-11-12T02:30:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a02ef9dd1 ran `go test -trimpath -count=1 ./internal/api -run TestLiveRunWrite -v`: TestLiveRunWriteReachesWorktree, TestLiveRunWriteCommittedByRunsNextCommit and TestLiveRunWriteNoRunNoCopy all PASS. An accept made in the main checkout while run R1's worktree exists is copied byte for byte into the worktree's .rhiza/log together with its uncommitted open and propose, and the worktree's log folds cleanly with the change set accepted (fixes attempt 1's f2). With real git and a linked worktree, the run's next commit (CommitCheckWrites through commitOnly, which now adds mirroredPaths: untracked entries of the run's change set identical to the main checkout's) holds all three entries on the run's branch, HEAD:<path> equal to the main copy, and leaves nothing untracked (fixes f1). A change set with no live run, and a dry run, copy nothing to any worktree. Read the diff (live_run_mirror.go copyMissingEntries/mirroredPaths, run_leaves.go commitOnly); go vet ./internal/api is clean. A wider ./internal/api -run 'Commit|Evidence|Check|Mirror|LiveRun' run passed every test, then failed only the known .rhiza-root/usage.live.json state-folder guard, which this change does not touch."
+        },
+        "handle": "live-run-write-reaches-worktree-verified",
+        "id": "01M76SF6DGA9RPFDGKK2AQ9SF4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76SF6DF2ZTNFHDCFBNNKXNF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76SF6DF2ZTNFHDCFBNNKXNF",
+        "id": "01M76SF6EZ63BP83MBKBYG64J3",
+        "link": "01M76SF6EZ63BP83MBK9XQ050A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA3B1FNWA3CMWCB4KQDD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76SF6HHZ5V2K5P8QZJK5FAJ",
+  "type": "ops",
+  "v": 1
+}
