@@ -400,7 +400,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "open-pr-triage", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "land-triage", "land-conflict-triage", "model-conflict-fix", "wait-landed", "landed-green",
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "open-pr-triage", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "land-triage", "land-conflict-triage", "land-main-conflict-triage", "model-conflict-fix", "wait-landed", "landed-green",
 		"gate-rebase-merge", "conflict-triage-landed", "conflict-fix-landed", "rebase-merge", "rebase-merge-gate-failed", "landed-infra-triage", "landed-infra-wait", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge", "push-merge-triage", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
@@ -2015,7 +2015,10 @@ func TestShipChangeLocalGate(t *testing.T) {
 		seen[n] = true
 		// The model-conflict fix goes back through gate-land to land: the
 		// one loop to a step before land, bounded by its own caps.
-		if n == "model-conflict-fix" {
+		// So does the land refused for a node main changed: its triage
+		// hands the merge of main to conflict-fix, bounded by the run's
+		// 3 conflict fixes.
+		if n == "model-conflict-fix" || n == "land-main-conflict-triage" {
 			return
 		}
 		for _, to := range def.Steps[n].On {
@@ -2035,7 +2038,7 @@ func TestShipChangeLocalGate(t *testing.T) {
 	}
 	pre["land"] = true
 	for n := range after {
-		if n == "model-conflict-fix" {
+		if n == "model-conflict-fix" || n == "land-main-conflict-triage" {
 			continue
 		}
 		for o, to := range def.Steps[n].On {
@@ -2121,8 +2124,14 @@ func TestShipChangeModelConflictFix(t *testing.T) {
 		t.Errorf("land-triage = %+v; want ship gate --failed, pass gate-fix-merge, fail land-conflict-triage, max_visits 4", lt)
 	}
 	ct := def.Steps["land-conflict-triage"]
-	if ct.Kind != KindCommand || ct.Run != "rhiza ship check --model-conflict" || ct.On[OutcomePass] != "model-conflict-fix" || len(ct.On) != 1 || ct.MaxVisits != 4 {
-		t.Errorf("land-conflict-triage = %+v; want ship check --model-conflict, pass model-conflict-fix only, max_visits 4", ct)
+	if ct.Kind != KindCommand || ct.Run != "rhiza ship check --model-conflict" || ct.On[OutcomePass] != "model-conflict-fix" || ct.On[OutcomeFail] != "land-main-conflict-triage" || len(ct.On) != 2 || ct.MaxVisits != 4 {
+		t.Errorf("land-conflict-triage = %+v; want ship check --model-conflict, pass model-conflict-fix, fail land-main-conflict-triage, max_visits 4", ct)
+	}
+	// A land the PR head's rhiza refused for a node main changed leaves a
+	// merge of main in progress: it goes to the pre-land conflict fixer.
+	mt := def.Steps["land-main-conflict-triage"]
+	if mt.Kind != KindCommand || mt.Run != "rhiza ship check --conflicts" || mt.On[OutcomePass] != "conflict-fix" || len(mt.On) != 1 || mt.MaxVisits != 4 {
+		t.Errorf("land-main-conflict-triage = %+v; want ship check --conflicts, pass conflict-fix only, max_visits 4", mt)
 	}
 	fx := def.Steps["model-conflict-fix"]
 	if fx.Kind != KindAgent || fx.On[OutcomePass] != "gate-land" || len(fx.On) != 1 || fx.MaxVisits != 3 {

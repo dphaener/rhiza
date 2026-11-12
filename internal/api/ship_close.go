@@ -17,6 +17,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -241,6 +242,9 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 		lerr := shipLandWith(ctx, t, bin)
 		shipRecordModelConflict(ctx, t, &st, lerr)
 		if lerr != nil {
+			if node, ok := shipLandNodeChanged(lerr); ok {
+				return nil, shipLandMainConflict(ctx, t, node, lerr)
+			}
 			return nil, lerr
 		}
 		resp.Landed = true
@@ -750,4 +754,72 @@ func (r ShipCommandResponse) Human(w io.Writer) {
 		return
 	}
 	fmt.Fprintf(w, "Ran %s.\n", shipScript)
+}
+
+// shipLandNodeRE finds the node in the head build's refusal to land: a node
+// the change set edits changed on main ("node N changed"), or the stale base
+// an older build words it as ("of N is stale").
+var shipLandNodeRE = regexp.MustCompile(`cannot land change set \S+: .*?(?:\bnode (\S+?):? changed|\bof (\S+) is stale)`)
+
+// shipLandNodeChanged reports whether err is the PR head's rhiza refusing to
+// land (exit status 3) because a node the change set edits changed on main,
+// and with no structured model conflict (which has its own fixer), and
+// names the node.
+func shipLandNodeChanged(err error) (string, bool) {
+	e := AsError(err)
+	if e == nil || e.Conflict != nil || !strings.Contains(e.Message, "exit status 3") {
+		return "", false
+	}
+	m := shipLandNodeRE.FindStringSubmatch(e.Message)
+	if m == nil {
+		return "", false
+	}
+	return m[1] + m[2], true
+}
+
+// shipLandMainConflict answers a land refused because node changed on main:
+// it merges origin/main into the branch. A merge that conflicts in code is
+// left in progress and recorded in the ship state, so ship check --conflicts
+// passes and the run's conflict fixer resolves it before land is tried again.
+// A merge that goes through cleanly is undone: nothing is left for a fixer.
+// Either way the error is a conflict naming node.
+func shipLandMainConflict(ctx *Ctx, t shipTarget, node string, lerr error) error {
+	fail := func(format string, a ...any) error {
+		return Conflictf("cannot land change set %s: node %s changed on %s: %s (%s)", t.cs, node, shipMain, fmt.Sprintf(format, a...), AsError(lerr).Message)
+	}
+	if _, err := ctx.Git("fetch", "-q", "origin"); err != nil {
+		return fail("could not fetch origin: %v", err)
+	}
+	onto, err := ctx.Git("rev-parse", "--verify", "--quiet", "refs/remotes/origin/"+shipMain)
+	if err != nil {
+		return fail("origin has no %s branch: %v", shipMain, err)
+	}
+	onto = strings.TrimSpace(onto)
+	if _, err := ctx.Git("merge-base", "--is-ancestor", onto, "HEAD"); err == nil {
+		return fail("the branch already holds origin/%s, so there is no merge to resolve", shipMain)
+	}
+	prefix, err := ctx.Git("rev-parse", "--show-prefix")
+	if err != nil {
+		return fail("%v", err)
+	}
+	rendered := strings.TrimSpace(prefix) + renderedDir + "/"
+	orig, err := gitHead(ctx)
+	if err != nil {
+		return err
+	}
+	resp := ShipRebaseResponse{Change: t.cs.String(), Branch: t.branch, Onto: onto, Behind: true}
+	conflicts, err := shipMergeOnto(ctx, t, onto, rendered, &resp)
+	if err != nil {
+		return fail("%v", err)
+	}
+	if len(conflicts) == 0 {
+		if _, err := ctx.Git("reset", "-q", "--keep", orig); err != nil {
+			return fail("merged origin/%s cleanly but could not put the branch back: %v", shipMain, err)
+		}
+		return fail("origin/%s merges cleanly, so no fixer is needed", shipMain)
+	}
+	if _, err := shipLeaveConflict(ctx, t, rendered, conflicts, resp); err != nil {
+		return err
+	}
+	return fail("merging origin/%s into %s conflicts in %s; the merge is left in progress for the conflict fixer", shipMain, t.branch, strings.Join(conflicts, ", "))
 }

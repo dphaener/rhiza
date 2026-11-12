@@ -290,6 +290,19 @@ kind = "command"
 run = "rhiza ship check --model-conflict"
 max_visits = 4
 on.pass = "model-conflict-fix"
+on.fail = "land-main-conflict-triage"
+
+# ship land fails when the PR head's rhiza refuses to land (exit 3) because a
+# node the change set edits changed on main: it merges origin/main into the
+# branch and records a conflict in code, left as a merge in progress. Only
+# that passes here, to conflict-fix (not conflict-fix-landed: nothing landed),
+# which resolves the merge; the run then pushes it through render-pr and
+# lands again. Any other land failure ends the run here, as it always did.
+[step.land-main-conflict-triage]
+kind = "command"
+run = "rhiza ship check --conflicts"
+max_visits = 4
+on.pass = "conflict-fix"
 
 # One fixer on the run worktree: it moves each stale update onto the node's
 # landed version and commits, never pushing. The run goes back through
