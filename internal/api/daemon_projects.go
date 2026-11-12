@@ -422,6 +422,7 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 		err = eerr
 	}
 	daemonCommitUntracked(ctx)
+	daemonMergeModelPRs(ctx)
 	p.saveState()
 	return err
 }
