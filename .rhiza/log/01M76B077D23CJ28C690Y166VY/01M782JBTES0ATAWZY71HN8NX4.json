@@ -1,0 +1,40 @@
+{
+  "actor": "01M782CTCCWZ3DW9K8J7ZNVK4Y",
+  "after": [
+    "01M78298SSCNN463Y6TBFN6Y73"
+  ],
+  "at": "2026-11-12T14:28:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at cbb3a6a44 with built rhiza and tools/release binaries in a scratch repo: real `rhiza note add <cs>` notes 'breaking: drops --old', '  SEVERE:  loses data ', 'breaking changes ahead' and 'severe: crash on start' on a second change set gave `tools/release marks` = breaking [drops --old], severe [loses data] and severe [crash on start]; the plain-text note was ignored; editing an unlanded note with `rhiza set` updated its mark. Gaps: a note retracted with `rhiza retire` before landing (written as body.drop, not node.retire) still counted as a mark, and 'severe:' with an empty reason counted with reason ''. `tools/release marks` on this repo prints {}; go test ./tools/release passes; workflow check plan-bug and bugfix pass."
+        },
+        "handle": "release-marks-qa-1",
+        "id": "01M782JBRMHVB70GW373R49803",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M782JBRMHVB70GW3714CCJMW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M782JBRMHVB70GW3714CCJMW",
+        "id": "01M782JBSXPS6TFHAABVM8YN3B",
+        "link": "01M782JBSXPS6TFHAABT2PWCGV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7DJ5HD25ETA8QRYQP9GA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B077D23CJ28C690Y166VY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M782JBTES0ATAWZY71HN8NX4",
+  "type": "ops",
+  "v": 1
+}

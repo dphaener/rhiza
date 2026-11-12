@@ -1,0 +1,40 @@
+{
+  "actor": "01M7830RYE32X51WR6RPA766PG",
+  "after": [
+    "01M782ZCX2A7XVC0HM77D9Q1MR"
+  ],
+  "at": "2026-11-12T14:38:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at 29f2cf3c0 (fix 0874dbd08), with scratch builds of cmd/rhiza and tools/release in a fresh git repo. Real `rhiza note add <cs>` notes 'breaking: drops --old', '  SEVERE:  loses data ', 'plain remark', 'breaking changes ahead' and 'breaking: to retire' made `tools/release marks` print breaking [drops --old, to retire] and severe [loses data]; the plain and colon-less notes were ignored. `rhiza retire <note> --reason wrong` while unlanded wrote an entry with body.drop of the note and link create ops and empty ops; after it, marks no longer listed 'to retire' (the cycle 1 major is fixed). A second change set's 'severe: crash on start' was listed under its own ID. `rhiza set <note> --field statement=just a remark now` on an unlanded mark removed its breaking mark. `tools/release marks` on this repo prints {}. go test -trimpath -count=1 ./tools/release/... passes; workflow check plan-bug and bugfix are valid (expected bypass warnings only). Still open, minor: a node.update to a landed note is not read, and an empty 'severe:' reason counts."
+        },
+        "handle": "release-marks-qa-2",
+        "id": "01M7833NKT0EYJMEQG6KY0Z5DT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7833NKT0EYJMEQG6HBM203V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7833NKT0EYJMEQG6HBM203V",
+        "id": "01M7833NNHR113GY1MHV19JHTF",
+        "link": "01M7833NNHR113GY1MHQK5NPDN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7DJ5HD25ETA8QRYQP9GA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B077D23CJ28C690Y166VY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7833NQV1GTEP92M202EHTDA",
+  "type": "ops",
+  "v": 1
+}
