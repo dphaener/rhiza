@@ -29,7 +29,7 @@ func ciFlakeCounts(rec CIStability, window int) map[string]int {
 }
 
 // healthCI is ok while CI is stable and warn while it is unstable (an
-// identified flake in the window, or main's latest result red), with each
+// test flaked on 2 heads in the window, or main's latest result red), with each
 // flake in the window and its count as detail, unidentified ones included.
 // Unstable with no rhiza.ship.localGate set, it also warns that nothing runs
 // before a push, and points at the setting.

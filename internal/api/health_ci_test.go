@@ -28,7 +28,7 @@ func TestHealthCIStability(t *testing.T) {
 		p := ciHealth(t, "make check", `{"runs":[
 {"head":"a","result":"green","time":"x","flakes":["TestPond","TestGarden"]},
 {"head":"b","result":"green","time":"x","flakes":["TestPond"]}]}`)
-		if p.State != HealthWarn || !strings.HasPrefix(p.Summary, "unstable: flake") {
+		if p.State != HealthWarn || !strings.HasPrefix(p.Summary, "unstable: TestPond flaked 2 times") {
 			t.Fatalf("got %+v", p)
 		}
 		if len(p.Detail) != 2 || !strings.Contains(p.Detail[0], "TestGarden: 1 flake ") || !strings.Contains(p.Detail[1], "TestPond: 2 flakes ") {
@@ -42,7 +42,7 @@ func TestHealthCIStability(t *testing.T) {
 		p := ciHealth(t, "", `{"runs":[
 {"head":"a","result":"green","time":"x","flakes":["ci / UNKNOWN STEP"]},
 {"head":"b","result":"green","time":"x","flakes":["ci / UNKNOWN STEP","CI run 123"]}]}`)
-		if p.State != HealthOK || !strings.HasPrefix(p.Summary, "stable: ignored unidentified flake") || p.Next != "" || strings.Contains(p.Summary, "gate") {
+		if p.State != HealthOK || !strings.HasPrefix(p.Summary, "stable: ignored infra failures") || p.Next != "" || strings.Contains(p.Summary, "gate") {
 			t.Fatalf("got %+v", p)
 		}
 		if len(p.Detail) != 0 {

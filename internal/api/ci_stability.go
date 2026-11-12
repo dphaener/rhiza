@@ -152,42 +152,86 @@ func recordSettledCI(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckRespons
 
 // CIVerdict is Rhiza's judgment of a repo's CI, read from the record.
 type CIVerdict struct {
-	Unstable bool   `json:"unstable" desc:"True while the window holds an identified flake or main's latest result is red"`
-	Reason   string `json:"reason,omitempty" desc:"Why CI is unstable; when stable, the unidentified flakes it ignored, if any"`
+	Unstable bool   `json:"unstable" desc:"True while a named test flaked on 2 distinct heads in the window or main's latest result is red"`
+	Reason   string `json:"reason,omitempty" desc:"Why CI is unstable; when stable, the single flakes and infra failures it ignored, if any"`
 }
 
-// ciVerdict judges rec: CI is unstable while the last window runs hold an
-// identified flake, or while main's latest result is red. Infra
-// failures are ignored, and a stable verdict's reason names them. window
-// below 1 counts as 1.
+// ciVerdict judges rec: CI is unstable while a named test flaked on at
+// least 2 distinct heads within the last window runs, or while main's latest
+// result is red. A test seen on one head only, and infra failures, are
+// ignored; a stable verdict's reason says so. The unstable reason names each
+// such test, its flake count and after how many more completed CI runs it
+// stops applying. window below 1 counts as 1.
 func ciVerdict(rec CIStability, window int) CIVerdict {
 	window = max(window, 1)
-	runs := rec.Runs
-	if len(runs) > window {
-		runs = runs[len(runs)-window:]
+	start := max(len(rec.Runs)-window, 0)
+	type seen struct {
+		count int
+		// heads holds the run indexes of the flakes' distinct heads, newest first.
+		heads []int
+		keys  map[string]bool
 	}
-	var ignored []string
-	for _, r := range runs {
-		r = r.normalized()
-		if len(r.Flakes) > 0 {
-			return CIVerdict{Unstable: true, Reason: "flake in the last " + strconv.Itoa(window) + " CI runs: " + strings.Join(r.Flakes, ", ")}
+	byTest := map[string]*seen{}
+	var order, ignoredInfra []string
+	for i := len(rec.Runs) - 1; i >= start; i-- {
+		r := rec.Runs[i].normalized()
+		key := r.Head
+		if key == "" {
+			key = "#" + strconv.Itoa(i)
 		}
-		for _, f := range r.Infra {
-			if !slices.Contains(ignored, f) {
-				ignored = append(ignored, f)
+		for _, f := range r.Flakes {
+			s := byTest[f]
+			if s == nil {
+				s = &seen{keys: map[string]bool{}}
+				byTest[f] = s
+				order = append(order, f)
+			}
+			s.count++
+			if !s.keys[key] {
+				s.keys[key] = true
+				s.heads = append(s.heads, i)
 			}
 		}
+		for _, f := range r.Infra {
+			if !slices.Contains(ignoredInfra, f) {
+				ignoredInfra = append(ignoredInfra, f)
+			}
+		}
+	}
+	slices.Sort(order)
+	var unstable, ignored []string
+	for _, name := range order {
+		s := byTest[name]
+		if len(s.heads) < 2 {
+			if s.count == 1 {
+				ignored = append(ignored, name+" was seen once and ignored")
+			} else {
+				ignored = append(ignored, name+" flaked "+strconv.Itoa(s.count)+" times on one head and was ignored")
+			}
+			continue
+		}
+		// The older of the two latest flaky heads leaves the window after
+		// this many more completed runs.
+		n := window - (len(rec.Runs) - s.heads[1]) + 1
+		unstable = append(unstable, name+" flaked "+strconv.Itoa(s.count)+" times on "+strconv.Itoa(len(s.heads))+
+			" heads in the last "+strconv.Itoa(window)+" CI runs (stops applying after "+strconv.Itoa(n)+" more completed CI runs)")
+	}
+	if len(ignoredInfra) > 0 {
+		ignored = append(ignored, "ignored infra failures: "+strings.Join(ignoredInfra, ", "))
 	}
 	for i := len(rec.Runs) - 1; i >= 0; i-- {
 		if r := rec.Runs[i]; r.Main {
 			if r.Result == ciRed {
-				return CIVerdict{Unstable: true, Reason: "main's latest CI result is red (" + r.Head + ")"}
+				unstable = append(unstable, "main's latest CI result is red ("+r.Head+")")
 			}
 			break
 		}
 	}
+	if len(unstable) > 0 {
+		return CIVerdict{Unstable: true, Reason: strings.Join(unstable, "; ")}
+	}
 	if len(ignored) > 0 {
-		return CIVerdict{Reason: "ignored unidentified flake in the last " + strconv.Itoa(window) + " CI runs: " + strings.Join(ignored, ", ")}
+		return CIVerdict{Reason: strings.Join(ignored, "; ")}
 	}
 	return CIVerdict{}
 }

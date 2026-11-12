@@ -19,7 +19,7 @@ func gateFixture(t *testing.T, gate string, unstable bool) *sessionFixture {
 	}
 	rec := `{"runs":[{"head":"a","result":"green","time":"x"}]}`
 	if unstable {
-		rec = `{"runs":[{"head":"a","result":"green","time":"x","flakes":["TestPond"]}]}`
+		rec = `{"runs":[{"head":"a","result":"green","time":"x","flakes":["TestPond"]},{"head":"b","result":"green","time":"x","flakes":["TestPond"]}]}`
 	}
 	if err := writeAtomic(ciStabilityPath(f.common), []byte(rec)); err != nil {
 		t.Fatal(err)
@@ -51,13 +51,13 @@ func TestShipLocalGate(t *testing.T) {
 			t.Errorf("resp = %+v", r)
 		}
 	})
-	t.Run("unidentified flake only skips with the reason", func(t *testing.T) {
+	t.Run("infra failures only skip with the reason", func(t *testing.T) {
 		f := gateFixture(t, "echo gate-ran; exit 1", false)
 		if err := writeAtomic(ciStabilityPath(f.common), []byte(`{"runs":[{"head":"a","result":"green","time":"x","flakes":["ci / UNKNOWN STEP"]}]}`)); err != nil {
 			t.Fatal(err)
 		}
 		r := shipGate(t, f)
-		if !r.Skipped || r.Output != "" || r.ExitCode() != 0 || !strings.HasPrefix(r.Reason, "CI is stable") || !strings.Contains(r.Reason, "ignored unidentified flake") || !strings.Contains(r.Reason, "ci / UNKNOWN STEP") {
+		if !r.Skipped || r.Output != "" || r.ExitCode() != 0 || !strings.HasPrefix(r.Reason, "CI is stable") || !strings.Contains(r.Reason, "ignored infra failures") || !strings.Contains(r.Reason, "ci / UNKNOWN STEP") {
 			t.Errorf("resp = %+v", r)
 		}
 	})
@@ -96,7 +96,7 @@ func TestShipLocalGateOncePerHead(t *testing.T) {
 	f, g, _ := shipFixture(t)
 	log := filepath.Join(t.TempDir(), "gate.log")
 	f.git.out["config --get "+LocalGateKey] = "echo ran >> " + log + "\n"
-	if err := writeAtomic(ciStabilityPath(f.common), []byte(`{"runs":[{"head":"a","result":"green","time":"x","flakes":["TestPond"]}]}`)); err != nil {
+	if err := writeAtomic(ciStabilityPath(f.common), []byte(`{"runs":[{"head":"a","result":"green","time":"x","flakes":["TestPond"]},{"head":"b","result":"green","time":"x","flakes":["TestPond"]}]}`)); err != nil {
 		t.Fatal(err)
 	}
 	g.answers["git rev-parse HEAD"] = "beef000111\n"
@@ -133,7 +133,7 @@ func TestShipRebaseRunsLocalGate(t *testing.T) {
 	setup := func(t *testing.T, gate string) (*sessionFixture, string) {
 		f, state := shipRebaseFixture(t)
 		f.git.out["config --get "+LocalGateKey] = gate + "\n"
-		if err := writeAtomic(ciStabilityPath(f.common), []byte(`{"runs":[{"head":"a","result":"green","time":"x","flakes":["TestPond"]}]}`)); err != nil {
+		if err := writeAtomic(ciStabilityPath(f.common), []byte(`{"runs":[{"head":"a","result":"green","time":"x","flakes":["TestPond"]},{"head":"b","result":"green","time":"x","flakes":["TestPond"]}]}`)); err != nil {
 			t.Fatal(err)
 		}
 		return f, state
