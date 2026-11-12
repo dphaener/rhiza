@@ -3,6 +3,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -25,6 +26,18 @@ func run(args []string) error {
 			return err
 		}
 		fmt.Println(v)
+		return nil
+	}
+	if len(args) > 0 && args[0] == "marks" {
+		marks, err := ReadMarks(filepath.Join(".rhiza", "log"))
+		if err != nil {
+			return err
+		}
+		b, err := json.MarshalIndent(marks, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(b))
 		return nil
 	}
 	fs := flag.NewFlagSet("release", flag.ContinueOnError)

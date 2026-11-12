@@ -34,6 +34,23 @@ to `bugfix`. Both are autonomous (`.rhiza/workflows/plan-bug.toml`,
 expected. Inspect them with `rhiza workflow describe plan-bug` and
 `rhiza workflow describe bugfix`.
 
+## Release marks
+
+`tools/release` reads two marks from notes on a change set (`rhiza note add
+<change set> "<text>"`, written into the change set being planned or
+reviewed). A note whose text starts `breaking:` marks the change set
+breaking (a major release); one starting `severe:` marks a bug fix severe
+(released at once, not in the batched patch). The rest of the text is the
+reason. Other notes are ignored; `tools/release marks` prints what it reads.
+
+- A planner (plan-bug included) writes `breaking:` when the change set
+  removes or changes a CLI command, flag, `--json` shape, `rhiza.*` setting
+  or `.rhiza/` file format that existing users rely on. It writes `severe:`
+  on a bug fix only for data loss, a corrupted log or model, or a daemon or
+  CLI that cannot run at all; any other bug is not severe.
+- A reviewer who finds the built change set breaking or severe in a way the
+  plan missed writes the note too, and says so in its summary.
+
 ## Commands
 
 ```bash
