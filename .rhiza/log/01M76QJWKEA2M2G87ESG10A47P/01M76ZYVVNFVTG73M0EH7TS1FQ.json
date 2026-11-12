@@ -1,0 +1,40 @@
+{
+  "actor": "01M76Z0TKY8HDZPW1C7TMZ3QJ8",
+  "after": [
+    "01M76YJFECKFTBXD005V01AYBP"
+  ],
+  "at": "2026-11-12T04:23:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 4da6a0050 (fix for quality f1: HEAD bytes restored unchecked). Read the diff: originalBytes now applies isEntryBytes (DecodeCanonical, ID and change set match the path) to HEAD's blob for entry paths, falls back to the index, and reports 'HEAD's copy is damaged too and ...' when both fail; non-entry files such as repo.json still take HEAD unchecked. go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(repair|describe-golden|render-refuses-damaged-log)$': ok. The repair script covers the incident (an uncommitted entry overwritten with another entry's bytes): dry-run names it and changes nothing, repair restores it from the index at 0444, then render and fold-ok pass. A changed committed entry is restored from HEAD. New case: an entry committed already damaged makes render refuse; repair says 'restored from index', not 'from HEAD', and cmp matches the original bytes at 0444; render and fold-ok pass after commit. An entry the index never saw is reported not restorable, exit non-zero. go test ./internal/index/...: ok. go test ./internal/api -run 'Repair|Humaner|Describe': ok. gofmt clean, go vet ./internal/api clean. The whole internal/api package hit a 240s timeout on a loaded shared host (load 5.9 on 4 cores) while TestUsageWindowsAnchored (unrelated) had run for 2s; no test failed, so CI's make check covers it."
+        },
+        "handle": "repair-damaged-entries-verified-2",
+        "id": "01M76ZYVSFTX7MYDE8SY3B3BQP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76ZYVSFTX7MYDE8SVP9DBHB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76ZYVSFTX7MYDE8SVP9DBHB",
+        "id": "01M76ZYVTQ6YSFR99J3K4GXRVM",
+        "link": "01M76ZYVTQ6YSFR99J3FB9G8PD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QVDF2XHQYY78GE402FTD4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76QJWKEA2M2G87ESG10A47P",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76ZYVVNFVTG73M0EH7TS1FQ",
+  "type": "ops",
+  "v": 1
+}
