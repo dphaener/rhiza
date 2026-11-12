@@ -1,0 +1,96 @@
+{
+  "actor": "01M777569SEHHBSNKYBEN5AJE6",
+  "after": [
+    "01M777B92PJ7VHZGX79WNSSB74"
+  ],
+  "at": "2026-11-12T06:32:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M777A77AV16MSTDPMCADCPM6",
+        "id": "01M777B9F5MGX4DRDV54FNJBAT",
+        "link": "01M777B9F5MGX4DRDV511QYPSY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M777AW50YHP0C4A0D7YQET8E",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api (and internal/run for the journal field) start two milestone plan runs back to back with landed milestones up to 35 and see 36 then 37; a reservation held only by an ended or failed run is still skipped; a run planning an existing milestone gets no number; rhiza run status --json shows the reserved number",
+          "statement": "Starting a plan run for a new milestone (a milestone request, or run start --new --milestone) reserves its milestone number N, one more than the highest of every landed milestone intent's milestone field and every number reserved in any run journal in the shared run store (ended and failed runs included), stores N in the run's journal and shows it in rhiza run status; a run that plans an existing milestone reserves nothing"
+        },
+        "handle": "milestone-number-reserved",
+        "id": "01M777B9G3TT1SDCSTGKA0Z4DK",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M777B9G3TT1SDCSTGG2Z820G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M777B9G3TT1SDCSTGG2Z820G",
+        "id": "01M777B9GHSXE1MVKYHR8AM27A",
+        "link": "01M777B9GHSXE1MVKYHPXRMN7T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M777A77AV16MSTDPMCADCPM6",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/api checks the planner session's environment carries RHIZA_MILESTONE_NUMBER for a new-milestone plan run and omits it otherwise; a test in internal/guide checks the plan guide's Milestone section names RHIZA_MILESTONE_NUMBER, milestone-N, milestone=N and the mN- prefix",
+          "statement": "The planner of a milestone plan run gets the reserved number as RHIZA_MILESTONE_NUMBER, and the plan guide tells it to name the milestone intent milestone-N with field milestone=N and its done points prefixed mN-, never counting milestones from its own branch"
+        },
+        "handle": "planner-gets-milestone-number",
+        "id": "01M777B9HFVF828QJGDX9STEVS",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M777B9HFVF828QJGDWM3M4CH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M777B9HFVF828QJGDWM3M4CH",
+        "id": "01M777B9HWY1NVF16VFVNXTDJM",
+        "link": "01M777B9HWY1NVF16VFS9B8S3Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M777A77AV16MSTDPMCADCPM6",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api run run.milestone-check on a plan using the reserved number (passes) and on plans with the wrong handle, the wrong milestone field and a done point without the mN- prefix (each fails, naming the intent and the expected number)",
+          "statement": "run.milestone-check fails a plan whose new milestone intent does not use the run's reserved number (handle milestone-N, field milestone=N, done points prefixed mN-), naming the intent and the expected number in its Fix line"
+        },
+        "handle": "milestone-check-enforces-number",
+        "id": "01M777B9JRPCQZD1SBKFD31SH2",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M777B9JRPCQZD1SBKF1ZQ4ZX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M777B9JRPCQZD1SBKF1ZQ4ZX",
+        "id": "01M777B9KA3YCPY358AR2V0GYF",
+        "link": "01M777B9KA3YCPY358AP3FR42R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M777A77AV16MSTDPMCADCPM6",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7774MAPJ7VCPN1Q9M3RHMV4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M777B9KSWPE7SXQY0RBMC388",
+  "type": "ops",
+  "v": 1
+}

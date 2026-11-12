@@ -1,0 +1,30 @@
+{
+  "actor": "01M777569SEHHBSNKYBEN5AJE6",
+  "after": [
+    "01M7774MAPJ7VCPN1Q9NGNRQFF"
+  ],
+  "at": "2026-11-12T06:31:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "d85dd023-7452-4f12-87c3-01a1ce728739",
+          "statement": "Which intent should bug change set 01M7774 (concurrent milestone plans pick the same milestone number and handle) serve? The earlier bug fix 'A queued milestone request waits for another milestone' served milestone-25 (the backlog is empty: the daemon builds and ships the queued work on its own). / How should concurrent milestone plans stop picking the same number and handle? / Should run.milestone-check (plan step before review) also fail a plan whose milestone intent doesn't use the reserved number (handle milestone-N, field milestone=N, done points prefixed mN-)?"
+        },
+        "handle": "question-d85dd023-1",
+        "id": "01M77788WM4669KTMNJGSPTTCM",
+        "key": null,
+        "kind": "question",
+        "node": "01M77788WM4669KTMNJDY0T7B3",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7774MAPJ7VCPN1Q9M3RHMV4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7778ANK5CC0FWEQN46NHHXG",
+  "type": "ops",
+  "v": 1
+}
