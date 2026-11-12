@@ -26,8 +26,9 @@ checksum:
   name_template: checksums.txt
 
 snapshot:
-  # The latest channel builds a snapshot named by tools/release version.
-  version_template: "{{ .Env.RHIZA_BUILD_VERSION }}"
+  # The latest channel builds a snapshot named by tools/release version,
+  # without its v: archives use .Version and the ldflags add the v back.
+  version_template: '{{ trimprefix .Env.RHIZA_BUILD_VERSION "v" }}'
 
 changelog:
   disable: true
