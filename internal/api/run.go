@@ -1231,6 +1231,12 @@ func runRunAbandon(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("journal the abandoning of run %s: %v", j.ID, err).WithNext("rhiza run status " + j.ID)
 	}
 	j.Entries = append(j.Entries, e)
+	// The workflow's cleanup steps run before the worktree goes; a failing
+	// one is journalled and never undoes the abandoning.
+	abandonedCleanup(ctx, rs, common, j, sessions)
+	if j2, err := rs.Read(j.ID); err == nil {
+		j = j2
+	}
 	// A run whose process died left its own temp folder behind; the engine
 	// that would have removed it is gone, so abandoning removes it.
 	_ = os.RemoveAll(filepath.Dir(rs.TmpDir(j.ID)))
@@ -3499,4 +3505,40 @@ func startWorkflowOfRef(ctx *Ctx, ref, explicit string) (string, string, bool, e
 		return "", "", false, err
 	}
 	return name, pick, true, nil
+}
+
+// abandonedCleanup runs the cleanup steps of the workflow of run j, just
+// abandoned, in its worktree, under the lock the caller holds. Any failure
+// is logged to stderr: the run is abandoned either way.
+func abandonedCleanup(ctx *Ctx, rs *run.Store, common string, j run.Journal, sessions *session.Store) {
+	st := j.State()
+	def, err := st.ParseDefinition()
+	if err != nil || len(def.Cleanup) == 0 {
+		return
+	}
+	// A run that had its own worktree gets its cleanup there or not at
+	// all: commands written for the run's worktree never run in the main
+	// checkout.
+	main := filepath.Dir(common)
+	wt := st.Worktree
+	if wt == "" {
+		wt = main
+	} else if fi, err := os.Stat(wt); err != nil || !fi.IsDir() {
+		if ctx.Stderr != nil {
+			fmt.Fprintf(ctx.Stderr, "rhiza: run %s: cleanup not run: worktree %s is gone\n", j.ID, wt)
+		}
+		return
+	}
+	e := &run.Engine{
+		Store:  rs,
+		Runner: &stepRunner{ctx: ctx, change: st.Change, run: j.ID, worktree: wt, main: main, sessions: sessions},
+		Clock:  runClock,
+		Now:    ctx.Now,
+	}
+	if ctx.Stderr != nil {
+		e.Log = func(line string) { fmt.Fprintf(ctx.Stderr, "rhiza: %s\n", line) }
+	}
+	if err := e.Cleanup(j.ID); err != nil && ctx.Stderr != nil {
+		fmt.Fprintf(ctx.Stderr, "rhiza: run %s: cleanup: %v\n", j.ID, err)
+	}
 }
