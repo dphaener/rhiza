@@ -18,7 +18,7 @@ Milestone 34 puts afk's prompts as shipped defaults and the guards first, then t
 
 ### In
 
-- decided-by [milestone-34](../intent/milestone-34.01M76XMNA9ATHT77CB9GCH44P3.md)
+- decided-by [milestone-35](../intent/milestone-35.md)
 
 ## History
 

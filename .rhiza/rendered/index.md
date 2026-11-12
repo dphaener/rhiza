@@ -827,14 +827,14 @@
   - [m34-agents-md](intent/milestone-34/m34-agents-md.md)
   - [m34-orchestrator-doc](intent/milestone-34/m34-orchestrator-doc.md)
   - [m34-role-docs](intent/milestone-34/m34-role-docs.md)
-- [milestone-34](intent/milestone-34.01M76XMNA9ATHT77CB9GCH44P3.md)
-  - [m34-afk-prompts](intent/milestone-34/m34-afk-prompts.md)
-  - [m34-guards](intent/milestone-34/m34-guards.md)
-  - [m34-rework-down](intent/milestone-34/m34-rework-down.md)
-  - [m34-ci-rounds](intent/milestone-34/m34-ci-rounds.md)
-  - [m34-holds](intent/milestone-34/m34-holds.md)
-  - [m34-ship-40m](intent/milestone-34/m34-ship-40m.md)
-  - [m34-still-healthy](intent/milestone-34/m34-still-healthy.md)
+- [milestone-35](intent/milestone-35.md)
+  - [m35-afk-prompts](intent/milestone-35/m35-afk-prompts.md)
+  - [m35-guards](intent/milestone-35/m35-guards.md)
+  - [m35-rework-down](intent/milestone-35/m35-rework-down.md)
+  - [m35-ci-rounds](intent/milestone-35/m35-ci-rounds.md)
+  - [m35-holds](intent/milestone-35/m35-holds.md)
+  - [m35-ship-40m](intent/milestone-35/m35-ship-40m.md)
+  - [m35-still-healthy](intent/milestone-35/m35-still-healthy.md)
 
 ## Constraints
 

@@ -1,19 +1,24 @@
-# m34-guards
+# milestone-35
 
-intent · `01M76XMNBZ01KFRMX1VT4B8FVS` · parent [milestone-34](../milestone-34.01M76XMNA9ATHT77CB9GCH44P3.md)
+intent · `01M76XMNA9ATHT77CB9GCH44P3`
+
+## milestone
+
+```json
+35
+```
 
 ## statement
 
-Runs stop the mechanical misses that cost a retry: a verifier, check or critic cannot say done without its record, builders and fixers run and report their checks before handing off, and no agent sleeps, polls or runs a command longer than about four minutes.
+A full cycle of build runs is fast and rarely fails: afk's shipit/forge prompts are Rhiza's shipped defaults, guards stop the mechanical misses that cost retries, landing and merging main cost no full CI round, and known errors no longer hold runs, so rework halves and a ship-change run takes 40 minutes or less.
 
 ## Links
 
-### In
+### Out
 
-- serves change set `01M76XNMMENQCK9PZMGC9YBG99` (A verifier, review check or critic in a run cannot say done until it has recorded its result for this visit (Evidence or findings, a findings round, verdicts), and every role is told to run session done as its own command only after the recording command succeeded. Evidence: 23 of 491 build verifier attempts ended with neither Evidence nor findings, each costing a full builder and verifier retry (perf report 2026-11-12, prompt-gap rec 2).)
-- serves change set `01M76XQJYPYK52PJRNAKCPPBJJ` (Builders and fixers run the leaf's acceptance commands and the project's generate and render before their one commit, fold what they change into it, and report each command with its exit code in the commit; verifiers re-run what was reported. Evidence: 29 of 160 verifier blocker/major findings were generated, golden, format or self-check misses and 10 were commit, trailer or actor shape (prompt-gap rec 1).)
-- serves change set `01M76XQX53GGNWVCQHXVV510NH` (Builder, verifier, check and fixer guidance says: never sleep or poll, no single command longer than about four minutes, and a long command runs once in the background and is waited for once (afk execute.js rule). Evidence: verifier session p90 33.7m against a 3.7m median, builder p90 25-36m against about 4m (prompt-gap rec 6).)
+- decided-by [efficient-cycle-milestone-shape](../decision/efficient-cycle-milestone-shape.md)
 
 ## History
 
 - `01M76SV05752A64QJNN4QTD2KH` Efficient build cycle. Owner, 2026-11-12: "I'm disappointed with the overall performance of a full cycle of build runs. It takes a long time, and seems to be error prone. ... I like this process overall but it's just not efficient." On the shipit/forge prompts: "I also think we may have lost something by not including the shipit/forge prompts in the workflow steps." "Those should ship as the default build tools, and we also want to use them as our own." After the orchestrator's summary of both analyses and its proposal of one milestone ("Efficient build cycle", afk prompts as shipped defaults plus the four guards first, then the CI-round cuts and the error sources behind held runs, with the owner deciding on parallel leaves, a cheaper verifier model and dropping the critic), the owner said: "Sounds good". Evidence to start from (read it first; numbers are measured unless marked estimated): ~/orchestrator/perf-2026-11-12/report.md (233 run journals and 699 CI runs: where a ship-change's time goes, unit costs per failure cause, ranked recommendations, statistics), prompt-gap.md (afk at github.com/dphaener/afk plugins/afk, the merged shipit/forge prompts, compared role by role with Rhiza's step prompts, measured afk archives: median 39m per task vs Rhiza 29m plan + 121m ship, rework 12% vs 31% build retries and 7% vs 58% review fix cycles; 15 ranked recommendations with estimated effect, and a 12 change set sketch), tables.md and tables-recent.md. The analysis scripts are in the orchestrator's scratchpad (analyze.py, rerun after changes; a resource sampler is collecting the next 30 runs). Already filed and not to be duplicated: model-only CI for plan PRs (01M764CJ), pre-push self-check in every run (01M76R1E), non-test CI failures routed to ci-fix (01M76A58), nothing uncommitted on main (01M76CSJ), log-entry write guard and repair (01M76Q44), plan review rounds that fail to record (01M76DWZ). Related milestones: 32 (workflow cleanup and language-neutral defaults) and the agent docs milestone (agents/ with orchestrator.md).
+- `01M774VK39TXC42NZNN7Z6GK99` apply /home/rhiza/tmp/claude-1000/-home-rhiza-code-rhiza/823cd4a5-db47-4770-9e31-1f8134228fec/scratchpad/rename-m35.json

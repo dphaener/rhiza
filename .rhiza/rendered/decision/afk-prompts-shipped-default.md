@@ -18,7 +18,7 @@ afk's shipit/forge prompts become Rhiza's shipped default prompts for every run 
 
 ### In
 
-- decided-by [m34-afk-prompts](../intent/milestone-34/m34-afk-prompts.md)
+- decided-by [m35-afk-prompts](../intent/milestone-35/m35-afk-prompts.md)
 
 ## History
 
