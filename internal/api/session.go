@@ -716,7 +716,18 @@ func recordAgentActor(ww *workspace, agent, sid string, cs, launcher, forID id.I
 			}
 		}
 	}
-	handle := uniqueHandle(handleSlug(agent+"-"+sid[:8]), func(h string) bool {
+	// The handle is derived from the session, so a live actor already
+	// holding it, landed or in an in-flight change set, is this session's:
+	// reuse it rather than write a second node with the same handle.
+	base := handleSlug(agent + "-" + sid[:8])
+	for _, c := range ww.changeSets() {
+		for _, o := range c.Ops {
+			if o.Type == op.TypeNodeCreate && o.Kind == op.KindActor && o.Handle == base {
+				return base, c.ID, nil
+			}
+		}
+	}
+	handle := uniqueHandle(base, func(h string) bool {
 		_, taken := m.HandleTaken(h)
 		return taken
 	})
