@@ -28,19 +28,69 @@ func shipPushDivergedFixture(t *testing.T, file, content string) (*Ctx, *openPRG
 			t.Fatal(err)
 		}
 	}
+	// main on origin, as ship.rebase merges it.
+	git("push", "-q", "origin", "main")
 	return ctx, g, origin, git
 }
 
+// recordGit records the argv of every git call the step makes, through
+// ctx.Git and ctx.Exec alike.
+func recordGit(ctx *Ctx) *[]string {
+	var calls []string
+	git, exec := ctx.Git, ctx.Exec
+	ctx.Git = func(args ...string) (string, error) {
+		calls = append(calls, strings.Join(args, " "))
+		return git(args...)
+	}
+	ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		if name == "git" {
+			calls = append(calls, strings.Join(args, " "))
+		}
+		return exec(name, args, dir, env)
+	}
+	return &calls
+}
+
+// noForceOrRebase fails on any git call that forces a push or rebases.
+func noForceOrRebase(t *testing.T, calls []string) {
+	t.Helper()
+	if len(calls) == 0 {
+		t.Fatal("no git calls recorded")
+	}
+	for _, c := range calls {
+		args := strings.Fields(c)
+		if len(args) > 0 && args[0] == "rebase" {
+			t.Errorf("git call %q rebases", c)
+		}
+		for _, a := range args {
+			if a == "--force" || a == "-f" && args[0] == "push" || strings.HasPrefix(a, "--force-with-lease") || args[0] == "push" && strings.HasPrefix(a, "+") {
+				t.Errorf("git call %q forces", c)
+			}
+		}
+	}
+}
+
+// shipPushDivergedSteps are the ship steps that push the run's branch.
+var shipPushDivergedSteps = []string{"ship.open-pr", "ship.rebase"}
+
 func TestShipPushDivergedMergesOrigin(t *testing.T) {
+	for _, op := range shipPushDivergedSteps {
+		t.Run(op, func(t *testing.T) { shipPushDivergedMerges(t, op) })
+	}
+}
+
+func shipPushDivergedMerges(t *testing.T, op string) {
 	ctx, g, origin, git := shipPushDivergedFixture(t, "theirs.txt", "theirs\n")
 	if err := os.WriteFile(filepath.Join(ctx.Root, "mine.txt"), []byte("mine\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	git("add", "mine.txt")
 	git("commit", "-q", "-m", "mine")
-	if _, err := callOp(t, ctx, "ship.open-pr", `{}`); err != nil {
+	calls := recordGit(ctx)
+	if _, err := callOp(t, ctx, op, `{}`); err != nil {
 		t.Fatal(err)
 	}
+	noForceOrRebase(t, *calls)
 	head := git("rev-parse", "HEAD")
 	out, err := g.exec("git", []string{"--git-dir", origin, "rev-parse", "cs/ship-it"}, "", nil)
 	if err != nil || strings.TrimSpace(string(out)) != head {
@@ -55,6 +105,12 @@ func TestShipPushDivergedMergesOrigin(t *testing.T) {
 }
 
 func TestShipPushDivergedConflictStops(t *testing.T) {
+	for _, op := range shipPushDivergedSteps {
+		t.Run(op, func(t *testing.T) { shipPushDivergedConflict(t, op) })
+	}
+}
+
+func shipPushDivergedConflict(t *testing.T, op string) {
 	ctx, g, origin, git := shipPushDivergedFixture(t, "clash.txt", "theirs\n")
 	if err := os.WriteFile(filepath.Join(ctx.Root, "clash.txt"), []byte("mine\n"), 0o644); err != nil {
 		t.Fatal(err)
@@ -62,7 +118,9 @@ func TestShipPushDivergedConflictStops(t *testing.T) {
 	git("add", "clash.txt")
 	git("commit", "-q", "-m", "mine")
 	before := git("rev-parse", "HEAD")
-	_, err := callOp(t, ctx, "ship.open-pr", `{}`)
+	calls := recordGit(ctx)
+	_, err := callOp(t, ctx, op, `{}`)
+	noForceOrRebase(t, *calls)
 	if err == nil || !strings.Contains(err.Error(), "earlier push") {
 		t.Fatalf("err = %v, want one naming origin's commit", err)
 	}
