@@ -109,6 +109,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if !ok {
 		return nil, Usagef("%s has no registered, initialised project for the daemon to work", root).WithNext("rhiza project add")
 	}
+	if ctx.Stderr != nil {
+		for _, note := range removedSettingNotes(homeCtx, reg) {
+			fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %s\n", note)
+		}
+	}
 	conf, err := daemonConfOf(homeCtx, r)
 	if err != nil {
 		return nil, err

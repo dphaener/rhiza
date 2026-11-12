@@ -50,26 +50,55 @@ func TestDaemonLoopSelfUpdateWaitsForPending(t *testing.T) {
 	}
 }
 
-// A root that still sets the removed self_update_project or
-// rhiza.daemon.selfUpdate gets a message naming rhiza.daemon.autoUpdate.
-func TestDaemonSettingsReportRemovedSelfUpdate(t *testing.T) {
-	for name, toml := range map[string]string{
-		"project": "self_update_project = \"repo\"\n\n[projects.repo]\npath = \".\"\n",
-		"key":     "[projects.repo]\npath = \".\"\n\n[daemon]\n\"rhiza.daemon.selfUpdate\" = \"true\"\n",
-	} {
-		ctx, _ := daemonRepo(t)
-		if err := os.WriteFile(filepath.Join(ctx.Root, "rhiza.toml"), []byte(toml), 0o644); err != nil {
-			t.Fatal(err)
-		}
-		_, err := settingsOf(ctx, nil)
-		if err == nil || !strings.Contains(err.Error(), "rhiza.daemon.autoUpdate") {
-			t.Fatalf("%s: settingsOf error = %v, want one naming rhiza.daemon.autoUpdate", name, err)
-		}
-	}
+// A root that still sets the removed self_update_project and
+// rhiza.daemon.selfUpdate keeps working: its settings read autoUpdate =
+// main, the daemon notes name rhiza.daemon.autoUpdate, and daemon set
+// writes rhiza.toml without the old keys.
+func TestDaemonSettingsMigrateRemovedSelfUpdate(t *testing.T) {
 	ctx, _ := daemonRepo(t)
-	_, err := runDaemonSet(ctx, DaemonSetRequest{Key: "rhiza.daemon.selfUpdate", Value: "true"})
+	path := filepath.Join(ctx.Root, "rhiza.toml")
+	old := "self_update_project = \"repo\"\n\n[projects.repo]\npath = \".\"\n\n[daemon]\n\"rhiza.daemon.selfUpdate\" = \"true\"\n"
+	if err := os.WriteFile(path, []byte(old), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	rows, err := settingsOf(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v := settingValue(rows, "rhiza.daemon.autoUpdate"); v != "main" {
+		t.Fatalf("autoUpdate = %q, want main", v)
+	}
+	_, reg, _ := rootOf(ctx)
+	if notes := removedSettingNotes(ctx, reg); len(notes) != 2 || !strings.Contains(strings.Join(notes, "\n"), "rhiza.daemon.autoUpdate") {
+		t.Fatalf("notes %q", notes)
+	}
+	resp, err := runDaemonSet(ctx, DaemonSetRequest{Key: "rhiza.daemon.maxRuns", Value: "2"})
+	if err != nil || resp.(DaemonSetResponse).Scope != ScopeMachine {
+		t.Fatalf("daemon set = %+v, %v", resp, err)
+	}
+	data, _ := os.ReadFile(path)
+	if strings.Contains(string(data), "selfUpdate") || strings.Contains(string(data), "self_update_project") ||
+		!strings.Contains(string(data), "rhiza.daemon.autoUpdate") {
+		t.Fatalf("rhiza.toml after daemon set:\n%s", data)
+	}
+	_, err = runDaemonSet(ctx, DaemonSetRequest{Key: "rhiza.daemon.selfUpdate", Value: "true"})
 	if err == nil || !strings.Contains(err.Error(), "rhiza.daemon.autoUpdate") {
 		t.Fatalf("daemon set selfUpdate error = %v", err)
+	}
+}
+
+// A machine setting under a root whose rhiza.toml does not load fails: it
+// never falls back to the project's git config.
+func TestDaemonSetBrokenRootWritesNoGitConfig(t *testing.T) {
+	ctx, _ := daemonRepo(t)
+	if err := os.WriteFile(filepath.Join(ctx.Root, "rhiza.toml"), []byte("not = = toml\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runDaemonSet(ctx, DaemonSetRequest{Key: "rhiza.daemon.autoUpdate", Value: "main"}); err == nil {
+		t.Fatal("daemon set under a broken root succeeded")
+	}
+	if v, err := ctx.Git("config", "--get", "rhiza.daemon.autoUpdate"); err == nil && strings.TrimSpace(v) != "" {
+		t.Fatalf("git config got %q", v)
 	}
 }
 

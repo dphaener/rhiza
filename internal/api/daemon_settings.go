@@ -6,7 +6,6 @@ package api
 // source; rhiza daemon set validates and writes one.
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -235,22 +234,23 @@ func rootOf(ctx *Ctx) (string, rootcfg.Config, bool) {
 	return root, c, true
 }
 
+// removedSettingNotes says what ctx's root and project still set that was
+// removed: the root's carried-over keys and a git config
+// rhiza.daemon.selfUpdate, which is ignored. Neither fails a command.
+func removedSettingNotes(ctx *Ctx, reg rootcfg.Config) []string {
+	notes := append([]string(nil), reg.Migrated...)
+	if ctx.Git != nil {
+		if v, err := ctx.Git("config", "--get", "rhiza.daemon.selfUpdate"); err == nil && strings.TrimSpace(v) != "" {
+			notes = append(notes, "git config "+rootcfg.RemovedHint("rhiza.daemon.selfUpdate")+"; it is ignored")
+		}
+	}
+	return notes
+}
+
 // settingsOf reads every setting from git config, a flag in flags (key to
 // value) winning. A bad value in config is a usage error naming the key.
 func settingsOf(ctx *Ctx, flags map[string]string) ([]Setting, error) {
 	var out []Setting
-	if ctx.Wd != "" {
-		if root, ok := rootcfg.Find(ctx.Wd); ok {
-			if _, err := rootcfg.Load(root); errors.Is(err, rootcfg.ErrRemoved) {
-				return nil, Usagef("%v", err)
-			}
-		}
-	}
-	if ctx.Git != nil {
-		if v, err := ctx.Git("config", "--get", "rhiza.daemon.selfUpdate"); err == nil && strings.TrimSpace(v) != "" {
-			return nil, Usagef("git config %s", rootcfg.RemovedHint("rhiza.daemon.selfUpdate"))
-		}
-	}
 	_, cfg, haveRoot := rootOf(ctx)
 	for _, d := range settingDefs {
 		s := Setting{Key: d.key, Value: d.def, Default: d.def, Source: SettingDefault, Scope: d.scope()}
@@ -472,8 +472,10 @@ func runDaemonSet(ctx *Ctx, req any) (any, error) {
 	if err := d.validate(v); err != nil {
 		return nil, Usagef("%s: %q %v", d.key, r.Value, err).WithNext("rhiza daemon settings")
 	}
-	if !d.project {
-		if root, _, ok := rootOf(ctx); ok {
+	if !d.project && ctx.Wd != "" {
+		// Under a root a machine setting goes to rhiza.toml, even when it
+		// does not load: never to the project's git config instead.
+		if root, ok := rootcfg.Find(ctx.Wd); ok {
 			if ctx.DryRun {
 				return DaemonSetResponse{Key: d.key, Value: v, Scope: ScopeMachine}, nil
 			}

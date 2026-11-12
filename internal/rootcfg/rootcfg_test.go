@@ -66,18 +66,39 @@ func TestFindEmptyDirFindsNoRoot(t *testing.T) {
 	}
 }
 
-func TestLoadRejectsRemovedSelfUpdate(t *testing.T) {
-	for _, toml := range []string{
-		"self_update_project = \"rhiza\"\n",
-		"[daemon]\n\"rhiza.daemon.selfUpdate\" = \"true\"\n",
+// A rhiza.toml from before autoUpdate still loads: selfUpdate = true reads
+// as autoUpdate = main, each old key is noted, and the next write drops them.
+func TestLoadMigratesRemovedSelfUpdate(t *testing.T) {
+	for _, tc := range []struct{ toml, auto string }{
+		{"self_update_project = \"rhiza\"\n\n[daemon]\n\"rhiza.daemon.selfUpdate\" = \"true\"\n", "main"},
+		{"self_update_project = \"rhiza\"\n", ""},
+		{"[daemon]\n\"rhiza.daemon.selfUpdate\" = \"false\"\n", ""},
+		{"[daemon]\n\"rhiza.daemon.selfUpdate\" = \"true\"\n\"rhiza.daemon.autoUpdate\" = \"off\"\n", "off"},
 	} {
 		root := t.TempDir()
-		if err := os.WriteFile(filepath.Join(root, File), []byte(toml), 0o644); err != nil {
+		if err := os.WriteFile(filepath.Join(root, File), []byte(tc.toml), 0o644); err != nil {
 			t.Fatal(err)
 		}
-		_, err := Load(root)
-		if !errors.Is(err, ErrRemoved) || !strings.Contains(err.Error(), "rhiza.daemon.autoUpdate") {
-			t.Fatalf("Load(%q) = %v", toml, err)
+		c, err := Load(root)
+		if err != nil {
+			t.Fatalf("Load(%q): %v", tc.toml, err)
+		}
+		if got := c.Daemon["rhiza.daemon.autoUpdate"]; got != tc.auto {
+			t.Fatalf("Load(%q) autoUpdate = %q, want %q", tc.toml, got, tc.auto)
+		}
+		if _, ok := c.Daemon["rhiza.daemon.selfUpdate"]; ok || len(c.Migrated) == 0 ||
+			!strings.Contains(strings.Join(c.Migrated, "\n"), "rhiza.daemon.autoUpdate") {
+			t.Fatalf("Load(%q) = %+v", tc.toml, c)
+		}
+		if err := SetDaemon(root, "rhiza.daemon.maxRuns", "2"); err != nil {
+			t.Fatal(err)
+		}
+		data, _ := os.ReadFile(filepath.Join(root, File))
+		if strings.Contains(string(data), "selfUpdate") || strings.Contains(string(data), "self_update_project") {
+			t.Fatalf("SetDaemon kept a removed key:\n%s", data)
+		}
+		if c, err := Load(root); err != nil || len(c.Migrated) != 0 || c.Daemon["rhiza.daemon.autoUpdate"] != tc.auto {
+			t.Fatalf("after write: %+v, %v", c, err)
 		}
 	}
 }
