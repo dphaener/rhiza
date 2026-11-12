@@ -56,6 +56,8 @@ const (
 	envAutonomous = "RHIZA_AUTONOMOUS"
 	// envMilestone is the milestone a plan run's request names.
 	envMilestone = "RHIZA_MILESTONE"
+	// envMilestoneNumber is the number a new-milestone plan run reserved.
+	envMilestoneNumber = "RHIZA_MILESTONE_NUMBER"
 	// envLeaf, envAttempt, envRole and envCommit are a leaf session's leaf
 	// handle, attempt, role and, for a verifier, the commit it checks.
 	envLeaf    = run.EnvLeaf
@@ -525,6 +527,11 @@ func launchEnv(rec session.Record) (set, unset []string) {
 		set = append(set, envMilestone+"="+rec.Milestone)
 	} else {
 		unset = append(unset, envMilestone)
+	}
+	if rec.MilestoneNumber > 0 {
+		set = append(set, envMilestoneNumber+"="+strconv.Itoa(rec.MilestoneNumber))
+	} else {
+		unset = append(unset, envMilestoneNumber)
 	}
 	if rec.Leaf != "" {
 		set = append(set, envLeaf+"="+rec.Leaf, envAttempt+"="+strconv.Itoa(rec.Attempt))

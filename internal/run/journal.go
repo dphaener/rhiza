@@ -228,6 +228,11 @@ type Started struct {
 	// MilestonePlan is true for the plan run of a milestone request: its
 	// interview session waits on the owner from launch.
 	MilestonePlan bool `json:"milestone_plan,omitempty"`
+	// MilestoneNumber is the milestone number a plan run for a new milestone
+	// reserved when it started, kept for the run's life (ended or failed
+	// included) so no later run draws it again; zero for a run that reserved
+	// none.
+	MilestoneNumber int `json:"milestone_number,omitempty"`
 	// Autonomy is the autonomy each stage had when the run started and
 	// where it came from, in stage order; empty for a run started before
 	// it was recorded.
@@ -1106,6 +1111,8 @@ type State struct {
 	Milestone string
 	// MilestonePlan is the started entry's MilestonePlan.
 	MilestonePlan bool
+	// MilestoneNumber is the started entry's MilestoneNumber.
+	MilestoneNumber int
 	// Autonomy is the started entry's Autonomy.
 	Autonomy []StageAutonomy
 	// Plan is the started entry's Plan.
@@ -1430,6 +1437,7 @@ func (j Journal) State() State {
 				st.Autonomous = s.Autonomous
 				st.Milestone = s.Milestone
 				st.MilestonePlan = s.MilestonePlan
+				st.MilestoneNumber = s.MilestoneNumber
 				st.Autonomy = s.Autonomy
 				st.Plan = s.Plan
 			}

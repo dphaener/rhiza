@@ -1,0 +1,86 @@
+{
+  "actor": "01M77B62KPXYTDKW9S4VE4DFV2",
+  "after": [
+    "01M77B1PNMAC6VJVP3686AGW8B"
+  ],
+  "at": "2026-11-12T07:44:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-215c18e1 at 8e55f6d4a, by hand with the built binary (go build -o scratchpad/rhiza-qa ./cmd/rhiza) in a scratch Rhiza root and repo with a stub plan-milestone workflow. rhiza run start --foreground --workflow plan --new X --milestone --json reserved 1, 2, 3 (Ship v5, which failed) and then 4, so the failed run's number was skipped. After landing milestone-12 and milestone-50 with --record, the next starts drew 51, 52, 53 and 54. Four run starts launched at once in the background drew 55, 56, 57 and 58, all different. rhiza run status <id> --json shows milestone_number for each. A plan run on an intention (--new with no --milestone) has no milestone_number. Scoped tests pass: go test -trimpath ./cmd/rhiza -run 'TestScripts/(plan-milestone-number|plan-run-milestone-env|plan-milestone-check|describe-golden)$', ./internal/run, and ./internal/api -run Milestone."
+        },
+        "handle": "milestone-number-reserved-qa-1",
+        "id": "01M77BEJ4503JSZVZ5VP7SCVBQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77BEJ4503JSZVZ5VN28YNS4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77BEJ4503JSZVZ5VN28YNS4",
+        "id": "01M77BEJ82FCCAHT5NQXFNJSB3",
+        "link": "01M77BEJ82FCCAHT5NQVX52YWE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M777B9G3TT1SDCSTGG2Z820G",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-215c18e1 at 8e55f6d4a, with the built binary, a fake rex that runs the agent command and a fake claude that writes its RHIZA_MILESTONE* environment to a file. A plan-milestone run whose agent interview step reserved 61 launched the planner with RHIZA_MILESTONE_NUMBER=61. A plan run on an intention launched its planner with no RHIZA_MILESTONE_NUMBER. rhiza guide plan (built binary) prints the Milestone bullet: name the intent from RHIZA_MILESTONE_NUMBER (N), handle milestone-N, field milestone=N, done points prefixed mN-, never counting milestones from your own branch. go test -trimpath ./internal/guide ./internal/session and ./internal/api -run Milestone pass."
+        },
+        "handle": "planner-gets-milestone-number-qa-1",
+        "id": "01M77BEJH63J749BR01WQTCJA9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77BEJH63J749BR01WDH2RQ9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77BEJH63J749BR01WDH2RQ9",
+        "id": "01M77BEJPSJTQT2R1E1PPQV9RV",
+        "link": "01M77BEJPSJTQT2R1E1K0HJPA3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M777B9HFVF828QJGDWM3M4CH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-215c18e1 at 8e55f6d4a, with the built binary in a scratch root. The stub plan-milestone workflow's first command step writes a milestone intent and a done point into RHIZA_CHANGE, and its next step runs rhiza run milestone-check, as the built-in workflow does. With reserved number 59, a plan writing milestone-59, field milestone=59 and done point m59-first succeeded. With reserved number 60, a plan writing milestone-51, field milestone=51 and done point m51-first (the old count-your-branch clash) failed at the check. Its error says the plan does not use the milestone number 60 the run reserved, and lists three problems: the wrong handle (expected milestone-60), the wrong milestone field and the done point lacking the m60- prefix. It ends with Fix: name the new milestone intent milestone-60 with field milestone=60 and prefix its done points' handles m60- (RHIZA_MILESTONE_NUMBER is 60). The plan-milestone-check script and the ./internal/api Milestone tests pass."
+        },
+        "handle": "milestone-check-enforces-number-qa-1",
+        "id": "01M77BEJS0T5FXSGYH85D8F87V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77BEJS0T5FXSGYH84CY6MPP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77BEJS0T5FXSGYH84CY6MPP",
+        "id": "01M77BEJV25PE658ZRD1GY81ZK",
+        "link": "01M77BEJV25PE658ZRCYTYZ4YC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M777B9JRPCQZD1SBKF1ZQ4ZX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7774MAPJ7VCPN1Q9M3RHMV4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77BEJXFDV8FDKJQPPZWEEBG",
+  "type": "ops",
+  "v": 1
+}

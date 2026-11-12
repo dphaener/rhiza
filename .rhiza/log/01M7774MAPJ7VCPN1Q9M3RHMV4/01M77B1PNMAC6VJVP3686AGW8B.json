@@ -1,0 +1,40 @@
+{
+  "actor": "01M779HVFXTF7HXS3ZC4606PG6",
+  "after": [
+    "01M77A2FRME2NRTNHNXP64NTHT"
+  ],
+  "at": "2026-11-12T07:37:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at d05f25d34: go test -trimpath ./internal/api/ -run TestRunMilestoneCheckEnforcesNumber -count=1 -v passes. The test starts plan-milestone runs with MilestoneNumber 7 and calls run.milestone-check through the API registry. It passes for milestone-7 with field milestone=7 and done point m7-first. It fails for handle milestone-8, for field milestone=8, and for unprefixed done point \"first\". Each error names the intent, contains \"milestone number 7\" and has a Fix line that names milestone-7, milestone=7 and the m7- prefix. The full internal/api package run printed PASS for every test, then the root-state guard reported .rhiza-root/usage.live.json changed. That file is written by the live root, not by this diff. go vet and gofmt are clean. In the diff (newMilestoneNumberProblems), only new intents that carry a milestone field (absent from the landed disk model) are checked, and only when the run reserved a number."
+        },
+        "handle": "milestone-check-enforces-number-verified",
+        "id": "01M77B1PHV3AKC6YZS89F2EH28",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77B1PHV3AKC6YZS89107BYY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77B1PHV3AKC6YZS89107BYY",
+        "id": "01M77B1PKBRZKHVSMKTNPZ0JNR",
+        "link": "01M77B1PKBRZKHVSMKTM64HT06",
+        "note": "",
+        "op": "link.create",
+        "to": "01M777B9JRPCQZD1SBKF1ZQ4ZX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7774MAPJ7VCPN1Q9M3RHMV4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77B1PNMAC6VJVP3686AGW8B",
+  "type": "ops",
+  "v": 1
+}

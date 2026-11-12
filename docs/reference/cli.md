@@ -1876,6 +1876,7 @@ Output (`--json` fields):
 - `id` (string): The run ID
 - `leaves` (array of object): The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none
 - `messages` (array of object): The messages its sessions sent each other, in order
+- `milestone_number` (integer): The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none
 - `pick` (string): Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded
 - `pr` (string): While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise
 - `pre_push` (object): The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran

@@ -4275,6 +4275,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "milestone_number": {
+                "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
+                "type": "integer"
+              },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
                 "type": "string"
@@ -6079,6 +6083,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "milestone_number": {
+                "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
+                "type": "integer"
               },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
@@ -9786,6 +9794,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "milestone_number": {
+                "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
+                "type": "integer"
+              },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
                 "type": "string"
@@ -11430,6 +11442,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "milestone_number": {
+                "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
+                "type": "integer"
               },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
@@ -14030,6 +14046,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "milestone_number": {
+                "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
+                "type": "integer"
+              },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
                 "type": "string"
@@ -15714,6 +15734,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "milestone_number": {
+                "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
+                "type": "integer"
               },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
@@ -17466,6 +17490,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "milestone_number": {
+                "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
+                "type": "integer"
+              },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
                 "type": "string"
@@ -19185,6 +19213,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "milestone_number": {
+                "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
+                "type": "integer"
+              },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
                 "type": "string"
@@ -20718,6 +20750,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "milestone_number": {
+            "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
+            "type": "integer"
           },
           "pick": {
             "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
