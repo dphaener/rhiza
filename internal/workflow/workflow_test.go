@@ -400,7 +400,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "open-pr-triage", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "land-triage", "wait-landed", "landed-green",
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "open-pr-triage", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "land-triage", "model-conflict-triage", "model-conflict-fix", "render-model-conflict", "wait-landed", "landed-green",
 		"gate-rebase-merge", "conflict-triage-landed", "conflict-fix-landed", "rebase-merge", "rebase-merge-gate-failed", "landed-infra-triage", "landed-infra-wait", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge", "push-merge-triage", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
@@ -1700,7 +1700,7 @@ func checkShipChangePrePushFix(t *testing.T, name string, def *Definition) {
 		"gate-triage":              {"gate-fix", "ci-triage"},
 		"rebase-gate-failed":       {"gate-fix", ""},
 		"open-pr-triage":           {"gate-fix", ""},
-		"land-triage":              {"gate-fix-merge", ""},
+		"land-triage":              {"gate-fix-merge", "model-conflict-triage"},
 		"push-merge-triage":        {"gate-fix-merge", ""},
 		"rebase-merge-gate-failed": {"gate-fix-merge", "landed-infra-triage"},
 	} {
@@ -2016,7 +2016,12 @@ func TestShipChangeLocalGate(t *testing.T) {
 		}
 	}
 	after := map[string]bool{}
-	for _, to := range def.Steps["land"].On {
+	for o, to := range def.Steps["land"].On {
+		// A land refused on a model conflict returns to the gate and land
+		// through its own bounded fix route (TestShipChangeModelConflictRoute).
+		if o == OutcomeFail {
+			to = def.Steps[to].On[OutcomePass]
+		}
 		walk(to, after)
 	}
 	pre := map[string]bool{}
@@ -2220,5 +2225,42 @@ func TestEnvTable(t *testing.T) {
 	bad := strings.Replace(src, "A = \"x\"", "RHIZA_RUN = \"x\"", 1)
 	if _, err := Parse("w", []byte(bad)); err == nil {
 		t.Error("RHIZA_ variable accepted")
+	}
+}
+
+// TestShipChangeModelConflictRoute checks ship-change's route for a land
+// refused on a model conflict: land-triage, model-conflict-triage, the
+// fixer, render, gate-land and land again, bounded by max_visits.
+func TestShipChangeModelConflictRoute(t *testing.T) {
+	data, ok := Builtin("ship-change")
+	if !ok {
+		t.Fatal("no ship-change built-in")
+	}
+	def, err := ParseWith("ship-change", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := def.Steps["land"].On[OutcomeFail]; got != "land-triage" {
+		t.Errorf("land on.fail = %q; want land-triage", got)
+	}
+	if got := def.Steps["land-triage"].On[OutcomeFail]; got != "model-conflict-triage" {
+		t.Errorf("land-triage on.fail = %q; want model-conflict-triage", got)
+	}
+	tri := def.Steps["model-conflict-triage"]
+	if tri.Kind != KindCommand || tri.Run != "rhiza ship check --model-conflict" || tri.On[OutcomePass] != "model-conflict-fix" || tri.On[OutcomeFail] != "" || tri.MaxVisits == 0 {
+		t.Errorf("model-conflict-triage = %+v; want ship check --model-conflict, pass to model-conflict-fix, fail ends, bounded", tri)
+	}
+	fix := def.Steps["model-conflict-fix"]
+	if fix.Kind != KindAgent || fix.On[OutcomePass] != "render-model-conflict" || fix.MaxVisits == 0 || !strings.Contains(fix.Prompt, "--rebase") || !strings.Contains(fix.Prompt, "Review: {run}") {
+		t.Errorf("model-conflict-fix = %+v; want a bounded agent naming --rebase and the Review trailer, pass to render-model-conflict", fix)
+	}
+	if r := def.Steps["render-model-conflict"]; r.Run != def.Steps["render-pr"].Run || r.On[OutcomePass] != "gate-land" {
+		t.Errorf("render-model-conflict = %+v; want render-pr's command, pass to gate-land", r)
+	}
+	if def.Steps["gate-land"].On[OutcomePass] != "land" {
+		t.Error("gate-land does not pass to land")
+	}
+	if def.Steps["land"].MaxVisits < 2 {
+		t.Errorf("land max_visits = %d; want the extra visits a fix allows", def.Steps["land"].MaxVisits)
 	}
 }
