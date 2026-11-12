@@ -81,6 +81,16 @@ func TestChecksVerdict(t *testing.T) {
 		{"Empty", nil, false, false, nil},
 		{"Green", []ShipCheck{ok, {Name: "run", Status: "completed", Conclusion: "success"}}, true, true, nil},
 		{"NeutralSkipped", []ShipCheck{ok, {Name: "n", Status: "COMPLETED", Conclusion: "NEUTRAL"}, {Name: "s", Status: "completed", Conclusion: "skipped"}}, true, true, nil},
+		{"ModelOnlyPR", []ShipCheck{
+			{Name: "changes", Status: "COMPLETED", Conclusion: "SUCCESS"},
+			{Name: "lint", Status: "COMPLETED", Conclusion: "SKIPPED"},
+			{Name: "scripts", Status: "COMPLETED", Conclusion: "SKIPPED"},
+			{Name: "api", Status: "COMPLETED", Conclusion: "SKIPPED"},
+			{Name: "rest", Status: "COMPLETED", Conclusion: "SKIPPED"},
+			{Name: "budgets", Status: "COMPLETED", Conclusion: "SKIPPED"},
+			{Name: "model", Status: "COMPLETED", Conclusion: "SUCCESS"},
+			{Name: "check", Status: "COMPLETED", Conclusion: "SUCCESS"},
+		}, true, true, nil},
 		{"InProgress", []ShipCheck{ok, {Name: "lint", Status: "IN_PROGRESS"}}, false, false, nil},
 		{"Queued", []ShipCheck{{Name: "lint", Status: "queued"}}, false, false, nil},
 		{"StatusPending", []ShipCheck{ok, {Name: "ctx", Status: "PENDING"}}, false, false, nil},
@@ -2290,5 +2300,35 @@ func TestParseCICausesSkipsTestOutput(t *testing.T) {
 	}
 	if got := parseFailedTests(log); !slices.Equal(got, []string{"TestScripts/check-stale"}) {
 		t.Errorf("tests = %v", got)
+	}
+}
+
+// modelOnlyRollup is a model-only PR's CI: the Go jobs skipped, the model
+// jobs green, all of one Actions run.
+func modelOnlyRollup() string {
+	var parts []string
+	for _, n := range []string{"lint", "scripts", "api", "rest", "budgets"} {
+		parts = append(parts, `{"name":"`+n+`","status":"COMPLETED","conclusion":"SKIPPED","detailsUrl":"https://github.com/o/r/actions/runs/42/job/1"}`)
+	}
+	for _, n := range []string{"changes", "model", "check"} {
+		parts = append(parts, `{"name":"`+n+`","status":"COMPLETED","conclusion":"SUCCESS","detailsUrl":"https://github.com/o/r/actions/runs/42/job/2"}`)
+	}
+	return strings.Join(parts, ",")
+}
+
+// SKIPPED jobs are not failed jobs: a model-only PR's head is settled and
+// green, and ship check reruns nothing for it.
+func TestShipRerunFailedSkippedJobs(t *testing.T) {
+	f, g, _ := shipFixture(t)
+	g.answers[shipPRView] = openPR(modelOnlyRollup())
+	// No "run rerun" answer: a rerun call would fail the check.
+	r := shipCheck(t, f, `{"settled":true}`)
+	if !r.Settled || !r.Green || !r.Passed || len(r.Failed) != 0 || len(r.Reran) != 0 {
+		t.Fatalf("model-only head: %+v", r)
+	}
+	for _, c := range g.calls {
+		if strings.Contains(c, "run rerun") {
+			t.Errorf("reran for skipped jobs: %s", c)
+		}
 	}
 }
