@@ -2052,3 +2052,23 @@ func TestPlanFreshStep(t *testing.T) {
 		}
 	}
 }
+
+// The plan review, critic and revise prompts tell the agent to run session
+// done on its own, after the recording command succeeded.
+func TestPlanReviewPromptsUnchained(t *testing.T) {
+	for _, n := range []string{"plan", "plan-milestone"} {
+		data, _ := Builtin(n)
+		def, err := ParseWith(n, data, builtinResolver)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for step, cmd := range map[string]string{"review": "rhiza run findings", "critic": "rhiza run verdict", "revise": "rhiza apply"} {
+			p := def.Steps[step].Prompt
+			for _, w := range []string{"as a separate command", cmd, "succeeded", "never chained after it with `;`"} {
+				if !strings.Contains(p, w) {
+					t.Errorf("%s %s prompt: no %q in %q", n, step, w, p)
+				}
+			}
+		}
+	}
+}
