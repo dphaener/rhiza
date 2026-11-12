@@ -1,0 +1,86 @@
+{
+  "actor": "01M77S9XVFSVZXX17PRX0YW6BN",
+  "after": [
+    "01M77S6KEYHEF93BK59098Z94B"
+  ],
+  "at": "2026-11-12T11:51:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA by hand with the binary built at 668f5cf08, in a scratch repo (bare origin, fake gh reporting PR #7 green): change set Ship it set first's statement, ship check passed, then change set Other rewrote first's statement and landed. On branch cs/ship-it, rhiza ship land exited 1 with 'Refused to land change set ...: its own operations rest on a stale base: <node> (field:statement) rewritten by op <op> of change set <Other>'; --json had landed=false and one model_conflicts entry (op, node, fields, base, landed_op, landed_change); the ship state file recorded the same; nothing was committed and gh pr merge was never called. rhiza ship check --model-conflict then exited 0 (JSON detail names the conflict); in another repo, after rhiza set first --rebase it exited 1 ('the recorded model conflict is repaired'), and with no conflict recorded it exited 1. Minor: its human line with a PR recorded reads 'PR #7 at : open from cs/ship-it' instead of naming the conflict."
+        },
+        "handle": "ship-land-reports-model-conflict-qa-1",
+        "id": "01M77SJEC2BVP7TVKB3PH9P9E6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77SJEC2BVP7TVKB3MKKAS51",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77SJEC2BVP7TVKB3MKKAS51",
+        "id": "01M77SJEEJFC1ETPV2DC0BZZ7J",
+        "link": "01M77SJEEJFC1ETPV2DAGPG45P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NH2F1X295VM050RE962KG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA by hand with the binary built at 668f5cf08 in a scratch repo where the accepted change set's own update of first rests on a base the landed change set Other rewrote: rhiza check only warned (exit 0); rhiza ship gate --model-conflict exited 1 with 'Gate failed: the change set's own operations rest on a stale base: <node> (field:statement) rewritten by op ... Restate them on the landed version (rhiza set <ref> --rebase).' and --json model_conflicts naming op, node, fields, base, landed op and change set; rhiza ship check (fake gh: PR #7 green) exited 1 with detail 'failed: 1 operation(s) of the change set rest on a stale base: ...' and recorded the conflict in .git/rhiza/ship/<cs>.json. After rhiza set first --rebase --field 'statement=Theirs and ours', ship gate --model-conflict passed (exit 0, no gate set) and ship check --model-conflict exited 1. Scoped go test ./internal/api -run 'TestShipCheck|TestShipGate|TestShipLand' ok."
+        },
+        "handle": "ship-gate-fails-own-model-conflict-qa-1",
+        "id": "01M77SJEJGVN714VQXBY2TMP3Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77SJEJGVN714VQXBX2H3T7V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77SJEJGVN714VQXBX2H3T7V",
+        "id": "01M77SJENQ9KT7PQGXR0BJR5XX",
+        "link": "01M77SJENQ9KT7PQGXQXW75KFQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NH2H5A9NCEFT1A53X89S3",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the binary built at 668f5cf08: rhiza workflow describe ship-change shows pr-green on.fail -> pr-model-conflict-triage (rhiza ship check --model-conflict) on.pass -> pr-model-conflict-fix; gate-land on.fail -> gate-model-conflict-triage on.pass -> model-conflict-fix; land on.fail -> land-triage on.fail -> model-conflict-triage on.pass -> model-conflict-fix -> render-model-conflict; the fixer prompts name rhiza set <ref> --rebase, the until check and the Review: {run} trailer. The repair the prompt prescribes worked by hand: rhiza set first --rebase on the stale node made ship check --model-conflict exit 1 and ship gate --model-conflict pass. .rhiza/workflows/ship-change.toml matches the builtin apart from the pre-existing head-build steps. go test ./internal/workflow/... -run TestShipChange and go test ./cmd/rhiza -run TestScripts/run-ship-model-conflict-fix$ ok."
+        },
+        "handle": "ship-model-conflict-fix-qa-1",
+        "id": "01M77SJEQB3T19VH3ZKGRJKE6K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77SJEQB3T19VH3ZKD127V4E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77SJEQB3T19VH3ZKD127V4E",
+        "id": "01M77SJETHHYW3ZM4ZV7NBQ22F",
+        "link": "01M77SJETHHYW3ZM4ZV629GS0R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NH2G554PQ7672BXQJSRBX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77N83F027XBGGZPK9SV6YN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77SJEW4DG9DQ2WGTPTJTY74",
+  "type": "ops",
+  "v": 1
+}
