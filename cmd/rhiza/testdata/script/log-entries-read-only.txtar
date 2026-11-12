@@ -1,0 +1,10 @@
+# Log entries are read-only on disk, and render makes them so again.
+
+exec rhiza init
+exec rhiza add capability store --field 'statement=Keeps the log' --record
+exec sh -c 'for f in .rhiza/log/*/*.json; do test "$(stat -c %a $f)" = 444 || exit 1; done'
+
+# A damaged mode is restored by render.
+exec sh -c 'chmod 644 .rhiza/log/*/*.json'
+exec rhiza render
+exec sh -c 'for f in .rhiza/log/*/*.json; do test "$(stat -c %a $f)" = 444 || exit 1; done'

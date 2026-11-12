@@ -1,0 +1,40 @@
+{
+  "actor": "01M76T70P4RVS794AHPGTZP8JZ",
+  "after": [
+    "01M76TPDS046YW93BB8RWZJ12S"
+  ],
+  "at": "2026-11-12T03:04:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 7742d897c: go test -trimpath ./cmd/rhiza -run TestScripts/(render-refuses-damaged-log|log-entries-read-only|render)$ passes; the new script makes all three damages in turn, asserts render exits non-zero with the problem, diffs .rhiza/rendered unchanged each time, and a restored log renders again. By hand with a scratch build: on committed entries, a non-canonical rewrite and one entry's bytes under another's name each fail render naming the path with 'not canonical' / 'id or change set does not match its path' (plus 'differs from HEAD'), and a canonical sed edit fails with 'differs from HEAD'; on uncommitted entries (no HEAD diff) the non-canonical and ID-mismatch damages still fail with path and problem, so each check stands alone; .rhiza/rendered stayed unchanged and a clean log rendered (exit 0). internal/store passes; internal/api render/log/read-only tests (39) pass. The full internal/api package did not finish on the overloaded host (load 18 on 4 cores; TestReadBudget timed out), and rootguard flags the known usage.live.json leak into ~/code/.rhiza-root, unrelated to this diff. Nit: the script's cases 1 and 2 assert the problem text but not the path; case 3 asserts the path."
+        },
+        "handle": "render-refuses-damaged-log-verified",
+        "id": "01M76VDMGNKZ4G1MARTAC0X7H2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76VDMGNKZ4G1MART72QN5EK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76VDMGNKZ4G1MART72QN5EK",
+        "id": "01M76VDMJZ7V5JGV63DFSY39AT",
+        "link": "01M76VDMJZ7V5JGV63DF4DSBSN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QVD9TGTNKR2S9REE3KAP2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76QJWKEA2M2G87ESG10A47P",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76VDMPQ6ZYAD2Y2C8Y5BQPJ",
+  "type": "ops",
+  "v": 1
+}

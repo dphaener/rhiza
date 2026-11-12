@@ -1,0 +1,40 @@
+{
+  "actor": "01M76TNA44DTVDPG0T3G9ZCV6Y",
+  "after": [
+    "01M76R7ADMVKTASRPWYGBDJ5MP"
+  ],
+  "at": "2026-11-12T02:51:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e5a33ba12 ran go test -trimpath ./internal/guide/... -v: all pass, including the new TestGuideReadsLogSafely (rhiza guide body contains `rhiza show`, `rhiza slice`, `cat`, `python -m json.tool`, `sed -i`, `rhiza repair`) and the size-cap tests TestCaps and TestCapCatchesOversize. Read the diff: internal/guide/text/rhiza.md Hard rules add 'Read log entries with rhiza show, rhiza slice or cat, never python -m json.tool, in-place jq, sed -i or a redirect. Fix a damaged entry with rhiza repair.' (the installed rhiza SKILL.md is built from this guide via internal/api/guide_install.go), docs/agents.md carries the same rule, and rhiza repair exists in a scratch build (rhiza repair --help)."
+        },
+        "handle": "guide-reads-log-safely-verified",
+        "id": "01M76TPDQMGBR6YQYCE65V832X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76TPDQMGBR6YQYCE4R3K80K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76TPDQMGBR6YQYCE4R3K80K",
+        "id": "01M76TPDR7JTB8V0FRQEWQ2XNK",
+        "link": "01M76TPDR7JTB8V0FRQD6Y4Q4A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QVDGG1RNT7EM6NHPZBR6Q",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76QJWKEA2M2G87ESG10A47P",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76TPDS046YW93BB8RWZJ12S",
+  "type": "ops",
+  "v": 1
+}

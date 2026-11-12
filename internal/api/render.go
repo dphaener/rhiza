@@ -79,7 +79,14 @@ func runRender(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	sets, _ := changeset.FoldLog(st.ReadLog())
+	log := st.ReadLog()
+	if err := damagedLog(ctx, log); err != nil {
+		return nil, err
+	}
+	if _, err := store.SetEntryModes(ctx.Root); err != nil {
+		return nil, Errorf("render: %v", err)
+	}
+	sets, _ := changeset.FoldLog(log)
 	m, _ := gmodel.AsIs(sets)
 	want := render.Render(m, sets)
 	if v := testRenderStale(ctx); v != "" {
@@ -105,6 +112,70 @@ func runRender(ctx *Ctx, _ any) (any, error) {
 		resp.Written = append(resp.Written, renderedDir+"/"+p)
 	}
 	return resp, nil
+}
+
+// damagedLog refuses to render over a damaged log: an entry that does not
+// parse canonically, one whose ID or change set does not match its path,
+// or an entry file tracked at HEAD that differs from HEAD (changed or
+// deleted), unless HEAD's copy is itself damaged and the file now holds its
+// canonical bytes. Every run's commit step renders first, so none commits such an
+// entry. The error names each path and problem; nothing has been written.
+func damagedLog(ctx *Ctx, log store.Log) error {
+	ds := findDamaged(ctx, log)
+	if len(ds) == 0 {
+		return nil
+	}
+	lines := make([]string, len(ds))
+	for i, d := range ds {
+		lines[i] = d.Path + ": " + d.Reason
+	}
+	return Errorf("render: damaged log, nothing rendered:\n%s", strings.Join(lines, "\n")).WithNext("rhiza repair --dry-run")
+}
+
+// damaged is one entry file render refuses: its path from the project
+// root, with slashes, and what is wrong with it.
+type damaged struct {
+	Path, Reason string
+}
+
+// findDamaged lists the damaged entry files of log, sorted by path.
+func findDamaged(ctx *Ctx, log store.Log) []damaged {
+	var ds []damaged
+	for _, p := range log.Problems {
+		if errors.Is(p.Err, store.ErrStray) {
+			continue
+		}
+		ds = append(ds, damaged{store.Dir + "/" + p.Path, p.Err.Error()})
+	}
+	if inWorkTree(ctx.Git) {
+		out, err := ctx.Git("diff", "--name-only", "--relative", "--diff-filter=MDT", "HEAD", "--", store.Dir+"/"+store.LogDir)
+		if err == nil {
+			for _, f := range strings.Split(out, "\n") {
+				if f = strings.TrimSpace(f); f != "" && !repairsDamagedHead(ctx, f) {
+					ds = append(ds, damaged{f, "differs from HEAD, but a committed entry is never changed"})
+				}
+			}
+		}
+	}
+	slices.SortStableFunc(ds, func(a, b damaged) int { return strings.Compare(a.Path, b.Path) })
+	return slices.CompactFunc(ds, func(a, b damaged) bool { return a.Path == b.Path })
+}
+
+// repairsDamagedHead reports whether the entry file p, which differs from
+// HEAD, differs only because HEAD's copy was committed already damaged and
+// the working file now holds the canonical bytes for its path, as repair
+// leaves it: that diff repairs the log rather than damaging it.
+func repairsDamagedHead(ctx *Ctx, p string) bool {
+	cs, eid, ok := entryPathIDs(p)
+	if !ok {
+		return false
+	}
+	head, err := ctx.Git("show", "HEAD:./"+p)
+	if err != nil || isEntryBytes([]byte(head), cs, eid) {
+		return false
+	}
+	have, err := os.ReadFile(filepath.Join(ctx.Root, filepath.FromSlash(p)))
+	return err == nil && isEntryBytes(have, cs, eid)
 }
 
 // testStaleFile is the extra file render writes under the

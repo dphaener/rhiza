@@ -119,6 +119,10 @@ type SessionHookResponse struct {
 	reply []byte
 }
 
+// logEditReason is what an agent is told when it tries to edit a log entry
+// with a file-editing tool.
+const logEditReason = "Never edit .rhiza/log by hand: the log is append-only and only rhiza writes it. Write through `rhiza apply`; read with `rhiza show`, `rhiza slice` or `cat`."
+
 // autonomousAskReason is what the agent of an autonomous session is told
 // when its hook denies a question to the owner.
 const autonomousAskReason = "This run is autonomous: no owner will answer. Your question is recorded and the arbiter will decide it; its answer arrives as a message. End your turn now and wait at your prompt."
@@ -768,6 +772,11 @@ func sessionHook(ctx *Ctx, event string) (SessionHookResponse, error) {
 		serr := recordHook(ctx, st, rec, a, event, payload, rep, changed, &resp)
 		serr = errors.Join(serr, deliverPending(st, rec, a, event, &resp))
 		serr = errors.Join(serr, typeIdlePending(ctx, st, rec.ID))
+		if g, deny, gerr := a.GuardReply(event, payload, logEditReason); gerr != nil {
+			serr = errors.Join(serr, fmt.Errorf("%s: %v", name, gerr))
+		} else if deny {
+			resp.reply = g
+		}
 		journaled, jerr := journalHookMessage(ctx, a, rec, event, payload)
 		resp.Journaled = journaled
 		return resp, errors.Join(serr, jerr)

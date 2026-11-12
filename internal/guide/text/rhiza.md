@@ -66,12 +66,14 @@ You work on an accepted change set (`rhiza ready` names the next one). The contr
 - `rhiza log <ref> --json`: every change set that touched it.
 - `rhiza tree --json` and `rhiza ls --json`: the capability tree; filtered lists.
 
-Read before you write: find the capability your work belongs under, and the decisions and
-constraints on it, so you add to the model rather than duplicate it.
+Read before you write: find the capability, decisions and constraints your work belongs
+under, so you add to the model, not duplicate it.
 
 ## Hard rules
 
 - Never edit `.rhiza/log/` by hand. Write only through `rhiza` commands.
+- Read log entries with `rhiza show`, `rhiza slice` or `cat`, never `python -m json.tool`,
+  in-place `jq`, `sed -i` or a redirect. Fix a damaged entry with `rhiza repair`.
 - Always pass `--json`. Read the JSON; don't parse the markdown.
 - Propose; run `rhiza accept` only where policy allows you to.
 - Never paraphrase an owner's decision: quote their exact words in the decision's fields.

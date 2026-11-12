@@ -338,30 +338,96 @@ func (s *Store) Write(e entry.Entry) error {
 // the temp file is then hard-linked into place, because link (unlike
 // rename) refuses to replace an existing file.
 func writeNew(dir, name string, data []byte) error {
-	f, err := os.CreateTemp(dir, "."+strings.TrimSuffix(name, ".json")+".*.tmp")
+	mode := EntryMode
+	if name == RepoFile {
+		mode = 0o644
+	}
+	tmp, err := writeTemp(dir, name, data, mode)
 	if err != nil {
 		return err
 	}
-	tmp := f.Name()
 	defer os.Remove(tmp)
-	if _, err := f.Write(data); err != nil {
-		f.Close()
-		return err
-	}
-	if err := f.Sync(); err != nil {
-		f.Close()
-		return err
-	}
-	if err := f.Close(); err != nil {
-		return err
-	}
-	if err := os.Chmod(tmp, 0o644); err != nil {
-		return err
-	}
 	if err := os.Link(tmp, filepath.Join(dir, name)); err != nil {
 		return err
 	}
 	return syncDir(dir)
+}
+
+// EntryMode is the permission of every log entry file: read-only, so a
+// shell command that opens an entry for writing fails instead of
+// overwriting it. Only rhiza writes entries, and it writes new files.
+const EntryMode fs.FileMode = 0o444
+
+// WriteEntryFile writes data to the log entry file dst through a temp file
+// and a rename, with EntryMode. Every entry file rhiza creates, in the log
+// or in a copy of it, is written by this or by Store.Write, which share
+// writeTemp.
+func WriteEntryFile(dst string, data []byte) error {
+	dir, name := filepath.Split(dst)
+	tmp, err := writeTemp(filepath.Clean(dir), name, data, EntryMode)
+	if err != nil {
+		return err
+	}
+	if err := os.Rename(tmp, dst); err != nil {
+		os.Remove(tmp)
+		return err
+	}
+	return nil
+}
+
+// SetEntryModes makes every entry file under the log folder of the
+// repository at root EntryMode, and returns how many it changed.
+func SetEntryModes(root string) (int, error) {
+	n := 0
+	logDir := filepath.Join(root, Dir, LogDir)
+	err := filepath.WalkDir(logDir, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				return nil
+			}
+			return err
+		}
+		if d.IsDir() || strings.HasPrefix(d.Name(), ".") || !strings.HasSuffix(d.Name(), ".json") {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil || info.Mode().Perm() == EntryMode {
+			return err
+		}
+		n++
+		return os.Chmod(p, EntryMode)
+	})
+	return n, err
+}
+
+// writeTemp writes data, synced and closed, to a new temp file in dir
+// named for name, with the given mode, and returns its path.
+func writeTemp(dir, name string, data []byte, mode fs.FileMode) (string, error) {
+	f, err := os.CreateTemp(dir, "."+strings.TrimSuffix(name, ".json")+".*.tmp")
+	if err != nil {
+		return "", err
+	}
+	tmp := f.Name()
+	fail := func(err error) (string, error) {
+		f.Close()
+		os.Remove(tmp)
+		return "", err
+	}
+	if _, err := f.Write(data); err != nil {
+		return fail(err)
+	}
+	if err := f.Sync(); err != nil {
+		return fail(err)
+	}
+	if err := f.Close(); err != nil {
+		os.Remove(tmp)
+		return "", err
+	}
+	if err := os.Chmod(tmp, mode); err != nil {
+		os.Remove(tmp)
+		return "", err
+	}
+	return tmp, nil
 }
 
 // syncDir fsyncs a folder so the names created in it survive a crash.

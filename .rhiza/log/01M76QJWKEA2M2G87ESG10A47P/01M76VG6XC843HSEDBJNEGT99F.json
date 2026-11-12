@@ -1,0 +1,40 @@
+{
+  "actor": "01M76SZ58QHWMQ7NCB1NBW54MH",
+  "after": [
+    "01M76VDMPQ6ZYAD2Y2C8Y5BQPJ"
+  ],
+  "at": "2026-11-12T03:05:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-6339fce5 at 5396151294: read the diff (store.writeNew and the new store.WriteEntryFile share writeTemp with EntryMode 0444, repo.json kept 0644; session.go copyNewFile now calls store.WriteEntryFile; runRender calls store.SetEntryModes on .rhiza/log). As uid 1000: go test -trimpath ./internal/store/... ok (TestWrite asserts mode 444 and that os.OpenFile O_WRONLY|O_TRUNC fails); go test -trimpath ./internal/api -run TestCopyChangeSetLogWritesReadOnly PASS (copyChangeSetLog output is 0444); go test -trimpath ./cmd/rhiza -run TestScripts/log-entries-read-only PASS (entries 444 after add --record, chmod 644 then rhiza render restores 444). go test -trimpath -short ./internal/api ran every test with no failures; the only red was the package's root-state guard reporting ~/code/.rhiza-root/usage.live.json changed during the 8-minute run, live daemon usage state this diff does not touch. The non-short run stalled in TestInboxGateQuestionsBudget's quiet-machine wait (load ~7 on 4 cores), unrelated to the change."
+        },
+        "handle": "log-entries-read-only-verified",
+        "id": "01M76VG6SHJDRZJM0X93T977GA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76VG6SHJDRZJM0X8ZYJP98Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76VG6SHJDRZJM0X8ZYJP98Q",
+        "id": "01M76VG6VKE0GV7PW89X92B6TD",
+        "link": "01M76VG6VKE0GV7PW89VAZ5R1W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QVD40AW1RFPN3ENSY5F9P",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76QJWKEA2M2G87ESG10A47P",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76VG6XC843HSEDBJNEGT99F",
+  "type": "ops",
+  "v": 1
+}

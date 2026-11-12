@@ -210,5 +210,6 @@ func TestDeliver(t *testing.T) {
 	}
 }
 
-func (askAdapter) ContextReply(string, string) ([]byte, bool, error) { return nil, false, nil }
-func (askAdapter) UsageLimit([]byte) (adapter.UsageLimit, bool)      { return adapter.UsageLimit{}, false }
+func (askAdapter) ContextReply(string, string) ([]byte, bool, error)       { return nil, false, nil }
+func (askAdapter) GuardReply(string, []byte, string) ([]byte, bool, error) { return nil, false, nil }
+func (askAdapter) UsageLimit([]byte) (adapter.UsageLimit, bool)            { return adapter.UsageLimit{}, false }
