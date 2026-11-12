@@ -36,7 +36,12 @@ type daemonFoldFix struct {
 	config    map[string]string
 }
 
-func newDaemonFoldFix(t testing.TB) *daemonFoldFix {
+func newDaemonFoldFix(t testing.TB) *daemonFoldFix { return newDaemonFoldFixN(t, 98, nil) }
+
+// newDaemonFoldFixN is newDaemonFoldFix with done change sets landed in
+// one step each. grow, when set, is called with the log folder once the
+// change sets are written, to add more of them directly.
+func newDaemonFoldFixN(t testing.TB, done int, grow func(logDir string)) *daemonFoldFix {
 	t.Helper()
 	ctx := testCtx(t.TempDir())
 	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
@@ -63,7 +68,7 @@ func newDaemonFoldFix(t testing.TB) *daemonFoldFix {
 	// Many change sets landed in one step each, then a few in flight.
 	rec := *ctx
 	rec.Record = true
-	for i := range 98 {
+	for i := range done {
 		o, _ := Lookup("add")
 		r, err := DecodeRequest(o, []byte(fmt.Sprintf(`{"kind":"capability","handle":"done-%d"}`, i)))
 		if err != nil {
@@ -84,6 +89,9 @@ func newDaemonFoldFix(t testing.TB) *daemonFoldFix {
 		case i < 4:
 			call("propose", `{}`)
 		}
+	}
+	if grow != nil {
+		grow(filepath.Join(ctx.Root, store.Dir, store.LogDir))
 	}
 	// The log is old news: a folder changed in the last clock ticks is not
 	// a stamp to trust.
