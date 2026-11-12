@@ -48,6 +48,9 @@ type settingDef struct {
 	flag string
 	// project marks a project setting; the rest are machine settings.
 	project bool
+	// emptyOK marks a machine setting whose empty value is a real value
+	// (off), kept in rhiza.toml, not the same as unset.
+	emptyOK bool
 }
 
 func validateChoice(opts ...string) func(string) error {
@@ -96,6 +99,7 @@ var settingDefs = []settingDef{
 		return err
 	}},
 	{key: "rhiza.daemon.autoUpdate", def: "off", typ: "off or main", desc: "Whether the daemon keeps itself up to date: main follows the registered Rhiza source checkout and runs make update when it moves; latest and release come with the release channels milestone", validate: validateChoice("off", "main")},
+	{key: FailureClassifierKey, def: DefaultFailureClassifier, typ: "shell command", emptyOK: true, desc: "The command that classifies a failed step as transient or real: it reads the step's output on stdin and prints 'transient: <reason>' or 'real: <reason>'; the default runs Claude headless with Haiku, any LLM CLI can be set, and an empty value turns classification off, so no failure is retried", validate: func(string) error { return nil }},
 	{key: "rhiza.daemon.trimGoCache", def: "true", typ: "boolean", desc: "Trim the Go build cache when disk space runs low", validate: validateChoice("true", "false")},
 	{key: "rhiza.daemon.permissionMode", def: "", flag: "--permission-mode", typ: "one word", desc: "The permission mode agents run in; unset leaves the agent's own default", validate: func(v string) error {
 		if strings.TrimSpace(v) == "" || strings.ContainsAny(v, " \t\r\n") {
@@ -255,7 +259,8 @@ func settingsOf(ctx *Ctx, flags map[string]string) ([]Setting, error) {
 	for _, d := range settingDefs {
 		s := Setting{Key: d.key, Value: d.def, Default: d.def, Source: SettingDefault, Scope: d.scope()}
 		if !d.project && haveRoot {
-			if v := strings.TrimSpace(cfg.Daemon[d.key]); v != "" {
+			raw, set := cfg.Daemon[d.key]
+			if v := strings.TrimSpace(raw); v != "" || (d.emptyOK && set) {
 				if err := d.validate(v); err != nil {
 					return nil, Usagef("rhiza.toml %s is %q: %v", d.key, v, err)
 				}
@@ -438,7 +443,7 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff"`
 	Project string `json:"project,omitempty" flag:"project" desc:"The registered project a project setting is written to; default the current project"`
 	Value   string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes"`
 }

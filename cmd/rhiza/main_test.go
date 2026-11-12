@@ -125,7 +125,7 @@ func setup(env *testscript.Env) error {
 	// at $WORK/repo (written directly, not through rhiza project add).
 	// $NOROOT is a folder outside any root, for the outside-a-root cases.
 	err := os.WriteFile(filepath.Join(env.WorkDir, "rhiza.toml"),
-		[]byte("[projects.repo]\npath = \"repo\"\n"), 0o644)
+		[]byte("[projects.repo]\npath = \"repo\"\n\n[daemon]\n\"rhiza.daemon.failureClassifier\" = \"\"\n"), 0o644)
 	if err != nil {
 		return err
 	}

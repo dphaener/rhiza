@@ -1,0 +1,55 @@
+# The failure classifier is a machine-wide command: the testscript Setup
+# sets it empty, so a failing command step runs once and no classifier is
+# called. A script that sets a fake classifier command sees its verdict
+# used: transient reruns the step once, real (or no clear verdict) does not.
+
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Classified' --title 'Classified'
+mkdir .rhiza/workflows
+cp $WORK/flow.toml .rhiza/workflows/flow.toml
+
+# Empty from Setup: one run of the step, no classifier call.
+exec rhiza daemon settings
+stdout 'rhiza.daemon.failureClassifier = "" \(rhiza.toml, machine\)'
+exec rhiza run start --foreground --workflow flow
+exec cat $WORK/count
+cmp stdout $WORK/one
+! exists $WORK/classifier.called
+
+# A fake classifier saying transient: the step runs once more.
+rm $WORK/count
+exec rhiza daemon set rhiza.daemon.failureClassifier 'cat > $WORK/classifier.in; echo called >> $WORK/classifier.called; echo "transient: flaky network"'
+exec rhiza daemon settings
+stdout 'rhiza.daemon.failureClassifier = .*transient: flaky network'
+exec rhiza run start --foreground --workflow flow
+stderr 'failure classifier: transient: flaky network'
+exec cat $WORK/count
+cmp stdout $WORK/two
+grep 'boom' $WORK/classifier.in
+
+# real: no rerun.
+rm $WORK/count
+exec rhiza daemon set rhiza.daemon.failureClassifier 'cat >/dev/null; echo "real: a test fails"'
+exec rhiza run start --foreground --workflow flow
+stderr 'failure classifier: real: a test fails'
+exec cat $WORK/count
+cmp stdout $WORK/one
+
+-- one --
+x
+-- two --
+x
+x
+-- flow.toml --
+name = "flow"
+
+[step.a]
+kind = "command"
+run = "echo x >> $WORK/count; if [ $(wc -l < $WORK/count) -lt 2 ]; then echo boom; exit 1; fi"
+on.fail = "done"

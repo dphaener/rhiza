@@ -87,6 +87,19 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		ctx.Rex = os.Stderr
 	}
 	ctx.Git = gitIn(ctx.Root)
+	ctx.Classify = func(output string) bool {
+		cmd := api.FailureClassifierCommand(ctx)
+		if cmd == "" {
+			return false
+		}
+		v := api.ClassifyFailure(cmd, output, shellWithStdin)
+		kind := "real"
+		if v.Transient {
+			kind = "transient"
+		}
+		fmt.Fprintf(ctx.Stderr, "rhiza: failure classifier: %s: %s\n", kind, v.Reason)
+		return v.Transient
+	}
 	if found {
 		if p, err := index.DefaultPath(ctx.Root); err == nil {
 			ctx.IndexPath = p
@@ -235,6 +248,23 @@ func execIn(name string, args []string, dir string, env []string) ([]byte, error
 		return out, fmt.Errorf("%s %s: %w", name, strings.Join(args, " "), err)
 	}
 	return out, nil
+}
+
+// shellWithStdin runs command through sh -c with stdin and returns its
+// standard output, for the failure classifier.
+func shellWithStdin(command, stdin string) (string, error) {
+	cmd := exec.Command("sh", "-c", command)
+	cmd.Stdin = strings.NewReader(stdin)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	out, err := cmd.Output()
+	if err != nil {
+		if msg := bytes.TrimSpace(stderr.Bytes()); len(msg) > 0 {
+			return string(out), fmt.Errorf("%v: %s", err, msg)
+		}
+		return string(out), err
+	}
+	return string(out), nil
 }
 
 // streamGrace is how long a killed program's output stays open for a child
