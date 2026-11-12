@@ -1,0 +1,40 @@
+{
+  "actor": "01M786THGNHZ4TQEVP646TCC6A",
+  "after": [
+    "01M7708FYRJEZZDAYK4X8BA78V"
+  ],
+  "at": "2026-11-12T15:43:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fbea4c40b ran `go test -trimpath -count=1 ./cmd/rhiza -run 'TestDevelopingDocLessons|TestAgentDocsConsistent' -v` (GOTMPDIR/TMPDIR overridden to the scratchpad): TestDevelopingDocLessons, TestAgentDocsConsistent and TestAgentDocsConsistentFixtures PASS. Read the diff: agents/developing.md covers testscript gotchas ($WORK quoting, -count, chmod, stdin paths, fake binaries), scratch binaries in the session scratchpad, unsetting RHIZA_ROOT/RHIZA_CHANGE/RHIZA_RUN, overriding GOTMPDIR, re-running root-daemon web tests from a scratch worktree, and rhiza render after landed writes; agents/README.md indexes it; the test checks each lesson; gofmt clean; the commit stages only its own actor record."
+        },
+        "handle": "developing-doc-verified",
+        "id": "01M786VH6VGVCEV1NEDFMJRVQ0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M786VH6VGVCEV1NEDCSAYB22",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M786VH6VGVCEV1NEDCSAYB22",
+        "id": "01M786VH7RH536D1CGANHXYCA1",
+        "link": "01M786VH7RH536D1CGAJPGKJ41",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76P0B69F8152BRFFCTW5G8X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76NXJ53FB2GVBQPT4F4DW3R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M786VH8DV0FP4TXEEKXJPFR0",
+  "type": "ops",
+  "v": 1
+}
