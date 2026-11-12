@@ -1,0 +1,40 @@
+{
+  "actor": "01M79100W0E30765EWQ42K9TKS",
+  "after": [
+    "01M790Y9185FWMH86Z25VX58EF"
+  ],
+  "at": "2026-11-12T23:23:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ec8a3ff45, go test -trimpath -count=1 -v ./internal/ciworkflow/... passed: TestChangesScript runs .github/scripts/ci-changes.sh (BASE, GREEN inputs) on scratch git repos and gets code=false for a land-like .rhiza/-only commit after green and for a merge of main bringing only .rhiza/, code=true for a code change since green, a merge of main bringing code, and no green with the PR leaving .rhiza/ (plus code=false for no green staying in .rhiza/, the merge-base fallback); TestCIChangesDecidesFromGitDiff asserts ci.yml's changes job runs the script with steps.green.outputs.sha (found via gh api with github.token), and TestCICheckAggregatesEveryJob passes. Read the script and changes job: the not-ancestor/empty GREEN fallback to git merge-base matches the updated statement. make self-check passed in a clean detached worktree with the run env cleared."
+        },
+        "handle": "ci-model-only-since-green-verified-3",
+        "id": "01M7915VHRKEX5B48101ZJZ39S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7915VHRKEX5B480ZY92QW0Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7915VHRKEX5B480ZY92QW0Q",
+        "id": "01M7915VK2ZFQQ8R8MGX3PYF1D",
+        "link": "01M7915VK2ZFQQ8R8MGV4SMB11",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZFT4TP194AK2Z1NCJH5A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSFD0JZ9424EWBSQA3K8X",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7915VM8MMPJJJK4FRS74YXH",
+  "type": "ops",
+  "v": 1
+}

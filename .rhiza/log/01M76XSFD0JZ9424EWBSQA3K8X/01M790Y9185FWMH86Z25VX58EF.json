@@ -1,0 +1,30 @@
+{
+  "actor": "01M790XMBJVNJ9ZM0KFCJ3GG1H",
+  "after": [
+    "01M790RD9P88JFZ6CZ1M5FGRA0"
+  ],
+  "at": "2026-11-12T23:19:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "The changes job's decision is a script file that takes the earlier green commit as an input (the workflow finds it with the job's GITHUB_TOKEN; the test never touches the network). A Go test in internal/ciworkflow (go test -trimpath ./internal/ciworkflow) runs the script against scratch git repos and asserts code=false for a land-like commit changing only .rhiza/ after a green commit and for a merge of main bringing only .rhiza/ changes, and code=true for a code change since green, for a merge of main bringing code, and when no green commit is given and the PR diff from base leaves .rhiza/; and asserts ci.yml's changes job runs that script and the check job still aggregates the verdict.",
+          "statement": "Rhiza's own CI (.github/workflows/ci.yml) runs only the model job on a pull request push when no path outside .rhiza/ differs between the tree this run tests and the tree of the pull request's latest run whose check verdict succeeded. With no usable earlier green commit (none, or one that is not an ancestor of the tested tree, as after a force push or rebase) the decision diffs from the merge base with the pull request's base instead, so a pull request that only touches .rhiza/ still runs only the model job. Any difference outside .rhiza/ (including code main brought in by a merge) runs the Go jobs as today."
+        },
+        "handle": "ci-model-only-since-green",
+        "id": "01M76XZFT4TP194AK2Z2WGDYMG",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M76XZFT4TP194AK2Z1NCJH5A",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      }
+    ]
+  },
+  "change_set": "01M76XSFD0JZ9424EWBSQA3K8X",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M790Y9185FWMH86Z25VX58EF",
+  "type": "ops",
+  "v": 1
+}
