@@ -1,0 +1,40 @@
+{
+  "actor": "01M7750AQFCPT1Q2T0P0N49J2Y",
+  "after": [
+    "01M774B0C2WNYV275DY99N7Z0M"
+  ],
+  "at": "2026-11-12T05:57:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fc00c5463 (attempt 2, fixing compliance f1): go test -trimpath ./internal/workflow/... ok. go test -trimpath ./internal/api -run 'TestShipGate|TestShipPrePushCheck|TestShipRebase' -count=1: every test passed, including TestShipGateFailed, TestShipGateFailedOnPrePushFailure and TestShipPrePushCheckRebase. TestShipPrePushCheckRebase now checks that no reset happens, that Kept equals the failing head, that the ship state records PrePushFailed, and that ship gate --failed then exits 0 on that head. Read the diff: runShipRebase now handles a pre-push failure in shipKeepPrePushFailure before the reset --keep. It keeps the merged head unpushed and records PrePushFailed, so rebase -> prepush-triage reaches prepush-fix. Other errors still reset and fail. The package's root-state guard reported ~/code/.rhiza-root/usage.live.json changed; with no test running, that file changed every 10-20s from live sessions, so the change did not cause it. rhiza workflow describe plan (built from this commit) lists open-pr and rebase on.fail -> prepush-triage, prepush-triage on.pass -> prepush-fix, and prepush-fix on.pass -> open-pr. make self-check failed only on stale .rhiza/rendered/ files (rendered/actor/* and index.md) from the run's actor and critic records. In a scratch worktree at HEAD, after rhiza render, rhiza check showed no fail lines."
+        },
+        "handle": "plan-prepush-fix-verified-2",
+        "id": "01M775A4HYF6TSZHSESSQDDVYK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M775A4HYF6TSZHSESSBR6DDR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M775A4HYF6TSZHSESSBR6DDR",
+        "id": "01M775A4MT9YMFBFWZ3EGAVFEC",
+        "link": "01M775A4MT9YMFBFWZ3AXBYF6W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RT03BTXG6QDTFNE23XMA2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M775A4QNVW450RE8HRPQV0N7",
+  "type": "ops",
+  "v": 1
+}
