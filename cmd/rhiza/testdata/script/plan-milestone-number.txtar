@@ -1,0 +1,65 @@
+# A plan run for a new milestone reserves its milestone number when it
+# starts: one more than the highest landed milestone and every number any
+# run journal holds. Two runs started back to back get 36 then 37; a number
+# held only by a failed run is still skipped; a run planning an existing
+# milestone reserves none. rhiza run status --json shows the number.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+env RHIZA_MILESTONE=
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/plan-milestone.toml .rhiza/workflows/plan-milestone.toml
+exec git add -A
+exec git commit -qm init
+
+exec rhiza add intent milestone-12 --field statement=Twelve --field milestone=12 --record
+exec rhiza add intent milestone-35 --field statement=Thirty-five --field milestone=35 --record
+
+# Two new-milestone plan runs back to back: 36, then 37.
+exec rhiza run start --foreground --workflow plan --new 'Ship v3' --milestone --permission-mode manual --json
+stdout '"workflow": "plan-milestone"'
+stdout '"milestone_number": 36'
+exec rhiza run start --foreground --workflow plan --new 'Ship v4' --milestone --permission-mode manual --json
+stdout '"milestone_number": 37'
+
+# A failed run keeps its number: the next run skips 38.
+exec touch $WORK/fail
+! exec rhiza run start --foreground --workflow plan --new 'Ship v5' --milestone --permission-mode manual --json
+exec rm $WORK/fail
+exec rhiza run start --foreground --workflow plan --new 'Ship v6' --milestone --permission-mode manual --json
+stdout '"milestone_number": 39'
+
+# run status shows the reserved number of every run.
+exec rhiza run status --json
+stdout '"milestone_number": 3[6-9]'
+
+# A plan run for an existing milestone (a milestone request naming one)
+# reserves nothing.
+exec rhiza request 'Add paging' --kind milestone --milestone milestone-35
+exec rhiza daemon --permission-mode manual --max-runs 1 --once
+stdout '^Started the plan run of request '
+exec sh -c 'rhiza request ls --json | sed -n "s/^      \"id\": \"\(.*\)\",$/\1/p" | head -1 | tr -d "\n" > $WORK/req'
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Add paging" --request $(cat $WORK/req) --permission-mode manual --json'
+stdout '"workflow": "plan-milestone"'
+stdout '"state": "succeeded"'
+! stdout 'milestone_number'
+
+fold-ok
+
+-- plan-milestone.toml --
+name = "plan-milestone"
+
+[step.a]
+kind = "command"
+run = "test ! -e \"$WORK/fail\""
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+# The daemon's plan-run tab is only logged; the run is started by hand.
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

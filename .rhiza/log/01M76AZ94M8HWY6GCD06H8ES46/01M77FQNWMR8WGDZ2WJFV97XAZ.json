@@ -1,0 +1,40 @@
+{
+  "actor": "01M77FP504SYZSRSM81SZTGPTQ",
+  "after": [
+    "01M76SG2MKM99DWXGRHK072SEA"
+  ],
+  "at": "2026-11-12T08:59:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 376a05b23, go test -count=1 -trimpath ./internal/release/... ./tools/release/... passes (vet and gofmt clean). TestBuild builds a manifest from a dist folder with the four rhiza_<ver>_<os>_<arch>.tar.gz archives and checksums.txt and checks channel=release, version=tag, commit, 4 platforms, each sha256 equal to checksums.txt and the releases/download/<tag>/<archive> URL; TestBuildMissingPlatform and TestBuildChecksumMismatch fail as required. Ran the release-snapshot job's new step by hand on a fake GoReleaser-shaped dist (metadata.json version 0.0.1-SNAPSHOT-376a05b): it wrote dist/manifest.json with 4 platforms and the jq length check passed; with darwin_arm64 removed, go run ./tools/release exited 1 with 'missing platforms: darwin/arm64', so the job fails. release.yml runs the tool after goreleaser on v* tags and uploads manifest.json as a release asset (--clobber), so releases/latest/download/manifest.json names the newest release. Diff read: archive names match .goreleaser.yaml name_template. GoReleaser itself not run (not installed; CI runs it)."
+        },
+        "handle": "release-channel-manifest-verified",
+        "id": "01M77FQNTM4W0GTV29B5SHQNG4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77FQNTM4W0GTV29B3B401TM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77FQNTM4W0GTV29B3B401TM",
+        "id": "01M77FQNVYBGHQ04VNA9RK5GK3",
+        "link": "01M77FQNVYBGHQ04VNA9NJXVG1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7CPKY732RZT6D4H4N8ND",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76AZ94M8HWY6GCD06H8ES46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77FQNWMR8WGDZ2WJFV97XAZ",
+  "type": "ops",
+  "v": 1
+}

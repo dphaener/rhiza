@@ -1,0 +1,40 @@
+{
+  "actor": "01M779DJD20SY7FC46P45G9ZCZ",
+  "after": [
+    "01M779YPGCNSGHG9873938QRP2"
+  ],
+  "at": "2026-11-12T07:20:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 8eb70a774 (attempt 2). Read the diff of 4ddef2aa9 and 8eb70a774: runRunStart reserves a number only when newMilestone (milestone plan with no request milestone, or a plan on a record change set), drawing it under a lock as one more than the highest landed milestone field and every run journal's MilestoneNumber (ended and failed included), and journals it in Started.MilestoneNumber, which run status shows as milestone_number. Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(plan-milestone-number|describe-golden)$': PASS. plan-milestone-number starts new-milestone plan runs with run start against landed milestones 12 and 35 and sees 36 then 37, a failed run holding 38 so the next gets 39, run status --json showing milestone_number, and a milestone request naming milestone-35 started with no milestone_number. Ran go test -trimpath ./internal/run -run TestFoldMilestoneNumber (failed run folds 36, no number folds 0 and omits the field): PASS. Ran go test -trimpath ./internal/api -run Milestone: all 17 tests PASS, including TestReserveMilestoneNumber and TestLaunchEnvMilestoneNumber. That run then hit the enclosing-root state-folder guard. Rerunning the leaf's api tests alone passed cleanly, so the guard failure does not come from this change. Attempt 1's three findings (no run-start test, no existing-milestone test, no internal/run test) are each addressed."
+        },
+        "handle": "milestone-number-reserved-verified",
+        "id": "01M77A2FPVEA6Q323GYCP1JSGH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77A2FPVEA6Q323GYARBW9PJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77A2FPVEA6Q323GYARBW9PJ",
+        "id": "01M77A2FQJ8J3NF5M78HZRJJ17",
+        "link": "01M77A2FQJ8J3NF5M78HXZJ89Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M777B9G3TT1SDCSTGG2Z820G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7774MAPJ7VCPN1Q9M3RHMV4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77A2FRME2NRTNHNXP64NTHT",
+  "type": "ops",
+  "v": 1
+}
