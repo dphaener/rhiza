@@ -6,10 +6,12 @@ package api
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
@@ -100,6 +102,9 @@ type daemonProj struct {
 	// lock is the project's per-repo daemon lock, nil for the home project,
 	// whose lock runDaemon holds.
 	lock *daemon.Lock
+	// modelAt is when the poll last did the model branches' network work
+	// (commit-untracked and the model PR merges), zero before the first.
+	modelAt time.Time
 }
 
 // newDaemonProj starts the daemon's work in the project at dir, whose
@@ -421,10 +426,77 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 	if eerr := daemonEvents(ctx, state, p.eventCmd); err == nil {
 		err = eerr
 	}
-	daemonCommitUntracked(ctx)
-	daemonMergeModelPRs(ctx)
+	if p.modelNetDue(ctx.Now()) {
+		// Throttled and bounded, as the self-update's fetch is: the network
+		// cannot hold up the daemon's polls, nor spend the gh token each tick.
+		mc := boundedExecCtx(ctx, modelNetTimeout)
+		daemonCommitUntracked(mc)
+		daemonMergeModelPRs(mc)
+	}
 	p.saveState()
 	return err
+}
+
+// modelNetEvery is the least time between two rounds of the daemon's model
+// branch network work: shipping orphan entries and merging model PRs.
+const modelNetEvery = time.Minute
+
+// modelNetDue reports whether the model branch network work runs at now:
+// on the first poll, then once modelNetEvery has passed. A due round is
+// counted as done.
+func (p *daemonProj) modelNetDue(now time.Time) bool {
+	if !p.modelAt.IsZero() && now.Sub(p.modelAt) < modelNetEvery {
+		return false
+	}
+	p.modelAt = now
+	return true
+}
+
+// modelNetTimeout bounds each git or gh program of that work.
+const modelNetTimeout = 30 * time.Second
+
+// boundedExecCtx is ctx with an Exec that kills each program after timeout
+// and never lets git prompt for credentials (GIT_TERMINAL_PROMPT=0). A
+// non-nil env is set over the caller's environment. A failure names the
+// program and its exit code: Start discards its standard error. Without
+// ctx.Start it is ctx itself, whose Exec runs untimed.
+func boundedExecCtx(ctx *Ctx, timeout time.Duration) *Ctx {
+	if ctx.Start == nil || ctx.Exec == nil {
+		return ctx
+	}
+	c := *ctx
+	c.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		return execWithin(ctx, Program{Name: name, Args: args, Dir: dir, Env: append(slices.Clone(env), "GIT_TERMINAL_PROMPT=0")}, timeout)
+	}
+	return &c
+}
+
+// execWithin runs p through ctx.Start and returns its standard output,
+// killing it after timeout.
+func execWithin(ctx *Ctx, p Program, timeout time.Duration) ([]byte, error) {
+	cmd := strings.TrimSpace(p.Name + " " + strings.Join(p.Args, " "))
+	proc, err := ctx.Start(p)
+	if err != nil {
+		return nil, err
+	}
+	timedOut := make(chan struct{})
+	timer := time.AfterFunc(timeout, func() {
+		close(timedOut)
+		proc.Kill()
+	})
+	out, _ := io.ReadAll(proc.Output())
+	code, err := proc.Wait()
+	if !timer.Stop() {
+		<-timedOut
+		return nil, fmt.Errorf("%s: timed out after %s", cmd, timeout)
+	}
+	if err != nil {
+		return nil, err
+	}
+	if code != 0 {
+		return out, fmt.Errorf("%s: exit %d", cmd, code)
+	}
+	return out, nil
 }
 
 // daemonCommitUntracked commits the main checkout's orphan log entries onto

@@ -2,10 +2,12 @@ package api
 
 import (
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 // modelPRFixture is modelBranchFixture with every orphan entry shipped on a
@@ -122,4 +124,61 @@ func TestDaemonModelPR(t *testing.T) {
 		}
 		daemonMergeModelPRs(f.ctx)
 	})
+}
+
+// The model branch network work runs on the first poll, then at most once
+// every modelNetEvery.
+func TestModelNetThrottled(t *testing.T) {
+	p := &daemonProj{}
+	t0 := time.Date(2026, 11, 12, 10, 0, 0, 0, time.UTC)
+	for _, c := range []struct {
+		at  time.Duration
+		due bool
+	}{{0, true}, {5 * time.Second, false}, {modelNetEvery - time.Second, false}, {modelNetEvery, true}, {modelNetEvery + 5*time.Second, false}} {
+		if got := p.modelNetDue(t0.Add(c.at)); got != c.due {
+			t.Fatalf("at +%s: due %v, want %v", c.at, got, c.due)
+		}
+	}
+}
+
+// A model branch program that hangs (git ls-remote on a stalled network) is
+// killed after its timeout, never prompts for credentials, and fails.
+func TestBoundedExecTimesOut(t *testing.T) {
+	ctx := testCtx(t.TempDir())
+	ctx.Exec = func(string, []string, string, []string) ([]byte, error) {
+		t.Fatal("untimed Exec used")
+		return nil, nil
+	}
+	var got Program
+	h := &hangProcess{killed: make(chan struct{})}
+	h.r, h.w = io.Pipe()
+	ctx.Start = func(p Program) (Process, error) { got = p; return h, nil }
+	_, err := boundedExecCtx(ctx, 10*time.Millisecond).Exec("git", []string{"ls-remote", "--heads", "origin"}, "/main", nil)
+	if err == nil || !strings.Contains(err.Error(), "git ls-remote --heads origin: timed out") {
+		t.Fatalf("err %v", err)
+	}
+	if got.Name != "git" || got.Dir != "/main" || strings.Join(got.Env, " ") != "GIT_TERMINAL_PROMPT=0" {
+		t.Fatalf("program %+v", got)
+	}
+}
+
+func TestBoundedExecOutputAndExit(t *testing.T) {
+	ctx := testCtx(t.TempDir())
+	ctx.Exec = func(string, []string, string, []string) ([]byte, error) { return nil, nil }
+	code := 0
+	ctx.Start = func(Program) (Process, error) {
+		return &fakeProcess{out: strings.NewReader("abc\tref\n"), code: code}, nil
+	}
+	bc := boundedExecCtx(ctx, time.Second)
+	if out, err := bc.Exec("gh", []string{"pr", "view", "b"}, "/main", nil); err != nil || string(out) != "abc\tref\n" {
+		t.Fatalf("out %q err %v", out, err)
+	}
+	code = 1
+	if _, err := bc.Exec("gh", []string{"pr", "view", "b"}, "/main", nil); err == nil || !strings.Contains(err.Error(), "gh pr view b: exit 1") {
+		t.Fatalf("err %v", err)
+	}
+	ctx.Start = nil
+	if boundedExecCtx(ctx, time.Second) != ctx {
+		t.Fatal("without Start the context is not ctx")
+	}
 }
