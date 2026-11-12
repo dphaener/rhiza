@@ -46,6 +46,25 @@ func run(args []string) error {
 		}
 		return runCheck(".", os.Stdout, env)
 	}
+	if len(args) > 0 && args[0] == "cut" {
+		env, err := parseCheck(args[1:])
+		if err != nil {
+			return err
+		}
+		_, err = Cut(".", os.Stdout, env, realGit("."))
+		return err
+	}
+	if len(args) > 0 && args[0] == "record-run" {
+		runs, err := parseRecordRun(args[1:])
+		if err != nil {
+			return err
+		}
+		added, err := RecordDaemonRun(runs, daemonStatus)
+		if err == nil && added {
+			fmt.Println("recorded the daemon's commit in", runs)
+		}
+		return err
+	}
 	if len(args) > 0 && args[0] == "marks" {
 		marks, err := ReadMarks(filepath.Join(".rhiza", "log"))
 		if err != nil {
