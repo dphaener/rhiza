@@ -1,0 +1,41 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M76F45GGYHQE393CWC6PSXJQ"
+  ],
+  "at": "2026-11-12T01:24:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "question": "Release tooling is for this repo only, so a major release cannot raise a Rhiza inbox item: how does the owner see and sign off a major candidate (e.g. a draft GitHub release the owner publishes, a rhiza request, or a hand-pushed tag)?",
+          "statement": "A major release candidate is prepared as a draft GitHub release with notes; the owner publishing it is the sign-off, after which the tool tags and pushes",
+          "wording": "Draft GitHub release: the tool prepares a draft GitHub release with notes, publishing it is the owner sign-off, and the tool then tags and pushes; picked by the owner"
+        },
+        "handle": "major-signoff-draft-release",
+        "id": "01M76NPP2GYFJRH1PWXFFP6MMT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76NPP2GYFJRH1PWXEB3FWNZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76NPP2GYFJRH1PWXEB3FWNZ",
+        "id": "01M76NPP36384P6FWWD2TFR0GD",
+        "link": "01M76NPP36384P6FWWD2E10MPN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7ED4HVPNVDBZR58WS9F1",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76B0M0A1T1SN6KHMG5JVDVR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76NPP53YYPCKPVH8Q9T64T8",
+  "type": "ops",
+  "v": 1
+}

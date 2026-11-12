@@ -1,0 +1,43 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [
+    "01M76B00QSZVGA0E6X87RKEHCG"
+  ],
+  "at": "2026-11-11T22:21:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test runs install.sh against a local fixture channel (base URL override): it installs a working rhiza for the host platform, --channel latest picks the latest manifest, and a tampered archive fails with nothing installed; shellcheck install.sh passes",
+          "statement": "install.sh, run as curl -fsSL <raw URL> | sh, installs the newest release (or --channel latest) for the running linux or darwin on amd64 or arm64 into ~/.local/bin or --dir, verifying the archive sha256 against the channel manifest and failing on a mismatch"
+        },
+        "handle": "install-script",
+        "id": "01M76B7DBYAAJRESBTJESK92A4",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M76B7DBYAAJRESBTJC5PHPB4",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "fields": {
+          "acceptance": "The README names install.sh, both manifest URLs and gh attestation verify; rhiza check passes",
+          "statement": "The README install section documents install.sh, the release and latest channels with their manifest URLs, go install, and how to verify a download with sha256 and gh attestation verify"
+        },
+        "handle": "readme-channels",
+        "id": "01M76B7DCEFTQGRF39QZ4PSDWY",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M76B7DCEFTQGRF39QY7BM5R2",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      }
+    ]
+  },
+  "change_set": "01M76B00QSZVGA0E6X85JE2BYY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76B7DCT655NQBY57N64YZBZ",
+  "type": "ops",
+  "v": 1
+}

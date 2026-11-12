@@ -1,0 +1,106 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [
+    "01M76B0FZA3N7ZHAYTBQ830KSP"
+  ],
+  "at": "2026-11-11T22:21:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/release/... -run TestNextVersion over fixture logs covers each kind, the pre-v1 breaking-is-minor rule and no change since the tag",
+          "statement": "tools/release check computes the next version and its kind since the last v* tag: major from v1.0.0 on when a change is marked or detected breaking (before v1 a breaking change makes a minor), minor when a milestone finished, patch when only bug fixes landed, none otherwise"
+        },
+        "handle": "release-next-version",
+        "id": "01M76B7E06G9AJHZSV3J9AB6ZG",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M76B7E06G9AJHZSV3GSEA005",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/release/... -run TestGates with a fake clock, a fake CI status and a fixture daemon-run history covers each gate passing and failing and the severe skip; the timer records daemon status (commit, started) so the first-run time is known",
+          "statement": "tools/release check reports each gate for the candidate commit with why it passes or fails: CI green on the commit; the root daemon first ran the commit at least 24h ago and no bug request was filed since; no change set serving the finished milestone in flight and no question blocking one; a patch is at most one per 24h unless a severe: fix is in it, which skips the soak and the batching but never CI"
+        },
+        "handle": "release-gates",
+        "id": "01M76B7E0P2S46PHFZ3MQ5YH6J",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M76B7E0P2S46PHFZ3KX010J6",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/release/... -run TestNotes compares notes from a fixture log with a golden file",
+          "statement": "tools/release check drafts the release notes from the change sets landed since the last tag, grouped by milestone, with bug fixes and breaking changes (and their reasons) called out"
+        },
+        "handle": "release-notes",
+        "id": "01M76B7E153HS76CMR40JYS5N4",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M76B7E153HS76CMR3ZHVPTM6",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "decision": null,
+        "from": "01M76B7E06G9AJHZSV3GSEA005",
+        "id": "01M76B7E1REPFYSXG8AAQZV6RA",
+        "link": "01M76B7E1REPFYSXG8A78PBBEK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSX3MH9BQ3HBT2SES85A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76B7E06G9AJHZSV3GSEA005",
+        "id": "01M76B7E2GWW7BED4CHB4A3SBK",
+        "link": "01M76B7E2GWW7BED4CH8P3HJSN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSYNNPSWTFV3RHSM4RMP",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76B7E0P2S46PHFZ3KX010J6",
+        "id": "01M76B7E3587136BWEZHF4M11C",
+        "link": "01M76B7E3587136BWEZHC9R6J2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSWKKGEWHC856A7TJYF5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76B7E0P2S46PHFZ3KX010J6",
+        "id": "01M76B7E3VKR0HYY2JD16HT9MW",
+        "link": "01M76B7E3VKR0HYY2JD13F4APT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSZGMRT62VKRJZY08FQE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76B7E153HS76CMR3ZHVPTM6",
+        "id": "01M76B7E4CVDJW6VT1PC3F4ZCH",
+        "link": "01M76B7E4CVDJW6VT1P97KHZS8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSWKKGEWHC856A7TJYF5",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76B0FZA3N7ZHAYTBN76MVSV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76B7E4VSWER8Z6M21AAR2V2",
+  "type": "ops",
+  "v": 1
+}

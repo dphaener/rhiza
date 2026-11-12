@@ -1,0 +1,15 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [],
+  "at": "2026-11-11T22:17:41Z",
+  "body": {
+    "intent": "Breaking-change detection: compare the API schemas (describe --json), daemon settings and log format at HEAD with the last release tag and report each breaking difference",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M76B0BSVESMEFD39RTW517R3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76B0BSVESMEFD39RX3ATV5N",
+  "type": "open",
+  "v": 1
+}

@@ -1,0 +1,39 @@
+{
+  "actor": "01M76BQPAV7XYBSPTRB8FYVJK2",
+  "after": [
+    "01M76B7DKDJSD4Y9JVNTD86RA0"
+  ],
+  "at": "2026-11-11T22:32:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Intent narrowed (plan review f3): release tooling is for this repo only (@{01M76BBTW1A3C00G0VYQ1WBTKA}), so the marks are notes on change sets read by tools/release (@{01M76B7DJ5HD25ETA8QRYQP9GA}), not fields of rhiza requests. A severe fix is marked by a severe: note on its change set, not a severity on the bug request, and the rhiza build a bug was filed against is not recorded on the request. The soak gate (@release-gates) instead counts any bug request filed since the root daemon first ran the candidate commit, which is conservative: every such bug was filed against that commit or a later one."
+        },
+        "handle": "note-01m76btstcnfv7",
+        "id": "01M76BTSTDPS6GHPC1P2GREE8F",
+        "key": null,
+        "kind": "note",
+        "node": "01M76BTSTCNFV75E7CAME7TF1S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76BTSTCNFV75E7CAME7TF1S",
+        "id": "01M76BTSWMS5X4PTF0C4AZD8VW",
+        "link": "01M76BTSWMS5X4PTF0C0WK3Q2A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B077D23CJ28C690Y166VY",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M76B077D23CJ28C690Y166VY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76BTSXKPA0N2TKTMR6A2EXW",
+  "type": "ops",
+  "v": 1
+}
