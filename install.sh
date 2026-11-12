@@ -2,17 +2,8 @@
 # Install rhiza: the newest release (or --channel latest) for this platform.
 #
 #   curl -fsSL https://raw.githubusercontent.com/dphaener/rhiza/main/install.sh | sh
-#   curl -fsSL .../install.sh | sh -s -- --channel latest --dir /usr/local/bin
 #
-# Options:
-#   --channel release|latest   release (default) is the newest v* tag; latest
-#                              is the newest build of main.
-#   --dir DIR                  install into DIR (default ~/.local/bin).
-#   -h, --help                 show this help.
-#
-# The archive's sha256 is checked against the channel manifest; on a mismatch
-# nothing is installed. RHIZA_INSTALL_BASE_URL replaces https://github.com/dphaener/rhiza
-# (for mirrors and tests).
+# Options and environment: see usage below, or pass --help.
 set -eu
 
 base=${RHIZA_INSTALL_BASE_URL:-https://github.com/dphaener/rhiza}
@@ -21,7 +12,25 @@ dir=${HOME:-}/.local/bin
 
 die() { echo "install.sh: $*" >&2; exit 1; }
 
-usage() { sed -n '2,/^set -eu/p' "$0" | sed '$d' | sed 's/^# \{0,1\}//'; }
+# Under curl | sh, $0 is the shell, not this file, so the help lives here.
+usage() {
+	cat <<'EOF'
+Install rhiza: the newest release (or --channel latest) for this platform.
+
+  curl -fsSL https://raw.githubusercontent.com/dphaener/rhiza/main/install.sh | sh
+  curl -fsSL .../install.sh | sh -s -- --channel latest --dir /usr/local/bin
+
+Options:
+  --channel release|latest   release (default) is the newest v* tag; latest
+                             is the newest build of main.
+  --dir DIR                  install into DIR (default ~/.local/bin).
+  -h, --help                 show this help.
+
+The archive's sha256 is checked against the channel manifest; on a mismatch
+nothing is installed. RHIZA_INSTALL_BASE_URL replaces https://github.com/dphaener/rhiza
+(for mirrors and tests).
+EOF
+}
 
 while [ $# -gt 0 ]; do
 	case $1 in
@@ -68,9 +77,10 @@ trap 'rm -rf "$tmp"' EXIT INT TERM
 echo "Fetching the $channel manifest"
 curl -fsSL "$manifest_url" -o "$tmp/manifest.json" || die "cannot fetch $manifest_url"
 
-# The manifest is JSON with one field per line (tools/release writes it so);
-# this reads the os/arch platform entry's url and sha256 without jq.
-entry=$(sed 's/[{},]/\n/g' "$tmp/manifest.json" | awk -v os="$os" -v arch="$arch" '
+# Split the manifest JSON at braces and commas into one field per line, then
+# read the os/arch platform entry's url and sha256 without jq. tr, not sed:
+# BSD sed (macOS) writes a literal n for \n in a replacement.
+entry=$(tr '{},' '\n\n\n' <"$tmp/manifest.json" | awk -v os="$os" -v arch="$arch" '
 	function val(l) { sub(/^[^:]*:[ \t]*"/, "", l); sub(/"[ \t]*$/, "", l); return l }
 	/"os"[ \t]*:/ { o = val($0); a = ""; u = ""; next }
 	/"arch"[ \t]*:/ { a = val($0); next }
@@ -80,7 +90,7 @@ entry=$(sed 's/[{},]/\n/g' "$tmp/manifest.json" | awk -v os="$os" -v arch="$arch
 [ -n "$entry" ] || die "the $channel manifest has no build for $os/$arch"
 url=${entry% *}
 want=${entry#* }
-version=$(sed 's/[{},]/\n/g' "$tmp/manifest.json" | awk '/"version"[ \t]*:/ { sub(/^[^:]*:[ \t]*"/, ""); sub(/"[ \t]*$/, ""); print; exit }')
+version=$(tr '{},' '\n\n\n' <"$tmp/manifest.json" | awk '/"version"[ \t]*:/ { sub(/^[^:]*:[ \t]*"/, ""); sub(/"[ \t]*$/, ""); print; exit }')
 
 echo "Downloading rhiza ${version:-} for $os/$arch"
 curl -fsSL "$url" -o "$tmp/rhiza.tar.gz" || die "cannot fetch $url"

@@ -2,9 +2,11 @@ package install
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -84,6 +86,36 @@ func TestInstallScript(t *testing.T) {
 		}
 	})
 
+	// The documented form: the script on stdin, so $0 is the shell, with a
+	// manifest on one line, so the split does not lean on tools/release's
+	// indentation.
+	t.Run("piped with a compact manifest", func(t *testing.T) {
+		fx.compact = true
+		defer func() { fx.compact = false }()
+		dir := t.TempDir()
+		out, err := pipeScript(t, fx, "--dir", dir)
+		if err != nil {
+			t.Fatalf("install: %v\n%s", err, out)
+		}
+		got, err := exec.Command(filepath.Join(dir, "rhiza"), "version").Output()
+		if err != nil {
+			t.Fatalf("run installed rhiza: %v", err)
+		}
+		if strings.TrimSpace(string(got)) != "fixture release" {
+			t.Fatalf("installed rhiza printed %q, want the release build", got)
+		}
+	})
+
+	t.Run("piped help", func(t *testing.T) {
+		out, err := pipeScript(t, fx, "--help")
+		if err != nil {
+			t.Fatalf("--help: %v\n%s", err, out)
+		}
+		if !strings.Contains(out, "--channel release|latest") || strings.Contains(out, "sed:") {
+			t.Fatalf("want the help text, got:\n%s", out)
+		}
+	})
+
 	t.Run("bad channel", func(t *testing.T) {
 		out, err := runScript(t, fx, t.TempDir(), "--channel", "nope")
 		if err == nil || !strings.Contains(out, "unknown channel") {
@@ -93,8 +125,9 @@ func TestInstallScript(t *testing.T) {
 }
 
 type fixture struct {
-	srv    *httptest.Server
-	tamper bool
+	srv     *httptest.Server
+	tamper  bool
+	compact bool // serve manifests as one-line JSON
 }
 
 // newFixture serves a channel: manifests for both channels and, per channel,
@@ -125,7 +158,17 @@ func newFixture(t *testing.T) *fixture {
 		if ch == release.ChannelLatest {
 			path = "/releases/download/latest/manifest.json"
 		}
-		mux.HandleFunc(path, func(w http.ResponseWriter, _ *http.Request) { w.Write(b) })
+		var compact bytes.Buffer
+		if err := json.Compact(&compact, b); err != nil {
+			t.Fatal(err)
+		}
+		mux.HandleFunc(path, func(w http.ResponseWriter, _ *http.Request) {
+			if fx.compact {
+				w.Write(compact.Bytes())
+				return
+			}
+			w.Write(b)
+		})
 		ch := ch
 		mux.HandleFunc("/archive/"+ch+"/", func(w http.ResponseWriter, _ *http.Request) {
 			a := archives[ch]
@@ -155,6 +198,21 @@ func archive(t *testing.T, body string) []byte {
 func runScript(t *testing.T, fx *fixture, dir string, args ...string) (string, error) {
 	t.Helper()
 	cmd := exec.Command("sh", append([]string{script, "--dir", dir}, args...)...)
+	cmd.Env = append(os.Environ(), "RHIZA_INSTALL_BASE_URL="+fx.srv.URL, "HOME="+t.TempDir())
+	out, err := cmd.CombinedOutput()
+	return string(out), err
+}
+
+// pipeScript runs the script as curl | sh -s -- args would: on stdin.
+func pipeScript(t *testing.T, fx *fixture, args ...string) (string, error) {
+	t.Helper()
+	f, err := os.Open(script)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	cmd := exec.Command("sh", append([]string{"-s", "--"}, args...)...)
+	cmd.Stdin = f
 	cmd.Env = append(os.Environ(), "RHIZA_INSTALL_BASE_URL="+fx.srv.URL, "HOME="+t.TempDir())
 	out, err := cmd.CombinedOutput()
 	return string(out), err
