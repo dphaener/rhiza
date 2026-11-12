@@ -20,6 +20,7 @@ func ciFlakeCounts(rec CIStability, window int) map[string]int {
 	}
 	counts := map[string]int{}
 	for _, r := range runs {
+		r = r.normalized()
 		for _, f := range r.Flakes {
 			counts[f]++
 		}

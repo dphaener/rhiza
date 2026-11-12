@@ -48,7 +48,42 @@ func TestShipCheckStabilityRecord(t *testing.T) {
 		g.answers[shipPRView] = openPR(greenRollup)
 		shipCheck(t, f, `{}`)
 		runs := stabilityRuns(t, f)
-		if len(runs) != 1 || runs[0].Result != ciGreen || !slices.Equal(runs[0].Flakes, []string{"test / Run"}) {
+		if len(runs) != 1 || runs[0].Result != ciGreen || !slices.Equal(runs[0].Flakes, []string{"TestGarden", "TestPond"}) || len(runs[0].Infra) != 0 {
+			t.Errorf("runs = %+v", runs)
+		}
+	})
+
+	// Each case: a failed log, rerun green: the flakes and infra recorded.
+	for _, c := range []struct {
+		name, log     string
+		flakes, infra []string
+	}{
+		{"subtests by full name", "test\tRun\t--- FAIL: TestFoo (0.1s)\ntest\tRun\t--- FAIL: TestScripts (1s)\ntest\tRun\t    --- FAIL: TestScripts/bar (1s)\n", []string{"TestFoo", "TestScripts/bar"}, nil},
+		{"unknown step", "scripts (4/4)\tUNKNOWN STEP\t--- FAIL\n", nil, []string{"scripts (4/4) / UNKNOWN STEP"}},
+		{"no job or step", "FAIL\n", nil, []string{"CI run 42"}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			f, g, _ := shipFixture(t)
+			g.answers[shipPRView] = openPR(rerunRollup)
+			g.answers["run rerun 42 --failed"] = ""
+			g.answers[logCall] = c.log
+			shipCheck(t, f, `{"settled":true}`)
+			g.answers[shipPRView] = openPR(greenRollup)
+			shipCheck(t, f, `{}`)
+			runs := stabilityRuns(t, f)
+			if len(runs) != 1 || runs[0].Result != ciGreen || !slices.Equal(runs[0].Flakes, c.flakes) || !slices.Equal(runs[0].Infra, c.infra) {
+				t.Errorf("runs = %+v", runs)
+			}
+		})
+	}
+
+	t.Run("old record reads job / step flakes as infra", func(t *testing.T) {
+		f, _, _ := shipFixture(t)
+		if err := writeAtomic(ciStabilityPath(f.common), []byte(`{"runs":[{"head":"h","result":"green","time":"x","flakes":["test / Run","CI run 9","TestA"]}]}`)); err != nil {
+			t.Fatal(err)
+		}
+		runs := stabilityRuns(t, f)
+		if len(runs) != 1 || !slices.Equal(runs[0].Flakes, []string{"TestA"}) || !slices.Equal(runs[0].Infra, []string{"test / Run", "CI run 9"}) {
 			t.Errorf("runs = %+v", runs)
 		}
 	})
@@ -140,7 +175,7 @@ func TestCIStability(t *testing.T) {
 		{"red main cleared by later green main", []CIRun{{Main: true, Result: ciRed}, {Main: true, Result: ciGreen}}, 20, false},
 		{"red main outlives the window", append([]CIRun{{Main: true, Result: ciRed}}, clean(30)...), 20, true},
 		{"red PR head is not main", []CIRun{{Result: ciRed}}, 20, false},
-		{"identified job / step flake", []CIRun{{Result: ciGreen, Flakes: []string{"scripts (4/4) / Run scripts"}}}, 20, true},
+		{"job / step flake reads as infra", []CIRun{{Result: ciGreen, Flakes: []string{"scripts (4/4) / Run scripts"}}}, 20, false},
 		{"unidentified flakes only", []CIRun{{Result: ciGreen, Flakes: []string{"ci / UNKNOWN STEP"}}, {Result: ciGreen, Flakes: []string{"CI run 123"}}}, 20, false},
 		{"identified beside unidentified", []CIRun{{Result: ciGreen, Flakes: []string{"ci / UNKNOWN STEP", "TestPond"}}}, 20, true},
 	}

@@ -38,14 +38,14 @@ func TestHealthCIStability(t *testing.T) {
 			t.Errorf("gate warning with a gate set: %+v", p)
 		}
 	})
-	t.Run("unidentified flakes are stable but still listed", func(t *testing.T) {
+	t.Run("infra failures are stable and not listed as flakes", func(t *testing.T) {
 		p := ciHealth(t, "", `{"runs":[
 {"head":"a","result":"green","time":"x","flakes":["ci / UNKNOWN STEP"]},
 {"head":"b","result":"green","time":"x","flakes":["ci / UNKNOWN STEP","CI run 123"]}]}`)
 		if p.State != HealthOK || !strings.HasPrefix(p.Summary, "stable: ignored unidentified flake") || p.Next != "" || strings.Contains(p.Summary, "gate") {
 			t.Fatalf("got %+v", p)
 		}
-		if len(p.Detail) != 2 || !strings.Contains(p.Detail[0], "CI run 123: 1 flake ") || !strings.Contains(p.Detail[1], "ci / UNKNOWN STEP: 2 flakes ") {
+		if len(p.Detail) != 0 {
 			t.Errorf("detail %q", p.Detail)
 		}
 	})

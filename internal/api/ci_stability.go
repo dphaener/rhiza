@@ -38,10 +38,39 @@ type CIRun struct {
 	Main   bool   `json:"main,omitempty" desc:"True for main's result (the merge commit), false for a PR head"`
 	Result string `json:"result" desc:"green or red"`
 	Time   string `json:"time" desc:"When the run was recorded, RFC 3339"`
-	// Flakes name where the head's first attempt failed ('job / step', or
-	// 'CI run <id>' for a log that names neither) before a rerun of the
-	// same head passed: set only on a green result that followed a rerun.
-	Flakes []string `json:"flakes,omitempty" desc:"Where the head failed ('job / step') before a rerun of the same head passed"`
+	// Flakes name the tests the head's first attempt failed (full names,
+	// subtests as 'TestScripts/bar') before a rerun of the same head
+	// passed: set only on a green result that followed a rerun.
+	Flakes []string `json:"flakes,omitempty" desc:"The tests that failed before a rerun of the same head passed"`
+	// Infra names the failures that name no test ('job / step', 'UNKNOWN
+	// STEP', 'CI run <id>') before such a rerun passed. They are kept
+	// apart from flakes: they make CI neither unstable nor a bug.
+	Infra []string `json:"infra,omitempty" desc:"Failures that named no test ('job / step', 'CI run <id>') before a rerun of the same head passed"`
+}
+
+// infraEntry reports whether a recorded flake names no test: a 'job /
+// step' (UNKNOWN STEP included) or 'CI run <id>'.
+func infraEntry(name string) bool {
+	return strings.HasPrefix(name, "CI run ") || strings.Contains(name, " / ")
+}
+
+// normalized reads an entry recorded before infra failures were kept
+// apart: flakes holding only 'job / step' or 'CI run' names are infra.
+func (r CIRun) normalized() CIRun {
+	if !slices.ContainsFunc(r.Flakes, infraEntry) {
+		return r
+	}
+	var flakes, infra []string
+	infra = slices.Clone(r.Infra)
+	for _, f := range r.Flakes {
+		if !infraEntry(f) {
+			flakes = append(flakes, f)
+		} else if !slices.Contains(infra, f) {
+			infra = append(infra, f)
+		}
+	}
+	r.Flakes, r.Infra = flakes, infra
+	return r
 }
 
 // CIStability is the record, oldest entry first.
@@ -65,6 +94,9 @@ func readCIStability(path string) (CIStability, error) {
 	}
 	if err := json.Unmarshal(b, &rec); err != nil {
 		return rec, Errorf("CI stability record %s: %v", path, err)
+	}
+	for i, r := range rec.Runs {
+		rec.Runs[i] = r.normalized()
 	}
 	return rec, nil
 }
@@ -111,6 +143,8 @@ func recordSettledCI(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckRespons
 		run.Result = ciGreen
 		if st.RerunHead == resp.Commit {
 			run.Flakes = slices.Clone(st.RerunTests)
+			run.Infra = slices.Clone(st.RerunInfra)
+			run = run.normalized()
 		}
 	}
 	return recordCIRun(ctx, t, run)
@@ -122,17 +156,9 @@ type CIVerdict struct {
 	Reason   string `json:"reason,omitempty" desc:"Why CI is unstable; when stable, the unidentified flakes it ignored, if any"`
 }
 
-// unidentifiedFlake reports whether flake names no test and no known step:
-// a 'job / UNKNOWN STEP' read from a log gh could not place, or 'CI run
-// <id>' for a log that names neither. Such a flake stays in the record but
-// does not make CI unstable.
-func unidentifiedFlake(flake string) bool {
-	return strings.HasPrefix(flake, "CI run ") || strings.HasSuffix(flake, "UNKNOWN STEP")
-}
-
 // ciVerdict judges rec: CI is unstable while the last window runs hold an
-// identified flake, or while main's latest result is red. Unidentified
-// flakes are ignored, and a stable verdict's reason names them. window
+// identified flake, or while main's latest result is red. Infra
+// failures are ignored, and a stable verdict's reason names them. window
 // below 1 counts as 1.
 func ciVerdict(rec CIStability, window int) CIVerdict {
 	window = max(window, 1)
@@ -142,16 +168,14 @@ func ciVerdict(rec CIStability, window int) CIVerdict {
 	}
 	var ignored []string
 	for _, r := range runs {
-		var known []string
-		for _, f := range r.Flakes {
-			if !unidentifiedFlake(f) {
-				known = append(known, f)
-			} else if !slices.Contains(ignored, f) {
+		r = r.normalized()
+		if len(r.Flakes) > 0 {
+			return CIVerdict{Unstable: true, Reason: "flake in the last " + strconv.Itoa(window) + " CI runs: " + strings.Join(r.Flakes, ", ")}
+		}
+		for _, f := range r.Infra {
+			if !slices.Contains(ignored, f) {
 				ignored = append(ignored, f)
 			}
-		}
-		if len(known) > 0 {
-			return CIVerdict{Unstable: true, Reason: "flake in the last " + strconv.Itoa(window) + " CI runs: " + strings.Join(known, ", ")}
 		}
 	}
 	for i := len(rec.Runs) - 1; i >= 0; i-- {
