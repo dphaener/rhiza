@@ -13,6 +13,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
 
@@ -80,6 +81,19 @@ func runSessionDone(ctx *Ctx, req any) (any, error) {
 	}
 	if rec.Status.SaidDone() {
 		return SessionDoneResponse{Session: rec.ID, At: rfc3339(rec.Status.Done.At), Already: true, DryRun: ctx.DryRun}, nil
+	}
+	if isPlanReviewer(rec) {
+		common, cerr := gitCommonDir(ctx)
+		if cerr != nil {
+			return nil, cerr
+		}
+		if j, err := run.NewStore(run.Dir(common)).Read(rec.Run); err == nil {
+			if st := j.State(); !st.Ended && st.Current == rec.Step {
+				if msg := reviewRoundMissing(st); msg != "" {
+					return nil, Conflictf("session %s cannot say done: %s", rec.ID, msg).WithNext("rhiza run findings")
+				}
+			}
+		}
 	}
 	mark := session.Report{State: session.StateDone, At: ctx.Now().UTC()}
 	if ctx.DryRun {

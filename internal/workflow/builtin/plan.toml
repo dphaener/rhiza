@@ -24,7 +24,9 @@ on.pass = "review"
 [step.review]
 kind = "agent"
 prompt = "Review the plan of change set {change} as the reviewer: follow `rhiza guide plan-review`, then run `rhiza session done`."
-until = "true"
+# The visit must have journaled a round (empty for a clean review): else
+# review-check would judge the previous round again.
+until = "rhiza run round-recorded"
 until_when = "done"
 max_visits = 3
 on.pass = "critic"

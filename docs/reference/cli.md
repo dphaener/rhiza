@@ -99,6 +99,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza run request-changes`](#rhiza-run-request-changes)
 - [`rhiza run resume`](#rhiza-run-resume)
 - [`rhiza run review-check`](#rhiza-run-review-check)
+- [`rhiza run round-recorded`](#rhiza-run-round-recorded)
 - [`rhiza run send-back`](#rhiza-run-send-back)
 - [`rhiza run start`](#rhiza-run-start)
 - [`rhiza run status`](#rhiza-run-status)
@@ -1736,6 +1737,19 @@ Output (`--json` fields):
 - `passed` (boolean): True: the review may go on to the gate
 - `questions` (array of object): From round 3, the question nodes left for the confirmed findings, in order
 - `round` (integer): The latest review round, from 1
+- `run` (string): The run's full ID
+
+## rhiza run round-recorded
+
+Check that the current visit of the plan review step of the run RHIZA_RUN names journaled a findings round (empty for a clean review); fails naming rhiza run findings if not.
+
+```
+rhiza run round-recorded
+```
+
+Output (`--json` fields):
+
+- `round` (integer): The latest plan review round's number, journaled in this visit
 - `run` (string): The run's full ID
 
 ## rhiza run send-back

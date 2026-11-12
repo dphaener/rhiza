@@ -15786,6 +15786,35 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "run.round-recorded",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "round": {
+            "description": "The latest plan review round's number, journaled in this visit",
+            "type": "integer"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "round",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Check that the current visit of the plan review step of the run RHIZA_RUN names journaled a findings round (empty for a clean review); fails naming rhiza run findings if not",
+      "write": false
+    },
+    {
       "name": "run.send-back",
       "request": {
         "additionalProperties": false,

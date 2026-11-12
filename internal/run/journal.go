@@ -1150,8 +1150,11 @@ type State struct {
 	RetryBase map[string]int
 	// retryNext is the step the last retried entry reopened the run at,
 	// until its next entered entry marks that visit as the retry.
-	retryNext  string
-	retryVisit map[string]int
+	retryNext string
+	// roundsAtEntry is how many plan review rounds the journal had when
+	// the current step was last entered.
+	roundsAtEntry int
+	retryVisit    map[string]int
 	// Messages are the message entries in journal order. A message changes
 	// nothing else in the fold.
 	Messages []Message
@@ -1402,6 +1405,7 @@ func (j Journal) State() State {
 		case TypeEntered:
 			st.Visits[e.Step]++
 			st.Current = e.Step
+			st.roundsAtEntry = len(st.Rounds)
 			st.CurrentVisit = e.Visit
 			if st.CurrentVisit == 0 {
 				st.CurrentVisit = st.Visits[e.Step]
@@ -1667,6 +1671,10 @@ func (st *State) arbitrated(e Entry) {
 		Step: e.Step, Question: e.Question, Outcome: e.Outcome, Detail: e.Detail, Decision: e.Decision, At: e.At,
 	})
 }
+
+// VisitRound reports whether a plan review round was journaled since the
+// current step's visit began: a round from an earlier visit does not count.
+func (st State) VisitRound() bool { return len(st.Rounds) > st.roundsAtEntry }
 
 // LatestRound is the run's latest plan review round, if it has one.
 func (st State) LatestRound() (Round, bool) {
