@@ -1,0 +1,40 @@
+{
+  "actor": "01M7612VGXSJ875PWB9BJ8MX5X",
+  "after": [
+    "01M761KENGWRYB0JZBJPMBAVSV"
+  ],
+  "at": "2026-11-11T20:00:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at b896e803: read the diff (inboxMachineHold/machineHoldItems in internal/api/inbox.go gate on healthLoadWarnAfter=30m from daemon state machine_hold, map memory-low reason to memory-low else load-high, detail names the reading, the limit and 'held for'; machine-wide, no tab to open; inbox app titles 'Machine load high'/'Memory low'). Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(inbox-load-hold|describe-golden)$': PASS; inbox-load-hold.txtar shows no item for a load hold since 29m, exactly one load-high item with '...over the limit of 3.00: held for 31m0s' at 31m, none for memory hold at 29m, one memory-low item at 31m, and items [] once a later poll's state has no hold. go test -trimpath ./internal/tui/inboxapp/...: ok (TestMachineHoldItemsRender renders both rows). TestScripts/inbox* pass; go test -trimpath ./internal/api -run 'Inbox|Notice|Machine|Hold' -v: all 17 tests PASS (incl. TestInboxNoticeNamesNoHandleOrID with load-high/memory-low cases); go vet and gofmt clean. The full internal/api package hit the 10m timeout on a loaded shared host in TestReadBudget (a timing budget that waits for a quiet host), unrelated to this diff."
+        },
+        "handle": "inbox-load-memory-hold-verified",
+        "id": "01M7635725YRD18NK96H7QC26J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7635725YRD18NK96EB0Z7Y2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7635725YRD18NK96EB0Z7Y2",
+        "id": "01M763573SV78S7VNAGQM4R2EF",
+        "link": "01M763573SV78S7VNAGM7BZ4D2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75TJ8FW01MJMA1HKD3TGNN0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75T742VGKA5XMRRXV4W6ZKP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M763575GWJ2MR6QCKXWD15MQ",
+  "type": "ops",
+  "v": 1
+}

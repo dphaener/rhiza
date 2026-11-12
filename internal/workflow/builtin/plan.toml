@@ -23,19 +23,30 @@ on.pass = "review"
 # check goes to the reviser and back to a fresh review.
 [step.review]
 kind = "agent"
-prompt = "Review the plan of change set {change} as the reviewer: follow `rhiza guide plan-review`, then run `rhiza session done`."
-until = "true"
+prompt = "Review the plan of change set {change} as the reviewer: follow `rhiza guide plan-review`. Run `rhiza session done` as a separate command, only once `rhiza run findings` succeeded, never chained after it with `;`."
+# The visit must have journaled a round (empty for a clean review): else
+# review-check would judge the previous round again.
+until = "rhiza run round-recorded"
 until_when = "done"
 max_visits = 3
 on.pass = "critic"
 
 [step.critic]
 kind = "agent"
-prompt = "Judge the latest review round of the plan of change set {change} as the critic: follow `rhiza guide plan-review`, then run `rhiza session done`."
+prompt = "Judge the latest review round of the plan of change set {change} as the critic: follow `rhiza guide plan-review`. Run `rhiza session done` as a separate command, only once `rhiza run verdict` succeeded, never chained after it with `;`."
 until = "true"
 until_when = "done"
 max_visits = 3
+on.pass = "fresh"
+
+# A round journaled before the latest revise is stale: back to a fresh
+# review, never to revise, so check judges only a fresh round.
+[step.fresh]
+kind = "command"
+run = "rhiza run review-check --fresh"
+max_visits = 3
 on.pass = "check"
+on.fail = "review"
 
 [step.check]
 kind = "command"
@@ -46,7 +57,7 @@ on.fail = "revise"
 
 [step.revise]
 kind = "agent"
-prompt = "Fix the confirmed findings of the latest review round of the plan of change set {change} as the reviser: follow `rhiza guide plan-review`, then run `rhiza session done`."
+prompt = "Fix the confirmed findings of the latest review round of the plan of change set {change} as the reviser: follow `rhiza guide plan-review`. Run `rhiza session done` as a separate command, only once your `rhiza apply` succeeded, never chained after it with `;`."
 until = "true"
 until_when = "done"
 max_visits = 2
@@ -86,8 +97,27 @@ on.pass = "pr-green"
 [step.pr-green]
 kind = "command"
 run = "rhiza ship check --reruns 2"
-max_visits = 3
+max_visits = 4
 on.pass = "rebase"
+on.fail = "pr-green-infra"
+
+# A red with no failing test is a CI infra outage: wait for it to clear,
+# rerunning the failed jobs with backoff, then check the head again. A red
+# with a failing test fails the triage and ends the run. The wait's
+# timeout ends the run with the infra failure in its detail.
+[step.pr-green-infra]
+kind = "command"
+run = "rhiza ship check --infra"
+max_visits = 4
+on.pass = "pr-green-infra-wait"
+
+[step.pr-green-infra-wait]
+kind = "wait"
+until = "rhiza ship check --settled --changed --rerun-infra"
+timeout = "6h"
+interval = "30s"
+max_visits = 3
+on.pass = "pr-green"
 
 [step.rebase]
 kind = "command"
@@ -106,8 +136,27 @@ on.pass = "rebased-green"
 [step.rebased-green]
 kind = "command"
 run = "rhiza ship check --reruns 2"
-max_visits = 3
+max_visits = 4
 on.pass = "merge"
+on.fail = "rebased-green-infra"
+
+# A red with no failing test is a CI infra outage: wait for it to clear,
+# rerunning the failed jobs with backoff, then check the head again. A red
+# with a failing test fails the triage and ends the run. The wait's
+# timeout ends the run with the infra failure in its detail.
+[step.rebased-green-infra]
+kind = "command"
+run = "rhiza ship check --infra"
+max_visits = 4
+on.pass = "rebased-green-infra-wait"
+
+[step.rebased-green-infra-wait]
+kind = "wait"
+until = "rhiza ship check --settled --changed --rerun-infra"
+timeout = "6h"
+interval = "30s"
+max_visits = 3
+on.pass = "rebased-green"
 
 # Merges nothing when origin/main moved after the head's checks passed:
 # the step fails and the run rebases and waits on the new head again, up

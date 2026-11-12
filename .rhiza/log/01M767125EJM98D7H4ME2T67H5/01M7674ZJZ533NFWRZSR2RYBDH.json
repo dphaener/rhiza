@@ -1,0 +1,30 @@
+{
+  "actor": "01M7671NKWEPGABMGVKBQEDT46",
+  "after": [
+    "01M767125EJM98D7H4MEBBVFA9"
+  ],
+  "at": "2026-11-11T21:10:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "a77d1ef4-7b1c-471a-b80e-01a1cc70c1d1",
+          "statement": "Change set 01M767125EJM98D7H4ME2T67H5 (a queued milestone request waits for another milestone's whole plan run) serves no intent yet. Which intent should it serve? / Which live milestone plan runs should keep a queued milestone request waiting (daemonMilestoneWaits and daemonPlanRequests' milestoneLive)?"
+        },
+        "handle": "question-a77d1ef4-1",
+        "id": "01M7674WNAGWBEZR6T5MJD5179",
+        "key": null,
+        "kind": "question",
+        "node": "01M7674WNAGWBEZR6T5JR0H0M4",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M767125EJM98D7H4ME2T67H5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7674ZJZ533NFWRZSR2RYBDH",
+  "type": "ops",
+  "v": 1
+}

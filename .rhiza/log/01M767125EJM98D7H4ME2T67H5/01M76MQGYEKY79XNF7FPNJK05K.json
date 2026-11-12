@@ -1,0 +1,40 @@
+{
+  "actor": "01M76MNEV98TSQ6S9W178TPMZR",
+  "after": [
+    "01M767SFDCQT5DSGQK8VZS17NP"
+  ],
+  "at": "2026-11-12T01:07:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 2932c7a22: ran go test -trimpath ./internal/api -run MilestoneWaits -v (TestDaemonMilestoneWaitsOwnerSteps and TestDaemonMilestoneWaitsAfterEndedRun PASS) and go test -trimpath ./cmd/rhiza -run 'TestScripts/daemon-milestone-request' (PASS). The unit test covers the queued second milestone request waiting while the first's run is unjournaled within daemonStartGrace, live on another host at the interview step, and stopped waiting on the owner at the gate; and not waiting when live at milestone-check or review. The built-in plan-milestone has no signoff-kind step: its owner sign-off stop is the gate (rhiza run gate), which is what the test exercises; milestoneHoldsOwner treats KindSignoff steps the same way. The txtar adds the case: first run live at interview keeps the second queued; after it enters milestone-check, --max-runs 2 (full) starts nothing and --max-runs 5 starts the second's plan-milestone run exactly once. Diff read: daemonMilestoneWaits and daemonPlanRequests' milestoneLive both call the new milestoneHoldsOwner, so one rule applies, and the maxRuns cap is untouched."
+        },
+        "handle": "milestone-wait-owner-steps-verified",
+        "id": "01M76MQGXDEJ95ATR131ABAY4R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76MQGXDEJ95ATR12XW7EX5R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76MQGXDEJ95ATR12XW7EX5R",
+        "id": "01M76MQGXZYBFK2N80CDEEBSDJ",
+        "link": "01M76MQGXZYBFK2N80CAJ0SVW3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M767A0H2FFW8H8DY4N0DNY8Y",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M767125EJM98D7H4ME2T67H5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76MQGYEKY79XNF7FPNJK05K",
+  "type": "ops",
+  "v": 1
+}

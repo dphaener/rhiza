@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M76CYK08FP9AY3B40YK512BR"
+  ],
+  "at": "2026-11-11T22:57:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "957603bc31d27691f58e7746132ec2b4efad70b2",
+          "pr": "https://github.com/dphaener/rhiza/pull/448",
+          "result": "11 checks passed: lint SUCCESS, go-install SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #448 (https://github.com/dphaener/rhiza/pull/448) passed CI at 957603b",
+          "status": "verified"
+        },
+        "handle": "pr-448-fix-the-inbox-keeps-a-watchdog",
+        "id": "01M76D9GFMBB1JNA6TJXPAMQR1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76D9GFMBB1JNA6TJTXVGH8W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76D9GFMBB1JNA6TJTXVGH8W",
+        "id": "01M76D9GHD6AW1FVM5WNFCM1MZ",
+        "link": "01M76D9GHD6AW1FVM5WMYE1YHC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M75SBSK2CNYAQD72JT5MG1BZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M75S3B1YNJWFDGXCN2BEEACQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76D9GP6AE0BCXX8BTTFGJ2Y",
+  "type": "ops",
+  "v": 1
+}

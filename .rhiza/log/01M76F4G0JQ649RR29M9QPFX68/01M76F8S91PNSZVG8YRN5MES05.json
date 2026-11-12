@@ -1,0 +1,241 @@
+{
+  "actor": "01M76F54CBVHBNV0VNBYABHZQ0",
+  "after": [
+    "01M76F8C63V7BRBX2E014VVEHF"
+  ],
+  "at": "2026-11-11T23:32:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A plan review step passes only on a findings round journaled during its own visit, so a reviewer whose rhiza run findings failed cannot pass the step by saying done; rhiza session done from a plan reviewer refuses for the same reason, and the empty round stays the way a clean review is recorded.",
+          "wording": "the planner's reading of the bug request, in an autonomous plan-bug run with no owner"
+        },
+        "handle": "review-step-needs-a-round",
+        "id": "01M76F8RN1PJ3NW1X3432BYNVV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76F8RN0JCQ5MSKNFFNAN6EE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76F8RN0JCQ5MSKNFFNAN6EE",
+        "id": "01M76F8RNTFEVYYA3ATMDWME1H",
+        "link": "01M76F8RNTFEVYYA3ATHJE2PWY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F79565HYN8J26RM52EY8C",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "New tests in internal/run and/or internal/api, plus a testscript under cmd/rhiza/testdata/script: a plan run's review-step session that says done with no rhiza run findings since the visit began does not pass to the critic and session done exits non-zero naming run findings; after rhiza run findings records {\"findings\":[]} in the same visit, session done exits 0 and the step passes to the critic; a round journaled in an earlier visit does not count. Run: go test -trimpath ./internal/run/... ./internal/api/... -run <the new tests>, and go test -trimpath ./cmd/rhiza -run TestScripts/<the new script>.",
+          "statement": "In the plan workflows (plan and plan-milestone), the review step passes only when the reviewer's visit journaled a new findings round (empty for a clean review), and rhiza session done in a review-step session that has journaled no round since the visit began exits non-zero naming rhiza run findings, so the session stays open to record one."
+        },
+        "handle": "review-visit-records-round",
+        "id": "01M76F8RPF7AF6C8Y5YBZSW7FR",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M76F8RPF7AF6C8Y5Y9D11DRW",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M76F8RPF7AF6C8Y5Y9D11DRW",
+        "id": "01M76F8RQD5Y85VZZJX3W50EQF",
+        "link": "01M76F8RQD5Y85VZZJX15N5BM7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8RN0JCQ5MSKNFFNAN6EE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76F8RPF7AF6C8Y5Y9D11DRW",
+        "id": "01M76F8RR9NJCVG41C7S496847",
+        "link": "01M76F8RR9NJCVG41C7RSPJEXQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F79565HYN8J26RM52EY8C",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "rhiza run review-check judges only a round recorded after the run's latest revise visit began; an older latest round means the review never recorded one, so it refuses rather than report findings the reviser already fixed.",
+          "wording": "the planner's reading of the bug request, in an autonomous plan-bug run with no owner"
+        },
+        "handle": "stale-round-not-judged",
+        "id": "01M76F8RRSS5SZVA5NJCY0NFTY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76F8RRSS5SZVA5NJ9PCW70C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76F8RRSS5SZVA5NJ9PCW70C",
+        "id": "01M76F8RSVZMSDV592QA45CS37",
+        "link": "01M76F8RSVZMSDV592Q6QS4RTR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F79565HYN8J26RM52EY8C",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/api (run_review_test.go) with a journal holding round 2 with a confirmed finding, then a revise step visit and no later round: review-check exits non-zero, its message names round 2 as predating the revise, and it adds no question or asked entry, even when the round is 3; with a round 3 journaled after the revise visit it judges round 3 as before. Run: go test -trimpath ./internal/api -run <the new test>.",
+          "statement": "rhiza run review-check refuses to judge, exiting non-zero and writing nothing, when the run's latest findings round was journaled before its latest revise visit began, saying that round predates the revise and the review recorded no round since."
+        },
+        "handle": "review-check-refuses-stale-round",
+        "id": "01M76F8RTCWVC288HQ1CZF3KBS",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M76F8RTCWVC288HQ1BJSJ2PE",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M76F8RTCWVC288HQ1BJSJ2PE",
+        "id": "01M76F8RVCTJPETRPV1MCAA2G4",
+        "link": "01M76F8RVCTJPETRPV1KWY1EHT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8RRSS5SZVA5NJ9PCW70C",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76F8RTCWVC288HQ1BJSJ2PE",
+        "id": "01M76F8RWNQHFXTRT4PPS5BN9B",
+        "link": "01M76F8RWNQHFXTRT4PN77C52J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F79565HYN8J26RM52EY8C",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A plan review finding may target a link, not only a node, because an unreal-depends-on finding is about a depends-on link: rhiza run findings accepts a model link's ID or a change set's link ID as the target.",
+          "wording": "the planner's reading of the bug request, in an autonomous plan-bug run with no owner"
+        },
+        "handle": "link-findings-allowed",
+        "id": "01M76F8RXV5A2W5SG2V3X02X09",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76F8RXV5A2W5SG2V08AY1HB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76F8RXV5A2W5SG2V08AY1HB",
+        "id": "01M76F8RZ8Y9Z78E20MD0A0S7T",
+        "link": "01M76F8RZ8Y9Z78E20M932WHSR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F79565HYN8J26RM52EY8C",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/api (run_review_test.go) and the describe-golden testscript if a type changes: rhiza run findings with a finding whose node field is a depends-on link's ID between two change sets, and one naming a model link's ID, records the round; run status --json shows each with the link's type and ends; a verdict confirms one; a round-3 review-check adds a question naming the link with no blocks link. An ID that is neither a node nor a link still exits 2 with nothing written. Run: go test -trimpath ./internal/api -run <the new tests>, and go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden when regenerated.",
+          "statement": "rhiza run findings accepts a link ID (a model link, or a link between change sets such as depends-on) as a finding's target, journals the finding naming the link with its type and ends, and rhiza run status, rhiza run verdict and rhiza run review-check (whose round-3 question for a link finding names the link and links blocks to no node) handle it like a node finding."
+        },
+        "handle": "findings-name-links",
+        "id": "01M76F8S09V3FZJC4T6TFGNAQ6",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M76F8S09V3FZJC4T6RJHT5PY",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M76F8S09V3FZJC4T6RJHT5PY",
+        "id": "01M76F8S1FKFPKAAYVM4W2QXXQ",
+        "link": "01M76F8S1FKFPKAAYVM3GD01CN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8RXV5A2W5SG2V08AY1HB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76F8S09V3FZJC4T6RJHT5PY",
+        "id": "01M76F8S3YV1JJNS2FF9Y8ZQXH",
+        "link": "01M76F8S3YV1JJNS2FF77MHX3A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F79565HYN8J26RM52EY8C",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The plan-review guide and the review, critic and revise step prompts tell the agent to run rhiza session done as its own command only after the recording command succeeded, never chained with ';' after a command that can fail.",
+          "wording": "the planner's reading of the bug request, in an autonomous plan-bug run with no owner"
+        },
+        "handle": "session-done-not-chained",
+        "id": "01M76F8S5WCAD56KK944JCA0B6",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76F8S5WCAD56KK944DNCGXC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76F8S5WCAD56KK944DNCGXC",
+        "id": "01M76F8S6F538NBJ05D99QJVR3",
+        "link": "01M76F8S6F538NBJ05D71CTRCX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F79565HYN8J26RM52EY8C",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests: internal/guide (plan_test.go) checks the plan-review topic says to run session done separately after the recording command succeeds and never to chain it with ';', staying within TopicCap; an internal/workflow builtin test checks the plan and plan-milestone review, critic and revise prompts carry the same instruction. Run: go test -trimpath ./internal/guide/... ./internal/workflow/... -run <the new tests>.",
+          "statement": "rhiza guide plan-review and the review, critic and revise step prompts of the built-in plan and plan-milestone workflows tell the agent to run rhiza session done as a separate command only once rhiza run findings, rhiza run verdict or the reviser's apply succeeded, never chained after one with ';'."
+        },
+        "handle": "plan-review-done-unchained",
+        "id": "01M76F8S79W69F3VS3W0W3BDFF",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M76F8S79W69F3VS3VY9VTKYX",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M76F8S79W69F3VS3VY9VTKYX",
+        "id": "01M76F8S7Y44T64SS2F947YGZH",
+        "link": "01M76F8S7Y44T64SS2F58PZ7Y5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8S5WCAD56KK944DNCGXC",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76F8S79W69F3VS3VY9VTKYX",
+        "id": "01M76F8S8JCGF9VEWTEYCYA3T7",
+        "link": "01M76F8S8JCGF9VEWTEYB90CG9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F79565HYN8J26RM52EY8C",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M76F4G0JQ649RR29M9QPFX68",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76F8S91PNSZVG8YRN5MES05",
+  "type": "ops",
+  "v": 1
+}

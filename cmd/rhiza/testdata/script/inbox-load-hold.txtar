@@ -1,0 +1,45 @@
+# The inbox lists one load-high or memory-low item while the daemon's last
+# poll records a hold that has lasted 30 minutes or more, none for a younger
+# hold, and none once a later poll records it released. The daemon state is
+# a fixture.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .git/rhiza
+
+exec sh -c 's=$(date -u -d "$RHIZA_TEST_NOW - 29 minutes" +%Y-%m-%dT%H:%M:%SZ); printf "{\"machine_hold\":{\"since\":\"%s\",\"reason\":\"load-high\",\"detail\":\"1-minute load 4.00 per core, over the limit of 3.00\"}}" $s > .git/rhiza/daemon.state.json'
+exec rhiza inbox --json
+! stdout 'load-high'
+stdout '"items": \[\]'
+
+exec sh -c 's=$(date -u -d "$RHIZA_TEST_NOW - 31 minutes" +%Y-%m-%dT%H:%M:%SZ); printf "{\"machine_hold\":{\"since\":\"%s\",\"reason\":\"load-high\",\"detail\":\"1-minute load 4.00 per core, over the limit of 3.00\"}}" $s > .git/rhiza/daemon.state.json'
+exec rhiza inbox --json
+stdout -count=1 '"kind": "load-high"'
+stdout '1-minute load 4.00 per core, over the limit of 3.00: held for 31m0s'
+exec rhiza inbox
+stdout -count=1 '^[0-9a-f]+ load-high$'
+exec sh -c 'rhiza inbox | head -1 | cut -d" " -f1 > ../id'
+! exec sh -c 'rhiza inbox open $(cat ../id)'
+stderr 'no tab to open'
+
+exec sh -c 's=$(date -u -d "$RHIZA_TEST_NOW - 29 minutes" +%Y-%m-%dT%H:%M:%SZ); printf "{\"machine_hold\":{\"since\":\"%s\",\"reason\":\"memory-low\",\"detail\":\"1.0 GiB available, under the minimum of 2.0 GiB\"}}" $s > .git/rhiza/daemon.state.json'
+exec rhiza inbox --json
+! stdout 'memory-low'
+
+exec sh -c 's=$(date -u -d "$RHIZA_TEST_NOW - 31 minutes" +%Y-%m-%dT%H:%M:%SZ); printf "{\"machine_hold\":{\"since\":\"%s\",\"reason\":\"memory-low\",\"detail\":\"1.0 GiB available, under the minimum of 2.0 GiB\"}}" $s > .git/rhiza/daemon.state.json'
+exec rhiza inbox --json
+stdout -count=1 '"kind": "memory-low"'
+stdout '1.0 GiB available, under the minimum of 2.0 GiB: held for 31m0s'
+! stdout 'load-high'
+
+cp ../ok.json .git/rhiza/daemon.state.json
+exec rhiza inbox --json
+! stdout 'memory-low'
+stdout '"items": \[\]'
+
+-- ok.json --
+{"process":{"host":"h","pid":1,"started":"2030-01-01T00:00:00Z"},"last_poll":"2030-01-01T00:10:00Z","max_runs":2,"autonomous":false,"runs":[]}

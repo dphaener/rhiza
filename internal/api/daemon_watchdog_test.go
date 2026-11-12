@@ -393,3 +393,45 @@ func TestWatchdogCIReadsBounded(t *testing.T) {
 		t.Fatalf("red read %d times after the journal moved, want 2", reads["red"])
 	}
 }
+
+// TestWatchdogNestedStep: a stalled step three levels deep is named whole in
+// the watchdog's log and in the inbox hold it leaves.
+func TestWatchdogNestedStep(t *testing.T) {
+	const nested = "ship-change/build/build"
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	sessions := session.NewStore(t.TempDir())
+	rec := session.Record{ID: "s1", Autonomous: false}
+	rec.Status.Hook = &session.Report{State: session.StateWorking, At: t0}
+	if err := sessions.Write(rec); err != nil {
+		t.Fatal(err)
+	}
+	j := run.Journal{ID: "N", Entries: []run.Entry{
+		{Type: run.TypeStarted, At: t0, Started: &run.Started{}},
+		{Type: run.TypeEntered, At: t0, Step: nested, Visit: 1},
+		{Type: run.TypeSession, At: t0, Step: nested, Session: "s1"},
+	}}
+	var log []string
+	d := watchdogDeps{
+		sessions: sessions,
+		step:     func(run.State) workflow.Step { return workflow.Step{Kind: "agent"} },
+		send:     func(string, string) error { return nil },
+		stop:     func(run.State, []string) error { return nil },
+		resume:   func(string) error { return nil },
+		log:      func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
+	}
+	pol := WatchdogPolicy{Enabled: true, AgentNudge: 20 * time.Minute, AgentRetry: 40 * time.Minute, CommandLimit: 30 * time.Minute, WaitLimit: 90 * time.Minute, RetryBudget: 1, AutonomousOnly: true}
+	_, holds, err := watchdogStalled(pol, []run.Journal{j}, t0.Add(50*time.Minute), nil, d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(holds) != 1 || holds[0].Step != nested {
+		t.Fatalf("holds %+v, want one at %s", holds, nested)
+	}
+	if !strings.Contains(holds[0].Detail, "step "+nested+" ") {
+		t.Errorf("hold detail %q does not name %s", holds[0].Detail, nested)
+	}
+	items := watchdogHoldItems(holds)
+	if len(items) != 1 || items[0].Step != nested {
+		t.Errorf("inbox items %+v, want step %s", items, nested)
+	}
+}

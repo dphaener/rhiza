@@ -1,0 +1,15 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [],
+  "at": "2026-11-11T20:14:50Z",
+  "body": {
+    "intent": "Auto-update release channels: rhiza.daemon.autoUpdate gains latest (the newest published incremental build between releases) and release (the newest official release), following the builds the release channels milestone publishes.",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M763ZDJBN7QKR3AAST5FTR6A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M763ZDJBN7QKR3AASXJHNWWN",
+  "type": "open",
+  "v": 1
+}

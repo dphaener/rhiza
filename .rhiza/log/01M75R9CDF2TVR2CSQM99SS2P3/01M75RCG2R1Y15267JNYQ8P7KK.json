@@ -1,0 +1,13 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M75R9CDGA16EM0ARJWJ6039Y"
+  ],
+  "at": "2026-11-11T16:52:17Z",
+  "body": {},
+  "change_set": "01M75R9CDF2TVR2CSQM99SS2P3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M75RCG2R1Y15267JNYQ8P7KK",
+  "type": "withdraw",
+  "v": 1
+}

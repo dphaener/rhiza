@@ -185,6 +185,16 @@ self-check: ## Run rhiza check on this repo with this commit's build
 		&& $$dir/$(BINARY) check; \
 	status=$$?; rm -rf $$dir; exit $$status
 
+.PHONY: docs
+docs: ## Regenerate docs/reference with this commit's build
+# The project's generate command (rhiza.ship.generate): build and run rhiza
+# docs the way self-check runs check, so the reference always comes from the
+# branch's own code and never from a stale binary on $$PATH.
+	@dir=$$(mktemp -d); \
+	go build -ldflags "$(LDFLAGS)" -o $$dir/$(BINARY) ./cmd/rhiza \
+		&& $$dir/$(BINARY) docs; \
+	status=$$?; rm -rf $$dir; exit $$status
+
 .PHONY: clean
 clean: ## Remove the locally built binary
 	rm -f $(BINARY)

@@ -149,3 +149,13 @@ func TestPlanAcceptanceScoped(t *testing.T) {
 		}
 	}
 }
+
+func TestPlanReviewDoneUnchained(t *testing.T) {
+	checkPhrases(t, "plan-review", map[string][]string{
+		"plan-review-guide": {"as its own\ncommand only once the recording command", "has succeeded", "Never chain it after one with `;`"},
+	})
+	tx, _ := Lookup("plan-review")
+	if n := Tokens(tx.Body); n > TopicCap {
+		t.Errorf("plan-review costs %d tokens, cap %d", n, TopicCap)
+	}
+}

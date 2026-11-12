@@ -1,0 +1,262 @@
+# The plan review step passes only once its visit journaled a findings
+# round (empty for a clean review): its until is rhiza run round-recorded,
+# and rhiza session done in its session is refused (exit 3, naming rhiza
+# run findings) until the visit has one. A round of an earlier visit does
+# not count.
+#
+# Run 1: the reviewer records no round and exits 0. Its done was refused,
+# the until fails, and the run fails at review, never reaching the critic.
+# Run 2: each reviewer first tries done with no round (refused, the run
+# stays at review), then records one: visit 1 a finding, visit 2 (after
+# the reviser, with visit 1's round behind it) an empty round. Each then
+# says done (exit 0) and the step passes to the critic.
+#
+# Nothing here reaches Rex or Claude Code: the fakes are those of
+# plan-workflow.txtar.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+mkdir $HOME/.claude/projects/p
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec git push -q -u origin main
+
+# Run 1: a lazy reviewer.
+exec rhiza change new 'Plan lazy' --kind record --title 'Plan lazy' --json
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rec'
+exec git add -A
+exec git commit -qm 'Plan lazy'
+exec git push -q origin main
+exec touch $WORK/lazy
+exec sh -c 'rhiza run start --foreground $(cat $WORK/rec) --workflow plan --permission-mode manual > $WORK/out 2> $WORK/err; echo exit=$?'
+! stdout '^exit=0$'
+exec cat $WORK/out
+stdout '^Run ([0-9A-Z]{26}) failed'
+exec sh -c 'sed -n "s/^Run \([0-9A-Z]*\) .*/\1/p" $WORK/out > $WORK/run1'
+exec sh -c 'rhiza run status $(cat $WORK/run1)'
+stdout '^- review \(visit 1\): fail'
+! stdout 'critic'
+exec cat $WORK/early.log
+stdout '^review 1: round-recorded exit=3$'
+stdout '^review 1: done exit=3$'
+stdout '^review 1: still at review$'
+exec cat $WORK/done.1
+stdout 'rhiza run findings'
+exec cat $WORK/check.1
+stdout 'rhiza run findings'
+exec cat $WORK/prompts.log
+! stdout 'as the critic'
+rm $WORK/lazy
+rm $WORK/early.log
+rm $WORK/reviews
+rm $WORK/prompts.log
+
+# Run 2: reviewers that try done first, then record a round.
+cd $WORK/repo
+exec rhiza change new 'Plan reports' --kind record --title 'Plan reports' --json
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rec'
+exec git add -A
+exec git commit -qm 'Plan reports'
+exec git push -q origin main
+exec sh -c 'rhiza run start --foreground $(cat $WORK/rec) --workflow plan --permission-mode manual > $WORK/out 2> $WORK/err; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/out
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exec sh -c 'sed -n "s/^Run \([0-9A-Z]*\) .*/\1/p" $WORK/out > $WORK/run2'
+
+# Each review visit refused done until it journaled its own round: visit
+# 2 had visit 1's round behind it, and it did not count.
+exec cat $WORK/early.log
+stdout -count=2 'round-recorded exit=3$'
+stdout '^review 1: done exit=3$'
+stdout '^review 2: done exit=3$'
+stdout -count=2 'still at review$'
+exec cat $WORK/done.2
+stdout 'rhiza run findings'
+exec cat $WORK/done.out
+! stdout 'rhiza run findings'
+
+# Once a round was journaled, done passed and the step went to the critic,
+# visit 2's round being empty.
+exec sh -c 'rhiza run status $(cat $WORK/run2)'
+stdout '^- review \(visit 1\): pass, then critic, '
+stdout '^- check \(visit 1\): fail, then revise: exit 1$'
+stdout '^- review \(visit 2\): pass, then critic, '
+stdout '^- check \(visit 2\): pass, then gate: exit 0$'
+exec cat $WORK/prompts.log
+stdout -count=2 'as the critic'
+exec sh -c 'rhiza run status $(cat $WORK/run2) --json'
+stdout '"round": 2'
+fold-ok
+
+-- source.json --
+{"title":"Planning interview","summary":"The owner planned the reports milestone.","quotes":[{"text":"Stream it, reports get huge","by":"owner"}]}
+-- record.json --
+{"writes":[
+  {"op":"add","kind":"intent","handle":"reports","fields":["statement=Users take their reports out of the product","milestone=1"]},
+  {"op":"add","kind":"decision","handle":"csv-streaming","fields":[
+    "statement=Stream CSV rows instead of building the file in memory",
+    "quote=Stream it, reports get huge"]},
+  {"op":"link","from":"csv-streaming","type":"derived-from","to":"plan-interview"}
+]}
+-- leaf.json --
+{"writes":[
+  {"op":"add","kind":"capability","handle":"export-csv","fields":["statement=Users export any report as CSV"]},
+  {"op":"link","from":"export-csv","type":"decided-by","to":"csv-streaming"}
+]}
+-- findings.json --
+{"findings":[{"node":"export-csv","kind":"missing-acceptance","reason":"export-csv has no acceptance check"}]}
+-- clean.json --
+{"findings":[]}
+-- verdict.json --
+{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"export-csv has no acceptance field"}]}
+-- fix.json --
+{"writes":[
+  {"op":"set","ref":"export-csv","fields":["acceptance=A test exports a 100k-row report with flat memory use"]}
+]}
+-- transcript.jsonl --
+{"type": "user", "message": {"role": "user", "content": "Stream it, reports get huge"}}
+-- bin/rex --
+#!/bin/sh
+case "$1 $2" in
+window\ close | block\ close)
+	echo "$*" >> "$WORK/rex.log"
+	exit 0
+	;;
+esac
+case "$1" in
+events | send | send-key)
+	echo "$*" >> "$WORK/rex.log"
+	exit 0
+	;;
+esac
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+i=0
+until [ -f "$WORK/ready" ]; do
+	i=$((i + 1))
+	if [ $i -gt 1600 ]; then
+		echo 'fake rex: the agent never got ready' >&2
+		exit 1
+	fi
+	sleep 0.025
+done
+rm -f "$WORK/ready"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+printf '%s\n' "$last" >> "$WORK/prompts.log"
+fail() {
+	echo "fake claude: $*" >> "$WORK/claude.err"
+	touch "$WORK/ready"
+	exit 1
+}
+has_acceptance() {
+	rhiza show export-csv --change "$(cat "$WORK/cs")" --json | grep -q '"acceptance"'
+}
+case "$last" in
+/rhiza-plan*)
+	rec=$RHIZA_CHANGE
+	cp "$WORK/transcript.jsonl" "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
+	rhiza source add plan-interview "$WORK/source.json" --raw-session "$RHIZA_SESSION" --json >> "$WORK/agent.out" || fail source
+	rhiza apply "$WORK/record.json" --json >> "$WORK/agent.out" || fail record
+	rhiza change new 'Export reports' --json > "$WORK/new.out" || fail change new
+	sed -n 's/.*"change_set": "\([0-9A-Z]*\)".*/\1/p' "$WORK/new.out" > "$WORK/cs"
+	rhiza link "$(cat "$WORK/cs")" serves reports --change "$rec" >> "$WORK/agent.out" || fail serves
+	rhiza land --json >> "$WORK/agent.out" || fail land
+	rhiza apply "$WORK/leaf.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail leaf
+	;;
+*'as the reviewer'*)
+	# Before any round: the check fails and done is refused, naming
+	# rhiza run findings, and the run stays at review.
+	n=$(($(cat "$WORK/reviews" 2>/dev/null || echo 0) + 1))
+	echo $n > "$WORK/reviews"
+	rhiza run round-recorded > "$WORK/check.$n" 2>&1
+	echo "review $n: round-recorded exit=$?" >> "$WORK/early.log"
+	rhiza session done > "$WORK/done.$n" 2>&1
+	echo "review $n: done exit=$?" >> "$WORK/early.log"
+	rhiza run status "$RHIZA_RUN" --json | grep -q '"current": "review"' && echo "review $n: still at review" >> "$WORK/early.log"
+	if [ -f "$WORK/lazy" ]; then
+		# Exits 0 with no round and never said done.
+		touch "$WORK/ready"
+		exit 0
+	fi
+	if has_acceptance; then
+		rhiza run findings "$WORK/clean.json" --json >> "$WORK/agent.out" || fail findings
+	else
+		rhiza run findings "$WORK/findings.json" --json >> "$WORK/agent.out" || fail findings
+	fi
+	;;
+*'as the critic'*)
+	if ! has_acceptance; then
+		rhiza run verdict "$WORK/verdict.json" --json >> "$WORK/agent.out" || fail verdict
+	fi
+	;;
+*'as the reviser'*)
+	rhiza apply "$WORK/fix.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail fix
+	;;
+*)
+	fail "unexpected prompt: $last"
+	;;
+esac
+rhiza session done >> "$WORK/done.out" || fail done
+touch "$WORK/ready"
+exit 0
+-- bin/gh --
+#!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ ! -f "$WORK/pr.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	if [ "$3" = 7 ]; then
+		printf '{"state":"MERGED","mergeCommit":{"oid":"%s"}}\n' "$(cat "$WORK/merged-head")"
+		exit 0
+	fi
+	head=$(git -C "$o" rev-parse --verify "refs/heads/$3")
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+"pr merge")
+	# Squash-free: main on origin takes the branch as it was checked.
+	b=$(git -C "$o" for-each-ref --format='%(refname:short)' 'refs/heads/cs/*')
+	git -C "$o" rev-parse "refs/heads/$b" > "$WORK/merged-head"
+	git -C "$o" update-ref refs/heads/main "refs/heads/$b"
+	touch "$WORK/pr.merged"
+	;;
+"pr create")
+	while [ $# -gt 0 ]; do
+		if [ "$1" = --body-file ]; then
+			cp "$2" "$WORK/pr-body.md"
+		fi
+		shift
+	done
+	touch "$WORK/pr.created"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

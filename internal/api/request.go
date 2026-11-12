@@ -290,7 +290,7 @@ func requestInfo(q daemon.Request, runs []run.Journal) RequestInfo {
 // and write of the queue holds its lock (daemon.UpdateRequests), the tab's
 // opening does not. With onlyKind milestone it starts only the oldest
 // queued milestone request, and none while another milestone request's run
-// is live or unjournaled: the owner's own interactive start, which takes the
+// holds the owner (milestoneHoldsOwner): the owner's own interactive start, which takes the
 // next free slot ahead of the other starts but, as they do, waits while
 // max runs run. Any other call leaves milestone requests to that one.
 // It returns the requests started.
@@ -328,7 +328,7 @@ func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, ma
 			case ok:
 				if q.Kind == daemon.KindMilestone {
 					for _, j := range runs {
-						if j.ID == q.Run && j.State().Liveness(host, nil) == run.LiveRunning {
+						if j.ID == q.Run && milestoneHoldsOwner(ctx, j, host) {
 							milestoneLive = true
 						}
 					}

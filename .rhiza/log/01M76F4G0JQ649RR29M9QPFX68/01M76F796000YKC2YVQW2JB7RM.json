@@ -1,0 +1,33 @@
+{
+  "actor": "01M76F54CBVHBNV0VNBYABHZQ0",
+  "after": [
+    "01M76F4G0JQ649RR29MB1YVWJ2"
+  ],
+  "at": "2026-11-11T23:31:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "7876b1804c1e2e43b2bceb61e55421373c1fc655a616e0bcca69760302f4de64",
+          "session": "d97fabfd-9ac2-42dd-bb6c-01a1ccf27f7d",
+          "summary": "Autonomous plan-bug run, no owner. The bug request (plan run 01M76583, 2026-11-11) names the failure: a round-3 reviewer's rhiza run findings was refused because a finding named a depends-on link's ID, the reviewer had chained rhiza session done with ';', so the review step passed with no round journaled; review-check then judged round 2 again and revise exceeded max_visits. The planner took the request's four-part fix as the plan, serving m4-runs-hold-up (runs finish without hand repair) as earlier run-repair bug fixes do: (1) the review step passes only when its visit journaled a new findings round, and session done refuses for a reviewer without one; (2) review-check refuses to judge a round that predates the latest revise; (3) run findings accepts a link as a finding's target; (4) the plan-review guide tells every role not to chain session done after a command that can fail. No owner words; no question was raised.",
+          "title": "Plan of the bug fix for unrecorded plan review rounds (autonomous plan-bug run)"
+        },
+        "handle": "plan-review-round-unrecorded-plan",
+        "id": "01M76F79565HYN8J26RPZ44JVX",
+        "key": null,
+        "kind": "source",
+        "node": "01M76F79565HYN8J26RM52EY8C",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76F4G0JQ649RR29M9QPFX68",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76F796000YKC2YVQW2JB7RM",
+  "type": "ops",
+  "v": 1
+}

@@ -36,6 +36,22 @@ The free disk space below which the daemon starts no run, such as 10G.
 - Default: `10G`
 - Flag: `rhiza daemon --min-free` overrides it for a run
 
+### `rhiza.daemon.maxLoad`
+
+The 1-minute load per core above which the daemon starts no run until the 5-minute load is back under it; 0 turns it off.
+
+- Type: number
+- Default: `3.0`
+- Flag: `rhiza daemon --max-load` overrides it for a run
+
+### `rhiza.daemon.minMemory`
+
+The available memory below which the daemon starts no run, such as 2G; 0 turns it off.
+
+- Type: size
+- Default: `2G`
+- Flag: `rhiza daemon --min-memory` overrides it for a run
+
 ### `rhiza.daemon.trimGoCache`
 
 Trim the Go build cache when disk space runs low.
@@ -211,6 +227,13 @@ How many of the latest settled CI runs are checked for flakes when judging CI st
 ### `rhiza.ship.localGate`
 
 The command ship-change runs in the run's worktree before every push while CI is unstable; unset means none.
+
+- Type: shell command
+- Default: unset
+
+### `rhiza.ship.generate`
+
+The command the render steps of build and review runs in the run's worktree to regenerate the project's checked-in generated files with the branch's own code; what it changes is committed with the render, and a failing command fails the step; unset means none.
 
 - Type: shell command
 - Default: unset

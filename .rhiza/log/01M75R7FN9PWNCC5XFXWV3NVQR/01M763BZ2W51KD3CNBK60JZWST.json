@@ -1,0 +1,72 @@
+{
+  "actor": "01M7639K0GQVMNPN86FPNT3ZAN",
+  "after": [
+    "01M761SSDJFC6CC9BP728G16R0"
+  ],
+  "at": "2026-11-11T20:04:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "rhiza workflow check ship-change is valid and describe shows rebase-merge-gate-failed's on.fail reaching the post-land infra triage and wait, passing to landed-green; a testscript (run-ship-infra-wait extended, or a new run-ship-landed-infra-wait with a fake gh) drives a landed ship-change run whose landed head's CI fails with no failing test into that wait, which reruns, and the run merges and closes out once a rerun is green; run with go test -trimpath ./internal/workflow/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/run-ship-(landed-)?infra-wait' only",
+          "statement": "After land, an infra red on ship-change's landed-green or rebased-merge-green no longer ends the run: rebase-merge-gate-failed gets on.fail to an infra triage step (rhiza ship check --infra) whose on.pass is an infra wait step (until rhiza ship check --settled --changed --rerun-infra, timeout 6h, interval 30s, max_visits 3) passing to landed-green, whose max_visits goes from the default 1 to 4 (one entry from wait-landed plus the wait's 3 returns), which re-checks the head and goes on through gate-rebase-merge and rebase-merge to merge; a conflict, a failing gate, a red with a failing test or any other failure keeps its path today, and the wait's timeout ends the run naming the infra failure"
+        },
+        "handle": "ship-change-landed-infra-wait",
+        "id": "01M75RHSWYX0S5ZRZ3NJR70XXK",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M75RHSWYX0S5ZRZ3NEZTC8W8",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "base": "01M6YSZPJEH766BCFMDVM0NW9Q",
+        "handle": null,
+        "id": "01M763BYX66BEVE5Q588Z0N0SD",
+        "node": "01M6MC56XH2VTXCYDT1G5WD55E",
+        "op": "node.update",
+        "set": {
+          "statement": "The built-in ship-change workflow sends a failure at pr-green or rebased-green (on.fail) to conflict-triage, which runs `rhiza ship check --conflicts` and falls back (its on.fail) to a command step ci-triage on anything but a merge conflict, so red CI reaches ci-triage through conflict-triage. ci-triage runs `rhiza ship check --test-failures`: it passes only when the head's latest ship check recorded at least one parsed test failure, and fails otherwise; ci-triage's on.fail goes to the wait step wait-ci-rerun, so an infra-only or unparsable failure waits for CI to move past the red head and then re-checks at pr-green instead of ending the run. ci-triage passes to ci-fix, an agent step (kind = \"agent\", one fixer session on the run worktree) whose prompt is the review fixer's prompt told to read the failing tests from `rhiza ship check --json` (its test failures and their no-leaf findings), re-run only those tests/scripts and their packages, and make one new commit with a Review: <run> trailer before `rhiza session done`; ci-fix passes to render-pr, then open-pr, wait-pr, pr-green and signoff. ci-fix runs at most twice per run (max_visits 2, so a third red head with test failures goes over the cap and fails the run, pr-green's or rebased-green's output naming the failing tests); ci-triage has max_visits 3; render-pr, open-pr, wait-pr and pr-green have max_visits 10 and signoff max_visits 8, so two CI fixes, conflict fixes and the owner's two request-changes fit; rebase, wait-rebased and rebased-green have max_visits 6 so a run re-enters them after each CI or conflict fix routed from rebased-green. After land, a failure at landed-green, rebase-merge or rebased-merge-green goes to conflict-triage-landed, whose non-conflict failures go on through rebase-merge-gate-failed to landed-infra-triage: a red with no failing test waits in landed-infra-wait and returns to landed-green (ship-change-landed-infra-wait), while a red with a failing test or any other non-infra failure still ends the run there"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6YXB50X4496BZ5ACVASWRK8",
+        "handle": null,
+        "id": "01M763BYY3T86QKR2X5E6YGCTR",
+        "node": "01M6WMRS4TPPTR6N3JKP0F7HQJ",
+        "op": "node.update",
+        "set": {
+          "statement": "The built-in ship-change workflow sends a code conflict to a fixer instead of the owner, through a triage that tells a conflict from any other failure: rhiza ship check --conflicts passes only when the ship state records an unresolved merge conflict and the run has made fewer than 3 conflict fixes, counted run-wide as the merge commits on the branch carrying this run's Review: trailer, so the cap is one count shared by every fixer step, before and after land; with no recorded conflict, or with 3 fixes already made, it fails and names why. rebase fails (on.fail) to a command step rebase-triage running rhiza ship check --conflicts, which passes to conflict-fix and has no on.fail, so a fetch, push, hook or refusal failure of rebase ends the run as today instead of launching a fixer; pr-green and rebased-green fail to a command step conflict-triage running the same check, which passes to conflict-fix and fails to ci-triage as before; conflict-fix is an agent step on the run worktree whose prompt gives the fixer both sides' commits and change sets from rhiza ship check --json and tells it to resolve the conflicts, regenerate golden files and rendered output, run only the touched packages' tests and scripts, and commit the merge with Change:, Actor: and a Review: <run> trailer, never pushing, then rhiza session done; it passes to render-pr, so open-pr pushes plainly and records the head and the run waits for CI again. After land, rebase-merge fails to conflict-triage-landed (the same check, no on.fail), which passes to conflict-fix-landed, the same fixer, which passes back to rebase-merge so the fixer's merge is pushed there and nothing lands twice; landed-green and rebased-merge-green fail to conflict-triage-landed too, whose non-conflict failures go on through rebase-merge-gate-failed to landed-infra-triage, so after land a red with no failing test waits in landed-infra-wait and returns to landed-green (ship-change-landed-infra-wait), while a red with a failing test or any other non-infra failure still ends the run. A fourth conflict in one run, before or after land, fails its triage and so fails the run: after land at once, as conflict-triage-landed falls through to rebase-merge-gate-failed and landed-infra-triage, which find no failing gate and no infra red; before land later and by a cap, since conflict-triage fails to ci-triage, which finds no failing test and fails to wait-ci-rerun, whose ship check --settled --changed settles a conflicting pull request (shipSettleConflict) before its --changed baseline and so passes back to pr-green, and the loop pr-green, conflict-triage, ci-triage, wait-ci-rerun repeats until ci-triage or wait-ci-rerun exceeds its max_visits 3 and fails the run over the cap; conflict-fix and conflict-fix-landed keep max_visits 3 only as a backstop, and the steps they re-enter get max_visits raised so 3 conflict fixes and 2 CI fixes fit"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M75RHSWYX0S5ZRZ3NEZTC8W8",
+        "id": "01M763BZ0G71FT4F02RVTMS1XJ",
+        "link": "01M763BZ0G71FT4F02RV2Z8QW0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MC56XH2VTXCYDT1G5WD55E",
+        "type": "supersedes"
+      },
+      {
+        "decision": null,
+        "from": "01M75RHSWYX0S5ZRZ3NEZTC8W8",
+        "id": "01M763BZ1FVWHQM4AZW4Q3DYFE",
+        "link": "01M763BZ1FVWHQM4AZW4AQVQKC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6WMRS4TPPTR6N3JKP0F7HQJ",
+        "type": "supersedes"
+      }
+    ]
+  },
+  "change_set": "01M75R7FN9PWNCC5XFXWV3NVQR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M763BZ2W51KD3CNBK60JZWST",
+  "type": "ops",
+  "v": 1
+}

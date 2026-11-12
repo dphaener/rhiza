@@ -50,11 +50,13 @@ exec rhiza run status
 stdout '^- interview \(visit 1\): pass, then milestone-check, '
 stdout '^- milestone-check \(visit 1\): pass, then review: exit 0$'
 stdout '^- review \(visit 1\): pass, then critic, '
-stdout '^- critic \(visit 1\): pass, then check, '
+stdout '^- critic \(visit 1\): pass, then fresh, '
+stdout '^- fresh \(visit 1\): pass, then check: exit 0$'
 stdout '^- check \(visit 1\): fail, then revise: exit 1$'
 stdout '^- revise \(visit 1\): pass, then review, '
 stdout '^- review \(visit 2\): pass, then critic, '
-stdout '^- critic \(visit 2\): pass, then check, '
+stdout '^- critic \(visit 2\): pass, then fresh, '
+stdout '^- fresh \(visit 2\): pass, then check: exit 0$'
 stdout '^- check \(visit 2\): pass, then gate: exit 0$'
 stdout '^- gate \(visit 1\): pass, then open-pr: exit 0$'
 ! stdout 'visit 3'
@@ -63,9 +65,9 @@ stdout '^- gate \(visit 1\): pass, then open-pr: exit 0$'
 # set and the plan-review guide.
 exec cat $WORK/prompts.log
 stdout -count=1 '^/rhiza-plan Plan change set 01[0-9A-Z]{24} \(Plan reports\) '
-stdout -count=2 '^Review the plan of change set 01[0-9A-Z]{24} as the reviewer: follow `rhiza guide plan-review`, then run `rhiza session done`\.$'
-stdout -count=2 'as the critic'
-stdout -count=1 'as the reviser'
+stdout -count=2 '^Review the plan of change set 01[0-9A-Z]{24} as the reviewer: follow `rhiza guide plan-review`\. Run `rhiza session done` as a separate command, only once `rhiza run findings` succeeded, never chained after it with `;`\.$'
+stdout -count=2 'as the critic: follow `rhiza guide plan-review`\. Run `rhiza session done` as a separate command, only once `rhiza run verdict` succeeded, never chained after it with `;`\.$'
+stdout -count=1 'as the reviser: follow `rhiza guide plan-review`\. Run `rhiza session done` as a separate command, only once your `rhiza apply` succeeded, never chained after it with `;`\.$'
 ! stdout 'plan file'
 
 # Two review rounds: one confirmed finding, then a clean round.

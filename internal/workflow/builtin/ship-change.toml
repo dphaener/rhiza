@@ -149,14 +149,17 @@ on.pass = "ci-fix"
 on.fail = "wait-ci-rerun"
 
 # The failing ship check recorded the red head and its check runs (red_head,
-# red_checks). This wait passes only once CI moved past them (another head,
-# or a check run with a new ID or attempt, such as a rerun by hand) and has
-# finished, then pr-green checks the head again, and signoff follows (after
-# a rebase, the rebased-green path). While it waits, its output names the
-# infra failure; on timeout the run ends with that line in its detail.
+# red_checks). With --rerun-infra the wait reruns the red head's failed jobs
+# itself, with backoff (5m, 10m, 20m, then every 30m), and passes once CI
+# moved past the red head (another head, or a check run with a new ID or
+# attempt) and has finished, then pr-green checks the head again, and
+# signoff follows (after a rebase, the rebased-green path). A failing test
+# in a rerun settles it too, and pr-green sends that to ci-fix. While it
+# waits, its output names the infra failure and the next rerun's time; on
+# the 6h timeout the run ends with that line in its detail.
 [step.wait-ci-rerun]
 kind = "wait"
-until = "rhiza ship check --settled --changed"
+until = "rhiza ship check --settled --changed --rerun-infra"
 timeout = "6h"
 interval = "30s"
 max_visits = 3
@@ -164,7 +167,7 @@ on.pass = "pr-green"
 
 [step.ci-fix]
 kind = "agent"
-prompt = "/rhiza-review Fix the failing CI tests of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. Read the failing tests from `rhiza ship check --json` (its tests, and its findings, which name no leaf). Reproduce each failing test locally first, with the repo's own scoped test command from its contributor guide, repeating it until it fails again or plainly passes: never push to see what CI does. A test that fails locally: fix it. One that does not reproduce is a flake: fix it, or quarantine it (skip it) with a bug request filed and named at the skip. Commit only once those tests and the packages you touched pass locally, never the repo's full suite: the PR's CI runs it again after your push. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
+prompt = "/rhiza-review Fix the CI findings of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. Read the CI findings from `rhiza ship check --json` (its tests and its findings, which name no leaf): failing tests, and recognised non-test causes such as a self-check, fmt-check, vet or build-target failure, each with the failing log lines. Reproduce each finding locally first, with the repo's own scoped command for it from its contributor guide (the test command for a test, the matching check command for a lint, format, vet or self-check finding), repeating a test until it fails again or plainly passes: never push to see what CI does. A finding that fails locally: fix it, or for stale generated files regenerate them with the repo's own command. A test that does not reproduce is a flake: fix it, or quarantine it (skip it) with a bug request filed and named at the skip. Commit only once those commands and the packages you touched pass locally, never the repo's full suite: the PR's CI runs it again after your push. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
 until = "true"
 until_when = "done"
 max_visits = 2
@@ -245,9 +248,12 @@ timeout = "2h"
 interval = "30s"
 on.pass = "landed-green"
 
+# landed-green is entered once from wait-landed and once more from each of
+# landed-infra-wait's returns (max_visits 3).
 [step.landed-green]
 kind = "command"
 run = "rhiza ship check"
+max_visits = 4
 on.pass = "gate-rebase-merge"
 on.fail = "conflict-triage-landed"
 
@@ -301,6 +307,29 @@ kind = "command"
 run = "rhiza ship gate --failed"
 max_visits = 3
 on.pass = "gate-fix-merge"
+on.fail = "landed-infra-triage"
+
+# After land, a red landed head (landed-green, rebased-merge-green) that is
+# no conflict and no failing gate comes here: a red with no failing test is
+# a CI infra outage, so the run waits for it to clear, rerunning the failed
+# jobs with backoff, then checks the head again at landed-green (which goes
+# on through gate-rebase-merge and rebase-merge to the merge). A red with a
+# failing test, or any other failure, fails the triage and ends the run as
+# before. The wait's timeout ends the run with the infra failure in its
+# detail.
+[step.landed-infra-triage]
+kind = "command"
+run = "rhiza ship check --infra"
+max_visits = 3
+on.pass = "landed-infra-wait"
+
+[step.landed-infra-wait]
+kind = "wait"
+until = "rhiza ship check --settled --changed --rerun-infra"
+timeout = "6h"
+interval = "30s"
+max_visits = 3
+on.pass = "landed-green"
 
 [step.gate-fix-merge]
 kind = "agent"

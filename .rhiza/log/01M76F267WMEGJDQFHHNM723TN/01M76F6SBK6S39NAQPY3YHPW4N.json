@@ -1,0 +1,30 @@
+{
+  "actor": "01M76F2SMCWE32BHBRYW030BK8",
+  "after": [
+    "01M76F267WMEGJDQFHHR5RQJ32"
+  ],
+  "at": "2026-11-11T23:31:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "6d8a4c7d-979b-46f4-96ad-01a1ccf15531",
+          "statement": "Change set 01M76F26 (nothing Rhiza writes is left uncommitted in the main checkout) serves no intent yet. Which should it serve? The earlier main-clone fixes it builds on (decision-run-carries-accept for the Inbox accept) served milestone-25, and milestone-25 is open on the roadmap. / A model write made in the main checkout (rhiza change new, withdraw, accept/propose/reject from the CLI, Inbox or web app, apply, link, gate answers) for a change set with no live run: where does its entry live until main has it? The daemon and the roadmap read change sets from the main checkout, so the main checkout must still see the write at once. (A change set with a live run gets the entry written into that run's worktree, and the run commits it as it does today.) / How are the untracked .rhiza/log entries already sitting in a main checkout (like 01M75R9C and 01M6T24H on ~/code/rhiza today) moved onto a branch? / How loudly do rhiza health and rhiza check report untracked .rhiza/log entries in a main checkout?"
+        },
+        "handle": "question-6d8a4c7d-1",
+        "id": "01M76F6QK59ZTSE4SHSVGC4922",
+        "key": null,
+        "kind": "question",
+        "node": "01M76F6QK59ZTSE4SHSV186QSC",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76F6SBK6S39NAQPY3YHPW4N",
+  "type": "ops",
+  "v": 1
+}

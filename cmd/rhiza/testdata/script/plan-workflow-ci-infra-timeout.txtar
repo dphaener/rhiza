@@ -1,0 +1,89 @@
+# A plan-shaped run whose CI stays red with no failing test passes pr-green
+# to its infra triage and infra wait, and the wait's timeout ends the run
+# failed, with the infra failure named in its detail. The workflow is
+# plan-workflow-ci-infra-wait's, with a 2s wait.
+
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/ship-change.toml .rhiza/workflows/ship-change.toml
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec git push -q origin main:cs/ship-it
+
+cp $WORK/queue $WORK/checks
+! exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
+exec rhiza run status
+stdout '^- pr-green-infra-wait \(visit 1\): timeout'
+stdout 'an infra failure'
+fold-ok
+
+-- ship-change.toml --
+name = "ship-change"
+start = "wait-pr"
+
+[step.wait-pr]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "30s"
+interval = "50ms"
+on.pass = "pr-green"
+
+# The plan workflows' pr-green shape: a red goes to its infra triage, whose
+# wait reruns with backoff and returns to pr-green.
+[step.pr-green]
+kind = "command"
+run = "rhiza ship check"
+max_visits = 4
+on.pass = "done"
+on.fail = "pr-green-infra"
+
+[step.pr-green-infra]
+kind = "command"
+run = "rhiza ship check --infra"
+max_visits = 4
+on.pass = "pr-green-infra-wait"
+
+[step.pr-green-infra-wait]
+kind = "wait"
+until = "rhiza ship check --settled --changed --rerun-infra"
+timeout = "2s"
+interval = "50ms"
+max_visits = 3
+on.pass = "pr-green"
+-- queue --
+RED
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+case "$1 $2" in
+"pr view")
+	q="$WORK/checks"
+	c=$(head -1 "$q")
+	if [ "$(wc -l < "$q")" -gt 1 ]; then
+		sed -i 1d "$q"
+	fi
+	head=$(git -C "$WORK/origin.git" rev-parse "refs/heads/$3")
+	case "$c" in
+	RERUN) test='{"name":"test","status":"COMPLETED","conclusion":"SUCCESS","detailsUrl":"https://ci.example/job/10"}' ;;
+	*) test='{"name":"test","status":"COMPLETED","conclusion":"FAILURE","detailsUrl":"https://ci.example/job/9"}' ;;
+	esac
+	printf '{"body":"Change set %s","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[%s]}\n' "$RHIZA_CHANGE" "$head" "$test"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

@@ -1,0 +1,79 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [
+    "01M75W99SHRTBS31PJFCV2CW8F"
+  ],
+  "at": "2026-11-11T20:14:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "Placeholder only. The scaffold should have extensive comments for each item with multiple examples for popular languages so the developer can easily scan through and create the workflow without having to jump around in documentation.",
+              "where": "2026-11-11 milestone plan interview"
+            },
+            {
+              "by": "owner",
+              "text": "We may want to chat about this, but isn't just reading the exit code good enough? If we need to detect what kind of error, maybe a quick  call out to an LLM (headless) using a model like Haiku would be a better choice. Let's talk about it.",
+              "where": "2026-11-11 milestone plan interview"
+            },
+            {
+              "by": "owner",
+              "text": "Number 1, but we have to be aware that users can bring their own LLM so we need to leave that open. I think global configuration is a good place for things like this. ",
+              "where": "2026-11-11 milestone plan interview"
+            },
+            {
+              "by": "owner",
+              "text": "I think that should all get cleaned up. Rhiza is the only self update candidate moving forward. Self update project is a useless setting at this point. Any non Rhiza projects that want self update can do so through their own custom workflow.",
+              "where": "2026-11-11 milestone plan interview"
+            },
+            {
+              "by": "owner",
+              "text": "I think it can and should show up in the generated reference and user docs.",
+              "where": "2026-11-11 milestone plan interview"
+            },
+            {
+              "by": "owner",
+              "text": "Self update SHOULD be a setting. I.E. if I am just a user of Rhiza, I should be able to turn on auto update and get the latest official release. It can also be just set to MAIN, which is what we would want here. For now I understand that main will always be the latest official release, but I will be adding a new release milestone soon that will change that so that the auto update can watch for actual releases and not just new builds.",
+              "where": "2026-11-11 milestone plan interview"
+            },
+            {
+              "by": "owner",
+              "text": "How about we also add 'latest' or similar. We should have incremental builds available between builds that brave users can use. ",
+              "where": "2026-11-11 milestone plan interview"
+            },
+            {
+              "by": "owner",
+              "text": "This should also be alled 'autoUpdate' and not 'selfUpdate', so it makes sense and aligns with the rest of the world",
+              "where": "2026-11-11 milestone plan interview"
+            },
+            {
+              "by": "owner",
+              "text": "We can include all of the release channels in the plan, but it will rely on the release milestone. This planning needs to wrap up before we can begin the planning and execution of the release milestone.",
+              "where": "2026-11-11 milestone plan interview"
+            }
+          ],
+          "raw_sha256": "9f3155aed8beb5e2888e17b777b92bdffa6527f3ac0a59c0508a8569142a4f96",
+          "session": "70ee81c4-37df-450f-86ae-01a1cbc527f8",
+          "summary": "Milestone 32 planned with the owner. Measured on the VM: disk 79% used; the biggest use is Rhiza's own leftovers (Claude scratch folders under ~/tmp ~29-34G, index .db files for removed worktrees ~15G, stray rhiza test temp dirs), not the Go cache (go-build 1.4G, module cache 3.1G). Settled by picks: the product cleans up Rhiza's own leftovers at run end and the daemon prunes orphans; workflows gain an end-of-run cleanup phase that runs on done or failed and never fails the run; the Go cache trim (rhiza.daemon.trimGoCache, gosweep) and ship's head build move into Rhiza's own workflows; per-run GOTMPDIR becomes workflow environment and the step runner's Go-signature rerun uses the failure classifier; ci-triage hands the fixer the failed CI logs and the per-language parsers go; auto-update defaults to off; the 'release' channel and the 'latest' channel wait for the release milestone's published builds. Settled by typed answers: the workflow new scaffold is a placeholder with extensive comments and multi-language examples; failures are classified by a headless LLM (Haiku by default) configured globally so users can bring their own; self-update becomes a documented setting named autoUpdate with channels (off, main now; latest, release with the release milestone), self_update_project is removed. Seven change sets were opened and all planned now; the latest/release channels are blocked on the release milestone, which the owner plans after this one.",
+          "title": "Workflow cleanup and language-neutral defaults, planned with the owner"
+        },
+        "handle": "workflow-cleanup-plan-2026-11-11",
+        "id": "01M763Y5C2KHYR9MXYA6H0VTB6",
+        "key": null,
+        "kind": "source",
+        "node": "01M763Y5C2KHYR9MXYA5FVZ5SA",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M75W99SF6Q1T4QJM5GKA4PM1",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M763Y5DJHZ5YH3G9WPJED3JM",
+  "type": "ops",
+  "v": 1
+}

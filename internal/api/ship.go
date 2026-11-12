@@ -27,6 +27,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
@@ -70,7 +71,7 @@ type ShipCheckRequest struct {
 	PROpen  bool `json:"pr_open,omitempty" flag:"pr-open" desc:"Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)"`
 	// TestFailures asks only whether the head's latest check recorded
 	// failing tests; it reads the state file and runs no gh.
-	TestFailures bool `json:"test_failures,omitempty" flag:"test-failures" desc:"Exit 0 only if the head's latest ship check recorded at least one failing test read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)"`
+	TestFailures bool `json:"test_failures,omitempty" flag:"test-failures" desc:"Exit 0 only if the head's latest ship check recorded at least one failing test or recognised cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, a make target error) read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)"`
 	// Conflicts asks only whether the ship state records a merge of main
 	// that is still unresolved; it reads the state file and git, runs no
 	// gh and records nothing.
@@ -79,7 +80,10 @@ type ShipCheckRequest struct {
 	Reruns ShipReruns `json:"reruns,omitempty" flag:"reruns" desc:"How many times a head's failed jobs are rerun before its failure stands, at least 1; default 1"`
 	// Changed makes Settled wait for CI to move past the red head a failing
 	// ship check recorded.
-	Changed bool `json:"changed,omitempty" flag:"changed" desc:"With --settled: also wait for CI to move past the red head the last failing ship check recorded (red_head, red_checks in the state file): settled only once the head is another one, or a check run's ID or attempt is not among the recorded ones, and that new CI has finished; until then not settled, naming the infra failure; with no red head recorded it is --settled alone (for a wait after an infra failure with no failing test)"`
+	Infra bool `json:"infra,omitempty" flag:"infra" desc:"Exit 0 only if the head's latest failing ship check recorded a red head (red_head) with no failing test read from a CI log: an infra failure; exit 1 for a green head, a red with failing tests, or any other failure; reads the state file only and records nothing (for a step that routes an infra red to a wait)"`
+	// RerunInfra makes the changed wait rerun the red head's failed jobs.
+	RerunInfra bool `json:"rerun_infra,omitempty" flag:"rerun-infra" desc:"With --settled --changed: while the red head stays red with no failing test, rerun its failed jobs itself with backoff (first after 5m, then 10m, 20m, then every 30m; the last rerun's time and count are kept in the state file) and report not settled, naming the infra failure and the next rerun's time; settled once CI moved past the red head and finished green, finished red with a failing test, or a new head's CI finished"`
+	Changed    bool `json:"changed,omitempty" flag:"changed" desc:"With --settled: also wait for CI to move past the red head the last failing ship check recorded (red_head, red_checks in the state file): settled only once the head is another one, or a check run's ID or attempt is not among the recorded ones, and that new CI has finished; until then not settled, naming the infra failure; with no red head recorded it is --settled alone (for a wait after an infra failure with no failing test)"`
 }
 
 // ShipReruns is the rerun budget per head: 0 when not given (one rerun).
@@ -132,7 +136,7 @@ type ShipCheckResponse struct {
 	MergeConflict *ShipMergeConflict `json:"merge_conflict,omitempty" desc:"A merge of main left in progress by a conflict in code: the files, origin/main's commits with their change sets and the branch's change set"`
 	Stop          string             `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
 	Tests         []string           `json:"tests,omitempty" desc:"The failing tests the failed Actions runs' logs name, once the failed jobs were rerun and failed again: Go tests and testscripts (a '--- FAIL:' line, such as TestScripts/x), RSpec ('rspec ./spec/x_spec.rb:12'), Minitest ('bin/rails test test/x_test.rb:12') and pytest ('pytest tests/test_x.py::test_y'), each as its runner's rerun command"`
-	Findings      []ShipFinding      `json:"findings,omitempty" desc:"One finding, with no leaf, per failing test, for a fix step; recorded in the state file as well"`
+	Findings      []ShipFinding      `json:"findings,omitempty" desc:"One finding, with no leaf, per failing test or recognised CI cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, or a make target error), for a fix step; recorded in the state file as well"`
 	Reran         []string           `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, up to --reruns times per head, instead of failing; the check then reports not settled"`
 }
 
@@ -407,7 +411,7 @@ type shipState struct {
 	// each rerun is called. A state from before it counts a head with
 	// Reruns as rerun once.
 	RerunCount int `json:"rerun_count,omitempty"`
-	// CIFindings are the failing tests read from the logs of the failed
+	// CIFindings are the failing tests and recognised causes read from the logs of the failed
 	// runs of RerunHead, for the step that fixes them.
 	CIFindings []ShipFinding `json:"ci_findings,omitempty"`
 	// RerunTests are the failing tests read from the logs of the failed
@@ -424,6 +428,12 @@ type shipState struct {
 	// ship check --settled --changed waits past them.
 	RedHead   string         `json:"red_head,omitempty"`
 	RedChecks []ShipRedCheck `json:"red_checks,omitempty"`
+	// RedAt is when RedHead was first seen red; InfraReruns and
+	// InfraRerunAt are how many times --rerun-infra reran its failed jobs,
+	// and when last: the backoff's state, kept across polls and restarts.
+	RedAt        string `json:"red_at,omitempty"`
+	InfraReruns  int    `json:"infra_reruns,omitempty"`
+	InfraRerunAt string `json:"infra_rerun_at,omitempty"`
 }
 
 // shipRunID is the run the ship step runs for: RHIZA_RUN, or empty outside
@@ -648,6 +658,15 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 	if r.Changed && (!r.Settled || r.Main || r.PROpen || r.Conflicts || r.TestFailures) {
 		return nil, Usagef("--changed goes with --settled alone: it waits for CI to move past a recorded red head").WithNext(shipCheckNext)
 	}
+	if r.RerunInfra && (!r.Changed || !r.Settled) {
+		return nil, Usagef("--rerun-infra goes with --settled --changed: it reruns the red head's failed jobs while waiting").WithNext(shipCheckNext)
+	}
+	if r.Infra {
+		if r.PROpen || r.Main || r.Settled || r.TestFailures || r.Conflicts || r.Changed {
+			return nil, Usagef("--infra asks only whether the last failing check recorded an infra red; it takes no other check flag")
+		}
+		return runShipInfra(ctx)
+	}
 	if r.Conflicts {
 		if r.PROpen || r.Main || r.Settled || r.TestFailures {
 			return nil, Usagef("--conflicts asks only whether a merge of main is unresolved; it takes none of --pr-open, --main, --settled or --test-failures")
@@ -743,6 +762,15 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		}
 	}
 	resp.Settled, resp.Green, resp.Failed = checksVerdict(resp.Checks)
+	if r.RerunInfra && resp.Settled && !resp.Green && st.RedHead != "" && resp.Commit == st.RedHead {
+		waiting, err := shipInfraWait(ctx, t, &st, &resp, path)
+		if err != nil {
+			return nil, err
+		}
+		if waiting {
+			return resp, nil
+		}
+	}
 	if r.Changed && resp.Settled && !resp.Green && !shipCIMoved(st, resp.Commit, resp.Checks) {
 		// The same settled red CI the last failing check recorded: an
 		// infra failure with no failing test, waiting for a rerun or a push.
@@ -797,6 +825,9 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 	if resp.Settled && !resp.Green && !r.Settled && !r.Main {
 		// Record the red head and its check runs, never as Head and
 		// Checks, which stay the last green ones.
+		if st.RedHead != resp.Commit {
+			st.RedAt, st.InfraReruns, st.InfraRerunAt = ctx.Now().UTC().Format(time.RFC3339), 0, ""
+		}
 		st.RedHead, st.RedChecks = resp.Commit, redChecks(resp.Checks)
 		if id := shipRunID(ctx); id != "" {
 			st.Run = id
@@ -813,6 +844,7 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 	} else {
 		st.PR, st.URL, st.Branch, st.Head, st.Checks = resp.PR, resp.URL, t.branch, resp.Commit, resp.Checks
 		st.RedHead, st.RedChecks = "", nil
+		st.RedAt, st.InfraReruns, st.InfraRerunAt = "", 0, ""
 	}
 	if id := shipRunID(ctx); id != "" {
 		st.Run = id
@@ -840,11 +872,110 @@ func runShipTestFailures(ctx *Ctx) (any, error) {
 		resp.Tests = append(resp.Tests, f.Test)
 	}
 	if len(resp.Tests) == 0 {
-		resp.Detail = "no failing test was recorded for the head: an infra or unparsable failure"
+		resp.Detail = "no failing test or recognised cause was recorded for the head: an infra or unparsable failure"
 		return resp, nil
 	}
 	resp.Passed = true
 	return resp, nil
+}
+
+// runShipInfra passes only when the state file holds a red head and no
+// failing test read from its logs: an infra failure.
+func runShipInfra(ctx *Ctx) (any, error) {
+	t, err := findShipTarget(ctx)
+	if err != nil {
+		return nil, err
+	}
+	st, err := readShipState(t.statePath())
+	if err != nil {
+		return nil, err
+	}
+	resp := ShipCheckResponse{Change: t.cs.String(), Branch: t.branch, Checks: []ShipCheck{}, Commit: st.RedHead, Findings: st.CIFindings}
+	switch {
+	case st.RedHead == "":
+		resp.Detail = "no red head was recorded: the head's CI is green or was not checked"
+	case len(st.CIFindings) > 0:
+		for _, f := range st.CIFindings {
+			resp.Tests = append(resp.Tests, f.Test)
+		}
+		resp.Detail = "the red head has failing tests: not an infra failure"
+	default:
+		resp.Passed = true
+	}
+	return resp, nil
+}
+
+// infraBackoff is the wait before the nth infra rerun (0-based): 5m,
+// doubling to a 30m cap.
+func infraBackoff(n int) time.Duration {
+	d := 5 * time.Minute
+	for i := 0; i < n && d < 30*time.Minute; i++ {
+		d *= 2
+	}
+	return min(d, 30*time.Minute)
+}
+
+// shipInfraWait handles a settled red CI on the recorded red head under
+// --rerun-infra. It reports waiting when the red is still an infra failure
+// (resp then says not settled, naming the next rerun), after rerunning the
+// failed jobs if the backoff is due; false when it should settle: the
+// attempt failed a test.
+func shipInfraWait(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResponse, path string) (bool, error) {
+	now := ctx.Now().UTC()
+	moved := shipCIMoved(*st, resp.Commit, resp.Checks)
+	if moved {
+		// A rerun's attempt: a failing test in its logs settles; none is
+		// still the outage.
+		var runs []string
+		for _, c := range resp.Checks {
+			if c.RunID != "" && !passingConclusions[strings.ToUpper(c.Conclusion)] && !slices.Contains(runs, c.RunID) {
+				runs = append(runs, c.RunID)
+			}
+		}
+		if len(shipFailedTests(ctx, t, runs)) > 0 || len(shipFailedCauses(ctx, t, runs)) > 0 {
+			return false, nil
+		}
+		st.RedChecks = redChecks(resp.Checks)
+	} else if len(st.CIFindings) > 0 {
+		return false, nil
+	}
+	base, err := time.Parse(time.RFC3339, st.RedAt)
+	if st.InfraReruns > 0 {
+		base, err = time.Parse(time.RFC3339, st.InfraRerunAt)
+	}
+	if err != nil {
+		base, st.RedAt = now, now.Format(time.RFC3339)
+	}
+	next := base.Add(infraBackoff(st.InfraReruns))
+	var runs []string
+	for _, c := range resp.Checks {
+		if c.RunID != "" && !passingConclusions[strings.ToUpper(c.Conclusion)] && !slices.Contains(runs, c.RunID) {
+			runs = append(runs, c.RunID)
+		}
+	}
+	note := ""
+	if !now.Before(next) && len(runs) > 0 {
+		st.InfraReruns++
+		st.InfraRerunAt = now.Format(time.RFC3339)
+		st.RerunHead, st.Reruns, st.RerunCount = resp.Commit, append(st.Reruns, runs...), shipRerunsSpent(*st, resp.Commit)+1
+		if err := writeShipState(path, *st); err != nil {
+			return false, err
+		}
+		for _, id := range runs {
+			if _, err := gh(ctx, t.dir(), "run", "rerun", id, "--failed"); err != nil {
+				return false, Errorf("%v", err)
+			}
+		}
+		resp.Reran = runs
+		next = now.Add(infraBackoff(st.InfraReruns))
+		note = fmt.Sprintf("reran the failed jobs of %s (rerun %d); ", shipPlural(len(runs), "run", "runs"), st.InfraReruns)
+	} else if err := writeShipState(path, *st); err != nil {
+		return false, err
+	}
+	resp.Settled, resp.Green, resp.Passed = false, false, false
+	resp.Detail = fmt.Sprintf("not settled: CI on head %s failed (%s) with no failing test: an infra failure; %snext rerun at %s", shortSHA(resp.Commit), strings.Join(resp.Failed, ", "), note, next.Format(time.RFC3339))
+	resp.Failed = nil
+	return true, nil
 }
 
 // runShipConflicts passes only while the ship state records a merge of
@@ -1046,6 +1177,135 @@ func shipFailedTests(ctx *Ctx, t shipTarget, runs []string) []string {
 	return tests
 }
 
+// shipFailedCauses reads the recognised non-test causes (see
+// parseCICauses) out of the logs of the Actions runs. A log gh cannot give
+// adds nothing.
+func shipFailedCauses(ctx *Ctx, t shipTarget, runs []string) []ciCause {
+	var causes []ciCause
+	for _, id := range runs {
+		out, err := gh(ctx, t.dir(), "run", "view", id, "--log-failed")
+		if err != nil {
+			continue
+		}
+		causes = append(causes, parseCICauses(string(out))...)
+	}
+	return causes
+}
+
+// ciCause is a deterministic non-test failure read from a CI log: Name is
+// what failed (the job and step, or the command) and Lines the failing
+// lines, quoted.
+type ciCause struct {
+	Name  string
+	Lines []string
+}
+
+var (
+	// 'fail render docs/reference/cli.md: ...' from rhiza check or self-check.
+	checkFailLine = regexp.MustCompile(`^fail \S.*`)
+	// '<file>.go:<line>:<col>: ...' from go vet and the compiler.
+	goDiagLine = regexp.MustCompile(`^(?:\./)?[\w./-]+\.go:\d+:\d+: \S.*`)
+	// The header a fmt-check prints before the files gofmt lists.
+	fmtHeaderLine = regexp.MustCompile(`(?i)^(?:unformatted files|files? (?:not|need) (?:to be )?(?:gofmt|formatted)|gofmt)\b.*$`)
+	goFileLine    = regexp.MustCompile(`^(?:\./)?[\w./-]+\.go$`)
+	// 'make: *** [Makefile:186: self-check] Error 1', '[build] Error 2'.
+	makeErrLine = regexp.MustCompile(`^make(?:\[\d+\])?: \*\*\* \[(?:\S+:\d+: )?([^\]\s]+)\] Error \d+`)
+)
+
+// ciCauseLines caps the lines one cause quotes.
+const ciCauseLines = 10
+
+// parseCICauses returns the deterministic causes a gh run view --log-failed
+// output names besides a failing test, in order of first appearance, from
+// unindented lines only (indented ones are a test's own output): rhiza
+// check or self-check 'fail ...' lines, a gofmt file listing, go vet and
+// compiler diagnostics, each grouped by the job and step that printed it,
+// and, only when none of those or a failing test is in the log, the target
+// of a 'make: *** [<target>] Error N' line with the lines just before it.
+func parseCICauses(log string) []ciCause {
+	var causes []ciCause
+	add := func(name, line string) {
+		for i := range causes {
+			if causes[i].Name == name {
+				if len(causes[i].Lines) < ciCauseLines && !slices.Contains(causes[i].Lines, line) {
+					causes[i].Lines = append(causes[i].Lines, line)
+				}
+				return
+			}
+		}
+		causes = append(causes, ciCause{Name: name, Lines: []string{line}})
+	}
+	var before []string
+	inFmt, fmtWhere := false, ""
+	type makeFail struct {
+		name  string
+		lines []string
+	}
+	var makes []makeFail
+	for _, raw := range strings.Split(log, "\n") {
+		raw = strings.TrimRight(raw, "\r")
+		body := logBody(raw)
+		text := strings.TrimSpace(body)
+		if text != "" && body[0] != text[0] {
+			// An indented line is a test's own output (a failing Go
+			// test's log, a testscript's quoted stdout): a 'fail ...'
+			// or a diagnostic there is what the test saw, not a cause.
+			inFmt = false
+			before = append(before, text)
+			continue
+		}
+		where := ""
+		if parts := strings.SplitN(ansiEscape.ReplaceAllString(raw, ""), "\t", 3); len(parts) == 3 {
+			where = strings.TrimSpace(parts[0]) + " / " + strings.TrimSpace(parts[1])
+		}
+		label := func(kind string) string {
+			if where == "" {
+				return kind
+			}
+			return where + ": " + kind
+		}
+		if inFmt {
+			if goFileLine.MatchString(text) && where == fmtWhere {
+				add(label("fmt-check"), text)
+				continue
+			}
+			inFmt = false
+		}
+		switch {
+		case checkFailLine.MatchString(text):
+			add(label("self-check"), text)
+		case fmtHeaderLine.MatchString(text):
+			inFmt, fmtWhere = true, where
+			add(label("fmt-check"), text)
+		case goDiagLine.MatchString(text):
+			add(label("go vet or compile"), text)
+		default:
+			if m := makeErrLine.FindStringSubmatch(text); m != nil {
+				name := "make " + m[1]
+				if where != "" {
+					name = where + ": " + name
+				}
+				if !slices.ContainsFunc(makes, func(o makeFail) bool { return o.name == name }) {
+					lines := before
+					if len(lines) > 5 {
+						lines = lines[len(lines)-5:]
+					}
+					makes = append(makes, makeFail{name, append([]string{}, lines...)})
+				}
+			}
+		}
+		if text != "" {
+			before = append(before, text)
+		}
+	}
+	if len(causes) == 0 && len(parseFailedTests(log)) == 0 {
+		for _, m := range makes {
+			causes = append(causes, ciCause{Name: m.name, Lines: m.lines})
+		}
+	}
+	return causes
+}
+
 // failLine matches a Go test's failure line in a log, as go test prints it
 // (possibly after a CI timestamp and indentation for a subtest).
 var failLine = regexp.MustCompile(`--- FAIL: (\S+)`)
@@ -1065,11 +1325,16 @@ var (
 // logText returns a log line's text after gh's "job<TAB>step<TAB>timestamp "
 // prefix (when it has one) and any colour codes, leading space trimmed.
 func logText(line string) string {
+	return strings.TrimLeft(logBody(line), " \t")
+}
+
+// logBody is logText with the line's own indentation kept.
+func logBody(line string) string {
 	line = ansiEscape.ReplaceAllString(line, "")
 	if parts := strings.SplitN(line, "\t", 3); len(parts) == 3 {
 		line = logTimestamp.ReplaceAllString(parts[2], "")
 	}
-	return strings.TrimLeft(line, " \t")
+	return line
 }
 
 // parseFailedTests returns the distinct tests named in a gh run view
@@ -1146,6 +1411,14 @@ func shipReadFailures(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResp
 			seen[name] = true
 			resp.Tests = append(resp.Tests, name)
 			resp.Findings = append(resp.Findings, ShipFinding{Test: name, Reason: fmt.Sprintf("Test %s failed in CI run %s (check %s) on %s; rerun it alone and fix it", name, c.RunID, c.Name, shortSHA(resp.Commit))})
+		}
+		for _, cause := range parseCICauses(string(out)) {
+			if seen[cause.Name] {
+				continue
+			}
+			seen[cause.Name] = true
+			resp.Tests = append(resp.Tests, cause.Name)
+			resp.Findings = append(resp.Findings, ShipFinding{Test: cause.Name, Reason: fmt.Sprintf("%s failed in CI run %s (check %s) on %s; reproduce it locally and fix it. Failing lines:\n%s", cause.Name, c.RunID, c.Name, shortSHA(resp.Commit), strings.Join(cause.Lines, "\n"))})
 		}
 	}
 	if slices.Equal(st.CIFindings, resp.Findings) {

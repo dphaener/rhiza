@@ -1,0 +1,61 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M76FRFJC2JJRNS0YV0BVDMVF"
+  ],
+  "at": "2026-11-11T23:44:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on main-write-model-branch): Every model write in a main checkout with no live run must, in the same operation, cut a branch from origin/main, push it and open a PR, but neither the leaf nor decision-main-writes-get-a-branch says what happens when the repo has no origin remote, no origin/main or no gh. That covers every testscript repo (CLAUDE.md: no test touches the network or gh; each script's repo is a plain, non-linked checkout) and any local-only Rhiza repo. As written, every rhiza change new, accept or apply in those repos would fail, or would need network and gh, which contradicts the test constraints and breaks the existing scripts. The leaf should state the fallback (e.g. no origin or gh: write locally and skip the model branch, or leave the entry to health/commit-untracked), and its acceptance should cover it. The critic confirmed it: Both main-write-model-branch and decision-main-writes-get-a-branch (2) make the branch, push and PR part of the same operation for every main-checkout write with no live run, with no fallback. Of 359 testscripts, 270 git init a plain main checkout and only 51 add an origin (e.g. change-show-canonical-text.txtar: git init, rhiza change new, add, propose, accept, land, no origin); apply.txtar has no git at all. CLAUDE.md forbids tests touching the network or gh. As written these writes would fail or need gh; the leaf's acceptance only covers a repo with a bare origin and fake gh, so the no-origin/no-gh case is undecided. How should it be settled?"
+        },
+        "handle": "review-01m76f247z4y9t4j86ryf70hnt-r3-f1",
+        "id": "01M76FZ15DP1PVV3Y4R8H5WK0D",
+        "key": null,
+        "kind": "question",
+        "node": "01M76FZ15DP1PVV3Y4R7KP5AQ4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76FZ15DP1PVV3Y4R7KP5AQ4",
+        "id": "01M76FZ15WGVRZ1JDRF91GRR9T",
+        "link": "01M76FZ15WGVRZ1JDRF7F7G34A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA4YDVZV5S8GZB49W9M0",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on check-warns-orphan-log): In a main checkout, every untracked entry that no model branch or live run holds counts as an orphan. In testscript repos and other repos with no origin, every entry written is exactly that, because no model branch can exist there. rhiza check would then warn in nearly every existing script, and health-orphan-log-entries would mark the main part bad in every one, changing many goldens and contradicting the existing scripts' expected output. Neither the leaves nor the Decision says how a repo with no origin is treated. The plan should state whether a repo without origin/main is out of scope for orphan reporting, and the acceptances should cover it. The critic confirmed it: In a repo with no origin no model branch can exist, so every entry rhiza writes there is untracked and unheld, i.e. an orphan under check-warns-orphan-log and health-orphan-log-entries. 35 git-init testscripts run rhiza check after uncommitted writes (e.g. change-show-canonical-text.txtar, check-evidence-actor.txtar) and health scripts such as health.txtar and health-projects.txtar run in git-init repos, where the main part would turn bad (exit 1). Neither leaf nor the Decision says how a repo without origin/main is treated, and the acceptances do not cover it. How should it be settled?"
+        },
+        "handle": "review-01m76f247z4y9t4j86ryf70hnt-r3-f2",
+        "id": "01M76FZ16C96GGBGK6088QYFM2",
+        "key": null,
+        "kind": "question",
+        "node": "01M76FZ16C96GGBGK60879HHW2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76FZ16C96GGBGK60879HHW2",
+        "id": "01M76FZ1723Z4MJ0XV0XFDTF9A",
+        "link": "01M76FZ1723Z4MJ0XV0VH9YD07",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAABBDGMZA9F3BBBA3H0D",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76FZ18W5QF59TGY4GWBP1T7",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,33 @@
+{
+  "actor": "01M768640Y6G44XF82BEMJ8F6Y",
+  "after": [
+    "01M768CNJA752EDZQNZTEH7ZW8"
+  ],
+  "at": "2026-11-11T21:32:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "dac111b27f90e3325faf5e4416d7dfd16e0f0213bad7e9be0cdcd6f5bb17d99b",
+          "session": "de19e88c-3c11-4405-aec4-01a1cc82df71",
+          "summary": "Autonomous plan run for change set 01M7684 (CI on a PR that changes only .rhiza/). The planner read .github/workflows/ci.yml (lint, scripts x4, api x2, rest, budgets and an aggregate check job; triggers pull_request and workflow_dispatch on a sha, checkout fetch-depth 0), the Makefile targets (lint = fmt-check + vet + self-check), internal/ciworkflow's tests of ci.yml, and ship check's checksVerdict (SKIPPED already counts as passing, untested) and shipRerunFailed. It raised three choices as one question: the intent to serve, how ci.yml detects a model-only PR and what runs then, and whether ship check gets its own test leaf. No owner took part; the arbiter answered with Decision decision-model-only-ci: no serves link (a standalone owner request); a plain-git `changes` job (code=true on any path outside .rhiza/, always true on workflow_dispatch) gating the five Go jobs, a `model` job running make self-check when code=false, and `check` as the single aggregate passing on success-or-skipped with changes succeeded; and a separate internal/api test leaf for the SKIPPED verdict and rerun.",
+          "title": "Plan interview: CI on a model-only PR (autonomous)"
+        },
+        "handle": "model-only-ci-interview",
+        "id": "01M768DNBE2DQ87QQQJQW5GWNZ",
+        "key": null,
+        "kind": "source",
+        "node": "01M768DNBE2DQ87QQQJMK969AT",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7684F6CEBCS33NW5DDK1BVP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M768DNCNHM65S0A7A62JYBHM",
+  "type": "ops",
+  "v": 1
+}
