@@ -623,7 +623,7 @@ func TestBuildBuiltin(t *testing.T) {
 			t.Errorf("%s prompt names an agent product: %q", role, r.Prompt)
 		}
 	}
-	for _, w := range []string{"{attempt}", "Leaf: {leaf}"} {
+	for _, w := range []string{"{attempt}", "Leaf: {leaf}", "pre-handoff checklist", "`Checks:` block"} {
 		if !strings.Contains(build.Builder.Prompt, w) {
 			t.Errorf("builder prompt lacks %q", w)
 		}
@@ -2308,6 +2308,34 @@ func TestBuiltinPromptsDoneOwnCommand(t *testing.T) {
 			}
 			if !strings.Contains(line, "very last action") {
 				t.Errorf("%s names rhiza session done without saying it is the very last action", where)
+			}
+		}
+	}
+}
+
+func TestFixerPromptsNameChecksBlock(t *testing.T) {
+	parse := func(name string) *Definition {
+		data, ok := Builtin(name)
+		if !ok {
+			t.Fatalf("no %s built-in", name)
+		}
+		def, err := ParseWith(name, data, builtinResolver)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return def
+	}
+	review, ship := parse("review"), parse("ship-change")
+	prompts := map[string]string{
+		"review fixer": review.Steps["review"].Fixer.Prompt,
+		"ci-fix":       ship.Steps["ci-fix"].Prompt,
+		"gate-fix":     ship.Steps["gate-fix"].Prompt,
+		"conflict-fix": ship.Steps["conflict-fix"].Prompt,
+	}
+	for name, p := range prompts {
+		for _, w := range []string{"`Checks:` block", "`rhiza ship generate`", "`rhiza render`", "exit code"} {
+			if !strings.Contains(p, w) {
+				t.Errorf("%s prompt lacks %q", name, w)
 			}
 		}
 	}

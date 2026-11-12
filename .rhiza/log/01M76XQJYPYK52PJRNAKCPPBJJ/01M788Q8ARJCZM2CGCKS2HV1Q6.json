@@ -1,0 +1,86 @@
+{
+  "actor": "01M788J9RJ43MAY3F06G1B6BXD",
+  "after": [
+    "01M788EEDXT61VZBKCY2BN04FZ"
+  ],
+  "at": "2026-11-12T16:16:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 95fee8aca with a binary built from the head: `rhiza guide build` prints the builder checklist (acceptance commands, `rhiza ship generate`, `rhiza render`, fold changes in, a Checks: block with exit codes above the trailers) and `rhiza workflow describe build --json` shows the builder prompt naming the pre-handoff checklist. In a scratch git repo, `rhiza ship generate` exited 0 both unset (nothing to generate) and with rhiza.ship.generate set (staged the changed file), and `rhiza render` exited 0. A commit made from the guide's example message parses with `git interpret-trailers --parse` to exactly Change/Actor/Leaf/Co-Authored-By, so the Checks: block is not read as trailers; `rhiza check` on this branch claims its Checks:-carrying commits. go test -trimpath ./internal/guide ./internal/workflow pass."
+        },
+        "handle": "builder-prehandoff-checklist-qa-1",
+        "id": "01M788Q85YT2ZX81MG984S8SAK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M788Q85YT2ZX81MG94F21NCD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M788Q85YT2ZX81MG94F21NCD",
+        "id": "01M788Q86MQSQAA9W3S5NK2198",
+        "link": "01M788Q86MQSQAA9W3S3KVTGSN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY43WSHZDCT6WSCK7ATYJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 95fee8aca with a binary built from the head: `rhiza guide review` prints the Fixer section's checklist (reproduce the findings, `rhiza ship generate`, `rhiza render`, a Checks: block with exit codes); builtin review.toml's fixer and builtin ship-change.toml's ci-fix, gate-fix, gate-fix-merge, conflict-fix and conflict-fix-landed prompts all name the Checks: block. Caveat: in this repo `rhiza workflow describe ship-change` resolves to the repo layer .rhiza/workflows/ship-change.toml, which shadows the builtin and lacks the new text, so Rhiza's own ci-fix/gate-fix/conflict-fix fixers do not get it (filed as a discovered-from draft change set). go test -trimpath ./internal/guide ./internal/workflow pass."
+        },
+        "handle": "fixer-prehandoff-checklist-qa-1",
+        "id": "01M788Q87H1GW2M37RAE7R3DJ5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M788Q87H1GW2M37RADEYPZ4N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M788Q87H1GW2M37RADEYPZ4N",
+        "id": "01M788Q88706Q03BK8JGJX7KHZ",
+        "link": "01M788Q88706Q03BK8JG72X47W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY4512EWBGYNTAAH4TQ4Y",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 95fee8aca with a binary built from the head: `rhiza guide build`'s Verifier section says to re-run every command in the commit's Checks: block and every acceptance command, and that a different exit code or no Checks: block is a finding naming the command. Re-running the Checks: commands of this branch's 5f8bfd112 in scope (go test -trimpath ./internal/guide ./internal/workflow) exited 0 as reported. go test -trimpath ./internal/guide passes."
+        },
+        "handle": "verifier-reruns-reported-checks-qa-1",
+        "id": "01M788Q89CAA8R2G8C4WSX84GF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M788Q89CAA8R2G8C4S8V53D8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M788Q89CAA8R2G8C4S8V53D8",
+        "id": "01M788Q8A606JA0DV2VE3G0FJM",
+        "link": "01M788Q8A606JA0DV2VD2SC8JV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY462ZXBJ1BQB0RJ5FA66",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XQJYPYK52PJRNAKCPPBJJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M788Q8ARJCZM2CGCKS2HV1Q6",
+  "type": "ops",
+  "v": 1
+}

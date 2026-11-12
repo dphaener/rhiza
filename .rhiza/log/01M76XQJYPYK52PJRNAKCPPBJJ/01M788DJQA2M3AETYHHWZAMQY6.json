@@ -1,0 +1,40 @@
+{
+  "actor": "01M7888HX4TEHWE0B27QENQCR5",
+  "after": [
+    "01M7882BVKP5BR4FTP60R7GP00"
+  ],
+  "at": "2026-11-12T16:10:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-dc5b5582 at 5f8bfd112: go test -trimpath ./internal/guide -run Review -v passes, incl. new TestReviewFixerPreHandoffChecklist, which asserts review.md's Fixer section names reproducing the findings, `rhiza ship generate`, `rhiza render`, the `Checks:` block and exit code; go test -trimpath ./internal/guide passes (review.md 799/800 tokens under the cap; to fit, the builder shortened unrelated review.md wording, e.g. the severity glosses and the merge-base git diff command). go test -trimpath ./internal/workflow passes, incl. new TestFixerPromptsNameChecksBlock, which asserts the review.toml fixer prompt and ship-change's ci-fix, gate-fix and conflict-fix prompts each name the `Checks:` block, `rhiza ship generate`, `rhiza render` and exit code. In the diff, gate-fix-merge and conflict-fix-landed get the same text. Caveat: make self-check in a clean detached checkout of 5f8bfd112 (RHIZA_ROOT/CHANGE/RUN unset) fails on a stale render: the claude-code-2be75af1 page is missing (its record came in with the run's evidence commit 4f44e4fb9), and this commit's index.md lists the untracked claude-code-14ab76b3. So the commit's 'make self-check: exit 0' held only in its dirty worktree. Commit a62c7cd14 on cs/pre-handoff-checklist already fixes this render, so no new fix is needed for this leaf."
+        },
+        "handle": "fixer-prehandoff-checklist-verified",
+        "id": "01M788DJK3F2QBTG3DBWF05TZ2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M788DJK3F2QBTG3DBW2QBSMB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M788DJK3F2QBTG3DBW2QBSMB",
+        "id": "01M788DJN933781V9J7F2QH79T",
+        "link": "01M788DJN933781V9J7BYKPXSR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY4512EWBGYNTAAH4TQ4Y",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XQJYPYK52PJRNAKCPPBJJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M788DJQA2M3AETYHHWZAMQY6",
+  "type": "ops",
+  "v": 1
+}

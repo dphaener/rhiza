@@ -1,0 +1,40 @@
+{
+  "actor": "01M787YR2N91NHY4D8A1J4RRE5",
+  "after": [
+    "01M777KHNCT8HS8AC45HXX494P"
+  ],
+  "at": "2026-11-12T16:04:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 120eafed3: go test -trimpath -count=1 ./internal/guide -run Build passed (TestBuildPreHandoffChecklist asserts build.md names the acceptance commands, `rhiza ship generate`, `rhiza render`, the `Checks:` block and exit codes, and that Checks: sits above Change: and outside the final trailer paragraph; TestBuildTrailersInOneFinalParagraph still passes). go test -trimpath -count=1 ./internal/workflow passed, with TestBuildBuiltin asserting the builder prompt names the `pre-handoff checklist` and the `Checks:` block. make self-check in a clean detached worktree at the commit printed ok. Read the diff: build.md's builder section tells the builder to run the acceptance commands, rhiza ship generate and rhiza render, fold changed files in, and list each command with its exit code in a Checks: block above the trailers; the commit itself carries such a block."
+        },
+        "handle": "builder-prehandoff-checklist-verified",
+        "id": "01M7882BT9YWBEPB5A25BB63HA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7882BT9YWBEPB5A21QHPNC1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7882BT9YWBEPB5A21QHPNC1",
+        "id": "01M7882BTWJEGWXZC7CRVJSTTH",
+        "link": "01M7882BTWJEGWXZC7CN3VDA5P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY43WSHZDCT6WSCK7ATYJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XQJYPYK52PJRNAKCPPBJJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7882BVKP5BR4FTP60R7GP00",
+  "type": "ops",
+  "v": 1
+}
