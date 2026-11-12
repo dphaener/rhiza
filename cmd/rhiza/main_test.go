@@ -18,6 +18,7 @@ import (
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/rootguard"
 	runpkg "github.com/dphaener/rhiza/internal/run"
+	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/store"
 	"github.com/rogpeppe/go-internal/testscript"
 )
@@ -53,7 +54,7 @@ func TestScripts(t *testing.T) {
 		Dir:           dir,
 		Files:         files,
 		Setup:         setup,
-		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "quickstart-doc": quickstartDoc, "chtimes": chtimes, "health-server": healthServer, "run-lock": runLock, "file-server": fileServer, "root-daemon-lock": rootDaemonLock},
+		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "quickstart-doc": quickstartDoc, "chtimes": chtimes, "health-server": healthServer, "run-lock": runLock, "file-server": fileServer, "root-daemon-lock": rootDaemonLock, "edit-sessions": editSessions},
 		UpdateScripts: *update,
 	})
 }
@@ -207,6 +208,71 @@ func runLock(ts *testscript.TestScript, neg bool, args []string) {
 		ts.Fatalf("run-lock %s: held=%v err=%v", args[1], !ok, err)
 	}
 	ts.Defer(unlock)
+}
+
+// editSessions is the script command `edit-sessions <edit> [args...]`: it
+// applies one hand edit to every session record of the repo in the working
+// directory, through the session store's Update, so it runs under the
+// store's lock and a concurrent locked writer (session start recording the
+// tab, a hook report) cannot drop it. The edits:
+//
+//	hook-at <time>                   the hook report's time
+//	hook-state <state> [kind detail] the hook report's state (and kind, detail)
+//	tab <title> <block> <session>    the record's tab
+//	rex <state> <time>               a Rex report
+//	autonomous                       mark the session autonomous
+//	done <time>                      the session's own word that it is done
+func editSessions(ts *testscript.TestScript, neg bool, args []string) {
+	if neg || len(args) == 0 {
+		ts.Fatalf("usage: edit-sessions edit [args...]")
+	}
+	at := func(v string) time.Time {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			ts.Fatalf("edit-sessions: bad time %q", v)
+		}
+		return t
+	}
+	var edit func(r *session.Record)
+	a := args[1:]
+	switch {
+	case args[0] == "hook-at" && len(a) == 1:
+		edit = func(r *session.Record) {
+			if r.Status.Hook != nil {
+				r.Status.Hook.At = at(a[0])
+			}
+		}
+	case args[0] == "hook-state" && (len(a) == 1 || len(a) == 3):
+		edit = func(r *session.Record) {
+			if r.Status.Hook == nil {
+				return
+			}
+			r.Status.Hook.State = a[0]
+			if len(a) == 3 {
+				r.Status.Hook.Kind, r.Status.Hook.Detail = a[1], a[2]
+			}
+		}
+	case args[0] == "tab" && len(a) == 3:
+		edit = func(r *session.Record) { r.Tab = session.Tab{Title: a[0], Block: a[1], Session: a[2]} }
+	case args[0] == "rex" && len(a) == 2:
+		edit = func(r *session.Record) { r.Status.Rex = &session.Report{State: a[0], At: at(a[1])} }
+	case args[0] == "autonomous" && len(a) == 0:
+		edit = func(r *session.Record) { r.Autonomous = true }
+	case args[0] == "done" && len(a) == 1:
+		edit = func(r *session.Record) { r.Status.Done = &session.Report{State: session.StateDone, At: at(a[0])} }
+	default:
+		ts.Fatalf("usage: edit-sessions edit [args...]: unknown edit or wrong arguments %q", args)
+	}
+	st := session.NewStore(session.Dir(ts.MkAbs(".git")))
+	recs, err := st.List()
+	if err != nil {
+		ts.Fatalf("edit-sessions: %v", err)
+	}
+	for _, r := range recs {
+		if _, err := st.Update(r.ID, edit); err != nil {
+			ts.Fatalf("edit-sessions: %v", err)
+		}
+	}
 }
 
 // rootDaemonLock is the script command `root-daemon-lock <root>`: it takes

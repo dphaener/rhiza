@@ -21,13 +21,16 @@ env REX_SESSION=session:s1
 exec rhiza change new 'Owner blocked' --title 'Owner blocked' --json
 exec rhiza run start --foreground --workflow work --permission-mode manual &
 
-# Wait (bounded) until the agent has reported working through its hook.
-exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"hook\"" "$WORK"/repo/.git/rhiza/sessions/*.json && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+# Wait (bounded) until the agent has reported working through its hook and
+# session start has recorded its tab, so neither write lands after the edits.
+exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"hook\"" "$WORK"/repo/.git/rhiza/sessions/*.json && grep -q "block:b1" "$WORK"/repo/.git/rhiza/sessions/*.json && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
 exec rhiza inbox --json
 ! stdout '"permission"'
 
 # A permission block reported at 00:00:00.
-exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"state\": \")working\"/\${1}blocked\", \"kind\": \"permission\", \"detail\": \"Allow the hook command?\"/s; s/(\"hook\": \{.*?\"at\": \")[^\"]*/\${1}2030-01-01T00:00:00Z/s; s/\"tab\": \{[^}]*\}/\"tab\": {\"title\": \"build tab\", \"block\": \"block:sess\", \"session\": \"session:s2\"}/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+edit-sessions hook-state blocked permission 'Allow the hook command?'
+edit-sessions hook-at 2030-01-01T00:00:00Z
+edit-sessions tab 'build tab' block:sess session:s2
 exec rhiza inbox --json
 stdout '"kind": "permission"'
 stdout '"step": "build"'
@@ -54,7 +57,7 @@ stdout 'focus -s session:s2 block:sess'
 ! stdout 'focus .*block:root'
 
 # A newer Rex idle report clears it.
-exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"status\": \{)/\${1}\"rex\": {\"state\": \"idle\", \"at\": \"2030-01-01T00:05:00Z\"}, /" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+edit-sessions rex idle 2030-01-01T00:05:00Z
 exec rhiza inbox --json
 ! stdout '"permission"'
 
@@ -66,8 +69,10 @@ wait
 exec sh -c 'rm $WORK/go; rm -f .git/rhiza/sessions/*.json'
 exec rhiza change new 'Autonomous blocked' --title 'Autonomous blocked' --json
 exec rhiza run start --foreground --workflow work --permission-mode manual --autonomous &
-exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"hook\"" "$WORK"/repo/.git/rhiza/sessions/*.json && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
-exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"state\": \")working\"/\${1}blocked\", \"kind\": \"permission\", \"detail\": \"Allow the hook command?\"/s; s/(\"hook\": \{.*?\"at\": \")[^\"]*/\${1}2030-01-01T00:00:00Z/s; s/\"tab\": \{[^}]*\}/\"tab\": {\"title\": \"build tab\", \"block\": \"block:sess\", \"session\": \"session:s2\"}/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"hook\"" "$WORK"/repo/.git/rhiza/sessions/*.json && grep -q "block:b1" "$WORK"/repo/.git/rhiza/sessions/*.json && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+edit-sessions hook-state blocked permission 'Allow the hook command?'
+edit-sessions hook-at 2030-01-01T00:00:00Z
+edit-sessions tab 'build tab' block:sess session:s2
 exec rhiza inbox --json
 stdout '"kind": "permission"'
 mkdir .git/rhiza/runs

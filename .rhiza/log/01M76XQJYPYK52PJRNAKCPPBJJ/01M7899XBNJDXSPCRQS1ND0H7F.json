@@ -1,0 +1,40 @@
+{
+  "actor": "01M7898AN43GPBZ41X25JYZK1B",
+  "after": [
+    "01M7897DKRXJD6X2T51FFSM2CH"
+  ],
+  "at": "2026-11-12T16:26:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At aa2f5da1c: go test -trimpath ./internal/guide -run Review passes, incl. TestReviewFixerPreHandoffChecklist, which slices review.md between '## Fixer' and '## Outside work' and asserts 'reproduce your findings', `rhiza ship generate`, `rhiza render`, '`Checks:` block' and 'exit code'; the whole guide package passes too (token caps). go test -trimpath ./internal/workflow passes, incl. TestFixerPromptsNameChecksBlock asserting the review.toml fixer prompt and ship-change.toml ci-fix, gate-fix and conflict-fix prompts each name the `Checks:` block, rhiza ship generate, rhiza render and exit code. Read the diff: review.md fixer section and the four prompts (plus gate-fix-merge and conflict-fix-landed) say to run reproducing commands, then rhiza ship generate and rhiza render before the one commit, with a Checks: block of commands and exit codes."
+        },
+        "handle": "fixer-prehandoff-checklist-verified-2",
+        "id": "01M7899X8NNS6N6B14YQF8VTQW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7899X8NNS6N6B14YP3866JJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7899X8NNS6N6B14YP3866JJ",
+        "id": "01M7899XA3MQZJHR48DV5T1KAZ",
+        "link": "01M7899XA3MQZJHR48DV2F3SNW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY4512EWBGYNTAAH4TQ4Y",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XQJYPYK52PJRNAKCPPBJJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7899XBNJDXSPCRQS1ND0H7F",
+  "type": "ops",
+  "v": 1
+}
