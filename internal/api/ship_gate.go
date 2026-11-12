@@ -8,14 +8,18 @@ package api
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/dphaener/rhiza/internal/run"
 )
 
 func init() {
@@ -56,7 +60,7 @@ type ShipGateResponse struct {
 	Passed  bool   `json:"passed" desc:"True if the gate ran and exited 0"`
 	Output  string `json:"output,omitempty" desc:"The end of the gate's combined output, when it ran"`
 	Error   string `json:"error,omitempty" desc:"How a failing gate failed: its exit status or a timeout"`
-	Log     string `json:"log,omitempty" desc:"The file holding the gate's whole combined output (under the git common dir, replaced on each run), when it ran"`
+	Log     string `json:"log,omitempty" desc:"The file holding the gate's whole combined output (in the run's directory, one file per gate run; outside a run rhiza/gate/<branch>.log under the git common dir, replaced on each run), when it ran"`
 	Head    string `json:"head,omitempty" desc:"The commit the gate passed on"`
 	Failed  string `json:"failed,omitempty" desc:"With --failed: the unpushed head ship rebase left after the gate failed on it, when the branch is still at it"`
 	// asked is true for --failed, whose exit code says whether Failed is set.
@@ -200,7 +204,7 @@ func shipLocalGate(ctx *Ctx, t *shipTarget) (ShipGateResponse, error) {
 	runErr := cmd.Run()
 	resp.Output = out.String()
 	resp.failLines = shipGateFailLines(resp.Output)
-	resp.Log = shipWriteGateLog(t, out.Bytes())
+	resp.Log = shipWriteGateLog(ctx, t, out.Bytes())
 	if len(resp.Output) > shipGateTail {
 		resp.Output = "...\n" + resp.Output[len(resp.Output)-shipGateTail:]
 	}
@@ -245,11 +249,47 @@ func shipGateFailLines(out string) []string {
 	return lines
 }
 
-// shipWriteGateLog writes the gate's whole output to
-// <common>/rhiza/gate/<branch>.log, replacing the last run's, and returns
-// the path; empty if it could not be written (the response still has the tail).
-func shipWriteGateLog(t *shipTarget, out []byte) string {
-	if t.common == "" || t.branch == "" {
+// shipWriteGateLog writes the gate's whole output to its own file and
+// returns the path; empty if it could not be written (the response still has
+// the tail). In a run (RHIZA_RUN) the file is <runs>/<run id>/gate-<n>.log,
+// n counting up so a later gate of the run never overwrites an earlier one;
+// outside a run it is <common>/rhiza/gate/<branch>.log, replaced each time.
+func shipWriteGateLog(ctx *Ctx, t *shipTarget, out []byte) string {
+	if t.common == "" {
+		return ""
+	}
+	if id := strings.TrimSpace(ctxGetenv(ctx)(envRun)); id != "" {
+		if j, err := run.NewStore(run.Dir(t.common)).Read(id); err == nil {
+			id = j.ID
+		}
+		if strings.ContainsAny(id, `/\`) || strings.HasPrefix(id, ".") {
+			return ""
+		}
+		dir := filepath.Join(run.Dir(t.common), id)
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return ""
+		}
+		for n := 1; n < 10000; n++ {
+			path := filepath.Join(dir, fmt.Sprintf("gate-%d.log", n))
+			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
+			if errors.Is(err, fs.ErrExist) {
+				continue
+			}
+			if err != nil {
+				return ""
+			}
+			_, err = f.Write(out)
+			if cerr := f.Close(); err == nil {
+				err = cerr
+			}
+			if err != nil {
+				return ""
+			}
+			return path
+		}
+		return ""
+	}
+	if t.branch == "" {
 		return ""
 	}
 	path := filepath.Join(t.common, "rhiza", "gate", filepath.FromSlash(t.branch)+".log")

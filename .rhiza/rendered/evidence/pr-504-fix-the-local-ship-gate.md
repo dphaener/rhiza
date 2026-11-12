@@ -28,7 +28,7 @@ verified
 
 - verifies [tests-leave-root-state-alone](../capability/rhiza/integrity/self-check/tests-leave-root-state-alone.md)
 - verifies [ci-stability-state](../capability/rhiza/orchestration/shipping/wait-green-pr/ci-stability-state.md)
-- verifies [ship-gate-full-log](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-gate-full-log.md)
+- verifies ship-gate-full-log (retired)
 
 ## History
 

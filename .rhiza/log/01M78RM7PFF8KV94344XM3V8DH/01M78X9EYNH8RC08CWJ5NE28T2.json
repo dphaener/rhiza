@@ -1,0 +1,40 @@
+{
+  "actor": "01M78X7X2YSJYWY3V1P96W4RSX",
+  "after": [
+    "01M78X24S0S4KN5WX6VYRNCGTK"
+  ],
+  "at": "2026-11-12T22:15:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fa3d982ee: go test -trimpath ./internal/api -run TestHealthCI -v passes. In TestHealthCI, a record with one 'scripts (4/4) / UNKNOWN STEP' infra failure and one TestX flake gives ok/stable. Its detail lists 'flaky TestX: 1 flake' and 'infra scripts (4/4) / UNKNOWN STEP: 1 failure ... infra failures do not make CI unstable'. The stable summary comes from ciVerdict, which reads 'TestX was seen once and ignored; ignored infra failures: ...'. A record where TestX flaked on 2 heads gives warn, naming 'TestX flaked 2 times on 2 heads' and 'stops applying after'. TestHealthCIStability also passes. go test -trimpath ./cmd/rhiza -run TestScripts/health-ci passes, and its script checks the infra line in both rhiza health and rhiza health --json. I read the diff: ciFailureCounts counts infra per job / step in the window, and healthCI appends one sorted infra detail line for each."
+        },
+        "handle": "health-ci-infra-failures-verified",
+        "id": "01M78X9EW1Z40YB2MRER2DTFM0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78X9EW1Z40YB2MRENXAFDSN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78X9EW1Z40YB2MRENXAFDSN",
+        "id": "01M78X9EX8X0AB8N72P4875B83",
+        "link": "01M78X9EX8X0AB8N72P1ME6JYG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S7501GDG9S1WVKE58HFKW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78RM7PFF8KV94344XM3V8DH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78X9EYNH8RC08CWJ5NE28T2",
+  "type": "ops",
+  "v": 1
+}

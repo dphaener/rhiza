@@ -24324,7 +24324,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "log": {
-            "description": "The file holding the gate's whole combined output (under the git common dir, replaced on each run), when it ran",
+            "description": "The file holding the gate's whole combined output (in the run's directory, one file per gate run; outside a run rhiza/gate/<branch>.log under the git common dir, replaced on each run), when it ran",
             "type": "string"
           },
           "output": {
@@ -24682,7 +24682,7 @@ cmp stdout describe.golden.json
                 "type": "string"
               },
               "log": {
-                "description": "The file holding the gate's whole combined output (under the git common dir, replaced on each run), when it ran",
+                "description": "The file holding the gate's whole combined output (in the run's directory, one file per gate run; outside a run rhiza/gate/<branch>.log under the git common dir, replaced on each run), when it ran",
                 "type": "string"
               },
               "output": {

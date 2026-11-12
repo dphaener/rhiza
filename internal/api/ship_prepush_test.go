@@ -146,7 +146,7 @@ func setCIStability(t *testing.T, common string, unstable bool) {
 	t.Helper()
 	rec := `{"runs":[{"head":"a","result":"green","time":"x"}]}`
 	if unstable {
-		rec = `{"runs":[{"head":"a","result":"green","time":"x","flakes":["TestPond"]}]}`
+		rec = `{"runs":[{"head":"a","result":"green","time":"x","flakes":["TestPond"]},{"head":"b","result":"green","time":"x","flakes":["TestPond"]}]}`
 	}
 	if err := writeAtomic(ciStabilityPath(common), []byte(rec)); err != nil {
 		t.Fatal(err)

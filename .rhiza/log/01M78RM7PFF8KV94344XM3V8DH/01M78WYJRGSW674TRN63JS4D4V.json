@@ -1,0 +1,40 @@
+{
+  "actor": "01M78WMT1AN9JG2WZRA927JP24",
+  "after": [
+    "01M78WGQ0AM6WRR7V9KZYXSBHC"
+  ],
+  "at": "2026-11-12T22:09:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at ed1957908: go test -trimpath ./internal/api -run 'TestShipGateRunLog|TestShipRebase' -v passes (13 tests). TestShipGateRunLog with RHIZA_RUN set runs a failing gate printing '--- FAIL: TestX', 20000 filler lines (>64 KB) and make's Error 1 line twice: both logs land as distinct files in run.Dir/<run>/ (gate-<n>.log, O_EXCL so never overwritten), each holds the whole output incl. 'Error 1', the last 20 human lines hold '--- FAIL: TestX' and 'Full log: <path>' within stepTailBytes (the command step's journal detail keeps the last 20 lines / 2048 bytes, so a failing gate step's detail names the log), and a passing gate also writes its log there; TestShipRebaseRunsLocalGate shows the no-run log at <common>/rhiza/gate/cs/ship-it.log. go test -trimpath ./internal/workflow ok; go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden ok (golden carries the new log desc). grep -c 'run `rhiza ship gate` to see' on internal/workflow/builtin/ship-change.toml, .rhiza/workflows/ship-change.toml, .rhiza/workflows/docs.toml prints 0 for all three, and each file's two gate-fix prompts tell the fixer to read the full gate log (`Full log:`) instead of rerunning rhiza ship gate. make self-check passes (exit 0) in a clean detached worktree of the commit with RHIZA_ROOT/CHANGE/RUN/LEAF/ACTOR unset; in the run worktree it failed only on the verifier session's own unrendered actor record. Read the diff of internal/api/ship_gate.go: run id resolved via the run store, path-traversal ids refused."
+        },
+        "handle": "ship-gate-run-log-verified",
+        "id": "01M78WYJN8KEY23XJRE4PNHSX7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78WYJN8KEY23XJRE37GM2MT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78WYJN8KEY23XJRE37GM2MT",
+        "id": "01M78WYJPCM3WC7RDJN4PN85X6",
+        "link": "01M78WYJPCM3WC7RDJN4406VSN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S754HVX2TR0XVH15MKYZ4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78RM7PFF8KV94344XM3V8DH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78WYJRGSW674TRN63JS4D4V",
+  "type": "ops",
+  "v": 1
+}

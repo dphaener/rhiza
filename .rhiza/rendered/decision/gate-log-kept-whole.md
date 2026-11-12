@@ -22,7 +22,8 @@ The local gate's whole combined output is written to a log file the fixer can re
 
 ### In
 
-- decided-by [ship-gate-full-log](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-gate-full-log.md)
+- decided-by ship-gate-full-log (retired)
+- decided-by [ship-gate-run-log](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-gate-run-log.md)
 
 ## History
 

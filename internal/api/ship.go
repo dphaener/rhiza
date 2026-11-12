@@ -448,8 +448,11 @@ type shipState struct {
 	CIFindings []ShipFinding `json:"ci_findings,omitempty"`
 	// RerunTests are the failing tests read from the logs of the failed
 	// runs just before RerunHead was rerun: if the rerun passes they are
-	// the head's flakes, in the CI stability record.
+	// the head's flakes, in the CI stability record. RerunInfra are the
+	// failures of logs that name no test ('job / step', 'CI run <id>'),
+	// recorded as infra, not flakes.
 	RerunTests []string `json:"rerun_tests,omitempty"`
+	RerunInfra []string `json:"rerun_infra,omitempty"`
 	// DispatchCommit is the merge commit CI was dispatched on, and
 	// Dispatched the workflow files dispatched for it, once each.
 	DispatchCommit string   `json:"dispatch_commit,omitempty"`
@@ -1273,7 +1276,7 @@ func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckRespo
 	if st.RerunHead != resp.Commit || count == 0 {
 		// The first attempt's failures, read while its logs are there; a
 		// later rerun's logs would replace them.
-		st.RerunTests = shipFailedTests(ctx, t, runs)
+		st.RerunTests, st.RerunInfra = shipFailedTests(ctx, t, runs)
 	}
 	st.RerunHead, st.Reruns, st.RerunCount, st.CIFindings = resp.Commit, append(st.Reruns, runs...), count+1, nil
 	if err := writeShipState(path, *st); err != nil {
@@ -1367,6 +1370,8 @@ type failedLog struct {
 	Run   string
 	Text  string
 	Where []string
+	// Tests are the failing tests the log names, by full name.
+	Tests []string
 }
 
 // shipFailedLogs reads the trimmed failing part of the log of each Actions
@@ -1379,27 +1384,57 @@ func shipFailedLogs(ctx *Ctx, t shipTarget, runs []string) []failedLog {
 			continue
 		}
 		if text, where := trimFailureLog(string(out)); text != "" {
-			logs = append(logs, failedLog{Run: id, Text: text, Where: where})
+			logs = append(logs, failedLog{Run: id, Text: text, Where: where, Tests: failedTestNames(string(out))})
 		}
 	}
 	return logs
 }
 
-// shipFailedTests names where the runs' logs fail ('job / step'), for the
-// head's flakes.
-func shipFailedTests(ctx *Ctx, t shipTarget, runs []string) []string {
+// goFailLine matches a go test '--- FAIL: <name> (<time>)' line, indented
+// for a subtest.
+var goFailLine = regexp.MustCompile(`^--- FAIL: (\S+)`)
+
+// failedTestNames reads the tests a CI log names as failed, by full name
+// (subtests as 'TestScripts/bar'), in order and without repeats. A parent
+// whose subtest is also named is left out: the subtest is the flake.
+func failedTestNames(log string) []string {
 	var names []string
-	for _, l := range shipFailedLogs(ctx, t, runs) {
-		for _, w := range l.Where {
-			if !slices.Contains(names, w) {
-				names = append(names, w)
-			}
-		}
-		if len(l.Where) == 0 {
-			names = append(names, "CI run "+l.Run)
+	for _, raw := range strings.Split(log, "\n") {
+		m := goFailLine.FindStringSubmatch(logText(strings.TrimRight(raw, "\r")))
+		if m != nil && !slices.Contains(names, m[1]) {
+			names = append(names, m[1])
 		}
 	}
-	return names
+	return slices.DeleteFunc(names, func(n string) bool {
+		return slices.ContainsFunc(names, func(o string) bool { return strings.HasPrefix(o, n+"/") })
+	})
+}
+
+// shipFailedTests reads the runs' failed logs for the head's flakes: the
+// failing tests they name, and, for a log that names none, where it fails
+// ('job / step', or 'CI run <id>') as an infra failure.
+func shipFailedTests(ctx *Ctx, t shipTarget, runs []string) (tests, infra []string) {
+	add := func(list []string, name string) []string {
+		if slices.Contains(list, name) {
+			return list
+		}
+		return append(list, name)
+	}
+	for _, l := range shipFailedLogs(ctx, t, runs) {
+		for _, n := range l.Tests {
+			tests = add(tests, n)
+		}
+		if len(l.Tests) > 0 {
+			continue
+		}
+		for _, w := range l.Where {
+			infra = add(infra, w)
+		}
+		if len(l.Where) == 0 {
+			infra = add(infra, "CI run "+l.Run)
+		}
+	}
+	return tests, infra
 }
 
 // shipLogFolder is where the failed jobs' logs are saved: the current run's
