@@ -1,0 +1,142 @@
+{
+  "actor": "01M76QKRKWWGZYFY5GM837EY9Z",
+  "after": [
+    "01M76QTW1ME4NGVT381M9G2H2F"
+  ],
+  "at": "2026-11-12T02:02:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M76QSWXXZ9AZCW4918RBPYYH",
+        "id": "01M76QVCZY9G2MC6440B2PZE3Q",
+        "link": "01M76QVCZY9G2MC6440A21HD4K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QTVN8STN3ET0VJXR9RET1",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/store/... has a test that a written entry is 0444 and that opening it for writing fails (as non-root); a testscript in cmd/rhiza/testdata/script (go test -trimpath ./cmd/rhiza -run TestScripts/<name>) chmods an entry to 0644, runs rhiza render and finds it 0444 again",
+          "statement": "rhiza writes every log entry file read-only (0444), and rhiza render sets 0444 on every entry under .rhiza/log, so a shell command that opens an entry for writing fails instead of overwriting it"
+        },
+        "handle": "log-entries-read-only",
+        "id": "01M76QVD40AW1RFPN3EPB4ZNF8",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M76QVD40AW1RFPN3ENSY5F9P",
+        "op": "node.create",
+        "parent": "01M5SWRSPVMK689DD23KH7KP0Z"
+      },
+      {
+        "decision": null,
+        "from": "01M76QVD40AW1RFPN3ENSY5F9P",
+        "id": "01M76QVD67VFZ193FY5W7Q4WCF",
+        "link": "01M76QVD67VFZ193FY5W4QC5ED",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QSWXXZ9AZCW4918RBPYYH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/adapter/claudecode/... covers a deny reply for each of the four tools on a .rhiza/log/ path (absolute and relative) and no reply for a path outside it, for Bash, and for Read; a testscript (go test -trimpath ./cmd/rhiza -run TestScripts/<name>) feeds rhiza session hook PreToolUse a Write payload on .rhiza/log/x/y.json and gets a deny naming rhiza apply",
+          "statement": "An agent session's PreToolUse hook (rhiza session hook) denies Write, Edit, MultiEdit and NotebookEdit on any path under .rhiza/log/, with a reason that says to write through rhiza apply and read with rhiza show, rhiza slice or cat; other tools and paths pass as before, and shell commands are not parsed"
+        },
+        "handle": "session-hook-denies-log-edits",
+        "id": "01M76QVD7QSJ8RV3YNK93G06SK",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M76QVD7QSJ8RV3YNK7YMZ01C",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M76QVD7QSJ8RV3YNK7YMZ01C",
+        "id": "01M76QVD8MKGH321V3VMPH1ZKS",
+        "link": "01M76QVD8MKGH321V3VH34GVTJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QSWXXZ9AZCW4918RBPYYH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript (go test -trimpath ./cmd/rhiza -run TestScripts/<name>) makes each of the three damages in turn (an entry rewritten non-canonically, an entry's bytes copied under another entry's file name, a committed entry changed), and each time rhiza render exits non-zero, names the path and problem, and leaves .rhiza/rendered unchanged; a clean log still renders",
+          "statement": "rhiza render fails, renders nothing and names each entry's path and problem when any log entry does not parse canonically, its ID does not match its file name, or an entry file tracked at HEAD differs from HEAD, so no run commit step (they all render first) commits a damaged entry"
+        },
+        "handle": "render-refuses-damaged-log",
+        "id": "01M76QVD9TGTNKR2S9RH6AQDHD",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M76QVD9TGTNKR2S9REE3KAP2",
+        "op": "node.create",
+        "parent": "01M5SWSJ5Q19Z3R1QHDWWT6H32"
+      },
+      {
+        "decision": null,
+        "from": "01M76QVD9TGTNKR2S9REE3KAP2",
+        "id": "01M76QVDDA78PTQ8ATJNM9VVD5",
+        "link": "01M76QVDDA78PTQ8ATJN8F18AW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QSWXXZ9AZCW4918RBPYYH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript (go test -trimpath ./cmd/rhiza -run TestScripts/<name>) reproduces the incident (an uncommitted entry the index has seen is overwritten with another entry's bytes), rhiza repair --dry-run names it and changes nothing, rhiza repair restores the original bytes at 0444 and rhiza render and fold-ok then pass; it also restores a changed committed entry from HEAD, and reports an entry the index never saw as not restorable with exit non-zero; go test -trimpath ./internal/index/... covers reading an entry's stored bytes; describe-golden.txtar is regenerated",
+          "statement": "rhiza repair (with --dry-run) finds the entries render refuses and restores each, from HEAD's bytes when the file is tracked at HEAD, else from the worktree's persistent index entries table when its stored bytes parse canonically under that file name's ID, writing through temp file and rename at 0444, deleting nothing, and naming every entry it could not restore and why; rhiza check stays read-only"
+        },
+        "handle": "repair-damaged-entries",
+        "id": "01M76QVDF2XHQYY78GE5AZEG6Y",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M76QVDF2XHQYY78GE402FTD4",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "decision": null,
+        "from": "01M76QVDF2XHQYY78GE402FTD4",
+        "id": "01M76QVDFTASFX7JQ1ZD8WH88W",
+        "link": "01M76QVDFTASFX7JQ1ZCA8ZG25",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QSWXXZ9AZCW4918RBPYYH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... asserts the rhiza guide text names rhiza show/slice or cat for reading entries, warns against json.tool and sed -i, and names rhiza repair, and the guide size-cap test still passes",
+          "statement": "The rhiza guide and the agent skills say to read log entries with rhiza show, rhiza slice or cat, never with tools that can write a file (python -m json.tool, jq with in-place output, sed -i, redirects), and to fix a damaged entry with rhiza repair"
+        },
+        "handle": "guide-reads-log-safely",
+        "id": "01M76QVDGG1RNT7EM6NJVF36A8",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M76QVDGG1RNT7EM6NHPZBR6Q",
+        "op": "node.create",
+        "parent": "01M5SWSQ8YXAQ763XWK5M7J24K"
+      },
+      {
+        "decision": null,
+        "from": "01M76QVDGG1RNT7EM6NHPZBR6Q",
+        "id": "01M76QVDHFDAJFGFHSHD5WVKWH",
+        "link": "01M76QVDHFDAJFGFHSH9NTMKN0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QSWXXZ9AZCW4918RBPYYH",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76QJWKEA2M2G87ESG10A47P",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76QVDJ70SZVE7QYH0PC8P82",
+  "type": "ops",
+  "v": 1
+}
