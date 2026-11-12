@@ -1,0 +1,63 @@
+{
+  "actor": "01M775CVKJGHQ9KGVFCN5JWXHG",
+  "after": [
+    "01M775A4QNVW450RE8HRPQV0N7"
+  ],
+  "at": "2026-11-12T06:01:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at f4f59c1c0 with a scratch build (go build -trimpath) in a hermetic scratch repo with a bare origin: on cs/<slug> with origin/main moved, a failing rhiza.ship.prePushCheck made ship rebase print the check's failing lines and 'Left origin/main merged into ... at 02a805a, unpushed, for the step's fixer', exit 1; origin's branch unchanged, HEAD kept at the merge, ship state pre_push_failed=02a805a; rhiza ship gate --failed then exited 0, so rebase -> prepush-triage reaches prepush-fix. After a fix commit on the kept merge, gate --failed exited 1 and ship rebase pushed 5f959b7 (exit 0). go test ./internal/workflow/... and ./internal/api -run 'TestShipPrePush|TestShipGate|TestShipRebase' passed (package FAIL only from the rootguard on ~/code/.rhiza-root/usage.live.json)."
+        },
+        "handle": "plan-prepush-fix-qa-2",
+        "id": "01M775J157KVK3Y077K51FEXRP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M775J157KVK3Y077K32AYY4R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M775J157KVK3Y077K32AYY4R",
+        "id": "01M775J176Q767FX1YBWCQZPKG",
+        "link": "01M775J176Q767FX1YBVPY2QDK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RT03BTXG6QDTFNE23XMA2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at f4f59c1c0 with a scratch build in a hermetic scratch repo with a bare origin: after ship rebase failed its pre-push check (exit 1, merge kept unpushed, ship state pre_push_failed set to the merged head), rhiza ship gate --failed exited 0, so ship-change's rebase-triage/rebase-gate-failed reaches gate-fix; once HEAD moved past it gate --failed exited 1. TestShipGate* and ./internal/workflow/... passed."
+        },
+        "handle": "ship-change-prepush-fix-qa-2",
+        "id": "01M775J1AA47VJ45FCR9KTE08H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M775J1AA47VJ45FCR87WZNFJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M775J1AA47VJ45FCR87WZNFJ",
+        "id": "01M775J1DBKP2YFYMTW08MTD23",
+        "link": "01M775J1DBKP2YFYMTW07F21VC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RT010NG76M92D8AF73776",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M775J1NN5BK2YRV2P3JJAD58",
+  "type": "ops",
+  "v": 1
+}

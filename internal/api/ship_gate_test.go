@@ -239,3 +239,59 @@ func TestShipCheckFailsOnGateFailedHead(t *testing.T) {
 		t.Errorf("check after a fix = %+v", r)
 	}
 }
+
+// The same holds for the head the pre-push check failed on.
+func TestShipCheckFailsOnPrePushFailedHead(t *testing.T) {
+	f, g, state := shipFixture(t)
+	g.answers[shipPRView] = openPR(greenRollup)
+	g.answers["git rev-parse HEAD"] = "beef000111\n"
+	if err := writeShipState(state, shipState{PrePushFailed: "beef000111"}); err != nil {
+		t.Fatal(err)
+	}
+	r := shipCheck(t, f, `{}`)
+	if r.ExitCode() != 1 || r.Passed || !strings.Contains(r.Detail, "pre-push check failed on beef000") {
+		t.Errorf("check on the kept head = %+v", r)
+	}
+	if r := shipCheck(t, f, `{"settled":true}`); r.ExitCode() != 0 {
+		t.Errorf("settled check on the kept head = %+v", r)
+	}
+	g.answers["git rev-parse HEAD"] = "cafe000222\n"
+	if r := shipCheck(t, f, `{}`); r.ExitCode() != 0 || !r.Passed {
+		t.Errorf("check after a fix = %+v", r)
+	}
+}
+
+// ship gate --failed also passes on a head the pre-push check failed on in
+// ship open-pr or land (recorded in the ship state), so the run's triage
+// step sends it to the gate's fixer; a failure that was not the pre-push
+// check (a gh or push error) records nothing and the triage fails.
+func TestShipGateFailedOnPrePushFailure(t *testing.T) {
+	f, g, state := shipFixture(t)
+	g.answers["git rev-parse HEAD"] = "beef000111\n"
+	ask := func() ShipGateResponse {
+		t.Helper()
+		r, err := callOp(t, f.ctx, "ship.gate", `{"failed":true}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r.(ShipGateResponse)
+	}
+	if r := ask(); r.ExitCode() != 1 {
+		t.Errorf("after a gh or push error: %+v", r)
+	}
+	tgt, err := findShipTarget(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	shipRecordPrePushFailed(tgt, &ShipPrePushCheck{Head: "beef000111", Lines: []string{"x"}})
+	if st, _ := readShipState(state); st.PrePushFailed != "beef000111" {
+		t.Fatalf("state = %+v", st)
+	}
+	if r := ask(); r.ExitCode() != 0 || r.Failed != "beef000111" {
+		t.Errorf("on the pre-push-failed head: %+v", r)
+	}
+	g.answers["git rev-parse HEAD"] = "cafe000222\n"
+	if r := ask(); r.ExitCode() != 1 {
+		t.Errorf("a fixed head still counts as the failure: %+v", r)
+	}
+}

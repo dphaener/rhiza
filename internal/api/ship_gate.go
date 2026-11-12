@@ -30,6 +30,10 @@ func init() {
 // LocalGateKey is the setting holding the project's local gate command.
 const LocalGateKey = "rhiza.ship.localGate"
 
+// PrePushCheckKey is the setting holding the project's pre-push check
+// command, run after rhiza check before every push of a run.
+const PrePushCheckKey = "rhiza.ship.prePushCheck"
+
 // shipGateTimeout bounds one gate run; shipGateTail is how much of its
 // output a response keeps (the end, where a failure is named).
 const (
@@ -40,7 +44,7 @@ const (
 // ShipGateRequest takes nothing to run the gate, which is a project
 // setting; Failed asks a routing question instead.
 type ShipGateRequest struct {
-	Failed bool `json:"failed,omitempty" flag:"failed" desc:"Run no gate: exit 0 only if the last ship rebase left an unpushed head the local gate failed on and the branch is still at it, else exit 1 (a conflict or another failure); reads the state file only (for a step that routes a gate failing on a rebased head to a fixer)"`
+	Failed bool `json:"failed,omitempty" flag:"failed" desc:"Run no gate: exit 0 only if the branch is still at an unpushed head the local gate failed on (ship rebase left it) or the pre-push check failed on (ship open-pr or land), else exit 1 (a conflict or another failure); reads the state file only (for a step that routes a gate failing on a rebased head to a fixer)"`
 }
 
 // ShipGateResponse is how the gate went.
@@ -75,7 +79,7 @@ func (r ShipGateResponse) ExitCode() int {
 func (r ShipGateResponse) Human(w io.Writer) {
 	switch {
 	case r.asked && r.Failed != "":
-		fmt.Fprintf(w, "The local gate failed on %s, which ship rebase left unpushed with origin/%s merged in: run rhiza ship gate there to see the failure.\n", shortSHA(r.Failed), shipMain)
+		fmt.Fprintf(w, "The local gate failed on %s, which was left unpushed (a rebase merged origin/%s in, or the pre-push check failed): run rhiza ship gate there, or see the pre-push check in rhiza run status, for the failure.\n", shortSHA(r.Failed), shipMain)
 	case r.asked:
 		fmt.Fprintln(w, "No head the local gate failed on after a rebase is on the branch.")
 	case r.Skipped:
@@ -100,6 +104,18 @@ func runShipGate(ctx *Ctx, req any) (any, error) {
 	return shipLocalGate(ctx, nil)
 }
 
+// shipRecordPrePushFailed records the head the pre-push check failed on in
+// the ship state, for ship gate --failed. Best effort: the failure is
+// reported either way.
+func shipRecordPrePushFailed(t shipTarget, c *ShipPrePushCheck) {
+	st, err := readShipState(t.statePath())
+	if err != nil {
+		return
+	}
+	st.PrePushFailed = c.Head
+	writeShipState(t.statePath(), st)
+}
+
 // shipGateFailed answers ship gate --failed: whether the branch is at the
 // head ship rebase left after the gate failed on it, so the step after a
 // failed rebase sends that to the gate's fixer and a conflict ends the run.
@@ -114,7 +130,7 @@ func shipGateFailed(ctx *Ctx) (any, error) {
 	}
 	resp := ShipGateResponse{asked: true}
 	head, _ := gitAt(ctx, t.dir(), "rev-parse", "HEAD")
-	if h := strings.TrimSpace(head); h != "" && h == st.GateFailed {
+	if h := strings.TrimSpace(head); h != "" && (h == st.GateFailed || h == st.PrePushFailed) {
 		resp.Failed = h
 	}
 	return resp, nil

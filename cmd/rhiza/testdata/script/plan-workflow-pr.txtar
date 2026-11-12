@@ -155,8 +155,8 @@ fold-ok
 # A following ship-change run on the planned change set opens and merges
 # its own PR, after the plan's merge: gh pr merge is called again, pinned
 # to the new PR's checked head, and not reported as already merged. The
-# repo's ship-change here is the PR half of the built-in one, its steps as
-# they are there, after a review of one check that finds nothing, since
+# repo's ship-change here is the PR half of the built-in one (render-pr,
+# open-pr and on), its steps as they are there, after a review of one check that finds nothing, since
 # nothing here builds the leaves.
 mkdir .rhiza/workflows
 cp $WORK/ship-change.toml .rhiza/workflows/ship-change.toml
@@ -187,7 +187,7 @@ exec sh -c 'cat $(git rev-parse --git-common-dir)/rhiza/ship/$(cat $WORK/cs).jso
 stdout '"pr": 8'
 stdout '"merge_commit": "'
 exec sh -c 'cd $WORK/repo.export-reports && rhiza run status'
-stdout '^- review \(visit 1\): pass, then open-pr: 1 of 1 checks passed$'
+stdout '^- review \(visit 1\): pass, then render-pr: 1 of 1 checks passed$'
 stdout '^- open-pr \(visit 1\): pass, then wait-pr: exit 0$'
 stdout '^- merge \(visit 1\): pass, then end: exit 0$'
 exec sh -c 'cd $WORK/repo.export-reports && rhiza ship merge --json'
@@ -225,7 +225,7 @@ name = "ship-change"
 [step.review]
 kind = "checks"
 interval = "50ms"
-on.pass = "open-pr"
+on.pass = "render-pr"
 
 [[step.review.check]]
 name = "alpha"
@@ -239,6 +239,18 @@ prompt = "Fix {leaf}"
 
 [step.review.verifier]
 prompt = "Verify {leaf}"
+
+# As in the built-in: render and commit the review's records before the
+# push, which the pre-push check runs rhiza check on.
+[step.render-pr]
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
+  git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+"""
+on.pass = "open-pr"
 
 [step.open-pr]
 kind = "command"

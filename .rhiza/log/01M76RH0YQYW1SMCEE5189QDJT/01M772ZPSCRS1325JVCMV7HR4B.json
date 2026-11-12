@@ -1,0 +1,40 @@
+{
+  "actor": "01M772V8NVJXKGJ0ZJQMJ2JSZA",
+  "after": [
+    "01M770A991YW8TW4FDVBN7NYQ9"
+  ],
+  "at": "2026-11-12T05:16:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 65e57e94e: ran go test -trimpath -count=1 ./internal/api -run 'TestShipPrePushCheck|TestShipLocalGate|TestWatchdogPRNoCI' -v; every test passed (TestShipPrePushCheck, ...ShipPush, ...OpenPR, ...Land, ...Rebase, ...WithLocalGate, ...Watchdog, ...HeadBuild, TestShipLocalGate, TestShipLocalGateOncePerHead, TestWatchdogPRNoCI). The package then exited FAIL only because rootguard saw ~/code/.rhiza-root/usage.live.json change. The live root daemon rewrites that file every few seconds: it also changed during a run that matched no tests. Read the diff: shipPush (open-pr, land), shipFinishRebase and watchdogMergeMain each call one helper, prePushCheck. It checks HEAD out into a temporary detached worktree, removed afterwards, and runs rhiza check there, then rhiza.ship.prePushCheck there. On failure it pushes nothing. open-pr, land and rebase return pre_push_check {head, lines} and exit 1; rebase and the watchdog reset --keep to the pre-merge head. The localGate stays gated on CI being unstable. The tests drive the ship.open-pr, ship.land and ship.rebase ops and watchdogMergeMain against each of the three failures: a committed non-canonical log entry, a committed stale render, and a failing command. They assert that origin is unchanged or that no push call was made, that the failing lines appear in the response, error and human output, and that one worktree is left. Two more cases fail with the fix only in the working tree. An untracked stray log entry passes. Passing pushes go through with CI stable and with CI unstable, and the gate runs only when CI is unstable. Also ran: go test ./cmd/rhiza -run 'TestScripts/(plan-workflow-pr|run-ship-change-rebase|ship-land-branch-build|describe-golden)$' passed, gofmt -l clean, go vet ./internal/api clean."
+        },
+        "handle": "prepush-check-before-push-verified",
+        "id": "01M772ZPQ5T6Q5N0V49PWD9EG8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M772ZPQ5T6Q5N0V49P85RF1H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M772ZPQ5T6Q5N0V49P85RF1H",
+        "id": "01M772ZPQXM7P3QN6P6RGMJJ1K",
+        "link": "01M772ZPQXM7P3QN6P6RDXBRXJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RSZWZW5K5DG8AN1SP994H",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M772ZPSCRS1325JVCMV7HR4B",
+  "type": "ops",
+  "v": 1
+}

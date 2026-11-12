@@ -179,7 +179,10 @@ self-check: ## Run rhiza check on this repo with this commit's build
 # rendered/ or a broken log fails make. The binary is built in place in a
 # fresh temp folder (never copied there, for the arm64 signature reason under
 # install), so it never touches ./rhiza or ~/bin. The folder is removed
-# whatever check returns, and check's exit status is make's.
+# whatever check returns, and check's exit status is make's. Then the repo's
+# own .rhiza/workflows copies of ship-change, plan and plan-milestone, which
+# shadow the built-ins, must keep the built-ins' pre-push fix routing.
+	@go test -trimpath ./internal/workflow -run '^TestRepoWorkflowsPrePushFix$$'
 	@dir=$$(mktemp -d); \
 	go build -ldflags "$(LDFLAGS)" -o $$dir/$(BINARY) ./cmd/rhiza \
 		&& $$dir/$(BINARY) check; \
