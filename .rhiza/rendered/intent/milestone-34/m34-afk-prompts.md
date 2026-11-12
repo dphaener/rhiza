@@ -1,6 +1,6 @@
 # m34-afk-prompts
 
-intent · `01M76XMNBAT0FWMMA5G09W751S` · parent [milestone-34](../milestone-34.md)
+intent · `01M76XMNBAT0FWMMA5G09W751S` · parent [milestone-34](../milestone-34.01M76XMNA9ATHT77CB9GCH44P3.md)
 
 ## statement
 

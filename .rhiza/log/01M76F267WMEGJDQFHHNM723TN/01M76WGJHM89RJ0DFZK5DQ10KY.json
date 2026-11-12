@@ -1,0 +1,40 @@
+{
+  "actor": "01M76WC0PNN7WE9W276ZQJGCJB",
+  "after": [
+    "01M76WE16DBD1FX787VCSFGSEK"
+  ],
+  "at": "2026-11-12T03:23:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 26624d814 (review fix for model f1): the commit adds one ops entry (01M76W9TA0HZVZ4F9EAAFGZDWE) rewording the leaf's statement to model/<change set>-<entry> named with the full change set and entry IDs, matching internal/api/model_branch.go shipModelWrite (branch := modelBranchPrefix + cs + \"-\" + tag, fed full IDs); acceptance unchanged. Re-ran the acceptance: go test -trimpath -count=1 ./internal/api -run TestModelBranch -v passes (AcceptShipsBranch, RecordApplyCarriesRender, NoOriginStaysLocal, FailingGHWarns, DryRunPushesNothing). make self-check reports no problem from this commit: its only fails are run-wide stale render of in-run actor pages, index.md and docs/reference/cli.md, which close-out's rhiza render regenerates; trailers name the leaf, change set and actor claude-code-cda938dd, which resolves."
+        },
+        "handle": "main-write-model-branch-verified-r2",
+        "id": "01M76WGJB6RXW20V0Z97QRM1EK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76WGJB6RXW20V0Z96V554XR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76WGJB6RXW20V0Z96V554XR",
+        "id": "01M76WGJERMHHWX6D16BYGNYW9",
+        "link": "01M76WGJERMHHWX6D168SWD152",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA4YDVZV5S8GZB49W9M0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76WGJHM89RJ0DFZK5DQ10KY",
+  "type": "ops",
+  "v": 1
+}

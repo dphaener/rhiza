@@ -1,0 +1,40 @@
+{
+  "actor": "01M76WPPSMHFK4MYNRR6J9D21M",
+  "after": [
+    "01M76WGJHM89RJ0DFZK5DQ10KY"
+  ],
+  "at": "2026-11-12T03:28:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-ab186019 at bc6f4805f: go test -trimpath -count=1 ./internal/api -run 'TestHealthMainOrphanLog' passes (TestHealthMainOrphanLog: orphan entry makes main bad with Next 'rhiza model commit-untracked' and detail naming .rhiza/log/<cs>/ and the change set; entry on a model branch leaves main ok with summary 'pending' and a 'pending entry' detail; TestHealthMainOrphanLogLiveRun: entry held by a live run leaves main ok with the pending entry listed, no Next). Review cycle 2 findings checked: f1 run-start-new-main-clean now asserts no 'orphan' plus the pending line, and passes (go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(run-start-new-main-clean|model-commit-untracked|health.*)$', 11 scripts PASS, GOTMPDIR outside the repo and free of the word 'orphan', since $WORK paths appear in health's output); f2 the leaf's statement no longer claims the Inbox, only rhiza health and daemon status. Read healthMain (internal/api/health.go:495-560) and classifyUntrackedLog (internal/api/check.go:618)."
+        },
+        "handle": "health-orphan-log-entries-verified-3",
+        "id": "01M76WRRAFKC7Z85J17QWD947G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76WRRAFKC7Z85J17Q3DGMXS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76WRRAFKC7Z85J17Q3DGMXS",
+        "id": "01M76WRRBCWNX7KH5MVGS2TBJQ",
+        "link": "01M76WRRBCWNX7KH5MVGE9SZAQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA9ATEZ0372B4BZ9SRST",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76WRRCEXB13B4CGT08H4D01",
+  "type": "ops",
+  "v": 1
+}

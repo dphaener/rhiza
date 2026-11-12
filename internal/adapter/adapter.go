@@ -34,6 +34,12 @@ type Adapter interface {
 	// prints on stdout to deny that call, telling the agent reason. It is
 	// pure: it builds bytes only.
 	AskReply(event string, payload []byte, reason string) (reply []byte, ok bool, err error)
+	// GuardReply reports whether one hook event and its stdin payload is the
+	// agent about to edit a file under .rhiza/log with a file-editing tool,
+	// and if so returns what the hook prints on stdout to deny that call,
+	// telling the agent reason. Shell commands are never parsed. It is pure:
+	// it builds bytes only.
+	GuardReply(event string, payload []byte, reason string) (reply []byte, ok bool, err error)
 	// HookMessage reads the message a session sent another out of one hook
 	// event and its stdin payload. The bool is false when the event carries
 	// no message. It errors on a payload it cannot read, or on a message

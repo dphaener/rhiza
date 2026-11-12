@@ -332,6 +332,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		if !ok {
 			return
 		}
+		update.Dir = main
 		update.Git = func(args ...string) (string, error) { return gitAt(ctx, main, args...) }
 		update.Fetch = func() error { return fetchMainWithin(ctx, main, selfUpdateFetchTimeout) }
 		update.Make = func(args ...string) error {
@@ -598,6 +599,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return it.Detail
 	case InboxMainStale:
 		return what + ": main was not updated after the merge: " + it.Detail
+	case InboxModelPR:
+		return what + ": a model-only pull request was not merged: " + it.Detail
 	case InboxOverlap:
 		other := it.OtherTitle
 		if other == "" {

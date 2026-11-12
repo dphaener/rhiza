@@ -1,0 +1,64 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M76V0WXZEFDBFH7TQRV6TQFF"
+  ],
+  "at": "2026-11-12T02:57:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M76NWA4W870AXQ6PBC85M17Q",
+        "handle": "milestone-34",
+        "id": "01M76V0WS26SE5PYBCFAYAQAN4",
+        "node": "01M76NWA4W870AXQ6PBANDWRGE",
+        "op": "node.update",
+        "set": {
+          "milestone": 34
+        },
+        "unset": []
+      },
+      {
+        "base": "01M76NWA870PYJG4FH6QKD7MGF",
+        "handle": "m34-agents-md",
+        "id": "01M76V0WT23YMWJR6JV1R71Q6Y",
+        "node": "01M76NWA870PYJG4FH6PF4WHRJ",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      },
+      {
+        "base": "01M76NWA90V18FMW9X3CA6BFFA",
+        "handle": "m34-orchestrator-doc",
+        "id": "01M76V0WVMKV8Y0X4JQBF097NB",
+        "node": "01M76NWA90V18FMW9X3AY0VTW0",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      },
+      {
+        "base": "01M76NWADJS6X9WP1J4AKEP5XS",
+        "handle": "m34-role-docs",
+        "id": "01M76V0WWVCNGGTXTS76SNXXQW",
+        "node": "01M76NWADJS6X9WP1J47HDKSN0",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      },
+      {
+        "base": "01M76NVMK5983DAD0RYZ7STR1H",
+        "handle": "m34-agent-docs-plan",
+        "id": "01M76V0WXZEFDBFH7TQHWM98T6",
+        "node": "01M76NVMK5983DAD0RYY0B0BVG",
+        "op": "node.update",
+        "set": {},
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76V0WXZEFDBFH7TQP6HSGWY",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M76V0WY7PKWY673W1V51APKM",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,56 @@
+{
+  "actor": "01M76ED4TF1BFCPTDFQJ6SY0N9",
+  "after": [
+    "01M76NXJ53FB2GVBQPT62H8NWS"
+  ],
+  "at": "2026-11-12T01:29:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test in cmd/rhiza reads agents/developing.md and finds each lesson (testscript, scratchpad, RHIZA_ROOT, GOTMPDIR, root daemon, rhiza render); it and the agent-docs consistency test pass with go test -trimpath ./cmd/rhiza -run on their names",
+          "statement": "agents/developing.md, listed in agents/README.md, holds the lessons for any agent changing Rhiza's code: testscript gotchas ($WORK quoting, -count, chmod, stdin paths, fake binaries), build scratch binaries into the session scratchpad rather than a shared $TMPDIR path, unset RHIZA_ROOT, RHIZA_CHANGE and RHIZA_RUN before manual rhiza checks in scratch repos, override a run's GOTMPDIR so testscript $WORK stays outside the real repo, re-run web tests that see the root daemon from a scratch worktree, and run rhiza render after landed model writes"
+        },
+        "handle": "developing-doc",
+        "id": "01M76P0B69F8152BRFFG1TRRP2",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M76P0B69F8152BRFFCTW5G8X",
+        "op": "node.create",
+        "parent": "01M76NWAEW076CHS77X90T6X04"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in cmd/rhiza reads agents/run-agents.md and finds each lesson (trailers in one paragraph, already-landed change set, empty commit, merge origin/main, ship json after a hand push); it and the agent-docs consistency test pass with go test -trimpath ./cmd/rhiza -run on their names",
+          "statement": "agents/run-agents.md, listed in agents/README.md, holds the lessons for builders, verifiers, checks and fixers working on Rhiza itself: Leaf:, Change: and Actor: trailers share the last paragraph with Co-Authored-By, run steps writing to the model handle a run change set that already landed, findings HEAD already fixes still get a new (empty) commit, a conflicting PR merges origin/main and is never rebased and force-pushed, and a hand push to a live run PR updates .git/rhiza/ship/<cs>.json"
+        },
+        "handle": "run-agents-doc",
+        "id": "01M76P0B7W8M843KJ8BGAZY8TZ",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M76P0B7W8M843KJ8BFHR6C80",
+        "op": "node.create",
+        "parent": "01M76NWAEW076CHS77X90T6X04"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in cmd/rhiza reads agents/vm.md and finds each lesson (rhiza-root.service, maxRuns, the Rex pin, stray-logs, inject delay); it and the agent-docs consistency test pass with go test -trimpath ./cmd/rhiza -run on their names",
+          "statement": "agents/vm.md, listed in agents/README.md, holds the lessons for operating the VM that runs Rhiza's daemon: one root ~/code under rhiza-root.service, lower rhiza.daemon.maxRuns when load is high, the Rex package is pinned because Ubuntu's Perl rex package replaced it once, worktree resets move stray .rhiza/log entries to ~/orchestrator/stray-logs/, and flakes are reproduced by injecting delay, never by CPU load on the shared host"
+        },
+        "handle": "vm-doc",
+        "id": "01M76P0B97WK63HSDNR5PS8NEQ",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M76P0B97WK63HSDNR4DMB2BT",
+        "op": "node.create",
+        "parent": "01M76NWAEW076CHS77X90T6X04"
+      }
+    ]
+  },
+  "change_set": "01M76NXJ53FB2GVBQPT4F4DW3R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76P0BA5NP5JB1CX841XJ28J",
+  "type": "ops",
+  "v": 1
+}

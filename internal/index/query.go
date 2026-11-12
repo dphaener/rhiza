@@ -335,6 +335,22 @@ func (x *Index) ChangeSets() ([]ChangeSetInfo, error) {
 	return out, rows.Err()
 }
 
+// StoredEntry returns the canonical bytes the index stored for entry eid of
+// change set cs, and whether it has them. The bytes are what the entry file
+// held when the index read it, so they survive a later overwrite of the
+// file; an entry the index never read well has none.
+func (x *Index) StoredEntry(cs, eid id.ID) ([]byte, bool, error) {
+	var raw []byte
+	err := x.db.QueryRow(`SELECT raw FROM entries WHERE change_set = ? AND id = ?`, idText(cs), idText(eid)).Scan(&raw)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, false, nil
+	}
+	if err != nil {
+		return nil, false, err
+	}
+	return raw, true, nil
+}
+
 // Entries returns the good entries of change set cs, decoded from their
 // stored bytes and sorted by ID; nil when there are none.
 func (x *Index) Entries(cs id.ID) ([]entry.Entry, error) {

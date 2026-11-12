@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M76Z72MA2KKTF6ZDB3SW6JAZ"
+  ],
+  "at": "2026-11-12T04:17:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Review check model still fails after 3 cycles: finding f1 (major at internal/api/daemon_projects.go:429) on leaf commit-untracked-log: The leaf says the daemon commits orphan entries 'on start and on each tick', but commit e8e289be4 changed poll to run daemonCommitUntracked (and daemonMergeMod…. Its last cycle: cycle 3: confirmed f1 (major). How should it be fixed, or should leaf commit-untracked-log change?"
+        },
+        "handle": "leaf-failed-01m76njm-1",
+        "id": "01M76ZJ60MV31BZVR5SY3MN8XG",
+        "key": null,
+        "kind": "question",
+        "node": "01M76ZJ60MV31BZVR5SXWZANYP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76ZJ60MV31BZVR5SXWZANYP",
+        "id": "01M76ZJ9YS8GDFMJ1RPTE8C71C",
+        "link": "01M76ZJ9YS8GDFMJ1RPQ29ZY7M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA7V5KJWJPQSF2X7PCMD",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76ZJC3V8YNSQA5DEE0DQPSG",
+  "type": "ops",
+  "v": 1
+}

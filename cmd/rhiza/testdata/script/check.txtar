@@ -77,6 +77,8 @@ stdout '^ok$'
 
 # A corrupt entry file fails the log rule.
 exists .rhiza/log/01M5PWGEF85Y185JZ2ZB9QSVK7/01M5PWGEF85Y185JZ2ZEVTPAGP.json
+# Entries are written read-only: a hand edit makes the file writable first.
+chmod 0644 .rhiza/log/01M5PWGEF85Y185JZ2ZB9QSVK7/01M5PWGEF85Y185JZ2ZEVTPAGP.json
 cp $WORK/corrupt.json .rhiza/log/01M5PWGEF85Y185JZ2ZB9QSVK7/01M5PWGEF85Y185JZ2ZEVTPAGP.json
 ! exec rhiza check
 stdout '^fail log \.rhiza/log/01M5PWGEF85Y185JZ2ZB9QSVK7/01M5PWGEF85Y185JZ2ZEVTPAGP\.json: '

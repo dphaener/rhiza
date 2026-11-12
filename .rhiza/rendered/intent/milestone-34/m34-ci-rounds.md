@@ -1,6 +1,6 @@
 # m34-ci-rounds
 
-intent · `01M76XMNE3EDE1M1QDQ6VP4KBZ` · parent [milestone-34](../milestone-34.md)
+intent · `01M76XMNE3EDE1M1QDQ6VP4KBZ` · parent [milestone-34](../milestone-34.01M76XMNA9ATHT77CB9GCH44P3.md)
 
 ## statement
 

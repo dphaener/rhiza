@@ -1,0 +1,326 @@
+{
+  "actor": "01M76ED4TF1BFCPTDFQJ6SY0N9",
+  "after": [
+    "01M76P4DYVZNRF15VW9J4VP939"
+  ],
+  "at": "2026-11-12T01:32:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "Move to AGENTS.md (Recommended)",
+            "Delete CLAUDE.md",
+            "Keep both, split"
+          ],
+          "picked": "Move to AGENTS.md (Recommended)",
+          "question": "Milestone 32 (agent docs for Rhiza's own developers): what happens to today's CLAUDE.md (112 lines of repo guidance: stack, bug requests, commands, scoped tests, binaries) once AGENTS.md exists?",
+          "session": "9eeeaa0d-e0b8-40d8-b95a-01a1cce67858",
+          "statement": "Milestone 32 (agent docs for Rhiza's own developers): what happens to today's CLAUDE.md (112 lines of repo guidance: stack, bug requests, commands, scoped tests, binaries) once AGENTS.md exists? — Move to AGENTS.md (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 9eeeaa0d-e0b8-40d8-b95a-01a1cce67858"
+        },
+        "handle": "answer-9eeeaa0d-1",
+        "id": "01M76P1R9Z653ZPHFKYCKRQJ21",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76P1R9Z653ZPHFKYBMQ0Z0A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76P1R9Z653ZPHFKYBMQ0Z0A",
+        "id": "01M76P1ZTV529RMHJ64KF6KJ5Q",
+        "link": "01M76P1ZTV529RMHJ64GAYN8JK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76NVMK5983DAD0RYY0B0BVG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Top of AGENTS.md (Recommended)",
+            "Orchestrator doc only",
+            "Its own doc in agents/"
+          ],
+          "picked": "Orchestrator doc only",
+          "question": "Where does the rule 'consult the owner before judgment calls; act autonomously only when the owner explicitly granted it for that task' live in the new agent docs?",
+          "session": "9eeeaa0d-e0b8-40d8-b95a-01a1cce67858",
+          "statement": "Where does the rule 'consult the owner before judgment calls; act autonomously only when the owner explicitly granted it for that task' live in the new agent docs? — Orchestrator doc only",
+          "wording": "the agent's option, picked by the owner in session 9eeeaa0d-e0b8-40d8-b95a-01a1cce67858"
+        },
+        "handle": "answer-9eeeaa0d-2",
+        "id": "01M76P258P16JKZ6D8F376RK8Z",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76P258P16JKZ6D8F1PK6NR3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76P258P16JKZ6D8F1PK6NR3",
+        "id": "01M76P29H0VA1PW5242C7QDS4A",
+        "link": "01M76P29H0VA1PW5242A09V8GD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76NVMK5983DAD0RYY0B0BVG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "A Go test (Recommended)",
+            "No check"
+          ],
+          "picked": "A Go test (Recommended)",
+          "question": "How should the AGENTS.md/agents/ docs stay consistent over time (e.g. the agents/README.md index listing every agents/*.md file, links resolving)?",
+          "session": "9eeeaa0d-e0b8-40d8-b95a-01a1cce67858",
+          "statement": "How should the AGENTS.md/agents/ docs stay consistent over time (e.g. the agents/README.md index listing every agents/*.md file, links resolving)? — A Go test (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 9eeeaa0d-e0b8-40d8-b95a-01a1cce67858"
+        },
+        "handle": "answer-9eeeaa0d-3",
+        "id": "01M76P2EJVQ012SC8799QCAPZP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76P2EJVQ012SC8799K077DY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76P2EJVQ012SC8799K077DY",
+        "id": "01M76P2M0M8YVYGJ67Y180SSJP",
+        "link": "01M76P2M0M8YVYGJ67XZJ46SXD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76NVMK5983DAD0RYY0B0BVG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Developing Rhiza",
+            "Run agents",
+            "Operating the VM",
+            "Orchestrator only"
+          ],
+          "picked": "Developing Rhiza, Run agents, Operating the VM",
+          "question": "Besides agents/orchestrator.md, which role or topic docs should agents/ start with? (Each draws on lessons now kept only in the orchestrator's personal memory on the VM.)",
+          "session": "9eeeaa0d-e0b8-40d8-b95a-01a1cce67858",
+          "statement": "Besides agents/orchestrator.md, which role or topic docs should agents/ start with? (Each draws on lessons now kept only in the orchestrator's personal memory on the VM.) — Developing Rhiza, Run agents, Operating the VM",
+          "wording": "the agent's option, picked by the owner in session 9eeeaa0d-e0b8-40d8-b95a-01a1cce67858"
+        },
+        "handle": "answer-9eeeaa0d-4",
+        "id": "01M76P2QNTBFPTGY2MBF94PM9W",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76P2QNTBFPTGY2MBF2XS9R4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76P2QNTBFPTGY2MBF2XS9R4",
+        "id": "01M76P2VKMB5CDN8HH0DWA5K51",
+        "link": "01M76P2VKMB5CDN8HH0CX9PSVT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76NVMK5983DAD0RYY0B0BVG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Prune them (Recommended)",
+            "Keep both",
+            "Point to docs"
+          ],
+          "picked": "Prune them (Recommended)",
+          "question": "Once the orchestrator's memory rules are written into agents/, what happens to those entries in the orchestrator's personal memory on the VM?",
+          "session": "9eeeaa0d-e0b8-40d8-b95a-01a1cce67858",
+          "statement": "Once the orchestrator's memory rules are written into agents/, what happens to those entries in the orchestrator's personal memory on the VM? — Prune them (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 9eeeaa0d-e0b8-40d8-b95a-01a1cce67858"
+        },
+        "handle": "answer-9eeeaa0d-5",
+        "id": "01M76P2ZTMN29E8074CZSVMXT5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76P2ZTMN29E8074CY481R4P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76P2ZTMN29E8074CY481R4P",
+        "id": "01M76P34BM02QNGT5XY5FA0QK1",
+        "link": "01M76P34BM02QNGT5XY4E7V405",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76NVMK5983DAD0RYY0B0BVG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Three change sets (Recommended)",
+            "Two change sets",
+            "One change set"
+          ],
+          "picked": "Three change sets (Recommended)",
+          "question": "How should milestone 32 (AGENTS.md + agents/ docs) split into change sets?",
+          "session": "9eeeaa0d-e0b8-40d8-b95a-01a1cce67858",
+          "statement": "How should milestone 32 (AGENTS.md + agents/ docs) split into change sets? — Three change sets (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 9eeeaa0d-e0b8-40d8-b95a-01a1cce67858"
+        },
+        "handle": "answer-9eeeaa0d-6",
+        "id": "01M76P37ZDHNV7H2TTJRE1AYXJ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76P37ZDHNV7H2TTJQWNG701",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76P37ZDHNV7H2TTJQWNG701",
+        "id": "01M76P3BBF1NR4J9S28XZQREBB",
+        "link": "01M76P3BBF1NR4J9S28TVMYR3Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76NVMK5983DAD0RYY0B0BVG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "All of them (Recommended)",
+            "Only the first"
+          ],
+          "picked": "All of them (Recommended)",
+          "question": "Which of milestone 32's change sets should get their leaves planned now (the rest keep only their intent, planned later)?",
+          "session": "9eeeaa0d-e0b8-40d8-b95a-01a1cce67858",
+          "statement": "Which of milestone 32's change sets should get their leaves planned now (the rest keep only their intent, planned later)? — All of them (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 9eeeaa0d-e0b8-40d8-b95a-01a1cce67858"
+        },
+        "handle": "answer-9eeeaa0d-7",
+        "id": "01M76P3F1DGPJ23XCN29A7KTDH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76P3F1C0SKKD7H4V1WH2W3B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76P3F1C0SKKD7H4V1WH2W3B",
+        "id": "01M76P3JGTSE63XWNTK3F73368",
+        "link": "01M76P3JGTSE63XWNTK0QF0HS3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76NVMK5983DAD0RYY0B0BVG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Orchestrator, after land (Recommended)",
+            "The builder, as a leaf"
+          ],
+          "picked": "Orchestrator, after land (Recommended)",
+          "question": "Who prunes the orchestrator's personal memory entries (on the VM, outside the repo) once agents/ covers them?",
+          "session": "9eeeaa0d-e0b8-40d8-b95a-01a1cce67858",
+          "statement": "Who prunes the orchestrator's personal memory entries (on the VM, outside the repo) once agents/ covers them? — Orchestrator, after land (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 9eeeaa0d-e0b8-40d8-b95a-01a1cce67858"
+        },
+        "handle": "answer-9eeeaa0d-8",
+        "id": "01M76P3NV26M2VQC3G4TJ2NDEN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76P3NV26M2VQC3G4S0BNJXH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76P3NV26M2VQC3G4S0BNJXH",
+        "id": "01M76P3S7MJ3EH4FGT9XA627V2",
+        "link": "01M76P3S7MJ3EH4FGT9SHZ4XN3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76NVMK5983DAD0RYY0B0BVG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Propose, don't start (Recommended)",
+            "Keep picking work",
+            "Wait for the owner"
+          ],
+          "picked": "Propose, don't start (Recommended)",
+          "question": "The orchestrator's memory holds two rules that conflict: 'keep picking work: never idle, plan and start the next high-value change sets yourself' and 'consult before deciding: autonomy only when explicitly granted'. What should agents/orchestrator.md say?",
+          "session": "9eeeaa0d-e0b8-40d8-b95a-01a1cce67858",
+          "statement": "The orchestrator's memory holds two rules that conflict: 'keep picking work: never idle, plan and start the next high-value change sets yourself' and 'consult before deciding: autonomy only when explicitly granted'. What should agents/orchestrator.md say? — Propose, don't start (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 9eeeaa0d-e0b8-40d8-b95a-01a1cce67858"
+        },
+        "handle": "answer-9eeeaa0d-9",
+        "id": "01M76P3WE2YFJNR4SB1YMR9A7J",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76P3WE2YFJNR4SB1VYWE5MY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76P3WE2YFJNR4SB1VYWE5MY",
+        "id": "01M76P3ZQKZSA5PR9YT85YX9BY",
+        "link": "01M76P3ZQKZSA5PR9YT6MPNDE8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76NVMK5983DAD0RYY0B0BVG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Nebari hands-off",
+            "Owner's Rex habits",
+            "Priorities",
+            "None of these"
+          ],
+          "picked": "None of these",
+          "question": "Which owner-specific rules belong in agents/orchestrator.md rather than staying in personal memory?",
+          "session": "9eeeaa0d-e0b8-40d8-b95a-01a1cce67858",
+          "statement": "Which owner-specific rules belong in agents/orchestrator.md rather than staying in personal memory? — None of these",
+          "wording": "the agent's option, picked by the owner in session 9eeeaa0d-e0b8-40d8-b95a-01a1cce67858"
+        },
+        "handle": "answer-9eeeaa0d-10",
+        "id": "01M76P444AG9SJXPE4961YH0FR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76P444AG9SJXPE495BB76YT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76P444AG9SJXPE495BB76YT",
+        "id": "01M76P4A5JPA3C4GVY8NF3EAND",
+        "link": "01M76P4A5JPA3C4GVY8JEBG3B2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76NVMK5983DAD0RYY0B0BVG",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M76P4DYVZNRF15VW9H8R0FAD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76P4FRP7TYMJWMRSB9HMTGQ",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,132 @@
+{
+  "actor": "01M76Y83YV72ZDXDEQCS89M6SW",
+  "after": [
+    "01M76Y484V31RJCGG586Z9A25X"
+  ],
+  "at": "2026-11-12T03:59:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 044b0aef3, binary built with go build -trimpath into a scratch dir, run by hand as uid 1000 in a scratch git repo (RHIZA_* unset): rhiza init, change new and add capability wrote every entry 0444 (stat). python3 -m json.tool A.json B.json (the incident command) failed with PermissionError on B and a shell redirect into an entry failed with Permission denied. chmod 644 on every entry then rhiza render set all back to 0444. rhiza session start (fake rex on PATH) copied the change set's entries into the session worktree at 0444. Scoped tests: go test ./internal/store/..., ./internal/api -run TestCopyChangeSetLog, TestScripts/log-entries-read-only all ok. Seen: sed -i still rewrites an entry (it renames in the writable folder), recorded as a minor finding."
+        },
+        "handle": "log-entries-read-only-qa-1",
+        "id": "01M76YJF0ZPN35EN7F12ZXHFN5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76YJF0ZPN35EN7F0Z6YNCJ3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76YJF0ZPN35EN7F0Z6YNCJ3",
+        "id": "01M76YJF263STZNDFA75M9P9M7",
+        "link": "01M76YJF263STZNDFA733EKRA7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QVD40AW1RFPN3ENSY5F9P",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 044b0aef3, binary built with go build -trimpath into a scratch dir, run by hand as uid 1000 in a scratch git repo (RHIZA_* unset): After committing, cp --remove-destination of one entry's bytes over an uncommitted entry and a json.tool --indent 4 rewrite of a committed entry: rhiza render exited 1, printed 'render: damaged log, nothing rendered:' naming both paths ('canon: not canonical' and 'id ... does not match its path: id is X, file name says Y'), next 'rhiza repair --dry-run', and .rhiza/rendered/index.md sha256 was unchanged; --json gave the same message. rm of a committed entry: render exited 1 with 'differs from HEAD, but a committed entry is never changed'. After repair, render exited 0. TestScripts/render-refuses-damaged-log ok."
+        },
+        "handle": "render-refuses-damaged-log-qa-1",
+        "id": "01M76YJF2WRGRAN0NRZB379DVP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76YJF2WRGRAN0NRZ7YGDY8K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76YJF2WRGRAN0NRZ7YGDY8K",
+        "id": "01M76YJF3PP2S7DS25AHBRVNN4",
+        "link": "01M76YJF3PP2S7DS25AGWVWA3S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QVD9TGTNKR2S9REE3KAP2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 044b0aef3, binary built with go build -trimpath into a scratch dir, run by hand as uid 1000 in a scratch git repo (RHIZA_* unset): On the damages above, rhiza repair --dry-run listed '... would restore from HEAD' and '... would restore from index', exit 0, entry hashes unchanged; rhiza repair restored both at 0444, the overwritten uncommitted entry matched its original sha256, then rhiza render and rhiza check passed. A deleted committed entry was restored from HEAD. An entry the index never saw, overwritten, gave 'repair: 1 entries cannot be restored: ... not tracked at HEAD and the index never saw it' with exit 1 for both --dry-run and the real run. go test ./internal/index/... and TestScripts/repair and describe-golden ok."
+        },
+        "handle": "repair-damaged-entries-qa-1",
+        "id": "01M76YJF4KQRD911P216996WZ8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76YJF4KQRD911P215TXC8NN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76YJF4KQRD911P215TXC8NN",
+        "id": "01M76YJF58KJ23DGJ1D3TZQPZV",
+        "link": "01M76YJF58KJ23DGJ1D18G5K1M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QVDF2XHQYY78GE402FTD4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 044b0aef3, binary built with go build -trimpath into a scratch dir, run by hand as uid 1000 in a scratch git repo (RHIZA_* unset): In a scratch session (rhiza session start --permission-mode manual --step solo, fake rex), fed rhiza session hook PreToolUse payloads: Write on .rhiza/log/a/b.json, Edit on the absolute worktree path, MultiEdit on ../x/.rhiza/log/a/b.json and NotebookEdit (notebook_path) under .rhiza/log all got permissionDecision deny with the reason 'Never edit .rhiza/log by hand ... Write through `rhiza apply`; read with `rhiza show`, `rhiza slice` or `cat`.' Write on .rhiza/logx/a.json and notes.md, Read of a log entry and Bash 'echo > .rhiza/log/...' got no reply. go test ./internal/adapter/... and TestScripts/session-hook-log-guard ok."
+        },
+        "handle": "session-hook-denies-log-edits-qa-1",
+        "id": "01M76YJF80QBFE0NDE9H06Y9TY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76YJF80QBFE0NDE9ER78FAS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76YJF80QBFE0NDE9ER78FAS",
+        "id": "01M76YJF9N3ER3DNVX4KMDX8PX",
+        "link": "01M76YJF9N3ER3DNVX4H7JSN1D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QVD7QSJ8RV3YNK7YMZ01C",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 044b0aef3, binary built with go build -trimpath into a scratch dir, run by hand as uid 1000 in a scratch git repo (RHIZA_* unset): rhiza guide (the rhiza skill) prints under Hard rules: 'Read log entries with `rhiza show`, `rhiza slice` or `cat`, never `python -m json.tool`, in-place `jq`, `sed -i` or a redirect. Fix a damaged entry with `rhiza repair`.' docs/agents.md carries the same rule; guide ls shows the rhiza skill at 1999 tokens, under the cap. go test ./internal/guide/... ok."
+        },
+        "handle": "guide-reads-log-safely-qa-1",
+        "id": "01M76YJFBJNGQV4P9G8158GF2T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76YJFBJNGQV4P9G7YE8F0WH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76YJFBJNGQV4P9G7YE8F0WH",
+        "id": "01M76YJFCX74YZTQ97689BQKF0",
+        "link": "01M76YJFCX74YZTQ97683Z4BPH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QVDGG1RNT7EM6NHPZBR6Q",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76QJWKEA2M2G87ESG10A47P",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76YJFECKFTBXD005V01AYBP",
+  "type": "ops",
+  "v": 1
+}

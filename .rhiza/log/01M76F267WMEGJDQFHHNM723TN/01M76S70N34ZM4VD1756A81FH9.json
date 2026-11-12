@@ -1,0 +1,40 @@
+{
+  "actor": "01M76S3QPN658ZDV23F21V4A32",
+  "after": [
+    "01M76QHP9VN99ADPMFTD7PFJWF"
+  ],
+  "at": "2026-11-12T02:25:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at eb83f6d89: ran go test -trimpath -count=1 ./internal/api -run TestModelBranch -v; all five subtests PASS against a local bare origin and a fake gh. AcceptShipsBranch: accept pushes one model/<cs8>-<entry8> branch whose diff from origin/main is exactly one .rhiza/log entry, one pr create, temp worktree removed, entry also in the main checkout; a second write extends the same branch with no second PR. RecordApplyCarriesRender: a --record apply's branch carries .rhiza/rendered/ and rhiza check in a worktree of it reports no stale render. FailingGHWarns: write succeeds with a warning and no worktree left. DryRunPushesNothing: no branch, no gh call. NoOriginStaysLocal: no gh call. Adjacent ship/mirror tests also pass; go vet and gofmt clean. Read the diff (model_branch.go, workspace.go writeEntry hook, RHIZA_TEST_NOW gate wired through cmd/rhiza Getenv). The package run's trailing FAIL (.rhiza-root/usage.live.json changed) is the live root daemon rewriting that file every few seconds with no tests running, not this change."
+        },
+        "handle": "main-write-model-branch-verified",
+        "id": "01M76S70K1D1V9P4SFFTA12SCQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76S70K1D1V9P4SFFT8336FC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76S70K1D1V9P4SFFT8336FC",
+        "id": "01M76S70M0M4Q2J0Y84HB03XFP",
+        "link": "01M76S70M0M4Q2J0Y84FNR02VH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA4YDVZV5S8GZB49W9M0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76S70N34ZM4VD1756A81FH9",
+  "type": "ops",
+  "v": 1
+}

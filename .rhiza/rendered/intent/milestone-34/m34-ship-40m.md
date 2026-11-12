@@ -1,6 +1,6 @@
 # m34-ship-40m
 
-intent · `01M76XMNGHCD7XX82ZCSRPRGPC` · parent [milestone-34](../milestone-34.md)
+intent · `01M76XMNGHCD7XX82ZCSRPRGPC` · parent [milestone-34](../milestone-34.01M76XMNA9ATHT77CB9GCH44P3.md)
 
 ## statement
 

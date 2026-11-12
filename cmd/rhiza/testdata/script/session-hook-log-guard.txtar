@@ -1,0 +1,45 @@
+# session hook denies a file-editing tool on a log entry: a PreToolUse for
+# Write on .rhiza/log/x/y.json gets a deny that names rhiza apply, and a
+# Write elsewhere, a Bash command on the log and a Read of it get no reply.
+# The fake rex opens a window and runs nothing.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Guard' --title 'Guard' --json
+exec rhiza session start --permission-mode manual --step solo --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+
+stdin $WORK/write-log.json
+exec rhiza session hook PreToolUse
+stdout '"permissionDecision":"deny"'
+stdout 'rhiza apply'
+
+stdin $WORK/write-other.json
+exec rhiza session hook PreToolUse
+! stdout .
+
+stdin $WORK/bash-log.json
+exec rhiza session hook PreToolUse
+! stdout .
+
+stdin $WORK/read-log.json
+exec rhiza session hook PreToolUse
+! stdout .
+
+-- write-log.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","cwd":"/tmp/w","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":".rhiza/log/x/y.json","content":"{}"}}
+-- write-other.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","cwd":"/tmp/w","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"/tmp/w/notes.md","content":"x"}}
+-- bash-log.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","cwd":"/tmp/w","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"echo > .rhiza/log/x/y.json"}}
+-- read-log.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","cwd":"/tmp/w","hook_event_name":"PreToolUse","tool_name":"Read","tool_input":{"file_path":"/tmp/w/.rhiza/log/x/y.json"}}
+-- bin/rex --
+#!/bin/sh
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

@@ -1,0 +1,42 @@
+# render refuses a damaged log and leaves .rhiza/rendered unchanged.
+
+exec git init -q
+exec rhiza init
+exec rhiza add capability store --field 'statement=Keeps the log' --record
+exec rhiza add capability log --parent store --record
+exec rhiza render
+exec git add -A
+exec git commit -q -m base
+exec sh -c 'cp -r .rhiza/rendered $WORK/before'
+
+# A clean log still renders.
+exec rhiza render
+stdout '0 written'
+
+exec sh -c 'ls .rhiza/log/*/*.json | grep -v repo | sed -n 2p > $WORK/f1; ls .rhiza/log/*/*.json | sed -n 3p > $WORK/f2'
+
+# 1. An entry rewritten non-canonically.
+exec sh -c 'f=$(cat $WORK/f1); cp $f $WORK/orig1; chmod 644 $f; tr -d "\n" < $WORK/orig1 > $f'
+! exec rhiza render
+stderr 'damaged log'
+stderr 'not canonical'
+exec sh -c 'f=$(cat $WORK/f1); cp $WORK/orig1 $f'
+exec sh -c 'diff -r $WORK/before .rhiza/rendered'
+
+# 2. One entry's bytes under another's file name.
+exec sh -c 'f1=$(cat $WORK/f1); f2=$(cat $WORK/f2); cp $f2 $WORK/orig2; chmod 644 $f2; cp $f1 $f2'
+! exec rhiza render
+stderr 'damaged log'
+exec sh -c 'f2=$(cat $WORK/f2); cp $WORK/orig2 $f2'
+exec sh -c 'diff -r $WORK/before .rhiza/rendered'
+
+# 3. A committed entry changed (valid, canonical, but not what HEAD holds).
+exec sh -c 'grep -l "Keeps the log" .rhiza/log/*/*.json > $WORK/f3; f=$(head -n1 $WORK/f3); chmod 644 $f; sed -i "s/Keeps the log/Keeps the logs/" $f'
+! exec rhiza render
+stderr 'differs from HEAD'
+stderr '\.rhiza/log/'
+exec sh -c 'git checkout -- $(head -n1 $WORK/f3)'
+exec sh -c 'diff -r $WORK/before .rhiza/rendered'
+
+# Restored, it renders again.
+exec rhiza render

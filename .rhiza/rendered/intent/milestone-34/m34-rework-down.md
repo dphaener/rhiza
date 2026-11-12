@@ -1,6 +1,6 @@
 # m34-rework-down
 
-intent · `01M76XMND0SMBMRC5Q6M02HYQ0` · parent [milestone-34](../milestone-34.md)
+intent · `01M76XMND0SMBMRC5Q6M02HYQ0` · parent [milestone-34](../milestone-34.01M76XMNA9ATHT77CB9GCH44P3.md)
 
 ## statement
 

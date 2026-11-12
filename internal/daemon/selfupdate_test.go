@@ -3,6 +3,9 @@ package daemon
 import (
 	"errors"
 	"github.com/dphaener/rhiza/internal/rootcfg"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -194,5 +197,72 @@ func TestSelfUpdateProjectChoosesCheckout(t *testing.T) {
 	u.Run()
 	if len(dirs) != 0 {
 		t.Fatalf("ran with none named: %v", dirs)
+	}
+}
+
+// TestSelfUpdateDropsIncomingLogCopies: an untracked .rhiza/log file that
+// origin/main adds byte for byte is dropped, so the fast-forward is not
+// blocked by it; a differing untracked file stays.
+func TestSelfUpdateDropsIncomingLogCopies(t *testing.T) {
+	tmp := t.TempDir()
+	run := func(dir string, args ...string) string {
+		t.Helper()
+		cmd := exec.Command("git", args...)
+		cmd.Dir = dir
+		cmd.Env = append(os.Environ(), "GIT_CONFIG_GLOBAL=/dev/null", "GIT_CONFIG_SYSTEM=/dev/null",
+			"GIT_AUTHOR_NAME=t", "GIT_AUTHOR_EMAIL=t@t", "GIT_COMMITTER_NAME=t", "GIT_COMMITTER_EMAIL=t@t")
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatalf("git %v: %v\n%s", args, err, out)
+		}
+		return strings.TrimSpace(string(out))
+	}
+	origin, main, other := filepath.Join(tmp, "origin.git"), filepath.Join(tmp, "main"), filepath.Join(tmp, "other")
+	run(tmp, "init", "-q", "--bare", "-b", "main", origin)
+	run(tmp, "clone", "-q", origin, main)
+	run(tmp, "clone", "-q", origin, other)
+	write := func(dir, rel, body string) {
+		t.Helper()
+		p := filepath.Join(dir, rel)
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(other, "README", "x")
+	run(other, "add", "-A")
+	run(other, "commit", "-q", "-m", "init")
+	run(other, "push", "-q", "origin", "HEAD:main")
+	run(main, "pull", "-q", "origin", "main")
+	write(other, ".rhiza/log/cs/a.json", "{\"a\":1}\n")
+	write(other, ".rhiza/log/cs/b.json", "{\"b\":1}\n")
+	run(other, "add", "-A")
+	run(other, "commit", "-q", "-m", "entries")
+	run(other, "push", "-q", "origin", "HEAD:main")
+	write(main, ".rhiza/log/cs/a.json", "{\"a\":1}\n")
+	write(main, ".rhiza/log/cs/c.json", "{\"c\":1}\n")
+
+	su := &SelfUpdate{Dir: main,
+		Make: func(args ...string) error { return nil },
+	}
+	su.Git = func(args ...string) (string, error) {
+		cmd := exec.Command("git", args...)
+		cmd.Dir = main
+		out, err := cmd.Output()
+		return string(out), err
+	}
+	if !su.Run() {
+		t.Fatal("self-update did not run make update")
+	}
+	if got := run(main, "rev-parse", "HEAD"); got != run(main, "rev-parse", "origin/main") {
+		t.Errorf("main not fast-forwarded: %s", got)
+	}
+	if run(main, "ls-files", ".rhiza/log/cs/a.json") == "" {
+		t.Error("a.json is not tracked after the fast-forward")
+	}
+	if _, err := os.Stat(filepath.Join(main, ".rhiza/log/cs/c.json")); err != nil {
+		t.Errorf("a differing untracked file was removed: %v", err)
 	}
 }

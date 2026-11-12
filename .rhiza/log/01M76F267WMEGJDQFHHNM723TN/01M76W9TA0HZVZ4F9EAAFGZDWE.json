@@ -1,0 +1,30 @@
+{
+  "actor": "01M76W91FKTJZ4A4VP4TZ1RVX7",
+  "after": [
+    "01M76VHTDXCGP71SPQNKPN9HDT"
+  ],
+  "at": "2026-11-12T03:19:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test ./internal/api -run 'TestModelBranch' with a local bare origin and a fake gh: an accept in the main checkout yields a pushed model/<cs>-<entry> branch from origin/main holding exactly that entry and one PR request; a --record apply yields a branch holding its entry plus the re-rendered .rhiza/rendered/ files, on which rhiza check passes with no stale-render problem; a second write to the same change set adds a commit to the same branch and opens no second PR; the temporary worktree is removed; a dry run pushes nothing",
+          "statement": "A model write made in the main checkout for a change set with no live run still writes its entry into the main checkout's .rhiza/log and, in the same operation, commits it onto the short-lived branch model/<change set>-<entry>, named with the full change set and entry IDs, cut from origin/main in a temporary worktree, pushes it and opens a model-only PR; when the write changes the landed model (a --record apply or link, an add actor --record, an answer or accept that lands a record), the commit also carries rhiza render's output for .rhiza/rendered/ so the PR passes make check's self-check; a later write to the same change set while its model PR is open goes onto that same branch and PR"
+        },
+        "handle": "main-write-model-branch",
+        "id": "01M76FAA4YDVZV5S8GZEP7FQXF",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M76FAA4YDVZV5S8GZB49W9M0",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76W9TA0HZVZ4F9EAAFGZDWE",
+  "type": "ops",
+  "v": 1
+}

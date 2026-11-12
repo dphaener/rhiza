@@ -86,6 +86,7 @@ const (
 	InboxLoadHigh     = "load-high"
 	InboxMemoryLow    = "memory-low"
 	InboxMainStale    = "main-stale"
+	InboxModelPR      = "model-pr"
 	InboxAccept       = "accept"
 	InboxInterview    = "interview"
 	InboxWorkflow     = "workflow"
@@ -100,7 +101,7 @@ type InboxRequest struct {
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string              `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, accept, interview or workflow"`
+	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview or workflow"`
 	At             string              `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string              `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
 	Change         string              `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
@@ -202,6 +203,17 @@ func (r InboxResponse) Human(w io.Writer) {
 			fmt.Fprintf(w, "%s main-stale change set %s\n", it.ID, it.Change)
 			if it.Project != "" {
 				fmt.Fprintf(w, "  project: %s\n", it.Project)
+			}
+			fmt.Fprintf(w, "  %s\n", it.Detail)
+			continue
+		}
+		if it.Kind == InboxModelPR {
+			fmt.Fprintf(w, "%s model-pr change set %s\n", it.ID, it.Change)
+			if it.Project != "" {
+				fmt.Fprintf(w, "  project: %s\n", it.Project)
+			}
+			if it.ChangeTitle != "" {
+				fmt.Fprintf(w, "  change set: %s\n", it.ChangeTitle)
 			}
 			fmt.Fprintf(w, "  %s\n", it.Detail)
 			continue
@@ -784,7 +796,7 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	items = sortInboxItems(append(append(append(append(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMachineHold(ctx)...), inboxMainStale(ctx)...), inboxWorkflow(ctx)...), inboxWatchdog(ctx)...))
+	items = sortInboxItems(append(append(append(append(append(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMachineHold(ctx)...), inboxMainStale(ctx)...), inboxModelPRs(ctx)...), inboxWorkflow(ctx)...), inboxWatchdog(ctx)...))
 	byRun := map[string]run.State{}
 	for _, j := range runs {
 		byRun[j.ID] = j.State()
@@ -1178,7 +1190,7 @@ func findInboxItems(ctx *Ctx, ref string) ([]InboxItem, map[string]run.State, er
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, it := range append(append(append(append(append(append(append(all, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMachineHold(ctx)...), inboxMainStale(ctx)...), inboxWorkflow(ctx)...) {
+	for _, it := range append(append(append(append(append(append(append(append(all, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMachineHold(ctx)...), inboxMainStale(ctx)...), inboxModelPRs(ctx)...), inboxWorkflow(ctx)...) {
 		if strings.HasPrefix(it.ID, ref) {
 			found = append(found, it)
 		}
@@ -1211,6 +1223,9 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 	}
 	if item.Kind == InboxMainStale {
 		return nil, Usagef("item %s is the main checkout not being up to date: it has no tab to open", item.ID).WithNext("rhiza health")
+	}
+	if item.Kind == InboxModelPR {
+		return nil, Usagef("item %s is a model-only pull request the daemon could not merge: it has no tab to open", item.ID).WithNext("rhiza health")
 	}
 	if item.Kind == InboxWorkflow {
 		return nil, Usagef("item %s is a workflow that does not resolve: it has no tab to open", item.ID).WithNext("rhiza daemon status")

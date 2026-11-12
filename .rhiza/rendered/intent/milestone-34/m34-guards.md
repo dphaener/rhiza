@@ -1,6 +1,6 @@
 # m34-guards
 
-intent · `01M76XMNBZ01KFRMX1VT4B8FVS` · parent [milestone-34](../milestone-34.md)
+intent · `01M76XMNBZ01KFRMX1VT4B8FVS` · parent [milestone-34](../milestone-34.01M76XMNA9ATHT77CB9GCH44P3.md)
 
 ## statement
 

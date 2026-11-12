@@ -1,6 +1,6 @@
 # m34-still-healthy
 
-intent · `01M76XMNHPHDNARC274WE1YAY8` · parent [milestone-34](../milestone-34.md)
+intent · `01M76XMNHPHDNARC274WE1YAY8` · parent [milestone-34](../milestone-34.01M76XMNA9ATHT77CB9GCH44P3.md)
 
 ## statement
 

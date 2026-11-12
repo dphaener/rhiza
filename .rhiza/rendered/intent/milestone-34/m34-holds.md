@@ -1,6 +1,6 @@
 # m34-holds
 
-intent · `01M76XMNFNPVC0SYM06JR8GSCJ` · parent [milestone-34](../milestone-34.md)
+intent · `01M76XMNFNPVC0SYM06JR8GSCJ` · parent [milestone-34](../milestone-34.01M76XMNA9ATHT77CB9GCH44P3.md)
 
 ## statement
 

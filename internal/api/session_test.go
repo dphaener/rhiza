@@ -1028,3 +1028,25 @@ func TestStartStepNestedPaths(t *testing.T) {
 		}
 	}
 }
+
+func TestCopyChangeSetLogWritesReadOnly(t *testing.T) {
+	src, dst := t.TempDir(), t.TempDir()
+	cs := id.ID{}
+	dir := filepath.Join(src, store.Dir, store.LogDir, cs.String())
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "01ABC.json"), []byte("{}\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := copyChangeSetLog(src, dst, cs); err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(filepath.Join(dst, store.Dir, store.LogDir, cs.String(), "01ABC.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m := info.Mode().Perm(); m != 0o444 {
+		t.Errorf("copied entry mode = %o, want 444", m)
+	}
+}
