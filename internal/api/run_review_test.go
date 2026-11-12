@@ -228,3 +228,65 @@ func TestRunVerdictDowngrade(t *testing.T) {
 		t.Fatalf("standing = %+v, want only f2 (a major still stands)", s)
 	}
 }
+
+// A plan-review finding carries its kind's severity: a plan critic may
+// downgrade a major kind (missing-acceptance) but not a minor one
+// (missing-provenance), and review-check and the gate count only confirmed
+// major findings, so a confirmed minor one passes.
+func TestPlanReviewDowngradeByKind(t *testing.T) {
+	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
+	t0 := time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
+	rs := run.NewStore(run.Dir(f.common))
+	if err := rs.Create("R12", run.Entry{
+		Type: run.TypeStarted, Step: "review", At: t0,
+		Started: &run.Started{Workflow: "plan", Definition: "name = \"plan\"\n[step.review]\nkind = \"command\"\nrun = \"true\"\n", Change: "01M76F4G0JQ649RR29M9QPFX68", Title: "Plan it"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	app := func(e run.Entry) {
+		t.Helper()
+		e.At = t0
+		if err := rs.Append("R12", e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return "R12"
+		}
+		return ""
+	}
+	app(run.Entry{Type: run.TypeEntered, Step: "review"})
+	app(run.Entry{Type: run.TypeFindings, Step: "review", Findings: []run.Finding{
+		{ID: "f1", Node: "n", Kind: run.KindMissingAcceptance, Reason: "a"},
+		{ID: "f2", Node: "n", Kind: run.KindMissingProvenance, Reason: "b"},
+	}})
+	verdict := func(body string) error {
+		f.ctx.Stdin = strings.NewReader(body)
+		_, err := callOp(t, f.ctx, "run.verdict", `{"file":"-"}`)
+		return err
+	}
+	if e := AsError(verdict(`{"verdicts":[{"finding":"f2","verdict":"downgraded","severity":"nit","reason":"r"}]}`)); e == nil || e.Code != CodeUsage {
+		t.Fatalf("downgrade of a minor kind: %v, want usage", e)
+	}
+	if err := verdict(`{"verdicts":[{"finding":"f1","verdict":"downgraded","severity":"minor","reason":"small"},{"finding":"f2","verdict":"confirmed","reason":"real"}]}`); err != nil {
+		t.Fatalf("downgrade of a major kind: %v", err)
+	}
+	st, _ := rs.Read("R12")
+	rd, _ := st.State().LatestRound()
+	if v, _ := rd.Verdict("f1"); v.Verdict != run.Downgraded || v.Original != run.SeverityMajor || v.Severity != run.SeverityMinor {
+		t.Fatalf("f1 verdict = %+v, want downgraded major to minor", v)
+	}
+	if _, err := callOp(t, f.ctx, "run.review-check", `{}`); err != nil {
+		t.Fatalf("review-check with a downgrade and a confirmed minor: %v", err)
+	}
+	m := newModel(store.Log{}, id.ID{})
+	if _, err := gateReview(nil, m, reviewRun{id: "R12", state: st.State()}); err != nil {
+		t.Fatalf("gate with no confirmed major: %v", err)
+	}
+	// A confirmed major kind still fails the check.
+	app(run.Entry{Type: run.TypeVerdict, Step: "critic", Verdicts: []run.Verdict{{Finding: "f1", Verdict: run.Confirmed, Reason: "r"}}})
+	if _, err := callOp(t, f.ctx, "run.review-check", `{}`); err == nil || !strings.Contains(err.Error(), "f1") {
+		t.Fatalf("review-check with a confirmed missing-acceptance: %v", err)
+	}
+}

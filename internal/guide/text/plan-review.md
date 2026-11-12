@@ -68,7 +68,7 @@ major, the rest minor. `minor` and `nit` are never fixed.
 
 ## Reviser
 
-Fix each confirmed finding of the latest round in the model, nothing else: one
+Fix each confirmed major finding of the latest round in the model, nothing else: one
 `rhiza apply <file> --change <cs> --json` per change set holding the nodes. A node in a
 landed record is fixed with a record write: `rhiza apply <file> --record --json`.
 Never invent an owner's words: a missing quote becomes a question, not a made-up quote.

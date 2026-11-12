@@ -16576,7 +16576,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "confirmed": {
-            "description": "The round's findings the critic confirmed, in order",
+            "description": "The round's major findings the critic confirmed (a confirmed minor is never fixed), in order",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -16718,7 +16718,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass",
+      "summary": "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent major, the rest minor), fail with one before round 3, else leave each as a question and pass",
       "write": true
     },
     {

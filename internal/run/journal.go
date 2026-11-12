@@ -162,6 +162,19 @@ func ValidKind(kind string) bool {
 	return false
 }
 
+// KindSeverity is the severity a plan-review finding of kind carries:
+// missing-acceptance, contradiction and outside-intent are major,
+// missing-provenance and unreal-depends-on minor; "" for any other kind.
+func KindSeverity(kind string) string {
+	switch kind {
+	case KindMissingAcceptance, KindContradiction, KindOutsideIntent:
+		return SeverityMajor
+	case KindMissingProvenance, KindUnrealDependsOn:
+		return SeverityMinor
+	}
+	return ""
+}
+
 // Severities of a review finding, from the most to the least serious.
 const (
 	SeverityBlocker = "blocker"
@@ -500,6 +513,15 @@ type Finding struct {
 	Reason     string `json:"reason"`
 }
 
+// EffectiveSeverity is f's severity: Severity when set, else for a
+// plan-review finding (one with a Kind) KindSeverity of its kind, else "".
+func (f Finding) EffectiveSeverity() string {
+	if f.Severity == "" && f.Kind != "" {
+		return KindSeverity(f.Kind)
+	}
+	return f.Severity
+}
+
 // Verdict is a critic's verdict on the finding with ID Finding: confirmed
 // or dropped, or downgraded to Severity (lower than the finding's
 // Original severity, journalled with it), for Reason.
@@ -549,6 +571,20 @@ func (r Round) Confirmed() []Finding {
 	var out []Finding
 	for _, f := range r.Findings {
 		if v, ok := r.Verdict(f.ID); ok && v.Verdict == Confirmed {
+			out = append(out, f)
+		}
+	}
+	return out
+}
+
+// Blocking are the round's confirmed findings that are not minor or nit
+// (a plan-review finding's severity is KindSeverity of its kind; one with
+// neither severity nor kind counts), in order: those a plan review's check
+// and gate count. A confirmed minor or nit is never fixed.
+func (r Round) Blocking() []Finding {
+	var out []Finding
+	for _, f := range r.Confirmed() {
+		if sev := f.EffectiveSeverity(); sev != SeverityMinor && sev != SeverityNit {
 			out = append(out, f)
 		}
 	}
