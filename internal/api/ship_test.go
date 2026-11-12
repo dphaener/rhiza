@@ -997,58 +997,24 @@ func TestShipCloseOutClosesTabs(t *testing.T) {
 	}
 }
 
-func TestGoModule(t *testing.T) {
-	for _, c := range []struct{ in, want string }{
-		{"module github.com/dphaener/rhiza\n\ngo 1.25\n", rhizaModule},
-		{"// a comment\nmodule github.com/dphaener/rhiza // Rhiza\n", rhizaModule},
-		{"module \"github.com/dphaener/rhiza\"\n", rhizaModule},
-		{"\tmodule   github.com/dphaener/rhiza  \r\n", rhizaModule},
-		{"module example.com/other\n", "example.com/other"},
-		{"module github.com/dphaener/rhiza/v2\n", "github.com/dphaener/rhiza/v2"},
-		{"modules x\ngo 1.25\n", ""},
-		{"// module github.com/dphaener/rhiza\n", ""},
-		{"", ""},
-	} {
-		if got := goModule([]byte(c.in)); got != c.want {
-			t.Errorf("goModule(%q) = %q, want %q", c.in, got, c.want)
-		}
-	}
-}
-
-func TestIsRhizaRepo(t *testing.T) {
-	for _, c := range []struct {
-		mod  string // "" writes no go.mod
-		want bool
-	}{
-		{"", false},
-		{"module github.com/dphaener/rhiza\n", true},
-		{"module example.com/other\n", false},
-		{"module github.com/dphaener/rhiza/v2\n", false},
-	} {
-		dir := t.TempDir()
-		if c.mod != "" {
-			if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte(c.mod), 0o644); err != nil {
-				t.Fatal(err)
-			}
-		}
-		got, err := isRhizaRepo(dir)
-		if err != nil || got != c.want {
-			t.Errorf("isRhizaRepo(%q) = %v, %v; want %v", c.mod, got, err, c.want)
-		}
-	}
-}
-
-// rhizaRepoFixture is a ship land fixture whose root is Rhiza's own repo,
-// with programs answered by a shipExec, and the head build's path.
+// rhizaRepoFixture is a ship land fixture whose workflow names a head
+// build (SHIP_HEAD_RHIZA), with programs answered by a shipExec, and the
+// head build's path.
 func rhizaRepoFixture(t *testing.T) (*sessionFixture, *shipExec, string) {
 	t.Helper()
 	f, _, _ := shipLandFixture(t)
-	if err := os.WriteFile(filepath.Join(f.ctx.Root, "go.mod"), []byte("module "+rhizaModule+"\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
 	x := &shipExec{answers: map[string]string{}}
 	f.ctx.Exec = x.run
-	bin := filepath.Join(f.common, "rhiza", "ship", currentOf(t, f.ctx).String(), "rhiza")
+	bin := filepath.Join(t.TempDir(), "rhiza")
+	if err := os.WriteFile(bin, []byte("#!/bin/sh\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	f.ctx.Getenv = func(k string) string {
+		if k == envShipRhiza {
+			return bin
+		}
+		return ""
+	}
 	return f, x, bin
 }
 
@@ -1058,12 +1024,14 @@ func TestShipLandWithHeadBuild(t *testing.T) {
 	f.ctx.ActorRef = shipTestActor
 	// Scripts and this fake have no model branch step: tests run with it off.
 	f.ctx.Getenv = func(k string) string {
-		if k == "RHIZA_TEST_NOW" {
+		switch k {
+		case "RHIZA_TEST_NOW":
 			return "1"
+		case envShipRhiza:
+			return bin
 		}
 		return ""
 	}
-	x.answers["go build -o "+bin+" ./cmd/rhiza"] = ""
 	x.answers[bin+" land --change "+cs.String()+" --json --actor "+shipTestActor] = `{}`
 	x.answers[bin+" render --json --actor "+shipTestActor] = `{"written":[".rhiza/rendered/a.md"],"removed":[".rhiza/rendered/stale.md"],"unchanged":3}`
 	resp, err := callOp(t, f.ctx, "ship.land", `{}`)
@@ -1075,7 +1043,7 @@ func TestShipLandWithHeadBuild(t *testing.T) {
 		!slices.Equal(r.Rendered, []string{".rhiza/rendered/a.md", ".rhiza/rendered/stale.md"}) {
 		t.Fatalf("land = %+v", r)
 	}
-	if len(x.calls) != 3 || !strings.HasPrefix(x.calls[0], "go build") {
+	if len(x.calls) != 2 {
 		t.Fatalf("calls = %q", x.calls)
 	}
 	for _, d := range x.dirs {
@@ -1083,25 +1051,24 @@ func TestShipLandWithHeadBuild(t *testing.T) {
 			t.Errorf("ran in %s, not %s", d, f.ctx.Root)
 		}
 	}
-	if fi, err := os.Stat(filepath.Dir(bin)); err != nil || !fi.IsDir() {
-		t.Errorf("head build folder: %v", err)
-	}
 	// The head build landed it; in-process nothing did.
 	if c, _ := ctxWorkspace(t, f.ctx).changeSet(cs); c.State != changeset.StateAccepted {
 		t.Errorf("change set is %s; only the head build should land it", c.State)
 	}
 }
 
-func TestShipLandHeadBuildFails(t *testing.T) {
+func TestShipLandHeadBuildMissing(t *testing.T) {
 	f, x, bin := rhizaRepoFixture(t)
 	cs := currentOf(t, f.ctx)
-	x.answers["go build -o "+bin+" ./cmd/rhiza"] = "!cmd/rhiza/main.go:1:1: syntax error"
+	if err := os.Remove(bin); err != nil {
+		t.Fatal(err)
+	}
 	_, err := callOp(t, f.ctx, "ship.land", `{}`)
 	wantExit(t, err, 1)
-	if !strings.Contains(err.Error(), "could not build rhiza from the PR head") || !strings.Contains(err.Error(), "syntax error") {
+	if !strings.Contains(err.Error(), envShipRhiza) || !strings.Contains(err.Error(), "not a built rhiza") {
 		t.Errorf("err = %v", err)
 	}
-	if len(x.calls) != 1 {
+	if len(x.calls) != 0 {
 		t.Errorf("calls = %q", x.calls)
 	}
 	for _, c := range f.git.calls {
@@ -1448,6 +1415,130 @@ func TestShipCheckConflicts(t *testing.T) {
 
 // A fixer's merge, committed on top of origin's branch and holding main,
 // is rendered, pushed plainly and recorded.
+// headBuildRebase makes f's workflow name a head build and its command
+// (SHIP_HEAD_RHIZA, SHIP_HEAD_BUILD), and logs each program run into
+// f.git.calls as "exec <program> <args>", so a test sees the build's place
+// among the git calls. build is the build's answer, as a shipExec's.
+func headBuildRebase(t *testing.T, f *sessionFixture, build string) (bin, cmd string) {
+	t.Helper()
+	bin = filepath.Join(t.TempDir(), "rhiza")
+	if err := os.WriteFile(bin, []byte("#!/bin/sh\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	cmd = `go build -o "$SHIP_HEAD_RHIZA" ./cmd/rhiza`
+	prev := f.ctx.Getenv
+	f.ctx.Getenv = func(k string) string {
+		switch k {
+		case envShipRhiza:
+			return bin
+		case envShipBuild:
+			return cmd
+		}
+		if prev == nil {
+			return ""
+		}
+		return prev(k)
+	}
+	f.ctx.Exec = func(name string, args []string, dir string, _ []string) ([]byte, error) {
+		f.git.calls = append(f.git.calls, "exec "+name+" "+strings.Join(args, " "))
+		if dir != f.ctx.Root {
+			t.Errorf("%s ran in %s, not %s", name, dir, f.ctx.Root)
+		}
+		switch {
+		case name == "sh" && slices.Equal(args, []string{"-c", cmd}):
+			if msg, failed := strings.CutPrefix(build, "!"); failed {
+				return nil, errors.New(msg)
+			}
+			return []byte(build), nil
+		case name == bin && len(args) > 0 && args[0] == "render":
+			return []byte(`{"written":[],"removed":[],"unchanged":1}`), nil
+		}
+		return nil, errors.New(name + " " + strings.Join(args, " ") + ": unexpected call")
+	}
+	return bin, cmd
+}
+
+// execOrder is the order of the merge, the head build, the head build's
+// render and the push among f's calls.
+func execOrder(f *sessionFixture, bin string) []string {
+	var order []string
+	for _, c := range f.git.calls {
+		switch {
+		case c == rebaseMerge:
+			order = append(order, "merge")
+		case strings.HasPrefix(c, "exec sh -c"):
+			order = append(order, "build")
+		case strings.HasPrefix(c, "exec "+bin+" render"):
+			order = append(order, "render")
+		case c == "commit -q --no-edit":
+			order = append(order, "commit")
+		case c == rebasePush:
+			order = append(order, "push")
+		}
+	}
+	return order
+}
+
+// A merged head renders with its own build: ship rebase runs the
+// workflow's build command after merging main and before rendering, since
+// the step before it built the head without main.
+func TestShipRebaseBuildsMergedHead(t *testing.T) {
+	f, _ := shipRebaseFixture(t)
+	bin, _ := headBuildRebase(t, f, "")
+	f.git.out[rebaseMerge] = ""
+	f.git.out[rebasePush] = ""
+	r := shipRebase(t, f)
+	if !r.Rebased || r.Pushed != "beef000111" {
+		t.Fatalf("rebase = %+v", r)
+	}
+	if got := execOrder(f, bin); !slices.Equal(got, []string{"merge", "build", "render", "push"}) {
+		t.Errorf("order = %v; calls %q", got, f.git.calls)
+	}
+}
+
+// A rendered-only conflict is settled with the merged head's build too.
+func TestShipRebaseRenderedConflictBuildsMergedHead(t *testing.T) {
+	f, _ := shipRebaseFixture(t)
+	bin, _ := headBuildRebase(t, f, "")
+	f.git.out[rebaseConflict] = ".rhiza/rendered/index.md\n"
+	f.git.out["diff --cached --name-only"] = ".rhiza/rendered/index.md\n"
+	f.git.out["commit -q --no-edit"] = ""
+	f.git.out[rebasePush] = ""
+	r := shipRebase(t, f)
+	if !r.Rebased || len(r.Settled) != 1 {
+		t.Fatalf("rebase = %+v", r)
+	}
+	got := execOrder(f, bin)
+	if len(got) < 4 || got[0] != "merge" || got[1] != "build" || got[2] != "render" || got[3] != "commit" {
+		t.Errorf("order = %v; want the build after the merge and before the settling render", got)
+	}
+}
+
+// A merged head that does not build pushes nothing and puts the branch
+// back, so a retried step merges again.
+func TestShipRebaseMergedHeadBuildFails(t *testing.T) {
+	f, state := shipRebaseFixture(t)
+	headBuildRebase(t, f, "!cmd/rhiza/main.go:1:1: syntax error")
+	f.git.out[rebaseMerge] = ""
+	f.git.out["reset -q --keep beef000111"] = ""
+	_, err := callOp(t, f.ctx, "ship.rebase", `{}`)
+	wantExit(t, err, 1)
+	if !strings.Contains(err.Error(), "merged head") || !strings.Contains(err.Error(), "syntax error") {
+		t.Errorf("err = %v", err)
+	}
+	if !slices.Contains(f.git.calls, "reset -q --keep beef000111") {
+		t.Errorf("the branch was not put back; calls %q", f.git.calls)
+	}
+	for _, c := range f.git.calls {
+		if strings.HasPrefix(c, "push") {
+			t.Errorf("pushed after a failed build: %q", c)
+		}
+	}
+	if st, _ := readShipState(state); st.Pushed != "" {
+		t.Errorf("state = %+v", st)
+	}
+}
+
 func TestShipRebaseFixerMerge(t *testing.T) {
 	f, state := shipRebaseFixture(t)
 	f.git.out["merge-base --is-ancestor "+rebaseOnto+" HEAD"] = ""
@@ -2056,7 +2147,6 @@ func TestShipLandHeadBuildErrorDetail(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			f, x, bin := rhizaRepoFixture(t)
-			x.answers["go build -o "+bin+" ./cmd/rhiza"] = ""
 			f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
 				if name == bin {
 					return []byte(c.out), c.err

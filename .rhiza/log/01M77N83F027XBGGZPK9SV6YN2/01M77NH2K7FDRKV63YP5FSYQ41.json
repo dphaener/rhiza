@@ -1,0 +1,96 @@
+{
+  "actor": "01M77N91K2JMJ1SPMBFAPP6WK2",
+  "after": [
+    "01M77NGKVM642N7F4980CHE8JQ"
+  ],
+  "at": "2026-11-12T10:40:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M77NFJV6S5JN933PSDTDX60A",
+        "id": "01M77NH2EJH8716S2RH2B8EQ23",
+        "link": "01M77NH2EJH8716S2RH1VAYDTV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NGKV6R3R7F14V9KA8WR0D",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestShipLand' passes with a new case: a fixture change set updates a node's field on a base that a landed change set has since rewritten; ship land exits non-zero, its JSON and the state file name the node, field and landed op; the triage command exits 0 then, and exits 1 for a land that failed on anything else and after the conflict is repaired",
+          "statement": "When rhiza ship land is refused because the shipping change set's own operation rests on a stale base, it records the conflict in the ship state (the node, the fields, the stale base and the landed op and change set that rewrote them) and says so distinctly, and a ship triage command (e.g. rhiza ship check --model-conflict) exits 0 only while such a recorded conflict still holds on the branch's head, so land-triage can route it"
+        },
+        "handle": "ship-land-reports-model-conflict",
+        "id": "01M77NH2F1X295VM050T5WT5C4",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M77NH2F1X295VM050RE962KG",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M77NH2F1X295VM050RE962KG",
+        "id": "01M77NH2FMZFD738ATVAQGR99Q",
+        "link": "01M77NH2FMZFD738ATVA1707AP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NFJV6S5JN933PSDTDX60A",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... passes with a test that the builtin ship-change routes land's fail through land-triage to the model-conflict triage, its pass to the fixer agent and the fixer back to render, gate-land and land, with land allowed the extra visits and the loop bounded; go test -trimpath ./cmd/rhiza -run TestScripts/<the ship-change workflow script> passes; make self-check passes",
+          "statement": "ship-change routes a land refused on a model conflict (land, then land-triage, then a model-conflict triage step) to a model-conflict fixer agent that restates each conflicting update on the landed version with `rhiza set <ref> --rebase`, keeping the landed change's work and adding this change set's intent, commits the rewritten .rhiza/log entry with the Change, Actor and Review trailers, and the run returns through render, gate-land and land; bounded by max_visits, so a repeated conflict ends the run with the conflict named, and every other land failure still ends it"
+        },
+        "handle": "ship-model-conflict-fix",
+        "id": "01M77NH2G554PQ7672BZJ4WMD5",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M77NH2G554PQ7672BXQJSRBX",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M77NH2G554PQ7672BXQJSRBX",
+        "id": "01M77NH2GPKZ8J9JGX5WXYPNQ5",
+        "link": "01M77NH2GPKZ8J9JGX5TD6VQNP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NFJV6S5JN933PSDTDX60A",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestShipCheck|TestShipGate' passes with new cases: a branch whose change set has its own stale-base conflict fails ship check (and the gate) naming the node and field, while a conflict in another in-flight change set leaves them passing; the ship-change routing test shows that failure reaches the model-conflict fixer",
+          "statement": "Before sign-off and land, rhiza ship check and the pre-land gate fail, rather than only warn, on a model conflict in the shipping change set's own operations, naming it, and the run sends that failure to the same model-conflict fixer; conflicts of other in-flight change sets stay warnings and rhiza check itself is unchanged"
+        },
+        "handle": "ship-gate-fails-own-model-conflict",
+        "id": "01M77NH2H5A9NCEFT1A7AADB6M",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M77NH2H5A9NCEFT1A53X89S3",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M77NH2H5A9NCEFT1A53X89S3",
+        "id": "01M77NH2JJKBTZBBDP1Y0GCG0M",
+        "link": "01M77NH2JJKBTZBBDP1VCKDZV0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NFJV6S5JN933PSDTDX60A",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M77N83F027XBGGZPK9SV6YN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77NH2K7FDRKV63YP5FSYQ41",
+  "type": "ops",
+  "v": 1
+}

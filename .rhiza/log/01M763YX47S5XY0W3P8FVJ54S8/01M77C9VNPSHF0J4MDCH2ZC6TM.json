@@ -1,0 +1,40 @@
+{
+  "actor": "01M77BTZ5CD8S85D0EG9BMS1G8",
+  "after": [
+    "01M77BN92FBKE4GPT9T07EK9KY"
+  ],
+  "at": "2026-11-12T07:59:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Attempt 2, at c02eb50a. TestScripts/daemon-settings-scope passes: daemon settings no longer lists trimGoCache (! stdout 'trimGoCache'). describe-golden passes. go test -trimpath -count=1 ./internal/api -run Daemon passes (run from a scratch worktree outside ~/code, because inside it the enclosing-root guard flagged the live daemon's usage.live.json write; every test passed in both runs). internal/daemon passes. rhiza docs --out into a scratch dir writes cli.md, config.md and workflow-file.md byte-identical to docs/reference, with no trimGoCache, so the reference is regenerated. Read the diff: the trimGoCache setting def, its daemonConf field, the daemonSweepGoCache call and function, the gosweep import and daemon-trims-go-cache.txtar are removed; no Go, txtar or doc file outside internal/gosweep names trimGoCache or gosweep. The change set retires daemon-trims-go-cache and go-build-cache-sweep. The fix commit c02eb50a resolves model finding f1: root-daemon-settings-scope's statement and acceptance no longer list trimGoCache. rhiza check fails only on render files, which is expected before landing. Left open: internal/gosweep stays as dead code (minor/nit findings), which the leaf's acceptance does not cover."
+        },
+        "handle": "daemon-no-go-cache-trim-verified-2",
+        "id": "01M77C9VMC3T6QQNAP4WEPAYED",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77C9VMC3T6QQNAP4TKGFECF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77C9VMC3T6QQNAP4TKGFECF",
+        "id": "01M77C9VN1DBEJ72AZFPWXZ1N7",
+        "link": "01M77C9VN1DBEJ72AZFKQM3ZT4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MDEKRSQERY6KR37594J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763YX47S5XY0W3P8FVJ54S8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77C9VNPSHF0J4MDCH2ZC6TM",
+  "type": "ops",
+  "v": 1
+}

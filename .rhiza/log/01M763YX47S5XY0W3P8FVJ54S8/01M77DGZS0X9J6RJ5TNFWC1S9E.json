@@ -1,0 +1,63 @@
+{
+  "actor": "01M77D5PEN5BW94P6892JC290T",
+  "after": [
+    "01M77D3NE68EDRHBZ8FNQXRY7Y"
+  ],
+  "at": "2026-11-12T08:20:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 90f39160 with a -trimpath build: in a scratch Rhiza root, an outer workflow including an inner one whose head-build step runs sh -c \"${SHIP_HEAD_BUILD:?...}\" (bugfix's shape) succeeded using the outer [env]'s SHIP_HEAD_BUILD (the inner's was ignored) with GOTMPDIR the run's tmp; with no SHIP_HEAD_BUILD in the outer [env] the step failed with 'SHIP_HEAD_BUILD: is not set' and the run failed. bugfix.toml's SHIP_HEAD_BUILD built a working rhiza; rhiza workflow check passes for ship-change, bugfix, docs, plan-bug, docs-build and docs-review. TestScripts/ship-land-branch-build (now SHIP_HEAD_RHIZA-based) and internal/api Ship|SessionRun|Daemon tests pass (run outside ~/code)."
+        },
+        "handle": "ship-head-build-step-qa-3",
+        "id": "01M77DGZE01018N5BYXH51JHYR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77DGZE01018N5BYXEDK1DYS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77DGZE01018N5BYXEDK1DYS",
+        "id": "01M77DGZG18CS78HP3ERY45D9B",
+        "link": "01M77DGZG18CS78HP3EPBQDDQV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MDWX73CXGPSKBXQCJK4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 90f39160: a scratch workflow run with [env] GOTMPDIR={run_tmp} gave its command step GOTMPDIR=<repo>/.git/rhiza/runs/<run>/tmp; TestScripts/workflow-env and internal/workflow, internal/run tests pass."
+        },
+        "handle": "workflow-env-qa-3",
+        "id": "01M77DGZJ90V1FJYSSZ8E95T5E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77DGZJ90V1FJYSSZ5YBSSP2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77DGZJ90V1FJYSSZ5YBSSP2",
+        "id": "01M77DGZNANNATB3TD636SPVCC",
+        "link": "01M77DGZNANNATB3TD62YBWGVK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MCFVAH4VXGAXZNTW4S7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763YX47S5XY0W3P8FVJ54S8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77DGZS0X9J6RJ5TNFWC1S9E",
+  "type": "ops",
+  "v": 1
+}

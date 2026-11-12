@@ -9,11 +9,13 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/store"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 // fakeExec records the programs a call runs and answers with out, or with
@@ -528,10 +530,7 @@ func TestSessionRun(t *testing.T) {
 	if !agent.Terminal || agent.Dir != f.worktree {
 		t.Errorf("agent terminal %v, dir %q", agent.Terminal, agent.Dir)
 	}
-	wantEnv := []string{"RHIZA_CHANGE=" + s.Change, "RHIZA_ACTOR=" + s.Actor, "RHIZA_FOR=" + s.For, "RHIZA_SESSION=" + s.ID, "RHIZA_RUN=run-1", "GOTMPDIR=" + run.TmpDir(run.Dir(f.common), "run-1")}
-	if fi, err := os.Stat(run.TmpDir(run.Dir(f.common), "run-1")); err != nil || !fi.IsDir() {
-		t.Errorf("the run's GOTMPDIR folder does not exist when the agent starts: %v", err)
-	}
+	wantEnv := []string{"RHIZA_CHANGE=" + s.Change, "RHIZA_ACTOR=" + s.Actor, "RHIZA_FOR=" + s.For, "RHIZA_SESSION=" + s.ID, "RHIZA_RUN=run-1"}
 	if !slices.Equal(agent.Env, wantEnv) || !slices.Equal(agent.Unset, []string{"RHIZA_AUTONOMOUS", "RHIZA_MILESTONE", "RHIZA_MILESTONE_NUMBER", "RHIZA_LEAF", "RHIZA_ATTEMPT", "RHIZA_CHECK", "RHIZA_CYCLE", "RHIZA_ROLE", "RHIZA_COMMIT", "RHIZA_ROOT"}) {
 		t.Errorf("env %v unset %v, want %v", agent.Env, agent.Unset, wantEnv)
 	}
@@ -1048,5 +1047,43 @@ func TestCopyChangeSetLogWritesReadOnly(t *testing.T) {
 	}
 	if m := info.Mode().Perm(); m != 0o444 {
 		t.Errorf("copied entry mode = %o, want 444", m)
+	}
+}
+
+// A session in a run whose workflow has an [env] table gets it over the
+// terminal's environment: {run_tmp} is the run's own temp folder, made
+// before the agent starts, and a plain value is set as written.
+func TestSessionRunWorkflowEnv(t *testing.T) {
+	f, s, fs := runFixture(t, `{"permission_mode":"manual","run":"R1"}`)
+	src := "[env]\nGOTMPDIR = \"{run_tmp}/go\"\nGOFLAGS = \"-count=1\"\n" +
+		"[step.s]\nkind = \"leaves\"\n[step.s.builder]\nprompt = \"b\"\n[step.s.verifier]\nprompt = \"v\"\n"
+	def, err := workflow.Parse("wf", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rs := run.NewStore(run.Dir(f.common))
+	now := time.Date(2026, 11, 12, 0, 0, 0, 0, time.UTC)
+	if err := run.Start(rs, "R1", run.Started{Workflow: "wf", Definition: src, Change: s.Change, Worktree: f.worktree}, now, def); err != nil {
+		t.Fatal(err)
+	}
+	tmp := rs.TmpDir("R1")
+	if _, err := os.Stat(tmp); !os.IsNotExist(err) {
+		t.Fatalf("run temp folder exists before the session runs: %v", err)
+	}
+
+	resp, err := callOp(t, f.ctx, "session.run", `{"id":"`+s.ID+`"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	agent := fs.programs[len(fs.programs)-1]
+	want := []string{"GOFLAGS=-count=1", "GOTMPDIR=" + tmp + "/go"}
+	if got := agent.Env[len(agent.Env)-2:]; !slices.Equal(got, want) {
+		t.Errorf("agent env %v, want it to end with %v", agent.Env, want)
+	}
+	if !slices.Equal(resp.(SessionRunResponse).Env, agent.Env) {
+		t.Errorf("response env %v, agent env %v", resp.(SessionRunResponse).Env, agent.Env)
+	}
+	if fi, err := os.Stat(tmp); err != nil || !fi.IsDir() {
+		t.Errorf("run temp folder %s not made: %v", tmp, err)
 	}
 }

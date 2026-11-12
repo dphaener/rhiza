@@ -1,0 +1,30 @@
+{
+  "actor": "01M77N2266BKR12ZPJZDJVHTDW",
+  "after": [
+    "01M77N1GAGBPBP7EH4EV4R1R0P"
+  ],
+  "at": "2026-11-12T10:35:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "a86fdccf-e6b8-4c91-ad56-01a1cf50f590",
+          "statement": "Change set 01M77N1 (Fix watchdog unmerged PR at land): ship-change's land step was refused because another accepted change set (auto-update) had landed a new statement for the same node first. land-triage only passes gate failures, so the run ended and the orchestrator repaired it by hand with `rhiza set --rebase` (commit 480b6acf3). How should ship-change handle a land refused for a model conflict?"
+        },
+        "handle": "question-a86fdccf-1",
+        "id": "01M77N6XND5EV3P8BE2G5DAZBA",
+        "key": null,
+        "kind": "question",
+        "node": "01M77N6XND5EV3P8BE2EBEDATK",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M77N1GAGBPBP7EH4EV2CT023",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77N6ZPPNV4WJQZ13N50VDKY",
+  "type": "ops",
+  "v": 1
+}

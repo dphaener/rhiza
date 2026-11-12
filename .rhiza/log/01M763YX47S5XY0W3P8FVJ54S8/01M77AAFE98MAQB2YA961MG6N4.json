@@ -1,0 +1,40 @@
+{
+  "actor": "01M77A4KDBKR9TR43Y0HGA9ZB7",
+  "after": [
+    "01M779B3EVR1QBGXNDM2FH8SN8"
+  ],
+  "at": "2026-11-12T07:24:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b384c062 I read the diff: trimGoCache leaves settingDefs, daemonConf and daemonConfOf, daemonSweepGoCache and the gosweep import leave internal/api/daemon.go, daemon-trims-go-cache.txtar is deleted, and docs/reference/config.md drops the setting. Nothing outside internal/gosweep itself references gosweep or trimGoCache in Go, scripts or docs. Ran with a private GOTMPDIR: go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-settings|docs-reference)' passes all 6 scripts; daemon-settings-scope now asserts ! stdout 'trimGoCache' on rhiza daemon settings. go test -trimpath ./internal/api -run 'Daemon|Docs|Setting' passes from a scratch worktree outside ~/code (it trips the known .rhiza-root usage leak guard under ~/code); noDiskReads no longer answers trimGoCache. rhiza docs --out from this build writes a config.md identical to docs/reference/config.md, with no trimGoCache. The retirements of daemon-trims-go-cache and go-build-cache-sweep are in the change set."
+        },
+        "handle": "daemon-no-go-cache-trim-verified",
+        "id": "01M77AAFAVXRQ4TJTTDK4A2SN8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77AAFAVXRQ4TJTTDHZ5R84V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77AAFAVXRQ4TJTTDHZ5R84V",
+        "id": "01M77AAFCQMJJXGDH1BHR2DK2A",
+        "link": "01M77AAFCQMJJXGDH1BH83G1AF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MDEKRSQERY6KR37594J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763YX47S5XY0W3P8FVJ54S8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77AAFE98MAQB2YA961MG6N4",
+  "type": "ops",
+  "v": 1
+}

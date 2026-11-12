@@ -599,23 +599,36 @@ func TestShipPrePushCheckWatchdog(t *testing.T) {
 	})
 }
 
-// In Rhiza's own repo the check runs a build of the head being pushed, as
-// ship land renders with one, not this binary's in-process check: a fake go
-// "builds" a rhiza that prints report as its check --json.
+// When the run's workflow names a head build (SHIP_HEAD_BUILD) the check
+// runs a build of the head being pushed, as ship land renders with one, not
+// this binary's in-process check: a fake build command "builds" a rhiza
+// that prints report as its check --json.
 func TestShipPrePushCheckHeadBuild(t *testing.T) {
+	const build = `go build -o "$SHIP_HEAD_RHIZA" ./cmd/rhiza`
 	setup := func(t *testing.T, report string, buildFails bool) (*prePushRepo, *[]string) {
 		r := newPrePushRepo(t)
-		r.commitFile("go.mod", "module "+rhizaModule+"\n\ngo 1.24\n")
+		r.ctx.Getenv = func(key string) string {
+			if key == envShipBuild {
+				return build
+			}
+			return ""
+		}
 		var calls []string
 		real := r.ctx.Exec
 		r.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
-			if name == "go" {
-				calls = append(calls, "go "+strings.Join(args, " "))
+			if name == "sh" && len(args) == 2 && args[1] == build {
+				var bin string
+				for _, kv := range env {
+					if v, ok := strings.CutPrefix(kv, envShipRhiza+"="); ok {
+						bin = v
+					}
+				}
+				calls = append(calls, "build -o "+bin)
 				if buildFails {
 					return []byte("cmd/rhiza/main.go:1: syntax error\n"), errors.New("exit status 1")
 				}
 				script := "#!/bin/sh\necho '" + report + "'\n"
-				if err := os.WriteFile(args[2], []byte(script), 0o755); err != nil {
+				if err := os.WriteFile(bin, []byte(script), 0o755); err != nil {
 					t.Fatal(err)
 				}
 				return nil, nil
@@ -635,7 +648,7 @@ func TestShipPrePushCheckHeadBuild(t *testing.T) {
 		if err := shipPrePushCheck(r.ctx, r.root); err != nil {
 			t.Fatal(err)
 		}
-		if len(*calls) != 2 || !strings.HasPrefix((*calls)[0], "go build -o ") || !strings.HasPrefix((*calls)[1], "rhiza check --json --skip-reference --branch-newer-format in ") ||
+		if len(*calls) != 2 || !strings.HasPrefix((*calls)[0], "build -o /") || !strings.HasPrefix((*calls)[1], "rhiza check --json --skip-reference --branch-newer-format in ") ||
 			strings.HasSuffix((*calls)[1], " in "+r.root) {
 			t.Errorf("calls %q", *calls)
 		}
@@ -705,5 +718,29 @@ func TestPrePushJournal(t *testing.T) {
 	st, _ := rs.Read(id)
 	if l, ok := st.State().LatestPrePush(); !ok || l.Outcome != run.CheckFailed {
 		t.Fatalf("latest: %+v", l)
+	}
+}
+
+// The watchdog acts on a run from outside its steps: shipRunEnv lets its
+// pre-push check see the workflow's [env] (SHIP_HEAD_BUILD among it) over
+// the daemon's own environment.
+func TestShipRunEnv(t *testing.T) {
+	const def = "name = \"w\"\n[env]\nSHIP_HEAD_RHIZA = \"{run_tmp}/rhiza-head\"\nSHIP_HEAD_BUILD = 'go build -o \"$SHIP_HEAD_RHIZA\" ./cmd/rhiza'\n[step.wait]\nkind = \"command\"\nrun = \"true\"\n"
+	j := run.Journal{ID: "r", Entries: []run.Entry{{Type: run.TypeStarted, At: time.Now(), Started: &run.Started{Definition: def}}}}
+	ctx := testCtx(t.TempDir())
+	ctx.Getenv = func(key string) string { return "own-" + key }
+	got := ctxGetenv(shipRunEnv(ctx, j.State(), "/tmp/run"))
+	if v := got(envShipBuild); v != `go build -o "$SHIP_HEAD_RHIZA" ./cmd/rhiza` {
+		t.Errorf("%s = %q", envShipBuild, v)
+	}
+	if v := got(envShipRhiza); v != "/tmp/run/rhiza-head" {
+		t.Errorf("%s = %q", envShipRhiza, v)
+	}
+	if v := got("PATH"); v != "own-PATH" {
+		t.Errorf("PATH = %q", v)
+	}
+	plain := run.Journal{ID: "p", Entries: []run.Entry{{Type: run.TypeStarted, At: time.Now(), Started: &run.Started{Definition: "name = \"w\"\n[step.wait]\nkind = \"command\"\nrun = \"true\"\n"}}}}
+	if c := shipRunEnv(ctx, plain.State(), "/tmp/run"); c != ctx {
+		t.Error("a workflow with no [env] changed the context")
 	}
 }

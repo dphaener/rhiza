@@ -100,7 +100,6 @@ var settingDefs = []settingDef{
 	}},
 	{key: "rhiza.daemon.autoUpdate", def: "off", typ: "off or main", desc: "Whether the daemon keeps itself up to date: main follows the registered Rhiza source checkout and runs make update when it moves; latest and release come with the release channels milestone", validate: validateChoice("off", "main")},
 	{key: FailureClassifierKey, def: DefaultFailureClassifier, typ: "shell command", emptyOK: true, desc: "The command that classifies a failed step as transient or real: it reads the step's output on stdin and prints 'transient: <reason>' or 'real: <reason>'; the default runs Claude headless with Haiku, any LLM CLI can be set, and an empty value turns classification off, so no failure is retried", validate: func(string) error { return nil }},
-	{key: "rhiza.daemon.trimGoCache", def: "true", typ: "boolean", desc: "Trim the Go build cache when disk space runs low", validate: validateChoice("true", "false")},
 	{key: "rhiza.daemon.permissionMode", def: "", flag: "--permission-mode", typ: "one word", desc: "The permission mode agents run in; unset leaves the agent's own default", validate: func(v string) error {
 		if strings.TrimSpace(v) == "" || strings.ContainsAny(v, " \t\r\n") {
 			return fmt.Errorf("must be one word")
@@ -307,13 +306,12 @@ type daemonConf struct {
 	maxLoad    float64
 	minMemory  uint64
 	// machine is the hold of new runs for load or memory this poll found.
-	machine     *daemon.MachineHold
-	mode        string
-	autoUpdate  string
-	paused      bool
-	trimGoCache bool
-	webHost     string
-	webPort     string
+	machine    *daemon.MachineHold
+	mode       string
+	autoUpdate string
+	paused     bool
+	webHost    string
+	webPort    string
 }
 
 // daemonConfOf resolves the settings for a poll: config, then the request's
@@ -356,7 +354,6 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 	c.paused = settingValue(rows, "rhiza.daemon.paused") == "true" || settingValue(rows, "rhiza.project.paused") == "true"
 	c.projectMax, _ = strconv.Atoi(settingValue(rows, "rhiza.project.maxRuns"))
 	c.autoUpdate = settingValue(rows, "rhiza.daemon.autoUpdate")
-	c.trimGoCache = settingValue(rows, "rhiza.daemon.trimGoCache") != "false"
 	c.mode = settingValue(rows, "rhiza.daemon.permissionMode")
 	c.webHost = settingValue(rows, web.HostKey)
 	c.webPort = settingValue(rows, web.PortKey)

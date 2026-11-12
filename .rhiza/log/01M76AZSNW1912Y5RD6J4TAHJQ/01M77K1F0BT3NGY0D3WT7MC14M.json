@@ -1,0 +1,40 @@
+{
+  "actor": "01M77JB1WFKQBGP7B5ATTEPMP3",
+  "after": [
+    "01M77J2Y8AFHG6GZAS9KFK1NX5"
+  ],
+  "at": "2026-11-12T09:57:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 103ce69c9: go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(version-channel|describe-golden|version|usage)$' PASS. version-channel.txtar points RHIZA_TEST_CHANNEL_BASE_URL at an httptest file-server fixture (no network) and covers newer (v0.1.0 vs release v0.2.0), same (v0.2.0), older (v0.3.0), a dev build on latest, an unknown channel (usage error), a missing --channel value, an unreachable channel (127.0.0.1:1 errors cleanly), plain version unchanged, and asserts no .rhiza was written. describe-golden passes unchanged: no request/response type changed (only the version frame command's help summary, which describe does not emit), so the golden is current. internal/release tests PASS; internal/api -run 'Frame|Check|Help|Usage' PASS; go vet and gofmt clean. The diff reads the manifest via release.Resolver.Newest and prints channel/newest/newer (JSON via canon.Marshal) with no writes."
+        },
+        "handle": "version-channel-check-verified",
+        "id": "01M77K1EZ4PVJXEXHHXBQQQZ72",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77K1EZ4PVJXEXHHXAPSM7KC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77K1EZ4PVJXEXHHXAPSM7KC",
+        "id": "01M77K1EZNGK9E4VC4PTM4YW2P",
+        "link": "01M77K1EZNGK9E4VC4PSNHBYGK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7D5PY6PAKYK14QQCKZE1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76AZSNW1912Y5RD6J4TAHJQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77K1F0BT3NGY0D3WT7MC14M",
+  "type": "ops",
+  "v": 1
+}

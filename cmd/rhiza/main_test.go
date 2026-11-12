@@ -53,7 +53,7 @@ func TestScripts(t *testing.T) {
 		Dir:           dir,
 		Files:         files,
 		Setup:         setup,
-		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "quickstart-doc": quickstartDoc, "chtimes": chtimes, "health-server": healthServer, "run-lock": runLock, "root-daemon-lock": rootDaemonLock},
+		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "quickstart-doc": quickstartDoc, "chtimes": chtimes, "health-server": healthServer, "run-lock": runLock, "file-server": fileServer, "root-daemon-lock": rootDaemonLock},
 		UpdateScripts: *update,
 	})
 }
@@ -218,6 +218,17 @@ func healthServer(ts *testscript.TestScript, neg bool, args []string) {
 	}))
 	ts.Defer(srv.Close)
 	ts.Setenv(args[0], srv.URL+"/health")
+}
+
+// fileServer serves a directory over HTTP: file-server var dir sets var to the
+// server's base URL. It closes when the script ends.
+func fileServer(ts *testscript.TestScript, neg bool, args []string) {
+	if neg || len(args) != 2 {
+		ts.Fatalf("usage: file-server var dir")
+	}
+	srv := httptest.NewServer(http.FileServer(http.Dir(ts.MkAbs(args[1]))))
+	ts.Defer(srv.Close)
+	ts.Setenv(args[0], srv.URL)
 }
 
 func foldOK(ts *testscript.TestScript, neg bool, args []string) {

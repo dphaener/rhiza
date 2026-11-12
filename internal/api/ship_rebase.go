@@ -335,12 +335,17 @@ func shipLeaveConflict(ctx *Ctx, t shipTarget, rendered string, conflicts []stri
 	return resp, nil
 }
 
-// shipFinishRebase renders the merged head, commits what that changed,
+// shipFinishRebase builds the merged head when the workflow names a head
+// build command, renders it, commits what that changed,
 // runs the local gate on it while CI is unstable (errShipGateFailed when it
 // fails), and pushes it to the change set's branch on origin with a plain
 // push: never forced, so it fails rather than drop a head it has not seen,
 // and never to main.
 func shipFinishRebase(ctx *Ctx, t shipTarget, rendered string, resp *ShipRebaseResponse) error {
+	// The head now holds main: build it again before rendering with it.
+	if err := shipRebuildHead(ctx); err != nil {
+		return err
+	}
 	var err error
 	if resp.Rendered, err = shipRender(ctx, t); err != nil {
 		return err
@@ -369,7 +374,8 @@ func shipFinishRebase(ctx *Ctx, t shipTarget, rendered string, resp *ShipRebaseR
 
 // shipMergeOnto merges onto into HEAD, keeping the branch's history. A
 // conflict only under rendered is settled by removing those files and
-// rendering again. Any other conflict returns every conflicted path and
+// rendering again, with the merged head's build when the workflow names
+// one. Any other conflict returns every conflicted path and
 // leaves the merge in progress. A merge that fails without a conflict is
 // aborted and is an error.
 func shipMergeOnto(ctx *Ctx, t shipTarget, onto, rendered string, resp *ShipRebaseResponse) ([]string, error) {
@@ -396,6 +402,10 @@ func shipMergeOnto(ctx *Ctx, t shipTarget, onto, rendered string, resp *ShipReba
 		if !slices.Contains(resp.Settled, p) {
 			resp.Settled = append(resp.Settled, p)
 		}
+	}
+	if err := shipRebuildHead(ctx); err != nil {
+		abort()
+		return nil, err
 	}
 	if _, err := shipRender(ctx, t); err != nil {
 		abort()

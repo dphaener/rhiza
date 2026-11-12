@@ -1,0 +1,40 @@
+{
+  "actor": "01M77KM65PNW8KQQT4HY5B7AGP",
+  "after": [
+    "01M77K7Z8NJ0M151VHMSGXR2PX"
+  ],
+  "at": "2026-11-12T10:08:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 940233379 (attempt 2) ran go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(version-channel|describe-golden)$|TestVersionNewer': all PASS. version-channel.txtar serves the channel manifests from a file-server fixture via RHIZA_TEST_CHANNEL_BASE_URL (no network) and covers newer, same, older, a dev build, an unknown channel (usage error), an unreachable channel (error, no crash) and that nothing is written; describe-golden passes against the current output. Read the fix diff: versionNewer now compares pre-release identifiers per semver (numeric ones numerically) and treats a -N-g<sha> describe suffix as N commits after its version; the new TestVersionNewer table covers rc.10 vs rc.2, main.10 vs main.9, v0.2.1-12-gdef vs v0.2.1-5-gabc, describe vs its tag and -dirty, resolving the confirmed f1 findings of the quality, qa and model checks. internal/release tests pass; gofmt and go vet clean on cmd/rhiza."
+        },
+        "handle": "version-channel-check-verified-2",
+        "id": "01M77KNVVMHB3GHAWMBRM2RA0F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77KNVVMHB3GHAWMBP8SNMKV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77KNVVMHB3GHAWMBP8SNMKV",
+        "id": "01M77KNVWCAZTN8TMVVEPTKXV4",
+        "link": "01M77KNVWCAZTN8TMVVBWFHKPY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7D5PY6PAKYK14QQCKZE1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76AZSNW1912Y5RD6J4TAHJQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77KNVX47R0KVB3T90F3YJQ6",
+  "type": "ops",
+  "v": 1
+}
