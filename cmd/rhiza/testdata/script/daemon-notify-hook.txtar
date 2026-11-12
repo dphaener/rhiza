@@ -88,8 +88,10 @@ mkdir .rhiza/workflows
 cp $WORK/work.toml .rhiza/workflows/work.toml
 exec rhiza change new 'Blocked run' --title 'Blocked run' --json
 exec rhiza run start --foreground --workflow work --permission-mode manual &
-exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"hook\"" "$WORK"/repo/.git/rhiza/sessions/*.json && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
-exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"state\": \")working\"/\${1}blocked\", \"kind\": \"permission\", \"detail\": \"Allow the hook command?\"/s; s/(\"hook\": \{.*?\"at\": \")[^\"]*/\${1}2030-01-01T00:00:00Z/s; s/\"tab\": \{[^}]*\}/\"tab\": {\"title\": \"build tab\", \"block\": \"block:sess\", \"session\": \"session:s2\"}/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"hook\"" "$WORK"/repo/.git/rhiza/sessions/*.json && grep -q "block:b1" "$WORK"/repo/.git/rhiza/sessions/*.json && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+edit-sessions hook-state blocked permission 'Allow the hook command?'
+edit-sessions hook-at 2030-01-01T00:00:00Z
+edit-sessions tab 'build tab' block:sess session:s2
 exec rhiza daemon --permission-mode manual --once --notify-command $WORK/hook.sh
 exec sh -c 'wc -l < $HOOKOUT'
 stdout '^ *1$'

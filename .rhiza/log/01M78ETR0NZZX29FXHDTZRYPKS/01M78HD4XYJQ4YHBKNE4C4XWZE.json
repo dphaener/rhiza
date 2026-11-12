@@ -1,0 +1,39 @@
+{
+  "actor": "01M78H799MZ30K67NNNK1QB2D9",
+  "after": [
+    "01M78F7M44XBQE6KQ3YG9S9W8M"
+  ],
+  "at": "2026-11-12T18:48:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Reproduction for 'fails before the change': a delay inside the tab Update alone cannot fail the old script, since the tab Update takes the lock before the hook lands. Inject, in internal/api/session.go just before the tab Update, a wait until st.Read(sid) has Status.Hook (poll 5ms, up to 2s), and a 300ms sleep inside the Update closure before r.Tab = tab. Then the old script (HEAD~2's inbox-stalled.txtar) fails 3/3 at the first stalled check (its hook-at edit is dropped; the hook keeps the real time) and the edit-sessions one passes 3/3."
+        },
+        "handle": "note-01m78hd4w8mbj2",
+        "id": "01M78HD4W8MBJ2RP5SFMSQP8J7",
+        "key": null,
+        "kind": "note",
+        "node": "01M78HD4W8MBJ2RP5SFH048NMZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78HD4W8MBJ2RP5SFH048NMZ",
+        "id": "01M78HD4X64B2JSM4GQQ2XQ6GJ",
+        "link": "01M78HD4X64B2JSM4GQPGTK38J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78F38SGXG1XXVX4V8BKTX2K",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M78ETR0NZZX29FXHDTZRYPKS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78HD4XYJQ4YHBKNE4C4XWZE",
+  "type": "ops",
+  "v": 1
+}
