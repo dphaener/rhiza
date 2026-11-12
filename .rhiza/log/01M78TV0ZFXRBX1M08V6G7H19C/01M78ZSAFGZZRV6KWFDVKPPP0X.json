@@ -1,0 +1,155 @@
+{
+  "actor": "01M78Z2FMM6V7KPG4KBYKTTJJR",
+  "after": [
+    "01M78YYKW4J97MNSX0XCQKSRGN"
+  ],
+  "at": "2026-11-12T22:59:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 4f1ad9a09 with a scratch build, on a scratch root (two projects) outside ~/code running a real 'rhiza daemon': 'rhiza daemon profile --seconds 5 --out live1.pprof' printed the path and exit 0; the file is gzip pprof (go tool pprof: Duration 5s, 310ms samples), the daemon kept polling after it; a second request issued 2s later exited 3 with 'a profile capture is already in progress'. With no daemon it exits 2 'no daemon is running at <root>'. Noted: on a daemon started with RHIZA_CPUPROFILE the capture fails with 'cpu profiling already in use', and on a cold start the request waits behind the first poll (94 s) so the CLI timed out at 23 s."
+        },
+        "handle": "daemon-live-cpu-profile-qa-1",
+        "id": "01M78ZSA158C2A7TC8TGXH0V7Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78ZSA158C2A7TC8TGMXNS2P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78ZSA158C2A7TC8TGMXNS2P",
+        "id": "01M78ZSA1VNGFB04CZZY1QEG7D",
+        "link": "01M78ZSA1VNGFB04CZZW8CBE5V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WAQ555KCQSZVXT3CPDQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 4f1ad9a09: a real root daemon run with RHIZA_CPUPROFILE=<dir>/daemon.pprof and a dispatch rule sending a ready feature to a scratch command-only workflow started a driver ('run start --foreground ... --workflow backoff'); /proc/<driver>/environ held RHIZA_CPUPROFILE=<dir>/daemon.pprof.01M78ZF6P7JDC1MEXJH2X74VM7.start-1, the driver wrote that 1.7 KB profile on exit and the daemon wrote its own daemon.pprof (311 s) on SIGINT, neither overwriting the other. The suffix is the change set's start log name, not the run ID (01M78ZF88X...) the statement names."
+        },
+        "handle": "daemon-passes-cpuprofile-to-drivers-qa-1",
+        "id": "01M78ZSA2M3KG59PFW95XH7PK1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78ZSA2M3KG59PFW928ES6CA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78ZSA2M3KG59PFW928ES6CA",
+        "id": "01M78ZSA3JG0ARFSKMHAWGV9D8",
+        "link": "01M78ZSA3JG0ARFSKMH8XR1J3X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WDA98WKD9YNVGJWBWA7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 4f1ad9a09: a real daemon-started driver ran a scratch workflow whose wait step (interval 2s, max_interval 8s) logged each check's time and printed a state file: with unchanged output the checks came 2,4,8,8,8,8 s apart, after the output changed 2 then 4 s, and the step passed when the condition held. rhiza workflow check rejects max_interval 10s below interval 30s and passes on every .rhiza/workflows/*.toml (bugfix, docs, docs-build, docs-review, plan-bug, ship-change); the three CI waits in ship-change.toml set 30s/2m. go test -run 'WaitBackoff|MaxInterval' on internal/run and internal/workflow passes."
+        },
+        "handle": "ci-wait-backs-off-qa-1",
+        "id": "01M78ZSA4C44V3N9STNX2JD2SY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78ZSA4C44V3N9STNVA46QJM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78ZSA4C44V3N9STNVA46QJM",
+        "id": "01M78ZSA557WGVKDM658EDH177",
+        "link": "01M78ZSA54FTQA2968B2VH94S1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WSRZERXA7TRPH50HSAV",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 4f1ad9a09: go test -trimpath ./internal/api/ -run '^$' -bench 'IdleRootPoll|IdleDriverPoll' -benchtime 3x -cpuprofile $TMPDIR/idle.pprof passed (IdleRootPoll 55.1 ms/op, IdleDriverPoll 52.7 us/op) and wrote a 148 KB profile go tool pprof reads."
+        },
+        "handle": "idle-poll-benchmarks-qa-1",
+        "id": "01M78ZSA65CNVEGRKSZZBSEC3F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78ZSA65CNVEGRKSZX0VP951",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78ZSA65CNVEGRKSZX0VP951",
+        "id": "01M78ZSA73FSG0H5T5Z32M5XA8",
+        "link": "01M78ZSA73FSG0H5T5Z2AZ4325",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WH7H4JKPF1CZ9S33Z7M",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 4f1ad9a09: a real root daemon over a scratch root with two registered projects, nothing changing, against the real ~/.claude/projects (2,309 project folders, 4,093 transcripts) used 0.032 core over 30 s and 0.040 core over 75 s (/proc stat ticks), under the 0.05 core target; it still started a newly accepted change set's run when one appeared. go test -run RootIdlePoll on internal/api passes. Noted: the first poll after start reads every transcript, 94 s and 41 CPU-s cold, 16 s warm, tripping the 15 s watchdog note."
+        },
+        "handle": "root-daemon-idle-poll-no-work-qa-1",
+        "id": "01M78ZSA928XM8FDZRDDPZEKHQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78ZSA928XM8FDZRDDHN178C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78ZSA928XM8FDZRDDHN178C",
+        "id": "01M78ZSAB5KSGSX2BMHGGFA3R1",
+        "link": "01M78ZSAB5KSGSX2BMHF4HEHT9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WM0TQZYN29GP2GCGGPZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 4f1ad9a09: go test -run UsageScan on internal/api passes; hands-on, the real two-project root daemon over 4,093 real transcripts held a steady 0.040 core across a 75 s window that spans a full walk, against the ~0.45 core the sampler measured before."
+        },
+        "handle": "usage-scan-once-per-poll-qa-1",
+        "id": "01M78ZSAD1PQRAKX31SYYB7P37",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78ZSAD1PQRAKX31SWQZPZMM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78ZSAD1PQRAKX31SWQZPZMM",
+        "id": "01M78ZSAEE35ZH5R0K2A1HMBH7",
+        "link": "01M78ZSAEE35ZH5R0K28HFVYEW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WPDAC0P0JMCA17H4TC9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78TV0ZFXRBX1M08V6G7H19C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78ZSAFGZZRV6KWFDVKPPP0X",
+  "type": "ops",
+  "v": 1
+}
