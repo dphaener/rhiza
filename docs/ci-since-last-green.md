@@ -37,7 +37,7 @@ jobs:
         GH_TOKEN: ${{ github.token }}
         EVENT: ${{ github.event_name }}
         PR: ${{ github.event.pull_request.number }}
-        CHECK: check
+        CHECK: ci-passed
       run: |
         full() { echo "code=true" >> "$GITHUB_OUTPUT"; exit 0; }
         [ "$EVENT" = pull_request ] || full
@@ -45,7 +45,7 @@ jobs:
         # The pull request's commits, newest first, the head excluded.
         for sha in $(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/commits" --paginate --jq '.[].sha' | tac | grep -v "^$head$"); do
           state=$(gh api "repos/$GITHUB_REPOSITORY/commits/$sha/check-runs" \
-            --jq "[.check_runs[] | select(.name == \"$CHECK\")] | map(.conclusion) | first // \"\"")
+            --jq "[.check_runs[] | select(.name == \"$CHECK\")] | if length > 0 and all(.conclusion == \"success\") then \"success\" else \"\" end")
           if [ "$state" = success ]; then green=$sha; break; fi
         done
         [ -n "${green:-}" ] || full
@@ -70,7 +70,7 @@ jobs:
     - uses: actions/checkout@v4
     - run: ./run-your-tests   # your own build and test commands
 
-  check:
+  ci-passed:
     needs: [changes, model, test]
     if: always()
     runs-on: ubuntu-latest
@@ -88,7 +88,9 @@ jobs:
         [ "$ran" -ge 2 ] || exit 1
 ```
 
-Make `check`, the aggregate job, the one required status. Its name is what `CHECK` looks for, so the last green commit means "its `check` passed".
+Make `ci-passed`, the aggregate job, the one required status. Its name is what `CHECK` looks for, so the last green commit means "its `ci-passed` passed".
+
+Give the aggregate job a name no other job in the repo uses. GitHub names a check run by its job name alone, not by its workflow, and the workflow `rhiza ci install` writes already has a job named `check`. If the aggregate job were also named `check`, a commit whose tests failed but whose Rhiza check passed could be taken as green, and a later `.rhiza/`-only push would skip the tests that failed. The example also counts a commit green only when every check run of that name succeeded, so a clash fails safe: it runs everything.
 
 ## Things to know
 

@@ -3,6 +3,7 @@ package api
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
@@ -201,6 +202,28 @@ func TestDocsCISinceGreen(t *testing.T) {
 		if strings.Contains(page, tool) {
 			t.Errorf("docs/ci-since-last-green.md names %q: the recipe is language-neutral", tool)
 		}
+	}
+	// The aggregate job's name is what marks a commit green. GitHub names a
+	// check run by its job alone, so it must not clash with a job of the
+	// workflow ci.install writes, and every run of that name must succeed.
+	m := regexp.MustCompile(`(?m)^ +CHECK: (\S+)$`).FindStringSubmatch(page)
+	if m == nil {
+		t.Fatal("docs/ci-since-last-green.md sets no CHECK name")
+	}
+	if !strings.Contains(page, "\n  "+m[1]+":\n") {
+		t.Errorf("docs/ci-since-last-green.md has no job named %q, the CHECK name", m[1])
+	}
+	jobs := regexp.MustCompile(`(?m)^  ([A-Za-z0-9_-]+):$`).FindAllStringSubmatch(workflowTemplate, -1)
+	if len(jobs) == 0 {
+		t.Fatal("no jobs found in workflowTemplate")
+	}
+	for _, j := range jobs {
+		if j[1] == m[1] {
+			t.Errorf("docs/ci-since-last-green.md names its aggregate job %q, as the workflow ci.install writes does", m[1])
+		}
+	}
+	if !strings.Contains(page, `all(.conclusion == \"success\")`) {
+		t.Error("docs/ci-since-last-green.md does not require every check run of the CHECK name to succeed")
 	}
 	readme, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
 	if err != nil {
