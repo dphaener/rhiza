@@ -1,0 +1,40 @@
+{
+  "actor": "01M7879HR7TH45NQYSA02DHJ6V",
+  "after": [
+    "01M78752XPEJYDCYS0M9M8RVZD"
+  ],
+  "at": "2026-11-12T15:52:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b0afd3c6d (detached checkout) I ran go test -trimpath -count=1 ./tools/release/... -run TestGates -v. All 14 TestGates subtests passed: all pass, CI red, CI missing, commit missing from the history (soak fails), soak too short, bug filed since, bug before the soak, milestone in flight, milestone blocked, second patch in 24h, patch after 24h, severe skips soak, severe skips batching and severe never skips CI. They use a fake clock and a fake CI value over the testdata/runs.jsonl run-history fixture, read through ReadRunHistory. TestGatesCheckReports also passed. It drives runCheck end to end in a scratch git repo with a fake CI func and a run-history file, and checks each gate's pass or FAIL line with its reason. The whole tools/release package passed, and go vet and gofmt are clean. I read the diff for review finding f2 (the milestone gate was vacuous). gateInputs now counts a change set serving a finished milestone as in flight when its land entry (Landing.Entry, a path under the log) is not in the candidate commit's tree (git ls-tree). So a land that is uncommitted, or an older --commit, fails the gate. The new test steps show that: an uncommitted CS6 land gives 'milestone FAIL change sets not landed in <head>: CS6', and the gate passes once the land is committed."
+        },
+        "handle": "release-gates-verified-2",
+        "id": "01M787B3JWRJ2EH8GHYX55W8V0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M787B3JWRJ2EH8GHYSWWJG1H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M787B3JWRJ2EH8GHYSWWJG1H",
+        "id": "01M787B3KJ0GV1KT12FK43WHNX",
+        "link": "01M787B3KJ0GV1KT12FGF28FFA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7E0P2S46PHFZ3KX010J6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B0FZA3N7ZHAYTBN76MVSV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M787B3MG290FKHWJZV6BHK31",
+  "type": "ops",
+  "v": 1
+}

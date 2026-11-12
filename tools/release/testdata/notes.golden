@@ -1,0 +1,18 @@
+## Breaking changes
+
+- Drop the --old flag: removes --old
+- cli: command gone: rhiza old
+
+## Milestone m33: Releases are cut by rule
+
+- Release marks
+- Evaluate the gates
+
+## Other changes
+
+- Drop the --old flag
+
+## Bug fixes
+
+- Fix the crash on empty logs
+- Repair a corrupted log (severe: log corruption)

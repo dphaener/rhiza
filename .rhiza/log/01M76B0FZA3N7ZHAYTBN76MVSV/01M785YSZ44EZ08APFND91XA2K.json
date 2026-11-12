@@ -1,0 +1,40 @@
+{
+  "actor": "01M785W7RQZNAFSTJF70VYDTBG",
+  "after": [
+    "01M785FCX4FSHY80K1E5640R6K"
+  ],
+  "at": "2026-11-12T15:27:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 4bf1b104d (attempt 2): ran go test -trimpath -count=1 ./tools/release/... -run TestGates -v; TestGates (14 subtests: each gate passing and failing, commit missing from history fails soak, severe skips soak and batching but never CI) and TestGatesCheckReports pass. TestGates now reads its history from the fixture testdata/runs.jsonl through ReadRunHistory (the JSON-lines format tools/release defines), fixing attempt 1's f2. tools/release check now wires the gates into runCheck (main.go parses -runs/RHIZA_RELEASE_RUNS and -commit; CI via an injectable gh lookup, bug requests and blocking questions from the log, last patch tag from git) and prints each gate with its reason, fixing f1; TestGatesCheckReports drives runCheck over a fixture repo with a fake clock, fake CI and fixture history and checks ready/blocked output, CI red, soak after a bug request, missing commit, and a blocking question cleared by an answer. Full package tests, go vet and gofmt clean."
+        },
+        "handle": "release-gates-verified",
+        "id": "01M785YSX1PVZCD0JR7P0N9M2Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M785YSX1PVZCD0JR7KZ5FE07",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M785YSX1PVZCD0JR7KZ5FE07",
+        "id": "01M785YSY4853P1TS9ZTZY4JZ4",
+        "link": "01M785YSY4853P1TS9ZQVQ5E9W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7E0P2S46PHFZ3KX010J6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B0FZA3N7ZHAYTBN76MVSV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M785YSZ44EZ08APFND91XA2K",
+  "type": "ops",
+  "v": 1
+}

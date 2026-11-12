@@ -1,0 +1,86 @@
+{
+  "actor": "01M7865W93X1H2E3W1QBWDQ6DD",
+  "after": [
+    "01M7862MWWSNJMJ2KH4EQYJ8PQ"
+  ],
+  "at": "2026-11-12T15:39:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 8ff82f55d: built tools/release (go build -trimpath) and ran `release check` by hand, with fake gh scripts on PATH, on this repo and on a scratch clone whose log I extended. CI gate: success passed; failure, in_progress (pending) and [] (no run) each FAIL with a reason; gh exiting 4 aborts with exit 1. Soak: a missing -runs file fails with 'not in the daemon run history'; a 30h/48h-old first run fails because a bug request came after; the earliest of duplicate lines counts; RHIZA_RELEASE_RUNS works as the default; a malformed line errors with file:line. Patch: a v0.2.1 tag 1 minute old fails 'last patch was 1m0s ago'. Severe: a 'severe: data loss on land' note on the bug fix gives soak and patch 'skipped' (ready even with HEAD missing from the history), and a red CI still blocks. Milestone: a blocking question on a serving change set fails the gate (lists which-frob) and passes once an answers link lands. Minor: -commit is not resolved to a SHA, and the in-flight check can never fire."
+        },
+        "handle": "release-gates-qa-1",
+        "id": "01M786MRHSHC6HNGB9S1E8DQ03",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M786MRHSHC6HNGB9S0VCYP93",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M786MRHSHC6HNGB9S0VCYP93",
+        "id": "01M786MRJD6X2CZ86PMA1BHR25",
+        "link": "01M786MRJD6X2CZ86PM9N9ZAGG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7E0P2S46PHFZ3KX010J6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 8ff82f55d: ran the built `release check` by hand. On this repo it reports v0.2.0 minor since v0.1.0 (two detected setting breaks, so breaking before v1 is a minor). On a scratch clone tagged v0.2.0: only a landed bug fix gives v0.2.1 patch; after tagging v0.2.1 it gives v0.2.2; a change set with a 'breaking: removes --old' note gives v0.3.0 minor (pre-v1); tagging v1.0.0 makes it v2.0.0 major; with nothing landed since the tag it reports 'none: no release since v0.2.0'."
+        },
+        "handle": "release-next-version-qa-1",
+        "id": "01M786MRK1KX1XSCVB27A48G6M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M786MRK1KX1XSCVB23D3W2B1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M786MRK1KX1XSCVB23D3W2B1",
+        "id": "01M786MRKKYHJN00DW4R56A2N6",
+        "link": "01M786MRKKYHJN00DW4PJ472J1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7E06G9AJHZSV3GSEA005",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 8ff82f55d: ran the built `release check` by hand. On this repo the draft notes list the detected breaking changes, then a section per finished milestone (m32-*, m33-*) with each change set's intent and the milestone's statement, then the bug fixes. On a scratch clone: the bug fix appears under Bug fixes, flagged '(severe: data loss on land)' once the note is added; a landed record change set is left out; a breaking-marked change set appears under Breaking changes with its title and reason ('Add the frobnicator: removes --old'), and under its milestone heading 'Milestone qa-milestone: Frobnication everywhere' with the other serving change set."
+        },
+        "handle": "release-notes-qa-1",
+        "id": "01M786MRM79833CX2NJPJVRTVB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M786MRM79833CX2NJKB58J3H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M786MRM79833CX2NJKB58J3H",
+        "id": "01M786MRMVHAMM2R4Y6V94A1CX",
+        "link": "01M786MRMVHAMM2R4Y6V54BT00",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7E153HS76CMR3ZHVPTM6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B0FZA3N7ZHAYTBN76MVSV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M786MRNHSH7XV3N1NG5G9KD7",
+  "type": "ops",
+  "v": 1
+}

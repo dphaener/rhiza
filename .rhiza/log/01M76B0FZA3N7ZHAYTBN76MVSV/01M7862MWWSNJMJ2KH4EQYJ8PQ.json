@@ -1,0 +1,40 @@
+{
+  "actor": "01M78618K1E3R67BRS445PRERV",
+  "after": [
+    "01M785YSZ44EZ08APFND91XA2K"
+  ],
+  "at": "2026-11-12T15:30:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 7f7fabf17 (attempt 2): go test -trimpath -count=1 ./tools/release/... -run TestNotes PASS; go vet and gofmt clean on tools/release. The test builds a fixture log (bug, milestone-served, breaking-marked, severe-marked and two kind=record landings, plus one before the tag) and compares Notes() with testdata/notes.golden: breaking changes with reasons and detected differences first, the milestone group with its statement, other changes, bug fixes with the severe one flagged; record change sets left out, output deterministic. Attempt 1's finding is fixed: ReadHistory now reads the open body's kind and Notes skips kind=record (still calling out a breaking mark on one). A scratch build of tools/release run as `check` in this checkout drafted v0.2.0 notes since v0.1.0 in 53 lines, grouped by milestone with bug fixes listed, and no 'Record agent actor' or 'apply' lines."
+        },
+        "handle": "release-notes-verified",
+        "id": "01M7862MTES4PRC702NQZRHGT3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7862MTES4PRC702NMF45Q51",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7862MTES4PRC702NMF45Q51",
+        "id": "01M7862MVEC4TNFZYTM4AD3S8B",
+        "link": "01M7862MVEC4TNFZYTM1TAPYZK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7E153HS76CMR3ZHVPTM6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B0FZA3N7ZHAYTBN76MVSV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7862MWWSNJMJ2KH4EQYJ8PQ",
+  "type": "ops",
+  "v": 1
+}

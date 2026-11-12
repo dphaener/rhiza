@@ -1,0 +1,30 @@
+{
+  "actor": "01M786QWAM4Z2Z245X4KXCQHXB",
+  "after": [
+    "01M786MRNHSH7XV3N1NG5G9KD7"
+  ],
+  "at": "2026-11-12T15:45:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/release/... -run TestNextVersion over fixture logs covers each kind, the pre-v1 breaking-is-minor rule and no change since the tag",
+          "statement": "tools/release check computes the next version and its kind since the last v* tag: major from v1.0.0 on when a change is marked or detected breaking (before v1 a breaking change makes a minor), minor when a milestone (an intent with a milestone field) finished, that is every change set serving it or an intent under it landed; otherwise patch when a bug fix landed, none otherwise. A patch is cut from main, so it ships whatever landed beside the fix, an unfinished milestone's features included"
+        },
+        "handle": "release-next-version",
+        "id": "01M76B7E06G9AJHZSV3J9AB6ZG",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M76B7E06G9AJHZSV3GSEA005",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      }
+    ]
+  },
+  "change_set": "01M76B0FZA3N7ZHAYTBN76MVSV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M786YY33D5P2JCGBVMAWMYZE",
+  "type": "ops",
+  "v": 1
+}
