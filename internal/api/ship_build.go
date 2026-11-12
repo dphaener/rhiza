@@ -1,89 +1,93 @@
 package api
 
-// This file holds the head build ship uses in Rhiza's own repo. There the
-// change set's branch may change how the model renders, and the rhiza that
-// runs ship (often an installed one, older than the branch) would land and
-// render the branch with its own rendering, leaving stale rendered files.
-// So when the worktree's go.mod names Rhiza's module, ship builds rhiza
-// from the PR head into <git common dir>/rhiza/ship/<change set>/rhiza
-// (work-layer state, never committed, beside the state file) and runs the
-// land and render with that build. Every other repo lands and renders
-// in-process, as before.
+// This file holds the head build ship can land and render with. A repo
+// whose own rendering the change set's branch may change (Rhiza's) names a
+// build of the PR head in its ship-change workflow: a step builds it and
+// the workflow's [env] sets SHIP_HEAD_RHIZA to its path. Ship's land and
+// render then run with that binary, since the rhiza that runs ship (often
+// an installed one, older than the branch) would leave stale rendered
+// files. A repo that names none lands and renders in-process. Ship rebase
+// changes the head it renders (it merges main first), so the workflow
+// also names the build's command in SHIP_HEAD_BUILD, and ship rebase runs
+// it on the merged head before rendering it.
 
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io/fs"
 	"os"
-	"path/filepath"
-	"strconv"
 	"strings"
+
+	"github.com/dphaener/rhiza/internal/run"
 )
 
-// rhizaModule is Rhiza's Go module path: a go.mod naming it marks Rhiza's
-// own repo.
-const rhizaModule = "github.com/dphaener/rhiza"
+// envShipRhiza names the binary ship's land and render run with, built
+// from the PR head by a step of the repo's ship-change workflow.
+const envShipRhiza = "SHIP_HEAD_RHIZA"
 
-// goModule is the module path that the go.mod file data declares, or ""
-// if it declares none. It reads the first module directive, dropping a
-// trailing // comment and quotes.
-func goModule(data []byte) string {
-	for line := range strings.SplitSeq(string(data), "\n") {
-		if i := strings.Index(line, "//"); i >= 0 {
-			line = line[:i]
-		}
-		line = strings.TrimSpace(line)
-		rest, ok := strings.CutPrefix(line, "module")
-		if !ok || (rest != "" && rest[0] != ' ' && rest[0] != '\t') {
-			continue
-		}
-		rest = strings.TrimSpace(rest)
-		if u, err := strconv.Unquote(rest); err == nil {
-			rest = u
-		}
-		return rest
-	}
-	return ""
-}
+// envShipBuild names the shell command that builds SHIP_HEAD_RHIZA from
+// the head checked out in the worktree: the same command as the
+// workflow's head-build steps. Ship rebase runs it after merging main.
+const envShipBuild = "SHIP_HEAD_BUILD"
 
-// isRhizaRepo reports whether root's go.mod names Rhiza's module. No
-// go.mod is not Rhiza's repo; an unreadable one is an error.
-func isRhizaRepo(root string) (bool, error) {
-	data, err := os.ReadFile(filepath.Join(root, "go.mod"))
-	if errors.Is(err, fs.ErrNotExist) {
-		return false, nil
-	}
-	if err != nil {
-		return false, Errorf("ship: read go.mod: %v", err)
-	}
-	return goModule(data) == rhizaModule, nil
-}
-
-// headBuildPath is where ship builds rhiza from the change set's PR head.
-func (t shipTarget) headBuildPath() string {
-	return filepath.Join(t.common, filepath.FromSlash(shipDir), t.cs.String(), "rhiza")
-}
-
-// shipHeadBuild builds rhiza from the head checked out in ctx.Root when
-// ctx.Root is Rhiza's own repo, and returns the build's path; elsewhere it
-// returns "" and builds nothing. A failed build is an error carrying go's
-// output.
-func shipHeadBuild(ctx *Ctx, t shipTarget) (string, error) {
-	ok, err := isRhizaRepo(ctx.Root)
-	if err != nil || !ok {
-		return "", err
+// shipRebuildHead runs the workflow's head build command (SHIP_HEAD_BUILD)
+// in ctx.Root, so a head that just changed under ship (main merged into
+// it) renders with its own build rather than the one a step built before
+// the merge. With no command named it does nothing. A failed build is an
+// error carrying its output.
+func shipRebuildHead(ctx *Ctx) error {
+	getenv := ctxGetenv(ctx)
+	cmd := strings.TrimSpace(getenv(envShipBuild))
+	if cmd == "" {
+		return nil
 	}
 	if ctx.Exec == nil {
-		return "", Errorf("ship: building rhiza from the PR head needs go, and no programs can be run here")
+		return Errorf("ship: %s cannot be run here: no programs can be run", envShipBuild)
 	}
-	bin := t.headBuildPath()
-	if err := os.MkdirAll(filepath.Dir(bin), 0o755); err != nil {
-		return "", Errorf("ship: %v", err)
+	if _, err := ctx.Exec("sh", []string{"-c", cmd}, ctx.Root, nil); err != nil {
+		return Errorf("ship: could not build rhiza from the merged head with %s (%s), so nothing was rendered or pushed: %v", envShipBuild, cmd, err)
 	}
-	if _, err := ctx.Exec("go", []string{"build", "-o", bin, "./cmd/rhiza"}, ctx.Root, nil); err != nil {
-		return "", Errorf("ship: could not build rhiza from the PR head in %s, so nothing was landed, rendered or pushed: %v", ctx.Root, err)
+	return nil
+}
+
+// shipRunEnv is ctx seeing the [env] of st's workflow ({run_tmp} being
+// runTmp) over its own environment, as the run's steps do: the daemon's
+// watchdog acts on a run from outside its steps, and its pre-push check
+// builds the head with the SHIP_HEAD_BUILD the workflow names.
+func shipRunEnv(ctx *Ctx, st run.State, runTmp string) *Ctx {
+	def, err := st.ParseDefinition()
+	if err != nil || len(def.Env) == 0 {
+		return ctx
+	}
+	env := map[string]string{}
+	for _, kv := range def.EnvPairs(runTmp) {
+		k, v, _ := strings.Cut(kv, "=")
+		env[k] = v
+	}
+	c := *ctx
+	parent := ctxGetenv(ctx)
+	c.Getenv = func(key string) string {
+		if v, ok := env[key]; ok {
+			return v
+		}
+		return parent(key)
+	}
+	return &c
+}
+
+// shipHeadBuild returns the head build the run's workflow names, or ""
+// when it names none. A named build that is missing is an error: the step
+// that builds it did not run.
+func shipHeadBuild(ctx *Ctx, _ shipTarget) (string, error) {
+	bin := strings.TrimSpace(ctxGetenv(ctx)(envShipRhiza))
+	if bin == "" {
+		return "", nil
+	}
+	if ctx.Exec == nil {
+		return "", Errorf("ship: the PR head's build %s cannot be run here: no programs can be run", bin)
+	}
+	if fi, err := os.Stat(bin); err != nil || fi.IsDir() {
+		return "", Errorf("ship: %s names %s, which is not a built rhiza: build it in a step before this one, so nothing was landed, rendered or pushed", envShipRhiza, bin)
 	}
 	return bin, nil
 }
@@ -176,7 +180,7 @@ func shipRenderWith(ctx *Ctx, bin string) ([]string, error) {
 }
 
 // shipRender is how a ship step renders the change set's worktree: with
-// rhiza built from the PR head in Rhiza's own repo, in-process elsewhere.
+// the head build the workflow names, in-process when it names none.
 func shipRender(ctx *Ctx, t shipTarget) ([]string, error) {
 	bin, err := shipHeadBuild(ctx, t)
 	if err != nil {

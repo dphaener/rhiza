@@ -1,0 +1,56 @@
+# A workflow's [env] table sets variables for every process its steps start,
+# with {run_tmp} filled in as the run's own temp folder, which exists while
+# a step runs and is gone after the run. A workflow without [env] gets no
+# GOTMPDIR from Rhiza.
+
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Env' --title 'Env' --json
+
+mkdir .rhiza/workflows
+cp $WORK/withenv.toml .rhiza/workflows/withenv.toml
+cp $WORK/noenv.toml .rhiza/workflows/noenv.toml
+
+exec rhiza run start --foreground --workflow withenv --json
+stdout '"state": "succeeded"'
+exec cat $WORK/with.env
+stdout '^FOO=\S+/tmp$'
+stdout '^PLAIN=x$'
+! stdout '^GOTMPDIR='
+exec cat $WORK/with.dir
+stdout '^dir$'
+# The folder is gone once the run ended.
+exec sh -c 'cut -d= -f2 < $WORK/with.env.foo > $WORK/with.path'
+exec sh -c 'test ! -e "$(cat $WORK/with.path)"'
+
+exec rhiza change new 'Env two' --title 'Env two' --json
+exec rhiza run start --foreground --workflow noenv --json
+stdout '"state": "succeeded"'
+exec cat $WORK/no.env
+! stdout '^GOTMPDIR='
+! stdout '^FOO='
+
+-- withenv.toml --
+name = "withenv"
+
+[env]
+FOO = "{run_tmp}"
+PLAIN = "x"
+
+[step.a]
+kind = "command"
+run = "env > $WORK/with.env; env | grep '^FOO=' > $WORK/with.env.foo; if [ -d \"$FOO\" ]; then echo dir > $WORK/with.dir; fi"
+on.pass = "done"
+
+-- noenv.toml --
+name = "noenv"
+
+[step.a]
+kind = "command"
+run = "env > $WORK/no.env"
+on.pass = "done"

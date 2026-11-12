@@ -22,7 +22,7 @@ TestScripts/ship-land-branch-build
 
 ### Out
 
-- verifies [land-with-branch-build](../capability/rhiza/workflows/workflow-runs/land-with-branch-build.md)
+- verifies land-with-branch-build (retired)
 
 ## History
 

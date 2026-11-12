@@ -19,7 +19,7 @@ the orchestrator's ruling as arbiter, under the owner's instruction to run miles
 ### In
 
 - decided-by [agent-step-done-signal](../capability/rhiza/workflows/workflow-runs/agent-step-done-signal.md)
-- decided-by [land-with-branch-build](../capability/rhiza/workflows/workflow-runs/land-with-branch-build.md)
+- decided-by land-with-branch-build (retired)
 - decided-by [rebase-when-behind](../capability/rhiza/workflows/workflow-runs/rebase-when-behind.md)
 - decided-by [resume-failed-run](../capability/rhiza/workflows/workflow-runs/resume-failed-run.md)
 

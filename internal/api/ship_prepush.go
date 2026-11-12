@@ -208,17 +208,16 @@ func prePushCheckLines(ctx *Ctx, dir, tmp string) ([]string, error) {
 	return prePushTail([]string{fmt.Sprintf("%s (%s) failed: %v", PrePushCheckKey, cmd, err)}, out), nil
 }
 
-// prePushRhizaCheck runs rhiza check in the clean checkout tmp. In Rhiza's
-// own repo it runs a build of that head, as ship land renders with one: a
-// branch that changes rendering is checked against its own rendering, not
-// this binary's. Elsewhere it runs in-process. Lines are set when the head
-// build could not give a report (a failed build, say), a failure too.
+// prePushRhizaCheck runs rhiza check in the clean checkout tmp. When the
+// run's workflow names a head build (SHIP_HEAD_BUILD, as ship land renders
+// with one) it runs a build of that head: a branch that changes rendering
+// is checked against its own rendering, not this binary's. Elsewhere it
+// runs in-process. Lines are set when the head build could not give a
+// report (a failed build, say), a failure too.
 func prePushRhizaCheck(ctx *Ctx, tmp string) (CheckResponse, []string, error) {
 	req := CheckRequest{SkipReference: true, BranchNewerFormat: true}
-	if ok, err := isRhizaRepo(tmp); err != nil {
-		return CheckResponse{}, nil, err
-	} else if ok && ctx.Exec != nil {
-		return prePushHeadCheck(ctx, tmp)
+	if cmd := strings.TrimSpace(ctxGetenv(ctx)(envShipBuild)); cmd != "" && ctx.Exec != nil {
+		return prePushHeadCheck(ctx, tmp, cmd)
 	}
 	c := *ctx
 	c.Root, c.DryRun = tmp, false
@@ -230,9 +229,11 @@ func prePushRhizaCheck(ctx *Ctx, tmp string) (CheckResponse, []string, error) {
 	return r.(CheckResponse), nil, nil
 }
 
-// prePushHeadCheck builds rhiza from the checkout tmp, outside it, and
-// runs that build's check --json there.
-func prePushHeadCheck(ctx *Ctx, tmp string) (CheckResponse, []string, error) {
+// prePushHeadCheck builds rhiza from the checkout tmp with the workflow's
+// head build command, into a binary outside it (SHIP_HEAD_RHIZA pointed
+// there, so the run's own head build is left alone), and runs that
+// build's check --json there.
+func prePushHeadCheck(ctx *Ctx, tmp, cmd string) (CheckResponse, []string, error) {
 	var rep CheckResponse
 	bdir, err := os.MkdirTemp("", "rhiza-prepush-bin-*")
 	if err != nil {
@@ -240,8 +241,9 @@ func prePushHeadCheck(ctx *Ctx, tmp string) (CheckResponse, []string, error) {
 	}
 	defer os.RemoveAll(bdir)
 	bin := filepath.Join(bdir, "rhiza")
-	if out, err := ctx.Exec("go", []string{"build", "-o", bin, "./cmd/rhiza"}, tmp, nil); err != nil {
-		return rep, prePushTail([]string{fmt.Sprintf("rhiza check: could not build rhiza from the head: %v", err)}, out), nil
+	env := append(os.Environ(), envShipRhiza+"="+bin)
+	if out, err := ctx.Exec("sh", []string{"-c", cmd}, tmp, env); err != nil {
+		return rep, prePushTail([]string{fmt.Sprintf("rhiza check: could not build rhiza from the head with %s (%s): %v", envShipBuild, cmd, err)}, out), nil
 	}
 	out, err := ctx.Exec(bin, []string{"check", "--json", "--skip-reference", "--branch-newer-format"}, tmp, nil)
 	if jerr := json.Unmarshal(bytes.TrimSpace(out), &rep); jerr != nil || rep.Findings == nil && !rep.OK {

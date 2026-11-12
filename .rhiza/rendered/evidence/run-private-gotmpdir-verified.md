@@ -14,7 +14,7 @@ Verified at 613bc62b (commits b2b5a2be and 613bc62b). Read the diffs: run.TmpDir
 
 ### Out
 
-- verifies [run-private-gotmpdir](../capability/rhiza/workflows/workflow-runs/run-private-gotmpdir.md)
+- verifies run-private-gotmpdir (retired)
 
 ## History
 

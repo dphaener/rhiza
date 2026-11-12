@@ -11,6 +11,7 @@ A workflow is a TOML file of named steps. Each step ends with an outcome, and it
 - `autonomous`: true or false: set every autonomy stage to auto or owner at once; not with [autonomy]
 - `autonomy`: A table giving a mode, auto or owner, to any of the stages plan, accept, ship and signoff; a stage left out follows rhiza.autonomy.<stage>
 - `cleanup`: A [[cleanup]] table, repeated: a command run once when a run of the workflow ends done, failed or abandoned, in the run's worktree with the run's environment, in file order; its keys are run (the shell command, required) and name (lowercase words joined by hyphens; unset takes cleanup-<n>). A failing cleanup step is journalled and logged and never changes the run's result
+- `env`: An [env] table of variables, KEY = "value", set for every process the run's steps start: agents, commands and cleanup steps. {run_tmp} in a value is the run's own private temp folder, made before a step uses it and removed when the run stops, finishes or fails. A name is letters, digits and _, not starting with a digit; RHIZA_* names are Rhiza's own and refused
 - `step.<name>` (required): A step, by its name: lowercase words joined by hyphens, at most 30 characters, never done or failed
 
 ## Keys every step may set

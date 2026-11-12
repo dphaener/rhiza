@@ -607,14 +607,19 @@ func (r *running) runStep(step workflow.Step, change string) (result, error) {
 
 // stepEnv is the RHIZA_* variables of step on the run's change set.
 func (r *running) stepEnv(step, change string) []string {
-	tmp := r.e.Store.TmpDir(r.j.ID)
-	_ = os.MkdirAll(tmp, 0o755)
-	return []string{
+	env := []string{
 		"RHIZA_CHANGE=" + change,
 		"RHIZA_RUN=" + r.j.ID,
 		"RHIZA_STEP=" + step,
-		EnvGoTmp + "=" + tmp,
 	}
+	if r.def.UsesRunTmp() {
+		tmp := r.e.Store.TmpDir(r.j.ID)
+		_ = os.MkdirAll(tmp, 0o755)
+		env = append(env, r.def.EnvPairs(tmp)...)
+	} else {
+		env = append(env, r.def.EnvPairs("")...)
+	}
+	return env
 }
 
 // StopExit is the exit code of a command step that asks the run to stop

@@ -14,7 +14,7 @@ QA at e129e9f1 with the built binary (go build -trimpath) in a scratch repo, rea
 
 ### Out
 
-- verifies [go-build-cache-sweep](../capability/rhiza/orchestration/daemon/go-build-cache-sweep.md)
+- verifies go-build-cache-sweep (retired)
 
 ## History
 
