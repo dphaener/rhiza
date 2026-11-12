@@ -1,0 +1,40 @@
+{
+  "actor": "01M78WWTQ2GJPG15DYKNG2NTB0",
+  "after": [
+    "01M777MB6QT67M3ZMX5CTRQK7M"
+  ],
+  "at": "2026-11-12T22:09:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5c8b9d932, verifier ran go test -trimpath ./internal/api -run RunVerdict -v: TestRunVerdictDowngrade PASS. It journals major->minor and blocker->major with severity and original_severity, and refuses as CodeUsage a downgrade of a major to major, a major or blocker to blocker, one with no severity, one of a minor finding, and a severity on a confirmed verdict. go test -trimpath ./internal/run: ok (TestStandingDowngrade covers the journaled verdict and that a finding downgraded below major no longer stands). go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden: ok, and re-running it with -update left no diff, so the golden is current. Diff read: SeverityRank orders blocker<major<minor<nit, and the validation requires rank(new) > rank(original). Note: run.Verdict now decodes original_severity from input, so a confirmed or dropped verdict could carry a caller-supplied one (a downgraded verdict's is overwritten). This is outside the acceptance."
+        },
+        "handle": "verdict-downgraded-verified",
+        "id": "01M78WYPPHD6N9HXTPYM7HQ1N1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78WYPPHD6N9HXTPYGK22735",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78WYPPHD6N9HXTPYGK22735",
+        "id": "01M78WYPRTE04WEFF2YXDXBR1Z",
+        "link": "01M78WYPRTE04WEFF2YTV7MSZV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZGDTNAM0425G73YGZ3P0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRYNK4PGG53XNC1ZWFTKD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78WYPSZK8QGSZRS0Z3SRWQS",
+  "type": "ops",
+  "v": 1
+}

@@ -202,7 +202,7 @@ func summaryCheck(b *strings.Builder, st run.State, c run.CheckState) {
 		}
 		b.WriteString("\n")
 	}
-	var confirmed, dropped, minor []string
+	var confirmed, dropped, downgraded, minor []string
 	for _, rd := range c.Rounds {
 		for _, f := range rd.Findings {
 			line := fmt.Sprintf("- cycle %d: %s", rd.Cycle, findingLine(runFinding(f, rd)))
@@ -212,6 +212,8 @@ func summaryCheck(b *strings.Builder, st run.State, c run.CheckState) {
 				minor = append(minor, line)
 			case judged && v.Verdict == run.Dropped:
 				dropped = append(dropped, line)
+			case judged && v.Verdict == run.Downgraded:
+				downgraded = append(downgraded, line)
 			case !judged:
 				confirmed = append(confirmed, line+" — no verdict, so it stands")
 			default:
@@ -225,6 +227,7 @@ func summaryCheck(b *strings.Builder, st run.State, c run.CheckState) {
 	}{
 		{"Confirmed", confirmed},
 		{"Dropped by the critic", dropped},
+		{"Downgraded by the critic", downgraded},
 		{"Minors and nits, reported, not fixed", minor},
 	} {
 		if len(part.lines) > 0 {

@@ -8,13 +8,18 @@ package api
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/dphaener/rhiza/internal/run"
 )
 
 func init() {
@@ -55,10 +60,13 @@ type ShipGateResponse struct {
 	Passed  bool   `json:"passed" desc:"True if the gate ran and exited 0"`
 	Output  string `json:"output,omitempty" desc:"The end of the gate's combined output, when it ran"`
 	Error   string `json:"error,omitempty" desc:"How a failing gate failed: its exit status or a timeout"`
+	Log     string `json:"log,omitempty" desc:"The file holding the gate's whole combined output (in the run's directory, one file per gate run; outside a run rhiza/gate/<branch>.log under the git common dir, replaced on each run), when it ran"`
 	Head    string `json:"head,omitempty" desc:"The commit the gate passed on"`
 	Failed  string `json:"failed,omitempty" desc:"With --failed: the unpushed head ship rebase left after the gate failed on it, when the branch is still at it"`
 	// asked is true for --failed, whose exit code says whether Failed is set.
 	asked bool
+	// failLines are the failing lines of the whole output, for Human.
+	failLines []string
 }
 
 // ExitCode is 0 when the gate passed or was skipped, else 1.
@@ -89,6 +97,12 @@ func (r ShipGateResponse) Human(w io.Writer) {
 	default:
 		if r.Output != "" {
 			fmt.Fprintln(w, strings.TrimRight(r.Output, "\n"))
+		}
+		for _, l := range r.failLines {
+			fmt.Fprintln(w, l)
+		}
+		if r.Log != "" {
+			fmt.Fprintf(w, "Full log: %s\n", r.Log)
 		}
 		fmt.Fprintf(w, "Local gate failed (%s): %s. CI is unstable (%s): fix it here, never push to see.\n", r.Command, r.Error, r.Reason)
 	}
@@ -155,7 +169,11 @@ func shipLocalGate(ctx *Ctx, t *shipTarget) (ShipGateResponse, error) {
 		return ShipGateResponse{}, err
 	}
 	if !v.Unstable {
-		return ShipGateResponse{Command: gate, Skipped: true, Reason: "CI is stable"}, nil
+		reason := "CI is stable"
+		if v.Reason != "" {
+			reason += " (" + v.Reason + ")"
+		}
+		return ShipGateResponse{Command: gate, Skipped: true, Reason: reason}, nil
 	}
 	if t == nil {
 		found, err := findShipTarget(ctx)
@@ -185,6 +203,8 @@ func shipLocalGate(ctx *Ctx, t *shipTarget) (ShipGateResponse, error) {
 	cmd.WaitDelay = time.Second
 	runErr := cmd.Run()
 	resp.Output = out.String()
+	resp.failLines = shipGateFailLines(resp.Output)
+	resp.Log = shipWriteGateLog(ctx, t, out.Bytes())
 	if len(resp.Output) > shipGateTail {
 		resp.Output = "...\n" + resp.Output[len(resp.Output)-shipGateTail:]
 	}
@@ -207,6 +227,79 @@ func shipLocalGate(ctx *Ctx, t *shipTarget) (ShipGateResponse, error) {
 		}
 	}
 	return resp, nil
+}
+
+// shipGateMaxFailLines caps the failing lines a failed gate's output ends with.
+const shipGateMaxFailLines = 10
+
+// shipGateFailLines picks a gate output's failing go test lines ("--- FAIL:",
+// "FAIL", "panic:"), the first shipGateMaxFailLines of them.
+func shipGateFailLines(out string) []string {
+	var lines []string
+	for _, l := range strings.Split(out, "\n") {
+		l = strings.TrimRight(l, "\r")
+		t := strings.TrimLeft(l, " \t")
+		if strings.HasPrefix(t, "--- FAIL:") || strings.HasPrefix(l, "FAIL") || strings.HasPrefix(l, "panic:") {
+			lines = append(lines, l)
+			if len(lines) == shipGateMaxFailLines {
+				break
+			}
+		}
+	}
+	return lines
+}
+
+// shipWriteGateLog writes the gate's whole output to its own file and
+// returns the path; empty if it could not be written (the response still has
+// the tail). In a run (RHIZA_RUN) the file is <runs>/<run id>/gate-<n>.log,
+// n counting up so a later gate of the run never overwrites an earlier one;
+// outside a run it is <common>/rhiza/gate/<branch>.log, replaced each time.
+func shipWriteGateLog(ctx *Ctx, t *shipTarget, out []byte) string {
+	if t.common == "" {
+		return ""
+	}
+	if id := strings.TrimSpace(ctxGetenv(ctx)(envRun)); id != "" {
+		if j, err := run.NewStore(run.Dir(t.common)).Read(id); err == nil {
+			id = j.ID
+		}
+		if strings.ContainsAny(id, `/\`) || strings.HasPrefix(id, ".") {
+			return ""
+		}
+		dir := filepath.Join(run.Dir(t.common), id)
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return ""
+		}
+		for n := 1; n < 10000; n++ {
+			path := filepath.Join(dir, fmt.Sprintf("gate-%d.log", n))
+			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
+			if errors.Is(err, fs.ErrExist) {
+				continue
+			}
+			if err != nil {
+				return ""
+			}
+			_, err = f.Write(out)
+			if cerr := f.Close(); err == nil {
+				err = cerr
+			}
+			if err != nil {
+				return ""
+			}
+			return path
+		}
+		return ""
+	}
+	if t.branch == "" {
+		return ""
+	}
+	path := filepath.Join(t.common, "rhiza", "gate", filepath.FromSlash(t.branch)+".log")
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return ""
+	}
+	if err := writeAtomic(path, out); err != nil {
+		return ""
+	}
+	return path
 }
 
 // shipTreeClean reports whether dir has no uncommitted changes to tracked

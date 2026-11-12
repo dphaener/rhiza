@@ -23,6 +23,8 @@ Minor and patch releases are cut fully automatically once the gates pass; a majo
 ### In
 
 - decided-by [m33-release-policy](../intent/milestone-33/m33-release-policy.md)
+- decided-by [auto-release](../capability/rhiza/distribution/auto-release.md)
+- decided-by [major-release-signoff](../capability/rhiza/distribution/major-release-signoff.md)
 
 ## History
 

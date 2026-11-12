@@ -3,6 +3,7 @@ package api
 import (
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -47,7 +48,42 @@ func TestShipCheckStabilityRecord(t *testing.T) {
 		g.answers[shipPRView] = openPR(greenRollup)
 		shipCheck(t, f, `{}`)
 		runs := stabilityRuns(t, f)
-		if len(runs) != 1 || runs[0].Result != ciGreen || !slices.Equal(runs[0].Flakes, []string{"test / Run"}) {
+		if len(runs) != 1 || runs[0].Result != ciGreen || !slices.Equal(runs[0].Flakes, []string{"TestGarden", "TestPond"}) || len(runs[0].Infra) != 0 {
+			t.Errorf("runs = %+v", runs)
+		}
+	})
+
+	// Each case: a failed log, rerun green: the flakes and infra recorded.
+	for _, c := range []struct {
+		name, log     string
+		flakes, infra []string
+	}{
+		{"subtests by full name", "test\tRun\t--- FAIL: TestFoo (0.1s)\ntest\tRun\t--- FAIL: TestScripts (1s)\ntest\tRun\t    --- FAIL: TestScripts/bar (1s)\n", []string{"TestFoo", "TestScripts/bar"}, nil},
+		{"unknown step", "scripts (4/4)\tUNKNOWN STEP\t--- FAIL\n", nil, []string{"scripts (4/4) / UNKNOWN STEP"}},
+		{"no job or step", "FAIL\n", nil, []string{"CI run 42"}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			f, g, _ := shipFixture(t)
+			g.answers[shipPRView] = openPR(rerunRollup)
+			g.answers["run rerun 42 --failed"] = ""
+			g.answers[logCall] = c.log
+			shipCheck(t, f, `{"settled":true}`)
+			g.answers[shipPRView] = openPR(greenRollup)
+			shipCheck(t, f, `{}`)
+			runs := stabilityRuns(t, f)
+			if len(runs) != 1 || runs[0].Result != ciGreen || !slices.Equal(runs[0].Flakes, c.flakes) || !slices.Equal(runs[0].Infra, c.infra) {
+				t.Errorf("runs = %+v", runs)
+			}
+		})
+	}
+
+	t.Run("old record reads job / step flakes as infra", func(t *testing.T) {
+		f, _, _ := shipFixture(t)
+		if err := writeAtomic(ciStabilityPath(f.common), []byte(`{"runs":[{"head":"h","result":"green","time":"x","flakes":["test / Run","CI run 9","TestA"]}]}`)); err != nil {
+			t.Fatal(err)
+		}
+		runs := stabilityRuns(t, f)
+		if len(runs) != 1 || !slices.Equal(runs[0].Flakes, []string{"TestA"}) || !slices.Equal(runs[0].Infra, []string{"test / Run", "CI run 9"}) {
 			t.Errorf("runs = %+v", runs)
 		}
 	})
@@ -123,7 +159,8 @@ func TestCIStability(t *testing.T) {
 		}
 		return rs
 	}
-	flake := CIRun{Result: ciGreen, Flakes: []string{"TestPond"}}
+	flake := CIRun{Head: "h1", Result: ciGreen, Flakes: []string{"TestPond"}}
+	flake2 := CIRun{Head: "h2", Result: ciGreen, Flakes: []string{"TestPond"}}
 	cases := []struct {
 		name     string
 		runs     []CIRun
@@ -131,14 +168,20 @@ func TestCIStability(t *testing.T) {
 		unstable bool
 	}{
 		{"empty", nil, 20, false},
-		{"flake in window", append([]CIRun{flake}, clean(19)...), 20, true},
-		{"flake pushed out by 20 clean runs", append([]CIRun{flake}, clean(20)...), 20, false},
-		{"window 5 shrinks", append([]CIRun{flake}, clean(5)...), 5, false},
-		{"window 5 still holds", append([]CIRun{flake}, clean(4)...), 5, true},
+		{"one flake in window is ignored", append([]CIRun{flake}, clean(19)...), 20, false},
+		{"same head twice is ignored", []CIRun{flake, flake}, 20, false},
+		{"two tests once each", []CIRun{{Head: "h1", Result: ciGreen, Flakes: []string{"TestX"}}, {Head: "h2", Result: ciGreen, Flakes: []string{"TestY"}}}, 20, false},
+		{"two heads in window", append([]CIRun{flake, flake2}, clean(18)...), 20, true},
+		{"older flake pushed out by 19 clean runs", append([]CIRun{flake, flake2}, clean(19)...), 20, false},
+		{"window 5 shrinks", append([]CIRun{flake, flake2}, clean(4)...), 5, false},
+		{"window 5 still holds", append([]CIRun{flake, flake2}, clean(3)...), 5, true},
 		{"red main", []CIRun{{Main: true, Result: ciRed}}, 20, true},
 		{"red main cleared by later green main", []CIRun{{Main: true, Result: ciRed}, {Main: true, Result: ciGreen}}, 20, false},
 		{"red main outlives the window", append([]CIRun{{Main: true, Result: ciRed}}, clean(30)...), 20, true},
 		{"red PR head is not main", []CIRun{{Result: ciRed}}, 20, false},
+		{"job / step flake reads as infra", []CIRun{{Result: ciGreen, Flakes: []string{"scripts (4/4) / Run scripts"}}}, 20, false},
+		{"unidentified flakes only", []CIRun{{Result: ciGreen, Flakes: []string{"ci / UNKNOWN STEP"}}, {Result: ciGreen, Flakes: []string{"CI run 123"}}}, 20, false},
+		{"identified beside unidentified", []CIRun{{Head: "h1", Result: ciGreen, Flakes: []string{"ci / UNKNOWN STEP", "TestPond"}}, flake2}, 20, true},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -148,6 +191,48 @@ func TestCIStability(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("ignored unidentified flake named in the reason", func(t *testing.T) {
+		v := ciVerdict(CIStability{Runs: []CIRun{{Result: ciGreen, Flakes: []string{"ci / UNKNOWN STEP"}}, {Result: ciGreen, Flakes: []string{"CI run 123", "ci / UNKNOWN STEP"}}}}, 20)
+		if v.Unstable || v.Reason != "ignored infra failures: CI run 123, ci / UNKNOWN STEP" {
+			t.Errorf("verdict = %+v", v)
+		}
+		if v := ciVerdict(CIStability{Runs: []CIRun{{Result: ciGreen, Flakes: []string{"CI run 123"}}, {Main: true, Result: ciRed, Head: "m1"}}}, 20); !v.Unstable || !strings.Contains(v.Reason, "main's latest CI result is red") {
+			t.Errorf("red main beside an unidentified flake = %+v", v)
+		}
+	})
+
+	t.Run("unstable reason names the test, its count and when it stops", func(t *testing.T) {
+		for _, c := range []struct {
+			window, clean int
+			want          string
+		}{
+			{20, 3, "TestX flaked 2 times on 2 heads in the last 20 CI runs (stops applying after 16 more completed CI runs)"},
+			{5, 2, "TestX flaked 2 times on 2 heads in the last 5 CI runs (stops applying after 2 more completed CI runs)"},
+		} {
+			rec := CIStability{Runs: append([]CIRun{{Head: "a", Result: ciGreen, Flakes: []string{"TestX"}}, {Head: "b", Result: ciGreen, Flakes: []string{"TestX"}}}, clean(c.clean)...)}
+			if v := ciVerdict(rec, c.window); !v.Unstable || v.Reason != c.want {
+				t.Fatalf("verdict = %+v, want %q", v, c.want)
+			}
+			// Stable again after exactly N more clean runs, not before.
+			n := c.window - c.clean - 1
+			rec.Runs = append(rec.Runs, clean(n-1)...)
+			if !ciVerdict(rec, c.window).Unstable {
+				t.Errorf("window %d: stable after %d more runs, one too soon", c.window, n-1)
+			}
+			rec.Runs = append(rec.Runs, clean(1)...)
+			if ciVerdict(rec, c.window).Unstable {
+				t.Errorf("window %d: still unstable after %d more runs", c.window, n)
+			}
+		}
+	})
+
+	t.Run("single flake reason says seen once and ignored", func(t *testing.T) {
+		v := ciVerdict(CIStability{Runs: []CIRun{{Head: "a", Result: ciGreen, Flakes: []string{"TestX"}}}}, 20)
+		if v.Unstable || v.Reason != "TestX was seen once and ignored" {
+			t.Errorf("verdict = %+v", v)
+		}
+	})
 
 	t.Run("ship check main recording clears red", func(t *testing.T) {
 		f, g, state := shipFixture(t)

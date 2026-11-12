@@ -26,21 +26,42 @@ jobs:
         cache: true
         cache-dependency-path: go.sum
 
+    # tools/release cut pushes an annotated tag whose message is the version
+    # then the notes; the notes become the release body. checkout may have
+    # replaced the annotation with the commit, so fetch the tag object again.
+    # The owner signs off a major release by publishing its draft GitHub
+    # release, which pushes a lightweight tag; tools/release cut then
+    # replaces it with the annotated one, and only that one releases.
+    - name: Take the release notes from the tag annotation
+      id: notes
+      run: |
+        git fetch --force origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+        if [ "$(git cat-file -t "refs/tags/$GITHUB_REF_NAME")" != tag ]; then
+          echo "$GITHUB_REF_NAME is not an annotated tag: waiting for tools/release cut"
+          echo "annotated=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        echo "annotated=true" >> "$GITHUB_OUTPUT"
+        git tag -l --format='%(contents:body)' "$GITHUB_REF_NAME" > "$RUNNER_TEMP/release-notes.md"
+
     - name: Run GoReleaser
+      if: steps.notes.outputs.annotated == 'true'
       uses: goreleaser/goreleaser-action@v7
       with:
         distribution: goreleaser
         version: "~> v2"
-        args: release --clean
+        args: release --clean --release-notes ${{ runner.temp }}/release-notes.md
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Attest build provenance
+      if: steps.notes.outputs.annotated == 'true'
       uses: actions/attest-build-provenance@v3
       with:
         subject-path: dist/*.tar.gz
 
     - name: Publish the channel manifest
+      if: steps.notes.outputs.annotated == 'true'
       run: |
         go run ./tools/release -dist dist -tag "$GITHUB_REF_NAME" -commit "$GITHUB_SHA" -repo "$GITHUB_REPOSITORY"
         gh release upload "$GITHUB_REF_NAME" dist/manifest.json --clobber

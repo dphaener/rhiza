@@ -1,0 +1,40 @@
+{
+  "actor": "01M78WZYYRZ8NWWZCDBXY1HV90",
+  "after": [
+    "01M78WYJRGSW674TRN63JS4D4V"
+  ],
+  "at": "2026-11-12T22:11:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 3cb4a4ff5: go test -trimpath -count=1 ./internal/api -run 'TestCIStability|TestShipLocalGate' -v passes (TestCIStability, TestShipLocalGate, TestShipLocalGateOncePerHead). The cases cover: one TestX flake gives stable with reason 'TestX was seen once and ignored'; the same head twice gives stable; TestX and TestY once each give stable; TestX on 2 heads gives unstable with reason 'TestX flaked 2 times on 2 heads in the last 20 CI runs (stops applying after 16 more completed CI runs)', with N=2 for window 5, and stable after exactly N more clean runs but not N-1; infra-only gives stable with reason 'ignored infra failures: ...'; red main gives unstable with no flake and is cleared by a ship check main green record. Read the diff: the N formula window-(len-idx)+1 matches when the older of the two latest flaky heads leaves the window. ship_gate.go appends any stable verdict reason to 'CI is stable (...)', and the infra-only gate test checks that path, so a single-flake skip carries 'seen once and ignored'. ciVerdict takes its window from rhiza.ship.ciWindow through ciStabilityVerdict. gofmt and go vet on internal/api are clean."
+        },
+        "handle": "ci-unstable-repeated-flake-verified",
+        "id": "01M78X24PJWRJJPJJAFWKDPX3T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78X24PJWRJJPJJAFTJWNN78",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78X24PJWRJJPJJAFTJWNN78",
+        "id": "01M78X24QH1CHP3FQXWQR5M4Z2",
+        "link": "01M78X24QH1CHP3FQXWPFKFVJW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S74SS6J69T9H1YPMK7YSR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78RM7PFF8KV94344XM3V8DH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78X24S0S4KN5WX6VYRNCGTK",
+  "type": "ops",
+  "v": 1
+}

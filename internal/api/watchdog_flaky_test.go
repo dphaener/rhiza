@@ -76,6 +76,14 @@ func TestFlakyTestBugs(t *testing.T) {
 	if len(queue) != 4 || !strings.Contains(queue[3].Text, "ddd444") {
 		t.Fatalf("want one new TestA request for the later flake: %+v", queue)
 	}
+	// An infra-only run files no bug.
+	n := len(queue)
+	runs = []CIRun{{Head: "eee555", PR: 11, Result: ciGreen, Infra: []string{"scripts (4/4) / UNKNOWN STEP"}}, {Head: "fff666", PR: 12, Result: ciGreen, Flakes: []string{"CI run 5"}}}
+	poll(pol)
+	if len(queue) != n {
+		t.Fatalf("infra-only run queued: %+v", queue[n:])
+	}
+	runs = nil
 	// fileBugs = false queues none.
 	queue = nil
 	poll(WatchdogPolicy{})

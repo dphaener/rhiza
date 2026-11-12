@@ -122,9 +122,9 @@ func TestPlanReviewText(t *testing.T) {
 			"outside-intent", "contradiction",
 			"rhiza overlaps --change <cs> --json", "naming the other change set",
 			"rhiza run findings - --json <<'EOF'", "\nEOF\n", `{"findings":[{"node":"`, `"kind":`, `"reason":`, `{"findings":[]}`,
-			"rhiza run verdict - --json <<'EOF'", `{"verdicts":[{"finding":"f1","verdict":`, "`confirmed` or `dropped`",
+			"rhiza run verdict - --json <<'EOF'", `{"verdicts":[{"finding":"f1","verdict":`, "`confirmed` (keeps the severity)",
 			"serving an intent it adds", "rhiza change show", "rhiza slice", "rhiza why",
-			"Never add a finding", "confirmed finding", "--record", "rhiza session done",
+			"Never add a finding", "confirmed major finding", "--record", "rhiza session done",
 		},
 	})
 }

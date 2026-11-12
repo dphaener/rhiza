@@ -16,6 +16,8 @@ With the watchdog's fileBugs on, each test the CI stability record holds a flake
 
 - depends-on [ci-stability-record](../../shipping/wait-green-pr/ci-stability-record.md)
 - decided-by [ci-unstable-gate-rules](../../../../../decision/ci-unstable-gate-rules.md)
+- decided-by [local-gate-trigger-identified-flakes](../../../../../decision/local-gate-trigger-identified-flakes.md)
+- decided-by [local-gate-repeated-named-flakes](../../../../../decision/local-gate-repeated-named-flakes.md)
 
 ### In
 

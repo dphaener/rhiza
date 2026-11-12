@@ -29,6 +29,27 @@ builds with missing `$WORK` files. Look at the 5-minute average, not the
 1-minute one: short spikes to 18 to 23 pass. Lowering the cap never stops
 runs already live.
 
+## Automatic releases
+
+The systemd user timer `rhiza-release.timer` (units in `script/systemd/`)
+runs `rhiza-release.service` hourly in the root main checkout
+`~/code/rhiza`. Each run first records the root daemon's running commit and
+start time in the daemon-run history (`$RHIZA_RELEASE_RUNS`, default in the
+unit `~/.local/state/rhiza/daemon-runs.jsonl`), which the soak gate reads,
+adding a line only for a commit not yet in it. Then `tools/release cut` pushes
+an annotated tag with the notes when `release check` passes for a minor or
+patch; the release job publishes the notes as the release body. A major
+release is never tagged: it waits for the owner. Install:
+
+```bash
+mkdir -p ~/.config/systemd/user
+cp ~/code/rhiza/script/systemd/rhiza-release.* ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now rhiza-release.timer
+```
+
+Read a run with `journalctl --user -u rhiza-release.service`.
+
 ## Pinned Rex package
 
 The Rex package is pinned. Ubuntu's universe ships an unrelated Perl `rex`

@@ -280,9 +280,10 @@ func gitSurface(dir, ref string) (Surface, error) {
 	return s, nil
 }
 
-// breakingAgainstLastTag compares HEAD with the last v* tag in dir.
+// breakingAgainstLastTag compares HEAD with the last annotated v* tag in
+// dir, the last release (see evaluate).
 func breakingAgainstLastTag(dir string) (string, []Break, error) {
-	tag, err := git(dir, "describe", "--tags", "--abbrev=0", "--match", "v*", "HEAD")
+	tag, err := git(dir, "describe", "--abbrev=0", "--match", "v*", "HEAD")
 	if err != nil {
 		return "", nil, fmt.Errorf("no v* tag to compare with: %w", err)
 	}

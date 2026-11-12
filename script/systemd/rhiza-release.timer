@@ -1,0 +1,10 @@
+[Unit]
+Description=Hourly Rhiza release check and cut
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+Unit=rhiza-release.service
+
+[Install]
+WantedBy=timers.target

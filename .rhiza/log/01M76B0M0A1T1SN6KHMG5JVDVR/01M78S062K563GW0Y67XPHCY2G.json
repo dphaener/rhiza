@@ -1,0 +1,40 @@
+{
+  "actor": "01M78RQ1P62NVDE56NYVZBH849",
+  "after": [
+    "01M78RMB9JQM7AJJKC630F34WS"
+  ],
+  "at": "2026-11-12T21:00:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 5, at 6ebde15cd. Ran the acceptance `go test -trimpath -count=1 ./tools/release/... -run TestMajor`: PASS. TestMajor shows two cuts return SignOff with no push and exactly one draft at the candidate; after the release is published (fake git models the lightweight tag publishing makes on the remote) one cut tags and pushes once, with the tag message the version then the notes; a repeat returns Existing; a published tag at another commit errors and pushes nothing; a failing gate blocks with no draft. Also ran the whole package `go test -trimpath -count=1 ./tools/release/...`: ok, incl. TestCutRealGitKeepsHeadings, which with real git and a bare origin replaces a published lightweight v2.0.0 by an annotated tag (tag -a -f, forced push) whose body keeps '## Breaking changes'. Read cut.go: the lightweight tag of a major is not treated as already released, the sign-off is majorSignOff (published GitHub release), and next.go/breaking.go run git describe without --tags, so only annotated v* tags count as releases (Decision release-annotated-tags-only, which answers question major-signoff-lightweight-tag). make self-check from a clean detached worktree at this commit with env -i: ok (in the run env it fails only on this verifier's own untracked actor)."
+        },
+        "handle": "major-release-signoff-verified-3",
+        "id": "01M78S060VMS7KSKACN5J68C1N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78S060VMS7KSKACN38T5DC6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78S060VMS7KSKACN38T5DC6",
+        "id": "01M78S061PR6NA5WTRBFQPHM3T",
+        "link": "01M78S061PR6NA5WTRBCQRFAC3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7EBC8W8NQW1GXBYYB3Z0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B0M0A1T1SN6KHMG5JVDVR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78S062K563GW0Y67XPHCY2G",
+  "type": "ops",
+  "v": 1
+}
