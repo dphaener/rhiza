@@ -1,0 +1,132 @@
+{
+  "actor": "01M76WTMCJ86X1E1Y9T5Q8XMES",
+  "after": [
+    "01M76WRRCEXB13B4CGT08H4D01"
+  ],
+  "at": "2026-11-12T03:31:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, hands-on with rhiza built from this branch at c57d3a309 (go build into the session scratchpad), in a scratch Rhiza root with a project repo, a local bare origin, real git, a fake rex/claude and a scripted gh logging calls (pr view fails, pr create prints a URL), with no RHIZA_TEST_NOW so the model-branch step is live: rhiza run start --foreground --workflow plan --new 'Plan reports' (and again with --milestone) succeeded; the open entry in the main checkout was byte-identical to the one in ../repo.<slug> and committed at the run branch's HEAD with a clean worktree; rhiza change show of the new change set worked from main; rhiza check printed ok with no untracked-entry warning and rhiza health's main part was 'ok ... 2 untracked log entries pending on a model branch or run'. No model/* branch reached origin and gh was never called (the cycle 1 spurious model PR is gone)."
+        },
+        "handle": "run-start-new-opens-in-worktree-qa-2",
+        "id": "01M76WZNW4ETA8BHXCZJ123ERH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76WZNW4ETA8BHXCZHA1CXGT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76WZNW4ETA8BHXCZHA1CXGT",
+        "id": "01M76WZNYAEB7QHWXXWQ3M5DPD",
+        "link": "01M76WZNYAEB7QHWXXWKPAHBGD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA1QXNBQDGDWWN6BS1KX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, hands-on with rhiza built from this branch at c57d3a309 (go build into the session scratchpad), in a scratch Rhiza root with a project repo, a local bare origin, real git, a fake rex/claude and a scripted gh logging calls (pr view fails, pr create prints a URL), with no RHIZA_TEST_NOW so the model-branch step is live: after removing a finished plan run's worktree, rhiza check in the main checkout exited 0, printed ok and 'warn log .rhiza/log/<cs>/<entry>.json: untracked log entry that no model branch or live run holds' with 'next: rhiza model commit-untracked'; while the run's linked worktree existed, and for entries on a pushed model branch, it printed no such warning."
+        },
+        "handle": "check-warns-orphan-log-qa-2",
+        "id": "01M76WZP15K0GAMFPRAR1AV8JY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76WZP15K0GAMFPRAP3PX8XZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76WZP15K0GAMFPRAP3PX8XZ",
+        "id": "01M76WZP38FXJEBS32HHAYQN16",
+        "link": "01M76WZP38FXJEBS32HEVV9JVQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAABBDGMZA9F3BBBA3H0D",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, hands-on with rhiza built from this branch at c57d3a309 (go build into the session scratchpad), in a scratch Rhiza root with a project repo, a local bare origin, real git, a fake rex/claude and a scripted gh logging calls (pr view fails, pr create prints a URL), with no RHIZA_TEST_NOW so the model-branch step is live: with that orphan, rhiza health exited 1 with 'bad main ... 1 untracked log entries on no branch, 2 ... pending on a model branch or run', naming the entry, its change set and rhiza model commit-untracked, and listing the run-held and model-branch-held entries as pending; after commit-untracked the main part was ok with 3 pending."
+        },
+        "handle": "health-orphan-log-entries-qa-2",
+        "id": "01M76WZP67MRA4EGRXH1RTJHSK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76WZP67MRA4EGRXGYVTHVE8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76WZP67MRA4EGRXGYVTHVE8",
+        "id": "01M76WZP8EZYDW4X34FFBVYJAS",
+        "link": "01M76WZP8EZYDW4X34FBPWVR9P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA9ATEZ0372B4BZ9SRST",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, hands-on with rhiza built from this branch at c57d3a309 (go build into the session scratchpad), in a scratch Rhiza root with a project repo, a local bare origin, real git, a fake rex/claude and a scripted gh logging calls (pr view fails, pr create prints a URL), with no RHIZA_TEST_NOW so the model-branch step is live: rhiza change new 'Main write' in the main checkout with no live run kept the entry in main's log and pushed model/<full cs ID>-<full entry ID> to origin, cut from origin/main and holding exactly that one entry, and ran gh pr create --base main --head that branch once; the temporary worktree was gone afterwards (git worktree list)."
+        },
+        "handle": "main-write-model-branch-qa-2",
+        "id": "01M76WZPB1PGECT0V0PPENXF8P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76WZPB1PGECT0V0PN4JNEGT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76WZPB1PGECT0V0PN4JNEGT",
+        "id": "01M76WZPCSCAQFT8XNFGRPTKZX",
+        "link": "01M76WZPCSCAQFT8XNFE4TB406",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA4YDVZV5S8GZB49W9M0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, hands-on with rhiza built from this branch at c57d3a309 (go build into the session scratchpad), in a scratch Rhiza root with a project repo, a local bare origin, real git, a fake rex/claude and a scripted gh logging calls (pr view fails, pr create prints a URL), with no RHIZA_TEST_NOW so the model-branch step is live: with one orphan entry of a change set whose plan worktree was removed, rhiza model commit-untracked printed 'change set <cs>: committed 1 entries on a model branch', pushed model/<cs>-<entry> to origin and called gh pr create once, leaving the run-held and model-branch-held entries untouched (no second branch or PR for them)."
+        },
+        "handle": "commit-untracked-log-qa-2",
+        "id": "01M76WZPEVWMPN7F283MKBEQD9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76WZPEVWMPN7F283M9BRKAB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76WZPEVWMPN7F283M9BRKAB",
+        "id": "01M76WZPJ165MMG3B1ZPGGZ3YA",
+        "link": "01M76WZPJ165MMG3B1ZKCQJXY8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA7V5KJWJPQSF2X7PCMD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76WZPMDFGJSC66F2E94Z5D9",
+  "type": "ops",
+  "v": 1
+}
