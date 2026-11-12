@@ -213,7 +213,7 @@ check)
 	# check's output, fixes by adding one fix-N.txt, and commits with the
 	# run's Review: trailer, taken from its prompt.
 	case "$last" in
-	*"Fix the failing CI tests"*) ;;
+	*"Fix the CI findings"*) ;;
 	*) exit 0 ;;
 	esac
 	rhiza ship check --json > "$WORK/fix-input.json" 2>&1
