@@ -39,10 +39,18 @@ func Dir(gitCommonDir string) string {
 	return filepath.Join(gitCommonDir, "rhiza", "runs")
 }
 
-// TmpDir is the run's own temp folder under the runs directory dir:
-// <dir>/<run id>/tmp. A workflow's [env] values name it as {run_tmp}. The
-// engine creates it as a step starts and removes it when the run ends.
-func TmpDir(dir, id string) string { return filepath.Join(dir, id, "tmp") }
+// TmpDir is the run's own temp folder, outside every git repository:
+// os.UserCacheDir()/rhiza/run-tmp/<run id>, or
+// os.TempDir()/rhiza-run-tmp-<uid>/<run id> when there is no user cache
+// dir. A workflow's [env] values name it as {run_tmp}. The engine creates
+// it as a step starts and removes it (that folder only, never the shared
+// run-tmp parent) when the run ends.
+func TmpDir(id string) string {
+	if c, err := os.UserCacheDir(); err == nil && c != "" {
+		return filepath.Join(c, "rhiza", "run-tmp", id)
+	}
+	return filepath.Join(os.TempDir(), fmt.Sprintf("rhiza-run-tmp-%d", os.Getuid()), id)
+}
 
 // Store keeps one append-only JSONL journal per run in a directory.
 type Store struct {
@@ -53,7 +61,7 @@ type Store struct {
 func NewStore(dir string) *Store { return &Store{dir: dir} }
 
 // TmpDir is TmpDir for a run of this store.
-func (s *Store) TmpDir(id string) string { return TmpDir(s.dir, id) }
+func (s *Store) TmpDir(id string) string { return TmpDir(id) }
 
 func (s *Store) path(id string) string { return filepath.Join(s.dir, id+".jsonl") }
 

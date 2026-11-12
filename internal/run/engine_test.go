@@ -239,6 +239,7 @@ const runID = "01RUNAAAAAAAAAAAAAAAAAAAAA"
 // setup parses src, starts a run of it and returns an engine over fakes.
 func setup(t *testing.T, src string) (*Engine, *fakeRunner, *fakeClock, *workflow.Definition) {
 	t.Helper()
+	t.Setenv("XDG_CACHE_HOME", t.TempDir())
 	def, err := workflow.Parse("wf", []byte(src))
 	if err != nil {
 		t.Fatal(err)
