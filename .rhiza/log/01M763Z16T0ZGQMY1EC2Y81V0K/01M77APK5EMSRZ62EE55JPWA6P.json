@@ -1,0 +1,40 @@
+{
+  "actor": "01M77AJCGW5G8E6JQR8C6HFYA6",
+  "after": [
+    "01M77A2EAJX3MGKMP3A69YQDVH"
+  ],
+  "at": "2026-11-12T07:31:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 26fb806ba I read the diff and ran the scoped tests in a detached worktree outside ~/code with fakes only. TestDaemonAutoUpdateSetting (internal/api; fake git and make) passes: autoUpdate unset or off runs no git or make; main with a registered project whose go.mod is not Rhiza's logs 'no registered project is Rhiza's source checkout' and runs nothing; main with a Rhiza checkout runs git fetch origin main, git merge --ff-only and make update exactly once over two polls. internal/daemon passes, including TestRhizaCheckoutFindsModule (finds the project by module path, false when there is none) and the existing SelfUpdate tests. TestScripts/daemon-settings passes and shows rhiza.daemon.autoUpdate = off (default, machine). gofmt and go vet are clean. Inside ~/code the api package fails only on the enclosing-root guard, because the live daemon rewrites .rhiza-root/usage.live.json; the test does not cause it."
+        },
+        "handle": "daemon-auto-update-verified",
+        "id": "01M77APJY7ZGF9SRQYGYK9TCCG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77APJY7ZGF9SRQYGY8QXH1D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77APJY7ZGF9SRQYGY8QXH1D",
+        "id": "01M77APK1Y56EGTHT7EJGKFVWA",
+        "link": "01M77APK1Y56EGTHT7EHVTAP7P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MMAZSKZD27543JQ79D8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z16T0ZGQMY1EC2Y81V0K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77APK5EMSRZ62EE55JPWA6P",
+  "type": "ops",
+  "v": 1
+}

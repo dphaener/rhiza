@@ -151,55 +151,6 @@ func TestSelfUpdateUsesFetch(t *testing.T) {
 	}
 }
 
-func TestSelfUpdateProjectChoosesCheckout(t *testing.T) {
-	root := "/r"
-	reg := rootcfg.Config{
-		SelfUpdateProject: "rhiza",
-		Projects:          map[string]rootcfg.Project{"rhiza": {Path: "code/rhiza"}, "other": {Path: "o"}},
-	}
-	var dirs []string
-	git := func(dir string, args ...string) (string, error) {
-		dirs = append(dirs, "git:"+dir)
-		switch args[0] {
-		case "rev-parse":
-			if args[2] == "HEAD" {
-				return "aaa", nil
-			}
-			return "bbb", nil
-		case "merge-base":
-			return "", errors.New("exit 1")
-		case "symbolic-ref":
-			return "main", nil
-		}
-		return "", nil
-	}
-	mk := func(dir string, args ...string) error { dirs = append(dirs, "make:"+dir); return nil }
-	u := &SelfUpdate{}
-	if !u.ForCheckout(root, reg, git, mk) {
-		t.Fatal("named project not resolved")
-	}
-	u.Run()
-	for _, d := range dirs {
-		if !strings.HasSuffix(d, ":/r/code/rhiza") {
-			t.Fatalf("ran outside the project: %s", d)
-		}
-	}
-	if len(dirs) == 0 || dirs[len(dirs)-1] != "make:/r/code/rhiza" {
-		t.Fatalf("calls %v", dirs)
-	}
-
-	dirs = nil
-	reg.SelfUpdateProject = ""
-	u = &SelfUpdate{}
-	if u.ForCheckout(root, reg, git, mk) {
-		t.Fatal("unset still resolved")
-	}
-	u.Run()
-	if len(dirs) != 0 {
-		t.Fatalf("ran with none named: %v", dirs)
-	}
-}
-
 // TestSelfUpdateDropsIncomingLogCopies: an untracked .rhiza/log file that
 // origin/main adds byte for byte is dropped, so the fast-forward is not
 // blocked by it; a differing untracked file stays.
@@ -264,5 +215,29 @@ func TestSelfUpdateDropsIncomingLogCopies(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(main, ".rhiza/log/cs/c.json")); err != nil {
 		t.Errorf("a differing untracked file was removed: %v", err)
+	}
+}
+
+func TestRhizaCheckoutFindsModule(t *testing.T) {
+	root := t.TempDir()
+	for name, mod := range map[string]string{"a": "example.com/other", "b": RhizaModule, "c": "none"} {
+		d := filepath.Join(root, name)
+		if err := os.MkdirAll(d, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if name != "c" {
+			if err := os.WriteFile(filepath.Join(d, "go.mod"), []byte("module "+mod+"\n\ngo 1.25\n"), 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	reg := rootcfg.Config{Projects: map[string]rootcfg.Project{"a": {Path: "a"}, "b": {Path: "b"}, "c": {Path: "c"}}}
+	dir, ok := RhizaCheckout(root, reg)
+	if !ok || dir != filepath.Join(root, "b") {
+		t.Fatalf("RhizaCheckout = %q, %v", dir, ok)
+	}
+	delete(reg.Projects, "b")
+	if dir, ok := RhizaCheckout(root, reg); ok {
+		t.Fatalf("found %q with no Rhiza project", dir)
 	}
 }

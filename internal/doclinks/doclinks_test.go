@@ -58,3 +58,23 @@ func TestRepoDocsLinksResolve(t *testing.T) {
 		t.Fatalf("broken doc links:\n%s", strings.Join(got, "\n"))
 	}
 }
+
+// The daemon docs name the autoUpdate setting and its values, and no longer
+// the removed selfUpdate setting or self_update_project key.
+func TestDocsDescribeAutoUpdate(t *testing.T) {
+	b, err := os.ReadFile(filepath.Join("..", "..", "docs", "runs-and-daemon.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	doc := string(b)
+	for _, want := range []string{"rhiza.daemon.autoUpdate", "`off`", "`main`"} {
+		if !strings.Contains(doc, want) {
+			t.Errorf("docs/runs-and-daemon.md does not name %s", want)
+		}
+	}
+	for _, gone := range []string{"selfUpdate", "self_update_project"} {
+		if strings.Contains(doc, gone) {
+			t.Errorf("docs/runs-and-daemon.md still names %s", gone)
+		}
+	}
+}

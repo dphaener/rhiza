@@ -22,6 +22,19 @@ const File = "rhiza.toml"
 // ErrExists is returned by Init when the directory is already a root.
 var ErrExists = errors.New("already a Rhiza root")
 
+// RemovedHint is what Rhiza says about a setting that no longer exists, or
+// "" when key is not one. key is a rhiza.toml key (self_update_project) or a
+// daemon setting (rhiza.daemon.selfUpdate).
+func RemovedHint(key string) string {
+	switch key {
+	case "self_update_project":
+		return "self_update_project is removed: set rhiza.daemon.autoUpdate to main instead"
+	case "rhiza.daemon.selfUpdate", "selfUpdate":
+		return "rhiza.daemon.selfUpdate is removed: it is now rhiza.daemon.autoUpdate (off or main)"
+	}
+	return ""
+}
+
 // Project is one registered project.
 type Project struct {
 	// Path is the project's folder, relative to the root (or absolute).
@@ -32,14 +45,13 @@ type Project struct {
 
 // Config is the content of a root's rhiza.toml.
 type Config struct {
-	// SelfUpdateProject names the registered project whose main checkout
-	// the daemon keeps itself current from (self_update_project). Empty
-	// means the daemon never self-updates.
-	SelfUpdateProject string             `toml:"self_update_project,omitempty"`
-	Projects          map[string]Project `toml:"projects"`
+	Projects map[string]Project `toml:"projects"`
 	// Daemon holds the machine-wide daemon settings, by their full key
 	// (rhiza.daemon.maxRuns), each a string as rhiza daemon set takes it.
 	Daemon map[string]string `toml:"daemon,omitempty"`
+	// Migrated holds a note for each removed setting Load found and carried
+	// over: the next write of rhiza.toml drops the old keys.
+	Migrated []string `toml:"-"`
 }
 
 // Find walks up from dir to the nearest folder holding a rhiza.toml and
@@ -95,7 +107,11 @@ func Init(dir string) (string, error) {
 	return path, nil
 }
 
-// Load reads the root's rhiza.toml.
+// Load reads the root's rhiza.toml. A removed setting still in it never
+// fails the load: self_update_project is dropped and rhiza.daemon.selfUpdate
+// = true becomes rhiza.daemon.autoUpdate = main (unless autoUpdate is set),
+// each noted in Migrated, so a root written by an older Rhiza keeps working
+// and keeps updating itself.
 func Load(root string) (Config, error) {
 	var c Config
 	path := filepath.Join(root, File)
@@ -103,8 +119,21 @@ func Load(root string) (Config, error) {
 	if err != nil {
 		return c, err
 	}
-	if _, err := toml.Decode(string(data), &c); err != nil {
+	md, err := toml.Decode(string(data), &c)
+	if err != nil {
 		return c, fmt.Errorf("%s: %w", path, err)
+	}
+	if md.IsDefined("self_update_project") {
+		c.Migrated = append(c.Migrated, fmt.Sprintf("%s: %s; it is ignored", path, RemovedHint("self_update_project")))
+	}
+	if v, ok := c.Daemon["rhiza.daemon.selfUpdate"]; ok {
+		delete(c.Daemon, "rhiza.daemon.selfUpdate")
+		note := fmt.Sprintf("%s: %s; it is ignored", path, RemovedHint("rhiza.daemon.selfUpdate"))
+		if _, set := c.Daemon["rhiza.daemon.autoUpdate"]; !set && strings.TrimSpace(v) == "true" {
+			c.Daemon["rhiza.daemon.autoUpdate"] = "main"
+			note = fmt.Sprintf("%s: %s; read as rhiza.daemon.autoUpdate = main", path, RemovedHint("rhiza.daemon.selfUpdate"))
+		}
+		c.Migrated = append(c.Migrated, note)
 	}
 	return c, nil
 }
@@ -201,7 +230,8 @@ func Remove(root, name string) error {
 }
 
 // SetDaemon writes the machine setting key = value in root's rhiza.toml,
-// keeping the rest.
+// keeping the rest. Removed settings Load carried over are written in their
+// new form, never the old.
 func SetDaemon(root, key, value string) error {
 	c, err := Load(root)
 	if err != nil {

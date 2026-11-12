@@ -13,13 +13,6 @@ Pause the whole daemon: no project is worked while true.
 - Type: boolean
 - Default: `false`
 
-### `rhiza.daemon.selfUpdate`
-
-Let the daemon update and restart itself when main has a newer build.
-
-- Type: boolean
-- Default: `false`
-
 ### `rhiza.daemon.maxRuns`
 
 The most runs the daemon works at once, across all projects.
@@ -51,6 +44,13 @@ The available memory below which the daemon starts no run, such as 2G; 0 turns i
 - Type: size
 - Default: `2G`
 - Flag: `rhiza daemon --min-memory` overrides it for a run
+
+### `rhiza.daemon.autoUpdate`
+
+Whether the daemon keeps itself up to date: main follows the registered Rhiza source checkout and runs make update when it moves; latest and release come with the release channels milestone.
+
+- Type: off or main
+- Default: `off`
 
 ### `rhiza.daemon.trimGoCache`
 

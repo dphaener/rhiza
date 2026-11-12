@@ -2,8 +2,9 @@ package daemon
 
 import (
 	"fmt"
-	"github.com/dphaener/rhiza/internal/rootcfg"
 	"os"
+
+	"github.com/dphaener/rhiza/internal/rootcfg"
 	"path/filepath"
 	"strings"
 	"time"
@@ -35,6 +36,10 @@ type SelfUpdate struct {
 	Now func() time.Time
 	// Every is the least time between two fetches.
 	Every time.Duration
+
+	// NoneLogged is set by the caller once it has logged that no Rhiza
+	// checkout is registered, so that is said once, not every poll.
+	NoneLogged bool
 
 	// fetched is when origin/main was last fetched, or tried to be.
 	fetched time.Time
@@ -174,31 +179,25 @@ func short(sha string) string {
 	return sha
 }
 
-// SelfUpdateCheckout is the main checkout the daemon updates itself from:
-// the folder of the project the root's rhiza.toml names as
-// self_update_project. It reports false when none is named or the name is
-// not a registered project, and the daemon then never self-updates.
-func SelfUpdateCheckout(root string, reg rootcfg.Config) (string, bool) {
-	name := reg.SelfUpdateProject
-	if name == "" {
-		return "", false
-	}
-	if _, ok := reg.Projects[name]; !ok {
-		return "", false
-	}
-	return reg.Dir(root, name), true
-}
+// RhizaModule is the Go module path of Rhiza's own source.
+const RhizaModule = "github.com/dphaener/rhiza"
 
-// ForCheckout points u at the root's self-update checkout, with git and
-// make run in that folder through the given runners. It reports false, and
-// leaves u alone, when the root names no such project.
-func (u *SelfUpdate) ForCheckout(root string, reg rootcfg.Config, git func(dir string, args ...string) (string, error), make func(dir string, args ...string) error) bool {
-	dir, ok := SelfUpdateCheckout(root, reg)
-	if !ok {
-		return false
+// RhizaCheckout finds the registered project that is Rhiza's own source
+// checkout: the first project, by name, whose go.mod declares RhizaModule.
+// It reports false when none is, and the daemon then updates nothing.
+func RhizaCheckout(root string, reg rootcfg.Config) (string, bool) {
+	for _, name := range reg.Names() {
+		dir := reg.Dir(root, name)
+		b, err := os.ReadFile(filepath.Join(dir, "go.mod"))
+		if err != nil {
+			continue
+		}
+		for _, line := range strings.Split(string(b), "\n") {
+			f := strings.Fields(line)
+			if len(f) == 2 && f[0] == "module" && strings.Trim(f[1], `"`) == RhizaModule {
+				return dir, true
+			}
+		}
 	}
-	u.Dir = dir
-	u.Git = func(args ...string) (string, error) { return git(dir, args...) }
-	u.Make = func(args ...string) error { return make(dir, args...) }
-	return true
+	return "", false
 }

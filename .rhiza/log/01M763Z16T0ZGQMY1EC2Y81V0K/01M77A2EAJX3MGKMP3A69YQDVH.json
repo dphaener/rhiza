@@ -1,0 +1,40 @@
+{
+  "actor": "01M77A0FB3M8E60T3KQVNYQGK4",
+  "after": [
+    "01M779WKDPF98GRY8VQEDRHRJ0"
+  ],
+  "at": "2026-11-12T07:20:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 328e4c60f I built rhiza with -trimpath and ran rhiza docs --out into a copy of docs/reference: no diff from the committed docs/reference, and config.md shows rhiza.daemon.autoUpdate with type off or main, default off, and latest and release named as coming with the release channels milestone. go test -trimpath ./internal/doclinks -run TestDocsDescribeAutoUpdate passes (TestRepoDocsLinksResolve too). In a git archive copy, renaming rhiza.daemon.autoUpdate in docs/runs-and-daemon.md made it fail, and adding selfUpdate to it made it fail. docs/runs-and-daemon.md names autoUpdate with off and main and no longer names selfUpdate or self_update_project. go test ./internal/docs and ./internal/api -run 'Setting|Docs' pass."
+        },
+        "handle": "auto-update-documented-verified",
+        "id": "01M77A2E93DNPXGHPZE5V1F0S7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77A2E93DNPXGHPZE297ADB0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77A2E93DNPXGHPZE297ADB0",
+        "id": "01M77A2E9WF201NYDWZ554751C",
+        "link": "01M77A2E9WF201NYDWZ2SF8Q55",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MRZ4256B2ECYVG4D4SH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z16T0ZGQMY1EC2Y81V0K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77A2EAJX3MGKMP3A69YQDVH",
+  "type": "ops",
+  "v": 1
+}
