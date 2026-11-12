@@ -167,40 +167,41 @@ type RunResponse struct {
 
 // RunInfo is a run folded from its journal.
 type RunInfo struct {
-	ID             string             `json:"id" desc:"The run ID"`
-	Workflow       string             `json:"workflow" desc:"The workflow's name"`
-	Pick           string             `json:"pick,omitempty" desc:"Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded"`
-	Change         string             `json:"change" desc:"The change set it runs on; empty for a scheduled run, which has none"`
-	Trigger        string             `json:"trigger,omitempty" desc:"What started a run with no change set: schedule; absent for a change set's run"`
-	TriggerName    string             `json:"trigger_name,omitempty" desc:"With trigger schedule: the schedule's name"`
-	Title          string             `json:"title" desc:"The change set's title"`
-	Worktree       string             `json:"worktree" desc:"The worktree every step runs in"`
-	Autonomous     bool               `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
-	Autonomy       []RunStageAutonomy `json:"autonomy,omitempty" desc:"The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded"`
-	State          string             `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
-	Current        string             `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
-	Detail         string             `json:"detail,omitempty" desc:"Why it stopped or failed"`
-	Steps          []RunStep          `json:"steps" desc:"The steps done, in order"`
-	StartedAt      string             `json:"started_at" desc:"When it started, RFC 3339 UTC"`
-	Blocked        *RunBlocked        `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
-	Stalled        *RunStalled        `json:"stalled,omitempty" desc:"A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise"`
-	Amendments     []RunAmendment     `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
-	Messages       []RunMessage       `json:"messages" desc:"The messages its sessions sent each other, in order"`
-	Sessions       []RunSession       `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
-	Totals         SessionTokenUse    `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
-	Warnings       []string           `json:"warnings,omitempty" desc:"The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none"`
-	Retries        []RunRetry         `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
-	Accepts        []RunAccept        `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
-	Questions      []RunQuestion      `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
-	Rounds         []RunRound         `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
-	Waiting        []RunWaiting       `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
-	Leaves         []RunLeaf          `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
-	Checks         []RunCheck         `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
-	Fixes          []RunFix           `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
-	CodeChecks     []RunCodeCheck     `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
-	Signoffs       []RunSignoff       `json:"signoffs,omitempty" desc:"The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none"`
-	PR             string             `json:"pr,omitempty" desc:"While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise"`
-	SignoffWaiting bool               `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise"`
+	ID              string             `json:"id" desc:"The run ID"`
+	Workflow        string             `json:"workflow" desc:"The workflow's name"`
+	Pick            string             `json:"pick,omitempty" desc:"Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded"`
+	Change          string             `json:"change" desc:"The change set it runs on; empty for a scheduled run, which has none"`
+	Trigger         string             `json:"trigger,omitempty" desc:"What started a run with no change set: schedule; absent for a change set's run"`
+	TriggerName     string             `json:"trigger_name,omitempty" desc:"With trigger schedule: the schedule's name"`
+	Title           string             `json:"title" desc:"The change set's title"`
+	Worktree        string             `json:"worktree" desc:"The worktree every step runs in"`
+	MilestoneNumber int                `json:"milestone_number,omitempty" desc:"The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none"`
+	Autonomous      bool               `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
+	Autonomy        []RunStageAutonomy `json:"autonomy,omitempty" desc:"The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded"`
+	State           string             `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
+	Current         string             `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
+	Detail          string             `json:"detail,omitempty" desc:"Why it stopped or failed"`
+	Steps           []RunStep          `json:"steps" desc:"The steps done, in order"`
+	StartedAt       string             `json:"started_at" desc:"When it started, RFC 3339 UTC"`
+	Blocked         *RunBlocked        `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
+	Stalled         *RunStalled        `json:"stalled,omitempty" desc:"A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise"`
+	Amendments      []RunAmendment     `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
+	Messages        []RunMessage       `json:"messages" desc:"The messages its sessions sent each other, in order"`
+	Sessions        []RunSession       `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
+	Totals          SessionTokenUse    `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
+	Warnings        []string           `json:"warnings,omitempty" desc:"The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none"`
+	Retries         []RunRetry         `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
+	Accepts         []RunAccept        `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
+	Questions       []RunQuestion      `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
+	Rounds          []RunRound         `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
+	Waiting         []RunWaiting       `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
+	Leaves          []RunLeaf          `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
+	Checks          []RunCheck         `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
+	Fixes           []RunFix           `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
+	CodeChecks      []RunCodeCheck     `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
+	Signoffs        []RunSignoff       `json:"signoffs,omitempty" desc:"The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none"`
+	PR              string             `json:"pr,omitempty" desc:"While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise"`
+	SignoffWaiting  bool               `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise"`
 }
 
 // RunStageAutonomy is one stage's autonomy as a run started.
@@ -672,7 +673,9 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	}
 	// A plan run on a record change set plans a milestone too; its
 	// plan-milestone workflow's agent steps are checked again.
+	newMilestone := milestone && reqMilestone == ""
 	if !milestone && def.Name == planWorkflow && planIsMilestone(ctx, t.cs.String()) {
+		newMilestone = true
 		if def, path, data, err = milestonePlanWorkflow(ctx, def, path, data, true); err != nil {
 			return nil, err
 		}
@@ -732,7 +735,23 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	claimStartLog(ctx, t.common, rid)
-	if err := startRun(rs, rid, started, ctx.Now(), def); err != nil {
+	if newMilestone {
+		// The number is drawn and journaled under one lock, so two starts
+		// never draw the same one.
+		unlock, err := rs.LockChange(milestoneNumberLock)
+		if err != nil {
+			return nil, Errorf("lock milestone numbers: %v", err)
+		}
+		if started.MilestoneNumber, err = reserveMilestoneNumber(ctx, rs); err != nil {
+			unlock()
+			return nil, err
+		}
+		err = startRun(rs, rid, started, ctx.Now(), def)
+		unlock()
+		if err != nil {
+			return nil, err
+		}
+	} else if err := startRun(rs, rid, started, ctx.Now(), def); err != nil {
 		return nil, err
 	}
 	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, started.Autonomous, r.NoWait)
@@ -2809,7 +2828,7 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 	info := RunInfo{
 		ID: st.ID, Workflow: st.Workflow, Pick: st.Pick, Change: st.Change, Title: st.Title, Worktree: st.Worktree,
 		Trigger: st.Trigger, TriggerName: st.TriggerName,
-		Autonomous: st.Autonomous, Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
+		Autonomous: st.Autonomous, MilestoneNumber: st.MilestoneNumber, Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
 		Amendments: []RunAmendment{}, Messages: []RunMessage{}, Sessions: []RunSession{},
 		Autonomy: runStageAutonomy(st.Autonomy),
 		Warnings: slices.Clone(st.Warnings),

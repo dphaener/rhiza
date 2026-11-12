@@ -16,7 +16,9 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/policy"
+	"github.com/dphaener/rhiza/internal/run"
 )
 
 func init() {
@@ -132,4 +134,46 @@ func milestonesServed(ctx *Ctx, cmd string, cs id.ID) ([]id.ID, error) {
 		}
 	}
 	return out, nil
+}
+
+// milestoneNumberLock names the lock a plan run holds from drawing its
+// milestone number to journaling it.
+const milestoneNumberLock = "milestone-number"
+
+// reserveMilestoneNumber draws the milestone number a plan run for a new
+// milestone reserves: one more than the highest of every landed milestone
+// intent's milestone field and every number reserved in any run journal of
+// rs, ended and failed runs included. The caller holds milestoneNumberLock
+// and journals the number before releasing it.
+func reserveMilestoneNumber(ctx *Ctx, rs *run.Store) (int, error) {
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return 0, err
+	}
+	top := 0
+	m := newModel(w.diskLog(), id.ID{})
+	var walk func(parent id.ID)
+	walk = func(parent id.ID) {
+		for _, n := range m.Children(op.KindIntent, parent) {
+			if planMilestoneField(n.Fields) {
+				in := planInputs{milestoneNums: map[id.ID]float64{}}
+				planNoteMilestoneNum(in, n.ID, n.Fields)
+				if f, ok := in.milestoneNums[n.ID]; ok && int(f) > top {
+					top = int(f)
+				}
+			}
+			walk(n.ID)
+		}
+	}
+	walk(id.ID{})
+	js, err := rs.List()
+	if err != nil {
+		return 0, Errorf("read the run journals: %v", err)
+	}
+	for _, j := range js {
+		if n := j.State().MilestoneNumber; n > top {
+			top = n
+		}
+	}
+	return top + 1, nil
 }
