@@ -14,7 +14,7 @@ Verifier, attempt 2, at b9f87b04: read the leaf's diff from the merge-base (inte
 
 ### Out
 
-- verifies [ship-check-runner-test-failures](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-runner-test-failures.md)
+- verifies ship-check-runner-test-failures (retired)
 
 ## History
 

@@ -1,6 +1,6 @@
-# A red RSpec project: after the once-per-head rerun, ship check reads the
-# failed run's log and lists the 'rspec ./path:line' rerun command of its
-# 'Failed examples:' block as a test and a finding; --test-failures exits 0.
+# A red RSpec project: after the once-per-head rerun, ship check saves the
+# failed run's log, trimmed to its 'Failed examples:' block, and its finding
+# names the saved file; --test-failures exits 0.
 
 chmod 755 bin/gh
 env PATH=$WORK/bin:$PATH
@@ -30,11 +30,15 @@ exec git push -q -u origin cs/ship-it
 ! exec rhiza ship check --settled --json
 stdout '"reran"'
 
-# Second: the log's rspec rerun command is a test and a finding.
-exec rhiza ship check --settled --json
-stdout '"rspec ./spec/views/tasks/list_spec.rb:290"'
-! stdout '# Tasks list'
-stdout '"test": "rspec ./spec/views/tasks/list_spec.rb:290"'
+# Second: the run's saved log, named by the finding, holds the rspec
+# rerun command.
+exec sh -c 'rhiza ship check --settled --json > $WORK/check.json'
+exec cat $WORK/check.json
+stdout '"test": "CI run 42 \(test\)"'
+stdout 'saved in \S+42\.log'
+exec sh -c 'cat "$(sed -n "s/.*saved in \([^:]*\):.*/\1/p" $WORK/check.json | head -1)"'
+stdout '^rspec ./spec/views/tasks/list_spec.rb:290 # Tasks list shows rows$'
+stdout '^Failed examples:$'
 exec rhiza ship check --test-failures
 
 -- other.mod --

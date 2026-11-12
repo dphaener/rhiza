@@ -52,6 +52,13 @@ Whether the daemon keeps itself up to date: main follows the registered Rhiza so
 - Type: off or main
 - Default: `off`
 
+### `rhiza.daemon.failureClassifier`
+
+The command that classifies a failed step as transient or real: it reads the step's output on stdin and prints 'transient: <reason>' or 'real: <reason>'; the default runs Claude headless with Haiku, any LLM CLI can be set, and an empty value turns classification off, so no failure is retried.
+
+- Type: shell command
+- Default: `claude -p --model haiku "You classify a failed command from a software build or CI run. Its output follows on standard input. Answer with one line: 'transient: <reason>' if the failure is an infrastructure or environment hiccup that a plain rerun would likely fix (a network or GitHub error, a held lock, a vanished temp file, a full or flaky runner), or 'real: <reason>' if the code, a test, or the configuration is at fault. Give only that line."`
+
 ### `rhiza.daemon.permissionMode`
 
 The permission mode agents run in; unset leaves the agent's own default.

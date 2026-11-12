@@ -1,0 +1,40 @@
+{
+  "actor": "01M77E0YM2JS5MSAWE7JF73FQM",
+  "after": [
+    "01M76NXCS7AG0YA9N4RVVRX09E"
+  ],
+  "at": "2026-11-12T08:43:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at fb1045461. Diff: stepRunner.Command (internal/api/run.go) now reruns a failed command step once only when Ctx.Classify (new optional func in api.go) returns transient; nil classifier means no rerun, StopExit is never rerun, and the second result stands. vanishedGoWork and its regexp are removed, and the old capability step-retry-vanished-go-work no longer resolves in the to-be view. Ran go test -trimpath ./internal/api -run TestCommandRerunsOnTransient -v -count=1: PASS for 'transient then passes' (2 runs, exit 0, 1 rerun line), 'transient twice stands' (2 runs, exit 1), 'real not rerun' (1 run, exit 1, no rerun line) and 'no classifier not rerun' (1 run). go vet ./internal/api and gofmt -l internal/api were clean. Scoped -run 'Step|TestRun' tests all pass, but the package's root-state guard flags .rhiza-root/usage.live.json as changed; that also happens without the new test and matches the known fake-usage leak, so it is not from this leaf. A full internal/api run hit the 600s timeout and later an outside SIGTERM under VM load ~7, with no FAIL lines."
+        },
+        "handle": "step-rerun-classified-verified",
+        "id": "01M77ESNF5XE1C33FT26PRH565",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77ESNF44RN64HZVJDQJB079",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77ESNF44RN64HZVJDQJB079",
+        "id": "01M77ESNGGC6SSDX0VW92VW77D",
+        "link": "01M77ESNGGC6SSDX0VW6NRBN64",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642N3Y65X0MX8J6J2WSJVH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z4X9Q90ASH2K1BF7PZPS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77ESNJV41A9RSZ2WJKVREPG",
+  "type": "ops",
+  "v": 1
+}

@@ -114,26 +114,27 @@ func runShipGate(ctx *Ctx, req any) (any, error) {
 	if err := refuseShipDryRun(ctx, "ship.gate"); err != nil {
 		return nil, err
 	}
+	if !gr.ModelConflict {
+		return shipLocalGate(ctx, nil)
+	}
 	t, err := findShipTarget(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if gr.ModelConflict {
-		mcs, err := shipOwnModelConflicts(ctx, t)
+	mcs, err := shipOwnModelConflicts(ctx, t)
+	if err != nil {
+		return nil, err
+	}
+	if len(mcs) > 0 {
+		st, err := readShipState(t.statePath())
 		if err != nil {
 			return nil, err
 		}
-		if len(mcs) > 0 {
-			st, err := readShipState(t.statePath())
-			if err != nil {
-				return nil, err
-			}
-			st.ModelConflicts = mcs
-			if err := writeShipState(t.statePath(), st); err != nil {
-				return nil, err
-			}
-			return ShipGateResponse{ModelConflicts: mcs}, nil
+		st.ModelConflicts = mcs
+		if err := writeShipState(t.statePath(), st); err != nil {
+			return nil, err
 		}
+		return ShipGateResponse{ModelConflicts: mcs}, nil
 	}
 	return shipLocalGate(ctx, &t)
 }

@@ -14,7 +14,7 @@ The built-in ship-change workflow sends a failure at pr-green or rebased-green (
 
 ### Out
 
-- depends-on [ship-check-ci-test-findings](ship-check-ci-test-findings.md)
+- depends-on ship-check-ci-test-findings (retired)
 - decided-by [ship-change-ci-fix-cycle](../../../../../decision/ship-change-ci-fix-cycle.md)
 
 ### In
