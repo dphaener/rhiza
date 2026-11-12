@@ -101,6 +101,15 @@ func runSessionDone(ctx *Ctx, req any) (any, error) {
 			return nil, Conflictf("session %s cannot say done: %s", rec.ID, msg).WithNext("rhiza run findings --leaf " + rec.Leaf)
 		}
 	}
+	if isCheckSession(rec) || isCriticSession(rec) {
+		if msg := reviewRecordMissing(ctx, rec); msg != "" {
+			next := "rhiza run findings --check " + rec.Check
+			if rec.Role == "critic" {
+				next = "rhiza run verdict --check " + rec.Check
+			}
+			return nil, Conflictf("session %s cannot say done: %s", rec.ID, msg).WithNext(next)
+		}
+	}
 	mark := session.Report{State: session.StateDone, At: ctx.Now().UTC()}
 	if ctx.DryRun {
 		return SessionDoneResponse{Session: rec.ID, At: rfc3339(mark.At), DryRun: true}, nil
