@@ -79,10 +79,14 @@ func runRender(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	log := st.ReadLog()
+	if err := damagedLog(ctx, log); err != nil {
+		return nil, err
+	}
 	if _, err := store.SetEntryModes(ctx.Root); err != nil {
 		return nil, Errorf("render: %v", err)
 	}
-	sets, _ := changeset.FoldLog(st.ReadLog())
+	sets, _ := changeset.FoldLog(log)
 	m, _ := gmodel.AsIs(sets)
 	want := render.Render(m, sets)
 	if v := testRenderStale(ctx); v != "" {
@@ -108,6 +112,36 @@ func runRender(ctx *Ctx, _ any) (any, error) {
 		resp.Written = append(resp.Written, renderedDir+"/"+p)
 	}
 	return resp, nil
+}
+
+// damagedLog refuses to render over a damaged log: an entry that does not
+// parse canonically, one whose ID or change set does not match its path,
+// or an entry file tracked at HEAD that differs from HEAD (changed or
+// deleted). Every run's commit step renders first, so none commits such an
+// entry. The error names each path and problem; nothing has been written.
+func damagedLog(ctx *Ctx, log store.Log) error {
+	var lines []string
+	for _, p := range log.Problems {
+		if errors.Is(p.Err, store.ErrStray) {
+			continue
+		}
+		lines = append(lines, fmt.Sprintf("%s/%s: %v", store.Dir, p.Path, p.Err))
+	}
+	if inWorkTree(ctx.Git) {
+		out, err := ctx.Git("diff", "--name-only", "--relative", "--diff-filter=MDT", "HEAD", "--", store.Dir+"/"+store.LogDir)
+		if err == nil {
+			for _, f := range strings.Split(out, "\n") {
+				if f = strings.TrimSpace(f); f != "" {
+					lines = append(lines, f+": differs from HEAD, but a committed entry is never changed")
+				}
+			}
+		}
+	}
+	if len(lines) == 0 {
+		return nil
+	}
+	slices.Sort(lines)
+	return Errorf("render: damaged log, nothing rendered:\n%s", strings.Join(lines, "\n")).WithNext("rhiza check")
 }
 
 // testStaleFile is the extra file render writes under the
