@@ -57,6 +57,8 @@ The trailers are what let `rhiza check` and the rest of the tooling say which ch
 These are in the guide too. They're what you're relying on, so they're worth knowing:
 
 - Never edit `.rhiza/log/` by hand. Only the CLI writes it.
+- Read log entries with `rhiza show`, `rhiza slice` or `cat`, never `python -m json.tool`,
+  in-place `jq`, `sed -i` or a redirect. Fix a damaged entry with `rhiza repair`.
 - Always pass `--json` and read that, not the human text.
 - Propose, and leave `rhiza accept` to the owner unless your policy says otherwise.
 - Never paraphrase the owner. A decision's `quote` is their exact words, and an option the agent wrote is the agent's wording, not theirs.
