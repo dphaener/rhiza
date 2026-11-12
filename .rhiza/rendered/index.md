@@ -3789,6 +3789,7 @@
 - [usage-window-tokens-verified-2](evidence/usage-window-tokens-verified-2.md)
 - [usage-windows-qa-2](evidence/usage-windows-qa-2.md)
 - [usage-windows-verified](evidence/usage-windows-verified.md)
+- [v010-attestation-verified](evidence/v010-attestation-verified.md)
 - [vm-root-installed-evidence](evidence/vm-root-installed-evidence.md)
 - [vm-root-installed-qa-1](evidence/vm-root-installed-qa-1.md)
 - [vm-root-installed-verified](evidence/vm-root-installed-verified.md)

@@ -18,6 +18,7 @@ The release job publishes a GitHub build-provenance attestation for every archiv
 - verifies [release-provenance-verified](../../../evidence/release-provenance-verified.md)
 - verifies [release-provenance-qa-1](../../../evidence/release-provenance-qa-1.md)
 - verifies [pr-476-release-channel-manifest-and](../../../evidence/pr-476-release-channel-manifest-and.md)
+- verifies [v010-attestation-verified](../../../evidence/v010-attestation-verified.md)
 
 ## History
 
