@@ -1,0 +1,86 @@
+{
+  "actor": "01M7855MGG9G9CQHCJ7W4F03FN",
+  "after": [
+    "01M78520ME1WX3F8Q8WJTWSF7Q"
+  ],
+  "at": "2026-11-12T15:16:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 with the binary built at HEAD c345f85e6. Live: this QA check session's own `rhiza session done --dry-run --json` (check qa, cycle 1, no round yet) exits 3, code conflict, message names `rhiza run findings --check qa -`, next `rhiza run findings --check qa`. Scratch repo with a hand-written review run journal (step checks, check bugs, cycle 1): check session refused (exit 3) naming rhiza run findings and written no done mark; after a findings round (blocker f1, major f2, nit f3) it says done. Critic with f1,f2 unjudged refused naming `rhiza run verdict --check bugs -` and listing (f1, f2); after f1 confirmed still refused listing (f2); after f2 dropped it says done with nit f3 unjudged. Fixer session says done with no round. go test -trimpath ./internal/api -run SessionDone passes."
+        },
+        "handle": "done-refuses-unrecorded-check-qa-1",
+        "id": "01M7859XJ15MZKY2A0F9WG79XP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7859XJ15MZKY2A0F65ATGA4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7859XJ15MZKY2A0F65ATGA4",
+        "id": "01M7859XJSQB8K02RXNHYJJXEH",
+        "link": "01M7859XJSQB8K02RXNGXH4R9D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY3QZ8A5JTZE1V4EMAZMN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 with the binary built at HEAD c345f85e6, in a scratch repo (rhiza init, change set with capability leaf-a, actors ada and bob) with a hand-written build run journal (leaf-session builder and verifier on leaf-a attempt 1). Builder session done succeeds. Verifier with nothing recorded: exit 3 conflict naming `rhiza run findings --leaf leaf-a -`, session status stays unset (no done mark). After bob writes Evidence verifying leaf-a via rhiza apply: still refused, message says leaf-a-bob was written by another actor. After a findings entry on attempt 1: a verifier of attempt 1 says done. A verifier of attempt 2 is refused until ada writes her own Evidence, then says done. Human text form prints 'Session ... is done.'. go test -trimpath ./internal/api -run SessionDone passes."
+        },
+        "handle": "done-refuses-unrecorded-verifier-qa-1",
+        "id": "01M7859XKJHQ52Y988FRYCHMVY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7859XKJHQ52Y988FPY9FKE0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7859XKJHQ52Y988FPY9FKE0",
+        "id": "01M7859XM99W0JARWZDV644D1Y",
+        "link": "01M7859XM99W0JARWZDQHS00M4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY3PYRWRTE99N44HPC2G1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 with the binary built at HEAD c345f85e6: `rhiza guide build` and `rhiza guide review` both say each role ends with `rhiza session done` as its own command after its recording command succeeded. `rhiza workflow describe <w> --json` for build, review, plan, plan-milestone and ship-change: no prompt contains '; rhiza session done' or '&& rhiza session done', and every mention of rhiza session done is matched by 'very last action' (2/2, 8/8, 5/5, 5/5, 16/16). grep over .rhiza/workflows and internal/ finds no chained done. go test -trimpath ./internal/guide -run 'Build|Review' and ./internal/workflow pass."
+        },
+        "handle": "done-own-command-guide-qa-1",
+        "id": "01M7859XNPXWQJCHN2Z8C4XK90",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7859XNPXWQJCHN2Z5XHYAPR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7859XNPXWQJCHN2Z5XHYAPR",
+        "id": "01M7859XPDW161Q04CYNPVPM2V",
+        "link": "01M7859XPDW161Q04CYKWPTSF3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY3S1VF65NT8YXQKZ4VZC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XNMMENQCK9PZMGC9YBG99",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7859XQHZV3WMA71RRJF864C",
+  "type": "ops",
+  "v": 1
+}
