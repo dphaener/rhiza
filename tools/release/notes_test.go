@@ -19,7 +19,7 @@ func TestNotes(t *testing.T) {
 	writeAt(t, dir, "CS2", "a", "open", mid, `{"intent":"Fix the crash on empty logs","request_kind":"bug"}`)
 	writeAt(t, dir, "CS2", "b", "land", mid, `{}`)
 	writeAt(t, dir, "CS3", "a", "open", mid, `{"intent":"Release marks"}`)
-	writeAt(t, dir, "CS3", "b", "ops", mid, `{"ops":[{"op":"node.create","kind":"intent","node":"I2","handle":"m33","fields":{"statement":"Releases are cut by rule"}},
+	writeAt(t, dir, "CS3", "b", "ops", mid, `{"ops":[{"op":"node.create","kind":"intent","node":"I2","handle":"m33","fields":{"milestone":"33","statement":"Releases are cut by rule"}},
 		{"op":"link.create","type":"serves","from":"CS3","to":"I2"},{"op":"link.create","type":"serves","from":"CS4","to":"I2"}]}`)
 	writeAt(t, dir, "CS3", "c", "land", mid, `{}`)
 	writeAt(t, dir, "CS4", "a", "open", after, `{"intent":"Evaluate the gates"}`)
