@@ -58,6 +58,10 @@ type Options struct {
 	Commit  string // full commit sha the release was built from
 	Repo    string // owner/name on GitHub
 	Channel string // defaults to ChannelRelease
+	// ReleaseTag is the GitHub release the archives are uploaded to, which
+	// the download URLs name; it defaults to Tag (the latest channel's is
+	// the rolling "latest").
+	ReleaseTag string
 }
 
 // Build reads dist and returns the manifest, or an error unless all four
@@ -68,6 +72,9 @@ func Build(o Options) (*Manifest, error) {
 	}
 	if o.Channel == "" {
 		o.Channel = ChannelRelease
+	}
+	if o.ReleaseTag == "" {
+		o.ReleaseTag = o.Tag
 	}
 	if o.Version == "" {
 		o.Version = strings.TrimPrefix(o.Tag, "v")
@@ -98,7 +105,7 @@ func Build(o Options) (*Manifest, error) {
 			return nil, fmt.Errorf("release: %s sha256 is %s but %s says %s", name, got, ChecksumsFile, want)
 		}
 		p.SHA256 = want
-		p.URL = fmt.Sprintf("https://github.com/%s/releases/download/%s/%s", o.Repo, o.Tag, name)
+		p.URL = fmt.Sprintf("https://github.com/%s/releases/download/%s/%s", o.Repo, o.ReleaseTag, name)
 		m.Platforms = append(m.Platforms, p)
 	}
 	if len(missing) > 0 {

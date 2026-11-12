@@ -85,3 +85,21 @@ func TestBuildChecksumMismatch(t *testing.T) {
 		t.Fatalf("err = %v", err)
 	}
 }
+
+func TestBuildReleaseTagNamesDownloads(t *testing.T) {
+	o := opts(writeDist(t, ""))
+	o.ReleaseTag = "latest"
+	o.Channel = "latest"
+	m, err := Build(o)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m.Channel != "latest" || m.Version != o.Tag {
+		t.Fatalf("channel %q version %q", m.Channel, m.Version)
+	}
+	for _, p := range m.Platforms {
+		if !strings.Contains(p.URL, "/releases/download/latest/") {
+			t.Fatalf("url %q", p.URL)
+		}
+	}
+}

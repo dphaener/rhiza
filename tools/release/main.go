@@ -35,6 +35,8 @@ func run(args []string) error {
 	fs.StringVar(&o.Version, "version", "", "archive version (default: tag without v)")
 	fs.StringVar(&o.Commit, "commit", "", "commit sha")
 	fs.StringVar(&o.Repo, "repo", "dphaener/rhiza", "GitHub owner/name")
+	fs.StringVar(&o.Channel, "channel", "", "manifest channel (default: release)")
+	fs.StringVar(&o.ReleaseTag, "release-tag", "", "GitHub release the archives are on (default: tag)")
 	out := fs.String("out", "", "output file (default: <dist>/manifest.json)")
 	if err := fs.Parse(args); err != nil {
 		return err

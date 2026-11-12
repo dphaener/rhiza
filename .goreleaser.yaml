@@ -15,7 +15,7 @@ builds:
     goos: [linux, darwin]
     goarch: [amd64, arm64]
     ldflags:
-      - -s -w -X main.version={{ .Tag }}
+      - -s -w -X main.version={{ if .IsSnapshot }}v{{ .Version }}{{ else }}{{ .Tag }}{{ end }}
 
 archives:
   - id: rhiza
@@ -24,6 +24,10 @@ archives:
 
 checksum:
   name_template: checksums.txt
+
+snapshot:
+  # The latest channel builds a snapshot named by tools/release version.
+  version_template: "{{ .Env.RHIZA_BUILD_VERSION }}"
 
 changelog:
   disable: true
