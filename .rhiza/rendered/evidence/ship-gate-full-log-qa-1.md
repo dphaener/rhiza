@@ -14,7 +14,7 @@ QA by hand with the built binary (go build ./cmd/rhiza at 952263bc7) in a fresh 
 
 ### Out
 
-- verifies [ship-gate-full-log](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-gate-full-log.md)
+- verifies ship-gate-full-log (retired)
 
 ## History
 

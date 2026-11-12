@@ -483,7 +483,10 @@
         - [plan-prepush-fix](capability/rhiza/orchestration/shipping/wait-green-pr/plan-prepush-fix.md)
         - [ship-land-records-model-conflict](capability/rhiza/orchestration/shipping/wait-green-pr/ship-land-records-model-conflict.md)
         - [ship-change-model-conflict-fix-step](capability/rhiza/orchestration/shipping/wait-green-pr/ship-change-model-conflict-fix-step.md)
-        - [ship-gate-full-log](capability/rhiza/orchestration/shipping/wait-green-pr/ship-gate-full-log.md)
+        - [ci-flakes-name-tests](capability/rhiza/orchestration/shipping/wait-green-pr/ci-flakes-name-tests.md)
+        - [ci-unstable-repeated-flake](capability/rhiza/orchestration/shipping/wait-green-pr/ci-unstable-repeated-flake.md)
+        - [health-ci-infra-failures](capability/rhiza/orchestration/shipping/wait-green-pr/health-ci-infra-failures.md)
+        - [ship-gate-run-log](capability/rhiza/orchestration/shipping/wait-green-pr/ship-gate-run-log.md)
       - [pinned-merge](capability/rhiza/orchestration/shipping/pinned-merge.md)
       - [close-out](capability/rhiza/orchestration/shipping/close-out.md)
       - [repo-ship-command](capability/rhiza/orchestration/shipping/repo-ship-command.md)
@@ -1321,6 +1324,7 @@
 - [live-app-name-and-op](decision/live-app-name-and-op.md)
 - [live-settings-rebase-resolution](decision/live-settings-rebase-resolution.md)
 - [live-usage-source](decision/live-usage-source.md)
+- [local-gate-repeated-named-flakes](decision/local-gate-repeated-named-flakes.md)
 - [local-gate-trigger-identified-flakes](decision/local-gate-trigger-identified-flakes.md)
 - [log-in-product-repo](decision/log-in-product-repo.md)
 - [m10-picked-by-orchestrator](decision/m10-picked-by-orchestrator.md)
@@ -1981,6 +1985,7 @@
 - [question-13d1ddd0-1](question/question-13d1ddd0-1.md)
 - [question-168498bf-1](question/question-168498bf-1.md)
 - [question-226cf21d-1](question/question-226cf21d-1.md)
+- [question-250a1536-1](question/question-250a1536-1.md)
 - [question-25cce3b3-1](question/question-25cce3b3-1.md)
 - [question-25f669da-1](question/question-25f669da-1.md)
 - [question-29479c02-1](question/question-29479c02-1.md)
@@ -2361,6 +2366,8 @@
 - [ci-fix-fixes-ci-findings-verified](evidence/ci-fix-fixes-ci-findings-verified.md)
 - [ci-fix-reproduces-locally-qa-1](evidence/ci-fix-reproduces-locally-qa-1.md)
 - [ci-fix-reproduces-locally-verified](evidence/ci-fix-reproduces-locally-verified.md)
+- [ci-flakes-name-tests-qa-1](evidence/ci-flakes-name-tests-qa-1.md)
+- [ci-flakes-name-tests-verified](evidence/ci-flakes-name-tests-verified.md)
 - [ci-install-cancels-stale-qa-1](evidence/ci-install-cancels-stale-qa-1.md)
 - [ci-install-cancels-stale-verified](evidence/ci-install-cancels-stale-verified.md)
 - [ci-install-cancels-stale-verified-2](evidence/ci-install-cancels-stale-verified-2.md)
@@ -2379,6 +2386,8 @@
 - [ci-triage-infra-waits-qa-1](evidence/ci-triage-infra-waits-qa-1.md)
 - [ci-triage-infra-waits-verified](evidence/ci-triage-infra-waits-verified.md)
 - [ci-triage-infra-waits-verified-2](evidence/ci-triage-infra-waits-verified-2.md)
+- [ci-unstable-repeated-flake-qa-1](evidence/ci-unstable-repeated-flake-qa-1.md)
+- [ci-unstable-repeated-flake-verified](evidence/ci-unstable-repeated-flake-verified.md)
 - [ci-yml-cancels-stale-qa-1](evidence/ci-yml-cancels-stale-qa-1.md)
 - [ci-yml-cancels-stale-verified](evidence/ci-yml-cancels-stale-verified.md)
 - [ci-yml-dispatchable-qa-1](evidence/ci-yml-dispatchable-qa-1.md)
@@ -2702,6 +2711,8 @@
 - [health-app-verified](evidence/health-app-verified.md)
 - [health-autonomy-risk-qa-1](evidence/health-autonomy-risk-qa-1.md)
 - [health-autonomy-risk-verified](evidence/health-autonomy-risk-verified.md)
+- [health-ci-infra-failures-qa-1](evidence/health-ci-infra-failures-qa-1.md)
+- [health-ci-infra-failures-verified](evidence/health-ci-infra-failures-verified.md)
 - [health-ci-stability-qa-1](evidence/health-ci-stability-qa-1.md)
 - [health-ci-stability-verified](evidence/health-ci-stability-verified.md)
 - [health-load-memory-hold-qa-1](evidence/health-load-memory-hold-qa-1.md)
@@ -3324,6 +3335,7 @@
 - [pr-503-fix-flaky-test-scripts](evidence/pr-503-fix-flaky-test-scripts.md)
 - [pr-504-fix-the-local-ship-gate](evidence/pr-504-fix-the-local-ship-gate.md)
 - [pr-506-automatic-releases](evidence/pr-506-automatic-releases.md)
+- [pr-509-the-local-ship-gate-switches](evidence/pr-509-the-local-ship-gate-switches.md)
 - [pr-52-the-daemon](evidence/pr-52-the-daemon.md)
 - [pr-53-the-inbox](evidence/pr-53-the-inbox.md)
 - [pr-61-leaf-trailer-split-paragraphs](evidence/pr-61-leaf-trailer-split-paragraphs.md)
@@ -3802,6 +3814,8 @@
 - [ship-gate-fails-own-model-conflict-verified](evidence/ship-gate-fails-own-model-conflict-verified.md)
 - [ship-gate-full-log-qa-1](evidence/ship-gate-full-log-qa-1.md)
 - [ship-gate-full-log-verified](evidence/ship-gate-full-log-verified.md)
+- [ship-gate-run-log-qa-1](evidence/ship-gate-run-log-qa-1.md)
+- [ship-gate-run-log-verified](evidence/ship-gate-run-log-verified.md)
 - [ship-head-build-error-detail-qa-1](evidence/ship-head-build-error-detail-qa-1.md)
 - [ship-head-build-error-detail-verified](evidence/ship-head-build-error-detail-verified.md)
 - [ship-head-build-step-qa-2](evidence/ship-head-build-step-qa-2.md)
@@ -4249,6 +4263,7 @@
 - [landed-run-resume-plan](source/landed-run-resume-plan.md)
 - [leaf-trailer-split-paragraphs-plan](source/leaf-trailer-split-paragraphs-plan.md)
 - [live-usage-plan-interview](source/live-usage-plan-interview.md)
+- [local-gate-switches-plan](source/local-gate-switches-plan.md)
 - [local-ship-gate-plan](source/local-ship-gate-plan.md)
 - [log-guard-plan](source/log-guard-plan.md)
 - [m10-orchestrator-picks](source/m10-orchestrator-picks.md)
@@ -9525,6 +9540,7 @@
 - [note-01m76btsdks68s](note/note-01m76btsdks68s.md)
 - [note-01m76btstcnfv7](note/note-01m76btstcnfv7.md)
 - [note-01m78hd4w8mbj2](note/note-01m78hd4w8mbj2.md)
+- [note-01m78s7bvr15xf](note/note-01m78s7bvr15xf.md)
 - [note-scheduled-triggers-file](note/note-scheduled-triggers-file.md)
 
 ## Retired
@@ -9579,5 +9595,6 @@
 - capability run-private-gotmpdir `01M6WGXA5QZV54A91F061Y3KNQ` — Replaced by workflow-env: Rhiza's own workflows set GOTMPDIR to the run's temp folder; the product no longer sets it.
 - capability step-retry-vanished-go-work `01M6WGXA821QDFHM5T4K3G3P2Q` — Replaced by step-rerun-classified: the step runner reruns a failed step only when the failure classifier says transient; the go vanished-$WORK signature is gone.
 - capability watchdog-transient-failure `01M6WJ2CRTGK0ZMW94E2BA801H` — Replaced by watchdog-classifies-failures: the watchdog retries on the configured classifier's transient verdict; the hard-coded signature list is gone.
+- capability ship-gate-full-log `01M78FP45EF4RB94DP1JZ5W6T2` — Superseded by ship-gate-run-log (decision local-gate-repeated-named-flakes): one gate log per gate run in the run's directory, never overwritten, instead of rhiza/gate/<branch>.log replaced each run; the common-dir path stays only for a gate run outside a run.
 - actor claude-code-a463ece8 `01M6HYXRR6ZXYF68BAC8X0KEEQ` — Duplicate of actor claude-code-a463ece8 (node 01M6HV8Y05D3EMPSARA4H5VJ15) that landed on main from another branch while this run was building; the same session recorded itself twice
 - actor claude-code-83858632 `01M6KFM58RDZ5KSG59GP1005QZ` — Duplicate actor record: session claude-code-83858632 recorded itself in a verifier checkout (change set 01M6KFMJ) after already recording in the run worktree (01M6KE23); keep the first

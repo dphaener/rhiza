@@ -16,11 +16,13 @@ rhiza ship check records each CI run it settles, on a run's PR head or on main, 
 
 - decided-by [ci-unstable-gate-rules](../../../../../decision/ci-unstable-gate-rules.md)
 - decided-by [local-gate-trigger-identified-flakes](../../../../../decision/local-gate-trigger-identified-flakes.md)
+- decided-by [local-gate-repeated-named-flakes](../../../../../decision/local-gate-repeated-named-flakes.md)
 
 ### In
 
 - depends-on [ci-stability-state](ci-stability-state.md)
 - depends-on [flaky-test-bugs](../../daemon/daemon-watchdog/flaky-test-bugs.md)
+- depends-on [ci-flakes-name-tests](ci-flakes-name-tests.md)
 - verifies [ci-stability-record-verified](../../../../../evidence/ci-stability-record-verified.md)
 - verifies [ci-stability-record-qa-1](../../../../../evidence/ci-stability-record-qa-1.md)
 - verifies [pr-403-stop-using-ci-as-a-debugger](../../../../../evidence/pr-403-stop-using-ci-as-a-debugger.md)
