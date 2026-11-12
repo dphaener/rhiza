@@ -1,0 +1,63 @@
+{
+  "actor": "01M78EVFH435FXVBVPSX04BN85",
+  "after": [
+    "01M78F34J1P0YS8S61FAS2PR0Q"
+  ],
+  "at": "2026-11-12T18:07:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "inbox-stalled lost its hand edit of hook.at when session start's locked tab Update read the record before the unlocked rewrite and wrote it back after. Taking the same lock serialises the edit with every locked writer, now and later; waiting for the tab write only covers today's writers, and quarantine leaves the four scripts' checks unrun. This carries out the arbiter's ruling flaky-scripts-4-next-step (fix the timing dependence).",
+          "statement": "Testscripts that hand-edit a live run's session record make the edit through a testscript command that holds the session store's flock on .<id>.lock, the lock Store.Update takes, instead of an unlocked perl and mv; no script is quarantined"
+        },
+        "handle": "session-edits-under-lock",
+        "id": "01M78F38R9PH6BXX9STJEYBHTT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M78F38R9PH6BXX9STFQ3TKSM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78F38R9PH6BXX9STFQ3TKSM",
+        "id": "01M78F38RWDFM6R6C4Z604NXFF",
+        "link": "01M78F38RWDFM6R6C4Z4BP0BG5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78F2TEG8V0X15FQQX7CEMZB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "With a temporary delay injected inside session start's tab Update (between its read and its write, not committed), go test -trimpath ./cmd/rhiza -run 'TestScripts/inbox-stalled$' fails before the change and passes after it on 3 consecutive runs; without the delay, go test -trimpath ./cmd/rhiza -run 'TestScripts/(inbox-stalled|inbox-permission|run-status-stalled|daemon-notify-hook)$' -count=3 passes; no script under cmd/rhiza/testdata/script still rewrites .git/rhiza/sessions/*.json with an unlocked perl and mv; go test -trimpath ./internal/session/... passes if internal/session changed",
+          "statement": "cmd/rhiza's testscripts inbox-stalled, inbox-permission, run-status-stalled and daemon-notify-hook make every hand edit of a live run's session record under the session store's lock, through a testscript command registered in cmd/rhiza/main_test.go, so a concurrent locked writer (session start recording the tab, a hook report) can no longer drop the edit and flake the script"
+        },
+        "handle": "testscripts-edit-sessions-locked",
+        "id": "01M78F38SGXG1XXVX4VAD4152Q",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M78F38SGXG1XXVX4V8BKTX2K",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M78F38SGXG1XXVX4V8BKTX2K",
+        "id": "01M78F38T097HMJDZKNQB742GS",
+        "link": "01M78F38T097HMJDZKNN3BS9PZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78F38R9PH6BXX9STFQ3TKSM",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M78ETR0NZZX29FXHDTZRYPKS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78F38TFTMHC9XN6DCPSMRTY",
+  "type": "ops",
+  "v": 1
+}
