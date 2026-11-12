@@ -1,0 +1,79 @@
+{
+  "actor": "01M76ED4TF1BFCPTDFQJ6SY0N9",
+  "after": [
+    "01M76ECB9S2Q9QPWRAX5PCNNGV"
+  ],
+  "at": "2026-11-12T01:27:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "I want another feature request. claude code will read agents.md now, so let's make it agents.md. I also want a directory with agent docs, with some indexed instructions for agents. For instance, an orchestrator. You've been doing a great job, but often times you move a little fast and make decisions without consulting with me. I know this can be confusing at times, since I do sometimes ask for full autonomy, but that should only happen when asked for. This is purely for developers working on Rhiza and the agents that work on them. If this seems too big for a single feature, let's make it another milestone.",
+              "where": "2026-11-11 request, relayed in the record's intent"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Move to AGENTS.md: AGENTS.md becomes the one source; CLAUDE.md shrinks to a single @AGENTS.md import line",
+              "where": "plan interview, CLAUDE.md"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Orchestrator doc only: only agents/orchestrator.md carries the consult rule",
+              "where": "plan interview, consult rule"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "A Go test fails when an agents/*.md file is missing from the index or a relative link in AGENTS.md or agents/ is broken",
+              "where": "plan interview, checks"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Developing Rhiza, Run agents, Operating the VM",
+              "where": "plan interview, agents/ docs"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Prune them: delete each memory entry the docs now cover; personal-only facts stay",
+              "where": "plan interview, memory"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Three change sets; all planned now; the orchestrator prunes its memory after land",
+              "where": "plan interview, split"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Propose, don't start: when idle, the orchestrator picks the next high-value work and asks the owner with a recommendation; it starts work on its own only when the owner granted autonomy for that task or session. Queued bug requests still flow",
+              "where": "plan interview, idle rule"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "None of these: Nebari hands-off, the owner's Rex habits and priorities stay in personal memory",
+              "where": "plan interview, scope"
+            }
+          ],
+          "raw_sha256": "c0c76243f7652b7e0aa1e7861f61939b987bdf58d161230e2b675967f3bb000a",
+          "session": "9eeeaa0d-e0b8-40d8-b95a-01a1cce67858",
+          "summary": "Planned milestone 32 from the owner's request for AGENTS.md and an indexed agents/ directory of instructions for agents developing Rhiza. All picks were the planner's AskUserQuestion options. Decided: CLAUDE.md's content moves to AGENTS.md and CLAUDE.md shrinks to an @AGENTS.md import; the consult-before-deciding rule lives in agents/orchestrator.md only, not in AGENTS.md; a Go test keeps the agents/README.md index and relative links consistent; agents/ starts with orchestrator.md, developing.md, run-agents.md and vm.md; the orchestrator's personal memory entries those docs cover are pruned, by the orchestrator after each docs change set lands (not a built leaf); three change sets (AGENTS.md entry point; orchestrator doc; the other three role docs, both depending on the first), all planned now; when idle the orchestrator proposes the next high-value work with a recommendation instead of starting it, unless the owner granted autonomy, while bug requests still flow; Nebari hands-off, the owner's Rex habits and priorities stay in personal memory, not in the docs. Nothing left open.",
+          "title": "Milestone 32 plan: agent docs for Rhiza's own developers, with the owner"
+        },
+        "handle": "m32-agent-docs-plan",
+        "id": "01M76NVMK5983DAD0RYZ7STR1H",
+        "key": null,
+        "kind": "source",
+        "node": "01M76NVMK5983DAD0RYY0B0BVG",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76ECB9S2Q9QPWRAX3502XGY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76NVMM7RJB5D7AVSXDZMP8E",
+  "type": "ops",
+  "v": 1
+}

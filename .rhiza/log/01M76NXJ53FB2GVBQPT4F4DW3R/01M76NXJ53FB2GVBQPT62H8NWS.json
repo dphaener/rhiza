@@ -1,0 +1,18 @@
+{
+  "actor": "01M76ED4TF1BFCPTDFQJ6SY0N9",
+  "after": [],
+  "at": "2026-11-12T01:28:24Z",
+  "body": {
+    "intent": "agents/developing.md, agents/run-agents.md and agents/vm.md: the lessons for developing Rhiza, for run agents working on Rhiza, and for operating the VM",
+    "kind": "intention",
+    "sources": [
+      "01M76NVMK5983DAD0RYY0B0BVG"
+    ],
+    "title": "Role docs for Rhiza agents"
+  },
+  "change_set": "01M76NXJ53FB2GVBQPT4F4DW3R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76NXJ53FB2GVBQPT62H8NWS",
+  "type": "open",
+  "v": 2
+}

@@ -1,0 +1,116 @@
+{
+  "actor": "01M76ED4TF1BFCPTDFQJ6SY0N9",
+  "after": [
+    "01M76NWXV16NF94MBV6ZHCEE8E"
+  ],
+  "at": "2026-11-12T01:29:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test in cmd/rhiza reads CLAUDE.md and finds only the import line @AGENTS.md, and reads AGENTS.md and finds the sections Ignore the ~/code/.claude/rules files, Stack and shape, Bug requests, Commands, Tests and Binaries; go test -trimpath ./cmd/rhiza -run that test passes",
+          "statement": "AGENTS.md at the repo root holds the repo guidance CLAUDE.md held (ignore the ~/code rules, stack and shape, bug requests, commands, tests, binaries), and CLAUDE.md is only the line @AGENTS.md, so Claude Code and other agents read the same one file"
+        },
+        "handle": "agents-md-entry-point",
+        "id": "01M76NZQ9E4VVYH1CBT2731WD9",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M76NZQ9E4VVYH1CBT1ZDACE7",
+        "op": "node.create",
+        "parent": "01M76NWAEW076CHS77X90T6X04"
+      },
+      {
+        "fields": {
+          "acceptance": "The consistency test (agent-docs-consistent) passes on the repo: agents/README.md exists, AGENTS.md links it, and every agents/*.md other than README.md is listed in it",
+          "statement": "agents/README.md indexes every doc under agents/, one line each saying which agent reads it and when, and AGENTS.md links to it near its top as where role instructions live"
+        },
+        "handle": "agents-docs-index",
+        "id": "01M76NZQA1943A46ZY976K6T10",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M76NZQA1943A46ZY93ZKTZJX",
+        "op": "node.create",
+        "parent": "01M76NWAEW076CHS77X90T6X04"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run <the test> passes on the repo, and its table cases fail on a fixture with an unindexed agents/ doc, one without the AGENTS.md link and one with a broken relative link",
+          "statement": "A Go test fails when an agents/*.md file is missing from agents/README.md's index, when AGENTS.md does not link agents/README.md, or when a relative link in AGENTS.md or under agents/ points at a file that does not exist"
+        },
+        "handle": "agent-docs-consistent",
+        "id": "01M76NZQB0E9EP3387YYMX0R6M",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M76NZQB0E9EP3387YTWEW6MC",
+        "op": "node.create",
+        "parent": "01M76NWAEW076CHS77X90T6X04"
+      },
+      {
+        "base": "01M6M0FK7XV5HMP0A70F4V4BS2",
+        "handle": null,
+        "id": "01M76NZQBV08C74BWEM6EGW3Q2",
+        "node": "01M6M0FK7XV5HMP0A70DZFF188",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A test reads AGENTS.md and finds go test -trimpath, a TestScripts/<name> run and make self-check as the agents' scoped commands, and the rule that agents in runs never run make check, make test or a bare go test ./...; it no longer finds the unqualified line 'Run `make check` before calling any change done.'; that test passes with go test -trimpath on its package",
+          "statement": "This repo's AGENTS.md tells agents in runs to test only what their change touches, with go test -trimpath on the touched packages, the affected cmd/rhiza testscripts run by name, and make self-check, and never make check, make test or a bare go test ./..., since the PR's GitHub CI runs make check before every merge"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6YCRMA48VMM2KTZ2QZXPZHV",
+        "handle": null,
+        "id": "01M76NZQCFT6X0GC0F3FK0NJWR",
+        "node": "01M6YCRMA48VMM2KTZ2Q92EY10",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestClaudeMDScopedTests finds AGENTS.md's scoped-tests rule unchanged plus the unstable-CI reproduce-locally rule; go test -trimpath ./internal/guide -run 'TestBuildText|TestReviewText' finds the same two rules in the rhiza-build and rhiza-review guide texts",
+          "statement": "This repo's AGENTS.md and the rhiza-build and rhiza-review guide topics keep scoped tests as the default and add that, while CI is unstable or a red is not explained by the change, an agent reproduces the failing test locally and pushes only after it and the touched packages pass, never pushing or rerunning CI to see"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6ZCM35BZXJ8X5SQ97VCVNKZ",
+        "handle": null,
+        "id": "01M76NZQD5WKTMCVK7C8XGRKZN",
+        "node": "01M6ZCM35BZXJ8X5SQ96639XZ4",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestBuildText|TestReviewText' finds the delay-injection rule (inject a delay at the suspected race; never busy loops or parallel stress on the host) in both the build and review topics beside the unstable-CI rule; go test -trimpath ./cmd/rhiza -run TestClaudeMDScopedTests finds the same rule in AGENTS.md beside the unstable-CI reproduce-locally rule, with that rule unchanged",
+          "statement": "The rhiza-build and rhiza-review guide topics (so the rhiza-build and rhiza-review skills) and this repo's AGENTS.md tell builders, verifiers, checks and fixers to reproduce a timing flake by injecting a delay at the suspected race, and never by busy loops, CPU stress or parallel stress runs on the shared host"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M686VFHDHYAJP8B10CY0HH00",
+        "handle": null,
+        "id": "01M76NZQDK7486EZFFQ3W96Q9S",
+        "node": "01M686VFHDHYAJP8B10B23TMSC",
+        "op": "node.update",
+        "set": {
+          "acceptance": "The same test asserts make help's output names update, and a test reads AGENTS.md and finds make update in its commands",
+          "statement": "make help and AGENTS.md's command list name make update"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M75RK1M7WBHR4ND59MSB94TJ",
+        "handle": null,
+        "id": "01M76NZQE2TY3MMF916N67AYBR",
+        "node": "01M75RK1M7WBHR4ND59KFBG8JT",
+        "op": "node.update",
+        "set": {
+          "acceptance": "AGENTS.md names rhiza request --kind bug, .rhiza/dispatch.toml, plan-bug and bugfix, says both run autonomous with no owner step and that bugs do not come from GitHub issues; every command it names exists (rhiza request --help, rhiza workflow describe plan-bug and bugfix succeed)",
+          "statement": "AGENTS.md has a short section on how a bug reaches and moves through this repo: queued as rhiza request --kind bug (CLI, the Request app, the orchestrator, the watchdog), planned by plan-bug and shipped by bugfix with no owner step, and never from GitHub issues"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76NWXV16NF94MBV6WYESRM0",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76NZQEVQXW57AM6N73E2RD0",
+  "type": "ops",
+  "v": 1
+}
