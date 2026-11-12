@@ -1,0 +1,41 @@
+{
+  "actor": "01M77BJBTJPW6SHMD17YQ6P6AJ",
+  "after": [
+    "01M77BC2E290TN3RF04GE1K9NH"
+  ],
+  "at": "2026-11-12T07:54:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "internal/rootcfg and daemon-settings tests show the old key and self_update_project reported with the autoUpdate hint.",
+          "statement": "rhiza.daemon.selfUpdate and rhiza.toml's self_update_project are removed: a root that still sets either keeps loading, selfUpdate = true is read as rhiza.daemon.autoUpdate = main (unless autoUpdate is set), the daemon logs a message naming rhiza.daemon.autoUpdate, and the next write of rhiza.toml drops the old keys; daemon set of the old key is refused with that message."
+        },
+        "handle": "self-update-settings-removed",
+        "id": "01M7642MPQYFWZPE8HSGZNBD6Q",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M7642MPQYFWZPE8HSGANKMTJ",
+        "op": "node.create",
+        "parent": "01M6CS1WF6WPPJTPC8X1DHYGD8"
+      },
+      {
+        "base": "01M6RN871GNRWZ6FJQACFF0MVE",
+        "handle": null,
+        "id": "01M77C0DFY57AY5KV7NSWAT978",
+        "node": "01M6RN871GNRWZ6FJQAAHWT4PY",
+        "op": "node.update",
+        "set": {
+          "statement": "On this VM ~/code is the root with rhiza and nebari registered, rhiza-root.service runs the root daemon with rhiza.daemon.autoUpdate = main (carried over from the removed self_update_project and rhiza.daemon.selfUpdate = true), rhiza-rhiza.service is uninstalled, and the rhiza project's machine settings moved from its git config into rhiza.toml."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M763Z16T0ZGQMY1EC2Y81V0K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77C0DH773GEBS8Z4QE8C7V7",
+  "type": "ops",
+  "v": 1
+}

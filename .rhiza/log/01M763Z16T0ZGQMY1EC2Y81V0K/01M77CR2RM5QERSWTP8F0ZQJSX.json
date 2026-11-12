@@ -1,0 +1,86 @@
+{
+  "actor": "01M77CDYMC43S2036T8056DMZ8",
+  "after": [
+    "01M77CB2NKDVDZ0FR1WWRT4MBA"
+  ],
+  "at": "2026-11-12T08:07:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at 42361ffc9, built rhiza in a scratch root (own HOME, fake make on PATH) whose rhiza.toml has the VM's shape: self_update_project = \"rhiza\" and [daemon] rhiza.daemon.selfUpdate = \"true\". project ls, daemon settings and health exit 0; daemon settings shows rhiza.daemon.autoUpdate = main (rhiza.toml, machine). rhiza daemon starts, logs both old keys as removed (selfUpdate read as autoUpdate = main), and after origin/main moved it fast-forwarded the checkout and ran make update. rhiza daemon set rhiza.daemon.permissionMode acceptEdits rewrote rhiza.toml without either old key and with autoUpdate = main, and wrote no git config. A git config rhiza.daemon.selfUpdate is logged as removed and ignored at daemon start. go test ./internal/rootcfg passes."
+        },
+        "handle": "self-update-settings-removed-qa-2",
+        "id": "01M77CR26TSWAGJ0PQ8RQZBFHZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77CR26TSWAGJ0PQ8RKTTBZQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77CR26TSWAGJ0PQ8RKTTBZQ",
+        "id": "01M77CR2A62JH4R3PKJ35TPRMJ",
+        "link": "01M77CR2A62JH4R3PKJ33RKYE4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MPQYFWZPE8HSGANKMTJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at 42361ffc9, built rhiza with a fake make in a scratch root whose registered project has go.mod module github.com/dphaener/rhiza and a bare origin. With autoUpdate = main, after a new commit was pushed to origin/main, rhiza daemon fast-forwarded the checkout to it and ran make update there. With off, a new origin commit was neither merged nor followed by make. With main and the module renamed, the daemon logged 'auto-update: no registered project is Rhiza's source checkout; nothing to update' and ran nothing. daemon set rhiza.daemon.autoUpdate latest exits 2 ('must be off or main'). A fresh root shows autoUpdate = off (default, machine). go test ./internal/daemon, ./internal/api -run Setting|SelfUpdate|AutoUpdate and the daemon-settings testscript pass."
+        },
+        "handle": "daemon-auto-update-qa-2",
+        "id": "01M77CR2CX94432ZSX4H6B8T57",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77CR2CX94432ZSX4G8GPQ46",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77CR2CX94432ZSX4G8GPQ46",
+        "id": "01M77CR2GZT7JT856R34DF2K03",
+        "link": "01M77CR2GZT7JT856R31C032TB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MMAZSKZD27543JQ79D8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at 42361ffc9: the built rhiza docs --out into a copy of docs/reference gives no diff; config.md has rhiza.daemon.autoUpdate; docs/runs-and-daemon.md names autoUpdate with off and main; no selfUpdate or self_update_project left in docs/runs-and-daemon.md, docs/reference/config.md or README.md. go test -trimpath ./internal/doclinks passes."
+        },
+        "handle": "auto-update-documented-qa-2",
+        "id": "01M77CR2JK7YBMYTSEMR0HR2E7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77CR2JK7YBMYTSEMNGNM9JK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77CR2JK7YBMYTSEMNGNM9JK",
+        "id": "01M77CR2PANW328V6XB1D0GMAZ",
+        "link": "01M77CR2PANW328V6XAYF5W8PT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MRZ4256B2ECYVG4D4SH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z16T0ZGQMY1EC2Y81V0K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77CR2RM5QERSWTP8F0ZQJSX",
+  "type": "ops",
+  "v": 1
+}

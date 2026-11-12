@@ -32,7 +32,7 @@ verified
 - verifies [root-daemon-settings-scope](../capability/rhiza/orchestration/daemon/root-daemon-settings-scope.md)
 - verifies [root-daemon-usage-governor](../capability/rhiza/orchestration/usage-governor/root-daemon-usage-governor.md)
 - verifies [root-daemon-service](../capability/rhiza/orchestration/daemon/root-daemon-service.md)
-- verifies [root-daemon-self-update](../capability/rhiza/orchestration/daemon/root-daemon-self-update.md)
+- verifies root-daemon-self-update (retired)
 - verifies [root-daemon-rex-session](../capability/rhiza/orchestration/daemon/root-daemon-rex-session.md)
 - verifies [daemon-settings](../capability/rhiza/orchestration/daemon/daemon-settings.md)
 - verifies [usage-settings](../capability/rhiza/orchestration/usage-governor/usage-settings.md)

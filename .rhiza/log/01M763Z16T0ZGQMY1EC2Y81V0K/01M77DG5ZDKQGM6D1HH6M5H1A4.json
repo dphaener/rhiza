@@ -1,0 +1,83 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M77CR2RM5QERSWTP8F0ZQJSX"
+  ],
+  "at": "2026-11-12T08:20:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "a5fd5a12f0d9701e6fbb89a770a6afc4faf2257d",
+          "pr": "https://github.com/dphaener/rhiza/pull/473",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #473 (https://github.com/dphaener/rhiza/pull/473) passed CI at a5fd5a1",
+          "status": "verified"
+        },
+        "handle": "pr-473-auto-update-setting",
+        "id": "01M77DG5R60EHW60E33X440FNH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77DG5R60EHW60E33SHR39QB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77DG5R60EHW60E33SHR39QB",
+        "id": "01M77DG5RWASEWH7N964NXZ7NA",
+        "link": "01M77DG5RWASEWH7N960SGVE37",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MMAZSKZD27543JQ79D8",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M77DG5R60EHW60E33SHR39QB",
+        "id": "01M77DG5SGPE1HPW87G59HGGD6",
+        "link": "01M77DG5SGPE1HPW87G215NAZT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MPQYFWZPE8HSGANKMTJ",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M77DG5R60EHW60E33SHR39QB",
+        "id": "01M77DG5TMFAWTCADJQPVZCGEH",
+        "link": "01M77DG5TMFAWTCADJQN8YR2JA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MRZ4256B2ECYVG4D4SH",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M77DG5R60EHW60E33SHR39QB",
+        "id": "01M77DG5VMCQTZ5YWB1ZB27JH1",
+        "link": "01M77DG5VMCQTZ5YWB1Z4AN8N2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN871GNRWZ6FJQAAHWT4PY",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M77DG5R60EHW60E33SHR39QB",
+        "id": "01M77DG5WN0CFHNSVY0SXK3945",
+        "link": "01M77DG5WN0CFHNSVY0RD34FQR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6RN85C17S5VE1A6SNZAXK89",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z16T0ZGQMY1EC2Y81V0K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77DG5ZDKQGM6D1HH6M5H1A4",
+  "type": "ops",
+  "v": 1
+}

@@ -28,7 +28,7 @@ One root daemon. The assistant's option, picked by the owner.
 - decided-by [root-daemon-polls-projects](../capability/rhiza/orchestration/daemon/root-daemon-polls-projects.md)
 - decided-by [root-daemon-usage-governor](../capability/rhiza/orchestration/usage-governor/root-daemon-usage-governor.md)
 - decided-by [root-daemon-service](../capability/rhiza/orchestration/daemon/root-daemon-service.md)
-- decided-by [root-daemon-self-update](../capability/rhiza/orchestration/daemon/root-daemon-self-update.md)
+- decided-by root-daemon-self-update (retired)
 - decided-by [inbox-across-projects](../capability/rhiza/orchestration/inbox-across-projects.md)
 - decided-by [roadmap-across-projects](../capability/rhiza/orchestration/roadmap-across-projects.md)
 - decided-by [health-across-projects](../capability/rhiza/orchestration/health-across-projects.md)

@@ -1,0 +1,40 @@
+{
+  "actor": "01M77C9AK08FC42HEQKDBT5ZBY",
+  "after": [
+    "01M77CA189Z4B6FRKEF9TF60E1"
+  ],
+  "at": "2026-11-12T08:00:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2, at cd74e6466: read the diff (internal/daemon/selfupdate.go RhizaCheckout by go.mod module path, internal/api/daemon.go autoUpdate wiring with the once-only none-registered log, daemon_settings.go autoUpdate off|main default off). Ran go test -trimpath -count=1 ./internal/daemon/... ./internal/rootcfg/... (ok); go test ./internal/api -run 'AutoUpdate|SelfUpdate|RhizaCheckout|DaemonSet|Settings' -v: TestDaemonAutoUpdateSetting PASS, with fake git and make covering unset and off (nothing run), main with a Rhiza checkout (git fetch origin main, git merge --ff-only, make update once over two ticks) and main with none (logged, nothing run); TestRhizaCheckoutFindsModule passes in internal/daemon. go test ./cmd/rhiza -run 'TestScripts/(daemon-settings|describe-golden)$' ok; daemon-settings asserts rhiza.daemon.autoUpdate = off (default, machine). The off/main/none cases live in internal/api rather than internal/daemon, as the compliance check noted (minor); the behaviour the acceptance names is covered."
+        },
+        "handle": "daemon-auto-update-verified-2",
+        "id": "01M77CB2H6E56MB9WXG8JK4GBE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77CB2H6E56MB9WXG7F53WVW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77CB2H6E56MB9WXG7F53WVW",
+        "id": "01M77CB2KQSCA6WDJFN34QAYQH",
+        "link": "01M77CB2KQSCA6WDJFN2BDF4XM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MMAZSKZD27543JQ79D8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z16T0ZGQMY1EC2Y81V0K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77CB2NKDVDZ0FR1WWRT4MBA",
+  "type": "ops",
+  "v": 1
+}

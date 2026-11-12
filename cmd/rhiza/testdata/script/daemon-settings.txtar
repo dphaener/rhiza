@@ -29,6 +29,7 @@ exec rhiza accept --reason ok
 exec rhiza daemon settings
 stdout 'rhiza.daemon.paused = false \(default, (machine|project)\)'
 stdout 'rhiza.daemon.maxRuns = 2 \(default, (machine|project)\)'
+stdout 'rhiza.daemon.autoUpdate = off \(default, machine\)'
 stdout 'rhiza.daemon.minFree = 10G \(default, (machine|project)\)'
 stdout 'rhiza.daemon.permissionMode = "" \(default, (machine|project)\)'
 stdout 'rhiza.web.host = 127.0.0.1 \(default, (machine|project)\)'

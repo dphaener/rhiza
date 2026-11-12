@@ -8,7 +8,7 @@ On the VM: rhiza project ls shows rhiza and nebari with nebari's initialised sta
 
 ## statement
 
-On this VM ~/code is the root with rhiza and nebari registered (rhiza as self_update_project), rhiza-root.service runs the root daemon, rhiza-rhiza.service is uninstalled, and the rhiza project's machine settings moved from its git config into rhiza.toml.
+On this VM ~/code is the root with rhiza and nebari registered, rhiza-root.service runs the root daemon with rhiza.daemon.autoUpdate = main (carried over from the removed self_update_project and rhiza.daemon.selfUpdate = true), rhiza-rhiza.service is uninstalled, and the rhiza project's machine settings moved from its git config into rhiza.toml.
 
 ## Links
 
@@ -23,7 +23,9 @@ On this VM ~/code is the root with rhiza and nebari registered (rhiza as self_up
 - verifies [vm-root-installed-verified](../../../../evidence/vm-root-installed-verified.md)
 - verifies [vm-root-installed-qa-1](../../../../evidence/vm-root-installed-qa-1.md)
 - verifies [pr-351-this-vm-on-one-root](../../../../evidence/pr-351-this-vm-on-one-root.md)
+- verifies [pr-473-auto-update-setting](../../../../evidence/pr-473-auto-update-setting.md)
 
 ## History
 
 - `01M6RN474B5EXMX8NYHE7F62RV` This VM on one root: rhiza and nebari registered under one root run by one root daemon service, replacing rhiza-rhiza.service
+- `01M763Z16T0ZGQMY1EC2Y81V0K` Auto-update setting: rhiza.daemon.selfUpdate becomes rhiza.daemon.autoUpdate with values off (default) and main (follow a registered Rhiza source checkout and run make update, as self-update does today); rhiza.toml's self_update_project is removed; the setting is in daemon settings, the generated reference and the user docs.

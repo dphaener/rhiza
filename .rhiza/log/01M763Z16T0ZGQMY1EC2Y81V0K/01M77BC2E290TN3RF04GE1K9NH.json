@@ -1,0 +1,86 @@
+{
+  "actor": "01M77AT5VYAB12S6QJXWNH7FR7",
+  "after": [
+    "01M77APK5EMSRZ62EE55JPWA6P"
+  ],
+  "at": "2026-11-12T07:43:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at ce36f205e with a -trimpath build in a scratch root (HOME and root outside ~/code, port off): rhiza daemon settings shows rhiza.daemon.autoUpdate = off (default, machine); daemon set takes off and main and refuses latest and true (exit 2). Ran the real daemon loop (timeout -s INT 25) with a registered project whose go.mod declares github.com/dphaener/rhiza, origin/main one commit ahead and a Makefile whose update target touches a marker: with main it fast-forwarded the checkout and logged 'self-update: updated to 52b44f898' and the marker appeared; with off and origin ahead again, nothing ran; with main and that project unregistered it logged 'auto-update: no registered project is Rhiza's source checkout; nothing to update' once and ran no make."
+        },
+        "handle": "daemon-auto-update-qa-1",
+        "id": "01M77BC26QN0WH9YNF2HKC6CWR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77BC26QN0WH9YNF2GFV3HEE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77BC26QN0WH9YNF2GFV3HEE",
+        "id": "01M77BC28CZ1PW9VMFS46FZ2ZF",
+        "link": "01M77BC28CZ1PW9VMFS0BG5FVF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MMAZSKZD27543JQ79D8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at ce36f205e: the built rhiza docs --out into a copy of docs/reference gives no diff; config.md has rhiza.daemon.autoUpdate; docs/runs-and-daemon.md names autoUpdate with off and main and latest/release as coming with release channels; no selfUpdate or self_update_project left in docs/ or README.md. go test -trimpath ./internal/doclinks passes."
+        },
+        "handle": "auto-update-documented-qa-1",
+        "id": "01M77BC29T1M645H5HEEGQC3DW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77BC29T1M645H5HECSBGF7V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77BC29T1M645H5HECSBGF7V",
+        "id": "01M77BC2B1KCM9FYVVE5AHT1CE",
+        "link": "01M77BC2B1KCM9FYVVE1E4548P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MRZ4256B2ECYVG4D4SH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at ce36f205e in a scratch root: with self_update_project in rhiza.toml, or rhiza.daemon.selfUpdate under [daemon], or in git config, daemon settings exits 2 naming the key and the autoUpdate hint; daemon set rhiza.daemon.selfUpdate exits 2 with the hint. The reporting is as accepted, but it is fatal: project ls, root show and the daemon itself (daemon --once, exit 1) refuse to run on such a toml (see the QA finding)."
+        },
+        "handle": "self-update-settings-removed-qa-1",
+        "id": "01M77BC2BY9B2XBRDCGTHD9XQN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77BC2BY9B2XBRDCGQHT9ST4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77BC2BY9B2XBRDCGQHT9ST4",
+        "id": "01M77BC2CYKNC0DPJ9ZFZ5BPQR",
+        "link": "01M77BC2CYKNC0DPJ9ZDHZEQH5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MPQYFWZPE8HSGANKMTJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z16T0ZGQMY1EC2Y81V0K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77BC2E290TN3RF04GE1K9NH",
+  "type": "ops",
+  "v": 1
+}
