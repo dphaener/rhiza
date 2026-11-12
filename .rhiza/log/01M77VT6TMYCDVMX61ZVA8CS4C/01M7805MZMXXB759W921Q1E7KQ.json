@@ -1,0 +1,63 @@
+{
+  "actor": "01M7800G2GBP36MG5Y7Y3MC07N",
+  "after": [
+    "01M77ZY3QF2A69058N5K1K28CF"
+  ],
+  "at": "2026-11-12T13:46:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at c3bc52840 with a binary built from the branch, real ~/.cache. In a scratch Rhiza root and repo, a workflow with [env] GOTMPDIR = \"{run_tmp}\": the step saw GOTMPDIR=~/.cache/rhiza/run-tmp/<run id>, present during the step, git rev-parse there said 'not a git repository', go env GOTMPDIR agreed, nothing under the repo's .git/rhiza/runs/*/tmp; after the run its folder was gone and a sibling folder and the parent stayed. A second workflow step ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(ci-install|workflow-env)$' with GOTMPDIR={run_tmp}: ok, and git status of the checkout showed no new file (no .github/workflows/rhiza.yml). A third run was killed -9 mid-step, then rhiza run abandon removed only its own run-tmp folder, keeping the sibling and the run-tmp parent. Scoped tests with GOTMPDIR in the scratchpad pass: TestScripts/workflow-env, ./internal/run/..., ./internal/api -run 'TestSessionRunWorkflowEnv$|Abandon|GoTmp'; the host's ~/.cache/rhiza/run-tmp was empty before and after."
+        },
+        "handle": "run-tmp-outside-repo-qa-2",
+        "id": "01M7805MWNRKYY3DCJS6YDBMPF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7805MWNRKYY3DCJS629QT52",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7805MWNRKYY3DCJS629QT52",
+        "id": "01M7805MX9BB785GH8FAGW5HM2",
+        "link": "01M7805MX9BB785GH8F789N3VW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77W0Z8V8WBNPS6AZAG67R86",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at c3bc52840: with this run's own GOTMPDIR (~/code/rhiza/.git/rhiza/runs/<run>/tmp), go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/ci-install$' fails before the script runs ('inside a git dir: set GOTMPDIR outside the repository') and ~/code/rhiza/.github/workflows holds no rhiza.yml; with GOTMPDIR in the session scratchpad, TestCheckWorkOutsideRepo and TestScripts/ci-install pass."
+        },
+        "handle": "testscripts-refuse-work-in-repo-qa-2",
+        "id": "01M7805MXWNR7HPY94HG4EQFBY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7805MXWNR7HPY94HFRXP106",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7805MXWNR7HPY94HFRXP106",
+        "id": "01M7805MYKVBD3XM9ZXR88NSJ5",
+        "link": "01M7805MYKVBD3XM9ZXPXWPAGH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77W0Z9YDVWCQT2RSXGD8W91",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77VT6TMYCDVMX61ZVA8CS4C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7805MZMXXB759W921Q1E7KQ",
+  "type": "ops",
+  "v": 1
+}

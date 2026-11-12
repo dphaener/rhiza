@@ -1,0 +1,40 @@
+{
+  "actor": "01M77WEFZD5P3W77JKS780TJFW",
+  "after": [
+    "01M77W636ZJSE3KC4E5XZ6AZ62"
+  ],
+  "at": "2026-11-12T12:42:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 561ecd015 I read the diff: setup() in cmd/rhiza/main_test.go now calls checkWorkOutsideRepo(env.WorkDir) before anything else; it resolves symlinks and walks ancestors, failing on a .git path element, an ancestor holding .git (work tree), or a bare-repo dir (HEAD+objects+refs), with errors naming the path and 'set GOTMPDIR outside the repository'. go test -trimpath ./cmd/rhiza -run 'TestCheckWorkOutsideRepo|TestScripts/ci-install' -v -count=1 with GOTMPDIR in my scratchpad: TestCheckWorkOutsideRepo/work_tree, /git_dir, /bare_repo (errors containing GOTMPDIR and the path) and /outside (nil) PASS, TestScripts/ci-install PASS. Run with the run's own GOTMPDIR under ~/code/rhiza/.git/rhiza/runs/.../tmp, ci-install fails before running with 'testscript $WORK $WORK is inside a git dir: set GOTMPDIR outside the repository', so the guard fires in the real case. Note: testscript's log rewrites the work dir to $WORK, so the printed path reads '$WORK' rather than the absolute path; the error itself carries the real path."
+        },
+        "handle": "testscripts-refuse-work-in-repo-verified",
+        "id": "01M77WFTZ5Z6DVDNA3XJMRVJSS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77WFTZ4PB4SC11STRPKDQA6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77WFTZ4PB4SC11STRPKDQA6",
+        "id": "01M77WFV07GT8FZPCX074FG5Z0",
+        "link": "01M77WFV07GT8FZPCX05XMP59W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77W0Z9YDVWCQT2RSXGD8W91",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77VT6TMYCDVMX61ZVA8CS4C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77WFV1P90T3PC5Z5A1ZZ485",
+  "type": "ops",
+  "v": 1
+}
