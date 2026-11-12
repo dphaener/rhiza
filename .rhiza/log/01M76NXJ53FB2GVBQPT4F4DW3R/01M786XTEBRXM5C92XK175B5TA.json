@@ -1,0 +1,40 @@
+{
+  "actor": "01M786WPN396RMWA6F8SV0DJKS",
+  "after": [
+    "01M786VH8DV0FP4TXEEKXJPFR0"
+  ],
+  "at": "2026-11-12T15:44:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 43b42aef3 ran go test -trimpath -count=1 ./cmd/rhiza -run 'TestRunAgentsDocLessons|TestAgentDocsConsistent': TestRunAgentsDocLessons, TestAgentDocsConsistent and TestAgentDocsConsistentFixtures all PASS. Read the diff: agents/run-agents.md is listed in agents/README.md and covers trailers in one paragraph with Co-Authored-By, a run change set that already landed, an empty commit for findings HEAD already fixes, merging origin/main rather than rebase and force-push, and updating pushed in .git/rhiza/ship/<cs>.json after a hand push. The test checks for each of these lessons. The commit's trailers parse as one block (git interpret-trailers --parse)."
+        },
+        "handle": "run-agents-doc-verified",
+        "id": "01M786XTD016EP86ATF3RPDNT3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M786XTD016EP86ATF32QK6K9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M786XTD016EP86ATF32QK6K9",
+        "id": "01M786XTDP6YNAJM7FQK89XS78",
+        "link": "01M786XTDP6YNAJM7FQGN1HN13",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76P0B7W8M843KJ8BFHR6C80",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76NXJ53FB2GVBQPT4F4DW3R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M786XTEBRXM5C92XK175B5TA",
+  "type": "ops",
+  "v": 1
+}
