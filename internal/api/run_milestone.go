@@ -79,6 +79,11 @@ func runRunMilestoneCheck(ctx *Ctx, _ any) (any, error) {
 	}
 	resp := RunMilestoneCheckResponse{Run: rr.id, ChangeSets: []string{}}
 	var bad []string
+	var badNum []string
+	var landed Model
+	if rr.state.MilestoneNumber > 0 {
+		landed = newModel(w.diskLog(), id.ID{})
+	}
 	for _, c := range plan {
 		if !inFlight[c.ID] {
 			continue // landed already: it is in no roadmap
@@ -90,6 +95,9 @@ func runRunMilestoneCheck(ctx *Ctx, _ any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
+		if landed != nil {
+			badNum = append(badNum, newMilestoneNumberProblems(w.model(c.ID), landed, rr.state.MilestoneNumber)...)
+		}
 		ok := true
 		switch {
 		case !want.IsZero():
@@ -100,6 +108,14 @@ func runRunMilestoneCheck(ctx *Ctx, _ any) (any, error) {
 		if !ok {
 			bad = append(bad, fmt.Sprintf("- %s (%s)", c.ID, c.Open.DisplayTitle()))
 		}
+	}
+	if len(badNum) > 0 {
+		n := rr.state.MilestoneNumber
+		slices.Sort(badNum)
+		badNum = slices.Compact(badNum)
+		return nil, Errorf("%s: the plan of run %s does not use the milestone number %d the run reserved:\n%s\n"+
+			"Fix: name the new milestone intent milestone-%d with field milestone=%d and prefix its done points' handles m%d- (RHIZA_MILESTONE_NUMBER is %d)",
+			cmd, rr.id, n, strings.Join(badNum, "\n"), n, n, n, n).WithNext("rhiza run status " + rr.id)
 	}
 	if len(bad) > 0 {
 		if !want.IsZero() {
@@ -176,4 +192,43 @@ func reserveMilestoneNumber(ctx *Ctx, rs *run.Store) (int, error) {
 		}
 	}
 	return top + 1, nil
+}
+
+// newMilestoneNumberProblems lists, one line each, how the new milestone
+// intents of m (those landed lacks that carry a milestone field) and their
+// done points break the reserved number n: the handle must be milestone-n,
+// the milestone field n, and each done point's handle prefixed mn-.
+func newMilestoneNumberProblems(m, landed Model, n int) []string {
+	var out []string
+	var walk func(parent id.ID, under *Node)
+	walk = func(parent id.ID, under *Node) {
+		for _, c := range m.Children(op.KindIntent, parent) {
+			if c.Retired {
+				continue
+			}
+			if under != nil {
+				if want := fmt.Sprintf("m%d-", n); !strings.HasPrefix(c.Handle, want) {
+					out = append(out, fmt.Sprintf("- done point %q of milestone %q lacks the %q prefix (expected milestone number %d)", c.Handle, under.Handle, want, n))
+				}
+				walk(c.ID, under)
+				continue
+			}
+			if _, ok := landed.Node(c.ID); ok || !planMilestoneField(c.Fields) {
+				walk(c.ID, nil)
+				continue
+			}
+			in := planInputs{milestoneNums: map[id.ID]float64{}}
+			planNoteMilestoneNum(in, c.ID, c.Fields)
+			if h := fmt.Sprintf("milestone-%d", n); c.Handle != h {
+				out = append(out, fmt.Sprintf("- milestone intent %q has the wrong handle (expected milestone number %d: %q)", c.Handle, n, h))
+			}
+			if f, ok := in.milestoneNums[c.ID]; !ok || int(f) != n || f != float64(int(f)) {
+				out = append(out, fmt.Sprintf("- milestone intent %q has the wrong milestone field (expected milestone number %d)", c.Handle, n))
+			}
+			cc := c
+			walk(c.ID, &cc)
+		}
+	}
+	walk(id.ID{}, nil)
+	return out
 }

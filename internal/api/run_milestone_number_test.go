@@ -88,3 +88,70 @@ func TestLaunchEnvMilestoneNumber(t *testing.T) {
 		}
 	}
 }
+
+// run milestone-check on a plan run that reserved a milestone number passes
+// a new milestone intent using it (handle milestone-N, field milestone=N,
+// done points prefixed mN-) and fails one with the wrong handle, the wrong
+// field or an unprefixed done point, naming the intent and the number.
+func TestRunMilestoneCheckEnforcesNumber(t *testing.T) {
+	ctx, _, _, _ := openPRFixture(t, false)
+	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
+	store := run.NewStore(run.Dir(filepath.Join(ctx.Root, ".git")))
+	n := 0
+	start := func(adds ...string) {
+		t.Helper()
+		n++
+		cs := newChange(t, ctx, `{"intent":"Plan `+string(rune('a'+n))+`","title":"Plan"}`).ChangeSet.String()
+		runID := "RN" + string(rune('A'+n))
+		if err := store.Create(runID, run.Entry{
+			Type: run.TypeStarted, Step: "milestone-check", At: time.Date(2026, 11, 12, 12, 0, 0, 0, time.UTC),
+			Started: &run.Started{Workflow: "plan-milestone", Change: cs, Title: "Plan", MilestoneNumber: 7},
+		}); err != nil {
+			t.Fatal(err)
+		}
+		ctx.Getenv = func(k string) string {
+			if k == envRun {
+				return runID
+			}
+			return ""
+		}
+		for _, a := range adds {
+			if _, err := callOp(t, ctx, "add", a); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	check := func() error {
+		_, err := callOp(t, ctx, "run.milestone-check", `{}`)
+		return err
+	}
+	wantFail := func(what, intent string) {
+		t.Helper()
+		err := check()
+		if err == nil {
+			t.Fatalf("%s: passed; want a failure", what)
+		}
+		for _, s := range []string{intent, "milestone number 7", "Fix:"} {
+			if !strings.Contains(err.Error(), s) {
+				t.Errorf("%s: error %q lacks %q", what, err, s)
+			}
+		}
+	}
+
+	start(
+		`{"kind":"intent","handle":"milestone-7","fields":["statement=Seven","milestone=7"]}`,
+		`{"kind":"intent","handle":"m7-first","parent":"milestone-7","fields":["statement=A done point"]}`,
+	)
+	if err := check(); err != nil {
+		t.Errorf("reserved number used: %v", err)
+	}
+	start(`{"kind":"intent","handle":"milestone-8","fields":["statement=Eight","milestone=7"]}`)
+	wantFail("wrong handle", "milestone-8")
+	start(`{"kind":"intent","handle":"milestone-7","fields":["statement=Seven","milestone=8"]}`)
+	wantFail("wrong milestone field", "milestone-7")
+	start(
+		`{"kind":"intent","handle":"milestone-7","fields":["statement=Seven","milestone=7"]}`,
+		`{"kind":"intent","handle":"first","parent":"milestone-7","fields":["statement=A done point"]}`,
+	)
+	wantFail("done point without the prefix", `"first"`)
+}
