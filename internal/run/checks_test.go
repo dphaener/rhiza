@@ -748,9 +748,49 @@ func TestCriticDowngradeEndsFix(t *testing.T) {
 	if want := []string{"alpha check 1", "beta check 1", "gamma check 1", "alpha critic 1"}; !reflect.DeepEqual(roles(r), want) {
 		t.Errorf("started %v, want %v (no fixer)", roles(r), want)
 	}
+	if len(r.fixSpecs) != 0 {
+		t.Errorf("change-set fixer sessions = %+v, want none", r.fixSpecs)
+	}
+	if len(r.leafSpecs) != 0 {
+		t.Errorf("leaf sessions started: %v", leafSpecRoles(r))
+	}
 	c, _ := st.Check("review", "alpha")
 	if o, _ := c.Outcome(1); o.Outcome != CheckPassed || o.Detail != "cycle 1: critic downgraded f1 (major to minor)" {
 		t.Errorf("alpha's outcome = %+v", o)
+	}
+}
+
+// A critic confirming a check's major, beside another major it
+// downgrades to minor, fails the check and starts the change set's fixer
+// for the confirmed major alone.
+func TestCriticConfirmedMajorStartsFix(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	passChecks(r, 1, threeChecks...)
+	passChecks(r, 2, "alpha")
+	r.findings[checkSID("alpha", "check", 1)] = []Finding{sev("f1", SeverityMajor), sev("f2", SeverityMajor)}
+	crit := checkSID("alpha", "critic", 1)
+	r.outcome[crit] = workflow.OutcomePass
+	r.verdicts[crit] = []Verdict{
+		{Finding: "f1", Verdict: Confirmed, Reason: "real"},
+		{Finding: "f2", Verdict: Downgraded, Reason: "small", Severity: SeverityMinor, Original: SeverityMajor},
+	}
+	r.outcome[fixSID(2)] = workflow.OutcomePass
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	c, _ := st.Check("review", "alpha")
+	if o, _ := c.Outcome(1); o.Outcome != CheckFailed {
+		t.Errorf("alpha's cycle 1 outcome = %+v, want failed", o)
+	}
+	if len(r.fixSpecs) != 1 {
+		t.Fatalf("change-set fixer sessions = %+v, want one", r.fixSpecs)
+	}
+	if want := []string{"alpha f1 major"}; !reflect.DeepEqual(fixFindingIDs(r.fixSpecs[0].Findings), want) {
+		t.Errorf("fixer findings = %v, want %v", fixFindingIDs(r.fixSpecs[0].Findings), want)
 	}
 }
 
