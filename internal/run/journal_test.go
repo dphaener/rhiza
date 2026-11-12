@@ -1027,3 +1027,43 @@ func TestFoldCheckRounds(t *testing.T) {
 		t.Fatal("severities")
 	}
 }
+
+// A plan run's reserved milestone number round-trips through the store and
+// folds into its state, ended or failed; a run that reserved none journals
+// no milestone_number and folds 0.
+func TestFoldMilestoneNumber(t *testing.T) {
+	s := newStore(t)
+	plain := startedEntry("a", 0)
+	b, err := json.Marshal(plain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(b), "milestone_number") {
+		t.Fatalf("a started entry with no number names milestone_number: %s", b)
+	}
+	reserved := startedEntry("a", 0)
+	reserved.Started.MilestoneNumber = 36
+	if err := s.Create("01RUNMS1", reserved); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Create("01RUNMS2", plain); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Append("01RUNMS1", Entry{Type: TypeFinished, At: at(1), End: "failed"}); err != nil {
+		t.Fatal(err)
+	}
+	j, err := s.Read("01RUNMS1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st := j.State(); st.MilestoneNumber != 36 || st.Result != "failed" {
+		t.Fatalf("failed run folds MilestoneNumber %d, result %q; want 36, failed", st.MilestoneNumber, st.Result)
+	}
+	j, err = s.Read("01RUNMS2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st := j.State(); st.MilestoneNumber != 0 {
+		t.Fatalf("run with no number folds MilestoneNumber %d", st.MilestoneNumber)
+	}
+}
