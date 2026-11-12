@@ -1,0 +1,40 @@
+{
+  "actor": "01M786Z6HR38YYW77FN99DHM3R",
+  "after": [
+    "01M786XTEBRXM5C92XK175B5TA"
+  ],
+  "at": "2026-11-12T15:46:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 278aebb85 (detached checkout) ran go test -trimpath -count=1 ./cmd/rhiza -run 'TestVMDocLessons|TestAgentDocsConsistent' -v: TestVMDocLessons (new cmd/rhiza/vmdoc_test.go reads agents/vm.md and checks rhiza-root.service, rhiza.daemon.maxRuns, 'The Rex package is pinned', stray-logs, 'injecting a delay'), TestAgentDocsConsistent and its fixtures all PASS. Read the diff: agents/vm.md covers one root ~/code under rhiza-root.service, lowering rhiza.daemon.maxRuns on high 5-minute load, the Rex apt pin after Ubuntu's Perl rex replaced it, worktree resets moving stray .rhiza/log entries to ~/orchestrator/stray-logs/, and reproducing flakes by injecting delay not CPU load; agents/README.md indexes vm.md. Cross-checked on the VM: rhiza-root.service is active and /etc/apt/preferences.d/rex and /etc/apt/apt.conf.d/51unattended-no-rex exist. Commit stages only the builder's own actor record."
+        },
+        "handle": "vm-doc-verified",
+        "id": "01M78703RMT8XFEF1MSDHZN3GQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78703RMT8XFEF1MS9PERZM6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78703RMT8XFEF1MS9PERZM6",
+        "id": "01M78703S7NPFPFVP3PNPZ3KJ3",
+        "link": "01M78703S7NPFPFVP3PK19K2E0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76P0B97WK63HSDNR4DMB2BT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76NXJ53FB2GVBQPT4F4DW3R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78703SV76NE4HE0MJ47ADS7",
+  "type": "ops",
+  "v": 1
+}
