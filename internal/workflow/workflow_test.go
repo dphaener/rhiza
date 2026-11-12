@@ -2171,3 +2171,35 @@ func TestPlanReviewPromptsUnchained(t *testing.T) {
 		}
 	}
 }
+
+func TestParseCleanup(t *testing.T) {
+	const steps = "[step.a]\nkind = \"command\"\nrun = \"true\"\non.pass = \"done\"\n"
+	d, err := Parse("w", []byte(steps+"[[cleanup]]\nname = \"drop-db\"\nrun = \"dropdb x\"\n[[cleanup]]\nrun = \"rm -rf tmp\"\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []Cleanup{{Name: "drop-db", Run: "dropdb x"}, {Name: "cleanup-2", Run: "rm -rf tmp"}}
+	if !reflect.DeepEqual(d.Cleanup, want) {
+		t.Errorf("Cleanup = %+v, want %+v", d.Cleanup, want)
+	}
+	if got := d.Cleanup[0].Step(); got.Kind != KindCommand || got.Run != "dropdb x" || got.Name != "drop-db" {
+		t.Errorf("Step() = %+v", got)
+	}
+	if d, err := Parse("w", []byte(steps)); err != nil || len(d.Cleanup) != 0 {
+		t.Errorf("no section: %v, %+v", err, d)
+	}
+	for _, c := range []struct{ name, src, want string }{
+		{"no run", "[[cleanup]]\nname = \"a\"\n", "run is missing"},
+		{"blank run", "[[cleanup]]\nrun = \"  \"\n", "run is missing"},
+		{"bad name", "[[cleanup]]\nname = \"Bad\"\nrun = \"true\"\n", "cleanup step \"Bad\""},
+		{"twice", "[[cleanup]]\nname = \"a\"\nrun = \"true\"\n[[cleanup]]\nname = \"a\"\nrun = \"true\"\n", "declared twice"},
+		{"unknown key", "[[cleanup]]\nrun = \"true\"\nprompt = \"x\"\n", "unknown key"},
+	} {
+		if _, err := Parse("w", []byte(steps+c.src)); err == nil || !strings.Contains(err.Error(), c.want) {
+			t.Errorf("%s: Parse error %v, want %q", c.name, err, c.want)
+		}
+		if _, probs := Validate("w", []byte(steps+c.src), nil); len(probs) == 0 {
+			t.Errorf("%s: Validate found no problem", c.name)
+		}
+	}
+}

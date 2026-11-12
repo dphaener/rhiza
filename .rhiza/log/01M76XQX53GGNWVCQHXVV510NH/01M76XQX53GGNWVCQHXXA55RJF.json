@@ -1,0 +1,18 @@
+{
+  "actor": "01M76SW1E13KTDYQ639HDXG331",
+  "after": [],
+  "at": "2026-11-12T03:45:08Z",
+  "body": {
+    "intent": "Builder, verifier, check and fixer guidance says: never sleep or poll, no single command longer than about four minutes, and a long command runs once in the background and is waited for once (afk execute.js rule). Evidence: verifier session p90 33.7m against a 3.7m median, builder p90 25-36m against about 4m (prompt-gap rec 6).",
+    "kind": "intention",
+    "sources": [
+      "01M76XM73SV2HZ5FRGC8CMX965"
+    ],
+    "title": "Command budget"
+  },
+  "change_set": "01M76XQX53GGNWVCQHXVV510NH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76XQX53GGNWVCQHXXA55RJF",
+  "type": "open",
+  "v": 2
+}

@@ -1,0 +1,86 @@
+{
+  "actor": "01M76SW1E13KTDYQ639HDXG331",
+  "after": [
+    "01M76XRYNMJZSBMV2N5HJCTJQH"
+  ],
+  "at": "2026-11-12T03:49:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api (go test -trimpath ./internal/api -run RunVerdict) assert a downgrade of a major to minor is journaled with both severities, and a downgrade to major of a major, to blocker, or with no severity exits as a usage error; go test -trimpath ./internal/run covers the journal entry; describe-golden is regenerated (go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden).",
+          "statement": "rhiza run verdict accepts a third verdict, downgraded, with a severity lower than the finding's (blocker to major, minor or nit; major to minor or nit), journaled with the finding's original severity; a downgrade to the same or a higher severity, or without a severity, is refused."
+        },
+        "handle": "verdict-downgraded",
+        "id": "01M76XZGDTNAM0425G766F0E99",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M76XZGDTNAM0425G73YGZ3P0",
+        "op": "node.create",
+        "parent": "01M5Z0EHF5WMV1Y0X96EJ0NCPZ"
+      },
+      {
+        "decision": null,
+        "from": "01M76XZGDTNAM0425G73YGZ3P0",
+        "id": "01M76XZGE8XM5BA04E423GM5TE",
+        "link": "01M76XZGE8XM5BA04E41S0TDKC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/run (go test -trimpath ./internal/run -run 'Checks|Critic') run a checks step where a check's only major is downgraded to minor and assert the check passes with no fixer session started, while a confirmed major still starts the fixer; go test -trimpath ./internal/api -run 'RunStatus|ReviewSummary' asserts both severities are shown.",
+          "statement": "A downgraded finding counts at its lower severity: a check whose surviving findings are all minor or nit after the critic passes its cycle without a fixer, and rhiza run status and the review summary show each downgraded finding with its original and lower severity."
+        },
+        "handle": "downgrade-ends-fix",
+        "id": "01M76XZGEMFYQN2SKCNDYG35AJ",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M76XZGEMFYQN2SKCNBTHW3AT",
+        "op": "node.create",
+        "parent": "01M5Z0EHF5WMV1Y0X96EJ0NCPZ"
+      },
+      {
+        "decision": null,
+        "from": "01M76XZGEMFYQN2SKCNBTHW3AT",
+        "id": "01M76XZGF32KPH905791W5ME3V",
+        "link": "01M76XZGF32KPH90578YGDJEJT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'Review|Plan' asserts review.md and plan-review.md contain the same severity block byte for byte, that both critic sections name confirmed, downgraded and dropped, and that the block names no Go, make or Rhiza-repo command.",
+          "statement": "The review and plan-review guide topics hold one shared severity block, byte for byte: blocker (behaviour broken, a build or test fails, or a leaf is missing), major (an acceptance point unmet or a real defect), minor (style, naming, docs or a non-blocking follow-up) and nit, with a mapping per check; and the critic sections say confirm, downgrade or drop, never add or raise."
+        },
+        "handle": "severity-contract",
+        "id": "01M76XZGFGB9C8J6GA5S2NG66K",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M76XZGFGB9C8J6GA5NF3RBQE",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M76XZGFGB9C8J6GA5NF3RBQE",
+        "id": "01M76XZGG0E1G60H18XHMFW94W",
+        "link": "01M76XZGG0E1G60H18XDXG1DF7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76XRYNK4PGG53XNC1ZWFTKD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76XZGGEB1AGF2NZBWQKDXX9",
+  "type": "ops",
+  "v": 1
+}

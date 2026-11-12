@@ -1,0 +1,418 @@
+{
+  "actor": "01M76SW1E13KTDYQ639HDXG331",
+  "after": [
+    "01M76Y5TQB9QJSHJ8C8KFDGBYA"
+  ],
+  "at": "2026-11-12T03:52:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "Done needs a record (Recommended)",
+            "Pre-handoff checklist (Recommended)",
+            "Command budget (Recommended)",
+            "Git-safety deny"
+          ],
+          "picked": "Done needs a record (Recommended), Pre-handoff checklist (Recommended), Command budget (Recommended)",
+          "question": "The tool guard (01M76QJW) and generate-before-push (pre-push check 01M76RH0) are already filed. Which guards make up this milestone's 'guards first' change sets?",
+          "session": "e3a4887c-f758-434a-a9a4-01a1cd9de36f",
+          "statement": "The tool guard (01M76QJW) and generate-before-push (pre-push check 01M76RH0) are already filed. Which guards make up this milestone's 'guards first' change sets? — Done needs a record (Recommended), Pre-handoff checklist (Recommended), Command budget (Recommended)",
+          "wording": "the agent's option, picked by the owner in session e3a4887c-f758-434a-a9a4-01a1cd9de36f"
+        },
+        "handle": "answer-e3a4887c-1",
+        "id": "01M76Y1T6DQ8S44JH82GRHB01R",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76Y1T6DQ8S44JH82GMD3K56",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Y1T6DQ8S44JH82GMD3K56",
+        "id": "01M76Y1ZGMPQZA08G9DMTV2K52",
+        "link": "01M76Y1ZGMPQZA08G9DM4YW3Y8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XM73SV2HZ5FRGC8CMX965",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Role topics, 3 change sets (Recommended)",
+            "Role topics, 1 change set",
+            "Extend current guides"
+          ],
+          "picked": "Role topics, 3 change sets (Recommended)",
+          "question": "How should afk's shipit/forge prompts become Rhiza's shipped defaults?",
+          "session": "e3a4887c-f758-434a-a9a4-01a1cd9de36f",
+          "statement": "How should afk's shipit/forge prompts become Rhiza's shipped defaults? — Role topics, 3 change sets (Recommended)",
+          "wording": "the agent's option, picked by the owner in session e3a4887c-f758-434a-a9a4-01a1cd9de36f"
+        },
+        "handle": "answer-e3a4887c-2",
+        "id": "01M76Y24A7V0P9ZXDJ334GEM2Z",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76Y24A7V0P9ZXDJ32AT1N9N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Y24A7V0P9ZXDJ32AT1N9N",
+        "id": "01M76Y2925MRMD5J34CRBE9SRC",
+        "link": "01M76Y2925MRMD5J34CNN3QQ6E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XM73SV2HZ5FRGC8CMX965",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "afk's content, Rhiza's words (Recommended)",
+            "afk text near-verbatim"
+          ],
+          "picked": "afk's content, Rhiza's words (Recommended)",
+          "question": "How closely should the shipped prompts follow afk's text?",
+          "session": "e3a4887c-f758-434a-a9a4-01a1cd9de36f",
+          "statement": "How closely should the shipped prompts follow afk's text? — afk's content, Rhiza's words (Recommended)",
+          "wording": "the agent's option, picked by the owner in session e3a4887c-f758-434a-a9a4-01a1cd9de36f"
+        },
+        "handle": "answer-e3a4887c-3",
+        "id": "01M76Y2DKQ4B7RPAGMFQYYVQBH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76Y2DKQ4B7RPAGMFP886SRJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Y2DKQ4B7RPAGMFP886SRJ",
+        "id": "01M76Y2JM68RCETPJBV546YPSD",
+        "link": "01M76Y2JM68RCETPJBV1HSEZFJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XM73SV2HZ5FRGC8CMX965",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Keep, with downgrade (Recommended)",
+            "Drop the critic",
+            "Downgrade, blockers only"
+          ],
+          "picked": "Keep, with downgrade (Recommended)",
+          "question": "What happens to the ship review critic (98% confirm rate)?",
+          "session": "e3a4887c-f758-434a-a9a4-01a1cd9de36f",
+          "statement": "What happens to the ship review critic (98% confirm rate)? — Keep, with downgrade (Recommended)",
+          "wording": "the agent's option, picked by the owner in session e3a4887c-f758-434a-a9a4-01a1cd9de36f"
+        },
+        "handle": "answer-e3a4887c-4",
+        "id": "01M76Y2QP794PK2TA68D5R15XE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76Y2QP794PK2TA68A9FBNJB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Y2QP794PK2TA68A9FBNJB",
+        "id": "01M76Y2Y39ZTQTEZAAH5CMC32H",
+        "link": "01M76Y2Y39ZTQTEZAAH32T1MKS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XM73SV2HZ5FRGC8CMX965",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Yes, tiered by risk (Recommended)",
+            "No, opus for all",
+            "Later, after measuring"
+          ],
+          "picked": "Yes, tiered by risk (Recommended)",
+          "question": "Should low-risk leaves get a cheaper verifier model?",
+          "session": "e3a4887c-f758-434a-a9a4-01a1cd9de36f",
+          "statement": "Should low-risk leaves get a cheaper verifier model? — Yes, tiered by risk (Recommended)",
+          "wording": "the agent's option, picked by the owner in session e3a4887c-f758-434a-a9a4-01a1cd9de36f"
+        },
+        "handle": "answer-e3a4887c-5",
+        "id": "01M76Y33T9YSZZXVNTJW4XQMST",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76Y33T9YSZZXVNTJREM20Y3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Y33T9YSZZXVNTJREM20Y3",
+        "id": "01M76Y38HKY3XMG8R0H9FC2Q70",
+        "link": "01M76Y38HKY3XMG8R0H80JPXNJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XM73SV2HZ5FRGC8CMX965",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Later, after leaf files (Recommended)",
+            "Yes, in this milestone now",
+            "No"
+          ],
+          "picked": "Later, after leaf files (Recommended)",
+          "question": "Should independent leaves build in parallel?",
+          "session": "e3a4887c-f758-434a-a9a4-01a1cd9de36f",
+          "statement": "Should independent leaves build in parallel? — Later, after leaf files (Recommended)",
+          "wording": "the agent's option, picked by the owner in session e3a4887c-f758-434a-a9a4-01a1cd9de36f"
+        },
+        "handle": "answer-e3a4887c-6",
+        "id": "01M76Y3DASWV2SB67Y3RVGSSER",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76Y3DASWV2SB67Y3RTTA34A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Y3DASWV2SB67Y3RTTA34A",
+        "id": "01M76Y3JA7VK2WRE9W89H11CA7",
+        "link": "01M76Y3JA7VK2WRE9W87M1VYQE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XM73SV2HZ5FRGC8CMX965",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Model-only since last green (Recommended)",
+            "Land before first push"
+          ],
+          "picked": "Model-only since last green (Recommended)",
+          "question": "How should the post-land CI round (wait-landed, ~6m every run) be cut?",
+          "session": "e3a4887c-f758-434a-a9a4-01a1cd9de36f",
+          "statement": "How should the post-land CI round (wait-landed, ~6m every run) be cut? — Model-only since last green (Recommended)",
+          "wording": "the agent's option, picked by the owner in session e3a4887c-f758-434a-a9a4-01a1cd9de36f"
+        },
+        "handle": "answer-e3a4887c-7",
+        "id": "01M76Y3PG5DMJJY5ZHNRNQQDZY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76Y3PG5DMJJY5ZHNQ4A66BS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Y3PG5DMJJY5ZHNQ4A66BS",
+        "id": "01M76Y3VE5MPEW54RJBYX23S7B",
+        "link": "01M76Y3VE5MPEW54RJBV6MKQM4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XM73SV2HZ5FRGC8CMX965",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Yes, same rule (Recommended)",
+            "No, leave them"
+          ],
+          "picked": "Yes, same rule (Recommended)",
+          "question": "Should this milestone also cut the merge-of-main CI rounds (wait-rebased 5.3m median ALL, wait-rebased-merge, ~0m RECENT median but p90 6–13m)?",
+          "session": "e3a4887c-f758-434a-a9a4-01a1cd9de36f",
+          "statement": "Should this milestone also cut the merge-of-main CI rounds (wait-rebased 5.3m median ALL, wait-rebased-merge, ~0m RECENT median but p90 6–13m)? — Yes, same rule (Recommended)",
+          "wording": "the agent's option, picked by the owner in session e3a4887c-f758-434a-a9a4-01a1cd9de36f"
+        },
+        "handle": "answer-e3a4887c-8",
+        "id": "01M76Y3ZRM54EZCW18ZP362PV5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76Y3ZRM54EZCW18ZN5V46X5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Y3ZRM54EZCW18ZN5V46X5",
+        "id": "01M76Y44A7PYYG8WJEDVD384HZ",
+        "link": "01M76Y44A7PYYG8WJEDRPMD9QE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XM73SV2HZ5FRGC8CMX965",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Rework halved, ship ≤40m (Recommended)",
+            "Toward afk: ≤12% / ≤10%",
+            "No numeric gate"
+          ],
+          "picked": "Rework halved, ship ≤40m (Recommended)",
+          "question": "What measured targets should close the milestone (analyze.py over the 30 ship-change runs after it lands, vs the RECENT baseline)?",
+          "session": "e3a4887c-f758-434a-a9a4-01a1cd9de36f",
+          "statement": "What measured targets should close the milestone (analyze.py over the 30 ship-change runs after it lands, vs the RECENT baseline)? — Rework halved, ship ≤40m (Recommended)",
+          "wording": "the agent's option, picked by the owner in session e3a4887c-f758-434a-a9a4-01a1cd9de36f"
+        },
+        "handle": "answer-e3a4887c-9",
+        "id": "01M76Y48EPA97H0RHWSZZ38FFC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76Y48EPA97H0RHWSX2FD0ZH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Y48EPA97H0RHWSX2FD0ZH",
+        "id": "01M76Y4CQGWVTCY0CXT4EQZKMX",
+        "link": "01M76Y4CQGWVTCY0CXT2B4QHTG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XM73SV2HZ5FRGC8CMX965",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Leaf contract (Recommended)",
+            "Verbatim retry + run notes (Recommended)",
+            "Model lints in review (Recommended)",
+            "Lean session start"
+          ],
+          "picked": "Leaf contract (Recommended), Verbatim retry + run notes (Recommended), Model lints in review (Recommended)",
+          "question": "Which further items from the analysis belong in this milestone?",
+          "session": "e3a4887c-f758-434a-a9a4-01a1cd9de36f",
+          "statement": "Which further items from the analysis belong in this milestone? — Leaf contract (Recommended), Verbatim retry + run notes (Recommended), Model lints in review (Recommended)",
+          "wording": "the agent's option, picked by the owner in session e3a4887c-f758-434a-a9a4-01a1cd9de36f"
+        },
+        "handle": "answer-e3a4887c-10",
+        "id": "01M76Y4JABRG4RFPT0GVZG58ZX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76Y4JABRG4RFPT0GVDRF9NT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Y4JABRG4RFPT0GVDRF9NT",
+        "id": "01M76Y4R9CW9W941KSJDMX9C10",
+        "link": "01M76Y4R9CW9W941KSJAR1ZYYD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XM73SV2HZ5FRGC8CMX965",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Yes, in this milestone (Recommended)",
+            "No, separately"
+          ],
+          "picked": "Yes, in this milestone (Recommended)",
+          "question": "Should the daemon journal why an accepted change set waits before its run starts (27m RECENT, 60m ALL median, cause unknown)?",
+          "session": "e3a4887c-f758-434a-a9a4-01a1cd9de36f",
+          "statement": "Should the daemon journal why an accepted change set waits before its run starts (27m RECENT, 60m ALL median, cause unknown)? — Yes, in this milestone (Recommended)",
+          "wording": "the agent's option, picked by the owner in session e3a4887c-f758-434a-a9a4-01a1cd9de36f"
+        },
+        "handle": "answer-e3a4887c-11",
+        "id": "01M76Y4YZFT5XGGKFTW5CT4F4E",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76Y4YZFT5XGGKFTW450D6GK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Y4YZFT5XGGKFTW450D6GK",
+        "id": "01M76Y557HTH3NDS7J694R3K4S",
+        "link": "01M76Y557HTH3NDS7J68GHDY4A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XM73SV2HZ5FRGC8CMX965",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "The three guards (Recommended)",
+            "CI since last green (Recommended)",
+            "Held-run error sources",
+            "Critic downgrade"
+          ],
+          "picked": "The three guards (Recommended), CI since last green (Recommended), Held-run error sources, Critic downgrade",
+          "question": "Which change sets should get their leaves planned now (the rest keep their intent and are planned later)?",
+          "session": "e3a4887c-f758-434a-a9a4-01a1cd9de36f",
+          "statement": "Which change sets should get their leaves planned now (the rest keep their intent and are planned later)? — The three guards (Recommended), CI since last green (Recommended), Held-run error sources, Critic downgrade",
+          "wording": "the agent's option, picked by the owner in session e3a4887c-f758-434a-a9a4-01a1cd9de36f"
+        },
+        "handle": "answer-e3a4887c-12",
+        "id": "01M76Y5AFSCH9QEDJAAAGQ193S",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76Y5AFSCH9QEDJAA8C1PVW9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Y5AFSCH9QEDJAA8C1PVW9",
+        "id": "01M76Y5FJ8RAZEPXPZ8QDR0RAV",
+        "link": "01M76Y5FJ8RAZEPXPZ8QB1SP81",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XM73SV2HZ5FRGC8CMX965",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Yes, fold it (Recommended)",
+            "No, keep scope"
+          ],
+          "picked": "Yes, fold it (Recommended)",
+          "question": "Following afk, should the review role topics fold the scope check into compliance (4 checks per cycle instead of 5)?",
+          "session": "e3a4887c-f758-434a-a9a4-01a1cd9de36f",
+          "statement": "Following afk, should the review role topics fold the scope check into compliance (4 checks per cycle instead of 5)? — Yes, fold it (Recommended)",
+          "wording": "the agent's option, picked by the owner in session e3a4887c-f758-434a-a9a4-01a1cd9de36f"
+        },
+        "handle": "answer-e3a4887c-13",
+        "id": "01M76Y5MGRKWTRDXA43376Z624",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76Y5MGRKWTRDXA432PTB2B4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Y5MGRKWTRDXA432PTB2B4",
+        "id": "01M76Y5RP65R7XQKY699XFW9DH",
+        "link": "01M76Y5RP65R7XQKY69634JQC7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XM73SV2HZ5FRGC8CMX965",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M76Y5TQB9QJSHJ8C8G5FM9FQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76Y5WY41BKWHHDM8RY1MQ4G",
+  "type": "ops",
+  "v": 1
+}

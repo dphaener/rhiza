@@ -1,0 +1,51 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M76ZT13H2QMKD6F0W4NN50R8"
+  ],
+  "at": "2026-11-12T04:44:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "go with the recommendation on the placeholder finding, and a documented recipe",
+          "quote_where": "owner, 2026-11-12, to the orchestrator in chat, answering the plan gate questions of run 01M76STX",
+          "statement": "The acceptance of @{01M76XZG5J7ETYBRT4W550P79M} names its testscript run-ship-land-conflict (go test -trimpath ./cmd/rhiza -run TestScripts/run-ship-land-conflict), and says the ship-change land step gains an on.fail that routes a land conflict (exit 3) to conflict-fix, not conflict-fix-landed, while any other land failure still fails land"
+        },
+        "handle": "land-conflict-script-named",
+        "id": "01M7714JQCXVJAM178H5A081VK",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7714JQCXVJAM178H1S333DB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7714JQCXVJAM178H1S333DB",
+        "id": "01M7714JRBX139NC7PARWK2WXA",
+        "link": "01M7714JRBX139NC7PANBD77AH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76ZQQ2KDNBTW2B0HEK7VWGS",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M76XZG5J7ETYBRT4W550P79M",
+        "id": "01M7714JSBD5QXX4FBTB9VMWC6",
+        "link": "01M7714JSBD5QXX4FBTB7R3Y50",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7714JQCXVJAM178H1S333DB",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7714JTPGSVWG1JPCR7MAYMW",
+  "type": "ops",
+  "v": 1
+}

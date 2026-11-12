@@ -1,0 +1,40 @@
+{
+  "actor": "01M76SW1E13KTDYQ639HDXG331",
+  "after": [
+    "01M76XQX53GGNWVCQHXXA55RJF"
+  ],
+  "at": "2026-11-12T03:48:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'Build|Review' asserts build.md and review.md each hold the budget rule (no sleep or poll, about four minutes per command, background once and wait once) and that it names no Go, make or Rhiza-repo command.",
+          "statement": "The build and review guide topics tell builders, verifiers, checks and fixers never to sleep or poll, never to run a single command longer than about four minutes, and to run a long build or test once in the background and wait for it once, in language-neutral words."
+        },
+        "handle": "command-budget-guide",
+        "id": "01M76XY4EE4QA5EKNQXJ5YKPT7",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M76XY4EE4QA5EKNQXHR7R9XH",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "decision": null,
+        "from": "01M76XY4EE4QA5EKNQXHR7R9XH",
+        "id": "01M76XY4EX5GR218G8BHQNREVY",
+        "link": "01M76XY4EX5GR218G8BDR0AP78",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76XQX53GGNWVCQHXVV510NH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76XY4FF7BT9GTNXGMJFABXY",
+  "type": "ops",
+  "v": 1
+}
