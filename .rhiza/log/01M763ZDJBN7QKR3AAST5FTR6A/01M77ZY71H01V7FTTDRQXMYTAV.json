@@ -1,0 +1,63 @@
+{
+  "actor": "01M77ZDE1MDYFCQ1G3MQ5KV093",
+  "after": [
+    "01M77Z9BFY0ERE4Y2Z1VJMK4Q0"
+  ],
+  "at": "2026-11-12T13:42:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at da0068fa7, hands-on with the built binary against the real published feeds: built rhiza stamped v0.1.1-main.5+aaa1111 into a scratch Rhiza root (isolated HOME), daemon set rhiza.daemon.autoUpdate latest (accepted; 'bogus' rejected with 'must be off or main or latest or release'), ran rhiza daemon --max-runs 0. It logged 'auto-update latest: installed v0.1.1-main.12+1f9c3a7 (was v0.1.1-main.5+aaa1111)' then 'binary changed, re-executing'; the executable's sha256 changed and rhiza version reported v0.1.1-main.12+1f9c3a7. Rebuilt stamped v0.1.1-main.12+1f9c3a7: the daemon ran 25s, logged no install, the executable was unchanged. (The re-exec'd published build predates this change and rejects the latest value, as expected for a pre-feature build.) Scoped tests: go test ./internal/daemon -run ChannelUpdate and ./internal/release pass; ./internal/api -run TestDaemonAutoUpdate tests all PASS, the package's root-state guard intermittently flags usage.live.json, which the VM's live root daemon rewrites every few seconds (the pre-existing TestDaemonAutoUpdateSetting alone trips it too)."
+        },
+        "handle": "auto-update-latest-qa-1",
+        "id": "01M77ZY6YXPDG1JYFGG6ZPXMK6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77ZY6YXPDG1JYFGG4M8N392",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77ZY6YXPDG1JYFGG4M8N392",
+        "id": "01M77ZY6ZH9N0WNFBEP6PVHSST",
+        "link": "01M77ZY6ZH9N0WNFBEP4J7YH1R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642SDGZMX8RYVYY562PFVR",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at da0068fa7, hands-on with the built binary against the real published release feed (v0.1.0 release, v0.1.1-main.12 incremental): in a scratch Rhiza root with rhiza.daemon.autoUpdate=release, rhiza daemon --max-runs 0 built as v0.0.9 logged 'auto-update release: installed v0.1.0 (was v0.0.9)', re-executed, and rhiza version then reported v0.1.0. Built as v0.1.0, v0.1.0-5-gabc1234 and v0.1.1-main.5+aaa1111, each daemon ran 25s, installed nothing and left the executable byte-identical: the release channel ignores the newer incremental build and never downgrades an incremental build to the release. go test ./internal/api -run TestDaemonAutoUpdateRelease passes."
+        },
+        "handle": "auto-update-release-qa-1",
+        "id": "01M77ZY705PGRA8Q3TS0GR9RYC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77ZY705PGRA8Q3TRXXY81BN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77ZY705PGRA8Q3TRXXY81BN",
+        "id": "01M77ZY70W7DDEYRM8SD735110",
+        "link": "01M77ZY70W7DDEYRM8SAQ3QJJJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642SFPZY7YR19WHQ5V2Y5M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763ZDJBN7QKR3AAST5FTR6A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77ZY71H01V7FTTDRQXMYTAV",
+  "type": "ops",
+  "v": 1
+}

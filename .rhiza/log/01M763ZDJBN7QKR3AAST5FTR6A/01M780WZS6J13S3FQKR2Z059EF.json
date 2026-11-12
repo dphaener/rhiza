@@ -1,0 +1,73 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M780C9WM978XX8QP8AJT8033"
+  ],
+  "at": "2026-11-12T13:59:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "399ac9b5f47a655d5d73f422418e7dce7f42a6dd",
+          "pr": "https://github.com/dphaener/rhiza/pull/489",
+          "result": "14 checks passed: changes SUCCESS, go-install SUCCESS, snapshot SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #489 (https://github.com/dphaener/rhiza/pull/489) passed CI at 399ac9b",
+          "status": "verified"
+        },
+        "handle": "pr-489-auto-update-release-channels",
+        "id": "01M780WZD3FHZD28YH5VQ3DQHG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M780WZD3FHZD28YH5TGV97T7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M780WZD3FHZD28YH5TGV97T7",
+        "id": "01M780WZDXRNVB3B255JK6B0NK",
+        "link": "01M780WZDXRNVB3B255HW58SXP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642SDGZMX8RYVYY562PFVR",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M780WZD3FHZD28YH5TGV97T7",
+        "id": "01M780WZES2B9XQFNNX3T67KR9",
+        "link": "01M780WZES2B9XQFNNX1TKTJY8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642SFPZY7YR19WHQ5V2Y5M",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M780WZD3FHZD28YH5TGV97T7",
+        "id": "01M780WZFW5GABTA4QH6ZF2JX0",
+        "link": "01M780WZFW5GABTA4QH3QSXW70",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MMAZSKZD27543JQ79D8",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M780WZD3FHZD28YH5TGV97T7",
+        "id": "01M780WZKQ6S4NTTVG89CC0V2D",
+        "link": "01M780WZKQ6S4NTTVG85XPY22H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MRZ4256B2ECYVG4D4SH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763ZDJBN7QKR3AAST5FTR6A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M780WZS6J13S3FQKR2Z059EF",
+  "type": "ops",
+  "v": 1
+}

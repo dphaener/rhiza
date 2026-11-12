@@ -19,6 +19,8 @@ All release channels are planned in this milestone; latest and release rely on t
 ### In
 
 - decided-by [m32-auto-update](../intent/milestone-32/m32-auto-update.md)
+- decided-by [auto-update-latest](../capability/rhiza/orchestration/daemon/auto-update-latest.md)
+- decided-by [auto-update-release](../capability/rhiza/orchestration/daemon/auto-update-release.md)
 
 ## History
 
