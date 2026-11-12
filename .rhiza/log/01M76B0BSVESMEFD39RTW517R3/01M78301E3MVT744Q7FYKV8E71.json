@@ -1,0 +1,40 @@
+{
+  "actor": "01M782YR3XGPQ4Z4CTJ6CJ4W6T",
+  "after": [
+    "01M76SHPT2XVGVWD52KE53FRC5"
+  ],
+  "at": "2026-11-12T14:36:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 9e4f6f0da: go test -trimpath -count=1 ./tools/release/... passes. TestBreaking's fixture pairs flag a removed op, removed request and response fields, a retyped field, a removed and a retyped setting and a log format bump 5->6 as breaking, and report nothing for an identical surface or for an added op, fields and setting. The diff's parsers match the real inputs: docs/reference/config.md has 46 setting headings and 46 '- Type:' lines, internal/entry/entry.go has 'const FormatVersion = 5', and describe-golden's schemas are inline (no $ref). End to end in a scratch clone tagged v9.9.9 at HEAD~3, 'go run ./tools/release breaking' built both refs, printed '0 breaking difference(s) since v9.9.9', exited 0 and removed its worktree."
+        },
+        "handle": "breaking-detection-verified",
+        "id": "01M78301C7RPJ2DZYG9RCP3EWS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78301C7RPJ2DZYG9MPVGD20",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78301C7RPJ2DZYG9MPVGD20",
+        "id": "01M78301D31Q7X25RHM6GB6DXH",
+        "link": "01M78301D31Q7X25RHM2N5W3MR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7DRSHQHDGWY46MBH319P",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B0BSVESMEFD39RTW517R3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78301E3MVT744Q7FYKV8E71",
+  "type": "ops",
+  "v": 1
+}

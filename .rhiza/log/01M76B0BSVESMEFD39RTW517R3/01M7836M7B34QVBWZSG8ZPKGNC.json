@@ -1,0 +1,40 @@
+{
+  "actor": "01M7833HW163229EVPR6CN3YFD",
+  "after": [
+    "01M78301E3MVT744Q7FYKV8E71"
+  ],
+  "at": "2026-11-12T14:39:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 15f674d4c with a built tools/release binary in a scratch clone: 'release breaking' against the real v0.1.0 tag built both refs in ~12s and printed 'setting: rhiza.daemon.autoUpdate changed type from \"off or main\" to \"off, main, latest or release\"' and 'setting: rhiza.daemon.trimGoCache removed' (trimGoCache really is gone from docs/reference/config.md since v0.1.0), '2 breaking difference(s) since v0.1.0', exit 0, no leftover worktree or temp dir. Then tagged HEAD v0.2.0 and committed a renamed show request json field (view -> viewx) and FormatVersion 5 -> 6: it printed 'field: show request.view removed' and 'log-format: version changed from 5 to 6' (the added viewx not reported). go test -trimpath -count=1 ./tools/release/... passes."
+        },
+        "handle": "breaking-detection-qa-1",
+        "id": "01M7836M65BE1HZCS0TAZSVBT8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7836M65BE1HZCS0TAND3XKP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7836M65BE1HZCS0TAND3XKP",
+        "id": "01M7836M6PHFMH4KXV8Q7WPY13",
+        "link": "01M7836M6PHFMH4KXV8MNH6H7Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7DRSHQHDGWY46MBH319P",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B0BSVESMEFD39RTW517R3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7836M7B34QVBWZSG8ZPKGNC",
+  "type": "ops",
+  "v": 1
+}
