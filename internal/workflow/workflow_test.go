@@ -1,7 +1,9 @@
 package workflow
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"maps"
 	"os"
 	"os/exec"
@@ -429,20 +431,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 			t.Errorf("%s = %+v; want a command running ship check --conflicts, pass %q, fail %q", n, st, want.pass, want.fail)
 		}
 	}
-	// Only gate-triage falls back to ci-triage; the other two end the run.
-	for n, want := range map[string]struct{ pass, fail string }{
-		"gate-triage":              {"gate-fix", "ci-triage"},
-		"rebase-gate-failed":       {"gate-fix", ""},
-		"open-pr-triage":           {"gate-fix", ""},
-		"land-triage":              {"gate-fix-merge", ""},
-		"push-merge-triage":        {"gate-fix-merge", ""},
-		"rebase-merge-gate-failed": {"gate-fix-merge", "landed-infra-triage"},
-	} {
-		st := def.Steps[n]
-		if st.Kind != KindCommand || st.Run != "rhiza ship gate --failed" || st.On[OutcomePass] != want.pass || st.On[OutcomeFail] != want.fail {
-			t.Errorf("%s = %+v; want a command running ship gate --failed, pass %q, fail %q", n, st, want.pass, want.fail)
-		}
-	}
+	checkShipChangePrePushFix(t, "ship-change", def)
 	// Both fixers' merges reach their push through its local gate.
 	for n, next := range map[string]string{"conflict-fix": "render-pr", "conflict-fix-landed": "gate-rebase-merge"} {
 		fx := def.Steps[n]
@@ -1698,19 +1687,90 @@ func TestPlanPrePushFix(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		for _, n := range []string{"open-pr", "rebase"} {
-			if got := def.Steps[n].On[OutcomeFail]; got != "prepush-triage" {
-				t.Errorf("%s %s on.fail = %q; want prepush-triage", name, n, got)
-			}
+		checkPlanPrePushFix(t, name, def)
+	}
+}
+
+// checkShipChangePrePushFix checks ship-change's routing of a failed push:
+// each failing step's triage runs ship gate --failed and passes to gate-fix
+// or gate-fix-merge. Only gate-triage falls back to ci-triage.
+func checkShipChangePrePushFix(t *testing.T, name string, def *Definition) {
+	t.Helper()
+	for n, want := range map[string]struct{ pass, fail string }{
+		"gate-triage":              {"gate-fix", "ci-triage"},
+		"rebase-gate-failed":       {"gate-fix", ""},
+		"open-pr-triage":           {"gate-fix", ""},
+		"land-triage":              {"gate-fix-merge", ""},
+		"push-merge-triage":        {"gate-fix-merge", ""},
+		"rebase-merge-gate-failed": {"gate-fix-merge", "landed-infra-triage"},
+	} {
+		st := def.Steps[n]
+		if st.Kind != KindCommand || st.Run != "rhiza ship gate --failed" || st.On[OutcomePass] != want.pass || st.On[OutcomeFail] != want.fail {
+			t.Errorf("%s %s = %+v; want a command running ship gate --failed, pass %q, fail %q", name, n, st, want.pass, want.fail)
 		}
-		tri := def.Steps["prepush-triage"]
-		if tri.Run != "rhiza ship gate --failed" || tri.On[OutcomePass] != "prepush-fix" || len(tri.On) != 1 {
-			t.Errorf("%s prepush-triage = %+v; want ship gate --failed, pass to prepush-fix only", name, tri)
+	}
+	for from, triage := range map[string]string{"open-pr": "open-pr-triage", "land": "land-triage", "push-merge": "push-merge-triage"} {
+		if got := def.Steps[from].On[OutcomeFail]; got != triage {
+			t.Errorf("%s %s on.fail = %q; want %s", name, from, got, triage)
 		}
-		fix := def.Steps["prepush-fix"]
-		if fix.Kind != KindAgent || fix.MaxVisits != 2 || fix.On[OutcomePass] != "open-pr" || len(fix.On) != 1 || !strings.Contains(fix.Prompt, "commit") {
-			t.Errorf("%s prepush-fix = %+v; want agent, max_visits 2, pass to open-pr, commit in prompt", name, fix)
+	}
+	for _, n := range []string{"gate-fix", "gate-fix-merge"} {
+		if st, ok := def.Steps[n]; !ok || st.Kind != KindAgent {
+			t.Errorf("%s has no %s agent step", name, n)
 		}
+	}
+}
+
+// checkPlanPrePushFix checks a plan workflow's routing of a failed push:
+// open-pr and rebase fail to prepush-triage, which runs ship gate --failed
+// and passes only to prepush-fix.
+func checkPlanPrePushFix(t *testing.T, name string, def *Definition) {
+	t.Helper()
+	for _, n := range []string{"open-pr", "rebase"} {
+		if got := def.Steps[n].On[OutcomeFail]; got != "prepush-triage" {
+			t.Errorf("%s %s on.fail = %q; want prepush-triage", name, n, got)
+		}
+	}
+	tri := def.Steps["prepush-triage"]
+	if tri.Run != "rhiza ship gate --failed" || tri.On[OutcomePass] != "prepush-fix" || len(tri.On) != 1 {
+		t.Errorf("%s prepush-triage = %+v; want ship gate --failed, pass to prepush-fix only", name, tri)
+	}
+	fix := def.Steps["prepush-fix"]
+	if fix.Kind != KindAgent || fix.MaxVisits != 2 || fix.On[OutcomePass] != "open-pr" || len(fix.On) != 1 || !strings.Contains(fix.Prompt, "commit") {
+		t.Errorf("%s prepush-fix = %+v; want agent, max_visits 2, pass to open-pr, commit in prompt", name, fix)
+	}
+}
+
+// A repo .rhiza/workflows copy of ship-change, plan or plan-milestone shadows
+// the built-in and cannot include it, so it must carry the built-in's
+// pre-push fix routing itself. This guards Rhiza's own copies; make
+// self-check runs it.
+func TestRepoWorkflowsPrePushFix(t *testing.T) {
+	dir := filepath.Join("..", "..", ".rhiza", "workflows")
+	resolve := func(name string) ([]byte, error) {
+		if data, err := os.ReadFile(filepath.Join(dir, name+".toml")); err == nil {
+			return data, nil
+		}
+		return builtinResolver(name)
+	}
+	checks := map[string]func(*testing.T, string, *Definition){
+		"ship-change":    checkShipChangePrePushFix,
+		"plan":           checkPlanPrePushFix,
+		"plan-milestone": checkPlanPrePushFix,
+	}
+	for name, check := range checks {
+		data, err := os.ReadFile(filepath.Join(dir, name+".toml"))
+		if errors.Is(err, fs.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		def, err := ParseWith(name, data, resolve)
+		if err != nil {
+			t.Fatalf("parse repo %s: %v", name, err)
+		}
+		check(t, "repo "+name, def)
 	}
 }
 
