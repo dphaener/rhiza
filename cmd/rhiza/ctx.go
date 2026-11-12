@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	crand "crypto/rand"
 	"errors"
 	"fmt"
@@ -256,14 +257,27 @@ func execIn(name string, args []string, dir string, env []string) ([]byte, error
 	return out, nil
 }
 
+// classifierTimeout bounds one failure classifier call. The watchdog calls
+// it inside the daemon's poll, so a hung classifier would stall every
+// project; one that runs out of time is killed and its failure is real.
+var classifierTimeout = 60 * time.Second
+
 // shellWithStdin runs command through sh -c with stdin and returns its
-// standard output, for the failure classifier.
+// standard output, for the failure classifier. It kills the command, and
+// every process it started, after classifierTimeout.
 func shellWithStdin(command, stdin string) (string, error) {
-	cmd := exec.Command("sh", "-c", command)
+	ctx, cancel := context.WithTimeout(context.Background(), classifierTimeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "sh", "-c", command)
+	ownGroup(cmd)
+	cmd.WaitDelay = streamGrace
 	cmd.Stdin = strings.NewReader(stdin)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	out, err := cmd.Output()
+	if ctx.Err() == context.DeadlineExceeded {
+		return string(out), fmt.Errorf("timed out after %s", classifierTimeout)
+	}
 	if err != nil {
 		if msg := bytes.TrimSpace(stderr.Bytes()); len(msg) > 0 {
 			return string(out), fmt.Errorf("%v: %s", err, msg)
