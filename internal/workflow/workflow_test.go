@@ -1511,7 +1511,7 @@ func TestRenderStepAddsNoCommitWhenClean(t *testing.T) {
 			}
 			// The stub's render rewrites the rendered page with the
 			// content of $STUB_PAGE, as a real render does when stale.
-			stub := "#!/bin/sh\n[ \"$1\" = render ] || exit 2\nmkdir -p .rhiza/rendered\nprintf '%s\\n' \"$STUB_PAGE\" > .rhiza/rendered/index.md\n"
+			stub := "#!/bin/sh\n[ \"$1 $2\" = \"ship generate\" ] && exit 0\n[ \"$1\" = render ] || exit 2\nmkdir -p .rhiza/rendered\nprintf '%s\\n' \"$STUB_PAGE\" > .rhiza/rendered/index.md\n"
 			if err := os.WriteFile(filepath.Join(bin, "rhiza"), []byte(stub), 0o755); err != nil {
 				t.Fatal(err)
 			}

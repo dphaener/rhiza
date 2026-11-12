@@ -1843,7 +1843,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout or ciWindow, or rhiza.autonomy.plan, accept, ship or signoff",
+            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate or generate, or rhiza.autonomy.plan, accept, ship or signoff",
             "type": "string"
           },
           "project": {
@@ -22954,6 +22954,54 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "Before a push, while CI is unstable, run the project's local gate command (rhiza.ship.localGate) in the change set's worktree and fail if it does; with CI stable or no gate set, do nothing",
+      "write": false
+    },
+    {
+      "name": "ship.generate",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "description": "The generate command (rhiza.ship.generate); empty if none is set, which skips it",
+            "type": "string"
+          },
+          "error": {
+            "description": "How a failing command failed: its exit status or a timeout",
+            "type": "string"
+          },
+          "output": {
+            "description": "The end of the command's combined output, when it ran",
+            "type": "string"
+          },
+          "passed": {
+            "description": "True if the command ran and exited 0",
+            "type": "boolean"
+          },
+          "skipped": {
+            "description": "True if no generate command is set",
+            "type": "boolean"
+          },
+          "staged": {
+            "description": "The files the command changed, now staged",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "passed",
+          "skipped"
+        ],
+        "type": "object"
+      },
+      "summary": "Run the project's generate command (rhiza.ship.generate) in the current worktree and stage the files it changed; with no command set, do nothing",
       "write": false
     },
     {
