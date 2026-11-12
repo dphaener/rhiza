@@ -1,0 +1,53 @@
+{
+  "actor": "01M78RK5RE1T47XVTVYQ53XDG4",
+  "after": [
+    "01M78RFJBN2GN22EA1RHJHCG58"
+  ],
+  "at": "2026-11-12T20:54:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "describe annotated tags only (no --tags)",
+            "describe --tags and skip non-annotated v* tags"
+          ],
+          "statement": "Only an annotated v* tag is a release: evaluate (tools/release/next.go) and breakingAgainstLastTag (tools/release/breaking.go) run git describe without --tags, so the lightweight vX.0.0 tag that publishing a major's draft GitHub release makes is the sign-off, not the last release, and Cut still tags the signed-off major with its annotated tag. Recorded by the review cycle 3 fixer from what commit 4d496116f does; no owner words."
+        },
+        "handle": "release-annotated-tags-only",
+        "id": "01M78RMAZBWX0SZA38Y2FSEHXH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M78RMAZBWX0SZA38Y1976YC5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78RMAZBWX0SZA38Y1976YC5",
+        "id": "01M78RMB2TR5ZEYGV5Z4ZB9696",
+        "link": "01M78RMB2TR5ZEYGV5Z3S4XJMT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78QVJCD10S11S58V9NR3E8K",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M76B7EBC8W8NQW1GXBYYB3Z0",
+        "id": "01M78RMB509W9MQMZK29AYTHBZ",
+        "link": "01M78RMB509W9MQMZK26V231AE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78RMAZBWX0SZA38Y1976YC5",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76B0M0A1T1SN6KHMG5JVDVR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78RMB9JQM7AJJKC630F34WS",
+  "type": "ops",
+  "v": 1
+}

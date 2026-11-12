@@ -14,6 +14,7 @@ func TestVMDocLessons(t *testing.T) {
 	doc := string(b)
 	for _, lesson := range []string{
 		"rhiza-root.service",
+		"rhiza-release.timer",
 		"rhiza.daemon.maxRuns",
 		"The Rex package is pinned",
 		"stray-logs",

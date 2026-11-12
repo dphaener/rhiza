@@ -8,7 +8,7 @@ release.yml runs actions/attest-build-provenance over dist/*.tar.gz with id-toke
 
 ## statement
 
-The release job publishes a GitHub build-provenance attestation for every archive, so gh attestation verify <archive> --repo dphaener/rhiza succeeds on a downloaded release
+The release job for an annotated v* tag publishes a GitHub build-provenance attestation for every archive, so gh attestation verify <archive> --repo dphaener/rhiza succeeds on a downloaded release
 
 ## Links
 
@@ -19,7 +19,9 @@ The release job publishes a GitHub build-provenance attestation for every archiv
 - verifies [release-provenance-qa-1](../../../evidence/release-provenance-qa-1.md)
 - verifies [pr-476-release-channel-manifest-and](../../../evidence/pr-476-release-channel-manifest-and.md)
 - verifies [v010-attestation-verified](../../../evidence/v010-attestation-verified.md)
+- verifies [pr-506-automatic-releases](../../../evidence/pr-506-automatic-releases.md)
 
 ## History
 
 - `01M76AZ94M8HWY6GCD06H8ES46` Release channel manifest and provenance: every v* release publishes a JSON manifest (channel, version, commit, per-platform archive URL and sha256) and GitHub build-provenance attestations alongside its archives and checksums
+- `01M76B0M0A1T1SN6KHMG5JVDVR` Automatic releases: the daemon cuts a minor or patch release when rhiza release check passes (tags it, the release workflow publishes it with the generated notes), and raises an owner sign-off in the inbox for a major release
