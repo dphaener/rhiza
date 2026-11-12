@@ -1754,7 +1754,7 @@ Exit code: set by the result, besides the shared codes.
 Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass.
 
 ```
-rhiza run review-check [--fresh]
+rhiza run review-check [--fresh] [--findings]
 ```
 
 Appends to the log.
@@ -1762,6 +1762,7 @@ Appends to the log.
 Arguments and flags:
 
 - `--fresh`: Only test that the latest round postdates the latest revise visit (or the run has none): exit 0 if so, non-zero if not; judges and writes nothing
+- `--findings`: Only test that the latest round holds at least one finding: exit 0 if so, non-zero for a clean round, which needs no critic; judges and writes nothing
 
 Output (`--json` fields):
 

@@ -2222,3 +2222,25 @@ func TestEnvTable(t *testing.T) {
 		t.Error("RHIZA_ variable accepted")
 	}
 }
+
+// Both plan workflows send a review round to the critic only when it holds
+// a finding: a clean round goes straight to fresh.
+func TestPlanCleanRoundSkipsCritic(t *testing.T) {
+	for _, name := range []string{"plan", "plan-milestone"} {
+		data, ok := Builtin(name)
+		if !ok {
+			t.Fatalf("no %s built-in", name)
+		}
+		def, err := Parse(name, data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := def.Steps["review"].On[OutcomePass]; got != "has-findings" {
+			t.Errorf("%s review on.pass = %q; want has-findings", name, got)
+		}
+		hf := def.Steps["has-findings"]
+		if hf.Kind != KindCommand || hf.Run != "rhiza run review-check --findings" || hf.On[OutcomePass] != "critic" || hf.On[OutcomeFail] != "fresh" {
+			t.Errorf("%s has-findings = %+v; want a command running review-check --findings, pass critic, fail fresh", name, hf)
+		}
+	}
+}

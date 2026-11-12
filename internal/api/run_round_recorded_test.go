@@ -196,3 +196,49 @@ func TestReviewFindingsNameLinks(t *testing.T) {
 		t.Errorf("confirmed %+v", got)
 	}
 }
+
+// review-check --findings passes only when the latest round holds a
+// finding; a clean round needs no critic, and run verdict still refuses an
+// empty list.
+func TestReviewCheckFindingsFlag(t *testing.T) {
+	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
+	t0 := time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
+	store := run.NewStore(run.Dir(f.common))
+	err := store.Create("R11", run.Entry{
+		Type: run.TypeStarted, Step: "review", At: t0,
+		Started: &run.Started{Workflow: "plan", Change: "01M76F4G0JQ649RR29M9QPFX68", Title: "Plan it"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	app := func(e run.Entry) {
+		t.Helper()
+		e.At = t0
+		if err := store.Append("R11", e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return "R11"
+		}
+		return ""
+	}
+	app(run.Entry{Type: run.TypeEntered, Step: "review", Visit: 1})
+	if _, err := callOp(t, f.ctx, "run.review-check", `{"findings":true}`); err == nil {
+		t.Fatal("no round passed --findings")
+	}
+	app(run.Entry{Type: run.TypeFindings, Step: "review", Findings: []run.Finding{}})
+	if _, err := callOp(t, f.ctx, "run.review-check", `{"findings":true}`); err == nil {
+		t.Fatal("a clean round passed --findings")
+	}
+	f.ctx.Stdin = strings.NewReader(`{"verdicts":[]}`)
+	if _, err := callOp(t, f.ctx, "run.verdict", `{"file":"-"}`); err == nil {
+		t.Fatal("run verdict accepted an empty list")
+	}
+	app(run.Entry{Type: run.TypeEntered, Step: "review", Visit: 2})
+	app(run.Entry{Type: run.TypeFindings, Step: "review", Findings: []run.Finding{{ID: "f1", Kind: "k", Reason: "r"}}})
+	if _, err := callOp(t, f.ctx, "run.review-check", `{"findings":true}`); err != nil {
+		t.Fatalf("a round with a finding: %v", err)
+	}
+}

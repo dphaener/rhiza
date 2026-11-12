@@ -16420,6 +16420,10 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "findings": {
+            "description": "Only test that the latest round holds at least one finding: exit 0 if so, non-zero for a clean round, which needs no critic; judges and writes nothing",
+            "type": "boolean"
+          },
           "fresh": {
             "description": "Only test that the latest round postdates the latest revise visit (or the run has none): exit 0 if so, non-zero if not; judges and writes nothing",
             "type": "boolean"
