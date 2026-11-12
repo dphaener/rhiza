@@ -1,0 +1,40 @@
+{
+  "actor": "01M76QRK17AQWXK0MRR8G3WD43",
+  "after": [
+    "01M76QF9C6KR0K1HK1TPS0WMWW"
+  ],
+  "at": "2026-11-12T02:02:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 3, at ff79bd5e5: go test -trimpath -count=1 ./internal/ciworkflow/... passes (TestCIChangesDecidesFromGitDiff, TestCIGoJobsRunOnlyOnCodeChanges, TestCIModelJobRunsOnlyOnModelChanges, TestCICheckAggregatesEveryJob plus the existing trigger, checkout/run-name, concurrency and jobs/matrices tests). Read .github/workflows/ci.yml: changes outputs code from git diff --name-only against git merge-base of the PR base and HEAD, code=true on non-pull_request events; lint, scripts, api, rest, budgets need changes with if code == 'true'; model needs changes with if code == 'false' and runs make self-check then go test -trimpath ./internal/op -run TestEveryFieldInRepoLogIsKnown (passes locally); check needs changes, model and the five Go jobs, if: always(), fails unless changes succeeded, fails on any result other than success/skipped, and fails when only changes succeeded. Makefile has no diff from the merge-base. The retry's commit 5cdf2698e amends ci-yml-parallel-jobs' statement and acceptance to match the new check job, closing the model finding. make self-check reports only stale-render fails for this run's own untracked actor records, refreshed at close-out. The clause about the next model-only PR's gh run view can only be read after merge."
+        },
+        "handle": "ci-model-only-pr-verified-3",
+        "id": "01M76QVXQXF8H6622PMEGRYTBV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76QVXQXF8H6622PMAGYNTS4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76QVXQXF8H6622PMAGYNTS4",
+        "id": "01M76QVXRPAFXKTHFVYVC9H59F",
+        "link": "01M76QVXRPAFXKTHFVYR89GYPF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M768E0NH089HZ4WRR0SBBDAB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7684F6CEBCS33NW5DDK1BVP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76QVXSGHYQE7EPF0H4G3Q60",
+  "type": "ops",
+  "v": 1
+}
