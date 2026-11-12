@@ -124,6 +124,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza ship command`](#rhiza-ship-command)
 - [`rhiza ship deploy`](#rhiza-ship-deploy)
 - [`rhiza ship gate`](#rhiza-ship-gate)
+- [`rhiza ship generate`](#rhiza-ship-generate)
 - [`rhiza ship land`](#rhiza-ship-land)
 - [`rhiza ship merge`](#rhiza-ship-merge)
 - [`rhiza ship open-pr`](#rhiza-ship-open-pr)
@@ -516,7 +517,7 @@ rhiza daemon set <key> <value> [--project <project>]
 
 Arguments and flags:
 
-- `<key>`: The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout or ciWindow, or rhiza.autonomy.plan, accept, ship or signoff (required)
+- `<key>`: The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
 - `<value>`: The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes (required)
 - `--project`: The registered project a project setting is written to; default the current project
 
@@ -2234,7 +2235,7 @@ Arguments and flags:
 - `--settled`: Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it merges main into the branch as ship rebase does: a clean merge is pushed and reported not settled, a conflict in code is left in progress and reported settled (exit 0) with the conflict in its detail, and so is a clean merge the local gate failed on, left unpushed
 - `--main`: Check that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, locally with git and no wait on CI, instead of checking the pull request; a differing tree dispatches CI on the merge commit (once) and checks its runs as it does a pull request's, and a stop that cannot be waited out exits 75 with a stop: line
 - `--pr-open`: Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)
-- `--test-failures`: Exit 0 only if the head's latest ship check recorded at least one failing test read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)
+- `--test-failures`: Exit 0 only if the head's latest ship check recorded at least one failing test or recognised cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, a make target error) read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)
 - `--conflicts`: Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed or once the run has made 3 conflict fixes (merge commits on the branch with its Review: trailer); reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)
 - `--reruns`: How many times a head's failed jobs are rerun before its failure stands, at least 1; default 1
 - `--infra`: Exit 0 only if the head's latest failing ship check recorded a red head (red_head) with no failing test read from a CI log: an infra failure; exit 1 for a green head, a red with failing tests, or any other failure; reads the state file only and records nothing (for a step that routes an infra red to a wait)
@@ -2250,7 +2251,7 @@ Output (`--json` fields):
 - `conflicts` (array of string): The files of an unresolved merge of main (a conflict in code left in progress): with --settled the check reports settled, without it the check fails while the merge is unresolved
 - `detail` (string): Why it did not pass, such as no open pull request
 - `failed` (array of string): The names of the settled checks that did not pass
-- `findings` (array of object): One finding, with no leaf, per failing test, for a fix step; recorded in the state file as well
+- `findings` (array of object): One finding, with no leaf, per failing test or recognised CI cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, or a make target error), for a fix step; recorded in the state file as well
 - `green` (boolean): True if settled and every check passed (success, neutral or skipped)
 - `main` (boolean): True if it checked the merge commit on main rather than the pull request
 - `merge_conflict` (object): A merge of main left in progress by a conflict in code: the files, origin/main's commits with their change sets and the branch's change set
@@ -2349,6 +2350,25 @@ Output (`--json` fields):
 - `passed` (boolean): True if the gate ran and exited 0
 - `reason` (string): Why it ran (why CI is unstable) or why it was skipped
 - `skipped` (boolean): True if the gate did not run: CI is stable, or no gate is set
+
+Exit code: set by the result, besides the shared codes.
+
+## rhiza ship generate
+
+Run the project's generate command (rhiza.ship.generate) in the current worktree and stage the files it changed; with no command set, do nothing.
+
+```
+rhiza ship generate
+```
+
+Output (`--json` fields):
+
+- `command` (string): The generate command (rhiza.ship.generate); empty if none is set, which skips it
+- `error` (string): How a failing command failed: its exit status or a timeout
+- `output` (string): The end of the command's combined output, when it ran
+- `passed` (boolean): True if the command ran and exited 0
+- `skipped` (boolean): True if no generate command is set
+- `staged` (array of string): The files the command changed, now staged
 
 Exit code: set by the result, besides the shared codes.
 

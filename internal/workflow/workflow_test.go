@@ -1513,7 +1513,7 @@ func TestRenderStepAddsNoCommitWhenClean(t *testing.T) {
 			}
 			// The stub's render rewrites the rendered page with the
 			// content of $STUB_PAGE, as a real render does when stale.
-			stub := "#!/bin/sh\n[ \"$1\" = render ] || exit 2\nmkdir -p .rhiza/rendered\nprintf '%s\\n' \"$STUB_PAGE\" > .rhiza/rendered/index.md\n"
+			stub := "#!/bin/sh\n[ \"$1 $2\" = \"ship generate\" ] && exit 0\n[ \"$1\" = render ] || exit 2\nmkdir -p .rhiza/rendered\nprintf '%s\\n' \"$STUB_PAGE\" > .rhiza/rendered/index.md\n"
 			if err := os.WriteFile(filepath.Join(bin, "rhiza"), []byte(stub), 0o755); err != nil {
 				t.Fatal(err)
 			}
@@ -1760,7 +1760,7 @@ func TestPlanRerunsCIFlakes(t *testing.T) {
 	}
 }
 
-// The ci-fix fixer reproduces each failing test locally, fixes or quarantines
+// The ci-fix fixer reproduces each CI finding (failing test or non-test cause) locally, fixes or quarantines
 // it with a bug filed, and commits only once the tests pass locally; the
 // prompt stays repo-agnostic, naming no Go, make or testscript command.
 func TestShipChangeCIFixPrompt(t *testing.T) {
@@ -1773,7 +1773,7 @@ func TestShipChangeCIFixPrompt(t *testing.T) {
 		t.Fatal(err)
 	}
 	p := def.Steps["ci-fix"].Prompt
-	for _, want := range []string{"Reproduce each failing test locally", "repeating it until it fails again or plainly passes", "quarantine it", "bug request filed and named at the skip", "Commit only once those tests and the packages you touched pass locally", "never push to see"} {
+	for _, want := range []string{"Fix the CI findings", "failing tests, and recognised non-test causes", "self-check, fmt-check, vet or build-target failure", "Reproduce each finding locally", "repeating a test until it fails again or plainly passes", "regenerate them", "quarantine it", "bug request filed and named at the skip", "Commit only once those commands and the packages you touched pass locally", "never push to see"} {
 		if !strings.Contains(p, want) {
 			t.Errorf("ci-fix prompt lacks %q", want)
 		}

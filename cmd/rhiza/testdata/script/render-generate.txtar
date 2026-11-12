@@ -1,0 +1,99 @@
+# The generate setting and the render step of the built-in build workflow.
+# rhiza.ship.generate is a project setting, empty by default (empty
+# skips). Set to a command that rewrites a tracked file, a build run's
+# render step runs it before rhiza render and commits what it changed with
+# the Change trailer; a failing command fails the step.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec sh -c 'echo old > generated.txt'
+exec git add -A
+exec git commit -qm init
+
+exec rhiza daemon settings
+stdout 'rhiza.ship.generate = "" \(default, project\)'
+exec rhiza daemon settings --json
+stdout '"key": "rhiza.ship.generate"'
+stdout '"source": "default"'
+
+# Empty: skipped, and nothing is staged.
+exec rhiza ship generate
+stdout 'nothing to generate'
+exec git status --porcelain --untracked-files=no
+! stdout .
+
+exec rhiza change new 'One leaf' --title 'One leaf'
+exec rhiza add capability first --field 'statement=Does first'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm leaf
+
+# A build run with the setting set to a command rewriting a tracked file.
+exec rhiza daemon set rhiza.ship.generate 'echo new > generated.txt'
+exec rhiza daemon settings
+stdout 'rhiza.ship.generate = echo new > generated.txt \(git config, project\)'
+exec sh -c 'rhiza run start --foreground --workflow build --permission-mode manual --json; echo exit=$?'
+stdout '"state": "succeeded"'
+stdout '^exit=0$'
+
+# The render step committed the regenerated file with the Change trailer.
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git log -1 --format=%s'
+stdout '^Render after the build$'
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git log -1 --format=%B'
+stdout '^Change: [0-9A-Z]{26}$'
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git show HEAD:generated.txt'
+stdout '^new$'
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git status --porcelain --untracked-files=no'
+! stdout .
+
+# A failing command fails the command, and so the step.
+exec rhiza daemon set rhiza.ship.generate 'echo boom; exit 3'
+! exec rhiza ship generate
+stdout 'Generate failed'
+stdout 'boom'
+
+fold-ok
+
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+model=none
+while [ $# -gt 0 ]; do
+	if [ "$1" = --model ]; then
+		model=$2
+	fi
+	shift
+done
+echo "role=$RHIZA_ROLE leaf=$RHIZA_LEAF attempt=$RHIZA_ATTEMPT model=$model" >> "$WORK/claude.log"
+if [ "$RHIZA_ROLE" = builder ]; then
+	pwd -P > "$WORK/build.pwd"
+	echo "$RHIZA_LEAF" > "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt"
+	git commit -q -m "build $RHIZA_LEAF" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
+	exit 0
+fi
+rhiza add evidence "$RHIZA_LEAF-verified" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+rhiza link "$RHIZA_LEAF-verified" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+exit 0

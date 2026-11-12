@@ -1,0 +1,40 @@
+{
+  "actor": "01M76J82ZYHSY3H7755GZHF5BE",
+  "after": [
+    "01M76K0S701J0AY9GMZ5VFVXCB"
+  ],
+  "at": "2026-11-12T00:43:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified as claude-code-161be154 at 7e7d2ba60. go test -trimpath ./internal/workflow/... ok. go test -trimpath ./internal/api/... ok (379s) from a git-archive copy outside ~/code; run inside ~/code the tests all passed, but the root-state guard flagged .rhiza-root/usage.live.json, which the live root daemon writes, not this change. go test -trimpath ./cmd/rhiza -run 'TestScripts/(render-generate|describe-golden)' PASS: render-generate shows daemon settings listing rhiza.ship.generate with an empty default, empty skipping with nothing staged, a build run's render step committing the rewritten tracked file with the Change trailer and a clean tree, and a failing command failing (exit 1, output shown); the render steps chain it with && before rhiza render, so a failure fails the step. This repo's git config sets rhiza.ship.generate=make docs; make docs leaves docs/reference unchanged. make self-check at the leaf commit fails only on stale .rhiza/rendered (the run's render step refreshes it); in a scratch clone after rhiza render, make self-check is ok. Diff read: build.toml/review.toml run ship generate first and commit all staged changes with the Change trailer; ship.generate stages only paths whose status or content changed since before the command."
+        },
+        "handle": "render-runs-generate-verified",
+        "id": "01M76KB7GPF1A21S12B8STSY60",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76KB7GPF1A21S12B5TJBF2J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76KB7GPF1A21S12B5TJBF2J",
+        "id": "01M76KB7HCTEJ5CY93MB2BQYSK",
+        "link": "01M76KB7HCTEJ5CY93M7SYKB2N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76BDZEWD3YNK3ZSSAZ35FRZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B50FYAFEWQS29QZCGMTPN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76KB7J0777YEQ9A3JRXCVC6",
+  "type": "ops",
+  "v": 1
+}
