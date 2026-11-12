@@ -109,7 +109,7 @@ func TestReviewFindingsNameLinks(t *testing.T) {
 		return ""
 	}
 	findings := func(node string) (any, error) {
-		f.ctx.Stdin = strings.NewReader(`{"findings":[{"node":"` + node + `","kind":"unreal-depends-on","reason":"Not real"}]}`)
+		f.ctx.Stdin = strings.NewReader(`{"findings":[{"node":"` + node + `","kind":"contradiction","reason":"Not real"}]}`)
 		return callOp(t, f.ctx, "run.findings", `{"file":"-"}`)
 	}
 

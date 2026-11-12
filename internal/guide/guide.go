@@ -18,7 +18,7 @@ const (
 	// SkillCap is the most a skill may cost.
 	SkillCap = 2000
 	// TopicCap is the most a topic may cost.
-	TopicCap = 800
+	TopicCap = 1000
 	// StartCap is the most the session-start context may cost.
 	StartCap = 100
 )

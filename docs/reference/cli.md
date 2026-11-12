@@ -1751,7 +1751,7 @@ Exit code: set by the result, besides the shared codes.
 
 ## rhiza run review-check
 
-Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass.
+Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent major, the rest minor), fail with one before round 3, else leave each as a question and pass.
 
 ```
 rhiza run review-check [--fresh] [--findings]
@@ -1766,7 +1766,7 @@ Arguments and flags:
 
 Output (`--json` fields):
 
-- `confirmed` (array of object): The round's findings the critic confirmed, in order
+- `confirmed` (array of object): The round's major findings the critic confirmed (a confirmed minor is never fixed), in order
 - `dry_run` (boolean): True if nothing was written or journalled
 - `passed` (boolean): True: the review may go on to the gate
 - `questions` (array of object): From round 3, the question nodes left for the confirmed findings, in order
@@ -1946,7 +1946,7 @@ rhiza run verdict <file> [--check <check>]
 
 Appends to the log.
 
-Input: {"verdicts":[{"finding":"f1","verdict":"confirmed"|"dropped","reason":...},...]}, at least one; each names a finding of the latest round (with --check, of the check's latest round). Its schema: `rhiza describe run.verdict --json`.
+Input: {"verdicts":[{"finding":"f1","verdict":"confirmed"|"dropped"|"downgraded","reason":...,"severity":...},...]}, at least one; each names a finding of the latest round (with --check, of the check's latest round). Its schema: `rhiza describe run.verdict --json`.
 
 Arguments and flags:
 

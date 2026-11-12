@@ -1,0 +1,29 @@
+{
+  "actor": "01M78Z0CWB5JJ0C1A55NJVR1E4",
+  "after": [
+    "01M78YPWDZE3X92G6G7GTX5W4R"
+  ],
+  "at": "2026-11-12T22:46:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5WSGDAB8W8BWQX6VG29YKDV",
+        "handle": null,
+        "id": "01M78Z1TNP67C7EX1TCHN6WFQZ",
+        "node": "01M5WSGDAB8W8BWQX6VEWR1FVY",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript in a run with journaled rounds: no confirmed finding passes; one confirmed major-kind finding in round 1 or 2 fails and adds nothing; one confirmed in round 3 adds a question node whose statement holds the finding and its reason, linked blocks to the capability it names, journals it with an asked entry per added question, and passes. go test -trimpath ./internal/api -run TestPlanReviewDowngradeByKind shows a confirmed missing-provenance finding and a missing-acceptance one downgraded to minor pass review-check and gateReview, and the missing-acceptance one, once confirmed, fails review-check.",
+          "statement": "rhiza run review-check counts only the latest round's confirmed findings that are still major: a finding's own severity, or the severity a critic downgraded it to, else its kind's (missing-acceptance, contradiction and outside-intent are major; missing-provenance and unreal-depends-on are minor), a confirmed minor or nit never counting. It passes when the latest round has none and fails when it has any in round 1 or 2; after a third round that still has them it adds each as a question node (in the run's change set while it is open, else where review-questions-follow-the-node puts it), linked blocks to the node it names when that is a capability, journals them, and passes, so the plan reaches the gate with those questions open; a confirmed minor-kind finding is never added as a question. It also journals each question it adds as an asked entry, so that in an autonomous run the arbiter decides it. The gate's review check (gateReview) counts the same findings."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XRYNK4PGG53XNC1ZWFTKD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78Z1TPPA5HYS1EEAWJHCN1R",
+  "type": "ops",
+  "v": 1
+}
