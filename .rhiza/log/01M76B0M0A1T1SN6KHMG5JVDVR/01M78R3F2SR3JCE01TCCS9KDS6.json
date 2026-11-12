@@ -1,0 +1,40 @@
+{
+  "actor": "01M78R1YPTD2P1RADDSQTP3XCA",
+  "after": [
+    "01M78QZVH3RXTSG3CND7XPY720"
+  ],
+  "at": "2026-11-12T20:45:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 4d496116f, the fix for the confirmed blocker that a signed-off major was never cut. go test -trimpath -count=1 ./tools/release/... -run 'TestMajor|TestCutRealGit' -v: PASS. TestMajor holds the major as a draft while unsigned. Once the draft is published, the fake fetch lands the lightweight v2.0.0 in the fixture repo, and the run tags and pushes once. A plain tag pushes once, a published tag at another commit is never moved, and a failing gate blocks with no draft. TestCutRealGitKeepsHeadings/replacing_a_published_lightweight_tag uses real git with a bare origin and its fetch. It ends with origin's v2.0.0 as an annotated tag that keeps the '## Breaking changes' heading. With next.go and breaking.go reverted to HEAD~1 in a scratch worktree, both tests fail with 'none: no release since v2.0.0'. The full go test -trimpath ./tools/release/... passes. In the diff, evaluate and breakingAgainstLastTag call describe without --tags, so they read annotated tags only."
+        },
+        "handle": "major-release-signoff-verified-2",
+        "id": "01M78R3ETMC50J2XNYV0YB8017",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78R3ETMC50J2XNYV0V1K1VW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78R3ETMC50J2XNYV0V1K1VW",
+        "id": "01M78R3EYVGD6426NA45HRQFJB",
+        "link": "01M78R3EYVGD6426NA44053WS0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7EBC8W8NQW1GXBYYB3Z0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B0M0A1T1SN6KHMG5JVDVR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78R3F2SR3JCE01TCCS9KDS6",
+  "type": "ops",
+  "v": 1
+}
