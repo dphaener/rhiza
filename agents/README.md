@@ -9,3 +9,4 @@ reads it and when. Repo-wide guidance for every agent is in
 
 - [orchestrator.md](orchestrator.md): the orchestrator agent reads it before running Rhiza's own development (watch loop, main tree, load, PRs, owner).
 - [developing.md](developing.md): any agent changing Rhiza's code or running its tests reads it first (testscripts, scratch binaries, `RHIZA_ROOT`, `GOTMPDIR`, the root daemon, `rhiza render`).
+- [run-agents.md](run-agents.md): builders, verifiers, checks and fixers working on Rhiza itself read it (commit trailers, an already-landed run change set, findings HEAD already fixes, PR conflicts, hand pushes to a run's PR).
