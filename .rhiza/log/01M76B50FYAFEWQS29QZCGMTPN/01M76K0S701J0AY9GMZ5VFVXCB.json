@@ -1,0 +1,40 @@
+{
+  "actor": "01M76JMJJJMKDK855FP797CW8K",
+  "after": [
+    "01M76J5FJMJQPKN3790JKVRQBP"
+  ],
+  "at": "2026-11-12T00:37:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ce2b6bdc2: go test -trimpath ./internal/workflow -run TestShipChangeCIFixPrompt PASS (asserts 'Fix the CI findings', 'failing tests, and recognised non-test causes', 'self-check, fmt-check, vet or build-target failure', 'Reproduce each finding locally', 'regenerate them', plus the kept quarantine/bug-filed/commit-only-once-passing/never-push-to-see rules); go test -trimpath ./internal/workflow/... ok; go test -trimpath ./cmd/rhiza -run 'TestScripts/run-ship' ok (255s), run-ship-ci-lint-fix PASS: fake gh lint check stays FAILURE after its one rerun with 'fail render docs/reference/cli.md: differs from what rhiza docs writes' and 'make: *** [Makefile:186: self-check] Error 1' in --log-failed, fake fixer greps those lines from rhiza ship check --json; journal goes pr-green, conflict-triage, gate-triage, ci-triage pass -> ci-fix pass -> render-pr -> pr-green pass -> signoff, with no wait-ci-rerun. Diff read: the ship-change.toml ci-fix prompt and its .rhiza/workflows/docs.toml copy are identical, and run-ship-ci-fix.txtar's match string was updated. make self-check fails only on stale .rhiza/rendered actor/index files from run actor records, which render-pr regenerates, not on this leaf."
+        },
+        "handle": "ci-fix-fixes-ci-findings-verified",
+        "id": "01M76K0S4NQFJN57TKPME13741",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76K0S4NQFJN57TKPM57XC4Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76K0S4NQFJN57TKPM57XC4Y",
+        "id": "01M76K0S5YGZWBVS2K40RBNNB3",
+        "link": "01M76K0S5YGZWBVS2K3Z96Y71P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76BDZC7N8TC2CC7WA2RARN9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B50FYAFEWQS29QZCGMTPN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76K0S701J0AY9GMZ5VFVXCB",
+  "type": "ops",
+  "v": 1
+}
