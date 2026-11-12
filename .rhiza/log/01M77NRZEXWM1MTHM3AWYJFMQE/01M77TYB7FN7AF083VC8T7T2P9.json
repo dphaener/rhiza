@@ -1,0 +1,40 @@
+{
+  "actor": "01M77T10VAR5A1WR2939DB876P",
+  "after": [
+    "01M77SRQ66ZEBQD0F6HE0DS8GC"
+  ],
+  "at": "2026-11-12T12:15:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2, at a511eec72 (detached checkout). The fix commit updates TestPlanBuiltin to the plan order review -> has-findings -> critic/fresh, which resolves the quality finding that internal/workflow was red. Ran with GOTMPDIR outside the worktree path: go test -count=1 -trimpath ./internal/workflow/... ok (incl. TestPlanBuiltin, TestPlanCleanRoundSkipsCritic, which reads both built-in plan and plan-milestone); go test -trimpath ./internal/api -run 'TestReviewCheckFindingsFlag|TestReviewCheck' PASS (clean or absent round fails review-check --findings, a round with a finding passes, run verdict with {\"verdicts\":[]} errors); go test -count=1 -trimpath ./cmd/rhiza -run TestScripts/(plan-workflow|plan-workflow-autonomous|plan-workflow-pr|plan-milestone-backlog|plan-review-visit-round|describe-golden) ok (plan-workflow-autonomous: review -> has-findings fail -> fresh -> check -> gate with no critic session; plan-workflow, plan-review-visit-round and plan-milestone-backlog: a round with findings goes to the critic). Diff read: both plan.toml and plan-milestone.toml add a has-findings command step running rhiza run review-check --findings, with on.pass critic and on.fail fresh. Note: plan-review-visit-round fails at line 46 only when GOTMPDIR contains the word critic (this checkout's path does), because $WORK appears in run status output. That comes from the environment, not from the change."
+        },
+        "handle": "plan-clean-round-skips-critic-step-verified-2",
+        "id": "01M77TYB60MB1GYZM2RGF3QCF5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77TYB60MB1GYZM2RD7DQXBT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77TYB60MB1GYZM2RD7DQXBT",
+        "id": "01M77TYB6VNFYPGAHC0H1WFRVB",
+        "link": "01M77TYB6VNFYPGAHC0GJZXTCB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NZCXG646BQB0FY09EKQPW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77NRZEXWM1MTHM3AWYJFMQE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77TYB7FN7AF083VC8T7T2P9",
+  "type": "ops",
+  "v": 1
+}

@@ -33,7 +33,16 @@ prompt = "Review the plan of change set {change} as the reviewer: follow `rhiza 
 until = "rhiza run round-recorded"
 until_when = "done"
 max_visits = 3
+on.pass = "has-findings"
+
+# A clean round (no findings) has nothing for a critic to judge, and
+# rhiza run verdict refuses an empty list: it goes straight to fresh.
+[step.has-findings]
+kind = "command"
+run = "rhiza run review-check --findings"
+max_visits = 3
 on.pass = "critic"
+on.fail = "fresh"
 
 [step.critic]
 kind = "agent"

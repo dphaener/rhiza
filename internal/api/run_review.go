@@ -932,7 +932,8 @@ const runReviewCheckNext = "rhiza describe run.review-check"
 
 // RunReviewCheckRequest takes nothing: the run is RHIZA_RUN's.
 type RunReviewCheckRequest struct {
-	Fresh bool `json:"fresh,omitempty" flag:"fresh" desc:"Only test that the latest round postdates the latest revise visit (or the run has none): exit 0 if so, non-zero if not; judges and writes nothing"`
+	Fresh    bool `json:"fresh,omitempty" flag:"fresh" desc:"Only test that the latest round postdates the latest revise visit (or the run has none): exit 0 if so, non-zero if not; judges and writes nothing"`
+	Findings bool `json:"findings,omitempty" flag:"findings" desc:"Only test that the latest round holds at least one finding: exit 0 if so, non-zero for a clean round, which needs no critic; judges and writes nothing"`
 }
 
 // RunReviewQuestion is a question node run.review-check left for a
@@ -1026,6 +1027,14 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 	if req.(RunReviewCheckRequest).Fresh {
 		resp := RunReviewCheckResponse{Run: rr.id, Round: len(rr.state.Rounds), Passed: true, Confirmed: []RunFinding{}, DryRun: ctx.DryRun}
 		return resp, nil
+	}
+	if req.(RunReviewCheckRequest).Findings {
+		rd, ok := rr.state.LatestRound()
+		if !ok || len(rd.Findings) == 0 {
+			return nil, Conflictf("%s: run %s's latest review round holds no finding, so it needs no critic", cmd, rr.id).
+				WithNext("rhiza run status " + rr.id)
+		}
+		return RunReviewCheckResponse{Run: rr.id, Round: rd.Number, Passed: true, Confirmed: []RunFinding{}, DryRun: ctx.DryRun}, nil
 	}
 	rd, ok := rr.state.LatestRound()
 	if !ok {

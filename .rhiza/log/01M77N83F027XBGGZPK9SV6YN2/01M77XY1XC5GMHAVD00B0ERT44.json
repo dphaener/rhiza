@@ -1,0 +1,41 @@
+{
+  "actor": "01M77XWM4SQ59V1CM1C7JCZ8TE",
+  "after": [
+    "01M77XW441VZKBTAW16XSGMWBB"
+  ],
+  "at": "2026-11-12T13:07:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Both change sets answer the same bug (run 01M77DW: land refused on a stale-base model conflict, land-triage only passes recorded gate failures, so a green PR stranded), and both designs fix it with the same core: a model-conflict fixer running `rhiza set --rebase`, bounded, then back through the gate and land. 01M77N1G has already landed on main through #484, reviewed and merged, with its capabilities (ship-land-records-model-conflict, ship-change-model-conflict-fix-step) in the landed model and its code live for every run. Replacing it now would mean rewriting landed, working code and retiring landed capabilities to ship an equivalent fix, which adds risk and churn for no change in outcome, against m4-runs-hold-up. The earlier question ship-land-model-conflict-two-designs (retire one of the two) was never answered while both were unlanded; main's landing settles it in 01M77N1G's favour. Main's version is also the narrower one (one recorded conflict, a head check and a fix count), which keeps the merge small. The only real difference in behaviour is this branch's early pre-push failure on the shipping change set's own conflicts; it is useful but not needed for the bug, so it is kept only as a clean addition on main's shapes and dropped otherwise rather than reopening main's design.",
+          "statement": "The merge keeps main's design (change set 01M77N1G, Decision ship-land-model-conflict-rebase, landed via #484) for a land refused on a model conflict: land records the one conflict in state.model_conflict, `rhiza ship check --model-conflict` passes only at the refused head and under 3 Model-Conflict: commits and prints both intents, and the route stays land-triage → land-conflict-triage → model-conflict-fix → gate-land. In each clashing file (internal/api/ship.go, internal/model/apply.go, both ship-change.toml, workflow_test.go, cli.md, describe-golden) take main's side and drop this branch's competing implementation: land's WhatIf pre-check and model_conflicts list, the model-conflict-triage / gate-model-conflict-triage / pr-model-conflict-fix / render-model-conflict steps, and `ship gate --model-conflict`. This branch's one piece main lacks, failing ship check before push on the shipping change set's own model conflict, ships only if it fits on main's state and steps without changing main's --model-conflict flag, output or route (a pre-push failure routed to main's model-conflict-fix); if it does not fit cleanly, drop it, since main's land-time repair already closes the bug. This change set's leaves are reworded to describe what ships or retired, so the model matches the code.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "merge-keeps-main-model-conflict-design",
+        "id": "01M77XY1VBBKQ4S7DNMZ9G7P8E",
+        "key": null,
+        "kind": "decision",
+        "node": "01M77XY1VBBKQ4S7DNMXK9EDX0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77XY1VBBKQ4S7DNMXK9EDX0",
+        "id": "01M77XY1WF3ETYZWKVKN40W00X",
+        "link": "01M77XY1WF3ETYZWKVKK3S518J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77XVZ8NDQW5V75QHY9SDTK2",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M77N83F027XBGGZPK9SV6YN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77XY1XC5GMHAVD00B0ERT44",
+  "type": "ops",
+  "v": 1
+}

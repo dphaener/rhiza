@@ -52,8 +52,9 @@ stdout 'step interview: session [0-9a-f-]+ has the answer to question question-[
 exec rhiza run status
 stdout '^- interview \(visit 1\): pass, then milestone-check, '
 stdout '^- milestone-check \(visit 1\): pass, then review: exit 0$'
-stdout '^- review \(visit 1\): pass, then critic, '
-stdout '^- critic \(visit 1\): pass, then fresh, '
+stdout '^- review \(visit 1\): pass, then has-findings, '
+stdout '^- has-findings \(visit 1\): fail, then fresh: exit 3'
+! stdout '^- critic \(visit 1\)'
 stdout '^- fresh \(visit 1\): pass, then check: exit 0$'
 stdout '^- check \(visit 1\): pass, then gate: exit 0$'
 stdout '^- gate \(visit 1\): pass, then open-pr: exit 0$'
@@ -79,7 +80,7 @@ exec cat $WORK/prompts.log
 stdout -count=1 '^/rhiza-plan Plan change set 01[0-9A-Z]{24} \(Plan exports\) '
 stdout -count=1 '^Decide question [0-9A-Z]{26}: follow rhiza guide arbiter\.$'
 stdout -count=1 'as the reviewer'
-stdout -count=1 'as the critic'
+! stdout 'as the critic'
 ! stdout 'as the reviser'
 
 # The gate accepted the run's intention change set with rule autonomous;
@@ -104,7 +105,7 @@ stdout '^Render the plan$'
 fold-ok
 # Each session's pane closed as it finished, before the next session
 # opened: the arbiter's once its verdict was in, the planner's once its
-# step passed, then the reviewer's and the critic's. Close-out only sweeps
+# step passed, then the reviewer's (a clean round has no critic). Close-out only sweeps
 # the tabs after.
 cmp $WORK/panes.log $WORK/want-panes.log
 
@@ -115,9 +116,6 @@ block close
 block close
 window new
 block close
-window new
-block close
-window close
 window close
 window close
 window close

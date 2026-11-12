@@ -1,0 +1,33 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M77XZHKMYT78ZXMPT8CJ5M7V"
+  ],
+  "at": "2026-11-12T13:16:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "2f0a4f8e90948ab576daf4fbdc492be5b8c09ad7",
+          "pr": "https://github.com/dphaener/rhiza/pull/485",
+          "result": "8 checks passed: changes SUCCESS, model SUCCESS, lint SKIPPED, scripts SKIPPED, api SKIPPED, rest SKIPPED, budgets SKIPPED, check SUCCESS",
+          "statement": "Pull request #485 (https://github.com/dphaener/rhiza/pull/485) passed CI at 2f0a4f8",
+          "status": "verified"
+        },
+        "handle": "pr-485-fix-watchdog-unmerged-pr-at-01m77n83f027",
+        "id": "01M77YEQ594GH07KG2W90Y8ZK6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77YEQ581RD2KTHFNRY12B42",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M77N83F027XBGGZPK9SV6YN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77YEQ9TMBFK4NJT7F2TSJ5J",
+  "type": "ops",
+  "v": 1
+}
