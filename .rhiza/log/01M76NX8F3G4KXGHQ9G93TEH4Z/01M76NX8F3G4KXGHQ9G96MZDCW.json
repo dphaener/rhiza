@@ -1,0 +1,18 @@
+{
+  "actor": "01M76ED4TF1BFCPTDFQJ6SY0N9",
+  "after": [],
+  "at": "2026-11-12T01:28:15Z",
+  "body": {
+    "intent": "agents/orchestrator.md: how the orchestrator runs Rhiza's own development, consulting the owner before judgment calls and acting autonomously only when granted",
+    "kind": "intention",
+    "sources": [
+      "01M76NVMK5983DAD0RYY0B0BVG"
+    ],
+    "title": "Orchestrator agent doc"
+  },
+  "change_set": "01M76NX8F3G4KXGHQ9G93TEH4Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76NX8F3G4KXGHQ9G96MZDCW",
+  "type": "open",
+  "v": 2
+}

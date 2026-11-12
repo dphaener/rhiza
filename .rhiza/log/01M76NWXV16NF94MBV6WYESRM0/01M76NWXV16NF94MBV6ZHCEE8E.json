@@ -1,0 +1,18 @@
+{
+  "actor": "01M76ED4TF1BFCPTDFQJ6SY0N9",
+  "after": [],
+  "at": "2026-11-12T01:28:04Z",
+  "body": {
+    "intent": "AGENTS.md is this repo's agent entry point: CLAUDE.md's guidance moves into AGENTS.md and CLAUDE.md becomes an @AGENTS.md import, AGENTS.md links agents/README.md (the index of agents/ docs), a Go test keeps the index and relative links consistent, and the tests and capabilities that read CLAUDE.md read AGENTS.md",
+    "kind": "intention",
+    "sources": [
+      "01M76NVMK5983DAD0RYY0B0BVG"
+    ],
+    "title": "AGENTS.md entry point"
+  },
+  "change_set": "01M76NWXV16NF94MBV6WYESRM0",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76NWXV16NF94MBV6ZHCEE8E",
+  "type": "open",
+  "v": 2
+}
