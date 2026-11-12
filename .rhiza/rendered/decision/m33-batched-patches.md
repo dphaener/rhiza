@@ -24,6 +24,7 @@ Bug fixes are released as a batched patch, except a fix marked severe, which is 
 
 - decided-by [m33-release-policy](../intent/milestone-33/m33-release-policy.md)
 - decided-by [release-marks](../capability/rhiza/distribution/release-marks.md)
+- decided-by [release-gates](../capability/rhiza/distribution/release-gates.md)
 
 ## History
 
