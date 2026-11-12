@@ -354,8 +354,14 @@ func TestWrite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if mode := info.Mode().Perm(); mode != 0o644 {
-		t.Errorf("mode = %o, want 644", mode)
+	if mode := info.Mode().Perm(); mode != 0o444 {
+		t.Errorf("mode = %o, want 444", mode)
+	}
+	if os.Getuid() != 0 {
+		if f, err := os.OpenFile(p, os.O_WRONLY|os.O_TRUNC, 0); err == nil {
+			f.Close()
+			t.Error("opening an entry for writing succeeded, want a permission error")
+		}
 	}
 	b, err := os.ReadFile(p)
 	if err != nil {

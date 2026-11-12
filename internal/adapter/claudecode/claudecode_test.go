@@ -924,3 +924,32 @@ func TestScratchGlobs(t *testing.T) {
 		}
 	}
 }
+
+func TestGuardReply(t *testing.T) {
+	cases := []struct {
+		name, payload string
+		deny          bool
+	}{
+		{"write abs", `{"cwd":"/w","tool_name":"Write","tool_input":{"file_path":"/w/.rhiza/log/a/b.json"}}`, true},
+		{"write rel", `{"cwd":"/w","tool_name":"Write","tool_input":{"file_path":".rhiza/log/a/b.json"}}`, true},
+		{"edit", `{"cwd":"/w","tool_name":"Edit","tool_input":{"file_path":"/w/.rhiza/log/a/b.json"}}`, true},
+		{"multiedit dotdot", `{"cwd":"/w/src","tool_name":"MultiEdit","tool_input":{"file_path":"../.rhiza/log/a/b.json"}}`, true},
+		{"notebook", `{"cwd":"/w","tool_name":"NotebookEdit","tool_input":{"notebook_path":".rhiza/log/a/b.ipynb"}}`, true},
+		{"other path", `{"cwd":"/w","tool_name":"Write","tool_input":{"file_path":"/w/.rhiza/model.json"}}`, false},
+		{"bash", `{"cwd":"/w","tool_name":"Bash","tool_input":{"command":"echo > .rhiza/log/a/b.json"}}`, false},
+		{"read", `{"cwd":"/w","tool_name":"Read","tool_input":{"file_path":"/w/.rhiza/log/a/b.json"}}`, false},
+	}
+	for _, c := range cases {
+		reply, ok, err := Adapter{}.GuardReply("PreToolUse", []byte(c.payload), "use rhiza apply")
+		if err != nil || ok != c.deny {
+			t.Errorf("%s: ok=%v err=%v, want %v", c.name, ok, err, c.deny)
+			continue
+		}
+		if ok && !strings.Contains(string(reply), `"permissionDecision":"deny"`) {
+			t.Errorf("%s: reply %s", c.name, reply)
+		}
+	}
+	if _, ok, _ := (Adapter{}).GuardReply("PostToolUse", []byte(cases[0].payload), "x"); ok {
+		t.Error("PostToolUse denied")
+	}
+}

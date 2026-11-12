@@ -1,6 +1,7 @@
 package index
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -516,5 +517,34 @@ func TestRemoveDeletesTheWorktreesDatabaseOnly(t *testing.T) {
 	}
 	if err := Remove(a); err != nil {
 		t.Fatalf("Remove with no database: %v", err)
+	}
+}
+
+func TestStoredEntry(t *testing.T) {
+	f := newFixture(t)
+	cs := landedSet(f, 1)
+	db := f.dbPath()
+	x := openT(t, f, db, nil)
+	eid := eID(1)
+	want, err := os.ReadFile(filepath.Join(f.gdir, entryPath(cs, eid)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, ok, err := x.StoredEntry(cs, eid)
+	if err != nil || !ok || !bytes.Equal(got, want) {
+		t.Fatalf("StoredEntry = %q, %v, %v; want %q", got, ok, err, want)
+	}
+	// Overwriting the file leaves the stored bytes alone.
+	if err := os.WriteFile(filepath.Join(f.gdir, entryPath(cs, eid)), []byte("junk"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	x.Close()
+	x = openT(t, f, db, nil)
+	if got, ok, _ := x.StoredEntry(cs, eid); !ok || !bytes.Equal(got, want) {
+		t.Fatalf("after overwrite StoredEntry = %q, %v", got, ok)
+	}
+	// An entry the index never saw has no bytes.
+	if _, ok, err := x.StoredEntry(cs, eID(999)); ok || err != nil {
+		t.Fatalf("unknown entry: %v, %v", ok, err)
 	}
 }

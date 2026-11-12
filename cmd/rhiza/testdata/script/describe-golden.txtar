@@ -8142,6 +8142,92 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "repair",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True when nothing was written",
+            "type": "boolean"
+          },
+          "lost": {
+            "description": "The entries that cannot be restored, with why",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "Where the original bytes come from: HEAD or index; empty when there are none",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "The entry file, relative to the project root",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "What was wrong with it",
+                  "type": "string"
+                },
+                "why": {
+                  "description": "Why it cannot be restored; empty when it can",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "reason"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "restored": {
+            "description": "The entries restored, or with --dry-run the ones that would be",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "Where the original bytes come from: HEAD or index; empty when there are none",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "The entry file, relative to the project root",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "What was wrong with it",
+                  "type": "string"
+                },
+                "why": {
+                  "description": "Why it cannot be restored; empty when it can",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "reason"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "dry_run",
+          "lost",
+          "restored"
+        ],
+        "type": "object"
+      },
+      "summary": "Restore the damaged log entries render refuses, from HEAD or the persistent index",
+      "write": false
+    },
+    {
       "name": "request",
       "request": {
         "additionalProperties": false,
