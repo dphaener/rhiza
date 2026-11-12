@@ -27,6 +27,17 @@ func run(args []string) error {
 		fmt.Println(v)
 		return nil
 	}
+	if len(args) > 0 && args[0] == "breaking" {
+		tag, bs, err := breakingAgainstLastTag(".")
+		if err != nil {
+			return err
+		}
+		for _, b := range bs {
+			fmt.Println(b)
+		}
+		fmt.Fprintf(os.Stderr, "%d breaking difference(s) since %s\n", len(bs), tag)
+		return nil
+	}
 	fs := flag.NewFlagSet("release", flag.ContinueOnError)
 	var o release.Options
 	fs.StringVar(&o.Dist, "dist", "dist", "GoReleaser dist folder")
