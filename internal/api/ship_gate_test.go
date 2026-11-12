@@ -50,6 +50,16 @@ func TestShipLocalGate(t *testing.T) {
 			t.Errorf("resp = %+v", r)
 		}
 	})
+	t.Run("unidentified flake only skips with the reason", func(t *testing.T) {
+		f := gateFixture(t, "echo gate-ran; exit 1", false)
+		if err := writeAtomic(ciStabilityPath(f.common), []byte(`{"runs":[{"head":"a","result":"green","time":"x","flakes":["ci / UNKNOWN STEP"]}]}`)); err != nil {
+			t.Fatal(err)
+		}
+		r := shipGate(t, f)
+		if !r.Skipped || r.Output != "" || r.ExitCode() != 0 || !strings.HasPrefix(r.Reason, "CI is stable") || !strings.Contains(r.Reason, "ignored unidentified flake") || !strings.Contains(r.Reason, "ci / UNKNOWN STEP") {
+			t.Errorf("resp = %+v", r)
+		}
+	})
 	t.Run("no gate skips", func(t *testing.T) {
 		f := gateFixture(t, "", true)
 		r := shipGate(t, f)

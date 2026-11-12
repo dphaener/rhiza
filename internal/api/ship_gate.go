@@ -165,7 +165,11 @@ func shipLocalGate(ctx *Ctx, t *shipTarget) (ShipGateResponse, error) {
 		return ShipGateResponse{}, err
 	}
 	if !v.Unstable {
-		return ShipGateResponse{Command: gate, Skipped: true, Reason: "CI is stable"}, nil
+		reason := "CI is stable"
+		if v.Reason != "" {
+			reason += " (" + v.Reason + ")"
+		}
+		return ShipGateResponse{Command: gate, Skipped: true, Reason: reason}, nil
 	}
 	if t == nil {
 		found, err := findShipTarget(ctx)

@@ -27,10 +27,11 @@ func ciFlakeCounts(rec CIStability, window int) map[string]int {
 	return counts
 }
 
-// healthCI is ok while CI is stable and warn while it is unstable (a flake
-// in the window, or main's latest result red), with each flaky test and its
-// count as detail. Unstable with no rhiza.ship.localGate set, it also warns
-// that nothing runs before a push, and points at the setting.
+// healthCI is ok while CI is stable and warn while it is unstable (an
+// identified flake in the window, or main's latest result red), with each
+// flake in the window and its count as detail, unidentified ones included.
+// Unstable with no rhiza.ship.localGate set, it also warns that nothing runs
+// before a push, and points at the setting.
 func healthCI(ctx *Ctx) HealthPart {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
@@ -49,10 +50,13 @@ func healthCI(ctx *Ctx) HealthPart {
 		return healthFailed(HealthCI, fmt.Errorf("%s: %v", CIWindowKey, err))
 	}
 	v := ciVerdict(rec, window)
-	if !v.Unstable {
-		return HealthPart{Part: HealthCI, State: HealthOK, Summary: "stable"}
-	}
 	p := HealthPart{Part: HealthCI, State: HealthWarn, Summary: "unstable: " + v.Reason}
+	if !v.Unstable {
+		p = HealthPart{Part: HealthCI, State: HealthOK, Summary: "stable"}
+		if v.Reason != "" {
+			p.Summary += ": " + v.Reason
+		}
+	}
 	counts := ciFlakeCounts(rec, window)
 	tests := make([]string, 0, len(counts))
 	for name := range counts {
@@ -66,7 +70,7 @@ func healthCI(ctx *Ctx) HealthPart {
 		}
 		p.Detail = append(p.Detail, fmt.Sprintf("flaky %s: %d %s in the last %d runs", name, counts[name], n, max(window, 1)))
 	}
-	if strings.TrimSpace(settingValue(rows, LocalGateKey)) == "" {
+	if v.Unstable && strings.TrimSpace(settingValue(rows, LocalGateKey)) == "" {
 		p.Summary += "; no local gate is set, so nothing runs before a push"
 		p.Next = "rhiza daemon set " + LocalGateKey + " <command>"
 	}

@@ -118,21 +118,40 @@ func recordSettledCI(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckRespons
 
 // CIVerdict is Rhiza's judgment of a repo's CI, read from the record.
 type CIVerdict struct {
-	Unstable bool   `json:"unstable" desc:"True while the window holds a flake or main's latest result is red"`
-	Reason   string `json:"reason,omitempty" desc:"Why CI is unstable; empty when stable"`
+	Unstable bool   `json:"unstable" desc:"True while the window holds an identified flake or main's latest result is red"`
+	Reason   string `json:"reason,omitempty" desc:"Why CI is unstable; when stable, the unidentified flakes it ignored, if any"`
 }
 
-// ciVerdict judges rec: CI is unstable while the last window runs hold a
-// flake, or while main's latest result is red. window below 1 counts as 1.
+// unidentifiedFlake reports whether flake names no test and no known step:
+// a 'job / UNKNOWN STEP' read from a log gh could not place, or 'CI run
+// <id>' for a log that names neither. Such a flake stays in the record but
+// does not make CI unstable.
+func unidentifiedFlake(flake string) bool {
+	return strings.HasPrefix(flake, "CI run ") || strings.HasSuffix(flake, "UNKNOWN STEP")
+}
+
+// ciVerdict judges rec: CI is unstable while the last window runs hold an
+// identified flake, or while main's latest result is red. Unidentified
+// flakes are ignored, and a stable verdict's reason names them. window
+// below 1 counts as 1.
 func ciVerdict(rec CIStability, window int) CIVerdict {
 	window = max(window, 1)
 	runs := rec.Runs
 	if len(runs) > window {
 		runs = runs[len(runs)-window:]
 	}
+	var ignored []string
 	for _, r := range runs {
-		if len(r.Flakes) > 0 {
-			return CIVerdict{Unstable: true, Reason: "flake in the last " + strconv.Itoa(window) + " CI runs: " + strings.Join(r.Flakes, ", ")}
+		var known []string
+		for _, f := range r.Flakes {
+			if !unidentifiedFlake(f) {
+				known = append(known, f)
+			} else if !slices.Contains(ignored, f) {
+				ignored = append(ignored, f)
+			}
+		}
+		if len(known) > 0 {
+			return CIVerdict{Unstable: true, Reason: "flake in the last " + strconv.Itoa(window) + " CI runs: " + strings.Join(known, ", ")}
 		}
 	}
 	for i := len(rec.Runs) - 1; i >= 0; i-- {
@@ -142,6 +161,9 @@ func ciVerdict(rec CIStability, window int) CIVerdict {
 			}
 			break
 		}
+	}
+	if len(ignored) > 0 {
+		return CIVerdict{Reason: "ignored unidentified flake in the last " + strconv.Itoa(window) + " CI runs: " + strings.Join(ignored, ", ")}
 	}
 	return CIVerdict{}
 }
