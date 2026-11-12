@@ -1,0 +1,40 @@
+{
+  "actor": "01M7922W6YCYBV61EXV48QPFKT",
+  "after": [
+    "01M78TNFFHZT3V822SXC5WBJF5"
+  ],
+  "at": "2026-11-12T23:41:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 669309152: go test -trimpath -count=1 ./internal/api -run TestShipLocalGate passes (TestShipLocalGate and TestShipLocalGateOncePerCodeTree), and -run TestShip passes. TestShipLocalGateOncePerCodeTree, with CI unstable and a gate appending to a log to count runs, shows: first head runs the gate once; a new head whose git ls-tree differs only in the .rhiza entry passes with no run and a reason naming beef000 and 'not run again'; a changed non-.rhiza blob runs it again; a changed rhiza.ship.localGate on the same tree runs it again; a dirty worktree runs it and records nothing (the next clean gate reuses the earlier record); a state of only {\"gated\":...} reads and reruns once, then reuses. Diff read: shipState gains gated_tree and gated_command; shipCodeTree sha256-hashes git ls-tree HEAD lines minus the top-level .rhiza entry; reuse requires a clean worktree, same tree and same trimmed gate command. Checked by hand that real git ls-tree HEAD lists .rhiza as a tab-separated top-level entry. go vet and gofmt clean on internal/api."
+        },
+        "handle": "ship-gate-reuse-code-tree-verified",
+        "id": "01M7926XSX87DFAHF6ZWJTB3XY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7926XSX87DFAHF6ZTVV0GCC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7926XSX87DFAHF6ZTVV0GCC",
+        "id": "01M7926XVNDNHQ9QPTV6PPVD55",
+        "link": "01M7926XVNDNHQ9QPTV55HB903",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78TAJ9VCKZHPQZN5WS0A6DF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78T0G869AE4NQ9YGNB2DDGE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7926XY8YNQ1JE744QF5R46Q",
+  "type": "ops",
+  "v": 1
+}
