@@ -19,9 +19,11 @@ type Marks struct {
 }
 
 // ReadMarks reads the log under dir (a .rhiza folder's log) and returns the
-// marks by change set ID. Retired notes and retired links count for nothing.
+// marks by change set ID. Retired notes and retired links count for nothing,
+// and so do ops an entry's body.drop retracts (a retire before landing).
 func ReadMarks(logDir string) (map[string]Marks, error) {
 	type rawOp struct {
+		ID     string `json:"id"`
 		Op     string `json:"op"`
 		Kind   string `json:"kind"`
 		Node   string `json:"node"`
@@ -35,7 +37,8 @@ func ReadMarks(logDir string) (map[string]Marks, error) {
 	}
 	type entry struct {
 		Body struct {
-			Ops []rawOp `json:"ops"`
+			Ops  []rawOp  `json:"ops"`
+			Drop []string `json:"drop"`
 		} `json:"body"`
 	}
 	files, err := filepath.Glob(filepath.Join(logDir, "*", "*.json"))
@@ -47,6 +50,8 @@ func ReadMarks(logDir string) (map[string]Marks, error) {
 	text := map[string]string{} // note node -> statement
 	links := map[string]rawOp{} // link -> discusses link
 	retired := map[string]bool{}
+	var ops []rawOp
+	dropped := map[string]bool{} // op IDs some entry's body.drop retracts
 	for _, f := range files {
 		b, err := os.ReadFile(f)
 		if err != nil {
@@ -57,17 +62,24 @@ func ReadMarks(logDir string) (map[string]Marks, error) {
 		if err := json.Unmarshal(b, &e); err != nil {
 			return nil, fmt.Errorf("%s: %w", f, err)
 		}
-		for _, o := range e.Body.Ops {
-			switch {
-			case o.Op == "node.create" && o.Kind == "note":
-				text[o.Node] = o.Fields.Statement
-			case o.Op == "link.create" && o.Type == "discusses":
-				links[o.Link] = o
-			case o.Op == "node.retire":
-				retired[o.Node] = true
-			case o.Op == "link.retire":
-				retired[o.Link] = true
-			}
+		ops = append(ops, e.Body.Ops...)
+		for _, d := range e.Body.Drop {
+			dropped[d] = true
+		}
+	}
+	for _, o := range ops {
+		if o.ID != "" && dropped[o.ID] {
+			continue
+		}
+		switch {
+		case o.Op == "node.create" && o.Kind == "note":
+			text[o.Node] = o.Fields.Statement
+		case o.Op == "link.create" && o.Type == "discusses":
+			links[o.Link] = o
+		case o.Op == "node.retire":
+			retired[o.Node] = true
+		case o.Op == "link.retire":
+			retired[o.Link] = true
 		}
 	}
 	out := map[string]Marks{}

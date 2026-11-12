@@ -9,9 +9,15 @@ import (
 
 func writeEntry(t *testing.T, dir, cs, name, ops string) {
 	t.Helper()
+	writeEntryDrop(t, dir, cs, name, ops, "")
+}
+
+// writeEntryDrop writes an entry whose body.drop is drop (quoted op IDs).
+func writeEntryDrop(t *testing.T, dir, cs, name, ops, drop string) {
+	t.Helper()
 	d := filepath.Join(dir, cs)
 	os.MkdirAll(d, 0o755)
-	body := `{"body":{"ops":[` + ops + `]},"change_set":"` + cs + `"}`
+	body := `{"body":{"drop":[` + drop + `],"ops":[` + ops + `]},"change_set":"` + cs + `"}`
 	if err := os.WriteFile(filepath.Join(d, name+".json"), []byte(body), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -36,6 +42,12 @@ func TestReadMarks(t *testing.T) {
 		note("N6", "severe: retired")+","+discusses("L6", "N6", "CS3")+","+
 		note("N7", "severe: link retired")+","+discusses("L7", "N7", "CS3"))
 	writeEntry(t, dir, "CS3", "d", `{"op":"node.retire","node":"N6"},{"op":"link.retire","link":"L7"}`)
+	// A mark retracted before landing: a later entry drops the note's and
+	// link's create ops (op IDs O8, O9), as `rhiza retire` does while unlanded.
+	writeEntry(t, dir, "CS4", "e",
+		`{"id":"O8","op":"node.create","kind":"note","node":"N8","fields":{"statement":"breaking: to retire"}},`+
+			`{"id":"O9","op":"link.create","type":"discusses","link":"L8","from":"N8","to":"CS4"}`)
+	writeEntryDrop(t, dir, "CS4", "f", "", `"O8","O9"`)
 
 	got, err := ReadMarks(dir)
 	if err != nil {
