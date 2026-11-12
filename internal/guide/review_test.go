@@ -84,3 +84,18 @@ func TestReviewFixerTrailersInOneFinalParagraph(t *testing.T) {
 		}
 	}
 }
+
+func TestReviewFixerPreHandoffChecklist(t *testing.T) {
+	review, _ := Lookup("review")
+	i := strings.Index(review.Body, "## Fixer")
+	j := strings.Index(review.Body, "## Outside work")
+	if i < 0 || j < i {
+		t.Fatalf("review: no fixer section")
+	}
+	fixer := review.Body[i:j]
+	for _, want := range []string{"reproduce your findings", "`rhiza ship generate`", "`rhiza render`", "`Checks:` block", "exit code"} {
+		if !strings.Contains(fixer, want) {
+			t.Errorf("review fixer section lacks %q", want)
+		}
+	}
+}
