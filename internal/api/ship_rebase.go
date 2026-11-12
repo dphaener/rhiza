@@ -333,6 +333,9 @@ func shipFinishRebase(ctx *Ctx, t shipTarget, rendered string, resp *ShipRebaseR
 			return errShipGateFailed
 		}
 	}
+	if err := prePushCheck(ctx, ctx.Root); err != nil {
+		return err
+	}
 	if _, err := ctx.Git("push", "origin", "HEAD:refs/heads/"+t.branch); err != nil {
 		return Errorf("%v", err)
 	}

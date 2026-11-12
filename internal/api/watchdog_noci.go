@@ -76,6 +76,10 @@ func watchdogMergeMain(ctx *Ctx, t shipTarget, runID string) (watchdogMerge, err
 		}
 		return res, err
 	}
+	if err := prePushCheck(ctx, t.worktree); err != nil {
+		git("reset", "-q", "--keep", orig)
+		return res, err
+	}
 	if _, err := git("push", "origin", "HEAD:refs/heads/"+t.branch); err != nil {
 		git("reset", "-q", "--keep", orig)
 		return res, err

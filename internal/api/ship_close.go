@@ -391,8 +391,12 @@ func shipFollowPR(ctx *Ctx, t shipTarget) error {
 
 // shipPush pushes branch when it has no upstream (setting origin's) or is
 // ahead of it, and reports whether it pushed. Hooks run; it never forces.
+// Before it pushes it runs the pre-push check on the committed head.
 func shipPush(ctx *Ctx, branch string) (bool, error) {
 	if _, err := ctx.Git("rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"); err != nil {
+		if err := prePushCheck(ctx, ctx.Root); err != nil {
+			return false, err
+		}
 		if _, err := ctx.Git("push", "-u", "origin", branch); err != nil {
 			return false, Errorf("%v", err)
 		}
@@ -404,6 +408,9 @@ func shipPush(ctx *Ctx, branch string) (bool, error) {
 	}
 	if n, _ := strconv.Atoi(strings.TrimSpace(ahead)); n == 0 {
 		return false, nil
+	}
+	if err := prePushCheck(ctx, ctx.Root); err != nil {
+		return false, err
 	}
 	if _, err := ctx.Git("push"); err != nil {
 		return false, Errorf("%v", err)
