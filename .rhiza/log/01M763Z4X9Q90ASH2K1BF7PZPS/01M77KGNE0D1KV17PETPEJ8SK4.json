@@ -1,0 +1,40 @@
+{
+  "actor": "01M77KEA14CN582VGWRJCB5H5R",
+  "after": [
+    "01M77K5GHPRC7TSYJR53YTMJ04"
+  ],
+  "at": "2026-11-12T10:05:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier (attempt 2) at a0179336b: read the diff (shellWithStdin now runs the classifier under a 60s context deadline in its own process group, killing the group on timeout and returning an error, which ClassifyFailure reads as real). Ran go test -trimpath ./internal/api -run Classif: TestClassifyFailure covers transient, real, garbage, empty output, a failing command and off, with real on anything but a clear transient; all PASS. Ran go test -trimpath ./cmd/rhiza -run TestShellWithStdin: a hanging 'sleep 20' classifier is killed after the shortened 200ms timeout with a timed-out error, and a 'cat' classifier returns its stdin; PASS. Ran TestScripts/daemon-settings (lists rhiza.daemon.failureClassifier, empty from Setup, with the claude -p --model haiku default in --json), TestScripts/run-failure-classifier (empty from Setup: failing step runs once and no classifier call; a fake transient classifier reruns once and sees the step output on stdin; a real one does not rerun) and TestScripts/build-leaf-fails: all PASS. Setup in cmd/rhiza/main_test.go sets rhiza.daemon.failureClassifier empty. A broader internal/api -run Watchdog pass was flagged only by the root-state guard because the live root daemon rewrote ~/code/.rhiza-root/usage.live.json during the run, which this change does not touch."
+        },
+        "handle": "failure-classifier-setting-verified-2",
+        "id": "01M77KGNCHQVCCKR70R94BWC9J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77KGNCHQVCCKR70R876SAFR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77KGNCHQVCCKR70R876SAFR",
+        "id": "01M77KGND5312V9NN2H1Q0X8YD",
+        "link": "01M77KGND5312V9NN2H17F8HVD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642N1KXSN7CKCDEZFBK78Q",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z4X9Q90ASH2K1BF7PZPS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77KGNE0D1KV17PETPEJ8SK4",
+  "type": "ops",
+  "v": 1
+}
