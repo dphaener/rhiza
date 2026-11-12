@@ -29,8 +29,13 @@ exec sh -c 'cp $(sed -n 1p $WORK/new) $WORK/damaged'
 
 # --dry-run names it and changes nothing.
 exec rhiza repair --dry-run
+stdout '"dry_run": true'
 stdout '"from": "index"'
+cp stdout $WORK/dry
+exec sh -c 'grep -F "\"path\": \"$(sed -n 1p $WORK/new)\"" $WORK/dry'
 exec sh -c 'cmp $(sed -n 1p $WORK/new) $WORK/damaged'
+exec sh -c 'stat -c %a $(sed -n 1p $WORK/new)'
+stdout '^644$'
 
 # repair restores the original bytes, read-only.
 exec rhiza repair
