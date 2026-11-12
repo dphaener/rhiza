@@ -39,8 +39,9 @@ func TestWatchdogRequests(t *testing.T) {
 		{ID: "r6", Kind: daemon.KindFeature},
 	}
 	var resumed, log []string
+	classified := 0
 	d := watchdogDeps{
-		classify: fakeClassify,
+		classify: func(out string) FailureVerdict { classified++; return fakeClassify(out) },
 		resume:   func(id string) error { resumed = append(resumed, id); return nil },
 		log:      func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
 	}
@@ -53,11 +54,20 @@ func TestWatchdogRequests(t *testing.T) {
 	if got := strings.Join(resumed, ","); got != "gone,flake" {
 		t.Fatalf("resumed %q, want gone,flake", got)
 	}
-	if len(log) != 2 || !strings.Contains(log[0], "request r1") || !strings.Contains(log[1], "index.lock") {
+	if len(log) != 3 || !strings.Contains(log[0], "request r1") || !strings.Contains(log[1], "index.lock") ||
+		!strings.Contains(log[2], "run other step plan failure classified real, left to the inbox: the test is failing") {
 		t.Fatalf("log %q", log)
 	}
+	if classified != 2 {
+		t.Errorf("classified %d failures, want 2", classified)
+	}
+	// Over budget, and with the real failure judged, a second poll neither
+	// resumes, classifies nor logs.
 	resumed = nil
 	if _, err := watchdogRequests(pol, reqs, js, live, mem, d); err != nil || len(resumed) != 0 {
 		t.Fatalf("over budget: resumed %v err %v", resumed, err)
+	}
+	if classified != 2 || len(log) != 3 {
+		t.Errorf("second poll: classified %d, log %q", classified, log)
 	}
 }

@@ -445,6 +445,30 @@ func watchdogBudgetHolds(pol WatchdogPolicy, all []run.Journal, mem []daemon.Wat
 	return holds
 }
 
+// classifyOnce asks d's classifier about the failed step of j, remembered in
+// m: a real verdict, or none, is logged and marked Judged at the journal's
+// last entry, and while the journal still ends there the classifier is not
+// asked again. It reports the verdict and whether it is transient.
+func classifyOnce(m *daemon.WatchdogRun, j run.Journal, st run.State, step string, d watchdogDeps) (FailureVerdict, bool) {
+	if len(j.Entries) == 0 {
+		return FailureVerdict{}, false
+	}
+	last := j.Entries[len(j.Entries)-1].At
+	if !m.Judged.IsZero() && m.Judged.Equal(last) {
+		return FailureVerdict{}, false
+	}
+	v := FailureVerdict{Reason: "no failure classifier"}
+	if d.classify != nil {
+		v = d.classify(failedDetail(st, step))
+	}
+	if v.Transient {
+		return v, true
+	}
+	m.Judged = last
+	d.log("watchdog: run %s step %s failure classified real, left to the inbox: %s", j.ID, step, v.Reason)
+	return v, false
+}
+
 // watchdogTransient resumes with --retry each failed run of journals whose
 // failing step's output the classifier calls transient, within the run's
 // budget. A real failure, or one the classifier cannot judge, is left to the
@@ -473,12 +497,8 @@ func watchdogTransient(pol WatchdogPolicy, journals []run.Journal, live func(id 
 		if mem[i].Spent >= pol.RetryBudget || d.queued != nil && d.queued(j.ID) {
 			continue
 		}
-		if d.classify == nil {
-			continue
-		}
-		v := d.classify(failedDetail(st, step))
-		if !v.Transient {
-			d.log("watchdog: run %s step %s failure classified real, left to the inbox: %s", j.ID, step, v.Reason)
+		v, ok := classifyOnce(&mem[i], j, st, step, d)
+		if !ok {
 			continue
 		}
 		if err := d.resume(j.ID); err != nil {

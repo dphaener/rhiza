@@ -146,9 +146,9 @@ func TestWatchdogTransient(t *testing.T) {
 		failed("live", "gh: HTTP 503 Service Unavailable", true),
 		failed("owner", "gh: HTTP 502 Bad Gateway", false),
 	}
-	var log, resumed []string
+	var log, resumed, classified []string
 	d := watchdogDeps{
-		classify: fakeClassify,
+		classify: func(out string) FailureVerdict { classified = append(classified, out); return fakeClassify(out) },
 		resume:   func(id string) error { resumed = append(resumed, id); return nil },
 		log:      func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
 	}
@@ -164,12 +164,29 @@ func TestWatchdogTransient(t *testing.T) {
 	if len(log) != 4 || !strings.Contains(log[3], "classified real") || !strings.Contains(log[3], "the test is failing") {
 		t.Errorf("want one line per resume and one for the real failure, log %q", log)
 	}
-	// The budget is one: a second poll over the same failures acts on none.
+	if len(classified) != 4 {
+		t.Errorf("classified %d failures, want 4", len(classified))
+	}
+	// The budget is one: a second poll over the same failures acts on none,
+	// and the real failure, already judged, is neither classified nor logged
+	// again.
+	if mem, err = watchdogTransient(pol, js, live, mem, d); err != nil {
+		t.Fatal(err)
+	}
+	if len(resumed) != 3 || len(classified) != 4 || len(log) != 4 {
+		t.Errorf("second poll: resumed %v, classified %d, log %q", resumed, len(classified), log)
+	}
+	// A new failure of the same run (the journal moved on) is judged anew.
+	real := &js[3]
+	real.Entries = append(real.Entries,
+		run.Entry{Type: run.TypeEntered, At: t0.Add(time.Hour), Step: "build", Visit: 2},
+		run.Entry{Type: run.TypeEnded, At: t0.Add(time.Hour), Step: "build", Visit: 2, Outcome: "fail", Detail: "exit 1\ngh: HTTP 503"},
+		run.Entry{Type: run.TypeFinished, At: t0.Add(time.Hour), Step: "build", End: "failed", Detail: "step build failed"})
 	if _, err := watchdogTransient(pol, js, live, mem, d); err != nil {
 		t.Fatal(err)
 	}
-	if len(resumed) != 3 {
-		t.Errorf("over budget resumed %v", resumed)
+	if len(classified) != 5 || strings.Join(resumed, ",") != "work,lock,gh,real" {
+		t.Errorf("new failure: classified %d, resumed %v", len(classified), resumed)
 	}
 }
 
@@ -473,23 +490,29 @@ func TestWatchdogTransientClassifierError(t *testing.T) {
 	}}}
 	pol := WatchdogPolicy{Enabled: true, RetryBudget: 1, AutonomousOnly: true}
 	nolive := func(string) bool { return false }
-	var log []string
 	for name, classify := range map[string]func(string) FailureVerdict{
 		"error": func(string) FailureVerdict {
 			return ClassifyFailure("c", "x", func(string, string) (string, error) { return "", errors.New("exit 1") })
 		},
 		"none": nil,
 	} {
+		var log []string
 		d := watchdogDeps{
 			classify: classify,
 			resume:   func(string) error { t.Fatalf("%s: resumed", name); return nil },
 			log:      func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
 		}
-		if _, err := watchdogTransient(pol, js, nolive, nil, d); err != nil {
+		mem, err := watchdogTransient(pol, js, nolive, nil, d)
+		if err != nil {
 			t.Fatal(err)
 		}
-	}
-	if len(log) != 1 || !strings.Contains(log[0], "classifier failed") {
-		t.Errorf("log %q", log)
+		// A second poll leaves the judged failure alone, logging nothing.
+		if _, err := watchdogTransient(pol, js, nolive, mem, d); err != nil {
+			t.Fatal(err)
+		}
+		want := map[string]string{"error": "classifier failed", "none": "no failure classifier"}[name]
+		if len(log) != 1 || !strings.Contains(log[0], "left to the inbox") || !strings.Contains(log[0], want) {
+			t.Errorf("%s: log %q", name, log)
+		}
 	}
 }
