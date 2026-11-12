@@ -1,0 +1,63 @@
+{
+  "actor": "01M77WVW6WVTS12F40PFAVVK2P",
+  "after": [
+    "01M77WRJHXNVM4VA9B5RBBMBFA"
+  ],
+  "at": "2026-11-12T13:02:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1d8815c86 with a binary built from the branch: in a scratch Rhiza root and git repo, a workflow with [env] GOTMPDIR = \"{run_tmp}\" and one command step, run via rhiza run start --foreground. The run succeeded; the step saw GOTMPDIR=~/.cache/rhiza/run-tmp/<run id>, the folder existed during the step, git rev-parse from it said 'not a git repository', and after the run the folder was gone while a sibling run-tmp folder (R1) and the shared parent stayed. Nothing was made under the repo's .git/rhiza/runs beyond the run journal."
+        },
+        "handle": "run-tmp-outside-repo-qa-1",
+        "id": "01M77XMRTNCX6FHAV033V8J89S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77XMRTNCX6FHAV031SF6M9T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77XMRTNCX6FHAV031SF6M9T",
+        "id": "01M77XMRVM3PZ633AEM5DS08A5",
+        "link": "01M77XMRVM3PZ633AEM4Q7XQ6N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77W0Z8V8WBNPS6AZAG67R86",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1d8815c86: go test -trimpath ./cmd/rhiza -run TestScripts/ci-install$ with GOTMPDIR set to a scratch repo's .git/rhiza/tmp failed before the script ran ('inside a git dir: set GOTMPDIR outside the repository'); with GOTMPDIR set to a folder in that repo's work tree it failed naming the work tree; neither run wrote .github/workflows/rhiza.yml or anything else into the repo (git status clean). With GOTMPDIR outside any repo ci-install passed, and TestCheckWorkOutsideRepo passes."
+        },
+        "handle": "testscripts-refuse-work-in-repo-qa-1",
+        "id": "01M77XMRX1767S30VTG017YMV9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77XMRX1767S30VTFZC0NZE9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77XMRX1767S30VTFZC0NZE9",
+        "id": "01M77XMRYKKECZ0KM7FSCKQ73E",
+        "link": "01M77XMRYKKECZ0KM7FQJCCPST",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77W0Z9YDVWCQT2RSXGD8W91",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77VT6TMYCDVMX61ZVA8CS4C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77XMS2JRFKEFN4EZYW51P9J",
+  "type": "ops",
+  "v": 1
+}
