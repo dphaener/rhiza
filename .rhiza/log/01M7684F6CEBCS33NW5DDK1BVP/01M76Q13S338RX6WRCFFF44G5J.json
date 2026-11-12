@@ -1,0 +1,40 @@
+{
+  "actor": "01M76PZ8KDHH89DFC6D8NMWBES",
+  "after": [
+    "01M7694HCNCZF1523FXBE27WGF"
+  ],
+  "at": "2026-11-12T01:47:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 99bb0522f: go test -trimpath -count=1 ./internal/ciworkflow/... passes all 8 tests (incl. new TestCIChangesDecidesFromGitDiff, TestCIGoJobsRunOnlyOnCodeChanges, TestCIModelJobRunsOnlyOnModelChanges, updated TestCICheckAggregatesEveryJob and the existing trigger/concurrency/matrix/checkout/cache tests). Diff read: ci.yml adds a changes job (output code from steps.diff; code=true unless event is pull_request, else git merge-base + git diff --name-only filtering out .rhiza/), a model job (needs changes, if code == 'false', setup-go cache: true, make self-check, go test -trimpath ./internal/op -run TestEveryFieldInRepoLogIsKnown), needs/if code == 'true' on lint, scripts, api, rest, budgets, and check needing all seven with if: always(). Makefile untouched. Extracted and ran the check script: model-only results and code results exit 0; all-skipped, changes failure, any failure or cancelled exit 1. Extracted and ran the changes script: on HEAD vs parent code=true, on model-only commit f7a79b045 vs parent code=false, on workflow_dispatch code=true. ci.yml parses as YAML; TestEveryFieldInRepoLogIsKnown passes. Not verifiable pre-merge: the next model-only PR's live CI timing via gh run view."
+        },
+        "handle": "ci-model-only-pr-verified",
+        "id": "01M76Q13QPKGZE13M6PQ0HD318",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76Q13QPKGZE13M6PMJ69CHG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Q13QPKGZE13M6PMJ69CHG",
+        "id": "01M76Q13RA704G0E4M08G6RNQY",
+        "link": "01M76Q13RA704G0E4M04WR092S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M768E0NH089HZ4WRR0SBBDAB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7684F6CEBCS33NW5DDK1BVP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76Q13S338RX6WRCFFF44G5J",
+  "type": "ops",
+  "v": 1
+}
