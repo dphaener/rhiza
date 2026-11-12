@@ -416,15 +416,15 @@ func TestShipPrePushCheckLand(t *testing.T) {
 	})
 }
 
-// ship rebase: a failing check on the merged head pushes nothing, puts the
-// branch back where it was, and exits 1 with the failing lines in its
-// response.
+// ship rebase: a failing check on the merged head pushes nothing, keeps
+// the merged head on the branch and records it, and exits 1 with the
+// failing lines in its response; ship gate --failed then passes on it, so
+// the step goes on to its fixer.
 func TestShipPrePushCheckRebase(t *testing.T) {
 	for _, b := range prePushBreaks {
 		t.Run(b.name, func(t *testing.T) {
 			f, state := shipRebaseFixture(t)
 			f.git.out[rebaseMerge] = ""
-			f.git.out["reset -q --keep beef000111"] = ""
 			r := newPrePushRepo(t)
 			b.apply(t, r.root, r.git)
 			realPrePushCheck(t, r)
@@ -438,14 +438,35 @@ func TestShipPrePushCheckRebase(t *testing.T) {
 				t.Fatalf("rebase = %+v", rb)
 			}
 			noPush(t, f.git.calls)
-			if !slices.Contains(f.git.calls, "reset -q --keep beef000111") {
-				t.Errorf("branch not put back; calls %q", f.git.calls)
+			for _, c := range f.git.calls {
+				if strings.HasPrefix(c, "reset ") {
+					t.Errorf("the merged head was not kept: %q", c)
+				}
 			}
-			if st, _ := readShipState(state); st.Pushed != "" || st.GateFailed != "" {
+			if rb.Kept != rb.PrePushCheck.Head {
+				t.Errorf("kept %q, the check failed on %q", rb.Kept, rb.PrePushCheck.Head)
+			}
+			if st, _ := readShipState(state); st.Pushed != "" || st.GateFailed != "" || st.PrePushFailed != rb.PrePushCheck.Head {
 				t.Errorf("state = %+v", st)
 			}
-			if got := human(t, rb); !strings.Contains(got, b.want) || !strings.Contains(got, "nothing was pushed") {
+			if got := human(t, rb); !strings.Contains(got, b.want) || !strings.Contains(got, "nothing was pushed") || !strings.Contains(got, "for the step's fixer") {
 				t.Errorf("human = %q", got)
+			}
+			// The triage after the failed rebase passes on the kept head,
+			// so the step goes on to its fixer.
+			exec := f.ctx.Exec
+			f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+				if name == "git" && strings.Join(args, " ") == "rev-parse HEAD" {
+					return []byte(rb.PrePushCheck.Head + "\n"), nil
+				}
+				return exec(name, args, dir, env)
+			}
+			g, err := callOp(t, f.ctx, "ship.gate", `{"failed":true}`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if gr := g.(ShipGateResponse); gr.ExitCode() != 0 || gr.Failed != rb.PrePushCheck.Head {
+				t.Errorf("ship gate --failed after the rebase = %+v", gr)
 			}
 		})
 	}

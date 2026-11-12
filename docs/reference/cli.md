@@ -2459,10 +2459,10 @@ Output (`--json` fields):
 - `conflicts` (array of string): The files that conflicted when the merge stopped on a conflict outside the rendered files; the merge is left in progress in the worktree
 - `detail` (string): Why the merge stopped; the command exits 1 then
 - `gate` (object): The local gate run on the merged head before the push, while CI is unstable; a failing gate pushed nothing
-- `kept` (string): After a failing gate, the unpushed head left on the branch: origin's main merged into it, for the gate's fixer
+- `kept` (string): After a failing gate or pre-push check, the unpushed head left on the branch: origin's main merged into it, for the step's fixer
 - `merge_conflict` (object): The conflict's context for a fixer: the conflicted files, origin/main's commits with their change sets, and the branch's change set
 - `onto` (string): The commit of origin's main the branch was compared with
-- `pre_push_check` (object): The pre-push check that failed on the merged head, with its failing lines; nothing was pushed, the branch is put back where it was, and the command exits 1
+- `pre_push_check` (object): The pre-push check that failed on the merged head, with its failing lines; nothing was pushed, the merged head is left on the branch, unpushed, and the command exits 1
 - `pushed` (string): The merged head pushed to the PR branch
 - `rebased` (boolean): True if origin's main was merged into the branch and the result is ready to push (the name is kept from when this rebased)
 - `rendered` (array of string): The rendered files written or removed by rendering after the merge

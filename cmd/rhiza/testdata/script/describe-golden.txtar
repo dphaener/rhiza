@@ -24246,7 +24246,7 @@ cmp stdout describe.golden.json
             "type": "object"
           },
           "kept": {
-            "description": "After a failing gate, the unpushed head left on the branch: origin's main merged into it, for the gate's fixer",
+            "description": "After a failing gate or pre-push check, the unpushed head left on the branch: origin's main merged into it, for the step's fixer",
             "type": "string"
           },
           "merge_conflict": {
@@ -24316,7 +24316,7 @@ cmp stdout describe.golden.json
           },
           "pre_push_check": {
             "additionalProperties": false,
-            "description": "The pre-push check that failed on the merged head, with its failing lines; nothing was pushed, the branch is put back where it was, and the command exits 1",
+            "description": "The pre-push check that failed on the merged head, with its failing lines; nothing was pushed, the merged head is left on the branch, unpushed, and the command exits 1",
             "properties": {
               "head": {
                 "description": "The committed head the check ran on, which was not pushed",
