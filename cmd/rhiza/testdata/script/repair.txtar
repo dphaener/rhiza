@@ -74,7 +74,12 @@ stdout ': restored from index'
 exec sh -c 'cmp $(cat $WORK/tracked) $WORK/orig3'
 exec sh -c 'stat -c %a $(cat $WORK/tracked)'
 stdout '^444$'
-# The repaired file differs from HEAD's damaged copy until it is committed.
+# The repaired file differs from HEAD's damaged copy, but render accepts it
+# and repair finds nothing more, so a run's commit step can commit it.
+exec rhiza render
+exec rhiza repair
+stdout 'nothing to repair'
+fold-ok
 exec git add -A
 exec git commit -q -m repaired
 exec rhiza render

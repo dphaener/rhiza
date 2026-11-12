@@ -117,7 +117,8 @@ func runRender(ctx *Ctx, _ any) (any, error) {
 // damagedLog refuses to render over a damaged log: an entry that does not
 // parse canonically, one whose ID or change set does not match its path,
 // or an entry file tracked at HEAD that differs from HEAD (changed or
-// deleted). Every run's commit step renders first, so none commits such an
+// deleted), unless HEAD's copy is itself damaged and the file now holds its
+// canonical bytes. Every run's commit step renders first, so none commits such an
 // entry. The error names each path and problem; nothing has been written.
 func damagedLog(ctx *Ctx, log store.Log) error {
 	ds := findDamaged(ctx, log)
@@ -150,7 +151,7 @@ func findDamaged(ctx *Ctx, log store.Log) []damaged {
 		out, err := ctx.Git("diff", "--name-only", "--relative", "--diff-filter=MDT", "HEAD", "--", store.Dir+"/"+store.LogDir)
 		if err == nil {
 			for _, f := range strings.Split(out, "\n") {
-				if f = strings.TrimSpace(f); f != "" {
+				if f = strings.TrimSpace(f); f != "" && !repairsDamagedHead(ctx, f) {
 					ds = append(ds, damaged{f, "differs from HEAD, but a committed entry is never changed"})
 				}
 			}
@@ -158,6 +159,23 @@ func findDamaged(ctx *Ctx, log store.Log) []damaged {
 	}
 	slices.SortStableFunc(ds, func(a, b damaged) int { return strings.Compare(a.Path, b.Path) })
 	return slices.CompactFunc(ds, func(a, b damaged) bool { return a.Path == b.Path })
+}
+
+// repairsDamagedHead reports whether the entry file p, which differs from
+// HEAD, differs only because HEAD's copy was committed already damaged and
+// the working file now holds the canonical bytes for its path, as repair
+// leaves it: that diff repairs the log rather than damaging it.
+func repairsDamagedHead(ctx *Ctx, p string) bool {
+	cs, eid, ok := entryPathIDs(p)
+	if !ok {
+		return false
+	}
+	head, err := ctx.Git("show", "HEAD:./"+p)
+	if err != nil || isEntryBytes([]byte(head), cs, eid) {
+		return false
+	}
+	have, err := os.ReadFile(filepath.Join(ctx.Root, filepath.FromSlash(p)))
+	return err == nil && isEntryBytes(have, cs, eid)
 }
 
 // testStaleFile is the extra file render writes under the
