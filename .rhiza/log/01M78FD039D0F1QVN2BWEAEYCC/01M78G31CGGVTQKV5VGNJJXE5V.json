@@ -1,0 +1,107 @@
+{
+  "actor": "01M78G0H191R2P2TJJ7V9EAWBM",
+  "after": [
+    "01M78FQECC71B0RFWFSKEEQ57K"
+  ],
+  "at": "2026-11-12T18:25:00Z",
+  "body": {
+    "drop": [
+      "01M78FQE9FX3CBT19QS71R0PYR",
+      "01M78FQEA6PACF0TANPBXYGYN2",
+      "01M78FQEAWKQCK8H4ZE5N1Z2M9"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the question, this change set's intent (three runs 01M787SV, 01M788HB, 01M7859E all failed the ~20 min serialized make check gate on an unrelated root-guard leak, with the gate on only because of one 'scripts (4/4) / UNKNOWN STEP' flake on #498 while 29 of the last 30 CI runs were green), decision ci-unstable-gate-rules (any flake in the window, or main red, makes CI unstable), and the code: ciVerdict in internal/api/ci_stability.go returns unstable on any non-empty Flakes in the window, and shipFailedTests in internal/api/ship.go falls back to 'CI run <id>' when a log names no job/step. The gate exists to predict CI green before a push; a flake nobody can name cannot be reproduced or targeted locally, is as likely an infra or runner error as a test race, and AGENTS.md itself treats an infra error as a red not explained by the change. Letting one such event serialize every run behind a 20 min suite for the next 20 CI runs costs far more than it buys and, as the evidence shows, exposes runs to unrelated local-only failures. Keeping identified flakes and main-red as triggers preserves the original owner intent ('while main's CI is not reliably green', 'red runs that pass on rerun, per test') with the smallest change to the verdict; a count threshold was weighed but rejected as a larger departure from ci-unstable-gate-rules that the evidence does not require. Still recording, surfacing and filing the unidentified flake keeps it visible so a recurring infra problem is not hidden.",
+          "statement": "This decision supersedes ci-unstable-gate-rules, restating its rules with clause (2) changed so the full local gate switches on only for instability a local run can predict. (1) A repo's CI counts as unstable while main's latest completed CI result in the stability record is red, or while its last completed CI runs (main and run PR heads; 20 by default, the project setting rhiza.ship.ciWindow) hold an identified flake: a run that went red and then passed on a rerun of the same head, attributed to a named failing test (a '--- FAIL:' test name) or a 'job / step' whose step is known. It counts as stable again once neither holds. Main's latest result is the one the latest rhiza ship check --main recorded, since CI does not run on a push to main: a merge whose tree equals its tested PR head's takes that head's green result, and a tree-differing merge takes its dispatched CI run's result. (2) An unidentified flake (a step read as 'UNKNOWN STEP', or 'CI run <id>' whose log names no job or step) is still recorded in the CI stability record, still shown by rhiza health with its count and still filed as a bug by the watchdog, but it does not count toward the unstable verdict and so does not switch on the gate; the CI verdict's reason and ship.gate's skip reason say when one was seen but ignored. rhiza health shows the state with the flaky tests and their counts. (3) The 'full local gate' is one command the repo configures as a project setting (for Rhiza itself: make check). While CI is unstable, ship-change runs it in the run's worktree before every push and pushes only if it exits 0; on failure it fixes locally like any red. If no gate is configured, the run falls back to the scoped tests and rhiza health warns that CI is unstable with no local gate set. (4) A red PR that passes on its one rerun is a flake: the run is not held, it proceeds on the green head and lands as usual. The flake is recorded against the failing test in the CI stability record, and, with the watchdog's fileBugs on, a bug is filed once per test (deduplicated) to reproduce it locally and fix or quarantine it. A head that is still red after its one rerun is not rerun again: the run reproduces the failing test locally (repeatedly), fixes or quarantines it with a bug filed, and pushes again only after that test and the touched packages pass locally.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "local-gate-trigger-identified-flakes",
+        "id": "01M78FKX3BQT0ABF59FFJ4GDXE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M78FKX3BQT0ABF59FCKH9B6Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "base": "01M6YCRKH9VEHGSH0A2DFQRQ4W",
+        "handle": null,
+        "id": "01M78FP3ZS0A3JSW8VW7MW2CJT",
+        "node": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestCIStability|TestShipLocalGate|TestHealthCI' shows: an empty record stable; an identified flake ('scripts (4/4) / Run scripts' or '--- FAIL: TestX') inside the window unstable, and stable once 20 later clean runs push it out; a window whose only flakes are unidentified ('ci / UNKNOWN STEP', 'CI run 123') stable, with a reason naming the ignored flake, ship gate skipping with that reason, and rhiza health still listing the unidentified flake with its count; a red dispatched main result unstable, and stable once a later ship check --main records green, whether by a tree-equal merge or a green dispatched run; rhiza.ship.ciWindow=5 shrinking the window; an invalid window refused by rhiza daemon set",
+          "statement": "Rhiza judges a repo's CI unstable while its last completed CI runs in the stability record (20 by default, the project setting rhiza.ship.ciWindow) hold an identified flake, or while main's latest result in the record is red, and stable again once neither holds. An identified flake names its failing test ('--- FAIL:' test name) or a 'job / step' whose step is known; an unidentified flake (step read as UNKNOWN STEP, or 'CI run <id>' whose log names no job or step) stays in the record, in rhiza health with its count and in the watchdog's filed bugs, but does not count toward the verdict, and the stable verdict's reason (and ship.gate's skip reason) says when one was seen and ignored. Main's latest result is the one the latest rhiza ship check --main recorded: a merge whose tree equals its tested PR head's records that head's green result for the merge commit, and a tree-differing merge records the dispatched CI run's result, so a red main clears at the next merge that settles green"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M78FKX3BQT0ABF59FCKH9B6Z",
+        "id": "01M78G30JFCJ6V9A6TS35W2CAB",
+        "link": "01M78G30JFCJ6V9A6TS013JHF7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCNMKDZAYW484HXMT7JZJH",
+        "type": "supersedes"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKDX9JJQ25FRHFJND2ZK",
+        "id": "01M78G30MYM175151NSZVJFV3N",
+        "link": "01M78G30MYM175151NSWC82DCP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FKX3BQT0ABF59FCKH9B6Z",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKNPNZY0F0BTDCXQAP74",
+        "id": "01M78G30RB75GET6908QEPA916",
+        "link": "01M78G30RB75GET6908P8QG52K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FKX3BQT0ABF59FCKH9B6Z",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "id": "01M78G310ARGBVM9AFJW9QZRBK",
+        "link": "01M78G310ARGBVM9AFJTDAEXJ9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FKX3BQT0ABF59FCKH9B6Z",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRM0GKZ3W3J2QDD87GWHQ",
+        "id": "01M78G311MSW7D79P6G64D0G07",
+        "link": "01M78G311MSW7D79P6G5BXW225",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FKX3BQT0ABF59FCKH9B6Z",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRM4F76QFJRC071CY3DYZ",
+        "id": "01M78G312X2EQEYE6EVCYGFVBD",
+        "link": "01M78G312X2EQEYE6EV9KKAJ4K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FKX3BQT0ABF59FCKH9B6Z",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M78FD039D0F1QVN2BWEAEYCC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78G31CGGVTQKV5VGNJJXE5V",
+  "type": "ops",
+  "v": 1
+}
