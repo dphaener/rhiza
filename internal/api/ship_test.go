@@ -1762,43 +1762,51 @@ func TestShipCloseOutRecordsStaleMain(t *testing.T) {
 	}
 }
 
-func TestParseFailedTests(t *testing.T) {
-	nested := `test	Run tests	2026-11-04T10:00:00Z --- FAIL: TestScripts (12.00s)
-test	Run tests	2026-11-04T10:00:00Z     --- FAIL: TestScripts/review-check-worktree (1.20s)
-test	Run tests	2026-11-04T10:00:00Z FAIL	github.com/dphaener/rhiza/cmd/rhiza	13.1s
-`
-	if got, want := parseFailedTests(nested), []string{"TestScripts/review-check-worktree"}; !slices.Equal(got, want) {
-		t.Errorf("nested = %v, want %v", got, want)
+func TestTrimFailureLog(t *testing.T) {
+	p := "test\tRun\t2026-11-04T10:00:00Z "
+	jest := p + "npm test\n" + p + "FAIL src/x.test.js\n" + p + "  \x1b[31m● X › works\x1b[0m\n" + p + "    expected 1, got 2\n"
+	got, where := trimFailureLog(jest)
+	if !strings.Contains(got, "FAIL src/x.test.js") || !strings.Contains(got, "expected 1, got 2") || strings.Contains(got, "2026-11-04") || strings.Contains(got, "\x1b") {
+		t.Errorf("jest = %q", got)
 	}
-	two := "--- FAIL: TestA (0.00s)\n--- FAIL: TestB (0.01s)\n--- FAIL: TestA (0.00s)\n"
-	if got, want := parseFailedTests(two), []string{"TestA", "TestB"}; !slices.Equal(got, want) {
-		t.Errorf("two = %v, want %v", got, want)
+	if !slices.Equal(where, []string{"test / Run"}) {
+		t.Errorf("where = %v", where)
 	}
-	if got := parseFailedTests("Error: setup-go failed\nprocess completed with exit code 1\n"); len(got) != 0 {
-		t.Errorf("infra log = %v, want none", got)
-	}
-	p := "test\tRun specs\t2026-11-04T10:00:00Z "
-	rspec := p + "Failed examples:\n" + p + "\n" +
-		p + "rspec ./spec/views/tasks/list_spec.rb:290 # Tasks list shows rows\n" +
-		p + "rspec ./spec/views/tasks/list_spec.rb:290 # Tasks list shows rows\n" +
-		p + "\x1b[31mrspec ./spec/models/x_spec.rb:5\x1b[0m # X works\n" +
-		p + "rspec ./spec/system/garden_location_spec.rb[1:1:11] # Garden location saves\n" +
-		p + "rspec ./spec/models/y_spec.rb[1:2,1:3]\n"
-	if got, want := parseFailedTests(rspec), []string{"rspec ./spec/views/tasks/list_spec.rb:290", "rspec ./spec/models/x_spec.rb:5", "rspec ./spec/system/garden_location_spec.rb[1:1:11]", "rspec ./spec/models/y_spec.rb[1:2,1:3]"}; !slices.Equal(got, want) {
-		t.Errorf("rspec = %v, want %v", got, want)
-	}
-	mini := p + "bin/rails test test/models/x_test.rb:12\n" + p + "rails test test/models/y_test.rb:3\n"
-	if got, want := parseFailedTests(mini), []string{"bin/rails test test/models/x_test.rb:12", "rails test test/models/y_test.rb:3"}; !slices.Equal(got, want) {
-		t.Errorf("minitest = %v, want %v", got, want)
-	}
-	py := p + "FAILED tests/test_x.py::test_y - AssertionError: nope\n"
-	if got, want := parseFailedTests(py), []string{"pytest tests/test_x.py::test_y"}; !slices.Equal(got, want) {
-		t.Errorf("pytest = %v, want %v", got, want)
-	}
-	for _, none := range []string{p + "1 failure\n", p + "FAIL src/x.test.js\n", p + "Error: runner lost contact\n", p + "see rspec ./spec/x_spec.rb:1 above\n"} {
-		if got := parseFailedTests(none); len(got) != 0 {
-			t.Errorf("%q = %v, want none", none, got)
+	for _, none := range []string{"Error: setup-go failed\nprocess completed with exit code 1\n", p + "Temporary failure resolving archive.ubuntu.com\n", ""} {
+		if got, _ := trimFailureLog(none); got != "" {
+			t.Errorf("%q = %q, want nothing", none, got)
 		}
+	}
+	var long strings.Builder
+	for i := 0; i < 1000; i++ {
+		long.WriteString("--- FAIL: TestN\n")
+	}
+	if got, _ := trimFailureLog(long.String()); strings.Count(got, "\n") >= failLogMax {
+		t.Errorf("untrimmed: %d lines", strings.Count(got, "\n"))
+	}
+}
+
+// After the reruns a failing Jest job's log is saved trimmed in the run's
+// folder and the finding names the file.
+func TestShipCheckSavesFailedLog(t *testing.T) {
+	f, g, state := shipFixture(t)
+	g.answers[shipPRView] = openPR(infraRollup)
+	g.answers["run rerun 42 --failed"] = ""
+	p := "test\tnpm test\t2026-11-11T21:00:00Z "
+	g.answers["run view 42 --log-failed"] = p + "setup noise\n" + p + "FAIL src/garden.test.js\n" + p + "  ● Garden › grows\n" + p + "    expect(received).toBe(2)\n"
+	shipCheck(t, f, `{"settled":true}`) // spends the head's one rerun
+	r := shipCheck(t, f, `{"settled":true}`)
+	if len(r.Findings) != 1 || !strings.Contains(r.Findings[0].Reason, "ci-logs") || !strings.Contains(r.Findings[0].Reason, "42.log") {
+		t.Fatalf("findings = %+v", r.Findings)
+	}
+	_, after, _ := strings.Cut(r.Findings[0].Reason, "saved in ")
+	file, _, _ := strings.Cut(after, ":")
+	b, err := os.ReadFile(file)
+	if err != nil || !strings.Contains(string(b), "FAIL src/garden.test.js") || !strings.Contains(string(b), "expect(received).toBe(2)") {
+		t.Errorf("saved log %s = %q, %v", file, b, err)
+	}
+	if st, err := readShipState(state); err != nil || len(st.CIFindings) != 1 {
+		t.Errorf("state = %+v, %v", st, err)
 	}
 }
 
@@ -1930,9 +1938,9 @@ func TestShipCheckFailureDetailNotes(t *testing.T) {
 	const testLog = "test\tRun\t--- FAIL: TestGarden (0.1s)\n"
 	cases := []struct{ name, diff, check, log, want string }{
 		{"rhiza only", ".rhiza/log/x.json\n.rhiza/rendered/a.md\n", "test", testLog,
-			"failed: test after 2 reruns; failing tests: TestGarden; the PR changes only .rhiza/"},
+			"failed: test after 2 reruns; failing tests: CI run 42 (test); the PR changes only .rhiza/"},
 		{"other path", ".rhiza/log/x.json\nmain.go\n", "test", testLog,
-			"failed: test after 2 reruns; failing tests: TestGarden"},
+			"failed: test after 2 reruns; failing tests: CI run 42 (test)"},
 		{"reads rhiza", ".rhiza/rendered/a.md\n", "lint", "lint\tRun\trhiza check: .rhiza/rendered/a.md is stale\n",
 			"failed: lint after 2 reruns; the PR changes only .rhiza/"},
 	}
@@ -2219,65 +2227,6 @@ func TestShipCheckRerunInfraBackoff(t *testing.T) {
 	}
 }
 
-func TestParseCICauses(t *testing.T) {
-	selfCheck := "lint\tRun make lint\t2026-11-11T21:00:00Z fail render docs/reference/cli.md: differs from what rhiza docs writes\n" +
-		"lint\tRun make lint\t2026-11-11T21:00:00Z fail render docs/reference/config.md: differs from what rhiza docs writes\n" +
-		"lint\tRun make lint\t2026-11-11T21:00:01Z make: *** [Makefile:186: self-check] Error 1\n"
-	got := parseCICauses(selfCheck)
-	if len(got) != 1 || got[0].Name != "lint / Run make lint: self-check" || len(got[0].Lines) != 2 ||
-		got[0].Lines[0] != "fail render docs/reference/cli.md: differs from what rhiza docs writes" {
-		t.Errorf("self-check = %+v", got)
-	}
-	fmtLog := "lint\tfmt\t2026-11-11T21:00:00Z unformatted files:\nlint\tfmt\t2026-11-11T21:00:00Z internal/api/x.go\nlint\tfmt\t2026-11-11T21:00:00Z cmd/rhiza/y.go\nlint\tfmt\t2026-11-11T21:00:00Z make: *** [Makefile:163: fmt-check] Error 1\n"
-	got = parseCICauses(fmtLog)
-	if len(got) != 1 || got[0].Name != "lint / fmt: fmt-check" || !slices.Equal(got[0].Lines, []string{"unformatted files:", "internal/api/x.go", "cmd/rhiza/y.go"}) {
-		t.Errorf("fmt-check = %+v", got)
-	}
-	vet := "lint\tvet\t2026-11-11T21:00:00Z # example.com/x\nlint\tvet\t2026-11-11T21:00:00Z internal/api/x.go:12:3: undefined: foo\n"
-	got = parseCICauses(vet)
-	if len(got) != 1 || got[0].Name != "lint / vet: go vet or compile" || got[0].Lines[0] != "internal/api/x.go:12:3: undefined: foo" {
-		t.Errorf("vet = %+v", got)
-	}
-	bare := "build\tBuild\t2026-11-11T21:00:00Z compiling\nbuild\tBuild\t2026-11-11T21:00:00Z linker said no\nbuild\tBuild\t2026-11-11T21:00:01Z make: *** [build] Error 2\n"
-	got = parseCICauses(bare)
-	if len(got) != 1 || got[0].Name != "build / Build: make build" || !slices.Equal(got[0].Lines, []string{"compiling", "linker said no"}) {
-		t.Errorf("bare make = %+v", got)
-	}
-	for _, none := range []string{
-		"setup\tapt\t2026-11-11T21:00:00Z Temporary failure resolving archive.ubuntu.com\n",
-		"setup\tbilling\t2026-11-11T21:00:00Z The job was not started because recent account payments have failed or your spending limit needs to be increased.\n",
-		"test\tRun\t2026-11-11T21:00:00Z --- FAIL: TestX (0.1s)\ntest\tRun\t2026-11-11T21:00:00Z make: *** [test] Error 1\n",
-	} {
-		if got := parseCICauses(none); len(got) != 0 {
-			t.Errorf("parseCICauses(%q) = %+v; want none", none, got)
-		}
-	}
-}
-
-func TestShipCheckCIFindingsNonTest(t *testing.T) {
-	f, g, state := shipFixture(t)
-	g.answers[shipPRView] = openPR(infraRollup)
-	g.answers["run rerun 42 --failed"] = ""
-	g.answers["run view 42 --log-failed"] = "lint\tRun make lint\t2026-11-11T21:00:00Z fail render docs/reference/cli.md: differs from what rhiza docs writes\nlint\tRun make lint\t2026-11-11T21:00:01Z make: *** [Makefile:186: self-check] Error 1\n"
-	shipCheck(t, f, `{"settled":true}`) // spends the head's one rerun
-	r := shipCheck(t, f, `{"settled":true}`)
-	if len(r.Findings) != 1 || !strings.Contains(r.Findings[0].Reason, "fail render docs/reference/cli.md") || !strings.Contains(r.Findings[0].Test, "lint") {
-		t.Fatalf("findings = %+v", r.Findings)
-	}
-	st, err := readShipState(state)
-	if err != nil || len(st.CIFindings) != 1 {
-		t.Fatalf("state = %+v, %v", st, err)
-	}
-	if r := shipCheck(t, f, `{"test_failures":true}`); !r.Passed || r.ExitCode() != 0 {
-		t.Errorf("test-failures on a cause: %+v", r)
-	}
-	g.answers["run view 42 --log-failed"] = "setup\tapt\tTemporary failure resolving archive.ubuntu.com\n"
-	shipCheck(t, f, `{"settled":true}`)
-	if r := shipCheck(t, f, `{"test_failures":true}`); r.Passed || r.ExitCode() != 1 {
-		t.Errorf("test-failures on infra: %+v", r)
-	}
-}
-
 func TestShipInfraWaitSettlesOnCause(t *testing.T) {
 	f, g, _ := shipFixture(t)
 	g.answers[shipPRView] = openPR(infraRollup)
@@ -2289,24 +2238,6 @@ func TestShipInfraWaitSettlesOnCause(t *testing.T) {
 	g.answers[shipPRView] = strings.Replace(openPR(infraRollup), "42", "100", -1)
 	if r := shipCheck(t, f, req); !r.Passed || !r.Settled {
 		t.Errorf("attempt with a recognised cause: %+v", r)
-	}
-}
-
-func TestParseCICausesSkipsTestOutput(t *testing.T) {
-	log := "test\tRun make test\t2026-11-11T21:00:00Z --- FAIL: TestScripts (2.1s)\n" +
-		"test\tRun make test\t2026-11-11T21:00:00Z     --- FAIL: TestScripts/check-stale (0.3s)\n" +
-		"test\tRun make test\t2026-11-11T21:00:00Z         testscript.go:584: > ! rhiza check\n" +
-		"test\tRun make test\t2026-11-11T21:00:00Z             [stdout]\n" +
-		"test\tRun make test\t2026-11-11T21:00:00Z             fail render index.md: differs from what rhiza render writes\n" +
-		"test\tRun make test\t2026-11-11T21:00:00Z             internal/api/x.go:12:3: undefined: foo\n" +
-		"test\tRun make test\t2026-11-11T21:00:00Z             unformatted files:\n" +
-		"test\tRun make test\t2026-11-11T21:00:00Z FAIL\n" +
-		"test\tRun make test\t2026-11-11T21:00:01Z make: *** [Makefile:150: test] Error 1\n"
-	if got := parseCICauses(log); len(got) != 0 {
-		t.Errorf("causes = %+v; want none", got)
-	}
-	if got := parseFailedTests(log); !slices.Equal(got, []string{"TestScripts/check-stale"}) {
-		t.Errorf("tests = %v", got)
 	}
 }
 
