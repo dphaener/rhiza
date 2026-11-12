@@ -8,8 +8,10 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/run"
 )
 
 // prePushRepo is a real repo with a Rhiza model, an origin it has pushed
@@ -585,4 +587,53 @@ func TestShipPrePushCheckHeadBuild(t *testing.T) {
 			t.Errorf("%d worktrees left", n)
 		}
 	})
+}
+
+// prePushJournal is the pre-push entries the run whose worktree is r's
+// checkout holds.
+func (r *prePushRepo) prePushJournal(rs *run.Store, id string) []run.PrePushCheck {
+	r.t.Helper()
+	j, err := rs.Read(id)
+	if err != nil {
+		r.t.Fatal(err)
+	}
+	return j.State().PrePushChecks
+}
+
+func TestPrePushJournal(t *testing.T) {
+	r := newPrePushRepo(t)
+	rs := run.NewStore(run.Dir(filepath.Join(r.root, ".git")))
+	const id = "01M77PREPUSH0000000000000A"
+	first := run.Entry{Type: run.TypeStarted, At: time.Now(), Step: "ship",
+		Started: &run.Started{Workflow: "ship-change", Change: "01M5PWGEF85Y185JZ2ZGCNH40N", Worktree: r.root}}
+	if err := rs.Create(id, first); err != nil {
+		t.Fatal(err)
+	}
+
+	r.commitFile("a.txt", "a\n")
+	if err := shipPrePushCheck(r.ctx, r.root); err != nil {
+		t.Fatal(err)
+	}
+	passedHead := strings.TrimSpace(r.git("rev-parse", "HEAD"))
+	got := r.prePushJournal(rs, id)
+	if len(got) != 1 || got[0].Outcome != run.CheckPassed || got[0].Commit != passedHead || got[0].Command != "rhiza check" || got[0].Output != "" {
+		t.Fatalf("after a pass: %+v", got)
+	}
+
+	r.setCheck("echo FAIL generated file; exit 3")
+	if err := shipPrePushCheck(r.ctx, r.root); err == nil {
+		t.Fatal("check passed")
+	}
+	got = r.prePushJournal(rs, id)
+	if len(got) != 2 {
+		t.Fatalf("after a failure: %+v", got)
+	}
+	f := got[1]
+	if f.Outcome != run.CheckFailed || f.Commit != passedHead || !strings.Contains(f.Command, "exit 3") || !strings.Contains(f.Output, "FAIL generated file") {
+		t.Fatalf("failed entry: %+v", f)
+	}
+	st, _ := rs.Read(id)
+	if l, ok := st.State().LatestPrePush(); !ok || l.Outcome != run.CheckFailed {
+		t.Fatalf("latest: %+v", l)
+	}
 }

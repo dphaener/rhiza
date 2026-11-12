@@ -1850,6 +1850,7 @@ Output (`--json` fields):
 - `messages` (array of object): The messages its sessions sent each other, in order
 - `pick` (string): Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded
 - `pr` (string): While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise
+- `pre_push` (object): The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran
 - `questions` (array of object): The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none
 - `retries` (array of object): The retries of the run after it failed, in order; absent when it was never retried
 - `rounds` (array of object): The plan review rounds journalled by run findings and run verdict, in order; absent when there were none

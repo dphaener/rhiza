@@ -4283,6 +4283,46 @@ cmp stdout describe.golden.json
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
                 "type": "string"
               },
+              "pre_push": {
+                "additionalProperties": false,
+                "description": "The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran",
+                "properties": {
+                  "at": {
+                    "description": "When it ran, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "command": {
+                    "description": "What it ran: rhiza check, then the project's rhiza.ship.prePushCheck command when set",
+                    "type": "string"
+                  },
+                  "head": {
+                    "description": "The committed head the check ran on",
+                    "type": "string"
+                  },
+                  "outcome": {
+                    "description": "passed or failed",
+                    "enum": [
+                      "passed",
+                      "failed"
+                    ],
+                    "type": "string"
+                  },
+                  "output": {
+                    "description": "A failure's failing lines, the end of its output",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step the run was at",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "at",
+                  "head",
+                  "outcome"
+                ],
+                "type": "object"
+              },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
                 "items": {
@@ -6047,6 +6087,46 @@ cmp stdout describe.golden.json
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
                 "type": "string"
+              },
+              "pre_push": {
+                "additionalProperties": false,
+                "description": "The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran",
+                "properties": {
+                  "at": {
+                    "description": "When it ran, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "command": {
+                    "description": "What it ran: rhiza check, then the project's rhiza.ship.prePushCheck command when set",
+                    "type": "string"
+                  },
+                  "head": {
+                    "description": "The committed head the check ran on",
+                    "type": "string"
+                  },
+                  "outcome": {
+                    "description": "passed or failed",
+                    "enum": [
+                      "passed",
+                      "failed"
+                    ],
+                    "type": "string"
+                  },
+                  "output": {
+                    "description": "A failure's failing lines, the end of its output",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step the run was at",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "at",
+                  "head",
+                  "outcome"
+                ],
+                "type": "object"
               },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
@@ -9579,6 +9659,46 @@ cmp stdout describe.golden.json
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
                 "type": "string"
               },
+              "pre_push": {
+                "additionalProperties": false,
+                "description": "The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran",
+                "properties": {
+                  "at": {
+                    "description": "When it ran, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "command": {
+                    "description": "What it ran: rhiza check, then the project's rhiza.ship.prePushCheck command when set",
+                    "type": "string"
+                  },
+                  "head": {
+                    "description": "The committed head the check ran on",
+                    "type": "string"
+                  },
+                  "outcome": {
+                    "description": "passed or failed",
+                    "enum": [
+                      "passed",
+                      "failed"
+                    ],
+                    "type": "string"
+                  },
+                  "output": {
+                    "description": "A failure's failing lines, the end of its output",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step the run was at",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "at",
+                  "head",
+                  "outcome"
+                ],
+                "type": "object"
+              },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
                 "items": {
@@ -11183,6 +11303,46 @@ cmp stdout describe.golden.json
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
                 "type": "string"
+              },
+              "pre_push": {
+                "additionalProperties": false,
+                "description": "The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran",
+                "properties": {
+                  "at": {
+                    "description": "When it ran, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "command": {
+                    "description": "What it ran: rhiza check, then the project's rhiza.ship.prePushCheck command when set",
+                    "type": "string"
+                  },
+                  "head": {
+                    "description": "The committed head the check ran on",
+                    "type": "string"
+                  },
+                  "outcome": {
+                    "description": "passed or failed",
+                    "enum": [
+                      "passed",
+                      "failed"
+                    ],
+                    "type": "string"
+                  },
+                  "output": {
+                    "description": "A failure's failing lines, the end of its output",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step the run was at",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "at",
+                  "head",
+                  "outcome"
+                ],
+                "type": "object"
               },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
@@ -13743,6 +13903,46 @@ cmp stdout describe.golden.json
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
                 "type": "string"
               },
+              "pre_push": {
+                "additionalProperties": false,
+                "description": "The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran",
+                "properties": {
+                  "at": {
+                    "description": "When it ran, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "command": {
+                    "description": "What it ran: rhiza check, then the project's rhiza.ship.prePushCheck command when set",
+                    "type": "string"
+                  },
+                  "head": {
+                    "description": "The committed head the check ran on",
+                    "type": "string"
+                  },
+                  "outcome": {
+                    "description": "passed or failed",
+                    "enum": [
+                      "passed",
+                      "failed"
+                    ],
+                    "type": "string"
+                  },
+                  "output": {
+                    "description": "A failure's failing lines, the end of its output",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step the run was at",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "at",
+                  "head",
+                  "outcome"
+                ],
+                "type": "object"
+              },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
                 "items": {
@@ -15387,6 +15587,46 @@ cmp stdout describe.golden.json
               "pr": {
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
                 "type": "string"
+              },
+              "pre_push": {
+                "additionalProperties": false,
+                "description": "The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran",
+                "properties": {
+                  "at": {
+                    "description": "When it ran, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "command": {
+                    "description": "What it ran: rhiza check, then the project's rhiza.ship.prePushCheck command when set",
+                    "type": "string"
+                  },
+                  "head": {
+                    "description": "The committed head the check ran on",
+                    "type": "string"
+                  },
+                  "outcome": {
+                    "description": "passed or failed",
+                    "enum": [
+                      "passed",
+                      "failed"
+                    ],
+                    "type": "string"
+                  },
+                  "output": {
+                    "description": "A failure's failing lines, the end of its output",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step the run was at",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "at",
+                  "head",
+                  "outcome"
+                ],
+                "type": "object"
               },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
@@ -17099,6 +17339,46 @@ cmp stdout describe.golden.json
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
                 "type": "string"
               },
+              "pre_push": {
+                "additionalProperties": false,
+                "description": "The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran",
+                "properties": {
+                  "at": {
+                    "description": "When it ran, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "command": {
+                    "description": "What it ran: rhiza check, then the project's rhiza.ship.prePushCheck command when set",
+                    "type": "string"
+                  },
+                  "head": {
+                    "description": "The committed head the check ran on",
+                    "type": "string"
+                  },
+                  "outcome": {
+                    "description": "passed or failed",
+                    "enum": [
+                      "passed",
+                      "failed"
+                    ],
+                    "type": "string"
+                  },
+                  "output": {
+                    "description": "A failure's failing lines, the end of its output",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step the run was at",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "at",
+                  "head",
+                  "outcome"
+                ],
+                "type": "object"
+              },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
                 "items": {
@@ -18778,6 +19058,46 @@ cmp stdout describe.golden.json
                 "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
                 "type": "string"
               },
+              "pre_push": {
+                "additionalProperties": false,
+                "description": "The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran",
+                "properties": {
+                  "at": {
+                    "description": "When it ran, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "command": {
+                    "description": "What it ran: rhiza check, then the project's rhiza.ship.prePushCheck command when set",
+                    "type": "string"
+                  },
+                  "head": {
+                    "description": "The committed head the check ran on",
+                    "type": "string"
+                  },
+                  "outcome": {
+                    "description": "passed or failed",
+                    "enum": [
+                      "passed",
+                      "failed"
+                    ],
+                    "type": "string"
+                  },
+                  "output": {
+                    "description": "A failure's failing lines, the end of its output",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step the run was at",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "at",
+                  "head",
+                  "outcome"
+                ],
+                "type": "object"
+              },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
                 "items": {
@@ -20271,6 +20591,46 @@ cmp stdout describe.golden.json
           "pr": {
             "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
             "type": "string"
+          },
+          "pre_push": {
+            "additionalProperties": false,
+            "description": "The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran",
+            "properties": {
+              "at": {
+                "description": "When it ran, RFC 3339 UTC",
+                "type": "string"
+              },
+              "command": {
+                "description": "What it ran: rhiza check, then the project's rhiza.ship.prePushCheck command when set",
+                "type": "string"
+              },
+              "head": {
+                "description": "The committed head the check ran on",
+                "type": "string"
+              },
+              "outcome": {
+                "description": "passed or failed",
+                "enum": [
+                  "passed",
+                  "failed"
+                ],
+                "type": "string"
+              },
+              "output": {
+                "description": "A failure's failing lines, the end of its output",
+                "type": "string"
+              },
+              "step": {
+                "description": "The step the run was at",
+                "type": "string"
+              }
+            },
+            "required": [
+              "at",
+              "head",
+              "outcome"
+            ],
+            "type": "object"
           },
           "questions": {
             "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",

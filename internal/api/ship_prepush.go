@@ -19,6 +19,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/dphaener/rhiza/internal/run"
 )
 
 // ShipPrePushCheck is a pre-push check that failed: the committed head it
@@ -65,11 +67,26 @@ var prePushCheck = shipPrePushCheck
 // about to be pushed. It returns nil when the check passes, else an error
 // naming the head and carrying the failing lines.
 func shipPrePushCheck(ctx *Ctx, dir string) error {
+	head, err := prePushCheckHead(ctx, dir)
+	if err != nil {
+		return err
+	}
+	err = prePushCheckAt(ctx, dir, head)
+	journalPrePush(ctx, dir, head, err)
+	return err
+}
+
+// prePushCheckHead is the commit HEAD of the checkout at dir.
+func prePushCheckHead(ctx *Ctx, dir string) (string, error) {
 	head, err := gitAt(ctx, dir, "rev-parse", "HEAD")
 	if err != nil {
-		return Errorf("pre-push check: cannot read HEAD in %s: %v", dir, err)
+		return "", Errorf("pre-push check: cannot read HEAD in %s: %v", dir, err)
 	}
-	head = strings.TrimSpace(head)
+	return strings.TrimSpace(head), nil
+}
+
+// prePushCheckAt runs the check on head, the commit of dir's checkout.
+func prePushCheckAt(ctx *Ctx, dir, head string) error {
 	tmp, err := os.MkdirTemp("", "rhiza-prepush-*")
 	if err != nil {
 		return Errorf("pre-push check: %v", err)
@@ -94,6 +111,57 @@ func shipPrePushCheck(ctx *Ctx, dir string) error {
 		}
 	}
 	return nil
+}
+
+// journalPrePush journals the pre-push check's result on head in the run
+// whose checkout dir is (RHIZA_RUN's, else the unfinished run with that
+// worktree): passed or failed, the head, the command and, when failed, the
+// end of the output. Best effort: a check that errored before it could
+// judge the head, a dry run or a missing run journals nothing.
+func journalPrePush(ctx *Ctx, dir, head string, checkErr error) {
+	if ctx.DryRun {
+		return
+	}
+	e := run.Entry{Type: run.TypePrePush, At: ctx.Now(), Commit: head, Outcome: run.CheckPassed, Detail: "rhiza check"}
+	if out, err := gitAt(ctx, dir, "config", "--get", PrePushCheckKey); err == nil {
+		if cmd := strings.TrimSpace(out); cmd != "" {
+			e.Detail = "rhiza check; " + cmd
+		}
+	}
+	if checkErr != nil {
+		c, ok := prePushFailed(checkErr)
+		if !ok {
+			return
+		}
+		e.Outcome = run.CheckFailed
+		e.Text = strings.Join(c.Lines, "\n")
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return
+	}
+	rs := run.NewStore(run.Dir(common))
+	id := strings.TrimSpace(ctxGetenv(ctx)(envRun))
+	if id == "" {
+		js, err := rs.List()
+		if err != nil {
+			return
+		}
+		abs, _ := filepath.Abs(dir)
+		for _, j := range js {
+			st := j.State()
+			if w, _ := filepath.Abs(st.Worktree); !st.Ended && st.Worktree != "" && w == abs {
+				id, e.Step = j.ID, st.Current
+			}
+		}
+	} else if j, err := rs.Read(id); err == nil {
+		id, e.Step = j.ID, j.State().Current
+	} else {
+		return
+	}
+	if id != "" {
+		rs.Append(id, e)
+	}
 }
 
 // prePushCheckLines runs rhiza check, then the prePushCheck command, in the
