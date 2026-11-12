@@ -90,6 +90,13 @@ func TestPlanFallbacks(t *testing.T) {
 	if got := plan(t, root, "", ""); !strings.Contains(got, "make test") || !strings.Contains(got, "make self-check") {
 		t.Errorf("empty base:\n%s", got)
 	}
+	for _, f := range []string{"docs/quickstart.md", "AGENTS.md", ".github/workflows/ci.yml"} {
+		root, base := repo(t)
+		write(t, root, f, "changed\n")
+		if got := plan(t, root, base, ""); !strings.Contains(got, "make test") || !strings.Contains(got, "make self-check") {
+			t.Errorf("%s:\n%s", f, got)
+		}
+	}
 	write(t, root, "go.mod", "module example.com/x\n\ngo 1.22\n")
 	if got := plan(t, root, base, ""); !strings.Contains(got, "make test") || !strings.Contains(got, "make self-check") {
 		t.Errorf("go.mod:\n%s", got)

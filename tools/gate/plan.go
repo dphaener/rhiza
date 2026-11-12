@@ -102,7 +102,13 @@ func Build(base string, changed []string, pkgs []Pkg, acceptance []string) Plan 
 			if strings.HasSuffix(f, ".go") {
 				return Plan{f + " is Go code outside any package the tool can see", fullSteps}
 			}
-			continue
+			if strings.HasPrefix(f, ".rhiza/") {
+				continue
+			}
+			// Tests read files outside their packages (AGENTS.md, agents/,
+			// docs/, .github/, .goreleaser.yaml), so which ones a change
+			// affects cannot be worked out: the whole suite runs.
+			return Plan{f + " is outside every package, and tests may read it", fullSteps}
 		}
 		changedPkg[d] = true
 	}
