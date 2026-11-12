@@ -2274,3 +2274,21 @@ func TestShipInfraWaitSettlesOnCause(t *testing.T) {
 		t.Errorf("attempt with a recognised cause: %+v", r)
 	}
 }
+
+func TestParseCICausesSkipsTestOutput(t *testing.T) {
+	log := "test\tRun make test\t2026-11-11T21:00:00Z --- FAIL: TestScripts (2.1s)\n" +
+		"test\tRun make test\t2026-11-11T21:00:00Z     --- FAIL: TestScripts/check-stale (0.3s)\n" +
+		"test\tRun make test\t2026-11-11T21:00:00Z         testscript.go:584: > ! rhiza check\n" +
+		"test\tRun make test\t2026-11-11T21:00:00Z             [stdout]\n" +
+		"test\tRun make test\t2026-11-11T21:00:00Z             fail render index.md: differs from what rhiza render writes\n" +
+		"test\tRun make test\t2026-11-11T21:00:00Z             internal/api/x.go:12:3: undefined: foo\n" +
+		"test\tRun make test\t2026-11-11T21:00:00Z             unformatted files:\n" +
+		"test\tRun make test\t2026-11-11T21:00:00Z FAIL\n" +
+		"test\tRun make test\t2026-11-11T21:00:01Z make: *** [Makefile:150: test] Error 1\n"
+	if got := parseCICauses(log); len(got) != 0 {
+		t.Errorf("causes = %+v; want none", got)
+	}
+	if got := parseFailedTests(log); !slices.Equal(got, []string{"TestScripts/check-stale"}) {
+		t.Errorf("tests = %v", got)
+	}
+}

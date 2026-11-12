@@ -1216,7 +1216,8 @@ var (
 const ciCauseLines = 10
 
 // parseCICauses returns the deterministic causes a gh run view --log-failed
-// output names besides a failing test, in order of first appearance: rhiza
+// output names besides a failing test, in order of first appearance, from
+// unindented lines only (indented ones are a test's own output): rhiza
 // check or self-check 'fail ...' lines, a gofmt file listing, go vet and
 // compiler diagnostics, each grouped by the job and step that printed it,
 // and, only when none of those or a failing test is in the log, the target
@@ -1243,7 +1244,16 @@ func parseCICauses(log string) []ciCause {
 	var makes []makeFail
 	for _, raw := range strings.Split(log, "\n") {
 		raw = strings.TrimRight(raw, "\r")
-		text := strings.TrimRight(logText(raw), " \t")
+		body := logBody(raw)
+		text := strings.TrimSpace(body)
+		if text != "" && body[0] != text[0] {
+			// An indented line is a test's own output (a failing Go
+			// test's log, a testscript's quoted stdout): a 'fail ...'
+			// or a diagnostic there is what the test saw, not a cause.
+			inFmt = false
+			before = append(before, text)
+			continue
+		}
 		where := ""
 		if parts := strings.SplitN(ansiEscape.ReplaceAllString(raw, ""), "\t", 3); len(parts) == 3 {
 			where = strings.TrimSpace(parts[0]) + " / " + strings.TrimSpace(parts[1])
@@ -1315,11 +1325,16 @@ var (
 // logText returns a log line's text after gh's "job<TAB>step<TAB>timestamp "
 // prefix (when it has one) and any colour codes, leading space trimmed.
 func logText(line string) string {
+	return strings.TrimLeft(logBody(line), " \t")
+}
+
+// logBody is logText with the line's own indentation kept.
+func logBody(line string) string {
 	line = ansiEscape.ReplaceAllString(line, "")
 	if parts := strings.SplitN(line, "\t", 3); len(parts) == 3 {
 		line = logTimestamp.ReplaceAllString(parts[2], "")
 	}
-	return strings.TrimLeft(line, " \t")
+	return line
 }
 
 // parseFailedTests returns the distinct tests named in a gh run view
