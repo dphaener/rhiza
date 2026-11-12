@@ -76,6 +76,8 @@ type ShipCheckRequest struct {
 	// that is still unresolved; it reads the state file and git, runs no
 	// gh and records nothing.
 	Conflicts bool `json:"conflicts,omitempty" flag:"conflicts" desc:"Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed or once the run has made 3 conflict fixes (merge commits on the branch with its Review: trailer); reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)"`
+	// ModelConflict asks only whether the last ship land was refused for a model conflict.
+	ModelConflict bool `json:"model_conflict,omitempty" flag:"model-conflict" desc:"Exit 0 only if the ship state records a land refused for a model conflict (a stale write another change set landed to the same node aspect), the branch is still at the head it was refused at, and the run has made fewer than 3 model-conflict fixes (commits on the branch carrying its Review: trailer and a Model-Conflict: trailer), else exit 1 naming why; with --json shows the conflict with both change sets' IDs and intents; reads the state file and git only and records nothing (for a step that routes a model conflict to a fixer)"`
 	// Reruns is how many times a head's failed Actions runs are rerun.
 	Reruns ShipReruns `json:"reruns,omitempty" flag:"reruns" desc:"How many times a head's failed jobs are rerun before its failure stands, at least 1; default 1"`
 	// Changed makes Settled wait for CI to move past the red head a failing
@@ -117,27 +119,50 @@ func (r ShipReruns) budget() (int, error) {
 
 // ShipCheckResponse is what ship.check found.
 type ShipCheckResponse struct {
-	Change        string             `json:"change" desc:"The change set"`
-	Branch        string             `json:"branch" desc:"The change set's branch"`
-	Main          bool               `json:"main,omitempty" desc:"True if it checked the merge commit on main rather than the pull request"`
-	PR            int                `json:"pr,omitempty" desc:"The pull request's number; 0 if none was found"`
-	URL           string             `json:"url,omitempty" desc:"The pull request's URL"`
-	State         string             `json:"state,omitempty" desc:"The pull request's state, such as OPEN or MERGED"`
-	Commit        string             `json:"commit,omitempty" desc:"The commit checked: the PR's head, or the merge commit"`
-	Checks        []ShipCheck        `json:"checks" desc:"The checks reported for the commit"`
-	Settled       bool               `json:"settled" desc:"True if there is an open PR (or a merge commit) and every check on it has finished"`
-	Green         bool               `json:"green" desc:"True if settled and every check passed (success, neutral or skipped)"`
-	Failed        []string           `json:"failed,omitempty" desc:"The names of the settled checks that did not pass"`
-	Passed        bool               `json:"passed" desc:"True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise"`
-	Detail        string             `json:"detail,omitempty" desc:"Why it did not pass, such as no open pull request"`
-	Written       bool               `json:"written,omitempty" desc:"True if the result was recorded in the state file for the next steps"`
-	Rebased       string             `json:"rebased,omitempty" desc:"With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main"`
-	Conflicts     []string           `json:"conflicts,omitempty" desc:"The files of an unresolved merge of main (a conflict in code left in progress): with --settled the check reports settled, without it the check fails while the merge is unresolved"`
-	MergeConflict *ShipMergeConflict `json:"merge_conflict,omitempty" desc:"A merge of main left in progress by a conflict in code: the files, origin/main's commits with their change sets and the branch's change set"`
-	Stop          string             `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
-	Tests         []string           `json:"tests,omitempty" desc:"The failed Actions runs whose logs hold failure lines, once the failed jobs were rerun and failed again, each as 'CI run <id> (<check>)'"`
-	Findings      []ShipFinding      `json:"findings,omitempty" desc:"One finding, with no leaf, per failed run with failure lines, for a fix step: it names the file its trimmed failing log is saved in, in the run folder; recorded in the state file as well"`
-	Reran         []string           `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, up to --reruns times per head, instead of failing; the check then reports not settled"`
+	Change        string                 `json:"change" desc:"The change set"`
+	Branch        string                 `json:"branch" desc:"The change set's branch"`
+	Main          bool                   `json:"main,omitempty" desc:"True if it checked the merge commit on main rather than the pull request"`
+	PR            int                    `json:"pr,omitempty" desc:"The pull request's number; 0 if none was found"`
+	URL           string                 `json:"url,omitempty" desc:"The pull request's URL"`
+	State         string                 `json:"state,omitempty" desc:"The pull request's state, such as OPEN or MERGED"`
+	Commit        string                 `json:"commit,omitempty" desc:"The commit checked: the PR's head, or the merge commit"`
+	Checks        []ShipCheck            `json:"checks" desc:"The checks reported for the commit"`
+	Settled       bool                   `json:"settled" desc:"True if there is an open PR (or a merge commit) and every check on it has finished"`
+	Green         bool                   `json:"green" desc:"True if settled and every check passed (success, neutral or skipped)"`
+	Failed        []string               `json:"failed,omitempty" desc:"The names of the settled checks that did not pass"`
+	Passed        bool                   `json:"passed" desc:"True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise"`
+	Detail        string                 `json:"detail,omitempty" desc:"Why it did not pass, such as no open pull request"`
+	Written       bool                   `json:"written,omitempty" desc:"True if the result was recorded in the state file for the next steps"`
+	Rebased       string                 `json:"rebased,omitempty" desc:"With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main"`
+	Conflicts     []string               `json:"conflicts,omitempty" desc:"The files of an unresolved merge of main (a conflict in code left in progress): with --settled the check reports settled, without it the check fails while the merge is unresolved"`
+	ModelConflict *ShipModelConflictView `json:"model_conflict,omitempty" desc:"With --model-conflict: the land's recorded model conflict, with both change sets' IDs and intents"`
+	MergeConflict *ShipMergeConflict     `json:"merge_conflict,omitempty" desc:"A merge of main left in progress by a conflict in code: the files, origin/main's commits with their change sets and the branch's change set"`
+	Stop          string                 `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
+	Tests         []string               `json:"tests,omitempty" desc:"The failed Actions runs whose logs hold failure lines, once the failed jobs were rerun and failed again, each as 'CI run <id> (<check>)'"`
+	Findings      []ShipFinding          `json:"findings,omitempty" desc:"One finding, with no leaf, per failed run with failure lines, for a fix step: it names the file its trimmed failing log is saved in, in the run folder; recorded in the state file as well"`
+	Reran         []string               `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, up to --reruns times per head, instead of failing; the check then reports not settled"`
+}
+
+// ShipModelConflict is a model conflict a land was refused for.
+type ShipModelConflict struct {
+	Node      string   `json:"node" desc:"The node the stale write is on"`
+	Op        string   `json:"op" desc:"The conflicting operation, of the other change set"`
+	ChangeSet string   `json:"change_set" desc:"The other change set, which landed the conflicting operation"`
+	Aspects   []string `json:"aspects" desc:"The aspects it wrote, such as field:statement"`
+	Head      string   `json:"head" desc:"The branch head the land was refused at"`
+}
+
+// ShipModelConflictView is the recorded conflict for the fixer: both
+// change sets with their intents.
+type ShipModelConflictView struct {
+	Node              string   `json:"node" desc:"The node the stale write is on"`
+	Op                string   `json:"op" desc:"The conflicting operation, of the other change set"`
+	Aspects           []string `json:"aspects" desc:"The aspects it wrote, such as field:statement"`
+	Head              string   `json:"head" desc:"The branch head the land was refused at"`
+	ChangeSetID       string   `json:"refused_change_set" desc:"The change set the land was refused for"`
+	Intent            string   `json:"intent,omitempty" desc:"The refused change set's intent"`
+	OtherChangeSet    string   `json:"change_set" desc:"The other change set, which landed the conflicting operation"`
+	OtherChangeIntent string   `json:"other_intent,omitempty" desc:"The other change set's intent"`
 }
 
 // ShipFinding is a failed CI run, as a finding with no leaf that names its
@@ -399,6 +424,9 @@ type shipState struct {
 	// ship open-pr or ship land (nothing was pushed), so ship gate --failed
 	// routes it to the gate's fixer.
 	PrePushFailed string `json:"pre_push_failed,omitempty"`
+	// ModelConflict is the model conflict the last ship land was refused
+	// for, with the head it was refused at; cleared by any other land.
+	ModelConflict *ShipModelConflict `json:"model_conflict,omitempty"`
 	// MergeConflict is the context of a merge of main that conflicts in
 	// code, left in progress in the worktree for a fixer.
 	MergeConflict *ShipMergeConflict `json:"merge_conflict,omitempty"`
@@ -670,6 +698,12 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 			return nil, Usagef("--infra asks only whether the last failing check recorded an infra red; it takes no other check flag")
 		}
 		return runShipInfra(ctx)
+	}
+	if r.ModelConflict {
+		if r.PROpen || r.Main || r.Settled || r.TestFailures || r.Conflicts {
+			return nil, Usagef("--model-conflict asks only whether a land was refused for a model conflict; it takes no other check flag")
+		}
+		return runShipModelConflict(ctx)
 	}
 	if r.Conflicts {
 		if r.PROpen || r.Main || r.Settled || r.TestFailures {
@@ -1022,6 +1056,92 @@ func runShipConflicts(ctx *Ctx) (any, error) {
 		resp.Passed = true
 	}
 	return resp, nil
+}
+
+// shipModelFixCap is how many model-conflict fixes one run makes.
+const shipModelFixCap = 3
+
+// shipModelFixes counts the commits on the branch carrying the run's
+// Review: trailer and a Model-Conflict: trailer.
+func shipModelFixes(ctx *Ctx, t shipTarget) int {
+	rid := strings.TrimSpace(ctxGetenv(ctx)(envRun))
+	if rid == "" {
+		return 0
+	}
+	out, err := gitAt(ctx, t.dir(), "log", "--format=%H", "-E", "--grep=^Review: "+rid+"$", "--grep=^Model-Conflict:", "--all-match", "HEAD")
+	if err != nil {
+		return 0
+	}
+	return len(gitLines(out))
+}
+
+// runShipModelConflict passes only while the state records a land refused
+// for a model conflict at the branch's current head, with fixes to spare.
+func runShipModelConflict(ctx *Ctx) (any, error) {
+	t, err := findShipTarget(ctx)
+	if err != nil {
+		return nil, err
+	}
+	st, err := readShipState(t.statePath())
+	if err != nil {
+		return nil, err
+	}
+	resp := ShipCheckResponse{Change: t.cs.String(), Branch: t.branch, Checks: []ShipCheck{}, PR: st.PR, URL: st.URL}
+	head := ""
+	if out, err := gitAt(ctx, t.dir(), "rev-parse", "HEAD"); err == nil {
+		head = strings.TrimSpace(out)
+		resp.Commit = head
+	}
+	mc := st.ModelConflict
+	if mc == nil {
+		resp.Detail = "no model conflict is recorded"
+		return resp, nil
+	}
+	v := &ShipModelConflictView{Node: mc.Node, Op: mc.Op, Aspects: mc.Aspects, Head: mc.Head, ChangeSetID: t.cs.String(), OtherChangeSet: mc.ChangeSet}
+	if w, err := openCtxWorkspace(ctx); err == nil {
+		if c, ok := w.changeSet(t.cs); ok {
+			v.Intent = c.Open.Intent
+		}
+		if o, err := id.Parse(mc.ChangeSet); err == nil {
+			if c, ok := w.changeSet(o); ok {
+				v.OtherChangeIntent = c.Open.Intent
+			}
+		}
+	}
+	resp.ModelConflict = v
+	switch {
+	case head != mc.Head:
+		resp.Detail = fmt.Sprintf("the branch moved past %s, where the land was refused for a model conflict", shortSHA(mc.Head))
+	case shipModelFixes(ctx, t) >= shipModelFixCap:
+		resp.Detail = fmt.Sprintf("the land was refused for a model conflict on %s, but the run has already made %d model-conflict fixes (the most it makes)", mc.Node, shipModelFixCap)
+	default:
+		resp.Detail = fmt.Sprintf("the land was refused for a model conflict on %s: op %s of change set %s wrote %s", mc.Node, mc.Op, mc.ChangeSet, strings.Join(mc.Aspects, ", "))
+		resp.Passed = true
+	}
+	return resp, nil
+}
+
+// shipRecordModelConflict records in st and the ship state the model
+// conflict err refused a land for, at the branch's head, and clears it when
+// err is none (or nil). Best effort.
+func shipRecordModelConflict(ctx *Ctx, t shipTarget, st *shipState, err error) {
+	var c *ModelConflict
+	if e := AsError(err); e != nil {
+		c = e.Conflict
+	}
+	switch {
+	case c == nil && st.ModelConflict == nil:
+		return
+	case c == nil:
+		st.ModelConflict = nil
+	default:
+		head, herr := gitHead(ctx)
+		if herr != nil {
+			return
+		}
+		st.ModelConflict = &ShipModelConflict{Node: c.Node, Op: c.Op, ChangeSet: c.ChangeSet, Aspects: c.Aspects, Head: head}
+	}
+	writeShipState(t.statePath(), *st)
 }
 
 // shipConflictFixCap is how many conflict fixes one run makes, before and

@@ -97,12 +97,40 @@ func (e storedErr) Unwrap() error { return e.is }
 
 // storedError is the error of a stored problem: the sentinel is wrapped
 // as the model wraps it ("sentinel: detail"), so it is the error the model
-// made; anything else keeps its text and sentinel.
+// made (a stale base comes back as its model.StaleBaseError); anything
+// else keeps its text and sentinel.
 func storedError(msg string, sentinel error) error {
 	if rest, ok := strings.CutPrefix(msg, sentinel.Error()+": "); ok {
+		if sentinel == model.ErrConflict {
+			if sb, ok := staleBase(rest); ok && sb.Error() == msg {
+				return sb
+			}
+		}
 		return fmt.Errorf("%w: %s", sentinel, rest)
 	}
 	return storedErr{msg, sentinel}
+}
+
+// staleBase parses the detail of a model.StaleBaseError's text back into
+// it: "base B of N is stale: op O of change set C since wrote A, A".
+func staleBase(rest string) (*model.StaleBaseError, bool) {
+	head, aspects, ok := strings.Cut(rest, " since wrote ")
+	if !ok {
+		return nil, false
+	}
+	var b, n, o, c string
+	if k, err := fmt.Sscanf(head, "base %s of %s is stale: op %s of change set %s", &b, &n, &o, &c); err != nil || k != 4 {
+		return nil, false
+	}
+	var ids [4]id.ID
+	for i, s := range []string{b, n, o, c} {
+		v, err := id.Parse(s)
+		if err != nil {
+			return nil, false
+		}
+		ids[i] = v
+	}
+	return &model.StaleBaseError{Base: ids[0], Node: ids[1], Op: ids[2], ChangeSet: ids[3], Aspects: strings.Split(aspects, ", ")}, true
 }
 
 // loadSeed reads the stored as-is view as a model.Seed.

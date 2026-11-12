@@ -242,24 +242,50 @@ on.fail = "conflict-triage"
 kind = "command"
 run = "rhiza ship gate"
 stall = "70m"
-max_visits = 6
+max_visits = 9
 on.pass = "land"
 on.fail = "gate-fix"
 
 [step.land]
 kind = "command"
 run = "rhiza ship land"
+max_visits = 4
 on.pass = "wait-landed"
 on.fail = "land-triage"
 
 # land fails on the pre-push check of its push (the change set is landed,
-# the head recorded) or on gh, network or git; only the former passes, to
-# gate-fix-merge.
+# the head recorded), on a model conflict (rhiza land refused it because
+# another change set wrote the same node field first, recorded in the ship
+# state) or on gh, network or git. A failed pre-push check passes to
+# gate-fix-merge; anything else goes to land-conflict-triage, which passes
+# only for a recorded model conflict, so a gh, git or network failure still
+# ends the run.
 [step.land-triage]
 kind = "command"
 run = "rhiza ship gate --failed"
-max_visits = 3
+max_visits = 4
 on.pass = "gate-fix-merge"
+on.fail = "land-conflict-triage"
+
+# Passes only for a model conflict recorded at the current head with fewer
+# than 3 model-conflict fixes made: a 4th conflict ends the run here, on
+# ship check's "3 fixes made" reason, not on a cap.
+[step.land-conflict-triage]
+kind = "command"
+run = "rhiza ship check --model-conflict"
+max_visits = 4
+on.pass = "model-conflict-fix"
+
+# One fixer on the run worktree: it moves each stale update onto the node's
+# landed version and commits, never pushing. The run goes back through
+# gate-land, which pushes the fix once and lands again.
+[step.model-conflict-fix]
+kind = "agent"
+prompt = "/rhiza-review Fix the model conflict that refused the land of change set {change} in run {run}: another change set landed a write to a node this change set also writes, so `rhiza land` refused this one. Read both change sets' intent and the conflict (node, op, other change set, aspects) from `rhiza ship check --model-conflict --json`, and `rhiza show` both change sets. For each stale update of this change set to that node, move it onto the node's landed version with `rhiza set <node> --rebase`, setting every field the update writes, so both sides' edits hold. Run `rhiza check`, stage `.rhiza/log` and `.rhiza/rendered` (`git add -A -- .rhiza/rendered .rhiza/log`) and commit with a message whose final paragraph holds the `Change: {change}`, `Actor:`, `Review: {run}` and `Model-Conflict:` trailers together with any Co-Authored-By. Never push. If an edit cannot be honoured on both sides by any statement, a real clash, commit nothing and ask one blocking question here in the session (AskUserQuestion) that names both change sets and the node, wait for the answer, then rebase following it. Then run `rhiza session done` as your very last action."
+until = "true"
+until_when = "done"
+max_visits = 3
+on.pass = "gate-land"
 
 [step.wait-landed]
 kind = "wait"

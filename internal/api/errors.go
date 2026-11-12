@@ -23,6 +23,19 @@ type Error struct {
 	Code    Code
 	Message string
 	Next    string
+	// Conflict is set when the failure is a model conflict: the stale write
+	// that refused it, as structured fields.
+	Conflict *ModelConflict
+}
+
+// ModelConflict is a stale write in a what-if view: Op of change set
+// ChangeSet wrote Aspects of Node after the base the refused change set
+// wrote on.
+type ModelConflict struct {
+	Node      string   `json:"node" desc:"The node the stale write is on"`
+	Op        string   `json:"op" desc:"The conflicting operation, of the other change set"`
+	ChangeSet string   `json:"change_set" desc:"The change set that landed the conflicting operation"`
+	Aspects   []string `json:"aspects" desc:"The aspects it wrote, such as field:statement"`
 }
 
 // Error returns the message.
@@ -92,6 +105,8 @@ type ErrorBody struct {
 	Code    Code   `json:"code"`
 	Message string `json:"message"`
 	Next    string `json:"next"`
+	// Conflict is set for a model conflict.
+	Conflict *ModelConflict `json:"conflict,omitempty"`
 }
 
 // ErrorResponse is what --json prints for a failure:
@@ -107,7 +122,7 @@ func ErrorJSON(err error) ErrorResponse {
 	if e == nil {
 		e = &Error{Code: CodeError}
 	}
-	return ErrorResponse{Error: ErrorBody{Code: e.Code, Message: e.Message, Next: e.Next}}
+	return ErrorResponse{Error: ErrorBody{Code: e.Code, Message: e.Message, Next: e.Next, Conflict: e.Conflict}}
 }
 
 // article is the indefinite article for s: "an" before a vowel, else "a".

@@ -23604,6 +23604,10 @@ cmp stdout describe.golden.json
             "description": "Check that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, locally with git and no wait on CI, instead of checking the pull request; a differing tree dispatches CI on the merge commit (once) and checks its runs as it does a pull request's, and a stop that cannot be waited out exits 75 with a stop: line",
             "type": "boolean"
           },
+          "model_conflict": {
+            "description": "Exit 0 only if the ship state records a land refused for a model conflict (a stale write another change set landed to the same node aspect), the branch is still at the head it was refused at, and the run has made fewer than 3 model-conflict fixes (commits on the branch carrying its Review: trailer and a Model-Conflict: trailer), else exit 1 naming why; with --json shows the conflict with both change sets' IDs and intents; reads the state file and git only and records nothing (for a step that routes a model conflict to a fixer)",
+            "type": "boolean"
+          },
           "pr_open": {
             "description": "Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)",
             "type": "boolean"
@@ -23775,6 +23779,56 @@ cmp stdout describe.golden.json
               "change",
               "files",
               "onto"
+            ],
+            "type": "object"
+          },
+          "model_conflict": {
+            "additionalProperties": false,
+            "description": "With --model-conflict: the land's recorded model conflict, with both change sets' IDs and intents",
+            "properties": {
+              "aspects": {
+                "description": "The aspects it wrote, such as field:statement",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "change_set": {
+                "description": "The other change set, which landed the conflicting operation",
+                "type": "string"
+              },
+              "head": {
+                "description": "The branch head the land was refused at",
+                "type": "string"
+              },
+              "intent": {
+                "description": "The refused change set's intent",
+                "type": "string"
+              },
+              "node": {
+                "description": "The node the stale write is on",
+                "type": "string"
+              },
+              "op": {
+                "description": "The conflicting operation, of the other change set",
+                "type": "string"
+              },
+              "other_intent": {
+                "description": "The other change set's intent",
+                "type": "string"
+              },
+              "refused_change_set": {
+                "description": "The change set the land was refused for",
+                "type": "string"
+              }
+            },
+            "required": [
+              "aspects",
+              "change_set",
+              "head",
+              "node",
+              "op",
+              "refused_change_set"
             ],
             "type": "object"
           },
