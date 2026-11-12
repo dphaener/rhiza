@@ -1,0 +1,33 @@
+{
+  "actor": "01M777569SEHHBSNKYBEN5AJE6",
+  "after": [
+    "01M777A78BR6GB44PRVQGW9SRX"
+  ],
+  "at": "2026-11-12T06:32:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "1162754a2e64c726b57ee48f9d8b1a80c6b069165f2c2c98e9d6e865f1e4726d",
+          "session": "d85dd023-7452-4f12-87c3-01a1ce728739",
+          "summary": "Autonomous plan run of bug change set 01M7774: two milestone plans running at once both took the next milestone number from their own branch's model and clashed in CI (milestone-32 on PR #456, milestone-34 on PR #466), fixed by hand. The planner asked the arbiter three questions in one: which intent the fix serves, how to stop the clash, and whether run.milestone-check should enforce the number. The arbiter ruled (Decision milestone-number-reserved-at-run-start): serve milestone-25; run start of a milestone plan reserves N = 1 + the highest of landed milestone numbers and every number reserved in any run journal in the shared run store (ended and failed runs included), stores it in the journal, shows it in run status and hands it to the planner as RHIZA_MILESTONE_NUMBER; the plan guide tells the planner to use handle milestone-N, field milestone=N and done-point prefix mN-; a run planning an existing milestone reserves nothing; no renumbering at close-out; run.milestone-check fails a plan whose new milestone intent does not use the reserved number, naming the intent and expected number. Three leaves follow: the reservation, the planner's handoff and guide, and the check.",
+          "title": "Plan of the concurrent milestone number bug, with the arbiter"
+        },
+        "handle": "plan-milestone-number-clash",
+        "id": "01M777AW50YHP0C4A0DBXG4J7M",
+        "key": null,
+        "kind": "source",
+        "node": "01M777AW50YHP0C4A0D7YQET8E",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7774MAPJ7VCPN1Q9M3RHMV4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M777AW5F2SQ9XMA8PRQ162Q9",
+  "type": "ops",
+  "v": 1
+}
