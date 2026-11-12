@@ -2,6 +2,13 @@
 # one that has not said it is done, as stalled only once its last hook report
 # is more than 20 minutes old. The session record is written by
 # hand: its hook report is set to a fixed time and the clock moved.
+#
+# The hand edits go through edit-sessions, under the session store's lock:
+# session start records the tab with a locked read and write, and when the
+# agent's hook lands first, an unlocked edit made between that read and
+# write is dropped. To reproduce, make session start wait until the record
+# has a hook report, then sleep inside its tab Update: an unlocked edit then
+# fails at the first stalled check, edit-sessions waits for the lock.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
