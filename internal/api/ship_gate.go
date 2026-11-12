@@ -44,7 +44,8 @@ const (
 // ShipGateRequest takes nothing to run the gate, which is a project
 // setting; Failed asks a routing question instead.
 type ShipGateRequest struct {
-	Failed bool `json:"failed,omitempty" flag:"failed" desc:"Run no gate: exit 0 only if the branch is still at an unpushed head the local gate failed on (ship rebase left it) or the pre-push check failed on (ship open-pr or land), else exit 1 (a conflict or another failure); reads the state file only (for a step that routes a gate failing on a rebased head to a fixer)"`
+	ModelConflict bool `json:"model_conflict,omitempty" flag:"model-conflict" desc:"Before the gate runs, fail if the change set's own operations rest on a stale base (a landed change set rewrote the fields they write), naming the node and fields; conflicts of other in-flight change sets are ignored (the pre-land gate, so the run sends it to the model-conflict fixer)"`
+	Failed        bool `json:"failed,omitempty" flag:"failed" desc:"Run no gate: exit 0 only if the branch is still at an unpushed head the local gate failed on (ship rebase left it) or the pre-push check failed on (ship open-pr or land), else exit 1 (a conflict or another failure); reads the state file only (for a step that routes a gate failing on a rebased head to a fixer)"`
 }
 
 // ShipGateResponse is how the gate went.
@@ -57,6 +58,9 @@ type ShipGateResponse struct {
 	Error   string `json:"error,omitempty" desc:"How a failing gate failed: its exit status or a timeout"`
 	Head    string `json:"head,omitempty" desc:"The commit the gate passed on"`
 	Failed  string `json:"failed,omitempty" desc:"With --failed: the unpushed head ship rebase left after the gate failed on it, when the branch is still at it"`
+	// ModelConflicts are the change set's own operations resting on a stale
+	// base: the gate fails on them before it runs anything.
+	ModelConflicts []ShipModelConflict `json:"model_conflicts,omitempty" desc:"The change set's own operations resting on a stale base, each with its node, fields, stale base and the landed op and change set that rewrote them; the gate fails on them before running the project's gate (conflicts of other in-flight change sets are not counted)"`
 	// asked is true for --failed, whose exit code says whether Failed is set.
 	asked bool
 }
@@ -67,6 +71,9 @@ func (r ShipGateResponse) ExitCode() int {
 		if r.Failed != "" {
 			return 0
 		}
+		return 1
+	}
+	if len(r.ModelConflicts) > 0 {
 		return 1
 	}
 	if r.Skipped || r.Passed {
@@ -80,6 +87,8 @@ func (r ShipGateResponse) Human(w io.Writer) {
 	switch {
 	case r.asked && r.Failed != "":
 		fmt.Fprintf(w, "The local gate failed on %s, which was left unpushed (a rebase merged origin/%s in, or the pre-push check failed): run rhiza ship gate there, or see the pre-push check in rhiza run status, for the failure.\n", shortSHA(r.Failed), shipMain)
+	case len(r.ModelConflicts) > 0:
+		fmt.Fprintf(w, "Gate failed: the change set's own operations rest on a stale base: %s. Restate them on the landed version (rhiza set <ref> --rebase).\n", modelConflictText(r.ModelConflicts))
 	case r.asked:
 		fmt.Fprintln(w, "No head the local gate failed on after a rebase is on the branch.")
 	case r.Skipped:
@@ -95,13 +104,38 @@ func (r ShipGateResponse) Human(w io.Writer) {
 }
 
 func runShipGate(ctx *Ctx, req any) (any, error) {
-	if req.(ShipGateRequest).Failed {
+	gr := req.(ShipGateRequest)
+	if gr.Failed {
+		if gr.ModelConflict {
+			return nil, Usagef("--failed asks a routing question and takes no --model-conflict")
+		}
 		return shipGateFailed(ctx)
 	}
 	if err := refuseShipDryRun(ctx, "ship.gate"); err != nil {
 		return nil, err
 	}
-	return shipLocalGate(ctx, nil)
+	t, err := findShipTarget(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if gr.ModelConflict {
+		mcs, err := shipOwnModelConflicts(ctx, t)
+		if err != nil {
+			return nil, err
+		}
+		if len(mcs) > 0 {
+			st, err := readShipState(t.statePath())
+			if err != nil {
+				return nil, err
+			}
+			st.ModelConflicts = mcs
+			if err := writeShipState(t.statePath(), st); err != nil {
+				return nil, err
+			}
+			return ShipGateResponse{ModelConflicts: mcs}, nil
+		}
+	}
+	return shipLocalGate(ctx, &t)
 }
 
 // shipRecordPrePushFailed records the head the pre-push check failed on in

@@ -479,6 +479,21 @@ func shipModelConflicts(ctx *Ctx, cs id.ID) ([]ShipModelConflict, error) {
 	return out, nil
 }
 
+// shipOwnModelConflicts are the stale-base conflicts of t's change set's own
+// operations, none once it is landed. They fail ship check and ship gate
+// before anything is pushed or landed; other in-flight change sets'
+// conflicts never count.
+func shipOwnModelConflicts(ctx *Ctx, t shipTarget) ([]ShipModelConflict, error) {
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if c, _ := w.changeSet(t.cs); c.State == changeset.StateLanded {
+		return nil, nil
+	}
+	return shipModelConflicts(ctx, t.cs)
+}
+
 // runShipModelConflict answers ship check --model-conflict: 0 only while
 // a conflict ship land recorded still holds on the branch's head.
 func runShipModelConflict(ctx *Ctx) (any, error) {
@@ -861,6 +876,23 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 				resp.Detail = fmt.Sprintf("not settled: the pull request's head %s drops the pushed %s", shortSHA(v.Head), shortSHA(st.Pushed))
 				return resp, nil
 			}
+		}
+	}
+	if !r.Settled && !r.Main {
+		mcs, err := shipOwnModelConflicts(ctx, t)
+		if err != nil {
+			return nil, err
+		}
+		if len(mcs) > 0 {
+			// The land would refuse them: fail now, record them for the
+			// run's model-conflict fixer, and leave CI out of it.
+			st.ModelConflicts = mcs
+			if err := writeShipState(path, st); err != nil {
+				return nil, err
+			}
+			resp.ModelConflicts = mcs
+			resp.Detail = fmt.Sprintf("failed: %d operation(s) of the change set rest on a stale base: %s", len(mcs), modelConflictText(mcs))
+			return resp, nil
 		}
 	}
 	resp.Settled, resp.Green, resp.Failed = checksVerdict(resp.Checks)

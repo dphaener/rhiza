@@ -28,7 +28,12 @@ func gateFixture(t *testing.T, gate string, unstable bool) *sessionFixture {
 
 func shipGate(t *testing.T, f *sessionFixture) ShipGateResponse {
 	t.Helper()
-	r, err := callOp(t, f.ctx, "ship.gate", `{}`)
+	return shipGateWith(t, f, `{}`)
+}
+
+func shipGateWith(t *testing.T, f *sessionFixture, req string) ShipGateResponse {
+	t.Helper()
+	r, err := callOp(t, f.ctx, "ship.gate", req)
 	if err != nil {
 		t.Fatal(err)
 	}

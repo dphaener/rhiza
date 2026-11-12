@@ -2506,3 +2506,100 @@ func TestShipLandModelConflict(t *testing.T) {
 		t.Errorf("triage with no record = %+v", got)
 	}
 }
+
+// TestShipCheckAndGateFailOnOwnModelConflict: before sign-off and land, ship
+// check and ship gate fail on a stale base in the shipping change set's own
+// operations, naming the node and field, and record it for the model-conflict
+// fixer; another in-flight change set's conflict leaves them passing.
+func TestShipCheckAndGateFailOnOwnModelConflict(t *testing.T) {
+	f, g, state := shipFixture(t)
+	g.answers[shipPRView] = openPR(greenRollup)
+	ship := currentOf(t, f.ctx)
+	step := func(verbs ...string) {
+		for _, v := range verbs {
+			if _, err := callOp(t, f.ctx, v, `{}`); err != nil {
+				t.Fatalf("%s: %v", v, err)
+			}
+		}
+	}
+	use := func(cs string) {
+		if _, err := callOp(t, f.ctx, "change.use", `{"ref":"`+cs+`"}`); err != nil {
+			t.Fatal(err)
+		}
+	}
+	newChange(t, f.ctx, `{"intent":"Add the node"}`)
+	nodeID := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"checking","fields":["statement=One"]}`).Nodes[0]
+	step("propose", "accept", "land")
+
+	// Another in-flight change set goes stale; the shipping one stays clean.
+	newChange(t, f.ctx, `{"intent":"Stale in flight"}`)
+	mustWrite(t, f.ctx, "set", `{"ref":"checking","fields":["statement=Stale"]}`)
+	newChange(t, f.ctx, `{"intent":"Rewrite the node"}`)
+	mustWrite(t, f.ctx, "set", `{"ref":"checking","fields":["statement=Theirs"]}`)
+	step("propose", "accept", "land")
+	use(ship.String())
+	step("propose", "accept")
+	if r := shipCheck(t, f, `{}`); r.ExitCode() != 0 || !r.Passed || len(r.ModelConflicts) != 0 {
+		t.Fatalf("check with only another change set's conflict = %+v", r)
+	}
+	if r := shipGateWith(t, f, `{"model_conflict":true}`); r.ExitCode() != 0 || len(r.ModelConflicts) != 0 {
+		t.Fatalf("gate with only another change set's conflict = %+v", r)
+	}
+	_ = state
+	_ = nodeID
+}
+
+// The shipping change set's own stale update fails ship check and ship gate,
+// names the node and field, and records the conflict for the fixer.
+func TestShipCheckAndGateFailOnOwnStaleBase(t *testing.T) {
+	f, g, state := shipFixture(t)
+	g.answers[shipPRView] = openPR(greenRollup)
+	ship := currentOf(t, f.ctx)
+	step := func(verbs ...string) {
+		for _, v := range verbs {
+			if _, err := callOp(t, f.ctx, v, `{}`); err != nil {
+				t.Fatalf("%s: %v", v, err)
+			}
+		}
+	}
+	use := func(cs string) {
+		if _, err := callOp(t, f.ctx, "change.use", `{"ref":"`+cs+`"}`); err != nil {
+			t.Fatal(err)
+		}
+	}
+	newChange(t, f.ctx, `{"intent":"Add the node"}`)
+	nodeID := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"checking","fields":["statement=One"]}`).Nodes[0]
+	step("propose", "accept", "land")
+	use(ship.String())
+	mustWrite(t, f.ctx, "set", `{"ref":"checking","fields":["statement=Ours"]}`)
+	newChange(t, f.ctx, `{"intent":"Rewrite the node"}`)
+	mustWrite(t, f.ctx, "set", `{"ref":"checking","fields":["statement=Theirs"]}`)
+	step("propose", "accept", "land")
+	use(ship.String())
+	step("propose", "accept")
+
+	r := shipCheck(t, f, `{}`)
+	if r.ExitCode() != 1 || r.Passed || len(r.ModelConflicts) != 1 || !strings.Contains(r.Detail, nodeID.String()) || !strings.Contains(r.Detail, "field:statement") {
+		t.Fatalf("check = %+v", r)
+	}
+	if st, _ := readShipState(state); len(st.ModelConflicts) != 1 {
+		t.Errorf("state = %+v", st)
+	}
+	if got := shipCheck(t, f, `{"model_conflict":true}`); got.ExitCode() != 0 {
+		t.Errorf("model-conflict triage = %+v", got)
+	}
+	if gr := shipGate(t, f); len(gr.ModelConflicts) != 0 {
+		t.Errorf("gate without --model-conflict = %+v", gr)
+	}
+	gr := shipGateWith(t, f, `{"model_conflict":true}`)
+	if gr.ExitCode() != 1 || len(gr.ModelConflicts) != 1 || gr.ModelConflicts[0].Node != nodeID.String() {
+		t.Fatalf("gate = %+v", gr)
+	}
+	if got := human(t, gr); !strings.Contains(got, nodeID.String()) || !strings.Contains(got, "field:statement") {
+		t.Errorf("gate human = %q", got)
+	}
+	// Settled waits are unaffected: they only wait for CI.
+	if r := shipCheck(t, f, `{"settled":true}`); r.ExitCode() != 0 {
+		t.Errorf("settled = %+v", r)
+	}
+}

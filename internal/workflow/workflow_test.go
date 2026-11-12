@@ -400,15 +400,33 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "open-pr-triage", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "land-triage", "model-conflict-triage", "model-conflict-fix", "render-model-conflict", "wait-landed", "landed-green",
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "open-pr-triage", "wait-pr", "pr-green", "pr-model-conflict-triage", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "gate-model-conflict-triage", "land", "land-triage", "model-conflict-triage", "model-conflict-fix", "pr-model-conflict-fix", "render-model-conflict", "wait-landed", "landed-green",
 		"gate-rebase-merge", "conflict-triage-landed", "conflict-fix-landed", "rebase-merge", "rebase-merge-gate-failed", "landed-infra-triage", "landed-infra-wait", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge", "push-merge-triage", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
 	}
-	for _, n := range []string{"pr-green", "rebased-green"} {
+	for _, n := range []string{"rebased-green"} {
 		if got := def.Steps[n].On[OutcomeFail]; got != "conflict-triage" {
 			t.Errorf("%s on.fail = %q; want conflict-triage", n, got)
 		}
+	}
+	// A model conflict of the change set's own operations fails ship check
+	// and the pre-land gate: both reach the model-conflict fixer.
+	if got := def.Steps["pr-green"].On[OutcomeFail]; got != "pr-model-conflict-triage" {
+		t.Errorf("pr-green on.fail = %q; want pr-model-conflict-triage", got)
+	}
+	for n, fail := range map[string]string{"pr-model-conflict-triage": "conflict-triage", "gate-model-conflict-triage": "gate-fix"} {
+		s := def.Steps[n]
+		fixer := "model-conflict-fix"
+		if n == "pr-model-conflict-triage" {
+			fixer = "pr-model-conflict-fix"
+		}
+		if s.Run != "rhiza ship check --model-conflict" || s.On[OutcomePass] != fixer || s.On[OutcomeFail] != fail {
+			t.Errorf("%s = %+v; want ship check --model-conflict, pass %s, fail %s", n, s, fixer, fail)
+		}
+	}
+	if got := def.Steps["gate-land"]; got.Run != "rhiza ship gate --model-conflict" || got.On[OutcomeFail] != "gate-model-conflict-triage" {
+		t.Errorf("gate-land = %+v", got)
 	}
 	for _, n := range []string{"landed-green", "rebase-merge", "rebased-merge-green"} {
 		if got := def.Steps[n].On[OutcomeFail]; got != "conflict-triage-landed" {
@@ -1917,7 +1935,14 @@ func TestShipChangeLocalGate(t *testing.T) {
 			t.Errorf("%s is not a push step", push)
 		}
 		s := def.Steps[g.gate]
-		if s.Run != "rhiza ship gate" || s.On["pass"] != push || s.On["fail"] != g.fix {
+		run, fix := "rhiza ship gate", g.fix
+		if g.gate == "gate-land" {
+			// The pre-land gate also fails on the change set's own model
+			// conflict, which its triage sends to the model-conflict fixer
+			// and any other failure on to the gate's fixer.
+			run, fix = "rhiza ship gate --model-conflict", "gate-model-conflict-triage"
+		}
+		if s.Run != run || s.On["pass"] != push || s.On["fail"] != fix {
 			t.Errorf("%s = %+v; want rhiza ship gate, on.pass %s, on.fail %s", g.gate, s, push, g.fix)
 		}
 		// Every way into the push step goes through its gate.

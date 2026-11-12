@@ -1,16 +1,19 @@
-# A land refused on a model conflict goes to a fixer instead of ending the
-# run. The shipping change set's update of `first` rests on a base that the
-# landed change set Other has since rewritten (rhiza check only warns about
-# that), so ship land is refused and records the conflict; land-triage (ship
-# gate --failed) fails, model-conflict-triage (ship check --model-conflict)
-# routes it to model-conflict-fix, a fixer session that restates the update on
-# the landed version with `rhiza set first --rebase` and commits the log
-# entry with the Review: trailer, and the run goes back through
-# render-model-conflict, gate-land and land, which merges the PR.
+# A model conflict in the change set's own operations goes to a fixer instead of
+# ending the run. The shipping change set's update of `first` rests on a base
+# that the landed change set Other has since rewritten (rhiza check only warns
+# about that), so ship check fails before sign-off, naming the node and field,
+# and records the conflict; pr-model-conflict-triage (ship check
+# --model-conflict) routes it to pr-model-conflict-fix, a fixer session that
+# restates the update on the landed version with `rhiza set first --rebase`
+# and commits the log entry with the Review: trailer, and the run goes back
+# through render-pr, the gate, open-pr (which pushes it) and pr-green to
+# sign-off, then on to land, which merges the PR. (The same failure at the
+# pre-land gate goes to model-conflict-fix, and a land refused on it to
+# land-triage; both are in the API and workflow tests.)
 #
-# Case 1: the fixer repairs it: one fixer session, land visited twice.
+# Case 1: the fixer repairs it: one fixer session.
 # Case 2: a fixer that leaves the conflict in place fails the step's until:
-# the run fails at model-conflict-fix with nothing merged.
+# the run fails at pr-model-conflict-fix with nothing merged.
 #
 # The fakes are run-ship-conflict-fix.txtar's, without main moving.
 
@@ -30,12 +33,13 @@ exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$
 stdout '^exit=0$'
 stdout '^Run \S+ succeeded$'
 exec rhiza run status
-stdout '^- land \(visit 1\): fail, then land-triage'
-stdout '^- land-triage \(visit 1\): fail, then model-conflict-triage'
-stdout '^- model-conflict-triage \(visit 1\): pass, then model-conflict-fix: '
-stdout '^- model-conflict-fix \(visit 1\): pass, then render-model-conflict'
-stdout '^- gate-land \(visit 2\): pass, then land'
-stdout '^- land \(visit 2\): pass, then wait-landed'
+stdout '^- pr-green \(visit 1\): fail, then pr-model-conflict-triage'
+stdout 'stale base'
+stdout '^- pr-model-conflict-triage \(visit 1\): pass, then pr-model-conflict-fix: '
+stdout '^- pr-model-conflict-fix \(visit 1\): pass, then render-pr'
+stdout '^- pr-green \(visit 2\): pass, then signoff'
+stdout '^- land \(visit 1\): pass, then wait-landed'
+! stdout '^- land-triage'
 ! stdout '^- gate-fix-merge'
 exec sh -c 'wc -l < $WORK/model-fixes.log'
 stdout '^1$'
@@ -52,13 +56,10 @@ cd $WORK
 exec sh $WORK/setup.sh
 cd repo
 exec sh -c 'rhiza run start --foreground $(cat $WORK/cs) --permission-mode manual --json; echo exit=$?'
-stdout '"signoff_waiting": true'
-exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$?'
-stdout '^Run \S+ failed$'
 exec rhiza run status
-stdout '^- model-conflict-fix \(visit 1\): fail'
+stdout '^- pr-model-conflict-fix \(visit 1\): fail'
 stdout 'until did not hold'
-! stdout '^- land \(visit 2\)'
+! stdout '^- signoff'
 ! grep '^pr merge' $WORK/gh.log
 -- setup.sh --
 #!/bin/sh
