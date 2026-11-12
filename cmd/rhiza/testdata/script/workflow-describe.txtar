@@ -67,6 +67,16 @@ stdout '"mode": "owner",\n\s*"stage": "signoff"'
 exec rhiza workflow describe build --json
 stdout '"autonomy": \[\]'
 
+# a workflow's cleanup steps, in order
+cp $WORK/clean.toml clean.toml
+exec rhiza workflow describe clean.toml
+stdout '^cleanup drop-db: dropdb x$'
+stdout '^cleanup cleanup-2: rm -rf tmp$'
+exec rhiza workflow describe clean.toml --json
+stdout '"name": "drop-db"'
+exec rhiza workflow describe build --json
+stdout '"cleanup": \[\]'
+
 # nothing was written: no runs, and the model still folds
 exec rhiza run ls
 ! stdout 'inc|build'
@@ -89,6 +99,15 @@ workflow = "build"
 [autonomy]
 signoff = "owner"
 ship = "auto"
+[step.only]
+kind = "command"
+run = "true"
+-- clean.toml --
+[[cleanup]]
+name = "drop-db"
+run = "dropdb x"
+[[cleanup]]
+run = "rm -rf tmp"
 [step.only]
 kind = "command"
 run = "true"

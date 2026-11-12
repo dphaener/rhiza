@@ -78,6 +78,17 @@ stdout 'autonomy.ship: maybe is not a mode'
 ! exec rhiza workflow check $WORK/both-autonomy.toml
 stdout 'autonomous and \[autonomy\] are both set'
 
+# a cleanup section is checked: a valid one passes, and a cleanup step must be
+# a command (run only), with no next step
+exec rhiza workflow check $WORK/good-cleanup.toml
+stdout 'is valid'
+! exec rhiza workflow check $WORK/cleanup-no-run.toml
+stdout 'cleanup step "tidy": run is missing'
+! exec rhiza workflow check $WORK/cleanup-agent.toml
+stdout 'unknown key'
+! exec rhiza workflow check $WORK/cleanup-next.toml
+stdout 'unknown key'
+
 # nothing was written
 fold-ok
 
@@ -208,6 +219,41 @@ run = "make"
 -- good-autonomy.toml --
 name = "good-autonomy"
 autonomous = true
+
+[step.build]
+kind = "command"
+run = "make"
+-- good-cleanup.toml --
+name = "good-cleanup"
+
+[[cleanup]]
+name = "tidy"
+run = "rm -rf tmp"
+
+[step.build]
+kind = "command"
+run = "make"
+-- cleanup-no-run.toml --
+[[cleanup]]
+name = "tidy"
+
+[step.build]
+kind = "command"
+run = "make"
+-- cleanup-agent.toml --
+[[cleanup]]
+name = "tidy"
+kind = "agent"
+prompt = "tidy up"
+
+[step.build]
+kind = "command"
+run = "make"
+-- cleanup-next.toml --
+[[cleanup]]
+name = "tidy"
+run = "true"
+on.pass = "build"
 
 [step.build]
 kind = "command"
