@@ -1,0 +1,40 @@
+{
+  "actor": "01M77BTBFRM2CBN9ZNJ063VFR6",
+  "after": [
+    "01M77BEJXFDV8FDKJQPPZWEEBG"
+  ],
+  "at": "2026-11-12T08:03:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at b2455268f (attempt 2). Read the diff: newMilestoneNumberProblems now treats as new the milestone intents the plan's change sets created (landed or not) and runs over every plan change set, so a record landed during the interview is still checked, which addresses the confirmed quality/model finding. In a scratch worktree outside ~/code (inside it the root daemon's usage.live.json trips rootguard, unrelated to this change), go test -trimpath ./internal/api -run Milestone passes, including TestRunMilestoneCheckEnforcesNumber: reserved number 7 used passes; wrong handle milestone-8, wrong field milestone=8 and unprefixed done point 'first' each fail naming the intent, 'milestone number 7' and a Fix: line; a misnumbered milestone-8 still fails after the record is proposed, accepted and landed. With run_milestone.go reverted to HEAD~1 that new case fails ('landed record: passed; want a failure'), so the test pins the fix. TestScripts/plan-milestone-number and plan-milestone-check also pass."
+        },
+        "handle": "milestone-check-enforces-number-verified-2",
+        "id": "01M77CHH07ZE57CYX44EJEA714",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77CHH07ZE57CYX44BB2GMAZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77CHH07ZE57CYX44BB2GMAZ",
+        "id": "01M77CHH4Y14FG8ZFMCQWZEKNE",
+        "link": "01M77CHH4Y14FG8ZFMCPHR2TA1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M777B9JRPCQZD1SBKF1ZQ4ZX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7774MAPJ7VCPN1Q9M3RHMV4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77CHH8GR0Q8CVQ280TJZ3N9",
+  "type": "ops",
+  "v": 1
+}
