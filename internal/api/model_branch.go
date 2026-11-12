@@ -70,19 +70,35 @@ func modelBranchStep(ctx *Ctx) func(entry.Entry) error {
 }
 
 func shipOnModelBranch(ctx *Ctx, top string, e entry.Entry) (err error) {
+	return shipModelWrite(ctx, top, e.ChangeSet.String(), e.ID.String(), func(root string) error {
+		st, err := store.Open(root)
+		if err != nil {
+			return err
+		}
+		if err := st.Write(e); err != nil && !isEntryExists(err) {
+			return err
+		}
+		return nil
+	})
+}
+
+// shipModelWrite puts a write on change set cs's model branch. tag names a
+// new branch (model/<cs>-<tag>); an open model PR of cs takes the write on
+// its branch instead. write makes the write in the temporary worktree's
+// project root.
+func shipModelWrite(ctx *Ctx, top, cs, tag string, write func(root string) error) (err error) {
 	git := func(dir string, args ...string) (string, error) {
 		out, err := ctx.Exec("git", args, dir, nil)
 		return strings.TrimSpace(string(out)), err
 	}
-	cs := e.ChangeSet.String()
-	branch := modelBranchPrefix + branchShort(cs) + "-" + branchShort(e.ID.String())
+	branch := modelBranchPrefix + cs + "-" + tag
 	base := "origin/main"
 	reuse := false
 	if _, err := git(top, "fetch", "-q", "origin", "main"); err != nil {
 		return err
 	}
 	// An open model PR for this change set takes the write on its branch.
-	if out, err := git(top, "ls-remote", "--heads", "origin", "refs/heads/"+modelBranchPrefix+branchShort(cs)+"-*"); err == nil {
+	if out, err := git(top, "ls-remote", "--heads", "origin", "refs/heads/"+modelBranchPrefix+cs+"-*"); err == nil {
 		for _, line := range strings.Split(out, "\n") {
 			_, ref, ok := strings.Cut(line, "\t")
 			name := strings.TrimPrefix(ref, "refs/heads/")
@@ -123,11 +139,7 @@ func shipOnModelBranch(ctx *Ctx, top string, e entry.Entry) (err error) {
 	if rel, err := filepath.Rel(top, ctx.Root); err == nil && rel != "." {
 		root = filepath.Join(wt, rel)
 	}
-	st, err := store.Open(root)
-	if err != nil {
-		return err
-	}
-	if err := st.Write(e); err != nil && !isEntryExists(err) {
+	if err := write(root); err != nil {
 		return err
 	}
 	// Render's output rides the same commit when the write changed the
@@ -143,7 +155,7 @@ func shipOnModelBranch(ctx *Ctx, top string, e entry.Entry) (err error) {
 	if out, _ := git(wt, "status", "--porcelain", "--", store.Dir); out == "" {
 		return nil // the branch already holds this entry
 	}
-	msg := fmt.Sprintf("Record model write %s on change set %s\n\nChange: %s\n", branchShort(e.ID.String()), branchShort(cs), cs)
+	msg := fmt.Sprintf("Record model write %s on change set %s\n\nChange: %s\n", branchShort(tag), branchShort(cs), cs)
 	if _, err := git(wt, "commit", "-q", "-m", msg); err != nil {
 		return err
 	}

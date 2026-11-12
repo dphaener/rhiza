@@ -7350,6 +7350,55 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "model.commit-untracked",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "shipped": {
+            "description": "One row per change set with orphan entries",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "change_set": {
+                  "description": "The change set the entries belong to",
+                  "type": "string"
+                },
+                "entries": {
+                  "description": "The entry files, relative to the project root, committed onto the change set's model branch",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "error": {
+                  "description": "Why the entries are still untracked, when shipping them failed",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "change_set",
+                "entries"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "shipped"
+        ],
+        "type": "object"
+      },
+      "summary": "Commit the untracked .rhiza/log entries of a main checkout that no model branch or live run holds onto model branches, one per change set, each with a model-only PR",
+      "write": false
+    },
+    {
       "name": "mv",
       "request": {
         "additionalProperties": false,

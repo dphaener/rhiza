@@ -5,6 +5,7 @@ package api
 // project's part of a poll (its journal, holds and state file).
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -420,8 +421,21 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 	if eerr := daemonEvents(ctx, state, p.eventCmd); err == nil {
 		err = eerr
 	}
+	daemonCommitUntracked(ctx)
 	p.saveState()
 	return err
+}
+
+// daemonCommitUntracked commits the main checkout's orphan log entries onto
+// model branches, as rhiza model commit-untracked does. It never fails the
+// poll: a failure is in the daemon log and the next tick retries.
+func daemonCommitUntracked(ctx *Ctx) {
+	if !modelBranchEnabled(ctx) {
+		return
+	}
+	if _, err := runModelCommitUntracked(ctx, nil); err != nil && ctx.Stderr != nil {
+		fmt.Fprintf(ctx.Stderr, "rhiza: daemon: model commit-untracked: %v\n", err)
+	}
 }
 
 // daemonMilestoneWaits reports whether a queued milestone request could

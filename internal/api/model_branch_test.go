@@ -128,7 +128,7 @@ func TestModelBranch(t *testing.T) {
 			t.Fatal(err)
 		}
 		bs := f.branches(t)
-		if len(bs) != 1 || !strings.HasPrefix(bs[0], "model/"+f.cs[:8]+"-") {
+		if len(bs) != 1 || !strings.HasPrefix(bs[0], "model/"+f.cs+"-") {
 			t.Fatalf("branches = %v", bs)
 		}
 		f.git(f.root, "fetch", "-q", "origin", bs[0])
@@ -231,4 +231,31 @@ func TestModelBranch(t *testing.T) {
 			t.Errorf("branches %v, gh calls %d", bs, f.gh.calls)
 		}
 	})
+}
+
+// TestDaemonCommitsUntracked: a daemon tick commits an orphan entry of the
+// main checkout onto a model branch with a PR, and the next tick has
+// nothing left to do.
+func TestDaemonCommitsUntracked(t *testing.T) {
+	f := modelBranchFixture(t, true)
+	f.ctx.Git = func(args ...string) (string, error) {
+		out, err := f.gh.exec("git", args, f.root, nil)
+		return string(out), err
+	}
+	daemonCommitUntracked(f.ctx)
+	bs := f.branches(t)
+	if len(bs) == 0 || f.gh.creates != len(bs) {
+		t.Fatalf("branches %v, PRs %d", bs, f.gh.creates)
+	}
+	if !strings.HasPrefix(strings.Join(bs, " "), "model/") || !strings.Contains(strings.Join(bs, " "), "model/"+f.cs+"-") {
+		t.Errorf("no branch for change set %s: %v", f.cs, bs)
+	}
+	if f.stderr.Len() != 0 {
+		t.Errorf("stderr: %s", f.stderr)
+	}
+	n := f.gh.creates
+	daemonCommitUntracked(f.ctx)
+	if f.gh.creates != n || len(f.branches(t)) != len(bs) {
+		t.Errorf("second tick shipped again: %d PRs", f.gh.creates)
+	}
 }
