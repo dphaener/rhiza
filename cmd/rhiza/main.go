@@ -111,6 +111,9 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer, getenv func(s
 			fmt.Fprint(stdout, usage())
 			return 0
 		}
+		if len(rest) > 1 {
+			return versionChannel(g, rest[1:], stdout, stderr, getenv)
+		}
 		fmt.Fprintf(stdout, "rhiza %s\n", versionString())
 		return 0
 	case "tui":
