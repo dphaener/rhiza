@@ -1,0 +1,40 @@
+{
+  "actor": "01M784FT9QM0A2SJKQG707HCJM",
+  "after": [
+    "01M777KBJA5S0Q5SVCN0Q99WGN"
+  ],
+  "at": "2026-11-12T15:02:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c44cd76a7: go test -trimpath -count=1 ./internal/guide -run 'Build|Review' -v passes; TestBuildText and TestReviewText now require 'rhiza session done', 'as its own command' and '`;` or `&&`', and build.md/review.md both say each role ends with rhiza session done as its own command after its recording command succeeded, never chained with ; or &&. go test -trimpath -count=1 ./internal/workflow passes, including new TestBuiltinPromptsDoneOwnCommand, which scans every builtin (BuiltinNames) prompt naming rhiza session done for '; rhiza session done', ';rhiza session done', '&& rhiza session done' and requires 'very last action'. Read the diff: all prompts in build, plan, plan-milestone, review and ship-change .toml are single-line, and grep shows no session done mention outside prompt lines, so the scan covers them all."
+        },
+        "handle": "done-own-command-guide-verified",
+        "id": "01M784GTHRT3TCKZ4THVAKV5Y8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M784GTHRT3TCKZ4THQKJYJGD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M784GTHRT3TCKZ4THQKJYJGD",
+        "id": "01M784GTJ70AW2PDV8K5EHJZCZ",
+        "link": "01M784GTJ70AW2PDV8K4JF4YP3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY3S1VF65NT8YXQKZ4VZC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XNMMENQCK9PZMGC9YBG99",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M784GTJS399Z9P4J5WV9Z3MM",
+  "type": "ops",
+  "v": 1
+}

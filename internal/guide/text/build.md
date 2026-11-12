@@ -1,8 +1,8 @@
 # Build
 
-A build run takes a change set's leaves one at a time. Each leaf gets a fresh builder
-session, then a fresh verifier session. `RHIZA_CHANGE`, `RHIZA_LEAF` (the leaf's handle) and
-`RHIZA_ATTEMPT` (1, 2, ...) are set. Each role ends with `rhiza session done`.
+A build run takes a change set's leaves one at a time: a fresh builder session, then a fresh verifier. `RHIZA_CHANGE`, `RHIZA_LEAF` (the leaf's handle) and
+`RHIZA_ATTEMPT` (1, 2, ...) are set. Each role ends with `rhiza session done` as its own command after its recording
+command succeeded, never chained with `;` or `&&`.
 
 ## Start
 
@@ -11,12 +11,12 @@ rhiza slice --change "$RHIZA_CHANGE" --json
 rhiza show "$RHIZA_LEAF" --json
 ```
 
-The leaf's `acceptance` is the bar. Build that leaf only.
+The leaf's `acceptance` is the bar; build only that leaf.
 
 ## Builder
 
-Write the code and tests to the leaf's acceptance. End with exactly one new commit
-whose trailers name the leaf as well as the change set and you:
+Write code and tests to the acceptance. End with exactly one new commit
+whose trailers name the leaf, the change set and you:
 
 ```
 Stream CSV exports
@@ -27,8 +27,7 @@ Leaf: export-csv
 Co-Authored-By: Agent Name <agent@example.com>
 ```
 
-Keep every trailer, `Co-Authored-By:` included, in the one final paragraph, with no
-blank line between them.
+Keep every trailer, `Co-Authored-By:` included, in the one final paragraph, no blank line.
 
 Your actor record sits untracked in `.rhiza/log`. Stage it with your work, so the
 `Actor:` trailer names a tracked actor:
@@ -41,7 +40,7 @@ Stage only that record, never another actor's.
 
 On a retry (`RHIZA_ATTEMPT` above 1), read the earlier attempts' findings in
 `rhiza run status --json` first, then add one fix commit with the same `Leaf:` trailer.
-Never rewrite the earlier commits.
+Never rewrite earlier commits.
 
 ## Tests
 
@@ -57,8 +56,7 @@ Reproduce a timing flake by injecting a delay at the suspected race, never by bu
 
 ## Outside work
 
-- Needed outside work, without which the leaf cannot pass: raise a question (the recipe in
-  `rhiza guide`) linked `blocks` to the leaf, and stop.
+- Needed outside work, without which the leaf cannot pass: raise a question linked `blocks` to the leaf, and stop.
 - Noticed-only work: a discovered-from draft change set, never built in this run.
   `rhiza change new "<intent>" --json`, then
   `rhiza link <new> discovered-from <this> --change <new> --json`, then

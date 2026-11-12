@@ -1,0 +1,40 @@
+{
+  "actor": "01M784M3H2TWZNGQEVN3SZ5MCB",
+  "after": [
+    "01M784V454RGXH2X73WENH0BTA"
+  ],
+  "at": "2026-11-12T15:12:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e62f6b443, read the diff (internal/api/session_done.go: isLeafVerifier + verifierRecordMissing, a Conflict with next `rhiza run findings --leaf <leaf>` whose message names both `rhiza run findings` and the Evidence recipe; new internal/api/session_done_verifier_test.go). Ran `go test -trimpath ./internal/api -run SessionDone -count=1 -v`: TestSessionDoneVerifierNeedsRecord PASS. It covers each acceptance point: builder session done succeeds; verifier with nothing recorded gets a conflict naming rhiza run findings and no done mark; Evidence by another actor (bob) alone is still refused with no mark; after findings journaled on the attempt it succeeds; with Evidence by the verifier's own actor (attempt 2) it succeeds. The other SessionDone tests pass too, as do `-run 'Leaves|Verifier|Evidence'`; go vet and gofmt are clean. Scripts that run verifier sessions pass (bugfix-workflow-autonomous, run-ship-ci-fix, run-ship-ci-lint-fix, run-ship-conflict-fix, run-ship-model-conflict). plan-workflow-pr fails on the plan-reviewer prompt text at line 77. That comes from sibling leaf done-own-command-guide (c44cd76a7 changed plan.toml prompts), not from this leaf's diff."
+        },
+        "handle": "done-refuses-unrecorded-verifier-verified",
+        "id": "01M78520K6ECTKCWH4E2YKNG3H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78520K6ECTKCWH4E2WME5NP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78520K6ECTKCWH4E2WME5NP",
+        "id": "01M78520KT7YJYGZXW501Q16T9",
+        "link": "01M78520KT7YJYGZXW4WMQVRJZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY3PYRWRTE99N44HPC2G1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XNMMENQCK9PZMGC9YBG99",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78520ME1WX3F8Q8WJTWSF7Q",
+  "type": "ops",
+  "v": 1
+}

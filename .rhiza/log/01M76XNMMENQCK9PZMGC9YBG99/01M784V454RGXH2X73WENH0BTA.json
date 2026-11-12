@@ -1,0 +1,40 @@
+{
+  "actor": "01M784RCCVNCV61TME2ER98FJV",
+  "after": [
+    "01M784GTJS399Z9P4J5WV9Z3MM"
+  ],
+  "at": "2026-11-12T15:08:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e5443c542, go test -trimpath ./internal/api -run SessionDone -count=1 passes (TestSessionDoneReviewRecords: check session refused naming `rhiza run findings` until a round is journaled for its check and cycle; critic refused naming `rhiza run verdict` while a blocker/major is unjudged, also with only the major left, and succeeds once both have verdicts; fixer never refused). The plan reviewer case (TestReviewVisitNeedsRound) and TestReviewCheckFindingsFlag pass too. The committed test journals a non-empty round, and its refusal assertion checks the message rather than the error code, so I ran a scratch probe test in a copy outside the repo. In it the refusal is CodeConflict, a check session succeeds after an empty {\"findings\":[]} round, and a critic with one unjudged blocker is refused, then succeeds after its verdict. Read the diff: session_done.go calls reviewRecordMissing only for role check/critic sessions with a run and a check, and skips when the run is ended or the step moved on."
+        },
+        "handle": "done-refuses-unrecorded-check-verified",
+        "id": "01M784V43YHX3ARDHS9MWGSA9H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M784V43YHX3ARDHS9JNDV0QB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M784V43YHX3ARDHS9JNDV0QB",
+        "id": "01M784V44MAEH7H28G1ZF3NNS5",
+        "link": "01M784V44MAEH7H28G1VR4CM54",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY3QZ8A5JTZE1V4EMAZMN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XNMMENQCK9PZMGC9YBG99",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M784V454RGXH2X73WENH0BTA",
+  "type": "ops",
+  "v": 1
+}
