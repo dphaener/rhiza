@@ -1,0 +1,41 @@
+{
+  "actor": "01M76SHWPAFQYB1XY9ZG9FMEAX",
+  "after": [
+    "01M76SHG5D788VDSG860D3G5G6"
+  ],
+  "at": "2026-11-12T02:32:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding is right on the mechanics: workflow-overrides makes a repo file shadow the built-in for every bare-name use (including bugfix's workflow step), and include.go rejects a repo ship-change including ship-change as a self-include, so 01M763YX's repo workflows (rhiza-own-workflows-go-cleanup, ship-head-build-step) must be full copies. Then routing added only in internal/workflow/builtin never reaches Rhiza's own runs, which are the runs whose CI failures motivated this change set (intent points 1 and 4); the push itself would still be refused by shipPush, but the run would end instead of reaching a fixer. Options weighed: (a) wait for or depend on 01M763YX: couples two independent change sets and does not fix the case where 01M763YX lands first; (b) add a builtin: include prefix to the resolver: new language surface outside this change set's intent and scope; (c) port the routing into whatever repo copies exist and add a self-check guard: smallest, works in either landing order, and the guard turns the silent gap rhiza overlaps cannot see (different nodes) into a failing make self-check for whichever change set lands second. The intent asks to coordinate with milestone-32; this makes that coordination concrete without changing 01M763YX's nodes.",
+          "statement": "The pre-push fix routing must reach Rhiza's own repo-level workflow copies, not only the built-ins. Since a repo .rhiza/workflows/<name>.toml shadows the built-in and cannot include it, change set 01M76RH0 owns keeping them in step: when ship-change-prepush-fix and plan-prepush-fix are built, any .rhiza/workflows/ship-change.toml, plan.toml or plan-milestone.toml present on main at that time gets the same on.fail -> ship gate --failed triage -> gate-fix / gate-fix-merge / prepush-fix routing and steps as the built-in it copies; and both leaves add a check, run by make self-check (via rhiza workflow check or an internal/workflow test over the repo's .rhiza/workflows), that fails if a repo copy of ship-change, plan or plan-milestone lacks that routing, so whichever of 01M76RH0 and 01M763YX lands second is caught and must carry the routing into the copies. Both leaves' acceptance is extended to cover this. 01M76RH0 does not wait on 01M763YX and does not add a builtin: include prefix.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "prepush-fix-reaches-repo-workflows",
+        "id": "01M76SKG2THQYFMKYAYCCZT05K",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76SKG2THQYFMKYAYC9GVC7X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76SKG2THQYFMKYAYC9GVC7X",
+        "id": "01M76SKG5KR12W3X8NTMA5FZSX",
+        "link": "01M76SKG5KR12W3X8NTJYHRCR0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76SHFZQCE8F0MY6MNZ46CKD",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76SKGAFD84AAG37S1ANR4HR",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,88 @@
+{
+  "actor": "01M76ED4TF1BFCPTDFQJ6SY0N9",
+  "after": [
+    "01M76NVMM7RJB5D7AVSXDZMP8E"
+  ],
+  "at": "2026-11-12T01:27:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": 32,
+          "statement": "Agents developing Rhiza find their instructions in the repo: AGENTS.md is the entry point any agent reads, it links an indexed agents/ directory of role docs (orchestrator, developing Rhiza, run agents, the VM), and those docs replace the rules that lived only in the orchestrator's personal memory."
+        },
+        "handle": "milestone-32",
+        "id": "01M76NWA4W870AXQ6PBC85M17Q",
+        "key": "zzzzzzz",
+        "kind": "intent",
+        "node": "01M76NWA4W870AXQ6PBANDWRGE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76NWA4W870AXQ6PBANDWRGE",
+        "id": "01M76NWA67PNHYJGS763Z4TES4",
+        "link": "01M76NWA67PNHYJGS762CFSM9V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76NVMK5983DAD0RYY0B0BVG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "AGENTS.md at the repo root holds today's CLAUDE.md guidance, CLAUDE.md only imports it, AGENTS.md links agents/README.md, the index of every agents/ doc, and a Go test keeps that index and the docs' relative links consistent."
+        },
+        "handle": "m32-agents-md",
+        "id": "01M76NWA870PYJG4FH6QKD7MGF",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M76NWA870PYJG4FH6PF4WHRJ",
+        "op": "node.create",
+        "parent": "01M76NWA4W870AXQ6PBANDWRGE"
+      },
+      {
+        "fields": {
+          "statement": "agents/orchestrator.md tells the orchestrator how to run Rhiza's own development, including consulting the owner before judgment calls and acting autonomously only when the owner granted it."
+        },
+        "handle": "m32-orchestrator-doc",
+        "id": "01M76NWA90V18FMW9X3CA6BFFA",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M76NWA90V18FMW9X3AY0VTW0",
+        "op": "node.create",
+        "parent": "01M76NWA4W870AXQ6PBANDWRGE"
+      },
+      {
+        "fields": {
+          "statement": "agents/developing.md, agents/run-agents.md and agents/vm.md hold the lessons for developing Rhiza, for run agents working on Rhiza, and for operating the VM."
+        },
+        "handle": "m32-role-docs",
+        "id": "01M76NWADJS6X9WP1J4AKEP5XS",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M76NWADJS6X9WP1J47HDKSN0",
+        "op": "node.create",
+        "parent": "01M76NWA4W870AXQ6PBANDWRGE"
+      },
+      {
+        "fields": {
+          "statement": "This repo carries the instructions for the agents that develop Rhiza: AGENTS.md and the indexed agents/ directory"
+        },
+        "handle": "own-agent-docs",
+        "id": "01M76NWAEW076CHS77XCXWZ847",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M76NWAEW076CHS77X90T6X04",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      }
+    ]
+  },
+  "change_set": "01M76ECB9S2Q9QPWRAX3502XGY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76NWAFQQ0V4JC4KSRVSHK6E",
+  "type": "ops",
+  "v": 1
+}

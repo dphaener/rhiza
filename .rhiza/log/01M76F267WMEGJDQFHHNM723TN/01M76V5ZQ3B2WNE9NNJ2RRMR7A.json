@@ -1,0 +1,40 @@
+{
+  "actor": "01M76TFX5H65REQBPRM3ETFP53",
+  "after": [
+    "01M76TGCY5V13HJ6FCFZTW1QKY"
+  ],
+  "at": "2026-11-12T03:00:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e09d453f9, attempt 2: go test -trimpath ./internal/api -run TestHealthMainOrphanLog -v -count=1 passes TestHealthMainOrphanLog (an untracked entry with no branch makes healthMain bad, Next and detail name the .rhiza/log/<cs>/ entry, its change set and rhiza model commit-untracked; a stale close-out keeps it bad instead of softening it to warn; after daemonCommitUntracked puts it on a model branch the part is ok with a pending entry listed) and TestHealthMainOrphanLogLiveRun (an entry a live run's worktree holds is pending, the part is ok, Next is empty, no 'on no branch' detail). go vet ./internal/api is clean; go test -run 'Health|Orphan|Untracked|ModelBranch|ModelPR|Check' ./internal/api passes in 27s. HealthResponse.ExitCode is 1 when any part is bad, so an orphan exits 1. Diff read: classifyUntrackedLog splits orphans from pending with the same branch/worktree logic as orphanLogEntries, and check.go still uses that logic. The whole internal/api package hit go test's default 600s timeout on a host with load ~12 on 4 cores; make test uses -timeout 20m and CI shards the package, so this is environmental and not caused by the change."
+        },
+        "handle": "health-orphan-log-entries-verified",
+        "id": "01M76V5ZJ4JV7R0X32HSR41TFC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76V5ZJ4JV7R0X32HP5SMJCE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76V5ZJ4JV7R0X32HP5SMJCE",
+        "id": "01M76V5ZMMEDX9AQ00QQEYDWV4",
+        "link": "01M76V5ZMMEDX9AQ00QNH25293",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA9ATEZ0372B4BZ9SRST",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76V5ZQ3B2WNE9NNJ2RRMR7A",
+  "type": "ops",
+  "v": 1
+}

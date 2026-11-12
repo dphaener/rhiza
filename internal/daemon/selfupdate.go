@@ -3,6 +3,8 @@ package daemon
 import (
 	"fmt"
 	"github.com/dphaener/rhiza/internal/rootcfg"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -25,6 +27,10 @@ type SelfUpdate struct {
 	Fetch func() error
 	// Log reports what was done or skipped.
 	Log func(format string, args ...any)
+	// Dir is the main checkout's folder: where untracked log copies that
+	// origin/main also holds are dropped before the fast-forward. Empty
+	// drops nothing.
+	Dir string
 	// Now is the clock; nil fetches on every Run.
 	Now func() time.Time
 	// Every is the least time between two fetches.
@@ -94,6 +100,7 @@ func (u *SelfUpdate) Run() bool {
 		u.logf("self-update: skipped until main moves again: %s", why)
 		return false
 	}
+	u.dropIncomingLogCopies(remote)
 	if _, err := u.Git("merge", "--ff-only", remote); err != nil {
 		u.logf("self-update: skipped until main moves again: fast-forward: %v", err)
 		return false
@@ -104,6 +111,33 @@ func (u *SelfUpdate) Run() bool {
 	}
 	u.logf("self-update: updated to %s", short(remote))
 	return true
+}
+
+// dropIncomingLogCopies removes the untracked .rhiza/log files in the main
+// checkout that remote holds byte for byte, so the fast-forward may write
+// them as tracked files. Files that differ stay. Best effort.
+func (u *SelfUpdate) dropIncomingLogCopies(remote string) {
+	if u.Dir == "" {
+		return
+	}
+	out, err := u.Git("ls-files", "--others", "--exclude-standard", "-z", "--", ".rhiza/log")
+	if err != nil {
+		return
+	}
+	for _, f := range strings.Split(out, "\x00") {
+		if f == "" {
+			continue
+		}
+		ours, err := u.Git("hash-object", "--", f)
+		if err != nil {
+			continue
+		}
+		theirs, err := u.Git("rev-parse", "--verify", "--quiet", remote+":"+f)
+		if err != nil || strings.TrimSpace(ours) != strings.TrimSpace(theirs) {
+			continue
+		}
+		_ = os.Remove(filepath.Join(u.Dir, f))
+	}
 }
 
 func (u *SelfUpdate) fetch() error {
@@ -163,6 +197,7 @@ func (u *SelfUpdate) ForCheckout(root string, reg rootcfg.Config, git func(dir s
 	if !ok {
 		return false
 	}
+	u.Dir = dir
 	u.Git = func(args ...string) (string, error) { return git(dir, args...) }
 	u.Make = func(args ...string) error { return make(dir, args...) }
 	return true

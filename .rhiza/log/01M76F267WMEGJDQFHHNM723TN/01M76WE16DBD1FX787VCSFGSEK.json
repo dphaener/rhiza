@@ -1,0 +1,30 @@
+{
+  "actor": "01M76WCHQBNQ3WVNRFNYQ4HNP0",
+  "after": [
+    "01M76WB1SW98QXHHGWTJSK8E7K"
+  ],
+  "at": "2026-11-12T03:22:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test ./internal/api -run 'TestHealthMainOrphanLog' asserts an orphan entry makes the main part bad with the entry, change set and command named, and an entry held by a model branch or a live run leaves the part ok with the pending entry listed",
+          "statement": "rhiza health's main-checkout part reports each untracked .rhiza/log entry that no pending model branch or live run holds as a problem (bad, exit 1, shown in rhiza health and the daemon status), naming the entry, its change set and rhiza model commit-untracked; an entry a pending model branch holds is listed as pending, not a problem"
+        },
+        "handle": "health-orphan-log-entries",
+        "id": "01M76FAA9ATEZ0372B4E0ST9WB",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M76FAA9ATEZ0372B4BZ9SRST",
+        "op": "node.create",
+        "parent": "01M6CS2B9S9YVY1WBBVAHWZFR9"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76WE16DBD1FX787VCSFGSEK",
+  "type": "ops",
+  "v": 1
+}

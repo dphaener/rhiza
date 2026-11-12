@@ -1,0 +1,40 @@
+{
+  "actor": "01M76YVTV65Y3SAT64NYE25M9F",
+  "after": [
+    "01M76YHJ2SM1R9HFGVTG7AV3RY"
+  ],
+  "at": "2026-11-12T04:06:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at e8e289be4 (attempt 5): go test -trimpath -count=1 ./internal/api -run 'TestDaemonModelPR|TestModelNetThrottled|TestBoundedExec' passes: with a fake gh and no run, Green squash-merges the model PR, leaves no model branch, no untracked .rhiza/log copy, HEAD == origin/main with the change set's entries present and no inbox item; red and conflict merge nothing, keep the branches, and inboxModelPRs lists an InboxModelPR item naming the change set; a gh failure never fails the poll. go test -trimpath -count=1 ./internal/daemon -run TestSelfUpdate passes, including TestSelfUpdateDropsIncomingLogCopies. Diff read: the poll now runs daemonCommitUntracked and daemonMergeModelPRs at most once per modelNetEvery (1m) per project, through boundedExecCtx, which kills each git/gh program after 30s with GIT_TERMINAL_PROMPT=0 set over the environment (startProgram's programEnv merges it, so PATH/HOME are kept). Nothing in the merge or commit-untracked path matches on stderr text, so dropping stderr from errors only shortens failure details. This addresses the cycle's confirmed quality finding f1 (untimed, unthrottled network work every 5s). go vet clean on both packages."
+        },
+        "handle": "daemon-merges-model-prs-verified-5",
+        "id": "01M76YZVNFZD46AAMQ2FVAFEVA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76YZVNFZD46AAMQ2ET5PFQW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76YZVNFZD46AAMQ2ET5PFQW",
+        "id": "01M76YZVQNB18BSJN0WG74ZGYC",
+        "link": "01M76YZVQNB18BSJN0WE0V2FMG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA6HBKA3Y4P11P3CZF4C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76YZVWA3C64N3YD7GVCBK69",
+  "type": "ops",
+  "v": 1
+}

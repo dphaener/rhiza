@@ -1,0 +1,40 @@
+{
+  "actor": "01M76QCS8NJDCRFA5XNBMX8JGS",
+  "after": [
+    "01M76G2P4DWQT0BXRMD0ZW8QBK"
+  ],
+  "at": "2026-11-12T01:55:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier (attempt 2) at c55e23ef9: read the diff of 7a96ef5b4 (internal/api/check.go orphanLogEntries, internal/check/check.go Orphans warn finding with Next 'rhiza model commit-untracked') and ran go test -trimpath -count=1 ./cmd/rhiza -run TestScripts/check-orphan-log (ok) and go test -trimpath ./internal/check/... (ok); go build ./... and go vet on internal/api and internal/check clean. The script asserts: a git-init repo with no origin gives ok and no warning; with origin/main an untracked change-set entry in the main checkout gives exit 0, 'ok', a 'warn log .rhiza/log/<cs>/<entry>.json: untracked log entry that no model branch or live run holds' line naming the entry and 'next: rhiza model commit-untracked', and --json ok:true with a warn finding; the same entry copied into a linked worktree gives no warning in that worktree (and holds the main one); removing the worktree makes it an orphan again; a model/* branch holding the path also silences it. orphanLogEntries returns nil in linked worktrees (git-dir != common-dir) and without refs/remotes/origin/main, matching orphan-log-needs-origin-main."
+        },
+        "handle": "check-warns-orphan-log-verified",
+        "id": "01M76QEGKJNYQPEZBB42S6G4D9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76QEGKJNYQPEZBB4118K1NH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76QEGKJNYQPEZBB4118K1NH",
+        "id": "01M76QEGMPCS3711DJXMMMDTYJ",
+        "link": "01M76QEGMPCS3711DJXK0N26Z4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAABBDGMZA9F3BBBA3H0D",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76QEGNKW4B762HYPJ4BM7YB",
+  "type": "ops",
+  "v": 1
+}

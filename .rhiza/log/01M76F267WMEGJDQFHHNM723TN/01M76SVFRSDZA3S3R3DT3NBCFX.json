@@ -1,0 +1,40 @@
+{
+  "actor": "01M76SRR9YEHQZNF24YT4Y96G7",
+  "after": [
+    "01M76SF6HHZ5V2K5P8QZJK5FAJ"
+  ],
+  "at": "2026-11-12T02:37:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-c7ea6cab at 6c092c4b4: go test -trimpath ./cmd/rhiza -run 'TestScripts/(model-commit-untracked|describe-golden)$' passes. In the kept $WORK: the bare origin has one model/<cs>-<entry> branch per orphan folder (the two orphan change sets plus the init actor's log folder, so the script asserts 3, not the acceptance's 2) and the fake gh logged one pr create per branch; the run-held change set 01M5PWGK… is on no branch and still untracked; a second run prints 'no untracked log entries to commit'. go test -trimpath ./internal/api -run 'TestDaemonCommitsUntracked|TestModelBranch' passes: a daemon tick (daemonCommitUntracked, called from each project poll, so the first poll after start too) ships an orphan onto a model branch with a PR and a second tick ships nothing. gofmt and go vet are clean. Diff read: runModelCommitUntracked groups orphanLogEntries by change set and ships each through shipModelWrite, which shipOnModelBranch now shares; model branches are now named by full IDs. Weak spot: the held-entry check compares 8-char ID prefixes, which passes only because the seeded IDs differ there. One run of internal/api failed on the known .rhiza-root/usage.live.json write by the enclosing root and passed on rerun."
+        },
+        "handle": "commit-untracked-log-verified",
+        "id": "01M76SVFHDJAKSNXT8SDC68SWF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76SVFHDJAKSNXT8SBAWX4ZG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76SVFHDJAKSNXT8SBAWX4ZG",
+        "id": "01M76SVFNN45BNFJ7JJ4EJP193",
+        "link": "01M76SVFNN45BNFJ7JJ3M46SWT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA7V5KJWJPQSF2X7PCMD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76SVFRSDZA3S3R3DT3NBCFX",
+  "type": "ops",
+  "v": 1
+}

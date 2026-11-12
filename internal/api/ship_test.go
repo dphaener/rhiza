@@ -1056,6 +1056,13 @@ func TestShipLandWithHeadBuild(t *testing.T) {
 	f, x, bin := rhizaRepoFixture(t)
 	cs := currentOf(t, f.ctx)
 	f.ctx.ActorRef = shipTestActor
+	// Scripts and this fake have no model branch step: tests run with it off.
+	f.ctx.Getenv = func(k string) string {
+		if k == "RHIZA_TEST_NOW" {
+			return "1"
+		}
+		return ""
+	}
 	x.answers["go build -o "+bin+" ./cmd/rhiza"] = ""
 	x.answers[bin+" land --change "+cs.String()+" --json --actor "+shipTestActor] = `{}`
 	x.answers[bin+" render --json --actor "+shipTestActor] = `{"written":[".rhiza/rendered/a.md"],"removed":[".rhiza/rendered/stale.md"],"unchanged":3}`
