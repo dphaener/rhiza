@@ -79,6 +79,9 @@ func runRender(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	if _, err := store.SetEntryModes(ctx.Root); err != nil {
+		return nil, Errorf("render: %v", err)
+	}
 	sets, _ := changeset.FoldLog(st.ReadLog())
 	m, _ := gmodel.AsIs(sets)
 	want := render.Render(m, sets)

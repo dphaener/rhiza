@@ -679,8 +679,7 @@ func copyChangeSetLog(srcRoot, dstRoot string, cs id.ID) error {
 	return nil
 }
 
-// copyNewFile copies src to dst unless dst exists, through a temp file and
-// a rename.
+// copyNewFile copies the entry src to dst unless dst exists, read-only.
 func copyNewFile(src, dst string) error {
 	if _, err := os.Stat(dst); err == nil {
 		return nil
@@ -689,23 +688,7 @@ func copyNewFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	f, err := os.CreateTemp(filepath.Dir(dst), "."+filepath.Base(dst)+".*.tmp")
-	if err != nil {
-		return err
-	}
-	tmp := f.Name()
-	defer os.Remove(tmp)
-	_, err = f.Write(data)
-	if cerr := f.Close(); err == nil {
-		err = cerr
-	}
-	if err == nil {
-		err = os.Chmod(tmp, 0o644)
-	}
-	if err == nil {
-		err = os.Rename(tmp, dst)
-	}
-	return err
+	return store.WriteEntryFile(dst, data)
 }
 
 // recordAgentActor records the agent's actor node in the worktree's model,
