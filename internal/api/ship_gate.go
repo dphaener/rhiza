@@ -27,7 +27,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "ship.gate",
-		Summary:  "Before a push, while CI is unstable, run the project's local gate command (rhiza.ship.localGate) in the change set's worktree and fail if it does; with CI stable or no gate set, do nothing",
+		Summary:  "Before a push, while CI is unstable, run the project's local gate command (rhiza.ship.localGate) in the change set's worktree and fail if it does; with CI stable or no gate set, do nothing. The command gets RHIZA_GATE_HEAD (the commit it checks) and RHIZA_GATE_BASE (the merge-base of that head with origin/main, empty if none is found) in its environment, so it can check only what the branch changes",
 		Request:  reflect.TypeFor[ShipGateRequest](),
 		Response: reflect.TypeFor[ShipGateResponse](),
 		Run:      runShipGate,
@@ -205,7 +205,8 @@ func shipLocalGate(ctx *Ctx, t *shipTarget) (ShipGateResponse, error) {
 	defer cancel()
 	cmd := exec.CommandContext(c, "sh", "-c", gate)
 	cmd.Dir = t.dir()
-	cmd.Env = os.Environ()
+	base, _ := gitAt(ctx, t.dir(), "merge-base", "HEAD", "origin/"+shipMain)
+	cmd.Env = append(os.Environ(), "RHIZA_GATE_HEAD="+head, "RHIZA_GATE_BASE="+strings.TrimSpace(base))
 	var out bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &out
 	cmd.WaitDelay = time.Second

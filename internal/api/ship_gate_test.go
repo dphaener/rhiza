@@ -44,6 +44,22 @@ func TestShipLocalGate(t *testing.T) {
 			t.Errorf("resp = %+v, worktree %s", r, f.worktree)
 		}
 	})
+	t.Run("gate environment names the head and the merge-base", func(t *testing.T) {
+		f, g, _ := shipFixture(t)
+		f.git.out["config --get "+LocalGateKey] = "echo env:$RHIZA_GATE_HEAD:$RHIZA_GATE_BASE:\n"
+		if err := writeAtomic(ciStabilityPath(f.common), []byte(`{"runs":[{"head":"a","result":"green","time":"x","flakes":["TestPond"]},{"head":"b","result":"green","time":"x","flakes":["TestPond"]}]}`)); err != nil {
+			t.Fatal(err)
+		}
+		g.answers["git rev-parse HEAD"] = "beef000111\n"
+		g.answers["git merge-base HEAD origin/main"] = "ba5e000222\n"
+		if r := shipGate(t, f); !r.Passed || !strings.Contains(r.Output, "env:beef000111:ba5e000222:") {
+			t.Errorf("with origin/main: %+v", r)
+		}
+		g.answers["git merge-base HEAD origin/main"] = "!fatal: Not a valid object name origin/main"
+		if r := shipGate(t, f); !r.Passed || !strings.Contains(r.Output, "env:beef000111::") {
+			t.Errorf("no origin/main: %+v", r)
+		}
+	})
 	t.Run("stable skips", func(t *testing.T) {
 		f := gateFixture(t, "echo gate-ran >&2; exit 1", false)
 		r := shipGate(t, f)
