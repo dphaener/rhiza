@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -37,36 +38,84 @@ func cutRepo(t *testing.T, tag string) (dir, head string) {
 	return dir, git("2026-11-10T00:00:00Z", "rev-parse", "HEAD")
 }
 
-// fakeGit records every git call except the read-only ones it answers from
-// tags (the local and remote tag names).
+// fakeGit records every git call and answers the read-only ones from its
+// tags: local and remote hold annotated tag names, published the lightweight
+// tags (name to commit) that publishing a GitHub release makes on the
+// remote; fetch brings those here. A tag -a makes a local annotated tag and
+// a push moves it to the remote.
 type fakeGit struct {
 	local, remote []string
+	published     map[string]string
+	fetched       map[string]string
 	calls         [][]string
 	notes         string
 }
 
 func (f *fakeGit) run(args ...string) (string, error) {
 	f.calls = append(f.calls, args)
-	has := func(ts []string, name string) string {
+	has := func(ts []string, name string) bool {
 		for _, x := range ts {
 			if x == name {
-				return x
+				return true
 			}
 		}
-		return ""
+		return false
+	}
+	ref := func(s string) string {
+		return strings.TrimSuffix(strings.TrimPrefix(s, "refs/tags/"), "^{commit}")
 	}
 	switch args[0] {
+	case "fetch":
+		for name, c := range f.published {
+			if !has(f.local, name) {
+				if f.fetched == nil {
+					f.fetched = map[string]string{}
+				}
+				f.fetched[name] = c
+			}
+		}
 	case "tag":
 		if args[1] == "--list" {
-			return has(f.local, args[2]), nil
+			if _, ok := f.fetched[args[2]]; ok || has(f.local, args[2]) {
+				return args[2], nil
+			}
+			return "", nil
 		}
 		if args[1] == "-a" {
+			name := args[2]
+			if name == "-f" {
+				name = args[3]
+			} else if _, ok := f.fetched[name]; ok {
+				return "", fmt.Errorf("tag %s already exists", name)
+			}
 			b, err := os.ReadFile(args[len(args)-1])
 			f.notes = string(b)
+			delete(f.fetched, name)
+			f.local = append(f.local, name)
 			return "", err
 		}
+	case "cat-file":
+		if has(f.local, ref(args[2])) {
+			return "tag", nil
+		}
+		return "commit", nil
+	case "rev-parse":
+		return f.fetched[ref(args[1])], nil
 	case "ls-remote":
-		return has(f.remote, strings.TrimPrefix(args[len(args)-1], "refs/tags/")), nil
+		name := ref(args[3])
+		if has(f.remote, name) {
+			return "obj\trefs/tags/" + name + "\nc\trefs/tags/" + name + "^{}", nil
+		}
+		if c, ok := f.published[name]; ok {
+			return c + "\trefs/tags/" + name, nil
+		}
+	case "push":
+		name := ref(args[len(args)-1])
+		if _, ok := f.published[name]; ok && args[1] != "--force" {
+			return "", fmt.Errorf("push %s: rejected, already exists", name)
+		}
+		delete(f.published, name)
+		f.remote = append(f.remote, name)
 	}
 	return "", nil
 }
@@ -161,7 +210,8 @@ func TestMajor(t *testing.T) {
 		Release:  func(string) (string, error) { return state, nil },
 		Draft: func(tag, commit, notes string) error {
 			drafts = append(drafts, tag+" "+commit)
-			if !strings.HasPrefix(notes, "v2.0.0\n\n") {
+			// The release body, as GoReleaser keeps it: the notes alone.
+			if notes == "" || strings.HasPrefix(notes, "v2.0.0") {
 				t.Errorf("draft notes %q", notes)
 			}
 			state = ReleaseDraft
@@ -187,18 +237,31 @@ func TestMajor(t *testing.T) {
 	if len(drafts) != 1 || drafts[0] != "v2.0.0 "+head {
 		t.Fatalf("drafts %v", drafts)
 	}
-	// Signed off: tagged and pushed once.
+	// Signed off: publishing the draft makes a lightweight tag at the
+	// candidate on the remote, which the tool replaces with the annotated
+	// one, pushed once.
 	state = ReleasePublished
-	if out, _ := cut(); out != Tagged || g.pushes() != 1 {
-		t.Fatalf("%v pushes=%d", out, g.pushes())
+	g.published = map[string]string{"v2.0.0": head}
+	if out, msg := cut(); out != Tagged || g.pushes() != 1 {
+		t.Fatalf("%v pushes=%d\n%s", out, g.pushes(), msg)
 	}
 	if !strings.HasPrefix(g.notes, "v2.0.0\n\n") {
 		t.Fatalf("tag message %q", g.notes)
 	}
-	// Once the tag is there, a repeat does nothing.
-	g.local = []string{"v2.0.0"}
+	// Once the annotated tag is there, a repeat does nothing.
 	if out, _ := cut(); out != Existing || g.pushes() != 1 {
 		t.Fatalf("%v pushes=%d", out, g.pushes())
+	}
+	// Signed off but no tag yet on the remote: a plain tag and push.
+	g = &fakeGit{}
+	if out, _ := cut(); out != Tagged || g.pushes() != 1 || g.calls[len(g.calls)-1][1] == "--force" {
+		t.Fatalf("%v calls %v", out, g.calls)
+	}
+	// A published release tagged at another commit is never moved.
+	g = &fakeGit{published: map[string]string{"v2.0.0": "other"}}
+	var b strings.Builder
+	if _, err := Cut(dir, &b, env, g.run); err == nil || g.pushes() != 0 {
+		t.Fatalf("err %v pushes=%d", err, g.pushes())
 	}
 	// A failing gate holds a major too, with no draft.
 	env.CI = func(string) (string, error) { return "failure", nil }

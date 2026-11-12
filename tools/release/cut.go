@@ -44,7 +44,9 @@ const (
 // passes: it pushes an annotated tag on the candidate commit whose message
 // is the version then the notes. It never tags a major release, a version
 // already tagged here or on the remote, or a release with a failing gate.
-// It pushes once, as the last step.
+// It pushes once, as the last step. A major release waits for the owner's
+// sign-off (publishing its draft GitHub release); publishing makes a
+// lightweight tag, which Cut then replaces with the annotated one.
 func Cut(dir string, w io.Writer, env CheckEnv, git GitFunc) (Outcome, error) {
 	if _, err := git("fetch", "--quiet", "--tags", "origin"); err != nil {
 		return "", err
@@ -63,18 +65,27 @@ func Cut(dir string, w io.Writer, env CheckEnv, git GitFunc) (Outcome, error) {
 		fmt.Fprintf(w, "%s is blocked\n", v)
 		return Blocked, nil
 	}
-	if out, err := git("tag", "--list", v); err != nil {
+	local, err := localTag(git, v)
+	if err != nil {
 		return "", err
-	} else if out != "" {
+	}
+	remote, err := remoteTag(git, v)
+	if err != nil {
+		return "", err
+	}
+	// Publishing a major's draft release (its sign-off) makes a lightweight
+	// tag at the candidate commit. That tag is not a release cut by the tool:
+	// only an annotated tag is.
+	ours := func(t tagRef) bool { return t.Exists && (t.Annotated || r.Next.Kind != KindMajor) }
+	switch {
+	case ours(local):
 		fmt.Fprintf(w, "%s is already tagged\n", v)
 		return Existing, nil
-	}
-	if out, err := git("ls-remote", "--tags", "origin", "refs/tags/"+v); err != nil {
-		return "", err
-	} else if out != "" {
+	case ours(remote):
 		fmt.Fprintf(w, "%s is already on the remote\n", v)
 		return Existing, nil
 	}
+	replace := false
 	if r.Next.Kind == KindMajor {
 		signed, err := majorSignOff(w, env, v, r.Commit, r.Notes)
 		if err != nil {
@@ -83,6 +94,12 @@ func Cut(dir string, w io.Writer, env CheckEnv, git GitFunc) (Outcome, error) {
 		if !signed {
 			return SignOff, nil
 		}
+		for _, t := range []tagRef{local, remote} {
+			if t.Exists && t.Commit != r.Commit {
+				return "", fmt.Errorf("%s is tagged at %s, not at the candidate %s", v, t.Commit, r.Commit)
+			}
+		}
+		replace = local.Exists || remote.Exists
 	}
 	f, err := os.CreateTemp("", "release-notes-*.md")
 	if err != nil {
@@ -95,15 +112,68 @@ func Cut(dir string, w io.Writer, env CheckEnv, git GitFunc) (Outcome, error) {
 	if err := f.Close(); err != nil {
 		return "", err
 	}
-	if _, err := git("tag", "-a", v, r.Commit, "-F", f.Name()); err != nil {
+	tag, push := []string{"tag", "-a", v, r.Commit, "-F", f.Name()}, []string{"push", "origin", "refs/tags/" + v}
+	if replace {
+		// Replace the signed-off release's lightweight tag with the
+		// annotated one, at the same commit.
+		tag = []string{"tag", "-a", "-f", v, r.Commit, "-F", f.Name()}
+		push = []string{"push", "--force", "origin", "refs/tags/" + v}
+	}
+	if _, err := git(tag...); err != nil {
 		return "", err
 	}
-	if _, err := git("push", "origin", "refs/tags/"+v); err != nil {
+	if _, err := git(push...); err != nil {
 		git("tag", "-d", v) // retry on the next run
 		return "", err
 	}
 	fmt.Fprintf(w, "tagged and pushed %s at %s\n", v, r.Commit)
 	return Tagged, nil
+}
+
+// tagRef is a tag as one repo holds it: whether it exists, whether it is
+// annotated (a tag object) or lightweight, and the commit it points at.
+type tagRef struct {
+	Exists, Annotated bool
+	Commit            string
+}
+
+// localTag reads tag v in the local repo.
+func localTag(git GitFunc, v string) (tagRef, error) {
+	out, err := git("tag", "--list", v)
+	if err != nil || out == "" {
+		return tagRef{}, err
+	}
+	kind, err := git("cat-file", "-t", "refs/tags/"+v)
+	if err != nil {
+		return tagRef{}, err
+	}
+	commit, err := git("rev-parse", "refs/tags/"+v+"^{commit}")
+	if err != nil {
+		return tagRef{}, err
+	}
+	return tagRef{Exists: true, Annotated: kind == "tag", Commit: commit}, nil
+}
+
+// remoteTag reads tag v on origin: an annotated tag lists a second, peeled
+// line (refs/tags/v^{}) naming its commit.
+func remoteTag(git GitFunc, v string) (tagRef, error) {
+	out, err := git("ls-remote", "--tags", "origin", "refs/tags/"+v, "refs/tags/"+v+"^{}")
+	if err != nil || out == "" {
+		return tagRef{}, err
+	}
+	t := tagRef{Exists: true}
+	for _, line := range strings.Split(out, "\n") {
+		sha, ref, _ := strings.Cut(line, "\t")
+		switch ref {
+		case "refs/tags/" + v + "^{}":
+			t.Annotated, t.Commit = true, sha
+		case "refs/tags/" + v:
+			if !t.Annotated {
+				t.Commit = sha
+			}
+		}
+	}
+	return t, nil
 }
 
 // Release states of a version's GitHub release.
@@ -133,7 +203,7 @@ func majorSignOff(w io.Writer, env CheckEnv, v, commit, notes string) (bool, err
 		fmt.Fprintf(w, "%s is a major release: its draft release waits for the owner to publish it\n", v)
 		return false, nil
 	}
-	if err := env.Draft(v, commit, v+"\n\n"+notes); err != nil {
+	if err := env.Draft(v, commit, notes); err != nil {
 		return false, err
 	}
 	fmt.Fprintf(w, "%s is a major release: drafted a GitHub release at %s, it waits for the owner to publish it\n", v, commit)
