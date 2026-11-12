@@ -5,6 +5,12 @@ name = "plan-bug"
 # with no owner step. The planner records its assumptions as Decisions and
 # an arbiter decides any question it raises.
 autonomous = true
+#
+# Release marks (CLAUDE.md, tools/release): the planner writes a note
+# `severe: <reason>` on the change set it plans only when the bug causes data
+# loss, a corrupted log or model, or a binary that cannot run, and
+# `breaking: <reason>` when the fix changes a CLI, --json, setting or .rhiza
+# format users rely on. Reviewers add either mark the plan missed.
 
 [env]
 GOTMPDIR = "{run_tmp}"
