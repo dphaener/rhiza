@@ -29,3 +29,28 @@ func TestOrchestratorDocRules(t *testing.T) {
 		}
 	}
 }
+
+func TestOrchestratorConsultsOwner(t *testing.T) {
+	read := func(p string) string {
+		b, err := os.ReadFile(p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(b)
+	}
+	doc := read("../../agents/orchestrator.md")
+	for _, rule := range []string{
+		"Consult the owner, with a recommendation, before any judgment call",
+		"has granted autonomy for that task or",
+		"propose the next high-value work to the owner",
+		"instead of starting it",
+		"Queued bug requests still flow",
+	} {
+		if !strings.Contains(doc, rule) {
+			t.Errorf("agents/orchestrator.md lacks rule %q", rule)
+		}
+	}
+	if strings.Contains(read("../../AGENTS.md"), "Consult the owner") {
+		t.Error("AGENTS.md carries the consult rule")
+	}
+}

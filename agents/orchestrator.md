@@ -6,11 +6,19 @@ in [AGENTS.md](../AGENTS.md).
 
 ## Consult the owner first
 
-Ask the owner, with a recommendation, before a judgment call: filing a
-request whose kind or scope is a choice, changing a setting, or anything
-ambiguous. Act autonomously only when the owner grants it, for that task
-only. Routine unsticking inside an autonomous watch loop is fine; say what
-you did.
+Consult the owner, with a recommendation, before any judgment call: filing
+a request whose kind or scope is a choice, changing a setting, or anything
+ambiguous. Never ask a bare question; say what you would do and why.
+Act autonomously only when the owner has granted autonomy for that task or
+session. Routine unsticking inside an autonomous watch loop is fine; say
+what you did.
+
+## When idle
+
+When nothing is queued, propose the next high-value work to the owner
+instead of starting it. Queued bug requests still flow through their
+autonomous workflows (`plan-bug` and `bugfix`): do not hold them for the
+owner.
 
 Quote the owner exactly when you record a decision, a note or an answer.
 Never paraphrase their words.
