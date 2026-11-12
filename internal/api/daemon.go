@@ -201,7 +201,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		webUI = &web.Manager{Factory: webFactory, Handler: WebRootHandler(ctx, root, homeName, home)}
 		defer webUI.Close()
 	}
-	var sweep daemon.SweepSchedule
+	var sweep, leftSweep daemon.SweepSchedule
 	// lastTurn is the project that took the last run slot: the next poll's
 	// round-robin starts after it, so turns rotate across polls instead of
 	// restarting at the home project.
@@ -220,6 +220,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		if conf.trimGoCache {
 			daemonSweepGoCache(homeCtx, &sweep, conf.minFree)
 		}
+		// Every served project's sessions and runs: a crashed run in any of
+		// them leaves scratch folders behind.
+		commons := make([]string, 0, len(projs))
+		for _, p := range projs {
+			commons = append(commons, p.common)
+		}
+		slices.Sort(commons)
+		daemonSweepLeftovers(homeCtx, &leftSweep, commons)
 	}
 	poll := func() error {
 		pollStart := ctx.Now()

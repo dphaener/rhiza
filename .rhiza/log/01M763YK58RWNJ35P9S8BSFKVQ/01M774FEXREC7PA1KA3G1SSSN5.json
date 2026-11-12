@@ -1,0 +1,40 @@
+{
+  "actor": "01M7748EC812XRSCNZK3FQ7RFR",
+  "after": [
+    "01M772T0R09BXQMJ77H07HMMWV"
+  ],
+  "at": "2026-11-12T05:42:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 96ab8695b read the leaf's diff (633298a41, 96ab8695b): index.Open records the resolved worktree root in meta; index.PruneOrphans removes .db (+wal/shm) whose recorded root is gone and keeps live and unrecorded/unreadable ones; leftovers.Scratch removes session scratch folders older than 24h whose run is not live (skips live-run sessions and fresh folders) and sums bytes; daemonSweepLeftovers runs from the daemon's home step on a SweepSchedule (at start, then SweepEvery=1h) and logs one stderr line with freed bytes only when something went. Ran go test -trimpath -count=1 ./internal/leftovers/... ./internal/index/... ./internal/daemon/... (all ok) and go test -trimpath -count=1 ./internal/api -run TestDaemonSweepLeftovers -v: PASS. That test builds fake index DBs (live, gone) and scratch folders (live-run old, ended old, ended fresh, no run, unknown run) with an injected clock: only the 3 orphans and the gone index are removed, stderr carries the exact freed bytes, a sweep 59 minutes later does nothing and one at 60 minutes sweeps again, never touching the live run's folder. A wider api run (-run Index|Leftover) passed every test but rootguard flagged .rhiza-root/usage.live.json changed; that file is rewritten each second by live Claude Code status lines on the host and is not in rootguard's owned list, unrelated to this leaf."
+        },
+        "handle": "daemon-prunes-orphan-leftovers-verified",
+        "id": "01M774FEVX8J3DFJAW5MA6MEQ1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M774FEVX8J3DFJAW5HCZ48XB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M774FEVX8J3DFJAW5HCZ48XB",
+        "id": "01M774FEWK448YMWGEWDK7FMKQ",
+        "link": "01M774FEWK448YMWGEWBHBQQFS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642M03G0506XQ7B2G4S0VF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763YK58RWNJ35P9S8BSFKVQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M774FEXREC7PA1KA3G1SSSN5",
+  "type": "ops",
+  "v": 1
+}

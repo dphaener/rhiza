@@ -747,12 +747,14 @@ func (r *stepRunner) openCheckout(name, commit string) (string, error) {
 }
 
 // RemoveCheckout removes a checkout OpenCheckout added, uncommitted
-// changes and all. One already gone is only pruned from git's list.
+// changes and all, with its index database: a checkout is one of the run's
+// worktrees. One already gone is only pruned from git's list.
 func (r *stepRunner) RemoveCheckout(dir string) error {
 	if _, err := os.Stat(dir); errors.Is(err, fs.ErrNotExist) {
 		_, err := r.worktreeGit("worktree", "prune")
 		return err
 	}
+	removeWorktreeIndex(r.ctx, dir)
 	_, err := r.worktreeGit("worktree", "remove", "--force", dir)
 	return err
 }

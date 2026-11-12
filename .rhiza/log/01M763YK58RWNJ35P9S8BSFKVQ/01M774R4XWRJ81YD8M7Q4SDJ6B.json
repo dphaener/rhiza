@@ -1,0 +1,63 @@
+{
+  "actor": "01M774KN00CZ6SNWH90ECDZMDK",
+  "after": [
+    "01M774FEXREC7PA1KA3G1SSSN5"
+  ],
+  "at": "2026-11-12T05:47:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c90d32c99 with a binary built from the branch (go build -trimpath), run by hand in a scratch Rhiza root with its own HOME, XDG_CACHE_HOME and TMPDIR, plus the script's fake rex and fake claude (the fake makes $TMPDIR/claude-test/<cwd>/<session-id>/scratchpad and runs rhiza slice so the worktree gets an index). I started a build-hold run (stopped at its wait, --no-wait) and a build-done run that succeeded. After the success, the ended run's session scratch folder was gone; the live run's scratch folder and both index DBs stayed, as did an unrelated $TMPDIR/claude-test/other/keep. `rhiza run abandon` on the live run printed 'remove-worktree done' and removed its worktree, its session scratch folder and its index DB, while the ended run's index stayed. I also checked that the real Claude Code layout on this host ($TMPDIR=/home/rhiza/tmp, /home/rhiza/tmp/claude-1000/<encoded cwd>/<session id>) is matched by the adapter's claude-*/*/<id> pattern."
+        },
+        "handle": "run-end-removes-leftovers-qa-1",
+        "id": "01M774R4MB2EZ2DMYF3DPW46KX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M774R4MB2EZ2DMYF3AM3P3Y5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M774R4MB2EZ2DMYF3AM3P3Y5",
+        "id": "01M774R4PR03T56GDGVJ21WCWP",
+        "link": "01M774R4PR03T56GDGVFMXPDVT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642KZP2AFAVV6DMMMDK8JR",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c90d32c99 with the built binary in the same scratch root, after the run-end scenario. I removed the ended run's worktree by hand with git worktree remove, so its index DB became an orphan. I recreated that ended session's scratch folder and aged it 2 days (touch -d), and recreated the abandoned run's session folder fresh. I also added an aged folder for a session ID nobody recorded. `rhiza daemon --once --max-runs 0 --permission-mode manual` logged 'rhiza: daemon: leftovers sweep freed 120.9 KiB: 1 index databases, 1 session scratch folders'. The orphan index and the aged ended-session folder were gone. The fresh folder, the unrecorded-session folder and other/keep stayed. A new live run (stopped at its wait) whose scratch folder I aged 3 days kept its folder and its index across another daemon --once, which logged no sweep line. I did not exercise the hourly spacing by hand; it is covered by TestDaemonSweepLeftovers with an injected clock."
+        },
+        "handle": "daemon-prunes-orphan-leftovers-qa-1",
+        "id": "01M774R4RXVV6W08KWQZSHZPY0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M774R4RXVV6W08KWQWAFQ3TY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M774R4RXVV6W08KWQWAFQ3TY",
+        "id": "01M774R4VSR8PDMNRMYAH0Y3A6",
+        "link": "01M774R4VSR8PDMNRMYA126KMN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642M03G0506XQ7B2G4S0VF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763YK58RWNJ35P9S8BSFKVQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M774R4XWRJ81YD8M7Q4SDJ6B",
+  "type": "ops",
+  "v": 1
+}
