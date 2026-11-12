@@ -1,0 +1,40 @@
+{
+  "actor": "01M77B4X849PJGA3DTC374YZ3F",
+  "after": [
+    "01M77BRQA6792SK5MGBQ54MEZ2"
+  ],
+  "at": "2026-11-12T07:52:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at ca5773613 (attempt 2). go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(workflow-env|daemon-settings-scope)$' passes: workflow-env.txtar runs a workflow with [env] FOO={run_tmp} and PLAIN=x, its command step sees FOO as an existing folder and PLAIN=x and no GOTMPDIR, the folder is gone after the run, and a workflow without [env] sees neither GOTMPDIR nor FOO. No non-test Go code under internal/ or cmd/ sets GOTMPDIR. go test -trimpath ./internal/workflow/... ./internal/run/... pass. The fix commit adds TestSessionRunWorkflowEnv (session.run gives an agent a run's [env]: {run_tmp}/go with the folder made, and a plain value) and an env key to FileKeys and docs/reference/workflow-file.md; go test -trimpath -count=1 ./internal/api -run TestSession passes in a scratch worktree outside ~/code (under ~/code the rootguard reports usage.live.json, which the live Claude Code statusline rewrites every second, not this change). A built rhiza's workflow check accepts every .rhiza/workflows/*.toml, bugfix.toml and plan-bug.toml included."
+        },
+        "handle": "workflow-env-verified-2",
+        "id": "01M77BXNQ5B4XJVP0BZZ2NR1EP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77BXNQ5B4XJVP0BZVGNH2QY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77BXNQ5B4XJVP0BZVGNH2QY",
+        "id": "01M77BXNR5C8V220AMWW0CK13K",
+        "link": "01M77BXNR5C8V220AMWSKGAW7V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MCFVAH4VXGAXZNTW4S7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763YX47S5XY0W3P8FVJ54S8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77BXNRZFC6MF5Q6QA4MCP9Z",
+  "type": "ops",
+  "v": 1
+}
