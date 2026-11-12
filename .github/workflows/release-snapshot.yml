@@ -9,6 +9,8 @@ on:
       - .goreleaser.yaml
       - .github/workflows/release.yml
       - .github/workflows/release-snapshot.yml
+      - internal/release/**
+      - tools/release/**
 
 jobs:
   snapshot:
@@ -45,3 +47,10 @@ jobs:
         for t in linux_amd64 linux_arm64 darwin_amd64 darwin_arm64; do
           ls dist/rhiza_*_"$t".tar.gz >/dev/null
         done
+
+    - name: Write the manifest
+      run: |
+        go run ./tools/release -dist dist -tag "v0.0.0-snapshot" \
+          -version "$(jq -r .version dist/metadata.json)" \
+          -commit "$(git rev-parse HEAD)"
+        test "$(jq '.platforms | length' dist/manifest.json)" = 4
