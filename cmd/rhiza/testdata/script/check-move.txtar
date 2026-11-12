@@ -26,6 +26,8 @@ exec rhiza check
 stdout '^ok$'
 
 # An edited entry still fails, naming it as modified.
+# Entries are written read-only: a hand edit makes the file writable first.
+chmod 0644 .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
 cp $WORK/c1-edited.json .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
 ! exec rhiza check
 stdout '^failed$'

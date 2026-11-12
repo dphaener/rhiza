@@ -30,6 +30,8 @@ stdout '"ok": true'
 
 # A modified entry fails, uncommitted or committed, naming the path and how
 # to put it back.
+# Entries are written read-only: a hand edit makes the file writable first.
+chmod 0644 .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
 cp $WORK/c1-edited.json .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
 ! exec rhiza check
 stdout '^failed$'
@@ -37,9 +39,13 @@ stdout '^fail append-only \.rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185
 stdout '^  next: git checkout [0-9a-f]{40} -- \.rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json$'
 exec sh -c 'rhiza check >/dev/null; echo exit $?'
 stdout '^exit 1$'
-exec rhiza render
+# Render refuses an entry that differs from HEAD, so the edit is committed
+# first and the render amended into the same commit.
 exec git add -A
 exec git commit -qm edit
+exec rhiza render
+exec git add -A
+exec git commit -q --amend --no-edit
 ! exec rhiza check
 stdout '^fail append-only \.rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json: log entry 01M5PWGEF85Y185JZ2ZQ6RRE3B modified'
 
@@ -60,8 +66,10 @@ stdout '^exit 2$'
 ! exec rhiza check --base nope --json
 stdout '"code": "usage"'
 
-# Restored, it passes again.
+# Restored, it passes again. The restore is committed first: render refuses
+# an entry that differs from HEAD.
 exec git checkout main -- .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
+exec git commit -qm restore
 exec rhiza render
 exec rhiza check
 stdout '^ok$'
@@ -122,6 +130,8 @@ exec git add -A
 exec git commit -qm one
 exec rhiza check
 stdout '^ok$'
+# Entries are written read-only: a hand edit makes the file writable first.
+chmod 0644 .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
 cp $WORK/c1-edited.json .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
 ! exec rhiza check --base HEAD
 stdout '^fail append-only \.rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json: log entry 01M5PWGEF85Y185JZ2ZQ6RRE3B modified'
