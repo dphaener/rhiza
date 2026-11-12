@@ -1,0 +1,40 @@
+{
+  "actor": "01M76N6J92221XJP6ZWJSYVEF2",
+  "after": [
+    "01M76MENVR0JZQYPK3DDHTB43X"
+  ],
+  "at": "2026-11-12T01:24:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 3, at db270e16a. Read the diff of 49149bb7a, abed08418 and db270e16a: parseCICauses and logBody in internal/api/ship.go, plus ship_test.go. Ran go test -trimpath -count=1 -v ./internal/api/ -run 'CICause|ShipInfraWait|Ship.*Cause|TestShipCheck': all pass, ok. That covers TestParseCICauses (gh-prefixed self-check log with fail render lines and 'make: *** [Makefile:186: self-check] Error 1' → a lint job/step finding quoting them; a fmt-check listing; a vet 'x.go:12:3:' diagnostic; a bare 'make: *** [build] Error 2' with the lines before it; apt 'Temporary failure resolving' and billing logs → none), TestShipCheckCIFindingsNonTest (fake gh: ci_findings recorded, --test-failures exit 0 on a cause and 1 on the infra log), TestShipInfraWaitSettlesOnCause (--settled --changed --rerun-infra settles on an attempt with a cause) and TestParseCICausesSkipsTestOutput (indented testscript output quoting 'fail render', a vet diagnostic or 'unformatted files:' yields no cause; the test is still found). This confirms cycle-2 quality f1 is fixed. go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden: ok. Every internal/api test passed (PASS) in the full go test -trimpath ./internal/api/..., but the package exited FAIL because rootguard reported '.rhiza-root/usage.live.json: file changed'. That file is rewritten continuously by live Claude Code status lines (internal/adapter/claudecode/statusline.go) and is not in rootguard's owned list. This leaf does not touch it, so it is a pre-existing guard gap unrelated to this leaf. Model f1 fixed: the ship-change-ci-fix-step, ship-check-ci-test-findings and ci-triage-infra-waits statements now say a recognised non-test cause passes ci-triage and goes to ci-fix."
+        },
+        "handle": "ship-check-ci-cause-findings-verified-3",
+        "id": "01M76NQ0NZ349JN4ZTXJKHD9N9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76NQ0NZ349JN4ZTXGJY7GXQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76NQ0NZ349JN4ZTXGJY7GXQ",
+        "id": "01M76NQ0PPA2ZRNBPMN26WHEYG",
+        "link": "01M76NQ0PPA2ZRNBPMN0J9K4Y2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76BDZ8W61MZ0NAAEAQWF6NG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B50FYAFEWQS29QZCGMTPN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76NQ0QFC4WK0QDC74X613X8",
+  "type": "ops",
+  "v": 1
+}

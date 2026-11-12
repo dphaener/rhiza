@@ -1,0 +1,39 @@
+{
+  "actor": "01M76BQPAV7XYBSPTRB8FYVJK2",
+  "after": [
+    "01M76BTDT4X3QRAJWRJBE1P6KH"
+  ],
+  "at": "2026-11-11T22:32:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Intent correction (plan review f2): releases are cut by tools/release run from a systemd user timer on the VM (@{01M76B7EAW7JX0E9RNRBMXM97G}), not by the Rhiza daemon, and a major does not raise an inbox item: release tooling is for this repo only (@{01M76BBTW1A3C00G0VYQ1WBTKA}). How the owner sees and signs off a major is open in @{01M76B7ED4HVPNVDBZR58WS9F1}. The leaves are authoritative."
+        },
+        "handle": "note-01m76btsdks68s",
+        "id": "01M76BTSDKS68S8WDQX86TPVXF",
+        "key": null,
+        "kind": "note",
+        "node": "01M76BTSDKS68S8WDQX7EVXT69",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76BTSDKS68S8WDQX7EVXT69",
+        "id": "01M76BTSEQXVZF7103BEM48A7S",
+        "link": "01M76BTSEQXVZF7103BB426RPK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B0M0A1T1SN6KHMG5JVDVR",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M76B0M0A1T1SN6KHMG5JVDVR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76BTSFH3YBREM85M3KG0XCZ",
+  "type": "ops",
+  "v": 1
+}

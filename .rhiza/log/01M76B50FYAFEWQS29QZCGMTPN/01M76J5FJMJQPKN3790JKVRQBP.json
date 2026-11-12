@@ -1,0 +1,40 @@
+{
+  "actor": "01M76GMN00EG8J2A86ZR0KJJZV",
+  "after": [
+    "01M76BJWNJ9DYZB918013VMJS2"
+  ],
+  "at": "2026-11-12T00:22:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 49149bb7a: read the diff (parseCICauses beside parseFailedTests in internal/api/ship.go, wired into shipReadFailures and shipInfraWait; --test-failures and findings descriptions name the causes; fmt header matches the Makefile's 'unformatted files:'). go test -trimpath ./internal/api/ -run 'TestParseCICauses|TestShipCheckCIFindingsNonTest|TestShipInfraWaitSettlesOnCause' -v -count=1: all three PASS. They cover gh job/step/timestamp-prefixed logs: a self-check log with two 'fail render docs/reference/...' lines plus 'make: *** [Makefile:186: self-check] Error 1' becomes one finding named 'lint / Run make lint: self-check' quoting the fail lines; a fmt-check listing; a go vet 'x.go:12:3:' diagnostic; a bare 'make: *** [build] Error 2' with the lines before it; apt 'Temporary failure resolving', billing and failing-test logs give no cause. Ship check with a fake gh records the finding in ci_findings; --test-failures exits 0 on it and 1 on the infra log; --settled --changed --rerun-infra settles on an attempt with a recognised cause. go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden -count=1: ok (golden regenerated). go test -trimpath -timeout 45m ./internal/api/...: every test passed (no '--- FAIL'); the package exited 1 only on the rootguard check, because .rhiza-root/usage.live.json changed, which the live root daemon writes and rootguard does not list as owned; this predates the leaf, is unrelated to its diff, and is filed as draft change set 01M76J4VQ6PMFR6T23Y957E8HK (discovered-from). The first run without -timeout hit go test's 10m default under host load ~12."
+        },
+        "handle": "ship-check-ci-cause-findings-verified",
+        "id": "01M76J5FCYDTY0QWKK9PRH3H5H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76J5FCYDTY0QWKK9MZE162W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76J5FCYDTY0QWKK9MZE162W",
+        "id": "01M76J5FDV9QVZEMVAGNXVRADQ",
+        "link": "01M76J5FDV9QVZEMVAGKX8F4B4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76BDZ8W61MZ0NAAEAQWF6NG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B50FYAFEWQS29QZCGMTPN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76J5FJMJQPKN3790JKVRQBP",
+  "type": "ops",
+  "v": 1
+}

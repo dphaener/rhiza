@@ -1,0 +1,43 @@
+{
+  "actor": "01M76ED4TF1BFCPTDFQJ6SY0N9",
+  "after": [
+    "01M76NX8F3G4KXGHQ9G96MZDCW"
+  ],
+  "at": "2026-11-12T01:29:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test in cmd/rhiza reads agents/orchestrator.md and finds each of those rules (git fetch, pkill, uncommitted on main, maxRuns, merge origin/main, --squash, quote the owner, milestone planning with the owner); it and the agent-docs consistency test pass with go test -trimpath ./cmd/rhiza -run on their names",
+          "statement": "agents/orchestrator.md, listed in agents/README.md, tells the orchestrator agent how to run Rhiza's own development: no git fetch in the main clone from the watch loop and no pkill by pattern, the main tree stays clean and nothing is left uncommitted on main (every model write on its own branch and PR), lower rhiza.daemon.maxRuns when the VM is loaded, merge origin/main into a conflicting PR and never rebase and force-push, merge by hand with gh pr merge --squash, quote the owner exactly, and plan a milestone only with the owner"
+        },
+        "handle": "orchestrator-doc",
+        "id": "01M76P0AFBXXQRCAEPZX02XD9T",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M76P0AFBXXQRCAEPZSZD95G9",
+        "op": "node.create",
+        "parent": "01M76NWAEW076CHS77X90T6X04"
+      },
+      {
+        "fields": {
+          "acceptance": "The orchestrator-doc test finds in agents/orchestrator.md the consult-with-a-recommendation rule, autonomy only when the owner granted it, and the idle rule (propose, don't start; bug requests still flow), and finds no consult rule in AGENTS.md; go test -trimpath ./cmd/rhiza -run on its name passes",
+          "statement": "agents/orchestrator.md tells the orchestrator to consult the owner, with a recommendation, before any judgment call and to act autonomously only when the owner granted autonomy for that task or session; when idle it proposes the next high-value work to the owner instead of starting it, while queued bug requests still flow through their autonomous workflows; AGENTS.md does not carry this rule"
+        },
+        "handle": "orchestrator-consults-owner",
+        "id": "01M76P0AJ9VF4D377JGXEFSKD6",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M76P0AJ9VF4D377JGWZJAAZY",
+        "op": "node.create",
+        "parent": "01M76NWAEW076CHS77X90T6X04"
+      }
+    ]
+  },
+  "change_set": "01M76NX8F3G4KXGHQ9G93TEH4Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76P0AKMA0RFW3WZEP30T4NQ",
+  "type": "ops",
+  "v": 1
+}

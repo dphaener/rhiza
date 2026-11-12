@@ -1,0 +1,50 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [
+    "01M76B077D23CJ28C692NZH80J"
+  ],
+  "at": "2026-11-11T22:21:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/release/... reads breaking: and severe: notes from a fixture .rhiza log and ignores other notes; make self-check passes with the updated .rhiza/workflows guidance",
+          "statement": "In this repo a change set is marked breaking or a bug fix severe by a note on the change set starting breaking: or severe: with the reason; the plan-bug and review guidance in this repo tell planners and reviewers when to write them, and tools/release reads them"
+        },
+        "handle": "release-marks",
+        "id": "01M76B7DJ5HD25ETA8QW855BY3",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M76B7DJ5HD25ETA8QRYQP9GA",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "decision": null,
+        "from": "01M76B7DJ5HD25ETA8QRYQP9GA",
+        "id": "01M76B7DJH0PYBK6J16H4AQ4MR",
+        "link": "01M76B7DJH0PYBK6J16G0DWM5G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSZGMRT62VKRJZY08FQE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76B7DJ5HD25ETA8QRYQP9GA",
+        "id": "01M76B7DJZKK1WVR33QQ0Q5PTG",
+        "link": "01M76B7DJZKK1WVR33QM6GMX2M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSYNNPSWTFV3RHSM4RMP",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76B077D23CJ28C690Y166VY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76B7DKDJSD4Y9JVNTD86RA0",
+  "type": "ops",
+  "v": 1
+}

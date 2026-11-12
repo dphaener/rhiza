@@ -1,0 +1,41 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M76F39PC76FSSKY8PH7TATHN"
+  ],
+  "at": "2026-11-12T01:24:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "question": "The owner cuts v0.1.0 by hand once the release manifest lands (the owner picked 'By hand after A'), so no leaf cuts it and no builder can verify a real attestation. After the owner pushes the v0.1.0 tag, who runs gh attestation verify on one of its archives and records it as Evidence on release-provenance, closing m33-release-channel's 'v0.1.0 is published' promise: the owner, or the orchestrator when it sees the tag?",
+          "statement": "The orchestrator cuts v0.1.0 once the manifest-and-provenance change set lands, then runs gh attestation verify on one of its archives and records the Evidence on @{01M76B7CPZ26NZ03MPCK9S55PA}",
+          "wording": "Orchestrator cuts and verifies: once the manifest-and-provenance change set lands, the orchestrator tags v0.1.0, watches the release workflow, runs gh attestation verify on an archive and records the Evidence; picked by the owner"
+        },
+        "handle": "orchestrator-cuts-v010",
+        "id": "01M76NPNRH6ZE9WNWKBYWRYXHF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76NPNRH6ZE9WNWKBYH5Z8PX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76NPNRH6ZE9WNWKBYH5Z8PX",
+        "id": "01M76NPNSN24PRBNJ8SGPMFQN4",
+        "link": "01M76NPNSN24PRBNJ8SF65FVP1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76C5KP25JNKAG2A8RX0P656",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76AZ94M8HWY6GCD06H8ES46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76NPNWB38WH22Q66PM3K7DC",
+  "type": "ops",
+  "v": 1
+}

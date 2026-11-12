@@ -1,0 +1,61 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M76NXS3KAX3KT3MQMT7XDHC6"
+  ],
+  "at": "2026-11-12T02:10:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "question": "Depends on the release channels milestone: link depends-on once it is planned.",
+          "statement": "The auto-update release channels change set depends on the release milestone channel resolver and latest channel change sets",
+          "wording": "Finish cleanup, park it: link the auto-update channels change set depends-on the release milestone once it is planned, then close the parked question; picked by the owner"
+        },
+        "handle": "autoupdate-channels-depend-on-release",
+        "id": "01M76RAXJWRX5TGWT2W8N3ABR4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76RAXJWRX5TGWT2W52YNXCM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76RAXJWRX5TGWT2W52YNXCM",
+        "id": "01M76RAXKGTFHM05DYRRVC970E",
+        "link": "01M76RAXKGTFHM05DYRQF7M6MH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642SJ9HWNTNY2B37W08274",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M763ZDJBN7QKR3AAST5FTR6A",
+        "id": "01M76RAY3BDCBH3FVTKXGQAN3F",
+        "link": "01M76RAY3BDCBH3FVTKWYSP0RF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AZSNW1912Y5RD6J4TAHJQ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M763ZDJBN7QKR3AAST5FTR6A",
+        "id": "01M76RAYBXGD954HQQ26VRR3KC",
+        "link": "01M76RAYBXGD954HQQ237ACM84",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AZHGY605TXF68M27W4SZV",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M763ZDJBN7QKR3AAST5FTR6A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76RAYDVEX1RB6YKQHK565CX",
+  "type": "ops",
+  "v": 1
+}

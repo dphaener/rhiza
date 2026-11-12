@@ -1,0 +1,30 @@
+{
+  "actor": "01M76BQPAV7XYBSPTRB8FYVJK2",
+  "after": [
+    "01M76B7E4VSWER8Z6M21AAR2V2"
+  ],
+  "at": "2026-11-11T22:31:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/release/... -run TestGates with a fake clock, a fake CI status and a fixture daemon-run history file (the format tools/release defines and reads) covers each gate passing and failing, a commit missing from the history failing the soak gate, and the severe skip",
+          "statement": "tools/release check reports each gate for the candidate commit with why it passes or fails: CI green on the commit; the root daemon first ran the commit at least 24h ago and no bug request was filed since; no change set serving the finished milestone in flight and no question blocking one; a patch is at most one per 24h unless a severe: fix is in it, which skips the soak and the batching but never CI"
+        },
+        "handle": "release-gates",
+        "id": "01M76B7E0P2S46PHFZ3MQ5YH6J",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M76B7E0P2S46PHFZ3KX010J6",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      }
+    ]
+  },
+  "change_set": "01M76B0FZA3N7ZHAYTBN76MVSV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76BTDHEM97JPD7C1G3TDNVQ",
+  "type": "ops",
+  "v": 1
+}

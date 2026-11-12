@@ -1,0 +1,52 @@
+{
+  "actor": "01M76C37J22BKWCFFN1721CTCP",
+  "after": [
+    "01M76B7CQDFAASGJS69CX5W376"
+  ],
+  "at": "2026-11-11T22:38:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "release.yml runs actions/attest-build-provenance over dist/*.tar.gz with id-token: write and attestations: write; goreleaser check and the release-snapshot job pass on the PR",
+          "statement": "The release job publishes a GitHub build-provenance attestation for every archive, so gh attestation verify <archive> --repo dphaener/rhiza succeeds on a downloaded release"
+        },
+        "handle": "release-provenance",
+        "id": "01M76B7CPZ26NZ03MPCMY616Y5",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M76B7CPZ26NZ03MPCK9S55PA",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "fields": {
+          "statement": "The owner cuts v0.1.0 by hand once the release manifest lands (the owner picked 'By hand after A'), so no leaf cuts it and no builder can verify a real attestation. After the owner pushes the v0.1.0 tag, who runs gh attestation verify on one of its archives and records it as Evidence on release-provenance, closing m33-release-channel's 'v0.1.0 is published' promise: the owner, or the orchestrator when it sees the tag?"
+        },
+        "handle": "v010-cut-and-attestation-evidence",
+        "id": "01M76C5KP25JNKAG2A8SPSG3XH",
+        "key": null,
+        "kind": "question",
+        "node": "01M76C5KP25JNKAG2A8RX0P656",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76C5KP25JNKAG2A8RX0P656",
+        "id": "01M76C5KRY93DMN8P7QVRPE8SG",
+        "link": "01M76C5KRY93DMN8P7QT3T6RW7",
+        "note": "The attestation check moved out of this leaf's acceptance (plan review round 2, f1): it can only run after v0.1.0 is cut by hand",
+        "op": "link.create",
+        "to": "01M76B7CPZ26NZ03MPCK9S55PA",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M76AZ94M8HWY6GCD06H8ES46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76C5KTGX1ZC5CS520QAWVCT",
+  "type": "ops",
+  "v": 1
+}

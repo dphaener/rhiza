@@ -1,0 +1,30 @@
+{
+  "actor": "01M76RHS6E243T24QWFQEDR706",
+  "after": [
+    "01M76RH0YQYW1SMCEE539R3C23"
+  ],
+  "at": "2026-11-12T02:16:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "aa618fe3-a94f-4379-98c2-01a1cd88ca37",
+          "statement": "Which intent should change set 01M76RH0 (pre-push check in every run) serve? Its predecessor ship-local-gate served milestone-25, which is still open. / Where should the always-on pre-push check (rhiza check + the project's command) be enforced for change set 01M76RH0? / What should the project setting for the generated-file pre-push command be called (this repo: make self-check; unset: rhiza check only)? / The plan workflows (plan, plan-milestone) have no gate or fixer today. When their pre-push check fails, where should change set 01M76RH0 send it?"
+        },
+        "handle": "question-aa618fe3-1",
+        "id": "01M76RNSSBN01KYXGC63RNT9Q9",
+        "key": null,
+        "kind": "question",
+        "node": "01M76RNSSBN01KYXGC60VKTS9J",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76RNVPH143H1SM7C1ACAWFB",
+  "type": "ops",
+  "v": 1
+}

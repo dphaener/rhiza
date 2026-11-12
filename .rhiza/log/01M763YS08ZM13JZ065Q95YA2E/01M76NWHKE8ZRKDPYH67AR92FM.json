@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M76576WNQPHV87Z3TC888ZZH"
+  ],
+  "at": "2026-11-12T01:27:52Z",
+  "body": {
+    "reason": "",
+    "rule": "owner"
+  },
+  "change_set": "01M763YS08ZM13JZ065Q95YA2E",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76NWHKE8ZRKDPYH67AR92FM",
+  "type": "accept",
+  "v": 1
+}

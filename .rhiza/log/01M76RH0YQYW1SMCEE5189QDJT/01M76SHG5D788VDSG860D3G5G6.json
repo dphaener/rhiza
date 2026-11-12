@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M76S9WQTXH04N07JN8MXTKPA"
+  ],
+  "at": "2026-11-12T02:31:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on ship-change-prepush-fix): The plan only changes the built-in workflows (internal/workflow/builtin/ship-change.toml, plan.toml, plan-milestone.toml) and its acceptance checks only those, but accepted in-flight change set 01M763YX (milestone-32, which the intent says to coordinate with) gives Rhiza's own repo its own workflows in .rhiza/workflows (rhiza-own-workflows-go-cleanup: workflows that set GOTMPDIR; ship-head-build-step: 'Rhiza's own ship-change workflow builds rhiza from the PR head in a step'). If those repo workflows replace ship-change (and plan/plan-milestone) rather than include the built-ins, the new on.fail -> ship gate --failed triage -> gate-fix / prepush-fix routing never reaches this repo's runs, the very runs whose CI failures motivated the change. The decision pre-push-check-shape coordinates with milestone-32 only on the setting's name; it should say how the routing reaches repo-level workflow copies (or that 01M763YX's workflows include the built-ins), and plan-prepush-fix has the same gap. rhiza overlaps lists nothing because the two change sets write different nodes. The critic confirmed it: Accepted in-flight 01M763YX (ship-head-build-step: 'Rhiza's own ship-change workflow builds rhiza from the PR head in a step'; rhiza-own-workflows-go-cleanup: Rhiza's own workflows in .rhiza/workflows set GOTMPDIR) gives this repo its own ship-change.toml. By workflow-overrides a repo .rhiza/workflows/ship-change.toml shadows the built-in for every bare-name use, including bugfix's workflow step, and it cannot include the built-in ship-change: the resolver has no builtin: prefix and a repo file naming ship-change resolves to itself, which include.go rejects as a self-include. So that file is a full copy, and the plan's on.fail -> ship gate --failed triage -> gate-fix routing (ship-change-prepush-fix, whose acceptance checks only internal/workflow/builtin) never reaches Rhiza's own runs; the same holds for plan-prepush-fix if 01M763YX copies plan/plan-milestone to set GOTMPDIR. The pre-push check itself sits in shipPush and still runs, but a failure would end the run instead of going to the fixer. Decision pre-push-check-shape coordinates with milestone-32 only on the setting's name, and rhiza overlaps misses this because the two change sets write different nodes. How should it be settled?"
+        },
+        "handle": "review-01m76rgz9k7zmdyec31e5kq7ta-r3-f1",
+        "id": "01M76SHFZQCE8F0MY6MQCKTSP0",
+        "key": null,
+        "kind": "question",
+        "node": "01M76SHFZQCE8F0MY6MNZ46CKD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76SHFZQCE8F0MY6MNZ46CKD",
+        "id": "01M76SHG0W5XEZNFPY9J89J9P1",
+        "link": "01M76SHG0W5XEZNFPY9HBPYTXP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RT010NG76M92D8AF73776",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76SHG5D788VDSG860D3G5G6",
+  "type": "ops",
+  "v": 1
+}
