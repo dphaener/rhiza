@@ -7,7 +7,7 @@
 # The fakes are run-ship-ci-fix.txtar's, except that gh's red check is the
 # lint job (until the branch holds fix-1.txt) and its failed-job log holds
 # the self-check and make lines instead of a failing test; the fixer needs
-# those lines in ship check --json.
+# those lines in the log ship check --json's finding names.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -136,16 +136,17 @@ check)
 	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
 	;;
 *)
-	# The ci-fix agent step: no role. It sees the failing tests in ship
-	# check's output, fixes by adding one fix-N.txt, and commits with the
+	# The ci-fix agent step: no role. It reads the failing lines in the
+	# log ship check's finding names, fixes by adding one fix-N.txt, and commits with the
 	# run's Review: trailer, taken from its prompt.
 	case "$last" in
 	*"Fix the CI findings"*) ;;
 	*) exit 0 ;;
 	esac
 	rhiza ship check --json > "$WORK/fix-input.json" 2>&1
-	grep -q 'fail render docs/reference/cli.md: differs from what rhiza docs writes' "$WORK/fix-input.json" || exit 1
-	grep -q 'make: \*\*\* \[Makefile:186: self-check\]' "$WORK/fix-input.json" || grep -q 'self-check' "$WORK/fix-input.json" || exit 1
+	log=$(sed -n 's/.*saved in \([^:]*\):.*/\1/p' "$WORK/fix-input.json" | head -1)
+	grep -q 'fail render docs/reference/cli.md: differs from what rhiza docs writes' "$log" || exit 1
+	grep -q 'make: \*\*\* \[Makefile:186: self-check\] Error 1' "$log" || exit 1
 	run=$(printf '%s' "$last" | sed -n 's/.*in run \([^:]*\):.*/\1/p')
 	n=$(( $(ls fix-*.txt 2>/dev/null | wc -l) + 1 ))
 	echo "fix $n" > "fix-$n.txt"

@@ -38,10 +38,10 @@ type CIRun struct {
 	Main   bool   `json:"main,omitempty" desc:"True for main's result (the merge commit), false for a PR head"`
 	Result string `json:"result" desc:"green or red"`
 	Time   string `json:"time" desc:"When the run was recorded, RFC 3339"`
-	// Flakes are the tests that failed on the head's first attempt and
-	// whose job then passed on a rerun of the same head: set only on a
-	// green result that followed a rerun.
-	Flakes []string `json:"flakes,omitempty" desc:"The tests that failed before a rerun of the same head passed"`
+	// Flakes name where the head's first attempt failed ('job / step', or
+	// 'CI run <id>' for a log that names neither) before a rerun of the
+	// same head passed: set only on a green result that followed a rerun.
+	Flakes []string `json:"flakes,omitempty" desc:"Where the head failed ('job / step') before a rerun of the same head passed"`
 }
 
 // CIStability is the record, oldest entry first.

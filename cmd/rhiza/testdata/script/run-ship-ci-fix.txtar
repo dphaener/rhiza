@@ -1,7 +1,7 @@
 # A red PR goes to a fixer instead of failing the run. When the head's CI
-# fails (after its once-per-head rerun) with failing tests in the log,
+# fails (after its once-per-head rerun) with failing lines in the log,
 # ship-change routes pr-green or rebased-green to ci-triage, which passes
-# only when ship check recorded a failing test, then to ci-fix: one fixer
+# only when ship check saved a failed log, then to ci-fix: one fixer
 # session on the run worktree that commits with a Review: trailer. The run
 # renders, pushes and waits for CI again, at most twice.
 #
@@ -9,13 +9,13 @@
 # sign-off. The owner then approves, and it lands and merges.
 # Case 2: green at pr-green, red at rebased-green (a new test fails on the
 # rebased head): a second fix, sign-off again, rebase again, then it lands.
-# Case 3: still red after two fixes: the run fails, naming the tests.
+# Case 3: still red after two fixes: the run fails, naming the failed run.
 # Case 4: red with a log naming no test (infra): ci-triage sends the run to
 # wait-ci-rerun (--no-wait stops it there) and ci-fix never runs.
 #
 # The fakes are run-ship-change.txtar's, except that gh's PR is red until
 # the branch holds as many fix-N.txt files as $WORK/need says, and its
-# failed-job log names TestScripts/x and its subtest x/sub (or an infra error, with $WORK/infra).
+# failed-job log fails TestScripts/x and its subtest x/sub (or an infra error, with $WORK/infra).
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -39,7 +39,7 @@ stdout '^- render-pr \(visit 2\): pass, then local-gate'
 stdout '^- pr-green \(visit 2\): pass, then signoff'
 stdout '^- Current step: signoff$'
 # The one fixer's commit carries a Review: trailer naming the run, with
-# the failing test read from the CI log.
+# the failing lines read from the saved CI log.
 exec sh -c 'wc -l < $WORK/fixes.log'
 stdout '^1$'
 exec git -C $WORK/repo.ship-it log -1 --format=%B --grep='fix ci 1'
@@ -77,7 +77,7 @@ exec git -C $WORK/origin.git log main --format=%s
 stdout 'Ship it \(#7\)'
 
 # Case 3: still red after two fixes: the third red head fails the run and
-# its output names the failing tests.
+# its output names the failed CI run.
 exec sh -c 'echo 99 > $WORK/need'
 cd $WORK
 exec sh $WORK/setup.sh
@@ -87,7 +87,7 @@ exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission
 exec rhiza run status
 stdout '^- ci-fix \(visit 2\): pass, then render-pr'
 stdout '^- ci-triage \(visit 3\)'
-stdout 'TestScripts/x'
+stdout 'CI run 42 \(test\)'
 ! stdout '^- ci-fix \(visit 3\)'
 exec rhiza run status --json
 stdout '"state": "failed"'
@@ -209,16 +209,16 @@ check)
 	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
 	;;
 *)
-	# The ci-fix agent step: no role. It sees the failing tests in ship
-	# check's output, fixes by adding one fix-N.txt, and commits with the
-	# run's Review: trailer, taken from its prompt.
+	# The ci-fix agent step: no role. It reads the failing lines in the
+	# log ship check's finding names, fixes by adding one fix-N.txt, and
+	# commits with the run's Review: trailer, taken from its prompt.
 	case "$last" in
 	*"Fix the CI findings"*) ;;
 	*) exit 0 ;;
 	esac
 	rhiza ship check --json > "$WORK/fix-input.json" 2>&1
-	grep -q 'TestScripts/x/sub' "$WORK/fix-input.json" || exit 1
-	grep -q '"TestScripts/x"' "$WORK/fix-input.json" && exit 1
+	log=$(sed -n 's/.*saved in \([^:]*\):.*/\1/p' "$WORK/fix-input.json" | head -1)
+	grep -q -- '--- FAIL: TestScripts/x/sub' "$log" || exit 1
 	run=$(printf '%s' "$last" | sed -n 's/.*in run \([^:]*\):.*/\1/p')
 	n=$(( $(ls fix-*.txt 2>/dev/null | wc -l) + 1 ))
 	echo "fix $n" > "fix-$n.txt"

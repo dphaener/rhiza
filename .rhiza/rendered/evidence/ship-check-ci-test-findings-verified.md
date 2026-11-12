@@ -14,7 +14,7 @@ Verified at 91caa11e. go test -trimpath ./internal/api/... passed, including the
 
 ### Out
 
-- verifies [ship-check-ci-test-findings](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-ci-test-findings.md)
+- verifies ship-check-ci-test-findings (retired)
 
 ## History
 

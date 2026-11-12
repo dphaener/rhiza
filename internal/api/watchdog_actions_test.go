@@ -26,8 +26,9 @@ func TestWatchdogLog(t *testing.T) {
 	var lines []string
 	var state daemon.State
 	d := watchdogDeps{
-		resume: func(string) error { return nil },
-		now:    func() time.Time { return now },
+		classify: fakeClassify,
+		resume:   func(string) error { return nil },
+		now:      func() time.Time { return now },
 	}
 	d.log = watchdogJournalLog(func(f string, a ...any) { lines = append(lines, fmt.Sprintf(f, a...)) }, &state, d.now)
 	pol := WatchdogPolicy{Enabled: true, RetryBudget: 3, AutonomousOnly: true}

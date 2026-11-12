@@ -19,6 +19,10 @@ A headless LLM call (Haiku by default) classifies a failure as transient or real
 ### In
 
 - decided-by [m32-failures-classified](../intent/milestone-32/m32-failures-classified.md)
+- decided-by [failure-classifier-setting](../capability/rhiza/orchestration/daemon/daemon-settings/failure-classifier-setting.md)
+- decided-by [watchdog-classifies-failures](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-classifies-failures.md)
+- decided-by [step-rerun-classified](../capability/rhiza/workflows/workflow-runs/step-rerun-classified.md)
+- decided-by [ci-logs-to-fixer](../capability/rhiza/orchestration/shipping/ci-logs-to-fixer.md)
 
 ## History
 

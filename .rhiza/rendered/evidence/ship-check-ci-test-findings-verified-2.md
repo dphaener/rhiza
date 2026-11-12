@@ -14,7 +14,7 @@ At 4c73aede (attempt 2, fixing quality f1) read the diff: parseFailedTests now d
 
 ### Out
 
-- verifies [ship-check-ci-test-findings](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-ci-test-findings.md)
+- verifies ship-check-ci-test-findings (retired)
 
 ## History
 

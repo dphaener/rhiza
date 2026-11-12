@@ -1,0 +1,26 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M77N14BJFNJV71N6C5M1TPV2"
+  ],
+  "at": "2026-11-12T10:51:11Z",
+  "body": {
+    "drop": [
+      "01M764M3NKP39F004ECTR4SWZ2"
+    ],
+    "ops": [
+      {
+        "base": "01M76MENTKMW0EMX8JV538PETR",
+        "id": "01M77P4310JAV6J82KP8RFCNSN",
+        "node": "01M6MC4GXTJ7SWF8NV4SYXD3F9",
+        "op": "node.retire",
+        "reason": "Replaced by ci-logs-to-fixer: ci-triage hands the fix agent the failed CI logs instead of parsing Go test output."
+      }
+    ]
+  },
+  "change_set": "01M763Z4X9Q90ASH2K1BF7PZPS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M77P432EMB574KB7GQMBGF8C",
+  "type": "ops",
+  "v": 1
+}

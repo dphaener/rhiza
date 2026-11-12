@@ -14,7 +14,7 @@ At 2bee5d01 ran go test -trimpath -count=1 ./internal/api -run 'TestVanishedGoWo
 
 ### Out
 
-- verifies [step-retry-vanished-go-work](../capability/rhiza/workflows/workflow-runs/step-retry-vanished-go-work.md)
+- verifies step-retry-vanished-go-work (retired)
 
 ## History
 

@@ -1,0 +1,109 @@
+{
+  "actor": "01M77JMQMS412FN6KJVN6YEY6H",
+  "after": [
+    "01M77JH8MAZE4B4RPP20G5Q58W"
+  ],
+  "at": "2026-11-12T09:59:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 3a745c744 with the built binary in a scratch Rhiza root, no RHIZA_* env. rhiza daemon settings lists rhiza.daemon.failureClassifier with the claude -p --model haiku default (default, machine); rhiza daemon set ... '' writes \"rhiza.daemon.failureClassifier\" = \"\" to rhiza.toml and shows it as \"\" (rhiza.toml, machine). Against a failing command step: empty ran it once with no classifier line; a fake classifier saw the step's output ('boom') on stdin; 'transient: flaky net', 'TRANSIENT - lock held' and a verdict after blank lines were read as transient; 'real: test fails', a free-text sentence ('I think it is probably transient') and a classifier exiting 3 were all real (no clear verdict / classifier failed: exit status 3). With the setting unset, the real default (Claude headless, Haiku) called a git index.lock 'File exists' error transient and a Go '--- FAIL: TestAdd ... want 2' real, each in about 7s with a one-line reason. A 'sleep 20' classifier held the step 21s: the call has no time limit."
+        },
+        "handle": "failure-classifier-setting-qa-1",
+        "id": "01M77K5FQ95Q7ZTYF4M41Q6X2S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77K5FQ95Q7ZTYF4M0AQR2JE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77K5FQ95Q7ZTYF4M0AQR2JE",
+        "id": "01M77K5FVFHR0QZDAWKS7A3GEX",
+        "link": "01M77K5FVFHR0QZDAWKPDCRJ4C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642N1KXSN7CKCDEZFBK78Q",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 3a745c744 with the built binary: rhiza run start --foreground on a workflow whose command step fails on its first run. A transient verdict printed 'step failure classified transient; running it once more' and the step ran twice and passed; a real verdict, garbage output, a failing classifier and an empty setting each left it at one run, failed. A step that always fails with a transient classifier ran exactly twice, then failed: one rerun only. With the real Haiku default, an index.lock error was rerun and a Go test assertion failure was not."
+        },
+        "handle": "step-rerun-classified-qa-1",
+        "id": "01M77K5FZ2JPN0T06ZY0DSJ1G2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77K5FZ2JPN0T06ZXX00X4BC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77K5FZ2JPN0T06ZXX00X4BC",
+        "id": "01M77K5G3NV0XJXESWKD80RBJJ",
+        "link": "01M77K5G3NV0XJXESWKBMH51B8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642N3Y65X0MX8J6J2WSJVH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 3a745c744 with the built binary: failed autonomous runs (rhiza run start --foreground --autonomous, step printing an HTTP 502 error) then rhiza daemon --once in a scratch root. Classifier empty: logged 'watchdog: run … step a failure classified real, left to the inbox: classifier off' and daemon.state.json records judged for the run. A fake 'transient: github 502' classifier received the failed step's detail on stdin; the watchdog logged 'failed on a transient error (github 502): resumed with --retry (budget 1 of 2)' and filed a bug request. A classifier exiting 2 logged 'classified real, left to the inbox: classifier failed: exit status 2', and a second daemon --once pass did not ask or log again. No transientSignatures remain in the code (grep)."
+        },
+        "handle": "watchdog-classifies-failures-qa-1",
+        "id": "01M77K5G7GH401Y3XS0WWZ1288",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77K5G7GH401Y3XS0RZR8CQ3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77K5G7GH401Y3XS0RZR8CQ3",
+        "id": "01M77K5GA12Z6X7RW717SQ1S6Q",
+        "link": "01M77K5GA12Z6X7RW716BM3GF6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642N2Q7TPP6BCV43AGR07T",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 3a745c744 with the built binary and a fake gh whose failed job 'jest' prints a real-shaped gh --log-failed Jest log (job/step/timestamp prefixes, 3000 noise lines then 'FAIL src/garden.test.js', the expect/Expected/Received lines, 'Tests: 1 failed' and '##[error]Process completed with exit code 1.'). First rhiza ship check --settled --json reran run 42; the second listed tests ['CI run 42 (jest)'] and a finding 'failed on <sha> after its reruns; its failing log lines are saved in .git/rhiza/ship/<cs>-ci-logs/42.log: read them, reproduce the failure locally and fix it'. The saved file was 11 lines, prefixes stripped, holding the FAIL line, the assertion and the summary. A log failing at its first lines followed by 3000 PASS lines saved 20 lines keeping both 'FAIL src/early.test.js' and the closing summary. No Go/RSpec/Minitest/pytest parser remains in non-test code (grep)."
+        },
+        "handle": "ci-logs-to-fixer-qa-1",
+        "id": "01M77K5GBM1MRFJKP82QFN5DV5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77K5GBM1MRFJKP82NWCZV26",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77K5GBM1MRFJKP82NWCZV26",
+        "id": "01M77K5GF33GN7TXJ7JRXD52J9",
+        "link": "01M77K5GF33GN7TXJ7JPJAXMV4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642N4ZK43G1W494MBFE7VE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z4X9Q90ASH2K1BF7PZPS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77K5GHPRC7TSYJR53YTMJ04",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M77KGRBMYCDV8YYNMQVF54ER",
+  "after": [
+    "01M77KGNE0D1KV17PETPEJ8SK4"
+  ],
+  "at": "2026-11-12T10:06:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2, at dd206f2dc. Ran go test -trimpath ./internal/api -run 'Watchdog|Classif' -count=1: all pass. TestWatchdogTransient, with an injected classifier, retries the transient failures (work, lock, gh) and leaves the real one to the inbox with 'classified real' and its reason logged. TestWatchdogTransientClassifierError leaves a classifier error ('classifier failed') and a missing classifier to the inbox. grep finds no transientSignatures in any Go file. Attempt 1's finding (unbounded classifier stalling the daemon tick) is fixed by a0179336b: shellWithStdin runs under a 60s classifierTimeout in its own process group, killed on expiry, and the error makes ClassifyFailure return a non-transient verdict. go test -trimpath ./cmd/rhiza -run 'TestShellWithStdin' -count=1 passes: TestShellWithStdinTimesOut kills 'sleep 20' in about 0.2s with a timeout error. go vet on both packages is clean."
+        },
+        "handle": "watchdog-classifies-failures-verified-2",
+        "id": "01M77KJ37SJMTBE9YYMXY903YN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77KJ37SJMTBE9YYMV2DPC8X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77KJ37SJMTBE9YYMV2DPC8X",
+        "id": "01M77KJ38CTN2BQXEF2ES7KKAP",
+        "link": "01M77KJ38CTN2BQXEF2DS93ZZT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642N2Q7TPP6BCV43AGR07T",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z4X9Q90ASH2K1BF7PZPS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77KJ390T5VA39A4S4RV09FC",
+  "type": "ops",
+  "v": 1
+}

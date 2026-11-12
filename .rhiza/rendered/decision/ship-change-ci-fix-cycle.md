@@ -23,7 +23,7 @@ Read the change set's intent, milestone-25 and milestone-24, internal/workflow/b
 
 ### In
 
-- decided-by [ship-check-ci-test-findings](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-ci-test-findings.md)
+- decided-by ship-check-ci-test-findings (retired)
 - decided-by [ship-change-ci-fix-step](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-change-ci-fix-step.md)
 
 ## History
