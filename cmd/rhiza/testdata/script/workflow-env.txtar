@@ -19,7 +19,7 @@ cp $WORK/noenv.toml .rhiza/workflows/noenv.toml
 exec rhiza run start --foreground --workflow withenv --json
 stdout '"state": "succeeded"'
 exec cat $WORK/with.env
-stdout '^FOO=\S+/tmp$'
+stdout '^FOO=\S+/\.cache/rhiza/run-tmp/[0-9A-Z]+$'
 stdout '^PLAIN=x$'
 ! stdout '^GOTMPDIR='
 exec cat $WORK/with.dir

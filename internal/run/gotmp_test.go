@@ -3,6 +3,7 @@ package run
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -47,8 +48,8 @@ func envOf(env []string, key string) string {
 func TestStepsGetEnvRunTmp(t *testing.T) {
 	e, r, _, _ := setup(t, gotmpWF)
 	want := e.Store.TmpDir(runID)
-	if filepath.Base(want) != "tmp" || filepath.Base(filepath.Dir(want)) != runID {
-		t.Fatalf("TmpDir = %q, want <runs>/%s/tmp", want, runID)
+	if want != filepath.Join(os.Getenv("XDG_CACHE_HOME"), "rhiza", "run-tmp", runID) {
+		t.Fatalf("TmpDir = %q, want <user cache>/rhiza/run-tmp/%s", want, runID)
 	}
 	check := func(step string) {
 		if got := envOf(r.envs[step], "FOO"); got != want {
@@ -73,7 +74,7 @@ func TestStepsGetEnvRunTmp(t *testing.T) {
 	check("build")
 	check("ci")
 	check("agent")
-	if _, err := os.Stat(filepath.Dir(want)); !os.IsNotExist(err) {
+	if _, err := os.Stat(want); !os.IsNotExist(err) {
 		t.Errorf("run folder still there after the run finished: %v", err)
 	}
 }
@@ -92,7 +93,7 @@ func TestRunTmpGoneAfterFailedRun(t *testing.T) {
 	if got := envOf(r.envs["build"], "FOO"); got != e.Store.TmpDir(runID) {
 		t.Errorf("FOO = %q", got)
 	}
-	if _, err := os.Stat(filepath.Dir(e.Store.TmpDir(runID))); !os.IsNotExist(err) {
+	if _, err := os.Stat(e.Store.TmpDir(runID)); !os.IsNotExist(err) {
 		t.Errorf("run folder still there after the run failed: %v", err)
 	}
 }
@@ -108,5 +109,37 @@ func TestNoEnvNoRunTmp(t *testing.T) {
 		if strings.HasPrefix(kv, "GOTMPDIR=") || strings.HasPrefix(kv, "FOO=") {
 			t.Errorf("unexpected %s", kv)
 		}
+	}
+}
+
+// Without a user cache dir the folder is under the OS temp dir, per user.
+func TestTmpDirFallsBackToOSTemp(t *testing.T) {
+	t.Setenv("XDG_CACHE_HOME", "")
+	t.Setenv("HOME", "")
+	got := TmpDir("r1")
+	want := filepath.Join(os.TempDir(), "rhiza-run-tmp-"+strconv.Itoa(os.Getuid()), "r1")
+	if got != want {
+		t.Errorf("TmpDir = %q, want %q", got, want)
+	}
+}
+
+// Ending a run removes its own folder only: the shared run-tmp parent and
+// another run's folder stay.
+func TestRunTmpRemovalSparesOthers(t *testing.T) {
+	e, r, _, _ := setup(t, gotmpWF)
+	other := TmpDir("other-run")
+	if err := os.MkdirAll(other, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	r.holds["ci"] = []bool{true}
+	r.outcome["S-agent"] = "pass"
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(e.Store.TmpDir(runID)); !os.IsNotExist(err) {
+		t.Errorf("own folder still there: %v", err)
+	}
+	if _, err := os.Stat(other); err != nil {
+		t.Errorf("another run's folder gone: %v", err)
 	}
 }

@@ -51,6 +51,9 @@ type sessionFixture struct {
 
 func newSessionFixture(t *testing.T, slug string) *sessionFixture {
 	t.Helper()
+	// Runs' temp folders live under the user cache: keep them in the test's
+	// own folder, never the host's ~/.cache.
+	t.Setenv("XDG_CACHE_HOME", t.TempDir())
 	tmp := t.TempDir()
 	root := filepath.Join(tmp, "repo")
 	if err := os.MkdirAll(root, 0o755); err != nil {

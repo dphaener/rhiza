@@ -1,0 +1,40 @@
+{
+  "actor": "01M77WPV4B55WCEKAP327H55DA",
+  "after": [
+    "01M77WFV1P90T3PC5Z5A1ZZ485"
+  ],
+  "at": "2026-11-12T12:47:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at de929a3bf: read the diff (run.TmpDir now os.UserCacheDir()/rhiza/run-tmp/<id>, falling back to os.TempDir()/rhiza-run-tmp-<uid>/<id>; engine and run.abandon remove only TmpDir(id), not its parent; session_run and watchdog callers use the same TmpDir; spec.go env wording and docs/reference/workflow-file.md name the new location). Ran go vet on internal/run, internal/api, internal/workflow (clean); go test -trimpath -count=1 ./internal/run/... -run 'RunTmp|TmpDir' -v: TestStepsGetEnvRunTmp (FOO={run_tmp} equals <XDG_CACHE_HOME>/rhiza/run-tmp/<id>, folder present when command, wait and agent steps run, gone after), TestRunTmpGoneAfterFailedRun, TestNoEnvNoRunTmp, TestTmpDirFallsBackToOSTemp, TestRunTmpRemovalSparesOthers all PASS; go test -trimpath -count=1 ./internal/api/... -run GoTmp: TestAbandonRemovesRunGoTmp PASS (own folder removed, other run's folder and shared parent kept); full ./internal/run/... and ./internal/workflow/... pass; gofmt clean."
+        },
+        "handle": "run-tmp-outside-repo-verified",
+        "id": "01M77WRJGPZJQBFVEHA0VK0G8S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77WRJGPZJQBFVEHA0D4BC81",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77WRJGPZJQBFVEHA0D4BC81",
+        "id": "01M77WRJH8DN6QRWHVEQ0D35BZ",
+        "link": "01M77WRJH8DN6QRWHVEKGYWD0B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77W0Z8V8WBNPS6AZAG67R86",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77VT6TMYCDVMX61ZVA8CS4C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77WRJHXNVM4VA9B5RBBMBFA",
+  "type": "ops",
+  "v": 1
+}

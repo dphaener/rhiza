@@ -1,0 +1,40 @@
+{
+  "actor": "01M77YFYJX08QMSGCYQAC3DHA6",
+  "after": [
+    "01M77XMS2JRFKEFN4EZYW51P9J"
+  ],
+  "at": "2026-11-12T13:42:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2, at 51a44876d (GOTMPDIR outside the repo). The two confirmed review findings are fixed. (1) go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/workflow-env$' passes; the script now expects FOO=<...>/.cache/rhiza/run-tmp/<run id>. (2) newSessionFixture sets XDG_CACHE_HOME to t.TempDir(). go test -trimpath -count=1 ./internal/api -run 'TestSessionRunWorkflowEnv$|Abandon|GoTmp' -v passes on two back-to-back runs (TestSessionRunWorkflowEnv, TestAbandonRemovesRunGoTmp, TestUniqueSlugShipTargetAndAbandon), and the host's ~/.cache/rhiza/run-tmp stays empty afterwards. go test -trimpath -count=1 ./internal/run/... passes. A verbose run of the whole internal/api package passed all 628 tests. The package was still marked FAIL because the root-state guard saw ~/code/.rhiza-root/usage.live.json change during the 14-minute run on the shared host. That is the live root daemon's file and is not touched by this diff, which only changes a test fixture env and one txtar."
+        },
+        "handle": "run-tmp-outside-repo-verified-2",
+        "id": "01M77ZY3PB94NDB8S0DP9V9T6G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77ZY3PB94NDB8S0DNJW601G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77ZY3PB94NDB8S0DNJW601G",
+        "id": "01M77ZY3PWX47PK23A4YP36AZH",
+        "link": "01M77ZY3PWX47PK23A4Y6MV46R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77W0Z8V8WBNPS6AZAG67R86",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77VT6TMYCDVMX61ZVA8CS4C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77ZY3QF2A69058N5K1K28CF",
+  "type": "ops",
+  "v": 1
+}
