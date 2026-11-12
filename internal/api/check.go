@@ -124,6 +124,9 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 		in.DocsWant = docsFiles()
 		in.Commands = []string{}
 		for _, o := range Operations() {
+			if o.Hidden {
+				continue
+			}
 			in.Commands = append(in.Commands, CommandPath(o.Name))
 		}
 		for _, f := range FrameCommands {

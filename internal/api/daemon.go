@@ -391,7 +391,10 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 		return n
 	}
-	l, err := daemonLoop(ctx, common, lock, poll, pendingAll, reexec, autoUpdate, ticks, interrupted)
+	prof := newDaemonProfiler(daemon.RootStateDir(root))
+	prof.Reset()
+	profPoll := func() error { prof.Poll(); return poll() }
+	l, err := daemonLoop(ctx, common, lock, profPoll, pendingAll, reexec, autoUpdate, ticks, interrupted)
 	if l != nil {
 		lock = l
 	}
