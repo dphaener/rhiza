@@ -364,6 +364,19 @@ func TestHealthMainOrphanLog(t *testing.T) {
 	if h.State != HealthOK || !strings.Contains(h.Summary, "pending") || !strings.Contains(detail(h), "pending entry") {
 		t.Fatalf("entry on a model branch: %+v", h)
 	}
+
+	// Without origin/main there is nothing to commit an entry to: an
+	// untracked entry leaves the part ok.
+	n := modelBranchFixture(t, false)
+	n.useGit()
+	if out := n.git(n.root, "ls-files", "--others", "--exclude-standard", "--", ".rhiza/log/"+n.cs); out == "" {
+		t.Fatal("no untracked log entry")
+	}
+	h = healthMain(n.ctx)
+	if h.State != HealthOK || h.Next != "" || strings.Contains(detail(h), "on no branch") ||
+		strings.Contains(detail(h), "commit-untracked") {
+		t.Fatalf("untracked entry without origin/main: %+v", h)
+	}
 }
 
 // TestHealthMainOrphanLogLiveRun: an untracked entry a live run's worktree
