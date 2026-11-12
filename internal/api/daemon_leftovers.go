@@ -13,9 +13,11 @@ import (
 
 // daemonSweepLeftovers prunes what ended runs left on disk when the
 // schedule says so (at start, then hourly): index databases whose worktree
-// is gone, and old scratch folders of sessions that belong to no live run.
-// It writes one stderr line with what was freed, only when something was.
-func daemonSweepLeftovers(ctx *Ctx, sched *daemon.SweepSchedule) {
+// is gone, and old scratch folders of sessions that belong to no live run,
+// in each project whose git common dir is in commons (every project the
+// daemon serves). It writes one stderr line with what was freed, only when
+// something was.
+func daemonSweepLeftovers(ctx *Ctx, sched *daemon.SweepSchedule, commons []string) {
 	now := ctx.Now()
 	if !sched.Due(now, 0, 0, false) {
 		return
@@ -26,8 +28,15 @@ func daemonSweepLeftovers(ctx *Ctx, sched *daemon.SweepSchedule) {
 		idx = index.PruneOrphans(dir)
 	}
 	var scr leftovers.Freed
-	if common, err := gitCommonDir(ctx); err == nil {
-		scr = sweepSessionScratch(ctx, common)
+	seen := map[string]bool{}
+	for _, common := range commons {
+		if seen[common] {
+			continue
+		}
+		seen[common] = true
+		f := sweepSessionScratch(ctx, common)
+		scr.Folders += f.Folders
+		scr.Bytes += f.Bytes
 	}
 	if (idx.Files > 0 || scr.Folders > 0) && ctx.Stderr != nil {
 		fmt.Fprintf(ctx.Stderr, "rhiza: daemon: leftovers sweep freed %s: %d index databases, %d session scratch folders\n",

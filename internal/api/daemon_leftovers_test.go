@@ -16,14 +16,16 @@ import (
 
 // TestDaemonSweepLeftoversPrunesOnlyOrphans builds index databases and
 // session scratch folders, live and orphaned, injects the clock, and runs
-// the daemon's sweep: only the orphans go, the stderr line carries the
-// freed bytes, and a second call within the hour does nothing.
+// the daemon's sweep: only the orphans go, in the home project and in
+// another served project alike, the stderr line carries the freed bytes,
+// and a second call within the hour does nothing.
 func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	t.Setenv("XDG_CACHE_HOME", filepath.Join(home, "cache"))
 	now := time.Date(2026, 11, 12, 12, 0, 0, 0, time.UTC)
-	common := t.TempDir()
+	common, other := t.TempDir(), t.TempDir()
+	commons := []string{common, other}
 	var stderr bytes.Buffer
 	ctx := &Ctx{
 		Home:   home,
@@ -84,13 +86,19 @@ func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// Another served project: one live run of its own.
+	if err := run.NewStore(run.Dir(other)).Create("run-other-live", run.Entry{Type: run.TypeStarted, At: now.Add(-72 * time.Hour), Started: &run.Started{Workflow: "build"}}); err != nil {
+		t.Fatal(err)
+	}
+
 	// Sessions and their scratch folders.
 	sessions := session.NewStore(session.Dir(common))
+	otherSessions := session.NewStore(session.Dir(other))
 	old, fresh := now.Add(-48*time.Hour), now.Add(-time.Hour)
 	scratch := map[string]string{}
-	mk := func(sid, rn string, mtime time.Time) {
+	mkIn := func(store *session.Store, sid, rn string, mtime time.Time) {
 		t.Helper()
-		if err := sessions.Write(session.Record{ID: sid, Agent: interviewAgent, Run: rn}); err != nil {
+		if err := store.Write(session.Record{ID: sid, Agent: interviewAgent, Run: rn}); err != nil {
 			t.Fatal(err)
 		}
 		d := filepath.Join(home, "scratch", sid)
@@ -108,25 +116,28 @@ func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 		}
 		scratch[sid] = d
 	}
+	mk := func(sid, rn string, mtime time.Time) { t.Helper(); mkIn(sessions, sid, rn, mtime) }
 	mk("s-live-old", "run-live", old)
 	mk("s-ended-old", "run-ended", old)
 	mk("s-ended-fresh", "run-ended", fresh)
 	mk("s-norun-old", "", old)
 	mk("s-unknown-old", "run-unknown", old)
-	gone := []string{"s-ended-old", "s-norun-old", "s-unknown-old"}
+	mkIn(otherSessions, "s-other-live-old", "run-other-live", old)
+	mkIn(otherSessions, "s-other-crashed-old", "run-other-crashed", old)
+	gone := []string{"s-ended-old", "s-norun-old", "s-unknown-old", "s-other-crashed-old"}
 	for _, sid := range gone {
 		wantBytes += int64(len("scratch of " + sid))
 	}
 
 	var sched daemon.SweepSchedule
-	daemonSweepLeftovers(ctx, &sched)
+	daemonSweepLeftovers(ctx, &sched, commons)
 
 	for _, sid := range gone {
 		if _, err := os.Stat(scratch[sid]); !os.IsNotExist(err) {
 			t.Errorf("orphan scratch %s stays: %v", sid, err)
 		}
 	}
-	for _, sid := range []string{"s-live-old", "s-ended-fresh"} {
+	for _, sid := range []string{"s-live-old", "s-ended-fresh", "s-other-live-old"} {
 		if _, err := os.Stat(scratch[sid]); err != nil {
 			t.Errorf("scratch %s went: %v", sid, err)
 		}
@@ -138,7 +149,7 @@ func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 		t.Errorf("live worktree's index went: %v", err)
 	}
 	want := "rhiza: daemon: leftovers sweep freed " + daemon.FormatSize(uint64(wantBytes)) +
-		": 1 index databases, 3 session scratch folders\n"
+		": 1 index databases, 4 session scratch folders\n"
 	if got := stderr.String(); got != want {
 		t.Fatalf("stderr = %q, want %q", got, want)
 	}
@@ -147,7 +158,7 @@ func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 	stderr.Reset()
 	mk("s-later-old", "run-ended", old)
 	now = now.Add(59 * time.Minute)
-	daemonSweepLeftovers(ctx, &sched)
+	daemonSweepLeftovers(ctx, &sched, commons)
 	if _, err := os.Stat(scratch["s-later-old"]); err != nil {
 		t.Fatalf("a sweep within the hour removed %s: %v", "s-later-old", err)
 	}
@@ -157,7 +168,7 @@ func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 
 	// An hour after the first, it runs again.
 	now = now.Add(time.Minute)
-	daemonSweepLeftovers(ctx, &sched)
+	daemonSweepLeftovers(ctx, &sched, commons)
 	if _, err := os.Stat(scratch["s-later-old"]); !os.IsNotExist(err) {
 		t.Fatalf("the hourly sweep left %s: %v", "s-later-old", err)
 	}

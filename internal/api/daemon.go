@@ -220,7 +220,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		if conf.trimGoCache {
 			daemonSweepGoCache(homeCtx, &sweep, conf.minFree)
 		}
-		daemonSweepLeftovers(homeCtx, &leftSweep)
+		// Every served project's sessions and runs: a crashed run in any of
+		// them leaves scratch folders behind.
+		commons := make([]string, 0, len(projs))
+		for _, p := range projs {
+			commons = append(commons, p.common)
+		}
+		slices.Sort(commons)
+		daemonSweepLeftovers(homeCtx, &leftSweep, commons)
 	}
 	poll := func() error {
 		pollStart := ctx.Now()
