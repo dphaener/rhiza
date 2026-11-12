@@ -1,0 +1,40 @@
+{
+  "actor": "01M7809AG8XTDNW11EE2GR1SD8",
+  "after": [
+    "01M7806YNQZ6DDRM5X1WBVEDK2"
+  ],
+  "at": "2026-11-12T13:50:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2 at 26057e13f: go test -trimpath -count=1 ./internal/api -run TestDaemonAutoUpdate passes TestDaemonAutoUpdateRelease, which uses a fake release feed (httptest release.json plus tar.gz). With autoUpdate=release, v0.1.0 -> v0.2.0 installs the new executable; v0.2.0 at v0.2.0 and the incremental build v0.2.0-5-gabc1234 are left as they are; no git or make runs; latest.json is never fetched. ./internal/daemon/..., ./internal/release/... and internal/doclinks TestDocsDescribeAutoUpdate pass. The fix commit amends daemon-auto-update and auto-update-documented to name off, main, latest and release, matching daemon_settings.go and docs/runs-and-daemon.md:109 and docs/reference/config.md:50 (the major model findings f1 and f2). make self-check fails only on stale .rhiza/rendered files, which are re-rendered when the change set lands. The release test sits in internal/api, the package that wires the daemon's auto-update, not internal/daemon, which is minor as review already noted."
+        },
+        "handle": "auto-update-release-verified-2",
+        "id": "01M780C9V7EKP59RGQXD19FGK2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M780C9V7EKP59RGQX9W6HG1A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M780C9V7EKP59RGQX9W6HG1A",
+        "id": "01M780C9VX2CJJ70TPFXDRVR47",
+        "link": "01M780C9VX2CJJ70TPFWF9EN47",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642SFPZY7YR19WHQ5V2Y5M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763ZDJBN7QKR3AAST5FTR6A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M780C9WM978XX8QP8AJT8033",
+  "type": "ops",
+  "v": 1
+}

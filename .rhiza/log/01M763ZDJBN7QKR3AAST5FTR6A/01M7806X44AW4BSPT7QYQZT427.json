@@ -1,0 +1,29 @@
+{
+  "actor": "01M7801Q0N98ZNYD43EWXYYTR4",
+  "after": [
+    "01M77ZY71H01V7FTTDRQXMYTAV"
+  ],
+  "at": "2026-11-12T13:47:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M7642MMAZSKZD27546VS11A5",
+        "handle": null,
+        "id": "01M7806X2T2R4NAEKBBK0CARAQ",
+        "node": "01M7642MMAZSKZD27543JQ79D8",
+        "op": "node.update",
+        "set": {
+          "acceptance": "internal/daemon self-update tests with fake git and make cover off, main with a Rhiza checkout, and main with none (logged, nothing updated); the daemon-settings testscript shows autoUpdate=off by default; the setting accepts off, main, latest and release and rejects any other value; the latest and release channels are checked by auto-update-latest's and auto-update-release's acceptance.",
+          "statement": "rhiza.daemon.autoUpdate takes off (the default), main, latest or release: with main the daemon finds the registered project that is Rhiza's own source checkout by its module path, fast-forwards it when origin/main moves and runs make update, as self-update does today; latest and release install the newest published build of their channel and restart the daemon on it (auto-update-latest, auto-update-release); off never updates."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M763ZDJBN7QKR3AAST5FTR6A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7806X44AW4BSPT7QYQZT427",
+  "type": "ops",
+  "v": 1
+}

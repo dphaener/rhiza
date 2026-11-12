@@ -1,0 +1,40 @@
+{
+  "actor": "01M77Q3A5N1ENQW2S8W39Y85W9",
+  "after": [
+    "01M77NX4W2TGPZDS4KNBW3EZWD"
+  ],
+  "at": "2026-11-12T11:25:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, detached checkout at cc2a6d8de: go test -trimpath -count=1 ./internal/api -run 'TestShipLand' -v passes all 8 cases, including the new TestShipLandModelConflict. It sets up a fixture change set whose set on node 'checking' rests on a base that a landed change set has since rewritten. ship.land returns exit code 1 with Landed=false and one model_conflicts entry naming the node ID, fields [field:statement], base, landed op and the other change set; the human text says 'stale base'; the state file records the same conflict. ship check --model-conflict exits 0 while the conflict holds, exits 1 after a rebase repair on the landed version, and exits 1 for a state with no recorded conflict (another land failure). The diff refuses before Evidence or any write, and clears the record on a successful push. Also passed: go test ./internal/model (typed ConflictError still matches ErrConflict), go test ./internal/api -run 'TestShip|Describe|Schema' (all tests pass; the package's root-state guard flagged ~/code/.rhiza-root/usage.live.json changing, which this usage-free diff does not touch), go test ./cmd/rhiza -run 'TestScripts/(describe-golden|ship-.*)$' ok, gofmt clean, go vet clean."
+        },
+        "handle": "ship-land-reports-model-conflict-verified",
+        "id": "01M77R3RTSAGJMDTSAG4XVN5Z8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77R3RTSAGJMDTSAG13SV0PR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77R3RTSAGJMDTSAG13SV0PR",
+        "id": "01M77R3RWZPR4D0PMST23BDE0F",
+        "link": "01M77R3RWZPR4D0PMSSZEZNB7X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NH2F1X295VM050RE962KG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77N83F027XBGGZPK9SV6YN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77R3RYRS0J9PP0VHJAB2RGJ",
+  "type": "ops",
+  "v": 1
+}

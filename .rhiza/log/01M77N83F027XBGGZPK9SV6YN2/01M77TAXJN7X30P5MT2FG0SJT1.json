@@ -1,0 +1,65 @@
+{
+  "actor": "01M77T8FYTFE9Q18TNSZG087CD",
+  "after": [
+    "01M77SJEW4DG9DQ2WGTPTJTY74"
+  ],
+  "at": "2026-11-12T12:04:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "830fa3ca3df5399d10ffbe1ae6528e31e0dc9c908b3e275193e33d2cfad42bac",
+          "session": "6eec8236-ad63-49dd-824c-01a1cf546583",
+          "summary": "Autonomous plan run 01M77N81 for bug 01M77N83 (watchdog: PR green at 52ace47 and unmerged after step land-triage failed). The planner traced run 01M77DWNRDSFY0PEP0S1P58P5W (change set 01M763Z4, PR #480): rhiza ship land was refused with a model conflict. The change set's op 01M764M3 updates ship-check-ci-test-findings' statement on base 01M6MC4GXTJ7SWF8NV4VMZDJ9N, which is stale because change set 01M76B50 (landed via #455) has since rewritten field:statement in op 01M76MENT. rhiza check only warns on an in-flight change set's conflict, so build/check, the pre-push check and CI all passed. land-triage runs `rhiza ship gate --failed`, which passes only for a recorded gate or pre-push failure, so the run ended (and the watchdog's two retries of land-triage repeated the same deterministic failure). The planner asked how ship-change should handle it, recommending a model-conflict fixer step. No owner answers in an autonomous run, so the arbiter decided (Decision ship-land-model-conflict-repair): land reports a model conflict distinctly, land-triage routes it to a model-conflict fixer that restates each conflicting update on the landed version with --rebase and commits it, and the run goes back through the gate and land within max_visits. Earlier, the pre-land gate and rhiza ship check fail on a conflict in the shipping change set's own ops; other in-flight conflicts stay warnings. The planner notes the CLI spells the rebase as `rhiza set <ref> --rebase` (buildUpdate in internal/api/write_node.go). The serves link goes to m4-runs-hold-up, as for the earlier ship-change bug fixes.",
+          "title": "Plan: ship-change repairs a land refused on a model conflict (autonomous)"
+        },
+        "handle": "plan-ship-land-model-conflict-repair",
+        "id": "01M77NGKV6R3R7F14V9PNXCHFT",
+        "key": null,
+        "kind": "source",
+        "node": "01M77NGKV6R3R7F14V9KA8WR0D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Two accepted change sets plan contradictory fixes for a land refused on a model conflict: this one (01M77N83, Decision ship-land-model-conflict-repair: land reports the conflict, land-triage routes to a model-conflict fixer that runs `rhiza set --rebase`, and the gate and rhiza ship check --model-conflict fail on the shipping change set's own conflicts) and 01M77N1G (Decision ship-land-model-conflict-rebase, leaves ship-land-records-model-conflict and ship-change-model-conflict-fix-step: steps land-conflict-triage and model-conflict-fix -> gate-land, a Model-Conflict: trailer, a 3-fix count in ship check --model-conflict, land max_visits 4, gate-land 9). Only one design can ship; the other's capabilities would no longer match the code. Ship-land-model-conflict-repair is meant to supersede ship-land-model-conflict-rebase, a link the model cannot record while 01M77N1G is unlanded. Should 01M77N1G be retired (withdrawn) in favour of this change set, or this one in favour of it?"
+        },
+        "handle": "ship-land-model-conflict-two-designs",
+        "id": "01M77TAX7V4KNR1XANH6Y9SZ76",
+        "key": null,
+        "kind": "question",
+        "node": "01M77TAX7V4KNR1XANH6BAG8FS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77TAX7V4KNR1XANH6BAG8FS",
+        "id": "01M77TAX9V5SG7ZAGEHDRDGBZB",
+        "link": "01M77TAX9V5SG7ZAGEHASRKMW5",
+        "note": "The question asks which of two contradictory designs for a land refused on a model conflict ships; this Decision is one of them.",
+        "op": "link.create",
+        "to": "01M77NFJV6S5JN933PSDTDX60A",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M77N83F027XBGGZPK9SV6YN2",
+        "id": "01M77TAXFR0AZVRRFMB05S7XB8",
+        "link": "01M77TAXFR0AZVRRFMAYKDK5VD",
+        "note": "Both plan the fix for a land refused on a model conflict with contradictory designs (Decision ship-land-model-conflict-repair here, ship-land-model-conflict-rebase there); this one's Decision supersedes the other's, and only one may ship (question ship-land-model-conflict-two-designs).",
+        "op": "link.create",
+        "to": "01M77N1GAGBPBP7EH4EV2CT023",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M77N83F027XBGGZPK9SV6YN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77TAXJN7X30P5MT2FG0SJT1",
+  "type": "ops",
+  "v": 1
+}

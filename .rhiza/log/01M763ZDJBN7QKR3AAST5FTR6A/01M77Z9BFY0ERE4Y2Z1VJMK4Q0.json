@@ -1,0 +1,40 @@
+{
+  "actor": "01M77Z6F5RX67RBWAJY1MW0SQN",
+  "after": [
+    "01M77Z3PFPWN8AAX0X5SBSXFDM"
+  ],
+  "at": "2026-11-12T13:31:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 24073c15a, go test -trimpath -count=1 ./internal/api -run TestDaemonAutoUpdate -v passes, including the new TestDaemonAutoUpdateRelease: with rhiza.daemon.autoUpdate=release and a fake httptest release feed, a daemon on v0.1.0 installs the v0.2.0 release over its executable (via daemon.ChannelUpdate on release.ChannelRelease, no git or make), an up-to-date v0.2.0 is left alone, an incremental build v0.2.0-5-gabc1234 is not replaced by the release, and the latest feed is never fetched (the fake fails the test if it is). internal/daemon and internal/release tests pass. The diff wires the release value in runDaemon to release.ChannelRelease, accepts release in the setting's validation, and updates docs/reference/config.md and docs/runs-and-daemon.md. Note: the test sits in internal/api (daemon auto-update tests), not internal/daemon, where the existing latest-channel tests also live. make self-check only fails on stale .rhiza/rendered actor files from this run, fixed by rhiza render at close-out."
+        },
+        "handle": "auto-update-release-verified",
+        "id": "01M77Z9BCTYDBSBV7XWWAGCJMD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77Z9BCTYDBSBV7XWSXG9A04",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77Z9BCTYDBSBV7XWSXG9A04",
+        "id": "01M77Z9BDTMKS9E6WZ5A7V4EYK",
+        "link": "01M77Z9BDTMKS9E6WZ58XNFED6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642SFPZY7YR19WHQ5V2Y5M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763ZDJBN7QKR3AAST5FTR6A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77Z9BFY0ERE4Y2Z1VJMK4Q0",
+  "type": "ops",
+  "v": 1
+}

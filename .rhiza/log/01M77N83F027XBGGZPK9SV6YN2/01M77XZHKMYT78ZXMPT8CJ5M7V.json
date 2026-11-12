@@ -1,0 +1,51 @@
+{
+  "actor": "01M77XPSRB872C293NZWNXW9NY",
+  "after": [
+    "01M77XY1XC5GMHAVD00B0ERT44"
+  ],
+  "at": "2026-11-12T13:08:31Z",
+  "body": {
+    "drop": [
+      "01M77NH2F1X295VM050T5WT5C4",
+      "01M77NH2FMZFD738ATVAQGR99Q",
+      "01M77NH2G554PQ7672BZJ4WMD5",
+      "01M77NH2GPKZ8J9JGX5WXYPNQ5",
+      "01M77NH2H5A9NCEFT1A7AADB6M",
+      "01M77NH2JJKBTZBBDP1Y0GCG0M",
+      "01M77R3RWZPR4D0PMST23BDE0F",
+      "01M77R83S90EY2B2H18AP4E0T0",
+      "01M77S6KDFS5QNBZSWKWE5ACE6",
+      "01M77SJEEJFC1ETPV2DC0BZZ7J",
+      "01M77SJENQ9KT7PQGXR0BJR5XX",
+      "01M77SJETHHYW3ZM4ZV7NBQ22F",
+      "01M77TQ4VCXAM3BX7NQ6P8ZG97"
+    ],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M77XY1VBBKQ4S7DNMXK9EDX0",
+        "id": "01M77XZHG32SWG48XZS9TPGP2Q",
+        "link": "01M77XZHG32SWG48XZS8R7CZJ0",
+        "note": "The merge keeps main's landed design instead of this change set's.",
+        "op": "link.create",
+        "to": "01M77NFJV6S5JN933PSDTDX60A",
+        "type": "supersedes"
+      },
+      {
+        "decision": null,
+        "from": "01M77XY1VBBKQ4S7DNMXK9EDX0",
+        "id": "01M77XZHHJPAQBE8QDEAJK3DFE",
+        "link": "01M77XZHHJPAQBE8QDE6SMJHGY",
+        "note": "01M77N1G's design ships: it landed via #484, and this change set's competing implementation is dropped in the merge.",
+        "op": "link.create",
+        "to": "01M77TAX7V4KNR1XANH6BAG8FS",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M77N83F027XBGGZPK9SV6YN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77XZHKMYT78ZXMPT8CJ5M7V",
+  "type": "ops",
+  "v": 1
+}

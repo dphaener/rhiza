@@ -1,0 +1,40 @@
+{
+  "actor": "01M77YZS1GR7DS2XXMWYQ1TJFN",
+  "after": [
+    "01M76RAYDVEX1RB6YKQHK565CX"
+  ],
+  "at": "2026-11-12T13:28:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 38a239c92: go test -trimpath -count=1 ./internal/daemon -run ChannelUpdate passes, where a fake httptest build feed serves a latest manifest and tar.gz: TestChannelUpdateInstallsNewerBuild shows v0.1.1-main.5 replaced by the newer v0.1.1-main.7 build (exe contents and image change, so the re-exec fires, no reinstall on the next check); TestChannelUpdateLeavesUpToDateInstallAlone shows an equal or older feed version downloads nothing and leaves the exe untouched; bad checksum and unreachable feed install nothing. internal/api TestDaemonAutoUpdateLatest passes (daemon with rhiza.daemon.autoUpdate=latest installs the newer feed build over its executable, leaves an up-to-date one alone, runs no git or make), as does TestDaemonAutoUpdateSetting. internal/release, go vet and gofmt clean; cmd/rhiza testscripts daemon-settings*, describe-golden, version* pass. Read the diff: versionNewer moved to release.Newer unchanged, setting accepts latest, Download checks the manifest sha256, install writes beside the exe and renames."
+        },
+        "handle": "auto-update-latest-verified",
+        "id": "01M77Z3PAX26RC2QHSGCVBA9W1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77Z3PAX26RC2QHSGB1MYNV1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77Z3PAX26RC2QHSGB1MYNV1",
+        "id": "01M77Z3PCBHGAP9DSX7E5FTEE3",
+        "link": "01M77Z3PCBHGAP9DSX7DDW8HYH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642SDGZMX8RYVYY562PFVR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763ZDJBN7QKR3AAST5FTR6A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77Z3PFPWN8AAX0X5SBSXFDM",
+  "type": "ops",
+  "v": 1
+}
