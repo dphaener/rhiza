@@ -1,0 +1,40 @@
+{
+  "actor": "01M785GFXR4FCGESTF438WDR6B",
+  "after": [
+    "01M7859XQHZV3WMA71RRJF864C"
+  ],
+  "at": "2026-11-12T15:20:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d46c2728c: go test -trimpath -count=1 ./internal/guide -run 'Build|Review' -v passed (TestBuildText and TestReviewText require 'rhiza session done', 'as its own command' and '`;` or `&&`' in build.md and review.md; both texts hold the rule); go test -trimpath -count=1 ./internal/guide and ./internal/workflow passed; TestBuiltinPromptsDoneOwnCommand scans every builtin prompt naming rhiza session done (all prompts are single-line, so all are scanned) for '; ' / '&& ' chaining and requires 'very last action', and passes; grep finds no chained session done in internal/workflow/builtin/*.toml. Read the fix diff: review.md scopes the throwaway checkout back to 'Checks and critics ... at the branch head', resolving the major quality/model findings."
+        },
+        "handle": "done-own-command-guide-verified-2",
+        "id": "01M785J1T45V66FBPGBR92AA9G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M785J1T45V66FBPGBNTF6GBS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M785J1T45V66FBPGBNTF6GBS",
+        "id": "01M785J1X3K5P55V6Y4W7EV33J",
+        "link": "01M785J1X3K5P55V6Y4S8S1JV8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY3S1VF65NT8YXQKZ4VZC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XNMMENQCK9PZMGC9YBG99",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M785J1YQ9GK4VKC901FGZ99Q",
+  "type": "ops",
+  "v": 1
+}

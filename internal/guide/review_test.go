@@ -50,7 +50,7 @@ func TestReviewText(t *testing.T) {
 			`"type":"verifies","to":"<leaf>"`,
 			"missing constraints",
 		},
-		"done": {"rhiza session done"},
+		"done": {"rhiza session done", "as its own command", "`;` or `&&`"},
 		"scoped-tests": {
 			"Checks, critics and fixers run only the tests covering what the change touches",
 			"scoped commands", "never the repo's full\nsuite",
