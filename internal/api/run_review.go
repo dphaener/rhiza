@@ -59,7 +59,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "run.review-check",
-		Summary:  "Check the latest review round of the run RHIZA_RUN names: pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass",
+		Summary:  "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass",
 		Write:    true,
 		Request:  reflect.TypeFor[RunReviewCheckRequest](),
 		Response: reflect.TypeFor[RunReviewCheckResponse](),
@@ -899,7 +899,9 @@ const reviewQuestionPrefix = "review-"
 const runReviewCheckNext = "rhiza describe run.review-check"
 
 // RunReviewCheckRequest takes nothing: the run is RHIZA_RUN's.
-type RunReviewCheckRequest struct{}
+type RunReviewCheckRequest struct {
+	Fresh bool `json:"fresh,omitempty" flag:"fresh" desc:"Only test that the latest round postdates the latest revise visit (or the run has none): exit 0 if so, non-zero if not; judges and writes nothing"`
+}
 
 // RunReviewQuestion is a question node run.review-check left for a
 // confirmed finding.
@@ -982,11 +984,19 @@ func reviewQuestionText(n int, f run.Finding, reason string) string {
 // each question (Step RHIZA_STEP, no Session), so an autonomous run's
 // arbiter decides it, and passes. A question already created in any open
 // or landed change set, or already journalled, is not again.
-func runRunReviewCheck(ctx *Ctx, _ any) (any, error) {
+func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 	const cmd = "run review-check"
 	rr, err := openReviewRun(ctx, cmd, runReviewCheckNext)
 	if err != nil {
 		return nil, err
+	}
+	if rr.state.RoundStale() {
+		return nil, Conflictf("%s: run %s's latest review round, round %d, predates the latest revise and the review recorded no round since: the review must journal a round with rhiza run findings", cmd, rr.id, len(rr.state.Rounds)).
+			WithNext("rhiza describe run.findings")
+	}
+	if req.(RunReviewCheckRequest).Fresh {
+		resp := RunReviewCheckResponse{Run: rr.id, Round: len(rr.state.Rounds), Passed: true, Confirmed: []RunFinding{}, DryRun: ctx.DryRun}
+		return resp, nil
 	}
 	rd, ok := rr.state.LatestRound()
 	if !ok {

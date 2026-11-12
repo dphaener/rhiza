@@ -37,7 +37,16 @@ prompt = "Judge the latest review round of the plan of change set {change} as th
 until = "true"
 until_when = "done"
 max_visits = 3
+on.pass = "fresh"
+
+# A round journaled before the latest revise is stale: back to a fresh
+# review, never to revise, so check judges only a fresh round.
+[step.fresh]
+kind = "command"
+run = "rhiza run review-check --fresh"
+max_visits = 3
 on.pass = "check"
+on.fail = "review"
 
 [step.check]
 kind = "command"

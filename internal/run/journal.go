@@ -1154,7 +1154,11 @@ type State struct {
 	// roundsAtEntry is how many plan review rounds the journal had when
 	// the current step was last entered.
 	roundsAtEntry int
-	retryVisit    map[string]int
+	// roundsAtRevise is how many plan review rounds the journal had when
+	// the latest visit of the revise step began; reviseSeen says there was one.
+	roundsAtRevise int
+	reviseSeen     bool
+	retryVisit     map[string]int
 	// Messages are the message entries in journal order. A message changes
 	// nothing else in the fold.
 	Messages []Message
@@ -1406,6 +1410,9 @@ func (j Journal) State() State {
 			st.Visits[e.Step]++
 			st.Current = e.Step
 			st.roundsAtEntry = len(st.Rounds)
+			if e.Step == "revise" {
+				st.roundsAtRevise, st.reviseSeen = len(st.Rounds), true
+			}
 			st.CurrentVisit = e.Visit
 			if st.CurrentVisit == 0 {
 				st.CurrentVisit = st.Visits[e.Step]
@@ -1675,6 +1682,13 @@ func (st *State) arbitrated(e Entry) {
 // VisitRound reports whether a plan review round was journaled since the
 // current step's visit began: a round from an earlier visit does not count.
 func (st State) VisitRound() bool { return len(st.Rounds) > st.roundsAtEntry }
+
+// RoundStale reports whether the run's latest plan review round was
+// journaled before its latest revise visit began, with no round since. A
+// run with no revise visit or no round has none stale.
+func (st State) RoundStale() bool {
+	return st.reviseSeen && len(st.Rounds) > 0 && len(st.Rounds) <= st.roundsAtRevise
+}
 
 // LatestRound is the run's latest plan review round, if it has one.
 func (st State) LatestRound() (Round, bool) {

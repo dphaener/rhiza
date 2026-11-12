@@ -15652,7 +15652,12 @@ cmp stdout describe.golden.json
       "name": "run.review-check",
       "request": {
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "fresh": {
+            "description": "Only test that the latest round postdates the latest revise visit (or the run has none): exit 0 if so, non-zero if not; judges and writes nothing",
+            "type": "boolean"
+          }
+        },
         "required": [],
         "type": "object"
       },
@@ -15782,7 +15787,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Check the latest review round of the run RHIZA_RUN names: pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass",
+      "summary": "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass",
       "write": true
     },
     {
