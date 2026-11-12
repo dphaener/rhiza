@@ -112,7 +112,10 @@ type History struct {
 
 // ReadHistory reads the log under logDir. A milestone is an intent with a
 // non-empty milestone field; a change set serves it when it serves the
-// milestone or any intent under it (a done point, a product intent).
+// milestone or any intent under it (a done point, a product intent). A change
+// set that ended without landing (withdrawn, rejected or superseded) serves
+// nothing, and neither does a serves link that was retired or that a
+// body.drop retracts.
 func ReadHistory(logDir string) (History, error) {
 	files, err := filepath.Glob(filepath.Join(logDir, "*", "*.json"))
 	if err != nil {
@@ -126,9 +129,13 @@ func ReadHistory(logDir string) (History, error) {
 	isMilestone := map[string]bool{}
 	texts := map[string]string{}   // change set -> intent text
 	csKinds := map[string]string{} // change set -> change set kind
-	type serve struct{ from, to string }
+	type serve struct{ id, link, from, to string }
 	var serves []serve
 	sets := map[string]bool{}
+	ended := map[string]bool{} // change set -> ended without landing
+	type retire struct{ id, link string }
+	var retires []retire
+	dropped := map[string]bool{} // op IDs some entry's body.drop retracts
 	for _, f := range files {
 		b, err := os.ReadFile(f)
 		if err != nil {
@@ -170,10 +177,17 @@ func ReadHistory(logDir string) (History, error) {
 				return h, err
 			}
 			h.Landed[e.ChangeSet] = Landing{ID: e.ChangeSet, At: at, Entry: filepath.ToSlash(rel)}
+		case "withdraw", "reject", "supersede":
+			ended[e.ChangeSet] = true
+		case "reopen":
+			ended[e.ChangeSet] = false
 		case "ops":
 			var o struct {
-				Ops []struct {
+				Drop []string `json:"drop"`
+				Ops  []struct {
+					ID     string                     `json:"id"`
 					Op     string                     `json:"op"`
+					Link   string                     `json:"link"`
 					Kind   string                     `json:"kind"`
 					Node   string                     `json:"node"`
 					Handle string                     `json:"handle"`
@@ -187,6 +201,9 @@ func ReadHistory(logDir string) (History, error) {
 				} `json:"ops"`
 			}
 			json.Unmarshal(e.Body, &o)
+			for _, d := range o.Drop {
+				dropped[d] = true
+			}
 			for _, op := range o.Ops {
 				switch {
 				case op.Op == "node.create" && op.Kind == "intent":
@@ -212,7 +229,9 @@ func ReadHistory(logDir string) (History, error) {
 						delete(parents, op.Node)
 					}
 				case op.Op == "link.create" && op.Type == "serves":
-					serves = append(serves, serve{op.From, op.To})
+					serves = append(serves, serve{op.ID, op.Link, op.From, op.To})
+				case op.Op == "link.retire":
+					retires = append(retires, retire{op.ID, op.Link})
 				}
 			}
 		}
@@ -223,9 +242,15 @@ func ReadHistory(logDir string) (History, error) {
 		l.Kind = csKinds[id]
 		h.Landed[id] = l
 	}
+	retired := map[string]bool{} // retired link IDs
+	for _, r := range retires {
+		if r.id == "" || !dropped[r.id] {
+			retired[r.link] = true
+		}
+	}
 	served := map[string]map[string]bool{} // milestone handle -> change sets
 	for _, s := range serves {
-		if !sets[s.from] {
+		if !sets[s.from] || ended[s.from] || retired[s.link] || s.id != "" && dropped[s.id] {
 			continue
 		}
 		m := milestoneOf(s.to, parents, isMilestone)

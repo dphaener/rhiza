@@ -141,3 +141,37 @@ func TestNextVersionFromLogs(t *testing.T) {
 		t.Fatalf("%+v", n)
 	}
 }
+
+// A change set that ends without landing, a retired serves link and a
+// dropped one keep no milestone open.
+func TestMilestoneIgnoresUnlandableServers(t *testing.T) {
+	dir, tag := fixture(t)
+	at := "2026-11-11T00:00:00Z"
+	writeAt(t, dir, "CS7", "a", "open", at, `{"kind":"intention"}`)
+	writeAt(t, dir, "CS7", "b", "ops", at, `{"ops":[{"op":"link.create","id":"O1","link":"L1","type":"serves","from":"CS7","to":"I3D"},
+		{"op":"link.create","id":"O2","link":"L2","type":"serves","from":"CS7","to":"I3"},
+		{"op":"link.create","id":"O3","link":"L3","type":"serves","from":"CS7","to":"I2"}]}`)
+	writeAt(t, dir, "CS7", "c", "ops", at, `{"drop":["O2"],"ops":[{"op":"link.retire","id":"O4","link":"L1"}]}`)
+	finished := func() []string {
+		t.Helper()
+		h, err := ReadHistory(dir)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return h.Inputs(tag, nil).Milestone
+	}
+	// CS7 is in flight and still serves m2 through L3; CS6 holds m3 open.
+	if got := finished(); len(got) != 0 {
+		t.Fatalf("with CS6 and CS7 in flight: %v", got)
+	}
+	// CS7's links to m3 are retired and dropped, so CS6's withdraw finishes
+	// m3; m2 waits on CS7 until it is withdrawn too.
+	writeAt(t, dir, "CS6", "z", "withdraw", at, `{}`)
+	if got := finished(); len(got) != 1 || got[0] != "m3" {
+		t.Fatalf("after CS6's withdraw: %v", got)
+	}
+	writeAt(t, dir, "CS7", "z", "withdraw", at, `{}`)
+	if got := finished(); len(got) != 2 || got[0] != "m2" || got[1] != "m3" {
+		t.Fatalf("after the withdraws: %v", got)
+	}
+}
