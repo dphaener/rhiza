@@ -199,6 +199,7 @@ type RunInfo struct {
 	Checks          []RunCheck         `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
 	Fixes           []RunFix           `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
 	CodeChecks      []RunCodeCheck     `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
+	PrePush         *RunPrePush        `json:"pre_push,omitempty" desc:"The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran"`
 	Signoffs        []RunSignoff       `json:"signoffs,omitempty" desc:"The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none"`
 	PR              string             `json:"pr,omitempty" desc:"While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise"`
 	SignoffWaiting  bool               `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise"`
@@ -227,6 +228,16 @@ type RunCodeCheck struct {
 	Step    string `json:"step,omitempty" desc:"The step the run was at"`
 	Outcome string `json:"outcome" enum:"pass,fail" desc:"pass or fail"`
 	Detail  string `json:"detail,omitempty" desc:"A fail's causes, separated by semicolons"`
+	At      string `json:"at" desc:"When it ran, RFC 3339 UTC"`
+}
+
+// RunPrePush is a pre-push check's result.
+type RunPrePush struct {
+	Step    string `json:"step,omitempty" desc:"The step the run was at"`
+	Outcome string `json:"outcome" enum:"passed,failed" desc:"passed or failed"`
+	Head    string `json:"head" desc:"The committed head the check ran on"`
+	Command string `json:"command,omitempty" desc:"What it ran: rhiza check, then the project's rhiza.ship.prePushCheck command when set"`
+	Output  string `json:"output,omitempty" desc:"A failure's failing lines, the end of its output"`
 	At      string `json:"at" desc:"When it ran, RFC 3339 UTC"`
 }
 
@@ -1259,6 +1270,7 @@ func runRunAbandon(ctx *Ctx, req any) (any, error) {
 	// A run whose process died left its own temp folder behind; the engine
 	// that would have removed it is gone, so abandoning removes it.
 	_ = os.RemoveAll(filepath.Dir(rs.TmpDir(j.ID)))
+	removeRunScratch(ctx, sessions, j.ID)
 	st := j.State()
 	return RunAbandonResponse{Run: runInfo(ctx, st, false, sessions), Cleanup: abandonCleanup(ctx, common, rs, j.ID, st)}, nil
 }
@@ -1345,6 +1357,7 @@ func abandonCleanup(ctx *Ctx, common string, rs *run.Store, id string, st run.St
 			if strings.TrimSpace(string(dirty)) != "" {
 				args = append(args, "--force")
 			}
+			removeWorktreeIndex(ctx, st.Worktree)
 			if _, err := git(append(args, st.Worktree)...); err != nil {
 				kept("remove-worktree", err.Error())
 			} else {
@@ -1814,6 +1827,9 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 		run1 = func(id string) (run.State, error) { return e.Continue(id, before) }
 	}
 	st, err := run1(rid)
+	if err == nil && st.Ended {
+		removeRunScratch(ctx, sessions, rid)
+	}
 	var apiErr *Error
 	switch {
 	case errors.As(err, &apiErr):
@@ -2942,6 +2958,9 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 	for _, c := range st.CodeChecks {
 		info.CodeChecks = append(info.CodeChecks, RunCodeCheck{Step: c.Step, Outcome: c.Outcome, Detail: c.Detail, At: rfc3339(c.At)})
 	}
+	if c, ok := st.LatestPrePush(); ok {
+		info.PrePush = &RunPrePush{Step: c.Step, Outcome: c.Outcome, Head: c.Commit, Command: c.Command, Output: c.Output, At: rfc3339(c.At)}
+	}
 	for _, s := range st.Signoffs {
 		info.Signoffs = append(info.Signoffs, runSignoff(s))
 	}
@@ -3265,6 +3284,16 @@ func (r RunInfo) Human(w io.Writer) {
 				fmt.Fprintf(w, " (%s)", oneLine(f.Detail))
 			}
 			fmt.Fprintf(w, "\n")
+		}
+	}
+	if p := r.PrePush; p != nil {
+		fmt.Fprintf(w, "\n## Pre-push check\n\n- %s on %s", p.Outcome, shortSHA(p.Head))
+		if p.Command != "" {
+			fmt.Fprintf(w, " (%s)", p.Command)
+		}
+		fmt.Fprintf(w, "\n")
+		if p.Output != "" {
+			fmt.Fprintf(w, "\n```\n%s\n```\n", p.Output)
 		}
 	}
 	if len(r.CodeChecks) > 0 {

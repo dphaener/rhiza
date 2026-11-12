@@ -1,0 +1,40 @@
+{
+  "actor": "01M773R9C02VQQ8FP3H99YW99X",
+  "after": [
+    "01M773JK8F6Y3HD9EHR7TMEHNE"
+  ],
+  "at": "2026-11-12T05:32:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-65b5a3d6 at 2554db589: go test -trimpath ./internal/workflow/... ok; new TestPlanPrePushFix checks, for plan and plan-milestone, that open-pr and rebase on.fail = prepush-triage, prepush-triage runs `rhiza ship gate --failed` with only on.pass = prepush-fix (no on.fail), and prepush-fix is an agent step with max_visits 2, only on.pass = open-pr, and a prompt telling it to commit; TestPlanBuiltin's order and route table updated likewise. A build of this commit's `rhiza workflow describe plan` and `describe plan-milestone` both list prepush-triage (-> prepush-fix) and prepush-fix (-> open-pr) with open-pr/rebase on.fail -> prepush-triage. go test -trimpath ./internal/api -run TestShipGate ok: TestShipGateFailed exits 1 with no kept head (a rebase conflict records none), TestShipGateFailedOnPrePushFailure exits 1 after a gh or push error (nothing recorded), 0 on the recorded pre-push-failed head, 1 once HEAD moves. make self-check fails here only on stale rendered actor pages and index.md for this run's committed actor records (the known in-run render staleness, rendered at close-out); in a scratch worktree at this commit, `rhiza render` then `rhiza check` reports no fail. Diff read: plan.toml and plan-milestone.toml changes are identical; cli.md --failed text updated."
+        },
+        "handle": "plan-prepush-fix-verified",
+        "id": "01M773WVXP7JAW95RMGJYC0P15",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M773WVXP7JAW95RMGGS2EDAQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M773WVXP7JAW95RMGGS2EDAQ",
+        "id": "01M773WVYNHBMTMA2PZA91GKB7",
+        "link": "01M773WVYNHBMTMA2PZ7WBG3MR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RT03BTXG6QDTFNE23XMA2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M773WVZFEEYWYQC8RNP8Z038",
+  "type": "ops",
+  "v": 1
+}

@@ -447,3 +447,11 @@ func (interviewAdapter) GuardReply(string, []byte, string) ([]byte, bool, error)
 func (interviewAdapter) UsageLimit([]byte) (adapter.UsageLimit, bool) {
 	return adapter.UsageLimit{}, false
 }
+
+// ScratchGlobs puts a fake session's scratch folder at $HOME/scratch/<sid>.
+func (interviewAdapter) ScratchGlobs(sid string, getenv func(string) string) []string {
+	if getenv("HOME") == "" {
+		return nil
+	}
+	return []string{filepath.Join(getenv("HOME"), "scratch", sid)}
+}

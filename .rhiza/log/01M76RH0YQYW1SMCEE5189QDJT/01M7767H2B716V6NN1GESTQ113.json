@@ -1,0 +1,40 @@
+{
+  "actor": "01M7762EJE5FH52MYGZ7G260MR",
+  "after": [
+    "01M775J1NN5BK2YRV2P3JJAD58"
+  ],
+  "at": "2026-11-12T06:13:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 5, at 63e02a2a4. go test -trimpath ./internal/workflow/... passes (ship-change.toml routes open-pr, push-merge and land on.fail to ship gate --failed triages that go on.pass to gate-fix / gate-fix-merge with no on.fail; rebase still reaches gate-fix via rebase-triage and rebase-gate-failed; gate-fix caps unchanged). go test -trimpath ./internal/api -run 'TestShipGate|TestShipCheckFailsOn|TestShipPrePushCheck|TestShipCheck' passes, including TestShipGateFailedOnPrePushFailure (gate --failed passes on the pre-push-failed head and fails after a gh/push error) and the fix commit's new tests: TestShipPrePushCheckSettleConflict (ship check --settled on a CONFLICTING PR with a failing real pre-push check ends the wait settled, exit 0, no push, PrePushFailed recorded, then ship gate --failed passes on the kept head) and TestShipCheckFailsOnPrePushFailedHead (plain ship check exits 1 on the kept head, passes after a fix). Read the diff: shipSettleConflict now handles rb.PrePushCheck like a failed gate, and runShipCheck has a PrePushFailed twin of the GateFailed branch, closing the review finding. Run from a detached scratch worktree outside ~/code, since inside it the api test guard trips on ~/code/.rhiza-root/usage.live.json, which the live daemon rewrites every few seconds regardless of the tests."
+        },
+        "handle": "ship-change-prepush-fix-verified-5",
+        "id": "01M7767H08RZHHYQV8M08J628Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7767H08RZHHYQV8KWCC2BH8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7767H08RZHHYQV8KWCC2BH8",
+        "id": "01M7767H1CFZ98022AD7Y2MFZB",
+        "link": "01M7767H1CFZ98022AD5EZQGBC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RT010NG76M92D8AF73776",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7767H2B716V6NN1GESTQ113",
+  "type": "ops",
+  "v": 1
+}

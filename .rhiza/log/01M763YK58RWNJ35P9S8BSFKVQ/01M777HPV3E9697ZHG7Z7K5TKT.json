@@ -1,0 +1,53 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M775CAVZR48AM3HJ6C3NZ150"
+  ],
+  "at": "2026-11-12T06:36:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "ff69710fc560dfcf14f23405d1e09979a481e711",
+          "pr": "https://github.com/dphaener/rhiza/pull/467",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #467 (https://github.com/dphaener/rhiza/pull/467) passed CI at ff69710",
+          "status": "verified"
+        },
+        "handle": "pr-467-runs-clean-up-rhiza-s-own",
+        "id": "01M777HPPDF2CW2MEP7497VCNN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M777HPPDF2CW2MEP7443EPDQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M777HPPDF2CW2MEP7443EPDQ",
+        "id": "01M777HPQ78PFTJA2HEEQT1HC1",
+        "link": "01M777HPQ78PFTJA2HEE7JRG9Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642KZP2AFAVV6DMMMDK8JR",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M777HPPDF2CW2MEP7443EPDQ",
+        "id": "01M777HPRM4XZ7F4EXKZZFNER7",
+        "link": "01M777HPRM4XZ7F4EXKZHB5EHS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642M03G0506XQ7B2G4S0VF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763YK58RWNJ35P9S8BSFKVQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M777HPV3E9697ZHG7Z7K5TKT",
+  "type": "ops",
+  "v": 1
+}

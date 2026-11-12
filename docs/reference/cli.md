@@ -519,7 +519,7 @@ rhiza daemon set <key> <value> [--project <project>]
 
 Arguments and flags:
 
-- `<key>`: The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
+- `<key>`: The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
 - `<value>`: The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes (required)
 - `--project`: The registered project a project setting is written to; default the current project
 
@@ -1879,6 +1879,7 @@ Output (`--json` fields):
 - `milestone_number` (integer): The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none
 - `pick` (string): Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded
 - `pr` (string): While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise
+- `pre_push` (object): The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran
 - `questions` (array of object): The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none
 - `retries` (array of object): The retries of the run after it failed, in order; absent when it was never retried
 - `rounds` (array of object): The plan review rounds journalled by run findings and run verdict, in order; absent when there were none
@@ -2367,7 +2368,7 @@ rhiza ship gate [--failed]
 
 Arguments and flags:
 
-- `--failed`: Run no gate: exit 0 only if the last ship rebase left an unpushed head the local gate failed on and the branch is still at it, else exit 1 (a conflict or another failure); reads the state file only (for a step that routes a gate failing on a rebased head to a fixer)
+- `--failed`: Run no gate: exit 0 only if the branch is still at an unpushed head the local gate failed on (ship rebase left it) or the pre-push check failed on (ship open-pr or land), else exit 1 (a conflict or another failure); reads the state file only (for a step that routes a gate failing on a rebased head to a fixer)
 
 Output (`--json` fields):
 
@@ -2420,9 +2421,12 @@ Output (`--json` fields):
 - `evidence_written` (boolean): True if this call wrote the Evidence; false if an earlier one had
 - `landed` (boolean): True if this call landed the change set; false if it had already landed
 - `pr` (integer): The pull request recorded
+- `pre_push_check` (object): The pre-push check that failed on the head, with its failing lines; nothing was pushed, and the command exits 1
 - `pushed` (string): The head pushed to the PR branch; empty if nothing needed pushing
 - `rendered` (array of string): The rendered files written or removed
 - `verifies` (array of string): The capabilities the Evidence verifies: those the change set creates or changes
+
+Exit code: set by the result, besides the shared codes.
 
 ## rhiza ship merge
 
@@ -2459,8 +2463,11 @@ Output (`--json` fields):
 - `created` (boolean): True if this call opened the pull request; false if it replaced the body of the one already open
 - `head` (string): The branch's head commit, as pushed
 - `pr` (integer): The pull request's number
+- `pre_push_check` (object): The pre-push check that failed on the head, with its failing lines; nothing was pushed and no pull request opened or edited, and the command exits 1
 - `pushed` (boolean): True if this call pushed the branch; false if origin already had its head
 - `url` (string): The pull request's URL
+
+Exit code: set by the result, besides the shared codes.
 
 ## rhiza ship rebase
 
@@ -2481,9 +2488,10 @@ Output (`--json` fields):
 - `conflicts` (array of string): The files that conflicted when the merge stopped on a conflict outside the rendered files; the merge is left in progress in the worktree
 - `detail` (string): Why the merge stopped; the command exits 1 then
 - `gate` (object): The local gate run on the merged head before the push, while CI is unstable; a failing gate pushed nothing
-- `kept` (string): After a failing gate, the unpushed head left on the branch: origin's main merged into it, for the gate's fixer
+- `kept` (string): After a failing gate or pre-push check, the unpushed head left on the branch: origin's main merged into it, for the step's fixer
 - `merge_conflict` (object): The conflict's context for a fixer: the conflicted files, origin/main's commits with their change sets, and the branch's change set
 - `onto` (string): The commit of origin's main the branch was compared with
+- `pre_push_check` (object): The pre-push check that failed on the merged head, with its failing lines; nothing was pushed, the merged head is left on the branch, unpushed, and the command exits 1
 - `pushed` (string): The merged head pushed to the PR branch
 - `rebased` (boolean): True if origin's main was merged into the branch and the result is ready to push (the name is kept from when this rebased)
 - `rendered` (array of string): The rendered files written or removed by rendering after the merge

@@ -81,6 +81,9 @@ const (
 	// TypeCodeCheck is a review's code check: rhiza run code-check ran
 	// rhiza check and build-check on the run's change set.
 	TypeCodeCheck = "code-check"
+	// TypePrePush is a pre-push check's result: the check every push the
+	// run makes runs on the committed head first.
+	TypePrePush = "pre-push"
 	// TypeSignoff is a signoff step's sign-off: the owner approved the
 	// review or asked for changes (rule owner), or an autonomous run
 	// passed it in the owner's place (rule autonomous).
@@ -364,6 +367,10 @@ type Block struct {
 //	code-check: Step, Outcome (pass or fail), Detail (rhiza run code-check
 //	           ran rhiza check and build-check on the run's change set while
 //	           the run was at step Step; Detail names each cause of a fail)
+//	pre-push:  Step, Outcome (passed or failed), Commit (the head checked),
+//	           Detail (the command: rhiza check, then the project's
+//	           prePushCheck), Text (a failure's failing lines, the end of
+//	           its output)
 //	process:   Process (the process that began running the run: when it
 //	           started or was resumed; the latest process entry wins)
 //	daemon-resumed: Detail (the daemon opened a tab running rhiza run
@@ -1219,6 +1226,8 @@ type State struct {
 	// CodeChecks are the code-check entries, in journal order. Like
 	// Checks they survive a new visit of their step.
 	CodeChecks []CodeCheck
+	// PrePushChecks are the pre-push entries, in journal order.
+	PrePushChecks []PrePushCheck
 	// Signoffs are the signoff entries, in journal order.
 	Signoffs []Signoff
 	// Process is the latest process entry's process; nil when the journal
@@ -1271,6 +1280,26 @@ type CodeCheck struct {
 	Outcome string
 	Detail  string
 	At      time.Time
+}
+
+// PrePushCheck is one pre-push entry: the check's Outcome (passed or
+// failed) on the committed head Commit, the Command it ran and, failed, the
+// end of its output as Output.
+type PrePushCheck struct {
+	Step    string
+	Outcome string
+	Commit  string
+	Command string
+	Output  string
+	At      time.Time
+}
+
+// LatestPrePush is the journal's latest pre-push check, if it has one.
+func (st State) LatestPrePush() (PrePushCheck, bool) {
+	if len(st.PrePushChecks) == 0 {
+		return PrePushCheck{}, false
+	}
+	return st.PrePushChecks[len(st.PrePushChecks)-1], true
 }
 
 // OwnerCycle says whether checks step step's cycle is an owner cycle:
@@ -1483,6 +1512,8 @@ func (j Journal) State() State {
 				Step: e.Step, Check: e.Check, Cycle: e.Cycle, Finding: e.Finding, Leaf: e.Leaf, Handle: e.Handle,
 				Question: e.Question, QuestionHandle: e.QuestionHandle, Text: e.Detail, At: e.At,
 			})
+		case TypePrePush:
+			st.PrePushChecks = append(st.PrePushChecks, PrePushCheck{Step: e.Step, Outcome: e.Outcome, Commit: e.Commit, Command: e.Detail, Output: e.Text, At: e.At})
 		case TypeCodeCheck:
 			st.CodeChecks = append(st.CodeChecks, CodeCheck{Step: e.Step, Outcome: e.Outcome, Detail: e.Detail, At: e.At})
 		case TypeCheckSession:

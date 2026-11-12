@@ -61,6 +61,20 @@ exec rhiza run status OPENCYCLE01 --json
 stdout '^          "outcome": "failed",'
 stdout '"open_cycle": 2'
 
+# The latest pre-push check shows in status, human and JSON.
+exec sh -c 'printf "%s\n%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGEF85Y185JZ2ZGCNH40N\"}}" "{\"type\":\"pre-push\",\"at\":\"2026-01-01T00:00:01Z\",\"step\":\"ship\",\"outcome\":\"passed\",\"commit\":\"1111111111111111111111111111111111111111\",\"detail\":\"rhiza check\"}" "{\"type\":\"pre-push\",\"at\":\"2026-01-01T00:00:02Z\",\"step\":\"ship\",\"outcome\":\"failed\",\"commit\":\"2222222222222222222222222222222222222222\",\"detail\":\"rhiza check; make self-check\",\"text\":\"FAIL docs stale\"}" > .git/rhiza/runs/PREPUSH0001.jsonl'
+exec rhiza run status PREPUSH0001
+stdout '## Pre-push check'
+stdout '- failed on 2222222 \(rhiza check; make self-check\)'
+stdout 'FAIL docs stale'
+! stdout '1111111'
+exec rhiza run status PREPUSH0001 --json
+stdout '"pre_push": \{'
+stdout '"outcome": "failed"'
+stdout '"head": "2222222222222222222222222222222222222222"'
+stdout '"command": "rhiza check; make self-check"'
+stdout '"output": "FAIL docs stale"'
+
 -- gate.toml --
 name = "gate"
 

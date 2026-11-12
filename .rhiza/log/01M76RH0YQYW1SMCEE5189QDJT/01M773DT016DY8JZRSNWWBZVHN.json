@@ -1,0 +1,40 @@
+{
+  "actor": "01M773AP7AWAPTKJHBFXD7FVWJ",
+  "after": [
+    "01M772ZPSCRS1325JVCMV7HR4B"
+  ],
+  "at": "2026-11-12T05:24:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-89e47f72 at aab52edf3: go test -trimpath ./internal/run/... ./internal/api -run PrePush -count=1 passed (TestPrePushFold; TestPrePushJournal runs shipPrePushCheck twice on a run whose worktree is the repo and reads back a passed entry with head, command 'rhiza check' and no output, then a failed entry with the command naming the prePushCheck and output 'FAIL generated file', LatestPrePush = failed; all existing TestShipPrePushCheck* pass). One of three api runs tripped rootguard on .rhiza-root/usage.live.json, the live Claude Code statusline file the diff does not touch; reruns were clean. go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-status|describe-golden)$' passed: rhiza run status prints '## Pre-push check' with '- failed on 2222222 (rhiza check; make self-check)' and the output block, not the older passed head, and --json carries pre_push {outcome, head, command, output}. Read the diff: TypePrePush entry folded into State.PrePushChecks, journalPrePush appends to RHIZA_RUN's run or the unfinished run with that worktree, best effort, skipped on dry run; RunInfo.PrePush documented in cli.md and describe-golden."
+        },
+        "handle": "prepush-check-in-run-status-verified",
+        "id": "01M773DSX70H0MM6S0MGRXNNJW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M773DSX6EXA0M14STV82GNVH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M773DSX6EXA0M14STV82GNVH",
+        "id": "01M773DSYWAAEBX9TFWD3RRTWG",
+        "link": "01M773DSYWAAEBX9TFWCMJP5BY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RSZYHP4RG66QH4EFKZK6Z",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M773DT016DY8JZRSNWWBZVHN",
+  "type": "ops",
+  "v": 1
+}

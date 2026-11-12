@@ -1,0 +1,40 @@
+{
+  "actor": "01M776GC8KRKH125ZDEFXQVYR0",
+  "after": [
+    "01M776FNWZ6JATHZ8B7PRF5VXG"
+  ],
+  "at": "2026-11-12T06:21:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 66cd47b7 (fixer cycle 3): go test -trimpath -count=1 ./internal/workflow/... passes (TestPlanPrePushFix checks plan and plan-milestone open-pr/rebase on.fail -> prepush-triage running ship gate --failed with only on.pass prepush-fix; prepush-fix agent, max_visits 2, on.pass open-pr, prompt says commit). rhiza workflow describe plan (and plan-milestone) lists prepush-triage and prepush-fix. go test -trimpath -count=1 ./internal/api -run TestShipGate passes (TestShipGateFailed: no kept head after a conflict exits 1; TestShipGateFailedOnPrePushFailure: a gh/push error records nothing and exits 1, the recorded pre-push head passes). make self-check now runs go test ./internal/workflow -run ^TestRepoWorkflowsPrePushFix$ first (seen in its output); in a scratch worktree at HEAD after rhiza render, make self-check exits 0 (in the run checkout it fails only on stale .rhiza/rendered actor files and index.md from this run's records, which render-pr fixes). Mutation check: a .rhiza/workflows/plan.toml copy of the built-in with open-pr's on.fail removed fails TestRepoWorkflowsPrePushFix (repo plan open-pr on.fail = \"\"; want prepush-triage), and an unchanged copy passes; main has no repo plan/plan-milestone copies today. The leaf's acceptance in the model was extended to name this guard, as decision prepush-fix-reaches-repo-workflows asks."
+        },
+        "handle": "plan-prepush-fix-verified-5",
+        "id": "01M776NMCCKJSQ4ETVWTAYQZFZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M776NMCCKJSQ4ETVWR0HQ2YD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M776NMCCKJSQ4ETVWR0HQ2YD",
+        "id": "01M776NMEEWK770AX1VFWNQZJV",
+        "link": "01M776NMEEWK770AX1VF1AZ5GM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RT03BTXG6QDTFNE23XMA2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M776NMFWTPK6PC1NE32X3CS9",
+  "type": "ops",
+  "v": 1
+}

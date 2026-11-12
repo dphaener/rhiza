@@ -1,0 +1,132 @@
+{
+  "actor": "01M7740R23TKVXF4VXCD39BXSR",
+  "after": [
+    "01M773WVZFEEYWYQC8RNP8Z038"
+  ],
+  "at": "2026-11-12T05:40:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at a191c9bf6 with a scratch build (go build -trimpath) in a hermetic scratch repo with a bare origin and a fake gh: rhiza daemon settings lists rhiza.ship.prePushCheck = \"\" (default, project) between localGate and generate; after rhiza daemon set rhiza.ship.prePushCheck '<cmd>' it lists the command (git config, project). go test ./cmd/rhiza -run TestScripts/ship-prepush-check passed."
+        },
+        "handle": "prepush-check-setting-qa-1",
+        "id": "01M774AZN5ZDP57TBP0RYPM942",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M774AZN5ZDP57TBP0PDKS4RT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M774AZN5ZDP57TBP0PDKS4RT",
+        "id": "01M774AZQ3SH1N2WJW66A7NP71",
+        "link": "01M774AZQ3SH1N2WJW6544M83E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RSZVP98R5EET9VWCRT1XC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at a191c9bf6 with a scratch build (go build -trimpath) in a hermetic scratch repo with a bare origin and a fake gh: ship open-pr on a committed non-canonical log entry printed 'The pre-push check failed on 651ba2c, so nothing was pushed' with both rhiza check lines, exit 1, origin unchanged, gh only asked pr view; with the fix only in the working tree it still failed (exit 1, origin unchanged); with the fix committed and an untracked non-canonical .rhiza/log entry (worktree rhiza check exit 1) the check passed and 0503ee5 was pushed. ship rebase with a failing rhiza.ship.prePushCheck command printed the command's output (run in /tmp/rhiza-prepush-*), exit 1, branch back at its pre-merge head, origin unchanged. git worktree list showed no leftover checkout. Scoped tests TestShipPrePushCheck*, TestShipLocalGate*, TestWatchdogPRNoCI all PASS (package FAIL only from rootguard on ~/code/.rhiza-root/usage.live.json)."
+        },
+        "handle": "prepush-check-before-push-qa-1",
+        "id": "01M774AZSZ90AA5BPRH87NHVHZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M774AZSZ90AA5BPRH493R7JM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M774AZSZ90AA5BPRH493R7JM",
+        "id": "01M774AZWG56F54G56CCJAF3DN",
+        "link": "01M774AZWG56F54G56C8NV9GF0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RSZWZW5K5DG8AN1SP994H",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at a191c9bf6 with a scratch build (go build -trimpath) in a hermetic scratch repo with a bare origin and a fake gh: in a run (RHIZA_RUN with a journaled review), after the failed open-pr rhiza run status showed '## Pre-push check / - failed on 651ba2c (rhiza check)' and the failing lines; --json pre_push carried outcome failed, head, command 'rhiza check', output; after the passing push it showed outcome passed on 0503ee5. go test ./internal/run/... and TestScripts/run-status passed."
+        },
+        "handle": "prepush-check-in-run-status-qa-1",
+        "id": "01M774AZXYGH0BDVKGQV926W9N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M774AZXYGH0BDVKGQRJB8T9T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M774AZXYGH0BDVKGQRJB8T9T",
+        "id": "01M774B01RH1VYSFM2EQ58T8QZ",
+        "link": "01M774B01RH1VYSFM2ENRSHQ4B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RSZYHP4RG66QH4EFKZK6Z",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at a191c9bf6 with a scratch build (go build -trimpath) in a hermetic scratch repo with a bare origin and a fake gh: rhiza workflow describe ship-change shows open-pr on.fail -> open-pr-triage (on.pass gate-fix), land/push-merge to their triage, gate-fix prompt naming the pre-push lines in run status --json. After the failed open-pr, .git/rhiza/ship state held pre_push_failed=651ba2c and rhiza ship gate --failed exited 0; after HEAD moved it exited 1. go test ./internal/workflow/... and TestShipGate* passed."
+        },
+        "handle": "ship-change-prepush-fix-qa-1",
+        "id": "01M774B03YPEGEXET5SKPCG7SD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M774B03YPEGEXET5SJVGGJXR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M774B03YPEGEXET5SJVGGJXR",
+        "id": "01M774B063PVXP49H6FJ0FDV7D",
+        "link": "01M774B063PVXP49H6FG8AJ1E3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RT010NG76M92D8AF73776",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at a191c9bf6 with a scratch build (go build -trimpath) in a hermetic scratch repo with a bare origin and a fake gh: rhiza workflow describe plan and plan-milestone list open-pr and rebase on.fail -> prepush-triage -> prepush-fix (agent, prompt says commit) -> open-pr. On open-pr's pre-push failure ship gate --failed exited 0, so the route reaches prepush-fix. But ship rebase failing its pre-push check (failing rhiza.ship.prePushCheck) puts the branch back at its pre-merge head and records no pre_push_failed, and ship gate --failed then exited 1 ('No head the local gate failed on after a rebase is on the branch'), so rebase's pre-push failure ends the run instead of reaching prepush-fix."
+        },
+        "handle": "plan-prepush-fix-qa-1",
+        "id": "01M774B08ZDP3KXF65B658GYHA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M774B08ZDP3KXF65B3TN9MA6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M774B08ZDP3KXF65B3TN9MA6",
+        "id": "01M774B0ANCVC0MB8BB5SN73D7",
+        "link": "01M774B0ANCVC0MB8BB2GKS5AQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RT03BTXG6QDTFNE23XMA2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M774B0C2WNYV275DY99N7Z0M",
+  "type": "ops",
+  "v": 1
+}
