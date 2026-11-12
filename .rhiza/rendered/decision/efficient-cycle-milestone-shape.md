@@ -22,6 +22,7 @@ Milestone 34 puts afk's prompts as shipped defaults and the guards first, then t
 - decided-by [done-refuses-unrecorded-verifier](../capability/rhiza/workflows/workflow-runs/agent-step-done-signal/done-refuses-unrecorded-verifier.md)
 - decided-by [done-refuses-unrecorded-check](../capability/rhiza/workflows/workflow-runs/agent-step-done-signal/done-refuses-unrecorded-check.md)
 - decided-by [done-own-command-guide](../capability/rhiza/guide/done-own-command-guide.md)
+- decided-by [command-budget-guide](../capability/rhiza/guide/command-budget-guide.md)
 
 ## History
 
