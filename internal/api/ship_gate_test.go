@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/dphaener/rhiza/internal/run"
 	"os"
 	"path/filepath"
 	"slices"
@@ -352,4 +353,42 @@ func TestShipGateFullLog(t *testing.T) {
 			t.Errorf("log = %q", b)
 		}
 	})
+}
+
+// In a run, each gate run writes its own log in the run's directory and
+// never overwrites an earlier one; outside a run the log is per branch.
+func TestShipGateRunLog(t *testing.T) {
+	script := "echo '--- FAIL: TestX'; seq 1 20000 | sed 's/^/filler line /'; echo FAIL; echo 'make: *** [Makefile:64: test] Error 1'; exit 2"
+	f := gateFixture(t, script, true)
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return "01RUNLOG"
+		}
+		return ""
+	}
+	g1 := shipGate(t, f)
+	g2 := shipGate(t, f)
+	wantDir := filepath.Join(run.Dir(f.common), "01RUNLOG")
+	if filepath.Dir(g1.Log) != wantDir || filepath.Dir(g2.Log) != wantDir || g1.Log == g2.Log {
+		t.Fatalf("logs = %q, %q; want two files in %s", g1.Log, g2.Log, wantDir)
+	}
+	for _, p := range []string{g1.Log, g2.Log} {
+		b, err := os.ReadFile(p)
+		if err != nil || len(b) <= 64<<10 || !strings.Contains(string(b), "Error 1") {
+			t.Errorf("%s holds %d bytes, %v; want the whole output", p, len(b), err)
+		}
+	}
+	lines := strings.Split(strings.TrimRight(human(t, g1), "\n"), "\n")
+	tail := strings.Join(lines[max(0, len(lines)-20):], "\n")
+	if !strings.Contains(tail, "--- FAIL: TestX") || !strings.Contains(tail, "Full log: "+g1.Log) {
+		t.Errorf("last 20 lines = %q", tail)
+	}
+	if len(tail) > stepTailBytes {
+		t.Errorf("tail is %d bytes, over the journal's %d: the log path would be cut", len(tail), stepTailBytes)
+	}
+	pass := gateFixture(t, "echo fine", true)
+	pass.ctx.Getenv = f.ctx.Getenv
+	if g := shipGate(t, pass); !g.Passed || !strings.HasPrefix(g.Log, filepath.Join(run.Dir(pass.common), "01RUNLOG")) {
+		t.Errorf("passing gate = %+v", g)
+	}
 }
