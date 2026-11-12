@@ -9,6 +9,7 @@ package api
 
 import (
 	"fmt"
+	"io"
 	"path"
 	"path/filepath"
 	"reflect"
@@ -37,6 +38,24 @@ type RepairResponse struct {
 	DryRun   bool            `json:"dry_run" desc:"True when nothing was written"`
 	Restored []RepairedEntry `json:"restored" desc:"The entries restored, or with --dry-run the ones that would be"`
 	Lost     []RepairedEntry `json:"lost" desc:"The entries that cannot be restored, with why"`
+}
+
+// Human names each entry repaired, or with --dry-run each one repair would
+// restore, and where its bytes come from.
+func (r RepairResponse) Human(w io.Writer) {
+	if len(r.Restored) == 0 && len(r.Lost) == 0 {
+		fmt.Fprintln(w, "No damaged log entries; nothing to repair.")
+		return
+	}
+	for _, e := range r.Restored {
+		fmt.Fprintf(w, "%s: %s from %s (%s)\n", e.Path, restoredVerb(r.DryRun), e.From, e.Reason)
+	}
+	for _, e := range r.Lost {
+		fmt.Fprintf(w, "%s: not restorable: %s\n", e.Path, e.Why)
+	}
+	if r.DryRun {
+		fmt.Fprintln(w, "Dry run: nothing was written.")
+	}
 }
 
 func init() {

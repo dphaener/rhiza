@@ -19,6 +19,8 @@ exec sh -c 'grep -l "Keeps the log" .rhiza/log/*/*.json | head -n1 > $WORK/track
 
 # A clean log has nothing to repair.
 exec rhiza repair
+stdout 'nothing to repair'
+exec rhiza repair --json
 stdout '"restored": \[\]'
 
 # The incident: one uncommitted entry written over with another's bytes.
@@ -29,6 +31,9 @@ exec sh -c 'cp $(sed -n 1p $WORK/new) $WORK/damaged'
 
 # --dry-run names it and changes nothing.
 exec rhiza repair --dry-run
+stdout 'would restore from index'
+stdout 'Dry run: nothing was written'
+exec rhiza repair --dry-run --json
 stdout '"dry_run": true'
 stdout '"from": "index"'
 cp stdout $WORK/dry
@@ -48,7 +53,7 @@ fold-ok
 # A changed committed entry is restored from HEAD.
 exec sh -c 'f=$(cat $WORK/tracked); cp $f $WORK/orig3; chmod 644 $f; sed -i "s/Keeps the log/Keeps the logs/" $f'
 exec rhiza repair
-stdout '"from": "HEAD"'
+stdout ': restored from HEAD'
 exec sh -c 'cmp $(cat $WORK/tracked) $WORK/orig3'
 exec sh -c 'stat -c %a $(cat $WORK/tracked)'
 stdout '^444$'
