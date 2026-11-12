@@ -39,14 +39,10 @@ func Dir(gitCommonDir string) string {
 	return filepath.Join(gitCommonDir, "rhiza", "runs")
 }
 
-// EnvGoTmp is the variable that moves go's build temp folders.
-const EnvGoTmp = "GOTMPDIR"
-
 // TmpDir is the run's own temp folder under the runs directory dir:
-// <dir>/<run id>/gotmp. The run's processes get it as GOTMPDIR, so a sweep
-// of the shared TMPDIR never removes a live go build's $WORK. The engine
-// creates it as a step starts and removes it when the run stops.
-func TmpDir(dir, id string) string { return filepath.Join(dir, id, "gotmp") }
+// <dir>/<run id>/tmp. A workflow's [env] values name it as {run_tmp}. The
+// engine creates it as a step starts and removes it when the run ends.
+func TmpDir(dir, id string) string { return filepath.Join(dir, id, "tmp") }
 
 // Store keeps one append-only JSONL journal per run in a directory.
 type Store struct {

@@ -1,5 +1,8 @@
 name = "docs-build"
 
+[env]
+GOTMPDIR = "{run_tmp}"
+
 # The build step takes the change set's leaves one at a time, in leaf
 # order: a fresh builder session, then a fresh verifier session at the
 # builder's commit. A failed attempt goes to a fresh builder on the next

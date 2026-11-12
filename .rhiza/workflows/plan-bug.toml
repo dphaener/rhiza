@@ -1,5 +1,8 @@
 name = "plan-bug"
 
+[env]
+GOTMPDIR = "{run_tmp}"
+
 # A bug request's plan run (.rhiza/dispatch.toml [request] bug): the plan
 # workflow, autonomous whatever rhiza.autonomy.* says, so a bug is planned
 # with no owner step. The planner records its assumptions as Decisions and

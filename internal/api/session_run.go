@@ -186,9 +186,15 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	env, unset := launchEnv(rec)
 	if rec.Run != "" && !ctx.DryRun {
 		if common, err := gitCommonDir(ctx); err == nil {
-			tmp := run.TmpDir(run.Dir(common), rec.Run)
-			if os.MkdirAll(tmp, 0o755) == nil {
-				env = append(env, run.EnvGoTmp+"="+tmp)
+			rs := run.NewStore(run.Dir(common))
+			if j, err := rs.Read(rec.Run); err == nil {
+				if def, err := j.State().ParseDefinition(); err == nil && len(def.Env) > 0 {
+					tmp := rs.TmpDir(rec.Run)
+					if def.UsesRunTmp() {
+						_ = os.MkdirAll(tmp, 0o755)
+					}
+					env = append(env, def.EnvPairs(tmp)...)
+				}
 			}
 		}
 	}

@@ -2104,3 +2104,22 @@ func TestParseCleanup(t *testing.T) {
 		}
 	}
 }
+
+func TestEnvTable(t *testing.T) {
+	src := "name = \"w\"\n[env]\nB = \"{run_tmp}/b\"\nA = \"x\"\n[step.s]\nkind = \"command\"\nrun = \"true\"\non.pass = \"done\"\n"
+	d, err := Parse("w", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !d.UsesRunTmp() {
+		t.Error("UsesRunTmp = false")
+	}
+	got := d.EnvPairs("/t")
+	if len(got) != 2 || got[0] != "A=x" || got[1] != "B=/t/b" {
+		t.Errorf("EnvPairs = %v", got)
+	}
+	bad := strings.Replace(src, "A = \"x\"", "RHIZA_RUN = \"x\"", 1)
+	if _, err := Parse("w", []byte(bad)); err == nil {
+		t.Error("RHIZA_ variable accepted")
+	}
+}

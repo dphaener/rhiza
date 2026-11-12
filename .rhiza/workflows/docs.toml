@@ -1,5 +1,8 @@
 name = "docs"
 
+[env]
+GOTMPDIR = "{run_tmp}"
+
 # Doc change sets: ship-change with the owner signing off every PR, and
 # builders and fixers told to write prose with the humanize skill.
 [autonomy]
