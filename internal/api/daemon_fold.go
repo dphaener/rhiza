@@ -8,14 +8,17 @@ package api
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"sync/atomic"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/dispatch"
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
@@ -26,7 +29,7 @@ import (
 // planReadCount and planFoldCount count the plan reads and the in-flight
 // change sets folded by them, process-wide; tests read them to see what a
 // daemon poll skipped.
-var planReadCount, planFoldCount atomic.Int64
+var planReadCount, planFoldCount, daemonPickCount atomic.Int64
 
 // daemonMove is one lifecycle move the events pass may run its command for.
 type daemonMove struct {
@@ -64,6 +67,54 @@ func (f *daemonFolded) stateOf(change string) (string, bool) {
 type daemonFoldCache struct {
 	stamp  string
 	folded *daemonFolded
+	pick   daemonPickMemo
+}
+
+// daemonPickMemo is the last pick, with the fold and the inputs it was made
+// from (sig, see daemonDemand).
+type daemonPickMemo struct {
+	fold   *daemonFolded
+	sig    string
+	picked []string
+}
+
+// daemonPickOf returns the pick of the fold under sig: the last one when the
+// fold (by identity) and sig are the same, else compute's, which it keeps.
+// Without a fold cache, or under a dry run, it always computes.
+func daemonPickOf(ctx *Ctx, fold *daemonFolded, sig string, compute func() []string) []string {
+	c := ctx.daemonFold
+	if c == nil || ctx.DryRun {
+		return compute()
+	}
+	if c.pick.fold == fold && c.pick.sig == sig {
+		return slices.Clone(c.pick.picked)
+	}
+	picked := compute()
+	c.pick = daemonPickMemo{fold: fold, sig: sig, picked: slices.Clone(picked)}
+	return picked
+}
+
+// workflowFilesStamp fingerprints the files a pick reads besides the log:
+// the repo's dispatch rules and workflows and the personal workflows, by
+// name, size and modification time.
+func workflowFilesStamp(root string) string {
+	var b strings.Builder
+	stat := func(p string) {
+		if fi, err := os.Stat(p); err == nil {
+			fmt.Fprintf(&b, "%s:%d:%d;", p, fi.Size(), fi.ModTime().UnixNano())
+		}
+	}
+	stat(filepath.Join(root, filepath.FromSlash(dispatch.File)))
+	for _, dir := range []string{filepath.Join(root, filepath.FromSlash(workflowsDir)), personalWorkflowsDir()} {
+		if dir == "" {
+			continue
+		}
+		es, _ := os.ReadDir(dir)
+		for _, e := range es {
+			stat(filepath.Join(dir, e.Name()))
+		}
+	}
+	return b.String()
 }
 
 // invalidate drops the cached fold, as a write of the daemon's own does.

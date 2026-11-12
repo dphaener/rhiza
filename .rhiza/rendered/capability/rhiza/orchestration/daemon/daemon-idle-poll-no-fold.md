@@ -18,6 +18,7 @@ A daemon poll where the log, git refs and daemon settings are unchanged since th
 
 ### In
 
+- supersedes [root-daemon-idle-poll-no-work](../../../root-daemon-idle-poll-no-work.md)
 - verifies [daemon-idle-poll-no-fold-verified](../../../../evidence/daemon-idle-poll-no-fold-verified.md)
 - verifies [daemon-idle-poll-no-fold-qa-1](../../../../evidence/daemon-idle-poll-no-fold-qa-1.md)
 - verifies [pr-217-fix-the-daemon-pins-a-full-cpu](../../../../evidence/pr-217-fix-the-daemon-pins-a-full-cpu.md)

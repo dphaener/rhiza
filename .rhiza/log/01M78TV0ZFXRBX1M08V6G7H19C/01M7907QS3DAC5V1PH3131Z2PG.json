@@ -1,0 +1,40 @@
+{
+  "actor": "01M7905KJDR6WZC3N97WFH8ZWM",
+  "after": [
+    "01M78ZY2R64Y1MGDAS1B95Z1JH"
+  ],
+  "at": "2026-11-12T23:07:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At feb1c57a3 (review fix adding max_interval's KeyDoc to the KindWait spec and docs/reference/workflow-file.md): go test -trimpath ./internal/run/... ./internal/workflow/... -run 'WaitBackoff|MaxInterval' passed TestWaitBackoff (fake clock, scripted unchanged-then-changed output, sleeps 30s,60s,120s,120s,120s then 30s after the change), TestWaitBackoffStopsAtTimeout (sleeps sum to exactly the 5m timeout), TestWaitMaxInterval (parses 2m, rejects below interval and on non-wait steps) and TestMaxIntervalShipChangeCIWaits (built-in ship-change ship-check waits set 30s/2m). Full ./internal/workflow/... and ./internal/run/... pass. rhiza workflow check exits 0 on every .rhiza/workflows/*.toml; all seven rhiza ship check waits in both builtin and repo ship-change.toml (which bugfix includes) set interval 30s, max_interval 2m. Diff read: engine.go doubles the sleep only when output equals the previous check's and caps at the remaining timeout."
+        },
+        "handle": "ci-wait-backs-off-verified-2",
+        "id": "01M7907QMJXYC28RNY4RVQV60J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7907QMJXYC28RNY4RESXBSY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7907QMJXYC28RNY4RESXBSY",
+        "id": "01M7907QPD2T8F5WGS4PB3RZJ5",
+        "link": "01M7907QPD2T8F5WGS4JJY18JK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WSRZERXA7TRPH50HSAV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78TV0ZFXRBX1M08V6G7H19C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7907QS3DAC5V1PH3131Z2PG",
+  "type": "ops",
+  "v": 1
+}

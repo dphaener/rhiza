@@ -1,0 +1,40 @@
+{
+  "actor": "01M78Y4BSZR9KP1SW0EX03TTWA",
+  "after": [
+    "01M78XS0AYFH1QX8DZHD0ZSMKE"
+  ],
+  "at": "2026-11-12T22:31:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6629e1cb2: go test -trimpath ./internal/run/... ./internal/workflow/... -run 'WaitBackoff|MaxInterval' -v passed TestWaitBackoff (fake clock, scripted outputs a a a a a b b; sleeps 30s 60s 120s 120s 120s 30s 60s), TestWaitBackoffStopsAtTimeout (total sleep exactly the 5m timeout), TestWaitMaxInterval (parses 2m, rejects 10s below 30s interval, rejects on a command step) and TestMaxIntervalShipChangeCIWaits (every built-in ship-change ship-check wait has 30s/2m); the full internal/run and internal/workflow packages pass. A build of this commit ran rhiza workflow check on each .rhiza/workflows/*.toml (bugfix, docs*, plan-bug, ship-change): all exit 0. Read the diff: all 7 ship-check waits in both the repo and built-in ship-change set max_interval 2m (bugfix includes ship-change); the production Condition runner returns the check's output tail, so backoff resets on changed output."
+        },
+        "handle": "ci-wait-backs-off-verified",
+        "id": "01M78Y66T7ZQ71EPW0254FM5V0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78Y66T7ZQ71EPW0226CTF5C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78Y66T7ZQ71EPW0226CTF5C",
+        "id": "01M78Y66VK92JK3KYCRC25MGG6",
+        "link": "01M78Y66VK92JK3KYCR91PGFN2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WSRZERXA7TRPH50HSAV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78TV0ZFXRBX1M08V6G7H19C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78Y66WM9021Z30KTCFCVTN3",
+  "type": "ops",
+  "v": 1
+}

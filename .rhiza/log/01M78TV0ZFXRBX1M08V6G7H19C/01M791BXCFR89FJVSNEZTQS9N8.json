@@ -1,0 +1,93 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7909W2A40TA7GSJ50MCFER4"
+  ],
+  "at": "2026-11-12T23:26:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "d164a0de0898c479a45a4c5470d1ad39724a0e98",
+          "pr": "https://github.com/dphaener/rhiza/pull/511",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #511 (https://github.com/dphaener/rhiza/pull/511) passed CI at d164a0d",
+          "status": "verified"
+        },
+        "handle": "pr-511-fix-the-root-daemon-still",
+        "id": "01M791BX2S33P3KE1BABGVTGEY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M791BX2S33P3KE1BA86XK523",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M791BX2S33P3KE1BA86XK523",
+        "id": "01M791BX3V99TF4FETRNVV2DCT",
+        "link": "01M791BX3V99TF4FETRHYFNGJ1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WAQ555KCQSZVXT3CPDQ",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M791BX2S33P3KE1BA86XK523",
+        "id": "01M791BX4YXB3NNCEAXGV3JJ88",
+        "link": "01M791BX4YXB3NNCEAXF03RB4Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WDA98WKD9YNVGJWBWA7",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M791BX2S33P3KE1BA86XK523",
+        "id": "01M791BX5VH8S0S26Z4BNSDQ6G",
+        "link": "01M791BX5VH8S0S26Z47VEBH7Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WH7H4JKPF1CZ9S33Z7M",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M791BX2S33P3KE1BA86XK523",
+        "id": "01M791BX70CK9D2KZT7QWB870G",
+        "link": "01M791BX70CK9D2KZT7KZ1HR21",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WM0TQZYN29GP2GCGGPZ",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M791BX2S33P3KE1BA86XK523",
+        "id": "01M791BX7Y1PEA5SFVN17MY1HY",
+        "link": "01M791BX7Y1PEA5SFVMXKRDK24",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WPDAC0P0JMCA17H4TC9",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M791BX2S33P3KE1BA86XK523",
+        "id": "01M791BX90YDN4MHP2WFY5BQ9M",
+        "link": "01M791BX90YDN4MHP2WEA0TRKD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WSRZERXA7TRPH50HSAV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78TV0ZFXRBX1M08V6G7H19C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M791BXCFR89FJVSNEZTQS9N8",
+  "type": "ops",
+  "v": 1
+}

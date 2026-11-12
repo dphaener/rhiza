@@ -32,8 +32,14 @@ func TestDescribeAll(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(resp.Operations) != len(Operations()) {
-		t.Fatalf("got %d operations, want %d", len(resp.Operations), len(Operations()))
+	visible := 0
+	for _, o := range Operations() {
+		if !o.Hidden {
+			visible++
+		}
+	}
+	if len(resp.Operations) != visible {
+		t.Fatalf("got %d operations, want %d", len(resp.Operations), visible)
 	}
 	var d *OperationInfo
 	for i, o := range resp.Operations {

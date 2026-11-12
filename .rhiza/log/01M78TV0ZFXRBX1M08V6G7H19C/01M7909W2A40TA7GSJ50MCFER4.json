@@ -1,0 +1,40 @@
+{
+  "actor": "01M790194GV7P3B028ZE82RFPP",
+  "after": [
+    "01M7907QS3DAC5V1PH3131Z2PG"
+  ],
+  "at": "2026-11-12T23:08:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2, at 61d125ffa (fix commit: supersedes links root-daemon-idle-poll-no-work -> daemon-idle-poll-no-fold and decision-idle-cpu-scope -> daemon-poll-caches-fold-not-picks, plus render). Read the diff: two link.create supersedes ops, the builder's actor record and re-rendered files, no code change. rhiza show confirms both older nodes now show 'superseded by'. Re-ran the acceptance: go test -trimpath ./internal/api/... -run 'RootIdlePoll' -v -count=1 -> TestRootIdlePoll PASS (second unchanged poll folds nothing and computes no pick; each stamp change redoes the work), TestRootIdlePollBudget PASS (median 71 ms, own 54 ms CPU < 100 ms budget). make self-check in a clean detached worktree at the commit under env -i: exit 0. (Under the run's env it fails the same way at the parent commit, on the run actor's unrendered file and docs, so this commit does not cause it.)"
+        },
+        "handle": "root-daemon-idle-poll-no-work-verified-2",
+        "id": "01M7909VYBSDC5SHDRDA6FFWTZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7909VYBSDC5SHDRD979S0H8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7909VYBSDC5SHDRD979S0H8",
+        "id": "01M7909W003GK9AMF7PQKE3XWZ",
+        "link": "01M7909W003GK9AMF7PQBE4P6Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WM0TQZYN29GP2GCGGPZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78TV0ZFXRBX1M08V6G7H19C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7909W2A40TA7GSJ50MCFER4",
+  "type": "ops",
+  "v": 1
+}

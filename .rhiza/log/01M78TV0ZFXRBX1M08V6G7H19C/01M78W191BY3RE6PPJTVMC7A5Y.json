@@ -1,0 +1,40 @@
+{
+  "actor": "01M78VX8XNWH9EXP7S70WXTG48",
+  "after": [
+    "01M78VAMHK563BX3ZERKTDC9YY"
+  ],
+  "at": "2026-11-12T21:53:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 65b2e01fe, go test -trimpath -count=1 ./internal/api/... -run 'DaemonProfile|Describe' -v passes (also under -race): TestDaemonProfile runs daemonLoop in-process with test-driven ticks and a fake capture clock, issues daemon.profile with seconds 1 and --out, asserts the 1s capture timer, a non-empty gzip pprof at --out, polls during and after the capture, and a second request refused with 'a profile capture is already in progress'; TestDaemonProfileDefaultPath checks the default path lands in the root's state folder; TestDaemonProfileNoDaemon checks the no-daemon error. The request and result travel as files in .rhiza-root, so no socket is bound. go test -trimpath ./cmd/rhiza -run 'TestScripts/(describe|help|docs|daemon|usage|reference)' passes. A scratch build hides the op from 'rhiza daemon --help' while 'rhiza daemon profile --help' shows --seconds (default 30) and --out. Diff read: Hidden flag filters help, subcommands, docs, check and unfiltered describe."
+        },
+        "handle": "daemon-live-cpu-profile-verified",
+        "id": "01M78W18Z1WTKVDMGESNS2KDEH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78W18Z0G87QBBQV7G2CHFWF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78W18Z0G87QBBQV7G2CHFWF",
+        "id": "01M78W1902DECQ6MS4FFWT9NCW",
+        "link": "01M78W1902DECQ6MS4FCB6Q0E6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WAQ555KCQSZVXT3CPDQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78TV0ZFXRBX1M08V6G7H19C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78W191BY3RE6PPJTVMC7A5Y",
+  "type": "ops",
+  "v": 1
+}
