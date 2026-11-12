@@ -1,0 +1,27 @@
+# The pre-push check setting. rhiza.ship.prePushCheck is a project setting,
+# empty by default (rhiza check alone), settable to a command such as
+# make self-check.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+
+exec rhiza daemon settings
+stdout 'rhiza.ship.prePushCheck = "" \(default, project\)'
+exec rhiza daemon settings --json
+stdout '"key": "rhiza.ship.prePushCheck"'
+stdout '"source": "default"'
+
+
+exec rhiza daemon set rhiza.ship.prePushCheck 'make self-check'
+exec rhiza daemon settings
+stdout 'rhiza.ship.prePushCheck = make self-check \(git config, project\)'
+exec rhiza daemon settings --json
+stdout '"value": "make self-check"'
+stdout '"source": "git config"'
+exec git config --get rhiza.ship.prePushCheck
+stdout '^make self-check$'
+
+
+fold-ok

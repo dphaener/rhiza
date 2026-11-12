@@ -30,6 +30,10 @@ func init() {
 // LocalGateKey is the setting holding the project's local gate command.
 const LocalGateKey = "rhiza.ship.localGate"
 
+// PrePushCheckKey is the setting holding the project's pre-push check
+// command, run after rhiza check before every push of a run.
+const PrePushCheckKey = "rhiza.ship.prePushCheck"
+
 // shipGateTimeout bounds one gate run; shipGateTail is how much of its
 // output a response keeps (the end, where a failure is named).
 const (
