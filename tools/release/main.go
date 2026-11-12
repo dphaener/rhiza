@@ -19,6 +19,14 @@ func main() {
 }
 
 func run(args []string) error {
+	if len(args) > 0 && args[0] == "version" {
+		v, err := gitLatestVersion(".")
+		if err != nil {
+			return err
+		}
+		fmt.Println(v)
+		return nil
+	}
 	fs := flag.NewFlagSet("release", flag.ContinueOnError)
 	var o release.Options
 	fs.StringVar(&o.Dist, "dist", "dist", "GoReleaser dist folder")
