@@ -1,0 +1,40 @@
+{
+  "actor": "01M788WT1EN9B89JX12XW9N784",
+  "after": [
+    "01M777KRFZ0N7MH8C5TNF0348E"
+  ],
+  "at": "2026-11-12T16:19:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ec0f384fe ran go test -trimpath -count=1 ./internal/guide -run 'Build|Review' -v: TestBuildReviewCommandBudget PASS, asserting build.md and review.md each hold '## Command budget' with 'Never sleep and never poll', 'about four minutes' and 'runs once in the background and is waited for once', and that the section names no go/make/rhiza/testscript/Claude. Read the diff: the section is language-neutral in both files. The attempt-1 finding (TestCaps over cap) is fixed: full ./internal/guide passes, build.md 3175 bytes/794 tokens, review.md 3200 bytes/800 tokens, both within the 800 cap; the trims keep every phrase the other guide tests assert. Scoped testscripts guide, guide-install, build-evidence-commit and docs-commands-exist pass."
+        },
+        "handle": "command-budget-guide-verified",
+        "id": "01M788XRBD3HZQGS3G7NDEF836",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M788XRBD3HZQGS3G7M7WTDMP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M788XRBD3HZQGS3G7M7WTDMP",
+        "id": "01M788XRDCWKFRSV9AHJ9HTSC2",
+        "link": "01M788XRDCWKFRSV9AHGX0SYJN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY4EE4QA5EKNQXHR7R9XH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XQX53GGNWVCQHXVV510NH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M788XREHT6TWFK6J5NA0W1QM",
+  "type": "ops",
+  "v": 1
+}
