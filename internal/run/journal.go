@@ -459,6 +459,8 @@ type Finding struct {
 	ID         string `json:"id"`
 	Node       string `json:"node,omitempty"`
 	Handle     string `json:"handle,omitempty"`
+	Link       string `json:"link,omitempty"`
+	LinkType   string `json:"link_type,omitempty"`
 	Kind       string `json:"kind,omitempty"`
 	Check      string `json:"check,omitempty"`
 	Severity   string `json:"severity,omitempty"`
