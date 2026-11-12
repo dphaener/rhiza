@@ -1,0 +1,61 @@
+{
+  "actor": "01M78QXKKTA5QEC1R5RK8PCA2W",
+  "after": [
+    "01M78QZ5KBSV17ZW0PPDTBSPT8"
+  ],
+  "at": "2026-11-12T20:43:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6W5BPEBTX6XAWPRN741Z7WH",
+        "handle": null,
+        "id": "01M78QZVDSAWC9FFVZ55HXQNJS",
+        "node": "01M6W5BPEBTX6XAWPRN3N7CH38",
+        "op": "node.update",
+        "set": {
+          "statement": "Rhiza installs with go install or from release binaries published for each release, an annotated version tag"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6W5GZ1GA5NPS1AP0SVFW78F",
+        "handle": null,
+        "id": "01M78QZVEMKSC2AQAY5FGC5Q78",
+        "node": "01M6W5GZ1GA5NPS1AP0QYYSKTA",
+        "op": "node.update",
+        "set": {
+          "statement": "An annotated v* tag (the one tools/release cut pushes) runs a GitHub Actions release job that builds rhiza with GoReleaser for linux and darwin on amd64 and arm64 and publishes the archives and a checksums file to a GitHub release; a lightweight v* tag, such as publishing a major's draft release makes, publishes nothing"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M76B7CPZ26NZ03MPCMY616Y5",
+        "handle": null,
+        "id": "01M78QZVFDKB32FFGSTYANZ051",
+        "node": "01M76B7CPZ26NZ03MPCK9S55PA",
+        "op": "node.update",
+        "set": {
+          "statement": "The release job for an annotated v* tag publishes a GitHub build-provenance attestation for every archive, so gh attestation verify <archive> --repo dphaener/rhiza succeeds on a downloaded release"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M76B7CPKY732RZT6D82EV1J0",
+        "handle": null,
+        "id": "01M78QZVGA5WCSSWN24Z01ZSWE",
+        "node": "01M76B7CPKY732RZT6D4H4N8ND",
+        "op": "node.update",
+        "set": {
+          "statement": "Every release (an annotated v* tag) publishes manifest.json beside its archives: channel (release), version, commit, and for each os/arch the archive URL and sha256, so releases/latest/download/manifest.json always names the newest release"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76B0M0A1T1SN6KHMG5JVDVR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78QZVH3RXTSG3CND7XPY720",
+  "type": "ops",
+  "v": 1
+}

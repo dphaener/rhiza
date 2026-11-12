@@ -350,9 +350,11 @@ type Report struct {
 
 // evaluate computes the next version and its kind since the last v* tag in
 // the repo at dir, each release gate for the candidate commit and the notes.
-// It reads only: nothing is tagged or written.
+// Only an annotated tag is a release: the lightweight tag that publishing a
+// major's draft GitHub release makes (its sign-off) is not, so describe
+// runs without --tags. It reads only: nothing is tagged or written.
 func evaluate(dir string, env CheckEnv) (Report, error) {
-	tag, err := gitOut(dir, "describe", "--tags", "--match", "v[0-9]*.[0-9]*.[0-9]*", "--abbrev=0")
+	tag, err := gitOut(dir, "describe", "--match", "v[0-9]*.[0-9]*.[0-9]*", "--abbrev=0")
 	if err != nil {
 		tag = ""
 	}

@@ -10,7 +10,8 @@ import (
 	"time"
 )
 
-// cutRepo is a fixture repo whose last tag is tag, made at 2026-11-05, with
+// cutRepo is a fixture repo whose last release is tag (annotated, as Cut
+// makes it), made at 2026-11-05, with
 // the fixture log committed after it: m2 finished and a bug fix landed.
 func cutRepo(t *testing.T, tag string) (dir, head string) {
 	t.Helper()
@@ -28,7 +29,7 @@ func cutRepo(t *testing.T, tag string) (dir, head string) {
 	}
 	git("2026-11-05T00:00:00Z", "init", "-q")
 	git("2026-11-05T00:00:00Z", "commit", "-q", "--allow-empty", "-m", "base")
-	git("2026-11-05T00:00:00Z", "tag", tag)
+	git("2026-11-05T00:00:00Z", "tag", "-a", "-m", tag, tag)
 	logs, _ := fixture(t)
 	if err := os.CopyFS(filepath.Join(dir, ".rhiza", "log"), os.DirFS(logs)); err != nil {
 		t.Fatal(err)
@@ -41,9 +42,11 @@ func cutRepo(t *testing.T, tag string) (dir, head string) {
 // fakeGit records every git call and answers the read-only ones from its
 // tags: local and remote hold annotated tag names, published the lightweight
 // tags (name to commit) that publishing a GitHub release makes on the
-// remote; fetch brings those here. A tag -a makes a local annotated tag and
-// a push moves it to the remote.
+// remote; fetch brings those here, and into the real repo at dir too (when
+// set), where evaluate reads the tags. A tag -a makes a local annotated tag
+// and a push moves it to the remote.
 type fakeGit struct {
+	dir           string
 	local, remote []string
 	published     map[string]string
 	fetched       map[string]string
@@ -72,6 +75,13 @@ func (f *fakeGit) run(args ...string) (string, error) {
 					f.fetched = map[string]string{}
 				}
 				f.fetched[name] = c
+				if f.dir != "" {
+					c := exec.Command("git", "tag", "-f", name, c)
+					c.Dir = f.dir
+					if out, err := c.CombinedOutput(); err != nil {
+						return "", fmt.Errorf("fetch %s: %v: %s", name, err, out)
+					}
+				}
 			}
 		}
 	case "tag":
@@ -217,7 +227,7 @@ func TestMajor(t *testing.T) {
 			state = ReleaseDraft
 			return nil
 		}}
-	g := &fakeGit{}
+	g := &fakeGit{dir: dir}
 	cut := func() (Outcome, string) {
 		t.Helper()
 		var b strings.Builder
@@ -238,7 +248,8 @@ func TestMajor(t *testing.T) {
 		t.Fatalf("drafts %v", drafts)
 	}
 	// Signed off: publishing the draft makes a lightweight tag at the
-	// candidate on the remote, which the tool replaces with the annotated
+	// candidate on the remote, which the fetch brings into the repo; it is
+	// not the last release, and the tool replaces it with the annotated
 	// one, pushed once.
 	state = ReleasePublished
 	g.published = map[string]string{"v2.0.0": head}
@@ -253,19 +264,23 @@ func TestMajor(t *testing.T) {
 		t.Fatalf("%v pushes=%d", out, g.pushes())
 	}
 	// Signed off but no tag yet on the remote: a plain tag and push.
-	g = &fakeGit{}
+	g = &fakeGit{dir: dir}
 	if out, _ := cut(); out != Tagged || g.pushes() != 1 || g.calls[len(g.calls)-1][1] == "--force" {
 		t.Fatalf("%v calls %v", out, g.calls)
 	}
 	// A published release tagged at another commit is never moved.
-	g = &fakeGit{published: map[string]string{"v2.0.0": "other"}}
+	base, err := exec.Command("git", "-C", dir, "rev-parse", "HEAD~1").Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	g = &fakeGit{dir: dir, published: map[string]string{"v2.0.0": strings.TrimSpace(string(base))}}
 	var b strings.Builder
 	if _, err := Cut(dir, &b, env, g.run); err == nil || g.pushes() != 0 {
 		t.Fatalf("err %v pushes=%d", err, g.pushes())
 	}
 	// A failing gate holds a major too, with no draft.
 	env.CI = func(string) (string, error) { return "failure", nil }
-	g, state, drafts = &fakeGit{}, ReleaseNone, nil
+	g, state, drafts = &fakeGit{dir: dir}, ReleaseNone, nil
 	if out, _ := cut(); out != Blocked || len(drafts) != 0 {
 		t.Fatalf("%v drafts %v", out, drafts)
 	}
@@ -415,20 +430,22 @@ func TestCutRealGitKeepsHeadings(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		// The lightweight tag stays on the remote only (no fetch), so this
-		// exercises the tag -a -f replace and its forced push with real git.
-		noFetch := func(args ...string) (string, error) {
-			if args[0] == "fetch" {
-				return "", nil
-			}
-			return git(args...)
-		}
+		// Cut's fetch brings the lightweight tag in; it is not the last
+		// release, so this exercises the tag -a -f replace and its forced
+		// push with real git.
 		var b strings.Builder
-		if out, err := Cut(dir, &b, env, noFetch); err != nil || out != Tagged {
+		if out, err := Cut(dir, &b, env, git); err != nil || out != Tagged {
 			t.Fatalf("%v %v\n%s", out, err, b.String())
 		}
 		if !strings.Contains(body(t, git, "v2.0.0"), "## Breaking changes") {
 			t.Fatal("breaking changes heading missing")
+		}
+		origin, err := git("remote", "get-url", "origin")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if out, err := gitIn(origin)("cat-file", "-t", "refs/tags/v2.0.0"); err != nil || out != "tag" {
+			t.Fatalf("origin's v2.0.0 is %q, %v: not annotated", out, err)
 		}
 	})
 }
