@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M783HZ099BBZRMFYXWP40W6Z"
+  ],
+  "at": "2026-11-12T15:06:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "4a9cd7e9d0987f68825cf01fd2eb882fcffb8baa",
+          "pr": "https://github.com/dphaener/rhiza/pull/493",
+          "result": "13 checks passed: changes SUCCESS, snapshot SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #493 (https://github.com/dphaener/rhiza/pull/493) passed CI at 4a9cd7e",
+          "status": "verified"
+        },
+        "handle": "pr-493-breaking-change-detection",
+        "id": "01M784QENPFWG7EYGGKCRVP95A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M784QENPFWG7EYGGK8TGASDT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M784QENPFWG7EYGGK8TGASDT",
+        "id": "01M784QEP5JHQRGXPBZNP2GFX6",
+        "link": "01M784QEP5JHQRGXPBZK1G8KY6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7DRSHQHDGWY46MBH319P",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B0BSVESMEFD39RTW517R3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M784QER28A3M4F149ZGDBEEZ",
+  "type": "ops",
+  "v": 1
+}

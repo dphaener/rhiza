@@ -28,6 +28,17 @@ func run(args []string) error {
 		fmt.Println(v)
 		return nil
 	}
+	if len(args) > 0 && args[0] == "breaking" {
+		tag, bs, err := breakingAgainstLastTag(".")
+		if err != nil {
+			return err
+		}
+		for _, b := range bs {
+			fmt.Println(b)
+		}
+		fmt.Fprintf(os.Stderr, "%d breaking difference(s) since %s\n", len(bs), tag)
+		return nil
+	}
 	if len(args) > 0 && args[0] == "marks" {
 		marks, err := ReadMarks(filepath.Join(".rhiza", "log"))
 		if err != nil {

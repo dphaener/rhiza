@@ -24,6 +24,7 @@ Releases follow semver: a breaking change is always a major release (strict from
 
 - decided-by [m33-release-policy](../intent/milestone-33/m33-release-policy.md)
 - decided-by [release-marks](../capability/rhiza/distribution/release-marks.md)
+- decided-by [breaking-detection](../capability/rhiza/distribution/breaking-detection.md)
 
 ## History
 

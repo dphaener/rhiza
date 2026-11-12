@@ -1,0 +1,40 @@
+{
+  "actor": "01M783FRYBTK0FFWQS87SPHRHY",
+  "after": [
+    "01M7836M7B34QVBWZSG8ZPKGNC"
+  ],
+  "at": "2026-11-12T14:45:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2 at ca38b73c6: go test -trimpath -count=1 -v ./tools/release/... passes. TestBreaking: removed op, removed request and response field, retyped field, removed and retyped setting and a log format bump are each reported as breaking; added op, field and setting give none. TestBreakingOneOfAndMaps: a field removed or retyped inside a oneOf variant, a dropped variant and a retyped map value are breaking; reordered or added variants are not. Read the diff: input documents, oneOf variants (matched by const properties) and additionalProperties are now decoded and compared, which fixes quality f1. Ran Breaking on this build's real describe --json: against itself it reports nothing; with handle removed from apply's set write variant it reports 'field: apply input.writes[](op=set).handle removed'. The minor findings left open (an enum superset is reported as a retyped setting, a newly required field and a removed enum value are not detected, the v* tag pattern, the breaking subcommand has no test) are outside the leaf's acceptance."
+        },
+        "handle": "breaking-detection-verified-2",
+        "id": "01M783HYY0W9FTVC2YVM0APN9H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M783HYY0W9FTVC2YVHPXB3CG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M783HYY0W9FTVC2YVHPXB3CG",
+        "id": "01M783HYZ4870JTPPC8MCAB87K",
+        "link": "01M783HYZ4870JTPPC8KJXNS6B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7DRSHQHDGWY46MBH319P",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B0BSVESMEFD39RTW517R3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M783HZ099BBZRMFYXWP40W6Z",
+  "type": "ops",
+  "v": 1
+}
