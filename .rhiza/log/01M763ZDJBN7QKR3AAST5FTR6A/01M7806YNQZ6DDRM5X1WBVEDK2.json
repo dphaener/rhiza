@@ -1,0 +1,29 @@
+{
+  "actor": "01M7801Q0N98ZNYD43EWXYYTR4",
+  "after": [
+    "01M7806X44AW4BSPT7QYQZT427"
+  ],
+  "at": "2026-11-12T13:47:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M7642MRZ4256B2ECYY211WW8",
+        "handle": null,
+        "id": "01M7806YMV9RM6FNMMCS2SWRA7",
+        "node": "01M7642MRZ4256B2ECYVG4D4SH",
+        "op": "node.update",
+        "set": {
+          "acceptance": "The generated settings reference golden is regenerated and shows autoUpdate as off, main, latest or release; docs/runs-and-daemon.md and docs/reference/config.md describe latest and release as working channels; a docs test (go test ./internal/doclinks -run TestDocsDescribeAutoUpdate) fails unless docs/runs-and-daemon.md names rhiza.daemon.autoUpdate with its off and main values and no longer names selfUpdate or self_update_project.",
+          "statement": "rhiza.daemon.autoUpdate and its channels are described in daemon settings, the generated settings reference and the user docs on the daemon as off, main, latest or release, each a working channel with what it updates from."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M763ZDJBN7QKR3AAST5FTR6A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7806YNQZ6DDRM5X1WBVEDK2",
+  "type": "ops",
+  "v": 1
+}
