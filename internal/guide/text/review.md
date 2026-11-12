@@ -1,9 +1,9 @@
 # Review
 
-A review run checks a built change set. Sessions get `RHIZA_CHANGE`, `RHIZA_CYCLE`
+Review sessions get `RHIZA_CHANGE`, `RHIZA_CYCLE`
 and `RHIZA_ROLE` (check, critic, fixer or verifier); checks and critics also `RHIZA_CHECK`,
 a leaf's fixer and verifier `RHIZA_LEAF`. Start with
-`rhiza slice --change "$RHIZA_CHANGE" --json`. Use a throwaway checkout.
+`rhiza slice --change "$RHIZA_CHANGE" --json`. Checks and critics use a throwaway checkout at the branch head.
 Review the diff from the merge-base with the default branch
 (`git diff $(git merge-base origin/main HEAD)`). Each role ends with `rhiza session done` as its own command after its recording
 command succeeded, never chained with `;` or `&&`.
@@ -11,8 +11,8 @@ command succeeded, never chained with `;` or `&&`.
 ## Checks
 
 Every check except `qa` tests runs with fakes only, never real Rex, agents or `gh`.
-Checks, critics and fixers run only the tests covering what the change touches, with the
-repo's scoped commands, never the repo's full
+Checks, critics and fixers run only the tests covering what the change touches, with
+scoped commands, never the repo's full
 suite: the PR's CI runs it before merge.
 
 While CI is unstable, or a red is not explained by your change,
