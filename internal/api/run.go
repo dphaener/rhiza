@@ -3516,13 +3516,22 @@ func abandonedCleanup(ctx *Ctx, rs *run.Store, common string, j run.Journal, ses
 	if err != nil || len(def.Cleanup) == 0 {
 		return
 	}
+	// A run that had its own worktree gets its cleanup there or not at
+	// all: commands written for the run's worktree never run in the main
+	// checkout.
+	main := filepath.Dir(common)
 	wt := st.Worktree
-	if fi, err := os.Stat(wt); wt == "" || err != nil || !fi.IsDir() {
-		wt = filepath.Dir(common)
+	if wt == "" {
+		wt = main
+	} else if fi, err := os.Stat(wt); err != nil || !fi.IsDir() {
+		if ctx.Stderr != nil {
+			fmt.Fprintf(ctx.Stderr, "rhiza: run %s: cleanup not run: worktree %s is gone\n", j.ID, wt)
+		}
+		return
 	}
 	e := &run.Engine{
 		Store:  rs,
-		Runner: &stepRunner{ctx: ctx, change: st.Change, run: j.ID, worktree: wt, main: filepath.Dir(common), sessions: sessions},
+		Runner: &stepRunner{ctx: ctx, change: st.Change, run: j.ID, worktree: wt, main: main, sessions: sessions},
 		Clock:  runClock,
 		Now:    ctx.Now,
 	}

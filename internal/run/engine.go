@@ -1251,8 +1251,9 @@ func (st State) ParseDefinition() (*workflow.Definition, error) {
 }
 
 // Cleanup runs the cleanup steps of the ended run id that have not run
-// since it last finished: the way an abandoned run, which no engine
-// finished, gets its cleanup. A failing step is journalled and logged, never
+// since it last ended: the way an abandoned run, which no engine finished,
+// gets its cleanup. Abandoning a run that had already failed is not a new
+// ending, so its cleanup does not run again. A failing step is journalled and logged, never
 // an error. The caller holds the run's lock.
 func (e *Engine) Cleanup(id string) error {
 	j, err := e.Store.Read(id)
@@ -1273,7 +1274,8 @@ func (e *Engine) Cleanup(id string) error {
 
 // cleanup runs the workflow's cleanup steps once each, in order, now that
 // the run has ended, skipping those the journal already holds since the
-// last finished entry (a resume or a second call never runs one twice). A
+// last retry (a resume, a second call, or abandoning a failed run never runs
+// one twice; only a retry reopens the run for a new ending). A
 // step that fails, or cannot run, or whose result cannot be journalled, is
 // logged and changes nothing else: the run's result stands.
 func (r *running) cleanup() {
@@ -1283,7 +1285,7 @@ func (r *running) cleanup() {
 	done := map[string]bool{}
 	for _, en := range r.j.Entries {
 		switch en.Type {
-		case TypeFinished:
+		case TypeRetried:
 			clear(done)
 		case TypeCleanup:
 			done[en.Step] = true

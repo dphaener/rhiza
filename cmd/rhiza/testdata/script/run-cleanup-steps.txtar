@@ -1,7 +1,8 @@
 # A workflow's [[cleanup]] steps run once, in order, when a run ends, in
 # the run's worktree with the run's environment. A failed run still fails
 # after its cleanup ran; a cleanup step that exits 1 is journalled and never
-# changes a done run's result; an abandoned run runs them too.
+# changes a done run's result; an abandoned run runs them too, unless it
+# had already failed (its cleanup ran then) or its worktree is gone.
 
 mkdir repo
 cd repo
@@ -35,6 +36,12 @@ exec cat $WORK/cleanup.env
 stdout '^RHIZA_STEP=tidy$'
 stdout '^RHIZA_CHANGE=01M5PWGEF85Y185JZ2ZGCNH40N$'
 
+# Abandoning the failed run is no new ending: its cleanup does not run again.
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/failed'
+exec sh -c 'rhiza run abandon $(cat $WORK/failed)'
+exec sh -c 'grep -c "\"type\":\"cleanup\"" .git/rhiza/runs/$(cat $WORK/failed).jsonl'
+stdout '^2$'
+
 # A cleanup step exiting 1 leaves a done run done, with the failure in the
 # journal, and the next cleanup step still runs.
 exec rhiza run start --foreground --workflow flaky --json
@@ -53,6 +60,18 @@ exec sh -c 'rhiza run abandon $(cat $WORK/held)'
 exists $WORK/abandoned.txt
 exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs cat'
 stdout '"type":"cleanup","at":"[^"]*","step":"mark"'
+
+# An abandoned run whose worktree is gone runs no cleanup, not even in the
+# main checkout.
+rm $WORK/abandoned.txt
+exec rhiza run start --foreground --workflow hold --no-wait
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/held'
+exec git worktree remove --force $WORK/repo.cleanup-steps
+exec sh -c 'rhiza run abandon $(cat $WORK/held)'
+stderr 'cleanup not run: worktree .* is gone'
+! exists $WORK/abandoned.txt
+exec sh -c 'cat .git/rhiza/runs/$(cat $WORK/held).jsonl'
+! stdout '"type":"cleanup"'
 
 # A malformed section is refused by check.
 cp ../bad.toml .rhiza/workflows/bad.toml
