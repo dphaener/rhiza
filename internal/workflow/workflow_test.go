@@ -2289,3 +2289,26 @@ func TestPlanCleanRoundSkipsCritic(t *testing.T) {
 		}
 	}
 }
+
+// TestBuiltinPromptsDoneOwnCommand holds every built-in prompt that names
+// `rhiza session done` to the rule: its own command, never chained after the
+// recording command, and the very last action.
+func TestBuiltinPromptsDoneOwnCommand(t *testing.T) {
+	for _, n := range BuiltinNames() {
+		data, _ := Builtin(n)
+		for i, line := range strings.Split(string(data), "\n") {
+			if !strings.HasPrefix(line, "prompt = ") || !strings.Contains(line, "rhiza session done") {
+				continue
+			}
+			where := fmt.Sprintf("%s.toml line %d", n, i+1)
+			for _, chained := range []string{"; rhiza session done", "&& rhiza session done", ";rhiza session done"} {
+				if strings.Contains(line, chained) {
+					t.Errorf("%s chains session done: %q", where, chained)
+				}
+			}
+			if !strings.Contains(line, "very last action") {
+				t.Errorf("%s names rhiza session done without saying it is the very last action", where)
+			}
+		}
+	}
+}

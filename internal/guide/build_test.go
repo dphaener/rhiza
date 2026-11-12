@@ -32,7 +32,7 @@ func TestBuildText(t *testing.T) {
 			"Evidence\nwritten by anyone else does not count",
 		},
 		"fakes-only": {"with fakes only, never real Rex,\nagents or `gh`"},
-		"done":       {"rhiza session done"},
+		"done":       {"rhiza session done", "as its own command", "`;` or `&&`"},
 		"scoped-tests": {
 			"Builders and verifiers run only the tests covering what the change touches",
 			"scoped commands", "never the repo's full\nsuite",
