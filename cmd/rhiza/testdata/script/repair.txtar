@@ -1,6 +1,7 @@
 # rhiza repair restores the entries render refuses: from HEAD for a tracked
-# file, from the persistent index for an uncommitted one it has seen, and
-# reports one the index never saw as not restorable.
+# file, from the persistent index for an uncommitted one it has seen or one
+# committed already damaged, and reports one the index never saw as not
+# restorable.
 
 exec git init -q
 exec rhiza init
@@ -57,6 +58,25 @@ stdout ': restored from HEAD'
 exec sh -c 'cmp $(cat $WORK/tracked) $WORK/orig3'
 exec sh -c 'stat -c %a $(cat $WORK/tracked)'
 stdout '^444$'
+exec rhiza render
+fold-ok
+
+# An entry committed already damaged is not restored from HEAD's damaged
+# bytes: the index's canonical bytes win.
+exec sh -c 'f=$(cat $WORK/tracked); chmod 644 $f; cp $(sed -n 2p $WORK/new) $f'
+exec git add -A
+exec git commit -q -m damaged
+! exec rhiza render
+stderr 'damaged log'
+exec rhiza repair
+stdout ': restored from index'
+! stdout 'from HEAD'
+exec sh -c 'cmp $(cat $WORK/tracked) $WORK/orig3'
+exec sh -c 'stat -c %a $(cat $WORK/tracked)'
+stdout '^444$'
+# The repaired file differs from HEAD's damaged copy until it is committed.
+exec git add -A
+exec git commit -q -m repaired
 exec rhiza render
 fold-ok
 

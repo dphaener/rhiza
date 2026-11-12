@@ -124,38 +124,64 @@ func restoredVerb(dry bool) string {
 }
 
 // originalBytes finds the bytes d's file should hold: HEAD's when the file
-// is tracked there, else the index's when they are canonical and name the
-// file's own change set and ID. why says why there are none. The index is
-// opened on first need into x.
+// is tracked there, else the index's, either only when they are canonical and
+// name the file's own change set and ID (an entry can be committed already
+// damaged); a file that is not an entry, such as repo.json, takes HEAD's
+// unchecked. why says why there are none. The index is opened on first need
+// into x.
 func originalBytes(ctx *Ctx, d damaged, x **index.Index) (data []byte, from, why string) {
+	cs, eid, ok := entryPathIDs(d.Path)
+	headDamaged := false
 	if inWorkTree(ctx.Git) {
 		if out, err := ctx.Git("show", "HEAD:./"+d.Path); err == nil {
-			return []byte(out), "HEAD", ""
+			if !ok || isEntryBytes([]byte(out), cs, eid) {
+				return []byte(out), "HEAD", ""
+			}
+			headDamaged = true
 		}
 	}
-	cs, eid, ok := entryPathIDs(d.Path)
 	if !ok {
 		return nil, "", "not a log/<change set>/<entry>.json path"
 	}
+	data, why = indexBytes(ctx, cs, eid, x)
+	if why != "" {
+		head := "not tracked at HEAD"
+		if headDamaged {
+			head = "HEAD's copy is damaged too"
+		}
+		return nil, "", head + " and " + why
+	}
+	return data, "index", ""
+}
+
+// indexBytes reads the canonical bytes of entry eid in change set cs from the
+// persistent index, opened on first need into x. why says why there are none.
+func indexBytes(ctx *Ctx, cs, eid id.ID, x **index.Index) (data []byte, why string) {
 	if *x == nil {
 		xi, err := index.Open(ctx.Root, ctx.IndexPath)
 		if err != nil {
-			return nil, "", "the index cannot be opened: " + err.Error()
+			return nil, "the index cannot be opened: " + err.Error()
 		}
 		*x = xi
 	}
 	raw, found, err := (*x).StoredEntry(cs, eid)
 	if err != nil {
-		return nil, "", "the index cannot be read: " + err.Error()
+		return nil, "the index cannot be read: " + err.Error()
 	}
 	if !found {
-		return nil, "", "not tracked at HEAD and the index never saw it"
+		return nil, "the index never saw it"
 	}
-	e, err := entry.DecodeCanonical(raw)
-	if err != nil || e.ID != eid || e.ChangeSet != cs {
-		return nil, "", "the index's stored bytes are not this entry's canonical bytes"
+	if !isEntryBytes(raw, cs, eid) {
+		return nil, "the index's stored bytes are not this entry's canonical bytes"
 	}
-	return raw, "index", ""
+	return raw, ""
+}
+
+// isEntryBytes reports whether data is the canonical encoding of entry eid in
+// change set cs.
+func isEntryBytes(data []byte, cs, eid id.ID) bool {
+	e, err := entry.DecodeCanonical(data)
+	return err == nil && e.ID == eid && e.ChangeSet == cs
 }
 
 // entryPathIDs parses .rhiza/log/<change set>/<entry>.json.
