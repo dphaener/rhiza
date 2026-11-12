@@ -1,0 +1,40 @@
+{
+  "actor": "01M76HAGNCWY128KC23FZMCB0X",
+  "after": [
+    "01M76HKG7KQ2C6BZ6J61K8WA8E"
+  ],
+  "at": "2026-11-12T00:19:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 6718a349d: go test -trimpath ./internal/api ./internal/workflow/... -run 'TestReviewCheckRefusesStaleRound|TestPlanFreshStep|TestPlanBuiltin' passes; go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes (golden has the fresh flag); full internal/api, internal/workflow and internal/run packages pass. Read the diff: State.RoundStale (rounds <= rounds at the latest revise entry) gates review-check before judging, with a Conflict naming round N as predating the latest revise and writing nothing; --fresh returns pass after that gate only. The test covers round 2 and round 3 stale for both forms with no asked entry, and a later fresh round passing both. plan.toml and plan-milestone.toml add step fresh (run = rhiza run review-check --fresh, on.pass = check, on.fail = review) and critic on.pass = fresh, checked by TestPlanFreshStep. An extra overlay test (no tree edit) confirmed: no revise -> --fresh passes and check judges round 1 as before; round 2 then revise -> stale refusal naming round 2; round 3 after revise -> --fresh exits 0 with no asked entry and review-check passes the stale gate into the unchanged judging path. Note: the leaf's own test makes its fresh round round 4 with no findings rather than a confirmed round 3."
+        },
+        "handle": "review-check-refuses-stale-round-verified",
+        "id": "01M76HZ9Z9NQY3SEEK6T2KQWY9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76HZ9Z9NQY3SEEK6QDBZ3XR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76HZ9Z9NQY3SEEK6QDBZ3XR",
+        "id": "01M76HZA0DW756G7T9Y25H7TYQ",
+        "link": "01M76HZA0DW756G7T9XZ6BNA48",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8RTCWVC288HQ1BJSJ2PE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F4G0JQ649RR29M9QPFX68",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76HZA1EKCEENPZ1CS36NYGB",
+  "type": "ops",
+  "v": 1
+}
