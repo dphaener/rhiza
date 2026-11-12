@@ -87,6 +87,7 @@ func newSessionFixture(t *testing.T, slug string) *sessionFixture {
 	f.rex = &fakeExec{out: rexWindowJSON}
 	ctx.Git = f.git.run
 	ctx.Exec = f.rex.run
+	ctx.Sleep = func(time.Duration) {}
 	ctx.Self = "/opt/bin/rhiza"
 	return f
 }

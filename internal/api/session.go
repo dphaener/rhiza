@@ -827,11 +827,44 @@ func openSessionPane(ctx *Ctx, tab, anchor session.Tab, split, label, worktree, 
 		}
 	}
 	args := rexWindowArgs(tab, worktree, self, sid)
-	out, err := ctx.Exec("rex", args, worktree, nil)
-	if err == nil {
-		tab, err = parseRexWindow(tab, out)
+	opened, err := retryRex(ctx, func() (session.Tab, error) {
+		out, err := ctx.Exec("rex", args, worktree, nil)
+		if err != nil {
+			return tab, err
+		}
+		return parseRexWindow(tab, out)
+	})
+	if err != nil {
+		return tab, args, err
 	}
-	return tab, args, err
+	return opened, args, nil
+}
+
+// rexTabWaits are the waits before the retries of a failed Rex tab open:
+// up to three retries, each wait longer than the last.
+var rexTabWaits = []time.Duration{time.Second, 3 * time.Second, 9 * time.Second}
+
+// retryRex runs open, and reruns it after each wait of rexTabWaits while it
+// fails (Rex not answering, or no window ID returned). After the last
+// retry it fails with Rex's last error. ctx.Sleep sleeps; nil is
+// time.Sleep.
+func retryRex(ctx *Ctx, open func() (session.Tab, error)) (session.Tab, error) {
+	sleep := ctx.Sleep
+	if sleep == nil {
+		sleep = time.Sleep
+	}
+	tab, err := open()
+	for _, wait := range rexTabWaits {
+		if err == nil {
+			return tab, nil
+		}
+		sleep(wait)
+		tab, err = open()
+	}
+	if err != nil {
+		return tab, fmt.Errorf("%v (after %d retries)", err, len(rexTabWaits))
+	}
+	return tab, nil
 }
 
 // splitPane splits the anchor block in direction split when that is right
