@@ -54,10 +54,14 @@ type Options struct {
 	Dist    string // folder with the archives and checksums.txt
 	Project string // archive name prefix, e.g. rhiza
 	Tag     string // git tag, e.g. v0.1.0; it is the manifest's version
-	Version string // archive version, the tag without its v; defaults to it
+	Version string // archive version, the tag without its v; defaults to it (see AssetVersion)
 	Commit  string // full commit sha the release was built from
 	Repo    string // owner/name on GitHub
 	Channel string // defaults to ChannelRelease
+	// ReleaseTag is the GitHub release the archives are uploaded to, which
+	// the download URLs name; it defaults to Tag (the latest channel's is
+	// the rolling "latest").
+	ReleaseTag string
 }
 
 // Build reads dist and returns the manifest, or an error unless all four
@@ -69,9 +73,13 @@ func Build(o Options) (*Manifest, error) {
 	if o.Channel == "" {
 		o.Channel = ChannelRelease
 	}
+	if o.ReleaseTag == "" {
+		o.ReleaseTag = o.Tag
+	}
 	if o.Version == "" {
 		o.Version = strings.TrimPrefix(o.Tag, "v")
 	}
+	o.Version = AssetVersion(o.Version)
 	f, err := os.Open(filepath.Join(o.Dist, ChecksumsFile))
 	if err != nil {
 		return nil, fmt.Errorf("release: %w", err)
@@ -98,13 +106,22 @@ func Build(o Options) (*Manifest, error) {
 			return nil, fmt.Errorf("release: %s sha256 is %s but %s says %s", name, got, ChecksumsFile, want)
 		}
 		p.SHA256 = want
-		p.URL = fmt.Sprintf("https://github.com/%s/releases/download/%s/%s", o.Repo, o.Tag, name)
+		p.URL = fmt.Sprintf("https://github.com/%s/releases/download/%s/%s", o.Repo, o.ReleaseTag, name)
 		m.Platforms = append(m.Platforms, p)
 	}
 	if len(missing) > 0 {
 		return nil, fmt.Errorf("release: missing platforms: %s", strings.Join(missing, ", "))
 	}
 	return m, nil
+}
+
+// AssetVersion is the version as it appears in an archive's file name: '+'
+// (semver build metadata, as in 0.0.1-main.5+abc1234) becomes '-', since
+// GitHub renames release assets with special characters and the manifest's
+// URLs must name the uploaded files. .goreleaser.yaml's archive
+// name_template maps it the same way.
+func AssetVersion(v string) string {
+	return strings.ReplaceAll(v, "+", "-")
 }
 
 // ParseChecksums reads a sha256sum-style file into file name to lowercase hex.

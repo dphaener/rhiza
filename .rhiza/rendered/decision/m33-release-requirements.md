@@ -23,6 +23,7 @@ Release requirements are baked in: Rhiza decides by rule what triggers a release
 ### In
 
 - decided-by [m33-release-policy](../intent/milestone-33/m33-release-policy.md)
+- decided-by [latest-channel-prerelease](../capability/rhiza/distribution/latest-channel-prerelease.md)
 
 ## History
 

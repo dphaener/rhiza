@@ -1,0 +1,40 @@
+{
+  "actor": "01M77HWYMBSE9G0Q7WV181GGR0",
+  "after": [
+    "01M77HDX3CB06KRDBW6MQBWJ84"
+  ],
+  "at": "2026-11-12T09:39:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at bbdef16 (attempt 2; both attempt-1 findings fixed). Read latest.yml: on push to branches [main] only; concurrency group 'latest' with cancel-in-progress true; gate step skips publishing when tag latest exists, differs from GITHUB_SHA and is a descendant of it (git merge-base --is-ancestor). Ran the gate logic in a scratch repo: no tag -> publish, latest at a descendant -> skip, same commit -> publish, newer commit -> publish. Reproduced release-snapshot.yml in a scratch clone with goreleaser v2.20.1: RHIZA_BUILD_VERSION=$(go run ./tools/release version) = v0.0.1-main.480+bbdef16; goreleaser check ok (also with the env unset); release --snapshot --clean built rhiza_0.0.1-main.480+bbdef16_{linux,darwin}_{amd64,arm64}.tar.gz, the four-archive ls loop passed; go run ./tools/release -dist dist -tag $V -version ${V#v} -channel latest -release-tag latest exited 0, manifest has channel latest, version v0.0.1-main.480+bbdef16, 4 platforms with /releases/download/latest/ URLs; the built binary prints 'rhiza v0.0.1-main.480+bbdef16' (no vv). go test -trimpath ./internal/release/... ./tools/release/... ok. Caveat not covered by the acceptance: asset names contain '+' (semver build metadata); GitHub may rename '+' in uploaded asset names, which would break the manifest URLs; worth checking on the first real publish."
+        },
+        "handle": "latest-channel-prerelease-verified",
+        "id": "01M77J0PG27D6G2HHSJN3YTAQ1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77J0PG27D6G2HHSJKPEB438",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77J0PG27D6G2HHSJKPEB438",
+        "id": "01M77J0PJ4FG6W2SCRTQ8STESC",
+        "link": "01M77J0PJ4FG6W2SCRTMKNT0Z1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7CXJ4H445ZBV963ADV16",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76AZHGY605TXF68M27W4SZV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77J0PM2JD2D61A3K11WW8HD",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,86 @@
+name: Latest
+
+# Every push to main replaces the rolling `latest` prerelease with archives
+# built from that commit. It is never GitHub's latest release.
+on:
+  push:
+    branches: [ main ]
+
+# One run at a time; a newer push cancels an older run.
+concurrency:
+  group: latest
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  latest:
+    runs-on: ubuntu-26.04
+
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+
+    - name: Skip when latest is already newer
+      id: gate
+      run: |
+        git fetch --force origin tag latest || true
+        if git rev-parse -q --verify refs/tags/latest >/dev/null \
+          && [ "$(git rev-parse 'latest^{commit}')" != "$GITHUB_SHA" ] \
+          && git merge-base --is-ancestor "$GITHUB_SHA" 'latest^{commit}'; then
+          echo "latest already points at a descendant of $GITHUB_SHA; nothing to publish"
+          echo "publish=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "publish=true" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Set up Go
+      if: steps.gate.outputs.publish == 'true'
+      uses: actions/setup-go@v7
+      with:
+        go-version-file: go.mod
+        cache: true
+        cache-dependency-path: go.sum
+
+    - name: Compute the version
+      if: steps.gate.outputs.publish == 'true'
+      run: echo "RHIZA_BUILD_VERSION=$(go run ./tools/release version)" >> "$GITHUB_ENV"
+
+    - name: Build the archives
+      if: steps.gate.outputs.publish == 'true'
+      uses: goreleaser/goreleaser-action@v7
+      with:
+        distribution: goreleaser
+        version: "~> v2"
+        args: release --snapshot --clean
+
+    - name: Write the manifest
+      if: steps.gate.outputs.publish == 'true'
+      run: |
+        for t in linux_amd64 linux_arm64 darwin_amd64 darwin_arm64; do
+          ls dist/rhiza_*_"$t".tar.gz >/dev/null
+        done
+        go run ./tools/release -dist dist -tag "$RHIZA_BUILD_VERSION" \
+          -version "${RHIZA_BUILD_VERSION#v}" -commit "$GITHUB_SHA" \
+          -repo "$GITHUB_REPOSITORY" -channel latest -release-tag latest
+
+    - name: Attest build provenance
+      if: steps.gate.outputs.publish == 'true'
+      uses: actions/attest-build-provenance@v3
+      with:
+        subject-path: dist/*.tar.gz
+
+    - name: Replace the latest prerelease
+      if: steps.gate.outputs.publish == 'true'
+      run: |
+        gh release delete latest --cleanup-tag --yes || true
+        gh release create latest --prerelease --latest=false \
+          --target "$GITHUB_SHA" --title "Latest $RHIZA_BUILD_VERSION" \
+          --notes "Build of main at $GITHUB_SHA. Not a release." \
+          dist/*.tar.gz dist/checksums.txt dist/manifest.json
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
