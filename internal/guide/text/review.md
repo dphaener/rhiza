@@ -67,6 +67,13 @@ Fix only the confirmed findings your prompt names, in one new commit with the `C
 `Review: <run>` ($RHIZA_RUN) for the change set's fixer. Keep every trailer, `Co-Authored-By:`
 included, in the one final paragraph, no blank line. Never rewrite commits.
 
+## Command budget
+
+Never sleep and never poll: no `sleep`, no loop that re-reads a command's output
+or status to see if it finished. No single command runs longer than about four
+minutes. A build or test, or a check's test run, that may take longer runs once in the background and is
+waited for once, until it exits; split work that cannot fit into smaller commands.
+
 ## Outside work
 
 Work outside the intent is a question or a discovered-from draft change set:

@@ -54,6 +54,13 @@ failing test locally, fix it, and push only after it and the
 touched packages pass locally.
 Reproduce a timing flake by injecting a delay at the suspected race, never by busy loops or parallel stress on the host.
 
+## Command budget
+
+Never sleep and never poll: no `sleep`, no loop that re-reads a command's output
+or status to see if it finished. No single command runs longer than about four
+minutes. A build or test that may take longer runs once in the background and is
+waited for once, until it exits; split work that cannot fit into smaller commands.
+
 ## Outside work
 
 - Needed outside work, without which the leaf cannot pass: raise a question linked `blocks` to the leaf, and stop.
