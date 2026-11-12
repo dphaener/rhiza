@@ -154,4 +154,14 @@ func TestRunMilestoneCheckEnforcesNumber(t *testing.T) {
 		`{"kind":"intent","handle":"first","parent":"milestone-7","fields":["statement=A done point"]}`,
 	)
 	wantFail("done point without the prefix", `"first"`)
+	// The planner lands the record during the interview, before this step:
+	// its new milestone intent is still checked.
+	start(`{"kind":"intent","handle":"milestone-8","fields":["statement=Eight","milestone=8"]}`)
+	wantFail("landed record, before landing", "milestone-8")
+	for _, s := range []string{"propose", "accept", "land"} {
+		if _, err := callOp(t, ctx, s, `{}`); err != nil {
+			t.Fatalf("%s: %v", s, err)
+		}
+	}
+	wantFail("landed record", "milestone-8")
 }

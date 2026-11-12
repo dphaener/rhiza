@@ -80,9 +80,21 @@ func runRunMilestoneCheck(ctx *Ctx, _ any) (any, error) {
 	resp := RunMilestoneCheckResponse{Run: rr.id, ChangeSets: []string{}}
 	var bad []string
 	var badNum []string
-	var landed Model
-	if rr.state.MilestoneNumber > 0 {
-		landed = newModel(w.diskLog(), id.ID{})
+	if n := rr.state.MilestoneNumber; n > 0 {
+		// The plan's new milestone intents are those its change sets
+		// created, landed or not: the planner lands the record during the
+		// interview, before this step.
+		created := map[id.ID]bool{}
+		for _, c := range plan {
+			for _, o := range c.Ops {
+				if o.Type == op.TypeNodeCreate && o.Kind == op.KindIntent {
+					created[o.Node] = true
+				}
+			}
+		}
+		for _, c := range plan {
+			badNum = append(badNum, newMilestoneNumberProblems(w.model(c.ID), created, n)...)
+		}
 	}
 	for _, c := range plan {
 		if !inFlight[c.ID] {
@@ -94,9 +106,6 @@ func runRunMilestoneCheck(ctx *Ctx, _ any) (any, error) {
 		served, err := milestonesServed(ctx, cmd, c.ID)
 		if err != nil {
 			return nil, err
-		}
-		if landed != nil {
-			badNum = append(badNum, newMilestoneNumberProblems(w.model(c.ID), landed, rr.state.MilestoneNumber)...)
 		}
 		ok := true
 		switch {
@@ -195,10 +204,11 @@ func reserveMilestoneNumber(ctx *Ctx, rs *run.Store) (int, error) {
 }
 
 // newMilestoneNumberProblems lists, one line each, how the new milestone
-// intents of m (those landed lacks that carry a milestone field) and their
-// done points break the reserved number n: the handle must be milestone-n,
-// the milestone field n, and each done point's handle prefixed mn-.
-func newMilestoneNumberProblems(m, landed Model, n int) []string {
+// intents of m (those in created, the plan's change sets' creates, that
+// carry a milestone field) and their done points break the reserved number
+// n: the handle must be milestone-n, the milestone field n, and each done
+// point's handle prefixed mn-.
+func newMilestoneNumberProblems(m Model, created map[id.ID]bool, n int) []string {
 	var out []string
 	var walk func(parent id.ID, under *Node)
 	walk = func(parent id.ID, under *Node) {
@@ -213,7 +223,7 @@ func newMilestoneNumberProblems(m, landed Model, n int) []string {
 				walk(c.ID, under)
 				continue
 			}
-			if _, ok := landed.Node(c.ID); ok || !planMilestoneField(c.Fields) {
+			if !created[c.ID] || !planMilestoneField(c.Fields) {
 				walk(c.ID, nil)
 				continue
 			}
