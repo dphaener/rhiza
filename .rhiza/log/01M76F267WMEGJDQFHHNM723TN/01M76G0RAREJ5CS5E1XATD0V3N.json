@@ -1,0 +1,41 @@
+{
+  "actor": "01M76FZB5ZXJYN0A7WM34NX2T4",
+  "after": [
+    "01M76FZ18W5QF59TGY4GWBP1T7"
+  ],
+  "at": "2026-11-11T23:45:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question (review r3 f1, confirmed by the critic) is that main-write-model-branch and decision-main-writes-get-a-branch make branch+push+PR part of every main-checkout write with no fallback, while 270 of 359 testscripts git init a plain checkout with no origin, apply.txtar has no git, and CLAUDE.md forbids tests touching the network or gh. I checked the scripts: several add an origin but put no fake gh on PATH (reopen.txtar, feed.txtar, run-abandon-unpushed.txtar, ship-close-out-log-copies.txtar), so gating on origin alone would still let them reach the real gh; hence the RHIZA_TEST_NOW opt-in, which is the codebase's existing pattern for test-only behaviour (render.go:120, daemon.go:194/1243/2113). The change set's intent is that nothing is left uncommitted on a main checkout that ships through origin; a repo with no origin has no branch or PR to ship to, so writing locally there keeps today's behaviour and every existing script passing, and flagging its entries as orphans would make health fail in every local-only repo for no actionable reason. Where origin exists, failing the user's accept/apply because GitHub is unreachable would lose nothing but block work; the entry is already on disk, and decision-main-writes-get-a-branch (3)-(4) already provide the safety net (health names orphans, the daemon's commit-untracked commits them), so a failed branch step degrades into that path instead of a new mechanism. The leaf's acceptance only covered bare origin + fake gh, so the two fallback cases are added to it.",
+          "statement": "The model-branch step of main-write-model-branch is conditional and never fails the write. (1) The entry is always written into the main checkout's .rhiza/log first, exactly as today. (2) The branch, push and PR step runs only when the repo has an origin remote with an origin/main ref; with no origin or no origin/main (every plain testscript repo, apply.txtar's no-git repo, any local-only Rhiza repo) the write stays local, no branch is cut, nothing is pushed, gh is never called, and rhiza health and rhiza check do not report such entries as orphans (there is nowhere to commit them; a local-only owner commits by hand). (3) Under RHIZA_TEST_NOW the step runs only when a test opts in with a dedicated test env var (following the RHIZA_TEST_FREE_BYTES pattern), so the existing scripts that add an origin but no fake gh never reach gh or the network; TestModelBranch and any new script opt in with a local bare origin and a fake gh. (4) When origin/main exists but the branch, push or PR step fails (gh missing or unauthenticated, network down, push rejected), the command still succeeds with the entry written, prints a warning naming the entry, and leaves it as an untracked entry with no pending model branch, which health reports as an orphan and the daemon's commit-untracked path retries on its next tick. The leaf's acceptance gains: in a repo with no origin, an accept writes the entry locally, exits 0, creates no branch and calls no gh, and health reports no problem; with origin and a failing fake gh, the accept exits 0 with a warning and health reports the entry as an orphan.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "decision-model-branch-fallback",
+        "id": "01M76G0R92RSD31EDP711XCXVV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76G0R92RSD31EDP6XBPAKDG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76G0R92RSD31EDP6XBPAKDG",
+        "id": "01M76G0RA2HB796QXM2Y6BA5ZM",
+        "link": "01M76G0RA2HB796QXM2XGK5JXT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FZ15DP1PVV3Y4R7KP5AQ4",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76G0RAREJ5CS5E1XATD0V3N",
+  "type": "ops",
+  "v": 1
+}

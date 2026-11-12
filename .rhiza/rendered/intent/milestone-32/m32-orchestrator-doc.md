@@ -1,6 +1,6 @@
 # m32-orchestrator-doc
 
-intent · `01M76NWA90V18FMW9X3AY0VTW0` · parent [milestone-32](../milestone-32.md)
+intent · `01M76NWA90V18FMW9X3AY0VTW0` · parent [milestone-32](../milestone-32.01M76NWA4W870AXQ6PBANDWRGE.md)
 
 ## statement
 

@@ -1,0 +1,109 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [
+    "01M763Z4XAX07ZRC41P7FXZHRS"
+  ],
+  "at": "2026-11-11T20:16:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Unit tests run a fake classifier command for transient, real, garbage output and a failing command, and show the parsed verdict, with real assumed on anything but a clear transient; the daemon-settings testscript lists the setting with its default.",
+          "statement": "A machine-wide setting names the failure classifier command: it reads a failed step's output on stdin and prints whether the failure is transient or real with a one-line reason; the default runs Claude headless with Haiku, any LLM CLI can be configured, and empty turns classification off."
+        },
+        "handle": "failure-classifier-setting",
+        "id": "01M7642N1KXSN7CKCDF25TGWJB",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M7642N1KXSN7CKCDEZFBK78Q",
+        "op": "node.create",
+        "parent": "01M6CS1WF6WPPJTPC8X1DHYGD8"
+      },
+      {
+        "decision": null,
+        "from": "01M7642N1KXSN7CKCDEZFBK78Q",
+        "id": "01M7642N201M1VY3JRZXJMENGM",
+        "link": "01M7642N201M1VY3JRZW902P7M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BNMBDWE0CRW0XZJ5P2V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/api watchdog tests with an injected classifier show a transient failure retried, a real one and a classifier error left to the inbox; no transientSignatures remain.",
+          "statement": "The watchdog retries a failed step within its budget only when the classifier says transient, and leaves it to the inbox when the classifier says real or cannot run; the hard-coded transient signature list is gone and each verdict and reason is logged."
+        },
+        "handle": "watchdog-classifies-failures",
+        "id": "01M7642N2Q7TPP6BCV46ZT5QGX",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M7642N2Q7TPP6BCV43AGR07T",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M7642N2Q7TPP6BCV43AGR07T",
+        "id": "01M7642N358QD9RDC1MV2XCFEQ",
+        "link": "01M7642N358QD9RDC1MSKMNAS6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BNMBDWE0CRW0XZJ5P2V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Run tests with an injected classifier show a command step rerun once on transient and not on real.",
+          "statement": "The step runner reruns a failed command step once only when the classifier says transient, instead of matching Go's vanished-$WORK signature (step-retry-vanished-go-work is retired)."
+        },
+        "handle": "step-rerun-classified",
+        "id": "01M7642N3Y65X0MX8J6P0W26CK",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7642N3Y65X0MX8J6J2WSJVH",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7642N3Y65X0MX8J6J2WSJVH",
+        "id": "01M7642N4FR3FNMEEJ0MA2NCK2",
+        "link": "01M7642N4FR3FNMEEJ0JEQ7KS0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BNMBDWE0CRW0XZJ5P2V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/api ship tests with fake gh output for a failing Jest job record a finding naming the saved log, and the saved log holds the failure lines.",
+          "statement": "When CI still fails after its reruns, ship saves the failed jobs' logs, trimmed to the failing part, in the run's folder and the fix step's finding points the fixer at them; the Go, RSpec, Minitest and pytest log parsers are gone."
+        },
+        "handle": "ci-logs-to-fixer",
+        "id": "01M7642N4ZK43G1W494NNV1BFD",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M7642N4ZK43G1W494MBFE7VE",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M7642N4ZK43G1W494MBFE7VE",
+        "id": "01M7642N5KHF7GFHBKZHF0KBC4",
+        "link": "01M7642N5KHF7GFHBKZG2PTQ5T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7640BNMBDWE0CRW0XZJ5P2V",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M763Z4X9Q90ASH2K1BF7PZPS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7642N63J7HGE4G3BEVBFK2F",
+  "type": "ops",
+  "v": 1
+}

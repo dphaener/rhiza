@@ -1,0 +1,15 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [],
+  "at": "2026-11-11T20:14:34Z",
+  "body": {
+    "intent": "Rhiza's Go behaviour moves into its own workflows: workflows can set environment variables (Rhiza's set GOTMPDIR to the run's temp folder), Rhiza's cleanup phase trims the Go build cache and stale go-build and rhiza test temp folders, Rhiza's ship-change workflow builds rhiza from the PR head in a step; trimGoCache, gosweep's daemon use, the product's GOTMPDIR and ship's is-Rhiza-repo check leave the product.",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M763YX47S5XY0W3P8FVJ54S8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M763YX47S5XY0W3P8KF208EM",
+  "type": "open",
+  "v": 1
+}

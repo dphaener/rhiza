@@ -1,0 +1,30 @@
+{
+  "actor": "01M764X8454X91T94853S3E54X",
+  "after": [
+    "01M764M3QRX1MA12EEKZWSP0SC"
+  ],
+  "at": "2026-11-11T20:31:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Unit tests run a fake classifier command for transient, real, garbage output and a failing command, and show the parsed verdict, with real assumed on anything but a clear transient; the daemon-settings testscript lists the setting with its default; a testscript whose command step fails (e.g. build-leaf-fails) runs with the classifier empty from Setup and records no classifier call, and a script that sets a fake classifier command sees its verdict used.",
+          "statement": "A machine-wide setting names the failure classifier command: it reads a failed step's output on stdin and prints whether the failure is transient or real with a one-line reason; the default runs Claude headless with Haiku, any LLM CLI can be configured, and empty turns classification off. The testscript Setup in cmd/rhiza/main_test.go sets the classifier empty, so no test calls an agent or the network; scripts that test classification set a fake classifier command."
+        },
+        "handle": "failure-classifier-setting",
+        "id": "01M7642N1KXSN7CKCDF25TGWJB",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M7642N1KXSN7CKCDEZFBK78Q",
+        "op": "node.create",
+        "parent": "01M6CS1WF6WPPJTPC8X1DHYGD8"
+      }
+    ]
+  },
+  "change_set": "01M763Z4X9Q90ASH2K1BF7PZPS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M764Y1CDJX74C0FZKMGXAYE5",
+  "type": "ops",
+  "v": 1
+}

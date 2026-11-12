@@ -1,0 +1,132 @@
+{
+  "actor": "01M76JQG01F7FCEQMDK0M5HW25",
+  "after": [
+    "01M76JM2QC1MM703TGHE3ZDCC6"
+  ],
+  "at": "2026-11-12T00:36:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c20429608, built binary (go build -trimpath) in a scratch repo with a hand-written plan run journal (builtin plan.toml definition), RHIZA_RUN set: rhiza run findings with a change-set depends-on link ID (also by 12-char prefix), a model depends-on link ID and a node recorded the round (exit 0); text and run status --json showed link, link_type depends-on, link_from and link_to; run verdict confirmed the link finding; round-3 run review-check added question review-…-r3-f1 naming 'link depends-on <id> from <a> to <b>' with links_in and links_out empty; an ID that is neither node nor link exited 2 with the journal unchanged."
+        },
+        "handle": "findings-name-links-qa-1",
+        "id": "01M76JXRVF4JESXDGEYDT6S16Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76JXRVF4JESXDGEY9TGZFP9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76JXRVF4JESXDGEY9TGZFP9",
+        "id": "01M76JXRWABRN5M5QWHQWAXYJV",
+        "link": "01M76JXRWABRN5M5QWHPGXFXEB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8S09V3FZJC4T6RJHT5PY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c20429608, built binary (go build -trimpath) in a scratch repo with a hand-written plan run journal (builtin plan.toml definition), RHIZA_RUN set: run findings recorded 3 findings and run verdict confirmed f1 and dropped f2,f3; run status --json and its markdown showed the round with its findings and verdicts; an unknown ID exited 2 with nothing written."
+        },
+        "handle": "plan-review-journal-qa-1",
+        "id": "01M76JXRY2RGSJNXXF1HWQ91C3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76JXRY2RGSJNXXF1FAV6KPJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76JXRY2RGSJNXXF1FAV6KPJ",
+        "id": "01M76JXRZ1PF5B1GEQA5TPAQAP",
+        "link": "01M76JXRZ1PF5B1GEQA501AXZS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGD28YB7NQC8BQR8MCVFM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c20429608, built binary (go build -trimpath) in a scratch repo with a hand-written plan run journal (builtin plan.toml definition), RHIZA_RUN set: after a revise visit with no later round, run review-check and run review-check --fresh both exited 3 naming round 1 as predating the latest revise and wrote nothing; with rounds journaled after each revise, --fresh exited 0 and review-check judged as before (round 2 fail exit 1, round 3 pass adding a question). workflow describe plan shows critic on.pass -> fresh, fresh on.pass -> check, on.fail -> review; plan-milestone.toml has the same."
+        },
+        "handle": "review-check-refuses-stale-round-qa-1",
+        "id": "01M76JXS04BPC7JHBMBQG8422N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76JXS04BPC7JHBMBQ55GZKN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76JXS04BPC7JHBMBQ55GZKN",
+        "id": "01M76JXS1J739AJAA8W4C1GKAW",
+        "link": "01M76JXS1J739AJAA8W21K5AH0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8RTCWVC288HQ1BJSJ2PE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c20429608, built binary (go build -trimpath) in a scratch repo with a hand-written plan run journal (builtin plan.toml definition), RHIZA_RUN set: at review visit 1 run round-recorded exited 3 naming rhiza run findings; after run findings it exited 0; at review visit 2 the earlier round did not count (exit 3). With a review-step session record, session done exited 3 naming rhiza run findings and left the session not done; after an empty {\"findings\":[]} round, session done exited 0."
+        },
+        "handle": "review-visit-records-round-qa-1",
+        "id": "01M76JXS3R100E0V01FRSPZ3K9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76JXS3R100E0V01FQDT74T0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76JXS3R100E0V01FQDT74T0",
+        "id": "01M76JXS5VAZKJNJKBWGEVT8T5",
+        "link": "01M76JXS5VAZKJNJKBWCF51ZWH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8RPF7AF6C8Y5Y9D11DRW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c20429608, built binary (go build -trimpath) in a scratch repo with a hand-written plan run journal (builtin plan.toml definition), RHIZA_RUN set: rhiza guide plan-review says to run session done as its own command once findings, verdict or the reviser's apply succeeded, never chained with ';'; workflow describe plan shows the critic prompt with the same instruction; plan.toml and plan-milestone.toml review, critic and revise prompts carry it."
+        },
+        "handle": "plan-review-done-unchained-qa-1",
+        "id": "01M76JXS9HHBXJECP0EHN6QCAH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76JXS9HHBXJECP0EFAMEVJT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76JXS9HHBXJECP0EFAMEVJT",
+        "id": "01M76JXSDJTPE19WV4CS9SA2CX",
+        "link": "01M76JXSDJTPE19WV4CRD795K7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8S79W69F3VS3VY9VTKYX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F4G0JQ649RR29M9QPFX68",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76JXSF10W0E24303TVQZ7N3",
+  "type": "ops",
+  "v": 1
+}

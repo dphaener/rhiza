@@ -1,7 +1,10 @@
 package api
 
 import (
+	"strconv"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
@@ -83,5 +86,69 @@ func TestReviewAskedFor(t *testing.T) {
 	st.Asked = []run.Asked{{Handle: other, Question: "01M6W7QGXS2VNCJ3KMFRMW78XE"}}
 	if _, err := gateReview(nil, m, reviewRun{id: st.ID, state: st}); err == nil {
 		t.Error("gateReview took another run's question for the finding")
+	}
+}
+
+// review-check, and its --fresh test, refuse a round journaled before the
+// latest revise visit, adding nothing, even when the round is 3.
+func TestReviewCheckRefusesStaleRound(t *testing.T) {
+	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
+	t0 := time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
+	store := run.NewStore(run.Dir(f.common))
+	if err := store.Create("R8", run.Entry{
+		Type: run.TypeStarted, Step: "review", At: t0,
+		Started: &run.Started{Workflow: "plan", Change: "01M76F4G0JQ649RR29M9QPFX68", Title: "Plan it"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	app := func(e run.Entry) {
+		t.Helper()
+		e.At = t0
+		if err := store.Append("R8", e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	round := func() {
+		app(run.Entry{Type: run.TypeEntered, Step: "review"})
+		app(run.Entry{Type: run.TypeFindings, Step: "review", Findings: []run.Finding{{ID: "f1", Node: "n"}}})
+		app(run.Entry{Type: run.TypeVerdict, Step: "critic", Verdicts: []run.Verdict{{Finding: "f1", Verdict: run.Confirmed}}})
+	}
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return "R8"
+		}
+		return ""
+	}
+	round()
+	round()
+	app(run.Entry{Type: run.TypeEntered, Step: "revise"})
+	for n := 2; n <= 3; n++ {
+		if n == 3 {
+			// A third stale round: the revise follows round 3.
+			app(run.Entry{Type: run.TypeEntered, Step: "review"})
+			app(run.Entry{Type: run.TypeFindings, Step: "review", Findings: []run.Finding{{ID: "f1", Node: "n"}}})
+			app(run.Entry{Type: run.TypeVerdict, Step: "critic", Verdicts: []run.Verdict{{Finding: "f1", Verdict: run.Confirmed}}})
+			app(run.Entry{Type: run.TypeEntered, Step: "revise"})
+		}
+		for _, req := range []string{`{}`, `{"fresh":true}`} {
+			_, err := callOp(t, f.ctx, "run.review-check", req)
+			e := AsError(err)
+			if e == nil || !strings.Contains(e.Message, "round "+strconv.Itoa(n)) || !strings.Contains(e.Message, "predates the latest revise") {
+				t.Fatalf("round %d, %s: %v", n, req, err)
+			}
+		}
+		st, _ := store.Read("R8")
+		if len(st.State().Asked) != 0 {
+			t.Fatalf("round %d: a stale check asked a question", n)
+		}
+	}
+	// A round after the revise visit is fresh.
+	app(run.Entry{Type: run.TypeEntered, Step: "review"})
+	app(run.Entry{Type: run.TypeFindings, Step: "review", Findings: []run.Finding{}})
+	if _, err := callOp(t, f.ctx, "run.review-check", `{"fresh":true}`); err != nil {
+		t.Fatalf("--fresh after a fresh round: %v", err)
+	}
+	if _, err := callOp(t, f.ctx, "run.review-check", `{}`); err != nil {
+		t.Fatalf("review-check of a fresh round: %v", err)
 	}
 }

@@ -59,7 +59,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "run.review-check",
-		Summary:  "Check the latest review round of the run RHIZA_RUN names: pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass",
+		Summary:  "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass",
 		Write:    true,
 		Request:  reflect.TypeFor[RunReviewCheckRequest](),
 		Response: reflect.TypeFor[RunReviewCheckResponse](),
@@ -92,8 +92,12 @@ type RunVerdictRequest struct {
 // once a critic gave one.
 type RunFinding struct {
 	ID            string `json:"id" desc:"The finding's ID in its round: f1, f2, ..."`
-	Node          string `json:"node,omitempty" desc:"The node it is about, by ID; absent for a leaf's finding"`
+	Node          string `json:"node,omitempty" desc:"The node it is about, by ID; absent for a leaf's finding and for a finding about a link"`
 	Handle        string `json:"handle,omitempty" desc:"The node's handle when the finding was recorded; absent when it had none"`
+	Link          string `json:"link,omitempty" desc:"A plan review finding about a link: the link's ID, in place of node"`
+	LinkType      string `json:"link_type,omitempty" desc:"That link's type, e.g. depends-on or serves"`
+	LinkFrom      string `json:"link_from,omitempty" desc:"That link's from end, by ID"`
+	LinkTo        string `json:"link_to,omitempty" desc:"That link's to end, by ID"`
 	Kind          string `json:"kind,omitempty" desc:"What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding"`
 	Check         string `json:"check,omitempty" desc:"A review check's finding: the check that found it"`
 	Severity      string `json:"severity,omitempty" desc:"A review check's finding: blocker, major, minor or nit"`
@@ -374,6 +378,13 @@ func runRunFindings(ctx *Ctx, req any) (any, error) {
 		}
 		node, err := r2.resolve(ref)
 		if err != nil {
+			if lk, ok := r2.resolveLink(ref); ok {
+				found = append(found, run.Finding{
+					ID: "f" + strconv.Itoa(n), Link: lk.ID.String(), LinkType: string(lk.Type),
+					LinkFrom: lk.From.String(), LinkTo: lk.To.String(), Kind: in.Kind, Reason: in.Reason,
+				})
+				continue
+			}
 			return nil, Usagef("finding %d: node %q: %s", n, ref, AsError(err).Message).
 				WithNext("rhiza ls --change " + rr.change.String())
 		}
@@ -661,6 +672,30 @@ func (p *planResolver) resolve(ref string) (Node, error) {
 	return Node{}, Usagef("%s, in change set %s's view or any of its plan's change sets", AsError(err).Message, p.run)
 }
 
+// resolveLink is the link ref names, by ID or unique prefix, in the run's
+// change set's view or, failing that, in a plan change set's view (read by
+// the failed node resolve before it).
+func (p *planResolver) resolveLink(ref string) (Link, bool) {
+	if lk, err := p.w.model(p.run).ResolveLink(ref); err == nil {
+		return lk, true
+	}
+	for _, v := range p.views {
+		if lk, err := v.ResolveLink(ref); err == nil {
+			return lk, true
+		}
+	}
+	return Link{}, false
+}
+
+// findingTarget is what a plan finding is about, for a line: its node's
+// handle, else the node's ID, else "link <type> <id> from <from> to <to>".
+func findingTarget(handle, node, link, linkType, from, to string) string {
+	if t := cmp.Or(handle, node); t != "" {
+		return t
+	}
+	return "link " + linkType + " " + link + " from " + from + " to " + to
+}
+
 // runRunVerdict checks the run, its latest round, then each verdict: a
 // finding the round holds, named once, confirmed or dropped, with a
 // reason. Only then does it journal them.
@@ -734,7 +769,7 @@ func runRunVerdict(ctx *Ctx, req any) (any, error) {
 // in round rd.
 func runFinding(f run.Finding, rd run.Round) RunFinding {
 	out := RunFinding{
-		ID: f.ID, Node: f.Node, Handle: f.Handle, Kind: f.Kind, Check: f.Check, Severity: f.Severity,
+		ID: f.ID, Node: f.Node, Handle: f.Handle, Link: f.Link, LinkType: f.LinkType, LinkFrom: f.LinkFrom, LinkTo: f.LinkTo, Kind: f.Kind, Check: f.Check, Severity: f.Severity,
 		Leaf: f.Leaf, LeafHandle: f.LeafHandle, Place: f.Place, Reason: f.Reason,
 	}
 	if v, ok := rd.Verdict(f.ID); ok {
@@ -754,7 +789,7 @@ func findingsFileSchema() map[string]any {
 				"items": map[string]any{
 					"type": "object",
 					"properties": map[string]any{
-						"node":     map[string]any{"type": "string", "description": "The node: a full ID, a unique prefix of 4+ characters or a handle, in the run's change set's view. Required, except with --check or --leaf, which refuse it"},
+						"node":     map[string]any{"type": "string", "description": "The node: a full ID, a unique prefix of 4+ characters or a handle, or a link's ID, in the run's change set's view. Required, except with --check or --leaf, which refuse it"},
 						"kind":     map[string]any{"enum": stringsAny(run.Kinds), "description": "What is wrong with the node. Required, except with --check or --leaf, which refuse it"},
 						"severity": map[string]any{"enum": stringsAny(run.Severities), "description": "How serious it is. Required with --check, refused otherwise"},
 						"leaf":     map[string]any{"type": "string", "description": "The leaf of the run's change set it is about, by handle or ID. Optional with --check, refused otherwise"},
@@ -877,10 +912,7 @@ func findingLine(f RunFinding) string {
 		}
 		return s
 	}
-	node := f.Handle
-	if node == "" {
-		node = f.Node
-	}
+	node := findingTarget(f.Handle, f.Node, f.Link, f.LinkType, f.LinkFrom, f.LinkTo)
 	s := f.ID + " " + f.Kind + " on " + node + ": " + oneLine(f.Reason)
 	if f.Verdict != "" {
 		s += " — " + f.Verdict + ": " + oneLine(f.VerdictReason)
@@ -899,7 +931,9 @@ const reviewQuestionPrefix = "review-"
 const runReviewCheckNext = "rhiza describe run.review-check"
 
 // RunReviewCheckRequest takes nothing: the run is RHIZA_RUN's.
-type RunReviewCheckRequest struct{}
+type RunReviewCheckRequest struct {
+	Fresh bool `json:"fresh,omitempty" flag:"fresh" desc:"Only test that the latest round postdates the latest revise visit (or the run has none): exit 0 if so, non-zero if not; judges and writes nothing"`
+}
 
 // RunReviewQuestion is a question node run.review-check left for a
 // confirmed finding.
@@ -962,10 +996,7 @@ func reviewNodeStatement(sets []changeset.ChangeSet, h string) string {
 // reviewQuestionText is the statement of the question left for finding
 // f, confirmed for reason, in round n.
 func reviewQuestionText(n int, f run.Finding, reason string) string {
-	node := f.Handle
-	if node == "" {
-		node = f.Node
-	}
+	node := findingTarget(f.Handle, f.Node, f.Link, f.LinkType, f.LinkFrom, f.LinkTo)
 	return fmt.Sprintf("Plan review round %d left finding %s (%s on %s): %s. The critic confirmed it: %s. How should it be settled?",
 		n, f.ID, f.Kind, node, strings.TrimRight(oneLine(f.Reason), "."), strings.TrimRight(oneLine(reason), "."))
 }
@@ -982,11 +1013,19 @@ func reviewQuestionText(n int, f run.Finding, reason string) string {
 // each question (Step RHIZA_STEP, no Session), so an autonomous run's
 // arbiter decides it, and passes. A question already created in any open
 // or landed change set, or already journalled, is not again.
-func runRunReviewCheck(ctx *Ctx, _ any) (any, error) {
+func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 	const cmd = "run review-check"
 	rr, err := openReviewRun(ctx, cmd, runReviewCheckNext)
 	if err != nil {
 		return nil, err
+	}
+	if rr.state.RoundStale() {
+		return nil, Conflictf("%s: run %s's latest review round, round %d, predates the latest revise and the review recorded no round since: the review must journal a round with rhiza run findings", cmd, rr.id, len(rr.state.Rounds)).
+			WithNext("rhiza describe run.findings")
+	}
+	if req.(RunReviewCheckRequest).Fresh {
+		resp := RunReviewCheckResponse{Run: rr.id, Round: len(rr.state.Rounds), Passed: true, Confirmed: []RunFinding{}, DryRun: ctx.DryRun}
+		return resp, nil
 	}
 	rd, ok := rr.state.LatestRound()
 	if !ok {

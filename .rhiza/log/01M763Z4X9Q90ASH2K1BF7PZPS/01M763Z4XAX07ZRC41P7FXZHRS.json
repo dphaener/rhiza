@@ -1,0 +1,15 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [],
+  "at": "2026-11-11T20:14:42Z",
+  "body": {
+    "intent": "Failures classified by a configurable LLM: a machine-wide setting names the classifier command (headless Claude with Haiku by default, any LLM CLI allowed); the watchdog and the step runner retry a failed step only when it says transient; the hard-coded failure signatures go; ci-triage hands the fix agent the failed CI logs instead of parsing Go, RSpec, Minitest and pytest output.",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M763Z4X9Q90ASH2K1BF7PZPS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M763Z4XAX07ZRC41P7FXZHRS",
+  "type": "open",
+  "v": 1
+}

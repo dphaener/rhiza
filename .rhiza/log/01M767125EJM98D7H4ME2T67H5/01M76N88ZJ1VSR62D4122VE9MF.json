@@ -1,0 +1,53 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M76MXSJ1NFFT29FAHQ4EYTFF"
+  ],
+  "at": "2026-11-12T01:16:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "fa3f0391c017be3ee873a43309250121a5c91dc6",
+          "pr": "https://github.com/dphaener/rhiza/pull/453",
+          "result": "11 checks passed: lint SUCCESS, go-install SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #453 (https://github.com/dphaener/rhiza/pull/453) passed CI at fa3f039",
+          "status": "verified"
+        },
+        "handle": "pr-453-fix-a-queued-milestone-request",
+        "id": "01M76N88SQ56BXPWFWY9VJGHPG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76N88SQ56BXPWFWY7E88BK3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76N88SQ56BXPWFWY7E88BK3",
+        "id": "01M76N88V0RS2XRKNY7BBNX7BR",
+        "link": "01M76N88V0RS2XRKNY78CJ2X7F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYSEB8N545M8M9APZTBXYS",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M76N88SQ56BXPWFWY7E88BK3",
+        "id": "01M76N88WPNARMBJ9WE3RV98EX",
+        "link": "01M76N88WPNARMBJ9WE0WQ3J10",
+        "note": "",
+        "op": "link.create",
+        "to": "01M767A0H2FFW8H8DY4N0DNY8Y",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M767125EJM98D7H4ME2T67H5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76N88ZJ1VSR62D4122VE9MF",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,51 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7657PS362BE9FME8Y568P7Q"
+  ],
+  "at": "2026-11-11T22:35:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "question": "The new-workflow scaffold and the docs are planned to show an example of setting environment variables in a workflow. That feature is built in a different change set, and the scaffold isn't required to wait for it, so it could ship examples of a field that doesn't exist yet. Should the scaffold wait for the environment-variable work, or should the environment example be dropped?",
+          "statement": "The language-neutral workflow scaffold waits for workflow environment variables and keeps its environment example",
+          "wording": "Wait and keep it: the scaffold change set depends on the environment-variable change set and keeps the example, picked by the owner"
+        },
+        "handle": "scaffold-env-example-waits",
+        "id": "01M76C1M3TYKPZWHC55TJ5GTZ6",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76C1M3TYKPZWHC55SZHQC97",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76C1M3TYKPZWHC55SZHQC97",
+        "id": "01M76C1M4YHWB4VVG9DNFV5N6S",
+        "link": "01M76C1M4YHWB4VVG9DHW7FM5J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7656JXFA5K23CPA9C6E2TE0",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M763Z8TGV8GJK2E621JS6HYZ",
+        "id": "01M76C1MT6C7F5K1SR1YSNF2PT",
+        "link": "01M76C1MT6C7F5K1SR1WXFF17E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M763YX47S5XY0W3P8FVJ54S8",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M763Z8TGV8GJK2E621JS6HYZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76C1MXG39MYF8TG9K3BKZ26",
+  "type": "ops",
+  "v": 1
+}

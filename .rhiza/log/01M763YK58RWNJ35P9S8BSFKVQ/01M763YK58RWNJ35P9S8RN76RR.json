@@ -1,0 +1,15 @@
+{
+  "actor": "01M75WAR3VD7Y13YNPE9QBWQ53",
+  "after": [],
+  "at": "2026-11-11T20:14:24Z",
+  "body": {
+    "intent": "Runs clean up Rhiza's own leftovers: when a run ends, Rhiza removes the scratch folders of the agent sessions it started and its worktree's index database; the daemon prunes orphans (index files whose worktree is gone, old session scratch folders) so disk use no longer grows with runs.",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M763YK58RWNJ35P9S8BSFKVQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M763YK58RWNJ35P9S8RN76RR",
+  "type": "open",
+  "v": 1
+}

@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M764M4A5MC6KKKZP76EKD6RA"
+  ],
+  "at": "2026-11-11T20:36:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on workflow-new-placeholder): Change set 01M763Z8TGV8GJK2E621JS6HYZ ('language-neutral workflow scaffold') writes 'a commented cleanup step and environment example' into the scaffold, and workflow-docs-examples documents 'workflow environment'. Workflow env only exists through workflow-env in change set 01M763YX47S5XY0W3P8FVJ54S8. Z8TG depends only on the cleanup-phase change set 01M763YS08ZM13JZ065Q95YA2E, so it can be built before workflow env exists and would scaffold and document a field that isn't there yet. It needs a depends-on link to 01M763YX47S5XY0W3P8FVJ54S8. The critic confirmed it: In the log, 01M763Z8TGV8GJK2E621JS6HYZ has only one depends-on link, to 01M763YS08ZM13JZ065Q95YA2E. Yet workflow-new-placeholder scaffolds an environment example and workflow-docs-examples documents workflow environment. Workflow env only comes from workflow-env in 01M763YX47S5XY0W3P8FVJ54S8, so Z8TG really does need YX47's work. How should it be settled?"
+        },
+        "handle": "review-01m75w8yt6m1f8w05gajzsec0h-r3-f2",
+        "id": "01M7656JXFA5K23CPA9FWJG4TG",
+        "key": null,
+        "kind": "question",
+        "node": "01M7656JXFA5K23CPA9C6E2TE0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7656JXFA5K23CPA9C6E2TE0",
+        "id": "01M7656JXW0QXZQNJZVTTZRMX6",
+        "link": "01M7656JXW0QXZQNJZVRG4V71V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642ND4H8MY27X1Y6D2CZ2K",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M763Z8TGV8GJK2E621JS6HYZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7656JZGB6D44C3T1DGH1J9Z",
+  "type": "ops",
+  "v": 1
+}

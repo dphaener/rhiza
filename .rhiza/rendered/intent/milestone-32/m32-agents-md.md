@@ -1,6 +1,6 @@
 # m32-agents-md
 
-intent · `01M76NWA870PYJG4FH6PF4WHRJ` · parent [milestone-32](../milestone-32.md)
+intent · `01M76NWA870PYJG4FH6PF4WHRJ` · parent [milestone-32](../milestone-32.01M76NWA4W870AXQ6PBANDWRGE.md)
 
 ## statement
 

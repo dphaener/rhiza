@@ -1,0 +1,30 @@
+{
+  "actor": "01M764HTWRH8RAHKS5VQAMEH6Y",
+  "after": [
+    "01M7642NFACPAEACP049K6N2R4"
+  ],
+  "at": "2026-11-11T20:26:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "The workflow-new testscript shows workflow new writing the skeleton (exit 0) with no make test and the examples present, workflow check on it exiting 0 with a warning naming the placeholder, and no such warning once the placeholder is replaced.",
+          "statement": "rhiza workflow new without --from writes a skeleton whose test command is a placeholder, with comments on every field and example commands for Go, Ruby, JavaScript/TypeScript, Python and Rust, plus a commented cleanup step and environment example; the placeholder is a workflow check warning, which never makes the workflow invalid, so workflow new still validates and writes the skeleton, and workflow check warns about it until it is replaced."
+        },
+        "handle": "workflow-new-placeholder",
+        "id": "01M7642ND4H8MY27X1Y8NF95VA",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M7642ND4H8MY27X1Y6D2CZ2K",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      }
+    ]
+  },
+  "change_set": "01M763Z8TGV8GJK2E621JS6HYZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M764M4A5MC6KKKZP76EKD6RA",
+  "type": "ops",
+  "v": 1
+}

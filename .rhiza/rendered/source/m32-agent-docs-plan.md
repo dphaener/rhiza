@@ -74,7 +74,7 @@ Milestone 32 plan: agent docs for Rhiza's own developers, with the owner
 
 ### In
 
-- derived-from [milestone-32](../intent/milestone-32.md)
+- derived-from [milestone-32](../intent/milestone-32.01M76NWA4W870AXQ6PBANDWRGE.md)
 - derived-from [answer-9eeeaa0d-1](../decision/answer-9eeeaa0d-1.md)
 - derived-from [answer-9eeeaa0d-2](../decision/answer-9eeeaa0d-2.md)
 - derived-from [answer-9eeeaa0d-3](../decision/answer-9eeeaa0d-3.md)
