@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-12T10:32:19Z",
+  "body": {
+    "intent": "Fix watchdog unmerged PR at step land: run 01M7786QKAZMH7PBJZP7QQA6HX; log: R head's build: conflict: cannot land change set 01M763YX47S5XY0W3P8FVJ54S8: model: conflict: base 01M6RN85C17S5VE1A6SQVD7WE1 of 01M6RN85C17S5VE1A6SNZAXK89 is stale: op 01M77C4T7EBWGBK547B9S31A74 of change set 01M763Z16T0ZGQMY1EC2Y81V0K since wrote field:statement: /home/rhiza/code/rhiza/.git/rhiza/ship/01M763YX47S5XY0W3P8FVJ54S8/rhiza land --change 01M763YX47S5XY0W3P8FVJ54S8 --json: exit status 3",
+    "kind": "intention",
+    "request_kind": "bug",
+    "sources": []
+  },
+  "change_set": "01M77N1GAGBPBP7EH4EV2CT023",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77N1GAGBPBP7EH4EV4R1R0P",
+  "type": "open",
+  "v": 4
+}
