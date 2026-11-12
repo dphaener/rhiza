@@ -1,0 +1,44 @@
+{
+  "actor": "01M77NPX1YXJJ371SC5QVWSZTW",
+  "after": [
+    "01M77NH2K7FDRKV63YP5FSYQ41"
+  ],
+  "at": "2026-11-12T10:44:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question records run 01M77DW ending with green PR #480 unmerged because land was refused on change set 01M763Z4's stale-base update to ship-check-ci-test-findings, and land-triage (rhiza ship gate --failed) only passes for a recorded pre-push failure, so any other land failure ends the run. The model already supports the repair: buildUpdate in internal/api/write_node.go has --rebase, which moves a pending update onto the landed version only when the call restates every field it writes, so landed work is not silently replaced. ship-change already pairs every other refusal class with a triage step and a bounded fixer (rebase-triage -> conflict-fix for code conflicts, gate-fix for gates, ci-fix for CI), so a model conflict should follow the same shape rather than strand a merge-ready PR for the watchdog. Making the gate fail on the shipping change set's own conflicts closes the gap the question names: rhiza check only warns for in-flight conflicts, so every check passed and the problem surfaced only at land. Restricting the hard failure to the shipping change set keeps other in-flight change sets' conflicts from blocking unrelated runs.",
+          "statement": "ship-change treats a land refused on a model conflict (the shipping change set's own operation resting on a stale base) as a fixable step, not an end. ship land reports the refusal distinctly (the conflicting nodes and fields, both versions) and land-triage routes it to a model-conflict fixer agent; the fixer restates each conflicting update on the landed version with `rhiza set <ref> --rebase`, keeping the landed change's work and adding this change set's intent, commits the rewritten .rhiza/log entry with the Change/Actor/Review trailers, and the run goes back through the gate and land (bounded by max_visits, so a repeat conflict still fails the run with the conflict named). Earlier, the pre-land gate (and rhiza ship check) fails, rather than only warns, on a conflict in the shipping change set's own operations, so the stale base is repaired before sign-off where possible. Conflicts of other in-flight change sets stay warnings.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "ship-land-model-conflict-repair",
+        "id": "01M77NFJV73VY0P8X4BECS62TH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M77NFJV6S5JN933PSDTDX60A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... passes with a test that the builtin ship-change routes land's fail through land-triage to the model-conflict triage, its pass to the fixer agent and the fixer back to render, gate-land and land, with land allowed the extra visits and the loop bounded; go test -trimpath ./cmd/rhiza -run TestScripts/run-ship-model-conflict-fix passes with a new testscript run-ship-model-conflict-fix.txtar (beside run-ship-conflict-fix.txtar) in which land is refused on the shipping change set's stale-base update, the fixer rebases it with `rhiza set <ref> --rebase`, and the run passes back through gate-land and land to a merged PR; make self-check passes",
+          "statement": "ship-change routes a land refused on a model conflict (land, then land-triage, then a model-conflict triage step) to a model-conflict fixer agent that restates each conflicting update on the landed version with `rhiza set <ref> --rebase`, keeping the landed change's work and adding this change set's intent, commits the rewritten .rhiza/log entry with the Change, Actor and Review trailers, and the run returns through render, gate-land and land; bounded by max_visits, so a repeated conflict ends the run with the conflict named, and every other land failure still ends it"
+        },
+        "handle": "ship-model-conflict-fix",
+        "id": "01M77NH2G554PQ7672BZJ4WMD5",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M77NH2G554PQ7672BXQJSRBX",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      }
+    ]
+  },
+  "change_set": "01M77N83F027XBGGZPK9SV6YN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77NQWHJGS1E9AKRRA52Z9JN",
+  "type": "ops",
+  "v": 1
+}
