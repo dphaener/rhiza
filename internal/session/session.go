@@ -38,6 +38,9 @@ type Record struct {
 	// Milestone is the ID of the milestone a plan run's request names,
 	// the session's RHIZA_MILESTONE; empty for none.
 	Milestone string `json:"milestone,omitempty"`
+	// MilestoneNumber is the number a plan run for a new milestone reserved,
+	// the session's RHIZA_MILESTONE_NUMBER; zero for none.
+	MilestoneNumber int `json:"milestone_number,omitempty"`
 	// Pending holds the message pointers sent to the session while it
 	// worked, in order: the next tool-call hook hands them to the agent and
 	// clears them.

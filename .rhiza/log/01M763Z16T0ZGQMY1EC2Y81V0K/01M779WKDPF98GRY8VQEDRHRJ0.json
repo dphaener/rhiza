@@ -1,0 +1,40 @@
+{
+  "actor": "01M779NBX8FVX3SEXCNANWG7PX",
+  "after": [
+    "01M76NX54JBMG0BM474MW4RN1Z"
+  ],
+  "at": "2026-11-12T07:17:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-445deb58 at a05cacac6: go test -trimpath ./internal/rootcfg/... ok (TestLoadRejectsRemovedSelfUpdate: rhiza.toml with self_update_project, and with [daemon] rhiza.daemon.selfUpdate, each makes Load return ErrRemoved with a message naming rhiza.daemon.autoUpdate); go test -trimpath ./internal/daemon/... ok; go test -trimpath ./internal/api -run TestDaemonSettingsReportRemovedSelfUpdate -v PASS (daemon settings reports both removed rhiza.toml keys with the autoUpdate hint; rhiza daemon set rhiza.daemon.selfUpdate true fails naming rhiza.daemon.autoUpdate); go test ./internal/api -run 'Daemon|Setting|SelfUpdate': every test passed, the package then failing only on the root-state guard (.rhiza-root/usage.live.json changed by the live daemon under ~/code, not by this diff); go vet clean. Diff read: selfUpdate setting def, SelfUpdateProject field, SelfUpdateCheckout/ForCheckout and the daemon's self-update wiring are removed; describe-golden, cli.md and config.md updated; git config rhiza.daemon.selfUpdate is also reported. Note: Load now errors on these keys, and the live root ~/code/rhiza.toml still sets both self_update_project and rhiza.daemon.selfUpdate, so those lines must be removed when this lands."
+        },
+        "handle": "self-update-settings-removed-verified",
+        "id": "01M779WKB46T58NZDW8FM0JZ29",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M779WKB46T58NZDW8F4NNQFG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M779WKB46T58NZDW8F4NNQFG",
+        "id": "01M779WKCEP3H4EA4D4AGXYQ0T",
+        "link": "01M779WKCEP3H4EA4D49BS14QX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MPQYFWZPE8HSGANKMTJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z16T0ZGQMY1EC2Y81V0K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M779WKDPF98GRY8VQEDRHRJ0",
+  "type": "ops",
+  "v": 1
+}

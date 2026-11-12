@@ -1,0 +1,40 @@
+{
+  "actor": "01M77C36GZ3FP12652ASX64NDJ",
+  "after": [
+    "01M77C4T911N2EVV420RS2B5SB"
+  ],
+  "at": "2026-11-12T07:59:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 14ad701b8 I read the diff (rootcfg.Load carries self_update_project and rhiza.daemon.selfUpdate over into Config.Migrated notes naming rhiza.daemon.autoUpdate, selfUpdate = true read as autoUpdate = main unless autoUpdate is set; runDaemon prints the notes; SetDaemon rewrites without the old keys; daemon set rhiza.daemon.selfUpdate refused). go test -trimpath ./internal/rootcfg/... passed (TestLoadMigratesRemovedSelfUpdate: four tomls, autoUpdate main/empty/empty/off, notes name rhiza.daemon.autoUpdate, a write drops the old keys and reloads with no notes). go test -trimpath ./internal/api -run 'Daemon|Setting' -count=1 from a git archive copy outside ~/code passed, incl. TestDaemonSettingsMigrateRemovedSelfUpdate (settings read autoUpdate = main, two notes naming rhiza.daemon.autoUpdate, daemon set maxRuns drops selfUpdate and self_update_project and keeps autoUpdate, daemon set selfUpdate refused naming autoUpdate) and TestDaemonSetBrokenRootWritesNoGitConfig. Run in place under ~/code, the same tests passed but the package's root-state guard flagged ~/code/.rhiza-root/usage.live.json changing, which is the live root daemon's file, not this change."
+        },
+        "handle": "self-update-settings-removed-verified-2",
+        "id": "01M77CA1717GQ8F504WRSE4TZ9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77CA1717GQ8F504WR432MPM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77CA1717GQ8F504WR432MPM",
+        "id": "01M77CA17NCXC7V1SFND5VX8HF",
+        "link": "01M77CA17NCXC7V1SFNB812ZJQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MPQYFWZPE8HSGANKMTJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z16T0ZGQMY1EC2Y81V0K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77CA189Z4B6FRKEF9TF60E1",
+  "type": "ops",
+  "v": 1
+}

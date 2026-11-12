@@ -1,0 +1,40 @@
+{
+  "actor": "01M778B0F1KBGA17XDDPNWPT17",
+  "after": [
+    "01M777GABAZKWTEHQRGN5AK2FA"
+  ],
+  "at": "2026-11-12T07:18:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-04fca9b2 at 1e6517862: read the diff (session.Record.MilestoneNumber, SessionStartRequest.milestoneNumber set by stepRunner.StartAgent from the run state's reserved MilestoneNumber, launchEnv sets RHIZA_MILESTONE_NUMBER=N when >0 else unsets it; plan.md Milestone section tells the planner to name the intent milestone-N, field milestone=N, done points prefixed mN-, never counting milestones from its own branch). Ran go test -trimpath ./internal/api -run 'TestLaunchEnvMilestoneNumber|TestSessionRun|MilestoneNumber' -count=1: ok (TestLaunchEnvMilestoneNumber checks set with MilestoneNumber 36 and unset with none). Ran go test -trimpath ./internal/guide/... ./internal/session/... -count=1: ok (TestPlanMilestoneNumber checks RHIZA_MILESTONE_NUMBER, milestone-N, milestone=N, `mN-`, Never count milestones). Full ./internal/api with -timeout 25m: every test PASS; the package-level guard then flagged ~/code/.rhiza-root/usage.live.json changed, which is the live root daemon's usage file, untouched by this diff."
+        },
+        "handle": "planner-gets-milestone-number-verified",
+        "id": "01M779YPA76M9D7MS9GWBGQ0DX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M779YPA76M9D7MS9GVQWNH8G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M779YPA76M9D7MS9GVQWNH8G",
+        "id": "01M779YPCZDG74KGYGY7KQXYGZ",
+        "link": "01M779YPCZDG74KGYGY53R024T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M777B9HFVF828QJGDWM3M4CH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7774MAPJ7VCPN1Q9M3RHMV4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M779YPGCNSGHG9873938QRP2",
+  "type": "ops",
+  "v": 1
+}

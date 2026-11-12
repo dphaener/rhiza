@@ -519,7 +519,7 @@ rhiza daemon set <key> <value> [--project <project>]
 
 Arguments and flags:
 
-- `<key>`: The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
+- `<key>`: The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
 - `<value>`: The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes (required)
 - `--project`: The registered project a project setting is written to; default the current project
 
@@ -1876,6 +1876,7 @@ Output (`--json` fields):
 - `id` (string): The run ID
 - `leaves` (array of object): The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none
 - `messages` (array of object): The messages its sessions sent each other, in order
+- `milestone_number` (integer): The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none
 - `pick` (string): Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded
 - `pr` (string): While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise
 - `pre_push` (object): The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran

@@ -108,6 +108,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if !ok {
 		return nil, Usagef("%s has no registered, initialised project for the daemon to work", root).WithNext("rhiza project add")
 	}
+	if ctx.Stderr != nil {
+		for _, note := range removedSettingNotes(homeCtx, reg) {
+			fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %s\n", note)
+		}
+	}
 	conf, err := daemonConfOf(homeCtx, r)
 	if err != nil {
 		return nil, err
@@ -186,9 +191,9 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			p.stop()
 		}
 	}()
-	selfUpdateOn := false
 	// The web UI listener follows rhiza.web.host and rhiza.web.port from poll to poll. A single
 	// poll (--once) and a test run (RHIZA_TEST_NOW) bind nothing.
+	autoUpdateOn := false
 	var webUI *web.Manager
 	if !r.Once && ctxGetenv(ctx)("RHIZA_TEST_NOW") == "" {
 		// The handlers take their own copies of ctx (WebProjectHandler and
@@ -215,7 +220,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", werr)
 			}
 		}
-		selfUpdateOn = conf.selfUpdate
+		autoUpdateOn = conf.autoUpdate == "main"
 		// Every served project's sessions and runs: a crashed run in any of
 		// them leaves scratch folders behind.
 		commons := make([]string, 0, len(projs))
@@ -324,18 +329,25 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	}
 	reexec := daemonReexec()
 	update := &daemon.SelfUpdate{Now: ctx.Now, Every: daemon.SelfUpdateEvery}
-	selfUpdate := func() {
-		if !selfUpdateOn || ctx.Exec == nil || ctx.Git == nil {
+	autoUpdate := func() {
+		if !autoUpdateOn || ctx.Exec == nil || ctx.Git == nil {
 			return
 		}
 		reg, err := rootcfg.Load(root)
 		if err != nil {
 			return
 		}
-		main, ok := daemon.SelfUpdateCheckout(root, reg)
+		main, ok := daemon.RhizaCheckout(root, reg)
 		if !ok {
+			if !update.NoneLogged {
+				update.NoneLogged = true
+				if ctx.Stderr != nil {
+					fmt.Fprintln(ctx.Stderr, "rhiza: daemon: auto-update: no registered project is Rhiza's source checkout; nothing to update")
+				}
+			}
 			return
 		}
+		update.NoneLogged = false
 		update.Dir = main
 		update.Git = func(args ...string) (string, error) { return gitAt(ctx, main, args...) }
 		update.Fetch = func() error { return fetchMainWithin(ctx, main, selfUpdateFetchTimeout) }
@@ -359,7 +371,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 		return n
 	}
-	l, err := daemonLoop(ctx, common, lock, poll, pendingAll, reexec, selfUpdate, ticks, interrupted)
+	l, err := daemonLoop(ctx, common, lock, poll, pendingAll, reexec, autoUpdate, ticks, interrupted)
 	if l != nil {
 		lock = l
 	}

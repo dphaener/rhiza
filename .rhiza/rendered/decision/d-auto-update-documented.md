@@ -19,6 +19,9 @@ The auto-update setting appears in daemon settings, the generated reference and 
 ### In
 
 - decided-by [m32-auto-update](../intent/milestone-32/m32-auto-update.md)
+- decided-by [daemon-auto-update](../capability/rhiza/orchestration/daemon/daemon-auto-update.md)
+- decided-by [self-update-settings-removed](../capability/rhiza/orchestration/daemon/daemon-settings/self-update-settings-removed.md)
+- decided-by [auto-update-documented](../capability/rhiza/orchestration/daemon/daemon-settings/auto-update-documented.md)
 
 ## History
 

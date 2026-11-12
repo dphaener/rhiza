@@ -14,7 +14,7 @@ QA cycle 2 at b8630e96 with a scratch build (go build -trimpath ./cmd/rhiza) on 
 
 ### Out
 
-- verifies [root-daemon-self-update](../capability/rhiza/orchestration/daemon/root-daemon-self-update.md)
+- verifies root-daemon-self-update (retired)
 
 ## History
 

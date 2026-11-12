@@ -76,7 +76,6 @@ var settingDefs = []settingDef{
 	// The hook commands run through sh -c, per project.
 	{project: true, key: "rhiza.eventCommand", def: "", typ: "shell command", desc: "A command run through sh -c for each event; unset means none", validate: validateCommand},
 	{project: true, key: "rhiza.notifyCommand", def: "", typ: "shell command", desc: "A command run through sh -c to notify the owner; unset means none", validate: validateCommand},
-	{key: "rhiza.daemon.selfUpdate", def: "false", typ: "boolean", desc: "Let the daemon update and restart itself when main has a newer build", validate: validateChoice("true", "false")},
 	{key: "rhiza.daemon.maxRuns", def: strconv.Itoa(daemon.DefaultMaxRuns), flag: "--max-runs", typ: "whole number", desc: "The most runs the daemon works at once, across all projects", validate: func(v string) error {
 		n, err := strconv.Atoi(v)
 		if err != nil || n < 1 {
@@ -96,6 +95,7 @@ var settingDefs = []settingDef{
 		_, err := daemon.ParseSize(v)
 		return err
 	}},
+	{key: "rhiza.daemon.autoUpdate", def: "off", typ: "off or main", desc: "Whether the daemon keeps itself up to date: main follows the registered Rhiza source checkout and runs make update when it moves; latest and release come with the release channels milestone", validate: validateChoice("off", "main")},
 	{key: "rhiza.daemon.permissionMode", def: "", flag: "--permission-mode", typ: "one word", desc: "The permission mode agents run in; unset leaves the agent's own default", validate: func(v string) error {
 		if strings.TrimSpace(v) == "" || strings.ContainsAny(v, " \t\r\n") {
 			return fmt.Errorf("must be one word")
@@ -233,6 +233,19 @@ func rootOf(ctx *Ctx) (string, rootcfg.Config, bool) {
 	return root, c, true
 }
 
+// removedSettingNotes says what ctx's root and project still set that was
+// removed: the root's carried-over keys and a git config
+// rhiza.daemon.selfUpdate, which is ignored. Neither fails a command.
+func removedSettingNotes(ctx *Ctx, reg rootcfg.Config) []string {
+	notes := append([]string(nil), reg.Migrated...)
+	if ctx.Git != nil {
+		if v, err := ctx.Git("config", "--get", "rhiza.daemon.selfUpdate"); err == nil && strings.TrimSpace(v) != "" {
+			notes = append(notes, "git config "+rootcfg.RemovedHint("rhiza.daemon.selfUpdate")+"; it is ignored")
+		}
+	}
+	return notes
+}
+
 // settingsOf reads every setting from git config, a flag in flags (key to
 // value) winning. A bad value in config is a usage error naming the key.
 func settingsOf(ctx *Ctx, flags map[string]string) ([]Setting, error) {
@@ -290,8 +303,8 @@ type daemonConf struct {
 	// machine is the hold of new runs for load or memory this poll found.
 	machine    *daemon.MachineHold
 	mode       string
+	autoUpdate string
 	paused     bool
-	selfUpdate bool
 	webHost    string
 	webPort    string
 }
@@ -335,7 +348,7 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 	c.minMemory, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minMemory"))
 	c.paused = settingValue(rows, "rhiza.daemon.paused") == "true" || settingValue(rows, "rhiza.project.paused") == "true"
 	c.projectMax, _ = strconv.Atoi(settingValue(rows, "rhiza.project.maxRuns"))
-	c.selfUpdate = settingValue(rows, "rhiza.daemon.selfUpdate") == "true"
+	c.autoUpdate = settingValue(rows, "rhiza.daemon.autoUpdate")
 	c.mode = settingValue(rows, "rhiza.daemon.permissionMode")
 	c.webHost = settingValue(rows, web.HostKey)
 	c.webPort = settingValue(rows, web.PortKey)
@@ -422,7 +435,7 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff"`
 	Project string `json:"project,omitempty" flag:"project" desc:"The registered project a project setting is written to; default the current project"`
 	Value   string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes"`
 }
@@ -443,6 +456,9 @@ func runDaemonSet(ctx *Ctx, req any) (any, error) {
 	r := req.(DaemonSetRequest)
 	d, ok := findSetting(r.Key)
 	if !ok {
+		if hint := rootcfg.RemovedHint(r.Key); hint != "" {
+			return nil, Usagef("%s", hint).WithNext("rhiza daemon settings")
+		}
 		keys := make([]string, 0, len(settingDefs))
 		for _, s := range settingDefs {
 			keys = append(keys, s.key)
@@ -453,8 +469,10 @@ func runDaemonSet(ctx *Ctx, req any) (any, error) {
 	if err := d.validate(v); err != nil {
 		return nil, Usagef("%s: %q %v", d.key, r.Value, err).WithNext("rhiza daemon settings")
 	}
-	if !d.project {
-		if root, _, ok := rootOf(ctx); ok {
+	if !d.project && ctx.Wd != "" {
+		// Under a root a machine setting goes to rhiza.toml, even when it
+		// does not load: never to the project's git config instead.
+		if root, ok := rootcfg.Find(ctx.Wd); ok {
 			if ctx.DryRun {
 				return DaemonSetResponse{Key: d.key, Value: v, Scope: ScopeMachine}, nil
 			}

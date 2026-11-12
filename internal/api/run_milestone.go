@@ -16,7 +16,9 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/policy"
+	"github.com/dphaener/rhiza/internal/run"
 )
 
 func init() {
@@ -77,6 +79,23 @@ func runRunMilestoneCheck(ctx *Ctx, _ any) (any, error) {
 	}
 	resp := RunMilestoneCheckResponse{Run: rr.id, ChangeSets: []string{}}
 	var bad []string
+	var badNum []string
+	if n := rr.state.MilestoneNumber; n > 0 {
+		// The plan's new milestone intents are those its change sets
+		// created, landed or not: the planner lands the record during the
+		// interview, before this step.
+		created := map[id.ID]bool{}
+		for _, c := range plan {
+			for _, o := range c.Ops {
+				if o.Type == op.TypeNodeCreate && o.Kind == op.KindIntent {
+					created[o.Node] = true
+				}
+			}
+		}
+		for _, c := range plan {
+			badNum = append(badNum, newMilestoneNumberProblems(w.model(c.ID), created, n)...)
+		}
+	}
 	for _, c := range plan {
 		if !inFlight[c.ID] {
 			continue // landed already: it is in no roadmap
@@ -98,6 +117,14 @@ func runRunMilestoneCheck(ctx *Ctx, _ any) (any, error) {
 		if !ok {
 			bad = append(bad, fmt.Sprintf("- %s (%s)", c.ID, c.Open.DisplayTitle()))
 		}
+	}
+	if len(badNum) > 0 {
+		n := rr.state.MilestoneNumber
+		slices.Sort(badNum)
+		badNum = slices.Compact(badNum)
+		return nil, Errorf("%s: the plan of run %s does not use the milestone number %d the run reserved:\n%s\n"+
+			"Fix: name the new milestone intent milestone-%d with field milestone=%d and prefix its done points' handles m%d- (RHIZA_MILESTONE_NUMBER is %d)",
+			cmd, rr.id, n, strings.Join(badNum, "\n"), n, n, n, n).WithNext("rhiza run status " + rr.id)
 	}
 	if len(bad) > 0 {
 		if !want.IsZero() {
@@ -132,4 +159,86 @@ func milestonesServed(ctx *Ctx, cmd string, cs id.ID) ([]id.ID, error) {
 		}
 	}
 	return out, nil
+}
+
+// milestoneNumberLock names the lock a plan run holds from drawing its
+// milestone number to journaling it.
+const milestoneNumberLock = "milestone-number"
+
+// reserveMilestoneNumber draws the milestone number a plan run for a new
+// milestone reserves: one more than the highest of every landed milestone
+// intent's milestone field and every number reserved in any run journal of
+// rs, ended and failed runs included. The caller holds milestoneNumberLock
+// and journals the number before releasing it.
+func reserveMilestoneNumber(ctx *Ctx, rs *run.Store) (int, error) {
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return 0, err
+	}
+	top := 0
+	m := newModel(w.diskLog(), id.ID{})
+	var walk func(parent id.ID)
+	walk = func(parent id.ID) {
+		for _, n := range m.Children(op.KindIntent, parent) {
+			if planMilestoneField(n.Fields) {
+				in := planInputs{milestoneNums: map[id.ID]float64{}}
+				planNoteMilestoneNum(in, n.ID, n.Fields)
+				if f, ok := in.milestoneNums[n.ID]; ok && int(f) > top {
+					top = int(f)
+				}
+			}
+			walk(n.ID)
+		}
+	}
+	walk(id.ID{})
+	js, err := rs.List()
+	if err != nil {
+		return 0, Errorf("read the run journals: %v", err)
+	}
+	for _, j := range js {
+		if n := j.State().MilestoneNumber; n > top {
+			top = n
+		}
+	}
+	return top + 1, nil
+}
+
+// newMilestoneNumberProblems lists, one line each, how the new milestone
+// intents of m (those in created, the plan's change sets' creates, that
+// carry a milestone field) and their done points break the reserved number
+// n: the handle must be milestone-n, the milestone field n, and each done
+// point's handle prefixed mn-.
+func newMilestoneNumberProblems(m Model, created map[id.ID]bool, n int) []string {
+	var out []string
+	var walk func(parent id.ID, under *Node)
+	walk = func(parent id.ID, under *Node) {
+		for _, c := range m.Children(op.KindIntent, parent) {
+			if c.Retired {
+				continue
+			}
+			if under != nil {
+				if want := fmt.Sprintf("m%d-", n); !strings.HasPrefix(c.Handle, want) {
+					out = append(out, fmt.Sprintf("- done point %q of milestone %q lacks the %q prefix (expected milestone number %d)", c.Handle, under.Handle, want, n))
+				}
+				walk(c.ID, under)
+				continue
+			}
+			if !created[c.ID] || !planMilestoneField(c.Fields) {
+				walk(c.ID, nil)
+				continue
+			}
+			in := planInputs{milestoneNums: map[id.ID]float64{}}
+			planNoteMilestoneNum(in, c.ID, c.Fields)
+			if h := fmt.Sprintf("milestone-%d", n); c.Handle != h {
+				out = append(out, fmt.Sprintf("- milestone intent %q has the wrong handle (expected milestone number %d: %q)", c.Handle, n, h))
+			}
+			if f, ok := in.milestoneNums[c.ID]; !ok || int(f) != n || f != float64(int(f)) {
+				out = append(out, fmt.Sprintf("- milestone intent %q has the wrong milestone field (expected milestone number %d)", c.Handle, n))
+			}
+			cc := c
+			walk(c.ID, &cc)
+		}
+	}
+	walk(id.ID{}, nil)
+	return out
 }
