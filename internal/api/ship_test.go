@@ -2429,3 +2429,80 @@ func TestShipRerunFailedSkippedJobs(t *testing.T) {
 		}
 	}
 }
+
+// TestShipLandModelConflict: a land refused because the change set's own
+// update rests on a base a landed change set rewrote is reported distinctly,
+// recorded in the ship state, and routed by ship check --model-conflict
+// until the conflict is repaired.
+func TestShipLandModelConflict(t *testing.T) {
+	f, _, state := shipFixture(t)
+	ship := currentOf(t, f.ctx)
+	land := func() {
+		for _, v := range []string{"propose", "accept", "land"} {
+			if _, err := callOp(t, f.ctx, v, `{}`); err != nil {
+				t.Fatalf("%s: %v", v, err)
+			}
+		}
+	}
+	newChange(t, f.ctx, `{"intent":"Add the node"}`)
+	nodeID := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"checking","fields":["statement=One"]}`).Nodes[0]
+	land()
+	if _, err := callOp(t, f.ctx, "change.use", `{"ref":"`+ship.String()+`"}`); err != nil {
+		t.Fatal(err)
+	}
+	mustWrite(t, f.ctx, "set", `{"ref":"checking","fields":["statement=Ours"]}`)
+	newChange(t, f.ctx, `{"intent":"Rewrite the node"}`)
+	other := currentOf(t, f.ctx)
+	mustWrite(t, f.ctx, "set", `{"ref":"checking","fields":["statement=Theirs"]}`)
+	land()
+	if _, err := callOp(t, f.ctx, "change.use", `{"ref":"`+ship.String()+`"}`); err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range []string{"propose", "accept"} {
+		if _, err := callOp(t, f.ctx, v, `{}`); err != nil {
+			t.Fatalf("%s: %v", v, err)
+		}
+	}
+	if err := writeShipState(state, shipState{PR: 7, URL: "https://github.com/o/r/pull/7", Branch: "cs/ship-it", Head: "abc1234def",
+		Checks: []ShipCheck{{Name: "test", Status: "COMPLETED", Conclusion: "SUCCESS"}}}); err != nil {
+		t.Fatal(err)
+	}
+	f.git.out["symbolic-ref --short HEAD"] = "cs/ship-it\n"
+
+	resp, err := callOp(t, f.ctx, "ship.land", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := resp.(ShipLandResponse)
+	if r.ExitCode() != 1 || r.Landed || len(r.ModelConflicts) != 1 {
+		t.Fatalf("land = %+v", r)
+	}
+	c := r.ModelConflicts[0]
+	if c.Node != nodeID.String() || !slices.Equal(c.Fields, []string{"field:statement"}) || c.LandedChange != other.String() || c.LandedOp == "" || c.Base == "" {
+		t.Fatalf("conflict = %+v", c)
+	}
+	if got := human(t, r); !strings.Contains(got, "stale base") || !strings.Contains(got, nodeID.String()) {
+		t.Errorf("human = %q", got)
+	}
+	if st, _ := readShipState(state); len(st.ModelConflicts) != 1 || st.ModelConflicts[0].Node != c.Node || st.ModelConflicts[0].LandedOp != c.LandedOp {
+		t.Errorf("state = %+v", st)
+	}
+	chk := func() ShipCheckResponse { return shipCheck(t, f, `{"model_conflict":true}`) }
+	if got := chk(); got.ExitCode() != 0 || len(got.ModelConflicts) != 1 {
+		t.Errorf("triage with the conflict = %+v", got)
+	}
+
+	// Repaired on the landed version: the triage fails.
+	mustWrite(t, f.ctx, "set", `{"ref":"checking","rebase":true,"fields":["statement=Theirs and ours"]}`)
+	if got := chk(); got.ExitCode() != 1 || got.Passed {
+		t.Errorf("triage after repair = %+v", got)
+	}
+
+	// Any other land failure records nothing: the triage fails.
+	if err := writeShipState(state, shipState{PR: 7, Head: "abc1234def"}); err != nil {
+		t.Fatal(err)
+	}
+	if got := chk(); got.ExitCode() != 1 {
+		t.Errorf("triage with no record = %+v", got)
+	}
+}

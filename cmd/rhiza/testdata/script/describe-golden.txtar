@@ -23604,6 +23604,10 @@ cmp stdout describe.golden.json
             "description": "Check that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, locally with git and no wait on CI, instead of checking the pull request; a differing tree dispatches CI on the merge commit (once) and checks its runs as it does a pull request's, and a stop that cannot be waited out exits 75 with a stop: line",
             "type": "boolean"
           },
+          "model_conflict": {
+            "description": "Exit 0 only if ship land recorded a refusal because the change set's own operation rests on a stale base (a node's fields rewritten by a landed change set) and the branch's head still has that conflict, else exit 1 (any other land failure, or the conflict repaired); reads the state file and the model only and records nothing (for a step that routes it to a fixer)",
+            "type": "boolean"
+          },
           "pr_open": {
             "description": "Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)",
             "type": "boolean"
@@ -23777,6 +23781,51 @@ cmp stdout describe.golden.json
               "onto"
             ],
             "type": "object"
+          },
+          "model_conflicts": {
+            "description": "With --model-conflict: the operations of the change set resting on a stale base that still hold, each with its node, fields, stale base and the landed op and change set that rewrote them",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "base": {
+                  "description": "The stale base: the operation the shipping operation was written on",
+                  "type": "string"
+                },
+                "fields": {
+                  "description": "The aspects the landed operation rewrote that the operation also writes: field:<name>, handle, position or retired",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "landed_change": {
+                  "description": "The change set that landed it",
+                  "type": "string"
+                },
+                "landed_op": {
+                  "description": "The landed operation that rewrote them",
+                  "type": "string"
+                },
+                "node": {
+                  "description": "The node (or link) the operation writes",
+                  "type": "string"
+                },
+                "op": {
+                  "description": "The shipping change set's operation resting on the stale base",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "base",
+                "fields",
+                "landed_change",
+                "landed_op",
+                "node",
+                "op"
+              ],
+              "type": "object"
+            },
+            "type": "array"
           },
           "passed": {
             "description": "True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise",
@@ -24147,6 +24196,51 @@ cmp stdout describe.golden.json
           "landed": {
             "description": "True if this call landed the change set; false if it had already landed",
             "type": "boolean"
+          },
+          "model_conflicts": {
+            "description": "The change set's own operations resting on a stale base, each with its node, fields, stale base and the landed op and change set that rewrote them; the land was refused, nothing was written, and the command exits 1",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "base": {
+                  "description": "The stale base: the operation the shipping operation was written on",
+                  "type": "string"
+                },
+                "fields": {
+                  "description": "The aspects the landed operation rewrote that the operation also writes: field:<name>, handle, position or retired",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "landed_change": {
+                  "description": "The change set that landed it",
+                  "type": "string"
+                },
+                "landed_op": {
+                  "description": "The landed operation that rewrote them",
+                  "type": "string"
+                },
+                "node": {
+                  "description": "The node (or link) the operation writes",
+                  "type": "string"
+                },
+                "op": {
+                  "description": "The shipping change set's operation resting on the stale base",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "base",
+                "fields",
+                "landed_change",
+                "landed_op",
+                "node",
+                "op"
+              ],
+              "type": "object"
+            },
+            "type": "array"
           },
           "pr": {
             "description": "The pull request recorded",
