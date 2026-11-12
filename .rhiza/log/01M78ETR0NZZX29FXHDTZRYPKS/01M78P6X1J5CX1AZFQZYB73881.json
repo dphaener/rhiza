@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M78JFMYZ2DD9VKDMA56S09N1"
+  ],
+  "at": "2026-11-12T20:11:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "bacbe96881367a2e9495deaebd201318bf599986",
+          "pr": "https://github.com/dphaener/rhiza/pull/503",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #503 (https://github.com/dphaener/rhiza/pull/503) passed CI at bacbe96",
+          "status": "verified"
+        },
+        "handle": "pr-503-fix-flaky-test-scripts",
+        "id": "01M78P6WZ2QNNEGY18TV1MK0W6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78P6WZ2QNNEGY18TSH9MJNA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78P6WZ2QNNEGY18TSH9MJNA",
+        "id": "01M78P6WZJ3MY3N5Y4ZFBW2AQ0",
+        "link": "01M78P6WZJ3MY3N5Y4ZDD90P5G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78F38SGXG1XXVX4V8BKTX2K",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78ETR0NZZX29FXHDTZRYPKS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78P6X1J5CX1AZFQZYB73881",
+  "type": "ops",
+  "v": 1
+}
