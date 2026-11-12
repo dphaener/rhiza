@@ -29,7 +29,7 @@ verified
 - verifies [daemon-watchdog](../capability/rhiza/orchestration/daemon/daemon-watchdog.md)
 - verifies [watchdog-policy](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-policy.md)
 - verifies [watchdog-stalled-step](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-stalled-step.md)
-- verifies [watchdog-transient-failure](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-transient-failure.md)
+- verifies watchdog-transient-failure (retired)
 - verifies [watchdog-ci-rerun](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-ci-rerun.md)
 - verifies [watchdog-pr-no-ci](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-pr-no-ci.md)
 - verifies [watchdog-green-pr-unmerged](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-green-pr-unmerged.md)

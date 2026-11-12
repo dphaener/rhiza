@@ -1,0 +1,60 @@
+{
+  "actor": "01M77NSR25TFKG6J973C93JZ34",
+  "after": [
+    "01M77NZCCCC6PJ3WGZ722DJKG8"
+  ],
+  "at": "2026-11-12T10:48:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M77NY73VZ2J0F7N50ZD6SSXS",
+        "id": "01M77NZCWWD8GB62KWSKJ048NV",
+        "link": "01M77NZCWWD8GB62KWSJR0YT8E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NZ42MBQQ8QZ7SDDQEKYH0",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "New tests in internal/api and/or internal/workflow, plus a testscript under cmd/rhiza/testdata/script: in a plan run whose review visit journals {\"findings\":[]}, the run moves from review to fresh and check (and on to gate) without starting a critic session; a round with findings still goes to the critic; both built-in plan and plan-milestone workflows route this way (a workflow test reads both files); rhiza run verdict with {\"verdicts\":[]} still exits non-zero. Run: go test -trimpath ./internal/api/... ./internal/workflow/... -run <the new tests>, and go test -trimpath ./cmd/rhiza -run TestScripts/<the new script>; regenerate describe-golden if a request type changes.",
+          "statement": "In the plan workflows (plan and plan-milestone), after the review step the run goes to the critic only when the latest review round holds at least one finding; a clean round (no findings) goes straight to fresh, then check, with no critic session, and rhiza run verdict still refuses an empty verdicts list."
+        },
+        "handle": "plan-clean-round-skips-critic-step",
+        "id": "01M77NZCXG646BQB0FY48VBG0M",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M77NZCXG646BQB0FY09EKQPW",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M77NZCXG646BQB0FY09EKQPW",
+        "id": "01M77NZCY1KVRTFNH1JN342EKK",
+        "link": "01M77NZCY1KVRTFNH1JKJJC6NQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NY73VZ2J0F7N50ZD6SSXS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M77NZCXG646BQB0FY09EKQPW",
+        "id": "01M77NZCYNXERC559WE3VGEMNN",
+        "link": "01M77NZCYNXERC559WE0Q670A0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NZ42MBQQ8QZ7SDDQEKYH0",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M77NRZEXWM1MTHM3AWYJFMQE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77NZCZ8TTVREN99W11S99XY",
+  "type": "ops",
+  "v": 1
+}

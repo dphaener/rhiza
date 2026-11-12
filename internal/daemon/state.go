@@ -236,6 +236,11 @@ type WatchdogRun struct {
 	NoCIHead      string    `json:"noci_head,omitempty"`
 	NoCIAt        time.Time `json:"noci_at,omitzero"`
 	NoCIConflicts []string  `json:"noci_conflicts,omitempty"`
+	// Judged is the run's last journal entry when the failure classifier
+	// said its failure was real, or could not judge it: while the journal
+	// still ends there, the failure is left to the inbox without asking the
+	// classifier or logging again. A resume moves the journal on.
+	Judged time.Time `json:"judged,omitzero"`
 }
 
 // WatchdogAttempt is one recovery the watchdog tried on a run.

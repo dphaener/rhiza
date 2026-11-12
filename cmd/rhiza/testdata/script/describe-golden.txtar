@@ -1843,7 +1843,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff",
+            "description": "The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff",
             "type": "string"
           },
           "project": {
@@ -23692,16 +23692,16 @@ cmp stdout describe.golden.json
             "type": "array"
           },
           "findings": {
-            "description": "One finding, with no leaf, per failing test or recognised CI cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, or a make target error), for a fix step; recorded in the state file as well",
+            "description": "One finding, with no leaf, per failed run with failure lines, for a fix step: it names the file its trimmed failing log is saved in, in the run folder; recorded in the state file as well",
             "items": {
               "additionalProperties": false,
               "properties": {
                 "reason": {
-                  "description": "What failed and where it was read",
+                  "description": "What failed and the saved log to read",
                   "type": "string"
                 },
                 "test": {
-                  "description": "The failing test or testscript",
+                  "description": "The failed CI run",
                   "type": "string"
                 }
               },
@@ -23864,7 +23864,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "tests": {
-            "description": "The failing tests the failed Actions runs' logs name, once the failed jobs were rerun and failed again: Go tests and testscripts (a '--- FAIL:' line, such as TestScripts/x), RSpec ('rspec ./spec/x_spec.rb:12'), Minitest ('bin/rails test test/x_test.rb:12') and pytest ('pytest tests/test_x.py::test_y'), each as its runner's rerun command",
+            "description": "The failed Actions runs whose logs hold failure lines, once the failed jobs were rerun and failed again, each as 'CI run <id> (<check>)'",
             "items": {
               "type": "string"
             },

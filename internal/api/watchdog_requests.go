@@ -41,6 +41,7 @@ func watchdogRequests(pol WatchdogPolicy, reqs []daemon.Request, journals []run.
 			continue
 		}
 		var why string
+		var step string
 		switch {
 		case !st.Ended:
 			why = "its plan run is gone while the request still says planning"
@@ -48,15 +49,11 @@ func watchdogRequests(pol WatchdogPolicy, reqs []daemon.Request, journals []run.
 			if st.Autonomous || !pol.AutonomousOnly {
 				continue // the failed-transient pass's
 			}
-			step, err := st.FailedStep()
+			s, err := st.FailedStep()
 			if err != nil {
 				continue
 			}
-			sig := transientSignature(failedDetail(st, step))
-			if sig == "" {
-				continue
-			}
-			why = fmt.Sprintf("its plan run failed at step %s on a transient error (%q)", step, sig)
+			step = s
 		default:
 			continue
 		}
@@ -67,6 +64,13 @@ func watchdogRequests(pol WatchdogPolicy, reqs []daemon.Request, journals []run.
 		}
 		if mem[i].Spent >= pol.RetryBudget || d.queued != nil && d.queued(r.Run) {
 			continue
+		}
+		if step != "" {
+			v, ok := classifyOnce(&mem[i], journals[ji], st, step, d)
+			if !ok {
+				continue
+			}
+			why = fmt.Sprintf("its plan run failed at step %s on a transient error (%s)", step, v.Reason)
 		}
 		if err := d.resume(r.Run); err != nil {
 			fail(fmt.Errorf("resume plan run %s: %w", r.Run, err))

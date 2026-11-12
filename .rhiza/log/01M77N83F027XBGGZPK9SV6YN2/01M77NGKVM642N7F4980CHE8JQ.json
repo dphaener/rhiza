@@ -1,0 +1,33 @@
+{
+  "actor": "01M77N91K2JMJ1SPMBFAPP6WK2",
+  "after": [
+    "01M77NGAPB7KJHZ7SAJHZ29X5A"
+  ],
+  "at": "2026-11-12T10:40:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "830fa3ca3df5399d10ffbe1ae6528e31e0dc9c908b3e275193e33d2cfad42bac",
+          "session": "6eec8236-ad63-49dd-824c-01a1cf546583",
+          "summary": "Autonomous plan run 01M77N81 for bug 01M77N83 (watchdog: PR green at 52ace47 and unmerged after step land-triage failed). The planner traced run 01M77DWNRDSFY0PEP0S1P58P5W (change set 01M763Z4, PR #480): rhiza ship land was refused with a model conflict. The change set's op 01M764M3 updates ship-check-ci-test-findings' statement on base 01M6MC4GXTJ7SWF8NV4VMZDJ9N, which is stale because change set 01M76B50 (landed via #455) has since rewritten field:statement in op 01M76MENT. rhiza check only warns on an in-flight change set's conflict, so build/check, the pre-push check and CI all passed. land-triage runs `rhiza ship gate --failed`, which passes only for a recorded gate or pre-push failure, so the run ended (and the watchdog's two retries of land-triage repeated the same deterministic failure). The planner asked how ship-change should handle it, recommending a model-conflict fixer step. No owner answers in an autonomous run, so the arbiter decided (Decision ship-land-model-conflict-repair): land reports a model conflict distinctly, land-triage routes it to a model-conflict fixer that restates each conflicting update on the landed version with --rebase and commits it, and the run goes back through the gate and land within max_visits. Earlier, the pre-land gate and rhiza ship check fail on a conflict in the shipping change set's own ops; other in-flight conflicts stay warnings. The planner notes the CLI spells the rebase as `rhiza set <ref> --rebase` (buildUpdate in internal/api/write_node.go). The serves link goes to m4-runs-hold-up, as for the earlier ship-change bug fixes.",
+          "title": "Plan: ship-change repairs a land refused on a model conflict (autonomous)"
+        },
+        "handle": "plan-ship-land-model-conflict",
+        "id": "01M77NGKV6R3R7F14V9PNXCHFT",
+        "key": null,
+        "kind": "source",
+        "node": "01M77NGKV6R3R7F14V9KA8WR0D",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M77N83F027XBGGZPK9SV6YN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77NGKVM642N7F4980CHE8JQ",
+  "type": "ops",
+  "v": 1
+}

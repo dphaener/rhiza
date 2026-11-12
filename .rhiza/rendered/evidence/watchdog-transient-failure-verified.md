@@ -14,7 +14,7 @@ At 8cb18c39, go test -trimpath -count=1 ./internal/api -run TestWatchdog -v pass
 
 ### Out
 
-- verifies [watchdog-transient-failure](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-transient-failure.md)
+- verifies watchdog-transient-failure (retired)
 
 ## History
 

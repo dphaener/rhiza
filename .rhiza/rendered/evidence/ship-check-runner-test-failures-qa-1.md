@@ -14,7 +14,7 @@ QA cycle 1: built this branch's rhiza (go build -trimpath) and ran it in a scrat
 
 ### Out
 
-- verifies [ship-check-runner-test-failures](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-runner-test-failures.md)
+- verifies ship-check-runner-test-failures (retired)
 
 ## History
 

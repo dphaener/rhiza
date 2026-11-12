@@ -16,7 +16,7 @@ func stabilityRuns(t *testing.T, f *sessionFixture) []CIRun {
 }
 
 // ship check records each settled CI run: a clean green, a flake per
-// failing test of a red head whose rerun passed, a red with no flake, and
+// failing job and step of a red head whose rerun passed, a red with no flake, and
 // main's result, from the tested head's or from the dispatched run.
 func TestShipCheckStabilityRecord(t *testing.T) {
 	const logCall = "run view 42 --log-failed"
@@ -47,7 +47,7 @@ func TestShipCheckStabilityRecord(t *testing.T) {
 		g.answers[shipPRView] = openPR(greenRollup)
 		shipCheck(t, f, `{}`)
 		runs := stabilityRuns(t, f)
-		if len(runs) != 1 || runs[0].Result != ciGreen || !slices.Equal(runs[0].Flakes, []string{"TestGarden", "TestPond"}) {
+		if len(runs) != 1 || runs[0].Result != ciGreen || !slices.Equal(runs[0].Flakes, []string{"test / Run"}) {
 			t.Errorf("runs = %+v", runs)
 		}
 	})
