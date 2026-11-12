@@ -463,6 +463,39 @@ func TestShipMergeNotMerged(t *testing.T) {
 	}
 }
 
+func TestShipMergeRefusedStops(t *testing.T) {
+	f, g, state := shipFixture(t)
+	if err := writeShipState(state, shipState{PR: 7, Branch: "cs/ship-it", Head: "abc1234def"}); err != nil {
+		t.Fatal(err)
+	}
+	mainHeld(g)
+	g.answers[shipMergeArg] = "!the base branch policy prohibits the merge"
+	resp, err := callOp(t, f.ctx, "ship.merge", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := resp.(ShipMergeResponse)
+	if m.ExitCode() != 75 || !strings.Contains(m.Stop, "base branch policy prohibits the merge") || m.MergeCommit != "" {
+		t.Errorf("merge = %+v", m)
+	}
+	if got := human(t, m); !strings.HasPrefix(got, "stop: GitHub refused to merge pull request #7: ") {
+		t.Errorf("human = %q", got)
+	}
+	if st, _ := readShipState(state); st.MergeCommit != "" {
+		t.Errorf("state = %+v", st)
+	}
+	// Behind main or conflicting is no refusal: the merge fails to rebase.
+	for _, msg := range []string{
+		"Pull request is not mergeable: the head branch is not up to date with the base branch",
+		"Pull request #7 has conflicts and cannot be merged",
+		"the base branch policy prohibits the merge: head branch is behind",
+	} {
+		g.answers[shipMergeArg] = "!" + msg
+		_, err = callOp(t, f.ctx, "ship.merge", `{}`)
+		wantExit(t, err, 1)
+	}
+}
+
 func TestShipTargetWithoutWorktree(t *testing.T) {
 	f, g, _ := shipFixture(t)
 	if err := os.RemoveAll(f.worktree); err != nil {

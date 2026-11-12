@@ -24532,7 +24532,7 @@ cmp stdout describe.golden.json
             "type": "integer"
           },
           "stop": {
-            "description": "Why nothing was merged and the run should stop, not fail: the pull request is a draft, to be marked ready before resuming; the command exits 75",
+            "description": "Why nothing was merged and the run should stop, not fail: the pull request is a draft, to be marked ready before resuming, or GitHub refused the merge for a reason a rebase cannot cure (a branch-protection rule, a required check, a merge method the repo does not allow), with its message; the command exits 75",
             "type": "string"
           }
         },

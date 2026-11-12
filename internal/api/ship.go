@@ -240,7 +240,7 @@ type ShipMergeResponse struct {
 	Head          string `json:"head" desc:"The head commit the merge was pinned to"`
 	MergeCommit   string `json:"merge_commit" desc:"The squash commit on main"`
 	AlreadyMerged bool   `json:"already_merged,omitempty" desc:"True if an earlier ship merge had merged it and recorded the merge commit"`
-	Stop          string `json:"stop,omitempty" desc:"Why nothing was merged and the run should stop, not fail: the pull request is a draft, to be marked ready before resuming; the command exits 75"`
+	Stop          string `json:"stop,omitempty" desc:"Why nothing was merged and the run should stop, not fail: the pull request is a draft, to be marked ready before resuming, or GitHub refused the merge for a reason a rebase cannot cure (a branch-protection rule, a required check, a merge method the repo does not allow), with its message; the command exits 75"`
 }
 
 // shipDraftStop is the stop: line for a draft pull request. Rhiza never
@@ -249,7 +249,60 @@ func shipDraftStop(pr int) string {
 	return fmt.Sprintf("pull request #%d is a draft: mark it ready for review, then resume the run", pr)
 }
 
-// ExitCode is run.StopExit when the pull request is a draft, 1 when ship
+// shipMergeRefusalMarks are the phrases of gh pr merge failures that no
+// rebase onto main can cure: a branch-protection rule, a required check, a
+// merge method the repo does not allow.
+var shipMergeRefusalMarks = []string{
+	"policy prohibits the merge",
+	"required status check",
+	"required check",
+	"protected branch",
+	"branch protection",
+	"review is required",
+	"reviews required",
+	"merge commits are not allowed",
+	"squash merges are not allowed",
+	"rebase merges are not allowed",
+	"merge method",
+}
+
+// shipMergeCurable are the phrases of a merge refused because the head is
+// behind main or conflicts: gate-rebase-merge's to cure. They win over a
+// refusal mark in the same message.
+var shipMergeCurable = []string{
+	"not up to date",
+	"out of date",
+	"behind",
+	"conflict",
+	"not mergeable",
+	"head branch was modified",
+	"base branch was modified",
+}
+
+// shipMergeRefusal reports whether gh's failure message is a refusal of
+// the merge itself, and the message to name as its reason.
+func shipMergeRefusal(msg string) (string, bool) {
+	low := strings.ToLower(msg)
+	for _, c := range shipMergeCurable {
+		if strings.Contains(low, c) {
+			return "", false
+		}
+	}
+	for _, m := range shipMergeRefusalMarks {
+		if strings.Contains(low, m) {
+			return strings.TrimSpace(msg), true
+		}
+	}
+	return "", false
+}
+
+// shipMergeRefusedStop is the stop: line for a merge GitHub refused.
+func shipMergeRefusedStop(pr int, reason string) string {
+	return fmt.Sprintf("GitHub refused to merge pull request #%d: %s", pr, reason)
+}
+
+// ExitCode is run.StopExit when the pull request is a draft or GitHub
+// refused the merge, 1 when ship
 // merge merged nothing because main moved.
 func (r ShipMergeResponse) ExitCode() int {
 	if r.Stop != "" {
@@ -1668,6 +1721,10 @@ func runShipMerge(ctx *Ctx, _ any) (any, error) {
 		return resp, nil
 	}
 	if _, err := gh(ctx, dir, "pr", "merge", pr, "--squash", "--match-head-commit", st.Head); err != nil {
+		if reason, ok := shipMergeRefusal(err.Error()); ok {
+			resp.Stop = shipMergeRefusedStop(st.PR, reason)
+			return resp, nil
+		}
 		return nil, Errorf("%v", err)
 	}
 	out, err := gh(ctx, dir, "pr", "view", pr, "--json", "mergeCommit,state")

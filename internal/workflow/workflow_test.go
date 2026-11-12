@@ -2349,3 +2349,21 @@ func TestFixerPromptsNameChecksBlock(t *testing.T) {
 		}
 	}
 }
+
+// ship merge stops the run (exit 75) on a merge GitHub refused, so merge's
+// on.fail, taken only for a merge behind main or conflicting, is the one
+// way back to gate-rebase-merge.
+func TestShipChangeMergeRefusedStops(t *testing.T) {
+	data, ok := Builtin("ship-change")
+	if !ok {
+		t.Fatal("no ship-change built-in")
+	}
+	def, err := ParseWith("ship-change", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := def.Steps["merge"]
+	if s.Run != "rhiza ship merge" || s.On["fail"] != "gate-rebase-merge" || s.On["pass"] != "wait-main" {
+		t.Errorf("merge = %+v", s)
+	}
+}
