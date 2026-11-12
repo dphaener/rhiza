@@ -1,8 +1,8 @@
 # Build
 
-A build run takes the leaves one at a time: a builder, then a verifier.
-`RHIZA_CHANGE`, `RHIZA_LEAF` and `RHIZA_ATTEMPT` are set.
-Each role ends with `rhiza session done` as its own command, never chained with `;` or `&&`.
+Per leaf, a builder then a verifier; `RHIZA_CHANGE`, `RHIZA_LEAF` and `RHIZA_ATTEMPT` are set.
+Each role ends with `rhiza session done` as its own command after its recording
+command succeeded, never chained with `;` or `&&`.
 
 ## Start
 
@@ -11,14 +11,14 @@ rhiza slice --change "$RHIZA_CHANGE" --json
 rhiza show "$RHIZA_LEAF" --json
 ```
 
-Its `acceptance` is the bar.
+The leaf's `acceptance` is the bar; build only that leaf.
 
 ## Builder
 
-Write code and tests to the acceptance. Before the commit, run its acceptance
+Write code and tests; before the commit, run its acceptance
 commands, then `rhiza ship generate` and `rhiza render`; fold every file they change in.
 End with exactly one new commit, each command and its exit code in a
-`Checks:` block above the trailers (leaf, change set, you):
+`Checks:` block above the trailers:
 
 ```
 Stream CSV exports
@@ -34,9 +34,9 @@ Leaf: export-csv
 Co-Authored-By: Agent Name <agent@example.com>
 ```
 
-Keep every trailer in the one final paragraph.
+Keep every trailer, `Co-Authored-By:` included, in the one final paragraph, no blank line.
 
-Your actor record sits untracked in `.rhiza/log`; stage it:
+Stage your untracked actor record in `.rhiza/log`:
 
 ```
 git add $(grep -l "Record agent actor $RHIZA_ACTOR " .rhiza/log/*/*.json | xargs -n1 dirname | sort -u)
@@ -93,5 +93,5 @@ agents or `gh`. End with exactly one of:
   EOF
   ```
 
-Then `rhiza session done`. An attempt with neither Evidence nor findings fails, and Evidence
+An attempt with neither Evidence nor findings fails, and Evidence
 written by anyone else does not count.

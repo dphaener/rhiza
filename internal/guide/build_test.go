@@ -14,11 +14,12 @@ func TestBuildText(t *testing.T) {
 	checkPhrases(t, "build", map[string][]string{
 		"start": {
 			`rhiza slice --change "$RHIZA_CHANGE" --json`, `rhiza show "$RHIZA_LEAF" --json`,
-			"RHIZA_ATTEMPT", "acceptance",
+			"RHIZA_ATTEMPT", "acceptance", "build only that leaf",
 		},
 		"trailer": {
 			"exactly one new commit", "\nLeaf: export-csv\n", "\nChange: ", "\nActor: ",
 			"rhiza run status --json", "fix commit with the same `Leaf:` trailer",
+			"`Co-Authored-By:` included, in the one final paragraph, no blank line",
 		},
 		"outside-work": {
 			"raise a question", "linked `blocks` to the leaf",
@@ -32,7 +33,10 @@ func TestBuildText(t *testing.T) {
 			"Evidence\nwritten by anyone else does not count",
 		},
 		"fakes-only": {"with fakes only, never real Rex,\nagents or `gh`"},
-		"done":       {"rhiza session done", "as its own command", "`;` or `&&`"},
+		"done": {
+			"rhiza session done", "as its own command", "after its recording\ncommand succeeded",
+			"`;` or `&&`",
+		},
 		"scoped-tests": {
 			"Builders and verifiers run only the tests covering what the change touches",
 			"scoped commands", "never the repo's full\nsuite",
