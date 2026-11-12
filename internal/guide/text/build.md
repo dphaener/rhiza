@@ -1,6 +1,6 @@
 # Build
 
-A build run takes a change set's leaves one at a time: a fresh builder session, then a fresh verifier. `RHIZA_CHANGE`, `RHIZA_LEAF` (the leaf's handle) and
+A build run takes leaves one at a time: a fresh builder, then a fresh verifier. `RHIZA_CHANGE`, `RHIZA_LEAF` (the leaf's handle) and
 `RHIZA_ATTEMPT` (1, 2, ...) are set. Each role ends with `rhiza session done` as its own command after its recording
 command succeeded, never chained with `;` or `&&`.
 
@@ -29,8 +29,7 @@ Co-Authored-By: Agent Name <agent@example.com>
 
 Keep every trailer, `Co-Authored-By:` included, in the one final paragraph, no blank line.
 
-Your actor record sits untracked in `.rhiza/log`. Stage it with your work, so the
-`Actor:` trailer names a tracked actor:
+Stage your untracked actor record in `.rhiza/log` with your work:
 
 ```
 git add $(grep -l "Record agent actor $RHIZA_ACTOR " .rhiza/log/*/*.json | xargs -n1 dirname | sort -u)
@@ -45,7 +44,7 @@ Never rewrite earlier commits.
 ## Tests
 
 Builders and verifiers run only the tests covering what the change touches, with the
-repo's own scoped commands (its contributor guide names them), never the repo's full
+repo's scoped commands, never the repo's full
 suite: the PR's CI runs it before merge.
 
 While CI is unstable, or a red is not explained by your change,
@@ -56,14 +55,13 @@ Reproduce a timing flake by injecting a delay at the suspected race, never by bu
 
 ## Command budget
 
-Never sleep and never poll: no `sleep`, no loop that re-reads a command's output
-or status to see if it finished. No single command runs longer than about four
-minutes. A build or test that may take longer runs once in the background and is
-waited for once, until it exits; split work that cannot fit into smaller commands.
+Never sleep and never poll. No command runs longer than about four
+minutes; a longer build or test runs once in the background and is
+waited for once.
 
 ## Outside work
 
-- Needed outside work, without which the leaf cannot pass: raise a question linked `blocks` to the leaf, and stop.
+- Outside work the leaf needs: raise a question linked `blocks` to the leaf, and stop.
 - Noticed-only work: a discovered-from draft change set, never built in this run.
   `rhiza change new "<intent>" --json`, then
   `rhiza link <new> discovered-from <this> --change <new> --json`, then
@@ -86,7 +84,7 @@ agents or `gh`. End with exactly one of:
   ]}
   ```
 
-- Findings, one per failed point, recorded from stdin with a heredoc, no temp file:
+- Findings, one per failed point, on stdin:
 
   ```
   rhiza run findings --leaf <leaf> - <<'EOF'
