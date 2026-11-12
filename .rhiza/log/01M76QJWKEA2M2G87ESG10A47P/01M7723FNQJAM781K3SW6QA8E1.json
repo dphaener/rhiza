@@ -1,0 +1,40 @@
+{
+  "actor": "01M771CYR82DQJSWYKT58R6PPY",
+  "after": [
+    "01M76ZYVVNFVTG73M0EH7TS1FQ"
+  ],
+  "at": "2026-11-12T05:01:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-76a416b6 at 637aff02a (attempt 5): go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(repair|describe-golden|render-refuses-damaged-log)$' passes. repair.txtar reproduces the incident (uncommitted, index-seen entry overwritten with another entry's bytes): repair --dry-run names it (from index) and leaves bytes and mode 644 unchanged; repair restores the original bytes at 0444; render and fold-ok pass. A sed-changed committed entry is restored from HEAD. An entry committed already damaged is restored from the index, not HEAD, and render now accepts it before commit while repair finds nothing (the attempt-4 finding). A junk entry the index never saw is reported not restorable with exit non-zero. go test -trimpath ./internal/index/... passes. go test -trimpath ./internal/api/... prints PASS; the only FAIL is the known root-state guard on ~/code/.rhiza-root/usage.live.json, not this diff. Diff read: repairsDamagedHead exempts a HEAD diff only when HEAD's blob (untrimmed git show) fails isEntryBytes and the working file passes it. Checked by hand with a scratch build: sed on a healthy committed entry is still refused by render and offered for restore from HEAD."
+        },
+        "handle": "repair-damaged-entries-verified-3",
+        "id": "01M7723F9J9367VVR66WXE016E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7723F9J9367VVR66THVG27T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7723F9J9367VVR66THVG27T",
+        "id": "01M7723FGRR8C9WDQYD9FZFM6N",
+        "link": "01M7723FGRR8C9WDQYD7B04S10",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QVDF2XHQYY78GE402FTD4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76QJWKEA2M2G87ESG10A47P",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7723FNQJAM781K3SW6QA8E1",
+  "type": "ops",
+  "v": 1
+}
