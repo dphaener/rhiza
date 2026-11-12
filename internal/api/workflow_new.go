@@ -52,30 +52,72 @@ func (r WorkflowNewResponse) Human(w io.Writer) {
 	fmt.Fprintln(w, r.Path)
 }
 
-const workflowSkeleton = `name = "%[1]s"
+// placeholderMarker is the text the skeleton's test command carries. A
+// command step whose run holds it is still the placeholder: workflow check
+// warns about it until it is replaced.
+const placeholderMarker = "RHIZA-PLACEHOLDER"
 
-# A workflow is steps run in order. Check it with
+const workflowSkeleton = `# A workflow is a set of steps run in order, started with
+#   rhiza run start --workflow %[1]s
+# Check this file with
 #   rhiza workflow check %[1]s
-# and see what a run would do with
+# and see what a run would do without doing it with
 #   rhiza run start --workflow %[1]s --dry-run
+name = "%[1]s"
+
+# The step a run begins at.
 start = "build"
 
 # An agent step runs an agent session with this prompt. {change}, {title},
 # {step} and {run} are filled in. The agent and its permission mode come
-# from run start's --agent and --permission-mode.
+# from run start's --agent and --permission-mode, or from the agent and
+# permission_mode keys here. on.pass names the next step.
 [step.build]
 kind = "agent"
 prompt = "Build change set {change} ({title}) in step {step} of run {run}"
 on.pass = "test"
 
-# A command step runs a shell command; on.pass and on.fail name the next
-# step, or done or failed.
+# A command step runs a shell command in the run's worktree. on.pass and
+# on.fail name the next step, or done or failed. max_visits bounds a loop:
+# the run fails on the visit after the last one, so build and test cannot
+# go back and forth all night.
+#
+# The run below is a PLACEHOLDER: it fails on purpose. Replace it with your
+# project's own test command, ideally one scoped to what a change touches.
+# Examples:
+#   Go:                  run = "go test ./..."
+#   Ruby (RSpec):        run = "bundle exec rspec"
+#   Ruby (Minitest):     run = "bin/rails test"
+#   JavaScript (npm):    run = "npm test"
+#   TypeScript (pnpm):   run = "pnpm test"
+#   Python (pytest):     run = "python -m pytest"
+#   Rust:                run = "cargo test"
+# A command with several parts is fine: run = "lint && unit-tests"
 [step.test]
 kind = "command"
-run = "make test"
+run = "echo 'replace this ` + placeholderMarker + ` with your test command' >&2; exit 1"
 max_visits = 3
 on.pass = "done"
 on.fail = "build"
+
+# A cleanup step is a command run once when a run of this workflow ends,
+# whether it finished done, failed or was abandoned. It runs in the run's
+# worktree with the run's environment, in file order, and a failure of it
+# never changes the run's result. Use it to stop what the steps started.
+# Uncomment and repeat the table for more than one:
+#
+# [[cleanup]]
+# name = "stop-services"
+# run = "docker compose down"
+
+# An env table sets variables for every process the run's steps start:
+# agents, commands and cleanup steps. {run_tmp} is the run's own private
+# temp folder, made before a step uses it and removed when the run ends.
+# Names are letters, digits and _; RHIZA_* names are Rhiza's own.
+#
+# [env]
+# DATABASE_URL = "sqlite://{run_tmp}/test.db"
+# CI = "true"
 `
 
 var (

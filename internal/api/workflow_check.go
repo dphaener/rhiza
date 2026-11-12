@@ -124,7 +124,25 @@ func runWorkflowCheck(ctx *Ctx, req any) (any, error) {
 	if !isWorkflowPath(ref) {
 		out.Warnings = exposureWarnings(ctx, name)
 	}
+	out.Warnings = append(out.Warnings, placeholderWarnings(name, data, ctx)...)
 	return out, nil
+}
+
+// placeholderWarnings warns for each command step still running the
+// skeleton's placeholder test command. It never makes the workflow invalid.
+func placeholderWarnings(name string, data []byte, ctx *Ctx) []string {
+	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root))
+	if err != nil {
+		return nil
+	}
+	var out []string
+	for _, n := range def.Order {
+		s := def.Steps[n]
+		if s.Kind == workflow.KindCommand && strings.Contains(s.Run, placeholderMarker) {
+			out = append(out, fmt.Sprintf("step %s still runs the placeholder command from workflow new: replace it with your project's test command", s.Name))
+		}
+	}
+	return out
 }
 
 // exposureWarnings is the warning for the workflow called name when the
