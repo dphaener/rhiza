@@ -1,0 +1,86 @@
+{
+  "actor": "01M77ADS8V1GJ308ZF81XY37W7",
+  "after": [
+    "01M77AAFE98MAQB2YA961MG6N4"
+  ],
+  "at": "2026-11-12T07:31:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 46f1cad8 with a -trimpath build, in a scratch root and repo with RHIZA_* and GOTMPDIR unset: a workflow with [env] GOTMPDIR={run_tmp}, NESTED={run_tmp}/sub, PLAIN=x ran with rhiza run start --foreground and succeeded; its command step saw GOTMPDIR=<repo>/.git/rhiza/runs/<run>/tmp (a directory while the step ran), NESTED=<that>/sub and PLAIN=x; its [[cleanup]] step saw the same GOTMPDIR with the folder still present; after the run the folder was gone. A workflow without [env] saw no GOTMPDIR. A workflow setting RHIZA_CHANGE in [env] fails rhiza workflow check with 'env: RHIZA_CHANGE is Rhiza's own variable and cannot be set'. go test ./internal/workflow/... ./internal/run/... and TestScripts/workflow-env pass."
+        },
+        "handle": "workflow-env-qa-1",
+        "id": "01M77AP4TS8SNXCBY96H2JSSK1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77AP4TS8SNXCBY96DQHYB0P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77AP4TS8SNXCBY96DQHYB0P",
+        "id": "01M77AP4WEK7Q362Z23G60D7V5",
+        "link": "01M77AP4WEK7Q362Z23C7QHEFQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MCFVAH4VXGAXZNTW4S7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 46f1cad8 with a -trimpath build: rhiza workflow check passes for bugfix, plan-bug, docs, docs-build, docs-review and ship-change, and workflow describe bugfix and ship-change list the go-cleanup cleanup step. Ran .rhiza/workflows/go-cleanup.sh with GOCACHE and TMPDIR on a fake tree: it removed cache/0a/old-a (4h), tmp/go-build-old (3h), tmp/rhiza-old (3h) and tmp/rhiza-new (90m, over the hour); it kept cache/0a/mid-b (2h), cache/ff/new-c, cache/README and trim.txt (4h, top level), cache/zz/old-z (non-hex dir), tmp/go-build-mid (90m), tmp/other-old (3h, other prefix) and a 3h-old rhiza-file plain file; exit 0. With GOCACHE=off a 4h-old cache entry was left. In a scratch repo a workflow's [[cleanup]] step sees the [env] GOTMPDIR folder."
+        },
+        "handle": "rhiza-own-workflows-go-cleanup-qa-1",
+        "id": "01M77AP4Y4VF0NNTV2EXXARFBP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77AP4Y4VF0NNTV2EW35B39P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77AP4Y4VF0NNTV2EW35B39P",
+        "id": "01M77AP50692V4QENH8YNHV0QV",
+        "link": "01M77AP50692V4QENH8WYG5YA5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MCX86XXCXQ0FG85CM1T",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 46f1cad8 with a -trimpath build: rhiza daemon settings lists no trimGoCache (0 matches for trim); rhiza docs --out into a scratch folder is identical to docs/reference, and config.md has no trimGoCache; outside internal/gosweep itself nothing in Go, scripts or docs names gosweep, trimGoCache, isRhizaRepo or EnvGoTmp. TestScripts/daemon-settings* pass."
+        },
+        "handle": "daemon-no-go-cache-trim-qa-1",
+        "id": "01M77AP51W4SCHF2QPZZKCM35F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77AP51W4SCHF2QPZYHNZ6PQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77AP51W4SCHF2QPZYHNZ6PQ",
+        "id": "01M77AP54MEB5X7VSF4H0GMS5P",
+        "link": "01M77AP54MEB5X7VSF4DFWTKQV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MDEKRSQERY6KR37594J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763YX47S5XY0W3P8FVJ54S8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77AP58EPBTWFC8BW3BD06XQ",
+  "type": "ops",
+  "v": 1
+}
