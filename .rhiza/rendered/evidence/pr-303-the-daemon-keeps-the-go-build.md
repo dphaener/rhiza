@@ -26,8 +26,8 @@ verified
 
 ### Out
 
-- verifies [go-build-cache-sweep](../capability/rhiza/orchestration/daemon/go-build-cache-sweep.md)
-- verifies [daemon-trims-go-cache](../capability/rhiza/orchestration/daemon/daemon-trims-go-cache.md)
+- verifies go-build-cache-sweep (retired)
+- verifies daemon-trims-go-cache (retired)
 
 ## History
 

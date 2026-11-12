@@ -181,5 +181,5 @@ type FrameCommand struct{ Name, Summary string }
 var FrameCommands = []FrameCommand{
 	{"api call", "Call an operation with a JSON request; prints JSON"},
 	{"tui app", "Run an app: a read app, or a write app that previews before it writes (--once prints its JSON)"},
-	{"version", "Print the rhiza version"},
+	{"version", "Print the rhiza version; --channel release|latest shows the newest one there"},
 }

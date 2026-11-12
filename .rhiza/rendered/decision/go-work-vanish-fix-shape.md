@@ -23,7 +23,7 @@ Intent: milestone-29's statement is one root daemon building every project under
 
 ### In
 
-- decided-by [run-private-gotmpdir](../capability/rhiza/workflows/workflow-runs/run-private-gotmpdir.md)
+- decided-by run-private-gotmpdir (retired)
 - decided-by [step-retry-vanished-go-work](../capability/rhiza/workflows/workflow-runs/step-retry-vanished-go-work.md)
 
 ## History

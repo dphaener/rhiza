@@ -1,5 +1,8 @@
 name = "docs-review"
 
+[env]
+GOTMPDIR = "{run_tmp}"
+
 # A review of a built change set. code-check runs rhiza check and
 # build-check in the run's worktree. With no on.fail, a failed code check
 # ends the run failed at once; a repo override may route it elsewhere.
@@ -90,3 +93,7 @@ kind = "signoff"
 max_visits = 3
 on.pass = "done"
 on.changes = "review"
+
+[[cleanup]]
+name = "go-cleanup"
+run = "sh .rhiza/workflows/go-cleanup.sh"

@@ -6,7 +6,14 @@ name = "plan-bug"
 # an arbiter decides any question it raises.
 autonomous = true
 
+[env]
+GOTMPDIR = "{run_tmp}"
+
 [step.plan]
 kind = "workflow"
 workflow = "plan"
 on.pass = "done"
+
+[[cleanup]]
+name = "go-cleanup"
+run = "sh .rhiza/workflows/go-cleanup.sh"

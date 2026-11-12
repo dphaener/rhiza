@@ -1,0 +1,15 @@
+{
+  "actor": "01M77AFMGDPSPCB31ASP9A83AD",
+  "after": [],
+  "at": "2026-11-12T07:29:21Z",
+  "body": {
+    "intent": "Constraints of a workflow's [env] table found in review of 01M763YX: an [env] key may not name a RHIZA_* variable (the parser refuses it), and only the run's own workflow file's [env] applies, so an included workflow's [env] (a workflow step's) sets nothing; add them as constraints on workflow-env.",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M77AJCZXX07RQ5V9J6KSKH79",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77AJCZXX07RQ5V9J92426G1",
+  "type": "open",
+  "v": 1
+}
