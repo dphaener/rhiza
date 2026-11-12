@@ -1,0 +1,63 @@
+{
+  "actor": "01M781YQ8ZCSZEZWWJRG6GF4DR",
+  "after": [
+    "01M781TTA4PM5RWG2F7N3434ME"
+  ],
+  "at": "2026-11-12T14:19:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d8d01e896 on linux/amd64 I ran the branch's install.sh hands-on against the real GitHub releases. cat install.sh | HOME=<scratch> sh fetched the release manifest and installed rhiza v0.1.0 into <scratch>/.local/bin (rhiza version: v0.1.0) and printed the PATH hint. cat install.sh | sh -s -- --channel latest --dir <scratch> installed v0.1.1-main.14+38cee74, which ran. For tamper, I served the real release manifest from a local mirror via RHIZA_INSTALL_BASE_URL with the linux/amd64 archive's bytes altered: it exited 1 with 'sha256 mismatch ... nothing installed', and the --dir stayed empty. sh -s -- --help printed the help under a pipe; --channel nope exited 1. go test -trimpath -count=1 ./tools/install -run TestInstallScript passed."
+        },
+        "handle": "install-script-qa-1",
+        "id": "01M7821S3T7W38ZFJ6HB4XWXA4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7821S3T7W38ZFJ6HA8V425T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7821S3T7W38ZFJ6HA8V425T",
+        "id": "01M7821S58J3FHG9HQF0GG9FF4",
+        "link": "01M7821S58J3FHG9HQEX4H4AB5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7DBYAAJRESBTJC5PHPB4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d8d01e896 I followed the README install section by hand. Its install.sh one-liner and the --channel latest form both installed working binaries (v0.1.0 and v0.1.1-main.14+38cee74). Both manifest URLs it names resolve and are the ones the script fetches. sha256sum of the real rhiza_0.1.0_linux_amd64.tar.gz matched its manifest entry. gh attestation verify <archive> --repo dphaener/rhiza exited 0, with source repo dphaener/rhiza and signer release.yml@refs/tags/v0.1.0. It exited 1 for an altered copy. go install remains documented."
+        },
+        "handle": "readme-channels-qa-1",
+        "id": "01M7821S6DX2JGJE585JAPF3RM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7821S6DX2JGJE585HRYSASK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7821S6DX2JGJE585HRYSASK",
+        "id": "01M7821S79930SJCCW8N5H5KV8",
+        "link": "01M7821S79930SJCCW8JZAWWGD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7DCEFTQGRF39QY7BM5R2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B00QSZVGA0E6X85JE2BYY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7821S8E477S0F6V7036SQ17",
+  "type": "ops",
+  "v": 1
+}

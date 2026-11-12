@@ -14,7 +14,20 @@ With Go (1.25 or newer):
 go install github.com/dphaener/rhiza/cmd/rhiza@latest
 ```
 
+Or install a release binary with the script, which checks the archive's sha256 against the release manifest (Linux or macOS, amd64 or arm64):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dphaener/rhiza/main/install.sh | sh
+```
+
+It installs into `~/.local/bin`; pass `--dir DIR` to change that. There are two channels, each with a manifest listing every archive and its sha256:
+
+- `release` (the default): the newest release, from `https://github.com/dphaener/rhiza/releases/latest/download/manifest.json`.
+- `latest`: the newest build of `main`, from `https://github.com/dphaener/rhiza/releases/download/latest/manifest.json`. Pick it with `curl -fsSL https://raw.githubusercontent.com/dphaener/rhiza/main/install.sh | sh -s -- --channel latest`.
+
 Or grab a binary for Linux or macOS (amd64 or arm64) from the [releases page](https://github.com/dphaener/rhiza/releases), unpack it and put `rhiza` on your `$PATH`. Each release has a `checksums.txt` to verify against.
+
+To verify a download by hand, compare `sha256sum` (or `shasum -a 256` on macOS) of the archive with its entry in the channel's manifest or `checksums.txt`. Release and `latest` archives also carry a build provenance attestation: `gh attestation verify rhiza_<version>_<os>_<arch>.tar.gz --repo dphaener/rhiza` checks that GitHub Actions built it from this repository.
 
 Then `rhiza version` should print what you installed.
 
