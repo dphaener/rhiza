@@ -1,6 +1,6 @@
 # Build
 
-A build run takes a change set's leaves one at a time: a builder, then a verifier.
+A build run takes the leaves one at a time: a builder, then a verifier.
 `RHIZA_CHANGE`, `RHIZA_LEAF` and `RHIZA_ATTEMPT` are set.
 Each role ends with `rhiza session done` as its own command, never chained with `;` or `&&`.
 
@@ -11,14 +11,14 @@ rhiza slice --change "$RHIZA_CHANGE" --json
 rhiza show "$RHIZA_LEAF" --json
 ```
 
-The leaf's `acceptance` is the bar.
+Its `acceptance` is the bar.
 
 ## Builder
 
-Write code and tests to the acceptance. Before the commit, run the leaf's acceptance
+Write code and tests to the acceptance. Before the commit, run its acceptance
 commands, then `rhiza ship generate` and `rhiza render`; fold every file they change in.
-End with exactly one new commit listing each command with its exit code in a
-`Checks:` block above the trailers, which name the leaf, the change set and you:
+End with exactly one new commit, each command and its exit code in a
+`Checks:` block above the trailers (leaf, change set, you):
 
 ```
 Stream CSV exports
@@ -34,17 +34,17 @@ Leaf: export-csv
 Co-Authored-By: Agent Name <agent@example.com>
 ```
 
-Keep every trailer, `Co-Authored-By:` too, in the one final paragraph.
+Keep every trailer in the one final paragraph.
 
-Your actor record sits untracked in `.rhiza/log`; stage it, so `Actor:` names a tracked actor:
+Your actor record sits untracked in `.rhiza/log`; stage it:
 
 ```
 git add $(grep -l "Record agent actor $RHIZA_ACTOR " .rhiza/log/*/*.json | xargs -n1 dirname | sort -u)
 ```
 
-Stage only it, never another actor's.
+Stage only yours, never another actor's.
 
-On a retry (`RHIZA_ATTEMPT` above 1), read the earlier findings in
+On a retry (`RHIZA_ATTEMPT` above 1), read earlier findings in
 `rhiza run status --json`, then add one fix commit with the same `Leaf:` trailer.
 Never rewrite history.
 
@@ -62,15 +62,16 @@ Reproduce a timing flake by injecting a delay at the suspected race, never by bu
 
 ## Outside work
 
-- Needed outside work: raise a question linked `blocks` to the leaf, and stop.
+- Needed outside work: raise a question linked `blocks` to the leaf; stop.
 - Noticed-only work: a discovered-from draft change set, never built in this run:
   `rhiza change new "<intent>" --json`, then
   `rhiza link <new> discovered-from <this> --change <new> --json`, then `rhiza change use <this>`.
 
 ## Verifier
 
-You work in a detached checkout at the leaf's commit. Re-run the acceptance as
-written, and read the diff. Never edit code. Test runs with fakes only, never real Rex,
+You work in a detached checkout at the leaf's commit. Re-run every command in its
+`Checks:` block and every acceptance command, and read the diff. A different exit code, or
+no `Checks:` block, is a finding naming the command. Never edit code. Test runs with fakes only, never real Rex,
 agents or `gh`. End with exactly one of:
 
 - Evidence written as yourself, then
