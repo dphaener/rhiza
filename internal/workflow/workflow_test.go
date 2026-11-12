@@ -494,7 +494,7 @@ func TestPlanBuiltin(t *testing.T) {
 	if def.Name != "plan" || def.Start != "interview" {
 		t.Errorf("name %q, start %q; want plan, interview", def.Name, def.Start)
 	}
-	want := []string{"interview", "milestone-check", "review", "critic", "fresh", "check", "revise", "gate", "open-pr", "wait-pr", "pr-green", "pr-green-infra", "pr-green-infra-wait", "rebase", "wait-rebased", "rebased-green", "rebased-green-infra", "rebased-green-infra-wait", "merge", "close-out"}
+	want := []string{"interview", "milestone-check", "review", "critic", "fresh", "check", "revise", "gate", "open-pr", "prepush-triage", "prepush-fix", "wait-pr", "pr-green", "pr-green-infra", "pr-green-infra-wait", "rebase", "wait-rebased", "rebased-green", "rebased-green-infra", "rebased-green-infra-wait", "merge", "close-out"}
 	if !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
@@ -562,11 +562,14 @@ func TestPlanBuiltin(t *testing.T) {
 		{"gate", OutcomePass, "open-pr", EndNone},
 		{"gate", OutcomeFail, "", EndFailed},
 		{"open-pr", OutcomePass, "wait-pr", EndNone},
-		{"open-pr", OutcomeFail, "", EndFailed},
+		{"open-pr", OutcomeFail, "prepush-triage", EndNone},
 		{"wait-pr", OutcomePass, "pr-green", EndNone},
 		{"pr-green", OutcomePass, "rebase", EndNone},
 		{"rebase", OutcomePass, "wait-rebased", EndNone},
-		{"rebase", OutcomeFail, "", EndFailed},
+		{"rebase", OutcomeFail, "prepush-triage", EndNone},
+		{"prepush-triage", OutcomePass, "prepush-fix", EndNone},
+		{"prepush-triage", OutcomeFail, "", EndFailed},
+		{"prepush-fix", OutcomePass, "open-pr", EndNone},
 		{"wait-rebased", OutcomePass, "rebased-green", EndNone},
 		{"rebased-green", OutcomePass, "merge", EndNone},
 		{"merge", OutcomePass, "close-out", EndNone},
@@ -1682,6 +1685,31 @@ func TestBuiltinPlanMilestone(t *testing.T) {
 		}
 		if _, ok := plan.Autonomy(st); ok {
 			t.Errorf("plan declares %s autonomy; want none", st)
+		}
+	}
+}
+
+// The plan workflows send open-pr's and rebase's failure to a triage that
+// passes only on a head the pre-push check failed on, to prepush-fix.
+func TestPlanPrePushFix(t *testing.T) {
+	for _, name := range []string{"plan", "plan-milestone"} {
+		data, _ := Builtin(name)
+		def, err := Parse(name, data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, n := range []string{"open-pr", "rebase"} {
+			if got := def.Steps[n].On[OutcomeFail]; got != "prepush-triage" {
+				t.Errorf("%s %s on.fail = %q; want prepush-triage", name, n, got)
+			}
+		}
+		tri := def.Steps["prepush-triage"]
+		if tri.Run != "rhiza ship gate --failed" || tri.On[OutcomePass] != "prepush-fix" || len(tri.On) != 1 {
+			t.Errorf("%s prepush-triage = %+v; want ship gate --failed, pass to prepush-fix only", name, tri)
+		}
+		fix := def.Steps["prepush-fix"]
+		if fix.Kind != KindAgent || fix.MaxVisits != 2 || fix.On[OutcomePass] != "open-pr" || len(fix.On) != 1 || !strings.Contains(fix.Prompt, "commit") {
+			t.Errorf("%s prepush-fix = %+v; want agent, max_visits 2, pass to open-pr, commit in prompt", name, fix)
 		}
 	}
 }

@@ -82,6 +82,25 @@ kind = "command"
 run = "rhiza ship open-pr"
 max_visits = 3
 on.pass = "wait-pr"
+on.fail = "prepush-triage"
+
+# open-pr and rebase fail on the pre-push check (nothing pushed, the head
+# recorded), a conflicting merge of main, or a gh, network or git error.
+# Only a head the pre-push check failed on passes here, to prepush-fix;
+# anything else ends the run as before.
+[step.prepush-triage]
+kind = "command"
+run = "rhiza ship gate --failed"
+max_visits = 3
+on.pass = "prepush-fix"
+
+[step.prepush-fix]
+kind = "agent"
+prompt = "Fix the failing pre-push check of the plan of change set {change} in run {run}: the pre-push check (rhiza check, then rhiza.ship.prePushCheck) failed on the head before a push, and nothing was pushed. Read the failing lines in `rhiza run status --json`, then fix the plan's model or rendered files with one `rhiza apply` (for a model error) or one `rhiza render` (for stale rendered files). Commit that fix to this run's branch with `git commit`, then run `rhiza session done` as your very last action."
+until = "true"
+until_when = "done"
+max_visits = 2
+on.pass = "open-pr"
 
 # The plan's PR merges once its CI is green, pinned to the checked head.
 # Before the merge, as in ship-change, ship rebase brings the branch up to
@@ -128,6 +147,7 @@ kind = "command"
 run = "rhiza ship rebase"
 max_visits = 3
 on.pass = "wait-rebased"
+on.fail = "prepush-triage"
 
 [step.wait-rebased]
 kind = "wait"

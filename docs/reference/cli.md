@@ -2339,7 +2339,7 @@ rhiza ship gate [--failed]
 
 Arguments and flags:
 
-- `--failed`: Run no gate: exit 0 only if the last ship rebase left an unpushed head the local gate failed on and the branch is still at it, else exit 1 (a conflict or another failure); reads the state file only (for a step that routes a gate failing on a rebased head to a fixer)
+- `--failed`: Run no gate: exit 0 only if the branch is still at an unpushed head the local gate failed on (ship rebase left it) or the pre-push check failed on (ship open-pr or land), else exit 1 (a conflict or another failure); reads the state file only (for a step that routes a gate failing on a rebased head to a fixer)
 
 Output (`--json` fields):
 
