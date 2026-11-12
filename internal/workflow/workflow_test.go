@@ -623,7 +623,7 @@ func TestBuildBuiltin(t *testing.T) {
 			t.Errorf("%s prompt names an agent product: %q", role, r.Prompt)
 		}
 	}
-	for _, w := range []string{"{attempt}", "Leaf: {leaf}"} {
+	for _, w := range []string{"{attempt}", "Leaf: {leaf}", "pre-handoff checklist", "`Checks:` block"} {
 		if !strings.Contains(build.Builder.Prompt, w) {
 			t.Errorf("builder prompt lacks %q", w)
 		}

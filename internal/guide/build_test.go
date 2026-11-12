@@ -67,6 +67,25 @@ func finalParagraph(s string) string {
 	return s
 }
 
+func TestBuildPreHandoffChecklist(t *testing.T) {
+	build, _ := Lookup("build")
+	for _, want := range []string{"acceptance\ncommands", "`rhiza ship generate`", "`rhiza render`", "`Checks:` block", "exit code"} {
+		if !strings.Contains(build.Body, want) {
+			t.Errorf("build: lacks %q", want)
+		}
+	}
+	i := strings.Index(build.Body, "\nStream CSV exports\n")
+	example := build.Body[i:]
+	example = example[:strings.Index(example, "\n```")]
+	c, ch := strings.Index(example, "\nChecks:\n"), strings.Index(example, "\nChange: ")
+	if c < 0 || ch < c {
+		t.Errorf("build example: Checks: block must sit above the trailers")
+	}
+	if strings.Contains(finalParagraph(example), "Checks:") {
+		t.Errorf("build example: Checks: inside the trailer paragraph")
+	}
+}
+
 func TestBuildCommitsOwnActorRecord(t *testing.T) {
 	build, _ := Lookup("build")
 	for _, want := range []string{"Record agent actor $RHIZA_ACTOR ", "git add $(", "never another actor's"} {
