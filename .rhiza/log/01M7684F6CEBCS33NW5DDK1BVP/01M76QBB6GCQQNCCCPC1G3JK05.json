@@ -1,0 +1,63 @@
+{
+  "actor": "01M76Q6WV5VCHYCACS4MC85TQ7",
+  "after": [
+    "01M76Q3ZYPV4R6BAJXJMQRXVSB"
+  ],
+  "at": "2026-11-12T01:53:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 7f99063: extracted the changes and check job scripts from .github/workflows/ci.yml and ran them in a scratch git repo. changes: a PR touching only .rhiza/ gives code=false (also when the base advanced on main after branching, via merge-base); a PR also touching main.go gives code=true; workflow_dispatch and push give code=true. check: [changes+model success, Go jobs skipped] exits 0; [model skipped, Go jobs success] exits 0; all skipped but changes exits 1; a failed Go job, a failed model job, a cancelled job, or a failed changes job each exit 1. Job graph parsed with PyYAML: model needs changes if code == 'false', lint/scripts/api/rest/budgets need changes if code == 'true', check needs all seven with always(). The model job's steps run locally with this commit's build: make self-check ok (with the session's own untracked actor log set aside) and go test -trimpath ./internal/op -run TestEveryFieldInRepoLogIsKnown ok; go test -trimpath ./internal/ciworkflow/... ok. main has no branch protection (gh api 404), so ship check is the gate. The post-merge observation of the next model-only PR's CI is not yet observable."
+        },
+        "handle": "ci-model-only-pr-qa-1",
+        "id": "01M76QBB464W3WN3CBMND8Q8NJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76QBB464W3WN3CBMNA1KY5F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76QBB464W3WN3CBMNA1KY5F",
+        "id": "01M76QBB4N9ZFWB66RBD3D2JW1",
+        "link": "01M76QBB4N9ZFWB66RB97T7PN7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M768E0NH089HZ4WRR0SBBDAB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 7f99063: go test -trimpath -count=1 ./internal/api -run 'ChecksVerdict|ShipRerunFailed|WatchdogCIRerun' ok, covering ModelOnlyPR (changes/model/check SUCCESS, the five Go jobs SKIPPED) as settled and green, TestShipRerunFailedSkippedJobs issuing no gh run rerun, and the TestWatchdogCIRerun model-only head with no rerun and rerunSpent false. Cross-checked with the real check-job script: the same skipped/success mix exits 0, so ship check and the workflow's aggregate agree."
+        },
+        "handle": "ship-check-skipped-jobs-green-qa-1",
+        "id": "01M76QBB58D147GWMWD8P09WHJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76QBB58D147GWMWD8JMZKNN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76QBB58D147GWMWD8JMZKNN",
+        "id": "01M76QBB5X3H154SWP8T1VFH52",
+        "link": "01M76QBB5X3H154SWP8RM3HBY4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M768E0S5MMHEP3CNXNJYBYPA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7684F6CEBCS33NW5DDK1BVP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76QBB6GCQQNCCCPC1G3JK05",
+  "type": "ops",
+  "v": 1
+}
