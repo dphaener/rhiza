@@ -3,8 +3,8 @@
 Sessions get `RHIZA_CHANGE`, `RHIZA_CYCLE`
 and `RHIZA_ROLE` (check, critic, fixer, verifier); checks and critics also `RHIZA_CHECK`,
 leaf fixers and verifiers `RHIZA_LEAF`. Start with
-`rhiza slice --change "$RHIZA_CHANGE" --json`. Checks and critics use a throwaway checkout at the branch head.
-Review the default branch diff,
+`rhiza slice --change "$RHIZA_CHANGE" --json`. Checks and critics use a throwaway checkout at HEAD.
+Review the diff from the merge-base with the default branch,
 `git diff $(git merge-base origin/main HEAD)`. Each role ends with `rhiza session done` as its own command after its recording
 command succeeded, never chained with `;` or `&&`.
 
@@ -19,7 +19,7 @@ While CI is unstable or a red is not explained by your change,
 do not push or rerun CI to see. Reproduce the
 failing test locally, fix it, push only after it and the
 touched packages pass locally.
-Reproduce a flake by injecting a delay at the suspected race, never by busy loops or parallel stress on the host.
+Reproduce flakes by injecting a delay at the suspected race, never by busy loops or parallel stress on the host.
 
 - `compliance`: each leaf's `acceptance` as written.
 - `quality`: correctness, tests, conventions.
@@ -34,7 +34,7 @@ Reproduce a flake by injecting a delay at the suspected race, never by busy loop
   ```
 
 - `scope`: work stays inside the intent and the leaves.
-- `model`: model and code match; missing constraints go in a discovered-from draft change set.
+- `model`: model and code match; missing constraints go in a discovered-from draft.
 
 Record one round, `{"findings":[]}` when clean (a check with none fails):
 
@@ -56,11 +56,11 @@ rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'
 EOF
 ```
 
-`verdict` is `confirmed` or `dropped`. Dropped findings stay in the run journal, no Decision.
+`verdict` is `confirmed` or `dropped`; dropped ones stay in the run journal, no Decision.
 
 ## Fixer
 
-Fix only the confirmed findings named, in one new commit with `Change:`, `Actor:` and `Leaf: <leaf>` (leaf fixer) or
+Fix only the named confirmed findings in one new commit with `Change:`, `Actor:` and `Leaf: <leaf>` (leaf fixer) or
 `Review: <run>` ($RHIZA_RUN, change set fixer) trailers. Keep all trailers, `Co-Authored-By:`
 included, in one final paragraph, no blank line. Never rewrite commits.
 
