@@ -15,6 +15,7 @@ rhiza ship check records each CI run it settles, on a run's PR head or on main, 
 ### Out
 
 - decided-by [ci-unstable-gate-rules](../../../../../decision/ci-unstable-gate-rules.md)
+- decided-by [local-gate-trigger-identified-flakes](../../../../../decision/local-gate-trigger-identified-flakes.md)
 
 ### In
 

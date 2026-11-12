@@ -1,0 +1,40 @@
+{
+  "actor": "01M78MYWYK34G330Y28F8101WV",
+  "after": [
+    "01M78GN61J0HXF382ACBR6Y9EE"
+  ],
+  "at": "2026-11-12T19:52:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at eee7eb49d (attempt 2). go test -trimpath ./internal/api -run 'TestShipGateFullLog|TestShipRebase' -count=1: all PASS. TestShipGateFullLog runs a gate printing '--- FAIL: TestX' first, 20000 filler lines (>64 KB) and make's 'Error 1' last: the log file holds every byte, ShipGateResponse.Log names it, and the last 20 human lines contain '--- FAIL: TestX' and the log path; its passing subtest shows a passing gate writes the log too. Attempt 1's finding is fixed: TestShipRebaseRunsLocalGate's failing case now asserts r.Gate.Log is <common>/rhiza/gate/cs/ship-it.log, the file holds the whole output, and the human output has 'Full log: <path>' (shared path through shipLocalGate, ship_rebase.go). Diff read: shipWriteGateLog writes atomically under the common dir, shipGateFailLines keeps at most 10 --- FAIL/FAIL/panic: lines printed before 'Full log:'. describe-golden has the log field and TestScripts/describe-golden passes. grep -c 'run `rhiza ship gate` to see' prints 0 for ship-change.toml and docs.toml; both gate-fix prompts in each name `rhiza run status --json` and the full gate log. make self-check passes (exit 0) from a clean detached worktree of eee7eb49d with the run's RHIZA_* env unset (with it set, it fails only on the verifier sessions' own unrendered actor files)."
+        },
+        "handle": "ship-gate-full-log-verified",
+        "id": "01M78N3RXWFN2GNV6HX64EJH02",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78N3RXWFN2GNV6HX2V6181K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78N3RXWFN2GNV6HX2V6181K",
+        "id": "01M78N3RYKVNRWCM5XPRH4J8BD",
+        "link": "01M78N3RYKVNRWCM5XPQ8B3516",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FP45EF4RB94DP1JZ5W6T2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78FD039D0F1QVN2BWEAEYCC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78N3RZC3W874H9E69XABDB1",
+  "type": "ops",
+  "v": 1
+}

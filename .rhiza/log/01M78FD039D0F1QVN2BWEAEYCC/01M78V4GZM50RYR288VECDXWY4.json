@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M78NBNVNWHQMZPAEB2P01AEE"
+  ],
+  "at": "2026-11-12T21:38:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "26308d45fea0838c3a0abd886635d76ea6e4de3a",
+          "pr": "https://github.com/dphaener/rhiza/pull/504",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #504 (https://github.com/dphaener/rhiza/pull/504) passed CI at 26308d4",
+          "status": "verified"
+        },
+        "handle": "pr-504-fix-the-local-ship-gate",
+        "id": "01M78V4GSAPK7AFAREEC35BQDD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78V4GSAPK7AFAREE9NXBKQD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78V4GSAPK7AFAREE9NXBKQD",
+        "id": "01M78V4GTV0BQ9H7JGX64ARPC6",
+        "link": "01M78V4GTV0BQ9H7JGX62PGS5A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6T26X2D1D7TTAJ0MMF0X9FN",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M78V4GSAPK7AFAREE9NXBKQD",
+        "id": "01M78V4GW5TH9E6SF9F3XCK35G",
+        "link": "01M78V4GW5TH9E6SF9F16ETMBY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M78V4GSAPK7AFAREE9NXBKQD",
+        "id": "01M78V4GX8C821Q3TZ2ZSRB9ZK",
+        "link": "01M78V4GX8C821Q3TZ2XGJV9EY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FP45EF4RB94DP1JZ5W6T2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78FD039D0F1QVN2BWEAEYCC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78V4GZM50RYR288VECDXWY4",
+  "type": "ops",
+  "v": 1
+}

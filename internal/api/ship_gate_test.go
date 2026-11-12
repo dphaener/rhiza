@@ -50,6 +50,16 @@ func TestShipLocalGate(t *testing.T) {
 			t.Errorf("resp = %+v", r)
 		}
 	})
+	t.Run("unidentified flake only skips with the reason", func(t *testing.T) {
+		f := gateFixture(t, "echo gate-ran; exit 1", false)
+		if err := writeAtomic(ciStabilityPath(f.common), []byte(`{"runs":[{"head":"a","result":"green","time":"x","flakes":["ci / UNKNOWN STEP"]}]}`)); err != nil {
+			t.Fatal(err)
+		}
+		r := shipGate(t, f)
+		if !r.Skipped || r.Output != "" || r.ExitCode() != 0 || !strings.HasPrefix(r.Reason, "CI is stable") || !strings.Contains(r.Reason, "ignored unidentified flake") || !strings.Contains(r.Reason, "ci / UNKNOWN STEP") {
+			t.Errorf("resp = %+v", r)
+		}
+	})
 	t.Run("no gate skips", func(t *testing.T) {
 		f := gateFixture(t, "", true)
 		r := shipGate(t, f)
@@ -148,8 +158,16 @@ func TestShipRebaseRunsLocalGate(t *testing.T) {
 		if st, _ := readShipState(state); st.GateFailed != "beef000111" || st.Pushed != "" {
 			t.Errorf("state = %+v; want the kept head recorded, nothing pushed", st)
 		}
-		if got := human(t, r); !strings.Contains(got, "FAIL TestMerged") || !strings.Contains(got, "for the gate's fixer") {
+		if got := human(t, r); !strings.Contains(got, "FAIL TestMerged") || !strings.Contains(got, "for the gate's fixer") || !strings.Contains(got, "Full log: "+r.Gate.Log) {
 			t.Errorf("human = %q", got)
+		}
+		// The rebase's gate writes the same log ship gate does.
+		want := filepath.Join(f.common, "rhiza", "gate", "cs", "ship-it.log")
+		if r.Gate.Log != want {
+			t.Errorf("gate log = %q, want %q", r.Gate.Log, want)
+		}
+		if b, err := os.ReadFile(want); err != nil || string(b) != "FAIL TestMerged\n" {
+			t.Errorf("log = %q, %v; want the whole output", b, err)
 		}
 	})
 	t.Run("a conflict runs no gate", func(t *testing.T) {
@@ -294,4 +312,44 @@ func TestShipGateFailedOnPrePushFailure(t *testing.T) {
 	if r := ask(); r.ExitCode() != 1 {
 		t.Errorf("a fixed head still counts as the failure: %+v", r)
 	}
+}
+
+// The gate's whole output goes to a log file the response names, and a
+// failing gate's human output ends with its failing lines and the path.
+func TestShipGateFullLog(t *testing.T) {
+	script := "echo '--- FAIL: TestX'; seq 1 20000 | sed 's/^/filler line /'; echo FAIL; echo 'make: *** [Makefile:64: test] Error 1'; exit 2"
+	f := gateFixture(t, script, true)
+	r, err := callOp(t, f.ctx, "ship.gate", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	g := r.(ShipGateResponse)
+	if g.Passed || g.Log == "" {
+		t.Fatalf("gate = %+v", g)
+	}
+	b, err := os.ReadFile(g.Log)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(b) <= 64<<10 || !strings.HasPrefix(string(b), "--- FAIL: TestX\n") || !strings.Contains(string(b), "Error 1") {
+		t.Errorf("log holds %d bytes, want the whole output", len(b))
+	}
+	lines := strings.Split(strings.TrimRight(human(t, g), "\n"), "\n")
+	if len(lines) > 20 {
+		lines = lines[len(lines)-20:]
+	}
+	tail := strings.Join(lines, "\n")
+	if !strings.Contains(tail, "--- FAIL: TestX") || !strings.Contains(tail, g.Log) {
+		t.Errorf("last 20 lines = %q", tail)
+	}
+	t.Run("a passing gate writes it too", func(t *testing.T) {
+		f := gateFixture(t, "echo fine", true)
+		g := shipGate(t, f)
+		if !g.Passed || g.Log == "" {
+			t.Fatalf("gate = %+v", g)
+		}
+		if b, _ := os.ReadFile(g.Log); !strings.Contains(string(b), "fine") {
+			t.Errorf("log = %q", b)
+		}
+	})
 }

@@ -3,6 +3,7 @@ package api
 import (
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -139,6 +140,9 @@ func TestCIStability(t *testing.T) {
 		{"red main cleared by later green main", []CIRun{{Main: true, Result: ciRed}, {Main: true, Result: ciGreen}}, 20, false},
 		{"red main outlives the window", append([]CIRun{{Main: true, Result: ciRed}}, clean(30)...), 20, true},
 		{"red PR head is not main", []CIRun{{Result: ciRed}}, 20, false},
+		{"identified job / step flake", []CIRun{{Result: ciGreen, Flakes: []string{"scripts (4/4) / Run scripts"}}}, 20, true},
+		{"unidentified flakes only", []CIRun{{Result: ciGreen, Flakes: []string{"ci / UNKNOWN STEP"}}, {Result: ciGreen, Flakes: []string{"CI run 123"}}}, 20, false},
+		{"identified beside unidentified", []CIRun{{Result: ciGreen, Flakes: []string{"ci / UNKNOWN STEP", "TestPond"}}}, 20, true},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -148,6 +152,16 @@ func TestCIStability(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("ignored unidentified flake named in the reason", func(t *testing.T) {
+		v := ciVerdict(CIStability{Runs: []CIRun{{Result: ciGreen, Flakes: []string{"ci / UNKNOWN STEP"}}, {Result: ciGreen, Flakes: []string{"CI run 123", "ci / UNKNOWN STEP"}}}}, 20)
+		if v.Unstable || v.Reason != "ignored unidentified flake in the last 20 CI runs: ci / UNKNOWN STEP, CI run 123" {
+			t.Errorf("verdict = %+v", v)
+		}
+		if v := ciVerdict(CIStability{Runs: []CIRun{{Result: ciGreen, Flakes: []string{"CI run 123"}}, {Main: true, Result: ciRed, Head: "m1"}}}, 20); !v.Unstable || !strings.Contains(v.Reason, "main's latest CI result is red") {
+			t.Errorf("red main beside an unidentified flake = %+v", v)
+		}
+	})
 
 	t.Run("ship check main recording clears red", func(t *testing.T) {
 		f, g, state := shipFixture(t)
