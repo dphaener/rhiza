@@ -1,0 +1,40 @@
+{
+  "actor": "01M76ZZ38VT37F2HVH63M4C7ND",
+  "after": [
+    "01M76ZNP56RR5HYFB099XN640P"
+  ],
+  "at": "2026-11-12T04:28:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 2ebbea723 (attempt 9). go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/model-commit-untracked$' passes: the bare origin and fake gh get one model branch and one PR per orphan change set, and the held entry stays untracked on no branch. That count is 3, because rhiza init's actor folder is a third orphan; this is the known minor carried finding. go test -trimpath -count=1 ./internal/api -run 'TestDaemonCommitsUntracked' passes: the round ships the orphan entry on model/<cs>-* with one PR, and a second call ships nothing. TestModelNetThrottled passes: due on the first poll, not at +5s or +59s, due again at +1m. Read daemon_projects.go:429-470: poll runs daemonCommitUntracked and daemonMergeModelPRs only when modelNetDue, through boundedExecCtx (modelNetTimeout 30s, GIT_TERMINAL_PROMPT=0). This matches the leaf's revised statement (377e4c386) and Decision commit-untracked-throttled-cadence. make self-check in this checkout fails to fold 01M76ZNP56RR5HYFB099XN640P because its predecessor 01M76ZKWG11Y4FK6T8A8Y93JMV (the run's cadence ruling) is still untracked in the run worktree and is committed at close-out. In a scratch clone with that entry and 01M76ZJC3V8YNSQA5DEE0DQPSG added, this commit's build reports no fold or docs failures, only .rhiza/rendered/ files, which close-out renders."
+        },
+        "handle": "commit-untracked-log-verified-9",
+        "id": "01M7706FR8ACSRQEJ41DNBV91J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7706FR8ACSRQEJ41AFHXEGK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7706FR8ACSRQEJ41AFHXEGK",
+        "id": "01M7706FV8V56JCE48FWXBZ01B",
+        "link": "01M7706FV8V56JCE48FWJTGM0W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA7V5KJWJPQSF2X7PCMD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7706FZRQB1CRZZQM6VJ0BAE",
+  "type": "ops",
+  "v": 1
+}
