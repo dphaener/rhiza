@@ -23621,6 +23621,28 @@ cmp stdout describe.golden.json
             "description": "The pull request recorded",
             "type": "integer"
           },
+          "pre_push_check": {
+            "additionalProperties": false,
+            "description": "The pre-push check that failed on the head, with its failing lines; nothing was pushed, and the command exits 1",
+            "properties": {
+              "head": {
+                "description": "The committed head the check ran on, which was not pushed",
+                "type": "string"
+              },
+              "lines": {
+                "description": "The failing lines: rhiza check's failing findings, or the rhiza.ship.prePushCheck command's error and output tail",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "head",
+              "lines"
+            ],
+            "type": "object"
+          },
           "pushed": {
             "description": "The head pushed to the PR branch; empty if nothing needed pushing",
             "type": "string"
@@ -23736,6 +23758,28 @@ cmp stdout describe.golden.json
           "pr": {
             "description": "The pull request's number",
             "type": "integer"
+          },
+          "pre_push_check": {
+            "additionalProperties": false,
+            "description": "The pre-push check that failed on the head, with its failing lines; nothing was pushed and no pull request opened or edited, and the command exits 1",
+            "properties": {
+              "head": {
+                "description": "The committed head the check ran on, which was not pushed",
+                "type": "string"
+              },
+              "lines": {
+                "description": "The failing lines: rhiza check's failing findings, or the rhiza.ship.prePushCheck command's error and output tail",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "head",
+              "lines"
+            ],
+            "type": "object"
           },
           "pushed": {
             "description": "True if this call pushed the branch; false if origin already had its head",
@@ -23909,6 +23953,28 @@ cmp stdout describe.golden.json
           "onto": {
             "description": "The commit of origin's main the branch was compared with",
             "type": "string"
+          },
+          "pre_push_check": {
+            "additionalProperties": false,
+            "description": "The pre-push check that failed on the merged head, with its failing lines; nothing was pushed, the branch is put back where it was, and the command exits 1",
+            "properties": {
+              "head": {
+                "description": "The committed head the check ran on, which was not pushed",
+                "type": "string"
+              },
+              "lines": {
+                "description": "The failing lines: rhiza check's failing findings, or the rhiza.ship.prePushCheck command's error and output tail",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "head",
+              "lines"
+            ],
+            "type": "object"
           },
           "pushed": {
             "description": "The merged head pushed to the PR branch",

@@ -11,10 +11,51 @@ package api
 // failure pushes nothing.
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"strings"
 )
+
+// ShipPrePushCheck is a pre-push check that failed: the committed head it
+// checked and its failing lines. Nothing was pushed.
+type ShipPrePushCheck struct {
+	Head  string   `json:"head" desc:"The committed head the check ran on, which was not pushed"`
+	Lines []string `json:"lines" desc:"The failing lines: rhiza check's failing findings, or the rhiza.ship.prePushCheck command's error and output tail"`
+}
+
+// Human writes the failure and its lines.
+func (c ShipPrePushCheck) Human(w io.Writer) {
+	fmt.Fprintf(w, "The pre-push check failed on %s, so nothing was pushed:\n", shortSHA(c.Head))
+	for _, l := range c.Lines {
+		fmt.Fprintln(w, l)
+	}
+}
+
+// prePushFailure is the error of a pre-push check that failed: its message
+// carries the failing lines, and check holds them for a response.
+type prePushFailure struct {
+	check ShipPrePushCheck
+	err   *Error
+}
+
+func (f *prePushFailure) Error() string { return f.err.Error() }
+func (f *prePushFailure) Unwrap() error { return f.err }
+
+// prePushFailed is the failed check in err, if err is a pre-push check's
+// failure.
+func prePushFailed(err error) (*ShipPrePushCheck, bool) {
+	var f *prePushFailure
+	if errors.As(err, &f) {
+		c := f.check
+		return &c, true
+	}
+	return nil, false
+}
 
 // prePushCheck is shipPrePushCheck; tests whose fake git has no real
 // checkout to check replace it.
@@ -47,7 +88,10 @@ func shipPrePushCheck(ctx *Ctx, dir string) error {
 		return err
 	}
 	if len(lines) > 0 {
-		return Errorf("the pre-push check failed on %s, so nothing was pushed:\n%s", shortSHA(head), strings.Join(lines, "\n"))
+		return &prePushFailure{
+			check: ShipPrePushCheck{Head: head, Lines: lines},
+			err:   Errorf("the pre-push check failed on %s, so nothing was pushed:\n%s", shortSHA(head), strings.Join(lines, "\n")),
+		}
 	}
 	return nil
 }
@@ -56,15 +100,14 @@ func shipPrePushCheck(ctx *Ctx, dir string) error {
 // clean checkout tmp of dir's HEAD, and returns the failing lines: none when
 // both pass. The command runs only when rhiza check passed.
 func prePushCheckLines(ctx *Ctx, dir, tmp string) ([]string, error) {
-	c := *ctx
-	c.Root, c.DryRun = tmp, false
-	c.Git = func(args ...string) (string, error) { return gitAt(ctx, tmp, args...) }
-	r, err := runCheck(&c, CheckRequest{SkipReference: true, BranchNewerFormat: true})
+	rep, lines, err := prePushRhizaCheck(ctx, tmp)
 	if err != nil {
-		return nil, Errorf("pre-push check: rhiza check could not run: %v", err)
+		return nil, err
 	}
-	if rep := r.(CheckResponse); !rep.OK {
-		var lines []string
+	if len(lines) > 0 {
+		return lines, nil
+	}
+	if !rep.OK {
 		for _, f := range rep.Findings {
 			if f.Severity != "fail" {
 				continue
@@ -94,7 +137,56 @@ func prePushCheckLines(ctx *Ctx, dir, tmp string) ([]string, error) {
 	if err == nil {
 		return nil, nil
 	}
-	lines := []string{fmt.Sprintf("%s (%s) failed: %v", PrePushCheckKey, cmd, err)}
+	return prePushTail([]string{fmt.Sprintf("%s (%s) failed: %v", PrePushCheckKey, cmd, err)}, out), nil
+}
+
+// prePushRhizaCheck runs rhiza check in the clean checkout tmp. In Rhiza's
+// own repo it runs a build of that head, as ship land renders with one: a
+// branch that changes rendering is checked against its own rendering, not
+// this binary's. Elsewhere it runs in-process. Lines are set when the head
+// build could not give a report (a failed build, say), a failure too.
+func prePushRhizaCheck(ctx *Ctx, tmp string) (CheckResponse, []string, error) {
+	req := CheckRequest{SkipReference: true, BranchNewerFormat: true}
+	if ok, err := isRhizaRepo(tmp); err != nil {
+		return CheckResponse{}, nil, err
+	} else if ok && ctx.Exec != nil {
+		return prePushHeadCheck(ctx, tmp)
+	}
+	c := *ctx
+	c.Root, c.DryRun = tmp, false
+	c.Git = func(args ...string) (string, error) { return gitAt(ctx, tmp, args...) }
+	r, err := runCheck(&c, req)
+	if err != nil {
+		return CheckResponse{}, nil, Errorf("pre-push check: rhiza check could not run: %v", err)
+	}
+	return r.(CheckResponse), nil, nil
+}
+
+// prePushHeadCheck builds rhiza from the checkout tmp, outside it, and
+// runs that build's check --json there.
+func prePushHeadCheck(ctx *Ctx, tmp string) (CheckResponse, []string, error) {
+	var rep CheckResponse
+	bdir, err := os.MkdirTemp("", "rhiza-prepush-bin-*")
+	if err != nil {
+		return rep, nil, Errorf("pre-push check: %v", err)
+	}
+	defer os.RemoveAll(bdir)
+	bin := filepath.Join(bdir, "rhiza")
+	if out, err := ctx.Exec("go", []string{"build", "-o", bin, "./cmd/rhiza"}, tmp, nil); err != nil {
+		return rep, prePushTail([]string{fmt.Sprintf("rhiza check: could not build rhiza from the head: %v", err)}, out), nil
+	}
+	out, err := ctx.Exec(bin, []string{"check", "--json", "--skip-reference", "--branch-newer-format"}, tmp, nil)
+	if jerr := json.Unmarshal(bytes.TrimSpace(out), &rep); jerr != nil || rep.Findings == nil && !rep.OK {
+		if err == nil {
+			err = jerr
+		}
+		return rep, prePushTail([]string{fmt.Sprintf("rhiza check with the head's build failed: %s", headFailure(out, err))}, out), nil
+	}
+	return rep, nil, nil
+}
+
+// prePushTail appends the tail of out to lines.
+func prePushTail(lines []string, out []byte) []string {
 	tail := strings.TrimRight(string(out), "\n")
 	if len(tail) > shipGateTail {
 		tail = "...\n" + tail[len(tail)-shipGateTail:]
@@ -102,5 +194,5 @@ func prePushCheckLines(ctx *Ctx, dir, tmp string) ([]string, error) {
 	if tail != "" {
 		lines = append(lines, tail)
 	}
-	return lines, nil
+	return lines
 }

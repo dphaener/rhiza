@@ -1,13 +1,15 @@
 package api
 
 import (
-	"github.com/dphaener/rhiza/internal/id"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 // prePushRepo is a real repo with a Rhiza model, an origin it has pushed
@@ -82,15 +84,79 @@ func (r *prePushRepo) remote() string {
 // strayLog is a log entry the store does not read as canonical.
 func (r *prePushRepo) strayLog() string {
 	r.t.Helper()
-	dir := filepath.Join(r.root, ".rhiza", "log", "01M6WHRFPM0C0X3H6VBFT4R19Y")
+	return writeStrayLog(r.t, r.root)
+}
+
+func writeStrayLog(t *testing.T, root string) string {
+	t.Helper()
+	dir := filepath.Join(root, ".rhiza", "log", "01M6WHRFPM0C0X3H6VBFT4R19Y")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
-		r.t.Fatal(err)
+		t.Fatal(err)
 	}
 	p := filepath.Join(dir, "01M6WHRFPM0C0X3H6VBFT4R19Z.json")
 	if err := os.WriteFile(p, []byte("not json\n"), 0o644); err != nil {
-		r.t.Fatal(err)
+		t.Fatal(err)
 	}
 	return p
+}
+
+// prePushBreaks are the heads the pre-push check fails on, each made in the
+// checkout at root (committed, the working tree left clean) with a line
+// its failure carries.
+var prePushBreaks = []struct {
+	name, want string
+	apply      func(t *testing.T, root string, git func(...string) string)
+}{
+	{"a committed non-canonical log entry", "rhiza check: log", func(t *testing.T, root string, git func(...string) string) {
+		writeStrayLog(t, root)
+		git("add", "-A")
+		git("commit", "-q", "-m", "stray log entry")
+	}},
+	{"a committed stale render", "rhiza check: render", func(t *testing.T, root string, git func(...string) string) {
+		files, _ := filepath.Glob(filepath.Join(root, ".rhiza", "rendered", "*.md"))
+		if len(files) == 0 {
+			t.Fatal("nothing rendered to make stale")
+		}
+		if err := os.WriteFile(files[0], []byte("stale\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		git("add", "-A")
+		git("commit", "-q", "-m", "stale render")
+	}},
+	{"a failing prePushCheck command", "FAIL generated file", func(t *testing.T, root string, git func(...string) string) {
+		git("config", PrePushCheckKey, "echo FAIL generated file; exit 3")
+	}},
+}
+
+// realPrePushCheck runs the real pre-push check on r whatever checkout a
+// fake-git op asks about, counting its runs.
+func realPrePushCheck(t *testing.T, r *prePushRepo) *int {
+	n := new(int)
+	prePushCheck = func(*Ctx, string) error {
+		*n++
+		return shipPrePushCheck(r.ctx, r.root)
+	}
+	return n
+}
+
+func setCIStability(t *testing.T, common string, unstable bool) {
+	t.Helper()
+	rec := `{"runs":[{"head":"a","result":"green","time":"x"}]}`
+	if unstable {
+		rec = `{"runs":[{"head":"a","result":"green","time":"x","flakes":["TestPond"]}]}`
+	}
+	if err := writeAtomic(ciStabilityPath(common), []byte(rec)); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func noPush(t *testing.T, calls []string) {
+	t.Helper()
+	for _, c := range calls {
+		if strings.HasPrefix(c, "push") {
+			t.Errorf("pushed: %q", c)
+		}
+	}
 }
 
 func (r *prePushRepo) commitFile(name, text string) {
@@ -189,6 +255,20 @@ func TestShipPrePushCheck(t *testing.T) {
 			t.Fatal("an uncommitted removal of a committed stray entry passed")
 		}
 	})
+	t.Run("a render fixed only in the working tree still fails", func(t *testing.T) {
+		r := newPrePushRepo(t)
+		prePushBreaks[1].apply(t, r.root, r.git)
+		if _, err := callOp(t, r.ctx, "render", `{}`); err != nil {
+			t.Fatal(err)
+		}
+		if r.git("status", "--porcelain") == "" {
+			t.Fatal("rendering again changed nothing in the working tree")
+		}
+		err := shipPrePushCheck(r.ctx, r.root)
+		if err == nil || !strings.Contains(err.Error(), "rhiza check: render") {
+			t.Fatalf("err = %v", err)
+		}
+	})
 	t.Run("an untracked stray log entry with a clean head passes", func(t *testing.T) {
 		r := newPrePushRepo(t)
 		r.commitFile("a.txt", "a\n")
@@ -199,17 +279,25 @@ func TestShipPrePushCheck(t *testing.T) {
 	})
 }
 
-func TestShipPushRunsPrePushCheck(t *testing.T) {
-	t.Run("failing pushes nothing", func(t *testing.T) {
-		r := newPrePushRepo(t)
-		before := r.remote()
-		r.commitFile("a.txt", "a\n")
-		r.setCheck("echo BAD; exit 1")
-		pushed, err := shipPush(r.ctx, "cs/x")
-		if err == nil || pushed || !strings.Contains(err.Error(), "BAD") || r.remote() != before {
-			t.Fatalf("pushed %v, err %v, remote %q was %q", pushed, err, r.remote(), before)
-		}
-	})
+func TestShipPrePushCheckShipPush(t *testing.T) {
+	for _, b := range prePushBreaks {
+		t.Run(b.name+" pushes nothing", func(t *testing.T) {
+			r := newPrePushRepo(t)
+			before := r.remote()
+			r.commitFile("a.txt", "a\n")
+			b.apply(t, r.root, r.git)
+			pushed, err := shipPush(r.ctx, "cs/x")
+			if err == nil || pushed || !strings.Contains(err.Error(), b.want) || r.remote() != before {
+				t.Fatalf("pushed %v, err %v, remote %q was %q", pushed, err, r.remote(), before)
+			}
+			if c, ok := prePushFailed(err); !ok || c.Head != r.git("rev-parse", "HEAD") || !strings.Contains(strings.Join(c.Lines, "\n"), b.want) {
+				t.Errorf("failure = %+v", c)
+			}
+			if n := r.worktrees(); n != 1 {
+				t.Errorf("%d worktrees left", n)
+			}
+		})
+	}
 	t.Run("passing pushes", func(t *testing.T) {
 		r := newPrePushRepo(t)
 		r.commitFile("a.txt", "a\n")
@@ -221,57 +309,280 @@ func TestShipPushRunsPrePushCheck(t *testing.T) {
 	})
 }
 
-func TestShipPrePushCheckWatchdog(t *testing.T) {
-	r := newPrePushRepo(t)
-	// main moves on with a file; the branch has its own work.
-	other := filepath.Join(t.TempDir(), "other")
-	gitRun(t, filepath.Dir(other), "clone", "-q", r.origin, other)
-	os.WriteFile(filepath.Join(other, "m.txt"), []byte("m\n"), 0o644)
-	gitRun(t, other, "add", ".")
-	gitRun(t, other, "commit", "-q", "-m", "main moves")
-	gitRun(t, other, "push", "-q", "origin", "HEAD:main")
-	r.commitFile("a.txt", "a\n")
-	r.git("push", "-q", "origin", "cs/x")
-	r.setCheck("echo BAD; exit 1")
-	cs, _ := id.Parse("01M6WHRFPM0C0X3H6VBFT4R19Y")
-	tg := shipTarget{cs: cs, branch: "cs/x", worktree: r.root, main: r.root, common: filepath.Join(r.root, ".git")}
-	before, remote := r.git("rev-parse", "HEAD"), r.remote()
-	res, err := watchdogMergeMain(r.ctx, tg, "")
-	if err == nil || !strings.Contains(err.Error(), "BAD") || res.Pushed != "" {
-		t.Fatalf("res %+v, err %v", res, err)
+// ship open-pr, against a real origin: a failing check pushes nothing,
+// opens or edits no pull request, and exits 1 with the failing lines in
+// its response; a passing one pushes as before, whatever CI's state.
+func TestShipPrePushCheckOpenPR(t *testing.T) {
+	setup := func(t *testing.T) (*Ctx, *openPRGH, string, func(...string) string) {
+		ctx, g, origin, git := openPRFixture(t, true)
+		prePushCheck = shipPrePushCheck
+		t.Cleanup(func() { prePushCheck = func(*Ctx, string) error { return nil } })
+		if _, err := callOp(t, ctx, "render", `{}`); err != nil {
+			t.Fatal(err)
+		}
+		git("add", "-A")
+		git("commit", "-q", "-m", "render")
+		return ctx, g, origin, git
 	}
-	if got := r.git("rev-parse", "HEAD"); got != before {
-		t.Errorf("branch left at %s, want %s", got, before)
+	remote := func(g *openPRGH, origin string) string {
+		out, _ := g.exec("git", []string{"--git-dir", origin, "for-each-ref", "refs/heads"}, "", nil)
+		return string(out)
 	}
-	if r.remote() != remote {
-		t.Error("origin's branch moved")
+	for _, b := range prePushBreaks {
+		t.Run(b.name, func(t *testing.T) {
+			ctx, g, origin, git := setup(t)
+			b.apply(t, ctx.Root, git)
+			before := remote(g, origin)
+			resp, err := callOp(t, ctx, "ship.open-pr", `{}`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			r := resp.(ShipOpenPRResponse)
+			if r.ExitCode() != 1 || r.Pushed || r.Created || r.PrePushCheck == nil || r.PrePushCheck.Head != git("rev-parse", "HEAD") ||
+				!strings.Contains(strings.Join(r.PrePushCheck.Lines, "\n"), b.want) {
+				t.Fatalf("open-pr = %+v", r)
+			}
+			if got := remote(g, origin); got != before {
+				t.Errorf("origin moved: %q, was %q", got, before)
+			}
+			for _, c := range g.calls {
+				if strings.HasPrefix(c, "pr create") || strings.HasPrefix(c, "pr edit") {
+					t.Errorf("gh %s after a failing check", c)
+				}
+			}
+			if got := human(t, r); !strings.Contains(got, b.want) || !strings.Contains(got, "nothing was pushed") {
+				t.Errorf("human = %q", got)
+			}
+			if n := strings.Count(git("worktree", "list", "--porcelain"), "worktree "); n != 1 {
+				t.Errorf("%d worktrees left", n)
+			}
+		})
 	}
-	r.setCheck("true")
-	if res, err = watchdogMergeMain(r.ctx, tg, ""); err != nil || res.Pushed == "" {
-		t.Fatalf("passing: %+v, %v", res, err)
+	for _, unstable := range []bool{false, true} {
+		t.Run("passing pushes, CI unstable "+map[bool]string{false: "no", true: "yes"}[unstable], func(t *testing.T) {
+			ctx, g, origin, git := setup(t)
+			setCIStability(t, filepath.Join(ctx.Root, ".git"), unstable)
+			git("config", PrePushCheckKey, "true")
+			resp, err := callOp(t, ctx, "ship.open-pr", `{}`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			r := resp.(ShipOpenPRResponse)
+			if r.ExitCode() != 0 || !r.Pushed || !r.Created || r.PrePushCheck != nil || !strings.Contains(remote(g, origin), git("rev-parse", "HEAD")) {
+				t.Fatalf("open-pr = %+v", r)
+			}
+		})
 	}
 }
 
-// ship rebase pushes nothing when the pre-push check fails on the merged
-// head, puts the branch back where it was, and says why in its error.
-func TestShipRebasePrePushCheckFails(t *testing.T) {
-	f, _ := shipRebaseFixture(t)
-	f.git.out[rebaseMerge] = ""
-	f.git.out["reset -q --keep beef000111"] = ""
-	prePushCheck = func(*Ctx, string) error {
-		return Errorf("the pre-push check failed on beef000, so nothing was pushed:\nBAD")
+// ship land: a failing check on the land commit pushes nothing and exits 1
+// with the failing lines in its response.
+func TestShipPrePushCheckLand(t *testing.T) {
+	for _, b := range prePushBreaks {
+		t.Run(b.name, func(t *testing.T) {
+			f, state, _ := shipLandFixture(t)
+			r := newPrePushRepo(t)
+			b.apply(t, r.root, r.git)
+			runs := realPrePushCheck(t, r)
+			resp, err := callOp(t, f.ctx, "ship.land", `{}`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			l := resp.(ShipLandResponse)
+			if *runs != 1 || l.ExitCode() != 1 || l.Pushed != "" || l.PrePushCheck == nil || !strings.Contains(strings.Join(l.PrePushCheck.Lines, "\n"), b.want) {
+				t.Fatalf("land = %+v, runs %d", l, *runs)
+			}
+			noPush(t, f.git.calls)
+			if st, _ := readShipState(state); st.Pushed != "" {
+				t.Errorf("state = %+v", st)
+			}
+			if got := human(t, l); !strings.Contains(got, b.want) || !strings.Contains(got, "nothing was pushed") {
+				t.Errorf("human = %q", got)
+			}
+		})
 	}
-	t.Cleanup(func() { prePushCheck = func(*Ctx, string) error { return nil } })
-	_, err := callOp(t, f.ctx, "ship.rebase", `{}`)
-	if err == nil || !strings.Contains(err.Error(), "BAD") {
-		t.Fatalf("err = %v", err)
-	}
-	for _, c := range f.git.calls {
-		if strings.HasPrefix(c, "push") {
-			t.Errorf("pushed: %q", c)
+	t.Run("passing pushes", func(t *testing.T) {
+		f, _, _ := shipLandFixture(t)
+		runs := realPrePushCheck(t, newPrePushRepo(t))
+		resp, err := callOp(t, f.ctx, "ship.land", `{}`)
+		if err != nil {
+			t.Fatal(err)
 		}
+		if l := resp.(ShipLandResponse); *runs != 1 || l.ExitCode() != 0 || l.Pushed != "beef000111" || !slices.Contains(f.git.calls, "push") {
+			t.Fatalf("land = %+v, runs %d", l, *runs)
+		}
+	})
+}
+
+// ship rebase: a failing check on the merged head pushes nothing, puts the
+// branch back where it was, and exits 1 with the failing lines in its
+// response.
+func TestShipPrePushCheckRebase(t *testing.T) {
+	for _, b := range prePushBreaks {
+		t.Run(b.name, func(t *testing.T) {
+			f, state := shipRebaseFixture(t)
+			f.git.out[rebaseMerge] = ""
+			f.git.out["reset -q --keep beef000111"] = ""
+			r := newPrePushRepo(t)
+			b.apply(t, r.root, r.git)
+			realPrePushCheck(t, r)
+			resp, err := callOp(t, f.ctx, "ship.rebase", `{}`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			rb := resp.(ShipRebaseResponse)
+			if rb.ExitCode() != 1 || rb.Pushed != "" || rb.PrePushCheck == nil || !strings.Contains(strings.Join(rb.PrePushCheck.Lines, "\n"), b.want) ||
+				!strings.Contains(rb.Detail, "nothing was pushed") {
+				t.Fatalf("rebase = %+v", rb)
+			}
+			noPush(t, f.git.calls)
+			if !slices.Contains(f.git.calls, "reset -q --keep beef000111") {
+				t.Errorf("branch not put back; calls %q", f.git.calls)
+			}
+			if st, _ := readShipState(state); st.Pushed != "" || st.GateFailed != "" {
+				t.Errorf("state = %+v", st)
+			}
+			if got := human(t, rb); !strings.Contains(got, b.want) || !strings.Contains(got, "nothing was pushed") {
+				t.Errorf("human = %q", got)
+			}
+		})
 	}
-	if !slices.Contains(f.git.calls, "reset -q --keep beef000111") {
-		t.Errorf("branch not put back; calls %q", f.git.calls)
+}
+
+// With the pre-push check passing, ship rebase pushes whatever CI's state,
+// and the local gate runs only while CI is unstable; the check runs both
+// times.
+func TestShipPrePushCheckWithLocalGate(t *testing.T) {
+	for _, unstable := range []bool{false, true} {
+		t.Run(map[bool]string{false: "CI stable", true: "CI unstable"}[unstable], func(t *testing.T) {
+			f, _ := shipRebaseFixture(t)
+			gateLog := filepath.Join(t.TempDir(), "gate.log")
+			f.git.out["config --get "+LocalGateKey] = "echo ran >> " + gateLog + "\n"
+			setCIStability(t, f.common, unstable)
+			f.git.out[rebaseMerge] = ""
+			f.git.out[rebasePush] = ""
+			r := newPrePushRepo(t)
+			r.setCheck("true")
+			runs := realPrePushCheck(t, r)
+			rb := shipRebase(t, f)
+			_, gerr := os.Stat(gateLog)
+			gateRan := gerr == nil
+			if rb.ExitCode() != 0 || rb.Pushed != "beef000111" || rb.PrePushCheck != nil || *runs != 1 || !slices.Contains(f.git.calls, rebasePush) {
+				t.Fatalf("rebase = %+v, check runs %d", rb, *runs)
+			}
+			if gateRan != unstable || (rb.Gate != nil) != unstable {
+				t.Errorf("gate ran %v (resp %+v) with CI unstable %v", gateRan, rb.Gate, unstable)
+			}
+		})
 	}
+}
+
+// The watchdog's merge of origin/main, against a real origin: a failing
+// check on the merged head pushes nothing and leaves the branch at its
+// pre-merge head, with the failing lines in its error; a passing one
+// pushes the merge.
+func TestShipPrePushCheckWatchdog(t *testing.T) {
+	setup := func(t *testing.T) (*prePushRepo, shipTarget) {
+		r := newPrePushRepo(t)
+		// main moves on with a file; the branch has its own work.
+		other := filepath.Join(t.TempDir(), "other")
+		gitRun(t, filepath.Dir(other), "clone", "-q", r.origin, other)
+		os.WriteFile(filepath.Join(other, "m.txt"), []byte("m\n"), 0o644)
+		gitRun(t, other, "add", ".")
+		gitRun(t, other, "commit", "-q", "-m", "main moves")
+		gitRun(t, other, "push", "-q", "origin", "HEAD:main")
+		r.commitFile("a.txt", "a\n")
+		cs, _ := id.Parse("01M6WHRFPM0C0X3H6VBFT4R19Y")
+		return r, shipTarget{cs: cs, branch: "cs/x", worktree: r.root, main: r.root, common: filepath.Join(r.root, ".git")}
+	}
+	for _, b := range prePushBreaks {
+		t.Run(b.name, func(t *testing.T) {
+			r, tg := setup(t)
+			b.apply(t, r.root, r.git)
+			r.git("push", "-q", "origin", "cs/x")
+			before, remote := r.git("rev-parse", "HEAD"), r.remote()
+			res, err := watchdogMergeMain(r.ctx, tg, "")
+			if err == nil || !strings.Contains(err.Error(), b.want) || res.Pushed != "" {
+				t.Fatalf("res %+v, err %v", res, err)
+			}
+			if got := r.git("rev-parse", "HEAD"); got != before {
+				t.Errorf("branch left at %s, want %s", got, before)
+			}
+			if r.remote() != remote {
+				t.Error("origin's branch moved")
+			}
+			if n := r.worktrees(); n != 1 {
+				t.Errorf("%d worktrees left", n)
+			}
+		})
+	}
+	t.Run("passing pushes the merge", func(t *testing.T) {
+		r, tg := setup(t)
+		r.git("push", "-q", "origin", "cs/x")
+		r.setCheck("true")
+		res, err := watchdogMergeMain(r.ctx, tg, "")
+		if err != nil || res.Pushed == "" || !strings.HasPrefix(r.remote(), res.Pushed) {
+			t.Fatalf("passing: %+v, %v", res, err)
+		}
+	})
+}
+
+// In Rhiza's own repo the check runs a build of the head being pushed, as
+// ship land renders with one, not this binary's in-process check: a fake go
+// "builds" a rhiza that prints report as its check --json.
+func TestShipPrePushCheckHeadBuild(t *testing.T) {
+	setup := func(t *testing.T, report string, buildFails bool) (*prePushRepo, *[]string) {
+		r := newPrePushRepo(t)
+		r.commitFile("go.mod", "module "+rhizaModule+"\n\ngo 1.24\n")
+		var calls []string
+		real := r.ctx.Exec
+		r.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+			if name == "go" {
+				calls = append(calls, "go "+strings.Join(args, " "))
+				if buildFails {
+					return []byte("cmd/rhiza/main.go:1: syntax error\n"), errors.New("exit status 1")
+				}
+				script := "#!/bin/sh\necho '" + report + "'\n"
+				if err := os.WriteFile(args[2], []byte(script), 0o755); err != nil {
+					t.Fatal(err)
+				}
+				return nil, nil
+			}
+			if filepath.Base(name) == "rhiza" {
+				calls = append(calls, "rhiza "+strings.Join(args, " ")+" in "+dir)
+			}
+			return real(name, args, dir, env)
+		}
+		return r, &calls
+	}
+	t.Run("the head's check governs, not this binary's", func(t *testing.T) {
+		// This binary would call the render stale; the head's build is the
+		// rendering ship land writes, and its check passes.
+		r, calls := setup(t, `{"ok":true,"base":"","findings":[]}`, false)
+		prePushBreaks[1].apply(t, r.root, r.git)
+		if err := shipPrePushCheck(r.ctx, r.root); err != nil {
+			t.Fatal(err)
+		}
+		if len(*calls) != 2 || !strings.HasPrefix((*calls)[0], "go build -o ") || !strings.HasPrefix((*calls)[1], "rhiza check --json --skip-reference --branch-newer-format in ") ||
+			strings.HasSuffix((*calls)[1], " in "+r.root) {
+			t.Errorf("calls %q", *calls)
+		}
+	})
+	t.Run("the head's failing findings fail it", func(t *testing.T) {
+		r, _ := setup(t, `{"ok":false,"base":"","findings":[{"severity":"fail","rule":"render","path":".rhiza/rendered/index.md","message":"differs from what render writes"}]}`, false)
+		err := shipPrePushCheck(r.ctx, r.root)
+		if err == nil || !strings.Contains(err.Error(), "rhiza check: render: .rhiza/rendered/index.md: differs from what render writes") {
+			t.Fatalf("err = %v", err)
+		}
+	})
+	t.Run("a head that does not build fails it", func(t *testing.T) {
+		r, _ := setup(t, "", true)
+		err := shipPrePushCheck(r.ctx, r.root)
+		if err == nil || !strings.Contains(err.Error(), "could not build rhiza from the head") || !strings.Contains(err.Error(), "syntax error") {
+			t.Fatalf("err = %v", err)
+		}
+		if n := r.worktrees(); n != 1 {
+			t.Errorf("%d worktrees left", n)
+		}
+	})
 }

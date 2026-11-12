@@ -2391,9 +2391,12 @@ Output (`--json` fields):
 - `evidence_written` (boolean): True if this call wrote the Evidence; false if an earlier one had
 - `landed` (boolean): True if this call landed the change set; false if it had already landed
 - `pr` (integer): The pull request recorded
+- `pre_push_check` (object): The pre-push check that failed on the head, with its failing lines; nothing was pushed, and the command exits 1
 - `pushed` (string): The head pushed to the PR branch; empty if nothing needed pushing
 - `rendered` (array of string): The rendered files written or removed
 - `verifies` (array of string): The capabilities the Evidence verifies: those the change set creates or changes
+
+Exit code: set by the result, besides the shared codes.
 
 ## rhiza ship merge
 
@@ -2430,8 +2433,11 @@ Output (`--json` fields):
 - `created` (boolean): True if this call opened the pull request; false if it replaced the body of the one already open
 - `head` (string): The branch's head commit, as pushed
 - `pr` (integer): The pull request's number
+- `pre_push_check` (object): The pre-push check that failed on the head, with its failing lines; nothing was pushed and no pull request opened or edited, and the command exits 1
 - `pushed` (boolean): True if this call pushed the branch; false if origin already had its head
 - `url` (string): The pull request's URL
+
+Exit code: set by the result, besides the shared codes.
 
 ## rhiza ship rebase
 
@@ -2455,6 +2461,7 @@ Output (`--json` fields):
 - `kept` (string): After a failing gate, the unpushed head left on the branch: origin's main merged into it, for the gate's fixer
 - `merge_conflict` (object): The conflict's context for a fixer: the conflicted files, origin/main's commits with their change sets, and the branch's change set
 - `onto` (string): The commit of origin's main the branch was compared with
+- `pre_push_check` (object): The pre-push check that failed on the merged head, with its failing lines; nothing was pushed, the branch is put back where it was, and the command exits 1
 - `pushed` (string): The merged head pushed to the PR branch
 - `rebased` (boolean): True if origin's main was merged into the branch and the result is ready to push (the name is kept from when this rebased)
 - `rendered` (array of string): The rendered files written or removed by rendering after the merge

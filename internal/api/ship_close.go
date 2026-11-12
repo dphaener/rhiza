@@ -75,6 +75,17 @@ type ShipLandResponse struct {
 	Rendered        []string `json:"rendered" desc:"The rendered files written or removed"`
 	Commit          string   `json:"commit,omitempty" desc:"The commit made on the PR branch; empty if nothing was staged"`
 	Pushed          string   `json:"pushed,omitempty" desc:"The head pushed to the PR branch; empty if nothing needed pushing"`
+	// PrePushCheck is set when the pre-push check failed on the land
+	// commit: nothing was pushed and the command exits 1.
+	PrePushCheck *ShipPrePushCheck `json:"pre_push_check,omitempty" desc:"The pre-push check that failed on the head, with its failing lines; nothing was pushed, and the command exits 1"`
+}
+
+// ExitCode is 1 when the pre-push check failed.
+func (r ShipLandResponse) ExitCode() int {
+	if r.PrePushCheck != nil {
+		return 1
+	}
+	return 0
 }
 
 // ShipCloseOutRequest takes the merge commit from the state file ship.merge
@@ -255,6 +266,10 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 	}
 	pushed, err := shipPush(ctx, t.branch)
 	if err != nil {
+		if c, ok := prePushFailed(err); ok {
+			resp.PrePushCheck = c
+			return resp, nil
+		}
 		return nil, err
 	}
 	if pushed {
@@ -660,9 +675,12 @@ func (r ShipLandResponse) Human(w io.Writer) {
 	} else {
 		fmt.Fprintln(w, "Nothing to commit.")
 	}
-	if r.Pushed != "" {
+	switch {
+	case r.PrePushCheck != nil:
+		r.PrePushCheck.Human(w)
+	case r.Pushed != "":
 		fmt.Fprintf(w, "Pushed %s.\n", shortSHA(r.Pushed))
-	} else {
+	default:
 		fmt.Fprintln(w, "Nothing to push.")
 	}
 }

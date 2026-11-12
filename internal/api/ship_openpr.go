@@ -45,6 +45,18 @@ type ShipOpenPRResponse struct {
 	Head    string `json:"head" desc:"The branch's head commit, as pushed"`
 	Pushed  bool   `json:"pushed" desc:"True if this call pushed the branch; false if origin already had its head"`
 	Created bool   `json:"created" desc:"True if this call opened the pull request; false if it replaced the body of the one already open"`
+	// PrePushCheck is set when the pre-push check failed on the head:
+	// nothing was pushed, no pull request was opened or edited, and the
+	// command exits 1.
+	PrePushCheck *ShipPrePushCheck `json:"pre_push_check,omitempty" desc:"The pre-push check that failed on the head, with its failing lines; nothing was pushed and no pull request opened or edited, and the command exits 1"`
+}
+
+// ExitCode is 1 when the pre-push check failed.
+func (r ShipOpenPRResponse) ExitCode() int {
+	if r.PrePushCheck != nil {
+		return 1
+	}
+	return 0
 }
 
 // reviewJournaled reports whether st holds the outcome of some review
@@ -117,6 +129,10 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 	}
 	resp := ShipOpenPRResponse{Change: t.cs.String(), Branch: t.branch, Head: sha}
 	if resp.Pushed, err = shipPush(ctx, t.branch); err != nil {
+		if c, ok := prePushFailed(err); ok {
+			resp.PrePushCheck = c
+			return resp, nil
+		}
 		return nil, err
 	}
 
@@ -204,6 +220,11 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 
 // Human is one line naming the PR and what was done to it.
 func (r ShipOpenPRResponse) Human(w io.Writer) {
+	if r.PrePushCheck != nil {
+		r.PrePushCheck.Human(w)
+		fmt.Fprintf(w, "No pull request was opened or edited for %s.\n", r.Branch)
+		return
+	}
 	verb := "Updated"
 	if r.Created {
 		verb = "Opened"
