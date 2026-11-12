@@ -103,3 +103,38 @@ func TestBuildReleaseTagNamesDownloads(t *testing.T) {
 		}
 	}
 }
+
+func TestBuildLatestAssetNamesHaveNoPlus(t *testing.T) {
+	dir := t.TempDir()
+	var sums strings.Builder
+	for _, p := range Platforms {
+		name := fmt.Sprintf("rhiza_0.0.1-main.5-abc1234_%s_%s.tar.gz", p.OS, p.Arch)
+		body := []byte("archive " + name)
+		if err := os.WriteFile(filepath.Join(dir, name), body, 0o644); err != nil {
+			t.Fatal(err)
+		}
+		s := sha256.Sum256(body)
+		fmt.Fprintf(&sums, "%s  %s\n", hex.EncodeToString(s[:]), name)
+	}
+	if err := os.WriteFile(filepath.Join(dir, ChecksumsFile), []byte(sums.String()), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	o := opts(dir)
+	o.Tag = "v0.0.1-main.5+abc1234"
+	o.Version = "0.0.1-main.5+abc1234"
+	o.Channel = "latest"
+	o.ReleaseTag = "latest"
+	m, err := Build(o)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m.Version != "v0.0.1-main.5+abc1234" {
+		t.Fatalf("version %q", m.Version)
+	}
+	for _, p := range m.Platforms {
+		want := fmt.Sprintf("https://github.com/dphaener/rhiza/releases/download/latest/rhiza_0.0.1-main.5-abc1234_%s_%s.tar.gz", p.OS, p.Arch)
+		if p.URL != want {
+			t.Errorf("url %s, want %s", p.URL, want)
+		}
+	}
+}

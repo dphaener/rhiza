@@ -54,7 +54,7 @@ type Options struct {
 	Dist    string // folder with the archives and checksums.txt
 	Project string // archive name prefix, e.g. rhiza
 	Tag     string // git tag, e.g. v0.1.0; it is the manifest's version
-	Version string // archive version, the tag without its v; defaults to it
+	Version string // archive version, the tag without its v; defaults to it (see AssetVersion)
 	Commit  string // full commit sha the release was built from
 	Repo    string // owner/name on GitHub
 	Channel string // defaults to ChannelRelease
@@ -79,6 +79,7 @@ func Build(o Options) (*Manifest, error) {
 	if o.Version == "" {
 		o.Version = strings.TrimPrefix(o.Tag, "v")
 	}
+	o.Version = AssetVersion(o.Version)
 	f, err := os.Open(filepath.Join(o.Dist, ChecksumsFile))
 	if err != nil {
 		return nil, fmt.Errorf("release: %w", err)
@@ -112,6 +113,15 @@ func Build(o Options) (*Manifest, error) {
 		return nil, fmt.Errorf("release: missing platforms: %s", strings.Join(missing, ", "))
 	}
 	return m, nil
+}
+
+// AssetVersion is the version as it appears in an archive's file name: '+'
+// (semver build metadata, as in 0.0.1-main.5+abc1234) becomes '-', since
+// GitHub renames release assets with special characters and the manifest's
+// URLs must name the uploaded files. .goreleaser.yaml's archive
+// name_template maps it the same way.
+func AssetVersion(v string) string {
+	return strings.ReplaceAll(v, "+", "-")
 }
 
 // ParseChecksums reads a sha256sum-style file into file name to lowercase hex.

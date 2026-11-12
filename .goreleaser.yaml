@@ -20,7 +20,10 @@ builds:
 archives:
   - id: rhiza
     formats: [tar.gz]
-    name_template: "rhiza_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    # GitHub renames release assets with special characters, so the '+' of a
+    # latest build's semver metadata becomes '-' in the file name, as
+    # release.AssetVersion maps it for the manifest.
+    name_template: 'rhiza_{{ replace .Version "+" "-" }}_{{ .Os }}_{{ .Arch }}'
 
 checksum:
   name_template: checksums.txt
