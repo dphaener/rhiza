@@ -117,6 +117,53 @@ func (f *modelFixture) branches(t *testing.T) []string {
 	return bs
 }
 
+// useGit points the fixture's ctx.Git at the repo, as health reads it.
+func (f *modelFixture) useGit() {
+	f.ctx.Git = func(args ...string) (string, error) {
+		out, err := f.gh.exec("git", args, f.root, nil)
+		return string(out), err
+	}
+}
+
+// proposePlain proposes the change set with no model branch step, so only
+// the accept that follows reaches it.
+func (f *modelFixture) proposePlain(t *testing.T) {
+	t.Helper()
+	exec := f.ctx.Exec
+	f.ctx.Exec = nil
+	defer func() { f.ctx.Exec = exec }()
+	if _, err := callOp(t, f.ctx, "propose", `{}`); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// untracked lists the main checkout's untracked log entries.
+func (f *modelFixture) untracked(t *testing.T) map[string]bool {
+	t.Helper()
+	m := map[string]bool{}
+	for _, l := range strings.Split(f.git(f.root, "ls-files", "--others", "--exclude-standard", "--", ".rhiza/log"), "\n") {
+		if l != "" {
+			m[l] = true
+		}
+	}
+	return m
+}
+
+// newEntry is the one untracked log entry not in before.
+func (f *modelFixture) newEntry(t *testing.T, before map[string]bool) string {
+	t.Helper()
+	var added []string
+	for e := range f.untracked(t) {
+		if !before[e] {
+			added = append(added, e)
+		}
+	}
+	if len(added) != 1 {
+		t.Fatalf("new untracked entries %v, want one", added)
+	}
+	return added[0]
+}
+
 func TestModelBranch(t *testing.T) {
 	t.Run("AcceptShipsBranch", func(t *testing.T) {
 		f := modelBranchFixture(t, true)
@@ -197,8 +244,15 @@ func TestModelBranch(t *testing.T) {
 
 	t.Run("NoOriginStaysLocal", func(t *testing.T) {
 		f := modelBranchFixture(t, false)
-		if _, err := callOp(t, f.ctx, "propose", `{}`); err != nil {
+		f.useGit()
+		f.proposePlain(t)
+		before := f.untracked(t)
+		if _, err := callOp(t, f.ctx, "accept", `{}`); err != nil {
 			t.Fatal(err)
+		}
+		entry := f.newEntry(t, before)
+		if _, err := os.Stat(filepath.Join(f.root, entry)); err != nil {
+			t.Errorf("accept entry not written locally: %v", err)
 		}
 		if f.gh.calls != 0 || f.stderr.Len() != 0 {
 			t.Errorf("gh calls %d, stderr %q", f.gh.calls, f.stderr)
@@ -206,19 +260,30 @@ func TestModelBranch(t *testing.T) {
 		if out := f.git(f.root, "branch", "--list", "model/*"); out != "" {
 			t.Errorf("branch cut: %s", out)
 		}
+		if h := healthMain(f.ctx); h.State != HealthOK || h.Next != "" {
+			t.Errorf("health reports a problem: %+v", h)
+		}
 	})
 
 	t.Run("FailingGHWarns", func(t *testing.T) {
 		f := modelBranchFixture(t, true)
+		f.useGit()
+		f.proposePlain(t)
+		before := f.untracked(t)
 		f.gh.fail = true
-		if _, err := callOp(t, f.ctx, "propose", `{}`); err != nil {
-			t.Fatalf("write failed: %v", err)
+		if _, err := callOp(t, f.ctx, "accept", `{}`); err != nil {
+			t.Fatalf("accept failed: %v", err)
 		}
+		entry := f.newEntry(t, before)
 		if !strings.Contains(f.stderr.String(), "warning") {
 			t.Errorf("no warning: %q", f.stderr)
 		}
 		if wts := f.git(f.root, "worktree", "list"); strings.Count(wts, "\n") != 0 {
 			t.Errorf("worktrees left: %s", wts)
+		}
+		h := healthMain(f.ctx)
+		if h.State != HealthBad || !strings.Contains(strings.Join(h.Detail, "\n"), "untracked entry "+entry+" of change set "+f.cs+" is on no branch") {
+			t.Errorf("health does not report the accept entry as an orphan: %+v", h)
 		}
 	})
 

@@ -174,8 +174,15 @@ func shipModelWrite(ctx *Ctx, top, cs, tag string, write func(root string) error
 		return err
 	}
 	title := fmt.Sprintf("Model write on change set %s", branchShort(cs))
-	_, err = gh(ctx, top, "pr", "create", "--base", shipMain, "--head", branch, "--title", title, "--body-file", body.Name())
-	return err
+	if _, err := gh(ctx, top, "pr", "create", "--base", shipMain, "--head", branch, "--title", title, "--body-file", body.Name()); err != nil {
+		// A new branch with no PR would hide the entry from health as
+		// pending: drop it, so the entry stays an orphan that health names
+		// and commit-untracked retries.
+		_, _ = git(top, "push", "-q", "origin", "--delete", branch)
+		_, _ = git(top, "update-ref", "-d", "refs/remotes/origin/"+branch)
+		return err
+	}
+	return nil
 }
 
 func isEntryExists(err error) bool {
