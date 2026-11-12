@@ -2,6 +2,9 @@
 
 Guidance for coding agents (Claude Code and others) working in this repository.
 
+Role instructions (which agent reads which doc, and when) live in
+[agents/README.md](agents/README.md), the index of the `agents/` docs.
+
 ## Ignore the `~/code/.claude/rules` files
 
 The Rails/Ruby rules in `~/code/.claude/rules/` (`stack.md`, `global.md`,
