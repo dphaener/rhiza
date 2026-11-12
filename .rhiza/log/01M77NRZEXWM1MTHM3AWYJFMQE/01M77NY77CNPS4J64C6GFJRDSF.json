@@ -1,0 +1,41 @@
+{
+  "actor": "01M77NX6GMJXNS4AWG338FC6BP",
+  "after": [
+    "01M77NWTXGFRCE30QH02G1SFJD"
+  ],
+  "at": "2026-11-12T10:47:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent offers two fixes: route a clean round from review to fresh, or let run verdict accept an empty list. Routing is the better fit. The code review workflow (internal/workflow/builtin/review.toml) already gives a critic only to a check with a blocker or major, so a clean round skipping the critic matches existing behaviour. A critic has nothing to judge in an empty round, so starting an agent session for it only spends a session, and an empty verdict list would be a record that says nothing. run verdict's rule that it needs at least one verdict, each naming a finding of the latest round (internal/api/run_review.go), stays a useful guard against a critic that records nothing for a round that has findings. Loosening it would also weaken that guard for the code review critics. plan/fresh and plan/check then judge the clean round as before (review-check passes a round with no confirmed findings), so only the plan workflows' routing changes: a command step or condition between review and critic that sends clean rounds to fresh.",
+          "statement": "In the plan and plan-milestone workflows, a review round with no findings skips the critic: after plan/review, the run goes to the critic only when the latest round has findings, and a clean round goes straight to plan/fresh. `rhiza run verdict` keeps refusing an empty verdicts list.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "plan-clean-round-skips-critic",
+        "id": "01M77NY73VZ2J0F7N5133J1YQ2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M77NY73VZ2J0F7N50ZD6SSXS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77NY73VZ2J0F7N50ZD6SSXS",
+        "id": "01M77NY75SM5GWB00FRF9ZVRC8",
+        "link": "01M77NY75SM5GWB00FRBEN3938",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NWRX9VZJJZPPK59H4E58Y",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M77NRZEXWM1MTHM3AWYJFMQE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77NY77CNPS4J64C6GFJRDSF",
+  "type": "ops",
+  "v": 1
+}
