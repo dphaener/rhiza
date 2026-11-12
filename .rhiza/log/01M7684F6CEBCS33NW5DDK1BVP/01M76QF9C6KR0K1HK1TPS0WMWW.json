@@ -1,0 +1,29 @@
+{
+  "actor": "01M76QE1A6GCSDK2T0T22RVJSJ",
+  "after": [
+    "01M76QBB6GCQQNCCCPC1G3JK05"
+  ],
+  "at": "2026-11-12T01:55:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6Q5HHWA4TNKZ9TB41JZW8B5",
+        "handle": null,
+        "id": "01M76QF9B91065H7ZC7EH8X7E8",
+        "node": "01M6Q5HHWA4TNKZ9TB3ZEGH7JR",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A Go test in internal/ciworkflow (go test -trimpath ./internal/ciworkflow/...) parses .github/workflows/ci.yml and asserts the jobs and matrices above, strategy.fail-fast false on each matrix, setup-go with cache on and cache-dependency-path go.sum in every job, each job's run step calling make, and a job named check with needs on every other job, if: always() and a step failing unless changes succeeded and every other needed result is success or skipped (as ci-model-only-pr allows), and failing when none ran; the existing ci-yml triggers and concurrency checks still pass. The change set's own PR CI run completes in about 5 minutes or less, read from gh run view.",
+          "statement": "CI runs the suite as parallel jobs of one workflow: lint, a matrix of 4 script shards, a matrix of 2 internal/api shards, rest and budgets, each calling its make target with fail-fast off and actions/setup-go caching modules and the build cache keyed on go.sum, on every run except a pull request whose changed paths all lie under .rhiza/, which skips them and runs only the model job (ci-model-only-pr); an aggregate job named check needs every other job (changes, model and the Go jobs), runs if: always() and fails unless changes succeeded and every other needed job succeeded or was skipped, with at least one of them succeeded; a PR's CI gives its verdict in about 5 minutes."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M7684F6CEBCS33NW5DDK1BVP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76QF9C6KR0K1HK1TPS0WMWW",
+  "type": "ops",
+  "v": 1
+}
