@@ -1,0 +1,40 @@
+{
+  "actor": "01M76J50NDTXD4FQ4B0HDTSQ5T",
+  "after": [
+    "01M76J1NK0D4FJBE15AMJDTVF8"
+  ],
+  "at": "2026-11-12T00:25:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b364a6a7b (attempt 2), ran go test -trimpath -count=1 ./internal/guide/... ./internal/workflow/... -run Unchained: TestPlanReviewDoneUnchained (plan-review topic says session done runs as its own command only after rhiza run findings / run verdict / the reviser's apply succeeded, never chained with ';', and stays within TopicCap) and TestPlanReviewPromptsUnchained (plan and plan-milestone review, critic and revise prompts carry 'as a separate command', the recording command, 'succeeded' and 'never chained after it with `;`') both PASS. Read the diffs of 5a50d91ce and b364a6a7b: guide text and both builtin TOMLs carry the instruction. Attempt 1's finding is fixed: plan-workflow, plan-workflow-pr and plan-milestone-backlog now assert the new reviewer, critic and reviser prompts (and the critic->fresh->check steps), and with GOTMPDIR overridden to a scratch dir, go test -trimpath ./cmd/rhiza -run 'TestScripts/(plan-workflow|plan-workflow-pr|plan-milestone-backlog|plan-workflow-ci-infra-wait|describe-golden)$' all PASS."
+        },
+        "handle": "plan-review-done-unchained-verified",
+        "id": "01M76J9VEWYA0BRSQZ6FQ4G4BH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76J9VEWYA0BRSQZ6F61M206",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76J9VEWYA0BRSQZ6F61M206",
+        "id": "01M76J9VFXS4JK27S8QECBKRP1",
+        "link": "01M76J9VFXS4JK27S8QC5TS2SS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8S79W69F3VS3VY9VTKYX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F4G0JQ649RR29M9QPFX68",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76J9VHFD8VFJ7V417W8NZZ5",
+  "type": "ops",
+  "v": 1
+}
