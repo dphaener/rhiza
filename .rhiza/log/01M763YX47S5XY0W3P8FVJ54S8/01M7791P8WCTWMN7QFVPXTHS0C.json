@@ -1,0 +1,40 @@
+{
+  "actor": "01M778XYF7H2XM67YNWZ36WSE3",
+  "after": [
+    "01M7790K6DMEVPKG6Z15VWR5CE"
+  ],
+  "at": "2026-11-12T07:02:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at aae248c36 (diff 9ea73a5ea..HEAD read). go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/workflow-env$' passes: a workflow with [env] FOO={run_tmp}, PLAIN=x runs a command step that sees FOO as an existing folder and PLAIN=x, with no GOTMPDIR, and the FOO folder is gone after the run; a workflow without [env] sees neither GOTMPDIR nor FOO. engine.stepEnv and session_run no longer add GOTMPDIR (EnvGoTmp removed); they set the [env] pairs and create the run tmp folder only when {run_tmp} is used. go test ./internal/workflow/... ./internal/run/... pass (TestEnvTable, TestStepsGetEnvRunTmp, TestRunTmpGoneAfterFailedRun, TestNoEnvNoRunTmp); TestSessionRun in internal/api passes (the package-level FAIL is the root guard seeing the live daemon rewrite ~/code/.rhiza-root/usage.live.json, which is unrelated). Attempt 1's finding is fixed: with this commit's build, rhiza workflow check passes on all five .rhiza/workflows/*.toml, and [env] sits below autonomous in bugfix and plan-bug."
+        },
+        "handle": "workflow-env-verified",
+        "id": "01M7791P430NNMQY49YTRS4BBQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7791P430NNMQY49YTRFF22T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7791P430NNMQY49YTRFF22T",
+        "id": "01M7791P62MGT7E5200MV8PFKT",
+        "link": "01M7791P62MGT7E5200HRY1A8K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642MCFVAH4VXGAXZNTW4S7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763YX47S5XY0W3P8FVJ54S8",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7791P8WCTWMN7QFVPXTHS0C",
+  "type": "ops",
+  "v": 1
+}
