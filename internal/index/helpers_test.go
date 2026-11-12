@@ -327,7 +327,12 @@ func dump(t tb, x *Index) map[string][]string {
 	t.Helper()
 	out := map[string][]string{}
 	for _, table := range []string{"meta", "files", "entries", "change_sets", "nodes", "links", "problems"} {
-		rows, err := x.db.Query(`SELECT * FROM ` + table)
+		q := `SELECT * FROM ` + table
+		if table == "meta" {
+			// The recorded root differs between two worktrees.
+			q += ` WHERE key <> '` + metaRoot + `'`
+		}
+		rows, err := x.db.Query(q)
 		if err != nil {
 			t.Fatalf("dump %s: %v", table, err)
 		}

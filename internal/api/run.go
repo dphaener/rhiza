@@ -1240,6 +1240,7 @@ func runRunAbandon(ctx *Ctx, req any) (any, error) {
 	// A run whose process died left its own temp folder behind; the engine
 	// that would have removed it is gone, so abandoning removes it.
 	_ = os.RemoveAll(filepath.Dir(rs.TmpDir(j.ID)))
+	removeRunScratch(ctx, sessions, j.ID)
 	st := j.State()
 	return RunAbandonResponse{Run: runInfo(ctx, st, false, sessions), Cleanup: abandonCleanup(ctx, common, rs, j.ID, st)}, nil
 }
@@ -1326,6 +1327,7 @@ func abandonCleanup(ctx *Ctx, common string, rs *run.Store, id string, st run.St
 			if strings.TrimSpace(string(dirty)) != "" {
 				args = append(args, "--force")
 			}
+			removeWorktreeIndex(ctx, st.Worktree)
 			if _, err := git(append(args, st.Worktree)...); err != nil {
 				kept("remove-worktree", err.Error())
 			} else {
@@ -1795,6 +1797,9 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 		run1 = func(id string) (run.State, error) { return e.Continue(id, before) }
 	}
 	st, err := run1(rid)
+	if err == nil && st.Ended {
+		removeRunScratch(ctx, sessions, rid)
+	}
 	var apiErr *Error
 	switch {
 	case errors.As(err, &apiErr):

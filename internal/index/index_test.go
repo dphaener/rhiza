@@ -479,6 +479,47 @@ func TestNewChangeSetEndpoint(t *testing.T) {
 	checkModel(t, x, f.gdir)
 }
 
+func TestRemoveDeletesTheWorktreesDatabaseOnly(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CACHE_HOME", filepath.Join(home, "cache"))
+	base := t.TempDir()
+	a, b := filepath.Join(base, "a"), filepath.Join(base, "b")
+	paths := map[string]string{}
+	for _, d := range []string{a, b} {
+		if err := os.Mkdir(d, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		p, err := DefaultPath(d)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		for _, f := range []string{p, p + "-wal", p + "-shm"} {
+			if err := os.WriteFile(f, []byte("x"), 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
+		paths[d] = p
+	}
+	if err := Remove(a); err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range []string{paths[a], paths[a] + "-wal", paths[a] + "-shm"} {
+		if _, err := os.Stat(f); !os.IsNotExist(err) {
+			t.Fatalf("%s survived Remove: %v", f, err)
+		}
+	}
+	if _, err := os.Stat(paths[b]); err != nil {
+		t.Fatalf("another worktree's index went: %v", err)
+	}
+	if err := Remove(a); err != nil {
+		t.Fatalf("Remove with no database: %v", err)
+	}
+}
+
 func TestStoredEntry(t *testing.T) {
 	f := newFixture(t)
 	cs := landedSet(f, 1)

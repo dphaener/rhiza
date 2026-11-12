@@ -174,12 +174,28 @@ func DefaultPath(root string) (string, error) {
 	return filepath.Join(cache, "rhiza", "index", hex.EncodeToString(sum[:])+".db"), nil
 }
 
+// Remove deletes the index database of the worktree at root, with its WAL
+// and shared-memory files. Call it before the worktree is removed: the path
+// is hashed resolved, so root must still exist. No database is no error.
+func Remove(root string) error {
+	p, err := DefaultPath(root)
+	if err != nil {
+		return err
+	}
+	return removeDB(p)
+}
+
 // Open opens the index at dbPath for the worktree at root, creating,
 // rebuilding or catching it up as needed, and returns it fresh. Its folder
 // is created when missing. It reads root's .rhiza folder and never
 // writes there.
 func Open(root, dbPath string) (*Index, error) {
-	return open(dbPath, os.DirFS(filepath.Join(root, store.Dir)))
+	x, err := open(dbPath, os.DirFS(filepath.Join(root, store.Dir)))
+	if err != nil {
+		return nil, err
+	}
+	recordRoot(x, root)
+	return x, nil
 }
 
 // open is Open over fsys, rooted at a .rhiza folder.

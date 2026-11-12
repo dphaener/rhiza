@@ -1,0 +1,40 @@
+{
+  "actor": "01M7756HYR534G07XJHNMSE2E3",
+  "after": [
+    "01M774R4XWRJ81YD8M7Q4SDJ6B"
+  ],
+  "at": "2026-11-12T05:58:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier (attempt 2) at 27033141f: read the diff (daemon.go passes every served project's git common dir, collected after all registered projects are initialised in the poll, to daemonSweepLeftovers, which dedups and sweeps each project's session scratch; index sweep global). Ran go test -trimpath -count=1 ./internal/leftovers/... ./internal/index/... (ok) and ./internal/api -run TestDaemonSweepLeftovers -v: PASS. The test builds fake index DBs (live and orphaned worktree) and session scratch folders across two projects with an injected clock: only orphans go (ended-old, no-run-old, unknown-run-old, other project's crashed-run-old), live-run, fresh and other project's live-run scratch stay, stderr logs the freed bytes with 1 index DB and 4 folders, a sweep 59 min later does nothing, one at 60 min runs. A broader ./internal/api -run 'Leftover|Sweep|Daemon' run passed its tests but its root-state guard flagged ~/code/.rhiza-root/usage.live.json changing; that file holds a real usage capture written live by the VM's sessions at that moment, not by this change."
+        },
+        "handle": "daemon-prunes-orphan-leftovers-verified-2",
+        "id": "01M775CAPFHE8NJ3H82MAV125G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M775CAPFHE8NJ3H82HA9V3ZT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M775CAPFHE8NJ3H82HA9V3ZT",
+        "id": "01M775CARQ7HXJF6ZJC2BHZMN3",
+        "link": "01M775CARQ7HXJF6ZJBZ02CJZQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642M03G0506XQ7B2G4S0VF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763YK58RWNJ35P9S8BSFKVQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M775CAVZR48AM3HJ6C3NZ150",
+  "type": "ops",
+  "v": 1
+}
