@@ -1,0 +1,40 @@
+{
+  "actor": "01M77T7T1RPH19RJZ7GTNFC8DM",
+  "after": [
+    "01M77TAXJN7X30P5MT2FG0SJT1"
+  ],
+  "at": "2026-11-12T12:11:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 8b74e581c (attempt 2, after compliance f1): read the diff, which adds case 3 to run-ship-model-conflict-fix.txtar. In it the other change set lands only at gate-land through a fake local gate, so land is refused on the stale base. go test -trimpath ./internal/workflow/... passes, including TestShipChangeModelConflictRoute (land-triage to model-conflict-triage to model-conflict-fix, bounded, back through render-model-conflict). go test -trimpath -count=1 ./cmd/rhiza -run TestScripts/run-ship-model-conflict-fix passes 3 times, plus run-ship-conflict-fix once. Case 3 asserts this route: gate-land v1 pass, land v1 fail, land-triage, model-conflict-triage pass, model-conflict-fix (rhiza set first --rebase, one fixer session), render-model-conflict, gate-land v2, land v2 pass. It also asserts the merged PR 'Ship it (#7)' and 'Theirs and ours' on first. Case 2 asserts that a fixer leaving the conflict fails the run unmerged. make self-check in a clean detached worktree at the commit fails only on 8 stale .rhiza/rendered files from the run's own actor records. After rhiza render, it passes."
+        },
+        "handle": "ship-model-conflict-fix-verified-2",
+        "id": "01M77TQ4TGSSCAC0ST0H707876",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77TQ4TGSSCAC0ST0ESZXP7R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77TQ4TGSSCAC0ST0ESZXP7R",
+        "id": "01M77TQ4VCXAM3BX7NQ6P8ZG97",
+        "link": "01M77TQ4VCXAM3BX7NQ57MNP4J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NH2G554PQ7672BXQJSRBX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77N83F027XBGGZPK9SV6YN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77TQ4W3YJCZ98Y57TFP1A3W",
+  "type": "ops",
+  "v": 1
+}
