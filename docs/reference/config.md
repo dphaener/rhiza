@@ -45,6 +45,13 @@ The available memory below which the daemon starts no run, such as 2G; 0 turns i
 - Default: `2G`
 - Flag: `rhiza daemon --min-memory` overrides it for a run
 
+### `rhiza.daemon.autoUpdate`
+
+Whether the daemon keeps itself up to date: main follows the registered Rhiza source checkout and runs make update when it moves; latest and release come with the release channels milestone.
+
+- Type: off or main
+- Default: `off`
+
 ### `rhiza.daemon.trimGoCache`
 
 Trim the Go build cache when disk space runs low.

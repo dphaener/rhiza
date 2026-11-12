@@ -96,6 +96,7 @@ var settingDefs = []settingDef{
 		_, err := daemon.ParseSize(v)
 		return err
 	}},
+	{key: "rhiza.daemon.autoUpdate", def: "off", typ: "off or main", desc: "Whether the daemon keeps itself up to date: main follows the registered Rhiza source checkout and runs make update when it moves; latest and release come with the release channels milestone", validate: validateChoice("off", "main")},
 	{key: "rhiza.daemon.trimGoCache", def: "true", typ: "boolean", desc: "Trim the Go build cache when disk space runs low", validate: validateChoice("true", "false")},
 	{key: "rhiza.daemon.permissionMode", def: "", flag: "--permission-mode", typ: "one word", desc: "The permission mode agents run in; unset leaves the agent's own default", validate: func(v string) error {
 		if strings.TrimSpace(v) == "" || strings.ContainsAny(v, " \t\r\n") {
