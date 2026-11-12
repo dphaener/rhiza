@@ -373,7 +373,8 @@ func gitHead(ctx *Ctx) (string, error) {
 // holds HEAD, or origin has no such branch, nothing changes. When it
 // contains HEAD and is ahead, a clean worktree is fast-forwarded to it; a
 // worktree with uncommitted changes is refused, naming them. When the two
-// have diverged, local commits origin lacks are refused, naming them.
+// have diverged, origin's commits are merged in when that is clean (see
+// shipMergeOrigin), else refused, naming them.
 func shipFollowPR(ctx *Ctx, t shipTarget) error {
 	// A failed fetch leaves what is known; the push then says what is wrong.
 	ctx.Git("fetch", "-q", "origin")
@@ -389,9 +390,7 @@ func shipFollowPR(ctx *Ctx, t shipTarget) error {
 		return nil
 	}
 	if _, err := ctx.Git("merge-base", "--is-ancestor", "HEAD", remote); err != nil {
-		local, _ := ctx.Git("rev-list", "--oneline", remote+"..HEAD")
-		return Conflictf("origin's %s has commits that %s does not, and %s has local commits that origin's lacks: %s; reconcile them before shipping",
-			t.branch, ctx.Root, ctx.Root, strings.Join(gitLines(local), "; "))
+		return shipMergeOrigin(ctx, t, remote)
 	}
 	dirty, err := ctx.Git("status", "--porcelain", "--untracked-files=no")
 	if err != nil {
@@ -403,6 +402,30 @@ func shipFollowPR(ctx *Ctx, t shipTarget) error {
 	}
 	if _, err := ctx.Git("merge", "--ff-only", remote); err != nil {
 		return Errorf("%v", err)
+	}
+	return nil
+}
+
+// shipMergeOrigin merges origin's copy of the branch into HEAD when the two
+// have diverged, as when an earlier push of this run reached origin but the
+// local branch lost it. A clean merge keeps both histories and is pushed
+// plainly later; a conflict is aborted and refused, naming origin's commits.
+// It never rebases or forces.
+func shipMergeOrigin(ctx *Ctx, t shipTarget, remote string) error {
+	theirs, _ := ctx.Git("rev-list", "--oneline", "HEAD.."+remote)
+	commits := strings.Join(gitLines(theirs), "; ")
+	dirty, err := ctx.Git("status", "--porcelain", "--untracked-files=no")
+	if err != nil {
+		return Errorf("%v", err)
+	}
+	if files := gitLines(dirty); len(files) > 0 {
+		return Conflictf("origin's %s has commits that %s does not (%s), but %s has uncommitted changes that stop merging them: %s; commit or discard them",
+			t.branch, ctx.Root, commits, ctx.Root, strings.Join(files, "; "))
+	}
+	if _, err := ctx.Git("merge", "--no-edit", "-m", "Merge origin/"+t.branch+" into "+t.branch, remote); err != nil {
+		ctx.Git("merge", "--abort")
+		return Conflictf("origin's %s has commits that conflict with %s: %s; reconcile them before shipping",
+			t.branch, ctx.Root, commits)
 	}
 	return nil
 }

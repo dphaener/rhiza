@@ -1581,15 +1581,16 @@ func TestShipRebaseRefusals(t *testing.T) {
 	if !strings.Contains(err.Error(), "on main") {
 		t.Errorf("err = %v", err)
 	}
-	// origin's branch has a commit the local branch lacks: no merge, no
-	// push.
+	// origin's branch has a commit the local branch lacks and merging it
+	// conflicts (the fake's merge fails): refused, nothing pushed.
 	f, _ = shipRebaseFixture(t)
 	delete(f.git.out, "merge-base --is-ancestor "+rebaseOrigin+" HEAD")
+	f.git.out["status --porcelain --untracked-files=no"] = ""
 	_, err = callOp(t, f.ctx, "ship.rebase", `{}`)
 	wantExit(t, err, 3)
 	for _, c := range f.git.calls {
-		if strings.HasPrefix(c, "merge ") || strings.HasPrefix(c, "push") {
-			t.Errorf("git call %q with origin's branch ahead", c)
+		if strings.HasPrefix(c, "push") {
+			t.Errorf("git call %q with origin's branch conflicting", c)
 		}
 	}
 	f.ctx.DryRun = true
