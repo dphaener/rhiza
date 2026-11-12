@@ -1,0 +1,40 @@
+{
+  "actor": "01M770439DE7S5M2PYV6A3401A",
+  "after": [
+    "01M76SM3G0EZX08GY8NY1AG1M2"
+  ],
+  "at": "2026-11-12T04:30:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-ff346ed0 at e292baaae: go test -trimpath ./cmd/rhiza -run 'TestScripts/(ship-prepush-check|describe-golden)$' PASS. With a scratch build in a hermetic repo, rhiza daemon settings --json lists rhiza.ship.prePushCheck between localGate and generate as {scope: project, default: \"\", value: \"\", source: default}; after rhiza daemon set rhiza.ship.prePushCheck 'make self-check' it lists value 'make self-check', source 'git config'. docs/reference/config.md and cli.md carry the key; rhiza docs regenerates them with no diff. CLAUDE.md documents setting it to make self-check for this repo. make self-check here fails only on stale .rhiza/rendered (the builder's landed actor record and the verifier's untracked one), which the run's build/render step rewrites; in a clean worktree at the commit, after rhiza render, rhiza check exits 0 with no docs failure. Nit, not blocking: in internal/api/daemon_settings.go the old generate comment now sits above the prePushCheck comment instead of above the generate entry."
+        },
+        "handle": "prepush-check-setting-verified",
+        "id": "01M770A94PB89SJ5KY4TFY21WT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M770A94PB89SJ5KY4QDRANTK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M770A94PB89SJ5KY4QDRANTK",
+        "id": "01M770A96H8JGVYH0M62SW7HK3",
+        "link": "01M770A96H8JGVYH0M61XK4H64",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RSZVP98R5EET9VWCRT1XC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M770A991YW8TW4FDVBN7NYQ9",
+  "type": "ops",
+  "v": 1
+}
