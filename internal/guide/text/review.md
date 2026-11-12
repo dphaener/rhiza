@@ -1,10 +1,10 @@
 # Review
 
 Sessions get `RHIZA_CHANGE`, `RHIZA_CYCLE`
-and `RHIZA_ROLE` (check, critic, fixer, verifier); checks and critics also `RHIZA_CHECK`,
+and `RHIZA_ROLE`; checks and critics also `RHIZA_CHECK`,
 leaf fixers and verifiers `RHIZA_LEAF`. Start with
-`rhiza slice --change "$RHIZA_CHANGE" --json`. Checks and critics use a throwaway checkout at HEAD.
-Review the diff from the merge-base with the default branch,
+`rhiza slice --change "$RHIZA_CHANGE" --json`. Checks and critics: a throwaway checkout.
+Review from the merge-base with the default branch:
 `git diff $(git merge-base origin/main HEAD)`. Each role ends with `rhiza session done` as its own command after its recording
 command succeeded, never chained with `;` or `&&`.
 
@@ -23,7 +23,7 @@ Reproduce flakes by injecting a delay at the suspected race, never by busy loops
 
 - `compliance`: each leaf's `acceptance` as written.
 - `quality`: correctness, tests, conventions.
-- `qa`: hands-on with the built binary; fakes alone do not count. Then
+- `qa`: hands-on, built binary; fakes alone do not count. Then
   Evidence written as yourself on each leaf it exercised, via
   `rhiza apply <file> --change "$RHIZA_CHANGE" --json`, `<cycle>` being $RHIZA_CYCLE:
 
@@ -34,7 +34,7 @@ Reproduce flakes by injecting a delay at the suspected race, never by busy loops
   ```
 
 - `scope`: work stays inside the intent and the leaves.
-- `model`: model and code match; missing constraints go in a discovered-from draft.
+- `model`: model matches code; missing constraints: a discovered-from draft.
 
 Record one round, `{"findings":[]}` when clean (a check with none fails):
 
@@ -48,7 +48,7 @@ Severities: `blocker` (cannot ship), `major` (must be fixed), `minor` and `nit` 
 
 ## Critic
 
-Confirm or drop each blocker and major in the check's last round (`rhiza run status --json`). Never add a finding. Record:
+Confirm or drop each blocker and major in the check's last round (`rhiza run status --json`). Never add a finding.
 
 ```
 rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'
@@ -56,19 +56,25 @@ rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'
 EOF
 ```
 
-`verdict` is `confirmed` or `dropped`; dropped ones stay in the run journal, no Decision.
+`confirmed` or `dropped`; those stay in the run journal, no Decision.
 
 ## Fixer
 
-Fix only the named confirmed findings in one new commit with `Change:`, `Actor:` and `Leaf: <leaf>` (leaf fixer) or
-`Review: <run>` ($RHIZA_RUN, change set fixer) trailers. Keep all trailers, `Co-Authored-By:`
+Fix only the named confirmed findings in one new commit trailed `Change:`, `Actor:` and `Leaf: <leaf>` (leaf fixer) or
+`Review: <run>` ($RHIZA_RUN). Keep all trailers, `Co-Authored-By:`
 included, in one final paragraph, no blank line. Never rewrite commits.
 
-First run the commands that reproduce your findings, `rhiza ship generate` and `rhiza render`; commit their changes with a `Checks:` block of exit codes.
+First reproduce your findings and run `rhiza ship generate` and `rhiza render`; commit with a `Checks:` block of exit codes.
+
+## Command budget
+
+Never sleep and never poll. No command runs over about four
+minutes; longer work runs once in the background and is
+waited for once.
 
 ## Outside work
 
-Work outside the intent is a question or a discovered-from draft change set:
+Work outside the intent: a question or a discovered-from draft change set:
 `rhiza change new "<intent>" --json`,
 `rhiza link <new> discovered-from <this> --change <new> --json`, then
 `rhiza change use <this>`.

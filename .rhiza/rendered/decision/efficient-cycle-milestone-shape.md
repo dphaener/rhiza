@@ -25,6 +25,7 @@ Milestone 34 puts afk's prompts as shipped defaults and the guards first, then t
 - decided-by [builder-prehandoff-checklist](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-guide/builder-prehandoff-checklist.md)
 - decided-by [fixer-prehandoff-checklist](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-guide/fixer-prehandoff-checklist.md)
 - decided-by [verifier-reruns-reported-checks](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-guide/verifier-reruns-reported-checks.md)
+- decided-by [command-budget-guide](../capability/rhiza/guide/command-budget-guide.md)
 
 ## History
 
