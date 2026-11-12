@@ -107,22 +107,22 @@ func TestMakeTestTimeout(t *testing.T) {
 }
 
 // TestClaudeMDCommandsNameMakeUpdate checks that the code block under
-// CLAUDE.md's "## Commands" heading has a line starting with `make update`.
+// AGENTS.md's "## Commands" heading has a line starting with `make update`.
 func TestClaudeMDCommandsNameMakeUpdate(t *testing.T) {
-	doc, err := os.ReadFile("../../CLAUDE.md")
+	doc, err := os.ReadFile("../../AGENTS.md")
 	if err != nil {
 		t.Fatal(err)
 	}
 	block, ok := commandsBlock(string(doc))
 	if !ok {
-		t.Fatal("CLAUDE.md has no code block under ## Commands")
+		t.Fatal("AGENTS.md has no code block under ## Commands")
 	}
 	for _, line := range strings.Split(block, "\n") {
 		if strings.HasPrefix(strings.TrimSpace(line), "make update") {
 			return
 		}
 	}
-	t.Errorf("CLAUDE.md's ## Commands block has no make update line:\n%s", block)
+	t.Errorf("AGENTS.md's ## Commands block has no make update line:\n%s", block)
 }
 
 // commandsBlock returns the first fenced code block after the "## Commands"

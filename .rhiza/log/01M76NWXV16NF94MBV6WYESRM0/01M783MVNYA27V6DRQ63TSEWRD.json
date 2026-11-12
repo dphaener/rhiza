@@ -1,0 +1,40 @@
+{
+  "actor": "01M783GPQJPQ8N50GQBDBVEF17",
+  "after": [
+    "01M783J61KTWFQ211FSC64D0XV"
+  ],
+  "at": "2026-11-12T14:47:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ad06447d3 (detached checkout) I checked the acceptance's conditions directly, since the agent-docs-consistent test is a later leaf not yet built: agents/README.md exists; AGENTS.md links [agents/README.md](agents/README.md) on line 6, right under its intro, as where role instructions live; agents/ holds no *.md other than README.md, so the index (which states the one-line form '- [name.md](name.md): <which agent> reads it <when>' for future docs) is complete; README.md's ../AGENTS.md link resolves. go test -trimpath ./cmd/rhiza -run 'TestClaudeMD|TestAgents|TestMakeUpdate' passes (TestClaudeMDScopedTests, TestClaudeMDImportsAgentsMD, TestClaudeMDCommandsNameMakeUpdate, TestMakeUpdateDryRun). make self-check fails only on stale .rhiza/rendered actor files and index.md, which run close-out's rhiza render writes; no fold or model errors."
+        },
+        "handle": "agents-docs-index-verified",
+        "id": "01M783MVMZ134JWHYE83CN16HV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M783MVMZ134JWHYE7ZGZB2T7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M783MVMZ134JWHYE7ZGZB2T7",
+        "id": "01M783MVNHSKDY0FYNCKFZAX5H",
+        "link": "01M783MVNHSKDY0FYNCHBHRMFK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76NZQA1943A46ZY93ZKTZJX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76NWXV16NF94MBV6WYESRM0",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M783MVNYA27V6DRQ63TSEWRD",
+  "type": "ops",
+  "v": 1
+}

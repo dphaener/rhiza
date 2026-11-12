@@ -10,6 +10,7 @@ package api
 import (
 	"fmt"
 	"io"
+	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -95,6 +96,20 @@ func runSessionDone(ctx *Ctx, req any) (any, error) {
 			}
 		}
 	}
+	if isLeafVerifier(rec) {
+		if msg := verifierRecordMissing(ctx, st, rec); msg != "" {
+			return nil, Conflictf("session %s cannot say done: %s", rec.ID, msg).WithNext("rhiza run findings --leaf " + rec.Leaf)
+		}
+	}
+	if isCheckSession(rec) || isCriticSession(rec) {
+		if msg := reviewRecordMissing(ctx, rec); msg != "" {
+			next := "rhiza run findings --check " + rec.Check
+			if rec.Role == "critic" {
+				next = "rhiza run verdict --check " + rec.Check
+			}
+			return nil, Conflictf("session %s cannot say done: %s", rec.ID, msg).WithNext(next)
+		}
+	}
 	mark := session.Report{State: session.StateDone, At: ctx.Now().UTC()}
 	if ctx.DryRun {
 		return SessionDoneResponse{Session: rec.ID, At: rfc3339(mark.At), DryRun: true}, nil
@@ -130,6 +145,55 @@ func runSessionDone(ctx *Ctx, req any) (any, error) {
 		}
 	}
 	return resp, nil
+}
+
+// isLeafVerifier reports whether rec is a verifier session of a leaves
+// step's leaf attempt in a run, which must record its result before it
+// says done.
+func isLeafVerifier(rec session.Record) bool {
+	return rec.Run != "" && rec.Role == "verifier" && rec.Leaf != "" && rec.Attempt > 0
+}
+
+// verifierRecordMissing says why the leaf verifier rec has recorded nothing
+// for its attempt yet, or "" when it has journaled findings or written
+// Evidence as its own actor, or when that cannot be told (a run that is
+// gone or over, a step that moved on, a model that cannot be read): then
+// the run judges the attempt as it always did.
+func verifierRecordMissing(ctx *Ctx, st *session.Store, rec session.Record) string {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return ""
+	}
+	j, err := run.NewStore(run.Dir(common)).Read(rec.Run)
+	if err != nil {
+		return ""
+	}
+	rs := j.State()
+	if rs.Ended || rs.Current != rec.Step {
+		return ""
+	}
+	var leaf run.LeafState
+	found := false
+	for _, l := range rs.Leaves {
+		if l.Step == rec.Step && (l.Handle == rec.Leaf || l.Leaf == rec.Leaf) {
+			leaf, found = l, true
+			break
+		}
+	}
+	if !found || len(leaf.AttemptFindings(rec.Attempt)) > 0 {
+		return ""
+	}
+	r := &stepRunner{ctx: ctx, change: rs.Change, run: rec.Run, worktree: rs.Worktree, main: filepath.Dir(common), sessions: st}
+	defer r.closeModel()
+	ok, why, err := r.Evidence(run.Leaf{ID: leaf.Leaf, Handle: leaf.Handle}, rec.ID)
+	if err != nil || ok {
+		return ""
+	}
+	msg := fmt.Sprintf("leaf %s's attempt %d has neither findings nor Evidence written by your own actor: ", leaf.Handle, rec.Attempt)
+	if why != "" {
+		msg += "the Evidence that verifies it was written by another actor (" + why + "), which does not count; "
+	}
+	return msg + "record findings with `rhiza run findings --leaf " + leaf.Handle + " -`, or write Evidence as yourself (rhiza apply with an evidence node and a verifies link to the leaf), then run `rhiza session done` again"
 }
 
 // exitedConflict refuses a done mark on a session that has exited.

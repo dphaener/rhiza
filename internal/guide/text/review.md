@@ -1,25 +1,25 @@
 # Review
 
-A review run checks a built change set. Each session gets `RHIZA_CHANGE`, `RHIZA_CYCLE`
+Review sessions get `RHIZA_CHANGE`, `RHIZA_CYCLE`
 and `RHIZA_ROLE` (check, critic, fixer or verifier); checks and critics also `RHIZA_CHECK`,
 a leaf's fixer and verifier `RHIZA_LEAF`. Start with
-`rhiza slice --change "$RHIZA_CHANGE" --json`. Checks and critics work in a
-throwaway checkout at the branch head.
+`rhiza slice --change "$RHIZA_CHANGE" --json`. Checks and critics use a throwaway checkout at the branch head.
 Review the diff from the merge-base with the default branch
-(`git diff $(git merge-base origin/main HEAD)`). Each role ends with `rhiza session done`.
+(`git diff $(git merge-base origin/main HEAD)`). Each role ends with `rhiza session done` as its own command after its recording
+command succeeded, never chained with `;` or `&&`.
 
 ## Checks
 
 Every check except `qa` tests runs with fakes only, never real Rex, agents or `gh`.
-Checks, critics and fixers run only the tests covering what the change touches, with the
-repo's scoped commands, never the repo's full
+Checks, critics and fixers run only the tests covering what the change touches, with
+scoped commands, never the repo's full
 suite: the PR's CI runs it before merge.
 
 While CI is unstable, or a red is not explained by your change,
 do not push or rerun CI to see. Reproduce the
 failing test locally, fix it, and push only after it and the
 touched packages pass locally.
-Reproduce a timing flake by injecting a delay at the suspected race, never by busy loops or parallel stress on the host.
+Reproduce a flake by injecting a delay at the suspected race, never by busy loops or parallel stress on the host.
 
 - `compliance`: each leaf's `acceptance`, met as written.
 - `quality`: correctness, tests, the repo's conventions.
@@ -47,13 +47,11 @@ rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'
 EOF
 ```
 
-Severities: `blocker` (cannot ship), `major` (must be
-fixed), `minor` and `nit` (never fixed). Schema: `rhiza describe run.findings`.
+Severities: `blocker` (cannot ship), `major` (must be fixed), `minor`, `nit` (never fixed). Schema: `rhiza describe run.findings`.
 
 ## Critic
 
-Read the check's latest round (`rhiza run status --json`). Confirm or drop each blocker
-and major. Never add a finding. Record on stdin:
+Read the check's latest round (`rhiza run status --json`). Confirm or drop each blocker and major. Never add a finding. Record on stdin:
 
 ```
 rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'
@@ -61,19 +59,17 @@ rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'
 EOF
 ```
 
-`verdict` is `confirmed` or `dropped`. Dropped findings stay in the run journal; no Decision.
+`verdict` is `confirmed` or `dropped`. Dropped findings stay in the run journal, no Decision.
 
 ## Fixer
 
-Fix only the confirmed findings your prompt names, in one new
-commit with the `Change:` and `Actor:` trailers plus `Leaf: <leaf>` for a leaf fixer, or
+Fix only the confirmed findings your prompt names, in one new commit with the `Change:` and `Actor:` trailers plus `Leaf: <leaf>` for a leaf fixer, or
 `Review: <run>` ($RHIZA_RUN) for the change set's fixer. Keep every trailer, `Co-Authored-By:`
-included, in the one final paragraph, with no blank line between them.
-Never rewrite earlier commits.
+included, in the one final paragraph, no blank line. Never rewrite commits.
 
 ## Outside work
 
-Work outside the intent is a question, or a discovered-from draft change set:
+Work outside the intent is a question or a discovered-from draft change set:
 `rhiza change new "<intent>" --json`, then
 `rhiza link <new> discovered-from <this> --change <new> --json`, then
 `rhiza change use <this>`.
