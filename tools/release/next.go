@@ -94,12 +94,14 @@ type Landing struct {
 	ID          string
 	At          time.Time
 	RequestKind string // "bug", "milestone" or "" for a feature
+	Intent      string // what the change set set out to do
 }
 
 // History is what the log says about landings and milestones.
 type History struct {
 	Landed     map[string]Landing  // change set -> landing
 	Milestones map[string][]string // intent handle -> change sets serving it
+	Statements map[string]string   // intent handle -> its statement
 }
 
 // ReadHistory reads the log under logDir. A milestone is an intent that
@@ -110,9 +112,10 @@ func ReadHistory(logDir string) (History, error) {
 		return History{}, err
 	}
 	sort.Strings(files)
-	h := History{Landed: map[string]Landing{}, Milestones: map[string][]string{}}
+	h := History{Landed: map[string]Landing{}, Milestones: map[string][]string{}, Statements: map[string]string{}}
 	kinds := map[string]string{}   // change set -> request kind
 	intents := map[string]string{} // intent node -> handle
+	texts := map[string]string{}   // change set -> intent text
 	type serve struct{ from, to string }
 	var serves []serve
 	sets := map[string]bool{}
@@ -135,9 +138,11 @@ func ReadHistory(logDir string) (History, error) {
 		case "open":
 			var o struct {
 				RequestKind string `json:"request_kind"`
+				Intent      string `json:"intent"`
 			}
 			json.Unmarshal(e.Body, &o)
 			kinds[e.ChangeSet] = o.RequestKind
+			texts[e.ChangeSet] = o.Intent
 		case "land":
 			at, err := time.Parse(time.RFC3339, e.At)
 			if err != nil {
@@ -151,9 +156,12 @@ func ReadHistory(logDir string) (History, error) {
 					Kind   string `json:"kind"`
 					Node   string `json:"node"`
 					Handle string `json:"handle"`
-					Type   string `json:"type"`
-					From   string `json:"from"`
-					To     string `json:"to"`
+					Fields struct {
+						Statement string `json:"statement"`
+					} `json:"fields"`
+					Type string `json:"type"`
+					From string `json:"from"`
+					To   string `json:"to"`
 				} `json:"ops"`
 			}
 			json.Unmarshal(e.Body, &o)
@@ -161,6 +169,7 @@ func ReadHistory(logDir string) (History, error) {
 				switch {
 				case op.Op == "node.create" && op.Kind == "intent":
 					intents[op.Node] = op.Handle
+					h.Statements[op.Handle] = op.Fields.Statement
 				case op.Op == "link.create" && op.Type == "serves":
 					serves = append(serves, serve{op.From, op.To})
 				}
@@ -169,6 +178,7 @@ func ReadHistory(logDir string) (History, error) {
 	}
 	for id, l := range h.Landed {
 		l.RequestKind = kinds[id]
+		l.Intent = texts[id]
 		h.Landed[id] = l
 	}
 	for _, s := range serves {
@@ -265,6 +275,11 @@ func runCheck(dir string, w io.Writer) error {
 	if err != nil {
 		return err
 	}
+	detected := make([]string, 0, len(bs))
+	for _, b := range bs {
+		detected = append(detected, b.String())
+	}
+	notes := Notes(h, since, marks, detected)
 	if n.Kind == KindNone {
 		fmt.Fprintf(w, "none: no release since %s\n", orNone(tag))
 		return nil
@@ -273,6 +288,7 @@ func runCheck(dir string, w io.Writer) error {
 	for _, r := range n.Reasons {
 		fmt.Fprintln(w, "  "+r)
 	}
+	fmt.Fprintf(w, "\n# %s\n\n%s", n.Version, notes)
 	return nil
 }
 
