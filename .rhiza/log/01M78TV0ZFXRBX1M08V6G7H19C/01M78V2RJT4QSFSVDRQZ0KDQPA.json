@@ -1,0 +1,41 @@
+{
+  "actor": "01M78V0TYQ6JPJXSCX05VVDREB",
+  "after": [
+    "01M78V05AG559X2YWKHM4ZGJ03"
+  ],
+  "at": "2026-11-12T21:37:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Intent: the two earlier CPU fixes served milestones that are now off the roadmap, so they can't be used. m4-orchestrated-by-rhiza (the daemon orchestrates everything with no orchestrator session) is open, and it is the intent that the daemon load-hold fix 01M75T74 served. The daemon's own ~0.45 core counts toward the load average that this hold reads. So idle daemon CPU directly reduces how much work the daemon-orchestrated loop can start. Profiling: cmd/rhiza/main.go only wraps a whole process in pprof (RHIZA_CPUPROFILE). Restarting the root service to profile it would lose the warm caches and the long-uptime state that the sampler measured, so the daemon needs an on-demand window. Drivers are per-run and short-lived, so start-to-exit profiling is enough for them. AGENTS.md forbids tests that touch the network or bind sockets, so the CI-safe path is a benchmark over a fixture. Budgets: the change set's intent asks for exactly this: skip fold and pick when inputs are unchanged, plus a CPU budget test for an idle poll. Counting folds is deterministic under load. A CPU ceiling follows the existing *_budget_test.go pattern (watchdog, inbox gate, write). The report puts daemon plus drivers at 44% of CPU and estimates about 0.7 core recoverable, which supports ~0.05 and ~0.01 core targets. Walking ~4,000 transcripts (2.6 GB) every 5 s once per project is the most obvious idle cost. Sharing one walk and keying it on size and mtime keeps the governor correct, and a once-a-minute full walk still catches new files. CI on this repo takes minutes, so checking every 30 s for the whole wait mostly costs process spawns. Backing off to 2 minutes, and returning to 30 s on any change, caps the added landing latency at about 2 minutes.",
+          "statement": "(1) Intent: change set 01M78TV0 serves m4-orchestrated-by-rhiza. (2) Profiling: add a hidden live capture for the running daemon, `rhiza daemon profile [--seconds N, default 30] [--out <file>]`, which asks the live daemon to run pprof.StartCPUProfile for N seconds and write the file, with no restart. Drivers are profiled by the existing RHIZA_CPUPROFILE start-to-exit hook, which the daemon passes down to the drivers it starts, plus an in-process Go benchmark of one idle daemon poll and one idle driver poll over a production-sized log fixture (go test -cpuprofile), so builders can profile deterministically without the VM. (3) Budgets and cadence: a daemon poll with nothing changed (log, refs, run records, settings, usage inputs all unchanged by stamp) does no fold and no pick; a budget test asserts zero folds on an unchanged poll and a CPU-time ceiling for it. Target steady idle cost is at most 0.05 core for the daemon and 0.01 core per driver. The usage governor scans Claude transcripts once per poll for all projects, not once per project, re-reads only files whose size or mtime changed, and does the full walk at most once a minute. While a ship-change step waits on CI, the ship check interval backs off from 30 s to at most 2 minutes while CI is pending, and goes back to 30 s on any state change.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "decision-idle-cpu-scope",
+        "id": "01M78V2RH7Z677JJBPASFF5GCM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M78V2RH7Z677JJBPANNDM53X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78V2RH7Z677JJBPANNDM53X",
+        "id": "01M78V2RHX373BJNQS38PZSMZK",
+        "link": "01M78V2RHX373BJNQS367HNHQM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V019YZ361DP3Y8XQVZAMD",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M78TV0ZFXRBX1M08V6G7H19C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78V2RJT4QSFSVDRQZ0KDQPA",
+  "type": "ops",
+  "v": 1
+}

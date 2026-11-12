@@ -1,0 +1,30 @@
+{
+  "actor": "01M78TVVJZRGCG51TX14K9MKZ2",
+  "after": [
+    "01M78TV0ZFXRBX1M08V87MYDY2"
+  ],
+  "at": "2026-11-12T21:35:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "73c618f6-89e6-4e1f-881c-01a1d1add530",
+          "statement": "Bug 01M78TV0 (root daemon ~0.43 core idle, drivers up to ~0.15 core): which intent should it serve? Both earlier CPU fixes (01M6H6SG daemon fold cache, 01M6NE0X driver idle poll) landed and served m24-on-the-vm / milestone-25, neither on the roadmap now; open milestone 4's m4-orchestrated-by-rhiza is what the daemon load-hold fix (01M75T74) served. / How should the live daemon and drivers be profiled at idle? Today RHIZA_CPUPROFILE only profiles a process from start to exit, so the root service can't be profiled without a restart. / What should the idle CPU budgets and the CI-wait cadence be? The usage governor re-walks ~4,000 Claude transcript files (2.6 GB dir) each 5 s poll, once per project; ship-change's CI waits run a fresh 'rhiza ship check' process every 30 s."
+        },
+        "handle": "question-73c618f6-1",
+        "id": "01M78V019YZ361DP3Y8Z909KHH",
+        "key": null,
+        "kind": "question",
+        "node": "01M78V019YZ361DP3Y8XQVZAMD",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M78TV0ZFXRBX1M08V6G7H19C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78V05AG559X2YWKHM4ZGJ03",
+  "type": "ops",
+  "v": 1
+}
