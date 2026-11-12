@@ -1,0 +1,40 @@
+{
+  "actor": "01M78YRRK21ZHDMT1E9S5A0QBV",
+  "after": [
+    "01M78Y7K0MH6KDNZN3732JV99Z"
+  ],
+  "at": "2026-11-12T22:44:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at f86804689: go test -trimpath ./internal/api/... -run 'RootIdlePoll' -v -count=1 passed. TestRootIdlePoll (two projects, idle-poll fixture) asserts the second and third unchanged polls add zero log reads, plan reads, folds, picks (new daemonPickCount) and transcript reads, then changes a log entry, a ref, a setting, a run record and a transcript file in turn and asserts the next poll redoes the work and the poll after is idle again. TestRootIdlePollBudget (quiettest median, budgetLock, like TestReadBudget) measured median 69.7 ms, own CPU 52.7 ms, under the 100 ms budget. Diff read: daemonDemand memoizes daemon.Pick on fold identity plus a signature of runs (id, entries, liveness), clock-based holds, running count, unjournaled and workflow/dispatch file stamps, so holds and liveness are still evaluated each poll. Also go test -trimpath ./internal/api/ -run 'Daemon|Pick|Watchdog|Usage' passed, go vet and gofmt clean."
+        },
+        "handle": "root-daemon-idle-poll-no-work-verified",
+        "id": "01M78YYKTFBJWSHD2T1MK3RACH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78YYKTFBJWSHD2T1M8EX7CJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78YYKTFBJWSHD2T1M8EX7CJ",
+        "id": "01M78YYKVBRCKK6F9Q7W3QXEQ5",
+        "link": "01M78YYKVBRCKK6F9Q7TCWX820",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WM0TQZYN29GP2GCGGPZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78TV0ZFXRBX1M08V6G7H19C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78YYKW4J97MNSX0XCQKSRGN",
+  "type": "ops",
+  "v": 1
+}
