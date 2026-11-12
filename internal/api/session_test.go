@@ -532,7 +532,7 @@ func TestSessionRun(t *testing.T) {
 	if fi, err := os.Stat(run.TmpDir(run.Dir(f.common), "run-1")); err != nil || !fi.IsDir() {
 		t.Errorf("the run's GOTMPDIR folder does not exist when the agent starts: %v", err)
 	}
-	if !slices.Equal(agent.Env, wantEnv) || !slices.Equal(agent.Unset, []string{"RHIZA_AUTONOMOUS", "RHIZA_MILESTONE", "RHIZA_LEAF", "RHIZA_ATTEMPT", "RHIZA_CHECK", "RHIZA_CYCLE", "RHIZA_ROLE", "RHIZA_COMMIT", "RHIZA_ROOT"}) {
+	if !slices.Equal(agent.Env, wantEnv) || !slices.Equal(agent.Unset, []string{"RHIZA_AUTONOMOUS", "RHIZA_MILESTONE", "RHIZA_MILESTONE_NUMBER", "RHIZA_LEAF", "RHIZA_ATTEMPT", "RHIZA_CHECK", "RHIZA_CYCLE", "RHIZA_ROLE", "RHIZA_COMMIT", "RHIZA_ROOT"}) {
 		t.Errorf("env %v unset %v, want %v", agent.Env, agent.Unset, wantEnv)
 	}
 
@@ -594,7 +594,7 @@ func TestSessionRunNoRunNoRex(t *testing.T) {
 	}
 	agent := fs.programs[0]
 	if slices.ContainsFunc(agent.Env, func(kv string) bool { return strings.HasPrefix(kv, "RHIZA_RUN=") }) ||
-		!slices.Equal(agent.Unset, []string{"RHIZA_RUN", "RHIZA_AUTONOMOUS", "RHIZA_MILESTONE", "RHIZA_LEAF", "RHIZA_ATTEMPT", "RHIZA_CHECK", "RHIZA_CYCLE", "RHIZA_ROLE", "RHIZA_COMMIT", "RHIZA_ROOT"}) {
+		!slices.Equal(agent.Unset, []string{"RHIZA_RUN", "RHIZA_AUTONOMOUS", "RHIZA_MILESTONE", "RHIZA_MILESTONE_NUMBER", "RHIZA_LEAF", "RHIZA_ATTEMPT", "RHIZA_CHECK", "RHIZA_CYCLE", "RHIZA_ROLE", "RHIZA_COMMIT", "RHIZA_ROOT"}) {
 		t.Errorf("env %v unset %v", agent.Env, agent.Unset)
 	}
 }

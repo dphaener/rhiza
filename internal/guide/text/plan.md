@@ -125,14 +125,16 @@ On a record change set you plan a milestone:
   but `RHIZA_CHANGE` still wins, so name it with `--change`. It serves the milestone; write
   the link where the intent is, in the record:
   `rhiza link <cs> serves <intent> --change <record>`.
-- Link change sets `depends-on` only where one really needs another's work first.
+- Name the milestone intent from `RHIZA_MILESTONE_NUMBER` (N): handle `milestone-N`, field
+  `milestone=N`, its done points' handles prefixed `mN-`. Never count milestones from your
+  own branch.
+- Link `depends-on` only where one needs another's work first.
 - The owner chooses which change sets to plan now. Those get leaves; the rest keep their
-  intent only, to be planned later.
+  intent only.
 - When the interview is written, `rhiza land` the record, before review.
-  The leaves of the change sets planned now go in next, `--change <cs>` each, as they refer
-  to the record's landed nodes; a question blocking a leaf goes in the leaf's change set.
-- Leave the change sets you opened as drafts. The gate proposes them; never propose, accept
-  or land them yourself.
+  The leaves of the change sets planned now go in next, `--change <cs>` each; a question
+  blocking a leaf goes in the leaf's change set.
+- Leave the change sets you opened as drafts: the gate proposes them.
 
 ## Autonomous runs
 

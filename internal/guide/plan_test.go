@@ -159,3 +159,9 @@ func TestPlanReviewDoneUnchained(t *testing.T) {
 		t.Errorf("plan-review costs %d tokens, cap %d", n, TopicCap)
 	}
 }
+
+func TestPlanMilestoneNumber(t *testing.T) {
+	checkPhrases(t, "plan", map[string][]string{
+		"plan-milestone-number": {"RHIZA_MILESTONE_NUMBER", "milestone-N", "milestone=N", "`mN-`", "Never count milestones"},
+	})
+}

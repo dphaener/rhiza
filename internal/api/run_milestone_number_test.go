@@ -2,10 +2,13 @@ package api
 
 import (
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/run"
+	"github.com/dphaener/rhiza/internal/session"
 )
 
 // A plan run for a new milestone draws one more than the highest landed
@@ -67,4 +70,21 @@ func mustState(t *testing.T, rs *run.Store, rid string) run.State {
 		t.Fatal(err)
 	}
 	return j.State()
+}
+
+func TestLaunchEnvMilestoneNumber(t *testing.T) {
+	has := func(l []string, s string) bool { return slices.Contains(l, s) }
+	set, unset := launchEnv(session.Record{ID: "S1", Change: "CS1", Run: "R1", MilestoneNumber: 36})
+	if !has(set, "RHIZA_MILESTONE_NUMBER=36") || has(unset, "RHIZA_MILESTONE_NUMBER") {
+		t.Errorf("new-milestone plan: set %v unset %v", set, unset)
+	}
+	set, unset = launchEnv(session.Record{ID: "S1", Change: "CS1", Run: "R1"})
+	if !has(unset, "RHIZA_MILESTONE_NUMBER") {
+		t.Errorf("no number: unset %v lacks RHIZA_MILESTONE_NUMBER", unset)
+	}
+	for _, s := range set {
+		if strings.HasPrefix(s, "RHIZA_MILESTONE_NUMBER=") {
+			t.Errorf("no number: set %v", set)
+		}
+	}
 }
