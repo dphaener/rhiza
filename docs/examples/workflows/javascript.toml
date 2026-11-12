@@ -1,0 +1,33 @@
+# Example workflow for JavaScript/TypeScript projects. Copy it with
+#   cp docs/examples/workflows/javascript.toml .rhiza/workflows/<name>.toml
+# then set name below to match the file. Check it with
+#   rhiza workflow check <name>
+name = "javascript-example"
+start = "build"
+
+# The agent builds the change set, then ends with rhiza session done.
+[step.build]
+kind = "agent"
+prompt = "Build change set {change} ({title}) in step {step} of run {run}. Run only the tests covering what you change, then commit and run rhiza session done."
+on.pass = "test"
+
+# The project's own test command. A failure goes back to build; max_visits
+# stops the two going back and forth forever.
+[step.test]
+kind = "command"
+run = "npm test"
+max_visits = 3
+on.pass = "done"
+on.fail = "build"
+
+# Variables for every process a step starts. {run_tmp} is the run's private
+# temp folder, removed when the run ends.
+[env]
+CI = "true"
+TMPDIR = "{run_tmp}"
+
+# Runs once when the run ends, whatever its result; a failure here never
+# changes the result.
+[[cleanup]]
+name = "stop-dev-server"
+run = 'pkill -f "vite|next dev" || true'

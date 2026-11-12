@@ -1,0 +1,40 @@
+{
+  "actor": "01M77YH8D591VC0WACH44GQ2M6",
+  "after": [
+    "01M76NXKFCY6PTR5YJJ5VPP0RD"
+  ],
+  "at": "2026-11-12T13:19:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At aa5d5f235, go test -trimpath -count=1 ./cmd/rhiza -run TestDocsExampleWorkflows passes: it globs docs/examples/workflows/*.toml (go, ruby, javascript, python; fails if fewer than 4) and runs rhiza workflow check on each, requiring exit 0 and 'is valid'. A scratch build's rhiza workflow check on each of the four files prints 'is valid', exit 0; mutated copies (a RHIZA_ env name, a dangling on.pass) fail with exit 1, so the check is real. docs/custom-workflows.md gains a 'Cleanup and environment' section explaining [[cleanup]] (runs once at run end in the run worktree, failure never changes the result) and [env] ({run_tmp}, RHIZA_* refused), and links the four examples, each with build, test, [env] and [[cleanup]]."
+        },
+        "handle": "workflow-docs-examples-verified",
+        "id": "01M77YK07VPER9T9MTJBEN70XQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77YK07VPER9T9MTJAFQFQS5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77YK07VPER9T9MTJAFQFQS5",
+        "id": "01M77YK08N3P8XC55G635EZYHZ",
+        "link": "01M77YK08N3P8XC55G61RQV46K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642NEC2XPB8ACSDXKCMJAE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z8TGV8GJK2E621JS6HYZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77YK09DPEPKRD8AVJP85VNN",
+  "type": "ops",
+  "v": 1
+}
