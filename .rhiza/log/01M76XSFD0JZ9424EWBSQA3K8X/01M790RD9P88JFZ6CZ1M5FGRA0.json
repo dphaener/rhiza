@@ -1,0 +1,40 @@
+{
+  "actor": "01M790NHPR76JM3CWAWF9ZBB7B",
+  "after": [
+    "01M790KZSC8A2AX4FVX9HQ8Y7R"
+  ],
+  "at": "2026-11-12T23:16:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier attempt 2 at fedd6cd77 (detached checkout). go test -trimpath -count=1 ./internal/ciworkflow/... exit 0: TestChangesScript passes its subtests land-like .rhiza/-only commit after green (code=false), merge of main bringing only .rhiza/ (code=false), code change since green (code=true), merge of main bringing code (code=true), no green commit with PR leaving .rhiza/ (code=true); TestCIChangesDecidesFromGitDiff, TestCIGoJobsRunOnlyOnCodeChanges, TestCIModelJobRunsOnlyOnModelChanges and TestCICheckAggregatesEveryJob pass. Read ci.yml: the changes job finds the PR's last green commit with gh and the job token and runs .github/scripts/ci-changes.sh \"$BASE\" \"$GREEN\"; check needs every job with if: always(). Re-ran the commit's Checks with a scratch build: rhiza ship generate exit 0 (0 files changed), rhiza render exit 0 (only this verifier's own untracked actor rendered), make self-check exit 0. The fix commit sets ci-model-only-pr's statement and acceptance to defer the PR decision rule to ci-model-only-since-green; it no longer mentions a plain git diff against the merge base, resolving the model check's finding f1."
+        },
+        "handle": "ci-model-only-since-green-verified-2",
+        "id": "01M790RD7CDBYQWP81AFMKKAH5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M790RD7CDBYQWP81ABYKMMA6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M790RD7CDBYQWP81ABYKMMA6",
+        "id": "01M790RD8SRCH7FFC45673AB4T",
+        "link": "01M790RD8SRCH7FFC454E1CCST",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZFT4TP194AK2Z1NCJH5A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSFD0JZ9424EWBSQA3K8X",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M790RD9P88JFZ6CZ1M5FGRA0",
+  "type": "ops",
+  "v": 1
+}
