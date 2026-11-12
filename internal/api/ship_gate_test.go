@@ -148,8 +148,16 @@ func TestShipRebaseRunsLocalGate(t *testing.T) {
 		if st, _ := readShipState(state); st.GateFailed != "beef000111" || st.Pushed != "" {
 			t.Errorf("state = %+v; want the kept head recorded, nothing pushed", st)
 		}
-		if got := human(t, r); !strings.Contains(got, "FAIL TestMerged") || !strings.Contains(got, "for the gate's fixer") {
+		if got := human(t, r); !strings.Contains(got, "FAIL TestMerged") || !strings.Contains(got, "for the gate's fixer") || !strings.Contains(got, "Full log: "+r.Gate.Log) {
 			t.Errorf("human = %q", got)
+		}
+		// The rebase's gate writes the same log ship gate does.
+		want := filepath.Join(f.common, "rhiza", "gate", "cs", "ship-it.log")
+		if r.Gate.Log != want {
+			t.Errorf("gate log = %q, want %q", r.Gate.Log, want)
+		}
+		if b, err := os.ReadFile(want); err != nil || string(b) != "FAIL TestMerged\n" {
+			t.Errorf("log = %q, %v; want the whole output", b, err)
 		}
 	})
 	t.Run("a conflict runs no gate", func(t *testing.T) {
