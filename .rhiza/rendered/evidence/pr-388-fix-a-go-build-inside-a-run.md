@@ -27,7 +27,7 @@ verified
 ### Out
 
 - verifies run-private-gotmpdir (retired)
-- verifies [step-retry-vanished-go-work](../capability/rhiza/workflows/workflow-runs/step-retry-vanished-go-work.md)
+- verifies step-retry-vanished-go-work (retired)
 
 ## History
 

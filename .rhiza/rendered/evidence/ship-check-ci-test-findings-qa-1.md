@@ -14,7 +14,7 @@ QA at dc3c5d5c with a built binary (go build ./cmd/rhiza) in a scratch repo with
 
 ### Out
 
-- verifies [ship-check-ci-test-findings](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-ci-test-findings.md)
+- verifies ship-check-ci-test-findings (retired)
 
 ## History
 

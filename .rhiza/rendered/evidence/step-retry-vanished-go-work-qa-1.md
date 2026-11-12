@@ -14,7 +14,7 @@ With the built binary in a scratch repo: a command step that printed 'could not 
 
 ### Out
 
-- verifies [step-retry-vanished-go-work](../capability/rhiza/workflows/workflow-runs/step-retry-vanished-go-work.md)
+- verifies step-retry-vanished-go-work (retired)
 
 ## History
 

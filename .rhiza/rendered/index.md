@@ -284,9 +284,9 @@
       - [lost-session-judged](capability/rhiza/workflows/workflow-runs/lost-session-judged.md)
       - [rejoin-rex-unreachable](capability/rhiza/workflows/workflow-runs/rejoin-rex-unreachable.md)
       - [run-autonomy-source](capability/rhiza/workflows/workflow-runs/run-autonomy-source.md)
-      - [step-retry-vanished-go-work](capability/rhiza/workflows/workflow-runs/step-retry-vanished-go-work.md)
       - [nested-step-session-start](capability/rhiza/workflows/workflow-runs/nested-step-session-start.md)
       - [run-end-removes-leftovers](capability/rhiza/workflows/workflow-runs/run-end-removes-leftovers.md)
+      - [step-rerun-classified](capability/rhiza/workflows/workflow-runs/step-rerun-classified.md)
       - [nested-step-paths-shown](capability/rhiza/workflows/workflow-runs/nested-step-paths-shown.md)
     - [built-in-workflows](capability/rhiza/workflows/built-in-workflows.md)
       - [ship-change-workflow](capability/rhiza/workflows/built-in-workflows/ship-change-workflow.md)
@@ -435,9 +435,7 @@
       - [wait-green-pr](capability/rhiza/orchestration/shipping/wait-green-pr.md)
         - [follow-moved-pr-head](capability/rhiza/orchestration/shipping/wait-green-pr/follow-moved-pr-head.md)
         - [ship-check-reruns-failed-once](capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-reruns-failed-once.md)
-        - [ship-check-ci-test-findings](capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-ci-test-findings.md)
         - [ship-change-ci-fix-step](capability/rhiza/orchestration/shipping/wait-green-pr/ship-change-ci-fix-step.md)
-        - [ship-check-runner-test-failures](capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-runner-test-failures.md)
         - [ship-check-rerun-budget](capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-rerun-budget.md)
         - [ship-change-conflict-fix-step](capability/rhiza/orchestration/shipping/wait-green-pr/ship-change-conflict-fix-step.md)
         - [ship-check-failure-names-reruns-and-rhiza-only-diff](capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-failure-names-reruns-and-rhiza-only-diff.md)
@@ -475,6 +473,7 @@
       - [ship-tracks-own-pr](capability/rhiza/orchestration/shipping/ship-tracks-own-pr.md)
       - [ship-head-build-error-detail](capability/rhiza/orchestration/shipping/ship-head-build-error-detail.md)
       - [ship-head-build-step](capability/rhiza/orchestration/shipping/ship-head-build-step.md)
+      - [ci-logs-to-fixer](capability/rhiza/orchestration/shipping/ci-logs-to-fixer.md)
       - [ship-check-skipped-jobs-green](capability/rhiza/orchestration/shipping/ship-check-skipped-jobs-green.md)
       - [live-run-write-reaches-worktree](capability/rhiza/orchestration/shipping/live-run-write-reaches-worktree.md)
       - [main-write-model-branch](capability/rhiza/orchestration/shipping/main-write-model-branch.md)
@@ -527,6 +526,7 @@
       - [daemon-settings](capability/rhiza/orchestration/daemon/daemon-settings.md)
         - [daemon-load-memory-settings](capability/rhiza/orchestration/daemon/daemon-settings/daemon-load-memory-settings.md)
         - [self-update-settings-removed](capability/rhiza/orchestration/daemon/daemon-settings/self-update-settings-removed.md)
+        - [failure-classifier-setting](capability/rhiza/orchestration/daemon/daemon-settings/failure-classifier-setting.md)
         - [auto-update-documented](capability/rhiza/orchestration/daemon/daemon-settings/auto-update-documented.md)
       - [daemon-pause](capability/rhiza/orchestration/daemon/daemon-pause.md)
       - [plan-requests](capability/rhiza/orchestration/daemon/plan-requests.md)
@@ -573,7 +573,6 @@
       - [daemon-watchdog](capability/rhiza/orchestration/daemon/daemon-watchdog.md)
         - [watchdog-policy](capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-policy.md)
         - [watchdog-stalled-step](capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-stalled-step.md)
-        - [watchdog-transient-failure](capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-transient-failure.md)
         - [watchdog-ci-rerun](capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-ci-rerun.md)
         - [watchdog-pr-no-ci](capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-pr-no-ci.md)
         - [watchdog-green-pr-unmerged](capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-green-pr-unmerged.md)
@@ -586,6 +585,7 @@
         - [watchdog-pr-owned-by-run](capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-pr-owned-by-run.md)
         - [flaky-test-bugs](capability/rhiza/orchestration/daemon/daemon-watchdog/flaky-test-bugs.md)
         - [watchdog-holds-skip-abandoned](capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-holds-skip-abandoned.md)
+        - [watchdog-classifies-failures](capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-classifies-failures.md)
       - [root-continuations-first](capability/rhiza/orchestration/daemon/root-continuations-first.md)
       - [daemon-prunes-orphan-leftovers](capability/rhiza/orchestration/daemon/daemon-prunes-orphan-leftovers.md)
       - [daemon-no-go-cache-trim](capability/rhiza/orchestration/daemon/daemon-no-go-cache-trim.md)
@@ -2283,6 +2283,8 @@
 - [ci-install-cancels-stale-verified-3](evidence/ci-install-cancels-stale-verified-3.md)
 - [ci-install-dispatchable-qa-1](evidence/ci-install-dispatchable-qa-1.md)
 - [ci-install-dispatchable-verified](evidence/ci-install-dispatchable-verified.md)
+- [ci-logs-to-fixer-qa-1](evidence/ci-logs-to-fixer-qa-1.md)
+- [ci-logs-to-fixer-verified](evidence/ci-logs-to-fixer-verified.md)
 - [ci-model-only-pr-qa-1](evidence/ci-model-only-pr-qa-1.md)
 - [ci-model-only-pr-verified](evidence/ci-model-only-pr-verified.md)
 - [ci-model-only-pr-verified-3](evidence/ci-model-only-pr-verified-3.md)
@@ -2552,6 +2554,10 @@
 - [explicit-permission-mode-test](evidence/explicit-permission-mode-test.md)
 - [failed-step-detail-shown-qa-1](evidence/failed-step-detail-shown-qa-1.md)
 - [failed-step-detail-shown-verified](evidence/failed-step-detail-shown-verified.md)
+- [failure-classifier-setting-qa-1](evidence/failure-classifier-setting-qa-1.md)
+- [failure-classifier-setting-qa-2](evidence/failure-classifier-setting-qa-2.md)
+- [failure-classifier-setting-verified](evidence/failure-classifier-setting-verified.md)
+- [failure-classifier-setting-verified-2](evidence/failure-classifier-setting-verified-2.md)
 - [faster-reads-budget](evidence/faster-reads-budget.md)
 - [feed-command-qa-1](evidence/feed-command-qa-1.md)
 - [feed-command-verified](evidence/feed-command-verified.md)
@@ -3182,6 +3188,7 @@
 - [pr-476-release-channel-manifest-and](evidence/pr-476-release-channel-manifest-and.md)
 - [pr-478-latest-channel](evidence/pr-478-latest-channel.md)
 - [pr-479-channel-resolver](evidence/pr-479-channel-resolver.md)
+- [pr-480-failures-classified-by-a](evidence/pr-480-failures-classified-by-a.md)
 - [pr-50-a-change-set-has-at-most-one](evidence/pr-50-a-change-set-has-at-most-one.md)
 - [pr-52-the-daemon](evidence/pr-52-the-daemon.md)
 - [pr-53-the-inbox](evidence/pr-53-the-inbox.md)
@@ -3699,6 +3706,8 @@
 - [status-in-genesis-files-test](evidence/status-in-genesis-files-test.md)
 - [status-precedence-test](evidence/status-precedence-test.md)
 - [step-amend-script](evidence/step-amend-script.md)
+- [step-rerun-classified-qa-1](evidence/step-rerun-classified-qa-1.md)
+- [step-rerun-classified-verified](evidence/step-rerun-classified-verified.md)
 - [step-retry-vanished-go-work-qa-1](evidence/step-retry-vanished-go-work-qa-1.md)
 - [step-retry-vanished-go-work-verified](evidence/step-retry-vanished-go-work-verified.md)
 - [tab-title-test](evidence/tab-title-test.md)
@@ -3838,6 +3847,10 @@
 - [watchdog-ci-rerun-qa-2](evidence/watchdog-ci-rerun-qa-2.md)
 - [watchdog-ci-rerun-verified](evidence/watchdog-ci-rerun-verified.md)
 - [watchdog-ci-rerun-verified-3](evidence/watchdog-ci-rerun-verified-3.md)
+- [watchdog-classifies-failures-qa-1](evidence/watchdog-classifies-failures-qa-1.md)
+- [watchdog-classifies-failures-qa-2](evidence/watchdog-classifies-failures-qa-2.md)
+- [watchdog-classifies-failures-verified](evidence/watchdog-classifies-failures-verified.md)
+- [watchdog-classifies-failures-verified-2](evidence/watchdog-classifies-failures-verified-2.md)
 - [watchdog-files-bugs-qa-1](evidence/watchdog-files-bugs-qa-1.md)
 - [watchdog-files-bugs-qa-2](evidence/watchdog-files-bugs-qa-2.md)
 - [watchdog-files-bugs-verified](evidence/watchdog-files-bugs-verified.md)
@@ -9019,9 +9032,13 @@
 - capability daemon-repo-session `01M6FES3PKQCSNG9SEECK4G1R7` — Superseded by root-daemon-rex-session: the session is named after the project's registered name, rhiza-<project>, not the main checkout's folder, and the root daemon creates and passes one per project (m29-rex-session-per-project).
 - capability daemon-self-update `01M6FES89JR3Z5XA751AGCD3RV` — Superseded by root-daemon-self-update: the root daemon self-updates from the project rhiza.toml names as self_update_project, with selfUpdate a machine setting in rhiza.toml (m29-settings-split).
 - capability requests-app-milestone `01M6JE40PG6Z1ZG27N7DMFH3FF` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): the old requests app and its milestone field are deleted; the new request form has no milestone field
+- capability ship-check-ci-test-findings `01M6MC4GXTJ7SWF8NV4SYXD3F9` — Replaced by ci-logs-to-fixer: ci-triage hands the fix agent the failed CI logs instead of parsing Go test output.
 - capability go-build-cache-sweep `01M6NREHKHFKZWMXYWG2F38AM5` — Replaced by rhiza-own-workflows-go-cleanup: Rhiza's own workflow cleanup phase trims the Go build cache and stale go-build folders; gosweep leaves the daemon.
 - capability daemon-trims-go-cache `01M6NRETPP5SJ8RMGV901X4G33` — Replaced by daemon-no-go-cache-trim and rhiza-own-workflows-go-cleanup: the daemon no longer trims the Go build cache; Rhiza's cleanup phase does.
 - capability root-daemon-self-update `01M6RN85F2T3NMVDRKV706VSZB` — Replaced by daemon-auto-update: rhiza.daemon.selfUpdate and rhiza.toml's self_update_project are removed; autoUpdate=main finds Rhiza's source checkout by its module path.
+- capability ship-check-runner-test-failures `01M6TBDK41SM1XY2928W79FEYZ` — Replaced by ci-logs-to-fixer: ci-triage hands the fix agent the failed CI logs instead of parsing RSpec, Minitest and pytest output.
 - capability run-private-gotmpdir `01M6WGXA5QZV54A91F061Y3KNQ` — Replaced by workflow-env: Rhiza's own workflows set GOTMPDIR to the run's temp folder; the product no longer sets it.
+- capability step-retry-vanished-go-work `01M6WGXA821QDFHM5T4K3G3P2Q` — Replaced by step-rerun-classified: the step runner reruns a failed step only when the failure classifier says transient; the go vanished-$WORK signature is gone.
+- capability watchdog-transient-failure `01M6WJ2CRTGK0ZMW94E2BA801H` — Replaced by watchdog-classifies-failures: the watchdog retries on the configured classifier's transient verdict; the hard-coded signature list is gone.
 - actor claude-code-a463ece8 `01M6HYXRR6ZXYF68BAC8X0KEEQ` — Duplicate of actor claude-code-a463ece8 (node 01M6HV8Y05D3EMPSARA4H5VJ15) that landed on main from another branch while this run was building; the same session recorded itself twice
 - actor claude-code-83858632 `01M6KFM58RDZ5KSG59GP1005QZ` — Duplicate actor record: session claude-code-83858632 recorded itself in a verifier checkout (change set 01M6KFMJ) after already recording in the run worktree (01M6KE23); keep the first
