@@ -87,7 +87,7 @@ fold-ok
 {"title":"Planning interview","summary":"The owner planned the reports milestone.","quotes":[{"text":"Stream it, reports get huge","by":"owner"}]}
 -- record.json --
 {"writes":[
-  {"op":"add","kind":"intent","handle":"reports","fields":["statement=Users take their reports out of the product","milestone=1"]},
+  {"op":"add","kind":"intent","handle":"milestone-1","fields":["statement=Users take their reports out of the product","milestone=1"]},
   {"op":"add","kind":"decision","handle":"csv-streaming","fields":[
     "statement=Stream CSV rows instead of building the file in memory",
     "quote=Stream it, reports get huge"]},
@@ -167,7 +167,7 @@ case "$last" in
 	rhiza apply "$WORK/record.json" --json >> "$WORK/agent.out" || fail record
 	rhiza change new 'Export reports' --json > "$WORK/new.out" || fail change new
 	sed -n 's/.*"change_set": "\([0-9A-Z]*\)".*/\1/p' "$WORK/new.out" > "$WORK/cs"
-	rhiza link "$(cat "$WORK/cs")" serves reports --change "$rec" >> "$WORK/agent.out" || fail serves
+	rhiza link "$(cat "$WORK/cs")" serves milestone-1 --change "$rec" >> "$WORK/agent.out" || fail serves
 	rhiza land --json >> "$WORK/agent.out" || fail land
 	rhiza apply "$WORK/leaf.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail leaf
 	rhiza add question park-disk --field 'statement=Which disk holds the exports?' --change "$(cat "$WORK/cs")" >> "$WORK/agent.out" || fail question
