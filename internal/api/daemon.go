@@ -1376,6 +1376,10 @@ func daemonDetach(ctx *Ctx, what, name string, env, args []string) error {
 	return daemonDetachNoRex(ctx, what, name, env, args)
 }
 
+// envCPUProfile is the hidden diagnostic variable naming the file a process
+// writes its CPU profile to; the daemon hands each driver its own.
+const envCPUProfile = "RHIZA_CPUPROFILE"
+
 // daemonDetachNoRex detaches the program in the session ctx names, without
 // asking Rex whether it exists.
 func daemonDetachNoRex(ctx *Ctx, what, name string, env, args []string) error {
@@ -1390,7 +1394,14 @@ func daemonDetachNoRex(ctx *Ctx, what, name string, env, args []string) error {
 	if ctx.daemonFold != nil {
 		ctx.daemonFold.invalidate()
 	}
-	p := Program{Name: ctx.Self, Args: args, Dir: ctx.Root, Env: append([]string{"REX_SESSION=" + ctx.RexSession}, env...), Unset: []string{"REX_BLOCK"}}
+	env = append([]string{"REX_SESSION=" + ctx.RexSession}, env...)
+	if prof := strings.TrimSpace(ctxGetenv(ctx)(envCPUProfile)); prof != "" {
+		// The driver profiles itself too, into a file of its own: the
+		// daemon's path with name (the run's ID, or for a start the name of
+		// its start log, the child drawing its ID later) added.
+		env = append(env, envCPUProfile+"="+prof+"."+name)
+	}
+	p := Program{Name: ctx.Self, Args: args, Dir: ctx.Root, Env: env, Unset: []string{"REX_BLOCK"}}
 	if err := ctx.Detach(p, filepath.Join(runLogDir(common), name+".log")); err != nil {
 		return Errorf("start %s: %v", what, err)
 	}
