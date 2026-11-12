@@ -1,0 +1,57 @@
+{
+  "actor": "01M76S8DNMAYVS5WSFR9PSZGWK",
+  "after": [
+    "01M76S2B5K1BXCAMTT57J5PFCN"
+  ],
+  "at": "2026-11-12T02:27:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Intent: milestone-25 (the daemon builds and ships the backlog on its own) is still open and is what CI failures on model and generated-file errors stall; the predecessor ship-local-gate served it, and milestone-32 is about cleanup and language-neutral defaults, which this change only has to respect. Enforcement: the owner wants every push covered (fixer, ci-fix, merge-of-main pushes, plan runs). Workflow steps alone would need a gate before each push step in five builtin workflows and any custom one, and the three failing PRs came from plan runs that have no gate at all; pushes in code all go through shipPush (internal/api/ship_close.go, called by ship_openpr.go and the land) and ship_rebase.go's push, so a check there cannot be skipped by a workflow that forgets a step, and the push step's failure is already routed by on.fail. Name: existing per-project command settings are rhiza.ship.localGate and rhiza.ship.generate (ship_gate.go, ship_generate.go); rhiza.ship.prePushCheck follows that prefix, says when it runs, and names no language or tool, as milestone-32 asks. Plan fixer: plan.toml's revise step is tied to review findings and loops back to review, and its cap of 2 is shared with them; pre-push failures in plans are model errors (duplicate handle, non-canonical log entry, stale render) a dedicated small fixer step can repair with rhiza apply or rhiza render, matching the intent's point (4) that a failure goes back to a fixer within the step's cap instead of pushing. Head checked: the pushes send the committed HEAD while rhiza check reads the working tree, and run worktrees carry untracked stray .rhiza/log entries and fixes not yet committed, so the check runs on a clean checkout of the head being pushed and a fixer must commit its fix.",
+          "statement": "Change set 01M76RH0 serves @{01M6HKVRE1B7RPP12EN6J2GGXC}, as its predecessor @{01M6YCRKT22SQQH70HYX1GPFZW} did, and only coordinates with @{01M7640BA83BXBMSEMZNC4K97G} by keeping the new setting language neutral. The pre-push check is enforced in the product, in one shared helper run before every git push a run makes (shipPush, used by ship open-pr and the land push; ship rebase's push; and the watchdog's merge-of-main push in watchdogMergeMain), so plan, plan-milestone, ship-change and its wrappers such as bugfix all get it, including fixer, ci-fix and merge-of-main pushes; it runs rhiza check, then the project's command, in a temporary clean checkout of exactly the committed head being pushed (not the run worktree, whose uncommitted or untracked files would make the result differ from what CI sees), and a failure refuses the push and fails that step with the failing lines, recorded in the run journal and rhiza run status. The setting is rhiza.ship.prePushCheck, a project setting with an empty default (rhiza check alone), set to make self-check for this repo, beside rhiza.ship.localGate and rhiza.ship.generate. rhiza.ship.localGate keeps its meaning (only while CI is unstable). In ship-change a push step failed by the pre-push check goes on.fail through a rhiza ship gate --failed triage, as rebase does today, to the existing gate-fix fixer, within its cap; other failures of those steps end the run as today. The plan and plan-milestone workflows each get the same triage and one new agent fixer step for it (for example prepush-fix, max_visits 2) that fixes the plan's model or rendered files from the failing lines with one rhiza apply or rhiza render, commits that fix, and goes back to open-pr; conflicts and gh or push errors still end the run, and once its cap is spent the run fails as a failing step does today.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "pre-push-check-shape",
+        "id": "01M76RR6DF852BWBK3EM8Q0X2Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76RR6DE5Y21VWVD28RHDN40",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestShipPrePushCheck|TestShipLocalGate|TestWatchdogPRNoCI' passes, showing in a run worktree with a committed non-canonical log entry, a committed stale render, or a failing prePushCheck command that ship open-pr, ship land, ship rebase and the watchdog's merge of origin/main each push nothing to origin and fail with the failing lines in their error and response (the watchdog leaving the branch at its pre-merge head); that a fix present only in the working tree (a render or log entry not committed, HEAD still stale) still fails the check and pushes nothing; that an untracked non-canonical .rhiza/log entry in the worktree with a clean committed head does not fail it; that the check's temporary checkout is removed afterwards; that with both passing they push as before (CI stable or unstable); and that localGate still runs only while CI is unstable",
+          "statement": "Before every git push a run makes (shipPush, used by ship open-pr and the land push; ship rebase's push of a merged head; and the watchdog's merge of origin/main into a run's branch, watchdogMergeMain in internal/api/watchdog_noci.go), all through one shared helper, whatever CI's state, Rhiza checks exactly the committed head being pushed: it makes a temporary clean checkout of that commit (a detached git worktree, removed afterwards) and runs rhiza check there (model, log canonicity, stale render) and then the project's rhiza.ship.prePushCheck command there, so uncommitted or untracked files in the run worktree (a stray .rhiza/log entry, a render or rhiza apply left uncommitted) neither pass nor fail it; if either fails it pushes nothing and fails the step with the failing lines and the head checked (the watchdog resets its merge as on a failed push and reports the failing lines), while rhiza.ship.localGate keeps running only while CI is unstable"
+        },
+        "handle": "prepush-check-before-push",
+        "id": "01M76RSZWZW5K5DG8AN3H9FVBS",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M76RSZWZW5K5DG8AN1SP994H",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... passes, checking that plan.toml and plan-milestone.toml route open-pr's and rebase's on.fail to a ship gate --failed triage whose on.pass is prepush-fix and which has no on.fail, that prepush-fix has max_visits 2 and on.pass open-pr and its prompt tells the agent to commit its fix, and that rhiza workflow describe plan lists both steps; go test -trimpath ./internal/api -run TestShipGate passes, showing ship gate --failed failing on a ship rebase conflict and on a gh or push error; make self-check passes",
+          "statement": "The built-in plan and plan-milestone workflows each send open-pr's and rebase's failure (both have no on.fail today) to a triage step running rhiza ship gate --failed, which passes only on a head the pre-push check failed on and then goes to a new agent step, prepush-fix (max_visits 2), that fixes the plan's model or rendered files from the failing lines with one rhiza apply or rhiza render, commits that fix to the run's branch, and goes back to open-pr; any other failure (a conflicting merge of main, a gh or push error) fails the triage with no on.fail and ends the run as today, and once prepush-fix's cap is spent the run fails as a failing step does today"
+        },
+        "handle": "plan-prepush-fix",
+        "id": "01M76RT03BTXG6QDTFNGNKCZVA",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M76RT03BTXG6QDTFNE23XMA2",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76S9WQTXH04N07JN8MXTKPA",
+  "type": "ops",
+  "v": 1
+}
