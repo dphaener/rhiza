@@ -2,7 +2,8 @@
 # run's branch and worktree first and writes the new change set's open entry
 # there, where the run commits it; the same bytes sit in the main checkout's
 # log as a copy held by the live run, so change show works from main, and
-# check does not call the copy an orphan.
+# neither check nor health calls the copy an orphan. The plan's gate step
+# commits the entry on the run's branch.
 #
 # The fake rex runs the tab's command; the fake claude does nothing.
 
@@ -29,22 +30,33 @@ exec git fetch -q origin
 exec rhiza run start --foreground --workflow plan --new 'Plan reports' --permission-mode manual --json
 stdout '"state": "succeeded"'
 exec sh -c 'rhiza change ls --json | grep -B3 "Plan reports" | grep "\"id\"" | sed "s/.*\"\([0-9A-Z]\{26\}\)\".*/\1/" > $WORK/id'
-exec sh -c 'cs=$(cat $WORK/id); diff -r ../repo.plan-reports/.rhiza/log/$cs .rhiza/log/$cs && echo held'
-stdout 'held'
+exec sh $WORK/held.sh plan-reports
+stdout 'held and committed: 1'
 exec sh -c 'rhiza change show "$(cat $WORK/id)" --json'
 stdout 'Plan reports'
 exec rhiza check
 ! stdout 'commit-untracked'
 ! stdout 'untracked log entry'
+exec rhiza health
+stdout 'ok   main +on main, clean'
+! stdout 'orphan'
+! stdout 'untracked'
 
 # A milestone record does the same.
 exec rhiza run start --foreground --workflow plan --new 'Plan the milestone' --milestone --permission-mode manual --json
 stdout '"state": "succeeded"'
-exec rhiza change ls --json
+exec sh -c 'rhiza change ls --json | grep -B3 "Plan the milestone" | grep "\"id\"" | sed "s/.*\"\([0-9A-Z]\{26\}\)\".*/\1/" > $WORK/id'
+exec sh $WORK/held.sh plan-the-milestone
+stdout 'held and committed: 1'
+exec sh -c 'rhiza change show "$(cat $WORK/id)" --json'
 stdout 'Plan the milestone'
 exec rhiza check
 ! stdout 'commit-untracked'
 ! stdout 'untracked log entry'
+exec rhiza health
+stdout 'ok   main +on main, clean'
+! stdout 'orphan'
+! stdout 'untracked'
 
 fold-ok
 
@@ -54,7 +66,27 @@ name = "plan"
 [step.interview]
 kind = "agent"
 prompt = "Plan {change}"
+on.pass = "gate"
+
+[step.gate]
+kind = "command"
+run = "rhiza run gate"
 on.pass = "done"
+-- held.sh --
+# held.sh <slug>: every entry of the new change set (ID in $WORK/id) in the
+# main checkout's log is byte-identical in the run's worktree, committed at
+# the run branch's HEAD, and the worktree has nothing uncommitted.
+cs=$(cat "$WORK/id")
+wt=../repo.$1
+n=0
+for f in .rhiza/log/$cs/*.json; do
+	cmp "$f" "$wt/$f" || exit 1
+	git -C "$wt" cat-file -e "HEAD:$f" || exit 1
+	git -C "$wt" show "HEAD:$f" | cmp - "$f" || exit 1
+	n=$((n+1))
+done
+test -z "$(git -C "$wt" status --porcelain)" || exit 1
+echo "held and committed: $n"
 -- other.toml --
 name = "other"
 
