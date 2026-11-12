@@ -60,7 +60,8 @@ type ShipRebaseResponse struct {
 	Commit        string             `json:"commit,omitempty" desc:"The commit of that rendering; empty if it changed nothing"`
 	Pushed        string             `json:"pushed,omitempty" desc:"The merged head pushed to the PR branch"`
 	Gate          *ShipGateResponse  `json:"gate,omitempty" desc:"The local gate run on the merged head before the push, while CI is unstable; a failing gate pushed nothing"`
-	Kept          string             `json:"kept,omitempty" desc:"After a failing gate, the unpushed head left on the branch: origin's main merged into it, for the gate's fixer"`
+	Kept          string             `json:"kept,omitempty" desc:"After a failing gate or pre-push check, the unpushed head left on the branch: origin's main merged into it, for the step's fixer"`
+	PrePushCheck  *ShipPrePushCheck  `json:"pre_push_check,omitempty" desc:"The pre-push check that failed on the merged head, with its failing lines; nothing was pushed, the merged head is left on the branch, unpushed, and the command exits 1"`
 	Detail        string             `json:"detail,omitempty" desc:"Why the merge stopped; the command exits 1 then"`
 }
 
@@ -81,10 +82,10 @@ type ShipMergeConflict struct {
 	MainCommits []ShipMergeCommit `json:"main_commits,omitempty" desc:"origin/main's commits since the merge-base, with their change sets"`
 }
 
-// ExitCode is 1 when a conflict or a failing local gate stopped the
-// rebase, else 0.
+// ExitCode is 1 when a conflict, a failing local gate or a failing pre-push
+// check stopped the rebase, else 0.
 func (r ShipRebaseResponse) ExitCode() int {
-	if len(r.Conflicts) > 0 || (r.Gate != nil && r.Gate.ExitCode() != 0) {
+	if len(r.Conflicts) > 0 || r.PrePushCheck != nil || (r.Gate != nil && r.Gate.ExitCode() != 0) {
 		return 1
 	}
 	return 0
@@ -216,13 +217,16 @@ func runShipRebase(ctx *Ctx, _ any) (any, error) {
 	resp.Rebased = true
 
 	// Render once more on the merged head, commit what changed, run the
-	// local gate, and push. If any of that fails, the branch goes back to
-	// where it was, so a retried step merges again rather than finding an
-	// unpushed head; only a failing gate keeps the merged head, unpushed,
-	// for the gate's fixer.
+	// local gate and the pre-push check, and push. If any of that fails, the
+	// branch goes back to where it was, so a retried step merges again
+	// rather than finding an unpushed head; only a failing gate or pre-push
+	// check keeps the merged head, unpushed, for the step's fixer.
 	if err := shipFinishRebase(ctx, t, rendered, &resp); err != nil {
 		if errors.Is(err, errShipGateFailed) {
 			return shipKeepGateFailure(ctx, t, resp)
+		}
+		if c, ok := prePushFailed(err); ok {
+			return shipKeepPrePushFailure(t, c, resp)
 		}
 		if _, rerr := ctx.Git("reset", "-q", "--keep", orig); rerr != nil {
 			return nil, Errorf("%v; and could not put %s back at %s: %v", err, t.branch, shortSHA(orig), rerr)
@@ -266,6 +270,27 @@ func shipKeepGateFailure(ctx *Ctx, t shipTarget, resp ShipRebaseResponse) (any, 
 		return nil, err
 	}
 	resp.Detail = fmt.Sprintf("the local gate (%s) failed on %s with origin/%s merged in; nothing was pushed, and the merge is left on the branch, unpushed, for the gate's fixer", resp.Gate.Command, t.branch, shipMain)
+	return resp, nil
+}
+
+// shipKeepPrePushFailure leaves the merged head the pre-push check failed
+// on on the branch, unpushed, and records it in the ship state as
+// PrePushFailed, as shipKeepGateFailure does for the local gate: merging
+// main can bring in what fails the check (a stale render, a model error
+// such as a duplicate handle), which only the merged head shows, so the
+// fixer works on it and the fix pushes without forcing. ship gate --failed
+// finds it there.
+func shipKeepPrePushFailure(t shipTarget, c *ShipPrePushCheck, resp ShipRebaseResponse) (any, error) {
+	st, err := readShipState(t.statePath())
+	if err != nil {
+		return nil, err
+	}
+	st.PrePushFailed = c.Head
+	if err := writeShipState(t.statePath(), st); err != nil {
+		return nil, err
+	}
+	resp.Rebased, resp.PrePushCheck, resp.Kept = false, c, c.Head
+	resp.Detail = fmt.Sprintf("the pre-push check failed on %s with origin/%s merged in; nothing was pushed, and the merge is left on %s, unpushed, for the step's fixer", shortSHA(c.Head), shipMain, t.branch)
 	return resp, nil
 }
 
@@ -337,6 +362,9 @@ func shipFinishRebase(ctx *Ctx, t shipTarget, rendered string, resp *ShipRebaseR
 		if !gate.Passed {
 			return errShipGateFailed
 		}
+	}
+	if err := prePushCheck(ctx, ctx.Root); err != nil {
+		return err
 	}
 	if _, err := ctx.Git("push", "origin", "HEAD:refs/heads/"+t.branch); err != nil {
 		return Errorf("%v", err)
@@ -434,6 +462,13 @@ func (r ShipRebaseResponse) Human(w io.Writer) {
 	switch {
 	case !r.Behind:
 		fmt.Fprintf(w, "%s already holds origin/%s at %s; nothing to merge.\n", r.Branch, shipMain, shortSHA(r.Onto))
+		return
+	case r.PrePushCheck != nil:
+		r.PrePushCheck.Human(w)
+		fmt.Fprintf(w, "Merged origin/%s at %s into %s, but the pre-push check failed on it: nothing was pushed.\n", shipMain, shortSHA(r.Onto), r.Branch)
+		if r.Kept != "" {
+			fmt.Fprintf(w, "Left origin/%s merged into %s at %s, unpushed, for the step's fixer.\n", shipMain, r.Branch, shortSHA(r.Kept))
+		}
 		return
 	case r.Gate != nil && !r.Gate.Passed:
 		r.Gate.Human(w)

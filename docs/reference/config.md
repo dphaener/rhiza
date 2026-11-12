@@ -224,6 +224,13 @@ The command ship-change runs in the run's worktree before every push while CI is
 - Type: shell command
 - Default: unset
 
+### `rhiza.ship.prePushCheck`
+
+The language-neutral command the pre-push check runs in the run's worktree after rhiza check, before every push of a run, to catch generated-file errors; unset means rhiza check alone.
+
+- Type: shell command
+- Default: unset
+
 ### `rhiza.ship.generate`
 
 The command the render steps of build and review runs in the run's worktree to regenerate the project's checked-in generated files with the branch's own code; what it changes is committed with the render, and a failing command fails the step; unset means none.

@@ -136,6 +136,9 @@ var settingDefs = []settingDef{
 	{project: true, key: LocalGateKey, def: "", typ: "shell command", desc: "The command ship-change runs in the run's worktree before every push while CI is unstable; unset means none", validate: validateCommand},
 	// The generate command: regenerates the project's checked-in generated
 	// files before the build and review render steps commit (unset means none).
+	// The pre-push check command: runs after rhiza check in the pre-push
+	// check before every run push (unset means rhiza check alone).
+	{project: true, key: PrePushCheckKey, def: "", typ: "shell command", desc: "The language-neutral command the pre-push check runs in the run's worktree after rhiza check, before every push of a run, to catch generated-file errors; unset means rhiza check alone", validate: validateCommand},
 	{project: true, key: GenerateKey, def: "", typ: "shell command", desc: "The command the render steps of build and review runs in the run's worktree to regenerate the project's checked-in generated files with the branch's own code; what it changes is committed with the render, and a failing command fails the step; unset means none", validate: validateCommand},
 	{project: true, key: "rhiza.autonomy.plan", def: AutonomyOwner, typ: "auto or owner", desc: "Who plans: auto lets an agent plan a request, owner waits for the owner", validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	// accept governs every plan run's gate, autonomous or owner-run, which
@@ -419,7 +422,7 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate or generate, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff"`
 	Project string `json:"project,omitempty" flag:"project" desc:"The registered project a project setting is written to; default the current project"`
 	Value   string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes"`
 }

@@ -1,0 +1,43 @@
+{
+  "actor": "01M77633GN7ZDBS1EQJ16YN3HX",
+  "after": [
+    "01M7767H2B716V6NN1GESTQ113"
+  ],
+  "at": "2026-11-12T06:17:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... passes, checking that ship-change.toml's open-pr, push-merge and land go on.fail to a ship gate --failed triage whose on.pass is gate-fix (gate-fix-merge for land) and which has no on.fail, that rebase still reaches gate-fix through rebase-triage and rebase-gate-failed, and that gate-fix's and gate-fix-merge's max_visits are unchanged; go test -trimpath ./internal/api -run TestShipGate passes, showing ship gate --failed passing on a head the pre-push check failed on and failing after an open-pr or land failure that was not the pre-push check (a gh or push error); make self-check runs go test -trimpath ./internal/workflow -run TestRepoWorkflowsPrePushFix, which fails if a repo .rhiza/workflows/ship-change.toml lacks that routing (the ship gate --failed triages passing to gate-fix and gate-fix-merge), and any such copy on main carries it",
+          "statement": "In the built-in ship-change workflow (and its wrappers such as bugfix), open-pr, push-merge and land, which have no on.fail today, each go on.fail to a triage step running rhiza ship gate --failed, as rebase does through rebase-triage and rebase-gate-failed; it passes only on a head the pre-push check (or local gate) failed on and then goes to the existing gate-fix fixer (gate-fix-merge after land) within its cap, and any other failure of those steps (gh, network, git) fails the triage with no on.fail and ends the run as today; ship gate --failed reports a head the pre-push check failed on, and the fixers' prompt reads the failing pre-push lines as well as a failing local gate's"
+        },
+        "handle": "ship-change-prepush-fix",
+        "id": "01M76RT010NG76M92D8E44QJ9T",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M76RT010NG76M92D8AF73776",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... passes, checking that plan.toml and plan-milestone.toml route open-pr's and rebase's on.fail to a ship gate --failed triage whose on.pass is prepush-fix and which has no on.fail, that prepush-fix has max_visits 2 and on.pass open-pr and its prompt tells the agent to commit its fix, and that rhiza workflow describe plan lists both steps; go test -trimpath ./internal/api -run TestShipGate passes, showing ship gate --failed failing on a ship rebase conflict and on a gh or push error; make self-check passes; make self-check also runs go test -trimpath ./internal/workflow -run TestRepoWorkflowsPrePushFix, which fails if a repo .rhiza/workflows/plan.toml or plan-milestone.toml lacks the prepush-triage and prepush-fix routing, and any such copy on main carries it",
+          "statement": "The built-in plan and plan-milestone workflows each send open-pr's and rebase's failure (both have no on.fail today) to a triage step running rhiza ship gate --failed, which passes only on a head the pre-push check failed on and then goes to a new agent step, prepush-fix (max_visits 2), that fixes the plan's model or rendered files from the failing lines with one rhiza apply or rhiza render, commits that fix to the run's branch, and goes back to open-pr; any other failure (a conflicting merge of main, a gh or push error) fails the triage with no on.fail and ends the run as today, and once prepush-fix's cap is spent the run fails as a failing step does today"
+        },
+        "handle": "plan-prepush-fix",
+        "id": "01M76RT03BTXG6QDTFNGNKCZVA",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M76RT03BTXG6QDTFNE23XMA2",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M776FNWZ6JATHZ8B7PRF5VXG",
+  "type": "ops",
+  "v": 1
+}

@@ -199,8 +199,10 @@ stdout '"change": "01M5PWGEF85Y185JZ2ZGCNH40N"'
 stdout '^- feature\.txt$'
 exec git rev-parse --verify MERGE_HEAD
 
-# A merge committed by hand on top is pushed, plainly, and recorded.
-exec sh -c 'echo resolved > feature.txt; echo resolved > @shipping; git add feature.txt @shipping; git commit -q --no-edit'
+# A merge committed by hand on top is pushed, plainly, and recorded. The
+# hand commit stands for the fixer's, which stages its actor record (the
+# pre-push check runs on the committed head, whose rendering must match it).
+exec sh -c 'echo resolved > feature.txt; echo resolved > @shipping; git add feature.txt @shipping .rhiza/log; git commit -q --no-edit'
 exec git rev-parse HEAD
 cp stdout $WORK/fixed.sha
 exec rhiza ship rebase

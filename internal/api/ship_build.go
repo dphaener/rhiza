@@ -17,6 +17,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/dphaener/rhiza/internal/run"
 )
 
 // envShipRhiza names the binary ship's land and render run with, built
@@ -46,6 +48,31 @@ func shipRebuildHead(ctx *Ctx) error {
 		return Errorf("ship: could not build rhiza from the merged head with %s (%s), so nothing was rendered or pushed: %v", envShipBuild, cmd, err)
 	}
 	return nil
+}
+
+// shipRunEnv is ctx seeing the [env] of st's workflow ({run_tmp} being
+// runTmp) over its own environment, as the run's steps do: the daemon's
+// watchdog acts on a run from outside its steps, and its pre-push check
+// builds the head with the SHIP_HEAD_BUILD the workflow names.
+func shipRunEnv(ctx *Ctx, st run.State, runTmp string) *Ctx {
+	def, err := st.ParseDefinition()
+	if err != nil || len(def.Env) == 0 {
+		return ctx
+	}
+	env := map[string]string{}
+	for _, kv := range def.EnvPairs(runTmp) {
+		k, v, _ := strings.Cut(kv, "=")
+		env[k] = v
+	}
+	c := *ctx
+	parent := ctxGetenv(ctx)
+	c.Getenv = func(key string) string {
+		if v, ok := env[key]; ok {
+			return v
+		}
+		return parent(key)
+	}
+	return &c
 }
 
 // shipHeadBuild returns the head build the run's workflow names, or ""

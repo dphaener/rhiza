@@ -77,6 +77,12 @@ Linux), so parallel runs' suites queue for the CPU-heavy part instead of
 thrashing. "Waiting for another make test" means yours is queued. Scope
 ad-hoc runs to the package you changed.
 
+This repo's pre-push check setting is `rhiza.ship.prePushCheck`
+(`git config rhiza.ship.prePushCheck 'make self-check'`, or
+`rhiza daemon set rhiza.ship.prePushCheck 'make self-check'`): every run's
+pre-push check runs it after `rhiza check`. Other projects set their own
+command or leave it empty.
+
 Rhiza keeps its own `.rhiza/` here, and `make check` runs `rhiza check`
 on it. After landing a change set, run `rhiza render` and commit
 `.rhiza/rendered/`, or `make check` fails on stale rendered files.

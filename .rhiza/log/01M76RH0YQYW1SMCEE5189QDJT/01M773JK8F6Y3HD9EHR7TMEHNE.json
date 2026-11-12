@@ -1,0 +1,40 @@
+{
+  "actor": "01M773H6PA5RT51X56E8D4JW4Z",
+  "after": [
+    "01M773DT016DY8JZRSNWWBZVHN"
+  ],
+  "at": "2026-11-12T05:27:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-04881a3b at 66f5e966f: go test -trimpath ./internal/workflow/... ok (TestShipChangeBuiltin asserts open-pr-triage and push-merge-triage/land-triage run rhiza ship gate --failed with on.pass gate-fix / gate-fix-merge and no on.fail; open-pr, land, push-merge on.fail route to them; rebase still goes rebase-triage -> rebase-gate-failed -> gate-fix; gate-fix and gate-fix-merge max_visits stay 2). go test -trimpath ./internal/api -run 'TestShipGate|TestShipOpenPR|TestShipLand|PrePush' ok, incl. TestShipGateFailedOnPrePushFailure: --failed exits 1 with nothing recorded (a gh/push error records nothing), 0 on the recorded pre-push-failed head, 1 once HEAD moves. Diff read: open-pr and land call shipRecordPrePushFailed only on prePushFailed errors, their responses exit 1 then; both fixer prompts now point at the failing pre-push lines in rhiza run status --json. describe-golden script passes."
+        },
+        "handle": "ship-change-prepush-fix-verified",
+        "id": "01M773JK5915MDRB6EJV3Z35QS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M773JK5915MDRB6EJTV7M47G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M773JK5915MDRB6EJTV7M47G",
+        "id": "01M773JK6B5WSPFF6C01F0EDWP",
+        "link": "01M773JK6B5WSPFF6BZXGTPJFW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RT010NG76M92D8AF73776",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M773JK8F6Y3HD9EHR7TMEHNE",
+  "type": "ops",
+  "v": 1
+}

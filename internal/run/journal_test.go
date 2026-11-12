@@ -1027,3 +1027,23 @@ func TestFoldCheckRounds(t *testing.T) {
 		t.Fatal("severities")
 	}
 }
+
+func TestPrePushFold(t *testing.T) {
+	at := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	j := Journal{Entries: []Entry{
+		{Type: TypeStarted, At: at, Started: &Started{Workflow: "w", Change: "c"}},
+		{Type: TypePrePush, At: at, Step: "ship", Outcome: CheckPassed, Commit: "abc", Detail: "rhiza check"},
+		{Type: TypePrePush, At: at, Step: "ship", Outcome: CheckFailed, Commit: "def", Detail: "rhiza check; make self-check", Text: "boom"},
+	}}
+	st := j.State()
+	if len(st.PrePushChecks) != 2 {
+		t.Fatalf("checks: %+v", st.PrePushChecks)
+	}
+	l, ok := st.LatestPrePush()
+	if !ok || l.Outcome != CheckFailed || l.Commit != "def" || l.Command != "rhiza check; make self-check" || l.Output != "boom" {
+		t.Fatalf("latest: %+v", l)
+	}
+	if _, ok := (State{}).LatestPrePush(); ok {
+		t.Fatal("empty state has a latest")
+	}
+}
