@@ -729,6 +729,31 @@ func TestCriticDropsMajor(t *testing.T) {
 	}
 }
 
+// A critic downgrading a check's only major to minor ends its cycle: the
+// check passes with no fixer session; a confirmed major still starts one.
+func TestCriticDowngradeEndsFix(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	passChecks(r, 1, threeChecks...)
+	r.findings[checkSID("alpha", "check", 1)] = []Finding{sev("f1", SeverityMajor)}
+	crit := checkSID("alpha", "critic", 1)
+	r.outcome[crit] = workflow.OutcomePass
+	r.verdicts[crit] = []Verdict{{Finding: "f1", Verdict: Downgraded, Reason: "small", Severity: SeverityMinor, Original: SeverityMajor}}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	if want := []string{"alpha check 1", "beta check 1", "gamma check 1", "alpha critic 1"}; !reflect.DeepEqual(roles(r), want) {
+		t.Errorf("started %v, want %v (no fixer)", roles(r), want)
+	}
+	c, _ := st.Check("review", "alpha")
+	if o, _ := c.Outcome(1); o.Outcome != CheckPassed || o.Detail != "cycle 1: critic downgraded f1 (major to minor)" {
+		t.Errorf("alpha's outcome = %+v", o)
+	}
+}
+
 // Each check and critic session's writes are committed once it is
 // judged, in the order they are judged; a commit that fails is only
 // logged, and the check's outcome stands.

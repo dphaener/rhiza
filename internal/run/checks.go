@@ -584,11 +584,22 @@ func checkVerdict(c CheckState, cycle int) (outcome, detail string, ok bool) {
 		}
 		return CheckFailed, fmt.Sprintf("cycle %d: confirmed %s", cycle, strings.Join(ids, ", ")), true
 	}
-	var ids []string
+	var dropped, down []string
 	for _, f := range serious {
-		ids = append(ids, f.ID)
+		if v, ok := r.Verdict(f.ID); ok && v.Verdict == Downgraded {
+			down = append(down, fmt.Sprintf("%s (%s to %s)", f.ID, f.Severity, v.Severity))
+		} else {
+			dropped = append(dropped, f.ID)
+		}
 	}
-	return CheckPassed, fmt.Sprintf("cycle %d: critic dropped %s", cycle, strings.Join(ids, ", ")), true
+	var parts []string
+	if len(dropped) > 0 {
+		parts = append(parts, "critic dropped "+strings.Join(dropped, ", "))
+	}
+	if len(down) > 0 {
+		parts = append(parts, "critic downgraded "+strings.Join(down, ", "))
+	}
+	return CheckPassed, fmt.Sprintf("cycle %d: %s", cycle, strings.Join(parts, "; ")), true
 }
 
 // checkStates are step's folded checks, by name.

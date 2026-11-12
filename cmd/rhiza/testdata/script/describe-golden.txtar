@@ -3782,6 +3782,10 @@ cmp stdout describe.golden.json
                                   "description": "A review check's finding: the check that found it",
                                   "type": "string"
                                 },
+                                "downgraded_to": {
+                                  "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                                  "type": "string"
+                                },
                                 "handle": {
                                   "description": "The node's handle when the finding was recorded; absent when it had none",
                                   "type": "string"
@@ -4432,6 +4436,10 @@ cmp stdout describe.golden.json
                             "description": "A review check's finding: the check that found it",
                             "type": "string"
                           },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                            "type": "string"
+                          },
                           "handle": {
                             "description": "The node's handle when the finding was recorded; absent when it had none",
                             "type": "string"
@@ -4635,6 +4643,10 @@ cmp stdout describe.golden.json
                         "properties": {
                           "check": {
                             "description": "A review check's finding: the check that found it",
+                            "type": "string"
+                          },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                             "type": "string"
                           },
                           "handle": {
@@ -4973,6 +4985,10 @@ cmp stdout describe.golden.json
                   "properties": {
                     "check": {
                       "description": "A review check's finding: the check that found it",
+                      "type": "string"
+                    },
+                    "downgraded_to": {
+                      "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                       "type": "string"
                     },
                     "handle": {
@@ -5599,6 +5615,10 @@ cmp stdout describe.golden.json
                                   "description": "A review check's finding: the check that found it",
                                   "type": "string"
                                 },
+                                "downgraded_to": {
+                                  "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                                  "type": "string"
+                                },
                                 "handle": {
                                   "description": "The node's handle when the finding was recorded; absent when it had none",
                                   "type": "string"
@@ -6249,6 +6269,10 @@ cmp stdout describe.golden.json
                             "description": "A review check's finding: the check that found it",
                             "type": "string"
                           },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                            "type": "string"
+                          },
                           "handle": {
                             "description": "The node's handle when the finding was recorded; absent when it had none",
                             "type": "string"
@@ -6452,6 +6476,10 @@ cmp stdout describe.golden.json
                         "properties": {
                           "check": {
                             "description": "A review check's finding: the check that found it",
+                            "type": "string"
+                          },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                             "type": "string"
                           },
                           "handle": {
@@ -6790,6 +6818,10 @@ cmp stdout describe.golden.json
                   "properties": {
                     "check": {
                       "description": "A review check's finding: the check that found it",
+                      "type": "string"
+                    },
+                    "downgraded_to": {
+                      "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                       "type": "string"
                     },
                     "handle": {
@@ -9317,6 +9349,10 @@ cmp stdout describe.golden.json
                                   "description": "A review check's finding: the check that found it",
                                   "type": "string"
                                 },
+                                "downgraded_to": {
+                                  "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                                  "type": "string"
+                                },
                                 "handle": {
                                   "description": "The node's handle when the finding was recorded; absent when it had none",
                                   "type": "string"
@@ -9967,6 +10003,10 @@ cmp stdout describe.golden.json
                             "description": "A review check's finding: the check that found it",
                             "type": "string"
                           },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                            "type": "string"
+                          },
                           "handle": {
                             "description": "The node's handle when the finding was recorded; absent when it had none",
                             "type": "string"
@@ -10170,6 +10210,10 @@ cmp stdout describe.golden.json
                         "properties": {
                           "check": {
                             "description": "A review check's finding: the check that found it",
+                            "type": "string"
+                          },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                             "type": "string"
                           },
                           "handle": {
@@ -10974,6 +11018,10 @@ cmp stdout describe.golden.json
                                   "description": "A review check's finding: the check that found it",
                                   "type": "string"
                                 },
+                                "downgraded_to": {
+                                  "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                                  "type": "string"
+                                },
                                 "handle": {
                                   "description": "The node's handle when the finding was recorded; absent when it had none",
                                   "type": "string"
@@ -11624,6 +11672,10 @@ cmp stdout describe.golden.json
                             "description": "A review check's finding: the check that found it",
                             "type": "string"
                           },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                            "type": "string"
+                          },
                           "handle": {
                             "description": "The node's handle when the finding was recorded; absent when it had none",
                             "type": "string"
@@ -11827,6 +11879,10 @@ cmp stdout describe.golden.json
                         "properties": {
                           "check": {
                             "description": "A review check's finding: the check that found it",
+                            "type": "string"
+                          },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                             "type": "string"
                           },
                           "handle": {
@@ -12165,6 +12221,10 @@ cmp stdout describe.golden.json
                   "properties": {
                     "check": {
                       "description": "A review check's finding: the check that found it",
+                      "type": "string"
+                    },
+                    "downgraded_to": {
+                      "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                       "type": "string"
                     },
                     "handle": {
@@ -12643,6 +12703,10 @@ cmp stdout describe.golden.json
               "properties": {
                 "check": {
                   "description": "A review check's finding: the check that found it",
+                  "type": "string"
+                },
+                "downgraded_to": {
+                  "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                   "type": "string"
                 },
                 "handle": {
@@ -13585,6 +13649,10 @@ cmp stdout describe.golden.json
                                   "description": "A review check's finding: the check that found it",
                                   "type": "string"
                                 },
+                                "downgraded_to": {
+                                  "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                                  "type": "string"
+                                },
                                 "handle": {
                                   "description": "The node's handle when the finding was recorded; absent when it had none",
                                   "type": "string"
@@ -14235,6 +14303,10 @@ cmp stdout describe.golden.json
                             "description": "A review check's finding: the check that found it",
                             "type": "string"
                           },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                            "type": "string"
+                          },
                           "handle": {
                             "description": "The node's handle when the finding was recorded; absent when it had none",
                             "type": "string"
@@ -14438,6 +14510,10 @@ cmp stdout describe.golden.json
                         "properties": {
                           "check": {
                             "description": "A review check's finding: the check that found it",
+                            "type": "string"
+                          },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                             "type": "string"
                           },
                           "handle": {
@@ -14776,6 +14852,10 @@ cmp stdout describe.golden.json
                   "properties": {
                     "check": {
                       "description": "A review check's finding: the check that found it",
+                      "type": "string"
+                    },
+                    "downgraded_to": {
+                      "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                       "type": "string"
                     },
                     "handle": {
@@ -15282,6 +15362,10 @@ cmp stdout describe.golden.json
                                   "description": "A review check's finding: the check that found it",
                                   "type": "string"
                                 },
+                                "downgraded_to": {
+                                  "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                                  "type": "string"
+                                },
                                 "handle": {
                                   "description": "The node's handle when the finding was recorded; absent when it had none",
                                   "type": "string"
@@ -15932,6 +16016,10 @@ cmp stdout describe.golden.json
                             "description": "A review check's finding: the check that found it",
                             "type": "string"
                           },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                            "type": "string"
+                          },
                           "handle": {
                             "description": "The node's handle when the finding was recorded; absent when it had none",
                             "type": "string"
@@ -16135,6 +16223,10 @@ cmp stdout describe.golden.json
                         "properties": {
                           "check": {
                             "description": "A review check's finding: the check that found it",
+                            "type": "string"
+                          },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                             "type": "string"
                           },
                           "handle": {
@@ -16490,6 +16582,10 @@ cmp stdout describe.golden.json
               "properties": {
                 "check": {
                   "description": "A review check's finding: the check that found it",
+                  "type": "string"
+                },
+                "downgraded_to": {
+                  "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                   "type": "string"
                 },
                 "handle": {
@@ -17049,6 +17145,10 @@ cmp stdout describe.golden.json
                                   "description": "A review check's finding: the check that found it",
                                   "type": "string"
                                 },
+                                "downgraded_to": {
+                                  "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                                  "type": "string"
+                                },
                                 "handle": {
                                   "description": "The node's handle when the finding was recorded; absent when it had none",
                                   "type": "string"
@@ -17699,6 +17799,10 @@ cmp stdout describe.golden.json
                             "description": "A review check's finding: the check that found it",
                             "type": "string"
                           },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                            "type": "string"
+                          },
                           "handle": {
                             "description": "The node's handle when the finding was recorded; absent when it had none",
                             "type": "string"
@@ -17902,6 +18006,10 @@ cmp stdout describe.golden.json
                         "properties": {
                           "check": {
                             "description": "A review check's finding: the check that found it",
+                            "type": "string"
+                          },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                             "type": "string"
                           },
                           "handle": {
@@ -18240,6 +18348,10 @@ cmp stdout describe.golden.json
                   "properties": {
                     "check": {
                       "description": "A review check's finding: the check that found it",
+                      "type": "string"
+                    },
+                    "downgraded_to": {
+                      "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                       "type": "string"
                     },
                     "handle": {
@@ -18780,6 +18892,10 @@ cmp stdout describe.golden.json
                                   "description": "A review check's finding: the check that found it",
                                   "type": "string"
                                 },
+                                "downgraded_to": {
+                                  "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                                  "type": "string"
+                                },
                                 "handle": {
                                   "description": "The node's handle when the finding was recorded; absent when it had none",
                                   "type": "string"
@@ -19430,6 +19546,10 @@ cmp stdout describe.golden.json
                             "description": "A review check's finding: the check that found it",
                             "type": "string"
                           },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                            "type": "string"
+                          },
                           "handle": {
                             "description": "The node's handle when the finding was recorded; absent when it had none",
                             "type": "string"
@@ -19633,6 +19753,10 @@ cmp stdout describe.golden.json
                         "properties": {
                           "check": {
                             "description": "A review check's finding: the check that found it",
+                            "type": "string"
+                          },
+                          "downgraded_to": {
+                            "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                             "type": "string"
                           },
                           "handle": {
@@ -20326,6 +20450,10 @@ cmp stdout describe.golden.json
                               "description": "A review check's finding: the check that found it",
                               "type": "string"
                             },
+                            "downgraded_to": {
+                              "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                              "type": "string"
+                            },
                             "handle": {
                               "description": "The node's handle when the finding was recorded; absent when it had none",
                               "type": "string"
@@ -20976,6 +21104,10 @@ cmp stdout describe.golden.json
                         "description": "A review check's finding: the check that found it",
                         "type": "string"
                       },
+                      "downgraded_to": {
+                        "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
+                        "type": "string"
+                      },
                       "handle": {
                         "description": "The node's handle when the finding was recorded; absent when it had none",
                         "type": "string"
@@ -21179,6 +21311,10 @@ cmp stdout describe.golden.json
                     "properties": {
                       "check": {
                         "description": "A review check's finding: the check that found it",
+                        "type": "string"
+                      },
+                      "downgraded_to": {
+                        "description": "A downgraded finding: the lower severity the critic left it at; Severity stays the original",
                         "type": "string"
                       },
                       "handle": {

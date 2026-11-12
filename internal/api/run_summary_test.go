@@ -1,6 +1,7 @@
 package api
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/dphaener/rhiza/internal/run"
@@ -105,5 +106,39 @@ None ran.
 `
 	if got := reviewSummary(waiting.State()); got != want {
 		t.Errorf("summary:\n%s\nwant:\n%s", got, want)
+	}
+}
+
+// A downgraded finding shows with its original and lower severity.
+func TestRunStatusReviewSummaryDowngraded(t *testing.T) {
+	j := run.Journal{ID: "R3", Entries: []run.Entry{
+		{Type: run.TypeStarted, Started: &run.Started{Workflow: "review", Change: "C1"}},
+		{Type: run.TypeCheckCycle, Step: "review", Cycle: 1, Checks: []string{"alpha"}},
+		{Type: run.TypeFindings, Step: "review", Check: "alpha", Cycle: 1, Findings: []run.Finding{
+			{ID: "f1", Severity: run.SeverityMajor, Place: "main.go:1", Reason: "slow"},
+		}},
+		{Type: run.TypeVerdict, Step: "review", Check: "alpha", Verdicts: []run.Verdict{
+			{Finding: "f1", Verdict: run.Downgraded, Reason: "rare", Severity: run.SeverityMinor, Original: run.SeverityMajor},
+		}},
+		{Type: run.TypeCheck, Step: "review", Check: "alpha", Cycle: 1, Outcome: run.CheckPassed, Detail: "cycle 1: critic downgraded f1 (major to minor)"},
+	}}
+	got := reviewSummary(j.State())
+	for _, want := range []string{
+		"Downgraded by the critic:",
+		"- cycle 1: f1 major at main.go:1: slow — downgraded from major to minor: rare",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("summary lacks %q:\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, "Confirmed:") {
+		t.Errorf("summary confirms a downgraded finding:\n%s", got)
+	}
+	st := runCheckInfo(j.State(), j.State().Checks[0])
+	if f := st.Rounds[0].Findings[0]; f.Severity != "major" || f.Downgraded != "minor" || f.Verdict != "downgraded" {
+		t.Errorf("status finding = %+v", f)
+	}
+	if l := findingLine(st.Rounds[0].Findings[0]); !strings.Contains(l, "downgraded from major to minor") {
+		t.Errorf("status line = %q", l)
 	}
 }

@@ -107,6 +107,7 @@ type RunFinding struct {
 	Reason        string `json:"reason" desc:"Why the reviewer found it"`
 	Verdict       string `json:"verdict,omitempty" desc:"The critic's latest verdict, confirmed, dropped or downgraded; absent before one"`
 	VerdictReason string `json:"verdict_reason,omitempty" desc:"Why the critic gave it; absent before a verdict"`
+	Downgraded    string `json:"downgraded_to,omitempty" desc:"A downgraded finding: the lower severity the critic left it at; Severity stays the original"`
 }
 
 // RunVerdict is one verdict a critic gave.
@@ -791,6 +792,9 @@ func runFinding(f run.Finding, rd run.Round) RunFinding {
 	}
 	if v, ok := rd.Verdict(f.ID); ok {
 		out.Verdict, out.VerdictReason = v.Verdict, v.Reason
+		if v.Verdict == run.Downgraded {
+			out.Downgraded = v.Severity
+		}
 	}
 	return out
 }
@@ -926,7 +930,11 @@ func findingLine(f RunFinding) string {
 		}
 		s += ": " + oneLine(f.Reason)
 		if f.Verdict != "" {
-			s += " — " + f.Verdict + ": " + oneLine(f.VerdictReason)
+			s += " — " + f.Verdict
+			if f.Downgraded != "" {
+				s += " from " + f.Severity + " to " + f.Downgraded
+			}
+			s += ": " + oneLine(f.VerdictReason)
 		}
 		return s
 	}
