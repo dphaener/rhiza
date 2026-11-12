@@ -1,0 +1,33 @@
+{
+  "actor": "01M77VTX0NEJ07A86XJVM0SFG3",
+  "after": [
+    "01M77VZKTC00CM4B39Q0ZMNKTQ"
+  ],
+  "at": "2026-11-12T12:34:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "31eba27ea3ec6886167412cbc96a7a789816d9e06d3f3c1840ff96a79b193e9e",
+          "session": "0dbe292c-3574-4c27-9bf7-01a1cfbd59e9",
+          "summary": "Autonomous plan run with no owner; the arbiter answered the planner's questions. Cause found: Rhiza's workflows set GOTMPDIR={run_tmp}, which is <git common dir>/rhiza/runs/<run id>/tmp, and go-internal testscript makes $WORK under $GOTMPDIR, so scripts that don't init their own repo reach ~/code/rhiza (ci-install wrote .github/workflows/rhiza.yml into main). The arbiter ruled: serve m4-runs-hold-up; move {run_tmp} out of every git repository to a per-user cache dir (os.UserCacheDir()/rhiza/run-tmp/<run id>, falling back to os.TempDir()/rhiza-run-tmp-<uid>/<run id>), still made at step start and removed at run end, with no workflow edits; and make cmd/rhiza's testscript Setup fail a script whose $WORK lies inside a git work tree or git dir, naming the path and saying to set GOTMPDIR outside the repo. Nothing left open.",
+          "title": "Plan: testscripts inside a run write into the real repo"
+        },
+        "handle": "testscripts-in-run-plan",
+        "id": "01M77W0KWA2PE04QA93PYPJDVA",
+        "key": null,
+        "kind": "source",
+        "node": "01M77W0KWA2PE04QA93PQ5A08H",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M77VT6TMYCDVMX61ZVA8CS4C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77W0KX8FPACNHA096VBEB8P",
+  "type": "ops",
+  "v": 1
+}
