@@ -1,0 +1,30 @@
+{
+  "actor": "01M78RP4EE824ZZX496G1JH8CQ",
+  "after": [
+    "01M78RM7PFF8KV94344YM6TT37"
+  ],
+  "at": "2026-11-12T21:01:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "250a1536-7da7-4f36-b513-01a1d18ad9d4",
+          "statement": "Which landed intent should change set 01M78RM (The local ship gate switches) serve? Its related gate bug 01M78FD0 serves m4-runs-hold-up ('A build, review or ship-change run finishes without hand repair', milestone-4, open); the original CI-stability work served milestone-25, which has no open change sets on the roadmap. / What should a CI failure that names no test (only 'job / step', 'UNKNOWN STEP' or 'CI run <id>') and passes on rerun do once it no longer counts as a flake? / How is 'failed more than once in the window' set for a named flaky test? / How should the local gate keep its full output?"
+        },
+        "handle": "question-250a1536-1",
+        "id": "01M78S1GBQGMS8H4F35ABXTA40",
+        "key": null,
+        "kind": "question",
+        "node": "01M78S1GBQGMS8H4F359A5SBQS",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M78RM7PFF8KV94344XM3V8DH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78S1JGEK0TG85FT7GNKSRJ0",
+  "type": "ops",
+  "v": 1
+}

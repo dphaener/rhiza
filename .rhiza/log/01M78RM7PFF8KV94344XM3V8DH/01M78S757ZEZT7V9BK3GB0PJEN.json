@@ -1,0 +1,179 @@
+{
+  "actor": "01M78RP4EE824ZZX496G1JH8CQ",
+  "after": [
+    "01M78S6F09KC9WJ4HXQ7QPWTEG"
+  ],
+  "at": "2026-11-12T21:04:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "id": "01M78S74H2CCZ2XWW8BN2F8X6V",
+        "link": "01M78S74H2CCZ2XWW8BKPM9T66",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S68PFA2DSYGZSEPYHAWBD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestShipCheckStabilityRecord|TestFlakyTestBugs|TestTrimFailureLog' shows: a rerun-green head whose failed log has '--- FAIL: TestFoo' and '--- FAIL: TestScripts/bar' recorded with flakes TestFoo and TestScripts/bar and no infra entry; a rerun-green head whose log names only 'scripts (4/4) / UNKNOWN STEP' (or no job/step at all) recorded with that job / step (or 'CI run <id>') as infra and no flake; a head still red after its rerun recorded red with neither; an existing record whose flakes hold only 'job / step' entries read as infra; the watchdog queuing a bug for TestFoo and none for an infra-only run",
+          "statement": "When rhiza ship check settles a head that went red and then passed on a rerun, it records a flake in the CI stability record only against each failing test the failed log names (go test '--- FAIL: <name>' lines, subtests by their full name), and records a failure that names no test (only 'job / step', 'UNKNOWN STEP' or 'CI run <id>') as an infra failure kept apart from flakes, for which the watchdog files no flaky-test bug"
+        },
+        "handle": "ci-flakes-name-tests",
+        "id": "01M78S74JZND6E67Z61C4HTJ3K",
+        "key": "zzzzzw",
+        "kind": "capability",
+        "node": "01M78S74JZND6E67Z618T2TYQM",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M78S74JZND6E67Z618T2TYQM",
+        "id": "01M78S74NH3PYTH1FFGD8DHYPF",
+        "link": "01M78S74NH3PYTH1FFGAXCCNWM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M78S74JZND6E67Z618T2TYQM",
+        "id": "01M78S74R2QB9WFC09GB0PA5XH",
+        "link": "01M78S74R2QB9WFC09G8H15YC1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKDX9JJQ25FRHFJND2ZK",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestCIStability|TestShipLocalGate' shows: one flake of TestX in the window stable, with a reason saying TestX was seen once and ignored, and ship gate skipping with that reason; TestX flaked on the same head twice stable; TestX and TestY flaked once each stable; TestX flaked on 2 distinct heads unstable, the reason naming TestX, its count 2 and the right N for the default window of 20 and for rhiza.ship.ciWindow=5, and stable again after N more clean runs; a window holding only infra failures stable, its reason naming them as ignored infra; a red main result unstable with no flake, and stable after a green ship check --main",
+          "statement": "Rhiza judges a repo's CI unstable only while one named test was recorded as a flake on at least 2 distinct heads (main or run PR) within the last rhiza.ship.ciWindow completed CI runs, or while main's latest result is red; the unstable reason names each such test, its flake count in the window and when it stops applying (after N more completed CI runs, N being the runs until the older of its two latest flakes leaves the window), and a stable verdict whose window holds infra failures or single flakes says they were seen and ignored, as does ship gate's skip reason"
+        },
+        "handle": "ci-unstable-repeated-flake",
+        "id": "01M78S74SS6J69T9H1YQRQR818",
+        "key": "zzzzzy",
+        "kind": "capability",
+        "node": "01M78S74SS6J69T9H1YPMK7YSR",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M78S74SS6J69T9H1YPMK7YSR",
+        "id": "01M78S74W1800RN50BXV8Z6XV4",
+        "link": "01M78S74W1800RN50BXTQXWHQP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M78S74SS6J69T9H1YPMK7YSR",
+        "id": "01M78S74X839QDFVNFD84PX8R6",
+        "link": "01M78S74X839QDFVNFD6R1VRDF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S74JZND6E67Z618T2TYQM",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M78S74SS6J69T9H1YPMK7YSR",
+        "id": "01M78S74YTNMH78KX2NPG6DYXC",
+        "link": "01M78S74YTNMH78KX2NM9YFE00",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestHealthCI shows a record with one 'scripts (4/4) / UNKNOWN STEP' infra failure and one single flake of TestX: the part ok (stable), listing the infra failure with count 1 and TestX with count 1 as ignored; a record where TestX flaked on 2 heads: the part warn, naming TestX, its count and when it stops applying; go test -trimpath ./cmd/rhiza -run TestScripts/health-ci passes with the infra line in rhiza health and health --json",
+          "statement": "rhiza health's CI part lists, apart from the flaky tests and their counts, the infra failures in the window with their count per job / step, and states plainly that they do not make CI unstable"
+        },
+        "handle": "health-ci-infra-failures",
+        "id": "01M78S7501GDG9S1WVKF628QJY",
+        "key": "zzzzzz",
+        "kind": "capability",
+        "node": "01M78S7501GDG9S1WVKE58HFKW",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M78S7501GDG9S1WVKE58HFKW",
+        "id": "01M78S7515J7H81GJ40WQM5B86",
+        "link": "01M78S7515J7H81GJ40SR5B3AW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M78S7501GDG9S1WVKE58HFKW",
+        "id": "01M78S7522NNNMRCCWQEW8SS99",
+        "link": "01M78S7522NNNMRCCWQE5EDR1E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S74SS6J69T9H1YPMK7YSR",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M78S7501GDG9S1WVKE58HFKW",
+        "id": "01M78S7538QMATWCM12EMY3E1A",
+        "link": "01M78S7538QMATWCM12BVW9DTE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKNPNZY0F0BTDCXQAP74",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestShipGateRunLog|TestShipRebase' shows: with RHIZA_RUN set, a failing gate whose output is over 64 KB with '--- FAIL: TestX' near its start and make's error lines at its end writes a log in the run's directory holding every byte, the response's log field names it, and the last 20 lines of the human output contain '--- FAIL: TestX' and 'Full log: <path>'; a second gate run in the same run writes a second file and leaves the first intact; a passing gate also writes its log; with no RHIZA_RUN the log is rhiza/gate/<branch>.log under the git common dir; go test -trimpath ./internal/api -run TestRunStatus (or the step-journal test touched) shows a failed gate step's journal detail naming the log path; go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes after regenerating it for the new field; go test -trimpath ./internal/workflow passes; grep -c 'run `rhiza ship gate` to see' internal/workflow/builtin/ship-change.toml .rhiza/workflows/ship-change.toml prints 0 for both and each gate-fix prompt names the full gate log; make self-check passes",
+          "statement": "Each local gate run (rhiza ship gate, and the gate ship rebase runs on a merged head) writes its whole combined output to its own log file in the run's directory, never overwriting an earlier gate log of that run (outside a run, rhiza/gate/<branch>.log under the git common dir); ShipGateResponse's log field and the gate step's journal entry carry the path, a failing gate's human output ends with its failing test lines (go test '--- FAIL:', 'FAIL', 'panic:', at most 10) and 'Full log: <path>', and the gate-fix prompts tell the fixer to read that log instead of rerunning the gate"
+        },
+        "handle": "ship-gate-run-log",
+        "id": "01M78S754HVX2TR0XVH1WRJAW4",
+        "key": "zzzzzzi",
+        "kind": "capability",
+        "node": "01M78S754HVX2TR0XVH15MKYZ4",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M78S754HVX2TR0XVH15MKYZ4",
+        "id": "01M78S755KH9BH4KMB9WTQ8579",
+        "link": "01M78S755KH9BH4KMB9S95G5PT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M78S754HVX2TR0XVH15MKYZ4",
+        "id": "01M78S756RHERS76MDGZF3M756",
+        "link": "01M78S756RHERS76MDGWE1H4JZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M78RM7PFF8KV94344XM3V8DH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78S757ZEZT7V9BK3GB0PJEN",
+  "type": "ops",
+  "v": 1
+}
