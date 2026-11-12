@@ -1,0 +1,40 @@
+{
+  "actor": "01M76TABDX5G7YN68H6W7FWKGN",
+  "after": [
+    "01M76SVFRSDZA3S3R3DT3NBCFX"
+  ],
+  "at": "2026-11-12T02:48:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 0d719dfe4 I ran go test -trimpath -count=1 ./internal/api -run TestDaemonModelPR: PASS for Green (a fake gh's pr merge squash-merges into origin/main; branches deleted, HEAD == origin/main, no untracked .rhiza/log left, entries present, no inbox item), red and conflict (nothing merged, branches kept, an inbox model-pr item names the change set), and GhFailureNeverFails. go test ./internal/daemon -run TestSelfUpdate: all 7 PASS, including TestSelfUpdateDropsIncomingLogCopies (an untracked copy byte-identical to what origin/main adds is dropped, the fast-forward succeeds and the file becomes tracked, and a differing untracked file is kept). go vet and gofmt are clean, and TestScripts/describe-golden passes. In the diff, daemonMergeModelPRs is called from the daemon poll after daemonCommitUntracked; it runs gh pr merge --squash --match-head-commit, then git push --delete, then pullMainAfterModelMerge (dropIncomingLogCopies, then pull --ff-only, and main-stale if blocked); SelfUpdate.Dir is set in both the root and the project paths."
+        },
+        "handle": "daemon-merges-model-prs-verified",
+        "id": "01M76TGCM4FZBXPEBJCWVR083R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76TGCM4FZBXPEBJCTGTGFCS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76TGCM4FZBXPEBJCTGTGFCS",
+        "id": "01M76TGCS2VMC4Q4MENBW62WMN",
+        "link": "01M76TGCS2VMC4Q4MENAECTTFY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA6HBKA3Y4P11P3CZF4C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76TGCY5V13HJ6FCFZTW1QKY",
+  "type": "ops",
+  "v": 1
+}
