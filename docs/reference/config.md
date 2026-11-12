@@ -13,13 +13,6 @@ Pause the whole daemon: no project is worked while true.
 - Type: boolean
 - Default: `false`
 
-### `rhiza.daemon.selfUpdate`
-
-Let the daemon update and restart itself when main has a newer build.
-
-- Type: boolean
-- Default: `false`
-
 ### `rhiza.daemon.maxRuns`
 
 The most runs the daemon works at once, across all projects.

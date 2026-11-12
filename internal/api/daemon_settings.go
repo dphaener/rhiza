@@ -6,6 +6,7 @@ package api
 // source; rhiza daemon set validates and writes one.
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -76,7 +77,6 @@ var settingDefs = []settingDef{
 	// The hook commands run through sh -c, per project.
 	{project: true, key: "rhiza.eventCommand", def: "", typ: "shell command", desc: "A command run through sh -c for each event; unset means none", validate: validateCommand},
 	{project: true, key: "rhiza.notifyCommand", def: "", typ: "shell command", desc: "A command run through sh -c to notify the owner; unset means none", validate: validateCommand},
-	{key: "rhiza.daemon.selfUpdate", def: "false", typ: "boolean", desc: "Let the daemon update and restart itself when main has a newer build", validate: validateChoice("true", "false")},
 	{key: "rhiza.daemon.maxRuns", def: strconv.Itoa(daemon.DefaultMaxRuns), flag: "--max-runs", typ: "whole number", desc: "The most runs the daemon works at once, across all projects", validate: func(v string) error {
 		n, err := strconv.Atoi(v)
 		if err != nil || n < 1 {
@@ -238,6 +238,18 @@ func rootOf(ctx *Ctx) (string, rootcfg.Config, bool) {
 // value) winning. A bad value in config is a usage error naming the key.
 func settingsOf(ctx *Ctx, flags map[string]string) ([]Setting, error) {
 	var out []Setting
+	if ctx.Wd != "" {
+		if root, ok := rootcfg.Find(ctx.Wd); ok {
+			if _, err := rootcfg.Load(root); errors.Is(err, rootcfg.ErrRemoved) {
+				return nil, Usagef("%v", err)
+			}
+		}
+	}
+	if ctx.Git != nil {
+		if v, err := ctx.Git("config", "--get", "rhiza.daemon.selfUpdate"); err == nil && strings.TrimSpace(v) != "" {
+			return nil, Usagef("git config %s", rootcfg.RemovedHint("rhiza.daemon.selfUpdate"))
+		}
+	}
 	_, cfg, haveRoot := rootOf(ctx)
 	for _, d := range settingDefs {
 		s := Setting{Key: d.key, Value: d.def, Default: d.def, Source: SettingDefault, Scope: d.scope()}
@@ -292,7 +304,6 @@ type daemonConf struct {
 	machine     *daemon.MachineHold
 	mode        string
 	paused      bool
-	selfUpdate  bool
 	trimGoCache bool
 	webHost     string
 	webPort     string
@@ -337,7 +348,6 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 	c.minMemory, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minMemory"))
 	c.paused = settingValue(rows, "rhiza.daemon.paused") == "true" || settingValue(rows, "rhiza.project.paused") == "true"
 	c.projectMax, _ = strconv.Atoi(settingValue(rows, "rhiza.project.maxRuns"))
-	c.selfUpdate = settingValue(rows, "rhiza.daemon.selfUpdate") == "true"
 	c.trimGoCache = settingValue(rows, "rhiza.daemon.trimGoCache") != "false"
 	c.mode = settingValue(rows, "rhiza.daemon.permissionMode")
 	c.webHost = settingValue(rows, web.HostKey)
@@ -425,7 +435,7 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff"`
 	Project string `json:"project,omitempty" flag:"project" desc:"The registered project a project setting is written to; default the current project"`
 	Value   string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes"`
 }
@@ -446,6 +456,9 @@ func runDaemonSet(ctx *Ctx, req any) (any, error) {
 	r := req.(DaemonSetRequest)
 	d, ok := findSetting(r.Key)
 	if !ok {
+		if hint := rootcfg.RemovedHint(r.Key); hint != "" {
+			return nil, Usagef("%s", hint).WithNext("rhiza daemon settings")
+		}
 		keys := make([]string, 0, len(settingDefs))
 		for _, s := range settingDefs {
 			keys = append(keys, s.key)

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -62,5 +63,21 @@ func TestFindEmptyDirFindsNoRoot(t *testing.T) {
 	}
 	if root, ok := Find("."); !ok || root != top {
 		t.Fatalf("Find(\".\") = %q, %v: want %q", root, ok, top)
+	}
+}
+
+func TestLoadRejectsRemovedSelfUpdate(t *testing.T) {
+	for _, toml := range []string{
+		"self_update_project = \"rhiza\"\n",
+		"[daemon]\n\"rhiza.daemon.selfUpdate\" = \"true\"\n",
+	} {
+		root := t.TempDir()
+		if err := os.WriteFile(filepath.Join(root, File), []byte(toml), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		_, err := Load(root)
+		if !errors.Is(err, ErrRemoved) || !strings.Contains(err.Error(), "rhiza.daemon.autoUpdate") {
+			t.Fatalf("Load(%q) = %v", toml, err)
+		}
 	}
 }

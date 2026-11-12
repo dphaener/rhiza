@@ -22,6 +22,23 @@ const File = "rhiza.toml"
 // ErrExists is returned by Init when the directory is already a root.
 var ErrExists = errors.New("already a Rhiza root")
 
+// ErrRemoved is wrapped by Load's error when rhiza.toml still sets a key
+// that was removed: the message names the key to use instead.
+var ErrRemoved = errors.New("removed setting")
+
+// RemovedHint is what Rhiza says about a setting that no longer exists, or
+// "" when key is not one. key is a rhiza.toml key (self_update_project) or a
+// daemon setting (rhiza.daemon.selfUpdate).
+func RemovedHint(key string) string {
+	switch key {
+	case "self_update_project":
+		return "self_update_project is removed: set rhiza.daemon.autoUpdate to main instead"
+	case "rhiza.daemon.selfUpdate", "selfUpdate":
+		return "rhiza.daemon.selfUpdate is removed: it is now rhiza.daemon.autoUpdate (off or main)"
+	}
+	return ""
+}
+
 // Project is one registered project.
 type Project struct {
 	// Path is the project's folder, relative to the root (or absolute).
@@ -32,11 +49,7 @@ type Project struct {
 
 // Config is the content of a root's rhiza.toml.
 type Config struct {
-	// SelfUpdateProject names the registered project whose main checkout
-	// the daemon keeps itself current from (self_update_project). Empty
-	// means the daemon never self-updates.
-	SelfUpdateProject string             `toml:"self_update_project,omitempty"`
-	Projects          map[string]Project `toml:"projects"`
+	Projects map[string]Project `toml:"projects"`
 	// Daemon holds the machine-wide daemon settings, by their full key
 	// (rhiza.daemon.maxRuns), each a string as rhiza daemon set takes it.
 	Daemon map[string]string `toml:"daemon,omitempty"`
@@ -103,8 +116,15 @@ func Load(root string) (Config, error) {
 	if err != nil {
 		return c, err
 	}
-	if _, err := toml.Decode(string(data), &c); err != nil {
+	md, err := toml.Decode(string(data), &c)
+	if err != nil {
 		return c, fmt.Errorf("%s: %w", path, err)
+	}
+	if md.IsDefined("self_update_project") {
+		return c, fmt.Errorf("%s: %w: %s", path, ErrRemoved, RemovedHint("self_update_project"))
+	}
+	if _, ok := c.Daemon["rhiza.daemon.selfUpdate"]; ok {
+		return c, fmt.Errorf("%s: %w: %s", path, ErrRemoved, RemovedHint("rhiza.daemon.selfUpdate"))
 	}
 	return c, nil
 }

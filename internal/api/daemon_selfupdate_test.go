@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -50,103 +49,26 @@ func TestDaemonLoopSelfUpdateWaitsForPending(t *testing.T) {
 	}
 }
 
-// selfUpdateRepo is daemonRepo whose git config sets
-// rhiza.daemon.selfUpdate to value ("" for unset), whose main checkout is
-// /main, and whose origin/main has moved past it. It records every git and
-// make run in the main checkout.
-func selfUpdateRepo(t *testing.T, value string, named bool) (*Ctx, func() []string) {
-	t.Helper()
-	ctx, common := daemonRepo(t)
-	if named {
-		toml := "self_update_project = \"repo\"\n\n[projects.repo]\npath = \".\"\n"
+// A root that still sets the removed self_update_project or
+// rhiza.daemon.selfUpdate gets a message naming rhiza.daemon.autoUpdate.
+func TestDaemonSettingsReportRemovedSelfUpdate(t *testing.T) {
+	for name, toml := range map[string]string{
+		"project": "self_update_project = \"repo\"\n\n[projects.repo]\npath = \".\"\n",
+		"key":     "[projects.repo]\npath = \".\"\n\n[daemon]\n\"rhiza.daemon.selfUpdate\" = \"true\"\n",
+	} {
+		ctx, _ := daemonRepo(t)
 		if err := os.WriteFile(filepath.Join(ctx.Root, "rhiza.toml"), []byte(toml), 0o644); err != nil {
 			t.Fatal(err)
 		}
-	}
-	var mu sync.Mutex
-	var ran []string
-	record := func(s string) {
-		mu.Lock()
-		defer mu.Unlock()
-		ran = append(ran, s)
-	}
-	ctx.Git = func(args ...string) (string, error) {
-		switch {
-		case len(args) == 2 && args[0] == "rev-parse" && args[1] == "--git-common-dir":
-			return common + "\n", nil
-		case len(args) == 3 && args[0] == "config" && args[2] == "rhiza.daemon.selfUpdate" && value != "":
-			return value + "\n", nil
-		}
-		return "", errors.New("unexpected git " + strings.Join(args, " "))
-	}
-	ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
-		if dir != ctx.Root {
-			return nil, errors.New("unexpected " + name)
-		}
-		record(name + " " + strings.Join(args, " "))
-		if name == "make" {
-			return nil, nil
-		}
-		switch args[0] {
-		case "rev-parse":
-			if args[2] == "HEAD" {
-				return []byte("aaa\n"), nil
-			}
-			return []byte("bbb\n"), nil
-		case "merge-base":
-			return nil, errors.New("exit status 1")
-		case "symbolic-ref":
-			return []byte("main\n"), nil
-		}
-		return nil, nil
-	}
-	return ctx, func() []string {
-		mu.Lock()
-		defer mu.Unlock()
-		return append([]string(nil), ran...)
-	}
-}
-
-// With rhiza.daemon.selfUpdate off, unset or false, the daemon neither
-// fetches nor runs make update; turned on, the same daemon fetches,
-// fast-forwards and runs make update once over several polls.
-func TestDaemonSelfUpdateSetting(t *testing.T) {
-	start := daemon.Image{Size: 10, Mod: time.Unix(1700000000, 0)}
-	old := daemonReexec
-	t.Cleanup(func() { daemonReexec = old })
-	daemonReexec = func() *daemon.Reexec { return (&reexecFake{img: start}).reexec(start) }
-
-	for _, value := range []string{"", "false"} {
-		ctx, ran := selfUpdateRepo(t, value, true)
-		if err := runDaemonTicks(t, ctx, 2, nil); err != nil {
-			t.Fatal(err)
-		}
-		if got := ran(); len(got) != 0 {
-			t.Fatalf("selfUpdate %q: ran %q, want nothing", value, got)
+		_, err := settingsOf(ctx, nil)
+		if err == nil || !strings.Contains(err.Error(), "rhiza.daemon.autoUpdate") {
+			t.Fatalf("%s: settingsOf error = %v, want one naming rhiza.daemon.autoUpdate", name, err)
 		}
 	}
-
-	// selfUpdate on but no project named: nothing runs.
-	ctx, ran := selfUpdateRepo(t, "true", false)
-	if err := runDaemonTicks(t, ctx, 2, nil); err != nil {
-		t.Fatal(err)
-	}
-	if got := ran(); len(got) != 0 {
-		t.Fatalf("no self_update_project: ran %q, want nothing", got)
-	}
-
-	ctx, ran = selfUpdateRepo(t, "true", true)
-	if err := runDaemonTicks(t, ctx, 2, nil); err != nil {
-		t.Fatal(err)
-	}
-	got := strings.Join(ran(), "\n")
-	for _, want := range []string{"git fetch origin main", "git merge --ff-only bbb", "make update"} {
-		if !strings.Contains(got, want) {
-			t.Fatalf("selfUpdate true: ran\n%s\nwant %q", got, want)
-		}
-	}
-	if n := strings.Count(got, "make update"); n != 1 {
-		t.Fatalf("selfUpdate true: make update ran %d times over 3 polls, want 1", n)
+	ctx, _ := daemonRepo(t)
+	_, err := runDaemonSet(ctx, DaemonSetRequest{Key: "rhiza.daemon.selfUpdate", Value: "true"})
+	if err == nil || !strings.Contains(err.Error(), "rhiza.daemon.autoUpdate") {
+		t.Fatalf("daemon set selfUpdate error = %v", err)
 	}
 }
 
