@@ -1,0 +1,41 @@
+{
+  "actor": "01M76QRAF3W2PHRQ80NKNKEPC0",
+  "after": [
+    "01M76QQWJWBKAX3RFD77KNEF5N"
+  ],
+  "at": "2026-11-12T02:01:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The incident was a shell command (python3 -m json.tool with a glob), so a PreToolUse hook on Write/Edit alone would not have stopped it, and parsing shell for writes is unreliable; read-only entries stop any non-root writer, and rhiza never rewrites an entry in place (writeNew links a temp file and refuses an existing name; removal and git checkout unlink, which file mode does not block), so 0444 costs nothing. The overwritten entry had been written by rhiza in the same run, so 0444 at write time would have refused it; render re-applying the mode covers checked-out entries. The question notes every commit step runs rhiza render first and render already reads the log but ignores its problems, so making render fail is the single choke point the change set's intent (2) asks for, naming the entry. For repair, the orchestrator's manual fix was restoring from the persistent index entries table (index catchup stores only good entries, so it keeps original bytes); HEAD is the authority for committed entries. A separate rhiza repair keeps rhiza check a read-only CI lint, and --dry-run lets a run see what would change. Guidance (4) is the intent's own ask.",
+          "statement": "(1) Guard in two layers. rhiza writes every log entry read-only: writeNew sets the temp file to 0444 before linking it into place, and rhiza render re-applies 0444 to every entry under .rhiza/log (git checkouts give 0644). That blocks shell writes (redirects, json.tool's output argument, sed -i on a path) without parsing shell. In addition the claudecode adapter's PreToolUse hook (rhiza session hook) denies Write, Edit, MultiEdit and NotebookEdit on any path under .rhiza/log/, with a reason that says to write through rhiza apply and read with rhiza show/slice or cat. No shell-command parsing or warning: the file mode covers shell. (2) rhiza render refuses: it already reads the whole log, so it fails (non-zero exit, nothing rendered) when any entry does not parse canonically, its id does not match its file name, or a log file tracked at HEAD differs from HEAD, naming each entry's path and its problem. Every run commit step runs render first, so this one check covers build/review/ship-change render, the plan gate's 'Render the plan', ship land and ship rebase. (3) A new command, rhiza repair (with --dry-run), finds the same damaged entries and restores each: a file tracked at HEAD from HEAD's bytes; otherwise from the persistent index's entries table when its stored raw parses canonically and its id matches the file name. It writes through temp file + rename at 0444, never deletes, and reports every entry it could not restore and why. rhiza check stays read-only. (4) The rhiza guide and the agent skills say to read log entries with rhiza show/slice or cat, never with tools that can write (json.tool, jq -i, sed -i, redirects).",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "decision-log-guard",
+        "id": "01M76QSWXXZ9AZCW491CMVX9W4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76QSWXXZ9AZCW4918RBPYYH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76QSWXXZ9AZCW4918RBPYYH",
+        "id": "01M76QSWYYMVPBB5N4BW5V462M",
+        "link": "01M76QSWYYMVPBB5N4BV8QWPXT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76QQTC9RTMBJE3CE5EWB3RB",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76QJWKEA2M2G87ESG10A47P",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76QSX0B7ZPMYQF4276TM4SP",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,30 @@
+{
+  "actor": "01M76QKRKWWGZYFY5GM837EY9Z",
+  "after": [
+    "01M76QJWKEA2M2G87ESHFKM1PK"
+  ],
+  "at": "2026-11-12T02:00:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "947b0dc6-2ede-427e-a0b9-01a1cd79cc02",
+          "statement": "How should runs' agent sessions be kept from writing .rhiza/log outside rhiza? rhiza already writes entries via temp file + rename (internal/store/store.go:358, chmod 0644), and every session already has a PreToolUse hook (rhiza session hook). / Where should a broken log entry (not canonical, or id not matching its file name, or a committed entry changed) be refused before commit? Every run commit step (build/review/ship-change render steps, plan gate 'Render the plan', ship land, ship rebase) runs rhiza render first, and render already reads the whole log but ignores its problems. / What should the repair of a damaged entry be?"
+        },
+        "handle": "question-947b0dc6-1",
+        "id": "01M76QQTC9RTMBJE3CE6QWKP5H",
+        "key": null,
+        "kind": "question",
+        "node": "01M76QQTC9RTMBJE3CE5EWB3RB",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76QJWKEA2M2G87ESG10A47P",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76QQWJWBKAX3RFD77KNEF5N",
+  "type": "ops",
+  "v": 1
+}
