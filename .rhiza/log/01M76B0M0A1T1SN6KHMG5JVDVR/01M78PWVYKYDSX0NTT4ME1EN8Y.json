@@ -1,0 +1,40 @@
+{
+  "actor": "01M78PVENCFJPS728EAR08WCJW",
+  "after": [
+    "01M76SJFYFS32E65ATHG7620CK"
+  ],
+  "at": "2026-11-12T20:23:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 7063296ac: go test -trimpath ./tools/release/... -run 'TestCut|TestRecordDaemonRun|TestParseDaemonStatus|TestReleaseWorkflowAndTimer' -count=1 passed. TestCut drives Cut with a fake git over a fixture repo: with every gate passing it makes an annotated tag v0.2.0 on the candidate commit, with the version followed by the notes as its message, and pushes exactly once as the last call; with the version already tagged locally or on the remote it returns exists and makes no push; when CI is red, the soak is under 24h or the commit is not in the run history it returns blocked and makes no tag or push; with a breaking: note since v1.0.0 it returns sign-off for v2.0.0 and makes no push. TestRecordDaemonRun with a fake daemon status appends {commit,at} for a new commit, adds nothing for a known commit after a restart, appends a second new commit, and the result reads back through ReadRunHistory, which the soak gate uses. The daemon status commit (vcs.revision) and the gate's candidate (rev-parse HEAD) are both full SHAs. Read the diff: release.yml refetches the tag object, writes %(contents:body) of the annotation to a file and passes it to goreleaser as --release-notes. script/systemd/rhiza-release.timer (OnCalendar=hourly) and rhiza-release.service (WorkingDirectory ~/code/rhiza, record-run as ExecStartPre, then cut) are in the repo, and the Automatic releases section of agents/vm.md names rhiza-release.timer. go test -trimpath ./cmd/rhiza -run TestVMDocLessons passed."
+        },
+        "handle": "auto-release-verified",
+        "id": "01M78PWVX32RH3P651ASNKCE8H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78PWVX32RH3P651AQT2MB3B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78PWVX32RH3P651AQT2MB3B",
+        "id": "01M78PWVXN709NMM5DGWT5DHJS",
+        "link": "01M78PWVXN709NMM5DGTRME80P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7EAW7JX0E9RNRBMXM97G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B0M0A1T1SN6KHMG5JVDVR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78PWVYKYDSX0NTT4ME1EN8Y",
+  "type": "ops",
+  "v": 1
+}
