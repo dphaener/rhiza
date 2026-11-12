@@ -18,7 +18,7 @@ func TestReviewText(t *testing.T) {
 			`rhiza slice --change "$RHIZA_CHANGE" --json`, "RHIZA_CHECK", "RHIZA_CYCLE", "RHIZA_ROLE",
 			"throwaway checkout",
 		},
-		"merge-base": {"merge-base", "default branch"},
+		"merge-base": {"`git diff $(git merge-base origin/main HEAD)`", "default branch"},
 		"five-checks": {
 			"`compliance`", "each leaf's `acceptance`", "`quality`", "`qa`", "built binary",
 			"fakes alone do not count", "`scope`", "inside the intent and the leaves", "`model`",
@@ -26,11 +26,11 @@ func TestReviewText(t *testing.T) {
 		"fakes-only": {
 			"Every check except `qa` tests runs with fakes only, never real Rex, agents or `gh`",
 		},
-		"severities": {"`blocker`", "`major`", "`minor`", "`nit`"},
+		"severities": {"`blocker` (cannot ship)", "`major` (must be fixed)", "`minor` and `nit` (never fixed)"},
 		"findings": {
 			`rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'`, "\nEOF\n",
 			`{"findings":[{"severity":"major","leaf":"<leaf>","place":"path:line","reason":`,
-			`{"findings":[]}`, "rhiza describe run.findings",
+			`{"findings":[]}`, "(a check with none fails)", "rhiza describe run.findings",
 		},
 		"verdict": {
 			`rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'`, "\nEOF\n",
@@ -50,7 +50,7 @@ func TestReviewText(t *testing.T) {
 			`"type":"verifies","to":"<leaf>"`,
 			"missing constraints",
 		},
-		"done": {"rhiza session done", "as its own command", "`;` or `&&`"},
+		"done": {"rhiza session done", "as its own command", "after its recording\ncommand succeeded", "`;` or `&&`"},
 		"scoped-tests": {
 			"Checks, critics and fixers run only the tests covering what the change touches",
 			"scoped commands", "never the repo's full\nsuite",

@@ -1,43 +1,42 @@
 # Review
 
-Review sessions get `RHIZA_CHANGE`, `RHIZA_CYCLE`
-and `RHIZA_ROLE` (check, critic, fixer or verifier); checks and critics also `RHIZA_CHECK`,
-a leaf's fixer and verifier `RHIZA_LEAF`. Start with
-`rhiza slice --change "$RHIZA_CHANGE" --json`. Checks and critics use a throwaway checkout at the head.
-Review the diff from the merge-base with the default branch. Each role ends with `rhiza session done` as its own command, never chained with `;` or `&&`.
+Sessions get `RHIZA_CHANGE`, `RHIZA_CYCLE`
+and `RHIZA_ROLE` (check, critic, fixer, verifier); checks and critics also `RHIZA_CHECK`,
+leaf fixers and verifiers `RHIZA_LEAF`. Start with
+`rhiza slice --change "$RHIZA_CHANGE" --json`. Checks and critics use a throwaway checkout at the branch head.
+Review the default branch diff,
+`git diff $(git merge-base origin/main HEAD)`. Each role ends with `rhiza session done` as its own command after its recording
+command succeeded, never chained with `;` or `&&`.
 
 ## Checks
 
 Every check except `qa` tests runs with fakes only, never real Rex, agents or `gh`.
-Checks, critics and fixers run only the tests covering what the change touches, with
+Checks, critics and fixers run only the tests covering what the change touches, by
 scoped commands, never the repo's full
 suite: the PR's CI runs it before merge.
 
-While CI is unstable, or a red is not explained by your change,
+While CI is unstable or a red is not explained by your change,
 do not push or rerun CI to see. Reproduce the
-failing test locally, fix it, and push only after it and the
+failing test locally, fix it, push only after it and the
 touched packages pass locally.
 Reproduce a flake by injecting a delay at the suspected race, never by busy loops or parallel stress on the host.
 
-- `compliance`: each leaf's `acceptance`, met as written.
-- `quality`: correctness, tests, the repo's conventions.
-- `qa`: hands-on, with the built binary; fakes alone do not count. Then
+- `compliance`: each leaf's `acceptance` as written.
+- `quality`: correctness, tests, conventions.
+- `qa`: hands-on with the built binary; fakes alone do not count. Then
   Evidence written as yourself on each leaf it exercised, via
   `rhiza apply <file> --change "$RHIZA_CHANGE" --json`, `<cycle>` being $RHIZA_CYCLE:
 
   ```json
-  {"writes":[
-    {"op":"add","kind":"evidence","handle":"<leaf>-qa-<cycle>",
-     "fields":["statement=<what you ran and saw>","result=PASS"]},
-    {"op":"link","from":"<leaf>-qa-<cycle>","type":"verifies","to":"<leaf>"}
-  ]}
+  {"writes":[{"op":"add","kind":"evidence","handle":"<leaf>-qa-<cycle>",
+  "fields":["statement=<what you ran and saw>","result=PASS"]},
+  {"op":"link","from":"<leaf>-qa-<cycle>","type":"verifies","to":"<leaf>"}]}
   ```
 
 - `scope`: work stays inside the intent and the leaves.
-- `model`: the model matches the code; missing constraints go in a discovered-from
-  draft change set.
+- `model`: model and code match; missing constraints go in a discovered-from draft change set.
 
-Record a round, `{"findings":[]}` when clean, on stdin:
+Record one round, `{"findings":[]}` when clean (a check with none fails):
 
 ```
 rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'
@@ -45,11 +44,11 @@ rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'
 EOF
 ```
 
-Severities: `blocker`, `major`, `minor`, `nit`. Schema: `rhiza describe run.findings`.
+Severities: `blocker` (cannot ship), `major` (must be fixed), `minor` and `nit` (never fixed). Schema: `rhiza describe run.findings`.
 
 ## Critic
 
-Read the check's latest round (`rhiza run status --json`). Confirm or drop each blocker and major. Never add a finding. Record on stdin:
+Confirm or drop each blocker and major in the check's last round (`rhiza run status --json`). Never add a finding. Record:
 
 ```
 rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'
@@ -61,15 +60,15 @@ EOF
 
 ## Fixer
 
-Fix only the confirmed findings named, in one new commit with `Change:` and `Actor:` trailers plus `Leaf: <leaf>` for a leaf fixer, or
-`Review: <run>` ($RHIZA_RUN) for the change set's fixer. Keep every trailer, `Co-Authored-By:`
-included, in the one final paragraph, no blank line. Never rewrite commits.
+Fix only the confirmed findings named, in one new commit with `Change:`, `Actor:` and `Leaf: <leaf>` (leaf fixer) or
+`Review: <run>` ($RHIZA_RUN, change set fixer) trailers. Keep all trailers, `Co-Authored-By:`
+included, in one final paragraph, no blank line. Never rewrite commits.
 
-Before the commit run the commands that reproduce your findings, `rhiza ship generate` and `rhiza render`, folding in their changes. List each with its exit code in a `Checks:` block.
+First run the commands that reproduce your findings, `rhiza ship generate` and `rhiza render`; commit their changes with a `Checks:` block of exit codes.
 
 ## Outside work
 
 Work outside the intent is a question or a discovered-from draft change set:
-`rhiza change new "<intent>" --json`, then
+`rhiza change new "<intent>" --json`,
 `rhiza link <new> discovered-from <this> --change <new> --json`, then
 `rhiza change use <this>`.
