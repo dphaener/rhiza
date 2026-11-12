@@ -1,0 +1,53 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M785YVNN2VWTP4QJ72DJ2RYZ"
+  ],
+  "at": "2026-11-12T15:35:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "ed62baba91b048cd6dbd3e0ea9f3a91649fcdd03",
+          "pr": "https://github.com/dphaener/rhiza/pull/496",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #496 (https://github.com/dphaener/rhiza/pull/496) passed CI at ed62bab",
+          "status": "verified"
+        },
+        "handle": "pr-496-orchestrator-agent-doc",
+        "id": "01M786D5RB7G2994RFZT3NRS8G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M786D5RB7G2994RFZQE6QHG3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M786D5RB7G2994RFZQE6QHG3",
+        "id": "01M786D5RY3DGY6N26MG86TMMB",
+        "link": "01M786D5RY3DGY6N26MFD7D20X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76P0AFBXXQRCAEPZSZD95G9",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M786D5RB7G2994RFZQE6QHG3",
+        "id": "01M786D5SGC71TDQBJ7QQZK7YK",
+        "link": "01M786D5SGC71TDQBJ7MZ21RRE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76P0AJ9VF4D377JGWZJAAZY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76NX8F3G4KXGHQ9G93TEH4Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M786D5VN2GHJX8FA4SJM2YAX",
+  "type": "ops",
+  "v": 1
+}

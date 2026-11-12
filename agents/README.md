@@ -7,5 +7,4 @@ reads it and when. Repo-wide guidance for every agent is in
 
 ## Index
 
-No role docs yet. Add a line here for each `agents/*.md` you add, in the
-form `- [name.md](name.md): <which agent> reads it <when>`.
+- [orchestrator.md](orchestrator.md): the orchestrator agent reads it before running Rhiza's own development (watch loop, main tree, load, PRs, owner).
