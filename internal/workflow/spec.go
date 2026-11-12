@@ -109,6 +109,7 @@ var kindDocs = map[string]KindDoc{
 			{Key: "until", Desc: "A shell command; exit 0 means the condition holds", Required: true},
 			{Key: "timeout", Desc: "How long to wait, such as \"30m\"", Required: true},
 			{Key: "interval", Desc: "How often the condition is checked; unset is 10s"},
+			{Key: "max_interval", Desc: "With interval: each unchanged check doubles the sleep up to this; a changed output resets it. Unset keeps the interval fixed"},
 		},
 	},
 	KindLeaves: {

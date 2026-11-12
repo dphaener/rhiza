@@ -69,6 +69,7 @@ Keys:
 - `until` (required): A shell command; exit 0 means the condition holds
 - `timeout` (required): How long to wait, such as "30m"
 - `interval`: How often the condition is checked; unset is 10s
+- `max_interval`: With interval: each unchanged check doubles the sleep up to this; a changed output resets it. Unset keeps the interval fixed
 
 Outcomes: `pass`, `timeout`.
 
