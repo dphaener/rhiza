@@ -1,0 +1,40 @@
+{
+  "actor": "01M77J1AV3MN0J1Q4NCG8YRQRH",
+  "after": [
+    "01M76SGY8HZC1AQ0NH8VTQY82T"
+  ],
+  "at": "2026-11-12T09:40:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 9916356b3: go vet and go test -trimpath -count=1 -v ./internal/release/... pass (10 tests), also with HTTP(S)_PROXY pointed at a dead port. Resolver tests run only against an httptest server on localhost (Resolver.URLs and Client set to the fixture; no github.com URL fetched): TestDownloadEachPlatform downloads and checks the archive for all four Platforms (linux/darwin x amd64/arm64); TestNewestBothChannels reports v0.1.0 for release and v0.1.1-12-gabc for latest and rejects an unknown channel; TestDownloadRejectsBadSHA rejects a tampered archive on sha256; TestDownloadRejectsMissingPlatform rejects linux/riscv64 and a platform dropped from the manifest; TestRejectsMalformedManifest rejects non-JSON, empty, wrong-channel, short-sha and missing-url manifests. Diff read: resolve.go bounds reads, checks HTTP status, compares lowercase hex sha256 before returning the archive. gofmt clean; commit trailers and staged actor record correct."
+        },
+        "handle": "channel-resolver-verified",
+        "id": "01M77J2Y55YEW2TZX5T5S96Q6C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77J2Y55YEW2TZX5T3FSC56D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77J2Y55YEW2TZX5T3FSC56D",
+        "id": "01M77J2Y6MZ8R86RZFXE57ZEP6",
+        "link": "01M77J2Y6MZ8R86RZFXE4CZ097",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7D55NHFJP1CNA4H5HWDH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76AZSNW1912Y5RD6J4TAHJQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77J2Y8AFHG6GZAS9KFK1NX5",
+  "type": "ops",
+  "v": 1
+}
