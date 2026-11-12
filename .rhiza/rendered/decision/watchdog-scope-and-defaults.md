@@ -26,7 +26,7 @@ workflows-are-the-rules: recoveries that belong to a step stay in that step's wo
 - decided-by [daemon-watchdog](../capability/rhiza/orchestration/daemon/daemon-watchdog.md)
 - decided-by [watchdog-policy](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-policy.md)
 - decided-by [watchdog-stalled-step](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-stalled-step.md)
-- decided-by [watchdog-transient-failure](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-transient-failure.md)
+- decided-by watchdog-transient-failure (retired)
 - decided-by [watchdog-ci-rerun](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-ci-rerun.md)
 - decided-by [watchdog-pr-no-ci](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-pr-no-ci.md)
 - decided-by [watchdog-green-pr-unmerged](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-green-pr-unmerged.md)

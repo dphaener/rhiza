@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"maps"
 	"slices"
-	"strings"
 
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
@@ -303,8 +302,7 @@ func checkBase(cs id.ID, o op.Op, t id.ID, retired bool, history []Ref, written 
 			continue
 		}
 		if overlaps(mine, written[j]) {
-			return fmt.Errorf("%w: base %s of %s is stale: op %s of change set %s since wrote %s",
-				ErrConflict, o.Base, t, history[j].Op, history[j].ChangeSet, strings.Join(written[j], ", ")), nil
+			return &StaleBaseError{Base: o.Base, Node: t, Op: history[j].Op, ChangeSet: history[j].ChangeSet, Aspects: slices.Clone(written[j])}, nil
 		}
 	}
 	if retired {

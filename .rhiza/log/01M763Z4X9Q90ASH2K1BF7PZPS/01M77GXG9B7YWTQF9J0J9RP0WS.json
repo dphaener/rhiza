@@ -1,0 +1,40 @@
+{
+  "actor": "01M77FRGJ92QEX8D85RCWERH2S",
+  "after": [
+    "01M77ESNJV41A9RSZ2WJKVREPG"
+  ],
+  "at": "2026-11-12T09:20:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 237e9ff9b, read the diff and ran go test -trimpath ./internal/api -run 'TestClassify|Setting': TestClassifyFailure's fake classifier commands for transient, real, garbage output, empty output, a near-miss word and a failing command all PASS, and only a clear 'transient' line comes out transient (the rest are real with a reason). The scripts daemon-settings (lists rhiza.daemon.failureClassifier = \"\" from Setup's rhiza.toml, the claude -p --model haiku default in --json, and set/unset), run-failure-classifier (empty from Setup: the failing command step runs once and nothing is called; a fake transient classifier reruns it and its output reaches the classifier on stdin; a fake real verdict does not rerun it), build-leaf-fails and describe-golden all PASS. Ran 16 scripts that rewrite rhiza.toml or rerun failed steps with a logging fake claude first on PATH: all PASS and claude was never called. Outside this leaf: TestShipCheckStabilityRecord/red_then_green_on_rerun fails the same way at the parent 424e22486, and TestInboxGateQuestionsBudget passes but takes 135s."
+        },
+        "handle": "failure-classifier-setting-verified",
+        "id": "01M77GXG6PJY8XGRYNDHJ3NV01",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77GXG6PJY8XGRYNDFJQAKXN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77GXG6PJY8XGRYNDFJQAKXN",
+        "id": "01M77GXG83WJPVBGS00WYRB0FD",
+        "link": "01M77GXG83WJPVBGS00S5F0GVP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642N1KXSN7CKCDEZFBK78Q",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z4X9Q90ASH2K1BF7PZPS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77GXG9B7YWTQF9J0J9RP0WS",
+  "type": "ops",
+  "v": 1
+}

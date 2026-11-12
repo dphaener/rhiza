@@ -32,12 +32,24 @@ stdout 'rhiza.daemon.maxRuns = 2 \(default, (machine|project)\)'
 stdout 'rhiza.daemon.autoUpdate = off \(default, machine\)'
 stdout 'rhiza.daemon.minFree = 10G \(default, (machine|project)\)'
 stdout 'rhiza.daemon.permissionMode = "" \(default, (machine|project)\)'
+stdout 'rhiza.daemon.failureClassifier = "" \(rhiza.toml, machine\)'
 stdout 'rhiza.web.host = 127.0.0.1 \(default, (machine|project)\)'
 stdout 'rhiza.web.port = 7787 \(default, (machine|project)\)'
 stdout 'rhiza.autonomy.plan = owner \(default, (machine|project)\)'
 stdout 'rhiza.autonomy.accept = auto \(default, (machine|project)\)'
 stdout 'rhiza.autonomy.ship = auto \(default, (machine|project)\)'
 stdout 'rhiza.autonomy.signoff = auto \(default, (machine|project)\)'
+
+# The classifier's default runs Claude headless with Haiku; Setup turns it
+# off (empty), and an empty value from set keeps it off.
+exec rhiza daemon settings --json
+stdout '"default": "claude -p --model haiku '
+exec rhiza daemon set rhiza.daemon.failureClassifier 'my-llm --classify'
+exec rhiza daemon settings
+stdout 'rhiza.daemon.failureClassifier = my-llm --classify \(rhiza.toml, machine\)'
+exec rhiza daemon set rhiza.daemon.failureClassifier ''
+exec rhiza daemon settings
+stdout 'rhiza.daemon.failureClassifier = "" \(rhiza.toml, machine\)'
 
 # set writes git config.
 exec rhiza daemon set rhiza.daemon.maxRuns 1

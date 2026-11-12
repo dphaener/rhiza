@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -38,6 +39,7 @@ func TestWatchdogStalled(t *testing.T) {
 		step:     func(run.State) workflow.Step { return workflow.Step{Kind: "agent"} },
 		send:     func(sid, _ string) error { sent = append(sent, sid); return nil },
 		stop:     func(st run.State, _ []string) error { stopped = append(stopped, st.ID); return nil },
+		classify: fakeClassify,
 		resume:   func(id string) error { resumed = append(resumed, id); return nil },
 		log:      func(f string, a ...any) { log = append(log, strings.TrimSpace(fmt.Sprintf(f, a...))) },
 	}
@@ -144,10 +146,11 @@ func TestWatchdogTransient(t *testing.T) {
 		failed("live", "gh: HTTP 503 Service Unavailable", true),
 		failed("owner", "gh: HTTP 502 Bad Gateway", false),
 	}
-	var log, resumed []string
+	var log, resumed, classified []string
 	d := watchdogDeps{
-		resume: func(id string) error { resumed = append(resumed, id); return nil },
-		log:    func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
+		classify: func(out string) FailureVerdict { classified = append(classified, out); return fakeClassify(out) },
+		resume:   func(id string) error { resumed = append(resumed, id); return nil },
+		log:      func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
 	}
 	pol := WatchdogPolicy{Enabled: true, RetryBudget: 1, AutonomousOnly: true}
 	live := func(id string) bool { return id == "live" }
@@ -158,15 +161,32 @@ func TestWatchdogTransient(t *testing.T) {
 	if got := strings.Join(resumed, ","); got != "work,lock,gh" {
 		t.Fatalf("resumed %s, want work,lock,gh", got)
 	}
-	if len(log) != 3 {
-		t.Errorf("want one line per resume, log %q", log)
+	if len(log) != 4 || !strings.Contains(log[3], "classified real") || !strings.Contains(log[3], "the test is failing") {
+		t.Errorf("want one line per resume and one for the real failure, log %q", log)
 	}
-	// The budget is one: a second poll over the same failures acts on none.
+	if len(classified) != 4 {
+		t.Errorf("classified %d failures, want 4", len(classified))
+	}
+	// The budget is one: a second poll over the same failures acts on none,
+	// and the real failure, already judged, is neither classified nor logged
+	// again.
+	if mem, err = watchdogTransient(pol, js, live, mem, d); err != nil {
+		t.Fatal(err)
+	}
+	if len(resumed) != 3 || len(classified) != 4 || len(log) != 4 {
+		t.Errorf("second poll: resumed %v, classified %d, log %q", resumed, len(classified), log)
+	}
+	// A new failure of the same run (the journal moved on) is judged anew.
+	real := &js[3]
+	real.Entries = append(real.Entries,
+		run.Entry{Type: run.TypeEntered, At: t0.Add(time.Hour), Step: "build", Visit: 2},
+		run.Entry{Type: run.TypeEnded, At: t0.Add(time.Hour), Step: "build", Visit: 2, Outcome: "fail", Detail: "exit 1\ngh: HTTP 503"},
+		run.Entry{Type: run.TypeFinished, At: t0.Add(time.Hour), Step: "build", End: "failed", Detail: "step build failed"})
 	if _, err := watchdogTransient(pol, js, live, mem, d); err != nil {
 		t.Fatal(err)
 	}
-	if len(resumed) != 3 {
-		t.Errorf("over budget resumed %v", resumed)
+	if len(classified) != 5 || strings.Join(resumed, ",") != "work,lock,gh,real" {
+		t.Errorf("new failure: classified %d, resumed %v", len(classified), resumed)
 	}
 }
 
@@ -185,9 +205,10 @@ func TestWatchdogTransientBudgetAcrossPolls(t *testing.T) {
 	var resumed []string
 	queued := true
 	d := watchdogDeps{
-		resume: func(id string) error { resumed = append(resumed, id); return nil },
-		queued: func(string) bool { return queued },
-		log:    func(string, ...any) {},
+		classify: fakeClassify,
+		resume:   func(id string) error { resumed = append(resumed, id); return nil },
+		queued:   func(string) bool { return queued },
+		log:      func(string, ...any) {},
 	}
 	pol := WatchdogPolicy{Enabled: true, RetryBudget: 1, AutonomousOnly: true}
 	nolive := func(string) bool { return false }
@@ -240,10 +261,11 @@ func TestWatchdogCIRerun(t *testing.T) {
 	pr := red
 	var reran, resumed, log []string
 	d := watchdogDeps{
-		ci:     func(run.State) (watchdogPR, error) { return pr, nil },
-		rerun:  func(_ run.State, id string) error { reran = append(reran, id); return nil },
-		resume: func(id string) error { resumed = append(resumed, id); return nil },
-		log:    func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
+		ci:       func(run.State) (watchdogPR, error) { return pr, nil },
+		rerun:    func(_ run.State, id string) error { reran = append(reran, id); return nil },
+		classify: fakeClassify,
+		resume:   func(id string) error { resumed = append(resumed, id); return nil },
+		log:      func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
 	}
 	pol := WatchdogPolicy{Enabled: true, RetryBudget: 2, CIReruns: 1, AutonomousOnly: true}
 	nolive := func(string) bool { return false }
@@ -342,10 +364,11 @@ func TestWatchdogCIRerunBudgetN(t *testing.T) {
 			pr := watchdogPR{Head: "aaaa111", Checks: []ShipCheck{{Name: "test", Status: "COMPLETED", Conclusion: "FAILURE", RunID: "7"}}, Attempts: map[string]int{"7": attempt}}
 			var reran []string
 			d := watchdogDeps{
-				ci:     func(run.State) (watchdogPR, error) { return pr, nil },
-				rerun:  func(_ run.State, id string) error { reran = append(reran, id); return nil },
-				resume: func(string) error { return nil },
-				log:    func(string, ...any) {},
+				ci:       func(run.State) (watchdogPR, error) { return pr, nil },
+				rerun:    func(_ run.State, id string) error { reran = append(reran, id); return nil },
+				classify: fakeClassify,
+				resume:   func(string) error { return nil },
+				log:      func(string, ...any) {},
 			}
 			pol := WatchdogPolicy{Enabled: true, RetryBudget: 2, CIReruns: n, AutonomousOnly: true}
 			if _, err := watchdogCIRerun(pol, []run.Journal{j}, func(string) bool { return false }, nil, d); err != nil {
@@ -381,11 +404,12 @@ func TestWatchdogCIReadsBounded(t *testing.T) {
 	prs := map[string]watchdogPR{"gone": {}, "red": red, "spent": red}
 	reads := map[string]int{}
 	d := watchdogDeps{
-		ci:     func(st run.State) (watchdogPR, error) { reads[st.ID]++; return prs[st.ID], nil },
-		rerun:  func(run.State, string) error { t.Fatal("reran"); return nil },
-		resume: func(string) error { t.Fatal("resumed"); return nil },
-		merge:  func(run.State) (watchdogMerge, error) { t.Fatal("merged"); return watchdogMerge{}, nil },
-		log:    func(string, ...any) {},
+		ci:       func(st run.State) (watchdogPR, error) { reads[st.ID]++; return prs[st.ID], nil },
+		rerun:    func(run.State, string) error { t.Fatal("reran"); return nil },
+		classify: fakeClassify,
+		resume:   func(string) error { t.Fatal("resumed"); return nil },
+		merge:    func(run.State) (watchdogMerge, error) { t.Fatal("merged"); return watchdogMerge{}, nil },
+		log:      func(string, ...any) {},
 	}
 	pol := WatchdogPolicy{Enabled: true, RetryBudget: 1, CIReruns: 1, AutonomousOnly: true}
 	none := func(string) bool { return false }
@@ -433,6 +457,7 @@ func TestWatchdogNestedStep(t *testing.T) {
 		step:     func(run.State) workflow.Step { return workflow.Step{Kind: "agent"} },
 		send:     func(string, string) error { return nil },
 		stop:     func(run.State, []string) error { return nil },
+		classify: fakeClassify,
 		resume:   func(string) error { return nil },
 		log:      func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
 	}
@@ -450,5 +475,44 @@ func TestWatchdogNestedStep(t *testing.T) {
 	items := watchdogHoldItems(holds)
 	if len(items) != 1 || items[0].Step != nested {
 		t.Errorf("inbox items %+v, want step %s", items, nested)
+	}
+}
+
+// TestWatchdogTransientClassifierError leaves a failure to the inbox when the
+// classifier cannot run or is not set, even if the output looks transient.
+func TestWatchdogTransientClassifierError(t *testing.T) {
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	js := []run.Journal{{ID: "gh", Entries: []run.Entry{
+		{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true}},
+		{Type: run.TypeEntered, At: t0, Step: "build", Visit: 1},
+		{Type: run.TypeEnded, At: t0, Step: "build", Visit: 1, Outcome: "fail", Detail: "exit 1\ngh: HTTP 502 Bad Gateway"},
+		{Type: run.TypeFinished, At: t0, Step: "build", End: "failed", Detail: "step build failed"},
+	}}}
+	pol := WatchdogPolicy{Enabled: true, RetryBudget: 1, AutonomousOnly: true}
+	nolive := func(string) bool { return false }
+	for name, classify := range map[string]func(string) FailureVerdict{
+		"error": func(string) FailureVerdict {
+			return ClassifyFailure("c", "x", func(string, string) (string, error) { return "", errors.New("exit 1") })
+		},
+		"none": nil,
+	} {
+		var log []string
+		d := watchdogDeps{
+			classify: classify,
+			resume:   func(string) error { t.Fatalf("%s: resumed", name); return nil },
+			log:      func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
+		}
+		mem, err := watchdogTransient(pol, js, nolive, nil, d)
+		if err != nil {
+			t.Fatal(err)
+		}
+		// A second poll leaves the judged failure alone, logging nothing.
+		if _, err := watchdogTransient(pol, js, nolive, mem, d); err != nil {
+			t.Fatal(err)
+		}
+		want := map[string]string{"error": "classifier failed", "none": "no failure classifier"}[name]
+		if len(log) != 1 || !strings.Contains(log[0], "left to the inbox") || !strings.Contains(log[0], want) {
+			t.Errorf("%s: log %q", name, log)
+		}
 	}
 }

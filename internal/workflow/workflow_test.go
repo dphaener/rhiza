@@ -400,7 +400,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "open-pr-triage", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "land-triage", "wait-landed", "landed-green",
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "open-pr-triage", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "land-triage", "land-conflict-triage", "model-conflict-fix", "wait-landed", "landed-green",
 		"gate-rebase-merge", "conflict-triage-landed", "conflict-fix-landed", "rebase-merge", "rebase-merge-gate-failed", "landed-infra-triage", "landed-infra-wait", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge", "push-merge-triage", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
@@ -1702,7 +1702,7 @@ func checkShipChangePrePushFix(t *testing.T, name string, def *Definition) {
 		"gate-triage":              {"gate-fix", "ci-triage"},
 		"rebase-gate-failed":       {"gate-fix", ""},
 		"open-pr-triage":           {"gate-fix", ""},
-		"land-triage":              {"gate-fix-merge", ""},
+		"land-triage":              {"gate-fix-merge", "land-conflict-triage"},
 		"push-merge-triage":        {"gate-fix-merge", ""},
 		"rebase-merge-gate-failed": {"gate-fix-merge", "landed-infra-triage"},
 	} {
@@ -2013,6 +2013,11 @@ func TestShipChangeLocalGate(t *testing.T) {
 			return
 		}
 		seen[n] = true
+		// The model-conflict fix goes back through gate-land to land: the
+		// one loop to a step before land, bounded by its own caps.
+		if n == "model-conflict-fix" {
+			return
+		}
 		for _, to := range def.Steps[n].On {
 			walk(to, seen)
 		}
@@ -2030,6 +2035,9 @@ func TestShipChangeLocalGate(t *testing.T) {
 	}
 	pre["land"] = true
 	for n := range after {
+		if n == "model-conflict-fix" {
+			continue
+		}
 		for o, to := range def.Steps[n].On {
 			if pre[to] {
 				t.Errorf("%s on.%s goes to %s, a step at or before land", n, o, to)
@@ -2095,6 +2103,41 @@ func TestKindDocsCoverKinds(t *testing.T) {
 // caps and routes for landed-green, landed-infra-triage and
 // landed-infra-wait must be the built-in's, so a cap the built-in lacks
 // cannot make the script pass while the real workflow fails.
+// The built-in ship-change recovers from a land refused for a model
+// conflict: land-triage falls through to land-conflict-triage, which
+// passes only for a recorded conflict, to a fixer that returns through
+// gate-land.
+func TestShipChangeModelConflictFix(t *testing.T) {
+	data, ok := Builtin("ship-change")
+	if !ok {
+		t.Fatal("no ship-change built-in")
+	}
+	def, err := ParseWith("ship-change", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lt := def.Steps["land-triage"]
+	if lt.Run != "rhiza ship gate --failed" || lt.On[OutcomePass] != "gate-fix-merge" || lt.On[OutcomeFail] != "land-conflict-triage" || lt.MaxVisits != 4 {
+		t.Errorf("land-triage = %+v; want ship gate --failed, pass gate-fix-merge, fail land-conflict-triage, max_visits 4", lt)
+	}
+	ct := def.Steps["land-conflict-triage"]
+	if ct.Kind != KindCommand || ct.Run != "rhiza ship check --model-conflict" || ct.On[OutcomePass] != "model-conflict-fix" || len(ct.On) != 1 || ct.MaxVisits != 4 {
+		t.Errorf("land-conflict-triage = %+v; want ship check --model-conflict, pass model-conflict-fix only, max_visits 4", ct)
+	}
+	fx := def.Steps["model-conflict-fix"]
+	if fx.Kind != KindAgent || fx.On[OutcomePass] != "gate-land" || len(fx.On) != 1 || fx.MaxVisits != 3 {
+		t.Errorf("model-conflict-fix = %+v; want an agent step passing to gate-land only, max_visits 3", fx)
+	}
+	for _, want := range []string{"rhiza set <node> --rebase", "rhiza ship check --model-conflict --json", "rhiza check", "Change: {change}", "Actor:", "Review: {run}", "Model-Conflict:", "Never push", "AskUserQuestion", "rhiza session done"} {
+		if !strings.Contains(fx.Prompt, want) {
+			t.Errorf("model-conflict-fix prompt lacks %q", want)
+		}
+	}
+	if def.Steps["land"].MaxVisits != 4 || def.Steps["gate-land"].MaxVisits != 9 {
+		t.Errorf("land, gate-land max_visits = %d, %d; want 4, 9", def.Steps["land"].MaxVisits, def.Steps["gate-land"].MaxVisits)
+	}
+}
+
 func TestShipChangeLandedInfraWaitScript(t *testing.T) {
 	data, ok := Builtin("ship-change")
 	if !ok {

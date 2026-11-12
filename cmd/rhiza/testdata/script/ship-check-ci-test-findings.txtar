@@ -1,6 +1,7 @@
-# A check still failing after its once-per-head rerun: ship check reads the
-# failed run's log and lists each '--- FAIL:' test as a test and a finding.
-# A failing check whose log names no test stays a plain failure.
+# A check still failing after its once-per-head rerun: ship check saves the
+# failed run's log, trimmed to its failing lines, and lists the run as a
+# test and a finding naming the saved file. A failing check whose log has
+# no failing line stays a plain failure.
 
 chmod 755 bin/gh
 env PATH=$WORK/bin:$PATH
@@ -31,22 +32,26 @@ exec git push -q -u origin cs/ship-it
 stdout '"reran"'
 ! stdout '"findings"'
 
-# Second: the log's test is a failure and a finding.
-exec rhiza ship check --settled --json
+# Second: the run is a failure and a finding, and its saved log holds the
+# failing line.
+exec sh -c 'rhiza ship check --settled --json > $WORK/check.json'
+exec cat $WORK/check.json
 stdout '"tests": \['
-stdout '"TestScripts/x"'
+stdout '"CI run 42 \(test\)"'
 stdout '"findings"'
 stdout 'failed: test'
-# The log is read twice: once at the rerun, for the tests that failed
+exec sh -c 'cat "$(sed -n "s/.*saved in \([^:]*\):.*/\1/p" $WORK/check.json | head -1)"'
+stdout '^--- FAIL: TestScripts/x \(0.10s\)$'
+# The log is read twice: once at the rerun, for where it failed
 # before it (the CI stability record's flakes, should the rerun pass), and
 # once now.
 exec sh -c 'grep -c "run view 42 --log-failed" $WORK/gh.log'
 stdout '^2$'
 exec sh -c 'cat $(git rev-parse --git-common-dir)/rhiza/ship/*.json'
 stdout '"ci_findings"'
-stdout 'TestScripts/x'
+stdout 'CI run 42'
 
-# An infra log names no test: a plain failure.
+# An infra log has no failing line: a plain failure.
 exec sh -c 'touch $WORK/infra'
 exec rhiza ship check --settled --json
 ! stdout '"tests"'

@@ -1,0 +1,63 @@
+{
+  "actor": "01M77KKK9SZY0NMA15B5ZB2XS5",
+  "after": [
+    "01M77KJ390T5VA39A4S4RV09FC"
+  ],
+  "at": "2026-11-12T10:12:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at a3db0fa7f with the built binary in a scratch root and HOME: rhiza daemon set rhiza.daemon.failureClassifier to a command that backgrounds a 'sleep 300' child, then sleeps 300 and would print 'transient: slow'. rhiza run start --foreground on a workflow whose command step fails took 61s and printed 'failure classifier: real: classifier failed: timed out after 1m0s'; the step ran once (no rerun), and both the classifier shell and its backgrounded child were gone afterwards (kill -0 fails; no 'sleep 300' left in pgrep). go test -trimpath ./cmd/rhiza -run 'TestShellWithStdin|TestScripts/run-failure-classifier' passes."
+        },
+        "handle": "failure-classifier-setting-qa-2",
+        "id": "01M77KWG18Q7SFFT3R86CCZ8K6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77KWG18Q7SFFT3R84VEE7C8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77KWG18Q7SFFT3R84VEE7C8",
+        "id": "01M77KWG2ZXDQS3872CX0VXN51",
+        "link": "01M77KWG2ZXDQS3872CV38PCEB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642N1KXSN7CKCDEZFBK78Q",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at a3db0fa7f with the built binary: an autonomous run whose command step fails, then the same hanging classifier (backgrounded sleep 300 child, sleep 300, 'transient: slow') and rhiza daemon --once. The daemon poll finished after 61s and logged 'watchdog: run <id> step a failure classified real, left to the inbox: classifier failed: timed out after 1m0s' (plus a poll-over-limit warning); the classifier and its child were killed. A second rhiza daemon --once finished in under a second and did not call the classifier again (no pid file written). internal/api Watchdog|Classify|Rerun tests pass from a worktree outside ~/code."
+        },
+        "handle": "watchdog-classifies-failures-qa-2",
+        "id": "01M77KWG4S3DE85Z92JZH4Z6ZV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77KWG4S3DE85Z92JZFK8CMM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77KWG4S3DE85Z92JZFK8CMM",
+        "id": "01M77KWG75Q8D28G72NKZGQPGS",
+        "link": "01M77KWG75Q8D28G72NJGWE96W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642N2Q7TPP6BCV43AGR07T",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z4X9Q90ASH2K1BF7PZPS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77KWG8N05AA5D6V080SPQFW",
+  "type": "ops",
+  "v": 1
+}

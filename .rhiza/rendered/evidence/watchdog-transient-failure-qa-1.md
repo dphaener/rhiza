@@ -14,7 +14,7 @@ An autonomous run of a command workflow failed with "fatal: Unable to create '/x
 
 ### Out
 
-- verifies [watchdog-transient-failure](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-transient-failure.md)
+- verifies watchdog-transient-failure (retired)
 
 ## History
 

@@ -76,6 +76,8 @@ type ShipCheckRequest struct {
 	// that is still unresolved; it reads the state file and git, runs no
 	// gh and records nothing.
 	Conflicts bool `json:"conflicts,omitempty" flag:"conflicts" desc:"Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed or once the run has made 3 conflict fixes (merge commits on the branch with its Review: trailer); reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)"`
+	// ModelConflict asks only whether the last ship land was refused for a model conflict.
+	ModelConflict bool `json:"model_conflict,omitempty" flag:"model-conflict" desc:"Exit 0 only if the ship state records a land refused for a model conflict (a stale write another change set landed to the same node aspect), the branch is still at the head it was refused at, and the run has made fewer than 3 model-conflict fixes (commits on the branch carrying its Review: trailer and a Model-Conflict: trailer), else exit 1 naming why; with --json shows the conflict with both change sets' IDs and intents; reads the state file and git only and records nothing (for a step that routes a model conflict to a fixer)"`
 	// Reruns is how many times a head's failed Actions runs are rerun.
 	Reruns ShipReruns `json:"reruns,omitempty" flag:"reruns" desc:"How many times a head's failed jobs are rerun before its failure stands, at least 1; default 1"`
 	// Changed makes Settled wait for CI to move past the red head a failing
@@ -117,34 +119,57 @@ func (r ShipReruns) budget() (int, error) {
 
 // ShipCheckResponse is what ship.check found.
 type ShipCheckResponse struct {
-	Change        string             `json:"change" desc:"The change set"`
-	Branch        string             `json:"branch" desc:"The change set's branch"`
-	Main          bool               `json:"main,omitempty" desc:"True if it checked the merge commit on main rather than the pull request"`
-	PR            int                `json:"pr,omitempty" desc:"The pull request's number; 0 if none was found"`
-	URL           string             `json:"url,omitempty" desc:"The pull request's URL"`
-	State         string             `json:"state,omitempty" desc:"The pull request's state, such as OPEN or MERGED"`
-	Commit        string             `json:"commit,omitempty" desc:"The commit checked: the PR's head, or the merge commit"`
-	Checks        []ShipCheck        `json:"checks" desc:"The checks reported for the commit"`
-	Settled       bool               `json:"settled" desc:"True if there is an open PR (or a merge commit) and every check on it has finished"`
-	Green         bool               `json:"green" desc:"True if settled and every check passed (success, neutral or skipped)"`
-	Failed        []string           `json:"failed,omitempty" desc:"The names of the settled checks that did not pass"`
-	Passed        bool               `json:"passed" desc:"True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise"`
-	Detail        string             `json:"detail,omitempty" desc:"Why it did not pass, such as no open pull request"`
-	Written       bool               `json:"written,omitempty" desc:"True if the result was recorded in the state file for the next steps"`
-	Rebased       string             `json:"rebased,omitempty" desc:"With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main"`
-	Conflicts     []string           `json:"conflicts,omitempty" desc:"The files of an unresolved merge of main (a conflict in code left in progress): with --settled the check reports settled, without it the check fails while the merge is unresolved"`
-	MergeConflict *ShipMergeConflict `json:"merge_conflict,omitempty" desc:"A merge of main left in progress by a conflict in code: the files, origin/main's commits with their change sets and the branch's change set"`
-	Stop          string             `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
-	Tests         []string           `json:"tests,omitempty" desc:"The failing tests the failed Actions runs' logs name, once the failed jobs were rerun and failed again: Go tests and testscripts (a '--- FAIL:' line, such as TestScripts/x), RSpec ('rspec ./spec/x_spec.rb:12'), Minitest ('bin/rails test test/x_test.rb:12') and pytest ('pytest tests/test_x.py::test_y'), each as its runner's rerun command"`
-	Findings      []ShipFinding      `json:"findings,omitempty" desc:"One finding, with no leaf, per failing test or recognised CI cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, or a make target error), for a fix step; recorded in the state file as well"`
-	Reran         []string           `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, up to --reruns times per head, instead of failing; the check then reports not settled"`
+	Change        string                 `json:"change" desc:"The change set"`
+	Branch        string                 `json:"branch" desc:"The change set's branch"`
+	Main          bool                   `json:"main,omitempty" desc:"True if it checked the merge commit on main rather than the pull request"`
+	PR            int                    `json:"pr,omitempty" desc:"The pull request's number; 0 if none was found"`
+	URL           string                 `json:"url,omitempty" desc:"The pull request's URL"`
+	State         string                 `json:"state,omitempty" desc:"The pull request's state, such as OPEN or MERGED"`
+	Commit        string                 `json:"commit,omitempty" desc:"The commit checked: the PR's head, or the merge commit"`
+	Checks        []ShipCheck            `json:"checks" desc:"The checks reported for the commit"`
+	Settled       bool                   `json:"settled" desc:"True if there is an open PR (or a merge commit) and every check on it has finished"`
+	Green         bool                   `json:"green" desc:"True if settled and every check passed (success, neutral or skipped)"`
+	Failed        []string               `json:"failed,omitempty" desc:"The names of the settled checks that did not pass"`
+	Passed        bool                   `json:"passed" desc:"True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise"`
+	Detail        string                 `json:"detail,omitempty" desc:"Why it did not pass, such as no open pull request"`
+	Written       bool                   `json:"written,omitempty" desc:"True if the result was recorded in the state file for the next steps"`
+	Rebased       string                 `json:"rebased,omitempty" desc:"With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main"`
+	Conflicts     []string               `json:"conflicts,omitempty" desc:"The files of an unresolved merge of main (a conflict in code left in progress): with --settled the check reports settled, without it the check fails while the merge is unresolved"`
+	ModelConflict *ShipModelConflictView `json:"model_conflict,omitempty" desc:"With --model-conflict: the land's recorded model conflict, with both change sets' IDs and intents"`
+	MergeConflict *ShipMergeConflict     `json:"merge_conflict,omitempty" desc:"A merge of main left in progress by a conflict in code: the files, origin/main's commits with their change sets and the branch's change set"`
+	Stop          string                 `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
+	Tests         []string               `json:"tests,omitempty" desc:"The failed Actions runs whose logs hold failure lines, once the failed jobs were rerun and failed again, each as 'CI run <id> (<check>)'"`
+	Findings      []ShipFinding          `json:"findings,omitempty" desc:"One finding, with no leaf, per failed run with failure lines, for a fix step: it names the file its trimmed failing log is saved in, in the run folder; recorded in the state file as well"`
+	Reran         []string               `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, up to --reruns times per head, instead of failing; the check then reports not settled"`
 }
 
-// ShipFinding is a failing test read from a CI log, as a finding with no
-// leaf.
+// ShipModelConflict is a model conflict a land was refused for.
+type ShipModelConflict struct {
+	Node      string   `json:"node" desc:"The node the stale write is on"`
+	Op        string   `json:"op" desc:"The conflicting operation, of the other change set"`
+	ChangeSet string   `json:"change_set" desc:"The other change set, which landed the conflicting operation"`
+	Aspects   []string `json:"aspects" desc:"The aspects it wrote, such as field:statement"`
+	Head      string   `json:"head" desc:"The branch head the land was refused at"`
+}
+
+// ShipModelConflictView is the recorded conflict for the fixer: both
+// change sets with their intents.
+type ShipModelConflictView struct {
+	Node              string   `json:"node" desc:"The node the stale write is on"`
+	Op                string   `json:"op" desc:"The conflicting operation, of the other change set"`
+	Aspects           []string `json:"aspects" desc:"The aspects it wrote, such as field:statement"`
+	Head              string   `json:"head" desc:"The branch head the land was refused at"`
+	ChangeSetID       string   `json:"refused_change_set" desc:"The change set the land was refused for"`
+	Intent            string   `json:"intent,omitempty" desc:"The refused change set's intent"`
+	OtherChangeSet    string   `json:"change_set" desc:"The other change set, which landed the conflicting operation"`
+	OtherChangeIntent string   `json:"other_intent,omitempty" desc:"The other change set's intent"`
+}
+
+// ShipFinding is a failed CI run, as a finding with no leaf that names its
+// saved log.
 type ShipFinding struct {
-	Test   string `json:"test" desc:"The failing test or testscript"`
-	Reason string `json:"reason" desc:"What failed and where it was read"`
+	Test   string `json:"test" desc:"The failed CI run"`
+	Reason string `json:"reason" desc:"What failed and the saved log to read"`
 }
 
 // ShipCheck is one CI check on a commit, normalised from gh's check runs,
@@ -399,6 +424,9 @@ type shipState struct {
 	// ship open-pr or ship land (nothing was pushed), so ship gate --failed
 	// routes it to the gate's fixer.
 	PrePushFailed string `json:"pre_push_failed,omitempty"`
+	// ModelConflict is the model conflict the last ship land was refused
+	// for, with the head it was refused at; cleared by any other land.
+	ModelConflict *ShipModelConflict `json:"model_conflict,omitempty"`
 	// MergeConflict is the context of a merge of main that conflicts in
 	// code, left in progress in the worktree for a fixer.
 	MergeConflict *ShipMergeConflict `json:"merge_conflict,omitempty"`
@@ -670,6 +698,12 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 			return nil, Usagef("--infra asks only whether the last failing check recorded an infra red; it takes no other check flag")
 		}
 		return runShipInfra(ctx)
+	}
+	if r.ModelConflict {
+		if r.PROpen || r.Main || r.Settled || r.TestFailures || r.Conflicts {
+			return nil, Usagef("--model-conflict asks only whether a land was refused for a model conflict; it takes no other check flag")
+		}
+		return runShipModelConflict(ctx)
 	}
 	if r.Conflicts {
 		if r.PROpen || r.Main || r.Settled || r.TestFailures {
@@ -944,7 +978,7 @@ func shipInfraWait(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckRespons
 				runs = append(runs, c.RunID)
 			}
 		}
-		if len(shipFailedTests(ctx, t, runs)) > 0 || len(shipFailedCauses(ctx, t, runs)) > 0 {
+		if len(shipFailedLogs(ctx, t, runs)) > 0 {
 			return false, nil
 		}
 		st.RedChecks = redChecks(resp.Checks)
@@ -1022,6 +1056,92 @@ func runShipConflicts(ctx *Ctx) (any, error) {
 		resp.Passed = true
 	}
 	return resp, nil
+}
+
+// shipModelFixCap is how many model-conflict fixes one run makes.
+const shipModelFixCap = 3
+
+// shipModelFixes counts the commits on the branch carrying the run's
+// Review: trailer and a Model-Conflict: trailer.
+func shipModelFixes(ctx *Ctx, t shipTarget) int {
+	rid := strings.TrimSpace(ctxGetenv(ctx)(envRun))
+	if rid == "" {
+		return 0
+	}
+	out, err := gitAt(ctx, t.dir(), "log", "--format=%H", "-E", "--grep=^Review: "+rid+"$", "--grep=^Model-Conflict:", "--all-match", "HEAD")
+	if err != nil {
+		return 0
+	}
+	return len(gitLines(out))
+}
+
+// runShipModelConflict passes only while the state records a land refused
+// for a model conflict at the branch's current head, with fixes to spare.
+func runShipModelConflict(ctx *Ctx) (any, error) {
+	t, err := findShipTarget(ctx)
+	if err != nil {
+		return nil, err
+	}
+	st, err := readShipState(t.statePath())
+	if err != nil {
+		return nil, err
+	}
+	resp := ShipCheckResponse{Change: t.cs.String(), Branch: t.branch, Checks: []ShipCheck{}, PR: st.PR, URL: st.URL}
+	head := ""
+	if out, err := gitAt(ctx, t.dir(), "rev-parse", "HEAD"); err == nil {
+		head = strings.TrimSpace(out)
+		resp.Commit = head
+	}
+	mc := st.ModelConflict
+	if mc == nil {
+		resp.Detail = "no model conflict is recorded"
+		return resp, nil
+	}
+	v := &ShipModelConflictView{Node: mc.Node, Op: mc.Op, Aspects: mc.Aspects, Head: mc.Head, ChangeSetID: t.cs.String(), OtherChangeSet: mc.ChangeSet}
+	if w, err := openCtxWorkspace(ctx); err == nil {
+		if c, ok := w.changeSet(t.cs); ok {
+			v.Intent = c.Open.Intent
+		}
+		if o, err := id.Parse(mc.ChangeSet); err == nil {
+			if c, ok := w.changeSet(o); ok {
+				v.OtherChangeIntent = c.Open.Intent
+			}
+		}
+	}
+	resp.ModelConflict = v
+	switch {
+	case head != mc.Head:
+		resp.Detail = fmt.Sprintf("the branch moved past %s, where the land was refused for a model conflict", shortSHA(mc.Head))
+	case shipModelFixes(ctx, t) >= shipModelFixCap:
+		resp.Detail = fmt.Sprintf("the land was refused for a model conflict on %s, but the run has already made %d model-conflict fixes (the most it makes)", mc.Node, shipModelFixCap)
+	default:
+		resp.Detail = fmt.Sprintf("the land was refused for a model conflict on %s: op %s of change set %s wrote %s", mc.Node, mc.Op, mc.ChangeSet, strings.Join(mc.Aspects, ", "))
+		resp.Passed = true
+	}
+	return resp, nil
+}
+
+// shipRecordModelConflict records in st and the ship state the model
+// conflict err refused a land for, at the branch's head, and clears it when
+// err is none (or nil). Best effort.
+func shipRecordModelConflict(ctx *Ctx, t shipTarget, st *shipState, err error) {
+	var c *ModelConflict
+	if e := AsError(err); e != nil {
+		c = e.Conflict
+	}
+	switch {
+	case c == nil && st.ModelConflict == nil:
+		return
+	case c == nil:
+		st.ModelConflict = nil
+	default:
+		head, herr := gitHead(ctx)
+		if herr != nil {
+			return
+		}
+		st.ModelConflict = &ShipModelConflict{Node: c.Node, Op: c.Op, ChangeSet: c.ChangeSet, Aspects: c.Aspects, Head: head}
+	}
+	writeShipState(t.statePath(), *st)
 }
 
 // shipConflictFixCap is how many conflict fixes one run makes, before and
@@ -1171,167 +1291,26 @@ func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckRespo
 	return nil
 }
 
-// shipFailedTests reads the failing tests out of the logs of the Actions
-// runs. A log gh cannot give adds nothing.
-func shipFailedTests(ctx *Ctx, t shipTarget, runs []string) []string {
-	var tests []string
-	for _, id := range runs {
-		out, err := gh(ctx, t.dir(), "run", "view", id, "--log-failed")
-		if err != nil {
-			continue
-		}
-		for _, name := range parseFailedTests(string(out)) {
-			if !slices.Contains(tests, name) {
-				tests = append(tests, name)
-			}
-		}
-	}
-	return tests
-}
-
-// shipFailedCauses reads the recognised non-test causes (see
-// parseCICauses) out of the logs of the Actions runs. A log gh cannot give
-// adds nothing.
-func shipFailedCauses(ctx *Ctx, t shipTarget, runs []string) []ciCause {
-	var causes []ciCause
-	for _, id := range runs {
-		out, err := gh(ctx, t.dir(), "run", "view", id, "--log-failed")
-		if err != nil {
-			continue
-		}
-		causes = append(causes, parseCICauses(string(out))...)
-	}
-	return causes
-}
-
-// ciCause is a deterministic non-test failure read from a CI log: Name is
-// what failed (the job and step, or the command) and Lines the failing
-// lines, quoted.
-type ciCause struct {
-	Name  string
-	Lines []string
-}
+// failureMarker matches the lines of a CI log that mark a failure, whatever
+// the runner: Go ('--- FAIL:', 'FAIL', 'panic:', a compiler diagnostic),
+// Jest and Mocha ('FAIL src/x.test.js', '●', '✕'), RSpec, Minitest and
+// pytest ('Failures:', 'Failed examples:', 'N examples, M failures',
+// 'FAILED', 'AssertionError', 'Traceback'), rhiza
+// check ('fail ...'), a gofmt listing ('unformatted files:') and make
+// ('*** [target] Error', '*** [Makefile:163: fmt-check] Error').
+var failureMarker = regexp.MustCompile(`--- FAIL|^FAIL\b|^FAILED\b|^fail \S|^● |✕|panic:|Traceback \(|AssertionError|^Failures:|^Failed examples:|\d+ examples?, [1-9]\d* failures?|Tests:\s+\d+ failed|\.go:\d+:\d+: \S|(?i:^unformatted files)|\*\*\* \[[^\]]+\] Error`)
 
 var (
-	// 'fail render docs/reference/cli.md: ...' from rhiza check or self-check.
-	checkFailLine = regexp.MustCompile(`^fail \S.*`)
-	// '<file>.go:<line>:<col>: ...' from go vet and the compiler.
-	goDiagLine = regexp.MustCompile(`^(?:\./)?[\w./-]+\.go:\d+:\d+: \S.*`)
-	// The header a fmt-check prints before the files gofmt lists.
-	fmtHeaderLine = regexp.MustCompile(`(?i)^(?:unformatted files|files? (?:not|need) (?:to be )?(?:gofmt|formatted)|gofmt)\b.*$`)
-	goFileLine    = regexp.MustCompile(`^(?:\./)?[\w./-]+\.go$`)
-	// 'make: *** [Makefile:186: self-check] Error 1', '[build] Error 2'.
-	makeErrLine = regexp.MustCompile(`^make(?:\[\d+\])?: \*\*\* \[(?:\S+:\d+: )?([^\]\s]+)\] Error \d+`)
-)
-
-// ciCauseLines caps the lines one cause quotes.
-const ciCauseLines = 10
-
-// parseCICauses returns the deterministic causes a gh run view --log-failed
-// output names besides a failing test, in order of first appearance, from
-// unindented lines only (indented ones are a test's own output): rhiza
-// check or self-check 'fail ...' lines, a gofmt file listing, go vet and
-// compiler diagnostics, each grouped by the job and step that printed it,
-// and, only when none of those or a failing test is in the log, the target
-// of a 'make: *** [<target>] Error N' line with the lines just before it.
-func parseCICauses(log string) []ciCause {
-	var causes []ciCause
-	add := func(name, line string) {
-		for i := range causes {
-			if causes[i].Name == name {
-				if len(causes[i].Lines) < ciCauseLines && !slices.Contains(causes[i].Lines, line) {
-					causes[i].Lines = append(causes[i].Lines, line)
-				}
-				return
-			}
-		}
-		causes = append(causes, ciCause{Name: name, Lines: []string{line}})
-	}
-	var before []string
-	inFmt, fmtWhere := false, ""
-	type makeFail struct {
-		name  string
-		lines []string
-	}
-	var makes []makeFail
-	for _, raw := range strings.Split(log, "\n") {
-		raw = strings.TrimRight(raw, "\r")
-		body := logBody(raw)
-		text := strings.TrimSpace(body)
-		if text != "" && body[0] != text[0] {
-			// An indented line is a test's own output (a failing Go
-			// test's log, a testscript's quoted stdout): a 'fail ...'
-			// or a diagnostic there is what the test saw, not a cause.
-			inFmt = false
-			before = append(before, text)
-			continue
-		}
-		where := ""
-		if parts := strings.SplitN(ansiEscape.ReplaceAllString(raw, ""), "\t", 3); len(parts) == 3 {
-			where = strings.TrimSpace(parts[0]) + " / " + strings.TrimSpace(parts[1])
-		}
-		label := func(kind string) string {
-			if where == "" {
-				return kind
-			}
-			return where + ": " + kind
-		}
-		if inFmt {
-			if goFileLine.MatchString(text) && where == fmtWhere {
-				add(label("fmt-check"), text)
-				continue
-			}
-			inFmt = false
-		}
-		switch {
-		case checkFailLine.MatchString(text):
-			add(label("self-check"), text)
-		case fmtHeaderLine.MatchString(text):
-			inFmt, fmtWhere = true, where
-			add(label("fmt-check"), text)
-		case goDiagLine.MatchString(text):
-			add(label("go vet or compile"), text)
-		default:
-			if m := makeErrLine.FindStringSubmatch(text); m != nil {
-				name := "make " + m[1]
-				if where != "" {
-					name = where + ": " + name
-				}
-				if !slices.ContainsFunc(makes, func(o makeFail) bool { return o.name == name }) {
-					lines := before
-					if len(lines) > 5 {
-						lines = lines[len(lines)-5:]
-					}
-					makes = append(makes, makeFail{name, append([]string{}, lines...)})
-				}
-			}
-		}
-		if text != "" {
-			before = append(before, text)
-		}
-	}
-	if len(causes) == 0 && len(parseFailedTests(log)) == 0 {
-		for _, m := range makes {
-			causes = append(causes, ciCause{Name: m.name, Lines: m.lines})
-		}
-	}
-	return causes
-}
-
-// failLine matches a Go test's failure line in a log, as go test prints it
-// (possibly after a CI timestamp and indentation for a subtest).
-var failLine = regexp.MustCompile(`--- FAIL: (\S+)`)
-
-// Rerun commands that RSpec, Minitest and pytest print for each failing
-// test, matched at the start of a log line's text. RSpec names an example
-// by line ('./spec/x_spec.rb:12') or, when a line is ambiguous (shared
-// examples, loops), by its id ('./spec/x_spec.rb[1:1:11]'), matched whole.
-var (
-	rspecLine    = regexp.MustCompile(`^rspec (\./\S+?(?::\d+|\[[\d:,]+\]))(?:\s|$)`)
-	minitestLine = regexp.MustCompile(`^((?:bin/)?rails test \S+:\d+)`)
-	pytestLine   = regexp.MustCompile(`^FAILED (\S+::\S+)`)
 	ansiEscape   = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
 	logTimestamp = regexp.MustCompile(`^\d{4}-\d\d-\d\dT\S+ ?`)
+)
+
+// Lines of context a trimmed log keeps before and after a failure marker,
+// and the most lines it keeps.
+const (
+	failLogBefore = 3
+	failLogAfter  = 12
+	failLogMax    = 300
 )
 
 // logText returns a log line's text after gh's "job<TAB>step<TAB>timestamp "
@@ -1349,45 +1328,87 @@ func logBody(line string) string {
 	return line
 }
 
-// parseFailedTests returns the distinct tests named in a gh run view
-// --log-failed output, in order of appearance: Go's '--- FAIL:' leaves
-// first (a failing subtest's parent fails too, but rerunning the parent,
-// TestScripts say, would rerun its whole suite), then the rerun commands
-// RSpec, Minitest and pytest print, as printed and without any trailing
-// comment ('rspec ./spec/x_spec.rb:12', 'rspec ./spec/x_spec.rb[1:1:11]', 'bin/rails test test/x_test.rb:12',
-// 'pytest tests/test_x.py::test_y').
-func parseFailedTests(log string) []string {
-	var names []string
-	seen := map[string]bool{}
-	for _, m := range failLine.FindAllStringSubmatch(log, -1) {
-		if !seen[m[1]] {
-			seen[m[1]] = true
-			names = append(names, m[1])
+// trimFailureLog cuts a gh run view --log-failed output down to the failing
+// part: each line failureMarker matches with a few lines before and more
+// after, in order and without repeats, capped at failLogMax lines, with the
+// job and step prefix and colours stripped. It also returns the distinct
+// 'job / step' names the marker lines came from. A log with no marker line
+// trims to nothing: the failure is not one a runner reported.
+func trimFailureLog(log string) (string, []string) {
+	lines := strings.Split(log, "\n")
+	keep := make([]bool, len(lines))
+	var where []string
+	for i, raw := range lines {
+		raw = strings.TrimRight(raw, "\r")
+		if !failureMarker.MatchString(logText(raw)) {
+			continue
+		}
+		if parts := strings.SplitN(ansiEscape.ReplaceAllString(raw, ""), "\t", 3); len(parts) == 3 {
+			w := strings.TrimSpace(parts[0]) + " / " + strings.TrimSpace(parts[1])
+			if !slices.Contains(where, w) {
+				where = append(where, w)
+			}
+		}
+		for j := max(0, i-failLogBefore); j <= min(len(lines)-1, i+failLogAfter); j++ {
+			keep[j] = true
 		}
 	}
 	var out []string
-	for _, name := range names {
-		if !slices.ContainsFunc(names, func(o string) bool { return strings.HasPrefix(o, name+"/") }) {
-			out = append(out, name)
+	for i, raw := range lines {
+		if keep[i] && len(out) < failLogMax {
+			out = append(out, strings.TrimRight(logBody(strings.TrimRight(raw, "\r")), " \t"))
 		}
 	}
-	seen = map[string]bool{}
-	for _, line := range strings.Split(log, "\n") {
-		text := logText(strings.TrimRight(line, "\r"))
-		name := ""
-		if m := rspecLine.FindStringSubmatch(text); m != nil {
-			name = "rspec " + m[1]
-		} else if m := minitestLine.FindStringSubmatch(text); m != nil {
-			name = m[1]
-		} else if m := pytestLine.FindStringSubmatch(text); m != nil {
-			name = "pytest " + m[1]
+	return strings.Join(out, "\n"), where
+}
+
+// failedLog is the trimmed log of one failed Actions run.
+type failedLog struct {
+	Run   string
+	Text  string
+	Where []string
+}
+
+// shipFailedLogs reads the trimmed failing part of the log of each Actions
+// run. A log gh cannot give, or with no failing part, adds nothing.
+func shipFailedLogs(ctx *Ctx, t shipTarget, runs []string) []failedLog {
+	var logs []failedLog
+	for _, id := range runs {
+		out, err := gh(ctx, t.dir(), "run", "view", id, "--log-failed")
+		if err != nil {
+			continue
 		}
-		if name != "" && !seen[name] {
-			seen[name] = true
-			out = append(out, name)
+		if text, where := trimFailureLog(string(out)); text != "" {
+			logs = append(logs, failedLog{Run: id, Text: text, Where: where})
 		}
 	}
-	return out
+	return logs
+}
+
+// shipFailedTests names where the runs' logs fail ('job / step'), for the
+// head's flakes.
+func shipFailedTests(ctx *Ctx, t shipTarget, runs []string) []string {
+	var names []string
+	for _, l := range shipFailedLogs(ctx, t, runs) {
+		for _, w := range l.Where {
+			if !slices.Contains(names, w) {
+				names = append(names, w)
+			}
+		}
+		if len(l.Where) == 0 {
+			names = append(names, "CI run "+l.Run)
+		}
+	}
+	return names
+}
+
+// shipLogFolder is where the failed jobs' logs are saved: the current run's
+// folder, or the ship state's folder outside a run.
+func shipLogFolder(ctx *Ctx, t shipTarget) string {
+	if id := shipRunID(ctx); id != "" {
+		return filepath.Join(run.Dir(t.common), id, "ci-logs")
+	}
+	return filepath.Join(t.common, filepath.FromSlash(shipDir), t.cs.String()+"-ci-logs")
 }
 
 // shipReadFailures reads, for a settled failed head that was already
@@ -1406,32 +1427,26 @@ func shipReadFailures(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResp
 		return writeShipState(path, *st)
 	}
 	seenRun := map[string]bool{}
-	seen := map[string]bool{}
 	for _, c := range resp.Checks {
 		if c.RunID == "" || seenRun[c.RunID] || passingConclusions[strings.ToUpper(c.Conclusion)] {
 			continue
 		}
 		seenRun[c.RunID] = true
-		out, err := gh(ctx, t.dir(), "run", "view", c.RunID, "--log-failed")
-		if err != nil {
+		logs := shipFailedLogs(ctx, t, []string{c.RunID})
+		if len(logs) == 0 {
 			continue
 		}
-		for _, name := range parseFailedTests(string(out)) {
-			if seen[name] {
-				continue
-			}
-			seen[name] = true
-			resp.Tests = append(resp.Tests, name)
-			resp.Findings = append(resp.Findings, ShipFinding{Test: name, Reason: fmt.Sprintf("Test %s failed in CI run %s (check %s) on %s; rerun it alone and fix it", name, c.RunID, c.Name, shortSHA(resp.Commit))})
+		dir := shipLogFolder(ctx, t)
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return Errorf("save CI log: %v", err)
 		}
-		for _, cause := range parseCICauses(string(out)) {
-			if seen[cause.Name] {
-				continue
-			}
-			seen[cause.Name] = true
-			resp.Tests = append(resp.Tests, cause.Name)
-			resp.Findings = append(resp.Findings, ShipFinding{Test: cause.Name, Reason: fmt.Sprintf("%s failed in CI run %s (check %s) on %s; reproduce it locally and fix it. Failing lines:\n%s", cause.Name, c.RunID, c.Name, shortSHA(resp.Commit), strings.Join(cause.Lines, "\n"))})
+		file := filepath.Join(dir, c.RunID+".log")
+		if err := os.WriteFile(file, []byte(logs[0].Text+"\n"), 0o644); err != nil {
+			return Errorf("save CI log: %v", err)
 		}
+		name := "CI run " + c.RunID + " (" + c.Name + ")"
+		resp.Tests = append(resp.Tests, name)
+		resp.Findings = append(resp.Findings, ShipFinding{Test: name, Reason: fmt.Sprintf("%s failed on %s after its reruns; its failing log lines are saved in %s: read them, reproduce the failure locally and fix it", name, shortSHA(resp.Commit), file)})
 	}
 	if slices.Equal(st.CIFindings, resp.Findings) {
 		return nil

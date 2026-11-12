@@ -519,7 +519,7 @@ rhiza daemon set <key> <value> [--project <project>]
 
 Arguments and flags:
 
-- `<key>`: The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
+- `<key>`: The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
 - `<value>`: The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes (required)
 - `--project`: The registered project a project setting is written to; default the current project
 
@@ -2256,7 +2256,7 @@ Output (`--json` fields):
 Check that a change set's pull request has every CI check passed, or that main after its merge has the tested head's tree; with --settled, rebase a pull request GitHub reports conflicting.
 
 ```
-rhiza ship check [--settled] [--main] [--pr-open] [--test-failures] [--conflicts] [--reruns <reruns>] [--infra] [--rerun-infra] [--changed]
+rhiza ship check [--settled] [--main] [--pr-open] [--test-failures] [--conflicts] [--model-conflict] [--reruns <reruns>] [--infra] [--rerun-infra] [--changed]
 ```
 
 Appends to the log.
@@ -2268,6 +2268,7 @@ Arguments and flags:
 - `--pr-open`: Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)
 - `--test-failures`: Exit 0 only if the head's latest ship check recorded at least one failing test or recognised cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, a make target error) read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)
 - `--conflicts`: Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed or once the run has made 3 conflict fixes (merge commits on the branch with its Review: trailer); reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)
+- `--model-conflict`: Exit 0 only if the ship state records a land refused for a model conflict (a stale write another change set landed to the same node aspect), the branch is still at the head it was refused at, and the run has made fewer than 3 model-conflict fixes (commits on the branch carrying its Review: trailer and a Model-Conflict: trailer), else exit 1 naming why; with --json shows the conflict with both change sets' IDs and intents; reads the state file and git only and records nothing (for a step that routes a model conflict to a fixer)
 - `--reruns`: How many times a head's failed jobs are rerun before its failure stands, at least 1; default 1
 - `--infra`: Exit 0 only if the head's latest failing ship check recorded a red head (red_head) with no failing test read from a CI log: an infra failure; exit 1 for a green head, a red with failing tests, or any other failure; reads the state file only and records nothing (for a step that routes an infra red to a wait)
 - `--rerun-infra`: With --settled --changed: while the red head stays red with no failing test, rerun its failed jobs itself with backoff (first after 5m, then 10m, 20m, then every 30m; the last rerun's time and count are kept in the state file) and report not settled, naming the infra failure and the next rerun's time; settled once CI moved past the red head and finished green, finished red with a failing test, or a new head's CI finished
@@ -2282,10 +2283,11 @@ Output (`--json` fields):
 - `conflicts` (array of string): The files of an unresolved merge of main (a conflict in code left in progress): with --settled the check reports settled, without it the check fails while the merge is unresolved
 - `detail` (string): Why it did not pass, such as no open pull request
 - `failed` (array of string): The names of the settled checks that did not pass
-- `findings` (array of object): One finding, with no leaf, per failing test or recognised CI cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, or a make target error), for a fix step; recorded in the state file as well
+- `findings` (array of object): One finding, with no leaf, per failed run with failure lines, for a fix step: it names the file its trimmed failing log is saved in, in the run folder; recorded in the state file as well
 - `green` (boolean): True if settled and every check passed (success, neutral or skipped)
 - `main` (boolean): True if it checked the merge commit on main rather than the pull request
 - `merge_conflict` (object): A merge of main left in progress by a conflict in code: the files, origin/main's commits with their change sets and the branch's change set
+- `model_conflict` (object): With --model-conflict: the land's recorded model conflict, with both change sets' IDs and intents
 - `passed` (boolean): True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise
 - `pr` (integer): The pull request's number; 0 if none was found
 - `rebased` (string): With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main
@@ -2293,7 +2295,7 @@ Output (`--json` fields):
 - `settled` (boolean): True if there is an open PR (or a merge commit) and every check on it has finished
 - `state` (string): The pull request's state, such as OPEN or MERGED
 - `stop` (string): With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75
-- `tests` (array of string): The failing tests the failed Actions runs' logs name, once the failed jobs were rerun and failed again: Go tests and testscripts (a '--- FAIL:' line, such as TestScripts/x), RSpec ('rspec ./spec/x_spec.rb:12'), Minitest ('bin/rails test test/x_test.rb:12') and pytest ('pytest tests/test_x.py::test_y'), each as its runner's rerun command
+- `tests` (array of string): The failed Actions runs whose logs hold failure lines, once the failed jobs were rerun and failed again, each as 'CI run <id> (<check>)'
 - `url` (string): The pull request's URL
 - `written` (boolean): True if the result was recorded in the state file for the next steps
 

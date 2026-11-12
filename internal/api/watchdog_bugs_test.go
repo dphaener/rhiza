@@ -29,6 +29,7 @@ func TestWatchdogBugs(t *testing.T) {
 	js := []run.Journal{failed("one", "build", lock), failed("two", "build", lock)}
 	queue := []daemon.Request{{ID: "req1", Kind: daemon.KindFeature, Run: "one"}}
 	d := watchdogDeps{
+		classify: fakeClassify,
 		resume:   func(string) error { return nil },
 		requests: func() ([]daemon.Request, error) { return queue, nil },
 		file: func(text string) error {

@@ -10,7 +10,7 @@ Plan review round 3 left finding f1 (contradiction on watchdog-transient-failure
 
 ### Out
 
-- blocks [watchdog-transient-failure](../capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-transient-failure.md)
+- blocks watchdog-transient-failure (retired)
 
 ### In
 

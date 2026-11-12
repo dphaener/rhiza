@@ -1,0 +1,40 @@
+{
+  "actor": "01M77JER404K923GZBNSVZBNSK",
+  "after": [
+    "01M77JE63XEWYGSER75FP8YZT1"
+  ],
+  "at": "2026-11-12T09:48:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 54110a0ef: go test -trimpath -count=1 ./internal/api -run 'Watchdog|Classif' passes. With an injected classifier, TestWatchdogTransient retries the transient failures (work, lock, gh) and leaves the real one to the inbox, logging 'classified real' with its reason; TestWatchdogTransientClassifierError leaves both a classifier error and a missing classifier to the inbox, never resuming, and logs the reason. grep finds no transientSignatures in code. Attempt-1 findings fixed: classifyOnce remembers a real or unjudged verdict in WatchdogRun.Judged at the journal's last entry, so a second poll neither classifies nor logs again, and a new failure is judged anew (tested); watchdogRequests now checks budget and queue before classifying and logs real verdicts (TestWatchdogRequests). Memory carries across polls via watchdogPasses for non-live runs. go vet and gofmt clean; internal/daemon tests pass."
+        },
+        "handle": "watchdog-classifies-failures-verified",
+        "id": "01M77JH8J8W41JNSVW2D5X12YN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77JH8J7H4WV8QW9C9WMJH1F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77JH8J7H4WV8QW9C9WMJH1F",
+        "id": "01M77JH8KCMKGFPX17X9WA5BX2",
+        "link": "01M77JH8KCMKGFPX17X9FDWN3N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642N2Q7TPP6BCV43AGR07T",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z4X9Q90ASH2K1BF7PZPS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77JH8MAZE4B4RPP20G5Q58W",
+  "type": "ops",
+  "v": 1
+}

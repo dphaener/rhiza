@@ -23,7 +23,7 @@ Change set 01M6TB6N serves intent m27-nebari-on-rhiza (01M6J303FW4PYT5E5CE39QNHJ
 
 ### In
 
-- decided-by [ship-check-runner-test-failures](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-runner-test-failures.md)
+- decided-by ship-check-runner-test-failures (retired)
 
 ## History
 
