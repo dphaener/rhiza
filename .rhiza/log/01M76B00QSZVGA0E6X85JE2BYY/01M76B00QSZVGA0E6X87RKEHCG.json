@@ -1,0 +1,15 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [],
+  "at": "2026-11-11T22:17:31Z",
+  "body": {
+    "intent": "install.sh: a curl | sh script that installs the newest release (or --channel latest) for this platform, verifying sha256 from the manifest, documented in the README",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M76B00QSZVGA0E6X85JE2BYY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76B00QSZVGA0E6X87RKEHCG",
+  "type": "open",
+  "v": 1
+}

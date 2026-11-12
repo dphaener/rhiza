@@ -1,0 +1,40 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [
+    "01M76B0BSVESMEFD39RX3ATV5N"
+  ],
+  "at": "2026-11-11T22:21:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/release/... over fixture pairs: removed op, removed field, retyped field, removed setting and a log format bump are breaking; an added op, field or setting is not",
+          "statement": "tools/release lists each breaking difference between HEAD and the last v* tag: a removed operation or request/response field, or a field whose type changed, in describe --json; a removed or retyped daemon setting; a changed log format version"
+        },
+        "handle": "breaking-detection",
+        "id": "01M76B7DRSHQHDGWY46NK4VRXR",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M76B7DRSHQHDGWY46MBH319P",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "decision": null,
+        "from": "01M76B7DRSHQHDGWY46MBH319P",
+        "id": "01M76B7DS5WWHQVKVB3NCP5DT6",
+        "link": "01M76B7DS5WWHQVKVB3M8RF90W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSYNNPSWTFV3RHSM4RMP",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76B0BSVESMEFD39RTW517R3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76B7DSHM16X2SRWK7J7D0K9",
+  "type": "ops",
+  "v": 1
+}

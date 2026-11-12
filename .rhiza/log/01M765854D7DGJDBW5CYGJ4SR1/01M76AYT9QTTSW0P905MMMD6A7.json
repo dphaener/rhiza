@@ -1,0 +1,248 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [
+    "01M76AY5A2ZK0QW0WA5G9D1AG5"
+  ],
+  "at": "2026-11-11T22:16:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "33",
+          "statement": "Rhiza binaries ship on release channels: official releases cut by rule and a latest build of every merge to main, each found through a manifest and verified by sha256, ready for milestone 32's auto-update."
+        },
+        "handle": "milestone-33",
+        "id": "01M76AYSQCE68YTFVJR0KRNSBZ",
+        "key": "zzzzzzz",
+        "kind": "intent",
+        "node": "01M76AYSQCE68YTFVJQZANYNSD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Every official v* release carries a channel manifest and build-provenance attestations, and v0.1.0 is published on the release channel."
+        },
+        "handle": "m33-release-channel",
+        "id": "01M76AYSS062BH7HK7TZB4C1W6",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M76AYSS062BH7HK7TVJYH8B3",
+        "op": "node.create",
+        "parent": "01M76AYSQCE68YTFVJQZANYNSD"
+      },
+      {
+        "fields": {
+          "statement": "Every merge to main replaces one rolling 'latest' GitHub prerelease with that commit's four archives, checksums and manifest, versioned as the next patch's semver prerelease."
+        },
+        "handle": "m33-latest-channel",
+        "id": "01M76AYSSQZ8JHN8SNH2CR616E",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M76AYSSQZ8JHN8SNH038CERR",
+        "op": "node.create",
+        "parent": "01M76AYSQCE68YTFVJQZANYNSD"
+      },
+      {
+        "fields": {
+          "statement": "A client finds the newest build on the release or latest channel from its manifest and verifies it: a resolver package, a read-only rhiza version --channel, and an install.sh."
+        },
+        "handle": "m33-client",
+        "id": "01M76AYSTDP7BEX1AHGQVPATRG",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M76AYSTDP7BEX1AHGPFK8J3Y",
+        "op": "node.create",
+        "parent": "01M76AYSQCE68YTFVJQZANYNSD"
+      },
+      {
+        "fields": {
+          "statement": "Releases are cut by rule: a finished milestone is a minor, landed fixes a batched patch (a severe fix at once), every release passes CI, a 24h soak and the milestone-closed gate with notes from the model; minor and patch are automatic, a major is owner-gated and strict semver holds from v1.0.0."
+        },
+        "handle": "m33-release-policy",
+        "id": "01M76AYSVSA60HBQ48Z2DA02A0",
+        "key": "y",
+        "kind": "intent",
+        "node": "01M76AYSVSA60HBQ48YZFSVRS3",
+        "op": "node.create",
+        "parent": "01M76AYSQCE68YTFVJQZANYNSD"
+      },
+      {
+        "fields": {
+          "question": "How is an official release cut? Today pushing a v* tag by hand publishes it; none has been cut yet (milestone 30 settled on v0.1.0 first).",
+          "quote": "Let's chat about this one. We should have baked in release requirements. What triggers a release, etc.",
+          "statement": "Release requirements are baked in: Rhiza decides by rule what triggers a release and which gates it must pass"
+        },
+        "handle": "m33-release-requirements",
+        "id": "01M76AYSWKKGEWHC856D6W6VQP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76AYSWKKGEWHC856A7TJYF5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "What triggers an official release?",
+          "quote": "#1, and when does a major release happen?",
+          "statement": "Every finished milestone triggers a minor release; fix-only patch releases come in between"
+        },
+        "handle": "m33-milestone-is-minor",
+        "id": "01M76AYSX3MH9BQ3HBT55EG9MZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76AYSX3MH9BQ3HBT2SES85A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "Once the gates pass, who tags the release?",
+          "quote": "Fully automatic for minor and patch, owner gated for major releases",
+          "statement": "Minor and patch releases are cut fully automatically once the gates pass; a major release waits for the owner's sign-off"
+        },
+        "handle": "m33-auto-minor-patch",
+        "id": "01M76AYSXNBZYZEDCBR2MCYBE5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76AYSXNBZYZEDCBQZF1TXZF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "When does a major release happen?",
+          "quote": "If we're sticking to semver, then a breaking change is always a major release. Does semver allow for a major release that is NOT a breaking change?",
+          "statement": "Releases follow semver: a breaking change is always a major release (strict from v1.0.0, as settled next)"
+        },
+        "handle": "m33-breaking-is-major",
+        "id": "01M76AYSYNNPSWTFV3RMM94D91",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76AYSYNNPSWTFV3RHSM4RMP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "When is an automatic patch release cut?",
+          "quote": "Batched, unless the bugfix is marked as severe and needs to be released immediately.",
+          "statement": "Bug fixes are released as a batched patch, except a fix marked severe, which is released immediately"
+        },
+        "handle": "m33-batched-patches",
+        "id": "01M76AYSZGMRT62VKRK1NSG9RR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76AYSZGMRT62VKRJZY08FQE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76AYSWKKGEWHC856A7TJYF5",
+        "id": "01M76AYT0ABAGSK87N1K1J4276",
+        "link": "01M76AYT0ABAGSK87N1HKGY0C7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M76AYSX3MH9BQ3HBT2SES85A",
+        "id": "01M76AYT140JXK7RCZ5CVZNZX5",
+        "link": "01M76AYT140JXK7RCZ58ZM7A9X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M76AYSXNBZYZEDCBQZF1TXZF",
+        "id": "01M76AYT1XPZ4WVZNT81AA1SVZ",
+        "link": "01M76AYT1XPZ4WVZNT7Z3G5KG0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M76AYSYNNPSWTFV3RHSM4RMP",
+        "id": "01M76AYT44MFRJ4QSD279XQ5GP",
+        "link": "01M76AYT44MFRJ4QSD23DHVE2X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M76AYSZGMRT62VKRJZY08FQE",
+        "id": "01M76AYT4X60ED1Z0XNG8ARD8Z",
+        "link": "01M76AYT4X60ED1Z0XND0KASFR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M76AYSVSA60HBQ48YZFSVRS3",
+        "id": "01M76AYT5T4H1BYYBJ6HZ1DQ7R",
+        "link": "01M76AYT5T4H1BYYBJ6F4NVEV9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSWKKGEWHC856A7TJYF5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76AYSVSA60HBQ48YZFSVRS3",
+        "id": "01M76AYT6PRDN9ZR85R21GZ69Q",
+        "link": "01M76AYT6PRDN9ZR85R07DZHC4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSX3MH9BQ3HBT2SES85A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76AYSVSA60HBQ48YZFSVRS3",
+        "id": "01M76AYT7CH0M03ZM3AWA98AW2",
+        "link": "01M76AYT7CH0M03ZM3AS5C0M4F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSXNBZYZEDCBQZF1TXZF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76AYSVSA60HBQ48YZFSVRS3",
+        "id": "01M76AYT7ZDA1ETGWRNXSARGE7",
+        "link": "01M76AYT7ZDA1ETGWRNWTTP1R6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSYNNPSWTFV3RHSM4RMP",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76AYSVSA60HBQ48YZFSVRS3",
+        "id": "01M76AYT8SNYADPW7R3FDTSV8F",
+        "link": "01M76AYT8SNYADPW7R3CEV2H7W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSZGMRT62VKRJZY08FQE",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M765854D7DGJDBW5CYGJ4SR1",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76AYT9QTTSW0P905MMMD6A7",
+  "type": "ops",
+  "v": 1
+}

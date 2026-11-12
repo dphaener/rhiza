@@ -1,0 +1,475 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [
+    "01M76BC1NX6T6JX98BK44J2NCY"
+  ],
+  "at": "2026-11-11T22:24:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "Rolling prerelease (Recommended)",
+            "Prerelease per merge",
+            "Actions artifacts"
+          ],
+          "picked": "Rolling prerelease (Recommended)",
+          "question": "Where should the 'latest' channel (a build of every merge to main) be published? Today only v* tags publish a GitHub release, and main gets about 27 merges a day.",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "Where should the 'latest' channel (a build of every merge to main) be published? Today only v* tags publish a GitHub release, and main gets about 27 merges a day. — Rolling prerelease (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-1",
+        "id": "01M76B83KQJT1K5VNGBESWS44K",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76B83KQJT1K5VNGBEREE8XZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76B83KQJT1K5VNGBEREE8XZ",
+        "id": "01M76B86JH5KBKBSFZY0FD16WA",
+        "link": "01M76B86JH5KBKBSFZXYTA1EQN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Semver prerelease (Recommended)",
+            "git describe",
+            "Commit only"
+          ],
+          "picked": "Semver prerelease (Recommended)",
+          "question": "What version should a 'latest' build report (rhiza version)? Releases report their tag, e.g. v0.1.0.",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "What version should a 'latest' build report (rhiza version)? Releases report their tag, e.g. v0.1.0. — Semver prerelease (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-2",
+        "id": "01M76B8A443YXC17JPHJ3DPKNH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76B8A443YXC17JPHHK202QP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76B8A443YXC17JPHHK202QP",
+        "id": "01M76B8DZS22D050YKPQ6NM6V6",
+        "link": "01M76B8DZS22D050YKPP49NBWY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Next patch (Recommended)",
+            "Next minor"
+          ],
+          "picked": "Next patch (Recommended)",
+          "question": "A latest build's version must sort after the release it follows. Which base should it use?",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "A latest build's version must sort after the release it follows. Which base should it use? — Next patch (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-3",
+        "id": "01M76B8HTXW32PBWRYJQD70XJD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76B8HTXW32PBWRYJNM7NM8R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76B8HTXW32PBWRYJNM7NM8R",
+        "id": "01M76B8NPMWZDZ92TGZ3Z1EP64",
+        "link": "01M76B8NPMWZDZ92TGZ0ZW9R30",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Manifest asset (Recommended)",
+            "GitHub releases API"
+          ],
+          "picked": "Manifest asset (Recommended)",
+          "question": "How does a client find the newest build on a channel (release or latest)?",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "How does a client find the newest build on a channel (release or latest)? — Manifest asset (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-4",
+        "id": "01M76B8SVJVSER4W7J9V0PAHFR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76B8SVJVSER4W7J9TKNJQZC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76B8SVJVSER4W7J9TKNJQZC",
+        "id": "01M76B8Y281JQEX4E9WPG8K781",
+        "link": "01M76B8Y281JQEX4E9WNYHE0JF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "sha256 + attestation (Recommended)",
+            "sha256 only",
+            "Signed (cosign)"
+          ],
+          "picked": "sha256 + attestation (Recommended)",
+          "question": "How does a client verify a downloaded build?",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "How does a client verify a downloaded build? — sha256 + attestation (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-5",
+        "id": "01M76B91E9R0EQP8WZ92AZMBXH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76B91E9R0EQP8WZ8YZFG392",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76B91E9R0EQP8WZ8YZFG392",
+        "id": "01M76B94VSXM9978C0ASZWM3HP",
+        "link": "01M76B94VSXM9978C0AQCXT591",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Resolver + check cmd (Recommended)",
+            "Resolver only",
+            "Publishing only"
+          ],
+          "picked": "Resolver + check cmd (Recommended)",
+          "question": "How much of the client side belongs here (milestone 32 owns the daemon's auto-update mechanics)?",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "How much of the client side belongs here (milestone 32 owns the daemon's auto-update mechanics)? — Resolver + check cmd (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-7",
+        "id": "01M76B988KNR8WT4PH1VS7G6RE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76B988KNR8WT4PH1SQ01Z44",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76B988KNR8WT4PH1SQ01Z44",
+        "id": "01M76B9BN5Q1H077YPB5D7S9YE",
+        "link": "01M76B9BN5Q1H077YPB3ZT7452",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "install.sh (Recommended)",
+            "README steps only"
+          ],
+          "picked": "install.sh (Recommended)",
+          "question": "Should a person be able to install from a channel without Go or the daemon?",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "Should a person be able to install from a channel without Go or the daemon? — install.sh (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-8",
+        "id": "01M76B9FCW2YTERQNTAQ21YB9A",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76B9FCW2YTERQNTAPV34N6C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76B9FCW2YTERQNTAPV34N6C",
+        "id": "01M76B9K1VTYVEP2G7494P4PK5",
+        "link": "01M76B9K1VTYVEP2G745G471XM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "CI green on commit",
+            "Soak on latest",
+            "Milestone closed",
+            "Notes from model"
+          ],
+          "picked": "CI green on commit, Soak on latest, Milestone closed, Notes from model",
+          "question": "Which gates must a release pass? (all that apply)",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "Which gates must a release pass? (all that apply) — CI green on commit, Soak on latest, Milestone closed, Notes from model",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-11",
+        "id": "01M76B9Q6ARZSMF2RPJ9JD7RE7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76B9Q6ARZSMF2RPJ5VA6C0D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76B9Q6ARZSMF2RPJ5VA6C0D",
+        "id": "01M76B9VDCCNT131XV5528FAZH",
+        "link": "01M76B9VDCCNT131XV54X8M3YC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "24 hours (Recommended)",
+            "12 hours",
+            "48 hours"
+          ],
+          "picked": "24 hours (Recommended)",
+          "question": "How long must a commit's latest build soak on the VM daemon before release?",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "How long must a commit's latest build soak on the VM daemon before release? — 24 hours (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-13",
+        "id": "01M76B9Z4TD4NN5J2QQGC36K0N",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76B9Z4TD4NN5J2QQETAGV3K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76B9Z4TD4NN5J2QQETAGV3K",
+        "id": "01M76BA3KNG4N7W5XHGZC4W8K6",
+        "link": "01M76BA3KNG4N7W5XHGYKB4K5P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Strict from v1 (Recommended)",
+            "Strict now"
+          ],
+          "picked": "Strict from v1 (Recommended)",
+          "question": "How do breaking changes and majors work?",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "How do breaking changes and majors work? — Strict from v1 (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-15",
+        "id": "01M76BAA94SH4JNTJGP6407V7S",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76BAA94SH4JNTJGP606WRZ5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76BAA94SH4JNTJGP606WRZ5",
+        "id": "01M76BAH3CZDAPHZRFM1F5MY2X",
+        "link": "01M76BAH3CZDAPHZRFKYN9SHFX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Marked + detected (Recommended)",
+            "Marked only",
+            "Detected only"
+          ],
+          "picked": "Marked + detected (Recommended)",
+          "question": "How does Rhiza know a change is breaking?",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "How does Rhiza know a change is breaking? — Marked + detected (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-16",
+        "id": "01M76BAR00ZJSH6HYE7X89K7ER",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76BAR00ZJSH6HYE7WYRGK7Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76BAR00ZJSH6HYE7WYRGK7Q",
+        "id": "01M76BAWRPRZ4J0KNRR346RQHA",
+        "link": "01M76BAWRPRZ4J0KNRR0MMDN16",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Marked; skips soak (Recommended)",
+            "Owner-only; skips soak"
+          ],
+          "picked": "Marked; skips soak (Recommended)",
+          "question": "A severe bug fix releases immediately. Who marks a bug severe, and which gates does it skip?",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "A severe bug fix releases immediately. Who marks a bug severe, and which gates does it skip? — Marked; skips soak (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-17",
+        "id": "01M76BB1T0FJXR1APA31KDQPFE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76BB1T0FJXR1APA2ZTQ594H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76BB1T0FJXR1APA2ZTQ594H",
+        "id": "01M76BB6GTSHF5V18GWVT63F2J",
+        "link": "01M76BB6GTSHF5V18GWRED7X8B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "By hand after A (Recommended)",
+            "First automatic one"
+          ],
+          "picked": "By hand after A (Recommended)",
+          "question": "When is v0.1.0, the first release, cut? Milestone 32's auto-update needs something on the release channel.",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "When is v0.1.0, the first release, cut? Milestone 32's auto-update needs something on the release channel. — By hand after A (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-18",
+        "id": "01M76BBB9FQTKQ522VKW2WME11",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76BBB9FQTKQ522VKV4QVFQF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76BBB9FQTKQ522VKV4QVFQF",
+        "id": "01M76BBF1K2W8PG3NTXNPT6P1Q",
+        "link": "01M76BBF1K2W8PG3NTXJ5V0G6H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "All eight (Recommended)",
+            "Channels first (A–D)"
+          ],
+          "picked": "All eight (Recommended)",
+          "question": "Which change sets should get leaves now? (the rest keep only their intent, planned later)",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "Which change sets should get leaves now? (the rest keep only their intent, planned later) — All eight (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-19",
+        "id": "01M76BBJKHQBKA0Y8XZ2MGX9E0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76BBJKHQBKA0Y8XZ0T4HD4M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76BBJKHQBKA0Y8XZ0T4HD4M",
+        "id": "01M76BBPYM00VXK9PP0EQHCXHF",
+        "link": "01M76BBPYM00VXK9PP0CJVWPNB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Feature, opt-in (Recommended)",
+            "Rhiza repo only"
+          ],
+          "picked": "Rhiza repo only",
+          "question": "Release policy E–H (marks, breaking detection, rhiza release check, the daemon cutting releases): is it a Rhiza feature any managed repo can turn on, or tooling only for Rhiza's own repo?",
+          "session": "41425f42-c4ee-4701-bd80-01a1cc544960",
+          "statement": "Release policy E–H (marks, breaking detection, rhiza release check, the daemon cutting releases): is it a Rhiza feature any managed repo can turn on, or tooling only for Rhiza's own repo? — Rhiza repo only",
+          "wording": "the agent's option, picked by the owner in session 41425f42-c4ee-4701-bd80-01a1cc544960"
+        },
+        "handle": "answer-41425f42-20",
+        "id": "01M76BBTW1A3C00G0VYRKQM0MS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76BBTW1A3C00G0VYQ1WBTKA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76BBTW1A3C00G0VYQ1WBTKA",
+        "id": "01M76BBZ74HEQGBSAQ1SXV04QX",
+        "link": "01M76BBZ74HEQGBSAQ1Q7XKW23",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AY599871MGQ6E7XCVAK6X",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M76BC1NX6T6JX98BK0DX8SB3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76BC3571WDFBQNZSB57VWD2",
+  "type": "ops",
+  "v": 1
+}

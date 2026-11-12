@@ -1,0 +1,15 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [],
+  "at": "2026-11-11T22:17:37Z",
+  "body": {
+    "intent": "Release marks: a change set can be marked breaking at plan or review, a bug request carries a severity (severe or not), and a bug request records the rhiza build it was filed against",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M76B077D23CJ28C690Y166VY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76B077D23CJ28C692NZH80J",
+  "type": "open",
+  "v": 1
+}

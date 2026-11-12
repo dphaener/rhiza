@@ -1,0 +1,43 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [
+    "01M76AZSNW1912Y5RD6NARMF99"
+  ],
+  "at": "2026-11-11T22:21:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/release/... against an httptest server on localhost: picks each of the four platforms, reports both channels newest versions, and rejects a bad sha256, a platform missing from the manifest and a malformed manifest; nothing reaches github.com",
+          "statement": "internal/release resolves a channel (release or latest) to its manifest, reports its newest version, picks the running os/arch archive, downloads it and rejects it unless its sha256 matches the manifest"
+        },
+        "handle": "channel-resolver",
+        "id": "01M76B7D55NHFJP1CNA7XZDBCV",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M76B7D55NHFJP1CNA4H5HWDH",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScripts/version-channel, with the channel base URL pointed at a fixture (a test override, no network), covers newer, same and older, an unknown channel and an unreachable channel; describe-golden is regenerated",
+          "statement": "rhiza version --channel release|latest prints the newest version on that channel and whether it is newer than the running build, and writes nothing"
+        },
+        "handle": "version-channel-check",
+        "id": "01M76B7D5PY6PAKYK14T01MVKR",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M76B7D5PY6PAKYK14QQCKZE1",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      }
+    ]
+  },
+  "change_set": "01M76AZSNW1912Y5RD6J4TAHJQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76B7D69DMH5EZX7VQSYG8NK",
+  "type": "ops",
+  "v": 1
+}
