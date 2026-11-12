@@ -1,0 +1,50 @@
+{
+  "actor": "01M78FDZRHRVN7QM13CR9G2XCE",
+  "after": [
+    "01M78FP4C8N88BX2Y4TCM4X688"
+  ],
+  "at": "2026-11-12T18:18:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestCIStability|TestShipLocalGate' shows: a window whose only flakes are 'ci / UNKNOWN STEP' and 'CI run 123' judged stable with a reason naming the ignored flakes, and ship gate skipping with that reason; a window with one 'scripts (4/4) / Run scripts' or '--- FAIL: TestX' flake judged unstable; go test -trimpath ./internal/api -run TestHealthCI still lists the unidentified flake with its count",
+          "statement": "Only a flake attributed to a named failing test ('--- FAIL:' name) or a 'job / step' with a known step makes CI unstable; an unidentified flake (step read as UNKNOWN STEP, or 'CI run <id>' whose log names no job or step) stays in the CI stability record, in rhiza health with its count and in the watchdog's filed bugs, but does not switch on the local gate, and the CI verdict's reason and ship gate's skip reason say an unidentified flake was seen and ignored"
+        },
+        "handle": "ci-verdict-ignores-unidentified-flakes",
+        "id": "01M78FQE9FX3CBT19QS71R0PYR",
+        "key": "zzzzzw",
+        "kind": "capability",
+        "node": "01M78FQE9FX3CBT19QS4AHSD9K",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M78FQE9FX3CBT19QS4AHSD9K",
+        "id": "01M78FQEA6PACF0TANPBXYGYN2",
+        "link": "01M78FQEA6PACF0TANP89TE9F4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FKX3BQT0ABF59FCKH9B6Z",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M78FQE9FX3CBT19QS4AHSD9K",
+        "id": "01M78FQEAWKQCK8H4ZE5N1Z2M9",
+        "link": "01M78FQEAWKQCK8H4ZE2Y5QBQ9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M78FD039D0F1QVN2BWEAEYCC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78FQECC71B0RFWFSKEEQ57K",
+  "type": "ops",
+  "v": 1
+}

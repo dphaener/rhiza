@@ -1,0 +1,30 @@
+{
+  "actor": "01M78GE1K22G30RP88JDFBC54J",
+  "after": [
+    "01M78G31CGGVTQKV5VGNJJXE5V"
+  ],
+  "at": "2026-11-12T18:31:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestShipGateFullLog|TestShipRebase' shows a gate whose output is over 64 KB with a '--- FAIL: TestX' line near its start and make's error lines at its end: the log file holds every byte, ShipGateResponse's log field names it, and the last 20 lines of the human output (what a failed command step keeps) contain '--- FAIL: TestX' and the log path; a passing gate also writes the log, and a failing gate run by ship rebase writes the same log; describe-golden is regenerated for the new field; grep -c 'run `rhiza ship gate` to see' .rhiza/workflows/ship-change.toml .rhiza/workflows/docs.toml prints 0 for both, each gate-fix prompt names `rhiza run status --json` and the full log, and make self-check passes",
+          "statement": "When the local gate runs (rhiza ship gate, and the gate ship rebase runs on a merged head, both through shipLocalGate), its whole combined output is written to a log file under the git common dir (rhiza/gate/<branch>.log, replaced on each run), the response carries the file's path, and a failing gate's human output ends with the output's failing test lines (go test '--- FAIL:', 'FAIL', 'panic:' lines, at most 10) and 'Full log: <path>', so the tail a run step keeps names the failing test and where to read the rest. The gate-fix prompts (.rhiza/workflows/ship-change.toml and docs.toml, two each) stop telling the fixer to run `rhiza ship gate` to see the gate's output, since a failed head is never cached and that reruns the whole gate; they tell it to read the failed gate step's kept output in `rhiza run status --json` and the full log file it names"
+        },
+        "handle": "ship-gate-full-log",
+        "id": "01M78FP45EF4RB94DP1KG36W64",
+        "key": "zzzzzr",
+        "kind": "capability",
+        "node": "01M78FP45EF4RB94DP1JZ5W6T2",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      }
+    ]
+  },
+  "change_set": "01M78FD039D0F1QVN2BWEAEYCC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78GEY7VBJ31K20XEZDH7FDY",
+  "type": "ops",
+  "v": 1
+}
