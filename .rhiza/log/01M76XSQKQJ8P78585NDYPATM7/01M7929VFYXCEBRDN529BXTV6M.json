@@ -1,0 +1,40 @@
+{
+  "actor": "01M7927ANNPKF5V93JVR1GN6WM",
+  "after": [
+    "01M7923T6AW6WGTBS899ETSZNZ"
+  ],
+  "at": "2026-11-12T23:43:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 5dccff371 (attempt 2), detached checkout. Ran `go test -trimpath ./internal/api -run ShipPushDiverged -v -count=1`: PASS for TestShipPushDivergedMergesOrigin/{ship.open-pr,ship.rebase} and TestShipPushDivergedConflictStops/{ship.open-pr,ship.rebase}. These use scratch repos with a bare origin whose cs/ship-it branch is one commit ahead (pushed from another clone). In the clean case (origin touches theirs.txt, local touches mine.txt) the step merges and pushes: origin's branch equals local HEAD, history holds both 'earlier push' and 'mine', and a merge commit exists. In the conflict case (both touch clash.txt) the error names 'earlier push', there is no MERGE_HEAD, HEAD is unchanged and nothing is pushed. Every git call made through ctx.Git and ctx.Exec is recorded, and noForceOrRebase asserts that none is a rebase, --force, -f push, --force-with-lease or + refspec push. That closes attempt 1's findings f1 (rebase not covered) and f2 (no force/rebase assertion). Read the diff: shipFollowPR now calls shipMergeOrigin on divergence (dirty-tree refusal, merge --no-edit, merge --abort plus Conflictf naming origin's commits on failure). ship.rebase reaches it through shipFollowPR. Neither file uses --force or rebase. Also ran: `go test -trimpath ./internal/api -run 'ShipOpenPR|FollowPR|ShipRebase|ShipClose|ShipLand|ShipMerge' -count=1`: ok. `go vet ./internal/api`: clean."
+        },
+        "handle": "ship-push-merges-own-origin-verified",
+        "id": "01M7929VD2C49YYPRA4G430YDQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7929VD2C49YYPRA4CZQ0KXG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7929VD2C49YYPRA4CZQ0KXG",
+        "id": "01M7929VEKNDNX1CJSHCVK4NFH",
+        "link": "01M7929VEKNDNX1CJSHBQ3MPVN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG4SPZ8481AWNBER0JJS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7929VFYXCEBRDN529BXTV6M",
+  "type": "ops",
+  "v": 1
+}
