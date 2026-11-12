@@ -347,3 +347,88 @@ func TestReleaseWorkflowAndTimer(t *testing.T) {
 		t.Error("agents/vm.md does not name rhiza-release.timer")
 	}
 }
+
+// TestCutRealGitKeepsHeadings tags with real git, plainly and by replacing
+// a published lightweight tag, and reads the annotation back: the notes'
+// "## " section headings survive, as release.yml publishes them.
+func TestCutRealGitKeepsHeadings(t *testing.T) {
+	now := time.Date(2026, 11, 12, 12, 0, 0, 0, time.UTC)
+	gitIn := func(dir string) GitFunc {
+		return func(args ...string) (string, error) {
+			c := exec.Command("git", append([]string{"-c", "user.name=t", "-c", "user.email=t@t", "-c", "tag.gpgsign=false"}, args...)...)
+			c.Dir = dir
+			out, err := c.CombinedOutput()
+			s := strings.TrimSpace(string(out))
+			if err != nil {
+				return s, fmt.Errorf("git %v: %w: %s", args, err, s)
+			}
+			return s, nil
+		}
+	}
+	setup := func(t *testing.T, tag string) (dir, head string, git GitFunc, env CheckEnv) {
+		dir, head = cutRepo(t, tag)
+		git = gitIn(dir)
+		origin := t.TempDir()
+		if _, err := gitIn(origin)("init", "-q", "--bare"); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := git("remote", "add", "origin", origin); err != nil {
+			t.Fatal(err)
+		}
+		runs := filepath.Join(t.TempDir(), "runs.jsonl")
+		os.WriteFile(runs, []byte(`{"commit":"`+head+`","at":"`+now.Add(-30*time.Hour).Format(time.RFC3339)+`"}`+"\n"), 0o644)
+		env = CheckEnv{Now: func() time.Time { return now }, Runs: runs,
+			CI:       func(string) (string, error) { return "success", nil },
+			Breaking: func(string) (string, []Break, error) { return "", nil, nil }}
+		return
+	}
+	body := func(t *testing.T, git GitFunc, v string) string {
+		t.Helper()
+		out, err := git("for-each-ref", "--format=%(contents:body)", "refs/tags/"+v)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(out, "## ") {
+			t.Fatalf("%s body lost its headings:\n%s", v, out)
+		}
+		return out
+	}
+
+	t.Run("plain tag", func(t *testing.T) {
+		dir, _, git, env := setup(t, "v0.1.0")
+		var b strings.Builder
+		if out, err := Cut(dir, &b, env, git); err != nil || out != Tagged {
+			t.Fatalf("%v %v\n%s", out, err, b.String())
+		}
+		body(t, git, "v0.2.0")
+	})
+
+	t.Run("replacing a published lightweight tag", func(t *testing.T) {
+		dir, head, git, env := setup(t, "v1.0.0")
+		writeEntry(t, filepath.Join(dir, ".rhiza", "log"), "CS5", "zz", note("NB", "breaking: drops --old")+","+discusses("LB", "NB", "CS5"))
+		env.Release = func(string) (string, error) { return ReleasePublished, nil }
+		env.Draft = func(string, string, string) error { t.Fatal("drafted a signed-off release"); return nil }
+		// Publishing the release made a lightweight tag at the candidate on
+		// the remote.
+		for _, args := range [][]string{{"tag", "v2.0.0", head}, {"push", "-q", "origin", "refs/tags/v2.0.0"}, {"tag", "-d", "v2.0.0"}} {
+			if _, err := git(args...); err != nil {
+				t.Fatal(err)
+			}
+		}
+		// The lightweight tag stays on the remote only (no fetch), so this
+		// exercises the tag -a -f replace and its forced push with real git.
+		noFetch := func(args ...string) (string, error) {
+			if args[0] == "fetch" {
+				return "", nil
+			}
+			return git(args...)
+		}
+		var b strings.Builder
+		if out, err := Cut(dir, &b, env, noFetch); err != nil || out != Tagged {
+			t.Fatalf("%v %v\n%s", out, err, b.String())
+		}
+		if !strings.Contains(body(t, git, "v2.0.0"), "## Breaking changes") {
+			t.Fatal("breaking changes heading missing")
+		}
+	})
+}

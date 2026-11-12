@@ -112,11 +112,13 @@ func Cut(dir string, w io.Writer, env CheckEnv, git GitFunc) (Outcome, error) {
 	if err := f.Close(); err != nil {
 		return "", err
 	}
-	tag, push := []string{"tag", "-a", v, r.Commit, "-F", f.Name()}, []string{"push", "origin", "refs/tags/" + v}
+	// --cleanup=verbatim keeps the notes as written: git's default strip
+	// would drop every "## <section>" heading as a comment line.
+	tag, push := []string{"tag", "-a", v, r.Commit, "--cleanup=verbatim", "-F", f.Name()}, []string{"push", "origin", "refs/tags/" + v}
 	if replace {
 		// Replace the signed-off release's lightweight tag with the
 		// annotated one, at the same commit.
-		tag = []string{"tag", "-a", "-f", v, r.Commit, "-F", f.Name()}
+		tag = []string{"tag", "-a", "-f", v, r.Commit, "--cleanup=verbatim", "-F", f.Name()}
 		push = []string{"push", "--force", "origin", "refs/tags/" + v}
 	}
 	if _, err := git(tag...); err != nil {
