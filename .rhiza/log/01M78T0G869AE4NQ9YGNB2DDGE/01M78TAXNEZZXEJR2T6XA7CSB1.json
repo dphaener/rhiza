@@ -1,0 +1,30 @@
+{
+  "actor": "01M78T1EBNW765GZ7WQ2WGHK89",
+  "after": [
+    "01M78TAJHSMRRD1H1E1QYAXN0B"
+  ],
+  "at": "2026-11-12T21:24:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/gate shows the plan the tool prints with -dry-run in a temporary git repo: a change to one internal package lists go test for that package and its reverse dependencies only, then make self-check; a change only under .rhiza/ lists make self-check only; a change to go.mod, or an empty RHIZA_GATE_BASE, lists make test and make self-check; a changed cmd/rhiza/testdata/script/foo.txtar with a leaf acceptance naming TestScripts/bar lists cmd/rhiza with -run 'TestScripts/(bar|foo)$'; grep -n \"rhiza.ship.localGate 'make gate'\" AGENTS.md finds the line",
+          "statement": "Rhiza's own repo has a scoped gate, make gate running a Go tool under tools/gate, that from RHIZA_GATE_BASE runs go test -trimpath on the Go packages the branch changes and their reverse dependencies (cmd/rhiza's TestScripts limited to the changed txtar files and those named TestScripts/<name> in the leaf acceptance checks of RHIZA_CHANGE), then make self-check, with cmd/rhiza under the machine-wide test lock, and falls back to make test plus make self-check when the base is empty or go.mod, go.sum, the Makefile, tools/gate or cmd/rhiza/main_test.go changed; AGENTS.md says to set rhiza.ship.localGate to 'make gate'"
+        },
+        "handle": "rhiza-scoped-gate",
+        "id": "01M78TAJENDS93MS29H3HR4YCK",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M78TAJENDS93MS29H076VKXT",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      }
+    ]
+  },
+  "change_set": "01M78T0G869AE4NQ9YGNB2DDGE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78TAXNEZZXEJR2T6XA7CSB1",
+  "type": "ops",
+  "v": 1
+}

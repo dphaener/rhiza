@@ -1,0 +1,41 @@
+{
+  "actor": "01M78T79DTWKN3M05BEHB7SY67",
+  "after": [
+    "01M78T6MFAKRDBK9VM8C92E4X6"
+  ],
+  "at": "2026-11-12T21:22:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Milestone 35's statement names a 40-minute ship-change run, and m35-ship-40m is its measurable done point; the perf report (~/orchestrator/perf-2026-11-12/report-prospective.md, item 1) puts gate and gate-fix at ~25m per run and says no m35 change set covers it, so the change set serves that done point rather than m4-runs-hold-up (about hand repair, which the sibling's trigger change fits). internal/api/ship_gate.go already skips the gate when HEAD equals the recorded Gated head on a clean tree; the intent's 4 reruns in run 01M787SV followed rendered-model and .rhiza/log changes, which change HEAD but not code, so keying the reuse on the non-.rhiza/ tree hash (option 1 of the intent) removes them while any code change still reruns it. Leaving .rhiza/ out is safe because the pre-push check runs rhiza check and make self-check before every push regardless. The intent's point (3) and m32-go-in-own-workflows require Go behaviour to live in Rhiza's own config, so the product only hands the command its base and the per-language scoping lives in this repo's gate command, with a full-suite fallback so a scoping gap never lets an untested change through.",
+          "statement": "Change set 01M78T0 serves m35-ship-40m (milestone 35: a ship-change run takes 40 minutes or less). Reuse: ship gate records, beside the head it passed on (ship state Gated), the hash of that head's tree with the top-level .rhiza/ entry left out, and passes at once without running the gate when the branch's current HEAD, with a clean worktree, has the same non-.rhiza/ tree hash; any change outside .rhiza/ (a conflict fix, a merge of origin/main that brings code) reruns it. .rhiza/ changes are already checked on every push by the pre-push check (rhiza check, then rhiza.ship.prePushCheck). Scope: Rhiza stays language-neutral. The gate command remains the project's setting rhiza.ship.localGate; ship gate runs it with the base it compares against in the environment (RHIZA_GATE_BASE, the merge-base with origin/main, and RHIZA_GATE_HEAD), and the project's command does the scoping. This repo sets its gate to a script/make target of its own that tests the Go packages the branch changes since that base, their reverse dependencies, the affected testscripts and make self-check, falling back to the full suite when it cannot work out the scope (or the base is missing); the full suite stays with CI. No Go-specific scoping goes into the shipped product.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "local-gate-reuse-and-scope",
+        "id": "01M78T8Q83CG5M2526J5M32D26",
+        "key": null,
+        "kind": "decision",
+        "node": "01M78T8Q83CG5M2526J2YGVHN7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78T8Q83CG5M2526J2YGVHN7",
+        "id": "01M78T8Q934VP6FHZB41H765ZV",
+        "link": "01M78T8Q934VP6FHZB40B6MVAC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78T6GS9KPCS99BXNACD749P",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M78T0G869AE4NQ9YGNB2DDGE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78T8Q9XY9WHEX2W8SWBG118",
+  "type": "ops",
+  "v": 1
+}

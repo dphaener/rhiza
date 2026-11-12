@@ -1,0 +1,28 @@
+{
+  "actor": "01M78TGD3SVX2F2K3Z2DCNZBEB",
+  "after": [
+    "01M78TAXNEZZXEJR2T6XA7CSB1"
+  ],
+  "at": "2026-11-12T21:27:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6YCRKT22SQQH70HYXCEX3AF",
+        "handle": null,
+        "id": "01M78TH4BW0YNACESE27T8VKE4",
+        "node": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "op": "node.update",
+        "set": {
+          "statement": "While CI is unstable, the built-in ship-change workflow runs the project's local gate command (rhiza.ship.localGate; make gate for Rhiza itself) in the run's worktree before every push and pushes only when it exits 0, sending a failing gate to a fixer like a red CI; while CI is stable, or with no gate set, the step passes at once and the run keeps its scoped tests"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M78T0G869AE4NQ9YGNB2DDGE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78TH4CGZRBSC679SA8YQYTR",
+  "type": "ops",
+  "v": 1
+}
