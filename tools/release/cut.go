@@ -58,9 +58,6 @@ func Cut(dir string, w io.Writer, env CheckEnv, git GitFunc) (Outcome, error) {
 	case r.Next.Kind == KindNone:
 		fmt.Fprintf(w, "none: no release since %s\n", orNone(r.Tag))
 		return Nothing, nil
-	case r.Next.Kind == KindMajor:
-		fmt.Fprintf(w, "%s is a major release: it waits for the owner's sign-off\n", v)
-		return SignOff, nil
 	case !AllPass(r.Gates):
 		printGates(w, r.Commit, r.Gates)
 		fmt.Fprintf(w, "%s is blocked\n", v)
@@ -77,6 +74,15 @@ func Cut(dir string, w io.Writer, env CheckEnv, git GitFunc) (Outcome, error) {
 	} else if out != "" {
 		fmt.Fprintf(w, "%s is already on the remote\n", v)
 		return Existing, nil
+	}
+	if r.Next.Kind == KindMajor {
+		signed, err := majorSignOff(w, env, v, r.Commit, r.Notes)
+		if err != nil {
+			return "", err
+		}
+		if !signed {
+			return SignOff, nil
+		}
 	}
 	f, err := os.CreateTemp("", "release-notes-*.md")
 	if err != nil {
@@ -98,6 +104,74 @@ func Cut(dir string, w io.Writer, env CheckEnv, git GitFunc) (Outcome, error) {
 	}
 	fmt.Fprintf(w, "tagged and pushed %s at %s\n", v, r.Commit)
 	return Tagged, nil
+}
+
+// Release states of a version's GitHub release.
+const (
+	ReleaseNone      = ""          // no release for the version
+	ReleaseDraft     = "draft"     // prepared, not yet published by the owner
+	ReleasePublished = "published" // the owner published it: the sign-off
+)
+
+// majorSignOff reports whether the owner has signed off major release v. The
+// sign-off is publishing the version's GitHub release. With no release yet
+// it prepares a draft (the candidate commit and the notes) for the owner to
+// publish; it never creates one twice, and never tags.
+func majorSignOff(w io.Writer, env CheckEnv, v, commit, notes string) (bool, error) {
+	if env.Release == nil || env.Draft == nil {
+		return false, fmt.Errorf("no GitHub release access to sign off %s", v)
+	}
+	state, err := env.Release(v)
+	if err != nil {
+		return false, err
+	}
+	switch state {
+	case ReleasePublished:
+		fmt.Fprintf(w, "%s is signed off by the owner\n", v)
+		return true, nil
+	case ReleaseDraft:
+		fmt.Fprintf(w, "%s is a major release: its draft release waits for the owner to publish it\n", v)
+		return false, nil
+	}
+	if err := env.Draft(v, commit, v+"\n\n"+notes); err != nil {
+		return false, err
+	}
+	fmt.Fprintf(w, "%s is a major release: drafted a GitHub release at %s, it waits for the owner to publish it\n", v, commit)
+	return false, nil
+}
+
+// ghRelease is the state of tag's GitHub release, through gh.
+func ghRelease(tag string) (string, error) {
+	out, err := exec.Command("gh", "release", "list", "--limit", "100", "--json", "tagName,isDraft").Output()
+	if err != nil {
+		return "", fmt.Errorf("gh release list: %w", err)
+	}
+	var rs []struct {
+		TagName string `json:"tagName"`
+		IsDraft bool   `json:"isDraft"`
+	}
+	if err := json.Unmarshal(out, &rs); err != nil {
+		return "", err
+	}
+	for _, r := range rs {
+		if r.TagName == tag {
+			if r.IsDraft {
+				return ReleaseDraft, nil
+			}
+			return ReleasePublished, nil
+		}
+	}
+	return ReleaseNone, nil
+}
+
+// ghDraft creates a draft GitHub release for tag at commit with the notes.
+func ghDraft(tag, commit, notes string) error {
+	out, err := exec.Command("gh", "release", "create", tag, "--draft", "--target", commit,
+		"--title", tag, "--notes", notes).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("gh release create: %w: %s", err, out)
+	}
+	return nil
 }
 
 // DaemonRun is the root daemon's running commit and when it started.

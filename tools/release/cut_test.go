@@ -145,17 +145,67 @@ func TestCut(t *testing.T) {
 			}
 		}
 	})
+}
 
-	t.Run("never for a major", func(t *testing.T) {
-		dir, head := cutRepo(t, "v1.0.0")
-		writeEntry(t, filepath.Join(dir, ".rhiza", "log"), "CS5", "zz", note("NB", "breaking: drops --old")+","+discusses("LB", "NB", "CS5"))
-		g := &fakeGit{}
+func TestMajor(t *testing.T) {
+	now := time.Date(2026, 11, 12, 12, 0, 0, 0, time.UTC)
+	runs := filepath.Join(t.TempDir(), "runs.jsonl")
+	dir, head := cutRepo(t, "v1.0.0")
+	writeEntry(t, filepath.Join(dir, ".rhiza", "log"), "CS5", "zz", note("NB", "breaking: drops --old")+","+discusses("LB", "NB", "CS5"))
+	os.WriteFile(runs, []byte(`{"commit":"`+head+`","at":"`+now.Add(-30*time.Hour).Format(time.RFC3339)+`"}`+"\n"), 0o644)
+	state := ReleaseNone
+	var drafts []string
+	env := CheckEnv{Now: func() time.Time { return now }, Runs: runs,
+		CI:       func(string) (string, error) { return "success", nil },
+		Breaking: func(string) (string, []Break, error) { return "", nil, nil },
+		Release:  func(string) (string, error) { return state, nil },
+		Draft: func(tag, commit, notes string) error {
+			drafts = append(drafts, tag+" "+commit)
+			if !strings.HasPrefix(notes, "v2.0.0\n\n") {
+				t.Errorf("draft notes %q", notes)
+			}
+			state = ReleaseDraft
+			return nil
+		}}
+	g := &fakeGit{}
+	cut := func() (Outcome, string) {
+		t.Helper()
 		var b strings.Builder
-		out, err := Cut(dir, &b, envFor(head, "success", now.Add(-30*time.Hour)), g.run)
-		if err != nil || out != SignOff || g.pushes() != 0 || !strings.Contains(b.String(), "v2.0.0") {
-			t.Fatalf("%v %v pushes=%d\n%s", out, err, g.pushes(), b.String())
+		out, err := Cut(dir, &b, env, g.run)
+		if err != nil {
+			t.Fatal(err)
 		}
-	})
+		return out, b.String()
+	}
+
+	// Held, with one draft prepared, until the owner publishes it.
+	for i := 0; i < 2; i++ {
+		if out, msg := cut(); out != SignOff || g.pushes() != 0 || !strings.Contains(msg, "v2.0.0") {
+			t.Fatalf("%v pushes=%d\n%s", out, g.pushes(), msg)
+		}
+	}
+	if len(drafts) != 1 || drafts[0] != "v2.0.0 "+head {
+		t.Fatalf("drafts %v", drafts)
+	}
+	// Signed off: tagged and pushed once.
+	state = ReleasePublished
+	if out, _ := cut(); out != Tagged || g.pushes() != 1 {
+		t.Fatalf("%v pushes=%d", out, g.pushes())
+	}
+	if !strings.HasPrefix(g.notes, "v2.0.0\n\n") {
+		t.Fatalf("tag message %q", g.notes)
+	}
+	// Once the tag is there, a repeat does nothing.
+	g.local = []string{"v2.0.0"}
+	if out, _ := cut(); out != Existing || g.pushes() != 1 {
+		t.Fatalf("%v pushes=%d", out, g.pushes())
+	}
+	// A failing gate holds a major too, with no draft.
+	env.CI = func(string) (string, error) { return "failure", nil }
+	g, state, drafts = &fakeGit{}, ReleaseNone, nil
+	if out, _ := cut(); out != Blocked || len(drafts) != 0 {
+		t.Fatalf("%v drafts %v", out, drafts)
+	}
 }
 
 func TestRecordDaemonRun(t *testing.T) {

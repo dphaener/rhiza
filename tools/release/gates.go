@@ -177,13 +177,18 @@ type CheckEnv struct {
 	// Breaking detects the breaking differences since the last tag; nil is
 	// breakingAgainstLastTag, which builds both versions.
 	Breaking func(dir string) (string, []Break, error)
+	// Release is the state of a version's GitHub release (ReleaseNone,
+	// ReleaseDraft or ReleasePublished) and Draft prepares a draft one: how a
+	// major release is signed off. Only a major release uses them.
+	Release func(tag string) (string, error)
+	Draft   func(tag, commit, notes string) error
 }
 
 // parseCheck reads check's flags. The run history defaults to
 // $RHIZA_RELEASE_RUNS.
 func parseCheck(args []string) (CheckEnv, error) {
 	fs := flag.NewFlagSet("check", flag.ContinueOnError)
-	env := CheckEnv{Now: time.Now, CI: ghCI}
+	env := CheckEnv{Now: time.Now, CI: ghCI, Release: ghRelease, Draft: ghDraft}
 	fs.StringVar(&env.Runs, "runs", os.Getenv("RHIZA_RELEASE_RUNS"), "daemon run history file (JSON lines of commit and at)")
 	fs.StringVar(&env.Commit, "commit", "", "candidate commit (default: HEAD)")
 	return env, fs.Parse(args)
