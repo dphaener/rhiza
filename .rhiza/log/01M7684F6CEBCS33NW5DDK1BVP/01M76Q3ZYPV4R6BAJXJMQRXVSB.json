@@ -1,0 +1,40 @@
+{
+  "actor": "01M76Q22KAN4XX0T8W5W2ZVZSC",
+  "after": [
+    "01M76Q13S338RX6WRCFFF44G5J"
+  ],
+  "at": "2026-11-12T01:49:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at f87db76e: go test -trimpath ./internal/api -run 'ChecksVerdict|ShipRerunFailed|WatchdogCIRerun' -v passes (TestChecksVerdict/ModelOnlyPR: SKIPPED lint, scripts, api, rest, budgets plus SUCCESS changes, model, check read settled and green with no failed names; TestShipRerunFailedSkippedJobs: ship.check on that head is settled, green and passed with no Failed or Reran entries and no gh run rerun call; the new TestWatchdogCIRerun case feeds a head with the Go jobs SKIPPED and changes, model, check SUCCESS and asserts no rerun and that rerunSpent is false). Mutation check in a scratch copy: dropping SKIPPED from passingConclusions fails all three (ModelOnlyPR verdict red, ship check calls gh run rerun 42 --failed, watchdog 'skipped jobs reran [7]'). Note: the rerunSpent assertion uses Attempts 1 with CIReruns 1, so on its own it would pass even if SKIPPED counted as failed; the poll assertion in the same case does catch that. The diff only adds tests and the builder's actor record."
+        },
+        "handle": "ship-check-skipped-jobs-green-verified",
+        "id": "01M76Q3ZX83T1J0SCXA00WTG91",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76Q3ZX83T1J0SCX9WVXNHJS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Q3ZX83T1J0SCX9WVXNHJS",
+        "id": "01M76Q3ZY3FX32AJGPSNQC1QY9",
+        "link": "01M76Q3ZY3FX32AJGPSMJ36JYE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M768E0S5MMHEP3CNXNJYBYPA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7684F6CEBCS33NW5DDK1BVP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76Q3ZYPV4R6BAJXJMQRXVSB",
+  "type": "ops",
+  "v": 1
+}
