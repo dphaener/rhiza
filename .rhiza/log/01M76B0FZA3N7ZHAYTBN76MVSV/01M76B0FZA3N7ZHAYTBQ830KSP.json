@@ -1,0 +1,15 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [],
+  "at": "2026-11-11T22:17:46Z",
+  "body": {
+    "intent": "rhiza release check: read-only; computes the next version and its kind from landed milestones, fixes and breaking marks or detections, evaluates the gates (CI green, 24h soak of the latest build, milestone closed, severe-fix skip) and drafts the notes from the model",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M76B0FZA3N7ZHAYTBN76MVSV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76B0FZA3N7ZHAYTBQ830KSP",
+  "type": "open",
+  "v": 1
+}

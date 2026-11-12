@@ -1,0 +1,216 @@
+# The 2026-11-11 case: a lint job that fails deterministically, again after
+# its once-per-head rerun, with a stale-generated-file self-check failure and
+# a make Error line in its log and no failing test. ship-change routes it
+# pr-green, conflict-triage, gate-triage, ci-triage, ci-fix, then back to
+# green and the sign-off, with no wait-ci-rerun visit.
+#
+# The fakes are run-ship-ci-fix.txtar's, except that gh's red check is the
+# lint job (until the branch holds fix-1.txt) and its failed-job log holds
+# the self-check and make lines instead of a failing test; the fixer needs
+# those lines in ship check --json.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+
+exec sh -c 'echo 1 > $WORK/need'
+exec sh $WORK/setup.sh
+cd repo
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+stdout '^exit=0$'
+exec rhiza run status
+stdout '^- pr-green \(visit 1\): fail, then conflict-triage'
+stdout '^- conflict-triage \(visit 1\): fail, then gate-triage'
+stdout '^- gate-triage \(visit 1\): fail, then ci-triage'
+stdout '^- ci-triage \(visit 1\): pass, then ci-fix: '
+stdout '^- ci-fix \(visit 1\): pass, then render-pr'
+stdout '^- render-pr \(visit 2\): pass, then local-gate'
+stdout '^- pr-green \(visit 2\): pass, then signoff'
+stdout '^- Current step: signoff$'
+! stdout 'wait-ci-rerun'
+exec sh -c 'wc -l < $WORK/fixes.log'
+stdout '^1$'
+exec git -C $WORK/repo.ship-it log -1 --format=%B --grep='fix ci 1'
+stdout '^Review: \S+$'
+grep 'run view 42 --log-failed' $WORK/gh.log
+exec sh -c 'grep -c "^run rerun" $WORK/gh.log || true'
+stdout '^1$'
+-- setup.sh --
+#!/bin/sh
+# A fresh origin and repo with an accepted change set, as a reviewed one
+# would be, committed on main and pushed.
+set -e
+rm -rf "$WORK/origin.git" "$WORK/repo" "$WORK/repo.ship-it"
+rm -f "$WORK/gh.log" "$WORK/pr.created" "$WORK/infra" "$WORK/fixes.log" "$WORK/order.log" "$WORK/ship.log"
+git init -q --bare "$WORK/origin.git"
+mkdir "$WORK/repo"
+cd "$WORK/repo"
+git init -q
+git remote add origin "$WORK/origin.git"
+rhiza init > /dev/null
+mkdir .rhiza/workflows
+cp "$WORK/ship.sh" .rhiza/workflows/ship.sh
+cp "$WORK/review.toml" .rhiza/workflows/review.toml
+rhiza change new 'Ship it' --title 'Ship it' --json > /dev/null
+rhiza add capability first --field 'statement=Does first' > /dev/null
+rhiza propose > /dev/null
+rhiza accept --reason ok > /dev/null
+git add -A
+git commit -qm 'Start shipping'
+git push -q -u origin main
+-- review.toml --
+# The repo's own review, as the built-in one but with two fake checks.
+# Its code step runs rhiza check, which passes only because ship-change
+# rendered and committed what build's sessions wrote.
+[step.code]
+kind = "command"
+run = "rhiza run code-check"
+on.pass = "review"
+
+[step.review]
+kind = "checks"
+interval = "50ms"
+max_visits = 3
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "beta"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 3
+on.pass = "done"
+on.changes = "review"
+-- ship.sh --
+#!/bin/sh
+echo shipped >> "$WORK/ship.log"
+echo shipped >> "$WORK/order.log"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+case "$RHIZA_ROLE" in
+builder)
+	echo built > feature.txt
+	git add feature.txt
+	git commit -q -m "build $RHIZA_LEAF" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: $RHIZA_LEAF" -- feature.txt || exit 1
+	;;
+verifier)
+	rhiza add evidence "$RHIZA_LEAF-verified" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-verified" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+check)
+	echo '{"findings":[]}' > "$WORK/empty-round.json"
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+	;;
+*)
+	# The ci-fix agent step: no role. It sees the failing tests in ship
+	# check's output, fixes by adding one fix-N.txt, and commits with the
+	# run's Review: trailer, taken from its prompt.
+	case "$last" in
+	*"Fix the CI findings"*) ;;
+	*) exit 0 ;;
+	esac
+	rhiza ship check --json > "$WORK/fix-input.json" 2>&1
+	grep -q 'fail render docs/reference/cli.md: differs from what rhiza docs writes' "$WORK/fix-input.json" || exit 1
+	grep -q 'make: \*\*\* \[Makefile:186: self-check\]' "$WORK/fix-input.json" || grep -q 'self-check' "$WORK/fix-input.json" || exit 1
+	run=$(printf '%s' "$last" | sed -n 's/.*in run \([^:]*\):.*/\1/p')
+	n=$(( $(ls fix-*.txt 2>/dev/null | wc -l) + 1 ))
+	echo "fix $n" > "fix-$n.txt"
+	git add "fix-$n.txt"
+	git commit -q -m "fix ci $n" -m "Review: $run" -- "fix-$n.txt" || exit 1
+	echo "$run" >> "$WORK/fixes.log"
+	rhiza session done >&2 || exit 1
+	;;
+esac
+exit 0
+-- bin/gh --
+#!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ "$3" = 7 ]; then
+		printf '{"mergeCommit":{"oid":"%s"},"state":"MERGED"}\n' "$(cat "$WORK/merge.sha")"
+		exit 0
+	fi
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	if [ ! -f "$WORK/pr.created" ]; then
+		printf '{"body":"Change set '"$csid"'","number":3,"url":"https://github.test/o/r/pull/3","state":"MERGED","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
+		exit 0
+	fi
+	echo "$head" > "$WORK/landed.sha"
+	have=$(git -C "$o" ls-tree --name-only "$head" | grep -c '^fix-')
+	c=SUCCESS
+	[ "$have" -lt "$(cat "$WORK/need")" ] && c=FAILURE
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"lint","status":"COMPLETED","conclusion":"%s","detailsUrl":"https://github.test/o/r/actions/runs/42/job/9"},{"context":"test","state":"SUCCESS"}]}\n' "$head" "$c"
+	;;
+"run rerun")
+	;;
+"run view")
+	echo "lint	Run make lint	fail render docs/reference/cli.md: differs from what rhiza docs writes"
+	echo "lint	Run make lint	fail render docs/reference/config.md: differs from what rhiza docs writes"
+	echo "lint	Run make lint	make: *** [Makefile:186: self-check] Error 1"
+	;;
+"pr create")
+	while [ $# -gt 0 ]; do
+		if [ "$1" = --body-file ]; then
+			cp "$2" "$WORK/pr-body.md"
+		fi
+		shift
+	done
+	touch "$WORK/pr.created"
+	;;
+"pr edit")
+	;;
+"pr merge")
+	head=$(git -C "$o" rev-parse refs/heads/cs/ship-it)
+	if [ "$6" != "$head" ]; then
+		echo "head branch was modified" >&2
+		exit 1
+	fi
+	sha=$(git -C "$o" commit-tree "$head^{tree}" -p refs/heads/main -m 'Ship it (#7)')
+	git -C "$o" update-ref refs/heads/main "$sha"
+	echo "$sha" > "$WORK/merge.sha"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

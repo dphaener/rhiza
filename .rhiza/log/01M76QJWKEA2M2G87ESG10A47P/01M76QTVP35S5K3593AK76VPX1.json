@@ -1,0 +1,33 @@
+{
+  "actor": "01M76QKRKWWGZYFY5GM837EY9Z",
+  "after": [
+    "01M76QSX0B7ZPMYQF4276TM4SP"
+  ],
+  "at": "2026-11-12T02:01:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "be4239c73c9015145b2274efbf68ed8dec01adbd85b21d72756bbf4c37e3d9d4",
+          "session": "947b0dc6-2ede-427e-a0b9-01a1cd79cc02",
+          "summary": "Autonomous plan of the bug where a reviser session's 'python3 -m json.tool .rhiza/log/<cs>/*.json' wrote one entry over another, broke PR #457's lint, and was repaired by hand from the persistent index. The planner read the code: rhiza writes entries via temp file + link (internal/store/store.go writeNew, mode 0644); every agent session already has a PreToolUse hook (rhiza session hook, claudecode adapter); every run commit step (build/review/ship-change render steps, plan gate 'Render the plan', ship land, ship rebase) runs rhiza render first, and render reads the whole log but ignores its problems; the index's entries table keeps each good entry's canonical bytes and never re-reads a seen path. No owner took part. The planner asked one question with three parts (how to guard, where to refuse, what repair looks like); the arbiter answered with Decision decision-log-guard (assumed, would have escalated): entries written 0444 and re-moded by render, plus a PreToolUse deny of Write/Edit/MultiEdit/NotebookEdit under .rhiza/log/ with no shell parsing; render fails naming each non-canonical, misnamed or HEAD-changed entry; a new rhiza repair (with --dry-run) restores from HEAD or the index entries table; guidance says to read entries with rhiza show/slice or cat. The change set serves m4-runs-hold-up, as runs must finish without hand repair.",
+          "title": "Plan interview: guarding the log against agent overwrites (autonomous)"
+        },
+        "handle": "log-guard-plan",
+        "id": "01M76QTVN8STN3ET0VK0Y3VC75",
+        "key": null,
+        "kind": "source",
+        "node": "01M76QTVN8STN3ET0VJXR9RET1",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76QJWKEA2M2G87ESG10A47P",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76QTVP35S5K3593AK76VPX1",
+  "type": "ops",
+  "v": 1
+}

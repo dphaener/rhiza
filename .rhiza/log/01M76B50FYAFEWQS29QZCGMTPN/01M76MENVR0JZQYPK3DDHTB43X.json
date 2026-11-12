@@ -1,0 +1,50 @@
+{
+  "actor": "01M76MC9K9SF508EM2HS2M5MJW",
+  "after": [
+    "01M76M977S1VQS84F39H84TN0J"
+  ],
+  "at": "2026-11-12T01:02:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M763BYX66BEVE5Q588Z0N0SD",
+        "handle": null,
+        "id": "01M76MENSY1G7XFDD9H2ES5MYJ",
+        "node": "01M6MC56XH2VTXCYDT1G5WD55E",
+        "op": "node.update",
+        "set": {
+          "statement": "The built-in ship-change workflow sends a failure at pr-green or rebased-green (on.fail) to conflict-triage, which runs `rhiza ship check --conflicts` and falls back (its on.fail) to a command step ci-triage on anything but a merge conflict, so red CI reaches ci-triage through conflict-triage. ci-triage runs `rhiza ship check --test-failures`: it passes only when the head's latest ship check recorded at least one CI finding (a parsed test failure, or a recognised non-test cause such as a self-check, fmt-check, vet or compile, or make-target failure; see ship-check-ci-cause-findings), and fails otherwise; ci-triage's on.fail goes to the wait step wait-ci-rerun, so an infra-only failure, or one with neither a failing test nor a recognised cause, waits for CI to move past the red head and then re-checks at pr-green instead of ending the run. ci-triage passes to ci-fix, an agent step (kind = \"agent\", one fixer session on the run worktree) whose prompt is the review fixer's prompt told to read the CI findings from `rhiza ship check --json` (its failing tests and recognised non-test causes, as no-leaf findings with the failing log lines), reproduce each locally with the repo's scoped command for it (the test command for a test, the matching check command for a lint, format, vet or self-check finding), and make one new commit with a Review: <run> trailer before `rhiza session done`; ci-fix passes to render-pr, then open-pr, wait-pr, pr-green and signoff. ci-fix runs at most twice per run (max_visits 2, so a third red head with CI findings goes over the cap and fails the run, pr-green's or rebased-green's output naming the failing tests); ci-triage has max_visits 3; render-pr, open-pr, wait-pr and pr-green have max_visits 10 and signoff max_visits 8, so two CI fixes, conflict fixes and the owner's two request-changes fit; rebase, wait-rebased and rebased-green have max_visits 6 so a run re-enters them after each CI or conflict fix routed from rebased-green. After land, a failure at landed-green, rebase-merge or rebased-merge-green goes to conflict-triage-landed, whose non-conflict failures go on through rebase-merge-gate-failed to landed-infra-triage: a red with no failing test waits in landed-infra-wait and returns to landed-green (ship-change-landed-infra-wait), while a red with a failing test or any other non-infra failure still ends the run there"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6MC4GXTJ7SWF8NV4VMZDJ9N",
+        "handle": null,
+        "id": "01M76MENTKMW0EMX8JV538PETR",
+        "node": "01M6MC4GXTJ7SWF8NV4SYXD3F9",
+        "op": "node.update",
+        "set": {
+          "statement": "When a PR head's checks still fail after their once-per-head rerun, rhiza ship check reads each failed Actions run's log (gh run view <run> --log-failed), reports the failing Go tests and testscripts it names ('--- FAIL: TestX[/sub]' lines) as test failures, and records each as a finding with no leaf for the next fix step; a failed check with no Actions run id, or whose log names neither a failing test nor a recognised non-test cause (ship-check-ci-cause-findings), such as only an infra/setup error, stays a plain failure"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6YGXMGVZQBYW9NX75YF2VVH",
+        "handle": null,
+        "id": "01M76MENV4VWJ9D58C4HDP3J26",
+        "node": "01M6YGXMGVZQBYW9NX74P1TQ4W",
+        "op": "node.update",
+        "set": {
+          "statement": "When ship-change's ci-triage finds no CI finding for a red head (neither a failing test nor a recognised non-test cause: an infra or unparsable failure), the run goes to a new wait step wait-ci-rerun instead of ending. The baseline it waits past is recorded by the failing ship check (pr-green or rebased-green, rhiza ship check without --settled): on a red head it now records in the state file the red head SHA and each of its check runs' ID and attempt (red_head, red_checks), while still recording no green Head/Checks; ci-triage (--test-failures) stays read-only. wait-ci-rerun's until, rhiza ship check --settled --changed, settles only once CI moved past that baseline (a head SHA other than red_head, or a check run ID or attempt not in red_checks) and that new CI finished; with no baseline recorded it behaves as --settled. While not settled its output names the infra failure (the red head and its failed checks with no failing test or recognised cause). The wait runs up to 6h with max_visits 3 and its on.pass goes to pr-green, which re-checks the head (a run back from after the rebase passes signoff again). Its timeout ends the run with a line naming the infra failure: the run engine's wait keeps the until command's last output and adds it to a wait's timeout detail (did not hold within <timeout>: <last output>)"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76B50FYAFEWQS29QZCGMTPN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76MENVR0JZQYPK3DDHTB43X",
+  "type": "ops",
+  "v": 1
+}

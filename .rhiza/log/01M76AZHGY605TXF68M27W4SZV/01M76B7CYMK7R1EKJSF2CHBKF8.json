@@ -1,0 +1,53 @@
+{
+  "actor": "01M7658PJ875K09N3V40BM2B05",
+  "after": [
+    "01M76AZHGZGEZN4JP4X4MQKH5M"
+  ],
+  "at": "2026-11-11T22:21:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/release/... computes the version with no tag, with a tag N commits back and with a tag at HEAD, and a semver comparison orders it after the tag, before the next patch, and after the previous latest build",
+          "statement": "A latest-channel build reports the next patch of the last v* tag as a semver prerelease: vX.Y.(Z+1)-main.<commits since the tag>+<short sha> (v0.0.1-main.N+sha before any tag), which sorts after the tag and before the next patch"
+        },
+        "handle": "latest-build-version",
+        "id": "01M76B7CWZHSPFD2WJYH9T6R67",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M76B7CWZHSPFD2WJYGWGZ0HH",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "fields": {
+          "acceptance": "The workflow triggers on push to main only, runs in one concurrency group that cancels older runs, and skips publishing when the latest tag already points at a descendant of its commit; the release-snapshot job builds a latest-channel snapshot with the computed version and requires the four archives and the manifest",
+          "statement": "Every push to main runs a Latest workflow that builds the four archives with that version and replaces the rolling latest GitHub prerelease (its tag moved to the commit) with them, checksums.txt, manifest.json (channel latest) and provenance attestations; it is never GitHub latest release, and an older run never overwrites a newer commit"
+        },
+        "handle": "latest-channel-prerelease",
+        "id": "01M76B7CXJ4H445ZBV984P17EJ",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M76B7CXJ4H445ZBV963ADV16",
+        "op": "node.create",
+        "parent": "01M6W5BPEBTX6XAWPRN3N7CH38"
+      },
+      {
+        "decision": null,
+        "from": "01M76B7CXJ4H445ZBV963ADV16",
+        "id": "01M76B7CY3Y2G0ZN3R6XST834K",
+        "link": "01M76B7CY3Y2G0ZN3R6XS3H9DF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76AYSWKKGEWHC856A7TJYF5",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76AZHGY605TXF68M27W4SZV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76B7CYMK7R1EKJSF2CHBKF8",
+  "type": "ops",
+  "v": 1
+}

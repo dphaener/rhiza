@@ -147,7 +147,7 @@ func TestCIJobsAndMatrices(t *testing.T) {
 			names = append(names, strings.TrimSuffix(l.text, ":"))
 		}
 	}
-	want := []string{"lint", "scripts", "api", "rest", "budgets", "check"}
+	want := []string{"changes", "model", "lint", "scripts", "api", "rest", "budgets", "check"}
 	if strings.Join(names, ",") != strings.Join(want, ",") {
 		t.Fatalf("ci.yml jobs = %v; want %v", names, want)
 	}
@@ -189,6 +189,50 @@ func texts(ls []line) []string {
 	return out
 }
 
+func TestCIChangesDecidesFromGitDiff(t *testing.T) {
+	j := jobBlock(t, "changes")
+	if out, _ := value(block(j, 4, "outputs"), 6, "code"); !strings.Contains(out, "steps.diff.outputs.code") {
+		t.Errorf("changes output code = %q; want steps.diff.outputs.code", out)
+	}
+	body := strings.Join(texts(j), "\n")
+	for _, want := range []string{"git merge-base", "git diff --name-only", "code=true", "code=false", `!= pull_request`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("changes job lacks %q", want)
+		}
+	}
+}
+
+func TestCIGoJobsRunOnlyOnCodeChanges(t *testing.T) {
+	for _, name := range []string{"lint", "scripts", "api", "rest", "budgets"} {
+		j := jobBlock(t, name)
+		if v, _ := value(j, 4, "needs"); v != "changes" {
+			t.Errorf("job %s needs = %q; want changes", name, v)
+		}
+		if v, _ := value(j, 4, "if"); v != "needs.changes.outputs.code == 'true" {
+			t.Errorf("job %s if = %q; want code == 'true'", name, v)
+		}
+	}
+}
+
+func TestCIModelJobRunsOnlyOnModelChanges(t *testing.T) {
+	j := jobBlock(t, "model")
+	if v, _ := value(j, 4, "needs"); v != "changes" {
+		t.Errorf("model needs = %q; want changes", v)
+	}
+	if v, _ := value(j, 4, "if"); v != "needs.changes.outputs.code == 'false" {
+		t.Errorf("model if = %q; want code == 'false'", v)
+	}
+	body := strings.Join(texts(j), "\n")
+	for _, run := range []string{"make self-check", "go test -trimpath ./internal/op -run TestEveryFieldInRepoLogIsKnown"} {
+		if !strings.Contains(body, "run: "+run) {
+			t.Errorf("model job: no step running %q", run)
+		}
+	}
+	if !has(j, "cache: true") {
+		t.Error("model job: setup-go must set cache: true")
+	}
+}
+
 func TestCICheckAggregatesEveryJob(t *testing.T) {
 	j := jobBlock(t, "check")
 	needs, _ := value(j, 4, "needs")
@@ -196,19 +240,21 @@ func TestCICheckAggregatesEveryJob(t *testing.T) {
 	for _, n := range strings.Split(strings.Trim(needs, "[]"), ",") {
 		got[strings.TrimSpace(n)] = true
 	}
-	for _, n := range []string{"lint", "scripts", "api", "rest", "budgets"} {
+	for _, n := range []string{"changes", "model", "lint", "scripts", "api", "rest", "budgets"} {
 		if !got[n] {
 			t.Errorf("check does not need %s (needs: %q)", n, needs)
 		}
 	}
-	if len(got) != 5 {
-		t.Errorf("check needs %q; want exactly the five other jobs", needs)
+	if len(got) != 7 {
+		t.Errorf("check needs %q; want exactly the seven other jobs", needs)
 	}
 	if v, _ := value(j, 4, "if"); v != "always()" {
 		t.Errorf("check if = %q; want always()", v)
 	}
 	body := strings.Join(texts(j), "\n")
-	if !strings.Contains(body, "needs.*.result") || !strings.Contains(body, `!= success`) || !strings.Contains(body, "exit 1") {
-		t.Error("check must fail unless every needed result is success")
+	for _, want := range []string{"needs.*.result", "needs.changes.result", `!= success`, `!= skipped`, "exit 1", "no job ran"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("check lacks %q", want)
+		}
 	}
 }

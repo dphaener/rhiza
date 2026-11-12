@@ -27,14 +27,17 @@ prompt = "/rhiza-build Verify leaf {leaf} of change set {change} ({title}) at co
 # .rhiza/rendered stale. Render and commit the rendered folder on the
 # branch, with the .rhiza/log entries the sessions left uncommitted
 # (their actor records), so rhiza check passes on it; nothing to render
-# commits nothing.
+# commits nothing. The project's generate command (rhiza.ship.generate)
+# runs first, so the generated files it changes are committed with the
+# render; a failing command fails the step.
 [step.render]
 kind = "command"
 run = """
+rhiza ship generate &&
 rhiza render &&
 git add -A -- .rhiza/rendered .rhiza/log &&
-{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
-  git commit -q -m 'Render after the build' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+{ git diff --cached --quiet ||
+  git commit -q -m 'Render after the build' -m "Change: $RHIZA_CHANGE"; }
 """
 on.pass = "check"
 

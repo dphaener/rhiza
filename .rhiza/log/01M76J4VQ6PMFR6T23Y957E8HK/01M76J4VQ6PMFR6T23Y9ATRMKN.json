@@ -1,0 +1,15 @@
+{
+  "actor": "01M76GMN00EG8J2A86ZR0KJJZV",
+  "after": [],
+  "at": "2026-11-12T00:22:29Z",
+  "body": {
+    "intent": "rootguard: treat .rhiza-root/usage.live.json as daemon-owned. The live root daemon (internal/daemon/usage.go) and the Claude Code statusline write it, but it is missing from rootguard's owned map, so a long internal/api test run under ~/code fails with 'the test run wrote into the state folder of the root enclosing it: .rhiza-root/usage.live.json: file changed' even though every test passed",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M76J4VQ6PMFR6T23Y957E8HK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76J4VQ6PMFR6T23Y9ATRMKN",
+  "type": "open",
+  "v": 1
+}

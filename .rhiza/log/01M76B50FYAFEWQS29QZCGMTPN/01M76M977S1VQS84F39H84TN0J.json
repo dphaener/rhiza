@@ -1,0 +1,86 @@
+{
+  "actor": "01M76KDC5234S9FCGKJJWXKS5T",
+  "after": [
+    "01M76KB7J0777YEQ9A3JRXCVC6"
+  ],
+  "at": "2026-11-12T00:59:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza at the branch head and replayed ship-change in a scratch root with a fake gh serving the real gh run view --log-failed output of PR #442's failed run 43100560013 (job/step/timestamp prefixed, ANSI): ship check recorded one finding 'lint / Run lint: self-check' quoting both 'fail render docs/reference/{cli,config}.md: differs from what rhiza docs writes' lines; the make Error fallback stayed quiet and the 'check' gate job's log gave no cause. go test -trimpath ./internal/api/... tests PASS (the package then fails only the known pre-existing .rhiza-root usage.live.json guard)."
+        },
+        "handle": "ship-check-ci-cause-findings-qa-1",
+        "id": "01M76M973QHJH8VWJRAR9FEHNS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76M973QHJH8VWJRAQ3490YQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76M973QHJH8VWJRAQ3490YQ",
+        "id": "01M76M974FQNY95TR3H5FQN0ND",
+        "link": "01M76M974FQNY95TR3H3QFDKG7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76BDZ8W61MZ0NAAEAQWF6NG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Same replay with the built binary and the real PR #442 lint log: the run went pr-green fail, conflict-triage, gate-triage, ci-triage pass, ci-fix (fixer read the fail render lines from ship check --json and committed with Review:), render-pr, pr-green pass, signoff; one gh run rerun, no wait-ci-rerun visit. go test -trimpath ./internal/workflow/... ok; TestScripts/run-ship-ci* ok."
+        },
+        "handle": "ci-fix-fixes-ci-findings-qa-1",
+        "id": "01M76M974ZFXHJYMPBVD99G0H6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76M974ZFXHJYMPBVBJ6WGXM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76M974ZFXHJYMPBVBJ6WGXM",
+        "id": "01M76M975MQZMCWHRS8QPTZT3A",
+        "link": "01M76M975MQZMCWHRS8P55QXN2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76BDZC7N8TC2CC7WA2RARN9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "This repo's rhiza.ship.generate reads 'make docs' (git config). make docs at the head left docs/reference unchanged ('3 unchanged'); make self-check on a clean worktree of HEAD printed ok. Built rhiza ship generate in a scratch repo: unset skipped with exit 0; 'echo new > gen.txt' passed and staged only gen.txt, leaving a file already dirty before unstaged; 'echo boom; exit 3' printed its output and exited 1. TestScripts/(render-generate|describe-golden) ok."
+        },
+        "handle": "render-runs-generate-qa-1",
+        "id": "01M76M976BDH5W1NMKWBHX34D3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76M976BDH5W1NMKW97WW5Z6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76M976BDH5W1NMKW97WW5Z6",
+        "id": "01M76M97710GS4PS8WYVARGBWW",
+        "link": "01M76M97710GS4PS8WYSM0NQA2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76BDZEWD3YNK3ZSSAZ35FRZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B50FYAFEWQS29QZCGMTPN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76M977S1VQS84F39H84TN0J",
+  "type": "ops",
+  "v": 1
+}
