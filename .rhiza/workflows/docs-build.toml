@@ -47,3 +47,7 @@ on.pass = "check"
 [step.check]
 kind = "command"
 run = "rhiza run build-check"
+
+[[cleanup]]
+name = "go-cleanup"
+run = "sh .rhiza/workflows/go-cleanup.sh"

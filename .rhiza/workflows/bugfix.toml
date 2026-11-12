@@ -1,14 +1,18 @@
 name = "bugfix"
 
-[env]
-GOTMPDIR = "{run_tmp}"
-
 # A bug's planned change set (.rhiza/dispatch.toml [ready] bug): the built-in
 # ship-change (build, review, PR, CI, land, merge), autonomous whatever
 # rhiza.autonomy.* says, so the fix ships with no owner sign-off.
 autonomous = true
 
+[env]
+GOTMPDIR = "{run_tmp}"
+
 [step.ship]
 kind = "workflow"
 workflow = "ship-change"
 on.pass = "done"
+
+[[cleanup]]
+name = "go-cleanup"
+run = "sh .rhiza/workflows/go-cleanup.sh"

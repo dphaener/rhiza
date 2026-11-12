@@ -401,3 +401,7 @@ on.pass = "deploy-check"
 [step.deploy-check]
 kind = "command"
 run = "rhiza ship deploy"
+
+[[cleanup]]
+name = "go-cleanup"
+run = "sh .rhiza/workflows/go-cleanup.sh"

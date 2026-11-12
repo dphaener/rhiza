@@ -93,3 +93,7 @@ kind = "signoff"
 max_visits = 3
 on.pass = "done"
 on.changes = "review"
+
+[[cleanup]]
+name = "go-cleanup"
+run = "sh .rhiza/workflows/go-cleanup.sh"
