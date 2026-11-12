@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"errors"
+	"github.com/dphaener/rhiza/internal/rootcfg"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -214,5 +215,29 @@ func TestSelfUpdateDropsIncomingLogCopies(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(main, ".rhiza/log/cs/c.json")); err != nil {
 		t.Errorf("a differing untracked file was removed: %v", err)
+	}
+}
+
+func TestRhizaCheckoutFindsModule(t *testing.T) {
+	root := t.TempDir()
+	for name, mod := range map[string]string{"a": "example.com/other", "b": RhizaModule, "c": "none"} {
+		d := filepath.Join(root, name)
+		if err := os.MkdirAll(d, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if name != "c" {
+			if err := os.WriteFile(filepath.Join(d, "go.mod"), []byte("module "+mod+"\n\ngo 1.25\n"), 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	reg := rootcfg.Config{Projects: map[string]rootcfg.Project{"a": {Path: "a"}, "b": {Path: "b"}, "c": {Path: "c"}}}
+	dir, ok := RhizaCheckout(root, reg)
+	if !ok || dir != filepath.Join(root, "b") {
+		t.Fatalf("RhizaCheckout = %q, %v", dir, ok)
+	}
+	delete(reg.Projects, "b")
+	if dir, ok := RhizaCheckout(root, reg); ok {
+		t.Fatalf("found %q with no Rhiza project", dir)
 	}
 }

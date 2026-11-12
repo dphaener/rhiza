@@ -304,6 +304,7 @@ type daemonConf struct {
 	// machine is the hold of new runs for load or memory this poll found.
 	machine     *daemon.MachineHold
 	mode        string
+	autoUpdate  string
 	paused      bool
 	trimGoCache bool
 	webHost     string
@@ -349,6 +350,7 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 	c.minMemory, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minMemory"))
 	c.paused = settingValue(rows, "rhiza.daemon.paused") == "true" || settingValue(rows, "rhiza.project.paused") == "true"
 	c.projectMax, _ = strconv.Atoi(settingValue(rows, "rhiza.project.maxRuns"))
+	c.autoUpdate = settingValue(rows, "rhiza.daemon.autoUpdate")
 	c.trimGoCache = settingValue(rows, "rhiza.daemon.trimGoCache") != "false"
 	c.mode = settingValue(rows, "rhiza.daemon.permissionMode")
 	c.webHost = settingValue(rows, web.HostKey)

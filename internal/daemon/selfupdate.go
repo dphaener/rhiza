@@ -3,6 +3,8 @@ package daemon
 import (
 	"fmt"
 	"os"
+
+	"github.com/dphaener/rhiza/internal/rootcfg"
 	"path/filepath"
 	"strings"
 	"time"
@@ -34,6 +36,10 @@ type SelfUpdate struct {
 	Now func() time.Time
 	// Every is the least time between two fetches.
 	Every time.Duration
+
+	// NoneLogged is set by the caller once it has logged that no Rhiza
+	// checkout is registered, so that is said once, not every poll.
+	NoneLogged bool
 
 	// fetched is when origin/main was last fetched, or tried to be.
 	fetched time.Time
@@ -171,4 +177,27 @@ func short(sha string) string {
 		return sha[:9]
 	}
 	return sha
+}
+
+// RhizaModule is the Go module path of Rhiza's own source.
+const RhizaModule = "github.com/dphaener/rhiza"
+
+// RhizaCheckout finds the registered project that is Rhiza's own source
+// checkout: the first project, by name, whose go.mod declares RhizaModule.
+// It reports false when none is, and the daemon then updates nothing.
+func RhizaCheckout(root string, reg rootcfg.Config) (string, bool) {
+	for _, name := range reg.Names() {
+		dir := reg.Dir(root, name)
+		b, err := os.ReadFile(filepath.Join(dir, "go.mod"))
+		if err != nil {
+			continue
+		}
+		for _, line := range strings.Split(string(b), "\n") {
+			f := strings.Fields(line)
+			if len(f) == 2 && f[0] == "module" && strings.Trim(f[1], `"`) == RhizaModule {
+				return dir, true
+			}
+		}
+	}
+	return "", false
 }
