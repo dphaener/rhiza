@@ -1,0 +1,57 @@
+# rhiza repair restores the entries render refuses: from HEAD for a tracked
+# file, from the persistent index for an uncommitted one it has seen, and
+# reports one the index never saw as not restorable.
+
+exec git init -q
+exec rhiza init
+exec rhiza add capability store --field 'statement=Keeps the log' --record
+exec rhiza render
+exec git add -A
+exec git commit -q -m base
+
+# Two uncommitted entries; the index reads them.
+exec rhiza add capability log --parent store --record
+exec rhiza add capability cache --parent store --record
+exec rhiza show log
+exec sh -c 'git ls-files -o --exclude-standard .rhiza/log | grep -v repo > $WORK/new; wc -l < $WORK/new'
+stdout '[2-9]'
+exec sh -c 'grep -l "Keeps the log" .rhiza/log/*/*.json | head -n1 > $WORK/tracked'
+
+# A clean log has nothing to repair.
+exec rhiza repair
+stdout '"restored": \[\]'
+
+# The incident: one uncommitted entry written over with another's bytes.
+exec sh -c 'a=$(sed -n 1p $WORK/new); b=$(sed -n 2p $WORK/new); cp $a $WORK/orig; chmod 644 $a; cp $b $a'
+! exec rhiza render
+stderr 'damaged log'
+exec sh -c 'cp $(sed -n 1p $WORK/new) $WORK/damaged'
+
+# --dry-run names it and changes nothing.
+exec rhiza repair --dry-run
+stdout '"from": "index"'
+exec sh -c 'cmp $(sed -n 1p $WORK/new) $WORK/damaged'
+
+# repair restores the original bytes, read-only.
+exec rhiza repair
+exec sh -c 'cmp $(sed -n 1p $WORK/new) $WORK/orig'
+exec sh -c 'stat -c %a $(sed -n 1p $WORK/new)'
+stdout '^444$'
+exec rhiza render
+fold-ok
+
+# A changed committed entry is restored from HEAD.
+exec sh -c 'f=$(cat $WORK/tracked); cp $f $WORK/orig3; chmod 644 $f; sed -i "s/Keeps the log/Keeps the logs/" $f'
+exec rhiza repair
+stdout '"from": "HEAD"'
+exec sh -c 'cmp $(cat $WORK/tracked) $WORK/orig3'
+exec sh -c 'stat -c %a $(cat $WORK/tracked)'
+stdout '^444$'
+exec rhiza render
+fold-ok
+
+# An entry the index never saw cannot be restored.
+exec sh -c 'f=$(sed -n 2p $WORK/new); d=$(dirname $f); echo junk > $d/01M76ZZZZZZZZZZZZZZZZZZZZZ.json'
+! exec rhiza repair
+stderr 'not restorable'
+stderr '01M76ZZZZZZZZZZZZZZZZZZZZZ'

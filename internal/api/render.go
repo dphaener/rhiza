@@ -120,28 +120,44 @@ func runRender(ctx *Ctx, _ any) (any, error) {
 // deleted). Every run's commit step renders first, so none commits such an
 // entry. The error names each path and problem; nothing has been written.
 func damagedLog(ctx *Ctx, log store.Log) error {
-	var lines []string
+	ds := findDamaged(ctx, log)
+	if len(ds) == 0 {
+		return nil
+	}
+	lines := make([]string, len(ds))
+	for i, d := range ds {
+		lines[i] = d.Path + ": " + d.Reason
+	}
+	return Errorf("render: damaged log, nothing rendered:\n%s", strings.Join(lines, "\n")).WithNext("rhiza repair --dry-run")
+}
+
+// damaged is one entry file render refuses: its path from the project
+// root, with slashes, and what is wrong with it.
+type damaged struct {
+	Path, Reason string
+}
+
+// findDamaged lists the damaged entry files of log, sorted by path.
+func findDamaged(ctx *Ctx, log store.Log) []damaged {
+	var ds []damaged
 	for _, p := range log.Problems {
 		if errors.Is(p.Err, store.ErrStray) {
 			continue
 		}
-		lines = append(lines, fmt.Sprintf("%s/%s: %v", store.Dir, p.Path, p.Err))
+		ds = append(ds, damaged{store.Dir + "/" + p.Path, p.Err.Error()})
 	}
 	if inWorkTree(ctx.Git) {
 		out, err := ctx.Git("diff", "--name-only", "--relative", "--diff-filter=MDT", "HEAD", "--", store.Dir+"/"+store.LogDir)
 		if err == nil {
 			for _, f := range strings.Split(out, "\n") {
 				if f = strings.TrimSpace(f); f != "" {
-					lines = append(lines, f+": differs from HEAD, but a committed entry is never changed")
+					ds = append(ds, damaged{f, "differs from HEAD, but a committed entry is never changed"})
 				}
 			}
 		}
 	}
-	if len(lines) == 0 {
-		return nil
-	}
-	slices.Sort(lines)
-	return Errorf("render: damaged log, nothing rendered:\n%s", strings.Join(lines, "\n")).WithNext("rhiza check")
+	slices.SortStableFunc(ds, func(a, b damaged) int { return strings.Compare(a.Path, b.Path) })
+	return slices.CompactFunc(ds, func(a, b damaged) bool { return a.Path == b.Path })
 }
 
 // testStaleFile is the extra file render writes under the
