@@ -32,3 +32,10 @@ jobs:
         args: release --clean
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish the channel manifest
+      run: |
+        go run ./tools/release -dist dist -tag "$GITHUB_REF_NAME" -commit "$GITHUB_SHA" -repo "$GITHUB_REPOSITORY"
+        gh release upload "$GITHUB_REF_NAME" dist/manifest.json --clobber
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
