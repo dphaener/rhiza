@@ -12,6 +12,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
@@ -55,10 +56,13 @@ type ShipGateResponse struct {
 	Passed  bool   `json:"passed" desc:"True if the gate ran and exited 0"`
 	Output  string `json:"output,omitempty" desc:"The end of the gate's combined output, when it ran"`
 	Error   string `json:"error,omitempty" desc:"How a failing gate failed: its exit status or a timeout"`
+	Log     string `json:"log,omitempty" desc:"The file holding the gate's whole combined output (under the git common dir, replaced on each run), when it ran"`
 	Head    string `json:"head,omitempty" desc:"The commit the gate passed on"`
 	Failed  string `json:"failed,omitempty" desc:"With --failed: the unpushed head ship rebase left after the gate failed on it, when the branch is still at it"`
 	// asked is true for --failed, whose exit code says whether Failed is set.
 	asked bool
+	// failLines are the failing lines of the whole output, for Human.
+	failLines []string
 }
 
 // ExitCode is 0 when the gate passed or was skipped, else 1.
@@ -89,6 +93,12 @@ func (r ShipGateResponse) Human(w io.Writer) {
 	default:
 		if r.Output != "" {
 			fmt.Fprintln(w, strings.TrimRight(r.Output, "\n"))
+		}
+		for _, l := range r.failLines {
+			fmt.Fprintln(w, l)
+		}
+		if r.Log != "" {
+			fmt.Fprintf(w, "Full log: %s\n", r.Log)
 		}
 		fmt.Fprintf(w, "Local gate failed (%s): %s. CI is unstable (%s): fix it here, never push to see.\n", r.Command, r.Error, r.Reason)
 	}
@@ -155,7 +165,11 @@ func shipLocalGate(ctx *Ctx, t *shipTarget) (ShipGateResponse, error) {
 		return ShipGateResponse{}, err
 	}
 	if !v.Unstable {
-		return ShipGateResponse{Command: gate, Skipped: true, Reason: "CI is stable"}, nil
+		reason := "CI is stable"
+		if v.Reason != "" {
+			reason += " (" + v.Reason + ")"
+		}
+		return ShipGateResponse{Command: gate, Skipped: true, Reason: reason}, nil
 	}
 	if t == nil {
 		found, err := findShipTarget(ctx)
@@ -185,6 +199,8 @@ func shipLocalGate(ctx *Ctx, t *shipTarget) (ShipGateResponse, error) {
 	cmd.WaitDelay = time.Second
 	runErr := cmd.Run()
 	resp.Output = out.String()
+	resp.failLines = shipGateFailLines(resp.Output)
+	resp.Log = shipWriteGateLog(t, out.Bytes())
 	if len(resp.Output) > shipGateTail {
 		resp.Output = "...\n" + resp.Output[len(resp.Output)-shipGateTail:]
 	}
@@ -207,6 +223,43 @@ func shipLocalGate(ctx *Ctx, t *shipTarget) (ShipGateResponse, error) {
 		}
 	}
 	return resp, nil
+}
+
+// shipGateMaxFailLines caps the failing lines a failed gate's output ends with.
+const shipGateMaxFailLines = 10
+
+// shipGateFailLines picks a gate output's failing go test lines ("--- FAIL:",
+// "FAIL", "panic:"), the first shipGateMaxFailLines of them.
+func shipGateFailLines(out string) []string {
+	var lines []string
+	for _, l := range strings.Split(out, "\n") {
+		l = strings.TrimRight(l, "\r")
+		t := strings.TrimLeft(l, " \t")
+		if strings.HasPrefix(t, "--- FAIL:") || strings.HasPrefix(l, "FAIL") || strings.HasPrefix(l, "panic:") {
+			lines = append(lines, l)
+			if len(lines) == shipGateMaxFailLines {
+				break
+			}
+		}
+	}
+	return lines
+}
+
+// shipWriteGateLog writes the gate's whole output to
+// <common>/rhiza/gate/<branch>.log, replacing the last run's, and returns
+// the path; empty if it could not be written (the response still has the tail).
+func shipWriteGateLog(t *shipTarget, out []byte) string {
+	if t.common == "" || t.branch == "" {
+		return ""
+	}
+	path := filepath.Join(t.common, "rhiza", "gate", filepath.FromSlash(t.branch)+".log")
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return ""
+	}
+	if err := writeAtomic(path, out); err != nil {
+		return ""
+	}
+	return path
 }
 
 // shipTreeClean reports whether dir has no uncommitted changes to tracked

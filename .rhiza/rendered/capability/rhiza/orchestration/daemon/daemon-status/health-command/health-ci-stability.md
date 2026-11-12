@@ -17,6 +17,7 @@ rhiza health shows a CI part: stable or unstable with the reason (flakes in the 
 - depends-on [ci-stability-state](../../../shipping/wait-green-pr/ci-stability-state.md)
 - depends-on [ship-local-gate](../../../shipping/wait-green-pr/ship-local-gate.md)
 - decided-by [ci-unstable-gate-rules](../../../../../../decision/ci-unstable-gate-rules.md)
+- decided-by [local-gate-trigger-identified-flakes](../../../../../../decision/local-gate-trigger-identified-flakes.md)
 
 ### In
 

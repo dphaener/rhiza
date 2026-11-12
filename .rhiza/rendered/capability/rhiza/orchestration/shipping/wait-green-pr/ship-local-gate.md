@@ -17,10 +17,12 @@ While CI is unstable, the built-in ship-change workflow runs the project's local
 - depends-on [ci-stability-state](ci-stability-state.md)
 - decided-by [ci-unstable-gate-rules](../../../../../decision/ci-unstable-gate-rules.md)
 - decided-by [no-ci-as-debugger](../../../../../decision/no-ci-as-debugger.md)
+- decided-by [local-gate-trigger-identified-flakes](../../../../../decision/local-gate-trigger-identified-flakes.md)
 
 ### In
 
 - depends-on [health-ci-stability](../../daemon/daemon-status/health-command/health-ci-stability.md)
+- depends-on [ship-gate-full-log](ship-gate-full-log.md)
 - blocks [review-01m6ycdrqqthsj4fv3sassw3v3-r3-f2](../../../../../question/review-01m6ycdrqqthsj4fv3sassw3v3-r3-f2.md)
 - blocks [leaf-failed-01m6ygg6-1](../../../../../question/leaf-failed-01m6ygg6-1.md)
 - verifies [ship-local-gate-verified](../../../../../evidence/ship-local-gate-verified.md)

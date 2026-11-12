@@ -16,6 +16,7 @@ A head still red once its rerun budget is spent (ship check --reruns and the wat
 
 - decided-by [ci-unstable-gate-rules](../../../../../decision/ci-unstable-gate-rules.md)
 - decided-by [no-ci-as-debugger](../../../../../decision/no-ci-as-debugger.md)
+- decided-by [local-gate-trigger-identified-flakes](../../../../../decision/local-gate-trigger-identified-flakes.md)
 
 ### In
 

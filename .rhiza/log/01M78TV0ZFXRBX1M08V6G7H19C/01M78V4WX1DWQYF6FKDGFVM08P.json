@@ -1,0 +1,185 @@
+{
+  "actor": "01M78TVVJZRGCG51TX14K9MKZ2",
+  "after": [
+    "01M78V4VBWD9SPQYD2PH5BQ6AC"
+  ],
+  "at": "2026-11-12T21:38:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M78V2RH7Z677JJBPANNDM53X",
+        "id": "01M78V4W99BE2BYQJ3K7V1JAR0",
+        "link": "01M78V4W99BE2BYQJ3K5EWFQXW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V40HNZXEHTCAZ6AN9G789",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... -run DaemonProfile: a Go test runs the daemon loop in-process with a fake clock, issues the profile request with --seconds 1, and asserts the daemon writes a non-empty gzip-compressed pprof file at --out (or the default path in the daemon's state folder), keeps polling afterwards, and that a second request while one is in progress is refused with an error naming the capture in progress; no test binds a socket",
+          "statement": "A hidden 'rhiza daemon profile [--seconds N] [--out <file>]' (N defaults to 30) asks the running daemon to capture a CPU profile of itself for N seconds and write it to the file, without restarting it, and prints the file's path"
+        },
+        "handle": "daemon-live-cpu-profile",
+        "id": "01M78V4WAQ555KCQSZW0NF8BHC",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M78V4WAQ555KCQSZVXT3CPDQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78V4WAQ555KCQSZVXT3CPDQ",
+        "id": "01M78V4WBQBC6N5AR5DSPCAQX0",
+        "link": "01M78V4WBQBC6N5AR5DRV64VGX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V2RH7Z677JJBPANNDM53X",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... -run CPUProfile: a Go test starts a run through the daemon with a fake Start and RHIZA_CPUPROFILE=<dir>/daemon.pprof in the daemon's environment, and asserts the driver's environment carries RHIZA_CPUPROFILE=<dir>/daemon.pprof.<run id>; with RHIZA_CPUPROFILE unset the driver's environment has none",
+          "statement": "When the daemon runs with RHIZA_CPUPROFILE set, each run driver it starts gets its own RHIZA_CPUPROFILE, the daemon's path with the run's ID added, so every driver writes a start-to-exit CPU profile without overwriting the daemon's or another driver's"
+        },
+        "handle": "daemon-passes-cpuprofile-to-drivers",
+        "id": "01M78V4WDA98WKD9YNVK5H3WR1",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M78V4WDA98WKD9YNVGJWBWA7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78V4WDA98WKD9YNVGJWBWA7",
+        "id": "01M78V4WEPD1G5MDRD1P45WT46",
+        "link": "01M78V4WEPD1G5MDRD1K1YAB5F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V2RH7Z677JJBPANNDM53X",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/ -run '^$' -bench 'IdleRootPoll|IdleDriverPoll' -benchtime 3x -cpuprofile $TMPDIR/idle.pprof completes and writes a profile; the benchmarks build their fixture in a temp dir with no network, Rex, agent or gh",
+          "statement": "In-process Go benchmarks time one idle root-daemon poll (two registered projects, nothing changed) and one idle driver poll over a production-sized fixture (a log of 1,000+ change sets, several runs in flight, ~4,000 transcript files), so a builder profiles idle cost with go test -cpuprofile and never needs the VM"
+        },
+        "handle": "idle-poll-benchmarks",
+        "id": "01M78V4WH7H4JKPF1CZBN6Z111",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M78V4WH7H4JKPF1CZ9S33Z7M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78V4WH7H4JKPF1CZ9S33Z7M",
+        "id": "01M78V4WJGE2T6Q7GBYA1PH156",
+        "link": "01M78V4WJGE2T6Q7GBY8Y7MTE1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V2RH7Z677JJBPANNDM53X",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... -run 'RootIdlePoll': a Go test runs the root daemon poll over two projects twice with nothing changed and asserts through the readLog, planRead and fold counters that the second poll folds nothing and computes no pick; it then changes each stamp in turn (log entry, ref move, run record, setting, transcript file) and asserts the next poll does the work again; a CPU budget test (quiettest, median, like TestReadBudget) on the idle-poll-benchmarks fixture asserts an unchanged root poll costs under 100 ms of process CPU",
+          "statement": "A root daemon poll in which, for every registered project, the log, git refs, run records, settings and usage inputs are unchanged by their stamps does no fold and no pick and costs at most 0.05 core of steady CPU at the 5 s poll, while clock-based holds, process liveness and due schedules are still evaluated"
+        },
+        "handle": "root-daemon-idle-poll-no-work",
+        "id": "01M78V4WM0TQZYN29GP63YRWKW",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M78V4WM0TQZYN29GP2GCGGPZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78V4WM0TQZYN29GP2GCGGPZ",
+        "id": "01M78V4WMV0KQGRQ5M2XAJ5PKQ",
+        "link": "01M78V4WMV0KQGRQ5M2V3PFGQS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V2RH7Z677JJBPANNDM53X",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... ./internal/adapter/claudecode/... -run 'UsageScan': a Go test with a fake clock and a transcript tree of 100+ files counts directory walks and file reads across root polls of two projects: one walk per poll at most, none in a poll less than a minute after the last full walk, zero file reads when nothing changed, one read when one known file grows, and a new file found by the next full walk; the usage windows computed match those of a full read",
+          "statement": "The usage governor reads Claude Code transcripts once per root daemon poll for all projects, not once per project, re-reads only transcript files whose size or mtime changed, and walks the transcript tree in full at most once a minute, re-checking only the files it already knows between full walks"
+        },
+        "handle": "usage-scan-once-per-poll",
+        "id": "01M78V4WPDAC0P0JMCA4E6NT1Y",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M78V4WPDAC0P0JMCA17H4TC9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78V4WPDAC0P0JMCA17H4TC9",
+        "id": "01M78V4WQ8PQSFHA5G0CYCNZK0",
+        "link": "01M78V4WQ8PQSFHA5G08ZS14D1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V2RH7Z677JJBPANNDM53X",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run/... ./internal/workflow/... -run 'WaitBackoff|MaxInterval': a Go test drives a wait step with a fake clock and a scripted check whose output stays the same then changes, and asserts the sleeps go 30s, 60s, 120s, 120s and back to 30s after the change, never past the step's timeout; a workflow test parses max_interval, rejects one below interval, and asserts the built-in ship-change CI waits set 2m; rhiza workflow check passes on .rhiza/workflows",
+          "statement": "A wait step can back off: with max_interval set, each check whose output is unchanged from the last doubles the interval up to max_interval, and any change in the output brings it back to interval; ship-change's and bugfix's CI waits (rhiza ship check --settled ...) set interval 30s and max_interval 2m, so a driver waiting on pending CI runs a ship check at most every 2 minutes"
+        },
+        "handle": "ci-wait-backs-off",
+        "id": "01M78V4WSRZERXA7TRPM0WHEGK",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M78V4WSRZERXA7TRPH50HSAV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78V4WSRZERXA7TRPH50HSAV",
+        "id": "01M78V4WTA5N5T16ZS0NCHFX1M",
+        "link": "01M78V4WTA5N5T16ZS0NBVXQAY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V2RH7Z677JJBPANNDM53X",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M78V4WM0TQZYN29GP2GCGGPZ",
+        "id": "01M78V4WV5D1N7XDR31GCMC2FD",
+        "link": "01M78V4WV5D1N7XDR31G62A0X8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WH7H4JKPF1CZ9S33Z7M",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M78V4WM0TQZYN29GP2GCGGPZ",
+        "id": "01M78V4WW3JNNSG7MCAYWHP42F",
+        "link": "01M78V4WW3JNNSG7MCAWCZE1G4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WPDAC0P0JMCA17H4TC9",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M78TV0ZFXRBX1M08V6G7H19C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78V4WX1DWQYF6FKDGFVM08P",
+  "type": "ops",
+  "v": 1
+}

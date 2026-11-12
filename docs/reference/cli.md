@@ -2379,6 +2379,7 @@ Output (`--json` fields):
 - `error` (string): How a failing gate failed: its exit status or a timeout
 - `failed` (string): With --failed: the unpushed head ship rebase left after the gate failed on it, when the branch is still at it
 - `head` (string): The commit the gate passed on
+- `log` (string): The file holding the gate's whole combined output (under the git common dir, replaced on each run), when it ran
 - `output` (string): The end of the gate's combined output, when it ran
 - `passed` (boolean): True if the gate ran and exited 0
 - `reason` (string): Why it ran (why CI is unstable) or why it was skipped

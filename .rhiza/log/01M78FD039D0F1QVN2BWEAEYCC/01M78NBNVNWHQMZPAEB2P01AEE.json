@@ -1,0 +1,40 @@
+{
+  "actor": "01M78N6XZP1C33D6VJT8WNDEHE",
+  "after": [
+    "01M78N3RZC3W874H9E69XABDB1"
+  ],
+  "at": "2026-11-12T19:57:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA by hand with the built binary (go build ./cmd/rhiza at 952263bc7) in a fresh scratch repo (git init, rhiza init, change new, rhiza daemon set rhiza.ship.localGate to a script, a ci-stability.json with an identified flake so CI is unstable). Failing gate printing '--- FAIL: TestEarly' and 'FAIL example.com/pkg/early' first, 30000 filler lines (619039 bytes), then make's 'Error 1', exit 2: rhiza ship gate exited 1; its last 20 human lines (a step's kept tail) held '--- FAIL: TestEarly', the FAIL line, 'Full log: <common>/rhiza/gate/cs/qa-gate-log.log' and the failure line; --json log names that file, output kept at the 16 KB tail; the log file is byte-identical to the gate's full output (cmp). A passing gate (echo all fine) exited 0 and replaced the log with 'all fine'; rerun on the same gated head passes from the cache without rerunning or naming a log. grep -c 'run `rhiza ship gate` to see' prints 0 for ship-change.toml and docs.toml; both gate-fix prompts in each name `rhiza run status --json` and the full gate log file. go test -trimpath ./internal/api -run 'TestShipGateFullLog|TestShipRebase|TestShipLocalGate' and ./cmd/rhiza TestScripts/(describe-golden|ship-local-gate) pass. Rebase-path log write checked through its unit test only."
+        },
+        "handle": "ship-gate-full-log-qa-1",
+        "id": "01M78NBNR81BYAVENYRF38C6WV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78NBNR81BYAVENYRBDRY6HW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78NBNR81BYAVENYRBDRY6HW",
+        "id": "01M78NBNSTSG652GA8QJF9XRWY",
+        "link": "01M78NBNSTSG652GA8QHGBQW4Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FP45EF4RB94DP1JZ5W6T2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78FD039D0F1QVN2BWEAEYCC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78NBNVNWHQMZPAEB2P01AEE",
+  "type": "ops",
+  "v": 1
+}
