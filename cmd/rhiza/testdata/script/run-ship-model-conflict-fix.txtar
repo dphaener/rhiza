@@ -7,15 +7,19 @@
 # restates the update on the landed version with `rhiza set first --rebase`
 # and commits the log entry with the Review: trailer, and the run goes back
 # through render-pr, the gate, open-pr (which pushes it) and pr-green to
-# sign-off, then on to land, which merges the PR. (The same failure at the
-# pre-land gate goes to model-conflict-fix, and a land refused on it to
-# land-triage; both are in the API and workflow tests.)
+# sign-off, then on to land, which merges the PR.
 #
 # Case 1: the fixer repairs it: one fixer session.
 # Case 2: a fixer that leaves the conflict in place fails the step's until:
 # the run fails at pr-model-conflict-fix with nothing merged.
+# Case 3: Other lands only after the pre-land gate passed (the fake local
+# gate lands it in the worktree at gate-land), so land is refused on the
+# stale base and goes through land-triage and model-conflict-triage to
+# model-conflict-fix, then render-model-conflict, gate-land and land again
+# to the merged PR.
 #
-# The fakes are run-ship-conflict-fix.txtar's, without main moving.
+# The fakes are run-ship-conflict-fix.txtar's, without main moving, plus a
+# local gate (gate.sh) that CI turning unstable after the sign-off brings in.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -50,6 +54,42 @@ stdout 'Ship it \(#7\)'
 exec rhiza show first --json
 stdout 'Theirs and ours'
 
+# Case 3: Other lands after the pre-land gate passed, so land is refused on
+# the stale base: land-triage and model-conflict-triage send it to
+# model-conflict-fix, whose fixer runs rhiza set first --rebase, and the run
+# goes back through render-model-conflict, gate-land and land to the merge.
+exec sh -c 'rm -f $WORK/fixer-mode; : > $WORK/hold-other'
+cd $WORK
+exec sh $WORK/setup.sh
+rm $WORK/hold-other
+cd repo
+exec git config rhiza.ship.localGate 'sh $WORK/gate.sh'
+exec sh -c 'rhiza run start --foreground $(cat $WORK/cs) --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+! exists $WORK/gate.log
+exec sh -c ': > $WORK/unstable-on-view'
+exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$?'
+stdout '^exit=0$'
+stdout '^Run \S+ succeeded$'
+exec rhiza run status
+! stdout 'pr-model-conflict'
+stdout '^- gate-land \(visit 1\): pass, then land'
+stdout '^- land \(visit 1\): fail, then land-triage'
+stdout '^- land-triage \(visit 1\): fail, then model-conflict-triage'
+stdout '^- model-conflict-triage \(visit 1\): pass, then model-conflict-fix'
+stdout '^- model-conflict-fix \(visit 1\): pass, then render-model-conflict'
+stdout '^- render-model-conflict \(visit 1\): pass, then gate-land'
+stdout '^- gate-land \(visit 2\): pass, then land'
+stdout '^- land \(visit 2\): pass, then wait-landed'
+! stdout '^- gate-fix'
+grep -count=2 '^gate-land$' $WORK/gate.log
+exec sh -c 'wc -l < $WORK/model-fixes.log'
+stdout '^1$'
+exec git -C $WORK/origin.git log main --format=%s
+stdout 'Ship it \(#7\)'
+exec rhiza show first --json
+stdout 'Theirs and ours'
+
 # Case 2: a fixer that repairs nothing fails the run.
 exec sh -c 'echo lazy > $WORK/fixer-mode'
 cd $WORK
@@ -68,8 +108,8 @@ stdout 'until did not hold'
 # unpushed commits: m1..m4 in a line, each changing feature.txt, and n1,
 # touching an unrelated file.
 set -e
-rm -rf "$WORK/origin.git" "$WORK/repo" "$WORK/repo.ship-it" "$WORK/other"
-rm -f "$WORK/cs" "$WORK/gh.log" "$WORK/pr.created" "$WORK/fixes.log" "$WORK/ship.log" "$WORK/refuse" "$WORK/typed.log" "$WORK/model-fixes.log" "$WORK/answer" "$WORK/clash.log" "$WORK/tab.out" "$WORK/arbiter.log"
+rm -rf "$WORK/origin.git" "$WORK/repo" "$WORK/repo.ship-it" "$WORK/other" "$WORK/held"
+rm -f "$WORK/cs" "$WORK/gh.log" "$WORK/pr.created" "$WORK/fixes.log" "$WORK/ship.log" "$WORK/refuse" "$WORK/typed.log" "$WORK/model-fixes.log" "$WORK/answer" "$WORK/clash.log" "$WORK/tab.out" "$WORK/arbiter.log" "$WORK/gate.log" "$WORK/other-cs"
 git init -q --bare "$WORK/origin.git"
 cat > "$WORK/origin.git/hooks/pre-receive" <<'EOF'
 #!/bin/sh
@@ -96,14 +136,31 @@ rhiza change new 'Ship it' --title 'Ship it' --json > /dev/null
 rhiza change ls --json | grep -B2 '"intent": "Ship it"' | grep '"id"' | cut -d'"' -f4 > "$WORK/cs"
 rhiza set first --field 'statement=Ours' > /dev/null
 rhiza add capability second --field 'statement=Does second' > /dev/null
-rhiza change new 'Other' --json > /dev/null
-rhiza set first --field 'statement=Theirs' > /dev/null
-rhiza propose > /dev/null
-rhiza accept --reason ok > /dev/null
-rhiza land > /dev/null
-rhiza change use "$(cat "$WORK/cs")" > /dev/null
-rhiza propose > /dev/null
-rhiza accept --reason ok > /dev/null
+if [ -f "$WORK/hold-other" ]; then
+	# Other lands later, at gate-land: write it now under another seed (so
+	# its IDs never meet the run's) and hold its entries out of the log.
+	rhiza propose > /dev/null
+	rhiza accept --reason ok > /dev/null
+	seed=$((RHIZA_TEST_SEED + 100000))
+	RHIZA_TEST_SEED=$seed rhiza change new 'Other' --json > /dev/null
+	RHIZA_TEST_SEED=$seed rhiza change ls --json | grep -B2 '"intent": "Other"' | grep '"id"' | cut -d'"' -f4 > "$WORK/other-cs"
+	RHIZA_TEST_SEED=$seed rhiza set first --field 'statement=Theirs' > /dev/null
+	RHIZA_TEST_SEED=$seed rhiza propose > /dev/null
+	RHIZA_TEST_SEED=$seed rhiza accept --reason ok > /dev/null
+	RHIZA_TEST_SEED=$seed rhiza land > /dev/null
+	mkdir "$WORK/held"
+	mv ".rhiza/log/$(cat "$WORK/other-cs")" "$WORK/held/"
+	rhiza change use "$(cat "$WORK/cs")" > /dev/null
+else
+	rhiza change new 'Other' --json > /dev/null
+	rhiza set first --field 'statement=Theirs' > /dev/null
+	rhiza propose > /dev/null
+	rhiza accept --reason ok > /dev/null
+	rhiza land > /dev/null
+	rhiza change use "$(cat "$WORK/cs")" > /dev/null
+	rhiza propose > /dev/null
+	rhiza accept --reason ok > /dev/null
+fi
 git add -A
 git commit -qm 'Start shipping'
 git push -q -u origin main
@@ -121,6 +178,20 @@ for n in 1 2 3 4; do
 	git add feature.txt
 	git commit -qm "Main $n" -m 'Change: 01M5PWGEF85Y185JZ2ZGCNH40M'
 done
+-- ci-red.json --
+{"runs":[{"head":"red","main":true,"result":"red","time":"2026-11-08T00:00:00Z"}]}
+-- gate.sh --
+#!/bin/sh
+# The local gate: passes, and at gate-land, while Other is held, lands it
+# in the worktree, as if it landed between the gate and land.
+echo "$RHIZA_STEP" >> "$WORK/gate.log"
+if [ "$RHIZA_STEP" = gate-land ] && [ -d "$WORK/held" ]; then
+	mv "$WORK"/held/* .rhiza/log/
+	rmdir "$WORK/held"
+	git add -A -- .rhiza/log
+	git commit -q -m 'Land Other' -m "Change: $(cat "$WORK/other-cs")" || exit 1
+fi
+exit 0
 -- review.toml --
 # The repo's own review, as the built-in one but with two fake checks.
 # Its code step runs rhiza check, which passes only because ship-change
@@ -305,6 +376,13 @@ case "$1 $2" in
 	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3") || [ ! -f "$WORK/pr.created" ]; then
 		echo "no pull requests found for branch \"$3\"" >&2
 		exit 1
+	fi
+	# CI turns unstable (main red) at the first view after the sign-off,
+	# so the local gate runs from gate-land on.
+	if [ -f "$WORK/unstable-on-view" ]; then
+		mkdir -p "$WORK/repo/.git/rhiza"
+		cp "$WORK/ci-red.json" "$WORK/repo/.git/rhiza/ci-stability.json"
+		rm "$WORK/unstable-on-view"
 	fi
 	# Main moves when a head's subject matches a trigger line.
 	if [ -s "$WORK/triggers" ]; then
