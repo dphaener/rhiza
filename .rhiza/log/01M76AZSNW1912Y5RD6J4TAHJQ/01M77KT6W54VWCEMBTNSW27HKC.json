@@ -1,0 +1,63 @@
+{
+  "actor": "01M77KQCVM7CFKSDCC9TD8CH21",
+  "after": [
+    "01M77KNVX47R0KVB3T90F3YJQ6"
+  ],
+  "at": "2026-11-12T10:10:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at b380a501f (cycle 2): built rhiza with go build -trimpath and ran `rhiza version --channel` against a local python http.server channel (RHIZA_TEST_CHANNEL_BASE_URL) with RHIZA_TEST_VERSION set. The cycle-1 ordering bug is fixed. These report newer: v0.2.0-5-gabc1234 over v0.2.0; v0.2.1-12-gdef over v0.2.1-5-gabc; v0.2.1-main.10+abc over main.9; v0.2.0-rc.10 over rc.2; v0.2.0 over rc.10; v0.10.0 over v0.9.0; v0.2.1-main.3 over v0.2.0-7-gabc-dirty; v0.2.0 over dev and over the Go pseudo-version build. These report not newer: each reverse pair, the same version, v0.2.0 against v0.3.0, rc.1 against v0.2.0, and main.3+abc against main.3+abc-dirty. --json gives channel/current/newest/newer. An unknown channel exits 2 with a usage error. A malformed manifest and an unreachable base (127.0.0.1:1) exit 1 with a clean error. Nothing was written in the empty cwd. Against the real published channel, release reports v0.1.0 as not newer than the v0.1.1 pseudo-version build. go test -trimpath ./cmd/rhiza -run TestScripts/version-channel passes."
+        },
+        "handle": "version-channel-check-qa-2",
+        "id": "01M77KT6NRHGBK6777TH17G6PE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77KT6NQYCWFESYNE6D31V5J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77KT6NQYCWFESYNE6D31V5J",
+        "id": "01M77KT6QDG16BBS5WKYCM9HEW",
+        "link": "01M77KT6QDG16BBS5WKTW7KJNK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7D5PY6PAKYK14QQCKZE1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at b380a501f (cycle 2): the built binary's Resolver.Newest read release and latest manifests from a local HTTP channel and from the real github.com release channel (v0.1.0). It rejected a malformed manifest ('malformed manifest: invalid character') and a 404. go test -trimpath ./internal/release/... passes."
+        },
+        "handle": "channel-resolver-qa-2",
+        "id": "01M77KT6RQ2F9XV0GVMA0701ZC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77KT6RQ2F9XV0GVM72YXFR7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77KT6RQ2F9XV0GVM72YXFR7",
+        "id": "01M77KT6V3CCJ7H4XCXC96J1XM",
+        "link": "01M77KT6V3CCJ7H4XCXBZND2XH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7D55NHFJP1CNA4H5HWDH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76AZSNW1912Y5RD6J4TAHJQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77KT6W54VWCEMBTNSW27HKC",
+  "type": "ops",
+  "v": 1
+}

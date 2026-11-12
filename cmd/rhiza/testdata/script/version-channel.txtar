@@ -1,0 +1,54 @@
+# rhiza version --channel shows the newest version on a channel and whether it
+# is newer than the running build; it writes nothing. The channel base URL is a
+# fixture (RHIZA_TEST_CHANNEL_BASE_URL), so there is no network.
+file-server RHIZA_TEST_CHANNEL_BASE_URL channels
+env RHIZA_TEST_VERSION=v0.1.0
+
+# newer
+exec rhiza version --channel release
+stdout 'release v0.2.0: newer than this build \(running v0.1.0\)'
+exec rhiza version --channel release --json
+stdout '"newer": true'
+stdout '"newest": "v0.2.0"'
+
+# same
+env RHIZA_TEST_VERSION=v0.2.0
+exec rhiza version --channel release
+stdout 'not newer than this build'
+exec rhiza version --channel release --json
+stdout '"newer": false'
+
+# older
+env RHIZA_TEST_VERSION=v0.3.0
+exec rhiza version --channel release
+stdout 'not newer than this build'
+exec rhiza version --channel release --json
+stdout '"newer": false'
+
+# a build that is not a version (dev) is behind any published one
+env RHIZA_TEST_VERSION=dev
+exec rhiza version --channel latest
+stdout 'latest v0.2.1-5-gabc: newer than this build \(running dev\)'
+
+# an unknown channel is a usage error
+! exec rhiza version --channel nightly
+stderr 'unknown channel "nightly"'
+! exec rhiza version --channel
+stderr 'needs a value'
+
+# an unreachable channel is an error, not a crash
+env RHIZA_TEST_CHANNEL_BASE_URL=http://127.0.0.1:1
+! exec rhiza version --channel release
+stderr 'rhiza: release:'
+
+# plain version is unchanged
+exec rhiza version
+stdout '\Arhiza \S+\n\z'
+
+# nothing was written
+! exists .rhiza
+
+-- channels/release/manifest.json --
+{"channel":"release","version":"v0.2.0","commit":"abc","platforms":[{"os":"linux","arch":"amd64","url":"http://x/a.tgz","sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]}
+-- channels/latest/manifest.json --
+{"channel":"latest","version":"v0.2.1-5-gabc","commit":"abc","platforms":[{"os":"linux","arch":"amd64","url":"http://x/a.tgz","sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]}
