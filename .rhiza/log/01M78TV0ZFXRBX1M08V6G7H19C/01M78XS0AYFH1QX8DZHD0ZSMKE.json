@@ -1,0 +1,40 @@
+{
+  "actor": "01M78XAF8MT30G60YAG89W9MBJ",
+  "after": [
+    "01M78W44RV8F4MXG72AXBBXW9Q"
+  ],
+  "at": "2026-11-12T22:24:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 770814896, ran go test -trimpath ./internal/api/ -run '^$' -bench 'IdleRootPoll|IdleDriverPoll' -benchtime 3x -cpuprofile $TMPDIR/idle.pprof: PASS in 75s (IdleRootPoll ~201ms/op, IdleDriverPoll ~56us/op) and wrote a 145KB profile that go tool pprof reads. Read the diff: the fixture is built in t.TempDir dirs, git and Detach are faked, Getenv is stubbed, no network/Rex/agent/gh; 4 runs in flight, 4,000 transcripts under a temp CLAUDE_CONFIG_DIR. In a throwaway scratch worktree, folded the grown fixture log: 1,099 change sets, 0 log problems, 0 fold problems. go test -run 'DaemonIdlePoll|DaemonPollCache|DaemonFold' ./internal/api passes with the refactored newDaemonFoldFix."
+        },
+        "handle": "idle-poll-benchmarks-verified",
+        "id": "01M78XRZXFKSCYV1BF9FBDW1MN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78XRZXFKSCYV1BF9BBKVX6S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78XRZXFKSCYV1BF9BBKVX6S",
+        "id": "01M78XS02W38W834QKCKX621G8",
+        "link": "01M78XS02W38W834QKCJRDAMVR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WH7H4JKPF1CZ9S33Z7M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78TV0ZFXRBX1M08V6G7H19C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78XS0AYFH1QX8DZHD0ZSMKE",
+  "type": "ops",
+  "v": 1
+}
