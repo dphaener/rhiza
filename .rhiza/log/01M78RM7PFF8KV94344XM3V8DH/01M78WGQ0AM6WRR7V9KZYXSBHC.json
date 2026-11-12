@@ -1,0 +1,40 @@
+{
+  "actor": "01M78WETN7C5W2JHP2BFW4QTW9",
+  "after": [
+    "01M78ST58W7EXFB9V5VRRMK1M8"
+  ],
+  "at": "2026-11-12T22:02:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at ddcc0cf53, detached checkout. Ran go test -trimpath ./internal/api -run 'TestShipCheckStabilityRecord|TestFlakyTestBugs|TestTrimFailureLog' -v: all PASS. Subtests cover each acceptance point: 'subtests by full name' (a log with '--- FAIL: TestFoo' and an indented '--- FAIL: TestScripts/bar', rerun green) records Flakes [TestFoo TestScripts/bar] and no Infra; 'unknown step' records Infra ['scripts (4/4) / UNKNOWN STEP'] and no flake; 'no job or step' records Infra ['CI run 42']; 'red after rerun' records red with no flakes (the code sets Flakes/Infra only on the green branch of recordSettledCI, so Infra is empty too); 'old record reads job / step flakes as infra' splits ['test / Run','CI run 9','TestA'] into Flakes [TestA] and Infra on read; TestFlakyTestBugs queues bugs for named test flakes and none for an infra-only run (Infra entry or a legacy 'CI run 5' flake). Also ran TestCIStability and TestHealthCIStability (PASS), TestScripts/describe-golden (ok), go vet and gofmt -l on internal/api (clean). Read the diff: failedTestNames in ship.go matches '--- FAIL: <name>' after logText strips the job/step prefix, timestamp and indentation, and drops a parent whose subtest is named; shipFailedTests sends a log that names no test to infra; CIRun.normalized moves 'job / step' and 'CI run' flakes into Infra on read, and ciVerdict, ciFlakeCounts and watchdogFlakyTests all use it."
+        },
+        "handle": "ci-flakes-name-tests-verified",
+        "id": "01M78WGPY9C2PHMNW5HMSS32TJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78WGPY9C2PHMNW5HJ9KKB7G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78WGPY9C2PHMNW5HJ9KKB7G",
+        "id": "01M78WGPZ8BZZFCP0GJDVFDPQR",
+        "link": "01M78WGPZ8BZZFCP0GJBJKHAYY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S74JZND6E67Z618T2TYQM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78RM7PFF8KV94344XM3V8DH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78WGQ0AM6WRR7V9KZYXSBHC",
+  "type": "ops",
+  "v": 1
+}
