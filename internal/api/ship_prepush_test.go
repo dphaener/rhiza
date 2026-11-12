@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"os/exec"
@@ -469,6 +470,54 @@ func TestShipPrePushCheckRebase(t *testing.T) {
 				t.Errorf("ship gate --failed after the rebase = %+v", gr)
 			}
 		})
+	}
+}
+
+// ship check --settled on a pull request GitHub reports CONFLICTING merges
+// main as ship rebase does; when the pre-push check fails on the merge, the
+// wait ends (settled, exit 0) with the merge kept unpushed, rather than
+// polling and checking again until it times out, and ship gate --failed
+// then passes on the kept head.
+func TestShipPrePushCheckSettleConflict(t *testing.T) {
+	b := prePushBreaks[0]
+	f, state := shipRebaseFixture(t)
+	f.git.out[rebaseMerge] = ""
+	r := newPrePushRepo(t)
+	b.apply(t, r.root, r.git)
+	realPrePushCheck(t, r)
+	body, _ := json.Marshal("Change set " + currentOf(t, f.ctx).String() + ": Ship it.")
+	view := `{"number":7,"url":"https://github.com/o/r/pull/7","state":"OPEN","headRefOid":"abc1234def","mergeable":"CONFLICTING","body":` + string(body) + `,"statusCheckRollup":[]}`
+	exec := f.ctx.Exec
+	kept := ""
+	f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		switch a := strings.Join(args, " "); {
+		case name == "gh" && strings.HasPrefix(a, "pr view cs/ship-it"):
+			return []byte(view), nil
+		case name == "git" && a == "rev-parse HEAD" && kept != "":
+			return []byte(kept + "\n"), nil
+		}
+		return exec(name, args, dir, env)
+	}
+	resp, err := callOp(t, f.ctx, "ship.check", `{"settled":true}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := resp.(ShipCheckResponse)
+	if c.ExitCode() != 0 || !c.Settled || !c.Passed || !strings.Contains(c.Detail, "pre-push check failed") || !strings.Contains(c.Detail, "for the step's fixer") {
+		t.Fatalf("settled check = %+v", c)
+	}
+	noPush(t, f.git.calls)
+	st, _ := readShipState(state)
+	if st.PrePushFailed == "" || st.Pushed != "" {
+		t.Fatalf("state = %+v", st)
+	}
+	kept = st.PrePushFailed
+	g, err := callOp(t, f.ctx, "ship.gate", `{"failed":true}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if gr := g.(ShipGateResponse); gr.ExitCode() != 0 || gr.Failed != kept {
+		t.Errorf("ship gate --failed after the settled check = %+v", gr)
 	}
 }
 

@@ -751,6 +751,14 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 				return resp, nil
 			}
 		}
+		if st.PrePushFailed != "" && !r.Settled {
+			if h, _ := gitAt(ctx, t.dir(), "rev-parse", "HEAD"); strings.TrimSpace(h) == st.PrePushFailed {
+				// The pre-push check failed on this head, left unpushed for
+				// the step's fixer: the PR's checks say nothing about it.
+				resp.Detail = fmt.Sprintf("failed: the pre-push check failed on %s, left unpushed on %s for the step's fixer", shortSHA(st.PrePushFailed), t.branch)
+				return resp, nil
+			}
+		}
 		if st.Pushed != "" && v.Head != st.Pushed {
 			// Someone else may have pushed on top of the run's head:
 			// follow a head that contains the pushed one.
@@ -1436,9 +1444,10 @@ func shipReadFailures(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResp
 // reports CONFLICTING: a push is reported not settled, so the next check
 // sees the new head; a conflict in code leaves the merge in progress and
 // is reported settled (exit 0) with the conflict in the detail, so the run
-// goes on to triage it. A clean merge the local gate failed on is left
-// unpushed and reported settled (exit 0) too: the next ship check fails on
-// it, and the run routes it to the gate's fixer. It raises no question.
+// goes on to triage it. A clean merge the local gate or the pre-push check
+// failed on is left unpushed and reported settled (exit 0) too: the next
+// ship check fails on it, and the run routes it to the step's fixer. It
+// raises no question.
 func shipSettleConflict(ctx *Ctx, resp ShipCheckResponse) (any, error) {
 	out, err := runShipRebase(ctx, ShipRebaseRequest{})
 	if err != nil {
@@ -1450,6 +1459,11 @@ func shipSettleConflict(ctx *Ctx, resp ShipCheckResponse) (any, error) {
 		resp.Conflicts, resp.MergeConflict, resp.Detail = rb.Conflicts, rb.MergeConflict, rb.Detail
 		resp.Settled, resp.Passed = true, true
 	case rb.Gate != nil && !rb.Gate.Passed:
+		resp.Detail = rb.Detail
+		resp.Settled, resp.Passed = true, true
+	case rb.PrePushCheck != nil:
+		// The merge is kept, unpushed, for the step's fixer: the wait
+		// ends, and plain ship check fails on the kept head.
 		resp.Detail = rb.Detail
 		resp.Settled, resp.Passed = true, true
 	case rb.Pushed != "":

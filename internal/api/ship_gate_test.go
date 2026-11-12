@@ -240,6 +240,27 @@ func TestShipCheckFailsOnGateFailedHead(t *testing.T) {
 	}
 }
 
+// The same holds for the head the pre-push check failed on.
+func TestShipCheckFailsOnPrePushFailedHead(t *testing.T) {
+	f, g, state := shipFixture(t)
+	g.answers[shipPRView] = openPR(greenRollup)
+	g.answers["git rev-parse HEAD"] = "beef000111\n"
+	if err := writeShipState(state, shipState{PrePushFailed: "beef000111"}); err != nil {
+		t.Fatal(err)
+	}
+	r := shipCheck(t, f, `{}`)
+	if r.ExitCode() != 1 || r.Passed || !strings.Contains(r.Detail, "pre-push check failed on beef000") {
+		t.Errorf("check on the kept head = %+v", r)
+	}
+	if r := shipCheck(t, f, `{"settled":true}`); r.ExitCode() != 0 {
+		t.Errorf("settled check on the kept head = %+v", r)
+	}
+	g.answers["git rev-parse HEAD"] = "cafe000222\n"
+	if r := shipCheck(t, f, `{}`); r.ExitCode() != 0 || !r.Passed {
+		t.Errorf("check after a fix = %+v", r)
+	}
+}
+
 // ship gate --failed also passes on a head the pre-push check failed on in
 // ship open-pr or land (recorded in the ship state), so the run's triage
 // step sends it to the gate's fixer; a failure that was not the pre-push
