@@ -1,0 +1,40 @@
+{
+  "actor": "01M77RY0DJDC0NBC08XEVYNPE4",
+  "after": [
+    "01M77R83TAPCPR3EQGR5KHKGMA"
+  ],
+  "at": "2026-11-12T11:44:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 38638bb20, go test -trimpath ./internal/api -run 'TestShipCheck|TestShipGate' passes, including the new TestShipCheckAndGateFailOnOwnStaleBase (the shipping change set's own stale update fails ship check and ship gate --model-conflict with exit 1, the detail and human output naming the node ID and field:statement, recorded in the ship state so ship check --model-conflict exits 0; plain ship gate and --settled unaffected) and TestShipCheckAndGateFailOnOwnModelConflict (only another in-flight change set stale: check and gate pass). go test ./internal/workflow -run TestShipChange passes: pr-green fails to pr-model-conflict-triage, which passes to pr-model-conflict-fix; gate-land runs ship gate --model-conflict and fails to gate-model-conflict-triage, which passes to model-conflict-fix. Testscripts run-ship-model-conflict-fix (a stale own update fails pr-green, triage routes it to pr-model-conflict-fix, the fixer repairs it, and the run signs off and lands; a fixer that does not repair it fails on the until check), run-ship-change-fail, run-ship-ci-fix, run-ship-ci-lint-fix, run-ship-conflict-fix and describe-golden pass. The diff does not touch rhiza check. The .rhiza and builtin ship-change.toml changes match. make self-check fails only on stale rendered files, which is expected before the run's render step."
+        },
+        "handle": "ship-gate-fails-own-model-conflict-verified",
+        "id": "01M77S6KBBFS8AZGK08P9CZC8D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77S6KBBFS8AZGK08KZH5EDK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77S6KBBFS8AZGK08KZH5EDK",
+        "id": "01M77S6KDFS5QNBZSWKWE5ACE6",
+        "link": "01M77S6KDFS5QNBZSWKT1W3K54",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NH2H5A9NCEFT1A53X89S3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77N83F027XBGGZPK9SV6YN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77S6KEYHEF93BK59098Z94B",
+  "type": "ops",
+  "v": 1
+}
