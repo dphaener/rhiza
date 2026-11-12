@@ -1,0 +1,86 @@
+{
+  "actor": "01M76SW1E13KTDYQ639HDXG331",
+  "after": [
+    "01M76XQJYPYK52PJRNANJ40H9M"
+  ],
+  "at": "2026-11-12T03:48:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run Build asserts build.md's builder section names the acceptance commands, rhiza ship generate, rhiza render and the Checks: block, and that the Checks: block sits above the one final trailer paragraph (guides-one-final-paragraph still holds); the build.toml builder prompt test in go test -trimpath ./internal/workflow asserts the prompt points at the checklist.",
+          "statement": "The build guide tells a builder, before its one leaf commit, to run the leaf's acceptance commands, then rhiza ship generate and rhiza render, fold every file they change into the commit, and list each command it ran with its exit code in a Checks: block of the commit body, above the trailer paragraph."
+        },
+        "handle": "builder-prehandoff-checklist",
+        "id": "01M76XY43WSHZDCT6WSDQ2H20G",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M76XY43WSHZDCT6WSCK7ATYJ",
+        "op": "node.create",
+        "parent": "01M5YX3HRZCS9HFYWGDSC5TGS8"
+      },
+      {
+        "decision": null,
+        "from": "01M76XY43WSHZDCT6WSCK7ATYJ",
+        "id": "01M76XY44GR1T9K7X4NB4FDKVM",
+        "link": "01M76XY44GR1T9K7X4N8BQKK7E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run Review asserts review.md's fixer section names rhiza ship generate, rhiza render and the Checks: block; go test -trimpath ./internal/workflow asserts the review.toml fixer prompt and ship-change.toml's ci-fix, gate-fix and conflict-fix prompts each name the Checks: block.",
+          "statement": "The review guide's fixer section and the ci-fix, gate-fix and conflict-fix prompts of the builtin ship-change workflow tell a fixer to run the commands that reproduce its findings, then rhiza ship generate and rhiza render, before its one commit, and to list each command with its exit code in a Checks: block of the commit body."
+        },
+        "handle": "fixer-prehandoff-checklist",
+        "id": "01M76XY4512EWBGYNTAC0B9MH0",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M76XY4512EWBGYNTAAH4TQ4Y",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M76XY4512EWBGYNTAAH4TQ4Y",
+        "id": "01M76XY45KFBA2CJVAH5NQ47KW",
+        "link": "01M76XY45KFBA2CJVAH2PM1TF6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run Build asserts build.md's verifier section says to re-run the Checks: block's commands and the acceptance commands, and that a missing Checks: block or a different exit code is a finding naming the command.",
+          "statement": "The build guide tells a verifier to re-run every command in the leaf commit's Checks: block and every acceptance command, and to record a finding naming the command when one exits differently from what was reported or the commit has no Checks: block."
+        },
+        "handle": "verifier-reruns-reported-checks",
+        "id": "01M76XY462ZXBJ1BQB0SA63540",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M76XY462ZXBJ1BQB0RJ5FA66",
+        "op": "node.create",
+        "parent": "01M5YX3HRZCS9HFYWGDSC5TGS8"
+      },
+      {
+        "decision": null,
+        "from": "01M76XY462ZXBJ1BQB0RJ5FA66",
+        "id": "01M76XY46QR2QANHS31SNTME2E",
+        "link": "01M76XY46QR2QANHS31S2VYWB8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNNPW27705N7G6XFBDCH",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76XQJYPYK52PJRNAKCPPBJJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76XY47F6C5VB0QPQBN0ADJA",
+  "type": "ops",
+  "v": 1
+}

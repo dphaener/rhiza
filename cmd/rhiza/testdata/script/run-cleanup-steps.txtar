@@ -1,0 +1,133 @@
+# A workflow's [[cleanup]] steps run once, in order, when a run ends, in
+# the run's worktree with the run's environment. A failed run still fails
+# after its cleanup ran; a cleanup step that exits 1 is journalled and never
+# changes a done run's result; an abandoned run runs them too, unless it
+# had already failed (its cleanup ran then) or its worktree is gone.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Cleanup steps' --title 'Cleanup steps' --json
+mkdir .rhiza/workflows
+cp ../failing.toml .rhiza/workflows/failing.toml
+cp ../flaky.toml .rhiza/workflows/flaky.toml
+cp ../hold.toml .rhiza/workflows/hold.toml
+
+# describe and check cover the section.
+exec rhiza workflow describe failing
+stdout '^cleanup tidy: echo tidy'
+exec rhiza workflow describe failing --json
+stdout '"cleanup"'
+exec rhiza workflow check failing
+! stderr 'cleanup'
+
+# A step fails: its cleanup ran, in the worktree, and the run still failed.
+exec sh -c 'rhiza run start --foreground --workflow failing --json; echo exit=$?'
+stdout '"state": "failed"'
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs cat'
+stdout '"type":"cleanup","at":"[^"]*","step":"tidy","outcome":"pass"'
+stdout '"type":"finished".*"end":"failed"'
+exists $WORK/repo.cleanup-steps/tidy.txt
+exists $WORK/repo.cleanup-steps/second.txt
+exec cat $WORK/cleanup.env
+stdout '^RHIZA_STEP=tidy$'
+stdout '^RHIZA_CHANGE=01M5PWGEF85Y185JZ2ZGCNH40N$'
+
+# Abandoning the failed run is no new ending: its cleanup does not run again.
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/failed'
+exec sh -c 'rhiza run abandon $(cat $WORK/failed)'
+exec sh -c 'grep -c "\"type\":\"cleanup\"" .git/rhiza/runs/$(cat $WORK/failed).jsonl'
+stdout '^2$'
+
+# A cleanup step exiting 1 leaves a done run done, with the failure in the
+# journal, and the next cleanup step still runs.
+exec rhiza run start --foreground --workflow flaky --json
+stdout '"state": "succeeded"'
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs cat'
+stdout '"type":"cleanup","at":"[^"]*","step":"bad","outcome":"fail"'
+stdout '"type":"cleanup","at":"[^"]*","step":"after","outcome":"pass"'
+stdout '"type":"finished".*"end":"succeeded"'
+exists $WORK/repo.cleanup-steps/after.txt
+
+# An abandoned run runs its cleanup before the worktree goes.
+exec sh -c 'rm -f $WORK/repo.cleanup-steps/after.txt; true'
+exec rhiza run start --foreground --workflow hold --no-wait
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/held'
+exec sh -c 'rhiza run abandon $(cat $WORK/held)'
+exists $WORK/abandoned.txt
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs cat'
+stdout '"type":"cleanup","at":"[^"]*","step":"mark"'
+
+# An abandoned run whose worktree is gone runs no cleanup, not even in the
+# main checkout.
+rm $WORK/abandoned.txt
+exec rhiza run start --foreground --workflow hold --no-wait
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/held'
+exec git worktree remove --force $WORK/repo.cleanup-steps
+exec sh -c 'rhiza run abandon $(cat $WORK/held)'
+stderr 'cleanup not run: worktree .* is gone'
+! exists $WORK/abandoned.txt
+exec sh -c 'cat .git/rhiza/runs/$(cat $WORK/held).jsonl'
+! stdout '"type":"cleanup"'
+
+# A malformed section is refused by check.
+cp ../bad.toml .rhiza/workflows/bad.toml
+! exec rhiza workflow check bad
+stdout 'cleanup step'
+
+-- failing.toml --
+name = "failing"
+
+[step.boom]
+kind = "command"
+run = "exit 1"
+on.fail = "failed"
+
+[[cleanup]]
+name = "tidy"
+run = "echo tidy > tidy.txt; env > $WORK/cleanup.env"
+
+[[cleanup]]
+run = "touch second.txt"
+-- flaky.toml --
+name = "flaky"
+
+[step.ok]
+kind = "command"
+run = "true"
+on.pass = "done"
+
+[[cleanup]]
+name = "bad"
+run = "exit 1"
+
+[[cleanup]]
+name = "after"
+run = "touch after.txt"
+-- hold.toml --
+name = "hold"
+
+[step.hold]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+
+[[cleanup]]
+name = "mark"
+run = "touch $WORK/abandoned.txt"
+-- bad.toml --
+name = "bad"
+
+[step.ok]
+kind = "command"
+run = "true"
+on.pass = "done"
+
+[[cleanup]]
+name = "no-run"

@@ -1,0 +1,89 @@
+{
+  "actor": "01M76SW1E13KTDYQ639HDXG331",
+  "after": [
+    "01M76SV05752A64QJNN5WREC6E"
+  ],
+  "at": "2026-11-12T03:43:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "I'm disappointed with the overall performance of a full cycle of build runs. It takes a long time, and seems to be error prone. ... I like this process overall but it's just not efficient.",
+              "where": "2026-11-12, request to the orchestrator"
+            },
+            {
+              "by": "owner",
+              "text": "I also think we may have lost something by not including the shipit/forge prompts in the workflow steps.",
+              "where": "2026-11-12, request to the orchestrator"
+            },
+            {
+              "by": "owner",
+              "text": "Those should ship as the default build tools, and we also want to use them as our own.",
+              "where": "2026-11-12, request to the orchestrator"
+            },
+            {
+              "by": "owner",
+              "text": "Sounds good",
+              "where": "2026-11-12, on the orchestrator's milestone proposal"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Guards: Done needs a record, Pre-handoff checklist, Command budget",
+              "where": "interview"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Role topics, 3 change sets; afk's content, Rhiza's words",
+              "where": "interview"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Critic: keep, with downgrade; verifier: yes, tiered by risk; parallel leaves: later, after leaf files",
+              "where": "interview"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Post-land CI: model-only since last green; merge rounds: yes, same rule",
+              "where": "interview"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Targets: rework halved, ship <=40m",
+              "where": "interview"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Extras: leaf contract, verbatim retry + run notes, model lints in review; queue journaling: yes",
+              "where": "interview"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Plan now: the three guards, CI since last green, held-run error sources, critic downgrade; scope check: yes, fold it",
+              "where": "interview"
+            }
+          ],
+          "raw_sha256": "8dcaaefb604d95fb7559da994183cce51e88cd9108a8676347c0dc3fc29d74f6",
+          "session": "e3a4887c-f758-434a-a9a4-01a1cd9de36f",
+          "summary": "Planned milestone 34, Efficient build cycle, from the 2026-11-12 performance report (233 run journals, 699 CI runs) and the afk prompt-gap analysis. The owner had asked for afk's shipit/forge prompts to ship as Rhiza's default build tools and accepted the orchestrator's milestone proposal. In this interview the owner picked: guards are done-needs-a-record, a builder/fixer pre-handoff checklist and a command budget (the .rhiza/log tool guard and generate-before-push are already filed as 01M76QJW and 01M76RH0; a git-safety deny was not picked); afk's prompts become one guide topic per role in three change sets (build, review, plan roles), keeping afk's content in Rhiza's words; the critic stays but can downgrade; low-risk leaves get a cheaper verifier tiered by risk; parallel leaves come later, after leaves name their files; the post-land CI round is cut by running only model checks when nothing outside .rhiza/ changed since the PR's last green commit, and the same rule covers merges of main; targets are build retries <=15% of leaves, second review cycles <=20% of runs, ship-change median <=40m and mean held time <=10m over the 30 runs after; the leaf contract, verbatim retry with run notes, deterministic model lints and queue-wait journaling are in, a lean session start is not; the scope check folds into compliance. Planned now: the three guards, CI since last green, held-run error sources and critic downgrade. Open: rhiza ci install writes only a rhiza check workflow, so where the since-last-green rule ships for other projects is parked as a question.",
+          "title": "Efficient build cycle milestone, with the owner"
+        },
+        "handle": "efficient-build-cycle-interview",
+        "id": "01M76XM73SV2HZ5FRGC8QA2MV9",
+        "key": null,
+        "kind": "source",
+        "node": "01M76XM73SV2HZ5FRGC8CMX965",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76SV05752A64QJNN4QTD2KH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76XM74PS5HVVWR0A77J1NWH",
+  "type": "ops",
+  "v": 1
+}
