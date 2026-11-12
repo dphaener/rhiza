@@ -1,0 +1,40 @@
+{
+  "actor": "01M785PHK8ZY3T6H8V7CDAMV50",
+  "after": [
+    "01M785N1TEG4WVF6QVDPW15T7Q"
+  ],
+  "at": "2026-11-12T15:24:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3652345eb ran go test -trimpath -count=1 ./cmd/rhiza -run 'TestOrchestratorConsultsOwner|TestOrchestratorDocRules' -v: both PASS. Read the diff: agents/orchestrator.md 'Consult the owner first' now says consult with a recommendation before any judgment call and act autonomously only when the owner has granted autonomy for that task or session; a new 'When idle' section says propose the next high-value work instead of starting it while queued bug requests still flow through plan-bug/bugfix. grep of AGENTS.md finds no consult/recommendation rule (only the bug-workflow autonomy text). The test checks each phrase and the absence of 'Consult the owner' in AGENTS.md. Note for review: the new 'When idle' heading now sits above the existing 'Quote the owner exactly' and 'Plan a milestone only with the owner' paragraphs, so they read as part of the idle section."
+        },
+        "handle": "orchestrator-consults-owner-verified",
+        "id": "01M785QPDABJ30Y9963AFFTGYP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M785QPDABJ30Y996394YZHZ0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M785QPDABJ30Y996394YZHZ0",
+        "id": "01M785QPFNESWS3QKPVCEMX45G",
+        "link": "01M785QPFNESWS3QKPV8T8DSJ1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76P0AJ9VF4D377JGWZJAAZY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76NX8F3G4KXGHQ9G93TEH4Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M785QPJ8AXQARSQY36GB705E",
+  "type": "ops",
+  "v": 1
+}

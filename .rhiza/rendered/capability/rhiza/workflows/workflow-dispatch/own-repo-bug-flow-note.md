@@ -4,11 +4,11 @@ capability · `01M75RK1M7WBHR4ND59KFBG8JT` · parent [workflow-dispatch](../work
 
 ## acceptance
 
-CLAUDE.md names rhiza request --kind bug, .rhiza/dispatch.toml, plan-bug and bugfix, says both run autonomous with no owner step and that bugs do not come from GitHub issues; every command it names exists (rhiza request --help, rhiza workflow describe plan-bug and bugfix succeed)
+AGENTS.md names rhiza request --kind bug, .rhiza/dispatch.toml, plan-bug and bugfix, says both run autonomous with no owner step and that bugs do not come from GitHub issues; every command it names exists (rhiza request --help, rhiza workflow describe plan-bug and bugfix succeed)
 
 ## statement
 
-CLAUDE.md has a short section on how a bug reaches and moves through this repo: queued as rhiza request --kind bug (CLI, the Request app, the orchestrator, the watchdog), planned by plan-bug and shipped by bugfix with no owner step, and never from GitHub issues
+AGENTS.md has a short section on how a bug reaches and moves through this repo: queued as rhiza request --kind bug (CLI, the Request app, the orchestrator, the watchdog), planned by plan-bug and shipped by bugfix with no owner step, and never from GitHub issues
 
 ## Links
 
@@ -22,7 +22,10 @@ CLAUDE.md has a short section on how a bug reaches and moves through this repo: 
 - verifies [own-repo-bug-flow-note-verified](../../../../evidence/own-repo-bug-flow-note-verified.md)
 - verifies [own-repo-bug-flow-note-qa-1](../../../../evidence/own-repo-bug-flow-note-qa-1.md)
 - verifies [pr-439-rhiza-s-own-repo-runs-bug](../../../../evidence/pr-439-rhiza-s-own-repo-runs-bug.md)
+- verifies [own-repo-bug-flow-note-agents-md-qa-1](../../../../evidence/own-repo-bug-flow-note-agents-md-qa-1.md)
+- verifies [pr-494-agents-md-entry-point](../../../../evidence/pr-494-agents-md-entry-point.md)
 
 ## History
 
 - `01M75RDBYXWSMQM0YPEQQ4ECY3` Rhiza's own repo runs bug requests through autonomous bug workflows, as Nebari does (nebari PR #94: .rhiza/dispatch.toml, .rhiza/workflows/plan-bug.toml and bugfix.toml in ~/code/nebari), without Nebari's GitHub issue intake. Owner, 2026-11-11: "i want to add a bugfix workflow like nebari has as well" and "it won't come from github issues though". Bugs reach this repo as rhiza request --kind bug (CLI, the Request app, the orchestrator, the watchdog). In this repo: (1) .rhiza/dispatch.toml: [request] bug = plan-bug and [ready] bug = bugfix; no schedules; (2) .rhiza/workflows/plan-bug.toml wraps the built-in plan and bugfix.toml wraps the built-in ship-change (Rhiza has no ship-change override), both autonomous = true, so a bug is planned and shipped with no owner step whatever rhiza.autonomy.* says; (3) a short docs note on how bug requests flow. Out of scope: no github-intake script, no rhiza.eventCommand hook, no issue labels. rhiza workflow check is expected to warn about autonomous workflows with bypassed permissions. Test with rhiza workflow check and make self-check.
+- `01M76NWXV16NF94MBV6WYESRM0` AGENTS.md is this repo's agent entry point: CLAUDE.md's guidance moves into AGENTS.md and CLAUDE.md becomes an @AGENTS.md import, AGENTS.md links agents/README.md (the index of agents/ docs), a Go test keeps the index and relative links consistent, and the tests and capabilities that read CLAUDE.md read AGENTS.md

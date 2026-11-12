@@ -1,0 +1,40 @@
+{
+  "actor": "01M785JT971W2DYNJY33S922EZ",
+  "after": [
+    "01M770844P0CSMQYD70NX3Q1WX"
+  ],
+  "at": "2026-11-12T15:22:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b60dc8980, go test -trimpath ./cmd/rhiza -run 'TestOrchestratorDocRules|TestAgentDocs' -v -count=1 passes: TestOrchestratorDocRules (new, cmd/rhiza/orchestratordoc_test.go) reads agents/orchestrator.md and finds each rule: no git fetch in the main clone, no pkill by pattern, nothing uncommitted on main / every model write on its own branch and PR, rhiza.daemon.maxRuns under load, merge origin/main and never rebase+force-push, gh pr merge --squash, quote the owner exactly, plan a milestone only with the owner; TestAgentDocsConsistent and its fixtures pass with orchestrator.md indexed in agents/README.md. Read the diff: the doc states each rule with its reason; gofmt and go vet clean."
+        },
+        "handle": "orchestrator-doc-verified",
+        "id": "01M785N1JA13VC0KE0WWYFTHF6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M785N1J9R4R38BFVRG3D26GZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M785N1J9R4R38BFVRG3D26GZ",
+        "id": "01M785N1PRWB1557DY8VRGMG9C",
+        "link": "01M785N1PRWB1557DY8VHVYRGX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76P0AFBXXQRCAEPZSZD95G9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76NX8F3G4KXGHQ9G93TEH4Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M785N1TEG4WVF6QVDPW15T7Q",
+  "type": "ops",
+  "v": 1
+}

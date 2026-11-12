@@ -1,0 +1,40 @@
+{
+  "actor": "01M783E5PZCZQVA327K6BAA8DF",
+  "after": [
+    "01M7707SE3H0YK41Z2VAVRK4CK"
+  ],
+  "at": "2026-11-12T14:46:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ef3679587: CLAUDE.md is exactly the line @AGENTS.md (cat -A). AGENTS.md matches the old CLAUDE.md word for word apart from its title and intro line (diff against HEAD~1:CLAUDE.md), and holds the sections Ignore the ~/code/.claude/rules files, Stack and shape, Bug requests, Commands, Tests and Binaries. New test TestClaudeMDImportsAgentsMD in cmd/rhiza/claudemd_test.go checks both. The existing TestClaudeMDScopedTests and TestClaudeMDCommandsNameMakeUpdate now read AGENTS.md. go test -trimpath -count=1 ./cmd/rhiza -run TestClaudeMD -v: all 3 PASS. No other Go, Makefile, script or txtar file reads CLAUDE.md. make self-check fails only on unrendered actor files and index.md, which the ship step renders; this is not part of the leaf's acceptance."
+        },
+        "handle": "agents-md-entry-point-verified",
+        "id": "01M783J5YJRGE6FG94YXYNQHPR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M783J5YJRGE6FG94YTR84ZD4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M783J5YJRGE6FG94YTR84ZD4",
+        "id": "01M783J5ZFPDHTYJ3K0ZTCETK6",
+        "link": "01M783J5ZFPDHTYJ3K0Z1F70HS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76NZQ9E4VVYH1CBT1ZDACE7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76NWXV16NF94MBV6WYESRM0",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M783J61KTWFQ211FSC64D0XV",
+  "type": "ops",
+  "v": 1
+}
