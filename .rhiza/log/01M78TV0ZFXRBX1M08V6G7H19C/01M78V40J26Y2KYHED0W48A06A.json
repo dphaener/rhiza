@@ -1,0 +1,33 @@
+{
+  "actor": "01M78TVVJZRGCG51TX14K9MKZ2",
+  "after": [
+    "01M78V2RJT4QSFSVDRQZ0KDQPA"
+  ],
+  "at": "2026-11-12T21:37:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "348affd721a6bc946e9f556df916b28f1549fcd4e9f0694756a345aae8d904ac",
+          "session": "73c618f6-89e6-4e1f-881c-01a1d1add530",
+          "summary": "Autonomous plan-bug run for change set 01M78TV0 (no owner present; the arbiter answered). Facts gathered: the live root daemon had used 48,960 CPU-s over 115,135 s uptime (about 0.43 core) and one run driver about 0.15 core, matching the 2026-11-12 sampler report. The earlier fixes 01M6H6SG (daemon poll fold cache) and 01M6NE0X (driver idle poll from the index) have both landed, so the remaining cost lies elsewhere. Candidates found in the code: the usage governor (usageWindowsNow -> claudecode UsageRecords) walks ~4,000 transcript files under ~/.claude/projects (2.6 GB) on every 5 s poll, once per registered project; ship-change's CI wait steps run a fresh 'rhiza ship check --settled' process every 30 s; RHIZA_CPUPROFILE only profiles a process from start to exit, so the running root service cannot be profiled without a restart. One question (intent, profiling method, budgets and cadence) was raised to the arbiter, whose Decision decision-idle-cpu-scope settled: serve m4-orchestrated-by-rhiza; add 'rhiza daemon profile [--seconds N] [--out file]' for a live daemon capture, pass RHIZA_CPUPROFILE down to drivers, and add in-process benchmarks of idle daemon and driver polls; an unchanged daemon poll does no fold and no pick, with a budget test; targets of at most 0.05 core idle for the daemon and 0.01 core per driver; transcripts scanned once per poll for all projects, only changed files re-read, full walk at most once a minute; CI waits back off from 30 s to at most 2 minutes while CI is pending and return to 30 s on any state change.",
+          "title": "Plan interview: idle CPU of the root daemon and run drivers (autonomous)"
+        },
+        "handle": "idle-cpu-plan-interview",
+        "id": "01M78V40HNZXEHTCAZ6E18KM56",
+        "key": null,
+        "kind": "source",
+        "node": "01M78V40HNZXEHTCAZ6AN9G789",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M78TV0ZFXRBX1M08V6G7H19C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78V40J26Y2KYHED0W48A06A",
+  "type": "ops",
+  "v": 1
+}

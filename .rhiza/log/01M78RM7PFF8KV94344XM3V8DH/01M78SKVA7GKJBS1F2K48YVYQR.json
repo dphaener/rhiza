@@ -1,0 +1,165 @@
+{
+  "actor": "01M78SGTVQF6TG8K6SZ7HT1S2Y",
+  "after": [
+    "01M78S81T7ZHH0F2NGPPD8WG9Y"
+  ],
+  "at": "2026-11-12T21:11:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the question, this change set's intent (owner, 2026-11-12: unstable only for 'a flake that names a failing test and has failed more than once in the window', 'a step-level or UNKNOWN STEP failure is infra, not a flake', 'stores its full output as a file in the run dir and the journal points to it', reason 'names the flake and when it stops applying'), the accepted unlanded bug change set 01M78FD0 (serves m4-runs-hold-up; its arbiter decision local-gate-trigger-identified-flakes still counts a single flake on a known 'job / step' and still files bugs for unidentified ones; its leaf ship-gate-full-log keeps the log under the git common dir), and the code: ciVerdict in internal/api/ci_stability.go flips to unstable on any non-empty Flakes in the window, CIRun.Flakes holds 'job / step' or 'CI run <id>' strings, and shipLocalGate in ship_gate.go keeps only a 16 KB tail that the run step cuts again to 2 KB. Intent: milestone-4 is open and is the outcome the evidence hurts (four runs, ~525 run-minutes, hand-routed gate-fixes), and 01M78FD0 already serves it, so the two related change sets stay together; milestone-25 has nothing open left to serve. Infra failures: the owner's words make step-level failures infra, which is stricter than 01M78FD0's ruling; a failure with no test cannot be reproduced by a local make check, so gating on it costs ~20 min per run and predicts nothing. Recording it and showing a count in health keeps a recurring infra problem visible without auto-filing per-test bugs that have no test to fix (the auto-filed 01M78960 is that noise). Threshold: 'more than once' means 2; distinct heads keep a rerun of one head from counting twice; reusing ciWindow avoids a new setting and keeps the verdict self-clearing, and the 'stops applying' count follows from the window. Log: the owner asked for the run dir and a journal pointer, which keeps logs per run and per attempt instead of overwriting one branch file shared by parallel fixers; the common-dir path stays only for a gate run by hand outside a run.",
+          "statement": "(1) Change set 01M78RM serves m4-runs-hold-up (milestone-4, open), like its related gate bug 01M78FD0: the harm is runs stalled and sent to gate-fix by a gate they should never have run, not backlog throughput; milestone-25 has no open change sets. 01M78RM builds on 01M78FD0 and supersedes its decision local-gate-trigger-identified-flakes (restating its clauses (3) and (4) unchanged in (5) below) and its leaf ship-gate-full-log, since the owner's request here is later and stricter. (2) A CI failure that names no test (only 'job / step', 'UNKNOWN STEP' or 'CI run <id>') and passes on a rerun of the same head is an infra failure, not a flake: it is still recorded in the CI stability record, marked infra and kept apart from flakes, and rhiza health shows infra failures in the window with their count per job / step. It never counts toward the unstable verdict, so it never switches on the local gate, and the watchdog files no flaky-test bug for it. When the verdict is stable while the window holds infra failures or single named flakes, its reason (and ship.gate's skip reason) says they were seen and ignored. (3) A named flaky test makes CI unstable only when at least 2 distinct CI runs (distinct heads, main or run PR) within the existing window (the last rhiza.ship.ciWindow completed runs, 20 by default) recorded it as a flake, matched by test name. The threshold is fixed at 2, the owner's 'more than once', not a new setting. A red main still makes CI unstable on its own; main's latest result is the one the latest rhiza ship check --main recorded (a tree-equal merge takes its tested PR head's green result, a tree-differing merge its dispatched CI run's result). The verdict's reason names each such test, its count in the window, and when it stops applying: after N more completed CI runs without it, where N is the number of runs until the older of its two latest flakes leaves the window. (4) Each local gate run writes its whole combined output to a log file in the run's directory (one file per gate invocation, never overwritten within the run), and the gate step's journal entry and ShipGateResponse carry that path. A failing gate's human output ends with its failing test lines (go test '--- FAIL:', 'FAIL', 'panic:', at most 10) and 'Full log: <path>', so the tail a step keeps names the test and the file. A gate run outside any run (no RHIZA_RUN) writes rhiza/gate/<branch>.log under the git common dir, as 01M78FD0 planned. The gate-fix prompts tell the fixer to read that log, not rerun the gate. (5) Unchanged from local-gate-trigger-identified-flakes: the 'full local gate' is one command the repo configures as a project setting (for Rhiza itself: make check); while CI is unstable, ship-change runs it in the run's worktree before every push and pushes only if it exits 0, and on failure fixes locally like any red; if no gate is configured, the run falls back to the scoped tests and rhiza health warns that CI is unstable with no local gate set. A red PR that passes on its one rerun is not held: the run proceeds on the green head and lands as usual, the failure is recorded (as a flake against each named failing test, or as infra), and, with the watchdog's fileBugs on, a bug is filed once per named test (deduplicated) to reproduce it locally and fix or quarantine it. A head still red after its one rerun is not rerun again: the run reproduces the failing test locally (repeatedly), fixes or quarantines it with a bug filed, and pushes again only after that test and the touched packages pass locally.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "local-gate-repeated-named-flakes",
+        "id": "01M78S3ZC8ZMBXVBJZV452AR5W",
+        "key": null,
+        "kind": "decision",
+        "node": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestShipGateRunLog|TestShipRebase' shows: with RHIZA_RUN set, a failing gate whose output is over 64 KB with '--- FAIL: TestX' near its start and make's error lines at its end writes a log in the run's directory holding every byte, the response's log field names it, and the last 20 lines of the human output contain '--- FAIL: TestX' and 'Full log: <path>'; a second gate run in the same run writes a second file and leaves the first intact; a passing gate also writes its log; with no RHIZA_RUN the log is rhiza/gate/<branch>.log under the git common dir; a ship-change gate command step that fails keeps a journal detail naming the log path; go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes after regenerating it for the new field; go test -trimpath ./internal/workflow passes; grep -c 'run `rhiza ship gate` to see' internal/workflow/builtin/ship-change.toml .rhiza/workflows/ship-change.toml .rhiza/workflows/docs.toml prints 0 for all three and each of their gate-fix prompts names the full gate log; make self-check passes",
+          "statement": "Each local gate run (rhiza ship gate, and the gate ship rebase runs on a merged head) writes its whole combined output to its own log file in the run's directory, never overwriting an earlier gate log of that run (outside a run, rhiza/gate/<branch>.log under the git common dir); ShipGateResponse's log field and the gate step's journal entry carry the path, a failing gate's human output ends with its failing test lines (go test '--- FAIL:', 'FAIL', 'panic:', at most 10) and 'Full log: <path>', and every gate-fix prompt (internal/workflow/builtin/ship-change.toml, .rhiza/workflows/ship-change.toml and .rhiza/workflows/docs.toml, two each) tells the fixer to read that log instead of rerunning the gate"
+        },
+        "handle": "ship-gate-run-log",
+        "id": "01M78S754HVX2TR0XVH1WRJAW4",
+        "key": "zzzzzzi",
+        "kind": "capability",
+        "node": "01M78S754HVX2TR0XVH15MKYZ4",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "base": "01M78FP3ZS0A3JSW8VW7MW2CJT",
+        "handle": null,
+        "id": "01M78SKTVJEJ5BZ649ANWNPZVD",
+        "node": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestCIStability|TestShipLocalGate|TestHealthCI' shows: an empty record stable; TestX flaked on 2 distinct heads inside the window unstable, and stable once later clean runs push the older of the two out; one flake of TestX, or a window whose only failures are infra ('scripts (4/4) / Run scripts', 'ci / UNKNOWN STEP', 'CI run 123'), stable, with a reason naming what was ignored, ship gate skipping with that reason, and rhiza health still listing them with their counts; a red dispatched main result unstable, and stable once a later ship check --main records green, whether by a tree-equal merge or a green dispatched run; rhiza.ship.ciWindow=5 shrinking the window; an invalid window refused by rhiza daemon set",
+          "statement": "Rhiza judges a repo's CI unstable while its last completed CI runs in the stability record (20 by default, the project setting rhiza.ship.ciWindow) hold a repeated named flake, one named test recorded as a flake on at least 2 distinct heads (as ci-unstable-repeated-flake states), or while main's latest result in the record is red, and stable again once neither holds. A single flake of a named test, and an infra failure (a failure naming no test: only 'job / step', 'UNKNOWN STEP' or 'CI run <id>'), stay in the record and in rhiza health with their counts but do not count toward the verdict, and the stable verdict's reason (and ship.gate's skip reason) says when one was seen and ignored. Main's latest result is the one the latest rhiza ship check --main recorded: a merge whose tree equals its tested PR head's records that head's green result for the merge commit, and a tree-differing merge records the dispatched CI run's result, so a red main clears at the next merge that settles green"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6YCRKNPNZY0F0BTDF9F11MG",
+        "handle": null,
+        "id": "01M78SKTWGBPVG60SX30QEHBQT",
+        "node": "01M6YCRKNPNZY0F0BTDCXQAP74",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/api -run TestHealthCI shows the part ok on a clean record, ok listing TestX with count 1 as ignored on a single flake, warn naming TestX and its count when TestX flaked on 2 distinct heads, warn naming main red, and the no-local-gate warning only when unstable with rhiza.ship.localGate unset; go test -trimpath ./cmd/rhiza -run TestScripts/health-ci prints the part in rhiza health and health --json",
+          "statement": "rhiza health shows a CI part: stable or unstable with the reason (a named test flaked on 2 or more distinct heads in the window, main red), each flaky test with its flake count (single flakes marked as ignored), and a warning when CI is unstable and no local gate (rhiza.ship.localGate) is set"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M78S754HVX2TR0XVH15MKYZ4",
+        "id": "01M78SKTXCY2A1FQRC6F35FTCX",
+        "link": "01M78SKTXCY2A1FQRC6D67Y19P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FP45EF4RB94DP1JZ5W6T2",
+        "type": "supersedes"
+      },
+      {
+        "base": "01M78FP45EF4RB94DP1KG36W64",
+        "id": "01M78SKTYBCXYTNWRFPAHZXM1R",
+        "node": "01M78FP45EF4RB94DP1JZ5W6T2",
+        "op": "node.retire",
+        "reason": "Superseded by ship-gate-run-log (decision local-gate-repeated-named-flakes): one gate log per gate run in the run's directory, never overwritten, instead of rhiza/gate/<branch>.log replaced each run; the common-dir path stays only for a gate run outside a run."
+      },
+      {
+        "decision": null,
+        "from": "01M78S754HVX2TR0XVH15MKYZ4",
+        "id": "01M78SKTZ0MC3AKPYNEX7PNZKP",
+        "link": "01M78SKTZ0MC3AKPYNET80BE5S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FP3CYRMNA5WR2QPM3R6HH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "id": "01M78SKV0SXCA5PZ98FFJPFS76",
+        "link": "01M78SKV0SXCA5PZ98FEM2EAWR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FKX3BQT0ABF59FCKH9B6Z",
+        "type": "supersedes"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "id": "01M78SKV3744SJ9XAHG6Z02XTK",
+        "link": "01M78SKV3744SJ9XAHG4P95JGQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKDX9JJQ25FRHFJND2ZK",
+        "id": "01M78SKV4X5B22PCZDRK7Y9SNZ",
+        "link": "01M78SKV4X5B22PCZDRHJC8985",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKNPNZY0F0BTDCXQAP74",
+        "id": "01M78SKV5RM0KNDRSYKVZRVR52",
+        "link": "01M78SKV5RM0KNDRSYKR6RJSMF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "id": "01M78SKV6VDBEAAGWHBF0W6ZPJ",
+        "link": "01M78SKV6VDBEAAGWHBBWN9608",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRM4F76QFJRC071CY3DYZ",
+        "id": "01M78SKV860C9DNMYDTF6DYXYV",
+        "link": "01M78SKV860C9DNMYDTCDMS269",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRM0GKZ3W3J2QDD87GWHQ",
+        "id": "01M78SKV9CV9D75XMQM0VGWENF",
+        "link": "01M78SKV9CV9D75XMQKX4XXNTN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M78RM7PFF8KV94344XM3V8DH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78SKVA7GKJBS1F2K48YVYQR",
+  "type": "ops",
+  "v": 1
+}

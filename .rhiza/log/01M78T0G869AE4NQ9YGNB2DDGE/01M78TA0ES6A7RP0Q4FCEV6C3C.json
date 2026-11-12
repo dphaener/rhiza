@@ -1,0 +1,33 @@
+{
+  "actor": "01M78T1EBNW765GZ7WQ2WGHK89",
+  "after": [
+    "01M78T8Q9XY9WHEX2W8SWBG118"
+  ],
+  "at": "2026-11-12T21:23:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "3e67215be090a992503541150e7399a11a6bc56a69eb98df410ee20e93b61884",
+          "session": "aea6d8fc-7b79-4c73-8624-01a1d1a09694",
+          "summary": "Autonomous plan run (no owner) for change set 01M78T0, filed after the 2026-11-12 performance report (~/orchestrator/perf-2026-11-12/report-prospective.md, recommendation 1: run 01M787SV ran the full make check 4 times, ~20-25 min each on the test lock, mostly after changes that touched only .rhiza/). The planner read internal/api/ship_gate.go (the gate already passes at once on a head recorded as Gated in the ship state, keyed on the commit, so any render or log commit reruns it), the ship-change workflows and the sibling change set 01M78RM (gate switches on only for repeated named flakes). Three questions went to the arbiter in one call: which intent to serve, what the reuse key is, and how scoping stays language-neutral. The arbiter's Decision local-gate-reuse-and-scope: serve m35-ship-40m; record the hash of the passing head's tree with top-level .rhiza/ left out and pass at once when a clean HEAD has the same non-.rhiza/ tree (.rhiza/ is checked on every push by the pre-push check); the gate command stays the project setting rhiza.ship.localGate, run with RHIZA_GATE_BASE (merge-base with origin/main) and RHIZA_GATE_HEAD in its environment, and Rhiza's own repo supplies a script that scopes go test to changed packages, their reverse dependencies, the affected testscripts and make self-check, falling back to the full suite; no Go-specific scoping in the shipped product. The planner chose the affected testscripts as the changed txtar files plus those named TestScripts/<name> in the change set's leaf acceptance checks, and a reuse that also requires the same gate command.",
+          "title": "Plan of 01M78T0: a passing local gate is reused"
+        },
+        "handle": "local-gate-reuse-interview",
+        "id": "01M78TA0E1BBZE2E039S8HXGX0",
+        "key": null,
+        "kind": "source",
+        "node": "01M78TA0E1BBZE2E039NJ4Z97N",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M78T0G869AE4NQ9YGNB2DDGE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78TA0ES6A7RP0Q4FCEV6C3C",
+  "type": "ops",
+  "v": 1
+}

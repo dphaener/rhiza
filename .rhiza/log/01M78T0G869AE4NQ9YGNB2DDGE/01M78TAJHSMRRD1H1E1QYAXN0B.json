@@ -1,0 +1,126 @@
+{
+  "actor": "01M78T1EBNW765GZ7WQ2WGHK89",
+  "after": [
+    "01M78TAHPRAKWCXBR7XVB3G4NN"
+  ],
+  "at": "2026-11-12T21:23:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M78T8Q83CG5M2526J2YGVHN7",
+        "id": "01M78TAJ93YCW7YAGQ5XSE8RT2",
+        "link": "01M78TAJ93YCW7YAGQ5TPTETCV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78TA0E1BBZE2E039NJ4Z97N",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestShipLocalGate' shows, with CI unstable and a gate that counts its runs: the gate runs once on a head; a new commit changing only .rhiza/ files (a rendered file and a log entry) passes at once with a reason naming the earlier passing head and the gate not run again; a commit changing a file outside .rhiza/ runs it again; a changed rhiza.ship.localGate runs it again on the same tree; a dirty worktree runs it and records nothing; a ship state written before this change (Gated head only, no tree) still reads and reruns the gate once",
+          "statement": "A passing local gate records, in the ship state beside the head it passed on, the gate command and the hash of that head's tree with the top-level .rhiza/ entry left out, and rhiza ship gate passes at once without running the gate when the worktree is clean and its HEAD has the same command and the same non-.rhiza/ tree, so render, log-entry and model-only merge commits never rerun it while any change outside .rhiza/ or a changed gate command does"
+        },
+        "handle": "ship-gate-reuse-code-tree",
+        "id": "01M78TAJ9VCKZHPQZN5YKECPFR",
+        "key": "zzzzzr",
+        "kind": "capability",
+        "node": "01M78TAJ9VCKZHPQZN5WS0A6DF",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M78TAJ9VCKZHPQZN5WS0A6DF",
+        "id": "01M78TAJAG11R1QYKSGMEDVPBQ",
+        "link": "01M78TAJAG11R1QYKSGJ9XXJPE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78T8Q83CG5M2526J2YGVHN7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M78TAJ9VCKZHPQZN5WS0A6DF",
+        "id": "01M78TAJBAFEDS7Y41TYWZ1DGA",
+        "link": "01M78TAJBAFEDS7Y41TVKR8HDF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestShipLocalGate' shows a gate command that prints its environment receiving RHIZA_GATE_HEAD equal to the worktree's HEAD and RHIZA_GATE_BASE equal to git merge-base HEAD origin/main, and an empty RHIZA_GATE_BASE in a repo with no origin/main; go test -trimpath ./cmd/rhiza -run 'TestScripts/describe-golden' passes with the ship.gate summary naming both variables",
+          "statement": "rhiza ship gate runs the project's gate command with RHIZA_GATE_BASE (the merge-base of HEAD with origin/main) and RHIZA_GATE_HEAD (the commit it checks) in its environment, RHIZA_GATE_BASE empty when no merge-base can be found, so a project's own gate command can check only what the branch changes while Rhiza stays language-neutral"
+        },
+        "handle": "ship-gate-base-env",
+        "id": "01M78TAJC7RKC9QNK7T8KE44V7",
+        "key": "zzzzzw",
+        "kind": "capability",
+        "node": "01M78TAJC7RKC9QNK7T52NFT62",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M78TAJC7RKC9QNK7T52NFT62",
+        "id": "01M78TAJCX12BVSFJMT2YHASNR",
+        "link": "01M78TAJCX12BVSFJMT2S9V5FD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78T8Q83CG5M2526J2YGVHN7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M78TAJC7RKC9QNK7T52NFT62",
+        "id": "01M78TAJDX0Q9B71F6Y1JM55K0",
+        "link": "01M78TAJDX0Q9B71F6XYGGMH8S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "The gate script has a dry-run mode printing the commands it would run, and go test -trimpath ./tools/... (or the script's own test, run by the builder) shows for a temporary repo: a change to one internal package lists go test for it and its reverse dependencies only and make self-check; a change only under .rhiza/ lists make self-check only; a change to go.mod or an empty RHIZA_GATE_BASE lists the full make test; a changed cmd/rhiza/testdata/script/foo.txtar with a leaf acceptance naming TestScripts/bar lists -run 'TestScripts/(foo|bar)$'; grep shows AGENTS.md naming git config rhiza.ship.localGate 'make gate'",
+          "statement": "Rhiza's own repo has a scoped gate (make gate, running a script under tools/) that, from RHIZA_GATE_BASE, runs go test -trimpath on the Go packages the branch changes and their reverse dependencies (cmd/rhiza's TestScripts limited to the changed txtar files and those named TestScripts/<name> in the leaf acceptance checks of RHIZA_CHANGE), then make self-check, under the machine-wide test lock, and falls back to make test plus make self-check when the base is empty or go.mod, go.sum, the Makefile, the gate script or cmd/rhiza/main_test.go changed; AGENTS.md says to set rhiza.ship.localGate to 'make gate'"
+        },
+        "handle": "rhiza-scoped-gate",
+        "id": "01M78TAJENDS93MS29H3HR4YCK",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M78TAJENDS93MS29H076VKXT",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M78TAJENDS93MS29H076VKXT",
+        "id": "01M78TAJFS482T2AJ5WDY217YW",
+        "link": "01M78TAJFS482T2AJ5WDW1G8VV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78T8Q83CG5M2526J2YGVHN7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M78TAJENDS93MS29H076VKXT",
+        "id": "01M78TAJGY390FZX9H8ZJJBXXD",
+        "link": "01M78TAJGY390FZX9H8VQCKZZT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78TAJC7RKC9QNK7T52NFT62",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M78T0G869AE4NQ9YGNB2DDGE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78TAJHSMRRD1H1E1QYAXN0B",
+  "type": "ops",
+  "v": 1
+}
