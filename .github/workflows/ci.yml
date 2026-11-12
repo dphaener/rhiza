@@ -21,9 +21,66 @@ concurrency:
   cancel-in-progress: true
 
 # Each job is one slice of `make check`, run in parallel; `check` aggregates
-# them into the single verdict Ship and branch protection read.
+# them into the single verdict Ship and branch protection read. `changes`
+# decides first: a pull request whose paths all lie under .rhiza/ runs only
+# `model`, everything else (and every dispatched run) runs the Go jobs.
 jobs:
+  changes:
+    runs-on: ubuntu-26.04
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.sha || github.sha }}
+        fetch-depth: 0
+
+    - name: Decide whether anything outside .rhiza/ changed
+      id: diff
+      env:
+        EVENT: ${{ github.event_name }}
+        BASE: ${{ github.event.pull_request.base.sha }}
+      run: |
+        if [ "$EVENT" != pull_request ]; then
+          echo "code=true" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        base=$(git merge-base "$BASE" HEAD)
+        outside=$(git diff --name-only "$base" HEAD | grep -v '^\.rhiza/' || true)
+        if [ -n "$outside" ]; then
+          echo "code=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "code=false" >> "$GITHUB_OUTPUT"
+        fi
+
+  model:
+    needs: changes
+    if: needs.changes.outputs.code == 'false'
+    runs-on: ubuntu-26.04
+
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.sha || github.sha }}
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v7
+      with:
+        go-version-file: go.mod
+        cache: true
+        cache-dependency-path: go.sum
+
+    - name: Run self-check
+      run: make self-check
+
+    - name: Check the log's fields are known
+      run: go test -trimpath ./internal/op -run TestEveryFieldInRepoLogIsKnown
+
   lint:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-26.04
 
     steps:
@@ -43,6 +100,8 @@ jobs:
       run: make lint
 
   scripts:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
@@ -66,6 +125,8 @@ jobs:
       run: make test-scripts SHARD=${{ matrix.shard }}
 
   api:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
@@ -89,6 +150,8 @@ jobs:
       run: make test-api SHARD=${{ matrix.shard }}
 
   rest:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-26.04
 
     steps:
@@ -108,6 +171,8 @@ jobs:
       run: make test-rest
 
   budgets:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-26.04
 
     steps:
@@ -127,19 +192,32 @@ jobs:
       run: make test-budgets
 
   check:
-    needs: [lint, scripts, api, rest, budgets]
+    needs: [changes, model, lint, scripts, api, rest, budgets]
     if: always()
     runs-on: ubuntu-26.04
 
     steps:
-    - name: Require every job to have succeeded
+    - name: Require every job to have succeeded or been skipped
       env:
         RESULTS: ${{ join(needs.*.result, ' ') }}
+        CHANGES: ${{ needs.changes.result }}
       run: |
         echo "needed job results: $RESULTS"
+        if [ "$CHANGES" != success ]; then
+          echo "the changes job did not succeed" >&2
+          exit 1
+        fi
+        ran=0
         for r in $RESULTS; do
-          if [ "$r" != success ]; then
+          if [ "$r" = success ]; then
+            ran=$((ran + 1))
+          elif [ "$r" != skipped ]; then
             echo "a needed job did not succeed" >&2
             exit 1
           fi
         done
+        # changes itself is one success; at least one more job must have run
+        if [ "$ran" -lt 2 ]; then
+          echo "no job ran: an all-skipped run is not green" >&2
+          exit 1
+        fi
