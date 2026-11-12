@@ -1,0 +1,40 @@
+{
+  "actor": "01M78HE3C82QC5657B6KM74B64",
+  "after": [
+    "01M78HD4XYJQ4YHBKNE4C4XWZE"
+  ],
+  "at": "2026-11-12T18:50:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 4c8f5ef67. Scratch detached worktrees at 78c8b343b (before) and 4c8f5ef67 (after), with an uncommitted injection in internal/api/session.go just before session start's tab Update: poll st.Read(sid) every 5ms (up to 2s) until Status.Hook is set, then time.Sleep(300ms) inside the Update closure, between its locked read and write, before r.Tab = tab. `go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/inbox-stalled$'` failed 3/3 before (inbox-stalled.txtar:36, no stalled item; a debug cat showed the tab recorded but hook.at still the real 2026-10-24T12:00:06Z, so the unlocked perl+mv edit was dropped) and passed 3/3 after. Without the delay, `go test -trimpath ./cmd/rhiza -run 'TestScripts/(inbox-stalled|inbox-permission|run-status-stalled|daemon-notify-hook)$' -count=3` passed. grep finds no script under cmd/rhiza/testdata/script that rewrites .git/rhiza/sessions/*.json with perl; the four scripts use the new edit-sessions command (cmd/rhiza/main_test.go), which applies each edit through session.Store.Update under the store's lock. internal/session is unchanged, so its tests were not needed. Not in scope: session-run-blocked-notice.txtar and printout-gap-names-reason.txtar still edit session records with sed+mv."
+        },
+        "handle": "testscripts-edit-sessions-locked-verified",
+        "id": "01M78HHSN5MBWE2S8BXS79H10S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78HHSN5MBWE2S8BXQ66BSNV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78HHSN5MBWE2S8BXQ66BSNV",
+        "id": "01M78HHSNMF0EVM2D5JCWYGCCY",
+        "link": "01M78HHSNMF0EVM2D5J90MG76W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78F38SGXG1XXVX4V8BKTX2K",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78ETR0NZZX29FXHDTZRYPKS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78HHSP20DPSHYKVE15SQ4P3",
+  "type": "ops",
+  "v": 1
+}
