@@ -24097,6 +24097,10 @@ cmp stdout describe.golden.json
             "description": "The commit the gate passed on",
             "type": "string"
           },
+          "log": {
+            "description": "The file holding the gate's whole combined output (under the git common dir, replaced on each run), when it ran",
+            "type": "string"
+          },
           "output": {
             "description": "The end of the gate's combined output, when it ran",
             "type": "string"
@@ -24449,6 +24453,10 @@ cmp stdout describe.golden.json
               },
               "head": {
                 "description": "The commit the gate passed on",
+                "type": "string"
+              },
+              "log": {
+                "description": "The file holding the gate's whole combined output (under the git common dir, replaced on each run), when it ran",
                 "type": "string"
               },
               "output": {

@@ -295,3 +295,43 @@ func TestShipGateFailedOnPrePushFailure(t *testing.T) {
 		t.Errorf("a fixed head still counts as the failure: %+v", r)
 	}
 }
+
+// The gate's whole output goes to a log file the response names, and a
+// failing gate's human output ends with its failing lines and the path.
+func TestShipGateFullLog(t *testing.T) {
+	script := "echo '--- FAIL: TestX'; seq 1 20000 | sed 's/^/filler line /'; echo FAIL; echo 'make: *** [Makefile:64: test] Error 1'; exit 2"
+	f := gateFixture(t, script, true)
+	r, err := callOp(t, f.ctx, "ship.gate", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	g := r.(ShipGateResponse)
+	if g.Passed || g.Log == "" {
+		t.Fatalf("gate = %+v", g)
+	}
+	b, err := os.ReadFile(g.Log)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(b) <= 64<<10 || !strings.HasPrefix(string(b), "--- FAIL: TestX\n") || !strings.Contains(string(b), "Error 1") {
+		t.Errorf("log holds %d bytes, want the whole output", len(b))
+	}
+	lines := strings.Split(strings.TrimRight(human(t, g), "\n"), "\n")
+	if len(lines) > 20 {
+		lines = lines[len(lines)-20:]
+	}
+	tail := strings.Join(lines, "\n")
+	if !strings.Contains(tail, "--- FAIL: TestX") || !strings.Contains(tail, g.Log) {
+		t.Errorf("last 20 lines = %q", tail)
+	}
+	t.Run("a passing gate writes it too", func(t *testing.T) {
+		f := gateFixture(t, "echo fine", true)
+		g := shipGate(t, f)
+		if !g.Passed || g.Log == "" {
+			t.Fatalf("gate = %+v", g)
+		}
+		if b, _ := os.ReadFile(g.Log); !strings.Contains(string(b), "fine") {
+			t.Errorf("log = %q", b)
+		}
+	})
+}
