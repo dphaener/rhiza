@@ -398,8 +398,8 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "wait-landed", "landed-green",
-		"gate-rebase-merge", "conflict-triage-landed", "conflict-fix-landed", "rebase-merge", "rebase-merge-gate-failed", "landed-infra-triage", "landed-infra-wait", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "open-pr-triage", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "land-triage", "wait-landed", "landed-green",
+		"gate-rebase-merge", "conflict-triage-landed", "conflict-fix-landed", "rebase-merge", "rebase-merge-gate-failed", "landed-infra-triage", "landed-infra-wait", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge", "push-merge-triage", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
 	}
@@ -433,6 +433,9 @@ func TestShipChangeBuiltin(t *testing.T) {
 	for n, want := range map[string]struct{ pass, fail string }{
 		"gate-triage":              {"gate-fix", "ci-triage"},
 		"rebase-gate-failed":       {"gate-fix", ""},
+		"open-pr-triage":           {"gate-fix", ""},
+		"land-triage":              {"gate-fix-merge", ""},
+		"push-merge-triage":        {"gate-fix-merge", ""},
 		"rebase-merge-gate-failed": {"gate-fix-merge", "landed-infra-triage"},
 	} {
 		st := def.Steps[n]
@@ -1899,8 +1902,16 @@ func TestShipChangeLocalGate(t *testing.T) {
 	if rm := def.Steps["render-merge"]; rm.Kind != KindCommand || rm.Run != def.Steps["render-pr"].Run || rm.On[OutcomePass] != "gate-push-merge" {
 		t.Errorf("render-merge = %+v; want render-pr's command, pass to gate-push-merge", rm)
 	}
-	if pm := def.Steps["push-merge"]; pm.Run != "rhiza ship open-pr" || pm.On[OutcomePass] != "wait-rebased-merge" || len(pm.On) != 1 {
-		t.Errorf("push-merge = %+v; want ship open-pr, pass to wait-rebased-merge", pm)
+	if pm := def.Steps["push-merge"]; pm.Run != "rhiza ship open-pr" || pm.On[OutcomePass] != "wait-rebased-merge" || pm.On[OutcomeFail] != "push-merge-triage" || len(pm.On) != 2 {
+		t.Errorf("push-merge = %+v; want ship open-pr, pass to wait-rebased-merge, fail to push-merge-triage", pm)
+	}
+	for n, tri := range map[string]string{"open-pr": "open-pr-triage", "land": "land-triage"} {
+		if got := def.Steps[n].On[OutcomeFail]; got != tri {
+			t.Errorf("%s on.fail = %q; want %s", n, got, tri)
+		}
+	}
+	if def.Steps["gate-fix"].MaxVisits != 2 || def.Steps["gate-fix-merge"].MaxVisits != 2 {
+		t.Errorf("gate-fix caps = %d, %d; want 2, 2", def.Steps["gate-fix"].MaxVisits, def.Steps["gate-fix-merge"].MaxVisits)
 	}
 	// After land nothing routes back to land or to a step before it, and
 	// every step there that can be revisited sets its cap, so a third

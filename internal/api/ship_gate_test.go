@@ -239,3 +239,38 @@ func TestShipCheckFailsOnGateFailedHead(t *testing.T) {
 		t.Errorf("check after a fix = %+v", r)
 	}
 }
+
+// ship gate --failed also passes on a head the pre-push check failed on in
+// ship open-pr or land (recorded in the ship state), so the run's triage
+// step sends it to the gate's fixer; a failure that was not the pre-push
+// check (a gh or push error) records nothing and the triage fails.
+func TestShipGateFailedOnPrePushFailure(t *testing.T) {
+	f, g, state := shipFixture(t)
+	g.answers["git rev-parse HEAD"] = "beef000111\n"
+	ask := func() ShipGateResponse {
+		t.Helper()
+		r, err := callOp(t, f.ctx, "ship.gate", `{"failed":true}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r.(ShipGateResponse)
+	}
+	if r := ask(); r.ExitCode() != 1 {
+		t.Errorf("after a gh or push error: %+v", r)
+	}
+	tgt, err := findShipTarget(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	shipRecordPrePushFailed(tgt, &ShipPrePushCheck{Head: "beef000111", Lines: []string{"x"}})
+	if st, _ := readShipState(state); st.PrePushFailed != "beef000111" {
+		t.Fatalf("state = %+v", st)
+	}
+	if r := ask(); r.ExitCode() != 0 || r.Failed != "beef000111" {
+		t.Errorf("on the pre-push-failed head: %+v", r)
+	}
+	g.answers["git rev-parse HEAD"] = "cafe000222\n"
+	if r := ask(); r.ExitCode() != 1 {
+		t.Errorf("a fixed head still counts as the failure: %+v", r)
+	}
+}

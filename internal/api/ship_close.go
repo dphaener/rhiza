@@ -267,6 +267,7 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 	pushed, err := shipPush(ctx, t.branch)
 	if err != nil {
 		if c, ok := prePushFailed(err); ok {
+			shipRecordPrePushFailed(t, c)
 			resp.PrePushCheck = c
 			return resp, nil
 		}

@@ -130,6 +130,7 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 	resp := ShipOpenPRResponse{Change: t.cs.String(), Branch: t.branch, Head: sha}
 	if resp.Pushed, err = shipPush(ctx, t.branch); err != nil {
 		if c, ok := prePushFailed(err); ok {
+			shipRecordPrePushFailed(t, c)
 			resp.PrePushCheck = c
 			return resp, nil
 		}

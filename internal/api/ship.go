@@ -395,6 +395,10 @@ type shipState struct {
 	// the local gate failed on it (origin's main merged into the branch),
 	// so ship gate --failed routes it to a fixer and ship check fails on it.
 	GateFailed string `json:"gate_failed,omitempty"`
+	// PrePushFailed is the committed head the pre-push check failed on in
+	// ship open-pr or ship land (nothing was pushed), so ship gate --failed
+	// routes it to the gate's fixer.
+	PrePushFailed string `json:"pre_push_failed,omitempty"`
 	// MergeConflict is the context of a merge of main that conflicts in
 	// code, left in progress in the worktree for a fixer.
 	MergeConflict *ShipMergeConflict `json:"merge_conflict,omitempty"`

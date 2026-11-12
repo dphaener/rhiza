@@ -75,7 +75,7 @@ on.fail = "gate-fix"
 
 [step.gate-fix]
 kind = "agent"
-prompt = "/rhiza-review Fix the failing local gate of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. CI is unstable, so the project's local gate (rhiza.ship.localGate) runs before the push, and it failed: run `rhiza ship gate` to see its output. Reproduce the failure locally with the failing test's own scoped command, repeating it until you see it fail again or plainly pass, then fix it or quarantine it (skip it) with a bug request filed and named at the skip. Commit only once the failing tests and the packages you touched pass locally. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
+prompt = "/rhiza-review Fix the failing local gate of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. CI is unstable, so the project's local gate (rhiza.ship.localGate) runs before the push, and it failed, or the pre-push check (rhiza check, then rhiza.ship.prePushCheck) failed on the head before a push: run `rhiza ship gate` to see the gate's output and read the failing pre-push lines in `rhiza run status --json`. Reproduce the failure locally with the failing test's own scoped command, repeating it until you see it fail again or plainly pass, then fix it or quarantine it (skip it) with a bug request filed and named at the skip. Commit only once the failing tests and the packages you touched pass locally. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
 until = "true"
 until_when = "done"
 max_visits = 2
@@ -86,6 +86,16 @@ kind = "command"
 run = "rhiza ship open-pr"
 max_visits = 10
 on.pass = "wait-pr"
+on.fail = "open-pr-triage"
+
+# open-pr fails on the pre-push check (nothing pushed, the head recorded), a
+# gh, network or git error. Only a head the pre-push check failed on passes
+# here, to gate-fix; anything else ends the run as before.
+[step.open-pr-triage]
+kind = "command"
+run = "rhiza ship gate --failed"
+max_visits = 3
+on.pass = "gate-fix"
 
 [step.wait-pr]
 kind = "wait"
@@ -240,6 +250,16 @@ on.fail = "gate-fix"
 kind = "command"
 run = "rhiza ship land"
 on.pass = "wait-landed"
+on.fail = "land-triage"
+
+# land fails on the pre-push check of its push (the change set is landed,
+# the head recorded) or on gh, network or git; only the former passes, to
+# gate-fix-merge.
+[step.land-triage]
+kind = "command"
+run = "rhiza ship gate --failed"
+max_visits = 3
+on.pass = "gate-fix-merge"
 
 [step.wait-landed]
 kind = "wait"
@@ -333,7 +353,7 @@ on.pass = "landed-green"
 
 [step.gate-fix-merge]
 kind = "agent"
-prompt = "/rhiza-review Fix the failing local gate of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. CI is unstable, so the project's local gate (rhiza.ship.localGate) runs before the push, and it failed: run `rhiza ship gate` to see its output. Reproduce the failure locally with the failing test's own scoped command, repeating it until you see it fail again or plainly pass, then fix it or quarantine it (skip it) with a bug request filed and named at the skip. Commit only once the failing tests and the packages you touched pass locally. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
+prompt = "/rhiza-review Fix the failing local gate of change set {change} in run {run}: follow `rhiza guide review`, as the review fixer. CI is unstable, so the project's local gate (rhiza.ship.localGate) runs before the push, and it failed, or the pre-push check (rhiza check, then rhiza.ship.prePushCheck) failed on the head before a push: run `rhiza ship gate` to see the gate's output and read the failing pre-push lines in `rhiza run status --json`. Reproduce the failure locally with the failing test's own scoped command, repeating it until you see it fail again or plainly pass, then fix it or quarantine it (skip it) with a bug request filed and named at the skip. Commit only once the failing tests and the packages you touched pass locally. Make one new commit with a `Review: {run}` trailer (in the one final paragraph with Change: and Actor:), then run `rhiza session done` as your very last action."
 until = "true"
 until_when = "done"
 max_visits = 2
@@ -363,6 +383,13 @@ kind = "command"
 run = "rhiza ship open-pr"
 max_visits = 3
 on.pass = "wait-rebased-merge"
+on.fail = "push-merge-triage"
+
+[step.push-merge-triage]
+kind = "command"
+run = "rhiza ship gate --failed"
+max_visits = 3
+on.pass = "gate-fix-merge"
 
 [step.wait-rebased-merge]
 kind = "wait"
