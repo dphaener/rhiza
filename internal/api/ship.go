@@ -268,13 +268,15 @@ var shipMergeRefusalMarks = []string{
 
 // shipMergeCurable are the phrases of a merge refused because the head is
 // behind main or conflicts: gate-rebase-merge's to cure. They win over a
-// refusal mark in the same message.
+// refusal mark in the same message. gh prefixes every refusal with "Pull
+// request owner/repo#N is not mergeable: ", so they match the reason after
+// it, never that prefix.
 var shipMergeCurable = []string{
 	"not up to date",
 	"out of date",
 	"behind",
 	"conflict",
-	"not mergeable",
+	"cannot be cleanly created",
 	"head branch was modified",
 	"base branch was modified",
 }

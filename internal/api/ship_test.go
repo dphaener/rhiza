@@ -484,8 +484,24 @@ func TestShipMergeRefusedStops(t *testing.T) {
 	if st, _ := readShipState(state); st.MergeCommit != "" {
 		t.Errorf("state = %+v", st)
 	}
+	// gh's own message carries a "not mergeable" prefix: still a refusal.
+	for _, msg := range []string{
+		"X Pull request owner/repo#7 is not mergeable: the base branch policy prohibits the merge.",
+		"Pull request owner/repo#7 is not mergeable: the base branch policy prohibits the merge.",
+	} {
+		g.answers[shipMergeArg] = "!" + msg
+		resp, err = callOp(t, f.ctx, "ship.merge", `{}`)
+		if err != nil {
+			t.Fatalf("%q: %v", msg, err)
+		}
+		if m := resp.(ShipMergeResponse); m.ExitCode() != 75 || !strings.Contains(m.Stop, "the base branch policy prohibits the merge") {
+			t.Errorf("%q: merge = %+v", msg, m)
+		}
+	}
 	// Behind main or conflicting is no refusal: the merge fails to rebase.
 	for _, msg := range []string{
+		"X Pull request owner/repo#7 is not mergeable: the head branch is not up to date with the base branch.",
+		"X Pull request owner/repo#7 is not mergeable: the merge commit cannot be cleanly created.",
 		"Pull request is not mergeable: the head branch is not up to date with the base branch",
 		"Pull request #7 has conflicts and cannot be merged",
 		"the base branch policy prohibits the merge: head branch is behind",
