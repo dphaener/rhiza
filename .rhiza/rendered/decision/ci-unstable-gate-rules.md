@@ -29,6 +29,7 @@ Read the change set's intent (owner's words of 2026-11-08), milestone-25 and its
 - decided-by [ship-local-gate](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-local-gate.md)
 - decided-by [ci-fix-reproduces-locally](../capability/rhiza/orchestration/shipping/wait-green-pr/ci-fix-reproduces-locally.md)
 - decided-by [flaky-test-bugs](../capability/rhiza/orchestration/daemon/daemon-watchdog/flaky-test-bugs.md)
+- supersedes [local-gate-trigger-identified-flakes](local-gate-trigger-identified-flakes.md)
 
 ## History
 
