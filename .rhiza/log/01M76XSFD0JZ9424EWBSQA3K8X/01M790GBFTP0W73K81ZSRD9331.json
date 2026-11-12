@@ -1,0 +1,63 @@
+{
+  "actor": "01M7909MWC7Y07M0D12WSK7CDN",
+  "after": [
+    "01M7905W86AE823DWB1QEWR2KR"
+  ],
+  "at": "2026-11-12T23:11:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 4ed003163: ran .github/scripts/ci-changes.sh by hand in scratch git repos: code=true for code since base with no green; code=false for a .rhiza/-only commit after green, for an Actions-style merge-commit HEAD whose PR side added only .rhiza/ since green, and for a merge of main bringing only .rhiza/; code=true for a merge of main bringing code, a bogus green sha, a green that is not an ancestor (rebase), and a path with a space. Ran ci.yml's green-commit lookup (gh api pulls/N/commits + check-runs named check) read-only against real PRs 509 and 510: it picked each PR's newest earlier commit whose check succeeded. go test -trimpath ./internal/ciworkflow/... passes; bash -n clean; a built rhiza check passes from a clean detached worktree of HEAD."
+        },
+        "handle": "ci-model-only-since-green-qa-1",
+        "id": "01M790GBBC2JZC15DTP55BY4C9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M790GBBC2JZC15DTP4KACRSS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M790GBBC2JZC15DTP4KACRSS",
+        "id": "01M790GBC3E09AWCNXJ7MBJYK6",
+        "link": "01M790GBC3E09AWCNXJ6958PNS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZFT4TP194AK2Z1NCJH5A",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 4ed003163: read docs/ci-since-last-green.md and its README link; the recipe's rule matches the script's behaviour exercised by hand (no green, non-ancestor green, .rhiza/-only diff vs code diff), its aggregate job ci-passed does not clash with the check job rhiza ci install writes, and its green test requires every check run of that name to succeed. go test -trimpath ./internal/api -run 'Docs|CI' passes."
+        },
+        "handle": "ci-since-green-for-projects-qa-1",
+        "id": "01M790GBD8J7T5QSJR1TKAXV0F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M790GBD8J7T5QSJR1QRE6GZ4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M790GBD8J7T5QSJR1QRE6GZ4",
+        "id": "01M790GBEART4FCE40S1A9392K",
+        "link": "01M790GBEART4FCE40S19W1TZS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZFVQM9EKM6YN432SYK2V",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSFD0JZ9424EWBSQA3K8X",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M790GBFTP0W73K81ZSRD9331",
+  "type": "ops",
+  "v": 1
+}
