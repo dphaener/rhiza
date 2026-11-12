@@ -131,6 +131,10 @@ type Ctx struct {
 	DryRun bool
 	// Now is the clock.
 	Now func() time.Time
+	// Classify reads a failed command's output and reports whether the
+	// failure is transient (worth one rerun). Nil, or any answer but a
+	// clear transient, means the failure is real: no rerun.
+	Classify func(output string) (transient bool)
 	// IDs makes new IDs.
 	IDs *id.Generator
 	// readLog, when set, replaces the store's log read; tests count folds
