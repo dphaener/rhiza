@@ -1,0 +1,40 @@
+{
+  "actor": "01M78W1WC3JMFF2T89H9AR7JG8",
+  "after": [
+    "01M78W191BY3RE6PPJTVMC7A5Y"
+  ],
+  "at": "2026-11-12T21:55:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At de5efa519 ran go test -trimpath ./internal/api/... -run CPUProfile -v -count=1: TestDaemonCPUProfilePassedToDrivers PASS. The test drives daemonResume (the daemon starting a run's driver) with a fake Detach and Getenv; with RHIZA_CPUPROFILE=/dir/daemon.pprof the driver Program's Env holds RHIZA_CPUPROFILE=/dir/daemon.pprof.01RUNID, and with it unset no RHIZA_CPUPROFILE entry. Read the diff: daemonDetachNoRex, which every daemon-detached driver goes through, appends RHIZA_CPUPROFILE=<daemon path>.<name>; Program.Env is set over the inherited environment, so it replaces the daemon's own value and the driver never overwrites the daemon's profile. For a start, name is the start log (<change set>.start-N) since the run ID is drawn later by the child, still a file unique to that driver. go vet and gofmt clean on internal/api."
+        },
+        "handle": "daemon-passes-cpuprofile-to-drivers-verified",
+        "id": "01M78W44HZJZJJWB7WT7Y7RXMR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78W44HZJZJJWB7WT52TQD2T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78W44HZJZJJWB7WT52TQD2T",
+        "id": "01M78W44NP9EMGSKFRW7C81K0Y",
+        "link": "01M78W44NP9EMGSKFRW5951K59",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WDA98WKD9YNVGJWBWA7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78TV0ZFXRBX1M08V6G7H19C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78W44RV8F4MXG72AXBBXW9Q",
+  "type": "ops",
+  "v": 1
+}
