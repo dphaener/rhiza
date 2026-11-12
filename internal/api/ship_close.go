@@ -449,6 +449,7 @@ func runShipCloseOut(ctx *Ctx, req any) (any, error) {
 	}
 
 	if _, err := os.Stat(t.worktree); err == nil {
+		removeWorktreeIndex(ctx, t.worktree)
 		if _, err := gitAt(ctx, t.main, "worktree", "remove", t.worktree); err != nil {
 			return nil, Errorf("%v", err)
 		}

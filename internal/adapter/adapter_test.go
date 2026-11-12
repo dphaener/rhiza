@@ -21,6 +21,7 @@ func (fake) ContextReply(string, string) ([]byte, bool, error)     { return nil,
 func (fake) AskReply(string, []byte, string) ([]byte, bool, error) { return nil, false, nil }
 func (fake) HookMessage(string, []byte) (Message, bool, error)     { return Message{}, false, nil }
 func (fake) TranscriptGlobs(string, func(string) string) []string  { return nil }
+func (fake) ScratchGlobs(string, func(string) string) []string     { return nil }
 func (fake) Answers([]byte) ([]Answer, error)                      { return nil, nil }
 func (fake) TokenUse([]byte) (TokenUse, error)                     { return TokenUse{}, nil }
 

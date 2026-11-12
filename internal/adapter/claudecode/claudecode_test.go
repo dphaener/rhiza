@@ -908,3 +908,19 @@ func TestUserStatusLine(t *testing.T) {
 		t.Errorf("got %q", got)
 	}
 }
+
+func TestScratchGlobs(t *testing.T) {
+	env := func(m map[string]string) func(string) string { return func(k string) string { return m[k] } }
+	got := (Adapter{}).ScratchGlobs("sid-1", env(map[string]string{"TMPDIR": "/var/t"}))
+	if len(got) != 1 || got[0] != "/var/t/claude-*/*/sid-1" {
+		t.Fatalf("got %q", got)
+	}
+	if got := (Adapter{}).ScratchGlobs("sid-1", env(nil)); len(got) != 1 || got[0] != "/tmp/claude-*/*/sid-1" {
+		t.Fatalf("default tmp: %q", got)
+	}
+	for _, sid := range []string{"", "../x", "a/b", "*"} {
+		if got := (Adapter{}).ScratchGlobs(sid, env(nil)); len(got) != 0 {
+			t.Fatalf("%q gave %q", sid, got)
+		}
+	}
+}
