@@ -40,6 +40,24 @@ exec rhiza workflow check skel
 stdout 'is valid'
 exec rhiza run start --workflow skel --permission-mode manual --dry-run
 
+# the skeleton has no make test, carries the language examples and the
+# cleanup and env examples, and check warns (exit 0) about the placeholder
+! grep 'make test' .rhiza/workflows/skel.toml
+grep 'Go: ' .rhiza/workflows/skel.toml
+grep 'Ruby' .rhiza/workflows/skel.toml
+grep 'JavaScript' .rhiza/workflows/skel.toml
+grep 'Python' .rhiza/workflows/skel.toml
+grep 'Rust' .rhiza/workflows/skel.toml
+grep '^# \[\[cleanup\]\]' .rhiza/workflows/skel.toml
+grep '^# \[env\]' .rhiza/workflows/skel.toml
+exec rhiza workflow check skel
+stdout 'warning: step test still runs the placeholder'
+exec rhiza workflow check skel --json
+stdout '"valid": true'
+# a forked workflow has no placeholder warning
+exec rhiza workflow check mine
+! stdout 'placeholder'
+
 # an existing file is left byte for byte, exit 3
 cp .rhiza/workflows/skel.toml $WORK/skel.before
 ! exec rhiza workflow new skel
@@ -67,6 +85,13 @@ stdout '^exit 2$'
 # an unknown source is a usage error
 ! exec rhiza workflow new y --from nothing-here
 stderr 'no workflow "nothing-here"'
+
+# replacing the placeholder clears the warning
+exec rhiza workflow new repl
+exec sed -i 's/^run = .*/run = "go test .\/..."/' .rhiza/workflows/repl.toml
+exec rhiza workflow check repl
+stdout 'is valid'
+! stdout 'warning'
 
 # --json is the api's bytes
 exec rhiza workflow new viajson --json --dry-run
