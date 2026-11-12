@@ -225,8 +225,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 		autoUpdateOn = conf.autoUpdate == "main"
 		autoUpdateChannel = ""
-		if conf.autoUpdate == "latest" {
+		switch conf.autoUpdate {
+		case "latest":
 			autoUpdateChannel = release.ChannelLatest
+		case "release":
+			autoUpdateChannel = release.ChannelRelease
 		}
 		// Every served project's sessions and runs: a crashed run in any of
 		// them leaves scratch folders behind.

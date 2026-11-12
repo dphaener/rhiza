@@ -106,7 +106,7 @@ rhiza daemon stop
 - `rhiza.daemon.paused` stops it starting anything new.
 - `rhiza.daemon.minFree` holds everything when the disk gets low.
 - `rhiza.daemon.usage.session` and `rhiza.daemon.usage.weekly` are token limits for your plan, with `rhiza.daemon.usage.reserve` the share to keep back. The daemon holds new runs when it gets near them.
-- `rhiza.daemon.autoUpdate` keeps the daemon on current Rhiza. `off` (the default) never updates it. `main` follows the Rhiza source checkout you registered and runs `make update` when it moves. `latest` installs the newest published incremental build between releases over the running executable and restarts the daemon on it. `release`, which follows official releases, comes with the release channels milestone.
+- `rhiza.daemon.autoUpdate` keeps the daemon on current Rhiza. `off` (the default) never updates it. `main` follows the Rhiza source checkout you registered and runs `make update` when it moves. `latest` installs the newest published incremental build between releases over the running executable and restarts the daemon on it. `release` installs the newest official release the same way, ignoring incremental builds.
 - `rhiza.daemon.permissionMode` is the permission mode agent steps get when they don't set one, in the runs the daemon starts itself, such as `plan` runs for requests. A run you queue with `rhiza run start` takes its own `--permission-mode` instead.
 
 ### Requests

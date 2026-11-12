@@ -320,3 +320,70 @@ func TestDaemonAutoUpdateLatest(t *testing.T) {
 		}
 	}
 }
+
+// With rhiza.daemon.autoUpdate = release the daemon follows the release
+// channel only: a newer official release installs, an incremental build of
+// the same version does not.
+func TestDaemonAutoUpdateRelease(t *testing.T) {
+	start := daemon.Image{Size: 10, Mod: time.Unix(1700000000, 0)}
+	old := daemonReexec
+	t.Cleanup(func() { daemonReexec = old })
+	daemonReexec = func() *daemon.Reexec { return (&reexecFake{img: start}).reexec(start) }
+
+	var archive bytes.Buffer
+	gz := gzip.NewWriter(&archive)
+	tw := tar.NewWriter(gz)
+	tw.WriteHeader(&tar.Header{Name: "rhiza", Typeflag: tar.TypeReg, Mode: 0o755, Size: 3})
+	tw.Write([]byte("new"))
+	tw.Close()
+	gz.Close()
+	sum := sha256.Sum256(archive.Bytes())
+
+	var version string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/release.json" {
+			json.NewEncoder(w).Encode(release.Manifest{Channel: release.ChannelRelease, Version: version, Commit: "abc",
+				Platforms: []release.Platform{{OS: runtime.GOOS, Arch: runtime.GOARCH, URL: "http://" + r.Host + "/a.tar.gz", SHA256: hex.EncodeToString(sum[:])}}})
+			return
+		}
+		if r.URL.Path == "/a.tar.gz" {
+			w.Write(archive.Bytes())
+			return
+		}
+		t.Errorf("release channel fetched %s", r.URL.Path)
+		http.NotFound(w, r)
+	}))
+	t.Cleanup(srv.Close)
+
+	oldURLs, oldExe := channelUpdateURLs, channelUpdateExe
+	t.Cleanup(func() { channelUpdateURLs, channelUpdateExe = oldURLs, oldExe })
+	channelUpdateURLs = map[string]string{
+		release.ChannelRelease: srv.URL + "/release.json",
+		release.ChannelLatest:  srv.URL + "/latest.json",
+	}
+
+	for _, c := range []struct{ current, newest, want string }{
+		{"v0.1.0", "v0.2.0", "new"},
+		{"v0.2.0", "v0.2.0", "old"},
+		// An incremental build past the release is not replaced by it.
+		{"v0.2.0-5-gabc1234", "v0.2.0", "old"},
+	} {
+		exe := filepath.Join(t.TempDir(), "rhiza")
+		if err := os.WriteFile(exe, []byte("old"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		channelUpdateExe = func() (string, error) { return exe, nil }
+		version = c.newest
+		ctx, ran := autoUpdateRepo(t, "release", daemon.RhizaModule)
+		ctx.Version = c.current
+		if err := runDaemonTicks(t, ctx, 2, nil); err != nil {
+			t.Fatal(err)
+		}
+		if got, _ := os.ReadFile(exe); string(got) != c.want {
+			t.Fatalf("running %s, release %s: exe holds %q, want %q", c.current, c.newest, got, c.want)
+		}
+		if got := ran(); len(got) != 0 {
+			t.Fatalf("release ran %q, want no git and no make", got)
+		}
+	}
+}

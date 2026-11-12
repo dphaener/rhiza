@@ -47,9 +47,9 @@ The available memory below which the daemon starts no run, such as 2G; 0 turns i
 
 ### `rhiza.daemon.autoUpdate`
 
-Whether the daemon keeps itself up to date: main follows the registered Rhiza source checkout and runs make update when it moves; latest installs the newest published incremental build between releases and restarts on it; release comes with the release channels milestone.
+Whether the daemon keeps itself up to date: main follows the registered Rhiza source checkout and runs make update when it moves; latest installs the newest published incremental build between releases and restarts on it; release installs the newest official release and restarts on it.
 
-- Type: off, main or latest
+- Type: off, main, latest or release
 - Default: `off`
 
 ### `rhiza.daemon.failureClassifier`
