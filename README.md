@@ -14,6 +14,14 @@ With Go (1.25 or newer):
 go install github.com/dphaener/rhiza/cmd/rhiza@latest
 ```
 
+Or install a release binary with the script, which checks the archive's sha256 against the release manifest (Linux or macOS, amd64 or arm64):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dphaener/rhiza/main/install.sh | sh
+```
+
+It installs into `~/.local/bin`; pass `--dir DIR` to change that, and `--channel latest` for the newest build of `main` instead of the newest release (`curl ... | sh -s -- --channel latest`).
+
 Or grab a binary for Linux or macOS (amd64 or arm64) from the [releases page](https://github.com/dphaener/rhiza/releases), unpack it and put `rhiza` on your `$PATH`. Each release has a `checksums.txt` to verify against.
 
 Then `rhiza version` should print what you installed.
