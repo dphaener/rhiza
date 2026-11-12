@@ -1,0 +1,41 @@
+{
+  "actor": "01M76RP7DEZCXATQ033DBTC0R1",
+  "after": [
+    "01M76RNVPH143H1SM7C1ACAWFB"
+  ],
+  "at": "2026-11-12T02:17:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Intent: milestone-25 (the daemon builds and ships the backlog on its own) is still open and is what CI failures on model and generated-file errors stall; the predecessor ship-local-gate served it, and milestone-32 is about cleanup and language-neutral defaults, which this change only has to respect. Enforcement: the owner wants every push covered (fixer, ci-fix, merge-of-main pushes, plan runs). Workflow steps alone would need a gate before each push step in five builtin workflows and any custom one, and the three failing PRs came from plan runs that have no gate at all; pushes in code all go through shipPush (internal/api/ship_close.go, called by ship_openpr.go and the land) and ship_rebase.go's push, so a check there cannot be skipped by a workflow that forgets a step, and the push step's failure is already routed by on.fail. Name: existing per-project command settings are rhiza.ship.localGate and rhiza.ship.generate (ship_gate.go, ship_generate.go); rhiza.ship.prePushCheck follows that prefix, says when it runs, and names no language or tool, as milestone-32 asks. Plan fixer: plan.toml's revise step is tied to review findings and loops back to review, and its cap of 2 is shared with them; pre-push failures in plans are model errors (duplicate handle, non-canonical log entry, stale render) a dedicated small fixer step can repair with rhiza apply or rhiza render, matching the intent's point (4) that a failure goes back to a fixer within the step's cap instead of pushing.",
+          "statement": "Change set 01M76RH0 serves @{01M6HKVRE1B7RPP12EN6J2GGXC}, as its predecessor @{01M6YCRKT22SQQH70HYX1GPFZW} did, and only coordinates with @{01M7640BA83BXBMSEMZNC4K97G} by keeping the new setting language neutral. The pre-push check is enforced in the product, in the one shared push path: a helper run before every git push a run makes (shipPush, used by ship open-pr and the land push, and ship rebase's push), so plan, plan-milestone, ship-change and its wrappers such as bugfix all get it, including fixer, ci-fix and merge-of-main pushes; it runs rhiza check on the run worktree, then the project's command, and a failure refuses the push and fails that step with the failing lines, recorded in the run journal and rhiza run status. The setting is rhiza.ship.prePushCheck, a project setting with an empty default (rhiza check alone), set to make self-check for this repo, beside rhiza.ship.localGate and rhiza.ship.generate. rhiza.ship.localGate keeps its meaning (only while CI is unstable). In ship-change a failed pre-push check goes on.fail to the existing gate-fix fixer, within its cap. The plan and plan-milestone workflows each get one new agent fixer step for it (for example prepush-fix, max_visits 2) that fixes the plan's model or rendered files from the failing lines with one rhiza apply or rhiza render and goes back to open-pr; once its cap is spent the run fails as a failing step does today.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "pre-push-check-shape",
+        "id": "01M76RR6DF852BWBK3EM8Q0X2Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76RR6DE5Y21VWVD28RHDN40",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76RR6DE5Y21VWVD28RHDN40",
+        "id": "01M76RR6DXZS5SF8KVNACYXK94",
+        "link": "01M76RR6DXZS5SF8KVN789EK6M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RNSSBN01KYXGC60VKTS9J",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76RR6ECY5Z0BECR2BWFM4RB",
+  "type": "ops",
+  "v": 1
+}

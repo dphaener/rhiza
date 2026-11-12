@@ -1,0 +1,182 @@
+{
+  "actor": "01M76RHS6E243T24QWFQEDR706",
+  "after": [
+    "01M76RSBTT5E6D9133N3NTN8TA"
+  ],
+  "at": "2026-11-12T02:18:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M76RR6DE5Y21VWVD28RHDN40",
+        "id": "01M76RSZV58SE95HBCV9BNRMCS",
+        "link": "01M76RSZV58SE95HBCV7G1K9BY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RSBKCAF91E8NY2JS692TY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScripts/ship-prepush-check passes, showing rhiza daemon settings --json listing rhiza.ship.prePushCheck as a project setting with an empty default (source default), and rhiza daemon set rhiza.ship.prePushCheck 'make self-check' then listing it with value make self-check from git config; make self-check passes with docs/reference regenerated",
+          "statement": "rhiza.ship.prePushCheck is a project setting holding a language-neutral shell command the pre-push check runs after rhiza check; its default is empty (rhiza check alone), it is listed beside rhiza.ship.localGate and rhiza.ship.generate in rhiza daemon settings and docs/reference, and Rhiza's own repo documents setting it to make self-check"
+        },
+        "handle": "prepush-check-setting",
+        "id": "01M76RSZVP98R5EET9VZM8Z6MJ",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M76RSZVP98R5EET9VWCRT1XC",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M76RSZVP98R5EET9VWCRT1XC",
+        "id": "01M76RSZW9346WD3AAZZ3JE9XN",
+        "link": "01M76RSZW9346WD3AAZXV31HZB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RR6DE5Y21VWVD28RHDN40",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestShipPrePushCheck|TestShipLocalGate' passes, showing in a run worktree with a non-canonical log entry, a stale render, or a failing prePushCheck command that ship open-pr, ship land and ship rebase each push nothing to origin and fail with the failing lines in their error and response, that with both passing they push as before (CI stable or unstable), and that localGate still runs only while CI is unstable",
+          "statement": "Before every git push a run makes (shipPush, used by ship open-pr and the land push, and ship rebase's push of a merged head), whatever CI's state, Rhiza runs rhiza check on the run's worktree (model, log canonicity, stale render) and then the project's rhiza.ship.prePushCheck command there; if either fails it pushes nothing and fails the step with the failing lines, while rhiza.ship.localGate keeps running only while CI is unstable"
+        },
+        "handle": "prepush-check-before-push",
+        "id": "01M76RSZWZW5K5DG8AN3H9FVBS",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M76RSZWZW5K5DG8AN1SP994H",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M76RSZWZW5K5DG8AN1SP994H",
+        "id": "01M76RSZXR8TYXXCYSWBA69M2R",
+        "link": "01M76RSZXR8TYXXCYSW87VTK9F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RR6DE5Y21VWVD28RHDN40",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run/... ./internal/api -run 'PrePush' passes, showing a passed and a failed pre-push check journalled with head, command and output tail; go test -trimpath ./cmd/rhiza -run TestScripts/run-status passes, showing rhiza run status (human and --json) naming the latest pre-push check result",
+          "statement": "Each pre-push check's result (passed or failed, the head it ran on, the command and, when failed, the end of its output) is written to the run journal, and rhiza run status shows the latest one"
+        },
+        "handle": "prepush-check-in-run-status",
+        "id": "01M76RSZYHP4RG66QH4H0NDJ0W",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M76RSZYHP4RG66QH4EFKZK6Z",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M76RSZYHP4RG66QH4EFKZK6Z",
+        "id": "01M76RSZZFBPAR2W04CPE2YVTN",
+        "link": "01M76RSZZFBPAR2W04CMS3G3SM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RR6DE5Y21VWVD28RHDN40",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... passes, checking that every push step of ship-change.toml (open-pr, rebase, push-merge, land) routes a failed pre-push check to gate-fix or gate-fix-merge, including through ship gate --failed after a rebase, with those fixers' max_visits unchanged; go test -trimpath ./internal/api -run TestShipGate passes, showing ship gate --failed reporting a head the pre-push check failed on",
+          "statement": "In the built-in ship-change workflow (and its wrappers such as bugfix), a push step failed by the pre-push check goes on.fail to the existing gate-fix fixer (gate-fix-merge after land) within its cap, and that fixer's prompt reads the failing pre-push lines as well as a failing local gate's"
+        },
+        "handle": "ship-change-prepush-fix",
+        "id": "01M76RT010NG76M92D8E44QJ9T",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M76RT010NG76M92D8AF73776",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M76RT010NG76M92D8AF73776",
+        "id": "01M76RT02MTEH39NAN6AZ5NZ1N",
+        "link": "01M76RT02MTEH39NAN6735DFEN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RR6DE5Y21VWVD28RHDN40",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... passes, checking that plan.toml and plan-milestone.toml route open-pr's and rebase's failure from the pre-push check to prepush-fix, that prepush-fix has max_visits 2 and on.pass open-pr, and that rhiza workflow describe plan lists the step; make self-check passes",
+          "statement": "The built-in plan and plan-milestone workflows each send a push step failed by the pre-push check to a new agent step, prepush-fix (max_visits 2), that fixes the plan's model or rendered files from the failing lines with one rhiza apply or rhiza render and goes back to open-pr; once its cap is spent the run fails as a failing step does today"
+        },
+        "handle": "plan-prepush-fix",
+        "id": "01M76RT03BTXG6QDTFNGNKCZVA",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M76RT03BTXG6QDTFNE23XMA2",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M76RT03BTXG6QDTFNE23XMA2",
+        "id": "01M76RT04DDNNZFWMY6RM9AMAW",
+        "link": "01M76RT04DDNNZFWMY6QXRDNKB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RR6DE5Y21VWVD28RHDN40",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M76RT03BTXG6QDTFNE23XMA2",
+        "id": "01M76RT05QV6NVY6MD50KXAYWF",
+        "link": "01M76RT05QV6NVY6MD4ZN8J2DG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RSZWZW5K5DG8AN1SP994H",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M76RT010NG76M92D8AF73776",
+        "id": "01M76RT06G43FM05VNX4PBPQ08",
+        "link": "01M76RT06G43FM05VNX20243MD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RSZWZW5K5DG8AN1SP994H",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M76RSZWZW5K5DG8AN1SP994H",
+        "id": "01M76RT08YQJ86FPQ4MWTX3KJN",
+        "link": "01M76RT08YQJ86FPQ4MW8B10Z2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RSZVP98R5EET9VWCRT1XC",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M76RSZYHP4RG66QH4EFKZK6Z",
+        "id": "01M76RT0AHS9JV6FTF2BV0J366",
+        "link": "01M76RT0AHS9JV6FTF28W3YTZ6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76RSZWZW5K5DG8AN1SP994H",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76RT0BS76DS6XDRXNXCCKWY",
+  "type": "ops",
+  "v": 1
+}

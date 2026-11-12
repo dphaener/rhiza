@@ -1,0 +1,33 @@
+{
+  "actor": "01M76RHS6E243T24QWFQEDR706",
+  "after": [
+    "01M76RR6ECY5Z0BECR2BWFM4RB"
+  ],
+  "at": "2026-11-12T02:18:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "999f774c8cce778291e230a93a4cbd2a14e45d723bff5891636e86f9af3a4820",
+          "session": "aa618fe3-a94f-4379-98c2-01a1cd88ca37",
+          "summary": "Autonomous plan run for change set 01M76RH0, no owner. The planner read the intent (owner chose option A on 2026-11-11: a pre-push self-check in every run), the push paths in code (shipPush in internal/api/ship_close.go used by ship open-pr and the land push; ship rebase's push in ship_rebase.go), ship.gate and rhiza.ship.localGate, ship.generate, and the plan, plan-milestone and ship-change workflows. It raised one batched question (which intent, where to enforce, the setting's name, where a plan's failure goes). The arbiter answered with Decision pre-push-check-shape: serve milestone-25 like ship-local-gate did; enforce in the shared push path, running rhiza check then the project's command, refusing the push on failure; setting rhiza.ship.prePushCheck, empty default, make self-check for this repo; localGate keeps its meaning; ship-change routes a failed pre-push check to gate-fix within its cap; plan and plan-milestone get a prepush-fix agent step (max_visits 2) back to open-pr. The planner then wrote five leaves under wait-green-pr.",
+          "title": "Plan of the pre-push check in every run (autonomous, arbiter)"
+        },
+        "handle": "pre-push-check-plan",
+        "id": "01M76RSBKCAF91E8NY2NXC7D5R",
+        "key": null,
+        "kind": "source",
+        "node": "01M76RSBKCAF91E8NY2JS692TY",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76RH0YQYW1SMCEE5189QDJT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76RSBKT8GGGWNSJTCD3XYT9",
+  "type": "ops",
+  "v": 1
+}
