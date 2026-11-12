@@ -14,11 +14,12 @@ func TestBuildText(t *testing.T) {
 	checkPhrases(t, "build", map[string][]string{
 		"start": {
 			`rhiza slice --change "$RHIZA_CHANGE" --json`, `rhiza show "$RHIZA_LEAF" --json`,
-			"RHIZA_ATTEMPT", "acceptance",
+			"RHIZA_ATTEMPT", "acceptance", "build only that leaf",
 		},
 		"trailer": {
 			"exactly one new commit", "\nLeaf: export-csv\n", "\nChange: ", "\nActor: ",
 			"rhiza run status --json", "fix commit with the same `Leaf:` trailer",
+			"`Co-Authored-By:` included, in the one final paragraph, no blank line",
 		},
 		"outside-work": {
 			"raise a question", "linked `blocks` to the leaf",
@@ -32,7 +33,10 @@ func TestBuildText(t *testing.T) {
 			"Evidence\nwritten by anyone else does not count",
 		},
 		"fakes-only": {"with fakes only, never real Rex,\nagents or `gh`"},
-		"done":       {"rhiza session done", "as its own command", "`;` or `&&`"},
+		"done": {
+			"rhiza session done", "as its own command", "after its recording\ncommand succeeded",
+			"`;` or `&&`",
+		},
 		"scoped-tests": {
 			"Builders and verifiers run only the tests covering what the change touches",
 			"scoped commands", "never the repo's full\nsuite",
@@ -65,6 +69,25 @@ func finalParagraph(s string) string {
 		return s[i+2:]
 	}
 	return s
+}
+
+func TestBuildPreHandoffChecklist(t *testing.T) {
+	build, _ := Lookup("build")
+	for _, want := range []string{"acceptance\ncommands", "`rhiza ship generate`", "`rhiza render`", "`Checks:` block", "exit code"} {
+		if !strings.Contains(build.Body, want) {
+			t.Errorf("build: lacks %q", want)
+		}
+	}
+	i := strings.Index(build.Body, "\nStream CSV exports\n")
+	example := build.Body[i:]
+	example = example[:strings.Index(example, "\n```")]
+	c, ch := strings.Index(example, "\nChecks:\n"), strings.Index(example, "\nChange: ")
+	if c < 0 || ch < c {
+		t.Errorf("build example: Checks: block must sit above the trailers")
+	}
+	if strings.Contains(finalParagraph(example), "Checks:") {
+		t.Errorf("build example: Checks: inside the trailer paragraph")
+	}
 }
 
 func TestBuildCommitsOwnActorRecord(t *testing.T) {
@@ -108,6 +131,24 @@ func TestGuidesFeedFindingsFromStdin(t *testing.T) {
 		}
 		if strings.Count(body, "<<'EOF'") == 0 {
 			t.Errorf("%s: no stdin heredoc form", name)
+		}
+	}
+}
+
+func TestBuildVerifierRerunsChecks(t *testing.T) {
+	build, _ := Lookup("build")
+	i := strings.Index(build.Body, "## Verifier")
+	if i < 0 {
+		t.Fatal("build: no Verifier section")
+	}
+	v := strings.Join(strings.Fields(build.Body[i:]), " ")
+	for _, want := range []string{
+		"every command in its `Checks:` block",
+		"every acceptance command",
+		"A different exit code, or no `Checks:` block, is a finding naming the command",
+	} {
+		if !strings.Contains(v, want) {
+			t.Errorf("build verifier: lacks %q", want)
 		}
 	}
 }

@@ -1,0 +1,40 @@
+{
+  "actor": "01M788CH6K9DQ91NHTM7EW9F41",
+  "after": [
+    "01M788DJQA2M3AETYHHWZAMQY6"
+  ],
+  "at": "2026-11-12T16:11:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a62c7cd14: `go test -trimpath -count=1 ./internal/guide -run Build -v` exits 0, TestBuildVerifierRerunsChecks passes, asserting build.md's Verifier section says to re-run every command in the commit's `Checks:` block and every acceptance command, and that a different exit code or no `Checks:` block is a finding naming the command (read in the diff of 0ce75a449). Re-ran a62c7cd14's reported Checks: `make self-check` in a clean detached worktree with RHIZA_ROOT/CHANGE/RUN unset exits 0 (render no longer differs; attempt 1's finding f1 is fixed); the guide test also exits 0 as reported."
+        },
+        "handle": "verifier-reruns-reported-checks-verified",
+        "id": "01M788EECFT3WP9E9EWSB6R45F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M788EECFT3WP9E9EWNBJ74WW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M788EECFT3WP9E9EWNBJ74WW",
+        "id": "01M788EEDB1MNHTYF98GX7JE4A",
+        "link": "01M788EEDB1MNHTYF98DR9MZ03",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY462ZXBJ1BQB0RJ5FA66",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XQJYPYK52PJRNAKCPPBJJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M788EEDXT61VZBKCY2BN04FZ",
+  "type": "ops",
+  "v": 1
+}

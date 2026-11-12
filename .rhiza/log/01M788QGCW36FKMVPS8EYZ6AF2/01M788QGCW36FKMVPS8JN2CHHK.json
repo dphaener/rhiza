@@ -1,0 +1,15 @@
+{
+  "actor": "01M788J9RJ43MAY3F06G1B6BXD",
+  "after": [],
+  "at": "2026-11-12T16:16:24Z",
+  "body": {
+    "intent": "Rhiza's own .rhiza/workflows/ship-change.toml, which shadows the builtin, gets the pre-handoff checklist text (run rhiza ship generate and rhiza render, a Checks: block with exit codes) in its ci-fix, gate-fix, gate-fix-merge, conflict-fix and conflict-fix-landed prompts, so this repo's own fixers follow it as the builtin's do.",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M788QGCW36FKMVPS8EYZ6AF2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M788QGCW36FKMVPS8JN2CHHK",
+  "type": "open",
+  "v": 1
+}

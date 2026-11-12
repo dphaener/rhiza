@@ -18,7 +18,7 @@ func TestReviewText(t *testing.T) {
 			`rhiza slice --change "$RHIZA_CHANGE" --json`, "RHIZA_CHECK", "RHIZA_CYCLE", "RHIZA_ROLE",
 			"throwaway checkout",
 		},
-		"merge-base": {"merge-base", "default branch"},
+		"merge-base": {"`git diff $(git merge-base origin/main HEAD)`", "default branch"},
 		"five-checks": {
 			"`compliance`", "each leaf's `acceptance`", "`quality`", "`qa`", "built binary",
 			"fakes alone do not count", "`scope`", "inside the intent and the leaves", "`model`",
@@ -26,11 +26,11 @@ func TestReviewText(t *testing.T) {
 		"fakes-only": {
 			"Every check except `qa` tests runs with fakes only, never real Rex, agents or `gh`",
 		},
-		"severities": {"`blocker`", "`major`", "`minor`", "`nit`"},
+		"severities": {"`blocker` (cannot ship)", "`major` (must be fixed)", "`minor` and `nit` (never fixed)"},
 		"findings": {
 			`rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'`, "\nEOF\n",
 			`{"findings":[{"severity":"major","leaf":"<leaf>","place":"path:line","reason":`,
-			`{"findings":[]}`, "rhiza describe run.findings",
+			`{"findings":[]}`, "(a check with none fails)", "rhiza describe run.findings",
 		},
 		"verdict": {
 			`rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'`, "\nEOF\n",
@@ -50,7 +50,7 @@ func TestReviewText(t *testing.T) {
 			`"type":"verifies","to":"<leaf>"`,
 			"missing constraints",
 		},
-		"done": {"rhiza session done", "as its own command", "`;` or `&&`"},
+		"done": {"rhiza session done", "as its own command", "after its recording\ncommand succeeded", "`;` or `&&`"},
 		"scoped-tests": {
 			"Checks, critics and fixers run only the tests covering what the change touches",
 			"scoped commands", "never the repo's full\nsuite",
@@ -81,6 +81,21 @@ func TestReviewFixerTrailersInOneFinalParagraph(t *testing.T) {
 	for _, p := range []string{"Co-Authored-By:", "one final paragraph", "no blank line"} {
 		if !strings.Contains(strings.ReplaceAll(review.Body, "\n", " "), p) {
 			t.Errorf("review fixer: no %q", p)
+		}
+	}
+}
+
+func TestReviewFixerPreHandoffChecklist(t *testing.T) {
+	review, _ := Lookup("review")
+	i := strings.Index(review.Body, "## Fixer")
+	j := strings.Index(review.Body, "## Outside work")
+	if i < 0 || j < i {
+		t.Fatalf("review: no fixer section")
+	}
+	fixer := review.Body[i:j]
+	for _, want := range []string{"reproduce your findings", "`rhiza ship generate`", "`rhiza render`", "`Checks:` block", "exit code"} {
+		if !strings.Contains(fixer, want) {
+			t.Errorf("review fixer section lacks %q", want)
 		}
 	}
 }
