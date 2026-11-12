@@ -1,0 +1,33 @@
+{
+  "actor": "01M78FDZRHRVN7QM13CR9G2XCE",
+  "after": [
+    "01M78FKX98FCM3ZN8Y45K583DW"
+  ],
+  "at": "2026-11-12T18:17:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "93cf0ccbb58c8bfe9e194d5bc0f023cecff9248885b5ec1fa7bcf276c63a4d71",
+          "session": "92aa21cf-cf96-4789-b4d7-01a1d0f6deed",
+          "summary": "Autonomous plan run (no owner) for the bug 'Fix The local ship gate'. Found the root guard fix already on main (commit e075aefa6 in PR #498 judges .rhiza-root/usage.live.json by captured_at), so this change set records it on tests-leave-root-state-alone instead of building it again. The gate's stored output was cut to the step's 2 KB / 20-line tail, which lost the failing test's name: planned a full gate log kept on disk, with the failing test lines and the log path at the end of the output the journal keeps. Asked what should switch the full local gate on; the arbiter ruled (local-gate-trigger-identified-flakes) that only main red or a flake attributed to a named test or known job/step does, while an unidentified flake is still recorded, shown and filed but ignored by the verdict. Not planned: deduplicating parallel gate fixers working the same failure.",
+          "title": "Local ship gate fix, autonomous plan"
+        },
+        "handle": "local-ship-gate-plan",
+        "id": "01M78FMVWV8MPY8Q2YCKWN5670",
+        "key": null,
+        "kind": "source",
+        "node": "01M78FMVWV8MPY8Q2YCKJJ5V4J",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M78FD039D0F1QVN2BWEAEYCC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78FMVYHG46PQXSKMNZ1AZ0D",
+  "type": "ops",
+  "v": 1
+}

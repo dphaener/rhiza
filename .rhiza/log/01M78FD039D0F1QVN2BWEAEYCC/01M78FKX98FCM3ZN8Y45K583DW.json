@@ -1,0 +1,41 @@
+{
+  "actor": "01M78FJE2DZHWY1FYFJ5AG3362",
+  "after": [
+    "01M78FJ2845GH21F6HA0KYHEPH"
+  ],
+  "at": "2026-11-12T18:16:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the question, this change set's intent (three runs 01M787SV, 01M788HB, 01M7859E all failed the ~20 min serialized make check gate on an unrelated root-guard leak, with the gate on only because of one 'scripts (4/4) / UNKNOWN STEP' flake on #498 while 29 of the last 30 CI runs were green), decision ci-unstable-gate-rules (any flake in the window, or main red, makes CI unstable), and the code: ciVerdict in internal/api/ci_stability.go returns unstable on any non-empty Flakes in the window, and shipFailedTests in internal/api/ship.go falls back to 'CI run <id>' when a log names no job/step. The gate exists to predict CI green before a push; a flake nobody can name cannot be reproduced or targeted locally, is as likely an infra or runner error as a test race, and AGENTS.md itself treats an infra error as a red not explained by the change. Letting one such event serialize every run behind a 20 min suite for the next 20 CI runs costs far more than it buys and, as the evidence shows, exposes runs to unrelated local-only failures. Keeping identified flakes and main-red as triggers preserves the original owner intent ('while main's CI is not reliably green', 'red runs that pass on rerun, per test') with the smallest change to the verdict; a count threshold was weighed but rejected as a larger departure from ci-unstable-gate-rules that the evidence does not require. Still recording, surfacing and filing the unidentified flake keeps it visible so a recurring infra problem is not hidden.",
+          "statement": "The full local gate (rhiza.ship.localGate) switches on only for instability a local run can predict: (1) main's latest recorded CI result is red, as today; or (2) the last rhiza.ship.ciWindow CI runs (default 20) hold a flake attributed to a named failing test, i.e. a '--- FAIL:' test name or a 'job / step' whose step is known. An unidentified flake (a step read as 'UNKNOWN STEP', or 'CI run <id>' whose log names no job or step) is still recorded in the CI stability record, still shown by rhiza health with its count and still filed as a bug by the watchdog, but it does not count toward the unstable verdict and so does not switch on the gate. The CI verdict's reason and ship.gate's skip reason say when an unidentified flake was seen but ignored. ci-unstable-gate-rules otherwise stands: rolling window, project-configured gate command, the flake rerun rule and the stay-red local-reproduce rule are unchanged.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "local-gate-trigger-identified-flakes",
+        "id": "01M78FKX3BQT0ABF59FFJ4GDXE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M78FKX3BQT0ABF59FCKH9B6Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78FKX3BQT0ABF59FCKH9B6Z",
+        "id": "01M78FKX6E9NP6WPCVDM9G0FA2",
+        "link": "01M78FKX6E9NP6WPCVDGWZPZTX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FJ01VT7SZ6CAZQHDJ4NY4",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M78FD039D0F1QVN2BWEAEYCC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78FKX98FCM3ZN8Y45K583DW",
+  "type": "ops",
+  "v": 1
+}
