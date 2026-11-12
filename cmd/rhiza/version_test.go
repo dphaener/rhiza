@@ -23,13 +23,16 @@ func TestVersion(t *testing.T) {
 }
 
 // TestVersionGoReleaserStamp keeps the release config stamping the tag
-// (with its v), not {{ .Version }}, which GoReleaser strips of the v.
+// (with its v), not a bare {{ .Version }}, which GoReleaser strips of the v.
+// A latest-channel snapshot has no tag of its own, so it stamps its
+// version with the v added back.
 func TestVersionGoReleaserStamp(t *testing.T) {
 	b, err := os.ReadFile("../../.goreleaser.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(b), "-X main.version={{ .Tag }}") {
-		t.Fatal(".goreleaser.yaml must set -X main.version={{ .Tag }}")
+	const stamp = "-X main.version={{ if .IsSnapshot }}v{{ .Version }}{{ else }}{{ .Tag }}{{ end }}"
+	if !strings.Contains(string(b), stamp) {
+		t.Fatalf(".goreleaser.yaml must set %s", stamp)
 	}
 }

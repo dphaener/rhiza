@@ -1,0 +1,40 @@
+{
+  "actor": "01M77JJW7XBA1ATNYZ7AA2A5EP",
+  "after": [
+    "01M77JCWKE0S57XEM39QR8WHFR"
+  ],
+  "at": "2026-11-12T09:52:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at d7d285186 (attempt 2, verifier). Read .github/workflows/latest.yml: on push to branches [main] only; concurrency group 'latest' with cancel-in-progress true; a gate step fetches the latest tag and sets publish=false when latest^{commit} differs from GITHUB_SHA and GITHUB_SHA is its ancestor (latest points at a descendant), and every later step is conditioned on publish=='true'; it replaces the prerelease with --prerelease --latest=false --target GITHUB_SHA, uploading the archives, checksums.txt and manifest.json (channel latest), after attest-build-provenance. Read .github/workflows/release-snapshot.yml: computes RHIZA_BUILD_VERSION with go run ./tools/release version, runs goreleaser check and release --snapshot --clean (snapshot.version_template trims the v from RHIZA_BUILD_VERSION), requires all four linux/darwin amd64/arm64 archives, writes the manifest with -channel latest -release-tag latest and asserts 4 platforms. Read the HEAD diff: archive name_template maps '+' to '-' and release.Build applies AssetVersion the same way. go test -trimpath ./internal/release/... ./tools/release/... passed. Simulated a latest dist (four archives named rhiza_0.0.1-main.5-abc1234_<os>_<arch>.tar.gz plus checksums.txt) and ran go run ./tools/release -tag v0.0.1-main.5+abc1234 -version 0.0.1-main.5+abc1234 -channel latest -release-tag latest: the manifest has version v0.0.1-main.5+abc1234, channel latest, 4 platforms, URLs under releases/download/latest/ naming the '-' archives. goreleaser is not installed here, so the real snapshot build was not run locally; the PR's Release snapshot job runs it."
+        },
+        "handle": "latest-channel-prerelease-verified-2",
+        "id": "01M77JR7DM08SD9GK6HM4ATATT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77JR7DM08SD9GK6HKX7JTBS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77JR7DM08SD9GK6HKX7JTBS",
+        "id": "01M77JR7J5YGWS4K9CK17M0B8F",
+        "link": "01M77JR7J5YGWS4K9CK0VY0JHF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7CXJ4H445ZBV963ADV16",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76AZHGY605TXF68M27W4SZV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77JR7MJH5V3FPBY1C98HR0Y",
+  "type": "ops",
+  "v": 1
+}
