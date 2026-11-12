@@ -21,8 +21,11 @@ cp $WORK/lost.toml .rhiza/workflows/lost.toml
 exec git add -A
 exec git commit -qm lost
 
+# Kill the run only once the session record holds its block: the record is
+# written before Rex opens the pane, so a kill in between leaves no block for
+# the resume to inspect.
 ! exec rhiza run start --foreground --workflow lost --permission-mode manual &run&
-exec sh -c 'for i in $(seq 100); do ls .git/rhiza/sessions/*.json >/dev/null 2>&1 && break; sleep 0.1; done'
+exec sh -c 'for i in $(seq 100); do grep -qs "\"block\": \"block:b1\"" .git/rhiza/sessions/*.json && exit 0; sleep 0.1; done; exit 1'
 kill run
 wait run
 
