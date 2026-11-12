@@ -174,6 +174,9 @@ type CheckEnv struct {
 	CI     func(commit string) (string, error)
 	Runs   string // daemon run history file; "" is an empty history
 	Commit string // candidate commit; "" is HEAD
+	// Breaking detects the breaking differences since the last tag; nil is
+	// breakingAgainstLastTag, which builds both versions.
+	Breaking func(dir string) (string, []Break, error)
 }
 
 // parseCheck reads check's flags. The run history defaults to

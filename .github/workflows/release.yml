@@ -26,12 +26,20 @@ jobs:
         cache: true
         cache-dependency-path: go.sum
 
+    # tools/release cut pushes an annotated tag whose message is the version
+    # then the notes; the notes become the release body. checkout may have
+    # replaced the annotation with the commit, so fetch the tag object again.
+    - name: Take the release notes from the tag annotation
+      run: |
+        git fetch --force origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+        git tag -l --format='%(contents:body)' "$GITHUB_REF_NAME" > "$RUNNER_TEMP/release-notes.md"
+
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v7
       with:
         distribution: goreleaser
         version: "~> v2"
-        args: release --clean
+        args: release --clean --release-notes ${{ runner.temp }}/release-notes.md
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

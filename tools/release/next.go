@@ -338,10 +338,20 @@ func (h History) Inputs(since time.Time, marks map[string]Marks) Inputs {
 	return in
 }
 
-// runCheck prints the next version and its kind since the last v* tag in the
-// repo at dir, then each release gate for the candidate commit with why it
-// passes or fails. It reads only: nothing is tagged or written.
-func runCheck(dir string, w io.Writer, env CheckEnv) error {
+// Report is the evaluated next release: its version and kind, the gates for
+// the candidate commit and the drafted notes.
+type Report struct {
+	Tag    string // last v* tag; "" for none
+	Next   Next
+	Commit string
+	Gates  []Gate
+	Notes  string
+}
+
+// evaluate computes the next version and its kind since the last v* tag in
+// the repo at dir, each release gate for the candidate commit and the notes.
+// It reads only: nothing is tagged or written.
+func evaluate(dir string, env CheckEnv) (Report, error) {
 	tag, err := gitOut(dir, "describe", "--tags", "--match", "v[0-9]*.[0-9]*.[0-9]*", "--abbrev=0")
 	if err != nil {
 		tag = ""
@@ -350,26 +360,30 @@ func runCheck(dir string, w io.Writer, env CheckEnv) error {
 	if tag != "" {
 		d, err := gitOut(dir, "log", "-1", "--format=%cI", tag)
 		if err != nil {
-			return err
+			return Report{}, err
 		}
 		if since, err = time.Parse(time.RFC3339, d); err != nil {
-			return err
+			return Report{}, err
 		}
 	}
 	logDir := filepath.Join(dir, ".rhiza", "log")
 	h, err := ReadHistory(logDir)
 	if err != nil {
-		return err
+		return Report{}, err
 	}
 	marks, err := ReadMarks(logDir)
 	if err != nil {
-		return err
+		return Report{}, err
 	}
 	in := h.Inputs(since, marks)
 	var bs []Break
 	if tag != "" {
-		if _, bs, err = breakingAgainstLastTag(dir); err != nil {
-			return err
+		detect := env.Breaking
+		if detect == nil {
+			detect = breakingAgainstLastTag
+		}
+		if _, bs, err = detect(dir); err != nil {
+			return Report{}, err
 		}
 	}
 	for _, b := range bs {
@@ -377,7 +391,7 @@ func runCheck(dir string, w io.Writer, env CheckEnv) error {
 	}
 	n, err := NextVersion(tag, in)
 	if err != nil {
-		return err
+		return Report{}, err
 	}
 	detected := make([]string, 0, len(bs))
 	for _, b := range bs {
@@ -386,20 +400,30 @@ func runCheck(dir string, w io.Writer, env CheckEnv) error {
 	notes := Notes(h, since, marks, detected)
 	gin, err := gateInputs(dir, logDir, env, h, in, n.Kind, marks)
 	if err != nil {
+		return Report{}, err
+	}
+	return Report{Tag: tag, Next: n, Commit: gin.Commit, Gates: Gates(gin), Notes: notes}, nil
+}
+
+// runCheck prints the next version and its kind since the last v* tag in the
+// repo at dir, then each release gate for the candidate commit with why it
+// passes or fails. It reads only: nothing is tagged or written.
+func runCheck(dir string, w io.Writer, env CheckEnv) error {
+	r, err := evaluate(dir, env)
+	if err != nil {
 		return err
 	}
-	gs := Gates(gin)
-	if n.Kind == KindNone {
-		fmt.Fprintf(w, "none: no release since %s\n", orNone(tag))
-		printGates(w, gin.Commit, gs)
+	if r.Next.Kind == KindNone {
+		fmt.Fprintf(w, "none: no release since %s\n", orNone(r.Tag))
+		printGates(w, r.Commit, r.Gates)
 		return nil
 	}
-	fmt.Fprintf(w, "%s %s (since %s)\n", n.Version, n.Kind, orNone(tag))
-	for _, r := range n.Reasons {
-		fmt.Fprintln(w, "  "+r)
+	fmt.Fprintf(w, "%s %s (since %s)\n", r.Next.Version, r.Next.Kind, orNone(r.Tag))
+	for _, reason := range r.Next.Reasons {
+		fmt.Fprintln(w, "  "+reason)
 	}
-	printGates(w, gin.Commit, gs)
-	fmt.Fprintf(w, "\n# %s\n\n%s", n.Version, notes)
+	printGates(w, r.Commit, r.Gates)
+	fmt.Fprintf(w, "\n# %s\n\n%s", r.Next.Version, r.Notes)
 	return nil
 }
 

@@ -1,0 +1,12 @@
+[Unit]
+Description=Record the root daemon's commit, then cut a release when the gates pass
+
+[Service]
+Type=oneshot
+# The root main checkout; the daemon's soak history lives beside the state.
+WorkingDirectory=%h/code/rhiza
+Environment=RHIZA_RELEASE_RUNS=%h/.local/state/rhiza/daemon-runs.jsonl
+Environment=PATH=%h/bin:%h/go/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin
+ExecStartPre=/usr/bin/mkdir -p %h/.local/state/rhiza
+ExecStartPre=/usr/bin/env go run ./tools/release record-run
+ExecStart=/usr/bin/env go run ./tools/release cut
