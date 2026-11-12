@@ -25,7 +25,7 @@ env REX_SESSION=session:s1
 exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"hook\"" "$WORK"/repo/.git/rhiza/sessions/*.json && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
 
 # Hand-write the hook report: working, last reported at 00:00:00.
-exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"at\": \")[^\"]*/\${1}2030-01-01T00:00:00Z/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+edit-sessions hook-at 2030-01-01T00:00:00Z
 
 env RHIZA_TEST_NOW=2030-01-01T00:19:00Z
 exec rhiza run status
@@ -52,7 +52,7 @@ exec rhiza run ls
 ! stdout 'Stalled'
 
 # An idle report is never stalled, however old.
-exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"state\": \")working/\${1}idle/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+edit-sessions hook-state idle
 exec rhiza run status
 ! stdout 'Stalled'
 

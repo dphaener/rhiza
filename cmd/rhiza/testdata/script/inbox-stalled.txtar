@@ -2,6 +2,13 @@
 # one that has not said it is done, as stalled only once its last hook report
 # is more than 20 minutes old. The session record is written by
 # hand: its hook report is set to a fixed time and the clock moved.
+#
+# The hand edits go through edit-sessions, under the session store's lock:
+# session start records the tab with a locked read and write, and when the
+# agent's hook lands first, an unlocked edit made between that read and
+# write is dropped. To reproduce, make session start wait until the record
+# has a hook report, then sleep inside its tab Update: an unlocked edit then
+# fails at the first stalled check, edit-sessions waits for the lock.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -25,7 +32,7 @@ exec rhiza run start --foreground --workflow work --permission-mode manual &
 exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"hook\"" "$WORK"/repo/.git/rhiza/sessions/*.json && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
 
 # Hand-write the hook report: working, last reported at 00:00:00.
-exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"at\": \")[^\"]*/\${1}2030-01-01T00:00:00Z/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+edit-sessions hook-at 2030-01-01T00:00:00Z
 
 env RHIZA_TEST_NOW=2030-01-01T00:19:00Z
 exec rhiza inbox --json
@@ -43,12 +50,12 @@ stdout 'has not reported since 2030-01-01T00:00:00Z'
 stdout 'next: rhiza session message'
 
 # A blocked report is never stalled, however old.
-exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"state\": \")working/\${1}blocked/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+edit-sessions hook-state blocked
 exec rhiza inbox --json
 ! stdout '"stalled"'
 
 # An idle one of an owner-attended run never stalls: it may wait on the owner.
-exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"state\": \")blocked/\${1}idle/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+edit-sessions hook-state idle
 exec sh -c '! grep -q autonomous "$WORK"/repo/.git/rhiza/sessions/*.json'
 exec rhiza inbox --json
 ! stdout '"stalled"'
@@ -57,7 +64,7 @@ exec rhiza run status --json
 
 # One an autonomous run launched stalls like a working one: it may hold a
 # background shell.
-exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/\A\{/{\"autonomous\": true, /" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+edit-sessions autonomous
 env RHIZA_TEST_NOW=2030-01-01T00:19:00Z
 exec rhiza inbox --json
 ! stdout '"stalled"'
@@ -68,7 +75,7 @@ exec rhiza run status --json
 stdout '"stalled"'
 
 # Unless it has said it is done.
-exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/\"hook\": \{/\"done\": {\"state\": \"done\", \"at\": \"2030-01-01T00:00:00Z\"}, \"hook\": {/" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+edit-sessions done 2030-01-01T00:00:00Z
 exec rhiza inbox --json
 ! stdout '"stalled"'
 

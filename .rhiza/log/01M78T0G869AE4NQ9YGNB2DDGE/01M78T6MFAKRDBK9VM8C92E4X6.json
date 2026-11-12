@@ -1,0 +1,30 @@
+{
+  "actor": "01M78T1EBNW765GZ7WQ2WGHK89",
+  "after": [
+    "01M78T0G869AE4NQ9YGNFGQDPE"
+  ],
+  "at": "2026-11-12T21:21:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "aea6d8fc-7b79-4c73-8624-01a1d1a09694",
+          "statement": "Which landed intent should change set 01M78T0 (A passing local gate is reused) serve? It saves ~20 min of ship-change wall time per run on gate days; the perf report says milestone 35 has no change set covering it. Its sibling 01M78RM (gate switches on only for repeated named flakes) serves m4-runs-hold-up. / What does a passing local gate get reused on: which tree must be unchanged for ship gate to pass at once without rerunning it? / How does the gate check only what the change touches while the product stays language-neutral?"
+        },
+        "handle": "question-aea6d8fc-1",
+        "id": "01M78T6GS9KPCS99BXNBK2EHRE",
+        "key": null,
+        "kind": "question",
+        "node": "01M78T6GS9KPCS99BXNACD749P",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M78T0G869AE4NQ9YGNB2DDGE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78T6MFAKRDBK9VM8C92E4X6",
+  "type": "ops",
+  "v": 1
+}

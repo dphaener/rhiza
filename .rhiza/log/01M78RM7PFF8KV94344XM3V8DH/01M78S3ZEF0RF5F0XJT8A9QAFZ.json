@@ -1,0 +1,41 @@
+{
+  "actor": "01M78S1Y4RQBW91H3B6Q0A43B2",
+  "after": [
+    "01M78S1JGEK0TG85FT7GNKSRJ0"
+  ],
+  "at": "2026-11-12T21:02:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the question, this change set's intent (owner, 2026-11-12: unstable only for 'a flake that names a failing test and has failed more than once in the window', 'a step-level or UNKNOWN STEP failure is infra, not a flake', 'stores its full output as a file in the run dir and the journal points to it', reason 'names the flake and when it stops applying'), the accepted unlanded bug change set 01M78FD0 (serves m4-runs-hold-up; its arbiter decision local-gate-trigger-identified-flakes still counts a single flake on a known 'job / step' and still files bugs for unidentified ones; its leaf ship-gate-full-log keeps the log under the git common dir), and the code: ciVerdict in internal/api/ci_stability.go flips to unstable on any non-empty Flakes in the window, CIRun.Flakes holds 'job / step' or 'CI run <id>' strings, and shipLocalGate in ship_gate.go keeps only a 16 KB tail that the run step cuts again to 2 KB. Intent: milestone-4 is open and is the outcome the evidence hurts (four runs, ~525 run-minutes, hand-routed gate-fixes), and 01M78FD0 already serves it, so the two related change sets stay together; milestone-25 has nothing open left to serve. Infra failures: the owner's words make step-level failures infra, which is stricter than 01M78FD0's ruling; a failure with no test cannot be reproduced by a local make check, so gating on it costs ~20 min per run and predicts nothing. Recording it and showing a count in health keeps a recurring infra problem visible without auto-filing per-test bugs that have no test to fix (the auto-filed 01M78960 is that noise). Threshold: 'more than once' means 2; distinct heads keep a rerun of one head from counting twice; reusing ciWindow avoids a new setting and keeps the verdict self-clearing, and the 'stops applying' count follows from the window. Log: the owner asked for the run dir and a journal pointer, which keeps logs per run and per attempt instead of overwriting one branch file shared by parallel fixers; the common-dir path stays only for a gate run by hand outside a run.",
+          "statement": "(1) Change set 01M78RM serves m4-runs-hold-up (milestone-4, open), like its related gate bug 01M78FD0: the harm is runs stalled and sent to gate-fix by a gate they should never have run, not backlog throughput; milestone-25 has no open change sets. 01M78RM builds on 01M78FD0's local-gate-trigger-identified-flakes and ship-gate-full-log and supersedes them where the two differ, since the owner's request here is later and stricter. (2) A CI failure that names no test (only 'job / step', 'UNKNOWN STEP' or 'CI run <id>') and passes on a rerun of the same head is an infra failure, not a flake: it is still recorded in the CI stability record, marked infra and kept apart from flakes, and rhiza health shows infra failures in the window with their count per job / step. It never counts toward the unstable verdict, so it never switches on the local gate, and the watchdog files no flaky-test bug for it. When the verdict is stable while the window holds infra failures or single named flakes, its reason (and ship.gate's skip reason) says they were seen and ignored. (3) A named flaky test makes CI unstable only when at least 2 distinct CI runs (distinct heads, main or run PR) within the existing window (the last rhiza.ship.ciWindow completed runs, 20 by default) recorded it as a flake, matched by test name. The threshold is fixed at 2, the owner's 'more than once', not a new setting. A red main still makes CI unstable on its own. The verdict's reason names each such test, its count in the window, and when it stops applying: after N more completed CI runs without it, where N is the number of runs until the older of its two latest flakes leaves the window. (4) Each local gate run writes its whole combined output to a log file in the run's directory (one file per gate invocation, never overwritten within the run), and the gate step's journal entry and ShipGateResponse carry that path. A failing gate's human output ends with its failing test lines (go test '--- FAIL:', 'FAIL', 'panic:', at most 10) and 'Full log: <path>', so the tail a step keeps names the test and the file. A gate run outside any run (no RHIZA_RUN) writes rhiza/gate/<branch>.log under the git common dir, as 01M78FD0 planned. The gate-fix prompts tell the fixer to read that log, not rerun the gate.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "local-gate-repeated-named-flakes",
+        "id": "01M78S3ZC8ZMBXVBJZV452AR5W",
+        "key": null,
+        "kind": "decision",
+        "node": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78S3ZC8ZMBXVBJZV44ANN2W",
+        "id": "01M78S3ZDG22D14ACX2TAPHPP0",
+        "link": "01M78S3ZDG22D14ACX2R3WNVMG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S1GBQGMS8H4F359A5SBQS",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M78RM7PFF8KV94344XM3V8DH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78S3ZEF0RF5F0XJT8A9QAFZ",
+  "type": "ops",
+  "v": 1
+}
