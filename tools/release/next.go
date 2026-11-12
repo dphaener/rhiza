@@ -95,6 +95,7 @@ type Landing struct {
 	At          time.Time
 	RequestKind string // "bug", "milestone" or "" for a feature
 	Intent      string // what the change set set out to do
+	Kind        string // the change set's kind: "intention", or "record" for model bookkeeping
 }
 
 // History is what the log says about landings and milestones.
@@ -117,6 +118,7 @@ func ReadHistory(logDir string) (History, error) {
 	kinds := map[string]string{}   // change set -> request kind
 	intents := map[string]string{} // intent node -> handle
 	texts := map[string]string{}   // change set -> intent text
+	csKinds := map[string]string{} // change set -> change set kind
 	type serve struct{ from, to string }
 	var serves []serve
 	sets := map[string]bool{}
@@ -140,9 +142,11 @@ func ReadHistory(logDir string) (History, error) {
 			var o struct {
 				RequestKind string `json:"request_kind"`
 				Intent      string `json:"intent"`
+				Kind        string `json:"kind"`
 			}
 			json.Unmarshal(e.Body, &o)
 			kinds[e.ChangeSet] = o.RequestKind
+			csKinds[e.ChangeSet] = o.Kind
 			texts[e.ChangeSet] = o.Intent
 			if o.RequestKind == "bug" {
 				if at, err := time.Parse(time.RFC3339, e.At); err == nil {
@@ -185,6 +189,7 @@ func ReadHistory(logDir string) (History, error) {
 	for id, l := range h.Landed {
 		l.RequestKind = kinds[id]
 		l.Intent = texts[id]
+		l.Kind = csKinds[id]
 		h.Landed[id] = l
 	}
 	for _, s := range serves {

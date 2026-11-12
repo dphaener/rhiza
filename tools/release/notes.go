@@ -10,7 +10,9 @@ import (
 // Notes drafts the release notes from the change sets landed after since,
 // grouped by the milestone each serves. Breaking changes (marked, with their
 // reasons, and the detected differences) and bug fixes (severe ones flagged)
-// are called out first. The output depends only on its inputs.
+// are called out first. Record change sets (model bookkeeping: actor
+// records, evidence) are not changes and are left out, though a breaking
+// mark on one is still called out. The output depends only on its inputs.
 func Notes(h History, since time.Time, marks map[string]Marks, detected []string) string {
 	var ids []string
 	for id, l := range h.Landed {
@@ -62,6 +64,9 @@ func Notes(h History, since time.Time, marks map[string]Marks, detected []string
 		m := marks[id]
 		for _, r := range m.Breaking {
 			breaking = append(breaking, fmt.Sprintf("%s: %s", title(id), r))
+		}
+		if h.Landed[id].Kind == "record" {
+			continue
 		}
 		if h.Landed[id].RequestKind == "bug" {
 			line := title(id)

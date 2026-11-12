@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -27,6 +28,10 @@ func TestNotes(t *testing.T) {
 	writeAt(t, dir, "CS5", "b", "land", after, `{}`)
 	writeAt(t, dir, "CS6", "a", "open", after, `{"intent":"Repair a corrupted log","request_kind":"bug"}`)
 	writeAt(t, dir, "CS6", "b", "land", after, `{}`)
+	writeAt(t, dir, "CS7", "a", "open", after, `{"intent":"Record agent actor claude-code-1 for session s","kind":"record"}`)
+	writeAt(t, dir, "CS7", "b", "land", after, `{}`)
+	writeAt(t, dir, "CS8", "a", "open", after, `{"intent":"apply /tmp/ev.json","kind":"record"}`)
+	writeAt(t, dir, "CS8", "b", "land", after, `{}`)
 	h, err := ReadHistory(dir)
 	if err != nil {
 		t.Fatal(err)
@@ -34,6 +39,9 @@ func TestNotes(t *testing.T) {
 	marks := map[string]Marks{
 		"CS5": {Breaking: []string{"removes --old"}},
 		"CS6": {Severe: []string{"log corruption"}},
+	}
+	if h.Landed["CS7"].Kind != "record" || h.Landed["CS3"].Kind != "" {
+		t.Fatalf("change set kinds not read: %+v", h.Landed)
 	}
 	got := Notes(h, time.Date(2026, 11, 5, 0, 0, 0, 0, time.UTC), marks, []string{"cli: command gone: rhiza old"})
 	golden := filepath.Join("testdata", "notes.golden")
@@ -47,6 +55,9 @@ func TestNotes(t *testing.T) {
 	}
 	if got != string(want) {
 		t.Fatalf("notes differ from %s:\n%s", golden, got)
+	}
+	if strings.Contains(got, "Record agent actor") || strings.Contains(got, "ev.json") {
+		t.Fatalf("record change sets listed:\n%s", got)
 	}
 	if again := Notes(h, time.Date(2026, 11, 5, 0, 0, 0, 0, time.UTC), marks, []string{"cli: command gone: rhiza old"}); again != got {
 		t.Fatal("not deterministic")
