@@ -1,0 +1,40 @@
+{
+  "actor": "01M781KPY925M4X480YW7DDNNB",
+  "after": [
+    "01M76SH4YWFY4B61PCEBW6DDK0"
+  ],
+  "at": "2026-11-12T14:12:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7c384f535 I ran go test -trimpath -count=1 -v ./tools/install -run TestInstallScript: all subtests pass, namely syntax (sh -n install.sh, under dash), release channel and latest channel (each installs a fixture rhiza from a local base-URL-override channel and the installed binary prints its channel), tampered archive (fails with a sha256 mismatch, and no rhiza is installed), piped with a compact manifest, piped help, and bad channel. I checked that both attempt-1 findings are fixed. f1: the manifest is now split with tr, not sed. With uname faked to Darwin/arm64 and a hand-written mixed-layout manifest served over local HTTP, sh install.sh --dir installed the darwin/arm64 archive and it ran. f2: cat install.sh | sh -s -- --help prints the heredoc help. I read the diff: the fixture marshals the real release.Manifest, and the release, latest and release-snapshot workflows publish manifest.json at the paths the script fetches."
+        },
+        "handle": "install-script-verified",
+        "id": "01M781N2D4JA691DZC19W31J34",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M781N2D4JA691DZC16X1WM87",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M781N2D4JA691DZC16X1WM87",
+        "id": "01M781N2DS977J23Y2E1ZZ3TWQ",
+        "link": "01M781N2DS977J23Y2E0QD28PZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7DBYAAJRESBTJC5PHPB4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B00QSZVGA0E6X85JE2BYY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M781N2E9Q57R2BVS8XQRV16K",
+  "type": "ops",
+  "v": 1
+}

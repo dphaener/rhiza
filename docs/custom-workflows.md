@@ -13,6 +13,37 @@ rhiza workflow check bugfix
 
 `workflow new` writes `.rhiza/workflows/bugfix.toml` and never overwrites a file that's there. Add `--from ship-change` to fork a built-in instead of starting empty, which is the better move when you only want to tweak one. A skeleton already passes `check`, so you can run it after every edit and see what you broke.
 
+The skeleton is commented on every item and its test command is a placeholder that fails on purpose, with a line to uncomment for Go, Ruby, JavaScript/TypeScript, Python and Rust. `check` warns, without failing, until you replace it.
+
+## Cleanup and environment
+
+Two optional tables sit beside the steps.
+
+`[[cleanup]]` is a command run once when a run of the workflow ends, whether it finished, failed or was abandoned. It runs in the run's worktree with the run's environment, in file order, and a failure never changes the run's result. Use it to stop what the steps started (a database, a dev server) or to trim caches. Repeat the table for more than one; `name` is optional.
+
+```toml
+[[cleanup]]
+name = "stop-services"
+run = "docker compose down"
+```
+
+`[env]` sets variables for every process the run's steps start: agents, commands and cleanup steps. `{run_tmp}` in a value is the run's own private temp folder, made before a step uses it and removed when the run ends, so parallel runs never share scratch files. Names are letters, digits and `_`; `RHIZA_*` names are Rhiza's own and refused.
+
+```toml
+[env]
+DATABASE_URL = "sqlite://{run_tmp}/test.db"
+CI = "true"
+```
+
+## Examples by language
+
+Each file is a complete build, test, cleanup workflow that passes `rhiza workflow check`, a test keeps it so. Copy one into `.rhiza/workflows/` and change the name and the commands:
+
+- [Go](examples/workflows/go.toml)
+- [Ruby](examples/workflows/ruby.toml)
+- [JavaScript and TypeScript](examples/workflows/javascript.toml)
+- [Python](examples/workflows/python.toml)
+
 ## The workflow
 
 Open the file and replace it with this:

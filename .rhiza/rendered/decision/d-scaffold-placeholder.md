@@ -19,6 +19,8 @@ rhiza workflow new scaffolds a placeholder test command with extensive comments 
 ### In
 
 - decided-by [m32-scaffold-docs](../intent/milestone-32/m32-scaffold-docs.md)
+- decided-by [workflow-new-placeholder](../capability/rhiza/workflows/workflow-authoring/workflow-new-placeholder.md)
+- decided-by [workflow-docs-examples](../capability/rhiza/workflows/workflow-authoring/workflow-docs-examples.md)
 
 ## History
 
