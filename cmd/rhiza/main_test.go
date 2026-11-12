@@ -107,6 +107,9 @@ const (
 )
 
 func setup(env *testscript.Env) error {
+	if err := checkWorkOutsideRepo(env.WorkDir); err != nil {
+		return err
+	}
 	env.Setenv("RHIZA_TEST_NOW", testNow)
 	env.Setenv("RHIZA_TEST_SEED", testSeed)
 	env.Setenv("RHIZA_TEST_FREE_BYTES", testFreeBytes)
@@ -136,6 +139,42 @@ func setup(env *testscript.Env) error {
 	env.Defer(func() { os.RemoveAll(noroot) })
 	env.Setenv("NOROOT", noroot)
 	return hermeticGit(env)
+}
+
+// checkWorkOutsideRepo fails when dir resolves inside a git work tree (an
+// ancestor holds .git) or inside a git dir (a .git path element, or a bare
+// repository's HEAD, objects and refs), so no script can write into a real
+// repository. A run's GOTMPDIR under the repo puts $WORK there.
+func checkWorkOutsideRepo(dir string) error {
+	real, err := filepath.EvalSymlinks(dir)
+	if err != nil {
+		real = dir
+	}
+	real, err = filepath.Abs(real)
+	if err != nil {
+		return err
+	}
+	for d := real; ; d = filepath.Dir(d) {
+		if filepath.Base(d) == ".git" {
+			return fmt.Errorf("testscript $WORK %s is inside a git dir: set GOTMPDIR outside the repository", real)
+		}
+		if _, err := os.Lstat(filepath.Join(d, ".git")); err == nil {
+			return fmt.Errorf("testscript $WORK %s is inside the git work tree %s: set GOTMPDIR outside the repository", real, d)
+		}
+		bare := true
+		for _, n := range []string{"HEAD", "objects", "refs"} {
+			if _, err := os.Lstat(filepath.Join(d, n)); err != nil {
+				bare = false
+				break
+			}
+		}
+		if bare {
+			return fmt.Errorf("testscript $WORK %s is inside the git dir %s: set GOTMPDIR outside the repository", real, d)
+		}
+		if filepath.Dir(d) == d {
+			return nil
+		}
+	}
 }
 
 // foldOK is the script command `fold-ok [dir]`: it reads the .rhiza folder

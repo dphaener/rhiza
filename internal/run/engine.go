@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -331,7 +330,7 @@ func (e *Engine) run(id string, retry bool, before func(State) ([]Entry, error))
 	defer unlock()
 	// The run's private temp folder goes with the run, whether it finishes,
 	// fails or stops.
-	defer func() { _ = os.RemoveAll(filepath.Dir(e.Store.TmpDir(j.ID))) }()
+	defer func() { _ = os.RemoveAll(e.Store.TmpDir(j.ID)) }()
 	// Read again under the lock: the holder may have moved on.
 	if j, err = e.Store.Read(j.ID); err != nil {
 		return State{}, err
