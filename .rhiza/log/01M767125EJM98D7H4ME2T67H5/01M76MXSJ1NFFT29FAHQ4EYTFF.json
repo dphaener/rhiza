@@ -1,0 +1,63 @@
+{
+  "actor": "01M76MT96CHXFJW583WN4JGMZ3",
+  "after": [
+    "01M76MQGYEKY79XNF7FPNJK05K"
+  ],
+  "at": "2026-11-12T01:11:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 42f7d662d with the built binary (go build -trimpath ./cmd/rhiza) in a scratch root with a fake rex and RHIZA_TEST_DETACH_LOG: queued two milestone requests; daemon --once --max-runs 5 started only the first's plan-milestone run; the next poll (start unjournaled, within grace) kept the second queued; with the first's journal live on another host at the interview step the second stayed queued; after appending entered review, --max-runs 1 started nothing and --max-runs 5 started the second's plan run (detach log: run start --workflow plan-milestone --new Second milestone ... --milestone). A third milestone request stayed queued while the first was stopped at the gate (not autonomous) and the second live at milestone-check, and started once the first's stop was at review instead. go test -trimpath ./internal/api -run MilestoneWaits and ./cmd/rhiza -run 'TestScripts/(daemon-milestone-request|plan-requests)' pass."
+        },
+        "handle": "milestone-wait-owner-steps-qa-1",
+        "id": "01M76MXS8C8ZXCFYBBA4KE4G3N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76MXS8C8ZXCFYBBA2XWBAEQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76MXS8C8ZXCFYBBA2XWBAEQ",
+        "id": "01M76MXS9PFRSMNF0W1SA18Q0K",
+        "link": "01M76MXS9PFRSMNF0W1NTHZ9QW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M767A0H2FFW8H8DY4N0DNY8Y",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 42f7d662d with the built binary in a scratch root with a fake rex: the oldest queued milestone request started in a free slot; a second milestone request stayed queued while the first's plan run held the owner (start unjournaled within grace, live at interview, stopped at the gate) and with the slots full (--max-runs 1), and started in the next free slot once the first was past its interview."
+        },
+        "handle": "milestone-request-starts-at-once-qa-owner-steps-1",
+        "id": "01M76MXSBWB72GDD7327ZBZSQT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76MXSBWB72GDD7325PC70Q8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76MXSBWB72GDD7325PC70Q8",
+        "id": "01M76MXSEKJM1PT3R4X8YWMC8Y",
+        "link": "01M76MXSEKJM1PT3R4X7YENS2F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYSEB8N545M8M9APZTBXYS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M767125EJM98D7H4ME2T67H5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76MXSJ1NFFT29FAHQ4EYTFF",
+  "type": "ops",
+  "v": 1
+}

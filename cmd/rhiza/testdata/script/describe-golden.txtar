@@ -3802,8 +3802,24 @@ cmp stdout describe.golden.json
                                   "description": "That leaf's handle when the finding was recorded",
                                   "type": "string"
                                 },
+                                "link": {
+                                  "description": "A plan review finding about a link: the link's ID, in place of node",
+                                  "type": "string"
+                                },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
+                                "link_type": {
+                                  "description": "That link's type, e.g. depends-on or serves",
+                                  "type": "string"
+                                },
                                 "node": {
-                                  "description": "The node it is about, by ID; absent for a leaf's finding",
+                                  "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                                   "type": "string"
                                 },
                                 "place": {
@@ -4384,8 +4400,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -4573,8 +4605,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -4895,8 +4943,24 @@ cmp stdout describe.golden.json
                       "description": "That leaf's handle when the finding was recorded",
                       "type": "string"
                     },
+                    "link": {
+                      "description": "A plan review finding about a link: the link's ID, in place of node",
+                      "type": "string"
+                    },
+                    "link_from": {
+                      "description": "That link's from end, by ID",
+                      "type": "string"
+                    },
+                    "link_to": {
+                      "description": "That link's to end, by ID",
+                      "type": "string"
+                    },
+                    "link_type": {
+                      "description": "That link's type, e.g. depends-on or serves",
+                      "type": "string"
+                    },
                     "node": {
-                      "description": "The node it is about, by ID; absent for a leaf's finding",
+                      "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                       "type": "string"
                     },
                     "place": {
@@ -5503,8 +5567,24 @@ cmp stdout describe.golden.json
                                   "description": "That leaf's handle when the finding was recorded",
                                   "type": "string"
                                 },
+                                "link": {
+                                  "description": "A plan review finding about a link: the link's ID, in place of node",
+                                  "type": "string"
+                                },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
+                                "link_type": {
+                                  "description": "That link's type, e.g. depends-on or serves",
+                                  "type": "string"
+                                },
                                 "node": {
-                                  "description": "The node it is about, by ID; absent for a leaf's finding",
+                                  "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                                   "type": "string"
                                 },
                                 "place": {
@@ -6085,8 +6165,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -6274,8 +6370,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -6596,8 +6708,24 @@ cmp stdout describe.golden.json
                       "description": "That leaf's handle when the finding was recorded",
                       "type": "string"
                     },
+                    "link": {
+                      "description": "A plan review finding about a link: the link's ID, in place of node",
+                      "type": "string"
+                    },
+                    "link_from": {
+                      "description": "That link's from end, by ID",
+                      "type": "string"
+                    },
+                    "link_to": {
+                      "description": "That link's to end, by ID",
+                      "type": "string"
+                    },
+                    "link_type": {
+                      "description": "That link's type, e.g. depends-on or serves",
+                      "type": "string"
+                    },
                     "node": {
-                      "description": "The node it is about, by ID; absent for a leaf's finding",
+                      "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                       "type": "string"
                     },
                     "place": {
@@ -8970,8 +9098,24 @@ cmp stdout describe.golden.json
                                   "description": "That leaf's handle when the finding was recorded",
                                   "type": "string"
                                 },
+                                "link": {
+                                  "description": "A plan review finding about a link: the link's ID, in place of node",
+                                  "type": "string"
+                                },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
+                                "link_type": {
+                                  "description": "That link's type, e.g. depends-on or serves",
+                                  "type": "string"
+                                },
                                 "node": {
-                                  "description": "The node it is about, by ID; absent for a leaf's finding",
+                                  "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                                   "type": "string"
                                 },
                                 "place": {
@@ -9552,8 +9696,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -9741,8 +9901,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -10527,8 +10703,24 @@ cmp stdout describe.golden.json
                                   "description": "That leaf's handle when the finding was recorded",
                                   "type": "string"
                                 },
+                                "link": {
+                                  "description": "A plan review finding about a link: the link's ID, in place of node",
+                                  "type": "string"
+                                },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
+                                "link_type": {
+                                  "description": "That link's type, e.g. depends-on or serves",
+                                  "type": "string"
+                                },
                                 "node": {
-                                  "description": "The node it is about, by ID; absent for a leaf's finding",
+                                  "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                                   "type": "string"
                                 },
                                 "place": {
@@ -11109,8 +11301,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -11298,8 +11506,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -11620,8 +11844,24 @@ cmp stdout describe.golden.json
                       "description": "That leaf's handle when the finding was recorded",
                       "type": "string"
                     },
+                    "link": {
+                      "description": "A plan review finding about a link: the link's ID, in place of node",
+                      "type": "string"
+                    },
+                    "link_from": {
+                      "description": "That link's from end, by ID",
+                      "type": "string"
+                    },
+                    "link_to": {
+                      "description": "That link's to end, by ID",
+                      "type": "string"
+                    },
+                    "link_type": {
+                      "description": "That link's type, e.g. depends-on or serves",
+                      "type": "string"
+                    },
                     "node": {
-                      "description": "The node it is about, by ID; absent for a leaf's finding",
+                      "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                       "type": "string"
                     },
                     "place": {
@@ -11976,7 +12216,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "node": {
-                  "description": "The node: a full ID, a unique prefix of 4+ characters or a handle, in the run's change set's view. Required, except with --check or --leaf, which refuse it",
+                  "description": "The node: a full ID, a unique prefix of 4+ characters or a handle, or a link's ID, in the run's change set's view. Required, except with --check or --leaf, which refuse it",
                   "type": "string"
                 },
                 "place": {
@@ -12082,8 +12322,24 @@ cmp stdout describe.golden.json
                   "description": "That leaf's handle when the finding was recorded",
                   "type": "string"
                 },
+                "link": {
+                  "description": "A plan review finding about a link: the link's ID, in place of node",
+                  "type": "string"
+                },
+                "link_from": {
+                  "description": "That link's from end, by ID",
+                  "type": "string"
+                },
+                "link_to": {
+                  "description": "That link's to end, by ID",
+                  "type": "string"
+                },
+                "link_type": {
+                  "description": "That link's type, e.g. depends-on or serves",
+                  "type": "string"
+                },
                 "node": {
-                  "description": "The node it is about, by ID; absent for a leaf's finding",
+                  "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                   "type": "string"
                 },
                 "place": {
@@ -13006,8 +13262,24 @@ cmp stdout describe.golden.json
                                   "description": "That leaf's handle when the finding was recorded",
                                   "type": "string"
                                 },
+                                "link": {
+                                  "description": "A plan review finding about a link: the link's ID, in place of node",
+                                  "type": "string"
+                                },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
+                                "link_type": {
+                                  "description": "That link's type, e.g. depends-on or serves",
+                                  "type": "string"
+                                },
                                 "node": {
-                                  "description": "The node it is about, by ID; absent for a leaf's finding",
+                                  "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                                   "type": "string"
                                 },
                                 "place": {
@@ -13588,8 +13860,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -13777,8 +14065,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -14099,8 +14403,24 @@ cmp stdout describe.golden.json
                       "description": "That leaf's handle when the finding was recorded",
                       "type": "string"
                     },
+                    "link": {
+                      "description": "A plan review finding about a link: the link's ID, in place of node",
+                      "type": "string"
+                    },
+                    "link_from": {
+                      "description": "That link's from end, by ID",
+                      "type": "string"
+                    },
+                    "link_to": {
+                      "description": "That link's to end, by ID",
+                      "type": "string"
+                    },
+                    "link_type": {
+                      "description": "That link's type, e.g. depends-on or serves",
+                      "type": "string"
+                    },
                     "node": {
-                      "description": "The node it is about, by ID; absent for a leaf's finding",
+                      "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                       "type": "string"
                     },
                     "place": {
@@ -14587,8 +14907,24 @@ cmp stdout describe.golden.json
                                   "description": "That leaf's handle when the finding was recorded",
                                   "type": "string"
                                 },
+                                "link": {
+                                  "description": "A plan review finding about a link: the link's ID, in place of node",
+                                  "type": "string"
+                                },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
+                                "link_type": {
+                                  "description": "That link's type, e.g. depends-on or serves",
+                                  "type": "string"
+                                },
                                 "node": {
-                                  "description": "The node it is about, by ID; absent for a leaf's finding",
+                                  "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                                   "type": "string"
                                 },
                                 "place": {
@@ -15169,8 +15505,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -15358,8 +15710,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -15652,7 +16020,12 @@ cmp stdout describe.golden.json
       "name": "run.review-check",
       "request": {
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "fresh": {
+            "description": "Only test that the latest round postdates the latest revise visit (or the run has none): exit 0 if so, non-zero if not; judges and writes nothing",
+            "type": "boolean"
+          }
+        },
         "required": [],
         "type": "object"
       },
@@ -15688,8 +16061,24 @@ cmp stdout describe.golden.json
                   "description": "That leaf's handle when the finding was recorded",
                   "type": "string"
                 },
+                "link": {
+                  "description": "A plan review finding about a link: the link's ID, in place of node",
+                  "type": "string"
+                },
+                "link_from": {
+                  "description": "That link's from end, by ID",
+                  "type": "string"
+                },
+                "link_to": {
+                  "description": "That link's to end, by ID",
+                  "type": "string"
+                },
+                "link_type": {
+                  "description": "That link's type, e.g. depends-on or serves",
+                  "type": "string"
+                },
                 "node": {
-                  "description": "The node it is about, by ID; absent for a leaf's finding",
+                  "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                   "type": "string"
                 },
                 "place": {
@@ -15782,8 +16171,37 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Check the latest review round of the run RHIZA_RUN names: pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass",
+      "summary": "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass",
       "write": true
+    },
+    {
+      "name": "run.round-recorded",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "round": {
+            "description": "The latest plan review round's number, journaled in this visit",
+            "type": "integer"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "round",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Check that the current visit of the plan review step of the run RHIZA_RUN names journaled a findings round (empty for a clean review); fails naming rhiza run findings if not",
+      "write": false
     },
     {
       "name": "run.send-back",
@@ -16200,8 +16618,24 @@ cmp stdout describe.golden.json
                                   "description": "That leaf's handle when the finding was recorded",
                                   "type": "string"
                                 },
+                                "link": {
+                                  "description": "A plan review finding about a link: the link's ID, in place of node",
+                                  "type": "string"
+                                },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
+                                "link_type": {
+                                  "description": "That link's type, e.g. depends-on or serves",
+                                  "type": "string"
+                                },
                                 "node": {
-                                  "description": "The node it is about, by ID; absent for a leaf's finding",
+                                  "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                                   "type": "string"
                                 },
                                 "place": {
@@ -16782,8 +17216,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -16971,8 +17421,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -17293,8 +17759,24 @@ cmp stdout describe.golden.json
                       "description": "That leaf's handle when the finding was recorded",
                       "type": "string"
                     },
+                    "link": {
+                      "description": "A plan review finding about a link: the link's ID, in place of node",
+                      "type": "string"
+                    },
+                    "link_from": {
+                      "description": "That link's from end, by ID",
+                      "type": "string"
+                    },
+                    "link_to": {
+                      "description": "That link's to end, by ID",
+                      "type": "string"
+                    },
+                    "link_type": {
+                      "description": "That link's type, e.g. depends-on or serves",
+                      "type": "string"
+                    },
                     "node": {
-                      "description": "The node it is about, by ID; absent for a leaf's finding",
+                      "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                       "type": "string"
                     },
                     "place": {
@@ -17815,8 +18297,24 @@ cmp stdout describe.golden.json
                                   "description": "That leaf's handle when the finding was recorded",
                                   "type": "string"
                                 },
+                                "link": {
+                                  "description": "A plan review finding about a link: the link's ID, in place of node",
+                                  "type": "string"
+                                },
+                                "link_from": {
+                                  "description": "That link's from end, by ID",
+                                  "type": "string"
+                                },
+                                "link_to": {
+                                  "description": "That link's to end, by ID",
+                                  "type": "string"
+                                },
+                                "link_type": {
+                                  "description": "That link's type, e.g. depends-on or serves",
+                                  "type": "string"
+                                },
                                 "node": {
-                                  "description": "The node it is about, by ID; absent for a leaf's finding",
+                                  "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                                   "type": "string"
                                 },
                                 "place": {
@@ -18397,8 +18895,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -18586,8 +19100,24 @@ cmp stdout describe.golden.json
                             "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
+                          "link": {
+                            "description": "A plan review finding about a link: the link's ID, in place of node",
+                            "type": "string"
+                          },
+                          "link_from": {
+                            "description": "That link's from end, by ID",
+                            "type": "string"
+                          },
+                          "link_to": {
+                            "description": "That link's to end, by ID",
+                            "type": "string"
+                          },
+                          "link_type": {
+                            "description": "That link's type, e.g. depends-on or serves",
+                            "type": "string"
+                          },
                           "node": {
-                            "description": "The node it is about, by ID; absent for a leaf's finding",
+                            "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                             "type": "string"
                           },
                           "place": {
@@ -19261,8 +19791,24 @@ cmp stdout describe.golden.json
                               "description": "That leaf's handle when the finding was recorded",
                               "type": "string"
                             },
+                            "link": {
+                              "description": "A plan review finding about a link: the link's ID, in place of node",
+                              "type": "string"
+                            },
+                            "link_from": {
+                              "description": "That link's from end, by ID",
+                              "type": "string"
+                            },
+                            "link_to": {
+                              "description": "That link's to end, by ID",
+                              "type": "string"
+                            },
+                            "link_type": {
+                              "description": "That link's type, e.g. depends-on or serves",
+                              "type": "string"
+                            },
                             "node": {
-                              "description": "The node it is about, by ID; absent for a leaf's finding",
+                              "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                               "type": "string"
                             },
                             "place": {
@@ -19843,8 +20389,24 @@ cmp stdout describe.golden.json
                         "description": "That leaf's handle when the finding was recorded",
                         "type": "string"
                       },
+                      "link": {
+                        "description": "A plan review finding about a link: the link's ID, in place of node",
+                        "type": "string"
+                      },
+                      "link_from": {
+                        "description": "That link's from end, by ID",
+                        "type": "string"
+                      },
+                      "link_to": {
+                        "description": "That link's to end, by ID",
+                        "type": "string"
+                      },
+                      "link_type": {
+                        "description": "That link's type, e.g. depends-on or serves",
+                        "type": "string"
+                      },
                       "node": {
-                        "description": "The node it is about, by ID; absent for a leaf's finding",
+                        "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                         "type": "string"
                       },
                       "place": {
@@ -20032,8 +20594,24 @@ cmp stdout describe.golden.json
                         "description": "That leaf's handle when the finding was recorded",
                         "type": "string"
                       },
+                      "link": {
+                        "description": "A plan review finding about a link: the link's ID, in place of node",
+                        "type": "string"
+                      },
+                      "link_from": {
+                        "description": "That link's from end, by ID",
+                        "type": "string"
+                      },
+                      "link_to": {
+                        "description": "That link's to end, by ID",
+                        "type": "string"
+                      },
+                      "link_type": {
+                        "description": "That link's type, e.g. depends-on or serves",
+                        "type": "string"
+                      },
                       "node": {
-                        "description": "The node it is about, by ID; absent for a leaf's finding",
+                        "description": "The node it is about, by ID; absent for a leaf's finding and for a finding about a link",
                         "type": "string"
                       },
                       "place": {

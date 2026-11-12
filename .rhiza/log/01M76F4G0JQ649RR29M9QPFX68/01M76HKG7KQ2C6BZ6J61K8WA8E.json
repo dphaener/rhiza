@@ -1,0 +1,40 @@
+{
+  "actor": "01M76HGFJQNXKFYYWFVFF0V4VX",
+  "after": [
+    "01M76FMQG1Z1Z0JQ63CREAEJQB"
+  ],
+  "at": "2026-11-12T00:12:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 89df994ce (attempt 2, fixing attempt 1's findings f1/f2). go test -trimpath ./internal/api/... -run TestReviewVisitNeedsRound: ok (round-recorded and session done refuse naming rhiza run findings with no round; pass after an empty round; an earlier visit's round does not count). go test -trimpath ./cmd/rhiza -run TestScripts/plan-review-visit-round (GOTMPDIR outside the repo): PASS; it drives the plan workflow with fakes: a reviewer with no round has done refused (exit 3, naming rhiza run findings), the run fails at review and never reaches the critic; reviewers that record a round (a finding on visit 1, an empty round on visit 2 whose earlier round did not count) say done exit 0 and pass to the critic. internal/run and internal/workflow tests pass; describe-golden passes. Diff read: plan.toml and plan-milestone.toml review until = rhiza run round-recorded; isPlanReviewer excludes check/role/leaf sessions, so review.toml checks steps are unaffected. Note: TestScripts/plan-workflow and plan-milestone-backlog fail at HEAD but pass at this leaf's commit 71596b673; they break with sibling leaf review-check-refuses-stale-round (6718a349d, critic now goes to the new fresh step, expected 'then check'), not with this leaf."
+        },
+        "handle": "review-visit-records-round-verified",
+        "id": "01M76HKG4QXWAXZNSSWBMZWQQ4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76HKG4QXWAXZNSSW9QZ5WXM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76HKG4QXWAXZNSSW9QZ5WXM",
+        "id": "01M76HKG6H7DH80A3XPPKVV6X5",
+        "link": "01M76HKG6H7DH80A3XPMM03VAS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8RPF7AF6C8Y5Y9D11DRW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F4G0JQ649RR29M9QPFX68",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76HKG7KQ2C6BZ6J61K8WA8E",
+  "type": "ops",
+  "v": 1
+}

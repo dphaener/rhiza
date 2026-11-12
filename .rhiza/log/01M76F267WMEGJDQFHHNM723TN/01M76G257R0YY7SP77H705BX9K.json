@@ -1,0 +1,41 @@
+{
+  "actor": "01M76G18K56YETT52W47MWFDTY",
+  "after": [
+    "01M76G0RAREJ5CS5E1XATD0V3N"
+  ],
+  "at": "2026-11-11T23:46:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding and critic are right: the branch path in decision-main-writes-get-a-branch cuts model branches from origin/main and pushes them, so in a repo without origin no entry can ever be held by a model branch, and every write would be an orphan. Flagging those would turn rhiza check warnings and health bad (exit 1) across ~35 git-init testscripts (e.g. change-show-canonical-text.txtar, check-evidence-actor.txtar, health.txtar, health-projects.txtar), which the change set never intended. An orphan only means something when the remedy exists: commit-untracked needs a remote to push a branch and open a PR. The code already treats a missing origin/main as 'nothing to compare' (internal/api/health.go healthOriginAhead and the behind-origin facts skip silently when refs/remotes/origin/main does not resolve), so keying on the same ref is consistent and cheap, needs no fetch, and keeps a local-only project, where uncommitted entries are the owner's own working state, free of noise. The owner's words ('Everything should get it's own branch') concern a project's shared main, which presupposes a remote. Adding the no-origin case to both acceptances closes the gap the reviewer named.",
+          "statement": "Orphan reporting and committing apply only in a repo whose main checkout has origin/main (refs/remotes/origin/main resolves). In a repo with no origin/main (a testscript git-init repo, a local-only project) a main-checkout write keeps today's behaviour: it writes the entry and opens no model branch or PR, since there is nothing to cut from or push to; rhiza check gives no orphan warning and its output is unchanged; rhiza health's main-checkout part reports no orphan problem (its state is decided as today, untracked entries not counted); rhiza model commit-untracked and the daemon's sweep do nothing and say no origin/main exists. @{01M76FAABBDGMZA9F3BBBA3H0D}'s acceptance testscript (check-orphan-log.txtar) also asserts that the same untracked entry in a git-init repo with no origin gives no warning, and @{01M76FAA9ATEZ0372B4BZ9SRST}'s acceptance (TestHealthMainOrphanLog) also asserts that an untracked entry in a repo with no origin/main leaves the part ok; existing testscripts and goldens in git-init repos do not change.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "orphan-log-needs-origin-main",
+        "id": "01M76G254WMYVYAQQ60VYH6B9N",
+        "key": null,
+        "kind": "decision",
+        "node": "01M76G254WMYVYAQQ60SDH1XDA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76G254WMYVYAQQ60SDH1XDA",
+        "id": "01M76G256K88R90EM29FEKFCXY",
+        "link": "01M76G256K88R90EM29C73HWXQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FZ16C96GGBGK60879HHW2",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76G257R0YY7SP77H705BX9K",
+  "type": "ops",
+  "v": 1
+}

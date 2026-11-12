@@ -18,6 +18,7 @@ import (
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
 	"github.com/dphaener/rhiza/internal/usage"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 // projectInitialised says whether dir holds an initialised Rhiza project:
@@ -426,7 +427,7 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 // daemonMilestoneWaits reports whether a queued milestone request could
 // start now: one with no run whose retry time has passed, and no other
 // milestone request's run live or unjournaled, as daemonPlanRequests'
-// milestoneLive counts them: a journaled run still running on host, or a
+// milestoneLive counts them: a journaled run holding the owner (milestoneHoldsOwner), or a
 // start not journaled yet within daemonStartGrace. A milestone request
 // whose run ended stays in the queue but blocks nothing.
 func daemonMilestoneWaits(ctx *Ctx, rs *run.Store, runs []run.Journal, host string) bool {
@@ -449,7 +450,7 @@ func daemonMilestoneWaits(ctx *Ctx, rs *run.Store, runs []run.Journal, host stri
 			continue
 		}
 		if i := slices.IndexFunc(runs, func(j run.Journal) bool { return j.ID == q.Run }); i >= 0 {
-			if runs[i].State().Liveness(host, nil) == run.LiveRunning {
+			if milestoneHoldsOwner(ctx, runs[i], host) {
 				return false
 			}
 			continue
@@ -462,6 +463,39 @@ func daemonMilestoneWaits(ctx *Ctx, rs *run.Store, runs []run.Journal, host stri
 		}
 	}
 	return wait
+}
+
+// milestoneHoldsOwner reports whether a milestone plan run, journaled as j,
+// holds the owner: it is live and running at its interview (start) step, or
+// it is stopped at a gate or sign-off step waiting on the owner (its run is
+// not autonomous). A run at any other step (milestone-check, review, critic,
+// check, revise, open-pr, wait-pr, CI, rebase, merge, close-out) holds
+// nothing, nor does a finished run. daemonPlanRequests' milestoneLive uses
+// this same rule.
+func milestoneHoldsOwner(ctx *Ctx, j run.Journal, host string) bool {
+	st := j.State()
+	if st.Ended {
+		return false
+	}
+	var def *workflow.Definition
+	if _, d, _, err := resolveWorkflow(ctx.Root, st.Workflow); err == nil {
+		def = d
+	}
+	if st.Stopped != "" && !st.Autonomous && def != nil {
+		if step, ok := def.Steps[st.Current]; ok && (step.Kind == workflow.KindSignoff || (step.Kind == workflow.KindCommand && strings.TrimSpace(step.Run) == "rhiza run gate")) {
+			return true
+		}
+	}
+	if st.Liveness(host, nil) != run.LiveRunning {
+		return false
+	}
+	if st.Current == "" {
+		return true
+	}
+	if def == nil {
+		return st.Current == "interview"
+	}
+	return st.Current == def.Start
 }
 
 // daemonRequestsStarting counts the plan requests whose start has not

@@ -1,0 +1,30 @@
+{
+  "actor": "01M76HAGNCWY128KC23FZMCB0X",
+  "after": [
+    "01M76J9VHFD8VFJ7V417W8NZZ5"
+  ],
+  "at": "2026-11-12T00:30:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 6718a349d: go test -trimpath ./internal/api ./internal/workflow/... -run 'TestReviewCheckRefusesStaleRound|TestPlanFreshStep|TestPlanBuiltin' passes; go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes (golden has the fresh flag); full internal/workflow and internal/run packages pass; full internal/api passes at this commit from a scratch worktree outside ~/code with TestReadBudget skipped (a timing budget this change does not touch, 190s under host load); run inside ~/code, TestDaemonSkipsReadyWithUnresolvedWorkflow fails on the shared ~/code/.rhiza-root usage.live.json changing, which is environmental (it passes from the scratch worktree). Read the diff: State.RoundStale (rounds <= rounds at the latest revise entry) gates review-check before judging, with a Conflict naming round N as predating the latest revise and writing nothing; --fresh returns pass after that gate only. The test covers round 2 and round 3 stale for both forms with no asked entry, and a later fresh round passing both. plan.toml and plan-milestone.toml add step fresh (run = rhiza run review-check --fresh, on.pass = check, on.fail = review) and critic on.pass = fresh, checked by TestPlanFreshStep. An extra overlay test (no tree edit) confirmed: no revise -> --fresh passes and check judges round 1 as before; round 2 then revise -> stale refusal naming round 2; round 3 after revise -> --fresh exits 0 with no asked entry and review-check passes the stale gate into the unchanged judging path. Note: the leaf's own test makes its fresh round round 4 with no findings rather than a confirmed round 3."
+        },
+        "handle": "review-check-refuses-stale-round-verified",
+        "id": "01M76HZ9Z9NQY3SEEK6T2KQWY9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76HZ9Z9NQY3SEEK6QDBZ3XR",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76F4G0JQ649RR29M9QPFX68",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76JM2QC1MM703TGHE3ZDCC6",
+  "type": "ops",
+  "v": 1
+}

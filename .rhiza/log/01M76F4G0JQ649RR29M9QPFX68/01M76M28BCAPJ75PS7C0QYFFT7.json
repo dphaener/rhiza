@@ -1,0 +1,83 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M76JXSF10W0E24303TVQZ7N3"
+  ],
+  "at": "2026-11-12T00:56:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "73538f132ce222268d1d3935c317d493408bc7aa",
+          "pr": "https://github.com/dphaener/rhiza/pull/452",
+          "result": "11 checks passed: lint SUCCESS, go-install SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #452 (https://github.com/dphaener/rhiza/pull/452) passed CI at 73538f1",
+          "status": "verified"
+        },
+        "handle": "pr-452-fix-a-plan-review-round-whose",
+        "id": "01M76M2815W2Y5FAJZD0TZX2XS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76M2814WVEY7E72MT9ZM6GB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76M2814WVEY7E72MT9ZM6GB",
+        "id": "01M76M282S7TAR829EBB1VWGQ9",
+        "link": "01M76M282S7TAR829EBA76G81R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8RPF7AF6C8Y5Y9D11DRW",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M76M2814WVEY7E72MT9ZM6GB",
+        "id": "01M76M28489SAVR71SVC118HCB",
+        "link": "01M76M28489SAVR71SV91P7FYW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8RTCWVC288HQ1BJSJ2PE",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M76M2814WVEY7E72MT9ZM6GB",
+        "id": "01M76M285DFFYFGN7ZEA3H9MXJ",
+        "link": "01M76M285DFFYFGN7ZE6XW8WEG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8S09V3FZJC4T6RJHT5PY",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M76M2814WVEY7E72MT9ZM6GB",
+        "id": "01M76M286RM14T3KQAESQ01Y87",
+        "link": "01M76M286RM14T3KQAEQKQRYS8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8S79W69F3VS3VY9VTKYX",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M76M2814WVEY7E72MT9ZM6GB",
+        "id": "01M76M2888W3M8MRP5KYFS7XHB",
+        "link": "01M76M2888W3M8MRP5KWG7JCG6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGD28YB7NQC8BQR8MCVFM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F4G0JQ649RR29M9QPFX68",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76M28BCAPJ75PS7C0QYFFT7",
+  "type": "ops",
+  "v": 1
+}
