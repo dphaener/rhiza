@@ -1,0 +1,86 @@
+{
+  "actor": "01M792KYQ740EFV7C1Y77WJAK2",
+  "after": [
+    "01M792GER9X0Z66V89RCE22NTX"
+  ],
+  "at": "2026-11-12T23:54:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the head build (go build ./cmd/rhiza at 4610130) in a scratch git repo with origin/main, a change set, a CI stability record with TestPond flaking on 2 heads, and rhiza.ship.localGate set to a command that appends to a log: rhiza ship gate ran the gate once and wrote gated, gated_tree and gated_command to the ship state; the same head passed at once ('already passed on 4c0f0cb with the same code outside .rhiza/, so the gate was not run again'); a commit adding a .rhiza/ file and a .rhiza/log entry passed at once with the new head and that reason; a commit changing pkg/a.go ran it again; a dirty worktree ran it and recorded nothing (the next clean gate reused the previous record); a changed gate command ran it again on the same tree; a ship state with gated only (gated_tree and gated_command removed) ran it once, then reused."
+        },
+        "handle": "ship-gate-reuse-code-tree-qa-1",
+        "id": "01M792XMPDTVJTZY0M6AYRGGRT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M792XMPDTVJTZY0M68NY1907",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M792XMPDTVJTZY0M68NY1907",
+        "id": "01M792XMS52EA4X5R17V2KQ6T5",
+        "link": "01M792XMS52EA4X5R17R07ZA0J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78TAJ9VCKZHPQZN5WS0A6DF",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the head build in the same scratch repo, the gate echoing HEAD=$RHIZA_GATE_HEAD BASE=$RHIZA_GATE_BASE: rhiza ship gate --json output was HEAD=aa1864b... (git rev-parse HEAD) BASE=b8d5ae1... (git merge-base HEAD origin/main); after removing the origin remote and origin/main, output was HEAD=ae5ef44... BASE= (empty) and the gate still passed. The ship.gate summary in docs/reference/cli.md and describe-golden names both variables."
+        },
+        "handle": "ship-gate-base-env-qa-1",
+        "id": "01M792XMY89CNZ48YA5JZR996T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M792XMY89CNZ48YA5GRMVHJP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M792XMY89CNZ48YA5GRMVHJP",
+        "id": "01M792XN06KQDEMD04VCMH2NWV",
+        "link": "01M792XN06KQDEMD04VA1ZEAAY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78TAJC7RKC9QNK7T52NFT62",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA in a detached worktree of the branch head: make gate ARGS=-dry-run printed make test + make self-check for an empty RHIZA_GATE_BASE ('no base to scope by') and for the merge-base with origin/main ('Makefile changed'); make self-check only for base 8e79a27 (6 .rhiza/ files changed); after a probe commit to internal/textref, go test -trimpath for textref and its 13 transitive reverse dependencies, cmd/rhiza non-script tests and TestScripts limited to the leaf-named scripts under the test lock, then make self-check; after a probe change to ship-local-gate.txtar with RHIZA_CHANGE set, the -run pattern included ship-local-gate and describe-golden. A real make gate with base 8e79a27 ran make self-check only and exited 0 (with the run's RHIZA_ROOT unset; under it, self-check fails on the run's own unrendered actors, which is the run environment, not the change). go test -trimpath ./tools/gate passes; AGENTS.md:95 has the localGate 'make gate' line."
+        },
+        "handle": "rhiza-scoped-gate-qa-1",
+        "id": "01M792XN2Y1N4VB07K0DV4R368",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M792XN2Y1N4VB07K0AQHPG85",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M792XN2Y1N4VB07K0AQHPG85",
+        "id": "01M792XN4Q528S3121W6R891EP",
+        "link": "01M792XN4Q528S3121W3AXBSVR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78TAJENDS93MS29H076VKXT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78T0G869AE4NQ9YGNB2DDGE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M792XN7B8PQFAHFX54MF3J24",
+  "type": "ops",
+  "v": 1
+}
