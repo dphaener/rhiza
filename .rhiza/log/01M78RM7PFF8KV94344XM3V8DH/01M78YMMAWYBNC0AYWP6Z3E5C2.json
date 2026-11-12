@@ -1,0 +1,93 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M78XS1VSRDM9MWAHG4RN5JGM"
+  ],
+  "at": "2026-11-12T22:39:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "d0adbcbc76cd3884b452d3edf1535a6f1730abf9",
+          "pr": "https://github.com/dphaener/rhiza/pull/509",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #509 (https://github.com/dphaener/rhiza/pull/509) passed CI at d0adbcb",
+          "status": "verified"
+        },
+        "handle": "pr-509-the-local-ship-gate-switches",
+        "id": "01M78YMKQESGEG1SKFRP2DRET8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78YMKQESGEG1SKFRKK2YEHD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78YMKQESGEG1SKFRKK2YEHD",
+        "id": "01M78YMKRT88KK9MHJZSZ1BXJ0",
+        "link": "01M78YMKRT88KK9MHJZS0642XA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S74JZND6E67Z618T2TYQM",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M78YMKQESGEG1SKFRKK2YEHD",
+        "id": "01M78YMKVHH9CEG3Z41D5T6HNM",
+        "link": "01M78YMKVHH9CEG3Z41AFQ46NB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S74SS6J69T9H1YPMK7YSR",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M78YMKQESGEG1SKFRKK2YEHD",
+        "id": "01M78YMKXTR3NTDTKNT36BYZ65",
+        "link": "01M78YMKXTR3NTDTKNT1SCDT40",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S7501GDG9S1WVKE58HFKW",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M78YMKQESGEG1SKFRKK2YEHD",
+        "id": "01M78YMM133SM517XPNWPX5H6G",
+        "link": "01M78YMM133SM517XPNSJCR9R1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S754HVX2TR0XVH15MKYZ4",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M78YMKQESGEG1SKFRKK2YEHD",
+        "id": "01M78YMM42KSZSV6HVH46FCDW2",
+        "link": "01M78YMM42KSZSV6HVH3RB1GFF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M78YMKQESGEG1SKFRKK2YEHD",
+        "id": "01M78YMM64SW7ZXKBQFHSSJ2ZQ",
+        "link": "01M78YMM64SW7ZXKBQFE99PB7V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKNPNZY0F0BTDCXQAP74",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78RM7PFF8KV94344XM3V8DH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78YMMAWYBNC0AYWP6Z3E5C2",
+  "type": "ops",
+  "v": 1
+}

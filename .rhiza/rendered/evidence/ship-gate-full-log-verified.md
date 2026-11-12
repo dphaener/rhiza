@@ -14,7 +14,7 @@ Verified at eee7eb49d (attempt 2). go test -trimpath ./internal/api -run 'TestSh
 
 ### Out
 
-- verifies [ship-gate-full-log](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-gate-full-log.md)
+- verifies ship-gate-full-log (retired)
 
 ## History
 

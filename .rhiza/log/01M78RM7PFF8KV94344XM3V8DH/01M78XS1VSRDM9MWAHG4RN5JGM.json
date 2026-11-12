@@ -1,0 +1,109 @@
+{
+  "actor": "01M78XDSEK2RXKZTC4X55E24N2",
+  "after": [
+    "01M78X9EYNH8RC08CWJ5NE28T2"
+  ],
+  "at": "2026-11-12T22:24:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 266a2e2a3 with the built binary (go build ./cmd/rhiza) in a scratch repo: a CI stability record holding an old-format flake 'scripts (4/4) / UNKNOWN STEP' and an infra 'CI run 77' made rhiza health read both as infra ('infra ...: 1 failure ...; infra failures do not make CI unstable'), not flakes, verdict stable. Fed 6 real failed-CI logs from this repo (gh run view --log-failed, runs 43247957656, 43218167434, 43211203447, 43195825404, 43194643130, 43183356034) to failedTestNames/trimFailureLog via a throwaway in-package test: each yielded the named failing tests by full name (e.g. TestScripts/arbiter-agent-tabs, TestWhatIf, TestVersionGoReleaserStamp), the parent TestScripts dropped, and the lint-only log (no '--- FAIL:') named no test, so it would be recorded as infra 'lint / Run lint'."
+        },
+        "handle": "ci-flakes-name-tests-qa-1",
+        "id": "01M78XRZW2VPVNZVA7N7R1HQAE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78XRZW2VPVNZVA7N3YVEC86",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78XRZW2VPVNZVA7N3YVEC86",
+        "id": "01M78XS066PPDGKK1D14ZFD1D0",
+        "link": "01M78XS066PPDGKK1D14CVR93G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S74JZND6E67Z618T2TYQM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 266a2e2a3 with the built binary in a scratch repo, hand-written CI stability records: one TestX flake -> rhiza health 'stable: TestX was seen once and ignored' and rhiza ship gate 'Local gate skipped: CI is stable (TestX was seen once and ignored).' exit 0; TestX twice on one head -> stable 'flaked 2 times on one head and was ignored'; TestX at runs 3 and 5 of 8 -> unstable 'TestX flaked 2 times on 2 heads in the last 20 CI runs (stops applying after 16 more completed CI runs)'; with git config rhiza.ship.ciWindow 5 -> '...last 5 CI runs (stops applying after 1 more...)', and with one more clean run appended -> stable; red main -> unstable 'main's latest CI result is red (m1)'; rhiza daemon set rhiza.ship.ciWindow 0 refused, exit 2."
+        },
+        "handle": "ci-unstable-repeated-flake-qa-1",
+        "id": "01M78XS0F6ZFWP40FN3X3PR5FA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78XS0F6ZFWP40FN3VV9ZDMW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78XS0F6ZFWP40FN3VV9ZDMW",
+        "id": "01M78XS0SN57DJW4TW37CQCYXQ",
+        "link": "01M78XS0SN57DJW4TW36V0062A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S74SS6J69T9H1YPMK7YSR",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 266a2e2a3 with the built binary in a scratch repo: a record with one TestX flake, one 'scripts (4/4) / UNKNOWN STEP' and one 'CI run 77' -> rhiza health 'ok ci stable: TestX was seen once and ignored; ignored infra failures: CI run 77, scripts (4/4) / UNKNOWN STEP' with detail lines 'flaky TestX: 1 flake in the last 20 runs' and 'infra <job / step>: 1 failure in the last 20 runs; infra failures do not make CI unstable' for each; rhiza health --json carries the same part (state ok, same detail). TestX on 2 heads -> warn naming TestX, its count 2 and 'stops applying after 16 more completed CI runs', plus the no-local-gate warning."
+        },
+        "handle": "health-ci-infra-failures-qa-1",
+        "id": "01M78XS12C8AG1E69MXVZRDVEP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78XS12C8AG1E69MXVECHQHH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78XS12C8AG1E69MXVECHQHH",
+        "id": "01M78XS1A423QK0T2JMRT5HVVE",
+        "link": "01M78XS1A423QK0T2JMN4AXWZ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S7501GDG9S1WVKE58HFKW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 266a2e2a3 with the built binary in a scratch repo, CI unstable (TestX on 2 heads), rhiza.ship.localGate set to a script printing '--- FAIL: TestX', 20000 filler lines (~400 KB) and make's Error 1, exit 2. Outside a run: rhiza ship gate exit 1, log at .git/rhiza/gate/cs/qa-gate-test.log with all 20004 lines; last lines of output were '--- FAIL: TestX', 'FAIL ...', 'Full log: <path>'. With RHIZA_RUN set: two failing gates wrote runs/<run>/gate-1.log and gate-2.log (both 408997 bytes, first intact), a passing gate gate-3.log; RHIZA_RUN=../evil wrote no log. A real foreground run (rhiza run start --workflow <file> --foreground, one command step 'rhiza ship gate') on a new head: run status --json step detail kept '--- FAIL: TestX' and 'Full log: .../runs/01M78XMMZH1P5E6BGY40B33SDS/gate-1.log'. grep -c 'run `rhiza ship gate` to see' prints 0 for internal/workflow/builtin/ship-change.toml, .rhiza/workflows/ship-change.toml, .rhiza/workflows/docs.toml; each has 2 'Full log' prompts."
+        },
+        "handle": "ship-gate-run-log-qa-1",
+        "id": "01M78XS1FVYGZ7N3057P2MZ381",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78XS1FVYGZ7N3057JH9E12C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78XS1FVYGZ7N3057JH9E12C",
+        "id": "01M78XS1K689N0EGF3VH65M0FZ",
+        "link": "01M78XS1K689N0EGF3VH30G1HE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78S754HVX2TR0XVH15MKYZ4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78RM7PFF8KV94344XM3V8DH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78XS1VSRDM9MWAHG4RN5JGM",
+  "type": "ops",
+  "v": 1
+}

@@ -37,6 +37,7 @@ func watchdogFlakyTests(pol WatchdogPolicy, d watchdogDeps) error {
 	var tests []string
 	byTest := map[string][]CIRun{}
 	for _, r := range runs {
+		r = r.normalized()
 		for _, name := range r.Flakes {
 			if _, ok := byTest[name]; !ok {
 				tests = append(tests, name)

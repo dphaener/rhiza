@@ -30,6 +30,7 @@ This decision supersedes ci-unstable-gate-rules, restating its rules with clause
 - decided-by [ship-local-gate](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-local-gate.md)
 - decided-by [ci-fix-reproduces-locally](../capability/rhiza/orchestration/shipping/wait-green-pr/ci-fix-reproduces-locally.md)
 - decided-by [flaky-test-bugs](../capability/rhiza/orchestration/daemon/daemon-watchdog/flaky-test-bugs.md)
+- supersedes [local-gate-repeated-named-flakes](local-gate-repeated-named-flakes.md)
 
 ## History
 
