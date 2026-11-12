@@ -65,6 +65,69 @@ func TestBreaking(t *testing.T) {
 	}
 }
 
+// writes is an apply-like input document: an array of write variants told apart by
+// their op const, each with its own fields.
+func writes(add, set, on string) string {
+	v := []string{}
+	if add != "" {
+		v = append(v, `{"additionalProperties":false,"properties":{"op":{"const":"add"},`+add+`}}`)
+	}
+	if set != "" {
+		v = append(v, `{"additionalProperties":false,"properties":{"op":{"const":"set"},`+set+`}}`)
+	}
+	return withInput(op("apply", "", `"on":{"type":"object","additionalProperties":{"type":"`+on+`"}}`),
+		`"writes":{"type":"array","items":{"oneOf":[`+strings.Join(v, ",")+`]}}`)
+}
+
+// withInput adds an input document schema with props to an op.
+func withInput(o, props string) string {
+	return strings.TrimSuffix(o, "}") + `,"input":{"type":"object","properties":{` + props + `}}}`
+}
+
+func TestBreakingOneOfAndMaps(t *testing.T) {
+	both := `"handle":{"type":"string"},"kind":{"type":"string"}`
+	base := surf(desc(writes(both, `"handle":{"type":"string"}`, "string")), nil, 1)
+	tests := []struct {
+		name string
+		cur  string
+		want []string
+	}{
+		{"identical", writes(both, `"handle":{"type":"string"}`, "string"), nil},
+		{"variants reordered", withInput(op("apply", "", `"on":{"type":"object","additionalProperties":{"type":"string"}}`),
+			`"writes":{"type":"array","items":{"oneOf":[`+
+				`{"properties":{"op":{"const":"set"},"handle":{"type":"string"}}},`+
+				`{"properties":{"op":{"const":"add"},`+both+`}}]}}`), nil},
+		{"field removed in a variant", writes(`"handle":{"type":"string"}`, `"handle":{"type":"string"}`, "string"),
+			[]string{"field: apply input.writes[](op=add).kind removed"}},
+		{"field retyped in a variant", writes(both, `"handle":{"type":"integer"}`, "string"),
+			[]string{`type: apply input.writes[](op=set).handle changed from "string" to "integer"`}},
+		{"variant dropped", writes(both, "", "string"),
+			[]string{"variant: apply input.writes[](op=set) removed"}},
+		{"variant added", withInput(op("apply", "", `"on":{"type":"object","additionalProperties":{"type":"string"}}`),
+			`"writes":{"type":"array","items":{"oneOf":[`+
+				`{"properties":{"op":{"const":"add"},`+both+`}},`+
+				`{"properties":{"op":{"const":"set"},"handle":{"type":"string"}}},`+
+				`{"properties":{"op":{"const":"mv"},"handle":{"type":"string"}}}]}}`), nil},
+		{"map value retyped", writes(both, `"handle":{"type":"string"}`, "integer"),
+			[]string{`type: apply response.on.* changed from "string" to "integer"`}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := Breaking(base, surf(desc(tc.cur), nil, 1))
+			if err != nil {
+				t.Fatal(err)
+			}
+			var g []string
+			for _, b := range got {
+				g = append(g, b.String())
+			}
+			if strings.Join(g, "\n") != strings.Join(tc.want, "\n") {
+				t.Fatalf("got %q want %q", g, tc.want)
+			}
+		})
+	}
+}
+
 func TestParseSettingsAndFormat(t *testing.T) {
 	md := "## M\n\n### `a.b`\n\nText.\n\n- Type: boolean\n- Default: `false`\n\n### `c.d`\n\n- Type: off, main or latest\n"
 	got := parseSettings(md)

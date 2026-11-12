@@ -23,7 +23,7 @@ type Surface struct {
 
 // Break is one breaking difference between two surfaces.
 type Break struct {
-	Kind   string // operation, field, type, setting or log-format
+	Kind   string // operation, field, type, variant, setting or log-format
 	Detail string
 }
 
@@ -31,8 +31,50 @@ func (b Break) String() string { return b.Kind + ": " + b.Detail }
 
 type schema struct {
 	Type       any               `json:"type"`
+	Const      any               `json:"const"`
 	Properties map[string]schema `json:"properties"`
 	Items      *schema           `json:"items"`
+	OneOf      []schema          `json:"oneOf"`
+	// AdditionalProperties is a map's value schema; nil when the schema has
+	// none or it is a boolean.
+	AdditionalProperties *schema `json:"-"`
+}
+
+func (s *schema) UnmarshalJSON(b []byte) error {
+	type plain schema
+	var p struct {
+		plain
+		AP json.RawMessage `json:"additionalProperties"`
+	}
+	if err := json.Unmarshal(b, &p); err != nil {
+		return err
+	}
+	*s = schema(p.plain)
+	if a := bytes.TrimSpace(p.AP); len(a) > 0 && a[0] == '{' {
+		s.AdditionalProperties = new(schema)
+		if err := json.Unmarshal(a, s.AdditionalProperties); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// variantKey names a oneOf variant by its constant properties (op=add), so
+// a variant matches across releases whatever its position; a variant with
+// none is named by its position.
+func variantKey(s schema, i int) string {
+	var keys []string
+	for n, p := range s.Properties {
+		if p.Const != nil {
+			b, _ := json.Marshal(p.Const)
+			keys = append(keys, n+"="+strings.Trim(string(b), `"`))
+		}
+	}
+	if len(keys) == 0 {
+		return "#" + strconv.Itoa(i)
+	}
+	sort.Strings(keys)
+	return strings.Join(keys, ",")
 }
 
 type describeDoc struct {
@@ -40,6 +82,7 @@ type describeDoc struct {
 		Name     string `json:"name"`
 		Request  schema `json:"request"`
 		Response schema `json:"response"`
+		Input    schema `json:"input"` // the file or stdin document it reads
 	} `json:"operations"`
 }
 
@@ -56,10 +99,32 @@ func typeOf(s schema) string {
 }
 
 // diffSchema reports removed and retyped fields of old under path, recursing
-// into object properties and array items.
+// into object properties, array items, map values and oneOf variants.
 func diffSchema(path string, old, cur schema, out *[]Break) {
 	if old.Items != nil && cur.Items != nil {
 		diffSchema(path+"[]", *old.Items, *cur.Items, out)
+	}
+	if oa, ca := old.AdditionalProperties, cur.AdditionalProperties; oa != nil && ca != nil {
+		if o, c := typeOf(*oa), typeOf(*ca); o != c {
+			*out = append(*out, Break{"type", fmt.Sprintf("%s.* changed from %s to %s", path, o, c)})
+		} else {
+			diffSchema(path+".*", *oa, *ca, out)
+		}
+	}
+	if len(old.OneOf) > 0 {
+		now := map[string]schema{}
+		for i, v := range cur.OneOf {
+			now[variantKey(v, i)] = v
+		}
+		for i, v := range old.OneOf {
+			k := variantKey(v, i)
+			nv, ok := now[k]
+			if !ok {
+				*out = append(*out, Break{"variant", path + "(" + k + ") removed"})
+				continue
+			}
+			diffSchema(path+"("+k+")", v, nv, out)
+		}
 	}
 	names := make([]string, 0, len(old.Properties))
 	for n := range old.Properties {
@@ -82,7 +147,8 @@ func diffSchema(path string, old, cur schema, out *[]Break) {
 }
 
 // Breaking lists every breaking difference from old (the last release) to cur
-// (HEAD): a removed operation or request/response field, a retyped field, a
+// (HEAD): a removed operation or request/response/input field (in objects,
+// arrays, maps and oneOf variants), a removed oneOf variant, a retyped field, a
 // removed or retyped setting, a changed log format version. Additions are not
 // breaking. The result is sorted by kind then detail, so it is stable.
 func Breaking(old, cur Surface) ([]Break, error) {
@@ -106,6 +172,7 @@ func Breaking(old, cur Surface) ([]Break, error) {
 		}
 		diffSchema(op.Name+" request", op.Request, c.Operations[i].Request, &out)
 		diffSchema(op.Name+" response", op.Response, c.Operations[i].Response, &out)
+		diffSchema(op.Name+" input", op.Input, c.Operations[i].Input, &out)
 	}
 	for k, t := range old.Settings {
 		nt, ok := cur.Settings[k]
