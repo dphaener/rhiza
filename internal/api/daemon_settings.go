@@ -98,7 +98,7 @@ var settingDefs = []settingDef{
 		_, err := daemon.ParseSize(v)
 		return err
 	}},
-	{key: "rhiza.daemon.autoUpdate", def: "off", typ: "off or main", desc: "Whether the daemon keeps itself up to date: main follows the registered Rhiza source checkout and runs make update when it moves; latest and release come with the release channels milestone", validate: validateChoice("off", "main")},
+	{key: "rhiza.daemon.autoUpdate", def: "off", typ: "off, main, latest or release", desc: "Whether the daemon keeps itself up to date: main follows the registered Rhiza source checkout and runs make update when it moves; latest installs the newest published incremental build between releases and restarts on it; release installs the newest official release and restarts on it", validate: validateChoice("off", "main", "latest", "release")},
 	{key: FailureClassifierKey, def: DefaultFailureClassifier, typ: "shell command", emptyOK: true, desc: "The command that classifies a failed step as transient or real: it reads the step's output on stdin and prints 'transient: <reason>' or 'real: <reason>'; the default runs Claude headless with Haiku, any LLM CLI can be set, and an empty value turns classification off, so no failure is retried", validate: func(string) error { return nil }},
 	{key: "rhiza.daemon.permissionMode", def: "", flag: "--permission-mode", typ: "one word", desc: "The permission mode agents run in; unset leaves the agent's own default", validate: func(v string) error {
 		if strings.TrimSpace(v) == "" || strings.ContainsAny(v, " \t\r\n") {

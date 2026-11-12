@@ -13,6 +13,7 @@ import (
 	"github.com/dphaener/rhiza/internal/rootcfg"
 	"io"
 	"io/fs"
+	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -26,6 +27,7 @@ import (
 	"github.com/dphaener/rhiza/internal/dispatch"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/policy"
+	"github.com/dphaener/rhiza/internal/release"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/web"
@@ -194,6 +196,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	// The web UI listener follows rhiza.web.host and rhiza.web.port from poll to poll. A single
 	// poll (--once) and a test run (RHIZA_TEST_NOW) bind nothing.
 	autoUpdateOn := false
+	autoUpdateChannel := ""
 	var webUI *web.Manager
 	if !r.Once && ctxGetenv(ctx)("RHIZA_TEST_NOW") == "" {
 		// The handlers take their own copies of ctx (WebProjectHandler and
@@ -221,6 +224,13 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			}
 		}
 		autoUpdateOn = conf.autoUpdate == "main"
+		autoUpdateChannel = ""
+		switch conf.autoUpdate {
+		case "latest":
+			autoUpdateChannel = release.ChannelLatest
+		case "release":
+			autoUpdateChannel = release.ChannelRelease
+		}
 		// Every served project's sessions and runs: a crashed run in any of
 		// them leaves scratch folders behind.
 		commons := make([]string, 0, len(projs))
@@ -329,7 +339,17 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	}
 	reexec := daemonReexec()
 	update := &daemon.SelfUpdate{Now: ctx.Now, Every: daemon.SelfUpdateEvery}
+	var chanUpdate *daemon.ChannelUpdate
 	autoUpdate := func() {
+		if autoUpdateChannel != "" {
+			if chanUpdate == nil || chanUpdate.Channel != autoUpdateChannel {
+				chanUpdate = newChannelUpdate(ctx, autoUpdateChannel)
+			}
+			if chanUpdate != nil {
+				chanUpdate.Run()
+			}
+			return
+		}
 		if !autoUpdateOn || ctx.Exec == nil || ctx.Git == nil {
 			return
 		}
@@ -726,6 +746,36 @@ func daemonRunsOf(runs []run.Journal, cs string) int {
 		}
 	}
 	return n
+}
+
+// channelUpdateClient is the HTTP client of the channel auto-update; a test
+// swaps it, and its URLs, for a fake build feed.
+var (
+	channelUpdateClient *http.Client
+	channelUpdateURLs   map[string]string
+	channelUpdateExe    = os.Executable
+)
+
+// newChannelUpdate is the daemon's auto-update of channel, replacing the
+// running executable; nil when the executable cannot be found.
+func newChannelUpdate(ctx *Ctx, channel string) *daemon.ChannelUpdate {
+	exe, err := channelUpdateExe()
+	if err != nil {
+		return nil
+	}
+	return &daemon.ChannelUpdate{
+		Channel:  channel,
+		Resolver: &release.Resolver{URLs: channelUpdateURLs, Client: channelUpdateClient},
+		Current:  ctx.Version,
+		Exe:      exe,
+		Now:      ctx.Now,
+		Every:    daemon.SelfUpdateEvery,
+		Log: func(format string, a ...any) {
+			if ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: "+format+"\n", a...)
+			}
+		},
+	}
 }
 
 // selfUpdateFetchTimeout bounds the self-update's git fetch, so a stalled

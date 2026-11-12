@@ -22,6 +22,8 @@ Auto-update is a user setting with channels: release (latest official release) a
 - decided-by [daemon-auto-update](../capability/rhiza/orchestration/daemon/daemon-auto-update.md)
 - decided-by [self-update-settings-removed](../capability/rhiza/orchestration/daemon/daemon-settings/self-update-settings-removed.md)
 - decided-by [auto-update-documented](../capability/rhiza/orchestration/daemon/daemon-settings/auto-update-documented.md)
+- decided-by [auto-update-latest](../capability/rhiza/orchestration/daemon/auto-update-latest.md)
+- decided-by [auto-update-release](../capability/rhiza/orchestration/daemon/auto-update-release.md)
 
 ## History
 
