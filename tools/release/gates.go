@@ -3,8 +3,13 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"flag"
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 )
@@ -160,4 +165,244 @@ func gatePatch(in GateInputs) Gate {
 		g.Reason = "no patch in the last 24h"
 	}
 	return g
+}
+
+// CheckEnv is what tools/release check reads from outside the repo: the
+// clock, the CI conclusion on a commit and the daemon run history file.
+type CheckEnv struct {
+	Now    func() time.Time
+	CI     func(commit string) (string, error)
+	Runs   string // daemon run history file; "" is an empty history
+	Commit string // candidate commit; "" is HEAD
+}
+
+// parseCheck reads check's flags. The run history defaults to
+// $RHIZA_RELEASE_RUNS.
+func parseCheck(args []string) (CheckEnv, error) {
+	fs := flag.NewFlagSet("check", flag.ContinueOnError)
+	env := CheckEnv{Now: time.Now, CI: ghCI}
+	fs.StringVar(&env.Runs, "runs", os.Getenv("RHIZA_RELEASE_RUNS"), "daemon run history file (JSON lines of commit and at)")
+	fs.StringVar(&env.Commit, "commit", "", "candidate commit (default: HEAD)")
+	return env, fs.Parse(args)
+}
+
+// ghCI is the conclusion of the latest CI workflow run on commit, through
+// gh: "success", "failure" and the like, "pending" while it runs, "" for
+// no run.
+func ghCI(commit string) (string, error) {
+	out, err := exec.Command("gh", "run", "list", "--workflow", "ci.yml", "--commit", commit,
+		"--limit", "1", "--json", "status,conclusion").Output()
+	if err != nil {
+		return "", fmt.Errorf("gh run list: %w", err)
+	}
+	var runs []struct{ Status, Conclusion string }
+	if err := json.Unmarshal(out, &runs); err != nil {
+		return "", err
+	}
+	if len(runs) == 0 {
+		return "", nil
+	}
+	if runs[0].Status != "completed" {
+		return "pending", nil
+	}
+	return runs[0].Conclusion, nil
+}
+
+// gateInputs gathers the gates' inputs for the candidate commit of the repo
+// at dir: the release's kind, its severe fixes, the milestones it finishes
+// and what is in flight or blocking them, bug requests, the last patch tag,
+// the CI conclusion and the daemon run history.
+func gateInputs(dir, logDir string, env CheckEnv, h History, in Inputs, kind Kind, marks map[string]Marks) (GateInputs, error) {
+	commit := env.Commit
+	if commit == "" {
+		c, err := gitOut(dir, "rev-parse", "HEAD")
+		if err != nil {
+			return GateInputs{}, fmt.Errorf("rev-parse HEAD: %w", err)
+		}
+		commit = c
+	}
+	g := GateInputs{Now: env.Now(), Commit: commit, Kind: kind, BugRequests: h.Bugs, Runs: RunHistory{}}
+	for _, f := range in.Fixes {
+		if marks[f].IsSevere() {
+			g.Severe = true
+		}
+	}
+	if env.Runs != "" {
+		runs, err := ReadRunHistory(env.Runs)
+		if err != nil {
+			return g, err
+		}
+		g.Runs = runs
+	}
+	ci, err := env.CI(commit)
+	if err != nil {
+		return g, err
+	}
+	g.CI = ci
+	q, err := ReadQuestions(logDir)
+	if err != nil {
+		return g, err
+	}
+	var serving []string
+	for _, m := range in.Milestone {
+		serving = append(serving, h.Milestones[m]...)
+	}
+	sort.Strings(serving)
+	for _, cs := range serving {
+		if _, ok := h.Landed[cs]; !ok {
+			g.InFlight = append(g.InFlight, cs)
+		}
+	}
+	g.Blocking = q.Blocking(serving)
+	g.LastPatch = lastPatch(dir)
+	return g, nil
+}
+
+// lastPatch is when the latest vX.Y.Z tag with Z above 0 was made; zero for
+// none.
+func lastPatch(dir string) time.Time {
+	out, err := gitOut(dir, "tag", "--list", "v[0-9]*.[0-9]*.[0-9]*", "--format=%(refname:short) %(creatordate:iso-strict)")
+	if err != nil {
+		return time.Time{}
+	}
+	var last time.Time
+	for _, line := range strings.Split(out, "\n") {
+		name, date, ok := strings.Cut(line, " ")
+		m := tagRE.FindStringSubmatch(name)
+		if !ok || m == nil || m[3] == "0" {
+			continue
+		}
+		if at, err := time.Parse(time.RFC3339, date); err == nil && at.After(last) {
+			last = at
+		}
+	}
+	return last
+}
+
+func printGates(w io.Writer, commit string, gs []Gate) {
+	verdict := "blocked"
+	if AllPass(gs) {
+		verdict = "ready"
+	}
+	fmt.Fprintf(w, "\ngates for %s: %s\n", commit, verdict)
+	for _, g := range gs {
+		mark := "pass"
+		if !g.Pass {
+			mark = "FAIL"
+		}
+		fmt.Fprintf(w, "  %-9s %s  %s\n", g.Name, mark, g.Reason)
+	}
+}
+
+// Questions is what the log says about open questions: a question is open
+// until something answers it or it is retired.
+type Questions struct {
+	Open    map[string]string   // open question node -> handle
+	Blocks  map[string][]string // open question node -> nodes or change sets it blocks
+	Created map[string]string   // node -> the change set that created it
+}
+
+// ReadQuestions reads the open questions and what they block from the log
+// under logDir. Retired links count for nothing, and neither do ops a
+// body.drop retracts.
+func ReadQuestions(logDir string) (Questions, error) {
+	type rawOp struct {
+		ID, Op, Kind, Node, Handle, Link, From, To, Type string
+	}
+	files, err := filepath.Glob(filepath.Join(logDir, "*", "*.json"))
+	if err != nil {
+		return Questions{}, err
+	}
+	sort.Strings(files)
+	type opIn struct {
+		cs string
+		o  rawOp
+	}
+	var ops []opIn
+	dropped := map[string]bool{}
+	for _, f := range files {
+		b, err := os.ReadFile(f)
+		if err != nil {
+			return Questions{}, err
+		}
+		var e struct {
+			ChangeSet string `json:"change_set"`
+			Body      struct {
+				Ops  []rawOp  `json:"ops"`
+				Drop []string `json:"drop"`
+			} `json:"body"`
+		}
+		if err := json.Unmarshal(b, &e); err != nil {
+			return Questions{}, fmt.Errorf("%s: %w", f, err)
+		}
+		for _, o := range e.Body.Ops {
+			ops = append(ops, opIn{e.ChangeSet, o})
+		}
+		for _, d := range e.Body.Drop {
+			dropped[d] = true
+		}
+	}
+	q := Questions{Open: map[string]string{}, Blocks: map[string][]string{}, Created: map[string]string{}}
+	retired := map[string]bool{}
+	var links []rawOp
+	for _, x := range ops {
+		o := x.o
+		if o.ID != "" && dropped[o.ID] {
+			continue
+		}
+		switch o.Op {
+		case "node.create":
+			q.Created[o.Node] = x.cs
+			if o.Kind == "question" {
+				q.Open[o.Node] = o.Handle
+			}
+		case "link.create":
+			links = append(links, o)
+		case "node.retire":
+			retired[o.Node] = true
+		case "link.retire":
+			retired[o.Link] = true
+		}
+	}
+	for _, l := range links {
+		if retired[l.Link] || retired[l.From] {
+			continue
+		}
+		if l.Type == "answers" {
+			delete(q.Open, l.To)
+		}
+	}
+	for n := range q.Open {
+		if retired[n] {
+			delete(q.Open, n)
+		}
+	}
+	for _, l := range links {
+		if l.Type == "blocks" && !retired[l.Link] && !retired[l.To] {
+			if _, ok := q.Open[l.From]; ok {
+				q.Blocks[l.From] = append(q.Blocks[l.From], l.To)
+			}
+		}
+	}
+	return q, nil
+}
+
+// Blocking lists the handles of the open questions that block one of the
+// change sets, or a node one of them created.
+func (q Questions) Blocking(sets []string) []string {
+	in := map[string]bool{}
+	for _, s := range sets {
+		in[s] = true
+	}
+	var out []string
+	for n, targets := range q.Blocks {
+		for _, t := range targets {
+			if in[t] || in[q.Created[t]] {
+				out = append(out, q.Open[n])
+				break
+			}
+		}
+	}
+	sort.Strings(out)
+	return out
 }

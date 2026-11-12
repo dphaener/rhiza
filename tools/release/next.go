@@ -102,6 +102,7 @@ type History struct {
 	Landed     map[string]Landing  // change set -> landing
 	Milestones map[string][]string // intent handle -> change sets serving it
 	Statements map[string]string   // intent handle -> its statement
+	Bugs       []time.Time         // when each bug request was filed (its open)
 }
 
 // ReadHistory reads the log under logDir. A milestone is an intent that
@@ -143,6 +144,11 @@ func ReadHistory(logDir string) (History, error) {
 			json.Unmarshal(e.Body, &o)
 			kinds[e.ChangeSet] = o.RequestKind
 			texts[e.ChangeSet] = o.Intent
+			if o.RequestKind == "bug" {
+				if at, err := time.Parse(time.RFC3339, e.At); err == nil {
+					h.Bugs = append(h.Bugs, at)
+				}
+			}
 		case "land":
 			at, err := time.Parse(time.RFC3339, e.At)
 			if err != nil {
@@ -236,8 +242,9 @@ func (h History) Inputs(since time.Time, marks map[string]Marks) Inputs {
 }
 
 // runCheck prints the next version and its kind since the last v* tag in the
-// repo at dir. It reads only: nothing is tagged or written.
-func runCheck(dir string, w io.Writer) error {
+// repo at dir, then each release gate for the candidate commit with why it
+// passes or fails. It reads only: nothing is tagged or written.
+func runCheck(dir string, w io.Writer, env CheckEnv) error {
 	tag, err := gitOut(dir, "describe", "--tags", "--match", "v[0-9]*.[0-9]*.[0-9]*", "--abbrev=0")
 	if err != nil {
 		tag = ""
@@ -280,14 +287,21 @@ func runCheck(dir string, w io.Writer) error {
 		detected = append(detected, b.String())
 	}
 	notes := Notes(h, since, marks, detected)
+	gin, err := gateInputs(dir, logDir, env, h, in, n.Kind, marks)
+	if err != nil {
+		return err
+	}
+	gs := Gates(gin)
 	if n.Kind == KindNone {
 		fmt.Fprintf(w, "none: no release since %s\n", orNone(tag))
+		printGates(w, gin.Commit, gs)
 		return nil
 	}
 	fmt.Fprintf(w, "%s %s (since %s)\n", n.Version, n.Kind, orNone(tag))
 	for _, r := range n.Reasons {
 		fmt.Fprintln(w, "  "+r)
 	}
+	printGates(w, gin.Commit, gs)
 	fmt.Fprintf(w, "\n# %s\n\n%s", n.Version, notes)
 	return nil
 }

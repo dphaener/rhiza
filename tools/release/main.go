@@ -40,7 +40,11 @@ func run(args []string) error {
 		return nil
 	}
 	if len(args) > 0 && args[0] == "check" {
-		return runCheck(".", os.Stdout)
+		env, err := parseCheck(args[1:])
+		if err != nil {
+			return err
+		}
+		return runCheck(".", os.Stdout, env)
 	}
 	if len(args) > 0 && args[0] == "marks" {
 		marks, err := ReadMarks(filepath.Join(".rhiza", "log"))
