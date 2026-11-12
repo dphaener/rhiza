@@ -26,7 +26,7 @@ func TestReviewText(t *testing.T) {
 		"fakes-only": {
 			"Every check except `qa` tests runs with fakes only, never real Rex, agents or `gh`",
 		},
-		"severities": {"`blocker` (cannot ship)", "`major` (must be fixed)", "`minor` and `nit` (never fixed)"},
+		"severities": {"`blocker`: behaviour broken", "`major`: an acceptance point unmet", "`minor`: style, naming", "`nit`", "`minor` and `nit` are never fixed"},
 		"findings": {
 			`rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'`, "\nEOF\n",
 			`{"findings":[{"severity":"major","leaf":"<leaf>","place":"path:line","reason":`,
@@ -35,7 +35,7 @@ func TestReviewText(t *testing.T) {
 		"verdict": {
 			`rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'`, "\nEOF\n",
 			`{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":`,
-			"`confirmed` or `dropped`",
+			"`confirmed` keeps the severity", "`downgraded` lowers it", "`dropped` removes the finding",
 		},
 		"critic":   {"Never add a finding"},
 		"dropped":  {"stay in the run journal", "no Decision"},
@@ -96,6 +96,52 @@ func TestReviewFixerPreHandoffChecklist(t *testing.T) {
 	for _, want := range []string{"reproduce your findings", "`rhiza ship generate`", "`rhiza render`", "`Checks:` block", "exit code"} {
 		if !strings.Contains(fixer, want) {
 			t.Errorf("review fixer section lacks %q", want)
+		}
+	}
+}
+
+// severityBlock is a topic's "## Severities" section.
+func severityBlock(t *testing.T, name string) string {
+	t.Helper()
+	tx, ok := Lookup(name)
+	if !ok {
+		t.Fatalf("%s: no topic", name)
+	}
+	i := strings.Index(tx.Body, "## Severities")
+	if i < 0 {
+		t.Fatalf("%s: no severity block", name)
+	}
+	rest := tx.Body[i+len("## Severities"):]
+	if j := strings.Index(rest, "\n## "); j >= 0 {
+		rest = rest[:j]
+	}
+	return rest
+}
+
+func TestReviewSeverityBlockShared(t *testing.T) {
+	review, plan := severityBlock(t, "review"), severityBlock(t, "plan-review")
+	if review != plan {
+		t.Errorf("review and plan-review severity blocks differ:\n%s\n---\n%s", review, plan)
+	}
+	for _, banned := range []string{"go ", "Go ", "make ", "rhiza check", "rhiza render", "rhiza ship", "testscript"} {
+		if strings.Contains(review, banned) {
+			t.Errorf("severity block names %q", banned)
+		}
+	}
+	for _, name := range []string{"review", "plan-review"} {
+		tx, _ := Lookup(name)
+		i := strings.Index(tx.Body, "## Critic")
+		if i < 0 {
+			t.Fatalf("%s: no critic section", name)
+		}
+		critic := tx.Body[i:]
+		if j := strings.Index(critic[3:], "\n## "); j >= 0 {
+			critic = critic[:j+3]
+		}
+		for _, want := range []string{"confirmed", "downgraded", "dropped", "Never add a finding"} {
+			if !strings.Contains(critic, want) {
+				t.Errorf("%s critic section lacks %q", name, want)
+			}
 		}
 	}
 }

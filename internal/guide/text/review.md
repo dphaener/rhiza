@@ -1,8 +1,7 @@
 # Review
 
-Sessions get `RHIZA_CHANGE`, `RHIZA_CYCLE`
-and `RHIZA_ROLE`; checks and critics also `RHIZA_CHECK`,
-leaf fixers and verifiers `RHIZA_LEAF`. Start with
+Sessions get `RHIZA_CHANGE`, `RHIZA_CYCLE` and `RHIZA_ROLE`; checks and critics also
+`RHIZA_CHECK`, leaf fixers `RHIZA_LEAF`. Start with
 `rhiza slice --change "$RHIZA_CHANGE" --json`. Checks and critics: a throwaway checkout.
 Review from the merge-base with the default branch:
 `git diff $(git merge-base origin/main HEAD)`. Each role ends with `rhiza session done` as its own command after its recording
@@ -44,11 +43,24 @@ rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'
 EOF
 ```
 
-Severities: `blocker` (cannot ship), `major` (must be fixed), `minor` and `nit` (never fixed). Schema: `rhiza describe run.findings`.
+Schema: `rhiza describe run.findings`.
+
+## Severities
+
+- `blocker`: behaviour broken, a build or test fails, or a leaf missing.
+- `major`: an acceptance point unmet, or a real defect.
+- `minor`: style, naming, docs or a non-blocking follow-up.
+- `nit`: taste.
+
+Per check: `compliance` leaf missing blocker, point unmet major; `quality` failing build or
+test blocker, defect major, convention minor; `qa` broken behaviour blocker, rough edge
+minor; `scope` outside the intent major; `model` code contradicted major, missing
+constraint minor. Plan review: `missing-acceptance`, `contradiction`, `outside-intent`
+major, the rest minor. `minor` and `nit` are never fixed.
 
 ## Critic
 
-Confirm or drop each blocker and major in the check's last round (`rhiza run status --json`). Never add a finding.
+Confirm, downgrade or drop each blocker and major of the check's last round (`rhiza run status --json`). Never add a finding or raise a severity.
 
 ```
 rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'
@@ -56,7 +68,7 @@ rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'
 EOF
 ```
 
-`confirmed` or `dropped`; those stay in the run journal, no Decision.
+`confirmed` keeps the severity, `downgraded` lowers it (`"severity":"minor"` or `"nit"`), `dropped` removes the finding; all stay in the run journal, no Decision.
 
 ## Fixer
 
