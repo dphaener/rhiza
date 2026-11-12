@@ -1,0 +1,43 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M77JSGDC8XGRZ8Q76GVSWT8S"
+  ],
+  "at": "2026-11-12T09:53:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "command": "gh attestation verify rhiza_0.1.0_linux_amd64.tar.gz --repo dphaener/rhiza",
+          "observed": "2026-11-12, release https://github.com/dphaener/rhiza/releases/tag/v0.1.0, workflow run https://github.com/dphaener/rhiza/actions/runs/43194702318",
+          "result": "exit 0; SLSA provenance v1 (https://slsa.dev/provenance/v1) covering all four archives, signed by https://github.com/dphaener/rhiza/.github/workflows/release.yml@refs/tags/v0.1.0 at commit 00726452d61b13defb574d462ae3c2f14f8522ad; archive sha256 d84c052b37edbc0b6abbdd9c1208723eb8ed6454dd3c455c0dbcf9215fa431e9 matches manifest.json; the extracted binary reports rhiza v0.1.0",
+          "statement": "gh attestation verify rhiza_0.1.0_linux_amd64.tar.gz --repo dphaener/rhiza succeeds on the downloaded v0.1.0 release archive",
+          "status": "verified"
+        },
+        "handle": "v010-attestation-verified",
+        "id": "01M77JSGB3SM2V70783EFJPTT2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77JSGB3SM2V70783BW8HRE8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77JSGB3SM2V70783BW8HRE8",
+        "id": "01M77JSGDC8XGRZ8Q76AZZ26J5",
+        "link": "01M77JSGDC8XGRZ8Q767NFK3VQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7CPZ26NZ03MPCK9S55PA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M77JSGDC8XGRZ8Q76E2PBER2",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M77JSH2ZZ0K6EFWXZA40D1B7",
+  "type": "ops",
+  "v": 1
+}
