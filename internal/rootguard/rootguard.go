@@ -3,8 +3,9 @@
 // test that reaches that root (a fake usage-limit hit, a stray file) writes
 // into the machine's real .rhiza-root/. TestMain wraps m.Run in Main, which
 // snapshots the folder before the run and, after it, reports each write it
-// attributes to the tests. The live root daemon and run drivers write to
-// the same folder at the same time, so files they own are never reported.
+// attributes to the tests. The live root daemon, run drivers and live
+// agents' status lines write to the same folder at the same time, so files
+// they own are never reported.
 package rootguard
 
 import (
@@ -15,6 +16,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/rootcfg"
@@ -25,6 +27,11 @@ const StateDir = ".rhiza-root"
 
 // limitsFile is the usage-limit log; its lines are judged by hit_at.
 const limitsFile = "usage.limits.jsonl"
+
+// liveFile is the live-usage file (daemon.LiveFile) that every live agent's
+// status line rewrites; its snapshots are judged by captured_at. It is
+// written through temp files named liveFile plus "." plus a random suffix.
+const liveFile = "usage.live.json"
 
 // owned are the files the root daemon and run drivers write. A change to
 // one is never attributed to a test run. The limits file is among them,
@@ -41,6 +48,13 @@ var owned = map[string]bool{
 	"continues.lock":    true,
 	"main-stale.json":   true,
 	limitsFile:          true,
+	liveFile:            true,
+}
+
+// isOwned reports whether the daemon, a run driver or a live agent owns the
+// file n, a live-file temp file included.
+func isOwned(n string) bool {
+	return owned[n] || strings.HasPrefix(n, liveFile+".")
 }
 
 type fileState struct {
@@ -52,14 +66,15 @@ type fileState struct {
 type Snapshot struct {
 	dir   string // the state folder; empty when no root encloses the dir
 	files map[string]fileState
-	lines int // lines in usage.limits.jsonl
+	lines int             // lines in usage.limits.jsonl
+	live  map[string]bool // snapshots in usage.live.json, as kind and captured_at
 }
 
 // Take snapshots the state folder of the root enclosing dir. With no
 // enclosing root, or no state folder, the snapshot is empty and Check
 // reports nothing unless a folder appears.
 func Take(dir string) *Snapshot {
-	s := &Snapshot{files: map[string]fileState{}}
+	s := &Snapshot{files: map[string]fileState{}, live: map[string]bool{}}
 	root, ok := rootcfg.Find(dir)
 	if !ok {
 		return s
@@ -67,7 +82,31 @@ func Take(dir string) *Snapshot {
 	s.dir = filepath.Join(root, StateDir)
 	s.files = scan(s.dir)
 	s.lines = len(readLines(filepath.Join(s.dir, limitsFile)))
+	for _, l := range readLive(filepath.Join(s.dir, liveFile)) {
+		s.live[l.key()] = true
+	}
 	return s
+}
+
+type liveSnap struct {
+	Kind       string    `json:"kind"`
+	CapturedAt time.Time `json:"captured_at"`
+}
+
+func (l liveSnap) key() string { return l.Kind + " " + l.CapturedAt.Format(time.RFC3339Nano) }
+
+// readLive returns the snapshots in the live-usage file; none when it is
+// missing or does not parse (a rewrite in flight is a rename, never partial).
+func readLive(path string) []liveSnap {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return nil
+	}
+	var out []liveSnap
+	if json.Unmarshal(b, &out) != nil {
+		return nil
+	}
+	return out
 }
 
 func scan(dir string) map[string]fileState {
@@ -106,9 +145,11 @@ func readLines(path string) [][]byte {
 
 // Check compares the folder now with the snapshot and returns one message
 // per write attributed to a test run that lasted from start to end: a file
-// that appeared or changed and no daemon or driver owns, and a line
-// appended to usage.limits.jsonl whose hit_at lies outside [start, end]
-// (tests stamp hits with fixed clocks, real drivers with the current time).
+// that appeared or changed and no daemon, driver or agent owns, a line
+// appended to usage.limits.jsonl whose hit_at lies outside [start, end],
+// and a new usage.live.json snapshot whose captured_at lies outside it
+// (tests stamp with fixed clocks, real drivers and agents with the current
+// time).
 func (s *Snapshot) Check(start, end time.Time) []string {
 	if s.dir == "" {
 		return nil
@@ -121,7 +162,7 @@ func (s *Snapshot) Check(start, end time.Time) []string {
 	}
 	sort.Strings(names)
 	for _, n := range names {
-		if owned[n] {
+		if isOwned(n) {
 			continue
 		}
 		old, had := s.files[n]
@@ -146,6 +187,15 @@ func (s *Snapshot) Check(start, end time.Time) []string {
 				out = append(out, fmt.Sprintf("%s/%s: line %d appended with hit_at %s, outside the test run (%s to %s)",
 					StateDir, limitsFile, s.lines+i+1, hit.HitAt.Format(time.RFC3339), start.UTC().Format(time.RFC3339), end.UTC().Format(time.RFC3339)))
 			}
+		}
+	}
+	for _, l := range readLive(filepath.Join(s.dir, liveFile)) {
+		if s.live[l.key()] {
+			continue
+		}
+		if l.CapturedAt.Before(start) || l.CapturedAt.After(end) {
+			out = append(out, fmt.Sprintf("%s/%s: %s snapshot written with captured_at %s, outside the test run (%s to %s)",
+				StateDir, liveFile, l.Kind, l.CapturedAt.Format(time.RFC3339), start.UTC().Format(time.RFC3339), end.UTC().Format(time.RFC3339)))
 		}
 	}
 	return out

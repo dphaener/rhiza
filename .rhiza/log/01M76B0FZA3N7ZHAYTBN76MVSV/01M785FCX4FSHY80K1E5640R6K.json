@@ -1,0 +1,40 @@
+{
+  "actor": "01M785E0PFEFYTGJR8JMT1P40S",
+  "after": [
+    "01M76SJ13NQ31EW3BBJ4RQQJQ2"
+  ],
+  "at": "2026-11-12T15:19:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a2142b081, go test -trimpath -count=1 ./tools/release/... -run TestNextVersion -v passed: TestNextVersion (7 subtests: breaking from v1 is major, breaking before v1 is minor, milestone is minor, fixes are a patch, features alone are none, nothing since the tag, no tag breaking is minor; plus bad tag rejected) and TestNextVersionFromLogs (fixture log: bug fix, milestone finished across the tag, unfinished milestone ignored, breaking mark on a landed change set only, minor before v1 and major from v1, none when nothing landed since the tag). go vet and gofmt clean. Read the diff and checked ReadHistory's field names (open.request_kind, land, ops node.create intent handle, link.create serves) against real .rhiza/log entries. Smoke run go run ./tools/release check on this repo printed v0.2.0 minor (since v0.1.0) with two detected breaking setting changes."
+        },
+        "handle": "release-next-version-verified",
+        "id": "01M785FCRX9YFM9BQX0VVJYSW5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M785FCRX9YFM9BQX0SPJEF49",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M785FCRX9YFM9BQX0SPJEF49",
+        "id": "01M785FCTS0YGPCHPG25JQWJVE",
+        "link": "01M785FCTS0YGPCHPG226S40YP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7E06G9AJHZSV3GSEA005",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76B0FZA3N7ZHAYTBN76MVSV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M785FCX4FSHY80K1E5640R6K",
+  "type": "ops",
+  "v": 1
+}

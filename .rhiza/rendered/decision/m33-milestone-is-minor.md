@@ -23,6 +23,7 @@ Every finished milestone triggers a minor release; fix-only patch releases come 
 ### In
 
 - decided-by [m33-release-policy](../intent/milestone-33/m33-release-policy.md)
+- decided-by [release-next-version](../capability/rhiza/distribution/release-next-version.md)
 
 ## History
 
