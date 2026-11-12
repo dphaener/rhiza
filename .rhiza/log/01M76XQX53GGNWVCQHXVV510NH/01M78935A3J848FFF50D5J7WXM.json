@@ -1,0 +1,40 @@
+{
+  "actor": "01M7891H0M3XFHEZ68SYCPPHJE",
+  "after": [
+    "01M788XREHT6TWFK6J5NA0W1QM"
+  ],
+  "at": "2026-11-12T16:22:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e629ee6d0: built the binary (go build -trimpath ./cmd/rhiza) and ran `rhiza guide build` and `rhiza guide review`: each prints '## Command budget' with 'Never sleep and never poll. No command runs longer than about four minutes; a longer build or test runs once in the background and is waited for once.', naming no language, make or Rhiza command. Ran `rhiza guide install --agent claude` into a temp HOME/repo: the installed rhiza-build and rhiza-review SKILL.md both carry the section. go test -trimpath -count=1 ./internal/guide passes (budget test and token caps)."
+        },
+        "handle": "command-budget-guide-qa-1",
+        "id": "01M789356H4YEZJK26JAGGQY53",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M789356H4YEZJK26J6GY7HM0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M789356H4YEZJK26J6GY7HM0",
+        "id": "01M7893581M282J557GM1DDWQF",
+        "link": "01M7893581M282J557GGN91HJA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY4EE4QA5EKNQXHR7R9XH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XQX53GGNWVCQHXVV510NH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78935A3J848FFF50D5J7WXM",
+  "type": "ops",
+  "v": 1
+}
