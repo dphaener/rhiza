@@ -8,3 +8,4 @@ reads it and when. Repo-wide guidance for every agent is in
 ## Index
 
 - [orchestrator.md](orchestrator.md): the orchestrator agent reads it before running Rhiza's own development (watch loop, main tree, load, PRs, owner).
+- [developing.md](developing.md): any agent changing Rhiza's code or running its tests reads it first (testscripts, scratch binaries, `RHIZA_ROOT`, `GOTMPDIR`, the root daemon, `rhiza render`).
