@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/dphaener/rhiza/internal/daemon"
 )
 
 // modelGH is a fake gh with the pull requests pr create made, by branch.
@@ -279,9 +281,58 @@ func TestHealthMainOrphanLog(t *testing.T) {
 		t.Fatalf("orphan entry: %+v", h)
 	}
 
+	// A stale close-out is only warn: it never softens an orphan's bad.
+	common := filepath.Join(f.root, ".git")
+	if err := daemon.WriteMainStale(common, daemon.MainStale{Change: f.cs, Detail: "pull failed"}); err != nil {
+		t.Fatal(err)
+	}
+	h = healthMain(f.ctx)
+	if h.State != HealthBad || h.Next != "rhiza model commit-untracked" || !strings.Contains(h.Summary, "could not pull") {
+		t.Fatalf("orphan entry with a stale close-out: %+v", h)
+	}
+	if err := daemon.ClearMainStale(common); err != nil {
+		t.Fatal(err)
+	}
+
 	daemonCommitUntracked(f.ctx)
 	h = healthMain(f.ctx)
 	if h.State != HealthOK || !strings.Contains(h.Summary, "pending") || !strings.Contains(detail(h), "pending entry") {
 		t.Fatalf("entry on a model branch: %+v", h)
+	}
+}
+
+// TestHealthMainOrphanLogLiveRun: an untracked entry a live run's worktree
+// also holds is pending, not an orphan, and leaves the main part ok.
+func TestHealthMainOrphanLogLiveRun(t *testing.T) {
+	f := modelBranchFixture(t, true)
+	f.ctx.Git = func(args ...string) (string, error) {
+		out, err := f.gh.exec("git", args, f.root, nil)
+		return string(out), err
+	}
+	wt := filepath.Join(filepath.Dir(f.root), "repo.run")
+	f.git(f.root, "worktree", "add", "-q", "-b", "cs/run", wt)
+	// The run's worktree holds every untracked entry the main checkout has.
+	untracked := strings.Split(f.git(f.root, "ls-files", "--others", "--exclude-standard", "--", ".rhiza/log"), "\n")
+	if len(untracked) == 0 || untracked[0] == "" {
+		t.Fatal("no untracked log entries")
+	}
+	for _, rel := range untracked {
+		b, err := os.ReadFile(filepath.Join(f.root, rel))
+		if err != nil {
+			t.Fatal(err)
+		}
+		dst := filepath.Join(wt, rel)
+		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(dst, b, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	h := healthMain(f.ctx)
+	detail := strings.Join(h.Detail, "\n")
+	if h.State != HealthOK || h.Next != "" || !strings.Contains(h.Summary, "pending") ||
+		!strings.Contains(detail, "pending entry .rhiza/log/"+f.cs+"/") || strings.Contains(detail, "on no branch") {
+		t.Fatalf("entry held by a live run: %+v", h)
 	}
 }

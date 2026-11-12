@@ -555,7 +555,9 @@ func healthMain(ctx *Ctx) HealthPart {
 		p.Detail = append(p.Detail, fmt.Sprintf("pending entry %s of change set %s is held by a model branch or run", f, logEntryChange(f)))
 	}
 	if ms, ok := daemon.ReadMainStale(common); ok {
-		p.State = HealthWarn
+		if p.State != HealthBad {
+			p.State = HealthWarn
+		}
 		p.Summary += "; the last close-out could not pull"
 		p.Detail = append(p.Detail, fmt.Sprintf("change set %s, since %s: %s", ms.Change, ms.Since.UTC().Format("2006-01-02T15:04:05Z"), ms.Detail))
 	}
