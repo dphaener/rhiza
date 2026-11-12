@@ -307,6 +307,23 @@ func TestWatchdogCIRerun(t *testing.T) {
 	if strings.Join(reran, ",") != "7" {
 		t.Errorf("new head reran %v, want 7", reran)
 	}
+	// A model-only PR's head: the Go jobs SKIPPED, the model jobs green. Nothing
+	// is red, so nothing is rerun and no rerun is spent.
+	reran = nil
+	pr = watchdogPR{Head: "cccc333", Attempts: map[string]int{"7": 1}}
+	for _, n := range []string{"lint", "scripts", "api", "rest", "budgets"} {
+		pr.Checks = append(pr.Checks, ShipCheck{Name: n, Status: "COMPLETED", Conclusion: "SKIPPED", RunID: "7"})
+	}
+	for _, n := range []string{"changes", "model", "check"} {
+		pr.Checks = append(pr.Checks, ShipCheck{Name: n, Status: "COMPLETED", Conclusion: "SUCCESS", RunID: "7"})
+	}
+	if rerunSpent(pr, pol) {
+		t.Error("rerunSpent counts skipped jobs")
+	}
+	poll(nil)
+	if len(reran) != 0 {
+		t.Errorf("skipped jobs reran %v", reran)
+	}
 }
 
 // With ciReruns N the watchdog reruns a head's failed jobs while an attempt
