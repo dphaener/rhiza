@@ -1,0 +1,40 @@
+{
+  "actor": "01M77YDTYBNR9HKEYZXZ41JYGM",
+  "after": [
+    "01M77YK09DPEPKRD8AVJP85VNN"
+  ],
+  "at": "2026-11-12T13:33:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at e8e7b194c: read the diff (workflow_new.go skeleton with RHIZA-PLACEHOLDER test command that exits 1, commented fields, Go/Ruby/JS/TS/Python/Rust examples, commented [[cleanup]] and [env]; workflow_check.go placeholderWarnings appends a warning and never touches Problems/Valid). Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(workflow-new|change-workflow-pin|workflow-check)$' with GOTMPDIR/TMPDIR in a neutral temp dir: all PASS. workflow-new.txtar shows workflow new skel exit 0, no 'make test', all language examples and commented cleanup/env present, workflow check skel exit 0 printing 'warning: step test still runs the placeholder', --json valid true, a fork from ship-change with no placeholder warning, and after replacing run with go test ./... check says valid with no warning. go test ./internal/workflow PASS; go test ./internal/api -run Workflow PASS. Note: the script's ! stdout 'placeholder' on 'workflow check mine' matches the printed $WORK path if TMPDIR contains 'placeholder' (as this run's scratchpad did); it is environment-only, the repo's own temp paths do not."
+        },
+        "handle": "workflow-new-placeholder-verified",
+        "id": "01M77ZCV6F5YT5D38M4CYKYP5T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77ZCV6F5YT5D38M49ZDN274",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77ZCV6F5YT5D38M49ZDN274",
+        "id": "01M77ZCVA688Q85RT57XDT5FFK",
+        "link": "01M77ZCVA688Q85RT57WVNKF4A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7642ND4H8MY27X1Y6D2CZ2K",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M763Z8TGV8GJK2E621JS6HYZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77ZCVG4GDQGFHNZQKXR1J7Q",
+  "type": "ops",
+  "v": 1
+}
