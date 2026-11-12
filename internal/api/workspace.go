@@ -104,6 +104,9 @@ type workspace struct {
 	// mirror copies each entry written to disk into the worktree of its
 	// change set's live run; nil copies nothing. See live_run_mirror.go.
 	mirror func(entry.Entry) error
+	// modelBranch ships each entry written in a main checkout on a model
+	// branch; nil ships nothing. See model_branch.go.
+	modelBranch func(entry.Entry) error
 }
 
 // openWorkspace opens the repository in root. No repository is not_found
@@ -139,6 +142,7 @@ func openCtxWorkspace(ctx *Ctx) (*workspace, error) {
 	}
 	w.readLog = ctx.readLog
 	w.mirror = liveRunMirror(ctx)
+	w.modelBranch = modelBranchStep(ctx)
 	return w, nil
 }
 
@@ -425,7 +429,12 @@ func (w *workspace) writeEntry(e entry.Entry) error {
 		w.ix.stale = true
 	}
 	if w.mirror != nil {
-		return w.mirror(e)
+		if err := w.mirror(e); err != nil {
+			return err
+		}
+	}
+	if w.modelBranch != nil {
+		return w.modelBranch(e)
 	}
 	return nil
 }
