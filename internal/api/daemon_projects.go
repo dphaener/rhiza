@@ -297,9 +297,12 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 	held := daemonHeld(pending, unjournaled, runs, accepted, ctx.Now())
 	running := 0
 	live := map[string]bool{}
+	var sig strings.Builder
 	for _, j := range runs {
 		st := j.State()
-		switch st.Liveness(host, nil) {
+		lv := st.Liveness(host, nil)
+		fmt.Fprintf(&sig, "%s:%d:%v,", j.ID, len(j.Entries), lv)
+		switch lv {
 		case run.LiveRunning:
 			live[st.Change] = true
 			running++
@@ -353,18 +356,29 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 		ready = append(ready, "plan request")
 	}
 	queued := len(ready) - continues
-	// As in daemonPoll1, each candidate's ship stage is the one its
-	// dispatched workflow declares: one whose ship stage is the owner's is
-	// raised, not picked, so it claims no slot.
-	ship := daemonShipOf(ctx.Root, fold)
-	cands := slices.DeleteFunc(slices.Clone(fold.cands), func(cs string) bool {
-		if _, ok := unjournaled[cs]; ok {
-			return true
-		}
-		mode, err := workflowStageMode(ctx, ship.For(cs), "ship")
-		return err != nil || mode == AutonomyOwner
+	// The pick is a function of the fold, the workflow and dispatch files,
+	// the runs (and whether each is live), what is held and the slots: it is
+	// recomputed only when one of them changed.
+	fmt.Fprintf(&sig, "|%s|%d|%d|%s", strings.Join(held, ","), running, len(fold.cands), workflowFilesStamp(ctx.Root))
+	for cs := range unjournaled {
+		sig.WriteString("|u" + cs)
+	}
+	picked := daemonPickOf(ctx, fold, sig.String(), func() []string {
+		// As in daemonPoll1, each candidate's ship stage is the one its
+		// dispatched workflow declares: one whose ship stage is the owner's
+		// is raised, not picked, so it claims no slot.
+		ship := daemonShipOf(ctx.Root, fold)
+		cands := slices.DeleteFunc(slices.Clone(fold.cands), func(cs string) bool {
+			if _, ok := unjournaled[cs]; ok {
+				return true
+			}
+			mode, err := workflowStageMode(ctx, ship.For(cs), "ship")
+			return err != nil || mode == AutonomyOwner
+		})
+		daemonPickCount.Add(1)
+		return daemon.Pick(cands, runs, held, host, nil, running+len(cands), ship)
 	})
-	ready = append(ready, daemon.Pick(cands, runs, held, host, nil, running+len(cands), ship)...)
+	ready = append(ready, picked...)
 	return ready, continues, queued, running
 }
 

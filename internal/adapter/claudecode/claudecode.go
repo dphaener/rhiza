@@ -945,21 +945,45 @@ type fileRecord struct {
 }
 
 // usageCache holds each transcript's parsed records by path, so a poll
-// reparses only the files that changed since the last call.
+// reparses only the files that changed since the last call. known is every
+// transcript path the last full walk of a root found, and walked when that
+// walk was; between full walks only the known files are checked.
 var usageCache = struct {
 	sync.Mutex
-	files map[string]fileUsage
-}{files: map[string]fileUsage{}}
+	files  map[string]fileUsage
+	known  map[string][]string
+	walked map[string]time.Time
+}{files: map[string]fileUsage{}, known: map[string][]string{}, walked: map[string]time.Time{}}
 
-// UsageRecords implements adapter.UsageReader. It walks every .jsonl file
-// under <config>/projects, which holds sessions and, deeper, their helpers'
-// transcripts, and reads nothing outside it. Input, output and
-// cache-creation tokens count; cache reads never do. A message repeated
-// across lines or files counts once, at its earliest timestamp, and a line
-// with no id counts on its own. A file last written before from holds no
-// line in the span and is not read; the others are parsed once per size and
-// modification time and kept in memory for the next call.
-func (Adapter) UsageRecords(getenv func(string) string, from, to time.Time) ([]adapter.UsageRecord, error) {
+// usageWalkEvery is the least time between two full walks of the transcript
+// tree.
+const usageWalkEvery = time.Minute
+
+var usageWalks, usageReads atomic.Int64
+
+// UsageScanStats returns how many full directory walks and transcript file
+// reads UsageRecords has done, process-wide; tests read it to see how much
+// a poll scanned.
+func UsageScanStats() (walks, reads int64) {
+	return usageWalks.Load(), usageReads.Load()
+}
+
+// UsageRecords implements adapter.UsageReader, walking the tree in full.
+func (a Adapter) UsageRecords(getenv func(string) string, from, to time.Time) ([]adapter.UsageRecord, error) {
+	return a.UsageRecordsAt(getenv, from, to, time.Time{})
+}
+
+// UsageRecordsAt walks every .jsonl file under <config>/projects, which
+// holds sessions and, deeper, their helpers' transcripts, and reads nothing
+// outside it. Input, output and cache-creation tokens count; cache reads
+// never do. A message repeated across lines or files counts once, at its
+// earliest timestamp, and a line with no id counts on its own. A file last
+// written before from holds no line in the span and is not read; the others
+// are parsed once per size and modification time and kept in memory for the
+// next call. The tree is walked in full at most once per usageWalkEvery of
+// now; in between, only the files the last walk found are checked, so a new
+// file waits for the next walk. A zero now always walks.
+func (Adapter) UsageRecordsAt(getenv func(string) string, from, to, now time.Time) ([]adapter.UsageRecord, error) {
 	config := configDir(getenv)
 	if config == "" {
 		return nil, nil
@@ -975,25 +999,17 @@ func (Adapter) UsageRecords(getenv func(string) string, from, to time.Time) ([]a
 	byID := map[string]int{}
 	usageCache.Lock()
 	defer usageCache.Unlock()
-	seen := map[string]bool{}
-	_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		if err != nil || !d.Type().IsRegular() || filepath.Ext(path) != ".jsonl" {
-			return nil
-		}
-		info, err := d.Info()
-		if err != nil {
-			return nil
-		}
-		seen[path] = true
+	visit := func(path string, info fs.FileInfo) {
 		if info.ModTime().Before(from) {
-			return nil
+			return
 		}
 		fu, ok := usageCache.files[path]
 		if !ok || fu.size != info.Size() || !fu.mtime.Equal(info.ModTime()) {
+			usageReads.Add(1)
 			next, err := readUsage(path, info.Size(), fu, ok)
 			if err != nil {
 				delete(usageCache.files, path)
-				return nil
+				return
 			}
 			next.size, next.mtime = info.Size(), info.ModTime()
 			fu = next
@@ -1011,12 +1027,46 @@ func (Adapter) UsageRecords(getenv func(string) string, from, to time.Time) ([]a
 			}
 			recs = append(recs, fr.UsageRecord)
 		}
-		return nil
-	})
-	for path := range usageCache.files {
-		if !seen[path] && isUnder(path, root) {
-			delete(usageCache.files, path)
+	}
+	last, walked := usageCache.walked[root]
+	if now.IsZero() || !walked || now.Sub(last) >= usageWalkEvery || now.Before(last) {
+		usageWalks.Add(1)
+		var known []string
+		_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+			if err != nil || !d.Type().IsRegular() || filepath.Ext(path) != ".jsonl" {
+				return nil
+			}
+			info, err := d.Info()
+			if err != nil {
+				return nil
+			}
+			known = append(known, path)
+			visit(path, info)
+			return nil
+		})
+		usageCache.known[root] = known
+		usageCache.walked[root] = now
+		seen := make(map[string]bool, len(known))
+		for _, p := range known {
+			seen[p] = true
 		}
+		for path := range usageCache.files {
+			if !seen[path] && isUnder(path, root) {
+				delete(usageCache.files, path)
+			}
+		}
+	} else {
+		kept := usageCache.known[root][:0]
+		for _, path := range usageCache.known[root] {
+			info, err := os.Lstat(path)
+			if err != nil || !info.Mode().IsRegular() {
+				delete(usageCache.files, path)
+				continue
+			}
+			kept = append(kept, path)
+			visit(path, info)
+		}
+		usageCache.known[root] = kept
 	}
 	out := recs[:0]
 	for _, r := range recs {

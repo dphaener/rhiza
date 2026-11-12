@@ -25,6 +25,7 @@ On a poll where the log, git refs and settings stamps are unchanged, the daemon 
 
 - decided-by [daemon-idle-poll-no-fold](../capability/rhiza/orchestration/daemon/daemon-idle-poll-no-fold.md)
 - decided-by [daemon-poll-cache-invalidates](../capability/rhiza/orchestration/daemon/daemon-poll-cache-invalidates.md)
+- supersedes [decision-idle-cpu-scope](decision-idle-cpu-scope.md)
 
 ## History
 

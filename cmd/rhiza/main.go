@@ -73,6 +73,9 @@ func usage() string {
 	type row struct{ name, summary string }
 	var rows []row
 	for _, o := range api.Operations() {
+		if o.Hidden {
+			continue
+		}
 		rows = append(rows, row{api.CommandPath(o.Name), o.Summary})
 	}
 	for _, f := range api.FrameCommands {

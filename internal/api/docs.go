@@ -91,6 +91,9 @@ func docsCommands() []docs.Command {
 	exiter := reflect.TypeFor[Exiter]()
 	var out []docs.Command
 	for _, o := range Operations() {
+		if o.Hidden {
+			continue
+		}
 		c := docs.Command{
 			Name: CommandPath(o.Name), Summary: o.Summary, Usage: UsageLine(o),
 			Writes: o.Write, SetsExit: o.Response.Implements(exiter),

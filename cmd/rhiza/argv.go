@@ -122,6 +122,9 @@ func subcommands(words []string) (string, []string, bool) {
 		prefix := strings.Join(words[:n], ".") + "."
 		var subs []string
 		for _, o := range api.Operations() {
+			if o.Hidden {
+				continue
+			}
 			if rest, ok := strings.CutPrefix(o.Name, prefix); ok {
 				sub, _, _ := strings.Cut(rest, ".")
 				subs = append(subs, sub)

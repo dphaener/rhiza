@@ -349,6 +349,11 @@ type Step struct {
 	// (AgentUntilInterval on an agent step with until), and zero on a
 	// command step.
 	Interval time.Duration
+	// MaxInterval, on a wait step, lets the wait back off: each check whose
+	// output is unchanged from the last doubles the sleep up to
+	// MaxInterval, and a change in the output brings it back to Interval.
+	// Zero means no backoff.
+	MaxInterval time.Duration
 	// Agent is an agent or arbiter step's adapter name; empty means the
 	// run's, else the default.
 	Agent string
@@ -648,6 +653,7 @@ type fileStep struct {
 	Timeout        string            `toml:"timeout"`
 	Stall          string            `toml:"stall"`
 	Interval       string            `toml:"interval"`
+	MaxInterval    string            `toml:"max_interval"`
 	Agent          string            `toml:"agent"`
 	PermissionMode string            `toml:"permission_mode"`
 	Prompt         string            `toml:"prompt"`
@@ -973,6 +979,9 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	if fs.Interval != "" && fs.Kind == KindCommand {
 		return fail("interval is only for wait and agent steps; a command step cannot have it")
 	}
+	if fs.MaxInterval != "" && fs.Kind != KindWait {
+		return fail("max_interval is only for wait steps; a %s step cannot have it", fs.Kind)
+	}
 	if fs.Agent != "" && fs.Kind != KindAgent {
 		return fail("agent is only for agent and arbiter steps; a %s step cannot have it", fs.Kind)
 	}
@@ -1024,6 +1033,16 @@ func buildStep(name string, fs fileStep) (Step, error) {
 				return fail("interval %v", err)
 			}
 			s.Interval = d
+		}
+		if fs.MaxInterval != "" {
+			d, err := positiveDuration(fs.MaxInterval)
+			if err != nil {
+				return fail("max_interval %v", err)
+			}
+			if d < s.Interval {
+				return fail("max_interval %s is below interval %s; want at least the interval", fs.MaxInterval, s.Interval)
+			}
+			s.MaxInterval = d
 		}
 	}
 	return s, nil

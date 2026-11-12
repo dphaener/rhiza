@@ -123,7 +123,14 @@ func usageRecordsFor(ctx *Ctx, from, to time.Time) []adapter.UsageRecord {
 		if !ok {
 			continue
 		}
-		if got, err := r.UsageRecords(ctx.Getenv, from, to); err == nil {
+		var got []adapter.UsageRecord
+		var err error
+		if ra, ok := a.(adapter.UsageReaderAt); ok {
+			got, err = ra.UsageRecordsAt(ctx.Getenv, from, to, ctx.Now())
+		} else {
+			got, err = r.UsageRecords(ctx.Getenv, from, to)
+		}
+		if err == nil {
 			recs = append(recs, got...)
 		}
 	}
