@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-12T03:02:12Z",
+  "body": {
+    "intent": "Record agent actor claude-code-809babea for session 809babea-7700-4861-b3ef-01a1cdb482d2",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M76V990VFMFJ4W8YMEJVXN2C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76V990VFMFJ4W8YMF9K3B2X",
+  "type": "open",
+  "v": 1
+}

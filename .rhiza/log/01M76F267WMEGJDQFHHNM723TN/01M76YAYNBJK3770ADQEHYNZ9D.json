@@ -1,0 +1,40 @@
+{
+  "actor": "01M76Y712YVEQFB8FXHFTDW6PB",
+  "after": [
+    "01M76WZPMDFGJSC66F2E94Z5D9"
+  ],
+  "at": "2026-11-12T03:55:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c00162a77, in a detached scratch worktree outside ~/code (inside ~/code the live root daemon rewrites .rhiza-root/usage.live.json and trips the state-folder guard), ran go test -trimpath -count=1 ./internal/api -run 'TestModelBranch|TestHealthMain' -v: ok, all subtests PASS. With a local bare origin and a fake gh: AcceptShipsBranch shows an accept yields one pushed model/<full cs>-<entry> branch whose diff from origin/main is exactly one .rhiza/log entry, one PR create, the entry also in the main checkout, no worktree left, and a second write extends the same branch with no second PR; RecordApplyCarriesRender shows a --record apply's branch carries .rhiza/rendered/ and rhiza check on it reports no stale render; DryRunPushesNothing shows no branch and no gh call. Per decision-model-branch-fallback, NoOriginStaysLocal now runs an accept with no origin: entry written locally, no gh call, no stderr, no model/* branch, healthMain OK with no next step; FailingGHWarns runs an accept with a failing fake gh: exit 0, warning printed, no worktree left, healthMain bad naming that accept entry as an orphan, and the diff deletes the pushed branch when pr create fails so the entry is not hidden as pending. The leaf statement now names the branch with full change set and entry IDs, matching model_branch.go. Read the diff of c00162a77."
+        },
+        "handle": "main-write-model-branch-verified-r5",
+        "id": "01M76YAY2E5FBBQ2KY76WMBSNP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76YAY2E5FBBQ2KY73XNP5WX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76YAY2E5FBBQ2KY73XNP5WX",
+        "id": "01M76YAYA89AHDWPFMSW67MMB6",
+        "link": "01M76YAYA89AHDWPFMSTGVKYY7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA4YDVZV5S8GZB49W9M0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76YAYNBJK3770ADQEHYNZ9D",
+  "type": "ops",
+  "v": 1
+}

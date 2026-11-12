@@ -169,6 +169,7 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 		in.Unclaimed = gitUnclaimed(ctx.Git, in.UnclaimedSince)
 	}
 	in.Dispatch = dispatchProblems(ctx.Root)
+	in.Orphans = orphanLogEntries(ctx)
 	rep := check.Run(in)
 	resp := CheckResponse{OK: rep.OK, Base: rep.Base, MergeBaseOf: from, Skipped: skipped,
 		Findings: make([]CheckFinding, 0, len(rep.Findings))}
@@ -592,4 +593,86 @@ func repoOrBuiltinWorkflow(root, name string) bool {
 	}
 	_, ok := workflow.Builtin(name)
 	return ok
+}
+
+// orphanLogEntries lists the untracked log entries of a main checkout that
+// no pending model branch or live run holds, as paths relative to the
+// project root. It is nil in a linked worktree (a run's untracked entries
+// are normal), in a repo without origin/main (nothing to commit them to) and
+// without git. A pending model branch holds an entry when a model/* branch,
+// local or on origin, has that path; a live run holds it when another
+// worktree has the file.
+func orphanLogEntries(ctx *Ctx) []string {
+	if !inWorkTree(ctx.Git) {
+		return nil
+	}
+	gitDir, err1 := ctx.Git("rev-parse", "--absolute-git-dir")
+	common, err2 := ctx.Git("rev-parse", "--path-format=absolute", "--git-common-dir")
+	if err1 != nil || err2 != nil || filepath.Clean(strings.TrimSpace(gitDir)) != filepath.Clean(strings.TrimSpace(common)) {
+		return nil
+	}
+	orphans, _ := classifyUntrackedLog(ctx.Git)
+	return orphans
+}
+
+// classifyUntrackedLog sorts the untracked log entries of the checkout git
+// runs in: orphans are held by no model branch or other worktree, pending
+// ones are held by one. Both are paths relative to the project root.
+func classifyUntrackedLog(git func(args ...string) (string, error)) (orphans, pending []string) {
+	if _, err := git("rev-parse", "--verify", "--quiet", "refs/remotes/origin/main"); err != nil {
+		return nil, nil
+	}
+	prefix, _ := git("rev-parse", "--show-prefix")
+	prefix = strings.TrimSpace(prefix)
+	out, err := git("ls-files", "--others", "--exclude-standard", "-z", "--", store.Dir+"/"+store.LogDir)
+	if err != nil {
+		return nil, nil
+	}
+	var files []string
+	for _, f := range strings.Split(out, "\x00") {
+		if parts := strings.Split(f, "/"); len(parts) == 4 && strings.HasSuffix(f, ".json") && !strings.HasPrefix(parts[3], ".") {
+			files = append(files, f)
+		}
+	}
+	if len(files) == 0 {
+		return nil, nil
+	}
+	var branches []string
+	if refs, err := git("for-each-ref", "--format=%(refname)", "refs/heads/model", "refs/remotes/origin/model"); err == nil {
+		branches = strings.Fields(refs)
+	}
+	var others []string
+	if wt, err := git("worktree", "list", "--porcelain"); err == nil {
+		for _, l := range strings.Split(wt, "\n") {
+			if dir, ok := strings.CutPrefix(l, "worktree "); ok {
+				others = append(others, strings.TrimSpace(dir))
+			}
+		}
+		if len(others) > 0 {
+			others = others[1:] // the first is the main checkout
+		}
+	}
+	for _, f := range files {
+		held := false
+		for _, b := range branches {
+			if _, err := git("cat-file", "-e", b+":"+prefix+f); err == nil {
+				held = true
+				break
+			}
+		}
+		for _, d := range others {
+			if _, err := os.Stat(filepath.Join(d, filepath.FromSlash(prefix+f))); err == nil {
+				held = true
+				break
+			}
+		}
+		if held {
+			pending = append(pending, f)
+		} else {
+			orphans = append(orphans, f)
+		}
+	}
+	slices.Sort(orphans)
+	slices.Sort(pending)
+	return orphans, pending
 }

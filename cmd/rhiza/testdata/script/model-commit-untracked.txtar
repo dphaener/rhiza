@@ -1,0 +1,59 @@
+# rhiza model commit-untracked commits the untracked log entries of a main
+# checkout that no model branch or live run holds onto one model branch per
+# change set, each with a model-only PR, and leaves a live run's entry alone.
+
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+exec git remote add origin $WORK/origin.git
+exec git push -q origin HEAD:main
+exec git fetch -q origin
+
+# Three change sets (and the actor's own log folder) with untracked open entries; a live run's worktree holds
+# a copy of the third.
+exec rhiza change new 'first orphan' --json
+exec rhiza change new 'second orphan' --json
+exec rhiza change new 'held by a run' --json
+exec sh -c 'ls .rhiza/log | tail -1 > ../held.txt'
+exec git worktree add -q ../wt
+exec sh -c 'mkdir -p ../wt/.rhiza/log/$(cat ../held.txt) && cp .rhiza/log/$(cat ../held.txt)/* ../wt/.rhiza/log/$(cat ../held.txt)/'
+
+exec rhiza model commit-untracked
+stdout 'committed 1 entries on a model branch'
+exec sh -c 'git ls-remote --heads $WORK/origin.git "refs/heads/model/*" | wc -l > ../n.txt'
+grep '^3$' ../n.txt
+exec sh -c 'grep -c "^pr create" $WORK/gh.log > ../prs.txt'
+grep '^3$' ../prs.txt
+
+# The held entry is untouched: still untracked, on no branch.
+exec git status --short
+stdout '^\?\? \.rhiza/log'
+exec sh -c 'git ls-remote --heads $WORK/origin.git "refs/heads/model/*" | cut -f2 | sed "s|refs/heads/model/||" | cut -c1-8 > ../branches.txt; cut -c1-8 ../held.txt > ../held8.txt'
+! exec sh -c 'grep -f ../held8.txt ../branches.txt'
+
+# Only the held entry is left, so a second run is quiet.
+exec rhiza model commit-untracked
+stdout 'no untracked log entries to commit'
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+case "$1 $2" in
+"pr view")
+	echo "no pull requests found for branch \"$3\"" >&2
+	exit 1
+	;;
+"pr create")
+	echo https://github.test/o/r/pull/7
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

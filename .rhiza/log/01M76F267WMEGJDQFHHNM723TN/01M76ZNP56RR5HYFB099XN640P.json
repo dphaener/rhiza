@@ -1,0 +1,30 @@
+{
+  "actor": "01M76ZMNXKV0J4NCYX1PXF1RWK",
+  "after": [
+    "01M76ZKWG11Y4FK6T8A8Y93JMV"
+  ],
+  "at": "2026-11-12T04:18:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript (cmd/rhiza/testdata/script/model-commit-untracked.txtar) with a local bare origin and a fake gh leaves orphan entries of two change sets plus one entry held by a live run, runs rhiza model commit-untracked and asserts two model branches with one PR each and the held entry untouched; go test ./internal/api -run 'TestDaemonCommitsUntracked' asserts a due daemon round (the first poll) does the same, not every tick",
+          "statement": "rhiza model commit-untracked finds the untracked .rhiza/log entries in the main checkout that no pending model branch or live run holds and commits them onto one model branch per change set with a model-only PR, as a main-checkout write does; the daemon does the same on its first poll and then at most once a minute per project (modelNetEvery), each git or gh program it runs for this killed after modelNetTimeout (30s) and run with GIT_TERMINAL_PROMPT=0 so it never waits on a credential prompt"
+        },
+        "handle": "commit-untracked-log",
+        "id": "01M76FAA7V5KJWJPQSF4M1WGZ3",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M76FAA7V5KJWJPQSF2X7PCMD",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76ZNP56RR5HYFB099XN640P",
+  "type": "ops",
+  "v": 1
+}

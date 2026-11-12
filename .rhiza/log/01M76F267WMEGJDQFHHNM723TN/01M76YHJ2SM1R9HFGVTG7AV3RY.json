@@ -1,0 +1,40 @@
+{
+  "actor": "01M76YBEPMA45S94NGTFADME7H",
+  "after": [
+    "01M76YAYNBJK3770ADQEHYNZ9D"
+  ],
+  "at": "2026-11-12T03:59:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5c8ba463b (RHIZA_ROOT/RHIZA_RUN unset, GOTMPDIR outside the repo): go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/model-commit-untracked$' passes. The script uses a local bare origin and a fake gh, leaves two orphan change sets plus one held by a live run's worktree, runs rhiza model commit-untracked, and asserts one model branch and one gh pr create per orphan folder. That is 3, because rhiza init's actor folder is a third orphan. It also asserts the held entry stays untracked and on no branch, and that a second run is quiet. go test -trimpath -count=1 ./internal/api -run TestDaemonCommitsUntracked -v passes (daemonCommitUntracked makes a model/<cs>- branch with one PR per branch, and a second tick ships nothing). Run from a scratch worktree outside ~/code, because inside ~/code the rootguard tripped on the live daemon's usage.live.json. In the diff, daemonCommitUntracked is called from every daemon poll (internal/api/daemon_projects.go:424), behind modelBranchEnabled. Known minor review findings (branch count 3 vs 2, 8-char prefix check) stand, but they do not defeat the acceptance."
+        },
+        "handle": "commit-untracked-log-verified-5",
+        "id": "01M76YHHY0NXA3AMWQF5SSJN29",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76YHHY0NXA3AMWQF28B7Y9W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76YHHY0NXA3AMWQF28B7Y9W",
+        "id": "01M76YHJ0FMGX9D6VVP491TNQ0",
+        "link": "01M76YHJ0FMGX9D6VVP2N0BK20",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA7V5KJWJPQSF2X7PCMD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76YHJ2SM1R9HFGVTG7AV3RY",
+  "type": "ops",
+  "v": 1
+}

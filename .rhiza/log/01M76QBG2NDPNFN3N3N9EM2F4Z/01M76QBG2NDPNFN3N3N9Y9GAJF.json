@@ -1,0 +1,15 @@
+{
+  "actor": "01M76PMBTARS49PE24JN8TMTHK",
+  "after": [],
+  "at": "2026-11-12T01:53:29Z",
+  "body": {
+    "intent": "rootguard treats usage.live.json as owned: live Claude Code status lines rewrite it, so long guarded test runs (internal/api, ~8 min) fail with 'usage.live.json: file changed' though every test passed",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M76QBG2NDPNFN3N3N9EM2F4Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76QBG2NDPNFN3N3N9Y9GAJF",
+  "type": "open",
+  "v": 1
+}
