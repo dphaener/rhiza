@@ -144,3 +144,68 @@ func TestDaemonMilestoneWaitsAfterEndedRun(t *testing.T) {
 		t.Fatal("first run finished: second blocked, want it to wait for a slot")
 	}
 }
+
+// A queued milestone request waits only while another milestone request's
+// plan run holds the owner: live at the interview step, stopped at a
+// sign-off (or gate) wait, or its start unjournaled within daemonStartGrace.
+// Live at any later step it blocks nothing.
+func TestDaemonMilestoneWaitsOwnerSteps(t *testing.T) {
+	f := newSessionFixture(t, "req")
+	now := time.Date(2026, 11, 1, 12, 0, 0, 0, time.UTC)
+	f.ctx.Now = func() time.Time { return now }
+	host, _ := os.Hostname()
+	rs := run.NewStore(run.Dir(f.common))
+	const first = "01M6YRUNOWNER00000000000000"
+	write := func(startedAt time.Time) {
+		t.Helper()
+		if err := daemon.WriteRequests(f.common, []daemon.Request{
+			{ID: "r1", Kind: daemon.KindMilestone, Text: "First", At: now.Add(-time.Hour), Run: first, StartedAt: startedAt},
+			{ID: "r2", Kind: daemon.KindMilestone, Text: "Second", At: now.Add(-time.Minute)},
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	waits := func() bool {
+		t.Helper()
+		runs, err := rs.List()
+		if err != nil {
+			t.Fatal(err)
+		}
+		return daemonMilestoneWaits(f.ctx, rs, runs, host)
+	}
+	append1 := func(e run.Entry) {
+		t.Helper()
+		e.At = now
+		if err := rs.Append(first, e); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// Unjournaled within the grace: the second waits.
+	write(now.Add(-time.Second))
+	if waits() {
+		t.Fatal("unjournaled within the grace: second can start, want it to wait")
+	}
+	// Journaled, live (another host) at the interview: still waits.
+	if err := rs.Create(first, run.Entry{Type: run.TypeStarted, At: now, Started: &run.Started{Workflow: "plan-milestone"}}); err != nil {
+		t.Fatal(err)
+	}
+	append1(run.Entry{Type: run.TypeProcess, Process: &run.Process{Host: host + "-elsewhere", Pid: 1}})
+	append1(run.Entry{Type: run.TypeEntered, Step: "interview"})
+	if waits() {
+		t.Fatal("live at the interview: second can start, want it to wait")
+	}
+	// Live at a later step: the second is demand.
+	for _, step := range []string{"milestone-check", "review"} {
+		append1(run.Entry{Type: run.TypeEntered, Step: step})
+		if !waits() {
+			t.Fatalf("live at %s: second blocked, want it to start", step)
+		}
+	}
+	// Stopped at the gate, waiting on the owner: it holds the owner again.
+	append1(run.Entry{Type: run.TypeEntered, Step: "gate"})
+	append1(run.Entry{Type: run.TypeStopped, Detail: "waiting for the owner"})
+	if waits() {
+		t.Fatal("stopped at the gate: second can start, want it to wait")
+	}
+}

@@ -111,6 +111,31 @@ stdout 'milestone queued: Second milestone'
 exec sh -c 'grep -c "Second milestone" $WORK/detach2.log || true'
 stdout '^0$'
 
+# The first's run journals, live on another host, at its interview step: the
+# second still waits. Once that step has ended and the run is live at a later
+# step (milestone-check), the owner is free: with --max-runs full nothing
+# starts, and with a free slot the next poll starts the second's plan run.
+exec sh -c 'rhiza request ls | sed -n "s/.*milestone planning: First milestone (run \\([0-9A-Z]*\\)).*/\\1/p" > first.id'
+exec sh -c 'rid=$(cat first.id); printf "%s\n%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"plan-milestone\",\"definition\":\"\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"elsewhere\",\"pid\":999999}}" "{\"type\":\"entered\",\"at\":\"2026-01-01T00:00:02Z\",\"step\":\"interview\"}" > .git/rhiza/runs/$rid.jsonl'
+exec rhiza daemon --permission-mode manual --once --max-runs 5
+exec rhiza request ls
+stdout 'milestone queued: Second milestone'
+exec sh -c 'grep -c "Second milestone" $WORK/detach2.log || true'
+stdout '^0$'
+exec sh -c 'rid=$(cat first.id); printf "%s\n" "{\"type\":\"entered\",\"at\":\"2026-01-01T00:00:03Z\",\"step\":\"milestone-check\"}" >> .git/rhiza/runs/$rid.jsonl'
+exec rhiza daemon --permission-mode manual --once --max-runs 2
+! stdout 'Started'
+exec rhiza request ls
+stdout 'milestone queued: Second milestone'
+exec sh -c 'grep -c "Second milestone" $WORK/detach2.log || true'
+stdout '^0$'
+exec rhiza daemon --permission-mode manual --once --max-runs 5
+stdout -count=1 '^Started the plan run of request '
+exec rhiza request ls
+stdout 'milestone planning: Second milestone'
+exec sh -c 'grep -c "run start --foreground --workflow plan-milestone --pick default --new Second milestone" $WORK/detach2.log'
+stdout '^1$'
+
 -- plan.toml --
 name = "plan"
 
