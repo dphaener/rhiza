@@ -64,6 +64,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza log`](#rhiza-log)
 - [`rhiza ls`](#rhiza-ls)
 - [`rhiza machine show`](#rhiza-machine-show)
+- [`rhiza model commit-untracked`](#rhiza-model-commit-untracked)
 - [`rhiza mv`](#rhiza-mv)
 - [`rhiza note add`](#rhiza-note-add)
 - [`rhiza overlaps`](#rhiza-overlaps)
@@ -1008,6 +1009,18 @@ Output (`--json` fields):
 - `file` (boolean): Whether the machine config file exists; false means trust is daily by default
 - `path` (string): The machine config file, whether or not it exists
 - `trust` (string): The machine's trust: dedicated when its config says so, else daily
+
+## rhiza model commit-untracked
+
+Commit the untracked .rhiza/log entries of a main checkout that no model branch or live run holds onto model branches, one per change set, each with a model-only PR.
+
+```
+rhiza model commit-untracked
+```
+
+Output (`--json` fields):
+
+- `shipped` (array of object): One row per change set with orphan entries
 
 ## rhiza mv
 
