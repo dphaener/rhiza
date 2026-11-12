@@ -515,9 +515,15 @@ func (r *running) loop() (State, error) {
 		}
 		switch act.Kind {
 		case ActFinished:
+			r.cleanup()
 			return st, nil
 		case ActFinish, ActOverCap:
-			return r.finish(act.Step, act.End, act.Detail)
+			fin, err := r.finish(act.Step, act.End, act.Detail)
+			if err != nil {
+				return fin, err
+			}
+			r.cleanup()
+			return fin, nil
 		case ActEnter:
 			if err := r.append(Entry{Type: TypeEntered, Step: act.Step, Visit: act.Visit}); err != nil {
 				return r.j.State(), err
@@ -1242,4 +1248,68 @@ func (st State) ParseDefinition() (*workflow.Definition, error) {
 		}
 		return []byte(src), nil
 	})
+}
+
+// Cleanup runs the cleanup steps of the ended run id that have not run
+// since it last finished: the way an abandoned run, which no engine
+// finished, gets its cleanup. A failing step is journalled and logged, never
+// an error. The caller holds the run's lock.
+func (e *Engine) Cleanup(id string) error {
+	j, err := e.Store.Read(id)
+	if err != nil {
+		return err
+	}
+	st := j.State()
+	if !st.Ended {
+		return fmt.Errorf("run %s has not finished", id)
+	}
+	def, err := definition(st)
+	if err != nil {
+		return err
+	}
+	(&running{e: e, j: j, def: def}).cleanup()
+	return nil
+}
+
+// cleanup runs the workflow's cleanup steps once each, in order, now that
+// the run has ended, skipping those the journal already holds since the
+// last finished entry (a resume or a second call never runs one twice). A
+// step that fails, or cannot run, or whose result cannot be journalled, is
+// logged and changes nothing else: the run's result stands.
+func (r *running) cleanup() {
+	if len(r.def.Cleanup) == 0 {
+		return
+	}
+	done := map[string]bool{}
+	for _, en := range r.j.Entries {
+		switch en.Type {
+		case TypeFinished:
+			clear(done)
+		case TypeCleanup:
+			done[en.Step] = true
+		}
+	}
+	change := r.j.State().Change
+	for _, c := range r.def.Cleanup {
+		if done[c.Name] {
+			continue
+		}
+		code, detail, err := r.e.Runner.Command(c.Step(), r.stepEnv(c.Name, change))
+		outcome, d := workflow.OutcomePass, fmt.Sprintf("exit %d", code)
+		switch {
+		case err != nil:
+			outcome, d = workflow.OutcomeFail, err.Error()
+		case code != 0:
+			outcome = workflow.OutcomeFail
+			if detail != "" {
+				d += "\n" + detail
+			}
+		}
+		if outcome == workflow.OutcomeFail {
+			r.log("run %s: cleanup step %s failed: %s", r.j.ID, c.Name, d)
+		}
+		if err := r.append(Entry{Type: TypeCleanup, Step: c.Name, Outcome: outcome, Detail: d}); err != nil {
+			r.log("run %s: cleanup step %s: journal: %v", r.j.ID, c.Name, err)
+		}
+	}
 }

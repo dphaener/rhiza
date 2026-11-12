@@ -26079,6 +26079,28 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "cleanup": {
+            "description": "The cleanup steps, in order: commands run once when a run ends done, failed or abandoned; empty when it declares none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "description": "The cleanup step's name",
+                  "type": "string"
+                },
+                "run": {
+                  "description": "The shell command",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "run"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "includes": {
             "description": "The workflows it includes, directly or through another, sorted",
             "items": {
@@ -26188,6 +26210,7 @@ cmp stdout describe.golden.json
         },
         "required": [
           "autonomy",
+          "cleanup",
           "includes",
           "layer",
           "name",

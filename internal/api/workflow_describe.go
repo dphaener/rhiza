@@ -55,6 +55,13 @@ type WorkflowDescribeResponse struct {
 	Steps    []WorkflowStepView `json:"steps" desc:"Every step in order"`
 	Includes []string           `json:"includes" desc:"The workflows it includes, directly or through another, sorted"`
 	Autonomy []WorkflowAutonomy `json:"autonomy" desc:"The autonomy the workflow declares, by stage in order; a stage it leaves out follows rhiza.autonomy.<stage>; empty when it declares none"`
+	Cleanup  []WorkflowCleanup  `json:"cleanup" desc:"The cleanup steps, in order: commands run once when a run ends done, failed or abandoned; empty when it declares none"`
+}
+
+// WorkflowCleanup is one cleanup step.
+type WorkflowCleanup struct {
+	Name string `json:"name" desc:"The cleanup step's name"`
+	Run  string `json:"run" desc:"The shell command"`
 }
 
 // WorkflowAutonomy is one stage's declared autonomy.
@@ -75,6 +82,9 @@ func (r WorkflowDescribeResponse) Human(w io.Writer) {
 	}
 	for _, a := range r.Autonomy {
 		fmt.Fprintf(w, "autonomy %s %s\n", a.Stage, a.Mode)
+	}
+	for _, c := range r.Cleanup {
+		fmt.Fprintf(w, "cleanup %s: %s\n", c.Name, c.Run)
 	}
 	for _, s := range r.Steps {
 		fmt.Fprintf(w, "%s %s\n", s.Name, s.Kind)
@@ -157,7 +167,10 @@ func runWorkflowDescribe(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	out := WorkflowDescribeResponse{Name: def.Name, Path: path, Start: def.Start, Shadows: []WorkflowLayer{}, Steps: []WorkflowStepView{}, Includes: []string{}, Autonomy: []WorkflowAutonomy{}}
+	out := WorkflowDescribeResponse{Name: def.Name, Path: path, Start: def.Start, Shadows: []WorkflowLayer{}, Steps: []WorkflowStepView{}, Includes: []string{}, Autonomy: []WorkflowAutonomy{}, Cleanup: []WorkflowCleanup{}}
+	for _, c := range def.Cleanup {
+		out.Cleanup = append(out.Cleanup, WorkflowCleanup{Name: c.Name, Run: c.Run})
+	}
 	for _, st := range workflow.AutonomyStages {
 		if m, ok := def.Autonomy(st); ok {
 			out.Autonomy = append(out.Autonomy, WorkflowAutonomy{Stage: st, Mode: m})
