@@ -1,7 +1,10 @@
 # Plan review
 
 A fresh review of a plan written into the model. You are given only a change set ID and one
-role: reviewer, critic or reviser. Each role ends with `rhiza session done`.
+role: reviewer, critic or reviser. Each role ends with `rhiza session done`, run as its own
+command only once the recording command (`rhiza run findings`, `rhiza run verdict` or the
+reviser's `rhiza apply`) has succeeded. Never chain it after one with `;`: a rejected command
+would still end the session with nothing recorded.
 
 ## Find the plan
 

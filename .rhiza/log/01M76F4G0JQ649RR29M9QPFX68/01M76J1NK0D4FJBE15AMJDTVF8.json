@@ -1,0 +1,40 @@
+{
+  "actor": "01M76HYD2D4E2S86CNXH033CHJ",
+  "after": [
+    "01M76HZA1EKCEENPZ1CS36NYGB"
+  ],
+  "at": "2026-11-12T00:20:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 897760da8, ran go test -trimpath -count=1 ./internal/api -run TestReviewFindingsNameLinks (PASS), ./internal/run/... (ok) and ./cmd/rhiza -run TestScripts/describe-golden plus the review/findings scripts (ok). I read the diff from 89df994ce. run findings resolves a link ID (in the run's change set or a plan change set's view) when node resolution fails, and journals link, link_type, link_from and link_to (run.Finding, api.RunFinding). The test records a depends-on link between two change sets and a model depends-on link. run.status returns each with type and ends, and its markdown names 'link depends-on <id> from <a> to <b>'. A verdict confirms each one. A round-3 review-check adds a question with no blocks link. An unknown ID exits 2 and journals no round. Attempt 1's two findings (no ends recorded, no run.status check) are fixed."
+        },
+        "handle": "findings-name-links-verified",
+        "id": "01M76J1NFTW2MYRMEZZM2HWDDM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76J1NFTW2MYRMEZZGPSR37Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76J1NFTW2MYRMEZZGPSR37Q",
+        "id": "01M76J1NH1FDEMJ2ZTH0B58SP6",
+        "link": "01M76J1NH1FDEMJ2ZTGX6KHBEF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76F8S09V3FZJC4T6RJHT5PY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F4G0JQ649RR29M9QPFX68",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76J1NK0D4FJBE15AMJDTVF8",
+  "type": "ops",
+  "v": 1
+}

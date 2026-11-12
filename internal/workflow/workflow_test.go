@@ -491,7 +491,7 @@ func TestPlanBuiltin(t *testing.T) {
 	if def.Name != "plan" || def.Start != "interview" {
 		t.Errorf("name %q, start %q; want plan, interview", def.Name, def.Start)
 	}
-	want := []string{"interview", "milestone-check", "review", "critic", "check", "revise", "gate", "open-pr", "wait-pr", "pr-green", "pr-green-infra", "pr-green-infra-wait", "rebase", "wait-rebased", "rebased-green", "rebased-green-infra", "rebased-green-infra-wait", "merge", "close-out"}
+	want := []string{"interview", "milestone-check", "review", "critic", "fresh", "check", "revise", "gate", "open-pr", "wait-pr", "pr-green", "pr-green-infra", "pr-green-infra-wait", "rebase", "wait-rebased", "rebased-green", "rebased-green-infra", "rebased-green-infra-wait", "merge", "close-out"}
 	if !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
@@ -549,7 +549,9 @@ func TestPlanBuiltin(t *testing.T) {
 		{"milestone-check", OutcomeFail, "", EndFailed},
 		{"interview", OutcomeFail, "", EndFailed},
 		{"review", OutcomePass, "critic", EndNone},
-		{"critic", OutcomePass, "check", EndNone},
+		{"critic", OutcomePass, "fresh", EndNone},
+		{"fresh", OutcomePass, "check", EndNone},
+		{"fresh", OutcomeFail, "review", EndNone},
 		{"check", OutcomePass, "gate", EndNone},
 		{"check", OutcomeFail, "revise", EndNone},
 		{"revise", OutcomePass, "review", EndNone},
@@ -575,7 +577,7 @@ func TestPlanBuiltin(t *testing.T) {
 		}
 	}
 
-	caps := map[string]int{"rebase": 3, "wait-rebased": 3, "rebased-green": 4, "merge": 3, "interview": 1, "review": 3, "critic": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 4}
+	caps := map[string]int{"rebase": 3, "wait-rebased": 3, "rebased-green": 4, "merge": 3, "interview": 1, "review": 3, "critic": 3, "fresh": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 4}
 	for name, c := range caps {
 		if got := def.Steps[name].Cap(); got != c {
 			t.Errorf("%s cap = %d; want %d", name, got, c)
@@ -2025,6 +2027,48 @@ func TestShipChangeLandedInfraWaitScript(t *testing.T) {
 		}
 		if s.Kind != b.Kind || s.Run != b.Run || s.Until != b.Until || !maps.Equal(s.On, b.On) {
 			t.Errorf("script's %s = %+v; want the built-in's kind, command and routes %+v", name, s, b)
+		}
+	}
+}
+
+// plan and plan-milestone run review-check --fresh after the critic, so a
+// stale round goes back to review, never to revise.
+func TestPlanFreshStep(t *testing.T) {
+	for _, n := range []string{"plan", "plan-milestone"} {
+		data, _ := Builtin(n)
+		def, err := ParseWith(n, data, builtinResolver)
+		if err != nil {
+			t.Fatal(err)
+		}
+		fresh, ok := def.Steps["fresh"]
+		if !ok {
+			t.Fatalf("%s has no fresh step", n)
+		}
+		if fresh.Run != "rhiza run review-check --fresh" || fresh.On["pass"] != "check" || fresh.On["fail"] != "review" {
+			t.Errorf("%s fresh = %+v", n, fresh)
+		}
+		if def.Steps["critic"].On["pass"] != "fresh" {
+			t.Errorf("%s critic on.pass = %q", n, def.Steps["critic"].On["pass"])
+		}
+	}
+}
+
+// The plan review, critic and revise prompts tell the agent to run session
+// done on its own, after the recording command succeeded.
+func TestPlanReviewPromptsUnchained(t *testing.T) {
+	for _, n := range []string{"plan", "plan-milestone"} {
+		data, _ := Builtin(n)
+		def, err := ParseWith(n, data, builtinResolver)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for step, cmd := range map[string]string{"review": "rhiza run findings", "critic": "rhiza run verdict", "revise": "rhiza apply"} {
+			p := def.Steps[step].Prompt
+			for _, w := range []string{"as a separate command", cmd, "succeeded", "never chained after it with `;`"} {
+				if !strings.Contains(p, w) {
+					t.Errorf("%s %s prompt: no %q in %q", n, step, w, p)
+				}
+			}
 		}
 	}
 }
