@@ -1,0 +1,30 @@
+{
+  "actor": "01M77N91K2JMJ1SPMBFAPP6WK2",
+  "after": [
+    "01M77N83F027XBGGZPKB31CQA2"
+  ],
+  "at": "2026-11-12T10:39:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "6eec8236-ad63-49dd-824c-01a1cf546583",
+          "statement": "Run 01M77DW's land step was refused because change set 01M763Z4's update to ship-check-ci-test-findings' statement rests on a stale base: 01M76B50 (landed via #455) has since rewritten that field. `rhiza check` only warns about an in-flight change set's conflict, so every check passed. land-triage only handles a failed pre-push check, so the run ended with green PR #480 unmerged. How should ship-change handle a land refused on a model conflict?"
+        },
+        "handle": "question-6eec8236-1",
+        "id": "01M77NDXVWW54D78AQT7GM21WV",
+        "key": null,
+        "kind": "question",
+        "node": "01M77NDXVWW54D78AQT3HRKZKZ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M77N83F027XBGGZPK9SV6YN2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77NDZYEEP05JAPVV1QB335R",
+  "type": "ops",
+  "v": 1
+}
