@@ -1,0 +1,28 @@
+{
+  "actor": "01M77C3Z79N8E2S3YNXZEZ57Y3",
+  "after": [
+    "01M77C0DH773GEBS8Z4QE8C7V7"
+  ],
+  "at": "2026-11-12T07:56:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6RN85C17S5VE1A6SQVD7WE1",
+        "handle": null,
+        "id": "01M77C4T7EBWGBK547B9S31A74",
+        "node": "01M6RN85C17S5VE1A6SNZAXK89",
+        "op": "node.update",
+        "set": {
+          "statement": "rhiza daemon settings lists every setting with its scope, machine (from rhiza.toml: maxRuns, usage budget and reserve, minFree, trimGoCache, web host and port, autoUpdate, permissionMode, paused) or project (from that repo's git config: autonomy per stage, project paused, per-project maxRuns, deploy check), and rhiza daemon set writes each key to its scope, taking --project or the current project for project keys. The hook commands rhiza.eventCommand and rhiza.notifyCommand are project settings: the root daemon runs a project's event command for that project's lifecycle moves and its notify command for that project's inbox, each read from that project's git config."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M763Z16T0ZGQMY1EC2Y81V0K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77C4T911N2EVV420RS2B5SB",
+  "type": "ops",
+  "v": 1
+}
