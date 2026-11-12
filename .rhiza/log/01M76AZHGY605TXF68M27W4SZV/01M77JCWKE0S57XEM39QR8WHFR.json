@@ -1,0 +1,63 @@
+{
+  "actor": "01M77J5FK1VB52GGRV8Q0Z7C87",
+  "after": [
+    "01M77J0PM2JD2D61A3K11WW8HD"
+  ],
+  "at": "2026-11-12T09:46:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c6d4316: go run ./tools/release version on this checkout (no v* tag) printed v0.0.1-main.482+c6d4316. In a scratch clone: with v0.1.0 tagged at HEAD it printed v0.1.0; one commit later, v0.1.1-main.1+99c5701 (after the tag, before v0.1.1). go test -trimpath -count=1 ./tools/release/... ./internal/release/... ok."
+        },
+        "handle": "latest-build-version-qa-1",
+        "id": "01M77JCW6VCMCSKSSF5S2ZYRSC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77JCW6VCMCSKSSF5N35BKFJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77JCW6VCMCSKSSF5N35BKFJ",
+        "id": "01M77JCW9CPTNTP7N8XAQ5NW9Z",
+        "link": "01M77JCW9CPTNTP7N8X6X5RNWB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7CWZHSPFD2WJYGWGZ0HH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c6d4316, run as the Latest workflow does in a scratch clone, with goreleaser v2.20.1. RHIZA_BUILD_VERSION=v0.0.1-main.482+c6d4316; goreleaser check ok; release --snapshot --clean built the four rhiza_0.0.1-main.482+c6d4316_{linux,darwin}_{amd64,arm64}.tar.gz plus checksums.txt, and the workflow's four-archive loop passed. tools/release -channel latest -release-tag latest wrote manifest.json with channel latest, that version, the commit and four /releases/download/latest/ URLs whose sha256s match checksums.txt. The extracted linux_amd64 binary prints 'rhiza v0.0.1-main.482+c6d4316'. Tag path unbroken: with v0.1.0 tagged and RHIZA_BUILD_VERSION unset, goreleaser release --skip=publish built rhiza_0.1.0 archives and the binary prints v0.1.0. Ran the gate step's shell: no latest tag, publish; latest at a newer descendant on an old run, skip; same commit, publish; latest older, publish. Read latest.yml: push to main only, concurrency group latest with cancel-in-progress, and the release is created with --prerelease --latest=false. The earlier '+' caveat is resolved: github.com keeps '+' in asset names (bell-sw/Liberica's latest release has bellsoft-jdk27.0.1.0.3+5-*), and a download URL with a literal '+' returns 200. Not run: a real publish to GitHub, attestation, or gh release create."
+        },
+        "handle": "latest-channel-prerelease-qa-1",
+        "id": "01M77JCWBN9ZJW6CF0YK4RZK9Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77JCWBN9ZJW6CF0YJRV6BAY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77JCWBN9ZJW6CF0YJRV6BAY",
+        "id": "01M77JCWGRY5C2EQC1J97GHT8D",
+        "link": "01M77JCWGRY5C2EQC1J66EQJG1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7CXJ4H445ZBV963ADV16",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76AZHGY605TXF68M27W4SZV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77JCWKE0S57XEM39QR8WHFR",
+  "type": "ops",
+  "v": 1
+}

@@ -15,15 +15,23 @@ builds:
     goos: [linux, darwin]
     goarch: [amd64, arm64]
     ldflags:
-      - -s -w -X main.version={{ .Tag }}
+      - -s -w -X main.version={{ if .IsSnapshot }}v{{ .Version }}{{ else }}{{ .Tag }}{{ end }}
 
 archives:
   - id: rhiza
     formats: [tar.gz]
-    name_template: "rhiza_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    # GitHub renames release assets with special characters, so the '+' of a
+    # latest build's semver metadata becomes '-' in the file name, as
+    # release.AssetVersion maps it for the manifest.
+    name_template: 'rhiza_{{ replace .Version "+" "-" }}_{{ .Os }}_{{ .Arch }}'
 
 checksum:
   name_template: checksums.txt
+
+snapshot:
+  # The latest channel builds a snapshot named by tools/release version,
+  # without its v: archives use .Version and the ldflags add the v back.
+  version_template: '{{ trimprefix .Env.RHIZA_BUILD_VERSION "v" }}'
 
 changelog:
   disable: true

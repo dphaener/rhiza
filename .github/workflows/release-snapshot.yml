@@ -9,6 +9,7 @@ on:
       - .goreleaser.yaml
       - .github/workflows/release.yml
       - .github/workflows/release-snapshot.yml
+      - .github/workflows/latest.yml
       - internal/release/**
       - tools/release/**
 
@@ -27,6 +28,9 @@ jobs:
         go-version-file: go.mod
         cache: true
         cache-dependency-path: go.sum
+
+    - name: Compute the latest-channel version
+      run: echo "RHIZA_BUILD_VERSION=$(go run ./tools/release version)" >> "$GITHUB_ENV"
 
     - name: Check config
       uses: goreleaser/goreleaser-action@v7
@@ -50,7 +54,7 @@ jobs:
 
     - name: Write the manifest
       run: |
-        go run ./tools/release -dist dist -tag "v0.0.0-snapshot" \
-          -version "$(jq -r .version dist/metadata.json)" \
-          -commit "$(git rev-parse HEAD)"
+        go run ./tools/release -dist dist -tag "$RHIZA_BUILD_VERSION" \
+          -version "${RHIZA_BUILD_VERSION#v}" -commit "$(git rev-parse HEAD)" \
+          -channel latest -release-tag latest
         test "$(jq '.platforms | length' dist/manifest.json)" = 4
