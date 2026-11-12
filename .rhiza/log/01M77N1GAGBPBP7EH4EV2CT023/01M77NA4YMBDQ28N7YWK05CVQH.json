@@ -1,0 +1,83 @@
+{
+  "actor": "01M77N2266BKR12ZPJZDJVHTDW",
+  "after": [
+    "01M77NA3W1T5MP8SCZHJ2ZXYZP"
+  ],
+  "at": "2026-11-12T10:37:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M77N8C8TWSDEB6TNWS8J8KD9",
+        "id": "01M77NA4MM8NVX15BSSW7CP2HK",
+        "link": "01M77NA4MM8NVX15BSSVKVQA68",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77N9K9BS1PDMZD2GDFDAT7K",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api: a ship land whose change set updates a node field that another change set landed a write to since its base is refused and records the conflict (node, op, other change set, aspects, head) in the ship state; ship check --model-conflict passes on it, fails with no recorded conflict, fails once the branch moved past the recorded head, fails once the branch holds 3 commits with the run's Review: and Model-Conflict: trailers, and fails after a land refused for a missing dependency; ship check --json shows both change sets with their intents; after rhiza set --rebase in the change set, ship land succeeds and clears the record. Run with go test -trimpath ./internal/api/... -run 'Ship' only.",
+          "statement": "When rhiza ship land is refused because the change set's what-if view has a model conflict (rhiza land exit 3 on a stale base: another change set landed a write to the same node aspect), it records the conflict in the change set's ship state (the node, the conflicting op and its change set, the aspects, the head it was refused at) and names it in its error; rhiza ship check --model-conflict exits 0 only when the ship state records such a conflict, the branch is still at that head and the run has made fewer than 3 model-conflict fixes (commits on the branch carrying this run's Review: trailer and a Model-Conflict: trailer), else exits 1 naming why, and rhiza ship check --json shows the recorded conflict with both change sets' IDs and intents for the fixer; a land refused for any other reason, or a later land that succeeds, leaves no conflict recorded."
+        },
+        "handle": "ship-land-records-model-conflict",
+        "id": "01M77NA4P0Z0VX0NW4RNEZAKS1",
+        "key": "zzzzz",
+        "kind": "capability",
+        "node": "01M77NA4P0Z0VX0NW4RM4J29Z5",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M77NA4P0Z0VX0NW4RM4J29Z5",
+        "id": "01M77NA4RFZ53SMVVECBE59T9V",
+        "link": "01M77NA4RFZ53SMVVEC8CEV09Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77N8C8TWSDEB6TNWS8J8KD9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/workflow loads the built-in ship-change workflow and asserts land-triage on.pass gate-fix-merge and on.fail land-conflict-triage, land-conflict-triage running rhiza ship check --model-conflict with on.pass model-conflict-fix and no on.fail, model-conflict-fix an agent step with on.pass gate-land and max_visits 3, and the prompt naming rhiza set --rebase and the trailers; a testscript run-ship-model-conflict.txtar with a local bare origin, a fake gh and a fake fixer agent: another change set lands a write to the same node field before land, land is refused, the fake fixer commits a rebased update, the run goes back through gate-land and lands once and merges; a land failing on a refused push (no model conflict) ends the run at land-conflict-triage with no fixer session; rhiza workflow check passes on the built-ins. Run with go test -trimpath ./internal/workflow/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/run-ship-model-conflict' only.",
+          "statement": "The built-in ship-change workflow recovers from a land refused for a model conflict: land-triage (rhiza ship gate --failed) keeps on.pass gate-fix-merge and gains on.fail land-conflict-triage, a command step running rhiza ship check --model-conflict with on.pass model-conflict-fix and no on.fail, so a gh, git or network failure of land still ends the run; model-conflict-fix is an agent step on the run worktree whose prompt has the fixer read both change sets' intent from rhiza ship check --json, move each stale update onto the node's landed version with rhiza set <node> --rebase setting every field it writes so both sides' edits hold, run rhiza check, commit with Change:, Actor:, Review: <run> and Model-Conflict: trailers, never push, and on an edit that no statement can honour on both sides ask one blocking question naming both change sets and the node, then run rhiza session done; it passes to gate-land, so land pushes the fix and lands once; model-conflict-fix has max_visits 3 and gate-land and land raise theirs so 3 fixes fit."
+        },
+        "handle": "ship-change-model-conflict-fix-step",
+        "id": "01M77NA4TTXHP9DFK9NKH39BZ6",
+        "key": "zzzzzi",
+        "kind": "capability",
+        "node": "01M77NA4TTXHP9DFK9NK1Z1453",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M77NA4TTXHP9DFK9NK1Z1453",
+        "id": "01M77NA4VPBQ0SBBPQJP3CSV5X",
+        "link": "01M77NA4VPBQ0SBBPQJKB8YB82",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77N8C8TWSDEB6TNWS8J8KD9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M77NA4TTXHP9DFK9NK1Z1453",
+        "id": "01M77NA4WF1SCNFGJ2QDD6VKW9",
+        "link": "01M77NA4WF1SCNFGJ2Q9KMVPCY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M77NA4P0Z0VX0NW4RM4J29Z5",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M77N1GAGBPBP7EH4EV2CT023",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77NA4YMBDQ28N7YWK05CVQH",
+  "type": "ops",
+  "v": 1
+}
