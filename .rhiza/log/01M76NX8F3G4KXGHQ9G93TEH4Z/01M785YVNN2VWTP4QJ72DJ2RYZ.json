@@ -1,0 +1,63 @@
+{
+  "actor": "01M785VAZXB0CWGE2G839XJJN2",
+  "after": [
+    "01M785QPJ8AXQARSQY36GB705E"
+  ],
+  "at": "2026-11-12T15:27:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at d34deebf1 with a binary built from the head (go build -trimpath): go test -trimpath -count=1 ./cmd/rhiza -run 'TestOrchestratorDocRules|TestOrchestratorConsultsOwner|TestAgentDocs' passes (TestAgentDocsConsistent and Fixtures pass with orchestrator.md indexed in agents/README.md). Exercised the commands the doc names: in a scratch git repo `rhiza daemon set rhiza.daemon.maxRuns 2` exits 0 and writes git config 2, `... abc` exits 2 with a whole-number error; `rhiza withdraw/accept/apply/link --help` all exist; `git ls-remote origin refs/heads/main` works as the fetch-free alternative; the ../AGENTS.md link resolves. In a clean detached worktree of the head, `rhiza check` prints ok (only pre-existing unclaimed warnings) and `rhiza render` leaves no diff."
+        },
+        "handle": "orchestrator-doc-qa-1",
+        "id": "01M785YVDX4G163CH0JVHZXB7E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M785YVDX4G163CH0JVG03Q4Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M785YVDX4G163CH0JVG03Q4Q",
+        "id": "01M785YVFH1GVGFY2FTAX9Y2GE",
+        "link": "01M785YVFH1GVGFY2FT8JP3BZ7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76P0AFBXXQRCAEPZSZD95G9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at d34deebf1: read agents/orchestrator.md: 'Consult the owner first' requires a recommendation before any judgment call and autonomy only when the owner granted it for that task or session; 'When idle' says propose the next high-value work instead of starting it while queued bug requests still flow through plan-bug and bugfix. grep finds no 'Consult the owner' in AGENTS.md. go test -trimpath -count=1 ./cmd/rhiza -run TestOrchestratorConsultsOwner passes; rhiza check on a clean detached checkout of the head prints ok."
+        },
+        "handle": "orchestrator-consults-owner-qa-1",
+        "id": "01M785YVGV1F8TNVP7R7T5A6SY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M785YVGV1F8TNVP7R48H5CBN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M785YVGV1F8TNVP7R48H5CBN",
+        "id": "01M785YVJPKTSHVTBP3VYBE62N",
+        "link": "01M785YVJPKTSHVTBP3TYWCZAY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76P0AJ9VF4D377JGWZJAAZY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76NX8F3G4KXGHQ9G93TEH4Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M785YVNN2VWTP4QJ72DJ2RYZ",
+  "type": "ops",
+  "v": 1
+}
