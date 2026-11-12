@@ -39,6 +39,13 @@ func run(args []string) error {
 		fmt.Fprintf(os.Stderr, "%d breaking difference(s) since %s\n", len(bs), tag)
 		return nil
 	}
+	if len(args) > 0 && args[0] == "check" {
+		env, err := parseCheck(args[1:])
+		if err != nil {
+			return err
+		}
+		return runCheck(".", os.Stdout, env)
+	}
 	if len(args) > 0 && args[0] == "marks" {
 		marks, err := ReadMarks(filepath.Join(".rhiza", "log"))
 		if err != nil {

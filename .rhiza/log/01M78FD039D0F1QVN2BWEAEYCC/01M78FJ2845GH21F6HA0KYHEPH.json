@@ -1,0 +1,30 @@
+{
+  "actor": "01M78FDZRHRVN7QM13CR9G2XCE",
+  "after": [
+    "01M78FD039D0F1QVN2BXV2W2GJ"
+  ],
+  "at": "2026-11-12T18:15:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "92aa21cf-cf96-4789-b4d7-01a1d0f6deed",
+          "statement": "What should switch on the full local gate (make check, ~20 min, serialized) for every run? Today one flake anywhere in the last 20 CI runs does, even an unidentified one ('scripts (4/4) / UNKNOWN STEP') while 29 of 30 were green."
+        },
+        "handle": "question-92aa21cf-1",
+        "id": "01M78FJ01VT7SZ6CAZQM0BGDD9",
+        "key": null,
+        "kind": "question",
+        "node": "01M78FJ01VT7SZ6CAZQHDJ4NY4",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M78FD039D0F1QVN2BWEAEYCC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78FJ2845GH21F6HA0KYHEPH",
+  "type": "ops",
+  "v": 1
+}

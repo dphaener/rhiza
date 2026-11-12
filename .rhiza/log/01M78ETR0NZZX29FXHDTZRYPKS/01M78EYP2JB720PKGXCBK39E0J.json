@@ -1,0 +1,30 @@
+{
+  "actor": "01M78EVFH435FXVBVPSX04BN85",
+  "after": [
+    "01M78ETR0NZZX29FXHDYBDE8KF"
+  ],
+  "at": "2026-11-12T18:05:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "aba0b284-b2de-4064-9020-01a1d0eda8ee",
+          "statement": "What would you type next?"
+        },
+        "handle": "question-aba0b284-1",
+        "id": "01M78EYKRE99FV4M235T178J0C",
+        "key": null,
+        "kind": "question",
+        "node": "01M78EYKRE99FV4M235S2WVDQ5",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M78ETR0NZZX29FXHDTZRYPKS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78EYP2JB720PKGXCBK39E0J",
+  "type": "ops",
+  "v": 1
+}

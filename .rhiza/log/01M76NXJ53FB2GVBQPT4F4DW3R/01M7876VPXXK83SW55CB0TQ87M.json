@@ -1,0 +1,86 @@
+{
+  "actor": "01M7873KJ81MBEWEGKRWN4H3A8",
+  "after": [
+    "01M78703SV76NE4HE0MJ47ADS7"
+  ],
+  "at": "2026-11-12T15:49:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 20ae0b603 built rhiza into the session scratchpad and ran go test -trimpath -count=1 ./cmd/rhiza -run 'TestDevelopingDocLessons|TestAgentDocsConsistent' with GOTMPDIR/TMPDIR in the scratchpad: all PASS. agents/README.md lists developing.md. Checked the doc's lessons against the system: testscript TestScripts/apply (rhiza init) passes with the run's own GOTMPDIR, since #488 already puts run GOTMPDIR under ~/.cache/rhiza/run-tmp, so the GOTMPDIR section's reason is stale (reported as a minor finding)."
+        },
+        "handle": "developing-doc-qa-1",
+        "id": "01M7876VCYWP7ZGKXAEK39ERE7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7876VCYWP7ZGKXAEK2NBJ39",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7876VCYWP7ZGKXAEK2NBJ39",
+        "id": "01M7876VF5CWXMARC03SA2KAZH",
+        "link": "01M7876VF5CWXMARC03Q12AGB7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76P0B69F8152BRFFCTW5G8X",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 20ae0b603 ran go test -trimpath -count=1 ./cmd/rhiza -run 'TestRunAgentsDocLessons|TestAgentDocsConsistent': PASS. agents/README.md lists run-agents.md. Checked on the VM: .git/rhiza/ship/<cs>.json holds a pushed key, the built binary has rhiza ship rebase, and 9 *-landed.txtar testscripts exist as the doc says."
+        },
+        "handle": "run-agents-doc-qa-1",
+        "id": "01M7876VG0CWGWPGYC7T4QV9KW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7876VG0CWGWPGYC7S9CJ9SB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7876VG0CWGWPGYC7S9CJ9SB",
+        "id": "01M7876VHFJEVJT7S4NNP0JR2M",
+        "link": "01M7876VHFJEVJT7S4NMDSV3TF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76P0B7W8M843KJ8BFHR6C80",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 20ae0b603 ran go test -trimpath -count=1 ./cmd/rhiza -run 'TestVMDocLessons|TestAgentDocsConsistent': PASS. agents/README.md lists vm.md. Checked on the VM: rhiza-root.service is active, ~/code/rhiza.toml exists, /etc/apt/preferences.d/rex and /etc/apt/apt.conf.d/51unattended-no-rex exist, /usr/bin/rex belongs to the rex package, ~/orchestrator/stray-logs exists, and the built binary's daemon set help accepts maxRuns."
+        },
+        "handle": "vm-doc-qa-1",
+        "id": "01M7876VK1X324DWEFBMB6WEYK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7876VK1X324DWEFBK8ZVNFS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7876VK1X324DWEFBK8ZVNFS",
+        "id": "01M7876VN9AY6X9T8C8R1FBZ1V",
+        "link": "01M7876VN9AY6X9T8C8PEWVJF4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76P0B97WK63HSDNR4DMB2BT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76NXJ53FB2GVBQPT4F4DW3R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7876VPXXK83SW55CB0TQ87M",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,33 @@
+{
+  "actor": "01M78EVFH435FXVBVPSX04BN85",
+  "after": [
+    "01M78F0DP6Z8NRW4KMCST4X1WV"
+  ],
+  "at": "2026-11-12T18:07:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "4e8f432bbf40a71e90eb43f4c07bbe36f6e597efeae0965ddf19b3b6ec22bb2c",
+          "session": "aba0b284-b2de-4064-9020-01a1d0eda8ee",
+          "summary": "Autonomous plan run, no owner. CI run 43256685725 attempt 1 (PR #498, head d1e350c) failed scripts (4/4) in TestScripts/inbox-stalled at inbox-stalled.txtar:32: the inbox listed the session as stalled since 2026-10-24T12:00:06Z, the hook time before the script's hand edit, so the edit to hook.at (2030-01-01T00:00:00Z) was lost. Cause found by reading the code: the script rewrites .git/rhiza/sessions/<id>.json with perl and mv, without the session store's lock, as soon as the record has a hook report. The fake claude reports its hook while `rhiza session start` is still running; session start then records the tab with Store.Update, which reads the record under the flock on .<id>.lock and writes it back. When Update reads before the perl rewrite and renames after it, the rewrite is lost. inbox-permission, run-status-stalled and daemon-notify-hook hand-edit the same way. The planner asked the arbiter to choose between a locked edit command, waiting for the tab write, or quarantine; the question reached the arbiter without its options, and the arbiter ruled (flaky-scripts-4-next-step): reproduce locally with an injected delay, then fix the timing dependence or quarantine with a bug filed. The planner chose the fix: route the hand edits through a testscript command holding the store's lock.",
+          "title": "Flaky scripts (4/4) plan, autonomous run"
+        },
+        "handle": "flaky-scripts-4-plan",
+        "id": "01M78F2TEG8V0X15FQR03HZ1A4",
+        "key": null,
+        "kind": "source",
+        "node": "01M78F2TEG8V0X15FQQX7CEMZB",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M78ETR0NZZX29FXHDTZRYPKS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78F2TEX347CVS2Y9R1DRBW1",
+  "type": "ops",
+  "v": 1
+}

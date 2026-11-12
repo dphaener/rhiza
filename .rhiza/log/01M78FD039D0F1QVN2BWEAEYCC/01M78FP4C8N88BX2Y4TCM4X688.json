@@ -1,0 +1,152 @@
+{
+  "actor": "01M78FDZRHRVN7QM13CR9G2XCE",
+  "after": [
+    "01M78FNSXFR2MRQVEWXZ51ZZTF"
+  ],
+  "at": "2026-11-12T18:17:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M78FKX3BQT0ABF59FCKH9B6Z",
+        "id": "01M78FP3AHNZDV9WYVN7MF122C",
+        "link": "01M78FP3AHNZDV9WYVN6A9S0TZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FMVWV8MPY8Q2YCKJJ5V4J",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "The journal keeps only a failed command step's last 2 KB / 20 lines (stepTailBytes in internal/api/run.go); make check's output ends with make's own error lines, which pushed the failing test's name out, and three fixers each reran the ~20-minute suite to find it. Keeping the whole log on disk and ending the gate's failure output with the FAIL lines and the path fits inside the existing tail without growing the journal.",
+          "statement": "The local gate's whole combined output is written to a log file the fixer can read, and the output a run step keeps (its 2 KB / 20-line tail) ends with the failing test lines and that file's path, so no fixer reruns the suite to learn what failed",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "gate-log-kept-whole",
+        "id": "01M78FP3CYRMNA5WR2QQPW0M82",
+        "key": null,
+        "kind": "decision",
+        "node": "01M78FP3CYRMNA5WR2QPM3R6HH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78FP3CYRMNA5WR2QPM3R6HH",
+        "id": "01M78FP3HEEWQM4XVQ168R2QQJ",
+        "link": "01M78FP3HEEWQM4XVQ148SHQVA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FMVWV8MPY8Q2YCKJJ5V4J",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "The intent asks to land the guard fix on its own, but it is already on main with tests (TestLiveSnapshotInsideSpan, TestLiveSnapshotOutsideSpan, TestLiveSnapshotUnchanged); only the model still states the old rule, so the leaf amends that capability and its build verifies the code already there.",
+          "statement": "The root guard fix that landed inside PR #498 (commit e075aefa6: usage.live.json judged by captured_at) is recorded in this change set on tests-leave-root-state-alone, not built again",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "guard-fix-recorded-here",
+        "id": "01M78FP3KHSM7XM532BTKTHKYT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M78FP3KHSM7XM532BT1X4WZH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78FP3KHSM7XM532BT1X4WZH",
+        "id": "01M78FP3QH6CVRAPB5D693SGRN",
+        "link": "01M78FP3QH6CVRAPB5D4S53KDQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FMVWV8MPY8Q2YCKJJ5V4J",
+        "type": "derived-from"
+      },
+      {
+        "base": "01M6T26X2D1D7TTAJ0MQ8VAY2P",
+        "handle": null,
+        "id": "01M78FP3TXKY54DRDS603PQMH9",
+        "node": "01M6T26X2D1D7TTAJ0MMF0X9FN",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/rootguard/... passes with tests that, on a temp root, the helper reports a file added or changed in .rhiza-root/, a usage.limits.jsonl line appended with a hit_at outside the run span, and a usage.live.json snapshot written with a captured_at outside the run span, and reports nothing when the folder is untouched, when no root encloses the dir, when only daemon-owned files changed, when the appended line's hit_at lies inside the run span, or when usage.live.json was rewritten with snapshots captured inside the run span or left unchanged",
+          "statement": "The test runs of internal/api and cmd/rhiza fail when they write into the state folder of a root enclosing the package dir, through one shared helper in package internal/rootguard: TestMain snapshots that root's .rhiza-root/ (names, sizes, mod times, the line count of usage.limits.jsonl, and the snapshots in usage.live.json by kind and captured_at) before m.Run and, after it, exits non-zero naming each write it attributes to the test run, while writes the live root daemon, run drivers and live agents' status lines make at the same time pass. Attribution: a file that appeared or changed is reported unless the daemon or drivers own it (daemon.lock, daemon.home, daemon.state.json, requests.json, requests.lock, starts.json, starts.lock, continues.json, continues.lock, main-stale.json, usage.limits.jsonl, usage.live.json); in usage.limits.jsonl, an appended line is reported when its hit_at lies outside the wall-clock span of the test run, and in usage.live.json a new snapshot is reported when its captured_at lies outside that span (tests stamp with fixed clocks, real drivers and status lines with the current time). cmd/rhiza's TestMain uses testscript.RunMain so the check runs after the scripts"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6T26X2D1D7TTAJ0MMF0X9FN",
+        "id": "01M78FP3XK01YHHV4KN57MWNHH",
+        "link": "01M78FP3XK01YHHV4KN4GP605D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FP3KHSM7XM532BT1X4WZH",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M6YCRKH9VEHGSH0A2DFQRQ4W",
+        "handle": null,
+        "id": "01M78FP3ZS0A3JSW8VW7MW2CJT",
+        "node": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestCIStability|TestShipLocalGate' shows: an empty record stable; an identified flake inside the window unstable, and stable once 20 later clean runs push it out; a window whose only flakes are unidentified ('ci / UNKNOWN STEP', 'CI run 123') stable, with a reason naming the ignored flake, and ship gate skipping with that reason; a red dispatched main result unstable, and stable once a later ship check --main records green, whether by a tree-equal merge or a green dispatched run; rhiza.ship.ciWindow=5 shrinking the window; an invalid window refused by rhiza daemon set",
+          "statement": "Rhiza judges a repo's CI unstable while its last completed CI runs in the stability record (20 by default, the project setting rhiza.ship.ciWindow) hold an identified flake, or while main's latest result in the record is red, and stable again once neither holds. An identified flake names its failing test ('--- FAIL:' test name) or a 'job / step' whose step is known; an unidentified flake (step read as UNKNOWN STEP, or 'CI run <id>' whose log names no job or step) stays in the record, in rhiza health with its count and in the watchdog's filed bugs, but does not count toward the verdict, and the stable verdict's reason (and ship.gate's skip reason) says when one was seen and ignored. Main's latest result is the one the latest rhiza ship check --main recorded: a merge whose tree equals its tested PR head's records that head's green result for the merge commit, and a tree-differing merge records the dispatched CI run's result, so a red main clears at the next merge that settles green"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6YCRKH9VEHGSH0A29RKY1ZD",
+        "id": "01M78FP436H8F1891M86W50CZP",
+        "link": "01M78FP436H8F1891M842SM85P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FKX3BQT0ABF59FCKH9B6Z",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestShipGateFullLog shows a gate whose output is over 64 KB with a '--- FAIL: TestX' line near its start and make's error lines at its end: the log file holds every byte, ShipGateResponse's log field names it, and the last 20 lines of the human output (what a failed command step keeps) contain '--- FAIL: TestX' and the log path; a passing gate also writes the log; describe-golden is regenerated for the new field",
+          "statement": "When the local gate (rhiza ship gate) runs, its whole combined output is written to a log file under the git common dir (rhiza/gate/<branch>.log, replaced on each run), the response carries the file's path, and a failing gate's human output ends with the output's failing test lines (go test '--- FAIL:', 'FAIL', 'panic:' lines, at most 10) and 'Full log: <path>', so the tail a run step keeps names the failing test and where to read the rest"
+        },
+        "handle": "ship-gate-full-log",
+        "id": "01M78FP45EF4RB94DP1KG36W64",
+        "key": "zzzzzr",
+        "kind": "capability",
+        "node": "01M78FP45EF4RB94DP1JZ5W6T2",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M78FP45EF4RB94DP1JZ5W6T2",
+        "id": "01M78FP48WXDKDCDGHQ1F69EFT",
+        "link": "01M78FP48WXDKDCDGHQ11DS093",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78FP3CYRMNA5WR2QPM3R6HH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M78FP45EF4RB94DP1JZ5W6T2",
+        "id": "01M78FP4B9MWPNRWRNQM76RM53",
+        "link": "01M78FP4B9MWPNRWRNQKNWD19Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M78FD039D0F1QVN2BWEAEYCC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78FP4C8N88BX2Y4TCM4X688",
+  "type": "ops",
+  "v": 1
+}

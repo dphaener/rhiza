@@ -136,3 +136,44 @@ func TestMainFailsOnWrite(t *testing.T) {
 		t.Fatal("write into the state folder did not fail the run")
 	}
 }
+
+func live(at time.Time) string {
+	return fmt.Sprintf(`[{"kind":"weekly","used_percentage":24,"resets_at":%q,"captured_at":%q,"agent":"claude-code"}]`+"\n",
+		at.Add(time.Hour).Format(time.RFC3339), at.Format(time.RFC3339Nano))
+}
+
+// A live agent's status line rewrites usage.live.json during the run (and
+// can leave a temp file behind): not the tests' write.
+func TestLiveSnapshotInsideSpan(t *testing.T) {
+	root, state := newRoot(t)
+	write(t, filepath.Join(state, liveFile), live(t0.Add(-time.Hour)))
+	snap := Take(root)
+	write(t, filepath.Join(state, liveFile), live(t0.Add(30*time.Second)))
+	write(t, filepath.Join(state, liveFile+".1253334828"), "")
+	if got := snap.Check(t0, t1); len(got) != 0 {
+		t.Fatalf("live agent's snapshot reported %v", got)
+	}
+}
+
+func TestLiveSnapshotOutsideSpan(t *testing.T) {
+	root, state := newRoot(t)
+	write(t, filepath.Join(state, liveFile), live(t0.Add(-time.Hour)))
+	snap := Take(root)
+	write(t, filepath.Join(state, liveFile), live(time.Date(2026, 11, 4, 10, 45, 0, 0, time.UTC)))
+	got := snap.Check(t0, t1)
+	if len(got) != 1 || !strings.Contains(got[0], "usage.live.json: weekly snapshot written with captured_at 2026-11-04T10:45:00Z") {
+		t.Fatalf("got %v", got)
+	}
+}
+
+// The live file rewritten during the run with only its old snapshot is not
+// reported: only new snapshots count.
+func TestLiveSnapshotUnchanged(t *testing.T) {
+	root, state := newRoot(t)
+	write(t, filepath.Join(state, liveFile), live(t0.Add(-time.Hour)))
+	snap := Take(root)
+	write(t, filepath.Join(state, liveFile), live(t0.Add(-time.Hour)))
+	if got := snap.Check(t0, t1); len(got) != 0 {
+		t.Fatalf("unchanged snapshot reported %v", got)
+	}
+}
