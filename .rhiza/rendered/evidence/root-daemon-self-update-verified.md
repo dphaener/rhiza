@@ -14,7 +14,7 @@ Verifier claude-code-1b977378 at 6c4b2376: go test -trimpath -count=1 ./internal
 
 ### Out
 
-- verifies [root-daemon-self-update](../capability/rhiza/orchestration/daemon/root-daemon-self-update.md)
+- verifies root-daemon-self-update (retired)
 
 ## History
 

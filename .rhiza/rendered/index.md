@@ -525,6 +525,8 @@
         - [daemon-state-at-start](capability/rhiza/orchestration/daemon/daemon-reexec-new-binary/daemon-state-at-start.md)
       - [daemon-settings](capability/rhiza/orchestration/daemon/daemon-settings.md)
         - [daemon-load-memory-settings](capability/rhiza/orchestration/daemon/daemon-settings/daemon-load-memory-settings.md)
+        - [self-update-settings-removed](capability/rhiza/orchestration/daemon/daemon-settings/self-update-settings-removed.md)
+        - [auto-update-documented](capability/rhiza/orchestration/daemon/daemon-settings/auto-update-documented.md)
       - [daemon-pause](capability/rhiza/orchestration/daemon/daemon-pause.md)
       - [plan-requests](capability/rhiza/orchestration/daemon/plan-requests.md)
         - [request-queue](capability/rhiza/orchestration/daemon/plan-requests/request-queue.md)
@@ -565,7 +567,6 @@
       - [root-daemon-round-robin](capability/rhiza/orchestration/daemon/root-daemon-round-robin.md)
       - [root-daemon-settings-scope](capability/rhiza/orchestration/daemon/root-daemon-settings-scope.md)
       - [root-daemon-service](capability/rhiza/orchestration/daemon/root-daemon-service.md)
-      - [root-daemon-self-update](capability/rhiza/orchestration/daemon/root-daemon-self-update.md)
       - [root-daemon-rex-session](capability/rhiza/orchestration/daemon/root-daemon-rex-session.md)
       - [vm-root-installed](capability/rhiza/orchestration/daemon/vm-root-installed.md)
       - [vm-second-project-ships](capability/rhiza/orchestration/daemon/vm-second-project-ships.md)
@@ -588,6 +589,7 @@
         - [watchdog-holds-skip-abandoned](capability/rhiza/orchestration/daemon/daemon-watchdog/watchdog-holds-skip-abandoned.md)
       - [root-continuations-first](capability/rhiza/orchestration/daemon/root-continuations-first.md)
       - [daemon-prunes-orphan-leftovers](capability/rhiza/orchestration/daemon/daemon-prunes-orphan-leftovers.md)
+      - [daemon-auto-update](capability/rhiza/orchestration/daemon/daemon-auto-update.md)
       - [daemon-merges-model-prs](capability/rhiza/orchestration/daemon/daemon-merges-model-prs.md)
     - [inbox](capability/rhiza/orchestration/inbox.md)
       - [inbox-list](capability/rhiza/orchestration/inbox/inbox-list.md)
@@ -2148,6 +2150,9 @@
 - [ask-status-is-question-qa-1](evidence/ask-status-is-question-qa-1.md)
 - [ask-status-is-question-verified](evidence/ask-status-is-question-verified.md)
 - [ask-status-is-question-verified-2](evidence/ask-status-is-question-verified-2.md)
+- [auto-update-documented-qa-1](evidence/auto-update-documented-qa-1.md)
+- [auto-update-documented-qa-2](evidence/auto-update-documented-qa-2.md)
+- [auto-update-documented-verified](evidence/auto-update-documented-verified.md)
 - [autonomous-gate-rule-verified](evidence/autonomous-gate-rule-verified.md)
 - [autonomous-keeps-permissions-verified](evidence/autonomous-keeps-permissions-verified.md)
 - [autonomous-review-verified](evidence/autonomous-review-verified.md)
@@ -2332,6 +2337,10 @@
 - [daemon-app-pause-verified](evidence/daemon-app-pause-verified.md)
 - [daemon-app-run-limit-qa-1](evidence/daemon-app-run-limit-qa-1.md)
 - [daemon-app-run-limit-verified](evidence/daemon-app-run-limit-verified.md)
+- [daemon-auto-update-qa-1](evidence/daemon-auto-update-qa-1.md)
+- [daemon-auto-update-qa-2](evidence/daemon-auto-update-qa-2.md)
+- [daemon-auto-update-verified](evidence/daemon-auto-update-verified.md)
+- [daemon-auto-update-verified-2](evidence/daemon-auto-update-verified-2.md)
 - [daemon-disk-guard-qa-1](evidence/daemon-disk-guard-qa-1.md)
 - [daemon-disk-guard-qa-2](evidence/daemon-disk-guard-qa-2.md)
 - [daemon-disk-guard-verified](evidence/daemon-disk-guard-verified.md)
@@ -3136,6 +3145,7 @@
 - [pr-467-runs-clean-up-rhiza-s-own](evidence/pr-467-runs-clean-up-rhiza-s-own.md)
 - [pr-468-workflow-cleanup-phase](evidence/pr-468-workflow-cleanup-phase.md)
 - [pr-469-every-run-checks-the-model-and](evidence/pr-469-every-run-checks-the-model-and.md)
+- [pr-473-auto-update-setting](evidence/pr-473-auto-update-setting.md)
 - [pr-50-a-change-set-has-at-most-one](evidence/pr-50-a-change-set-has-at-most-one.md)
 - [pr-52-the-daemon](evidence/pr-52-the-daemon.md)
 - [pr-53-the-inbox](evidence/pr-53-the-inbox.md)
@@ -3517,6 +3527,10 @@
 - [scripts-free-disk-hermetic-verified](evidence/scripts-free-disk-hermetic-verified.md)
 - [search-command-qa-1](evidence/search-command-qa-1.md)
 - [search-command-verified](evidence/search-command-verified.md)
+- [self-update-settings-removed-qa-1](evidence/self-update-settings-removed-qa-1.md)
+- [self-update-settings-removed-qa-2](evidence/self-update-settings-removed-qa-2.md)
+- [self-update-settings-removed-verified](evidence/self-update-settings-removed-verified.md)
+- [self-update-settings-removed-verified-2](evidence/self-update-settings-removed-verified-2.md)
 - [session-commands-test](evidence/session-commands-test.md)
 - [session-hook-denies-log-edits-qa-1](evidence/session-hook-denies-log-edits-qa-1.md)
 - [session-hook-denies-log-edits-verified](evidence/session-hook-denies-log-edits-verified.md)
@@ -8807,5 +8821,6 @@
 - capability daemon-repo-session `01M6FES3PKQCSNG9SEECK4G1R7` — Superseded by root-daemon-rex-session: the session is named after the project's registered name, rhiza-<project>, not the main checkout's folder, and the root daemon creates and passes one per project (m29-rex-session-per-project).
 - capability daemon-self-update `01M6FES89JR3Z5XA751AGCD3RV` — Superseded by root-daemon-self-update: the root daemon self-updates from the project rhiza.toml names as self_update_project, with selfUpdate a machine setting in rhiza.toml (m29-settings-split).
 - capability requests-app-milestone `01M6JE40PG6Z1ZG27N7DMFH3FF` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): the old requests app and its milestone field are deleted; the new request form has no milestone field
+- capability root-daemon-self-update `01M6RN85F2T3NMVDRKV706VSZB` — Replaced by daemon-auto-update: rhiza.daemon.selfUpdate and rhiza.toml's self_update_project are removed; autoUpdate=main finds Rhiza's source checkout by its module path.
 - actor claude-code-a463ece8 `01M6HYXRR6ZXYF68BAC8X0KEEQ` — Duplicate of actor claude-code-a463ece8 (node 01M6HV8Y05D3EMPSARA4H5VJ15) that landed on main from another branch while this run was building; the same session recorded itself twice
 - actor claude-code-83858632 `01M6KFM58RDZ5KSG59GP1005QZ` — Duplicate actor record: session claude-code-83858632 recorded itself in a verifier checkout (change set 01M6KFMJ) after already recording in the run worktree (01M6KE23); keep the first
