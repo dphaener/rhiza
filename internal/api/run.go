@@ -942,7 +942,9 @@ func newPlanChange(ctx *Ctx, r RunStartRequest, def *workflow.Definition, reqKin
 	if err := ww.writeEntry(e); err != nil {
 		return t, err
 	}
-	if err := w.writeEntry(e); err != nil {
+	// The run has no journal yet, so the main copy skips the live-run
+	// mirror and the model-branch step: the run's branch alone ships it.
+	if err := w.writeEntryUnshipped(e); err != nil {
 		return t, err
 	}
 	if err := w.setCurrent(cs); err != nil {

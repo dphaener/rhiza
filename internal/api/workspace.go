@@ -439,6 +439,15 @@ func (w *workspace) writeEntry(e entry.Entry) error {
 	return nil
 }
 
+// writeEntryUnshipped writes e like writeEntry, without the live-run mirror
+// or the model-branch step: for a copy that something else ships.
+func (w *workspace) writeEntryUnshipped(e entry.Entry) error {
+	mirror, modelBranch := w.mirror, w.modelBranch
+	w.mirror, w.modelBranch = nil, nil
+	defer func() { w.mirror, w.modelBranch = mirror, modelBranch }()
+	return w.writeEntry(e)
+}
+
 // openChangeSet starts a new change set with a fresh ID and returns that ID
 // and its open entry.
 func (w *workspace) openChangeSet(open changeset.Open, actor, forID id.ID) (id.ID, entry.Entry, error) {

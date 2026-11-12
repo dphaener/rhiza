@@ -3,13 +3,17 @@
 # there, where the run commits it; the same bytes sit in the main checkout's
 # log as a copy held by the live run, so change show works from main, and
 # neither check nor health calls the copy an orphan. The plan's gate step
-# commits the entry on the run's branch.
+# commits the entry on the run's branch. The model-branch step is on, and
+# the main copy never ships on a model branch or opens a model PR.
 #
-# The fake rex runs the tab's command; the fake claude does nothing.
+# The fake rex runs the tab's command; the fake claude does nothing; the
+# fake gh logs its calls.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
+chmod 755 bin/gh
 env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_MODEL_BRANCH=1
 exec git init -q --bare origin.git
 mkdir repo
 cd repo
@@ -40,7 +44,11 @@ exec rhiza check
 exec rhiza health
 stdout 'ok   main +on main, clean'
 ! stdout 'orphan'
-! stdout 'untracked'
+stdout '1 untracked log entries pending on a model branch or run'
+! stdout 'on no branch'
+exec git ls-remote --heads $WORK/origin.git 'refs/heads/model/*'
+! stdout .
+! exists $WORK/gh.log
 
 # A milestone record does the same.
 exec rhiza run start --foreground --workflow plan --new 'Plan the milestone' --milestone --permission-mode manual --json
@@ -56,7 +64,11 @@ exec rhiza check
 exec rhiza health
 stdout 'ok   main +on main, clean'
 ! stdout 'orphan'
-! stdout 'untracked'
+stdout '2 untracked log entries pending on a model branch or run'
+! stdout 'on no branch'
+exec git ls-remote --heads $WORK/origin.git 'refs/heads/model/*'
+! stdout .
+! exists $WORK/gh.log
 
 fold-ok
 
@@ -112,3 +124,7 @@ echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 -- bin/claude --
 #!/bin/sh
 exit 0
+-- bin/gh --
+#!/bin/sh
+echo "gh $*" >> "$WORK/gh.log"
+exit 1
