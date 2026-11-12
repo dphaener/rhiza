@@ -1,0 +1,40 @@
+{
+  "actor": "01M76YGD8XMD2YJQBV2W9QNP7N",
+  "after": [
+    "01M76YZVWA3C64N3YD7GVCBK69"
+  ],
+  "at": "2026-11-12T04:10:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 769366365, go test -trimpath -count=1 ./internal/api -run 'TestHealthMainOrphanLog' passes (TestHealthMainOrphanLog, TestHealthMainOrphanLogLiveRun). Read the tests: an orphan entry makes healthMain bad with Next 'rhiza model commit-untracked' and detail naming .rhiza/log/<cs>/ and the change set; a stale close-out never softens the orphan's bad; after daemonCommitUntracked the entry is held by a model branch and the part is ok with a 'pending entry' detail; an entry a live run's worktree holds leaves the part ok with the pending entry listed and no 'on no branch'; and the new case (Decision orphan-log-needs-origin-main, the confirmed cycle-2 finding) uses modelBranchFixture(t,false) and asserts an untracked entry with no origin/main leaves the part ok with no Next and no orphan or commit-untracked detail. Testscripts run-start-new-main-clean, health*, check-orphan-log and model-commit-untracked pass (an earlier run-start-new-main-clean failure was my own $WORK path containing 'orphan', gone with a neutral TMPDIR). internal/api -run 'Health|ModelBranch|CommitUntracked|Orphan|Untracked|Check' passes; the only FAIL line was the root-state guard on ~/code/.rhiza-root/usage.live.json, which the live daemon rewrites."
+        },
+        "handle": "health-orphan-log-entries-verified-5",
+        "id": "01M76Z72EWQHGXQ1GXGKKZHNDM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M76Z72EWQHGXQ1GXGHEP60EK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M76Z72EWQHGXQ1GXGHEP60EK",
+        "id": "01M76Z72HJ70C00YG71M6Q5TJM",
+        "link": "01M76Z72HJ70C00YG71HWR1BH2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76FAA9ATEZ0372B4BZ9SRST",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76F267WMEGJDQFHHNM723TN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M76Z72MA2KKTF6ZDB3SW6JAZ",
+  "type": "ops",
+  "v": 1
+}
