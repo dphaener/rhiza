@@ -1,0 +1,40 @@
+{
+  "actor": "01M78XC6EP42ZJ3NQ8YHTXMM9S",
+  "after": [
+    "01M78X93GF4E25MNC7R5T3E5A7"
+  ],
+  "at": "2026-11-12T22:17:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 96c2f0df4 ran go test -trimpath -count=1 ./internal/run -run 'Checks|Critic' (ok): TestCriticDowngradeEndsFix has the critic downgrade alpha's only major to minor and asserts the review passes, only checks and the critic start, r.fixSpecs and r.leafSpecs are empty, and the outcome detail is 'cycle 1: critic downgraded f1 (major to minor)'; TestCriticConfirmedMajorStartsFix confirms one major and downgrades another, and asserts the check fails and exactly one change-set fixer starts with only 'alpha f1 major'. Ran go test -trimpath -count=1 ./internal/api -run 'RunStatus|ReviewSummary' (ok): TestRunStatusReviewSummaryDowngraded asserts the summary lists the finding under 'Downgraded by the critic' as 'downgraded from major to minor', not under Confirmed, and that the run status finding keeps severity major with downgraded_to minor. Read the diff (checks.go checkVerdict, run_review.go, run_summary.go): it matches. Both attempt-1 findings (fixer never checked; no confirmed-major fixer case) are fixed."
+        },
+        "handle": "downgrade-ends-fix-verified",
+        "id": "01M78XDKQ2V058G8NZ1PN4E6S8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78XDKQ2V058G8NZ1N468KDS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78XDKQ2V058G8NZ1N468KDS",
+        "id": "01M78XDKSN8Q6S0TH4ENGG9N2Q",
+        "link": "01M78XDKSN8Q6S0TH4EKDFHPR8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZGEMFYQN2SKCNBTHW3AT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRYNK4PGG53XNC1ZWFTKD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78XDKVDDF8RVV25MR5JNTGC",
+  "type": "ops",
+  "v": 1
+}

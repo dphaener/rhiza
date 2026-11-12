@@ -52,14 +52,14 @@ func init() {
 		Request:  reflect.TypeFor[RunVerdictRequest](),
 		Response: reflect.TypeFor[RunVerdictResponse](),
 		Input: &Input{
-			Summary: `{"verdicts":[{"finding":"f1","verdict":"confirmed"|"dropped","reason":...},...]}, at least one; each names a finding of the latest round (with --check, of the check's latest round)`,
+			Summary: `{"verdicts":[{"finding":"f1","verdict":"confirmed"|"dropped"|"downgraded","reason":...,"severity":...},...]}, at least one; each names a finding of the latest round (with --check, of the check's latest round)`,
 			Schema:  verdictFileSchema,
 		},
 		Run: runRunVerdict,
 	})
 	register(Operation{
 		Name:     "run.review-check",
-		Summary:  "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass",
+		Summary:  "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent major, the rest minor), fail with one before round 3, else leave each as a question and pass",
 		Write:    true,
 		Request:  reflect.TypeFor[RunReviewCheckRequest](),
 		Response: reflect.TypeFor[RunReviewCheckResponse](),
@@ -105,15 +105,18 @@ type RunFinding struct {
 	LeafHandle    string `json:"leaf_handle,omitempty" desc:"That leaf's handle when the finding was recorded"`
 	Place         string `json:"place,omitempty" desc:"A review check's finding: where, as file:line or a node"`
 	Reason        string `json:"reason" desc:"Why the reviewer found it"`
-	Verdict       string `json:"verdict,omitempty" desc:"The critic's latest verdict, confirmed or dropped; absent before one"`
+	Verdict       string `json:"verdict,omitempty" desc:"The critic's latest verdict, confirmed, dropped or downgraded; absent before one"`
 	VerdictReason string `json:"verdict_reason,omitempty" desc:"Why the critic gave it; absent before a verdict"`
+	Downgraded    string `json:"downgraded_to,omitempty" desc:"A downgraded finding: the lower severity the critic left it at; Severity stays the original"`
 }
 
 // RunVerdict is one verdict a critic gave.
 type RunVerdict struct {
-	Finding string `json:"finding" desc:"The finding's ID in the round"`
-	Verdict string `json:"verdict" desc:"confirmed or dropped"`
-	Reason  string `json:"reason" desc:"Why"`
+	Finding  string `json:"finding" desc:"The finding's ID in the round"`
+	Verdict  string `json:"verdict" desc:"confirmed, dropped or downgraded"`
+	Reason   string `json:"reason" desc:"Why"`
+	Severity string `json:"severity,omitempty" desc:"A downgraded verdict: the lower severity the finding keeps"`
+	Original string `json:"original_severity,omitempty" desc:"A downgraded verdict: the finding's severity before it"`
 }
 
 // RunFindingsResponse is the round the findings opened, or the leaf
@@ -744,8 +747,24 @@ func runRunVerdict(ctx *Ctx, req any) (any, error) {
 			return nil, Usagef("verdict %d: finding %s is judged twice", n, v.Finding).WithNext(runVerdictNext)
 		}
 		seen[v.Finding] = true
-		if v.Verdict != run.Confirmed && v.Verdict != run.Dropped {
-			return nil, Usagef("verdict %d: verdict %q is not confirmed or dropped", n, v.Verdict).WithNext(runVerdictNext)
+		if v.Verdict != run.Confirmed && v.Verdict != run.Dropped && v.Verdict != run.Downgraded {
+			return nil, Usagef("verdict %d: verdict %q is not confirmed, dropped or downgraded", n, v.Verdict).WithNext(runVerdictNext)
+		}
+		if v.Verdict == run.Downgraded {
+			orig, _ := round.Finding(v.Finding)
+			sev := orig.EffectiveSeverity()
+			if !run.Serious(sev) {
+				return nil, Usagef("verdict %d: finding %s has severity %q: only a blocker or major finding can be downgraded", n, v.Finding, sev).WithNext(runVerdictNext)
+			}
+			if !run.ValidSeverity(v.Severity) {
+				return nil, Usagef("verdict %d: a downgraded verdict needs a severity, one of %s", n, strings.Join(run.Severities, ", ")).WithNext(runVerdictNext)
+			}
+			if run.SeverityRank(v.Severity) <= run.SeverityRank(sev) {
+				return nil, Usagef("verdict %d: finding %s is %s: downgrade it to a lower severity than %s, not %s", n, v.Finding, sev, sev, v.Severity).WithNext(runVerdictNext)
+			}
+			f.Verdicts[i].Original = sev
+		} else if v.Severity != "" {
+			return nil, Usagef("verdict %d: only a downgraded verdict takes a severity", n).WithNext(runVerdictNext)
 		}
 		if strings.TrimSpace(v.Reason) == "" {
 			return nil, Usagef("verdict %d: no reason", n).WithNext(runVerdictNext)
@@ -753,7 +772,7 @@ func runRunVerdict(ctx *Ctx, req any) (any, error) {
 	}
 	resp := RunVerdictResponse{Run: rr.id, Round: round.Number, Check: check, Verdicts: make([]RunVerdict, 0, len(f.Verdicts)), DryRun: ctx.DryRun}
 	for _, v := range f.Verdicts {
-		resp.Verdicts = append(resp.Verdicts, RunVerdict{Finding: v.Finding, Verdict: v.Verdict, Reason: v.Reason})
+		resp.Verdicts = append(resp.Verdicts, RunVerdict{Finding: v.Finding, Verdict: v.Verdict, Reason: v.Reason, Severity: v.Severity, Original: v.Original})
 	}
 	e := run.Entry{Type: run.TypeVerdict, At: ctx.Now(), Verdicts: f.Verdicts}
 	if review {
@@ -769,11 +788,14 @@ func runRunVerdict(ctx *Ctx, req any) (any, error) {
 // in round rd.
 func runFinding(f run.Finding, rd run.Round) RunFinding {
 	out := RunFinding{
-		ID: f.ID, Node: f.Node, Handle: f.Handle, Link: f.Link, LinkType: f.LinkType, LinkFrom: f.LinkFrom, LinkTo: f.LinkTo, Kind: f.Kind, Check: f.Check, Severity: f.Severity,
+		ID: f.ID, Node: f.Node, Handle: f.Handle, Link: f.Link, LinkType: f.LinkType, LinkFrom: f.LinkFrom, LinkTo: f.LinkTo, Kind: f.Kind, Check: f.Check, Severity: f.EffectiveSeverity(),
 		Leaf: f.Leaf, LeafHandle: f.LeafHandle, Place: f.Place, Reason: f.Reason,
 	}
 	if v, ok := rd.Verdict(f.ID); ok {
 		out.Verdict, out.VerdictReason = v.Verdict, v.Reason
+		if v.Verdict == run.Downgraded {
+			out.Downgraded = v.Severity
+		}
 	}
 	return out
 }
@@ -818,9 +840,10 @@ func verdictFileSchema() map[string]any {
 				"items": map[string]any{
 					"type": "object",
 					"properties": map[string]any{
-						"finding": map[string]any{"type": "string", "description": "The finding's ID in the latest round: f1, f2, ..."},
-						"verdict": map[string]any{"enum": []any{run.Confirmed, run.Dropped}, "description": "confirmed or dropped"},
-						"reason":  map[string]any{"type": "string", "minLength": 1, "description": "Why"},
+						"finding":  map[string]any{"type": "string", "description": "The finding's ID in the latest round: f1, f2, ..."},
+						"verdict":  map[string]any{"enum": []any{run.Confirmed, run.Dropped, run.Downgraded}, "description": "confirmed, dropped or downgraded"},
+						"severity": map[string]any{"enum": stringsAny(run.Severities), "description": "Only with downgraded: the lower severity the finding keeps"},
+						"reason":   map[string]any{"type": "string", "minLength": 1, "description": "Why"},
 					},
 					"required":             []string{"finding", "reason", "verdict"},
 					"additionalProperties": false,
@@ -901,21 +924,29 @@ func (r RunVerdictResponse) Human(w io.Writer) {
 // check's finding is "f1 severity at place on leaf: reason", "on leaf"
 // only when it names one.
 func findingLine(f RunFinding) string {
-	if f.Severity != "" {
+	if f.Kind == "" && f.Severity != "" {
 		s := f.ID + " " + f.Severity + " at " + oneLine(f.Place)
 		if leaf := cmp.Or(f.LeafHandle, f.Leaf); leaf != "" {
 			s += " on " + leaf
 		}
 		s += ": " + oneLine(f.Reason)
 		if f.Verdict != "" {
-			s += " — " + f.Verdict + ": " + oneLine(f.VerdictReason)
+			s += " — " + f.Verdict
+			if f.Downgraded != "" {
+				s += " from " + f.Severity + " to " + f.Downgraded
+			}
+			s += ": " + oneLine(f.VerdictReason)
 		}
 		return s
 	}
 	node := findingTarget(f.Handle, f.Node, f.Link, f.LinkType, f.LinkFrom, f.LinkTo)
 	s := f.ID + " " + f.Kind + " on " + node + ": " + oneLine(f.Reason)
 	if f.Verdict != "" {
-		s += " — " + f.Verdict + ": " + oneLine(f.VerdictReason)
+		s += " — " + f.Verdict
+		if f.Downgraded != "" {
+			s += " from " + f.Severity + " to " + f.Downgraded
+		}
+		s += ": " + oneLine(f.VerdictReason)
 	}
 	return s
 }
@@ -952,7 +983,7 @@ type RunReviewCheckResponse struct {
 	Run       string              `json:"run" desc:"The run's full ID"`
 	Round     int                 `json:"round" desc:"The latest review round, from 1"`
 	Passed    bool                `json:"passed" desc:"True: the review may go on to the gate"`
-	Confirmed []RunFinding        `json:"confirmed" desc:"The round's findings the critic confirmed, in order"`
+	Confirmed []RunFinding        `json:"confirmed" desc:"The round's major findings the critic confirmed (a confirmed minor is never fixed), in order"`
 	Questions []RunReviewQuestion `json:"questions,omitempty" desc:"From round 3, the question nodes left for the confirmed findings, in order"`
 	DryRun    bool                `json:"dry_run,omitempty" desc:"True if nothing was written or journalled"`
 }
@@ -1003,8 +1034,8 @@ func reviewQuestionText(n int, f run.Finding, reason string) string {
 }
 
 // runRunReviewCheck reads the run's latest review round. With no round
-// it fails; with no confirmed finding it passes. Before round 3 a
-// confirmed finding fails it (exit 1), writing nothing. From round 3 it
+// it fails; with no confirmed major finding (run.Round.Blocking) it
+// passes. Before round 3 such a finding fails it (exit 1), writing nothing. From round 3 it
 // adds a question node per confirmed finding, linked blocks to the
 // finding's node when that is a live capability where the question goes
 // (reviewQuestionTarget): the run's change set while it is open; once it
@@ -1041,7 +1072,7 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("%s: run %s has no review round yet, so the plan is unreviewed: rhiza run findings opens one", cmd, rr.id).
 			WithNext("rhiza describe run.findings")
 	}
-	confirmed := rd.Confirmed()
+	confirmed := rd.Blocking()
 	resp := RunReviewCheckResponse{Run: rr.id, Round: rd.Number, Confirmed: make([]RunFinding, 0, len(confirmed)), DryRun: ctx.DryRun}
 	for _, f := range confirmed {
 		resp.Confirmed = append(resp.Confirmed, runFinding(f, rd))
@@ -1570,8 +1601,8 @@ func questionOpen(sets []changeset.ChangeSet, m Model, q id.ID) bool {
 
 // gateReview decides whether an autonomous run's review passed, so the
 // gate may accept. With no review round it has not. The latest round
-// passes with no confirmed finding, or with a question left for each
-// confirmed one. It reports whether a question the review left
+// passes with no confirmed major finding (run.Round.Blocking), or with a
+// question left for each. It reports whether a question the review left
 // (reviewQuestions) is still open (questionOpen): the gate then stops for
 // the owner and accepts nothing.
 func gateReview(sets []changeset.ChangeSet, m Model, rr reviewRun) (bool, error) {
@@ -1589,7 +1620,7 @@ func gateReview(sets []changeset.ChangeSet, m Model, rr reviewRun) (bool, error)
 			open = true
 		}
 	}
-	for _, f := range rd.Confirmed() {
+	for _, f := range rd.Blocking() {
 		if _, ok := reviewAskedFor(reviewQuestions(rr.state), reviewQuestionHandle(rr.id, rd.Number, f.ID)); !ok {
 			return false, Errorf("%s: run %s is autonomous and review round %d has confirmed finding %s with no question left for it, so the review has not passed and it accepts nothing: run rhiza run review-check",
 				cmd, rr.id, rd.Number, f.ID).WithNext(runReviewCheckNext)

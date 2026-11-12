@@ -1,0 +1,86 @@
+{
+  "actor": "01M78XKTC2SF2ECBA4DNC4ZQ6Y",
+  "after": [
+    "01M78XDKVDDF8RVV25MR5JNTGC"
+  ],
+  "at": "2026-11-12T22:24:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e313e4634 with the built binary (go build -trimpath ./cmd/rhiza), in a scratch Rhiza root running a real rhiza run start --foreground review workflow (fake rex and claude only stand in for agent sessions). The beta critic first sent four bad verdicts: major to major, blocker to blocker, downgraded with no severity, and a downgrade of a minor. Each exited 2 with a usage message (e.g. 'finding f2 is major: downgrade it to a lower severity than major, not major'). It then sent blocker to major and major to nit, which were accepted. The run journal holds {verdict:downgraded, severity:minor, original_severity:major} and the blocker to major and major to nit entries, each with original_severity."
+        },
+        "handle": "verdict-downgraded-qa-1",
+        "id": "01M78XSA00HRRVY16SQ2QT2QYZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78XS9ZZGF88PBM20B9FX2GM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78XS9ZZGF88PBM20B9FX2GM",
+        "id": "01M78XSA5NYEHZHS1TJW8ZW8XR",
+        "link": "01M78XSA5NYEHZHS1TJVD7WQX2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZGDTNAM0425G73YGZ3P0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e313e4634 with the built binary, a real review run with checks alpha and beta (fake agents). Alpha's only major was downgraded to minor: alpha passed in cycle 1 ('passed: critic downgraded f1 (major to minor)'), and the session log shows no alpha re-run and no fixer for it. Beta's blocker was downgraded to major and still started the fixer and verifier for leaf thing in cycle 2, then beta re-ran and passed. rhiza run status shows 'f1 major ... downgraded from major to minor', and --json keeps severity major with downgraded_to minor. rhiza run summary lists both under 'Downgraded by the critic' as 'downgraded from <orig> to <lower>', not under Confirmed."
+        },
+        "handle": "downgrade-ends-fix-qa-1",
+        "id": "01M78XSAAS8RFPQY80J1BZV9E6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78XSAAS8RFPQY80J140RWGX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78XSAAS8RFPQY80J140RWGX",
+        "id": "01M78XSAE9VQA638HZ1PDDBYG7",
+        "link": "01M78XSAE9VQA638HZ1NKM67PF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZGEMFYQN2SKCNBTHW3AT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e313e4634 with the built binary: I extracted '## Severities' from rhiza guide review and rhiza guide plan-review, and cmp found them byte-identical (blocker, major, minor and nit, a per-check mapping and a plan-review mapping). The block names no go or make command. Both Critic sections say confirm, downgrade or drop and never add a finding or raise a severity, and both show the downgraded verdict's severity field."
+        },
+        "handle": "severity-contract-qa-1",
+        "id": "01M78XSAHD0VY4RJW8HPP5AJHR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78XSAHD0VY4RJW8HNC2CEAZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78XSAHD0VY4RJW8HNC2CEAZ",
+        "id": "01M78XSAMP46PPVCHR845TJPPV",
+        "link": "01M78XSAMP46PPVCHR83TK76AB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZGFGB9C8J6GA5NF3RBQE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRYNK4PGG53XNC1ZWFTKD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78XSAR2RC8ZAG25Z64YWKEN",
+  "type": "ops",
+  "v": 1
+}

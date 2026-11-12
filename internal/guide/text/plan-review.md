@@ -43,7 +43,7 @@ When the plan is clean, record `{"findings":[]}`: every review records a round.
 ## Critic
 
 Read the latest round in `rhiza run status --json`, check each finding against the model
-and the code, and confirm or drop it. Never add a finding.
+and the code, and confirm, downgrade or drop it. Never add a finding and never raise a severity.
 
 ```
 rhiza run verdict - --json <<'EOF'
@@ -51,11 +51,24 @@ rhiza run verdict - --json <<'EOF'
 EOF
 ```
 
-`verdict` is `confirmed` or `dropped`.
+`verdict` is `confirmed` (keeps the severity), `downgraded` (lowers it: add `"severity":"minor"` or `"nit"`) or `dropped`.
+
+## Severities
+
+- `blocker`: behaviour broken, a build or test fails, or a leaf missing.
+- `major`: an acceptance point unmet, or a real defect.
+- `minor`: style, naming, docs or a non-blocking follow-up.
+- `nit`: taste.
+
+Per check: `compliance` leaf missing blocker, point unmet major; `quality` failing build or
+test blocker, defect major, convention minor; `qa` broken behaviour blocker, rough edge
+minor; `scope` outside the intent major; `model` code contradicted major, missing
+constraint minor. Plan review: `missing-acceptance`, `contradiction`, `outside-intent`
+major, the rest minor. `minor` and `nit` are never fixed.
 
 ## Reviser
 
-Fix each confirmed finding of the latest round in the model, nothing else: one
+Fix each confirmed major finding of the latest round in the model, nothing else: one
 `rhiza apply <file> --change <cs> --json` per change set holding the nodes. A node in a
 landed record is fixed with a record write: `rhiza apply <file> --record --json`.
 Never invent an owner's words: a missing quote becomes a question, not a made-up quote.

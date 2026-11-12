@@ -1,0 +1,40 @@
+{
+  "actor": "01M78X7QWRPCQ131J24VP2ZZTP",
+  "after": [
+    "01M78WYPSZK8QGSZRS0Z3SRWQS"
+  ],
+  "at": "2026-11-12T22:15:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 9e405b92b, go test -trimpath ./internal/guide -run 'Review|Plan' -v passed all 13 tests, including the new TestReviewSeverityBlockShared, which extracts each topic's '## Severities' section and asserts review.md and plan-review.md match byte for byte, that both Critic sections contain confirmed, downgraded, dropped and 'Never add a finding', and that the block contains none of 'go ', 'make ', 'rhiza check/render/ship' or 'testscript'. Reading the diff: the shared block lists blocker (behaviour broken, build or test fails, leaf missing), major (acceptance point unmet, real defect), minor (style, naming, docs, non-blocking follow-up) and nit, with a mapping per check and for plan review; both critic sections say confirm, downgrade or drop and never add a finding or raise a severity. go test -trimpath ./internal/guide/... also passed. Side changes: TopicCap rose from 800 to 1000, and review.md's opener no longer says review verifiers get RHIZA_LEAF, although internal/run/checks.go still starts review verifiers. That is a minor docs loss and does not affect acceptance."
+        },
+        "handle": "severity-contract-verified",
+        "id": "01M78X93F004AR792NRJZZXXZT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78X93F004AR792NRF3DJ512",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78X93F004AR792NRF3DJ512",
+        "id": "01M78X93FRD6NPTFFQPS7ZJY50",
+        "link": "01M78X93FRD6NPTFFQPP3AFR46",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZGFGB9C8J6GA5NF3RBQE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRYNK4PGG53XNC1ZWFTKD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78X93GF4E25MNC7R5T3E5A7",
+  "type": "ops",
+  "v": 1
+}

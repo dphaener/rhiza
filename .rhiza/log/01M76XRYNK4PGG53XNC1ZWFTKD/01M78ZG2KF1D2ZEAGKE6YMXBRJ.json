@@ -1,0 +1,40 @@
+{
+  "actor": "01M78Z6YFYERR0P13JFYSBPMZ6",
+  "after": [
+    "01M78Z1TPPA5HYS1EEAWJHCN1R"
+  ],
+  "at": "2026-11-12T22:54:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 5, at d05bba3b8. Ran the acceptance: go test -trimpath -count=1 ./internal/guide -run 'Review|Plan' passes; TestReviewSeverityBlockShared asserts review.md and plan-review.md hold the same Severities block byte for byte, that it names no Go, make, rhiza check/render/ship or testscript command, and that both Critic sections name confirmed, downgraded and dropped and say never add a finding. Read the diff: the block lists blocker, major, minor and nit with a mapping per check. The earlier findings are fixed: plan-review findings take their kind's severity (run.KindSeverity), so a plan critic's downgrade works, and review-check and the gate count only Round.Blocking. plan-review-rounds is amended to match. Also passed: go test -trimpath ./internal/api -run 'TestPlanReviewDowngradeByKind|Gate|ReviewCheck|Verdict|Downgrad', ./internal/run/..., the cmd/rhiza run-review*, review-*, plan-review-visit-round and autonomous-review scripts, and make self-check in a clean detached checkout with the run's RHIZA_* env unset (exit 0). In this worktree it fails only on this session's own unrendered actor record."
+        },
+        "handle": "severity-contract-verified-5",
+        "id": "01M78ZG2HV7RMBAP5CSWH7875D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78ZG2HV7RMBAP5CSTWG56G1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78ZG2HV7RMBAP5CSTWG56G1",
+        "id": "01M78ZG2JVPZ6ADCHVX95P38DX",
+        "link": "01M78ZG2JVPZ6ADCHVX5CMXGAS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZGFGB9C8J6GA5NF3RBQE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRYNK4PGG53XNC1ZWFTKD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78ZG2KF1D2ZEAGKE6YMXBRJ",
+  "type": "ops",
+  "v": 1
+}
