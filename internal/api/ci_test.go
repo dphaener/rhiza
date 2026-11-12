@@ -175,3 +175,38 @@ func TestCIInstallErrors(t *testing.T) {
 		}
 	}
 }
+
+// The since-last-green recipe is a docs page, so a project of any language
+// can copy it: it must state the rule and carry the example job, and name no
+// language or test tool.
+func TestDocsCISinceGreen(t *testing.T) {
+	b, err := os.ReadFile(filepath.Join("..", "..", "docs", "ci-since-last-green.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	page := string(b)
+	for _, want := range []string{
+		"last green commit",
+		"not an ancestor",
+		"`.rhiza/`",
+		"changes:",
+		"git diff --name-only \"$green\" HEAD",
+		"at least one job besides",
+	} {
+		if !strings.Contains(page, want) {
+			t.Errorf("docs/ci-since-last-green.md lacks %q", want)
+		}
+	}
+	for _, tool := range []string{"go test", "npm", "pytest", "cargo", "bundle", "rspec", "make "} {
+		if strings.Contains(page, tool) {
+			t.Errorf("docs/ci-since-last-green.md names %q: the recipe is language-neutral", tool)
+		}
+	}
+	readme, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(readme), "docs/ci-since-last-green.md") {
+		t.Error("README.md does not link the recipe")
+	}
+}
