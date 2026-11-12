@@ -1,0 +1,82 @@
+# run start --new (a plan run, and with --milestone a milestone's) opens the
+# run's branch and worktree first and writes the new change set's open entry
+# there, where the run commits it; the same bytes sit in the main checkout's
+# log as a copy held by the live run, so change show works from main, and
+# check does not call the copy an orphan.
+#
+# The fake rex runs the tab's command; the fake claude does nothing.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+cp $WORK/plan.toml .rhiza/workflows/plan-milestone.toml
+exec rhiza change new 'Seed'
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+exec git remote add origin $WORK/origin.git
+exec git push -q origin HEAD:main
+exec git fetch -q origin
+
+# An intention: the worktree holds the entry, main holds the same bytes.
+exec rhiza run start --foreground --workflow plan --new 'Plan reports' --permission-mode manual --json
+stdout '"state": "succeeded"'
+exec sh -c 'rhiza change ls --json | grep -B3 "Plan reports" | grep "\"id\"" | sed "s/.*\"\([0-9A-Z]\{26\}\)\".*/\1/" > $WORK/id'
+exec sh -c 'cs=$(cat $WORK/id); diff -r ../repo.plan-reports/.rhiza/log/$cs .rhiza/log/$cs && echo held'
+stdout 'held'
+exec sh -c 'rhiza change show "$(cat $WORK/id)" --json'
+stdout 'Plan reports'
+exec rhiza check
+! stdout 'commit-untracked'
+! stdout 'untracked log entry'
+
+# A milestone record does the same.
+exec rhiza run start --foreground --workflow plan --new 'Plan the milestone' --milestone --permission-mode manual --json
+stdout '"state": "succeeded"'
+exec rhiza change ls --json
+stdout 'Plan the milestone'
+exec rhiza check
+! stdout 'commit-untracked'
+! stdout 'untracked log entry'
+
+fold-ok
+
+-- plan.toml --
+name = "plan"
+
+[step.interview]
+kind = "agent"
+prompt = "Plan {change}"
+on.pass = "done"
+-- other.toml --
+name = "other"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+exit 0

@@ -891,34 +891,64 @@ func newPlanChange(ctx *Ctx, r RunStartRequest, def *workflow.Definition, reqKin
 	if err != nil {
 		return t, err
 	}
-	cs, _, err := w.openChangeSet(open, actor, forID)
+	// The open entry is built in a dry workspace first: the real draw of the
+	// change set ID, with nothing written yet, gives the slug the run's branch
+	// and worktree take.
+	dw, err := openWorkspace(ctx.Root, ctx.Now, ctx.IDs, true)
 	if err != nil {
 		return t, err
 	}
+	dw.readLog = ctx.readLog
+	cs, e, err := dw.openChangeSet(open, actor, forID)
+	if err != nil {
+		return t, err
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return t, err
+	}
+	prefix, err := ctx.Git("rev-parse", "--show-prefix")
+	if err != nil {
+		return t, Errorf("%v", err)
+	}
+	t = changeWorktree{w: w, cs: cs, title: open.DisplayTitle(), common: common, prefix: strings.TrimSpace(prefix)}
+	mainRoot := filepath.Dir(common)
+	t.repo = filepath.Base(mainRoot)
+	t.slug = session.ChangeSetSlug(dw.changeSets(), cs)
+	t.branch = session.Branch(t.slug)
+	t.worktree = session.Worktree(mainRoot, t.repo, t.slug)
 	if ctx.DryRun {
-		common, err := gitCommonDir(ctx)
-		if err != nil {
+		return t, nil
+	}
+	// The run's branch and worktree come first, and the open entry is
+	// written in the worktree, where the run commits it on its branch. The
+	// same bytes go into the main checkout's log as a copy the live run
+	// holds, so the daemon, the roadmap and change show there see the change
+	// set at once; close-out drops it, and an abandoned run leaves it to
+	// rhiza model commit-untracked.
+	if t.reuse, err = worktreeReuse(ctx, t.worktree, t.branch); err != nil {
+		return t, err
+	}
+	if !t.reuse {
+		if err := addWorktree(ctx, t.prefix, t.worktree, t.branch); err != nil {
 			return t, err
 		}
-		prefix, err := ctx.Git("rev-parse", "--show-prefix")
-		if err != nil {
-			return t, Errorf("%v", err)
-		}
-		t = changeWorktree{w: w, cs: cs, title: open.DisplayTitle(), common: common, prefix: strings.TrimSpace(prefix)}
-		mainRoot := filepath.Dir(common)
-		t.repo = filepath.Base(mainRoot)
-		slug := session.ChangeSetSlug(w.changeSets(), cs)
-		t.slug = slug
-		t.branch = session.Branch(slug)
-		t.worktree = session.Worktree(mainRoot, t.repo, slug)
-		return t, nil
+		t.reuse = true
+	}
+	ww, err := openWorkspace(filepath.Join(t.worktree, t.prefix), ctx.Now, ctx.IDs, false)
+	if err != nil {
+		return t, err
+	}
+	if err := ww.writeEntry(e); err != nil {
+		return t, err
+	}
+	if err := w.writeEntry(e); err != nil {
+		return t, err
 	}
 	if err := w.setCurrent(cs); err != nil {
 		return t, err
 	}
-	nctx := *ctx
-	nctx.ChangeSet, nctx.ChangeRef = cs, ""
-	return resolveChangeWorktree(&nctx, "", "no run can work on it")
+	return t, nil
 }
 
 // planWorkflow is the workflow run start --new opens a change set for.
