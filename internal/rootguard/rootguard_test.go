@@ -90,6 +90,8 @@ func TestDaemonOwnedFiles(t *testing.T) {
 	for n := range owned {
 		write(t, filepath.Join(state, n), "changed by the daemon\n")
 	}
+	// a status line's temp file, caught mid-rename.
+	write(t, filepath.Join(state, liveFile+".123456"), "[]")
 	// limits file rewritten with no new line: nothing to attribute.
 	write(t, filepath.Join(state, limitsFile), limit(t0.Add(-time.Hour)))
 	if got := snap.Check(t0, t1); len(got) != 0 {

@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/rootcfg"
@@ -26,9 +27,14 @@ const StateDir = ".rhiza-root"
 // limitsFile is the usage-limit log; its lines are judged by hit_at.
 const limitsFile = "usage.limits.jsonl"
 
-// owned are the files the root daemon and run drivers write. A change to
-// one is never attributed to a test run. The limits file is among them,
-// but its appended lines are still judged by hit_at.
+// liveFile is the live-usage file (daemon.LiveFile) that every running
+// agent's status line rewrites, through a temp file named liveFile+".*".
+const liveFile = "usage.live.json"
+
+// owned are the files the root daemon, run drivers and live agents' status
+// lines write. A change to one is never attributed to a test run. The
+// limits file is among them, but its appended lines are still judged by
+// hit_at.
 var owned = map[string]bool{
 	"daemon.lock":       true,
 	"daemon.home":       true,
@@ -41,6 +47,13 @@ var owned = map[string]bool{
 	"continues.lock":    true,
 	"main-stale.json":   true,
 	limitsFile:          true,
+	liveFile:            true,
+}
+
+// isOwned reports whether name is owned, or is a status line's temp file
+// for the live-usage file.
+func isOwned(name string) bool {
+	return owned[name] || strings.HasPrefix(name, liveFile+".")
 }
 
 type fileState struct {
@@ -121,7 +134,7 @@ func (s *Snapshot) Check(start, end time.Time) []string {
 	}
 	sort.Strings(names)
 	for _, n := range names {
-		if owned[n] {
+		if isOwned(n) {
 			continue
 		}
 		old, had := s.files[n]
