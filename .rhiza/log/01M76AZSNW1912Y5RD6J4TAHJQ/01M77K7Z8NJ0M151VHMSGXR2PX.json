@@ -1,0 +1,63 @@
+{
+  "actor": "01M77K4FNQM637TDD2V1E70P8W",
+  "after": [
+    "01M77K1F0BT3NGY0D3WT7MC14M"
+  ],
+  "at": "2026-11-12T10:00:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 04a4369f0: a go run program over the release.Resolver pointed at the real published channel (github.com/dphaener/rhiza) downloaded v0.1.0 for linux/amd64, linux/arm64, darwin/amd64 and darwin/arm64 and verified each sha256. The linux/amd64 sum d84c052b... matches the release's checksums.txt, and the extracted binary prints rhiza v0.1.0. linux/riscv64 is rejected with 'v0.1.0 has no archive for linux/riscv64'. A local manifest with no commit is rejected as malformed (exit 1). go test -trimpath ./internal/release/... passes."
+        },
+        "handle": "channel-resolver-qa-1",
+        "id": "01M77K7YVYQH52XJY86G0KJ7BZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77K7YVWF9NDWA2H42M9A225",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77K7YVWF9NDWA2H42M9A225",
+        "id": "01M77K7Z0MJPQS6GM4A2YAWX5H",
+        "link": "01M77K7Z0MJPQS6GM4A2695M9G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7D55NHFJP1CNA4H5HWDH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 04a4369f0 with a built binary (go build -trimpath) against a local python http.server channel fixture: release v0.2.0 is reported newer for running v0.1.0 and for v0.2.0-rc.1, and not newer for v0.2.0 and v0.3.0. The --json output is {channel,current,newer,newest}. Unknown channel and misspelled flag exit 2 with next; a 404 or malformed manifest exits 1 with a clean error and --json error. Against the real network, --channel release reports v0.1.0. --channel latest returns 404 (nothing is published there yet). Nothing is written to the cwd. The version-channel and describe-golden testscripts pass. Comparison of git-describe versions on latest is wrong; see the qa finding."
+        },
+        "handle": "version-channel-check-qa-1",
+        "id": "01M77K7Z3VYRT5AMPK9DVZ1K6J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M77K7Z3VYRT5AMPK9AEHWN5W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M77K7Z3VYRT5AMPK9AEHWN5W",
+        "id": "01M77K7Z6W7K33A1MNA7K2FP0H",
+        "link": "01M77K7Z6W7K33A1MNA6A11T3R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76B7D5PY6PAKYK14QQCKZE1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76AZSNW1912Y5RD6J4TAHJQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M77K7Z8NJ0M151VHMSGXR2PX",
+  "type": "ops",
+  "v": 1
+}
