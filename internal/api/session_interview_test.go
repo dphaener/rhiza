@@ -444,6 +444,7 @@ func (interviewAdapter) ContextReply(string, string) ([]byte, bool, error) { ret
 func (interviewAdapter) GuardReply(string, []byte, string) ([]byte, bool, error) {
 	return nil, false, nil
 }
+func (interviewAdapter) APIError([]byte) (string, bool) { return "", false }
 func (interviewAdapter) UsageLimit([]byte) (adapter.UsageLimit, bool) {
 	return adapter.UsageLimit{}, false
 }

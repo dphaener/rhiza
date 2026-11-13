@@ -22,7 +22,8 @@ const usageFakeAgent = "usage-fake"
 
 var usageFakeReset time.Time
 
-func (usageFake) Name() string { return usageFakeAgent }
+func (usageFake) Name() string                   { return usageFakeAgent }
+func (usageFake) APIError([]byte) (string, bool) { return "", false }
 func (usageFake) UsageLimit(t []byte) (adapter.UsageLimit, bool) {
 	_, ok := limitAdapter{}.UsageLimit(t)
 	return adapter.UsageLimit{ResetAt: usageFakeReset}, ok
