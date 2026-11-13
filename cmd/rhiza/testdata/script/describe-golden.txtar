@@ -8790,6 +8790,10 @@ cmp stdout describe.golden.json
                       "state": {
                         "description": "proposed or accepted",
                         "type": "string"
+                      },
+                      "title": {
+                        "description": "The change set's display title: its set title, else the intent's first clause",
+                        "type": "string"
                       }
                     },
                     "required": [
@@ -8799,7 +8803,8 @@ cmp stdout describe.golden.json
                       "kind",
                       "ready",
                       "serves",
-                      "state"
+                      "state",
+                      "title"
                     ],
                     "type": "object"
                   },

@@ -1,0 +1,30 @@
+{
+  "actor": "01M7AHA28C7B0MW29JFYK34TX1",
+  "after": [
+    "01M79NZDS45KD5NB5QAB30D5PW"
+  ],
+  "at": "2026-11-13T13:29:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "4efb76f8-fe30-4c0f-81ac-01a1d5148417",
+          "statement": "The conductor's three review checks are plan (compliance + model) and code (the former quality), plus qa. The classic ship-change, the review workflow and docs-review still use the check-compliance, check-model and check-quality topics, and classic must stay unchanged. How should the plan and code checks get their role topics? / In a conductor run there is no checks step, so rhiza run findings --check and rhiza run verdict --check refuse today. How should they know which check names a conductor run accepts? / The conductor default's gate must fail while any blocker or major finding stands (not downgraded or dropped by a critic). Gate steps run commands the daemon owns. How should the gate count standing findings? / The daemon skips accepted change sets with no leaves today. Under the conductor default, the conductor plans the missing leaves. Which leafless change sets should the daemon now pick?"
+        },
+        "handle": "question-4efb76f8-1",
+        "id": "01M7AHJC72RKHKKGRWKJ7XGM71",
+        "key": null,
+        "kind": "question",
+        "node": "01M7AHJC72RKHKKGRWKG5783F8",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M79KGZ51V2F5YYWMMQTGR6NW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AHJH3ENJQT0ATQ2QQNAT0J",
+  "type": "ops",
+  "v": 1
+}
