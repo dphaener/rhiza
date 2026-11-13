@@ -1,0 +1,631 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M79KGDHMCZSE11NYVQEVM6TB"
+  ],
+  "at": "2026-11-13T04:45:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "36",
+          "statement": "An agent conducts each change set and the daemon only ships and guards: one conductor session plans missing leaves, spawns visible builder, verifier and reviewer sessions and lands; a dumb, durable daemon of a few primitives gates, pushes, waits for CI, merges and hands every red back to the conductor; teams bring their own skills, agents and workflows through a gate-checked contract; a change goes from start to merge in 40 minutes or less with planning included, and at most 1 run in 10 needs a person."
+        },
+        "handle": "milestone-36",
+        "id": "01M79KKVJEV4SCGA3BRRQKZC9A",
+        "key": "zzzzzzzr",
+        "kind": "intent",
+        "node": "01M79KKVJEV4SCGA3BRPABPYX8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "One conductor session conducts a change set end to end: it plans the leaves when there are none, spawns a builder and then a verifier per leaf, spawns the Plan, Code and QA review checks with a critic only on a blocker or major finding, spawns a fixer for confirmed findings, and lands the change set on the branch."
+        },
+        "handle": "m36-conductor",
+        "id": "01M79KKVJZBSHJ5RXCG89D8838",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M79KKVJZBSHJ5RXCG4JKBSP4",
+        "op": "node.create",
+        "parent": "01M79KKVJEV4SCGA3BRPABPYX8"
+      },
+      {
+        "fields": {
+          "statement": "The daemon is dumb but durable: workflows are built from the agent, spawn, gate, push/pr, wait, merge, signoff and hook primitives; any red result hands back to a named agent step with the cause, at most three times before the run parks with an inbox item; every step and spawned session is journaled, and killing the daemon at any point loses nothing."
+        },
+        "handle": "m36-durable-daemon",
+        "id": "01M79KKVKEPHJQ6MH0T2M4KVAH",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M79KKVKEPHJQ6MH0SZ58FG2Z",
+        "op": "node.create",
+        "parent": "01M79KKVJEV4SCGA3BRPABPYX8"
+      },
+      {
+        "fields": {
+          "statement": "Every session a run spawns is visible as a child of the run in rhiza run status and the web run page, with its role, leaf, model and outcome, and can be opened or resumed like any other session."
+        },
+        "handle": "m36-visible",
+        "id": "01M79KKVM10T0D703RCSYYYDK7",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M79KKVM10T0D703RCS27QB7M",
+        "op": "node.create",
+        "parent": "01M79KKVJEV4SCGA3BRPABPYX8"
+      },
+      {
+        "fields": {
+          "statement": "A team brings its own skills, agent and workflow: its already-installed skill runs through an invoke template, reads brief.md, slice.json and handback.md, meets the agent contract that the daemon's gates check, and passes rhiza skill check before it runs for real."
+        },
+        "handle": "m36-byo",
+        "id": "01M79KKVMQRDB3EETMZNKJ7XZY",
+        "key": "y",
+        "kind": "intent",
+        "node": "01M79KKVMQRDB3EETMZHRCNATG",
+        "op": "node.create",
+        "parent": "01M79KKVJEV4SCGA3BRPABPYX8"
+      },
+      {
+        "fields": {
+          "statement": "Over the 30 runs on the conductor default after the milestone lands, the median time from a run's start to its merge is 40 minutes or less, including the conductor planning any missing leaves (afk: 37.6 minutes; Rhiza before: about 75)."
+        },
+        "handle": "m36-40m",
+        "id": "01M79KKVNBXPJGA2DYA6XSJZGC",
+        "key": "z",
+        "kind": "intent",
+        "node": "01M79KKVNBXPJGA2DYA47YZZA6",
+        "op": "node.create",
+        "parent": "01M79KKVJEV4SCGA3BRPABPYX8"
+      },
+      {
+        "fields": {
+          "statement": "Over the same 30 runs, at most 3 need a person beyond the owner's own sign-offs and real questions: no hand-driving a ship, killing a process, nudging a session or retrying a step by hand."
+        },
+        "handle": "m36-touches",
+        "id": "01M79KKVNWQJPFDDBJVH72157Q",
+        "key": "zi",
+        "kind": "intent",
+        "node": "01M79KKVNWQJPFDDBJVF43HG00",
+        "op": "node.create",
+        "parent": "01M79KKVJEV4SCGA3BRPABPYX8"
+      },
+      {
+        "fields": {
+          "quote": "we also need to keep in mind that people should be able to bring their own workflows. the daemon should be dumb but durable. the original ask for orchestrating from the daemon was determinism but we're not getting that. the Damon should provide useful hooks for things that agents can't do, or shouldn't do. it should be as flexible as we can make it, but useful.",
+          "statement": "Rhiza's runs move from a daemon-driven workflow of about 56 steps to a conductor agent per change set over a dumb, durable daemon of a few primitives, with a gate-checked agent contract so teams bring their own skills, agents and workflows; determinism means durable decisions and deterministic gates, not scripting each agent judgment."
+        },
+        "handle": "conductor-milestone-direction",
+        "id": "01M79KKVPGCBYHVX9H9WC9H6WT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79KKVPGCBYHVX9H9WB8P5SM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Inside the conductor",
+            "Separate plan run"
+          ],
+          "question": "Where should planning a change set's leaves happen, when an accepted change set has none?",
+          "statement": "A change set with no leaves gets them from its own conductor's first phase, not from a separate plan run.",
+          "wording": "Inside the conductor (Recommended), picked by the owner"
+        },
+        "handle": "conductor-plans-leaves",
+        "id": "01M79KKVQ03YYFAZDYWEBTA6Y3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79KKVQ03YYFAZDYWBBZW5H8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "All spawned sessions",
+            "Spawned, cheap roles in-session"
+          ],
+          "question": "How should the conductor run its builders, verifiers and reviewers?",
+          "quote_where": "2026-11-13, on the proposal",
+          "statement": "Every builder, verifier, reviewer, critic and fixer is a separate session the daemon spawns on the conductor's request, journaled and visible, never an in-session sub-agent.",
+          "wording": "All spawned sessions (Recommended), picked by the owner"
+        },
+        "handle": "conductor-spawned-sessions",
+        "id": "01M79KKVQKMABKSY7Q11RTYFT5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79KKVQKMABKSY7Q0ZZC4JZF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Three: Plan, Code, QA",
+            "Two: Plan and Code",
+            "Keep all five"
+          ],
+          "question": "How many review checks should the default conductor run?",
+          "statement": "The default conductor runs three review checks: Plan (model and compliance), Code (quality) and QA (the built binary does what the leaf says); the scope check is dropped; a critic runs only on a check with a blocker or major finding.",
+          "wording": "Three: Plan, Code, QA (Recommended), picked by the owner"
+        },
+        "handle": "conductor-three-checks",
+        "id": "01M79KKVR7T0Z38NYD6VDA2JHT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79KKVR7T0Z38NYD6T1TTWGR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "What should happen to milestone-35's 'parallel leaf builds with file locks' change set (01M76XTN), now that the conductor would decide parallelism?",
+          "statement": "Milestone-35's change set for daemon-driven parallel leaf builds with file locks (01M76XTN06GSM9) is withdrawn: the conductor decides which builders to spawn in parallel, and the spawn primitive enforces slots and load.",
+          "wording": "Retire it (Recommended), picked by the owner"
+        },
+        "handle": "retire-parallel-leaf-builds",
+        "id": "01M79KKVRZ6CQQWEV3Z1DHN09P",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79KKVRZ6CQQWEV3YXNE4DYX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "When should the new milestone's change sets start building?",
+          "statement": "Milestone-36 builds after milestone-35's three in-flight builds land (review role prompts, plan role prompts, tiered verifier), whose prompts become the spawned sessions' briefs; milestone-35's other change sets run alongside.",
+          "wording": "After m35's in-flight builds (Recommended), picked by the owner"
+        },
+        "handle": "conductor-after-m35-inflight",
+        "id": "01M79KKVSMDP3B655ETKR44SNJ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79KKVSMDP3B655ETK8YQ7JC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "What speed target should the milestone commit to, measured over 30 runs on the new default? What target should the milestone set for runs that need a person?",
+          "statement": "Milestone-36 commits to a median of 40 minutes or less from start to merge with planning included, and at most 1 run in 10 needing a person, over 30 runs on the conductor default.",
+          "wording": "≤ 40 min, planning included (Recommended); ≤ 1 in 10 runs (Recommended), picked by the owner"
+        },
+        "handle": "conductor-targets",
+        "id": "01M79KKVTPPCCE73A0T2CNK3H5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79KKVTPPCCE73A0T1CG8DHV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "Is promoting the new default to the builtin workflow (which Nebari also uses) part of this milestone?",
+          "quote": "Promote immediately, it's not going to get worse, I'm tired of this.",
+          "statement": "The conductor default replaces the builtin ship-change at once, for every project that uses the builtin, and the old workflow stays available as the builtin ship-change-classic."
+        },
+        "handle": "conductor-promote-builtin-now",
+        "id": "01M79KKVVA41GTMTPHVADG15K6",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79KKVVA41GTMTPHV8C9BGQN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "Which of these change sets should get their leaves planned now?",
+          "statement": "Change sets 1 to 4 of milestone-36 (agent contract, primitives, conductor skill, new builtin default) get their leaves now; conformance, bring-your-own docs and the measurement keep their intent and are planned later, by the conductor once it is live.",
+          "wording": "1–4 now, 5–7 later (Recommended), picked by the owner"
+        },
+        "handle": "conductor-plan-1-4-now",
+        "id": "01M79KKVVX4H27J44VT4ASWFZH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79KKVVX4H27J44VT1DQX0KV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVPGCBYHVX9H9WB8P5SM",
+        "id": "01M79KKVWKRPTVYVS0STNTR8J3",
+        "link": "01M79KKVWKRPTVYVS0SQY3CE54",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGDGRD1HSEP361MFQ46MP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVQ03YYFAZDYWBBZW5H8",
+        "id": "01M79KKVXCZA71GWCV782VBFQ4",
+        "link": "01M79KKVXCZA71GWCV759K0Z1W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGDGRD1HSEP361MFQ46MP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVQKMABKSY7Q0ZZC4JZF",
+        "id": "01M79KKVXZJB87SHW9E2GZNK4W",
+        "link": "01M79KKVXZJB87SHW9DZ842698",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGDGRD1HSEP361MFQ46MP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVR7T0Z38NYD6T1TTWGR",
+        "id": "01M79KKVYM0ZAW0CT8WK7CBV3P",
+        "link": "01M79KKVYM0ZAW0CT8WGGVETK6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGDGRD1HSEP361MFQ46MP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVRZ6CQQWEV3YXNE4DYX",
+        "id": "01M79KKVZ63WBVVR6N7SNC1K88",
+        "link": "01M79KKVZ63WBVVR6N7R9R6ERE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGDGRD1HSEP361MFQ46MP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVSMDP3B655ETK8YQ7JC",
+        "id": "01M79KKVZT8XBXAX752MQT4PQ1",
+        "link": "01M79KKVZT8XBXAX752KW87RBB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGDGRD1HSEP361MFQ46MP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVTPPCCE73A0T1CG8DHV",
+        "id": "01M79KKW0B0PBHSJNCYF98PP8E",
+        "link": "01M79KKW0B0PBHSJNCYDQYNYKB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGDGRD1HSEP361MFQ46MP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVVA41GTMTPHV8C9BGQN",
+        "id": "01M79KKW0YA8PTKXH0890VSYZ3",
+        "link": "01M79KKW0YA8PTKXH0884MCT8B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGDGRD1HSEP361MFQ46MP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVVX4H27J44VT1DQX0KV",
+        "id": "01M79KKW1N7P8QEYS5YTEWDDRS",
+        "link": "01M79KKW1N7P8QEYS5YPZ7N676",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGDGRD1HSEP361MFQ46MP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVJEV4SCGA3BRPABPYX8",
+        "id": "01M79KKW27NW7PENA49A4AWT7Z",
+        "link": "01M79KKW27NW7PENA498VTDBFC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVPGCBYHVX9H9WB8P5SM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVJZBSHJ5RXCG4JKBSP4",
+        "id": "01M79KKW2TSDPMSP6JZMMY5EJ3",
+        "link": "01M79KKW2TSDPMSP6JZK95Q7FV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVQ03YYFAZDYWBBZW5H8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVJZBSHJ5RXCG4JKBSP4",
+        "id": "01M79KKW3ED6KVNZZ3NSASYFF7",
+        "link": "01M79KKW3ED6KVNZZ3NPTT5W5P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVR7T0Z38NYD6T1TTWGR",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVM10T0D703RCS27QB7M",
+        "id": "01M79KKW40EMFYXN47JE41CM0C",
+        "link": "01M79KKW40EMFYXN47JCEBZPMN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVQKMABKSY7Q0ZZC4JZF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVNBXPJGA2DYA47YZZA6",
+        "id": "01M79KKW4NYYF80GDN7AM8VNC3",
+        "link": "01M79KKW4NYYF80GDN78EMRN49",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVTPPCCE73A0T1CG8DHV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KKVNWQJPFDDBJVF43HG00",
+        "id": "01M79KKW5AKBER1JWND5JEPN5W",
+        "link": "01M79KKW5AKBER1JWND49PK64K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVTPPCCE73A0T1CG8DHV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KGHYF3272SZ9H9Y12FWF4",
+        "id": "01M79KKW6BJRS1ZD9F2YH6MDWB",
+        "link": "01M79KKW6BJRS1ZD9F2YDRTG9Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVMQRDB3EETMZHRCNATG",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79KGRYE538GJC5NA2VNYG4K",
+        "id": "01M79KKW7FT7BWYCMPY55MKZHB",
+        "link": "01M79KKW7FT7BWYCMPY4FG2W9X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVKEPHJQ6MH0SZ58FG2Z",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79KGRYE538GJC5NA2VNYG4K",
+        "id": "01M79KKW8HHK6D5R2SH94Z3195",
+        "link": "01M79KKW8HHK6D5R2SH6FRXKWR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVM10T0D703RCS27QB7M",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79KGZ51V2F5YYWMMQTGR6NW",
+        "id": "01M79KKW9K53ZBNMYNJ0DCM2PA",
+        "link": "01M79KKW9K53ZBNMYNHZ3S2KJT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVJZBSHJ5RXCG4JKBSP4",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79KH59D0HEME6B85PXXB056",
+        "id": "01M79KKWAM4SMACB6WWTJDBHNV",
+        "link": "01M79KKWAM4SMACB6WWR3BAKJQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVJZBSHJ5RXCG4JKBSP4",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79KH59D0HEME6B85PXXB056",
+        "id": "01M79KKWBP4Z4G2GQW463SGA4V",
+        "link": "01M79KKWBP4Z4G2GQW439K7V86",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVNBXPJGA2DYA47YZZA6",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79KHBKTKGWFD3ZGV1B5QPHA",
+        "id": "01M79KKWCSZ91S0EBAAWY84QFW",
+        "link": "01M79KKWCSZ91S0EBAATE13XVF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVMQRDB3EETMZHRCNATG",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79KHHVJK2RMMC25KY63QW13",
+        "id": "01M79KKWDX33P9VGJYV78FFTAK",
+        "link": "01M79KKWDX33P9VGJYV5BMJ9QW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVMQRDB3EETMZHRCNATG",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79KHRHFQYBAW375MA5D7V70",
+        "id": "01M79KKWF038MABZ12YX98H97Y",
+        "link": "01M79KKWF038MABZ12YV80HCN0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVNBXPJGA2DYA47YZZA6",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79KHRHFQYBAW375MA5D7V70",
+        "id": "01M79KKWG4ZEE6RQQBGQB9CR93",
+        "link": "01M79KKWG4ZEE6RQQBGP6Q0FKX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVNWQJPFDDBJVF43HG00",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79KGHYF3272SZ9H9Y12FWF4",
+        "id": "01M79KKWSWPJKXZK8CDFAAN7DJ",
+        "link": "01M79KKWSWPJKXZK8CDC0XB0B1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XRETZFTD2TQ5GS3WYAERA",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KGHYF3272SZ9H9Y12FWF4",
+        "id": "01M79KKX3DVYR7WKXW386SVA1J",
+        "link": "01M79KKX3DVYR7WKXW37C5NQS8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XRPN6WYMZSV2GWA05Y1FM",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KGHYF3272SZ9H9Y12FWF4",
+        "id": "01M79KKXEVXG58TWH88EE0PS19",
+        "link": "01M79KKXEVXG58TWH88CCS0YQW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XS745J8S0J74SZFEHQ17Z",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KGRYE538GJC5NA2VNYG4K",
+        "id": "01M79KKXVKXEAPCPZBB8CKE5RN",
+        "link": "01M79KKXVKXEAPCPZBB5ZPXY5F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XRETZFTD2TQ5GS3WYAERA",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KGRYE538GJC5NA2VNYG4K",
+        "id": "01M79KKY93RMWACMBZ1PHCC3SB",
+        "link": "01M79KKY93RMWACMBZ1NYYEYCR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XRPN6WYMZSV2GWA05Y1FM",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KGRYE538GJC5NA2VNYG4K",
+        "id": "01M79KKYNF9RZH06BFHQPXK5Z9",
+        "link": "01M79KKYNF9RZH06BFHKV99FA3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XS745J8S0J74SZFEHQ17Z",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KGZ51V2F5YYWMMQTGR6NW",
+        "id": "01M79KKZ1FSJW5TYFG9R08H4ZW",
+        "link": "01M79KKZ1FSJW5TYFG9NDN67JZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGHYF3272SZ9H9Y12FWF4",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KGZ51V2F5YYWMMQTGR6NW",
+        "id": "01M79KKZB2AW19C6871YNMGP31",
+        "link": "01M79KKZB2AW19C6871W7YZ46H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGRYE538GJC5NA2VNYG4K",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KH59D0HEME6B85PXXB056",
+        "id": "01M79KKZP9P5N6SMCX7J471HNY",
+        "link": "01M79KKZP9P5N6SMCX7FGXQZ2P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGZ51V2F5YYWMMQTGR6NW",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KHBKTKGWFD3ZGV1B5QPHA",
+        "id": "01M79KM01VC3AG163F24DEYEAW",
+        "link": "01M79KM01VC3AG163F20SZAE3A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGHYF3272SZ9H9Y12FWF4",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KHBKTKGWFD3ZGV1B5QPHA",
+        "id": "01M79KM0C6YAEK01D8JW4P6RG2",
+        "link": "01M79KM0C6YAEK01D8JSJMMG8T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGRYE538GJC5NA2VNYG4K",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KHHVJK2RMMC25KY63QW13",
+        "id": "01M79KM0Q05NQMYBVRJ01RCQ0G",
+        "link": "01M79KM0Q05NQMYBVRHXHZQE6R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KH59D0HEME6B85PXXB056",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KHHVJK2RMMC25KY63QW13",
+        "id": "01M79KM1146AWSAXPAY2SRZSAH",
+        "link": "01M79KM1146AWSAXPAY0PPX78T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KHBKTKGWFD3ZGV1B5QPHA",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KHRHFQYBAW375MA5D7V70",
+        "id": "01M79KM1AVSQY22N7GH0THTF4M",
+        "link": "01M79KM1AVSQY22N7GGWY8QM11",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KH59D0HEME6B85PXXB056",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M79KF4RGGHZCJ7PJWMP01XXM",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79KM1BE735191S57CZQS6RB",
+  "type": "ops",
+  "v": 1
+}

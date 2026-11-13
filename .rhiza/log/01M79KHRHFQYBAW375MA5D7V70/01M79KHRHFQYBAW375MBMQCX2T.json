@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T04:44:44Z",
+  "body": {
+    "intent": "Measure 30 runs on the conductor default against today's Rhiza and afk: median start-to-merge with planning, runs needing a person, tokens per change",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M79KHRHFQYBAW375MA5D7V70",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79KHRHFQYBAW375MBMQCX2T",
+  "type": "open",
+  "v": 1
+}
