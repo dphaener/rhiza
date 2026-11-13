@@ -1,0 +1,63 @@
+{
+  "actor": "01M79S65NBBRJKM3D9KTNNQ7YY",
+  "after": [
+    "01M79S9K590XDQKW61W6N2SHJY"
+  ],
+  "at": "2026-11-13T06:25:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A project's web API (the read-only handler a project's web UI reads through) reads only that project: roadmap with all=true returns every change set of the project it serves and never widens to the root's other projects; the CLI's rhiza roadmap --all keeps widening across the root",
+          "wording": "Scope the web API to its project, chosen by the planner in an autonomous run"
+        },
+        "handle": "web-api-reads-own-project",
+        "id": "01M79S9N480458ETJ4BT4282B8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79S9N480458ETJ4BRJPKPHF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79S9N480458ETJ4BRJPKPHF",
+        "id": "01M79S9N64PRPFRYHPYBJ1RH3P",
+        "link": "01M79S9N64PRPFRYHPY95GFE2Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79S98X7E9Y23AJREFNTD180",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api (beside web_root_test.go) registers two initialised projects under one root, each with its own milestone and change sets, serves WebRootHandler, GETs /p/<a>/roadmap and /p/<b>/roadmap and asserts each page lists its own project's change sets and milestone and none of the other's; it also GETs /p/<a>/api/roadmap?all=true and asserts every returned change set is project a's. go test -trimpath ./internal/api/... ./internal/web/... passes, and the existing roadmap --all testscripts still widen across the root (go test -trimpath ./cmd/rhiza -run 'TestScripts/.*roadmap.*')",
+          "statement": "Under a Rhiza root, each project's web roadmap (/p/<project>/roadmap) and change set pages list only that project's milestones and change sets, never another registered project's"
+        },
+        "handle": "web-roadmap-project-scoped",
+        "id": "01M79S9N7DZZ35JRWW244EA40E",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M79S9N7DZZ35JRWW20V549XS",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M79S9N7DZZ35JRWW20V549XS",
+        "id": "01M79S9N8TFT2H6FJXGHCJ7JJ2",
+        "link": "01M79S9N8TFT2H6FJXGEMK8N2F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79S9N480458ETJ4BRJPKPHF",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79S4M646SATZ2HW97GXK1MH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79S9NA5BKJA9RM8X23X2YHK",
+  "type": "ops",
+  "v": 1
+}
