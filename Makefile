@@ -148,6 +148,13 @@ test-budgets: ## Run the timing budgets alone, and print the read-budget timings
 	if [ -s "$$log" ]; then cat "$$log"; else echo "(no timings: $$log is missing or empty)"; fi; \
 	rm -f $$log; exit $$status
 
+.PHONY: gate
+gate: ## Run the scoped local ship gate from RHIZA_GATE_BASE (see tools/gate)
+# rhiza.ship.localGate: go test on the packages the branch changes and their
+# reverse dependencies, the affected testscripts, then self-check. The full
+# suite is CI's. Pass -dry-run via ARGS to print the plan only.
+	go run -trimpath ./tools/gate $(ARGS)
+
 .PHONY: lint
 lint: fmt-check vet self-check ## Run fmt-check, vet and self-check
 

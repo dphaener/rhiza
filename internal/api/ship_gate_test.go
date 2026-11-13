@@ -44,6 +44,22 @@ func TestShipLocalGate(t *testing.T) {
 			t.Errorf("resp = %+v, worktree %s", r, f.worktree)
 		}
 	})
+	t.Run("gate environment names the head and the merge-base", func(t *testing.T) {
+		f, g, _ := shipFixture(t)
+		f.git.out["config --get "+LocalGateKey] = "echo env:$RHIZA_GATE_HEAD:$RHIZA_GATE_BASE:\n"
+		if err := writeAtomic(ciStabilityPath(f.common), []byte(`{"runs":[{"head":"a","result":"green","time":"x","flakes":["TestPond"]},{"head":"b","result":"green","time":"x","flakes":["TestPond"]}]}`)); err != nil {
+			t.Fatal(err)
+		}
+		g.answers["git rev-parse HEAD"] = "beef000111\n"
+		g.answers["git merge-base HEAD origin/main"] = "ba5e000222\n"
+		if r := shipGate(t, f); !r.Passed || !strings.Contains(r.Output, "env:beef000111:ba5e000222:") {
+			t.Errorf("with origin/main: %+v", r)
+		}
+		g.answers["git merge-base HEAD origin/main"] = "!fatal: Not a valid object name origin/main"
+		if r := shipGate(t, f); !r.Passed || !strings.Contains(r.Output, "env:beef000111::") {
+			t.Errorf("no origin/main: %+v", r)
+		}
+	})
 	t.Run("stable skips", func(t *testing.T) {
 		f := gateFixture(t, "echo gate-ran >&2; exit 1", false)
 		r := shipGate(t, f)
@@ -89,38 +105,73 @@ func TestShipLocalGate(t *testing.T) {
 	})
 }
 
-// A head the gate passed on, with a clean worktree, passes again without
-// running the gate: the gate before rebase or land re-checks the head the
-// gate before open-pr passed. A new head runs it again.
-func TestShipLocalGateOncePerHead(t *testing.T) {
-	f, g, _ := shipFixture(t)
+// treeOf is a fake git ls-tree HEAD answer: a code file's blob, and a
+// .rhiza/ entry whose hash is rhiza.
+func treeOf(code, rhiza string) string {
+	return "100644 blob " + code + "\tmain.go\n040000 tree " + rhiza + "\t.rhiza\n"
+}
+
+// The gate runs once on a code tree: a head changing only .rhiza/ passes at
+// once, naming the earlier head; a change outside .rhiza/, a changed gate
+// command or a dirty worktree runs it; an older ship state (Gated only)
+// reruns it once.
+func TestShipLocalGateOncePerCodeTree(t *testing.T) {
+	f, g, state := shipFixture(t)
 	log := filepath.Join(t.TempDir(), "gate.log")
-	f.git.out["config --get "+LocalGateKey] = "echo ran >> " + log + "\n"
+	set := func(cmd string) { f.git.out["config --get "+LocalGateKey] = cmd + "\n" }
+	gate := "echo ran >> " + log
+	set(gate)
 	if err := writeAtomic(ciStabilityPath(f.common), []byte(`{"runs":[{"head":"a","result":"green","time":"x","flakes":["TestPond"]},{"head":"b","result":"green","time":"x","flakes":["TestPond"]}]}`)); err != nil {
 		t.Fatal(err)
 	}
-	g.answers["git rev-parse HEAD"] = "beef000111\n"
+	at := func(head, tree string) {
+		g.answers["git rev-parse HEAD"] = head + "\n"
+		g.answers["git ls-tree HEAD"] = tree
+	}
 	g.answers["git status --porcelain --untracked-files=no"] = ""
 	runs := func() int {
 		b, _ := os.ReadFile(log)
 		return strings.Count(string(b), "ran\n")
 	}
+	at("beef000111", treeOf("c1", "r1"))
 	r := shipGate(t, f)
 	if !r.Passed || r.Head != "beef000111" || runs() != 1 {
 		t.Fatalf("first gate = %+v, runs %d", r, runs())
 	}
 	r = shipGate(t, f)
-	if !r.Passed || r.Skipped || !strings.Contains(r.Reason, "already passed on beef000") || runs() != 1 {
-		t.Errorf("second gate on the same head = %+v, runs %d", r, runs())
+	if !r.Passed || !strings.Contains(r.Reason, "already passed on beef000") || runs() != 1 {
+		t.Errorf("same head = %+v, runs %d", r, runs())
+	}
+	at("cafe000222", treeOf("c1", "r2"))
+	r = shipGate(t, f)
+	if !r.Passed || r.Head != "cafe000222" || !strings.Contains(r.Reason, "already passed on beef000") || !strings.Contains(r.Reason, "not run again") || runs() != 1 {
+		t.Errorf(".rhiza/-only commit = %+v, runs %d", r, runs())
+	}
+	at("dead000333", treeOf("c2", "r2"))
+	if r = shipGate(t, f); !r.Passed || runs() != 2 {
+		t.Errorf("code change = %+v, runs %d", r, runs())
+	}
+	set(gate + " # changed")
+	if r = shipGate(t, f); !r.Passed || runs() != 3 {
+		t.Errorf("changed gate command on the same tree = %+v, runs %d", r, runs())
 	}
 	g.answers["git status --porcelain --untracked-files=no"] = " M x.go\n"
-	if r = shipGate(t, f); !r.Passed || runs() != 2 {
-		t.Errorf("gate with a dirty tree = %+v, runs %d", r, runs())
+	if r = shipGate(t, f); !r.Passed || runs() != 4 {
+		t.Errorf("dirty worktree = %+v, runs %d", r, runs())
 	}
 	g.answers["git status --porcelain --untracked-files=no"] = ""
-	g.answers["git rev-parse HEAD"] = "cafe000222\n"
-	if r = shipGate(t, f); !r.Passed || r.Head != "cafe000222" || runs() != 3 {
-		t.Errorf("gate on a new head = %+v, runs %d", r, runs())
+	if r = shipGate(t, f); !r.Passed || !strings.Contains(r.Reason, "not run again") || runs() != 4 {
+		t.Errorf("dirty run recorded something = %+v, runs %d", r, runs())
+	}
+	// A state from before the tree was recorded rereads and reruns once.
+	if err := writeAtomic(state, []byte(`{"gated":"dead000333"}`)); err != nil {
+		t.Fatal(err)
+	}
+	if r = shipGate(t, f); !r.Passed || runs() != 5 {
+		t.Errorf("old state = %+v, runs %d", r, runs())
+	}
+	if r = shipGate(t, f); !r.Passed || runs() != 5 {
+		t.Errorf("after the old state's rerun = %+v, runs %d", r, runs())
 	}
 }
 

@@ -1,0 +1,40 @@
+{
+  "actor": "01M79353NHZQ7Q3JCHVVHB7Q43",
+  "after": [
+    "01M792XN7B8PQFAHFX54MF3J24"
+  ],
+  "at": "2026-11-12T23:58:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 53b6f13a9 (fix for quality finding f1). go test -trimpath -count=1 -v ./tools/gate/... passes: TestPlanOnePackageAndDependents (internal/a change plans go test ./internal/a ./internal/b plus cmd/rhiza -skip, no internal/c, no make test, then make self-check), TestPlanRhizaOnly (.rhiza/-only change plans make self-check only), TestPlanFallbacks (empty RHIZA_GATE_BASE, go.mod, and now docs/quickstart.md, AGENTS.md, .github/workflows/ci.yml each plan make test plus make self-check), TestPlanScripts (changed foo.txtar with acceptance naming TestScripts/bar plans -run 'TestScripts/(bar|foo)$', no internal/), TestScriptNames. grep -n \"rhiza.ship.localGate 'make gate'\" AGENTS.md finds line 96. Re-ran the f1 repro RHIZA_GATE_BASE=3980a36aa~1 RHIZA_GATE_HEAD=3980a36aa go run ./tools/gate -dry-run: now plans make test then make self-check (README.md outside every package) instead of self-check only. Read the diff of plan.go (non-.rhiza/ files outside packages return fullSteps) and AGENTS.md wording. gofmt -l and go vet ./tools/gate clean."
+        },
+        "handle": "rhiza-scoped-gate-verified-2",
+        "id": "01M7936C4D2PX5K2ZH4BTZAR8Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7936C4D2PX5K2ZH486XW5RG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7936C4D2PX5K2ZH486XW5RG",
+        "id": "01M7936C51HYVZRVTRSNFBFBV0",
+        "link": "01M7936C51HYVZRVTRSJAMBM70",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78TAJENDS93MS29H076VKXT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78T0G869AE4NQ9YGNB2DDGE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7936C635TB14ENSGMWD2WDS",
+  "type": "ops",
+  "v": 1
+}
