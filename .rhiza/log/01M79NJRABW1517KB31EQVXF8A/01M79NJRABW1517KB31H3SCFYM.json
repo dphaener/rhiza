@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T05:20:15Z",
+  "body": {
+    "intent": "Approved designs: every web screen (frame and project picker, Home, roadmap and change set page, model pages, runs list and run detail) is designed phone-first with the owner on a design canvas, on one spacing and type scale, and the approved screens replace the reference pages in internal/web/pages",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M79NJRABW1517KB31EQVXF8A",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79NJRABW1517KB31H3SCFYM",
+  "type": "open",
+  "v": 1
+}

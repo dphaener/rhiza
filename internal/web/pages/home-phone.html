@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home on a phone · Rhiza</title>
+<!-- Design reference, milestone 37 (approved by the owner 2026-11-13). Source canvas: https://claude.ai/artifact/B2TEoC8RNuS5wWWdkoxo7a -->
+<link rel="icon" href="../static/icons/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../static/css/rhiza-tokens.css">
+<link rel="stylesheet" href="../static/css/rhiza.css">
+<style>
+body{margin:0;background:var(--ground)}
+a{color:var(--teal)}a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:999px;font:500 15px/1 var(--font-body);text-decoration:none;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink)}
+.btn--you{border-color:var(--rose);background:var(--rose-soft);color:var(--rose)}
+.btn--quiet{color:var(--teal)}
+</style>
+</head>
+<body class="rz">
+<div class="rz" data-theme="dark" style="width: 390px; min-height: 1720px; box-sizing: border-box; background: var(--ground); color: var(--ink); font-family: var(--font-body);">
+
+<header style="position: sticky; top: 0; display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 16px; background: var(--panel); border-bottom: 1px solid var(--line);">
+  <a href="#" style="display: flex; align-items: baseline; gap: 6px; text-decoration: none; color: var(--ink);"><b style="font: 380 22px/1 var(--font-display); letter-spacing: -0.02em;">Rhiza</b></a>
+  <button type="button" aria-haspopup="dialog" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; margin-left: auto; border: 1px solid var(--line); border-radius: 999px; background: var(--ground); color: var(--ink); font: 500 15px/1 var(--font-body);">
+    rhiza
+    <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--rose); color: var(--on-solid); font: 600 12px/1 var(--font-mono);" aria-label="3 need you">3</span>
+    <svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+  </button>
+  <span class="rz-live" title="Live stream connected"><span class="rz-live-dot" aria-hidden="true"></span>live</span>
+</header>
+
+<main style="display: flex; flex-direction: column; gap: 32px; padding: 32px 16px 48px;">
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <p class="rz-kicker" style="margin: 0; color: var(--rose);">Needs you</p>
+    <h1 style="margin: 0; font: 380 32px/36px var(--font-display); letter-spacing: -0.02em;">3 things need you</h1>
+    <p style="margin: 0; font: 400 15px/22px var(--font-body); color: var(--ink-2);">Oldest first. Each one says why it stopped and what you can do here.</p>
+  </div>
+
+  <section style="display: flex; flex-direction: column; gap: 16px;">
+    <article style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--rose); border-radius: 16px; background: var(--panel);">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="rz-pill rz-pill--waiting">question</span>
+        <span class="rz-meta" style="margin-left: auto; color: var(--ink-3); font: 400 13px/18px var(--font-mono);">12m ago</span>
+      </div>
+      <h2 style="margin: 0; font: 380 20px/26px var(--font-display);">Should the daemon refresh skill installs by itself?</h2>
+      <p style="margin: 0; font: 400 15px/22px var(--font-body); color: var(--ink-2);">Asked while planning the fix for sessions that started with an unknown skill. The planner recommends refreshing on every binary update.</p>
+      <p style="margin: 0; font: 400 13px/18px var(--font-body); color: var(--ink-3);">Fix Runs started agent sessions · <a href="#" class="rz-id">01M79N2F</a></p>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="#" class="btn btn--you">Answer</a>
+        <a href="#" class="btn btn--quiet">Open run</a>
+      </div>
+    </article>
+
+    <article style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--rose); border-radius: 16px; background: var(--panel);">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="rz-pill rz-pill--waiting">stuck</span>
+        <span style="margin-left: auto; color: var(--ink-3); font: 400 13px/18px var(--font-mono);">idle 26m</span>
+      </div>
+      <h2 style="margin: 0; font: 380 20px/26px var(--font-display);">Plan role topics is not moving</h2>
+      <p style="margin: 0; font: 400 15px/22px var(--font-body); color: var(--ink-2);">Its builder for <b style="font-weight: 500; color: var(--ink);">shared-severities-block</b> opened with an unknown skill and never got its task. Nothing has happened in the run for 26 minutes.</p>
+      <p style="margin: 0; font: 400 13px/18px var(--font-body); color: var(--ink-3);">build · leaf 2 of 5 · attempt 1 · <a href="#" class="rz-id">01M79EVF</a></p>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="#" class="btn btn--quiet">Open run</a>
+      </div>
+    </article>
+
+    <article style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel);">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="rz-pill rz-pill--interrupted">hold</span>
+        <span style="margin-left: auto; color: var(--ink-3); font: 400 13px/18px var(--font-mono);">since 05:30</span>
+      </div>
+      <h2 style="margin: 0; font: 380 20px/26px var(--font-display);">New runs are held: the machine is loaded</h2>
+      <p style="margin: 0; font: 400 15px/22px var(--font-body); color: var(--ink-2);">Load averaged 16.3 over five minutes, so run slots went from 3 to 2. Running work continues; queued work waits.</p>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="#" class="btn">Pause daemon</a>
+      </div>
+    </article>
+  </section>
+
+  <section class="rz-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 16px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <p class="rz-kicker" style="margin: 0;">Running now</p>
+      <h2 style="margin: 0; font: 380 20px/26px var(--font-display);">3 runs, 2 of 2 slots</h2>
+    </div>
+    <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column;">
+      <li style="display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-top: 1px solid var(--line);">
+        <div style="display: flex; align-items: baseline; gap: 8px;"><a href="#" style="font: 500 15px/22px var(--font-body); color: var(--ink); text-decoration: none;">Review role topics</a><span style="margin-left: auto; font: 400 13px/18px var(--font-mono); color: var(--ink-3);">2h 23m</span></div>
+        <p style="margin: 0; display: flex; align-items: center; gap: 6px; font: 400 14px/20px var(--font-body); color: var(--gold);"><span class="rz-live-dot" aria-hidden="true"></span>Building leaf 3 of 6, check-compliance-topic</p>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px;" aria-label="Phase 2 of 4: build">
+          <span style="height: 4px; border-radius: 999px; background: var(--teal);"></span><span style="height: 4px; border-radius: 999px; background: var(--gold); box-shadow: var(--glow);"></span><span style="height: 4px; border-radius: 999px; background: var(--line);"></span><span style="height: 4px; border-radius: 999px; background: var(--line);"></span>
+        </div>
+        <p style="margin: 0; font: 400 12px/16px var(--font-mono); color: var(--ink-3); letter-spacing: 0.04em;">PLAN · BUILD · REVIEW · SHIP</p>
+      </li>
+      <li style="display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-top: 1px solid var(--line);">
+        <div style="display: flex; align-items: baseline; gap: 8px;"><a href="#" style="font: 500 15px/22px var(--font-body); color: var(--ink); text-decoration: none;">Plan role topics</a><span style="margin-left: auto; font: 400 13px/18px var(--font-mono); color: var(--ink-3);">2h 07m</span></div>
+        <p style="margin: 0; font: 400 14px/20px var(--font-body); color: var(--rose);">Stuck in build, leaf 2 of 5 · see above</p>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px;" aria-label="Phase 2 of 4: build, stuck">
+          <span style="height: 4px; border-radius: 999px; background: var(--teal);"></span><span style="height: 4px; border-radius: 999px; background: var(--rose);"></span><span style="height: 4px; border-radius: 999px; background: var(--line);"></span><span style="height: 4px; border-radius: 999px; background: var(--line);"></span>
+        </div>
+      </li>
+      <li style="display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-top: 1px solid var(--line);">
+        <div style="display: flex; align-items: baseline; gap: 8px;"><a href="#" style="font: 500 15px/22px var(--font-body); color: var(--ink); text-decoration: none;">Fix Runs started agent sessions</a><span style="margin-left: auto; font: 400 13px/18px var(--font-mono); color: var(--ink-3);">19m</span></div>
+        <p style="margin: 0; display: flex; align-items: center; gap: 6px; font: 400 14px/20px var(--font-body); color: var(--gold);"><span class="rz-live-dot" aria-hidden="true"></span>Planning the fix, opening its PR</p>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px;" aria-label="Phase 1 of 4: plan">
+          <span style="height: 4px; border-radius: 999px; background: var(--gold); box-shadow: var(--glow);"></span><span style="height: 4px; border-radius: 999px; background: var(--line);"></span><span style="height: 4px; border-radius: 999px; background: var(--line);"></span><span style="height: 4px; border-radius: 999px; background: var(--line);"></span>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="rz-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 16px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <p class="rz-kicker" style="margin: 0;">Shipped today</p>
+      <h2 style="margin: 0; font: 380 20px/26px var(--font-display);">12 merged since midnight</h2>
+    </div>
+    <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column;">
+      <li style="display: flex; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);"><span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3);">05:18</span><span style="font: 400 15px/22px var(--font-body);">Plan milestone 36: conductor workflow</span></li>
+      <li style="display: flex; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);"><span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3);">05:01</span><span style="font: 400 15px/22px var(--font-body);">Tiered verifier</span></li>
+      <li style="display: flex; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);"><span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3);">03:22</span><span style="font: 400 15px/22px var(--font-body);">Queue wait journal</span></li>
+      <li style="display: flex; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);"><span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3);">03:06</span><span style="font: 400 15px/22px var(--font-body);">Build role topics</span></li>
+    </ol>
+    <a href="#" style="font: 500 15px/22px var(--font-body);">All 12 →</a>
+  </section>
+
+  <section class="rz-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <p class="rz-kicker" style="margin: 0;">Milestone 35</p>
+      <h2 style="margin: 0; font: 380 20px/26px var(--font-display);">Efficient build cycle, 8 of 15 landed</h2>
+    </div>
+    <div style="display: flex; height: 8px; border-radius: 999px; overflow: hidden; gap: 2px;" aria-label="8 landed, 6 accepted, 1 withdrawn">
+      <span style="flex: 8; background: var(--teal);"></span><span style="flex: 6; background: var(--teal); opacity: 0.42;"></span><span style="flex: 1; background: var(--ink-3); opacity: 0.55;"></span>
+    </div>
+    <p style="margin: 0; font: 400 13px/18px var(--font-mono); color: var(--ink-3);">8 landed · 6 accepted · 1 withdrawn</p>
+    <a href="#" style="font: 500 15px/22px var(--font-body);">Roadmap →</a>
+  </section>
+
+</main>
+</div>
+</body>
+</html>

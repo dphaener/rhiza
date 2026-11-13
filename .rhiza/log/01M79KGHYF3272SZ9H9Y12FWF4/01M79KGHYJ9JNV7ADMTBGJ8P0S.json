@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T04:44:05Z",
+  "body": {
+    "intent": "Every agent session a run starts gets one gate-checked contract and its context in files: brief.md, slice.json and, on a hand-back, handback.md, with templated invoke and handback text on agent steps",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79KGHYJ9JNV7ADMTBGJ8P0S",
+  "type": "open",
+  "v": 1
+}

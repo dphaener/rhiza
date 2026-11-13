@@ -1,0 +1,109 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M79KGZ51V2F5YYWMMVHAZ6QH"
+  ],
+  "at": "2026-11-13T04:47:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run TestConduct shows the topic names each phase and its command (rhiza run spawn, rhiza run findings, rhiza land, rhiza render, rhiza session done), the never-do list and rhiza guide contract, stays under the guide size cap, and is installed by rhiza guide install --agent claude.",
+          "statement": "Rhiza ships a conduct skill and guide topic for the conductor of a change set: read the slice and the code, plan the leaves if there are none, spawn a builder and then a verifier per leaf with a tight brief, spawn the Plan, Code and QA checks, spawn a critic only for a check with a blocker or major finding and a fixer for confirmed findings, land and render on the branch, then rhiza session done; it never merges, pushes, edits .rhiza/log or passes its own gate."
+        },
+        "handle": "conduct-skill",
+        "id": "01M79KPD8SQX6BBRG3NACDG8Z2",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M79KPD8SQX6BBRG3N6WRDD29",
+        "op": "node.create",
+        "parent": "01M5SWSQ8YXAQ763XWK5M7J24K"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/daemon -run TestPickNoLeaves shows an accepted, milestone-serving change set with no leaves picked for the default workflow and an umbrella change set still skipped; go test -trimpath ./cmd/rhiza -run TestScripts/conduct-plans-leaves shows a fake conductor writing leaves before its first spawn.",
+          "statement": "The daemon starts the default workflow on an accepted change set that serves a milestone and has no leaves, instead of skipping it, and the conductor plans its leaves into the model first, under the autonomous rules (questions go to the arbiter)."
+        },
+        "handle": "conduct-plans-leaves",
+        "id": "01M79KPD9T4QSDZCWH4QPW1G7C",
+        "key": "zzzzzzzy",
+        "kind": "capability",
+        "node": "01M79KPD9T4QSDZCWH4NQ577EA",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestRunFindingsCheckNames accepts plan, code and qa and refuses scope with a message naming the three; go test -trimpath ./internal/guide -run TestReviewChecks shows the review topic describes exactly these three checks.",
+          "statement": "Review has three checks: plan (does the code meet its leaves and does the model stay true, absorbing compliance and model), code (is the code right, the former quality check) and qa (the built binary does what each leaf says); the scope check is gone, and rhiza run findings accepts plan, code and qa."
+        },
+        "handle": "review-three-checks",
+        "id": "01M79KPDAWDKT4JQK1KEPVXBBY",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M79KPDAWDKT4JQK1KDNR5K0W",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestGateOpenBlocker shows a round of minor findings passing with no critic, a confirmed blocker failing the gate, and a blocker downgraded to minor by the critic passing.",
+          "statement": "A critic is spawned only for a review round with a blocker or major finding, and the conductor's gate counts any blocker or major finding the critic has not downgraded or dropped as open."
+        },
+        "handle": "critic-on-major",
+        "id": "01M79KPDBW0RMPYBW73T3AFCQP",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M79KPDBW0RMPYBW73RTEBNX3",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPD8SQX6BBRG3N6WRDD29",
+        "id": "01M79KPDCWTVEQ5CFN6EGJH8XS",
+        "link": "01M79KPDCWTVEQ5CFN6EG9C4ZD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVQKMABKSY7Q0ZZC4JZF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPD9T4QSDZCWH4NQ577EA",
+        "id": "01M79KPDDZ9VWAY51DCP6SC3PP",
+        "link": "01M79KPDDZ9VWAY51DCJPJ50H2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVQ03YYFAZDYWBBZW5H8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPDAWDKT4JQK1KDNR5K0W",
+        "id": "01M79KPDF1ZHKNSWCKV4TBJHT5",
+        "link": "01M79KPDF1ZHKNSWCKV3P8TWCZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVR7T0Z38NYD6T1TTWGR",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPDBW0RMPYBW73RTEBNX3",
+        "id": "01M79KPDG191654WEH0A9DETV6",
+        "link": "01M79KPDG191654WEH06C3C15G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVR7T0Z38NYD6T1TTWGR",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79KGZ51V2F5YYWMMQTGR6NW",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79KPDH2S66WPPEVMSXXQXE6",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Change set on a phone · Rhiza</title>
+<!-- Design reference, milestone 37 (approved by the owner 2026-11-13). Source canvas: https://claude.ai/artifact/B2TEoC8RNuS5wWWdkoxo7a -->
+<link rel="icon" href="../static/icons/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../static/css/rhiza-tokens.css">
+<link rel="stylesheet" href="../static/css/rhiza.css">
+<style>
+body{margin:0;background:var(--ground)}
+a{color:var(--teal)}a:hover{color:var(--ink)}
+.cnt{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;font:600 12px/1 var(--font-mono)}
+.leaf{display:flex;flex-direction:column;gap:8px;padding:16px 0;border-top:1px solid var(--line)}
+.leaf h3{margin:0;display:flex;align-items:center;gap:8px;font:500 15px/22px var(--font-body)}
+.leaf p{margin:0}
+.acc{font:400 13px/18px var(--font-body);color:var(--ink-3)}
+.ev{display:flex;align-items:center;gap:6px;font:400 13px/18px var(--font-body);color:var(--teal)}
+.why{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);text-decoration:none;color:var(--ink);min-height:44px}
+</style>
+</head>
+<body class="rz">
+<div class="rz" data-theme="dark" style="width: 390px; min-height: 1900px; box-sizing: border-box; background: var(--ground); color: var(--ink); font-family: var(--font-body);">
+
+<header style="display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 16px; background: var(--panel); border-bottom: 1px solid var(--line);">
+  <b style="font: 380 22px/1 var(--font-display); letter-spacing: -0.02em;">Rhiza</b>
+  <button type="button" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; margin-left: auto; border: 1px solid var(--line); border-radius: 999px; background: var(--ground); color: var(--ink); font: 500 15px/1 var(--font-body);">rhiza <span class="cnt" style="background: var(--rose); color: var(--on-solid);">3</span></button>
+</header>
+
+<main style="display: flex; flex-direction: column; gap: 32px; padding: 24px 16px 48px;">
+  <a href="roadmap-phone.html" style="display: inline-flex; align-items: center; min-height: 44px; font: 500 15px/22px var(--font-body); text-decoration: none;">← Milestone 35 · Efficient build cycle</a>
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 8px;"><p class="rz-kicker" style="margin: 0;">Change set</p><span class="rz-pill rz-pill--landed">landed</span></div>
+    <h1 style="margin: 0; font: 380 28px/34px var(--font-display); letter-spacing: -0.015em;">Tiered verifier</h1>
+    <p style="margin: 0; font: 400 17px/1.6 var(--font-body); color: var(--ink-2);">Build verifiers run on a cheaper model for low-risk leaves and on the strongest model for risky ones (test infrastructure, hooks, CI, workflow files, migrations, retries), still writing non-author Evidence.</p>
+  </div>
+
+  <dl style="margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 16px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); font: 400 14px/20px var(--font-body);">
+    <dt style="color: var(--ink-3);">Shipped</dt><dd style="margin: 0;">05:01 today, <a href="#">PR #525</a></dd>
+    <dt style="color: var(--ink-3);">Run</dt><dd style="margin: 0;"><a href="run-phone.html">2h 05m</a>, 3 leaves, 2 fix rounds</dd>
+    <dt style="color: var(--ink-3);">Serves</dt><dd style="margin: 0;">A ship-change run takes 40 minutes or less</dd>
+    <dt style="color: var(--ink-3);">ID</dt><dd style="margin: 0;"><a href="#" class="rz-id">01M76XS745</a></dd>
+  </dl>
+
+  <section style="display: flex; flex-direction: column; gap: 4px;">
+    <p class="rz-kicker" style="margin: 0;">What it builds</p>
+    <h2 style="margin: 0 0 12px; font: 380 20px/26px var(--font-display);">3 leaves, all verified</h2>
+    <article class="leaf">
+      <h3><span class="rz-glyph rz-glyph--capability" aria-hidden="true"></span><a href="model-page-phone.html" style="color: var(--ink); text-decoration: none;">Verifier tier choice</a></h3>
+      <p style="font: 400 15px/22px var(--font-body); color: var(--ink-2);">When the conductor launches a verifier whose role sets low-risk models, it starts it on that cheaper ladder only when the leaf is low risk.</p>
+      <p class="acc">Proved by tests in internal/run that start verifiers for risky and low-risk leaves.</p>
+      <p class="ev"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 6.2l2.4 2.4 4.6-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Verified · 2 QA passes with a scratch build</p>
+    </article>
+    <article class="leaf">
+      <h3><span class="rz-glyph rz-glyph--capability" aria-hidden="true"></span>Verifier tier fields</h3>
+      <p style="font: 400 15px/22px var(--font-body); color: var(--ink-2);">A workflow role names the cheaper model ladder it may use for low-risk leaves.</p>
+      <p class="ev"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 6.2l2.4 2.4 4.6-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Verified · took 4 attempts</p>
+    </article>
+    <article class="leaf">
+      <h3><span class="rz-glyph rz-glyph--capability" aria-hidden="true"></span>Verifier tier defaults</h3>
+      <p style="font: 400 15px/22px var(--font-body); color: var(--ink-2);">The built-in build workflow verifies low-risk leaves on Sonnet and risky ones on Opus.</p>
+      <p class="ev"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 6.2l2.4 2.4 4.6-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Verified · took 2 attempts</p>
+    </article>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 4px;">
+    <p class="rz-kicker" style="margin: 0;">Why</p>
+    <h2 style="margin: 0 0 12px; font: 380 20px/26px var(--font-display);">Decided in planning</h2>
+    <a class="why" href="model-page-phone.html"><span class="rz-glyph rz-glyph--decision" aria-hidden="true" style="margin-top: 5px;"></span><span style="display: flex; flex-direction: column; gap: 2px;"><span style="font: 500 15px/22px var(--font-body);">Tiered verifier rules</span><span style="font: 400 13px/18px var(--font-body); color: var(--ink-3);">The conductor decides a leaf's risk deterministically, with no agent judgment</span></span></a>
+    <a class="why" href="model-page-phone.html"><span class="rz-glyph rz-glyph--decision" aria-hidden="true" style="margin-top: 5px;"></span><span style="display: flex; flex-direction: column; gap: 2px;"><span style="font: 500 15px/22px var(--font-body);">What decides that a leaf is risky?</span><span style="font: 400 13px/18px var(--font-body); color: var(--ink-3);">A question from planning, answered by the rules above</span></span></a>
+    <a class="why" href="#"><span style="width: 12px; height: 12px; margin-top: 5px; border: 1px solid var(--ink-3); border-radius: 2px;" aria-hidden="true"></span><span style="display: flex; flex-direction: column; gap: 2px;"><span style="font: 500 15px/22px var(--font-body);">Tiered verifier plan</span><span style="font: 400 13px/18px var(--font-body); color: var(--ink-3);">The planning interview, as a source</span></span></a>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 4px;">
+    <p class="rz-kicker" style="margin: 0;">History</p>
+    <ol style="list-style: none; margin: 0; padding: 0; font: 400 14px/20px var(--font-body);">
+      <li style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);"><span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3);">05:01</span>Landed and merged</li>
+      <li style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);"><span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3);">02:56</span>Build started</li>
+      <li style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);"><span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3);">02:56</span>Plan merged, accepted by the daemon</li>
+      <li style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);"><span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3);">Nov 12</span>Opened in milestone 35's plan</li>
+    </ol>
+  </section>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T05:21:01Z",
+  "body": {
+    "intent": "Web Home answers 'does anything need me?' at a glance: every stuck or failed run, inbox item, waiting PR and hold with its reason in words and what to do, then what is running now and what shipped today",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M79NM3RJZFSZE1XHGHCRZSRM",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79NM3RJZFSZE1XHGHMH2QMV",
+  "type": "open",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M79HMYY2BXQJ35E9P4QZY2RE",
+  "after": [
+    "01M79HGPKH9GGQ8TPW67GFY9W8"
+  ],
+  "at": "2026-11-13T04:13:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 72436a158 in a detached checkout: go test -trimpath ./internal/run/ -run 'TestVerifierTier|TestVerifierRisky' -v passes all six tests, and go test -trimpath ./internal/run/... passes. The tests start verifiers from a role with models [opus], low_risk_models [sonnet], risky_paths [.github/**]. They journal sonnet for a low-risk first attempt touching only internal/x/x.go (TestVerifierTierChoice) and for review cycle 2's first fix on that file (TestVerifierTierReviewCycle). They journal opus for .github/workflows/ci.yml, an unreadable diff and a role without low_risk_models (TestVerifierTierChoice), for attempt 2 (TestVerifierTierRetry), for a fresh round (TestVerifierTierFreshRound) and for cycle 2's second fix try (TestVerifierTierReviewRetry). Cycle 3 is risky whatever the diff (TestVerifierRiskyRetryStates). The diff to verifierRisky and startLeaf matches: a checks step is a retry when the cycle is past 2, the try is not leafFixAttempt(cycle,1), or the round is past 1, and a low-risk launch takes the cheap ladder's first model. make self-check exits 0. build-workflow.txtar fails at :46 (it expects opus verifiers); that comes from the build.toml defaults and is already a confirmed review finding, not part of this leaf's acceptance."
+        },
+        "handle": "verifier-tier-choice-verified-2",
+        "id": "01M79HR5BKXVQ1645NCBKJDVN1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79HR5BKXVQ1645NCB07VYPA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79HR5BKXVQ1645NCB07VYPA",
+        "id": "01M79HR5CEDR1D9H92Y9V0MA1Q",
+        "link": "01M79HR5CEDR1D9H92Y62RHEMX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CZ29TQH0XYRCP38C2X9DK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XS745J8S0J74SZFEHQ17Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79HR5DM2XMM5Z99TB8FYPG4",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T04:44:11Z",
+  "body": {
+    "intent": "The daemon offers spawn, gate and hand-back primitives: an agent spawns journaled, visible child sessions; a gate step runs commands the daemon owns; any red hands back to a named agent step, capped, then the inbox",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M79KGRYE538GJC5NA2VNYG4K",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79KGRYE538GJC5NA6D1HM8X",
+  "type": "open",
+  "v": 1
+}

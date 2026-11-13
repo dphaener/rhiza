@@ -1,0 +1,41 @@
+{
+  "actor": "01M79NAMXN1CF65HMZ1PE0EN89",
+  "after": [
+    "01M79N9Q5JWYJ20ZNB19B126ED"
+  ],
+  "at": "2026-11-13T05:16:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent asks for three fixes and offers fix 1 as 'refresh, or refuse with an inbox item'. Refreshing is the better default. It is what the orchestrator did by hand to unstick the runs. autoUpdate already means the owner wants the daemon to follow main without being asked. Refusing alone would still have stalled every run until someone noticed. Refusing with an inbox item stays as the fallback for when a refresh fails, which covers both options in the intent. The refresh runs at every start, not only on re-exec, because a fresh daemon start with a stale guide fails the same way. Status already decides 'current' as version plus plugin (status.go pluginCurrent), so that is the test the refresh uses. Only installed scopes are refreshed, so the daemon never writes into a home or project that has not opted in. For fix 2, the claudecode adapter's hooks show SessionStart and idle but nothing for a rejected slash command. An unknown command is never submitted as a prompt, so the failure has to be caught ahead of time with a preflight check that the skill exists. The UserPromptSubmit grace is a backstop for other agents and other causes. The incident cost 16 attempts on a fault in the machine's setup, so this failure must not use up role attempts. Holding the run with an inbox item matches how other environment failures go to the owner. For fix 3, health already reports per part with ok, warn and bad, and an out-of-date guide is worth a look but does not stop rhiza from running. That makes it warn, as the intent says. A machine-level part fits because guides are installed per machine or user, like the usage hold. The new enum value is an addition and breaks no existing user of --json.",
+          "statement": "(1) The daemon refreshes guides every time it starts, including after it re-executes a new binary. It does this before it starts any agent step. For each installed guide that status finds (user scope, then project scope) whose version or plugin is not the binary's, it reinstalls that scope's guide for that agent, the same as rhiza guide install --agent <agent>. It never installs a guide where none was installed. If a refresh fails, the daemon does not start agent steps whose start command names a skill missing from the installed guide. It opens one inbox item naming the failed scope and the command rhiza guide install --agent <agent>, and it starts those steps again once the guide is current. (2) Before it launches a session, the adapter checks that the skill named by the step's start command is installed for the agent. If the skill is missing, the step fails at once with the reason 'start command /<name> unknown to <agent>: skill not installed; run rhiza guide install --agent <agent>'. This is an environment failure, not the role's: it uses up no builder or verifier attempt, and the run is held with an inbox item until the guide is installed and the run is resumed. There is also a backstop. A session that goes idle after SessionStart with no UserPromptSubmit within a short grace fails the same way, with the reason 'start command was never submitted'. (3) rhiza health gets a new machine-level part, guide, listed after usage. It is warn while any installed guide is out of date or missing a skill that a workflow starts, with next: rhiza guide install --agent <agent>. Otherwise it is ok, and it is never bad.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "decision-guide-refresh-start-fail-health",
+        "id": "01M79NCFAEPVAHFCPX6D1D5WX1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79NCFAEPVAHFCPX692PAJ3H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79NCFAEPVAHFCPX692PAJ3H",
+        "id": "01M79NCFBPJBF7NX59QSM7VBM0",
+        "link": "01M79NCFBPJBF7NX59QQQSHCJN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79N9HGE31ACQQJA5NPJD0H1",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M79N2JBDRDZ6R6HZ5YMRE8EY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79NCFDBRKERBVC9NWWEKRCF",
+  "type": "ops",
+  "v": 1
+}

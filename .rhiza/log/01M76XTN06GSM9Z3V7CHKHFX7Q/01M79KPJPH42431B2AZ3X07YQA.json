@@ -1,0 +1,13 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M779CNK12GBHED9EYDRZSVQJ"
+  ],
+  "at": "2026-11-13T04:47:22Z",
+  "body": {},
+  "change_set": "01M76XTN06GSM9Z3V7CHKHFX7Q",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79KPJPH42431B2AZ3X07YQA",
+  "type": "withdraw",
+  "v": 1
+}

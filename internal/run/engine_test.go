@@ -74,6 +74,9 @@ type fakeRunner struct {
 	checkWritesErr    map[string]error // CommitCheckWrites' error per session
 	checkoutErr       error            // OpenCheckout's error, when set
 	removeErr         error            // RemoveCheckout's error, when set
+	changed           []string         // ChangedFiles' result
+	changedErr        error            // ChangedFiles' error
+	changedRanges     []string         // "from..to" per ChangedFiles call
 	heads             []string         // Head's result per call, in order; past the end, fakeHead
 	// leafQuestions are "<handle> <text>" per AddLeafQuestion call; the
 	// nth question is QL<n>, handle leaf-failed-<n>.

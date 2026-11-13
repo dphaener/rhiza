@@ -26927,6 +26927,13 @@ cmp stdout describe.golden.json
                   "items": {
                     "additionalProperties": false,
                     "properties": {
+                      "low_risk_models": {
+                        "description": "A verifier's model ladder by attempt for a low-risk leaf; empty means models for every leaf",
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
                       "models": {
                         "description": "The model ladder by attempt or cycle; empty means the agent's default",
                         "items": {
@@ -26938,14 +26945,23 @@ cmp stdout describe.golden.json
                         "description": "The role's first prompt template",
                         "type": "string"
                       },
+                      "risky_paths": {
+                        "description": "A verifier's path globs: a leaf changing a matching file verifies on models; empty means none",
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
                       "role": {
                         "description": "The role: agent, builder, verifier, critic, fixer or a check's name",
                         "type": "string"
                       }
                     },
                     "required": [
+                      "low_risk_models",
                       "models",
                       "prompt",
+                      "risky_paths",
                       "role"
                     ],
                     "type": "object"

@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T04:44:37Z",
+  "body": {
+    "intent": "Bring-your-own docs: the primitives reference and a Bring your own agent page with one worked example per level, and rhiza init asks which agent the project uses",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M79KHHVJK2RMMC25KY63QW13",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79KHHVJK2RMMC25KYC9PB26",
+  "type": "open",
+  "v": 1
+}

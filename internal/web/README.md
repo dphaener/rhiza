@@ -10,7 +10,7 @@ static/
   app.js              SSE live updates, relative times, stale state
   fonts/                 Petrona, Instrument Sans, JetBrains Mono (variable woff2, SIL OFL)
   icons/                 favicon.svg / .ico, PNGs, maskable, head.html
-pages/                   static reference HTML for each page, with sample data
+pages/                   static reference HTML for each screen, with sample data (milestone 37 designs)
 ```
 
 ## Wiring it in
@@ -43,7 +43,7 @@ Serve `static/` at `/static/` and `site.webmanifest` at `/site.webmanifest`. Eve
 </div>
 ```
 
-Copy the exact markup from `pages/*.html`. Dark is the default; light follows the OS. Force one with `<html data-theme="dark">` or `data-theme="light"`.
+Copy the exact markup from `pages/*.html`. The milestone 37 redesign's approved screens are there at phone width (`*-phone.html`) and desktop width, with the frame and spacing rules in `frame-and-spacing.html` and the project picker in `project-picker.html`; their source canvas is https://claude.ai/artifact/B2TEoC8RNuS5wWWdkoxo7a. `runs.html` is still the old design until the runs list is redesigned. Dark is the default; light follows the OS. Force one with `<html data-theme="dark">` or `data-theme="light"`.
 
 ## Live updates
 

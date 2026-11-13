@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T04:44:18Z",
+  "body": {
+    "intent": "A rhiza-conduct skill conducts a change set in one session: plans its leaves if it has none, spawns a builder and verifier per leaf, three review checks with a critic only on blocker or major, fixes, lands",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M79KGZ51V2F5YYWMMQTGR6NW",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79KGZ51V2F5YYWMMVHAZ6QH",
+  "type": "open",
+  "v": 1
+}
