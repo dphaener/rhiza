@@ -242,3 +242,64 @@ func TestReviewCheckFindingsFlag(t *testing.T) {
 		t.Fatalf("a round with a finding: %v", err)
 	}
 }
+
+// run findings takes the plan-review kinds uncovered-intent and
+// oversized-leaf, a confirmed one of either fails review-check before round
+// 3 as a major finding, and a kind outside the seven is still refused with
+// an error listing them, journalling nothing.
+func TestRunFindingsPlanKinds(t *testing.T) {
+	f := newSessionFixture(t, "plankinds")
+	a := newChange(t, f.ctx, `{"intent":"Plan A"}`)
+	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"x"}`)
+	t0 := time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
+	store := run.NewStore(run.Dir(f.common))
+	if err := store.Create("R13", run.Entry{
+		Type: run.TypeStarted, Step: "review", At: t0,
+		Started: &run.Started{Workflow: "plan", Change: a.ChangeSet.String(), Title: "Plan it",
+			Definition: "name = \"plan\"\n[step.review]\nkind = \"command\"\nrun = \"true\"\n"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return "R13"
+		}
+		return ""
+	}
+	findings := func(kind string) (any, error) {
+		f.ctx.Stdin = strings.NewReader(`{"findings":[{"node":"x","kind":"` + kind + `","reason":"Wrong"}]}`)
+		return callOp(t, f.ctx, "run.findings", `{"file":"-"}`)
+	}
+
+	if err := store.Append("R13", run.Entry{Type: run.TypeEntered, Step: "review", At: t0, Visit: 1}); err != nil {
+		t.Fatal(err)
+	}
+	_, err := findings("no-failure-case")
+	wantExit(t, err, 2)
+	want := "missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent, oversized-leaf"
+	if e := AsError(err); e == nil || !strings.Contains(e.Message, want) {
+		t.Fatalf("unknown kind: %v, want the seven kinds listed", err)
+	}
+	if st, _ := store.Read("R13"); len(st.State().Rounds) != 0 {
+		t.Fatal("a refused kind journalled a round")
+	}
+
+	for i, kind := range []string{run.KindUncoveredIntent, run.KindOversizedLeaf} {
+		if i > 0 {
+			if err := store.Append("R13", run.Entry{Type: run.TypeEntered, Step: "review", At: t0, Visit: i + 1}); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if _, err := findings(kind); err != nil {
+			t.Fatalf("%s: %v", kind, err)
+		}
+		f.ctx.Stdin = strings.NewReader(`{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"Right"}]}`)
+		if _, err := callOp(t, f.ctx, "run.verdict", `{"file":"-"}`); err != nil {
+			t.Fatalf("%s verdict: %v", kind, err)
+		}
+		_, err := callOp(t, f.ctx, "run.review-check", `{}`)
+		if err == nil || !strings.Contains(err.Error(), "f1") {
+			t.Fatalf("review-check round %d with a confirmed %s: %v, want a failure naming f1", i+1, kind, err)
+		}
+	}
+}
