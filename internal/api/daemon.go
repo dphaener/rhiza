@@ -167,6 +167,9 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	}
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}, Planned: []string{}}
 	projs := map[string]*daemonProj{}
+	// gate holds the starts that need a skill of a guide the refresh below
+	// could not bring current; every project's ctx carries it.
+	var gate *guideGate
 	// project is the daemon's working state for a registered project,
 	// made when it first sees it initialised and kept from poll to poll.
 	project := func(name, dir string) (*daemonProj, error) {
@@ -181,6 +184,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
+		p.ctx.guideGate = gate
 		projs[name] = p
 		return p, nil
 	}
@@ -195,7 +199,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %s\n", line)
 		}
 	})
-	_ = guideScopes // read by the guide hold (daemon-holds-steps-on-stale-guide)
+	// A scope it could not refresh holds the starts that need its skills.
+	gate = newGuideGate(ctx, guideScopes)
+	for _, p := range projs {
+		p.ctx.guideGate = gate
+	}
 	defer func() {
 		for _, p := range projs {
 			p.stop()
@@ -535,6 +543,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	items = append(items, usageHoldItems(state.UsageHold)...)
 	items = append(items, watchdogHoldItems(state.WatchdogHolds)...)
 	items = append(items, machineHoldItems(state.MachineHold, ctx.Now())...)
+	items = append(items, guideHoldItems(state.GuideHolds)...)
 	if common, err := gitCommonDir(ctx); err == nil {
 		items = append(items, mainStaleItems(common)...)
 		items = append(items, workflowItems(common, state.Skips)...)
@@ -642,7 +651,7 @@ func inboxNotice(what string, it InboxItem) string {
 		return "machine load is high: the daemon holds new starts and resumes"
 	case InboxMemoryLow:
 		return "available memory is low: the daemon holds new starts and resumes"
-	case InboxWorkflow:
+	case InboxWorkflow, InboxGuideStale:
 		return it.Detail
 	case InboxMainStale:
 		return what + ": main was not updated after the merge: " + it.Detail
@@ -1090,6 +1099,13 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		var unresolved []daemon.Skip
 		cands, unresolved = daemonUnresolvedReady(ctx, fold, cands)
 		planSkips = append(planSkips, unresolved...)
+		cands = slices.DeleteFunc(cands, func(cs string) bool {
+			sk, held := guideSkipOf(ctx, fold, cs)
+			if held {
+				planSkips = append(planSkips, sk)
+			}
+			return held
+		})
 		picked = daemon.Pick(cands, runs, held, host, nil, shipMax, ship)
 		shipSkips := daemon.Skips(cands, runs, held, host, nil, shipMax, ship)
 		if shipMax < max {
@@ -1584,6 +1600,7 @@ var skipText = map[string]string{
 	daemon.SkipPaused:       "paused",
 	daemon.SkipShipOwner:    "ship is set to owner: only the owner starts its run",
 	daemon.SkipWorkflow:     "its workflow does not resolve: no run started",
+	daemon.SkipGuideStale:   "a skill its workflow starts is missing from the installed guide: no run started",
 }
 
 // DaemonProjectSkip is a registered project the root daemon did not work at

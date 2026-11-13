@@ -228,3 +228,75 @@ func TestDaemonGuideRefreshAtStart(t *testing.T) {
 		t.Errorf("a current guide was refreshed:\n%s", stderr.String())
 	}
 }
+
+// When the refresh fails for a scope, the daemon starts no step whose start
+// command names a skill missing from the guide, opens one inbox item naming
+// the scope and the install command however many polls pass, and starts the
+// step on the poll after the guide is installed, with the item gone.
+func TestDaemonGuideHold(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root writes into an unwritable folder")
+	}
+	f := usageFix(t)
+	ctx := f.ctx
+	ctx.Version = "1.2.3"
+	ctx.Home = t.TempDir()
+	home := oldGuide(t, ctx, ctx.Home, false)
+	// The refresh cannot write the missing skill's folder.
+	skills := filepath.Join(home, "skills")
+	if err := os.Chmod(skills, 0o555); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.Chmod(skills, 0o755) })
+	var lines []string
+	scopes := refreshGuides(ctx, t.TempDir(), rootcfg.Config{}, func(l string) { lines = append(lines, l) })
+	if len(scopes) != 1 || scopes[0].Refreshed || scopes[0].Err == "" {
+		t.Fatalf("refresh: %+v, log %v", scopes, lines)
+	}
+	ctx.guideGate = newGuideGate(ctx, scopes)
+
+	for poll := range 3 {
+		var skips []daemon.Skip
+		started, _, _, err := daemonPoll1(ctx, f.rs, f.pending, f.unj, 0, 4, 0, false, "", false, nil, nil, &skips)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(started)+len(f.picked) != 0 {
+			t.Fatalf("poll %d started %v (picked %v) over a stale guide", poll, started, f.picked)
+		}
+		var held bool
+		for _, sk := range skips {
+			if sk.Change == f.target && sk.Reason == daemon.SkipGuideStale {
+				held = strings.Contains(strings.Join(sk.Detail, " "), "/rhiza-builder")
+			}
+		}
+		if !held {
+			t.Fatalf("poll %d skips %+v: want %s held for the guide", poll, skips, f.target)
+		}
+		items := guideHoldItems(ctx.guideGate.state(ctx.Root))
+		if len(items) != 1 || items[0].Kind != InboxGuideStale {
+			t.Fatalf("poll %d items %+v, want exactly one", poll, items)
+		}
+		d := items[0].Detail
+		if !strings.Contains(d, "the user guide") || !strings.Contains(d, scopes[0].Err) || !strings.Contains(d, "rhiza guide install --agent claude") || strings.Contains(d, "--project") {
+			t.Fatalf("item %q", d)
+		}
+	}
+
+	// The owner installs the guide: the next poll starts the step.
+	if err := os.Chmod(skills, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	guideInstall(t, ctx, `{"agent":"claude"}`)
+	var skips []daemon.Skip
+	started, _, _, err := daemonPoll1(ctx, f.rs, f.pending, f.unj, 0, 4, 0, false, "", false, nil, nil, &skips)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(started) != 1 || started[0] != f.target {
+		t.Fatalf("after the install started %v, want %s", started, f.target)
+	}
+	if items := guideHoldItems(ctx.guideGate.state(ctx.Root)); len(items) != 0 {
+		t.Fatalf("items after the install: %+v", items)
+	}
+}

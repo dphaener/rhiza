@@ -113,6 +113,10 @@ type State struct {
 	// Learned are the window limits the daemon learned from usage-limit
 	// hits, one per window kind, the latest hit's.
 	Learned []LearnedLimit `json:"learned,omitempty"`
+	// GuideHolds are the guide scopes the daemon could not refresh and that
+	// are still not current: while any is, it starts no step whose start
+	// command names a skill that guide lacks.
+	GuideHolds []GuideHold `json:"guide_holds,omitempty"`
 	// Hooks are the notify and event commands the daemon took at start,
 	// each with where it came from (flag, git config or unset).
 	Hooks []HookValue `json:"hooks,omitempty"`
@@ -145,6 +149,20 @@ type UsageHold struct {
 	Limit     int64     `json:"limit"`
 	Reserve   int       `json:"reserve"`
 	Reset     time.Time `json:"reset"`
+}
+
+// GuideHold is a guide scope the daemon could not refresh.
+type GuideHold struct {
+	// Since is when the daemon found the scope stale.
+	Since time.Time `json:"since"`
+	// Scope is "user" or "project <name>".
+	Scope string `json:"scope"`
+	// Dir is the guide's plugin folder.
+	Dir string `json:"dir"`
+	// Error is why it was not refreshed.
+	Error string `json:"error"`
+	// Next is the command that installs the guide.
+	Next string `json:"next"`
 }
 
 // UsageWindow is the span of one usage window a poll found.

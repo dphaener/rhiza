@@ -42,6 +42,7 @@ const (
 	SkipShipOwner    = "ship-owner"
 	SkipPaused       = "paused"
 	SkipWorkflow     = "workflow-unresolved"
+	SkipGuideStale   = "guide-stale"
 )
 
 // Ship says which succeeded runs mean a change set has shipped: those of
