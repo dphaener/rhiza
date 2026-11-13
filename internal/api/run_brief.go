@@ -3,12 +3,14 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/canon"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/slice"
 	"github.com/dphaener/rhiza/internal/workflow"
@@ -104,15 +106,26 @@ func (r *stepRunner) fillSession(dir string) error {
 	if err != nil {
 		return fmt.Errorf("encode slice: %w", err)
 	}
-	in, err := r.briefInput(c, cs, sl)
+	// brief.md lists every decision, so it reads a slice nothing is cut
+	// from; slice.json stays what `rhiza slice --json` prints.
+	full, err := runSlice(c, SliceRequest{Budget: unboundedSliceBudget})
+	if err != nil {
+		return err
+	}
+	in, err := r.briefInput(c, cs, full.(SliceResponse))
 	if err != nil {
 		return err
 	}
 	return run.WriteSessionFiles(dir, run.RenderBrief(in), js)
 }
 
-// briefInput is what brief.md is rendered from, over the slice sl of
-// change set cs.
+// unboundedSliceBudget is a token budget no slice reaches, so no section
+// is cut.
+const unboundedSliceBudget = SliceBudget(math.MaxInt32)
+
+// briefInput is what brief.md is rendered from, over the uncut slice sl of
+// change set cs: its decisions are the change set's own (focus) Decisions,
+// then the other decisions that apply.
 func (r *stepRunner) briefInput(c *Ctx, cs id.ID, sl SliceResponse) (run.BriefInput, error) {
 	in := run.BriefInput{ChangeID: cs.String()}
 	if sl.Change != nil {
@@ -137,7 +150,7 @@ func (r *stepRunner) briefInput(c *Ctx, cs id.ID, sl SliceResponse) (run.BriefIn
 			Handle: l.Handle, Statement: nodeField(n.Fields, "statement"), Acceptance: nodeField(n.Fields, "acceptance"),
 		})
 	}
-	in.Decisions = itemStatements(sl.Decisions)
+	in.Decisions = decisionStatements(sl)
 	in.Constraints = itemStatements(sl.Constraints)
 	in.PrePushCheck = r.configValue(PrePushCheckKey)
 	in.LocalGate = r.configValue(LocalGateKey)
@@ -151,6 +164,26 @@ func nodeField(fields map[string]json.RawMessage, name string) string {
 		_ = json.Unmarshal(raw, &s)
 	}
 	return s
+}
+
+// decisionStatements are the statements of sl's live focus decisions, then
+// of its decisions not among them.
+func decisionStatements(sl SliceResponse) []string {
+	var out []string
+	seen := map[id.ID]bool{}
+	for _, f := range sl.Focus {
+		if f.Kind != op.KindDecision || f.Retired {
+			continue
+		}
+		seen[f.ID] = true
+		out = append(out, f.Statement)
+	}
+	for _, it := range sl.Decisions {
+		if !seen[it.ID] {
+			out = append(out, itemStatements([]slice.DocItem{it})...)
+		}
+	}
+	return out
 }
 
 // itemStatements are the statements of items, the handle where one has none.

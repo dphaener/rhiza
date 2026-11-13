@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -134,5 +135,58 @@ func TestSessionBriefUnwritable(t *testing.T) {
 	}
 	if len(f.rex.calls) != 0 {
 		t.Errorf("rex called: %q", f.rex.calls)
+	}
+}
+
+// brief.md lists every decision that applies with its statement, even when
+// the default slice budget cuts the Decisions section to a count, and the
+// change set's own Decisions, which the slice holds in focus.
+func TestSessionBriefDecisions(t *testing.T) {
+	f := newSessionFixture(t, "brief-decisions")
+	newChange(t, f.ctx, `{"intent":"Base"}`)
+	var writes []string
+	writes = append(writes, `{"op":"add","kind":"capability","handle":"base","fields":["statement=The base"]}`)
+	long := strings.Repeat("because it holds ", 40)
+	for i := range 40 {
+		h := fmt.Sprintf("landed-%02d", i)
+		writes = append(writes,
+			fmt.Sprintf(`{"op":"add","kind":"decision","handle":%q,"fields":["statement=Landed decision %02d %s"]}`, h, i, long),
+			fmt.Sprintf(`{"op":"link","from":"base","type":"decided-by","to":%q}`, h))
+	}
+	if _, err := applyFile(t, f.ctx, `{"writes":[`+strings.Join(writes, ",")+`]}`); err != nil {
+		t.Fatal(err)
+	}
+	for _, s := range []string{"propose", "accept", "land"} {
+		move(t, f.ctx, s, `{}`)
+	}
+	cs := newChange(t, f.ctx, `{"intent":"Readable tabs"}`).ChangeSet
+	if _, err := applyFile(t, f.ctx, `{"writes":[
+	  {"op":"add","kind":"capability","handle":"child","parent":"base","fields":["statement=The child"]},
+	  {"op":"add","kind":"decision","handle":"own","fields":["statement=Own decision of the change set"]},
+	  {"op":"link","from":"child","type":"decided-by","to":"own"}
+	]}`); err != nil {
+		t.Fatal(err)
+	}
+	r := &stepRunner{ctx: f.ctx, change: cs.String(), run: "R1", worktree: filepath.Join(t.TempDir(), "none")}
+	dir := filepath.Join(t.TempDir(), "session")
+	if err := r.fillSession(dir); err != nil {
+		t.Fatal(err)
+	}
+	js, err := os.ReadFile(filepath.Join(dir, "slice.json"))
+	if err != nil || !strings.Contains(string(js), `"section": "decisions"`) {
+		t.Fatalf("slice.json does not cut decisions, so this test proves nothing (%v): %s", err, js)
+	}
+	md, err := os.ReadFile(filepath.Join(dir, "brief.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"Own decision of the change set"}
+	for i := range 40 {
+		want = append(want, fmt.Sprintf("Landed decision %02d", i))
+	}
+	for _, w := range want {
+		if !strings.Contains(string(md), w) {
+			t.Errorf("brief.md lacks %q:\n%s", w, md)
+		}
 	}
 }
