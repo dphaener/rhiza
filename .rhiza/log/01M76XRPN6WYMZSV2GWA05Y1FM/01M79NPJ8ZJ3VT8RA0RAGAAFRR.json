@@ -1,0 +1,40 @@
+{
+  "actor": "01M79NJHEZZ9XJPTDDPAXEM3C5",
+  "after": [
+    "01M79N5KD74F3WFHREKRRKSGMB"
+  ],
+  "at": "2026-11-13T05:22:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 071bd5aab re-ran every Checks: command, each exit 0: go test -trimpath ./internal/guide/...; go test -trimpath ./internal/api -run GuideInstall (TestGuideInstallRoleSkills checks rhiza-planner, rhiza-plan-reviewer, rhiza-plan-critic and rhiza-plan-reviser written with their topic's description and expanded body, and unchanged on a second install); go test -trimpath ./internal/workflow/...; go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|guide-install|describe-golden)$'; rhiza ship generate (0 changed); rhiza render (only this verifier's own actor record). The acceptance's go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|guide-install)' also passes: guide.txtar's guide ls lists planner, plan-reviewer, plan-critic and plan-reviser, and guide-install.txtar checks the four new skill paths in the install output. Read the diff: plan.md and plan-review.md are now short indexes naming each role topic as /rhiza-<role> and rhiza guide <role>, with rhiza session done; TestPlanIndexes checks both routes and keeps each index under TopicCap/3 (plan 204 tokens, plan-review 164). Plan's description in guide.go is unchanged and TestPlanKinds still checks its trigger phrases. Removed plan-review phrase tests are covered by the plan-reviewer, plan-critic and plan-reviser topic tests. Nothing changed outside the leaf, and no TODOs or stubs were left."
+        },
+        "handle": "plan-role-skills-installed-verified",
+        "id": "01M79NPJ0S33KGF8D3790Z85NW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79NPJ0S33KGF8D375DP8Y1V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79NPJ0S33KGF8D375DP8Y1V",
+        "id": "01M79NPJ4Y38882J1QM1RCGTXS",
+        "link": "01M79NPJ4Y38882J1QM0T3G66T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH6B4G10X94QE56HC9RS4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79NPJ8ZJ3VT8RA0RAGAAFRR",
+  "type": "ops",
+  "v": 1
+}
