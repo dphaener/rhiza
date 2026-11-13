@@ -62,12 +62,9 @@ stdout '"op":"link","from":"<handle>","type":"answers","to":"<question id>"'
 stdout '^rhiza session done$'
 exec rhiza guide build
 stdout '^# Build$'
-stdout '^Leaf: export-csv$'
-stdout 'linked `blocks` to the leaf'
-stdout 'discovered-from draft change set, never built in this run'
-stdout '"type":"verifies","to":"<leaf>"'
-stdout 'rhiza run findings --leaf <leaf> - <<''EOF'''
-stdout 'neither Evidence nor findings fails'
+stdout '/rhiza-builder'
+stdout 'rhiza guide verifier'
+stdout 'rhiza guide build-retry'
 exec rhiza guide carving
 stdout '^# Carving$'
 stdout '^## Known limit$'
@@ -101,7 +98,7 @@ exec rhiza guide sources
 stdout '^# Sources$'
 stdout '^## Stored fields$'
 
-# guide ls lists all fifteen texts with their kinds and sizes.
+# guide ls lists all eighteen texts with their kinds and sizes.
 exec rhiza guide ls
 stdout -count=18 '^- '
 stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
@@ -111,6 +108,8 @@ stdout '^- advisor +topic +[0-9]+ tokens  '
 stdout '^- apply +topic +[0-9]+ tokens  '
 stdout '^- arbiter +topic +[0-9]+ tokens  '
 stdout '^- build +topic +[0-9]+ tokens  Building a change set.s leaves'
+stdout '^- build-retry +topic +[0-9]+ tokens  '
+stdout '^- builder +topic +[0-9]+ tokens  '
 stdout '^- carving +topic +[0-9]+ tokens  '
 stdout '^- change-sets +topic +[0-9]+ tokens  '
 stdout '^- import +topic +[0-9]+ tokens  '
@@ -118,6 +117,7 @@ stdout '^- plan-review +topic +[0-9]+ tokens  Plan review'
 stdout '^- reopening +topic +[0-9]+ tokens  '
 stdout '^- review +topic +[0-9]+ tokens  Reviewing a built change set'
 stdout '^- sources +topic +[0-9]+ tokens  '
+stdout '^- verifier +topic +[0-9]+ tokens  '
 stdout '^- workflows +topic +[0-9]+ tokens  Writing a custom workflow'
 exec rhiza guide ls --json
 stdout '"texts": \['

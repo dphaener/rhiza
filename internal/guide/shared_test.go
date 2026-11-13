@@ -42,9 +42,9 @@ func TestSharedBlockExpandsInPlace(t *testing.T) {
 			t.Errorf("%s: a shared marker is left", tx.Name)
 		}
 	}
-	b, _ := Lookup("build")
-	if !strings.Contains(b.Body, strings.TrimRight(shared["command-budget.md"], "\n")) {
-		t.Errorf("build lacks the command-budget block")
+	b, _ := Lookup("builder")
+	if !strings.Contains(b.Body, demote(strings.TrimRight(shared["command-budget.md"], "\n"))) {
+		t.Errorf("builder lacks the command-budget block")
 	}
 }
 

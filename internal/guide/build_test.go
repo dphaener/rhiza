@@ -6,59 +6,32 @@ import (
 	"testing"
 )
 
-func TestBuildText(t *testing.T) {
+// TestBuildIsAnIndex: the build topic is a short index that names the
+// three role topics, each by its skill and its rhiza guide route, and says
+// which role loads which; the role guidance is not repeated in it.
+func TestBuildIsAnIndex(t *testing.T) {
 	build, ok := Lookup("build")
 	if !ok || build.Skill {
 		t.Fatalf("build: found %v, skill %v; want a topic", ok, build.Skill)
 	}
 	checkPhrases(t, "build", map[string][]string{
-		"start": {
-			`rhiza slice --change "$RHIZA_CHANGE" --json`, `rhiza show "$RHIZA_LEAF" --json`,
-			"RHIZA_ATTEMPT", "acceptance", "build only that leaf",
-		},
-		"trailer": {
-			"exactly one new commit", "\nLeaf: export-csv\n", "\nChange: ", "\nActor: ",
-			"rhiza run status --json", "fix commit with the same `Leaf:` trailer",
-			"`Co-Authored-By:` included, in the one final paragraph, no blank line",
-		},
-		"outside-work": {
-			"raise a question", "linked `blocks` to the leaf",
-			"discovered-from draft change set, never built in this run",
-			"rhiza change new", "discovered-from <this>", "rhiza change use <this>",
-		},
-		"evidence-or-findings": {
-			"detached checkout", "Never edit code", "Evidence written as yourself",
-			`"type":"verifies","to":"<leaf>"`, "rhiza run findings --leaf <leaf> - <<'EOF'", "\n  EOF\n",
-			`{"findings":[{"reason":`, "neither Evidence nor findings fails",
-			"Evidence\nwritten by anyone else does not count",
-		},
-		"fakes-only": {"with fakes only, never real Rex,\nagents or `gh`"},
-		"done": {
-			"rhiza session done", "as its own command", "after its recording\ncommand succeeded",
-			"`;` or `&&`",
-		},
-		"scoped-tests": {
-			"Builders and verifiers run only the tests covering what the change touches",
-			"scoped commands", "never the repo's full\nsuite",
-			"the PR's CI runs it before merge",
-		},
-		"unstable-ci": {
-			"While CI is unstable", "not explained by your change",
-			"do not push or rerun CI to see", "Reproduce the\nfailing test locally",
-			"push only after it and the\ntouched packages pass locally",
-		},
-		"delay-repro": {
-			"injecting a delay at the suspected race", "never by busy loops or parallel stress on the host",
-		},
+		"builder":  {"Builder: `/rhiza-builder` (`rhiza guide builder`)"},
+		"retry":    {"RHIZA_ATTEMPT` > 1", "`/rhiza-build-retry` (`rhiza guide build-retry`)"},
+		"verifier": {"Verifier: `/rhiza-verifier` (`rhiza guide verifier`)"},
+		"done":     {"rhiza session done"},
 	})
-	for _, banned := range []string{"go test", "make check", "make test", "testscript"} {
+	if n := Tokens(build.Body); n > 250 {
+		t.Errorf("build index is %d tokens, want a short index", n)
+	}
+	for _, banned := range []string{"Record agent actor", "rhiza run findings", "Stream CSV exports", "Claude"} {
 		if strings.Contains(build.Body, banned) {
-			t.Errorf("build names %q", banned)
+			t.Errorf("build index holds %q: that belongs in a role topic", banned)
 		}
 	}
-	// Constraint agents-named-only-in-adapters: no agent product by name.
-	if strings.Contains(build.Body+build.Description, "Claude") {
-		t.Errorf("build names an agent product")
+	for _, name := range []string{"builder", "verifier", "build-retry"} {
+		if _, ok := Lookup(name); !ok {
+			t.Errorf("build names the %s topic, which does not exist", name)
+		}
 	}
 }
 
@@ -71,53 +44,9 @@ func finalParagraph(s string) string {
 	return s
 }
 
-func TestBuildPreHandoffChecklist(t *testing.T) {
-	build, _ := Lookup("build")
-	for _, want := range []string{"acceptance\ncommands", "`rhiza ship generate`", "`rhiza render`", "`Checks:` block", "exit code"} {
-		if !strings.Contains(build.Body, want) {
-			t.Errorf("build: lacks %q", want)
-		}
-	}
-	i := strings.Index(build.Body, "\nStream CSV exports\n")
-	example := build.Body[i:]
-	example = example[:strings.Index(example, "\n```")]
-	c, ch := strings.Index(example, "\nChecks:\n"), strings.Index(example, "\nChange: ")
-	if c < 0 || ch < c {
-		t.Errorf("build example: Checks: block must sit above the trailers")
-	}
-	if strings.Contains(finalParagraph(example), "Checks:") {
-		t.Errorf("build example: Checks: inside the trailer paragraph")
-	}
-}
-
-func TestBuildCommitsOwnActorRecord(t *testing.T) {
-	build, _ := Lookup("build")
-	for _, want := range []string{"Record agent actor $RHIZA_ACTOR ", "git add $(", "never another actor's"} {
-		if !strings.Contains(build.Body, want) {
-			t.Errorf("build: lacks %q", want)
-		}
-	}
-}
-
-func TestBuildTrailersInOneFinalParagraph(t *testing.T) {
-	build, _ := Lookup("build")
-	i := strings.Index(build.Body, "\nStream CSV exports\n")
-	if i < 0 {
-		t.Fatal("build: no builder commit example")
-	}
-	example := build.Body[i:]
-	example = example[:strings.Index(example, "\n```")]
-	last := finalParagraph(example)
-	for _, tr := range []string{"Change: ", "Actor: ", "Leaf: export-csv", "Co-Authored-By: "} {
-		if !strings.Contains(last, tr) {
-			t.Errorf("build example: final paragraph %q lacks %q", last, tr)
-		}
-	}
-}
-
 func TestGuidesFeedFindingsFromStdin(t *testing.T) {
 	re := regexp.MustCompile(`rhiza run (findings|verdict)[^\n]*`)
-	for _, name := range []string{"build", "review", "plan-review"} {
+	for _, name := range []string{"verifier", "review", "plan-review"} {
 		g, ok := Lookup(name)
 		if !ok {
 			t.Fatalf("no guide %q", name)
