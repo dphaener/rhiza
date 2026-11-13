@@ -1,0 +1,29 @@
+{
+  "actor": "01M790K3X3HZ37PNEF7PEA7QV0",
+  "after": [
+    "01M790GBFTP0W73K81ZSRD9331"
+  ],
+  "at": "2026-11-12T23:13:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M768E0NH089HZ4WRR3N4WVSS",
+        "handle": null,
+        "id": "01M790KZRWPM0Y3N4EYVXQ6M93",
+        "node": "01M768E0NH089HZ4WRR0SBBDAB",
+        "op": "node.update",
+        "set": {
+          "acceptance": "Go tests in internal/ciworkflow (go test -trimpath ./internal/ciworkflow/...) parse .github/workflows/ci.yml and assert: a `changes` job with an output code, set true on workflow_dispatch and on pull_request computed as ci-model-only-since-green's acceptance describes; lint, scripts, api, rest and budgets each needing changes with if on code == 'true'; a `model` job needing changes with if on code == 'false' that runs make self-check and `go test -trimpath ./internal/op -run TestEveryFieldInRepoLogIsKnown` (so a model-only PR whose log carries a field op.FieldKnown rejects still fails CI, as it does today through the api/rest jobs); check needing changes, model and the five Go jobs, if: always(), failing unless changes succeeded and every other result is success or skipped, and failing when none of model and the five Go jobs succeeded (an all-skipped run fails check); the existing triggers, concurrency, matrices and cache checks still pass. make check is unchanged. The change set's own PR touches Go code so runs everything; the next model-only PR's CI completes in a few minutes with check green, read from gh run view.",
+          "statement": "On a pull request CI can run only a `model` job (setup-go, make self-check, then `go test -trimpath ./internal/op -run TestEveryFieldInRepoLogIsKnown`, the one Go test that reads the repo's own .rhiza/log and fails on a node field this commit's code does not know, which neither fold nor rhiza check validates) and skip lint, scripts, api, rest and budgets, decided by a first `changes` job with an output code (code=false selects the model job, code=true the five Go jobs; always true on workflow_dispatch); when a pull request's code is false is the decision rule of ci-model-only-since-green. Every dispatched run on main runs everything as today, and the aggregate `check` job, needing changes, model and the five Go jobs with if: always(), fails unless changes succeeded and passes only when every other job is success or skipped with at least one of them succeeded."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XSFD0JZ9424EWBSQA3K8X",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M790KZSC8A2AX4FVX9HQ8Y7R",
+  "type": "ops",
+  "v": 1
+}

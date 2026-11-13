@@ -4,6 +4,8 @@ package ciworkflow
 
 import (
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -195,7 +197,7 @@ func TestCIChangesDecidesFromGitDiff(t *testing.T) {
 		t.Errorf("changes output code = %q; want steps.diff.outputs.code", out)
 	}
 	body := strings.Join(texts(j), "\n")
-	for _, want := range []string{"git merge-base", "git diff --name-only", "code=true", "code=false", `!= pull_request`} {
+	for _, want := range []string{".github/scripts/ci-changes.sh", "steps.green.outputs.sha", "code=true", `!= pull_request`} {
 		if !strings.Contains(body, want) {
 			t.Errorf("changes job lacks %q", want)
 		}
@@ -257,4 +259,127 @@ func TestCICheckAggregatesEveryJob(t *testing.T) {
 			t.Errorf("check lacks %q", want)
 		}
 	}
+}
+
+// gitRepo is a scratch repository with helpers.
+type gitRepo struct {
+	t   *testing.T
+	dir string
+}
+
+func (r gitRepo) git(args ...string) string {
+	r.t.Helper()
+	cmd := exec.Command("git", args...)
+	cmd.Dir = r.dir
+	cmd.Env = append(os.Environ(), "GIT_CONFIG_GLOBAL=/dev/null", "GIT_CONFIG_SYSTEM=/dev/null",
+		"GIT_AUTHOR_NAME=t", "GIT_AUTHOR_EMAIL=t@example.com",
+		"GIT_COMMITTER_NAME=t", "GIT_COMMITTER_EMAIL=t@example.com")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		r.t.Fatalf("git %v: %v\n%s", args, err, out)
+	}
+	return strings.TrimSpace(string(out))
+}
+
+// commit writes the files and commits them, returning the new sha.
+func (r gitRepo) commit(files map[string]string) string {
+	r.t.Helper()
+	for name, body := range files {
+		p := filepath.Join(r.dir, name)
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			r.t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			r.t.Fatal(err)
+		}
+	}
+	r.git("add", "-A")
+	r.git("commit", "-m", "c")
+	return r.git("rev-parse", "HEAD")
+}
+
+// decide runs the changes script at HEAD and returns its output.
+func (r gitRepo) decide(base, green string) string {
+	r.t.Helper()
+	script, err := filepath.Abs("../../.github/scripts/ci-changes.sh")
+	if err != nil {
+		r.t.Fatal(err)
+	}
+	cmd := exec.Command("bash", script, base, green)
+	cmd.Dir = r.dir
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		r.t.Fatalf("ci-changes.sh: %v\n%s", err, out)
+	}
+	return strings.TrimSpace(string(out))
+}
+
+func newRepo(t *testing.T) (gitRepo, string) {
+	t.Helper()
+	r := gitRepo{t, t.TempDir()}
+	r.git("init", "-b", "main")
+	base := r.commit(map[string]string{"main.go": "package main\n", ".rhiza/a": "1"})
+	return r, base
+}
+
+func TestChangesScript(t *testing.T) {
+	t.Run("land-like commit changing only .rhiza/ after green", func(t *testing.T) {
+		r, base := newRepo(t)
+		r.git("checkout", "-b", "pr")
+		green := r.commit(map[string]string{"main.go": "package main // pr\n"})
+		r.commit(map[string]string{".rhiza/log/x.json": "{}", ".rhiza/rendered/y.md": "y"})
+		if got := r.decide(base, green); got != "code=false" {
+			t.Errorf("got %s; want code=false", got)
+		}
+	})
+	t.Run("merge of main bringing only .rhiza/", func(t *testing.T) {
+		r, base := newRepo(t)
+		r.git("checkout", "-b", "pr")
+		green := r.commit(map[string]string{"main.go": "package main // pr\n"})
+		r.git("checkout", "main")
+		r.commit(map[string]string{".rhiza/log/m.json": "{}"})
+		r.git("checkout", "pr")
+		r.git("merge", "--no-ff", "-m", "merge main", "main")
+		if got := r.decide(base, green); got != "code=false" {
+			t.Errorf("got %s; want code=false", got)
+		}
+	})
+	t.Run("code change since green", func(t *testing.T) {
+		r, base := newRepo(t)
+		r.git("checkout", "-b", "pr")
+		green := r.commit(map[string]string{"main.go": "package main // pr\n"})
+		r.commit(map[string]string{"main.go": "package main // more\n", ".rhiza/b": "2"})
+		if got := r.decide(base, green); got != "code=true" {
+			t.Errorf("got %s; want code=true", got)
+		}
+	})
+	t.Run("merge of main bringing code", func(t *testing.T) {
+		r, base := newRepo(t)
+		r.git("checkout", "-b", "pr")
+		green := r.commit(map[string]string{".rhiza/pr": "1"})
+		r.git("checkout", "main")
+		r.commit(map[string]string{"other.go": "package main\n"})
+		r.git("checkout", "pr")
+		r.git("merge", "--no-ff", "-m", "merge main", "main")
+		if got := r.decide(base, green); got != "code=true" {
+			t.Errorf("got %s; want code=true", got)
+		}
+	})
+	t.Run("no green commit and the PR leaves .rhiza/", func(t *testing.T) {
+		r, base := newRepo(t)
+		r.git("checkout", "-b", "pr")
+		r.commit(map[string]string{".rhiza/b": "2"})
+		r.commit(map[string]string{"main.go": "package main // pr\n"})
+		if got := r.decide(base, ""); got != "code=true" {
+			t.Errorf("got %s; want code=true", got)
+		}
+	})
+	t.Run("no green commit and the PR stays in .rhiza/", func(t *testing.T) {
+		r, base := newRepo(t)
+		r.git("checkout", "-b", "pr")
+		r.commit(map[string]string{".rhiza/b": "2"})
+		if got := r.decide(base, ""); got != "code=false" {
+			t.Errorf("got %s; want code=false", got)
+		}
+	})
 }
