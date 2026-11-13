@@ -1,0 +1,40 @@
+{
+  "actor": "01M7ACG495BVGB0MDGB27BGZM5",
+  "after": [
+    "01M7AAHDD12CWXKED7NA43G868"
+  ],
+  "at": "2026-11-13T12:01:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f44a77bbb re-ran the Checks block: go test -trimpath ./internal/api -run 'TestSessionMessage|TestDeliver|TestTypePointer' (exit 0, also -count=1 with TestSessionMessageInSessionCheckout and TestDeliverInSessionCheckout passing), go test -trimpath ./cmd/rhiza -run 'TestScripts/(session-message|describe-golden)' (exit 0), rhiza ship generate (exit 0, nothing changed), rhiza render (exit 0). Diff read: messageFolder uses rec.Dir when set else rec.Worktree, used by session.message (incl. dry run) and Deliver in run.go; new tests set Dir to a separate folder and check 0001.md lands under <Dir>/.rhiza/local/messages/<session>/, not under the worktree, with the pointer naming the relative path; existing tests cover the no-Dir worktree case; File desc, summary, describe-golden and cli.md updated; no TODOs, nothing outside the leaf."
+        },
+        "handle": "message-file-in-session-checkout-verified",
+        "id": "01M7ACHYBV9YNDFQFK9G42BQF1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ACHYBV9YNDFQFK9CNM734C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ACHYBV9YNDFQFK9CNM734C",
+        "id": "01M7ACHYD26KZBZS0NY3PMDX8D",
+        "link": "01M7ACHYD26KZBZS0NY305VGQQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AAAVJE3QMNAYAZKHG3ASHW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7AA6QGX335J8XPJX3D6T4DJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ACHYE0ZZNJV36XSBSVPGFK",
+  "type": "ops",
+  "v": 1
+}
