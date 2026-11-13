@@ -1,0 +1,132 @@
+{
+  "actor": "01M79AVJ31XCYCVAY8672VG21H",
+  "after": [
+    "01M79AQWBRYQS40591DZETFKFB"
+  ],
+  "at": "2026-11-13T02:18:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from the branch head; ran `rhiza guide <topic>` for every topic in `rhiza guide ls`: no `<!-- shared:` marker survives and the builder/verifier/build-retry texts show the shared done, test-scope, unstable-CI, command-budget, outside-work and never-list blocks expanded in place; `rhiza guide nosuch` exits 4. go test -trimpath ./internal/guide/... ok."
+        },
+        "handle": "guide-shared-blocks-qa-1",
+        "id": "01M79B54NT5M0ZKSB9ZW5H1FKK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79B54NT5M0ZKSB9ZTB0FHPE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79B54NT5M0ZKSB9ZTB0FHPE",
+        "id": "01M79B54QJ93ZF3PB2NH96EKJZ",
+        "link": "01M79B54QJ93ZF3PB2NGSV9BH1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974FTA4EJ8NB0P869FGVT0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza; `rhiza guide builder` prints Task, Expected outcome, Read first, Must do, Must not do, Context as its only ## sections (shared blocks nested as ###), with the acceptance contract, read-pattern-first, question-before-work, Checks: block above one final trailer paragraph, the actor-record git add line and the RHIZA_ATTEMPT > 1 route to /rhiza-build-retry; the commands it names (slice, show, ship generate, render, session done, change new/use, link) all exist in the built binary."
+        },
+        "handle": "builder-topic-qa-1",
+        "id": "01M79B54TDKYPGPVD5K9E8XGM4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79B54TDKYPGPVD5K9BAS6HR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79B54TDKYPGPVD5K9BAS6HR",
+        "id": "01M79B54XD0EVNMWXS589Q0QEZ",
+        "link": "01M79B54XD0EVNMWXS55JVDWWB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974FWT13ZEJX4QJZQKJBFB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza; `rhiza guide build-retry` (192 tokens) says inspect the working tree and earlier commits, read findings from the prompt or `rhiza run status --json`, address every finding as written, one fix commit with the same Leaf: trailer, never rewrite history; it repeats none of the builder's shared blocks."
+        },
+        "handle": "build-retry-topic-qa-1",
+        "id": "01M79B54YYPA1N0JG244VWBBRP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79B54YYPA1N0JG242XF01S8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79B54YYPA1N0JG242XF01S8",
+        "id": "01M79B5516620AHPHVSHKMJ4A8",
+        "link": "01M79B5516620AHPHVSFXDVRC5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974G5P60MM2EHVR5M79X51",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza; `rhiza guide ls` lists build, builder, verifier and build-retry; `rhiza guide build` is a short index naming /rhiza-builder, /rhiza-verifier, /rhiza-build-retry and their `rhiza guide` routes; `HOME=<scratch> rhiza guide install --agent claude` wrote 10 files incl. skills/rhiza-builder, rhiza-verifier, rhiza-build-retry and rhiza-build SKILL.md with the topic descriptions and expanded bodies (verifier body matches `rhiza guide verifier`), and a second install reported 0 written, 10 unchanged. go test ./internal/api -run GuideInstall and TestScripts/(guide|guide-install|build-evidence-commit) ok."
+        },
+        "handle": "build-role-skills-installed-qa-1",
+        "id": "01M79B553X39KCTZWSJQH9PWBY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79B553X39KCTZWSJMRE68J9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79B553X39KCTZWSJMRE68J9",
+        "id": "01M79B5567XEX3V3YE1KV6EQ8M",
+        "link": "01M79B5567XEX3V3YE1J277K37",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974G8PCWZ6YB020VYE5FRB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza; `rhiza workflow describe build` and `docs-build` show the one-line /rhiza-builder and /rhiza-verifier prompts, docs-build keeping the humanize addendum after the builder line; review.toml and docs-review.toml verifier prompts are byte-identical to build.toml's; `rhiza workflow check` reports build, review, docs-build, docs-review valid; go test ./internal/workflow/... and TestScripts/(build-evidence-commit|docs-commands-exist|describe-golden) ok; make self-check passes from a clean detached checkout."
+        },
+        "handle": "build-prompts-one-line-qa-1",
+        "id": "01M79B5586744PZAWTNR200TEC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79B5586744PZAWTNQPBTV7C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79B5586744PZAWTNQPBTV7C",
+        "id": "01M79B55AJJDEGNSPYWSW8SVE6",
+        "link": "01M79B55AJJDEGNSPYWPBGEVRG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974GD79WS6HEB3RMEMQ7W9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79B55DQQ9HP9NJK7FS97QHK",
+  "type": "ops",
+  "v": 1
+}
