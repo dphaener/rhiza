@@ -1,0 +1,40 @@
+{
+  "actor": "01M7A09RVCA7VFQ6NZ0XNYKK9X",
+  "after": [
+    "01M7A05ZD2DDTWKMF2K79XB04W"
+  ],
+  "at": "2026-11-13T08:28:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1dbf71699 re-ran every Checks: command (exit 0 each): go test -trimpath ./internal/session/... ./internal/api/... -run StartNotSubmitted (acceptance; TestStartNotSubmitted, TestStartNotSubmittedFailsSession, ...PromptedIsFine, ...WithinGrace pass), go test -trimpath ./internal/run/... -run StartNotSubmitted (TestLeavesStepStartNotSubmitted passes), go test -trimpath ./internal/adapter/..., go test -trimpath ./internal/api/ -run 'TestSessionHook|TestSessionRun|Lost', rhiza ship generate, rhiza render (no tree changes). Read the leaf's three commits (5e6306336, 6bdf97a51, 1dbf71699): claude-code SessionStart sets HookReport.Start; recordHook marks Started/Prompted; session.NeverSubmitted with a 3m StartGrace; AgentStatus ends the session with 'start command was never submitted' as Environment; pollLeaf journals leaf-void after closing the pane and fails the run, so no leaf-attempt is counted and a retry restarts the builder at attempt 1. The api tests drive real hook payloads on a moved clock: SessionStart then idle past the grace fails with the reason; SessionStart, UserPromptSubmit, Stop past the grace stays live; idle within the grace stays live. Fakes only; no TODOs or stubs; changes stay within the leaf."
+        },
+        "handle": "session-start-prompt-not-submitted-verified",
+        "id": "01M7A0C59RVZ2WAH4DZ0B9JG3R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A0C59RVZ2WAH4DYXWWDX71",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A0C59RVZ2WAH4DYXWWDX71",
+        "id": "01M7A0C5AFRH0GBQZ3AF9N4QW6",
+        "link": "01M7A0C5AFRH0GBQZ3ADQ1TMGJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NEZJ5H07ZV0CGASQ0W2MJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79N2JBDRDZ6R6HZ5YMRE8EY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A0C5B6QYCX2WN6YDF2ZNX6",
+  "type": "ops",
+  "v": 1
+}
