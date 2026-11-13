@@ -50,17 +50,23 @@ func TestPlanKinds(t *testing.T) {
 }
 
 func TestPlanNoMandatoryMilestone(t *testing.T) {
-	tx, _ := Lookup("plan")
-	if strings.Contains(tx.Body, "builds only a change set that serves a milestone") {
-		t.Errorf("plan still says every change set must serve a milestone")
+	for _, name := range []string{"plan", "planner", "plan-recipes", "plan-interview"} {
+		tx, _ := Lookup(name)
+		if strings.Contains(tx.Body, "builds only a change set that serves a milestone") {
+			t.Errorf("%s still says every change set must serve a milestone", name)
+		}
 	}
 }
 
+// The phrases the plan skill once held, checked where they now live:
+// autonomous runs in planner; scope, the apply recipe, no plan file and
+// who records a pick in plan-recipes; the interview, Source and milestone
+// in plan-interview.
 func TestPlanText(t *testing.T) {
-	checkPhrases(t, "plan", map[string][]string{
+	checkPhrases(t, "plan-recipes", map[string][]string{
 		"plan-guide": {
 			"rhiza apply", `"acceptance=`, `"statement=`, `"type":"decided-by"`,
-			"no plan file", "no checkboxes", "rhiza session done",
+			"no plan file", "no checkboxes",
 		},
 		"plan-no-intent-yet": {
 			"serves no intent yet", "pick a landed intent", `"kind":"intent"`,
@@ -72,32 +78,37 @@ func TestPlanText(t *testing.T) {
 			"or an open milestone fits", ".rhiza/policy.toml", "`backlog` rule",
 			`"skip"`, "umbrella or area intent under no", "milestone",
 		},
+		"plan-scope": {"`intention`", "`record`", "serves"},
+		"plan-decisions-from-source": {
+			"derived-from", "quotes the owner's typed words", "rhiza session interview",
+		},
+	})
+	checkPhrases(t, "plan-interview", map[string][]string{
 		"plan-interview": {
 			"rhiza slice", "rhiza why", "Never ask a fact", "One topic per message",
 			"recommendation", "AskUserQuestion", "Only typed words are quoted",
 			"`wording`", "`quote`", `"kind":"question"`, `"type":"blocks"`,
 		},
 		"plan-scope": {
-			"`intention`", "`record`", "milestone", "serves", "child intents",
-			"rhiza change new", "intent only", "rhiza land", "before review",
-			"depends-on", "drafts",
-		},
-		"plan-autonomous-interview": {
-			"RHIZA_AUTONOMOUS=1", "arbiter", "(assumed, would have escalated)",
-			"ask the owner nothing", "Quote no owner words",
+			"milestone", "child intents", "rhiza change new", "intent only", "rhiza land",
+			"before review", "depends-on", "drafts",
 		},
 		"plan-source": {
 			"rhiza guide scrub", `--raw-session "$RHIZA_SESSION"`, "rhiza source add",
 			"Before you exit",
 		},
-		"plan-decisions-from-source": {
-			"derived-from", "quotes the owner's typed words", "rhiza session interview",
+	})
+	checkPhrases(t, "planner", map[string][]string{
+		"plan-guide": {"rhiza apply", "rhiza session done"},
+		"plan-autonomous-interview": {
+			"RHIZA_AUTONOMOUS=1", "arbiter", "(assumed, would have escalated)",
+			"ask the owner nothing", "Quote no owner words",
 		},
 	})
 }
 
 func TestPlanWhoRecords(t *testing.T) {
-	checkPhrases(t, "plan", map[string][]string{
+	checkPhrases(t, "plan-recipes", map[string][]string{
 		"plan-guide-who-records": {
 			"The run's capture records the owner's AskUserQuestion picks",
 			"writes no Decision for a plain owner pick",
@@ -106,11 +117,13 @@ func TestPlanWhoRecords(t *testing.T) {
 			"copy the asked question\nverbatim into its `question` field",
 		},
 	})
-	tx, _ := Lookup("plan")
-	for _, line := range strings.Split(tx.Body, "\n") {
-		l := strings.ToLower(line)
-		if strings.Contains(l, "plain") && strings.Contains(l, "write a decision") {
-			t.Errorf("plan tells the planner to write a Decision for a plain pick: %q", line)
+	for _, name := range []string{"planner", "plan-recipes", "plan-interview"} {
+		tx, _ := Lookup(name)
+		for _, line := range strings.Split(tx.Body, "\n") {
+			l := strings.ToLower(line)
+			if strings.Contains(l, "plain") && strings.Contains(l, "write a decision") {
+				t.Errorf("%s tells the planner to write a Decision for a plain pick: %q", name, line)
+			}
 		}
 	}
 }
@@ -130,7 +143,7 @@ func TestPlanReviewText(t *testing.T) {
 }
 
 func TestPlanAcceptanceScoped(t *testing.T) {
-	checkPhrases(t, "plan", map[string][]string{
+	checkPhrases(t, "plan-recipes", map[string][]string{
 		"plan-acceptance-scoped": {
 			"the tests covering that leaf, never the repo's full suite",
 		},
@@ -140,7 +153,7 @@ func TestPlanAcceptanceScoped(t *testing.T) {
 			"runs the repo's full suite", "tests covering that leaf",
 		},
 	})
-	for _, name := range []string{"plan", "plan-review"} {
+	for _, name := range []string{"plan", "plan-review", "planner", "plan-recipes", "plan-interview"} {
 		tx, _ := Lookup(name)
 		for _, bad := range []string{"go test", "make check", "make test", "testscript"} {
 			if strings.Contains(tx.Body, bad) {
@@ -161,7 +174,7 @@ func TestPlanReviewDoneUnchained(t *testing.T) {
 }
 
 func TestPlanMilestoneNumber(t *testing.T) {
-	checkPhrases(t, "plan", map[string][]string{
+	checkPhrases(t, "plan-interview", map[string][]string{
 		"plan-milestone-number": {"RHIZA_MILESTONE_NUMBER", "milestone-N", "milestone=N", "`mN-`", "Never count milestones"},
 	})
 }
