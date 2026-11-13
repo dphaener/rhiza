@@ -2,7 +2,10 @@ package web
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	"crypto/subtle"
+	"encoding/hex"
 	"net/http"
 	"strings"
 )
@@ -17,6 +20,9 @@ const (
 	// TokenCookie is the HttpOnly cookie a browser keeps the token in after
 	// one visit with ?token=.
 	TokenCookie = "rhiza_web_token"
+	// CSRFField is the form field every action form carries; a POST that the
+	// cookie authenticates is refused without the right value in it.
+	CSRFField = "csrf"
 	// MinTokenLen is the shortest token the setting accepts.
 	MinTokenLen = 16
 )
@@ -44,16 +50,35 @@ func ActionsOn(r *http.Request) bool {
 	return on
 }
 
+// CSRF is the value a page puts in its action forms' CSRFField, or "" when
+// the request did not carry the token (the page shows no actions then). It
+// derives from the token, so it needs no state and is the one the gate accepts.
+func CSRF(r *http.Request) string {
+	v, _ := r.Context().Value(csrfKey{}).(string)
+	return v
+}
+
+type csrfKey struct{}
+
+func csrfFor(token string) string {
+	m := hmac.New(sha256.New, []byte(token))
+	m.Write([]byte("rhiza web csrf"))
+	return hex.EncodeToString(m.Sum(nil))
+}
+
 // WithToken gates h's actions on the web token that token reads on each
 // request (empty means none is set). Reads pass as they are. With no token
 // set every request that is not a GET or HEAD is refused; with one, such a
 // request needs it as an "Authorization: Bearer" header or in the HttpOnly
-// cookie, or it is refused too. A GET or HEAD with ?token=<token> sets the
+// cookie, or it is refused too. A POST the cookie authenticates (a browser
+// sends it unasked) must also carry the CSRFField form field CSRF hands pages,
+// or it is refused with 403; a bearer header is not ambient and needs none. A GET or HEAD with ?token=<token> sets the
 // cookie and redirects to the same URL without it.
 func WithToken(token func() string, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		want := token()
 		ok := want != "" && presented(r, want)
+		bearer := want != "" && presentedBearer(r, want)
 		read := r.Method == http.MethodGet || r.Method == http.MethodHead
 		if read {
 			if q := r.URL.Query(); want != "" && q.Has("token") {
@@ -80,7 +105,15 @@ func WithToken(token func() string, h http.Handler) http.Handler {
 			return
 		}
 		if ok {
-			r = r.WithContext(context.WithValue(r.Context(), actionsKey{}, true))
+			csrf := csrfFor(want)
+			if !read && !bearer && !equal(r.PostFormValue(CSRFField), csrf) {
+				w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+				w.WriteHeader(http.StatusForbidden)
+				w.Write([]byte("a valid " + CSRFField + " field is required\n"))
+				return
+			}
+			ctx := context.WithValue(r.Context(), actionsKey{}, true)
+			r = r.WithContext(context.WithValue(ctx, csrfKey{}, csrf))
 		}
 		h.ServeHTTP(w, r)
 	})
@@ -88,7 +121,7 @@ func WithToken(token func() string, h http.Handler) http.Handler {
 
 // presented reports whether r carries want, as a bearer header or the cookie.
 func presented(r *http.Request, want string) bool {
-	if a, found := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer "); found && equal(strings.TrimSpace(a), want) {
+	if presentedBearer(r, want) {
 		return true
 	}
 	if c, err := r.Cookie(TokenCookie); err == nil && equal(c.Value, want) {
@@ -99,4 +132,9 @@ func presented(r *http.Request, want string) bool {
 
 func equal(a, b string) bool {
 	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1
+}
+
+func presentedBearer(r *http.Request, want string) bool {
+	a, found := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
+	return found && equal(strings.TrimSpace(a), want)
 }

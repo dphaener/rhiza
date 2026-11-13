@@ -3,6 +3,7 @@ package web
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 )
@@ -76,7 +77,7 @@ func TestWebTokenCookieAfterQueryVisit(t *testing.T) {
 	if len(cs) != 1 || cs[0].Name != TokenCookie || cs[0].Value != testToken || !cs[0].HttpOnly {
 		t.Fatalf("cookies = %+v, want one HttpOnly %s", cs, TokenCookie)
 	}
-	if rec := do(h, "POST", "/api/x", map[string]string{"Cookie": cs[0].String()}); rec.Code != 200 {
+	if rec := post(h, map[string]string{"Cookie": cs[0].String()}, url.Values{CSRFField: {csrfFor(testToken)}}); rec.Code != 200 {
 		t.Errorf("POST with cookie = %d", rec.Code)
 	}
 	if *hits != 1 {
