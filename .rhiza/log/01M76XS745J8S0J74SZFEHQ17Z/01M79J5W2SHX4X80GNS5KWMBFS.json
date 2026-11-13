@@ -1,0 +1,28 @@
+{
+  "actor": "01M79J55VV12NZRQH7MFBVQ2CK",
+  "after": [
+    "01M79J29XX6DG77B4J6NBSWT16"
+  ],
+  "at": "2026-11-13T04:20:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5YX3JAF2HPFAJBN44G2D869",
+        "handle": null,
+        "id": "01M79J5W210Q1317R01C2RZQG8",
+        "node": "01M5YX3JAF2HPFAJBN420H5JM7",
+        "op": "node.update",
+        "set": {
+          "statement": "Rhiza ships a built-in `build` workflow: a leaves step (builder models sonnet, opus, opus; verifier opus for risky leaves, sonnet for low-risk ones; split auto) followed by `rhiza run build-check`, ending done without landing the change set."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XS745J8S0J74SZFEHQ17Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79J5W2SHX4X80GNS5KWMBFS",
+  "type": "ops",
+  "v": 1
+}
