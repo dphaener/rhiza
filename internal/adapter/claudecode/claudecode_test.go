@@ -181,6 +181,9 @@ func TestHookStatus(t *testing.T) {
 		if err != nil || ok != c.ok || r.State != c.state || r.Kind != c.kind || r.SessionID != "s" {
 			t.Errorf("%s %s: %+v ok=%v err=%v", c.event, c.payload, r, ok, err)
 		}
+		if want := c.event == "SessionStart"; r.Start != want {
+			t.Errorf("%s %s: start %v, want %v", c.event, c.payload, r.Start, want)
+		}
 	}
 	if _, _, err := (Adapter{}).HookStatus("Stop", []byte("{")); err == nil {
 		t.Error("bad JSON should error")
