@@ -1,0 +1,40 @@
+{
+  "actor": "01M79T21XDS9S23MKZQR175QSA",
+  "after": [
+    "01M79TEMMZTB5ZN7HW1BK7ZMEN"
+  ],
+  "at": "2026-11-13T06:55:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 27d008d91 (attempt 2, review fix for compliance f1) re-ran the Checks block: go test -trimpath ./internal/workflow/ -run TestBuiltinRolePromptsScopeTests exits 0, and 1 on an archived copy with the critic test-scope marker removed (guide topic critic lacks the scoped-tests rule); go test -trimpath ./internal/guide/... 0; go test -trimpath ./internal/api/... 0; rhiza ship generate 0 and rhiza render 0 with no diff. Acceptance: TestCriticText checks the six sections in order, the session-done, test-scope, command-budget, never-list and severity blocks expanded, the isolation rule with the own-check-last-round exception, confirmed/downgraded (lower severity)/dropped, the never add/raise/rewrite rule and the rhiza run verdict --check heredoc; TestCriticRecordsNoFindingAndNoCommit bans rhiza run findings and commit text. rhiza guide critic now carries the scoped-tests rule. Diff touches only critic.md, its test, the workflow scope test, the actor record and rendered files; no stubs or TODOs."
+        },
+        "handle": "critic-topic-verified-2",
+        "id": "01M79V107W7NBD40YDTRBZPW4B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79V107W7NBD40YDTNEZCDPA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79V107W7NBD40YDTNEZCDPA",
+        "id": "01M79V10D2H8S9EDXGS3KZGGWP",
+        "link": "01M79V10D2H8S9EDXGS08GE52W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH2PKWJWNFT52SCCKX7B0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79V10Q5X4DY8MNB79G103JR",
+  "type": "ops",
+  "v": 1
+}
