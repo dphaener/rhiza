@@ -492,34 +492,25 @@ func TestPlanBuiltin(t *testing.T) {
 	if interview.Kind != KindAgent || !interview.WaitsForDone() || interview.Until == "" {
 		t.Errorf("interview = %+v; want an agent step that waits for done", interview)
 	}
-	for _, w := range []string{"rhiza-plan", "{change}", "rhiza guide plan", "rhiza session done"} {
-		if !strings.Contains(interview.Prompt, w) {
-			t.Errorf("interview prompt lacks %q: %q", w, interview.Prompt)
-		}
+	if want := "/rhiza-planner Plan change set {change} ({title}): follow rhiza guide planner."; interview.Prompt != want {
+		t.Errorf("interview prompt = %q; want %q", interview.Prompt, want)
 	}
 
-	roles := map[string]string{"review": "reviewer", "critic": "critic", "revise": "reviser"}
-	for name, role := range roles {
+	roles := map[string]string{
+		"review": "/rhiza-plan-reviewer Review the plan of change set {change}: follow rhiza guide plan-reviewer.",
+		"critic": "/rhiza-plan-critic Judge the latest review round of the plan of change set {change}: follow rhiza guide plan-critic.",
+		"revise": "/rhiza-plan-reviser Fix the confirmed findings of the latest review round of the plan of change set {change}: follow rhiza guide plan-reviser.",
+	}
+	for name, want := range roles {
 		s := def.Steps[name]
 		if s.Kind != KindAgent || !s.WaitsForDone() || s.Until == "" {
 			t.Errorf("%s = %+v; want an agent step that waits for done", name, s)
 		}
-		var ph []string
-		for _, m := range placeholderPattern.FindAllStringSubmatch(s.Prompt, -1) {
-			ph = append(ph, m[1])
+		if s.Prompt != want {
+			t.Errorf("%s prompt = %q; want %q", name, s.Prompt, want)
 		}
-		if !slices.Equal(ph, []string{"change"}) {
-			t.Errorf("%s prompt placeholders = %v; want only {change}: %q", name, ph, s.Prompt)
-		}
-		for _, w := range []string{"rhiza guide plan-review", role, "rhiza session done"} {
-			if !strings.Contains(s.Prompt, w) {
-				t.Errorf("%s prompt lacks %q: %q", name, w, s.Prompt)
-			}
-		}
-		for _, bad := range []string{"plan file", "rhiza-plan", ".md"} {
-			if strings.Contains(s.Prompt, bad) {
-				t.Errorf("%s prompt names %q: %q", name, bad, s.Prompt)
-			}
+		if strings.Contains(s.Prompt, "session done") {
+			t.Errorf("%s prompt keeps session done text: %q", name, s.Prompt)
 		}
 	}
 
@@ -2205,21 +2196,35 @@ func TestPlanFreshStep(t *testing.T) {
 	}
 }
 
-// The plan review, critic and revise prompts tell the agent to run session
-// done on its own, after the recording command succeeded.
-func TestPlanReviewPromptsUnchained(t *testing.T) {
+// The plan workflows' interview, review, critic and revise prompts are one
+// line each that route to the role's skill and guide topic; the session-done
+// and command rules live in the topics. The prepush-fix prompt keeps its own.
+func TestPlanPromptsOneLine(t *testing.T) {
+	want := map[string]string{
+		"interview": "/rhiza-planner Plan change set {change} ({title}): follow rhiza guide planner.",
+		"review":    "/rhiza-plan-reviewer Review the plan of change set {change}: follow rhiza guide plan-reviewer.",
+		"critic":    "/rhiza-plan-critic Judge the latest review round of the plan of change set {change}: follow rhiza guide plan-critic.",
+		"revise":    "/rhiza-plan-reviser Fix the confirmed findings of the latest review round of the plan of change set {change}: follow rhiza guide plan-reviser.",
+	}
 	for _, n := range []string{"plan", "plan-milestone"} {
 		data, _ := Builtin(n)
 		def, err := ParseWith(n, data, builtinResolver)
 		if err != nil {
 			t.Fatal(err)
 		}
-		for step, cmd := range map[string]string{"review": "rhiza run findings", "critic": "rhiza run verdict", "revise": "rhiza apply"} {
+		for step, w := range want {
 			p := def.Steps[step].Prompt
-			for _, w := range []string{"as a separate command", cmd, "succeeded", "never chained after it with `;`"} {
-				if !strings.Contains(p, w) {
-					t.Errorf("%s %s prompt: no %q in %q", n, step, w, p)
-				}
+			if p != w {
+				t.Errorf("%s %s prompt = %q; want %q", n, step, p, w)
+			}
+			if strings.Contains(p, "session done") {
+				t.Errorf("%s %s prompt keeps session done text: %q", n, step, p)
+			}
+		}
+		fix := def.Steps["prepush-fix"].Prompt
+		for _, w := range []string{"Fix the failing pre-push check of the plan of change set {change} in run {run}", "rhiza apply", "never chained after it with `;` or `&&`"} {
+			if !strings.Contains(fix, w) {
+				t.Errorf("%s prepush-fix prompt lacks %q: %q", n, w, fix)
 			}
 		}
 	}

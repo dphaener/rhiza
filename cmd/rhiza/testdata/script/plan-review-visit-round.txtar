@@ -53,7 +53,7 @@ stdout 'rhiza run findings'
 exec cat $WORK/check.1
 stdout 'rhiza run findings'
 exec cat $WORK/prompts.log
-! stdout 'as the critic'
+! stdout '^/rhiza-plan-critic '
 rm $WORK/lazy
 rm $WORK/early.log
 rm $WORK/reviews
@@ -94,7 +94,7 @@ stdout '^- review \(visit 2\): pass, then has-findings, '
 stdout '^- has-findings \(visit 2\): fail, then fresh: exit 3'
 stdout '^- check \(visit 2\): pass, then gate: exit 0$'
 exec cat $WORK/prompts.log
-stdout -count=1 'as the critic'
+stdout -count=1 '^/rhiza-plan-critic '
 exec sh -c 'rhiza run status $(cat $WORK/run2) --json'
 stdout '"round": 2'
 fold-ok
@@ -176,7 +176,7 @@ has_acceptance() {
 	rhiza show export-csv --change "$(cat "$WORK/cs")" --json | grep -q '"acceptance"'
 }
 case "$last" in
-/rhiza-plan*)
+/rhiza-planner*)
 	rec=$RHIZA_CHANGE
 	cp "$WORK/transcript.jsonl" "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
 	rhiza source add plan-interview "$WORK/source.json" --raw-session "$RHIZA_SESSION" --json >> "$WORK/agent.out" || fail source
@@ -191,7 +191,7 @@ case "$last" in
 	rhiza land --json >> "$WORK/agent.out" || fail land
 	rhiza apply "$WORK/leaf.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail leaf
 	;;
-*'as the reviewer'*)
+/rhiza-plan-reviewer*)
 	# Before any round: the check fails and done is refused, naming
 	# rhiza run findings, and the run stays at review.
 	n=$(($(cat "$WORK/reviews" 2>/dev/null || echo 0) + 1))
@@ -212,12 +212,12 @@ case "$last" in
 		rhiza run findings "$WORK/findings.json" --json >> "$WORK/agent.out" || fail findings
 	fi
 	;;
-*'as the critic'*)
+/rhiza-plan-critic*)
 	if ! has_acceptance; then
 		rhiza run verdict "$WORK/verdict.json" --json >> "$WORK/agent.out" || fail verdict
 	fi
 	;;
-*'as the reviser'*)
+/rhiza-plan-reviser*)
 	rhiza apply "$WORK/fix.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail fix
 	;;
 *)

@@ -289,7 +289,7 @@ has_acceptance() {
 	rhiza show export-csv --change "$(cat "$WORK/cs")" --json | grep -q '"acceptance"'
 }
 case "$last" in
-/rhiza-plan*)
+/rhiza-planner*)
 	rec=$RHIZA_CHANGE
 	cp "$WORK/transcript.jsonl" "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
 	rhiza source add plan-interview "$WORK/source.json" --raw-session "$RHIZA_SESSION" --json >> "$WORK/agent.out" || fail source
@@ -300,14 +300,14 @@ case "$last" in
 	rhiza land --json >> "$WORK/agent.out" || fail land
 	rhiza apply "$WORK/leaf.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail leaf
 	;;
-*'as the reviewer'*)
+/rhiza-plan-reviewer*)
 	if has_acceptance; then
 		rhiza run findings "$WORK/clean.json" --json >> "$WORK/agent.out" || fail findings
 	else
 		rhiza run findings "$WORK/findings.json" --json >> "$WORK/agent.out" || fail findings
 	fi
 	;;
-*'as the critic'*)
+/rhiza-plan-critic*)
 	if ! has_acceptance; then
 		rhiza run verdict "$WORK/verdict.json" --json >> "$WORK/agent.out" || fail verdict
 	fi
@@ -315,7 +315,7 @@ case "$last" in
 *'as check '*)
 	rhiza run findings --check "$RHIZA_CHECK" "$WORK/clean.json" --json >> "$WORK/agent.out" || fail check
 	;;
-*'as the reviser'*)
+/rhiza-plan-reviser*)
 	rhiza apply "$WORK/fix.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail fix
 	;;
 *)
