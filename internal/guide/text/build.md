@@ -1,8 +1,7 @@
 # Build
 
 Per leaf, a builder then a verifier; `RHIZA_CHANGE`, `RHIZA_LEAF` and `RHIZA_ATTEMPT` are set.
-Each role ends with `rhiza session done` as its own command after its recording
-command succeeded, never chained with `;` or `&&`.
+<!-- shared: session-done -->
 
 ## Start
 
@@ -48,28 +47,15 @@ Never rewrite history.
 
 ## Tests
 
-Builders and verifiers run only the tests covering what the change touches, with the
-repo's scoped commands, never the repo's full
-suite: the PR's CI runs it before merge.
+<!-- shared: test-scope -->
 
-While CI is unstable, or a red is not explained by your change,
-do not push or rerun CI to see. Reproduce the
-failing test locally, fix it, and push only after it and the
-touched packages pass locally.
-Reproduce flakes by injecting a delay at the suspected race, never by busy loops or parallel stress on the host.
+<!-- shared: unstable-ci -->
 
-## Command budget
+<!-- shared: command-budget -->
 
-Never sleep and never poll. No command runs over about four
-minutes; longer work runs once in the background and is
-waited for once.
+<!-- shared: outside-work -->
 
-## Outside work
-
-- Needed: raise a question linked `blocks` to the leaf; stop.
-- Noticed only: a discovered-from draft change set, never built in this run:
-  `rhiza change new "<intent>" --json`, then
-  `rhiza link <new> discovered-from <this> --change <new> --json`, then `rhiza change use <this>`.
+<!-- shared: never-list -->
 
 ## Verifier
 

@@ -5,12 +5,15 @@
 // The guide comes in three layers, each with a size cap measured in
 // estimated tokens (Tokens): the session start a hook prints (StartCap),
 // a skill (SkillCap) and a topic (TopicCap). The texts are markdown files
-// embedded from text/; this package only looks them up and measures them.
+// embedded from text/; a line `<!-- shared: <block> -->` in one is replaced
+// by text/shared/<block>.md when the guide loads; this package only looks them up and measures them.
 package guide
 
 import (
 	"embed"
+	"fmt"
 	"slices"
+	"strings"
 )
 
 // The size caps, in estimated tokens.
@@ -48,7 +51,7 @@ func (t Text) Cap() int {
 	return TopicCap
 }
 
-//go:embed text/*.md
+//go:embed text/*.md text/shared/*.md
 var files embed.FS
 
 // entry is one text's name, file and description.
@@ -115,7 +118,11 @@ var texts = func() []Text {
 		if err != nil {
 			panic("guide: " + err.Error())
 		}
-		out = append(out, Text{Name: e.name, Description: e.description, Body: string(b), Skill: e.skill})
+		body, err := Expand(string(b), loadShared)
+		if err != nil {
+			panic("guide: " + e.file + ": " + err.Error())
+		}
+		out = append(out, Text{Name: e.name, Description: e.description, Body: body, Skill: e.skill})
 	}
 	return out
 }()
@@ -145,4 +152,38 @@ func Lookup(name string) (Text, bool) {
 // rounded up.
 func Tokens(s string) int {
 	return (len(s) + 3) / 4
+}
+
+// Expand replaces each line `<!-- shared: <block> -->` of body with the
+// text of that block, as block returns it. A block it does not know is an
+// error naming the block.
+func Expand(body string, block func(name string) (string, bool)) (string, error) {
+	lines := strings.Split(body, "\n")
+	for i, l := range lines {
+		l = strings.TrimSpace(l)
+		name, ok := strings.CutPrefix(l, "<!-- shared:")
+		if !ok {
+			continue
+		}
+		name, ok = strings.CutSuffix(name, "-->")
+		if !ok {
+			continue
+		}
+		name = strings.TrimSpace(name)
+		text, found := block(name)
+		if !found {
+			return "", fmt.Errorf("unknown shared block %q", name)
+		}
+		lines[i] = strings.TrimRight(text, "\n")
+	}
+	return strings.Join(lines, "\n"), nil
+}
+
+// loadShared reads the shared block called name from text/shared/.
+func loadShared(name string) (string, bool) {
+	b, err := files.ReadFile("text/shared/" + name + ".md")
+	if err != nil {
+		return "", false
+	}
+	return string(b), true
 }
