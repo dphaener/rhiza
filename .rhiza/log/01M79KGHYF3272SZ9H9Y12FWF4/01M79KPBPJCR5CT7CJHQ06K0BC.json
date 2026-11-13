@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M79KGHYJ9JNV7ADMTBGJ8P0S"
+  ],
+  "at": "2026-11-13T04:47:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run -run TestBriefFiles shows a session's brief.md naming the change set, its intent, every leaf with its acceptance, the decisions and constraints, prePushCheck and the contract section, slice.json equal to rhiza slice --json at start, and handback.md written only on a hand-back with the failing tests or conflicted files; go test -trimpath ./cmd/rhiza -run TestScripts/brief-files passes, a failure case included (an unreadable run directory fails the session start with a message naming the path).",
+          "statement": "Before every agent session of a run, the daemon writes the session's context into the run's directory: brief.md (the change set and its intent, the leaves with their acceptance, the decisions and constraints, the repo's check commands and the agent contract), slice.json (rhiza slice --json for the change set at that moment) and, on a hand-back only, handback.md (the cause from rhiza ship check --json)."
+        },
+        "handle": "run-brief-files",
+        "id": "01M79KPBD9GFZM83ZPY08PQ97R",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M79KPBD9GFZM83ZPXXDRY6FS",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestInvokeTemplate covers parsing, an unknown placeholder refused by rhiza workflow check with its name, and prompt as an alias; go test -trimpath ./cmd/rhiza -run TestScripts/workflow-invoke shows a fake agent receiving '/myskill:conduct --prompt <path to brief.md>' and the three RHIZA_ variables; go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes after -update.",
+          "statement": "An agent step can name the exact text its session starts with (invoke) and the text a hand-back sends it (handback), with the placeholders {brief}, {slice}, {handback}, {change}, {run}, {leaf}, {attempt} and {worktree}; the daemon fills them in, sets RHIZA_BRIEF, RHIZA_SLICE and RHIZA_HANDBACK, and the agent's adapter delivers the text; prompt stays an alias of invoke."
+        },
+        "handle": "agent-invoke-template",
+        "id": "01M79KPBF6JT17PFXC2PEQ501Q",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M79KPBF6JT17PFXC2KD2DW6F",
+        "op": "node.create",
+        "parent": "01M5SWT9A05VXSMXQME4CPJN2D"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run TestContract shows the topic lists each obligation with its gate, every placeholder, every RHIZA_ variable and the three files, stays under the guide size cap, and that every shipped role topic (builder, verifier, review, plan, conduct once it exists) names rhiza guide contract.",
+          "statement": "rhiza guide contract prints the agent contract on one page: what any agent in a run must do (write the model only through rhiza, the Change:, Actor: and Leaf: trailers, Evidence on every leaf, findings through rhiza run findings, questions through rhiza, rhiza session done), which gate checks each, the invoke placeholders and RHIZA_ variables, and the three context files; every shipped role skill links it."
+        },
+        "handle": "guide-contract",
+        "id": "01M79KPBG8Q7PJ9C1S2ZBZB01B",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M79KPBG8Q7PJ9C1S2WCJG4XQ",
+        "op": "node.create",
+        "parent": "01M5SWSQ8YXAQ763XWK5M7J24K"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPBD9GFZM83ZPXXDRY6FS",
+        "id": "01M79KPBHB4VTRAFR69ZMS5F31",
+        "link": "01M79KPBHB4VTRAFR69WH6829T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVPGCBYHVX9H9WB8P5SM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPBF6JT17PFXC2KD2DW6F",
+        "id": "01M79KPBJE5JN1MQXG8NH5QFE4",
+        "link": "01M79KPBJE5JN1MQXG8MMY71TC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVPGCBYHVX9H9WB8P5SM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPBG8Q7PJ9C1S2WCJG4XQ",
+        "id": "01M79KPBM3T5ZT2GCQA1W5EHPM",
+        "link": "01M79KPBM3T5ZT2GCQ9YE7CM22",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVPGCBYHVX9H9WB8P5SM",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79KPBPJCR5CT7CJHQ06K0BC",
+  "type": "ops",
+  "v": 1
+}

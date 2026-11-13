@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T04:43:18Z",
+  "body": {
+    "intent": "Conductor workflow. Owner, 2026-11-13, after the overnight watch and the ship-change proposal (https://claude.ai/artifact/Vp1BQRYN5793H1N3GURe3h): an agent conducts each change set and spawns visible sessions through a dumb, durable daemon that only ships and guards; workflows are built from a few daemon primitives so teams bring their own skills and agents; the new default replaces the builtin ship-change at once.",
+    "kind": "record",
+    "sources": [],
+    "title": "Conductor workflow"
+  },
+  "change_set": "01M79KF4RGGHZCJ7PJWMP01XXM",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79KF4RGGHZCJ7PJWQAP4BB3",
+  "type": "open",
+  "v": 2
+}

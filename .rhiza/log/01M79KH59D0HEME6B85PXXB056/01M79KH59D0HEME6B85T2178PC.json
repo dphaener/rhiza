@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T04:44:24Z",
+  "body": {
+    "intent": "The builtin ship-change becomes the conductor default (conduct, gate, signoff, push, CI, merge, main CI, close-out; every red hands back to conduct) and the old one stays as ship-change-classic",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79KH59D0HEME6B85T2178PC",
+  "type": "open",
+  "v": 1
+}
