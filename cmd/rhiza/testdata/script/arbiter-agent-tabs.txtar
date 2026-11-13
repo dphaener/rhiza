@@ -157,7 +157,7 @@ fail() {
 	exit 1
 }
 case "$last" in
-/rhiza-plan*)
+/rhiza-planner*)
 	rec=$RHIZA_CHANGE
 	[ "$RHIZA_AUTONOMOUS" = 1 ] || fail not autonomous
 	cp "$WORK/transcript.jsonl" "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
@@ -195,10 +195,10 @@ case "$last" in
 	printf '{"writes":[{"op":"add","kind":"decision","handle":"'$h'","fields":["statement=Stream CSV rows instead of building the file in memory","wording=(assumed, would have escalated)","reasoning=Reports can be large"]},{"op":"link","from":"'$h'","type":"answers","to":"%s"}]}\n' "$q" > "$WORK/decision.json"
 	rhiza apply "$WORK/decision.json" --json >> "$WORK/agent.out" || fail arbiter
 	;;
-*'as the reviewer'*)
+/rhiza-plan-reviewer*)
 	rhiza run findings "$WORK/clean.json" --json >> "$WORK/agent.out" || fail findings
 	;;
-*'as the critic'*)
+/rhiza-plan-critic*)
 	;;
 *)
 	fail "unexpected prompt: $last"

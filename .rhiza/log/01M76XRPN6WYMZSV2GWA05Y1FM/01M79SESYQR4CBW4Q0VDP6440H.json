@@ -1,0 +1,40 @@
+{
+  "actor": "01M79SCKDDMTMRSCS7WEVE44RQ",
+  "after": [
+    "01M79S8QJ9Z8GKQNGNK1C3S3NT"
+  ],
+  "at": "2026-11-13T06:27:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Attempt 5 at 3de7e2438: re-ran the Checks block (rhiza show plan-review-journal | grep -c oversized-leaf: 1, exit 0; rhiza show review-findings | grep -c 'seven kinds': 1, exit 0; rhiza ship generate exit 0; rhiza render exit 0, tree clean) and the acceptance: go test -trimpath ./internal/run/... ok (Kinds ends uncovered-intent, oversized-leaf; KindSeverity major for both); go test -trimpath ./internal/api -run 'RunFindings|ReviewCheck' ok (TestRunFindingsPlanKinds: confirmed uncovered-intent/oversized-leaf fails review-check before round 3, no-failure-case refused listing the seven kinds); go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden ok with the golden already current. The diff only revises plan-review-journal and review-findings statements to name the seven kinds, plus the builder's actor record; no stubs or TODOs."
+        },
+        "handle": "plan-finding-kinds-verified-5",
+        "id": "01M79SESPZBXQ1CF63NX0F8NKC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79SESPZBXQ1CF63NW50GKXS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79SESPZBXQ1CF63NW50GKXS",
+        "id": "01M79SESSZB72TYV7XBWQCG6AC",
+        "link": "01M79SESSZB72TYV7XBT6A93VD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH55KDAWPGWR01WXZ38N3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79SESYQR4CBW4Q0VDP6440H",
+  "type": "ops",
+  "v": 1
+}

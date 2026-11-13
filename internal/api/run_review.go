@@ -59,7 +59,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "run.review-check",
-		Summary:  "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent major, the rest minor), fail with one before round 3, else leave each as a question and pass",
+		Summary:  "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent, uncovered-intent, oversized-leaf major, the rest minor), fail with one before round 3, else leave each as a question and pass",
 		Write:    true,
 		Request:  reflect.TypeFor[RunReviewCheckRequest](),
 		Response: reflect.TypeFor[RunReviewCheckResponse](),
@@ -98,7 +98,7 @@ type RunFinding struct {
 	LinkType      string `json:"link_type,omitempty" desc:"That link's type, e.g. depends-on or serves"`
 	LinkFrom      string `json:"link_from,omitempty" desc:"That link's from end, by ID"`
 	LinkTo        string `json:"link_to,omitempty" desc:"That link's to end, by ID"`
-	Kind          string `json:"kind,omitempty" desc:"What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding"`
+	Kind          string `json:"kind,omitempty" desc:"What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding"`
 	Check         string `json:"check,omitempty" desc:"A review check's finding: the check that found it"`
 	Severity      string `json:"severity,omitempty" desc:"A review check's finding: blocker, major, minor or nit"`
 	Leaf          string `json:"leaf,omitempty" desc:"A review check's finding: the leaf it is about, by ID; absent when it names none"`

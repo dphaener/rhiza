@@ -1,0 +1,28 @@
+{
+  "actor": "01M79S7P31TYSEAAW27GVDGWBK",
+  "after": [
+    "01M79S8MMY4698GFPQX7VQP2RR"
+  ],
+  "at": "2026-11-13T06:24:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5Z0EH5ZG74DZQY63M4H1WKH",
+        "handle": null,
+        "id": "01M79S8QG0ZT3VCC1MWTVXJ3K7",
+        "node": "01M5Z0EH5ZG74DZQY63G9B78WR",
+        "op": "node.update",
+        "set": {
+          "statement": "In a review run `rhiza run findings` and `rhiza run verdict` take the check they belong to, and each review finding has a severity (blocker, major, minor, nit), the leaf it is about when there is one, a place (file:line or node) and a reason, while plan review findings keep their seven kinds (missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent, oversized-leaf); `rhiza run status` shows each check's rounds with findings and verdicts."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79S8QJ9Z8GKQNGNK1C3S3NT",
+  "type": "ops",
+  "v": 1
+}

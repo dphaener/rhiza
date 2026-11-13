@@ -11,7 +11,7 @@ import (
 	"github.com/dphaener/rhiza/internal/guide"
 )
 
-var pluginPaths = []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginRetryPath, pluginBuildPath, pluginBuilderPath, pluginPlanPath, pluginReviewPath, pluginScrubPath, pluginVerifierPath}
+var pluginPaths = []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginRetryPath, pluginBuildPath, pluginBuilderPath, pluginPlanCriticPath, pluginPlanReviewerPath, pluginPlanReviserPath, pluginPlanPath, pluginPlannerPath, pluginReviewPath, pluginScrubPath, pluginVerifierPath}
 
 func guideInstall(t *testing.T, ctx *Ctx, req string) GuideInstallResponse {
 	t.Helper()
@@ -48,7 +48,7 @@ func TestYAMLQuote(t *testing.T) {
 }
 
 func TestSkillFileFrontmatter(t *testing.T) {
-	for _, tc := range []struct{ name, text string }{{"rhiza", "rhiza"}, {"rhiza-scrub", "scrub"}, {"rhiza-plan", "plan"}, {"rhiza-build", "build"}, {"rhiza-builder", "builder"}, {"rhiza-verifier", "verifier"}, {"rhiza-build-retry", "build-retry"}, {"rhiza-review", "review"}} {
+	for _, tc := range []struct{ name, text string }{{"rhiza", "rhiza"}, {"rhiza-scrub", "scrub"}, {"rhiza-plan", "plan"}, {"rhiza-planner", "planner"}, {"rhiza-plan-reviewer", "plan-reviewer"}, {"rhiza-plan-critic", "plan-critic"}, {"rhiza-plan-reviser", "plan-reviser"}, {"rhiza-build", "build"}, {"rhiza-builder", "builder"}, {"rhiza-verifier", "verifier"}, {"rhiza-build-retry", "build-retry"}, {"rhiza-review", "review"}} {
 		b, err := skillFile(tc.name, tc.text)
 		if err != nil {
 			t.Fatal(err)
@@ -121,7 +121,7 @@ func TestGuideInstallRoleSkills(t *testing.T) {
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
 	r := guideInstall(t, ctx, `{"agent":"claude"}`)
-	for _, tc := range []struct{ skill, text string }{{"rhiza-builder", "builder"}, {"rhiza-verifier", "verifier"}, {"rhiza-build-retry", "build-retry"}} {
+	for _, tc := range []struct{ skill, text string }{{"rhiza-builder", "builder"}, {"rhiza-verifier", "verifier"}, {"rhiza-build-retry", "build-retry"}, {"rhiza-planner", "planner"}, {"rhiza-plan-reviewer", "plan-reviewer"}, {"rhiza-plan-critic", "plan-critic"}, {"rhiza-plan-reviser", "plan-reviser"}} {
 		p := "skills/" + tc.skill + "/SKILL.md"
 		if !slices.Contains(r.Written, p) {
 			t.Fatalf("install wrote %v, want %s", r.Written, p)
@@ -137,7 +137,7 @@ func TestGuideInstallRoleSkills(t *testing.T) {
 		}
 	}
 	r = guideInstall(t, ctx, `{"agent":"claude"}`)
-	for _, s := range []string{"rhiza-builder", "rhiza-verifier", "rhiza-build-retry"} {
+	for _, s := range []string{"rhiza-builder", "rhiza-verifier", "rhiza-build-retry", "rhiza-planner", "rhiza-plan-reviewer", "rhiza-plan-critic", "rhiza-plan-reviser"} {
 		if !slices.Contains(r.Unchanged, "skills/"+s+"/SKILL.md") {
 			t.Errorf("second install: %s not unchanged: %+v", s, r)
 		}

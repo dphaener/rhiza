@@ -1,0 +1,29 @@
+{
+  "actor": "01M79RH8DPFEH2QAXS9AMSZA48",
+  "after": [
+    "01M79RDZ8STY5DVFRKFAKGX9S9"
+  ],
+  "at": "2026-11-13T06:12:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5WSGC647VGCTM55KPA7RJZV",
+        "handle": null,
+        "id": "01M79BH73W0TPETVS2Z43T7PG3",
+        "node": "01M5WSGC647VGCTM55KP1WAART",
+        "op": "node.update",
+        "set": {
+          "acceptance": "Go guide tests: rhiza guide ls lists plan as a skill and the four plan role topics; rhiza guide plan names the four topics with their skill and rhiza guide routes; rhiza guide planner names plan-recipes and plan-interview; rhiza guide plan-recipes holds an apply recipe for a leaf with statement and acceptance fields and a decided-by link, and says that no plan file and no checkboxes are kept; each text stays within its cap and plan's description within MaxDescription.",
+          "statement": "rhiza guide plan, a skill installed as rhiza-plan, is the plan index: it names the planner, plan-reviewer, plan-critic and plan-reviser topics and says which a planner, reviewer, critic and reviser load; the planner topic carries what a planning session plans, in what order, and that every leaf, acceptance check, Decision and question goes into the model through rhiza apply, and its Read first names plan-recipes and plan-interview; rhiza guide plan-recipes holds the apply recipes and says no plan file and no checkboxes are kept."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79RJN826MFCX4BRRCC105NF",
+  "type": "ops",
+  "v": 1
+}

@@ -22,6 +22,13 @@ afk's shipit/forge prompts become Rhiza's shipped default prompts for every run 
 - decided-by [builder-topic](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-guide/builder-topic.md)
 - decided-by [verifier-topic](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-guide/verifier-topic.md)
 - decided-by [build-prompts-one-line](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-guide/build-prompts-one-line.md)
+- decided-by [shared-severities-block](../capability/rhiza/workflows/built-in-workflows/plan-workflow/shared-severities-block.md)
+- decided-by [planner-topic](../capability/rhiza/workflows/built-in-workflows/plan-workflow/planner-topic.md)
+- decided-by [plan-reviewer-topic](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-reviewer-topic.md)
+- decided-by [plan-critic-topic](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-critic-topic.md)
+- decided-by [plan-reviser-topic](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-reviser-topic.md)
+- decided-by [plan-role-skills-installed](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-role-skills-installed.md)
+- decided-by [plan-prompts-one-line](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-prompts-one-line.md)
 
 ## History
 

@@ -44,7 +44,7 @@ stdout '^4$'
 # A finding of an unknown kind, or naming no node: usage, nothing written.
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/badkind.json --json; echo exit=$?'
 stdout '"code": "usage"'
-stdout 'finding 1: kind \\"style\\" is not one of missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction'
+stdout 'finding 1: kind \\"style\\" is not one of missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent, oversized-leaf'
 stdout '^exit=2$'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/badnode.json --json; echo exit=$?'
 stdout '"code": "usage"'

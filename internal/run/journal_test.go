@@ -1109,3 +1109,23 @@ func TestStandingDowngrade(t *testing.T) {
 		t.Fatalf("standing = %+v, want f2, f3", s)
 	}
 }
+
+// Kinds ends with the two later plan-review kinds, uncovered-intent then
+// oversized-leaf, and both carry major severity.
+func TestKindsPlanReviewAdditions(t *testing.T) {
+	n := len(Kinds)
+	if n < 2 || Kinds[n-2] != KindUncoveredIntent || Kinds[n-1] != KindOversizedLeaf {
+		t.Fatalf("Kinds = %v, want it to end with uncovered-intent, oversized-leaf", Kinds)
+	}
+	if KindUncoveredIntent != "uncovered-intent" || KindOversizedLeaf != "oversized-leaf" {
+		t.Fatalf("kind names %q, %q", KindUncoveredIntent, KindOversizedLeaf)
+	}
+	for _, k := range []string{KindUncoveredIntent, KindOversizedLeaf} {
+		if !ValidKind(k) {
+			t.Errorf("%s is not a valid kind", k)
+		}
+		if got := KindSeverity(k); got != SeverityMajor {
+			t.Errorf("KindSeverity(%s) = %q, want major", k, got)
+		}
+	}
+}

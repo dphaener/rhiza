@@ -1,0 +1,40 @@
+{
+  "actor": "01M79PXFV5SF5XKTXPPDF4CGHZ",
+  "after": [
+    "01M79NPJ8ZJ3VT8RA0RAGAAFRR"
+  ],
+  "at": "2026-11-13T05:50:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At bc8cc09ca: go test -trimpath ./internal/workflow/... exit 0 (TestPlanBuiltin and TestPlanPromptsOneLine assert plan.toml and plan-milestone.toml interview/review/critic/revise prompts equal the four one-liners, contain no 'session done', and prepush-fix keeps its own text); go test -trimpath ./cmd/rhiza -run 'TestScripts/(plan-|bugfix-workflow-autonomous|arbiter-agent-tabs|status|guide|describe-golden)' exit 0 with fake agents matching /rhiza-planner, /rhiza-plan-reviewer, /rhiza-plan-critic, /rhiza-plan-reviser; describe-golden unchanged (prompts not in describe output). Diff reviewed: only the four prompts in each builtin, the tests, the scripts and the builder's actor record changed; prepush-fix untouched; session-done rules present in planner/plan-reviewer/plan-critic/plan-reviser topics; no TODOs. make self-check: every check passes except render of this verifier's own untracked actor record (claude-code-bfbb34bc, not part of the commit); rhiza render on a clean detached checkout of HEAD writes no diff."
+        },
+        "handle": "plan-prompts-one-line-verified",
+        "id": "01M79Q9VYZM95DFW4VDMNNXNPX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79Q9VYZM95DFW4VDM2CXN6M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79Q9VYZM95DFW4VDM2CXN6M",
+        "id": "01M79Q9W120NQPE9EEMX56TQ1F",
+        "link": "01M79Q9W120NQPE9EEMVPNPMPP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH6T4DQAX8RJF1YTQC0AS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79Q9W32HX369BJ8GBY7VGZD",
+  "type": "ops",
+  "v": 1
+}

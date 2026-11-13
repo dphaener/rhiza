@@ -1,0 +1,40 @@
+{
+  "actor": "01M79MMWZ1REGAB0KAZ72MXG80",
+  "after": [
+    "01M79MHVC2NPVRCT11NF6EPWMX"
+  ],
+  "at": "2026-11-13T05:05:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 34af99081 re-ran the Checks block: go test -trimpath ./internal/guide/... (exit 0, includes TestPlanReviserText and TestListOrder), go test -trimpath ./cmd/rhiza -run TestScripts/guide (exit 0, guide ls counts 22 texts and lists plan-reviser), go test -trimpath ./internal/api -run Guide (exit 0), rhiza ship generate (exit 0, 0 changed), rhiza render (exit 0, no tracked diff). Read the diff: internal/guide/text/plan-reviser.md has the six sections in order; Must do names rhiza apply <file> --change <cs> --json and --record --json, splitting an oversized leaf into one-concern leaves, adding a leaf for an uncovered intent clause, never inventing an owner's words (missing quote becomes a question); Read first and Must not do carry the confirmed-major-only rule; command-budget, never-list and session-done blocks expand (checked in rhiza guide plan-reviser output). The test asserts all of these plus a negative case banning rhiza run findings/verdict, heredoc and findings/verdicts JSON. Nothing outside the leaf changed apart from the builder's actor record and its rendered file; no stubs or TODOs."
+        },
+        "handle": "plan-reviser-topic-verified",
+        "id": "01M79MR3Y1FXZ0BR569067HXB6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79MR3Y0XCV6BFZDSSETQEXX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79MR3Y0XCV6BFZDSSETQEXX",
+        "id": "01M79MR3ZRSG4T9XR6STRAKZC5",
+        "link": "01M79MR3ZRSG4T9XR6SR5ABXCG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH640TST58REPF7FSDXJ5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79MR428EG2VGQT07GVJ4ZMY",
+  "type": "ops",
+  "v": 1
+}
