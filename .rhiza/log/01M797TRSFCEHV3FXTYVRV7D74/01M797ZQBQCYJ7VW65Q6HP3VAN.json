@@ -1,0 +1,30 @@
+{
+  "actor": "01M797VMESZ317SF9SNWN4A8QS",
+  "after": [
+    "01M797TRSFCEHV3FXTYX4EVTWS"
+  ],
+  "at": "2026-11-13T01:22:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "16742c4a-fa0f-4ac5-b6a2-01a1d27db9cb",
+          "statement": "Change set 01M797T (queued run takes the daemon's permission mode): rhiza run start without --permission-mode, queued for the daemon (not --foreground), today fails checkAgentSteps at queue time. I recommend: at queue time, check the agent steps with rhiza.daemon.permissionMode in its place, and queue the start with no mode so the daemon fills in its setting when it starts the run (daemonStartsQueued already does m = mode). Which? / Change set 01M797T: when the start names no mode and rhiza.daemon.permissionMode is unset (or the start is --foreground, which no daemon drives), what happens? I recommend keeping today's refusal, with the message naming rhiza.daemon.permissionMode as a third way out next to --permission-mode and the step's permission_mode."
+        },
+        "handle": "question-16742c4a-1",
+        "id": "01M797ZMWVQ0XYXRPBN7ND8K12",
+        "key": null,
+        "kind": "question",
+        "node": "01M797ZMWVQ0XYXRPBN7G7FE8C",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M797TRSFCEHV3FXTYVRV7D74",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M797ZQBQCYJ7VW65Q6HP3VAN",
+  "type": "ops",
+  "v": 1
+}
