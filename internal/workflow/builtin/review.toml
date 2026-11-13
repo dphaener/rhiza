@@ -64,7 +64,7 @@ prompt = "/rhiza-review Fix the findings below for change set {change} in review
 # commit ($RHIZA_COMMIT) and passes only with Evidence written as itself.
 [step.review.verifier]
 models = ["opus"]
-prompt = "/rhiza-build Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT, as the verifier: follow `rhiza guide build`. Never edit code. End with Evidence written as yourself that verifies {leaf}, or with findings recorded by `rhiza run findings --leaf {leaf}`, then, once that succeeded, run `rhiza session done` as its own command and your very last action, never chained after it with `;` or `&&`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+prompt = "/rhiza-verifier Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT: follow rhiza guide verifier."
 
 # Fixers, verifiers and checks write records (actors, Evidence), which
 # leaves .rhiza/rendered stale. Render and commit the rendered folder on

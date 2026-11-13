@@ -613,24 +613,19 @@ func TestBuildBuiltin(t *testing.T) {
 	if want := []string{"opus"}; !slices.Equal(build.Verifier.Models, want) {
 		t.Errorf("verifier models = %v; want %v", build.Verifier.Models, want)
 	}
+	const builderLine = "/rhiza-builder Build leaf {leaf} of change set {change} ({title}), attempt {attempt}: follow rhiza guide builder."
+	const verifierLine = "/rhiza-verifier Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT: follow rhiza guide verifier."
+	if build.Builder.Prompt != builderLine {
+		t.Errorf("builder prompt = %q; want %q", build.Builder.Prompt, builderLine)
+	}
+	if build.Verifier.Prompt != verifierLine {
+		t.Errorf("verifier prompt = %q; want %q", build.Verifier.Prompt, verifierLine)
+	}
 	for role, r := range map[string]*Role{"builder": build.Builder, "verifier": build.Verifier} {
-		for _, w := range []string{"rhiza guide build", "{leaf}", "{change}", role, "rhiza session done"} {
-			if !strings.Contains(r.Prompt, w) {
-				t.Errorf("%s prompt lacks %q: %q", role, w, r.Prompt)
+		for _, w := range []string{"Checks:", "session done", "checklist", "full suite", "CI runs"} {
+			if strings.Contains(r.Prompt, w) {
+				t.Errorf("%s prompt still carries %q: %q", role, w, r.Prompt)
 			}
-		}
-		if strings.Contains(strings.ToLower(r.Prompt), "claude") {
-			t.Errorf("%s prompt names an agent product: %q", role, r.Prompt)
-		}
-	}
-	for _, w := range []string{"{attempt}", "Leaf: {leaf}", "pre-handoff checklist", "`Checks:` block"} {
-		if !strings.Contains(build.Builder.Prompt, w) {
-			t.Errorf("builder prompt lacks %q", w)
-		}
-	}
-	for _, w := range []string{"$RHIZA_COMMIT", "rhiza run findings --leaf {leaf}", "Never edit code"} {
-		if !strings.Contains(build.Verifier.Prompt, w) {
-			t.Errorf("verifier prompt lacks %q", w)
 		}
 	}
 	check := def.Steps["check"]
@@ -1235,7 +1230,7 @@ func TestReviewBuiltin(t *testing.T) {
 	}{
 		"critic":   {review.Critic, []string{"/rhiza-review", "{check}", "{change}", "rhiza guide review", "rhiza run verdict --check", "never add a finding", "rhiza session done"}},
 		"fixer":    {review.Fixer, []string{"/rhiza-review", "{change}", "{cycle}", "rhiza guide review", "rhiza session done"}},
-		"verifier": {review.Verifier, []string{"/rhiza-build", "{leaf}", "{change}", "$RHIZA_COMMIT", "rhiza guide build", "Never edit code", "rhiza run findings --leaf {leaf}", "rhiza session done"}},
+		"verifier": {review.Verifier, []string{"/rhiza-verifier", "{leaf}", "{change}", "$RHIZA_COMMIT", "rhiza guide verifier"}},
 	}
 	for name, tt := range roles {
 		if tt.r == nil {
@@ -1579,6 +1574,10 @@ func TestBuiltinRolePromptsScopeTests(t *testing.T) {
 		t.Fatalf("found %d role prompts; want builder, verifiers, 5 checks, critic, fixer", len(prompts))
 	}
 	for where, p := range prompts {
+		// The build roles are one line each; their guide topics carry the rule.
+		if strings.HasPrefix(p, "/rhiza-builder ") || strings.HasPrefix(p, "/rhiza-verifier ") {
+			continue
+		}
 		if !strings.Contains(p, rule) {
 			t.Errorf("%s prompt lacks the rule: %q", where, p)
 		}
@@ -2381,5 +2380,47 @@ func TestMaxIntervalShipChangeCIWaits(t *testing.T) {
 	}
 	if n == 0 {
 		t.Error("no CI wait steps found")
+	}
+}
+
+// TestBuildVerifierPromptsShared holds review.toml's leaf verifier prompt to
+// build.toml's, and Rhiza's own docs workflows to the built-in lines.
+func TestBuildVerifierPromptsShared(t *testing.T) {
+	parse := func(name string, data []byte) *Definition {
+		def, err := ParseWith(name, data, builtinResolver)
+		if err != nil {
+			t.Fatalf("%s: %v", name, err)
+		}
+		return def
+	}
+	builtin := func(name string) *Definition {
+		data, ok := Builtin(name)
+		if !ok {
+			t.Fatalf("no %s built-in", name)
+		}
+		return parse(name, data)
+	}
+	build, review := builtin("build"), builtin("review")
+	want := build.Steps["build"].Verifier.Prompt
+	if got := review.Steps["review"].Verifier.Prompt; got != want {
+		t.Errorf("review verifier prompt = %q; want build's %q", got, want)
+	}
+	builder := build.Steps["build"].Builder.Prompt
+	for _, n := range []string{"docs-build", "docs-review"} {
+		data, err := os.ReadFile(filepath.Join("..", "..", ".rhiza", "workflows", n+".toml"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		def := parse(n, data)
+		for sn, st := range def.Steps {
+			if st.Verifier != nil && st.Verifier.Prompt != want {
+				t.Errorf("%s step %s verifier prompt = %q; want %q", n, sn, st.Verifier.Prompt, want)
+			}
+			if n == "docs-build" && st.Builder != nil {
+				if !strings.HasPrefix(st.Builder.Prompt, builder) || !strings.Contains(st.Builder.Prompt, "humanize") {
+					t.Errorf("docs-build builder prompt = %q; want the builtin line plus the humanize addendum", st.Builder.Prompt)
+				}
+			}
+		}
 	}
 }
