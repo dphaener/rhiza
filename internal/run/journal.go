@@ -24,7 +24,11 @@ const (
 	// the agent step, Outcome the red outcome, Detail the cause. It gives
 	// every step its full max_visits again, as a retry does.
 	TypeHandback = "handback"
-	TypeFinished = "finished"
+	// TypeHandbackDelivered says the agent step the hand-back named has
+	// been given it (its session messaged or resumed with the handback
+	// text); until then a restarted driver delivers it again, once.
+	TypeHandbackDelivered = "handback-delivered"
+	TypeFinished          = "finished"
 	// TypeCleanup is a cleanup step's result once the run has finished:
 	// Step the cleanup step's name, Outcome pass or fail, Detail its exit
 	// and output tail. It never changes the run's result.
@@ -1217,11 +1221,14 @@ type State struct {
 	// HandbackBase each step's Visits as they stood at the last of them.
 	Handbacks    []Handback
 	HandbackBase map[string]int
-	Workflow     string
-	Pick         string
-	Change       string
-	Title        string
-	Worktree     string
+	// PendingHandback is the last hand-back no agent step has been given
+	// yet, nil when none waits.
+	PendingHandback *Handback
+	Workflow        string
+	Pick            string
+	Change          string
+	Title           string
+	Worktree        string
 	// Trigger and TriggerName are the started entry's: a scheduled run has
 	// a trigger and no change set.
 	Trigger        string
@@ -1782,7 +1789,7 @@ func (j Journal) State() State {
 			}
 		case TypeSpawnEnded:
 			for i := range st.Spawns {
-				if sp := &st.Spawns[i]; sp.Session == e.Session {
+				if sp := &st.Spawns[i]; sp.Session == e.Session && !sp.Ended {
 					sp.Ended, sp.Outcome, sp.Detail = true, e.Outcome, e.Detail
 				}
 			}
@@ -1823,8 +1830,12 @@ func (j Journal) State() State {
 				st.Rounds[n-1].Verdicts = append(st.Rounds[n-1].Verdicts, e.Verdicts...)
 			}
 		case TypeHandback:
-			st.Handbacks = append(st.Handbacks, Handback{Step: e.Step, Target: e.Next, Outcome: e.Outcome, Cause: e.Detail, At: e.At})
+			hb := Handback{Step: e.Step, Target: e.Next, Outcome: e.Outcome, Cause: e.Detail, At: e.At}
+			st.Handbacks = append(st.Handbacks, hb)
+			st.PendingHandback = &hb
 			st.HandbackBase = maps.Clone(st.Visits)
+		case TypeHandbackDelivered:
+			st.PendingHandback = nil
 		case TypeStopped:
 			st.Stopped, st.StoppedAt = e.Detail, e.At
 		case TypeFinished:

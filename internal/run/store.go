@@ -137,6 +137,24 @@ func (s *Store) Append(id string, e Entry) error {
 	return err
 }
 
+// AppendSpawnEnded adds a spawn-ended entry unless the run's journal already
+// records that child's end, and reports whether it added one. The spawn
+// process and a restarted driver both record a child's end; whichever comes
+// second finds it recorded.
+func (s *Store) AppendSpawnEnded(id string, e Entry) (bool, error) {
+	j, err := s.Read(id)
+	if err != nil {
+		return false, err
+	}
+	for _, sp := range j.State().Spawns {
+		if sp.Session == e.Session && sp.Ended {
+			return false, nil
+		}
+	}
+	e.Type = TypeSpawnEnded
+	return true, s.Append(id, e)
+}
+
 // Read returns the run with the full ID, or the unique one that starts with
 // a prefix of MinPrefix or more characters.
 func (s *Store) Read(id string) (Journal, error) {

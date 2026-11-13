@@ -118,6 +118,24 @@ type Handbacker interface {
 	Handback(step workflow.Step, session string, cause HandbackCause) error
 }
 
+// ChildState is where a spawned child session stands: Ended with its
+// Outcome and Detail once it has exited, or Gone (with Detail saying why)
+// when its session record no longer exists.
+type ChildState struct {
+	Ended   bool
+	Gone    bool
+	Outcome string
+	Detail  string
+}
+
+// ChildWatcher is a Runner that can tell where a spawned child session
+// stands, so a restarted driver can reattach to live children and record
+// the ones that ended while no driver watched. A Runner without it leaves
+// the spawns to the processes that started them.
+type ChildWatcher interface {
+	Child(session string) (ChildState, error)
+}
+
 // Question is a question node the Runner added: its ID and handle.
 type Question struct {
 	ID     string
@@ -383,6 +401,13 @@ func (e *Engine) run(id string, retry bool, before func(State) ([]Entry, error))
 		return st, err
 	}
 	r := &running{e: e, j: j, def: def}
+	if pb := st.PendingHandback; pb != nil {
+		// A hand-back journaled before a restart and not yet delivered.
+		if step, ok := def.Steps[pb.Step]; ok {
+			c := CauseOf(step, pb.Outcome, pb.Cause)
+			r.handback = &c
+		}
+	}
 	if e.Process != nil {
 		en := Entry{Type: TypeProcess, At: r.now(), Process: e.Process}
 		if err := e.Store.Append(j.ID, en); err != nil {
@@ -521,8 +546,50 @@ func (r *running) finish(step string, end workflow.End, detail string) (State, e
 	return r.j.State(), nil
 }
 
+// reconcileSpawns records the end of every spawned child the journal still
+// shows running: it asks the Runner (ChildWatcher) where each stands, as a
+// restarted driver must, and again on every poll while a step waits. A child
+// whose end its own spawn process already recorded is not recorded twice.
+func (r *running) reconcileSpawns() {
+	cw, ok := r.e.Runner.(ChildWatcher)
+	if !ok {
+		return
+	}
+	j, err := r.e.Store.Read(r.j.ID)
+	if err != nil {
+		r.log("spawned sessions: %v", err)
+		return
+	}
+	for _, sp := range j.State().Spawns {
+		if sp.Ended {
+			continue
+		}
+		cs, err := cw.Child(sp.Session)
+		if err != nil {
+			r.log("spawned session %s: %v", sp.Session, err)
+			continue
+		}
+		en := Entry{At: r.now(), Step: sp.Step, Parent: sp.Parent, Session: sp.Session, Outcome: cs.Outcome, Detail: cs.Detail}
+		switch {
+		case cs.Gone:
+			en.Outcome = workflow.OutcomeFail
+			if en.Detail == "" {
+				en.Detail = "session record is gone"
+			}
+		case !cs.Ended:
+			continue
+		}
+		if added, err := r.e.Store.AppendSpawnEnded(r.j.ID, en); err != nil {
+			r.log("spawned session %s: %v", sp.Session, err)
+		} else if added {
+			r.log("spawned session %s: ended %s, recorded", sp.Session, en.Outcome)
+		}
+	}
+}
+
 func (r *running) loop() (State, error) {
 	for {
+		r.reconcileSpawns()
 		st := r.j.State()
 		act, err := Decide(r.def, st)
 		if err != nil {
@@ -926,6 +993,11 @@ func (r *running) agent(step workflow.Step, env []string) (result, error) {
 			}
 		}
 	}
+	if cause != nil {
+		if err := r.append(Entry{Type: TypeHandbackDelivered, Step: step.Name}); err != nil {
+			return result{}, err
+		}
+	}
 	if session == "" {
 		s, err := r.e.Runner.StartAgent(step, step.Model(r.j.State().CurrentVisit), env)
 		if err != nil {
@@ -961,6 +1033,7 @@ func (r *running) pollAgent(step workflow.Step, env []string, session string) (r
 		interval = workflow.DefaultInterval
 	}
 	for {
+		r.reconcileSpawns()
 		status, err := r.agentStatus(session)
 		if err != nil {
 			// The step ends with an error outcome: end its block first.

@@ -193,7 +193,7 @@ func (sp spawner) spawn(r RunSpawnRequest) (RunSpawnResponse, error) {
 		}
 		spawnSleep(ctx)
 	}
-	if err := rs.Append(rr.id, run.Entry{Type: run.TypeSpawnEnded, At: ctx.Now(), Step: step, Parent: parent, Session: sid, Outcome: resp.Outcome, Detail: resp.Detail}); err != nil {
+	if _, err := rs.AppendSpawnEnded(rr.id, run.Entry{At: ctx.Now(), Step: step, Parent: parent, Session: sid, Outcome: resp.Outcome, Detail: resp.Detail}); err != nil {
 		return resp, Errorf("journal the end of child session %s in run %s: %v", sid, rr.id, err)
 	}
 	return resp, nil
