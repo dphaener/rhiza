@@ -3934,6 +3934,48 @@ cmp stdout describe.golden.json
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
                     },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "outcome": {
                       "description": "pass or fail",
                       "enum": [
@@ -5766,6 +5808,48 @@ cmp stdout describe.golden.json
                     "detail": {
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
+                    },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
                     },
                     "outcome": {
                       "description": "pass or fail",
@@ -9506,6 +9590,48 @@ cmp stdout describe.golden.json
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
                     },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "outcome": {
                       "description": "pass or fail",
                       "enum": [
@@ -11175,6 +11301,48 @@ cmp stdout describe.golden.json
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
                     },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "outcome": {
                       "description": "pass or fail",
                       "enum": [
@@ -12575,6 +12743,48 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "lints": {
+            "description": "The model lints' hits (stale references, unapplied Decisions, capabilities whose code the branch removed); a hit is never a cause and does not change passed",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "description": "The field the hit is in: statement or acceptance",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                  "enum": [
+                    "path",
+                    "test",
+                    "script",
+                    "unretired-capability",
+                    "unapplied-decision",
+                    "removed-code-capability"
+                  ],
+                  "type": "string"
+                },
+                "node": {
+                  "description": "The node's full ID",
+                  "type": "string"
+                },
+                "ref": {
+                  "description": "The missing or removed reference, as written",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "node"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "passed": {
             "description": "True if rhiza check found no failure and every leaf is OK",
             "type": "boolean"
@@ -12593,6 +12803,7 @@ cmp stdout describe.golden.json
           "change",
           "check",
           "leaves",
+          "lints",
           "passed",
           "run"
         ],
@@ -12910,6 +13121,83 @@ cmp stdout describe.golden.json
       },
       "summary": "End the plan of the run RHIZA_RUN names: propose each draft among its change sets; an autonomous run whose review passed accepts each under rule autonomous",
       "write": true
+    },
+    {
+      "name": "run.lint-check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change": {
+            "description": "The run's change set",
+            "type": "string"
+          },
+          "lints": {
+            "description": "The lint hits of the run's latest code-check entry: node, lint kind and the reference or Decision; empty when it has none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "description": "The field the hit is in: statement or acceptance",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                  "enum": [
+                    "path",
+                    "test",
+                    "script",
+                    "unretired-capability",
+                    "unapplied-decision",
+                    "removed-code-capability"
+                  ],
+                  "type": "string"
+                },
+                "node": {
+                  "description": "The node's full ID",
+                  "type": "string"
+                },
+                "ref": {
+                  "description": "The missing or removed reference, as written",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "node"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "passed": {
+            "description": "True if the latest code-check entry has no lint hits, or the run has none",
+            "type": "boolean"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change",
+          "lints",
+          "passed",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Pass when the latest code-check entry of the run RHIZA_RUN names has no model lint hits, else fail listing each hit",
+      "write": false
     },
     {
       "name": "run.log",
@@ -13807,6 +14095,48 @@ cmp stdout describe.golden.json
                     "detail": {
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
+                    },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
                     },
                     "outcome": {
                       "description": "pass or fail",
@@ -15520,6 +15850,48 @@ cmp stdout describe.golden.json
                     "detail": {
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
+                    },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
                     },
                     "outcome": {
                       "description": "pass or fail",
@@ -17304,6 +17676,48 @@ cmp stdout describe.golden.json
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
                     },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "outcome": {
                       "description": "pass or fail",
                       "enum": [
@@ -19051,6 +19465,48 @@ cmp stdout describe.golden.json
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
                     },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "outcome": {
                       "description": "pass or fail",
                       "enum": [
@@ -20608,6 +21064,48 @@ cmp stdout describe.golden.json
                 "detail": {
                   "description": "A fail's causes, separated by semicolons",
                   "type": "string"
+                },
+                "lints": {
+                  "description": "The model lints' hits; they never make a fail",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "field": {
+                        "description": "The field the hit is in: statement or acceptance",
+                        "type": "string"
+                      },
+                      "handle": {
+                        "description": "The node's handle",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                        "enum": [
+                          "path",
+                          "test",
+                          "script",
+                          "unretired-capability",
+                          "unapplied-decision",
+                          "removed-code-capability"
+                        ],
+                        "type": "string"
+                      },
+                      "node": {
+                        "description": "The node's full ID",
+                        "type": "string"
+                      },
+                      "ref": {
+                        "description": "The missing or removed reference, as written",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "node"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
                 },
                 "outcome": {
                   "description": "pass or fail",

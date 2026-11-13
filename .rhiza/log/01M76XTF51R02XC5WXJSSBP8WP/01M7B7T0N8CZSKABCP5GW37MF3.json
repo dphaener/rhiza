@@ -1,0 +1,40 @@
+{
+  "actor": "01M7B7QYHYSGQMJ1A20BZNTVFE",
+  "after": [
+    "01M7B7G0X8EKSZY8D8QY0BQH5J"
+  ],
+  "at": "2026-11-13T19:57:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a970d1bf5 re-ran the Checks block: go test -trimpath ./internal/api/... -run 'LintCheck' (TestLintCheck PASS: no code-check entry and an entry with no lints exit 0, two lints exit 1 with both hits in the response and human output, a later clean entry passes), go test -trimpath ./internal/workflow/... (ok: review order code, lints, lint-fix, review, render, signoff; code pass->lints, lints pass->review, fail->lint-fix, lint-fix max_visits 1 pass->review with the specified fixer prompt; ship-change includes review/lints and review/lint-fix), go test -trimpath ./cmd/rhiza -run 'TestScripts/describe-golden$' (ok, golden has run.lint-check), rhiza ship generate (0 files changed) and rhiza render: all exit 0. Diff read: only the leaf's files plus generated docs/reference/cli.md and the actor record; no TODOs, gofmt clean."
+        },
+        "handle": "review-lint-fix-route-verified",
+        "id": "01M7B7T0KFXF70W61KPSM2FTE6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B7T0KFXF70W61KPP1Q0FHF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B7T0KFXF70W61KPP1Q0FHF",
+        "id": "01M7B7T0MBDBJ5BZ8556YYVVN1",
+        "link": "01M7B7T0MBDBJ5BZ8556QYVANM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B0BDCY9W3A1M8XAT24DGDM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XTF51R02XC5WXJSSBP8WP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B7T0N8CZSKABCP5GW37MF3",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7B6A0G8CC7AP79ZX82Z18F6",
+  "after": [
+    "01M7B1D1M1BZE9Y4YV62R32MT5"
+  ],
+  "at": "2026-11-13T19:52:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3068936 (attempt 2) re-ran the Checks: go test -trimpath ./cmd/rhiza -run 'TestScripts/(review-code-check|describe-golden)$' exit 0; go test -trimpath ./internal/run/... exit 0; go test -trimpath -timeout 30m -skip Budget ./internal/api/... exit 0; rhiza ship generate exit 0 (0 changed); rhiza render exit 0. Read the diff of b01580340 and 3068936: code-check runs StaleRefs, UnappliedDecisions and RemovedCode in the run's worktree (head tree, Leaf: trailers from merge-base, deleted paths) and lists hits as lints in --json, human output and the journal entry, never as causes. review-code-check.txtar asserts the failure case (exit 1, causes name only alpha's Evidence, three lints listed) and the pass (passed true, exit 0, all three hits in --json, human output and run status code_checks for step code). TestCodeCheckLintsRoundTrip (journal Append/Read/State) and TestRunInfoCodeCheckLints (runInfo and human status) cover the round-trip. describe-golden was regenerated. Both earlier findings are addressed, there are no TODOs, and only the leaf's files plus the generated docs/reference changed."
+        },
+        "handle": "code-check-runs-lints-verified",
+        "id": "01M7B7G0PHRSEPYV5CV22B3THJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B7G0PHRSEPYV5CTYDFHYZ6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B7G0PHRSEPYV5CTYDFHYZ6",
+        "id": "01M7B7G0V7TBMEE41P1TCMJRTN",
+        "link": "01M7B7G0V7TBMEE41P1PPJM60Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZSBEY65G73S64CERYNTD0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XTF51R02XC5WXJSSBP8WP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B7G0X8EKSZY8D8QY0BQH5J",
+  "type": "ops",
+  "v": 1
+}
