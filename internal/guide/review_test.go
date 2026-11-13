@@ -103,7 +103,7 @@ func TestReviewRoleText(t *testing.T) {
 		},
 		"done": {"rhiza session done", "as its own command", "after its recording\ncommand succeeded", "`;` or `&&`"},
 		"scoped-tests": {
-			"run only the tests covering what the change touches",
+			"only the tests covering what the change touches",
 			"scoped commands", "never the repo's full\nsuite",
 			"the PR's CI runs it before merge",
 		},
