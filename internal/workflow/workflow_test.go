@@ -2751,3 +2751,43 @@ func TestGateStep(t *testing.T) {
 		t.Errorf("valid gate: %v", ps)
 	}
 }
+
+func TestHandbackTarget(t *testing.T) {
+	base := "[step.build]\nkind = \"agent\"\nprompt = \"build\"\non.pass = \"g\"\n[step.g]\nkind = \"gate\"\ncommands = [\"true\"]\non.fail = \"handback:build\"\n"
+	d, err := Parse("w", []byte(base))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d.HandbackCap != DefaultHandbackCap {
+		t.Errorf("handback_cap = %d, want %d", d.HandbackCap, DefaultHandbackCap)
+	}
+	if h, ok := d.HandbackTarget("g", OutcomeFail); !ok || h != "build" {
+		t.Errorf("HandbackTarget = %q, %v", h, ok)
+	}
+	if _, ok := d.HandbackTarget("g", OutcomePass); ok {
+		t.Error("pass has a hand-back target")
+	}
+	if next, end := d.Next("g", OutcomeFail); next != "build" || end != EndNone {
+		t.Errorf("Next = %q, %v", next, end)
+	}
+	d, err = Parse("w", []byte("handback_cap = 5\n"+base))
+	if err != nil || d.HandbackCap != 5 {
+		t.Fatalf("cap %v, %v", d, err)
+	}
+	tests := []struct{ name, src, want string }{
+		{"unknown step", "[step.g]\nkind = \"gate\"\ncommands = [\"true\"]\non.fail = \"handback:nope\"\n", `step "g": on.fail hands back to "nope", which is not a step`},
+		{"not an agent", "[step.c]\nkind = \"command\"\nrun = \"true\"\n[step.g]\nkind = \"gate\"\ncommands = [\"true\"]\non.fail = \"handback:c\"\n", `step "g": on.fail hands back to "c", which is a command step`},
+		{"cap zero", "handback_cap = 0\n" + base, "handback_cap is 0"},
+		{"cap negative", "handback_cap = -2\n" + base, "handback_cap is -2"},
+		{"cap text", "handback_cap = \"x\"\n" + base, "handback_cap is x"},
+	}
+	for _, tt := range tests {
+		_, err := Parse("w", []byte(tt.src))
+		if err == nil || !strings.Contains(err.Error(), tt.want) {
+			t.Errorf("%s: err = %v, want %q", tt.name, err, tt.want)
+		}
+		if _, ps := Validate("w", []byte(tt.src), nil); len(ps) == 0 {
+			t.Errorf("%s: Validate found no problem", tt.name)
+		}
+	}
+}

@@ -3259,7 +3259,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, permission, api-error, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale",
+                  "description": "question, open, signoff, failed, gave-up, handback, skipped, stalled, permission, api-error, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale",
                   "type": "string"
                 },
                 "next": {

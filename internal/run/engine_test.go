@@ -2777,3 +2777,65 @@ func TestGateStep(t *testing.T) {
 		}
 	})
 }
+
+const handbackWF = `
+[step.build]
+kind = "agent"
+prompt = "build"
+on.pass = "check"
+[step.check]
+kind = "command"
+run = "check"
+on.pass = "done"
+on.fail = "handback:build"
+`
+
+func TestHandbackRoute(t *testing.T) {
+	t.Run("re-enters the agent step each time", func(t *testing.T) {
+		e, r, _, _ := setup(t, handbackWF)
+		r.outcome["S-build"] = workflow.OutcomePass
+		r.codes["check"] = []int{1, 1, 0}
+		r.details["check"] = "tests red"
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := []string{"build:pass", "check:fail", "build:pass", "check:fail", "build:pass", "check:pass"}
+		if st.Result != Succeeded || !reflect.DeepEqual(outcomes(st), want) {
+			t.Fatalf("result %q steps %v", st.Result, outcomes(st))
+		}
+		if len(st.Handbacks) != 2 || st.Handbacks[0].Target != "build" || !strings.Contains(st.Handbacks[0].Cause, "tests red") || st.Handbacks[0].Step != "check" {
+			t.Errorf("handbacks %+v", st.Handbacks)
+		}
+	})
+	t.Run("a fourth failure parks the run", func(t *testing.T) {
+		e, r, _, _ := setup(t, handbackWF)
+		r.outcome["S-build"] = workflow.OutcomePass
+		r.codes["check"] = []int{1, 1, 1, 1, 1}
+		r.details["check"] = "tests red"
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st.Ended || len(st.Handbacks) != 3 || st.Current != "check" {
+			t.Fatalf("ended %v handbacks %d current %q", st.Ended, len(st.Handbacks), st.Current)
+		}
+		for _, want := range []string{HandbackParked, `"check"`, "3 hand-backs", `"build"`, "tests red"} {
+			if !strings.Contains(st.Stopped, want) {
+				t.Errorf("stopped %q lacks %q", st.Stopped, want)
+			}
+		}
+	})
+	t.Run("handback_cap sets the limit", func(t *testing.T) {
+		e, r, _, _ := setup(t, "handback_cap = 1\n"+handbackWF)
+		r.outcome["S-build"] = workflow.OutcomePass
+		r.codes["check"] = []int{1, 1, 1}
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st.Ended || len(st.Handbacks) != 1 || !strings.HasPrefix(st.Stopped, HandbackParked) {
+			t.Fatalf("ended %v handbacks %d stopped %q", st.Ended, len(st.Handbacks), st.Stopped)
+		}
+	})
+}

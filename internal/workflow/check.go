@@ -54,6 +54,9 @@ func Validate(name string, data []byte, resolve Resolver) (string, []Problem) {
 	if _, err := buildCleanup(f.Cleanup); err != nil {
 		out = append(out, Problem{Message: err.Error()})
 	}
+	if _, err := parseHandbackCap(f.HandbackCap); err != nil {
+		out = append(out, Problem{Message: err.Error()})
+	}
 	if len(f.Step) == 0 {
 		return name, append(out, Problem{Message: "workflow has no steps: add a [step.<name>] table"})
 	}

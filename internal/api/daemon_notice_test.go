@@ -48,6 +48,7 @@ func TestInboxNoticeNamesNoHandleOrID(t *testing.T) {
 		{"signoff", ids(InboxSignoff, InboxItem{}), "T: a sign-off waits on you"},
 		{"failed", ids(InboxFailed, InboxItem{}), "T: a run failed"},
 		{"gave-up", ids(InboxGaveUp, InboxItem{}), "T: the daemon gave up on a run"},
+		{"handback", ids(InboxHandback, InboxItem{}), "T: a run stopped after handing back too often"},
 		{"skipped", ids(InboxSkipped, InboxItem{}), "T: an interrupted run was not resumed"},
 		{"blocker", ids(InboxBlocker, InboxItem{Question: "Which store?", BlocksTitle: "Export orders"}), "T: a question blocks it: Which store?"},
 		{"overlap", ids(InboxOverlap, InboxItem{OtherTitle: "Other title"}), "T: an overlap with Other title waits on you"},

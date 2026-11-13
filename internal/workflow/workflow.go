@@ -87,6 +87,14 @@ const (
 	TargetFailed = "failed"
 )
 
+// HandbackPrefix starts an `on.<outcome>` target that hands the run back to
+// an agent step of the same workflow: `handback:<agent step>`.
+const HandbackPrefix = "handback:"
+
+// DefaultHandbackCap is how many times a run may hand back when the file
+// sets no handback_cap.
+const DefaultHandbackCap = 3
+
 // Outcomes the step kinds produce.
 const (
 	OutcomePass    = "pass"
@@ -191,6 +199,11 @@ type Definition struct {
 	// the run's steps start. {run_tmp} in a value is the run's own temp
 	// folder; see EnvPairs. Only the file's own.
 	Env map[string]string
+
+	// HandbackCap is the file's handback_cap: how many times a run may
+	// hand back to an agent step before the next red parks it. It is
+	// DefaultHandbackCap when the file sets none. Only the file's own.
+	HandbackCap int
 }
 
 // RunTmpToken stands for the run's own temp folder in an [env] value.
@@ -648,8 +661,23 @@ func (e End) String() string {
 	}
 }
 
+// HandbackTarget is the agent step an `on.<outcome>` entry of step hands
+// the run back to (`handback:<agent step>`), and whether it does.
+func (d *Definition) HandbackTarget(step, outcome string) (string, bool) {
+	s, ok := d.Steps[step]
+	if !ok {
+		return "", false
+	}
+	t, ok := s.On[outcome]
+	if !ok {
+		return "", false
+	}
+	return strings.CutPrefix(t, HandbackPrefix)
+}
+
 // Next decides where a run goes after step ends with outcome. An
-// `on.<outcome>` entry wins: a step name continues there, done ends the run
+// `on.<outcome>` entry wins: a step name continues there (for
+// `handback:<agent step>`, that agent step), done ends the run
 // succeeded, failed ends it failed. With no entry, `pass` ends the run
 // succeeded and any other outcome ends it failed. A step the definition does
 // not have ends the run failed.
@@ -671,6 +699,7 @@ func (d *Definition) Next(step, outcome string) (next string, end End) {
 	case TargetFailed:
 		return "", EndFailed
 	}
+	target = strings.TrimPrefix(target, HandbackPrefix)
 	return target, EndNone
 }
 
@@ -687,6 +716,9 @@ type fileDef struct {
 	Cleanup []fileCleanup `toml:"cleanup"`
 	// Env is the [env] table.
 	Env map[string]string `toml:"env"`
+	// HandbackCap is decoded loosely so a bad value is refused with a
+	// message naming the key.
+	HandbackCap any `toml:"handback_cap"`
 }
 
 type fileCleanup struct {
@@ -838,7 +870,11 @@ func parse(name string, data []byte, resolve Resolver, stack []string, includes 
 	if err != nil {
 		return nil, err
 	}
-	d := &Definition{Name: name, Steps: make(map[string]Step, len(f.Step)), autonomy: aut, Cleanup: cleanup, Env: env}
+	hcap, err := parseHandbackCap(f.HandbackCap)
+	if err != nil {
+		return nil, err
+	}
+	d := &Definition{Name: name, Steps: make(map[string]Step, len(f.Step)), autonomy: aut, Cleanup: cleanup, Env: env, HandbackCap: hcap}
 	d.Order = stepOrder(md.Keys(), f.Step)
 	arbiter := ""
 	for _, n := range d.Order {
@@ -874,6 +910,22 @@ func parse(name string, data []byte, resolve Resolver, stack []string, includes 
 		return nil, err
 	}
 	return d, nil
+}
+
+// parseHandbackCap reads the file's handback_cap: a whole number of at least
+// 1, DefaultHandbackCap when the file sets none.
+func parseHandbackCap(v any) (int, error) {
+	if v == nil {
+		return DefaultHandbackCap, nil
+	}
+	n, ok := v.(int64)
+	if !ok {
+		return 0, fmt.Errorf("handback_cap is %v; want a whole number of at least 1", v)
+	}
+	if n < 1 {
+		return 0, fmt.Errorf("handback_cap is %d; want a whole number of at least 1", n)
+	}
+	return int(n), nil
 }
 
 // undecoded is md.Undecoded without the keys under [autonomy], which
@@ -1550,6 +1602,16 @@ func checkTargets(s Step, steps map[string]Step) error {
 		}
 		t := s.On[o]
 		if t == TargetDone || t == TargetFailed {
+			continue
+		}
+		if h, ok := strings.CutPrefix(t, HandbackPrefix); ok {
+			ts, ok := steps[h]
+			if !ok {
+				return fmt.Errorf("step %q: on.%s hands back to %q, which is not a step of this workflow; want handback:<agent step>", s.Name, o, h)
+			}
+			if ts.Kind != KindAgent {
+				return fmt.Errorf("step %q: on.%s hands back to %q, which is %s step; want handback:<agent step>", s.Name, o, h, article(ts.Kind))
+			}
 			continue
 		}
 		if w, _, ok := strings.Cut(t, "/"); ok {

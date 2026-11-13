@@ -554,6 +554,20 @@ func (r *running) loop() (State, error) {
 		next, end := r.def.Next(step.Name, res.outcome)
 		if res.outcome == OutcomeError {
 			next, end = "", workflow.EndFailed
+		} else if target, ok := r.def.HandbackTarget(step.Name, res.outcome); ok {
+			n := len(r.j.State().Handbacks)
+			if limit := r.def.HandbackCap; n >= limit {
+				stop := fmt.Sprintf("%sstep %q went %s after %d hand-backs to %q: %s", HandbackParked, step.Name, res.outcome, n, target, res.detail)
+				if err := r.append(Entry{Type: TypeStopped, Step: step.Name, Detail: stop}); err != nil {
+					return r.j.State(), err
+				}
+				r.log("step %s: stopped, %s", step.Name, stop)
+				r.status(stop)
+				return r.j.State(), nil
+			}
+			if err := r.append(Entry{Type: TypeHandback, Step: step.Name, Next: target, Outcome: res.outcome, Detail: res.detail}); err != nil {
+				return r.j.State(), err
+			}
 		}
 		if err := r.append(Entry{
 			Type: TypeEnded, Step: step.Name, Visit: act.Visit, Outcome: res.outcome,

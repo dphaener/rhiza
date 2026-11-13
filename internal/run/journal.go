@@ -4,6 +4,7 @@
 package run
 
 import (
+	"maps"
 	"slices"
 	"strings"
 	"time"
@@ -13,11 +14,16 @@ import (
 
 // Entry types.
 const (
-	TypeStarted  = "started"
-	TypeEntered  = "entered"
-	TypeSession  = "session"
-	TypeEnded    = "ended"
-	TypeStopped  = "stopped"
+	TypeStarted = "started"
+	TypeEntered = "entered"
+	TypeSession = "session"
+	TypeEnded   = "ended"
+	TypeStopped = "stopped"
+	// TypeHandback is a routing step handing the run back to an agent step
+	// (its on.<outcome> was handback:<step>): Step the routing step, Next
+	// the agent step, Outcome the red outcome, Detail the cause. It gives
+	// every step its full max_visits again, as a retry does.
+	TypeHandback = "handback"
 	TypeFinished = "finished"
 	// TypeCleanup is a cleanup step's result once the run has finished:
 	// Step the cleanup step's name, Outcome pass or fail, Detail its exit
@@ -687,6 +693,20 @@ type RunSession struct {
 	Session string
 }
 
+// Handback is one hand-back of the run: the routing step that went red, the
+// agent step it handed back to and the cause.
+type Handback struct {
+	Step    string
+	Target  string
+	Outcome string
+	Cause   string
+	At      time.Time
+}
+
+// HandbackParked prefixes the stopped detail of a run that reached its
+// handback_cap and went red again.
+const HandbackParked = "handback cap reached: "
+
 // Spawn is one child session a step's session spawned: Step the calling
 // step, Parent the calling session, Session the child. Outcome and Detail
 // are empty until the child ends.
@@ -1193,11 +1213,15 @@ type State struct {
 	// SpawnHolds the spawns that waited on a hold, in journal order.
 	Spawns     []Spawn
 	SpawnHolds []SpawnHold
-	Workflow   string
-	Pick       string
-	Change     string
-	Title      string
-	Worktree   string
+	// Handbacks are the run's hand-backs in journal order, and
+	// HandbackBase each step's Visits as they stood at the last of them.
+	Handbacks    []Handback
+	HandbackBase map[string]int
+	Workflow     string
+	Pick         string
+	Change       string
+	Title        string
+	Worktree     string
 	// Trigger and TriggerName are the started entry's: a scheduled run has
 	// a trigger and no change set.
 	Trigger        string
@@ -1798,6 +1822,9 @@ func (j Journal) State() State {
 			if n := len(st.Rounds); n > 0 {
 				st.Rounds[n-1].Verdicts = append(st.Rounds[n-1].Verdicts, e.Verdicts...)
 			}
+		case TypeHandback:
+			st.Handbacks = append(st.Handbacks, Handback{Step: e.Step, Target: e.Next, Outcome: e.Outcome, Cause: e.Detail, At: e.At})
+			st.HandbackBase = maps.Clone(st.Visits)
 		case TypeStopped:
 			st.Stopped, st.StoppedAt = e.Detail, e.At
 		case TypeFinished:
@@ -1964,9 +1991,10 @@ func (st State) BlockOf(session string) (SessionBlock, bool) {
 }
 
 // CapVisits is how many visits of step count against its max_visits: those
-// since the run's last retried entry, or all of them when it has none.
+// since the run's last retried or handback entry, or all of them when it
+// has none.
 func (st State) CapVisits(step string) int {
-	return st.Visits[step] - st.RetryBase[step]
+	return st.Visits[step] - max(st.RetryBase[step], st.HandbackBase[step])
 }
 
 // FailedStep is the step a failed run would be retried at: the step its
