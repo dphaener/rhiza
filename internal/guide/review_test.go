@@ -100,7 +100,7 @@ func TestReviewFixerPreHandoffChecklist(t *testing.T) {
 	}
 }
 
-// severityBlock is a topic's "## Severities" section.
+// severityBlock is a topic's expanded "## Severities" section.
 func severityBlock(t *testing.T, name string) string {
 	t.Helper()
 	tx, ok := Lookup(name)
@@ -118,17 +118,60 @@ func severityBlock(t *testing.T, name string) string {
 	return rest
 }
 
-func TestReviewSeverityBlockShared(t *testing.T) {
-	review, plan := severityBlock(t, "review"), severityBlock(t, "plan-review")
-	if review != plan {
-		t.Errorf("review and plan-review severity blocks differ:\n%s\n---\n%s", review, plan)
+func TestSeveritiesBlockShared(t *testing.T) {
+	ents, err := files.ReadDir("text")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range ents {
+		if e.IsDir() {
+			continue
+		}
+		raw, err := files.ReadFile("text/" + e.Name())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(string(raw), "## Severities") {
+			t.Errorf("%s holds its own ## Severities section", e.Name())
+		}
+	}
+	shared := sharedFiles(t)["severities.md"]
+	if !strings.HasPrefix(shared, "## Severities") {
+		t.Fatalf("shared/severities.md does not open with ## Severities")
+	}
+	want := strings.TrimSuffix(strings.TrimPrefix(shared, "## Severities"), "\n")
+	for _, name := range []string{"review"} {
+		if got := severityBlock(t, name); strings.TrimSuffix(got, "\n") != want {
+			t.Errorf("%s: severity block differs from the shared block:\n%s", name, got)
+		}
+	}
+	for _, tx := range List() {
+		raw, _ := files.ReadFile("text/" + tx.Name + ".md")
+		if strings.Contains(string(raw), "<!-- shared: severities") && !strings.Contains(tx.Body, "## Severities") {
+			t.Errorf("%s names the severities block but does not show it", tx.Name)
+		}
+	}
+	for _, kind := range []string{"`uncovered-intent`", "`oversized-leaf`"} {
+		if !strings.Contains(shared, kind) {
+			t.Errorf("severities block lacks %s", kind)
+		}
+	}
+	if !strings.Contains(shared, "`uncovered-intent` and `oversized-leaf` major") {
+		t.Errorf("severities block does not make uncovered-intent and oversized-leaf major")
 	}
 	for _, banned := range []string{"go ", "Go ", "make ", "rhiza check", "rhiza render", "rhiza ship", "testscript"} {
-		if strings.Contains(review, banned) {
+		if strings.Contains(shared, banned) {
 			t.Errorf("severity block names %q", banned)
 		}
 	}
-	for _, name := range []string{"review", "plan-review"} {
+	_, err = Expand("x\n<!-- shared: severity -->\n", loadShared)
+	if err == nil || !strings.Contains(err.Error(), "severity") {
+		t.Errorf("misspelt block: Expand = %v, want an error naming severity", err)
+	}
+}
+
+func TestReviewCriticSections(t *testing.T) {
+	for _, name := range []string{"review"} {
 		tx, _ := Lookup(name)
 		i := strings.Index(tx.Body, "## Critic")
 		if i < 0 {

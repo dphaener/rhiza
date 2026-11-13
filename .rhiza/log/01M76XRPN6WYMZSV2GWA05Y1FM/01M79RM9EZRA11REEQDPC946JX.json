@@ -1,0 +1,40 @@
+{
+  "actor": "01M79RG42TFA4SWGS6P55CX5PV",
+  "after": [
+    "01M79RJN826MFCX4BRRCC105NF"
+  ],
+  "at": "2026-11-13T06:13:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 9d2239fe3 (attempt 2, on 071bd5aab): re-ran the Checks block (go test -trimpath ./internal/guide/..., go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|plan-review)', rhiza ship generate, rhiza render; all exit 0, tree clean after) and the acceptance (go test -trimpath ./internal/api -run GuideInstall, go test -trimpath ./internal/guide/..., go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|guide-install)'; all ok). Diff read: guide install writes rhiza-planner, rhiza-plan-reviewer, rhiza-plan-critic and rhiza-plan-reviser SKILL.md with the topic description and body, a second install reports them unchanged (guide_install_test); TestPlanIndexes checks plan and plan-review each name all four roles with /rhiza-<role> and rhiza guide <role> routes and stay under TopicCap/3; plan's description in guide.go is untouched and still asserted; guide.txtar lists the four topics in guide ls and guide-install.txtar the new skill paths. No TODOs, gofmt clean, nothing outside the leaf changed."
+        },
+        "handle": "plan-role-skills-installed-verified-2",
+        "id": "01M79RM9ANTY6V06S12T9E73W0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79RM9ANTY6V06S12QPGM7HA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79RM9ANTY6V06S12QPGM7HA",
+        "id": "01M79RM9C6SFR8H7Z248YFKFGX",
+        "link": "01M79RM9C6SFR8H7Z246WH289C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH6B4G10X94QE56HC9RS4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79RM9EZRA11REEQDPC946JX",
+  "type": "ops",
+  "v": 1
+}

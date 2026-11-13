@@ -77,11 +77,11 @@ exec cat $WORK/asker.log
 stdout '^got \.rhiza/local/messages/[0-9a-f-]{36}/0001\.md$'
 stdout '^Stream CSV rows instead of building the file in memory$'
 exec cat $WORK/prompts.log
-stdout -count=1 '^/rhiza-plan Plan change set 01[0-9A-Z]{24} \(Plan exports\) '
+stdout -count=1 '^/rhiza-planner Plan change set 01[0-9A-Z]{24} \(Plan exports\): follow rhiza guide planner\.$'
 stdout -count=1 '^Decide question [0-9A-Z]{26}: follow rhiza guide arbiter\.$'
-stdout -count=1 'as the reviewer'
-! stdout 'as the critic'
-! stdout 'as the reviser'
+stdout -count=1 '^/rhiza-plan-reviewer '
+! stdout '^/rhiza-plan-critic '
+! stdout '^/rhiza-plan-reviser '
 
 # The gate accepted the run's intention change set with rule autonomous;
 # the answering Decision is in it.
@@ -202,7 +202,7 @@ fail() {
 	exit 1
 }
 case "$last" in
-/rhiza-plan*)
+/rhiza-planner*)
 	rec=$RHIZA_CHANGE
 	[ "$RHIZA_AUTONOMOUS" = 1 ] || fail not autonomous
 	cp "$WORK/transcript.jsonl" "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
@@ -235,10 +235,10 @@ case "$last" in
 	printf '{"writes":[{"op":"add","kind":"decision","handle":"assume-streaming","fields":["statement=Stream CSV rows instead of building the file in memory","wording=(assumed, would have escalated)","reasoning=Reports can be large"]},{"op":"link","from":"assume-streaming","type":"answers","to":"%s"}]}\n' "$q" > "$WORK/decision.json"
 	rhiza apply "$WORK/decision.json" --json >> "$WORK/agent.out" || fail arbiter
 	;;
-*'as the reviewer'*)
+/rhiza-plan-reviewer*)
 	rhiza run findings "$WORK/clean.json" --json >> "$WORK/agent.out" || fail findings
 	;;
-*'as the critic'*)
+/rhiza-plan-critic*)
 	;;
 *)
 	fail "unexpected prompt: $last"

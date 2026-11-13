@@ -1555,7 +1555,7 @@ rhiza run findings <file> [--leaf <leaf>] [--check <check>]
 
 Appends to the log.
 
-Input: {"findings":[{"node":...,"kind":...,"reason":...},...]}, maybe empty for a clean review; kind is one of missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction. With --check: {"findings":[{"severity":...,"leaf":...,"place":...,"reason":...},...]}, maybe empty; severity is one of blocker, major, minor, nit, leaf optional. With --leaf: {"findings":[{"reason":...},...]}, at least one. Its schema: `rhiza describe run.findings --json`.
+Input: {"findings":[{"node":...,"kind":...,"reason":...},...]}, maybe empty for a clean review; kind is one of missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent, oversized-leaf. With --check: {"findings":[{"severity":...,"leaf":...,"place":...,"reason":...},...]}, maybe empty; severity is one of blocker, major, minor, nit, leaf optional. With --leaf: {"findings":[{"reason":...},...]}, at least one. Its schema: `rhiza describe run.findings --json`.
 
 Arguments and flags:
 
@@ -1751,7 +1751,7 @@ Exit code: set by the result, besides the shared codes.
 
 ## rhiza run review-check
 
-Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent major, the rest minor), fail with one before round 3, else leave each as a question and pass.
+Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent, uncovered-intent, oversized-leaf major, the rest minor), fail with one before round 3, else leave each as a question and pass.
 
 ```
 rhiza run review-check [--fresh] [--findings]
