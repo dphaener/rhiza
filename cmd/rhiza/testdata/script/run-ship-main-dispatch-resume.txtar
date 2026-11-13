@@ -43,7 +43,7 @@ exec git -C $WORK/other commit -qm 'Add CI'
 exec git -C $WORK/other push -q origin main
 exec sh -c 'printf "{\"pr\":7,\"url\":\"https://github.test/o/r/pull/7\",\"branch\":\"cs/ship-it\",\"head\":\"%s\",\"checks\":[{\"name\":\"test\",\"status\":\"COMPLETED\",\"conclusion\":\"SUCCESS\"}],\"merge_commit\":\"%s\"}\n" "$(cat $WORK/landed.sha)" "$(cat $WORK/merge.sha)" > .git/rhiza/ship/01M5PWGEF85Y185JZ2ZGCNH40N.json'
 
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 exec sh -c 'rhiza run resume --foreground --retry "$(cat $WORK/runid)"; echo exit=$?'
 stdout 'Run \S+ succeeded'
 exec sh -c 'grep -c "^workflow run ci.yml --ref main -f sha=$(cat $WORK/merge.sha)$" $WORK/gh.log'

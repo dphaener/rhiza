@@ -33,7 +33,7 @@ exec git commit -qm review
 exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json; echo exit=$?'
 stdout '"state": "succeeded"'
 stdout '^exit=0$'
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 
 # Each check session ran in a detached checkout of the branch head, not
 # in the run worktree, with RHIZA_ROOT naming the run worktree. (Once

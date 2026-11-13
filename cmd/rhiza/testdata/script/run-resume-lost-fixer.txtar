@@ -51,7 +51,7 @@ exec sh -c 'cat .git/rhiza/sessions/$(cat $WORK/fixer).json'
 ! stdout '"exit"'
 
 rm $WORK/lose
-exec sh -c 'rhiza run resume --foreground $(ls .git/rhiza/runs | sed "s/\..*//" | head -1)'
+exec sh -c 'rhiza run resume --foreground $(ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\..*//" | head -1)'
 stdout 'succeeded$'
 exec sh -c 'cat .git/rhiza/sessions/$(cat $WORK/fixer).json'
 stdout '"state": "lost"'
@@ -96,7 +96,7 @@ wait run
 exec sh -c 'grep "\"type\":\"review-fix\"" .git/rhiza/runs/*.jsonl | sed -n "s/.*\"session\":\"\([^\"]*\)\".*/\1/p" > $WORK/fixer'
 
 rm $WORK/lose
-exec sh -c 'rhiza run resume --foreground $(ls .git/rhiza/runs | sed "s/\..*//" | head -1)'
+exec sh -c 'rhiza run resume --foreground $(ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\..*//" | head -1)'
 stdout 'succeeded$'
 exec sh -c 'cat .git/rhiza/sessions/$(cat $WORK/fixer).json'
 stdout '"state": "lost"'

@@ -2119,6 +2119,9 @@ func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (s
 	req.Prompt = step.RenderPrompt(workflow.PromptVars{
 		Change: t.cs.String(), Slug: t.slug, Title: t.title, Run: r.run, Step: step.Name,
 	})
+	if err := r.prepareSession(&req, step.Name, run.AgentSessionName()); err != nil {
+		return "", err
+	}
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
 		return "", err

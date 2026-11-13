@@ -17,7 +17,7 @@ exec rhiza change new 'Plan A' --kind record --title 'Plan A' --json
 exec rhiza add intent want-a
 exec sh -c 'ls .git/rhiza/runs 2>/dev/null | sed "s/\.jsonl$//" > $WORK/before; true'
 exec rhiza run start --foreground --workflow hold --no-wait
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runa'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runa'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runa) rhiza run findings $WORK/clean.json'
 exec rhiza land
 exec sh -c 'rhiza change new "Serve A one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/a1'

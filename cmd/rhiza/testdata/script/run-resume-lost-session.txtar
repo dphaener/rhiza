@@ -29,7 +29,7 @@ exec sh -c 'for i in $(seq 100); do grep -qs "\"block\": \"block:b1\"" .git/rhiz
 kill run
 wait run
 
-! exec sh -c 'rhiza run resume --foreground $(ls .git/rhiza/runs | sed "s/\..*//" | head -1)'
+! exec sh -c 'rhiza run resume --foreground $(ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\..*//" | head -1)'
 stderr 'failed'
 exec sh -c 'cat .git/rhiza/sessions/*.json'
 stdout '"state": "lost"'

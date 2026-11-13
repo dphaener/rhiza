@@ -58,6 +58,9 @@ func (r *stepRunner) StartCheck(spec run.CheckSpec) (string, error) {
 		},
 		Check: spec.Check.Name, Cycle: spec.Cycle,
 	})
+	if err := r.prepareSession(&req, spec.Step.Name, run.CheckSessionName(spec.Check.Name, spec.Role, spec.Cycle)); err != nil {
+		return "", err
+	}
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
 		return "", err
@@ -86,6 +89,9 @@ func (r *stepRunner) StartFix(spec run.FixSpec) (string, error) {
 	req.Prompt = changeSetFixerPrompt(*role, spec, workflow.PromptVars{
 		Change: t.cs.String(), Slug: t.slug, Title: t.title, Run: r.run, Step: spec.Step.Name,
 	})
+	if err := r.prepareSession(&req, spec.Step.Name, run.ChangeSetFixSessionName(spec.Cycle, spec.Attempt)); err != nil {
+		return "", err
+	}
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
 		return "", err

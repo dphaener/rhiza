@@ -108,6 +108,13 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	req.Prompt = leafPrompt(*role, spec, workflow.PromptVars{
 		Change: t.cs.String(), Slug: t.slug, Title: t.title, Run: r.run, Step: spec.Step.Name,
 	})
+	name := run.LeafSessionName(spec.Role, spec.Leaf.Handle, spec.Attempt)
+	if spec.Cycle > 0 {
+		name = run.LeafFixSessionName(spec.Role, spec.Leaf.Handle, spec.Cycle, spec.Attempt)
+	}
+	if err := r.prepareSession(&req, spec.Step.Name, name); err != nil {
+		return "", err
+	}
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
 		return "", err

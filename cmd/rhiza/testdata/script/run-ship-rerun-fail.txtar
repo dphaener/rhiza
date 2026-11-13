@@ -25,7 +25,7 @@ exec git push -q -u origin main
 
 # The first wait stops with the rerun in flight; resumed, the head is red again.
 exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --no-wait
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 exec sh -c 'rhiza run resume --foreground $(cat $WORK/runid) --no-wait'
 stdout 'waiting: rhiza ship check --settled --changed'
 exec rhiza run status

@@ -126,6 +126,8 @@ type SessionStartRequest struct {
 	// checkout, and the build worktree's Rhiza root its writes go to. Only
 	// a run's StartLeaf sets them.
 	dir, root string
+	// briefDir is the session record's Brief. Only a run's starts set it.
+	briefDir string
 	// anchor is the tab of the session whose pane this session's pane
 	// splits, in direction split ("auto", right or below; auto follows
 	// the anchor's shape); a zero anchor opens a new tab. Only a run's
@@ -281,7 +283,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode, Prompt: r.Prompt,
 		Worktree: worktree, Branch: branch, Tab: tab, StartedAt: ctx.Now().UTC().Truncate(time.Second),
 		Advises: r.advises, Writes: r.writes, WritesRecord: r.writesRecord, Leaf: r.leaf, Attempt: r.attempt, Role: r.role, Commit: r.commit, Model: r.model,
-		Check: r.check, Cycle: r.cycle, Dir: r.dir, Root: r.root,
+		Check: r.check, Cycle: r.cycle, Dir: r.dir, Root: r.root, Brief: r.briefDir,
 	}
 	self := ctx.Self
 	if self == "" {
