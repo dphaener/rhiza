@@ -35,7 +35,7 @@ func (g guideRefresh) Next() string {
 // folder guide install did not write, and never rewrites a project guide
 // with a file tracked by git (it reports that as a failed refresh). It
 // returns the scopes it refreshed or failed to, and logs each.
-func refreshGuides(ctx *Ctx, root string, reg rootcfg.Config, homeName string, log func(string)) []guideRefresh {
+func refreshGuides(ctx *Ctx, root string, reg rootcfg.Config, log func(string)) []guideRefresh {
 	var out []guideRefresh
 	check := func(scope, base string, project bool) {
 		dir := filepath.Join(base, ".claude", "skills", pluginName)

@@ -1,6 +1,11 @@
 package api
 
 import (
+	"bytes"
+	"errors"
+	"time"
+
+	"github.com/dphaener/rhiza/internal/daemon"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -71,7 +76,7 @@ func TestDaemonGuideRefresh(t *testing.T) {
 		home := oldGuide(t, ctx, ctx.Home, false)
 		pdir := oldGuide(t, ctx, proj, true)
 		var lines []string
-		got := refreshGuides(ctx, root, reg, "proj", func(l string) { lines = append(lines, l) })
+		got := refreshGuides(ctx, root, reg, func(l string) { lines = append(lines, l) })
 		if len(got) != 2 || !got[0].Refreshed || !got[1].Refreshed || len(lines) != 2 {
 			t.Fatalf("got %+v, log %v", got, lines)
 		}
@@ -80,7 +85,7 @@ func TestDaemonGuideRefresh(t *testing.T) {
 				t.Errorf("%s is not current", d)
 			}
 		}
-		if again := refreshGuides(ctx, root, reg, "proj", noLog); len(again) != 0 {
+		if again := refreshGuides(ctx, root, reg, noLog); len(again) != 0 {
 			t.Errorf("a current guide was rewritten: %+v", again)
 		}
 	})
@@ -89,7 +94,7 @@ func TestDaemonGuideRefresh(t *testing.T) {
 		ctx, root, reg := setup(t)
 		foreign := filepath.Join(ctx.Home, ".claude", "skills", "rhiza", "SKILL.md")
 		writePath(t, foreign, "mine")
-		if got := refreshGuides(ctx, root, reg, "proj", noLog); len(got) != 0 {
+		if got := refreshGuides(ctx, root, reg, noLog); len(got) != 0 {
 			t.Fatalf("got %+v", got)
 		}
 		if b, _ := os.ReadFile(foreign); string(b) != "mine" {
@@ -99,7 +104,7 @@ func TestDaemonGuideRefresh(t *testing.T) {
 			t.Error("a guide was installed where none was")
 		}
 		os.RemoveAll(filepath.Join(ctx.Home, ".claude"))
-		if got := refreshGuides(ctx, root, reg, "proj", noLog); len(got) != 0 {
+		if got := refreshGuides(ctx, root, reg, noLog); len(got) != 0 {
 			t.Fatalf("got %+v", got)
 		}
 		if _, err := os.Stat(filepath.Join(ctx.Home, ".claude")); err == nil {
@@ -114,7 +119,7 @@ func TestDaemonGuideRefresh(t *testing.T) {
 		guideGit(t, proj, "add", "-Af", ".")
 		guideGit(t, proj, "commit", "-qm", "guide")
 		before := guideGit(t, proj, "status", "--porcelain")
-		got := refreshGuides(ctx, root, reg, "proj", noLog)
+		got := refreshGuides(ctx, root, reg, noLog)
 		if len(got) != 1 || got[0].Refreshed || !got[0].Tracked {
 			t.Fatalf("got %+v", got)
 		}
@@ -130,18 +135,96 @@ func TestDaemonGuideRefresh(t *testing.T) {
 	})
 }
 
-// The daemon refreshes an older user guide before its first poll.
+// The daemon refreshes the older guides of the home and of a registered
+// project before its first poll, and does it again when it starts as the
+// new binary a re-exec runs: at the first poll of each start (ctx.Reap,
+// called before a poll starts any session) both installs are already
+// current for the running version.
 func TestDaemonGuideRefreshAtStart(t *testing.T) {
 	ctx, _ := daemonRepo(t)
-	ctx.Version = "1.2.3"
-	ctx.Exec = realExec
 	ctx.Home = t.TempDir()
 	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
-	dir := oldGuide(t, ctx, ctx.Home, false)
-	if _, err := callOp(t, ctx, "daemon", `{"once":true,"permission_mode":"manual"}`); err != nil {
+	ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		if name != "git" {
+			return nil, errors.New("unexpected " + name)
+		}
+		return realExec(name, args, dir, env)
+	}
+	var stderr bytes.Buffer
+	ctx.Stderr = &stderr
+	// A registered project, with its own git checkout, beside the home.
+	proj := filepath.Join(ctx.Root, "proj")
+	if err := os.MkdirAll(proj, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if !pluginCurrent(dir, "1.2.3") {
-		t.Error("the daemon did not refresh the guide")
+	if _, err := callOp(t, testCtx(proj), "init", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	guideGit(t, proj, "init", "-q")
+	writePath(t, filepath.Join(ctx.Root, "rhiza.toml"), "[projects.repo]\npath = \".\"\n\n[projects.proj]\npath = \"proj\"\n")
+	ctx.Version = "1.2.3"
+	home := oldGuide(t, ctx, ctx.Home, false)
+	pdir := oldGuide(t, ctx, proj, true)
+
+	start := daemon.Image{Size: 10, Mod: time.Unix(1700000000, 0)}
+	old := daemonReexec
+	t.Cleanup(func() { daemonReexec = old })
+
+	// atFirstPoll runs the daemon and reports, for the first poll, whether
+	// both guides were current for the running version when it began.
+	atFirstPoll := func(f *reexecFake) (homeOK, projOK bool) {
+		t.Helper()
+		polled := false
+		ctx.Reap = func(string) {
+			if !polled {
+				polled = true
+				homeOK, projOK = pluginCurrent(home, ctx.Version), pluginCurrent(pdir, ctx.Version)
+			}
+		}
+		daemonReexec = func() *daemon.Reexec { return f.reexec(start) }
+		if err := runDaemonTicks(t, ctx, 1, nil); err != nil {
+			t.Fatal(err)
+		}
+		if !polled {
+			t.Fatal("the daemon never polled")
+		}
+		return homeOK, projOK
+	}
+
+	// A restart: the older guides are rewritten before the first poll, and
+	// the rebuilt binary it finds then is re-executed.
+	f := &reexecFake{img: daemon.Image{Size: 11, Mod: start.Mod}}
+	if h, p := atFirstPoll(f); !h || !p {
+		t.Fatalf("at the first poll after a restart: home current %v, project current %v", h, p)
+	}
+	if f.execs != 1 {
+		t.Fatalf("execs = %d, want 1", f.execs)
+	}
+	for _, want := range []string{"refreshed the user guide", "refreshed the project proj guide"} {
+		if !strings.Contains(stderr.String(), want) {
+			t.Errorf("log lacks %q:\n%s", want, stderr.String())
+		}
+	}
+
+	// The new image the re-exec ran starts as a newer version, over the
+	// guides the older one installed: it rewrites both before its first
+	// poll, and logs each.
+	stderr.Reset()
+	ctx.Version = "1.2.4"
+	if h, p := atFirstPoll(&reexecFake{img: start}); !h || !p {
+		t.Fatalf("at the first poll after the re-exec: home current %v, project current %v", h, p)
+	}
+	if !strings.Contains(stderr.String(), "refreshed the user guide in "+home+" to 1.2.4") ||
+		!strings.Contains(stderr.String(), "refreshed the project proj guide in "+pdir+" to 1.2.4") {
+		t.Errorf("log after the re-exec:\n%s", stderr.String())
+	}
+
+	// A start over current guides rewrites neither.
+	stderr.Reset()
+	if h, p := atFirstPoll(&reexecFake{img: start}); !h || !p {
+		t.Fatalf("current guides at a later start: home %v, project %v", h, p)
+	}
+	if strings.Contains(stderr.String(), "guide") {
+		t.Errorf("a current guide was refreshed:\n%s", stderr.String())
 	}
 }
