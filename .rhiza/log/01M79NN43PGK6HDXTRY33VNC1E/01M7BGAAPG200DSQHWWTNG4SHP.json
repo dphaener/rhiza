@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BG7M72N90QE9HYNBJ7J31H",
+  "after": [
+    "01M7BG50WKHP37HSRFKPJV0CNF"
+  ],
+  "at": "2026-11-13T22:26:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3e2f3f6b2: go test -trimpath ./internal/web -run TestLinksResolve -count=1 PASS (exit 0); go test -trimpath ./internal/web/... ok; rhiza ship generate and rhiza render exit 0 with no tracked changes. internal/web/links_test.go builds a two-project root (a, b) via RootWithProjects, each with a landed change set (intent, capability, decision) and a run, and crawls /p/<name>/ Home, /roadmap, /changes/<cs>, /runs/<run> and /nodes/links-cap, following every href/src/data-rz-fragment link: each in-project link must return 200, any link leaving the project fails unless it is a shared root path, and at least 8 pages must be crawled. Fakes only (no network, Rex or gh); diff touches only the test file plus actor log/rendered records; no stubs or TODOs."
+        },
+        "handle": "web-links-resolve-verified",
+        "id": "01M7BGAAM3N56H5CTAE7D2M183",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BGAAM3N56H5CTAE6GAB37G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BGAAM3N56H5CTAE6GAB37G",
+        "id": "01M7BGAANB28Q632TK8A3X0A2R",
+        "link": "01M7BGAANB28Q632TK873R5612",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8NS7D874K7TVBX23DXGA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NN43PGK6HDXTRY33VNC1E",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BGAAPG200DSQHWWTNG4SHP",
+  "type": "ops",
+  "v": 1
+}
