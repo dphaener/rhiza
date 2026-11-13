@@ -1,0 +1,197 @@
+# rhiza run start --workflow plan-review runs the built-in plan-review
+# workflow on a change set proposed with a leaf: no interview, so no planner
+# session opens. It enters at milestone-check, a clean review round passes
+# and the gate accepts the change set under rule autonomous, with
+# rhiza.autonomy.accept auto. `rhiza workflow describe plan-review` lists no
+# interview step.
+#
+# Nothing here reaches Rex or Claude Code: the fake rex starts the tab's
+# command in the background; one fake claude plays the reviewer.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+mkdir $HOME/.claude/projects/p
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec git push -q -u origin main
+
+exec rhiza workflow describe plan-review
+stdout '^includes plan$'
+stdout '^plan/milestone-check command$'
+! stdout 'interview'
+! stdout 'rhiza-planner'
+
+exec rhiza add intent ms --field milestone=1 --record
+exec rhiza change new 'Export reports' --json
+stdout '"change_set": "(01[0-9A-Z]{24})"'
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cs'
+exec sh -c 'rhiza link $(cat $WORK/cs) serves ms --change $(cat $WORK/cs)'
+exec sh -c 'rhiza apply $WORK/leaf.json --change $(cat $WORK/cs) --json'
+exec rhiza propose
+exec git add -A
+exec git commit -qm 'Propose export reports'
+exec git push -q origin main
+
+env REX_BLOCK=block:root
+env REX_SESSION=session:s1
+exec sh -c 'rhiza run start --foreground $(cat $WORK/cs) --workflow plan-review --autonomous --no-wait --permission-mode manual > $WORK/out 2> $WORK/err; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/out
+stdout '^Run [0-9A-Z]{26} succeeded$'
+stdout '^- Autonomous: yes$'
+
+exec rhiza run status --json
+stdout '"workflow": "plan-review"'
+stdout '"state": "succeeded"'
+exec rhiza run status
+stdout '^- plan/milestone-check \(visit 1\): pass, then plan/review: exit 0$'
+stdout '^- plan/review \(visit 1\): pass, then plan/has-findings, '
+stdout '^- plan/has-findings \(visit 1\): fail, then plan/fresh: exit 3'
+stdout '^- plan/gate \(visit 1\): pass, then plan/open-pr: exit 0$'
+! stdout 'interview'
+
+# Only the reviewer opened a session: no planner prompt.
+exec cat $WORK/prompts.log
+stdout -count=1 '^/rhiza-plan-reviewer '
+! stdout 'rhiza-planner'
+
+exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
+stdout '"state": "accepted"'
+stdout '"rule": "autonomous"'
+fold-ok
+
+-- leaf.json --
+{"writes":[
+  {"op":"add","kind":"capability","handle":"export-csv","fields":[
+    "statement=Users export any report as CSV",
+    "acceptance=A test exports a 100k-row report with flat memory use"]}
+]}
+-- clean.json --
+{"findings":[]}
+-- bin/rex --
+#!/bin/sh
+case "$1" in
+events)
+	exit 0
+	;;
+send | send-key)
+	echo "$*" >> "$WORK/typed.log"
+	exit 0
+	;;
+esac
+case "$1 $2" in
+"window close" | "block close")
+	echo "$1 $2" >> "$WORK/panes.log"
+	exit 0
+	;;
+"block call")
+	echo '{"columns":200,"rows":50,"cell_width_px":8,"cell_height_px":16}'
+	exit 0
+	;;
+esac
+verb=$1
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+i=0
+until [ -f "$WORK/ready" ]; do
+	i=$((i + 1))
+	if [ $i -gt 1600 ]; then
+		echo 'fake rex: the agent never got ready' >&2
+		exit 1
+	fi
+	sleep 0.025
+done
+rm -f "$WORK/ready"
+echo "$verb new" >> "$WORK/panes.log"
+if [ "$verb" = split ]; then
+	echo '{"block_id":"block:b2","window_id":"window:w1"}'
+else
+	echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+fi
+-- bin/claude --
+#!/bin/sh
+sid=
+for a; do last=$a; done
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+printf '%s\n' "$last" >> "$WORK/prompts.log"
+fail() {
+	echo "fake claude: $*" >> "$WORK/claude.err"
+	touch "$WORK/ready"
+	exit 1
+}
+case "$last" in
+/rhiza-plan-reviewer*)
+	rhiza run findings "$WORK/clean.json" --json >> "$WORK/agent.out" || fail findings
+	;;
+/rhiza-plan-critic*)
+	;;
+*)
+	fail "unexpected prompt: $last"
+	;;
+esac
+rhiza session done >> "$WORK/done.out" || fail done
+touch "$WORK/ready"
+exit 0
+-- bin/gh --
+#!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ ! -f "$WORK/pr.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	if [ "$3" = 7 ]; then
+		printf '{"state":"MERGED","mergeCommit":{"oid":"%s"}}\n' "$(cat "$WORK/merged-head")"
+		exit 0
+	fi
+	head=$(git -C "$o" rev-parse --verify "refs/heads/$3")
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+"pr merge")
+	# Squash-free: main on origin takes the branch as it was checked.
+	b=$(git -C "$o" for-each-ref --format='%(refname:short)' 'refs/heads/cs/*')
+	git -C "$o" rev-parse "refs/heads/$b" > "$WORK/merged-head"
+	git -C "$o" update-ref refs/heads/main "refs/heads/$b"
+	touch "$WORK/pr.merged"
+	;;
+"pr create")
+	while [ $# -gt 0 ]; do
+		if [ "$1" = --body-file ]; then
+			cp "$2" "$WORK/pr-body.md"
+		fi
+		shift
+	done
+	touch "$WORK/pr.created"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac
+

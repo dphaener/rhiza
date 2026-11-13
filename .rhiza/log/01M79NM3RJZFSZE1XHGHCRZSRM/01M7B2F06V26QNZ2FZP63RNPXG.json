@@ -1,0 +1,41 @@
+{
+  "actor": "01M7B2DP751WDCWS7DXBMTGNV7",
+  "after": [
+    "01M7B2D30BH5DH6H2Z8W916P8V"
+  ],
+  "at": "2026-11-13T18:24:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The leaf's 'no journal entry for 20 minutes' rule contradicts the code: session.Stalled (internal/session/status.go, StallAfter 20m on the session report), runStalledAll and RunStalled (internal/api/run.go) and the watchdog's progress check all judge a stall by session reports, and the inbox already lists these as InboxStalled (internal/api/inbox.go:406). Builders report progress without writing journal entries, so the journal rule would show working builders as stuck on Home while rhiza inbox shows nothing, and a really stalled run would get two cards. The change set's intent is that Home answers 'does anything need me?' from the same truth as the inbox; reusing the existing stalled item keeps one definition, matches the watchdog, and needs no new rule.",
+          "statement": "Home's stuck run is the inbox's stalled item, not a rule of its own: a live run is stuck exactly when rhiza inbox lists it as stalled (RunStalled / InboxStalled: a session of its current step silent for more than 20 minutes, working or idle in an autonomous run, not waiting on an answer or paused at a usage limit). Home shows one stuck card per such inbox item and never a second card for the same run, and web-home-needs-you's statement and acceptance say so: its stuck-run fixture is a run whose session last reported over 20 minutes ago, and a run whose session reported 5 minutes ago (even with no journal entry for 20 minutes) is not stuck.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "web-home-stuck-is-inbox-stalled",
+        "id": "01M7B2F04ARG51RRZEZ0CMKFM7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7B2F04ARG51RRZEYY4DRT11",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B2F04ARG51RRZEYY4DRT11",
+        "id": "01M7B2F05FY26Z28KSN21JFXJB",
+        "link": "01M7B2F05FY26Z28KSMYVRRF1P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B2D2G6QJG29X5AN9FZX6BD",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M79NM3RJZFSZE1XHGHCRZSRM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B2F06V26QNZ2FZP63RNPXG",
+  "type": "ops",
+  "v": 1
+}

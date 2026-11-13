@@ -354,7 +354,13 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 		// (the accept setting is owner, or the review did not pass): each
 		// waits for acceptance.
 		if !retried {
+			// A change set the same run journaled accepted needs nothing
+			// from the owner: main's model says proposed only until the
+			// plan PR merges.
 			for _, g := range st.Gated {
+				if runAccepted(st, g) {
+					continue
+				}
 				if state, ok := changeState(g); ok && state == string(changeset.StateProposed) {
 					add(InboxAccept, g, st.GatedAt, InboxItem{Detail: "waiting for acceptance", Next: ownerAcceptNext(g)})
 					items[len(items)-1].Change = g
@@ -818,6 +824,7 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 	fold := newInboxFold(ctx)
 	defer fold.close()
 	items := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxAPIErrorOf(ctx, common), inboxTabOf(ctx, common))
+	items = append(items, inboxUncoveredProposals(items, runs, fold)...)
 	blockers, err := inboxBlockers(ctx, questionAdvice(runs))
 	if err != nil {
 		return nil, err
@@ -1212,6 +1219,7 @@ func findInboxItems(ctx *Ctx, ref string) ([]InboxItem, map[string]run.State, er
 	fold := newInboxFold(ctx)
 	defer fold.close()
 	all := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxAPIErrorOf(ctx, common), inboxTabOf(ctx, common))
+	all = append(all, inboxUncoveredProposals(all, runs, fold)...)
 	blockers, err := inboxBlockers(ctx, questionAdvice(runs))
 	if err != nil {
 		return nil, nil, err
@@ -1531,4 +1539,15 @@ func workflowItems(common string, skips []daemon.Skip) []InboxItem {
 		})
 	}
 	return items
+}
+
+// runAccepted reports whether the run journaled an accepted entry for the
+// change set.
+func runAccepted(st run.State, change string) bool {
+	for _, a := range st.Accepts {
+		if a.Change == change && a.Verb == run.TypeAccepted {
+			return true
+		}
+	}
+	return false
 }

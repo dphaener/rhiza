@@ -562,7 +562,7 @@ func TestPlanBuiltin(t *testing.T) {
 		}
 	}
 
-	caps := map[string]int{"rebase": 3, "wait-rebased": 3, "rebased-green": 4, "merge": 3, "interview": 1, "review": 3, "critic": 3, "fresh": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 4}
+	caps := map[string]int{"rebase": 6, "wait-rebased": 6, "rebased-green": 6, "merge": 6, "interview": 1, "review": 3, "critic": 3, "fresh": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 4}
 	for name, c := range caps {
 		if got := def.Steps[name].Cap(); got != c {
 			t.Errorf("%s cap = %d; want %d", name, got, c)
@@ -1695,6 +1695,36 @@ func TestBuiltinPlanMilestone(t *testing.T) {
 	}
 }
 
+// The built-in plan-review workflow is plan without its interview: its
+// first step after expansion is milestone-check.
+func TestBuiltinPlanReview(t *testing.T) {
+	if !slices.Contains(BuiltinNames(), "plan-review") {
+		t.Fatalf("BuiltinNames = %v; want it to list plan-review", BuiltinNames())
+	}
+	data, ok := Builtin("plan-review")
+	if !ok {
+		t.Fatal("no plan-review built-in")
+	}
+	def, err := ParseWith("plan-review", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if def.Start != "plan/milestone-check" {
+		t.Errorf("plan-review starts at %q; want plan/milestone-check", def.Start)
+	}
+	for n, st := range def.Steps {
+		if st.Kind == KindAgent && strings.Contains(st.Prompt, "rhiza-planner") {
+			t.Errorf("plan-review has planner step %s", n)
+		}
+	}
+	if _, ok := def.Steps["plan/interview"]; ok {
+		t.Error("plan-review has an interview step")
+	}
+	if _, ok := def.Steps["plan/gate"]; !ok {
+		t.Error("plan-review has no gate step")
+	}
+}
+
 // The plan workflows send open-pr's and rebase's failure to a triage that
 // passes only on a head the pre-push check failed on, to prepush-fix.
 func TestPlanPrePushFix(t *testing.T) {
@@ -1834,6 +1864,9 @@ func TestPlanRerunsCIFlakes(t *testing.T) {
 			wantFail, wantVisits := "", 3
 			if step == "pr-green" || step == "rebased-green" {
 				wantFail, wantVisits = step+"-infra", 4
+			}
+			if step == "rebased-green" || step == "wait-rebased" {
+				wantVisits = 6
 			}
 			if s.On["pass"] != pass || s.On["fail"] != wantFail || s.MaxVisits != wantVisits {
 				t.Errorf("%s %s routes = pass %q fail %q max_visits %d; want pass %q, fail %q, %d", name, step, s.On["pass"], s.On["fail"], s.MaxVisits, pass, wantFail, wantVisits)

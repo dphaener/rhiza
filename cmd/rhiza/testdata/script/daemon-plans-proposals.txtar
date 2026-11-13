@@ -1,0 +1,152 @@
+# The daemon starts a plan-review run for a proposed change set with leaves
+# that no run covers: one poll starts one --workflow plan-review --autonomous
+# run, a second while that start is pending starts nothing more. A proposed
+# change set with no leaves, one a finished plan, plan-milestone (on the
+# record change set) or plan-review run gated, and one whose plan-review or
+# plan run ended failed start nothing on this or a following poll; one whose
+# only run was abandoned gets a start. The start shares --max-runs with the
+# ship picks, and nothing starts under rhiza daemon pause. Rex is faked.
+
+chmod 755 bin/rex
+chmod 755 mkrun.sh
+chmod 755 mkcs.sh
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+env RHIZA_TEST_FREE_BYTES=1099511627776
+mkdir ids
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .git/rhiza/runs
+
+# Change sets: fresh and abandoned should get a plan-review run.
+exec $WORK/mkcs.sh fresh
+exec $WORK/mkcs.sh abandoned
+exec $WORK/mkcs.sh gatedplan
+exec $WORK/mkcs.sh gatedmile
+exec $WORK/mkcs.sh gatedreview
+exec $WORK/mkcs.sh failedreview
+exec $WORK/mkcs.sh failedplan
+exec rhiza change new Noleaves --title Noleaves --json
+exec rhiza add intent want-nothing
+exec rhiza propose
+exec sh -c 'rhiza change new Record --kind record --title Record --json | sed -n "s/.*\"change_set\": \"\(.*\)\",/\1/p" > $WORK/ids/record'
+exec rhiza add intent want-record
+
+# The finished runs: each names the change set it gated, or failed on.
+exec $WORK/mkrun.sh 01M5PWGZZZZZZZZZZZZZZZZZ01 plan gatedplan gatedplan succeeded ''
+exec $WORK/mkrun.sh 01M5PWGZZZZZZZZZZZZZZZZZ02 plan-milestone record gatedmile succeeded ''
+exec $WORK/mkrun.sh 01M5PWGZZZZZZZZZZZZZZZZZ03 plan-review gatedreview gatedreview succeeded ''
+exec $WORK/mkrun.sh 01M5PWGZZZZZZZZZZZZZZZZZ04 plan-review failedreview '' failed 'step failed'
+exec $WORK/mkrun.sh 01M5PWGZZZZZZZZZZZZZZZZZ05 plan failedplan '' failed 'step failed'
+exec $WORK/mkrun.sh 01M5PWGZZZZZZZZZZZZZZZZZ06 plan-review abandoned '' failed 'abandoned by the owner'
+
+# Paused: nothing starts.
+exec rhiza daemon set rhiza.daemon.paused true
+exec rhiza daemon --permission-mode manual --once
+! stdout 'Started'
+! exists $WORK/detach.log
+exec rhiza daemon set rhiza.daemon.paused false
+
+# One poll starts a plan-review run for fresh and for abandoned only.
+exec rhiza daemon --permission-mode manual --once --max-runs 4
+stdout -count=2 '^Started a run of '
+exec sh -c 'grep -c -- "run start --foreground .* --workflow plan-review --autonomous --permission-mode manual" $WORK/detach.log'
+stdout '^2$'
+exec sh -c 'grep -c "run start --foreground $(cat $WORK/ids/fresh) --workflow plan-review" $WORK/detach.log'
+stdout '^1$'
+exec sh -c 'grep -c "run start --foreground $(cat $WORK/ids/abandoned) --workflow plan-review" $WORK/detach.log'
+stdout '^1$'
+exec rm $WORK/detach.log
+
+# The two plan-review runs journal (live, on another host): the next poll
+# starts nothing more. (A start not journaled yet holds the change set too:
+# internal/api's TestDaemonPlansProposalsPending polls twice in one process.)
+exec $WORK/mkrun.sh 01M5PWGZZZZZZZZZZZZZZZZZ07 plan-review fresh '' live ''
+exec $WORK/mkrun.sh 01M5PWGZZZZZZZZZZZZZZZZZ08 plan-review abandoned '' live ''
+exec rhiza daemon --permission-mode manual --once --max-runs 4
+! stdout 'Started'
+! exists $WORK/detach.log
+
+fold-ok
+
+# A second repo: the proposal's start and the ship pick share the slot.
+# (in a root of its own: run slots are machine-wide, and the first repo's
+# live runs still hold theirs).
+cd ..
+env RHIZA_TEST_DETACH_LOG=$WORK/detach2.log
+mkdir root2/repo2
+exec sh -c 'printf "[projects.repo2]\npath = \"repo2\"\n" > root2/rhiza.toml'
+cd root2/repo2
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new One --title One
+exec rhiza add capability one-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+exec $WORK/mkcs.sh second
+mkdir .git/rhiza/runs
+
+# One slot: the proposal's start takes it, the ship pick waits.
+exec rhiza daemon --permission-mode manual --once --max-runs 1
+stdout -count=1 '^Started a run of '
+exec sh -c 'grep -c -- "--workflow plan-review --autonomous" $WORK/detach2.log'
+stdout '^1$'
+! exec grep 'run start --foreground 01M5PWGMARA1WR6BD0MEF4Y76P' $WORK/detach2.log
+exec rm $WORK/detach2.log
+
+# Two slots: the plan-review run (journaled, live) holds one, the ship pick
+# takes the other.
+exec $WORK/mkrun.sh 01M5PWGZZZZZZZZZZZZZZZZZ09 plan-review second '' live ''
+exec rhiza daemon --permission-mode manual --once --max-runs 2
+stdout -count=1 '^Started a run of 01M5PWGMARA1WR6BD0MEF4Y76P'
+exec sh -c 'grep -c "run start --foreground" $WORK/detach2.log'
+stdout '^1$'
+! exec grep -- --workflow $WORK/detach2.log
+
+fold-ok
+
+-- plan.toml --
+name = "plan"
+
+[step.interview]
+kind = "agent"
+prompt = "Plan {change}"
+on.pass = "done"
+-- mkcs.sh --
+#!/bin/sh
+# mkcs.sh name: a proposed change set with one leaf, its ID in $WORK/ids/name.
+set -e
+rhiza change new "$1" --title "$1" --json | sed -n 's/.*"change_set": "\(.*\)",/\1/p' > "$WORK/ids/$1"
+rhiza add capability "$1-leaf" > /dev/null
+rhiza propose > /dev/null
+-- mkrun.sh --
+#!/bin/sh
+# mkrun.sh run workflow change gated end detail: a finished run journal of
+# workflow on the change set named change, gating the change set named gated.
+set -e
+f=.git/rhiza/runs/$1.jsonl
+cs=$(cat "$WORK/ids/$3")
+printf '{"type":"started","at":"2026-01-01T00:00:00Z","step":"s","started":{"workflow":"%s","definition":"","change":"%s"}}\n' "$2" "$cs" > "$f"
+if [ -n "$4" ]; then
+	printf '{"type":"gated","at":"2026-01-01T00:01:00Z","changes":["%s"]}\n' "$(cat "$WORK/ids/$4")" >> "$f"
+fi
+if [ "$5" = live ]; then
+	printf '{"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"elsewhere","pid":999999}}\n' >> "$f"
+else
+	printf '{"type":"finished","at":"2026-01-01T00:02:00Z","end":"%s","detail":"%s"}\n' "$5" "$6" >> "$f"
+fi
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

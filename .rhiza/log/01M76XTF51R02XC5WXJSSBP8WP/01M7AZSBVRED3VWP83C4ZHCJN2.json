@@ -1,0 +1,149 @@
+{
+  "actor": "01M7AZD58GWP798CRT2RXKGCEQ",
+  "after": [
+    "01M7AZR0HCBYBEQ3A1ZEAPYT16"
+  ],
+  "at": "2026-11-13T17:37:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M7AZNSY3NEDH37CH6NB8XDH5",
+        "id": "01M7AZSB6NZGH3S2QENWA5ZYBA",
+        "link": "01M7AZSB6NZGH3S2QENT8QJVA1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZR0EQN8T0NZSV96NBC055",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/modellint/... passes with table tests in internal/modellint/refs_test.go: a leaf naming a present path, Go test and testscript reports nothing; a missing path, a missing Go test and a missing testscript each report one hit naming the node, the field and the reference; a capability whose every path is gone is reported as unretired; failure cases: a node the change set did not write, naming a missing path, reports nothing, and a token whose first segment is no top-level entry (\"and/or\", a URL) is not a reference.",
+          "statement": "A new pure package internal/modellint reports, for each node the change set adds or changes in its to-be view (its leaves and the other capabilities and nodes it writes), each reference in its statement or acceptance that the head tree lacks: a repo path (a token whose first segment, after stripping a leading `./` and a trailing `/...`, is a top-level entry of the head tree), a Go test name `TestXxx` with no `func TestXxx(` in any *_test.go, and a testscript `TestScripts/<name>` with no `<name>.txtar` in the tree; a capability whose path references are all gone is reported as an unretired capability. It reads only the model and an fs.FS, runs no git, and does not touch internal/check or any file outside internal/modellint."
+        },
+        "handle": "modellint-stale-refs",
+        "id": "01M7AZSB7XH20CA9CJCG6FA5R3",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M7AZSB7XH20CA9CJCEATG154",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M7AZSB7XH20CA9CJCEATG154",
+        "id": "01M7AZSB8NGZVFZ8E9G50NTZFV",
+        "link": "01M7AZSB8NGZVFZ8E9G1EVZHH4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZNSY3NEDH37CH6NB8XDH5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/modellint/... passes with table tests in internal/modellint/decisions_test.go: a Decision no node links decided-by to is reported; an answers-only Decision is not; one linked from a landed capability is not; one linked only from leaves of the change set none of which has a Leaf: commit is reported, and with one such commit given, by handle or by ID, it is not; failure case: an unapplied Decision another change set wrote is not reported.",
+          "statement": "internal/modellint reports each Decision the change set adds or changes that is never applied: no live node links to it with decided-by (a Decision whose only link is answers on a question is exempt from this clause), or every node that does is a leaf of this change set with no branch commit carrying its Leaf: trailer, the leaves with such commits given to it as input by handle or ID. It judges nothing of the code's meaning and changes no file outside internal/modellint."
+        },
+        "handle": "modellint-unapplied-decisions",
+        "id": "01M7AZSBANC9KR2Y0J1T7DQW7N",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M7AZSBANC9KR2Y0J1QZZTWZ9",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M7AZSBANC9KR2Y0J1QZZTWZ9",
+        "id": "01M7AZSBC93J0NFK3DF6REG5Z4",
+        "link": "01M7AZSBC93J0NFK3DF48AK9QT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZNSY3NEDH37CH6NB8XDH5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7AZSBANC9KR2Y0J1QZZTWZ9",
+        "id": "01M7AZSBDJB4DX581CSVQPA3P7",
+        "link": "01M7AZSBDJB4DX581CSS5B92CP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZSB7XH20CA9CJCEATG154",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run 'TestScripts/(review-code-check|describe-golden)$' passes: in review-code-check.txtar a change set whose leaf acceptance names a missing file and which adds a Decision nothing links decided-by to gets code-check exit 0 with both hits under lints in --json and under code_checks in rhiza run status --json; failure case: the same change set with a leaf lacking verifier Evidence exits 1 and its causes name only the Evidence, not the lints. go test -trimpath ./internal/run/... ./internal/api/... passes with the code-check entry's lints round-tripping through the journal; describe-golden.txtar is regenerated with -update.",
+          "statement": "`rhiza run code-check` runs both internal/modellint lints on the run's change set in the run's worktree (the head tree, and the Leaf: trailers of the commits from the merge-base to HEAD) and lists their hits as `lints` in its --json response, in its human output and on the journalled code-check entry, which `rhiza run status --json` shows under code_checks; a lint hit is never a cause and never changes `passed` or the exit code. Files: internal/api/run_codecheck.go, internal/run/journal.go, internal/api/run.go, cmd/rhiza/testdata/script/review-code-check.txtar, cmd/rhiza/testdata/script/describe-golden.txtar."
+        },
+        "handle": "code-check-runs-lints",
+        "id": "01M7AZSBEY65G73S64CHC07YEK",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M7AZSBEY65G73S64CERYNTD0",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M7AZSBEY65G73S64CERYNTD0",
+        "id": "01M7AZSBGTFZNS7C69M5Q49ASS",
+        "link": "01M7AZSBGTFZNS7C69M2VBM343",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZNSY3NEDH37CH6NB8XDH5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7AZSBEY65G73S64CERYNTD0",
+        "id": "01M7AZSBK2G2MDQHKK3NTEREG2",
+        "link": "01M7AZSBK2G2MDQHKK3J3V78M9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZSBANC9KR2Y0J1QZZTWZ9",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... -run 'Check' passes with a test that starts the model check in cycle 1 of a run whose code-check entry has two lints and finds both lead lines in its prompt; failure cases: the quality check's prompt, the model check's cycle-2 prompt and a cycle-1 prompt with no lints carry no lead line. go test -trimpath ./internal/guide/... passes with check_model_test.go finding the leads rule with its major/minor mapping, the isolation rule kept as it was.",
+          "statement": "The checks step appends the latest code-check entry's lint hits to the model check's cycle-1 prompt as leads, one line each naming the node, the lint and the reference or Decision it flags, and nothing to any other check, any later cycle or when there are none; `rhiza guide check-model` tells the model check to confirm each lead it agrees with as a finding of its round (stale statement or acceptance text, an unapplied Decision or an unretired capability: major when the code contradicts the node, else minor) and to drop the rest, while it still never reads the run's status. Files: internal/api/run_checks.go, internal/api/run_checks_panes_test.go, internal/guide/text/check-model.md, internal/guide/check_model_test.go."
+        },
+        "handle": "model-check-lint-leads",
+        "id": "01M7AZSBPHSBRS607PJ5QY46AB",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7AZSBPHSBRS607PJ2CXXGF4",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M7AZSBPHSBRS607PJ2CXXGF4",
+        "id": "01M7AZSBR8QN5N21J7NF9K2N3F",
+        "link": "01M7AZSBR8QN5N21J7ND1ZEJQ3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZNSY3NEDH37CH6NB8XDH5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7AZSBPHSBRS607PJ2CXXGF4",
+        "id": "01M7AZSBSW3N22TDXTZH6Y63SX",
+        "link": "01M7AZSBSW3N22TDXTZEF44EHG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZSBEY65G73S64CERYNTD0",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M76XTF51R02XC5WXJSSBP8WP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AZSBVRED3VWP83C4ZHCJN2",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AQWAZSPS6PC9E9EZ7DTMEE",
+  "after": [
+    "01M7AQPQRHNPF1AX787JQ6T8ZX"
+  ],
+  "at": "2026-11-13T15:23:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 8aad96ca3, binary built fresh with make build to a scratch path, run in a hermetic scratch repo (env -i, own HOME). Built a concurrent pair (hid an entry while a second rhiza set wrote op a, restored it): check printed ok with only the concurrent-entries warn. apply --dry-run (add b, set a, link b depends-on a) exit 0 and wrote nothing; apply exit 0, wrote one entry whose after lists both concurrent heads; change show listed both node.create and the link; render+check ok with only the warn. Repeated applies on it work (a no-op one says the writes cancel out); a second concurrent pair in the same change set still lets apply write. A canonical hand-written ops entry dropping an unwritten op (ErrRevision) in another change set: apply --dry-run and apply both exit 1 with 'changeset: illegal revision', log entry count unchanged; the same with concurrent pairs plus that entry in one change set also fails and writes nothing. go test -trimpath ./cmd/rhiza -run 'TestScripts/(apply-concurrent|apply|check)$' and ./internal/api -run TestApply pass."
+        },
+        "handle": "apply-tolerates-concurrent-entries-qa-1",
+        "id": "01M7AR32RGPMNDP5MSX0J3VFEA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AR32RGPMNDP5MSWWPXMBW0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AR32RGPMNDP5MSWWPXMBW0",
+        "id": "01M7AR32TJQ9ZP93TKEM58AK1G",
+        "link": "01M7AR32TJQ9ZP93TKEJR837P5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AN6YYW3GR94680716HY50V",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7AN1DTS8RCJ60YD93BADX4C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AR32XK89M9FAJN93756C6T",
+  "type": "ops",
+  "v": 1
+}

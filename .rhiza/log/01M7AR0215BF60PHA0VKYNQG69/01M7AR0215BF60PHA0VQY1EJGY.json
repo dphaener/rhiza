@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-13T15:21:40Z",
+  "body": {
+    "intent": "apply /home/rhiza/tmp/claude-1000/-home-rhiza-code-rhiza/823cd4a5-db47-4770-9e31-1f8134228fec/scratchpad/m37-unlink.json",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7AR0215BF60PHA0VKYNQG69",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AR0215BF60PHA0VQY1EJGY",
+  "type": "open",
+  "v": 1
+}

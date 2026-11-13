@@ -1,0 +1,83 @@
+{
+  "actor": "01M7AQ95A0ZRK9T3QQTHPBNZ4X",
+  "after": [
+    "01M7AQEG0KM032K4024HJD2NFD"
+  ],
+  "at": "2026-11-13T15:12:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M7AQ89397MPNWGFSAYG3BK77",
+        "id": "01M7AQEYG0518CNXDD7MR1TA60",
+        "link": "01M7AQEYG0518CNXDD7H4456E0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4RRY5ZEVDSZ0E2M11DRB",
+        "type": "serves"
+      },
+      {
+        "fields": {
+          "reasoning": "Each rebased head waits 2-7 minutes for CI, and on a main where several plan runs merge render PRs, another merge often lands in that window. Raising the cap to ship-change's keeps the two workflows' merge loops alike and follows the earlier Decision's rule; serialising merges would be a new mechanism outside this bug's scope.",
+          "statement": "The plan and plan-milestone workflows cap their merge loop's steps (rebase, wait-rebased, rebased-green and merge) at 6 visits each, ship-change's current cap for the same loop, so a plan PR on a busy main gets six rebase-and-merge tries before the run ends failed; the other steps' caps are unchanged",
+          "wording": "(derived) plan-merge-loops-to-rebase gave the plan workflows ship-change's cap; ship-change's merge loop is now 6 visits and the plan workflows kept 3, which run 01M7AH6RHKMZRAHGJKJFM4VTNT exhausted on a busy main"
+        },
+        "handle": "plan-merge-loop-cap-six",
+        "id": "01M7AQEYHR99BXC70GVG5KCSXC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7AQEYHR99BXC70GVCCW2Q06",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AQEYHR99BXC70GVCCW2Q06",
+        "id": "01M7AQEYNGW4H1TWDZWPKQDRV8",
+        "link": "01M7AQEYNGW4H1TWDZWKJE030Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AQEFZDTZ6MYYN5RV0W9TFQ",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7AQEYHR99BXC70GVCCW2Q06",
+        "id": "01M7AQEYTQZAW8W1AJ3W5EEX97",
+        "link": "01M7AQEYTQZAW8W1AJ3TGR99C0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MT9X3ZK7259TEX95FVYW4W",
+        "type": "supersedes"
+      },
+      {
+        "base": "01M6MTA2NY5E0GWS0NDX3FCPJV",
+        "handle": null,
+        "id": "01M7AQEYXD7YF0FXTB24EXHCJ0",
+        "node": "01M6MTA2NY5E0GWS0NDWVNEA6D",
+        "op": "node.update",
+        "set": {
+          "acceptance": "TestPlanRerunsCIFlakes in internal/workflow/workflow_test.go checks, for both the built-in plan and plan-milestone workflows, that merge routes fail to rebase and that rebase, wait-rebased, rebased-green and merge each have max_visits 6 (wait-pr 3 and pr-green 4 unchanged), and fails if any is 3; cmd/rhiza/testdata/script/plan-workflow-merge-main-moved.txtar still passes as written; a new testscript cmd/rhiza/testdata/script/plan-workflow-merge-main-moved-often.txtar, modelled on it, has the fake gh push a commit to origin's main after each of the first three rebased-green checks: the run's log shows merge (visits 1, 2 and 3) fail then rebase, merge (visit 4) pass then close-out, gh.log has exactly one pr merge call, pinned to the fourth rebased head, no 'went over max_visits' appears, and the run ends succeeded. Files: internal/workflow/builtin/plan.toml, internal/workflow/builtin/plan-milestone.toml (the steps and the 'up to 3 times' comments), internal/workflow/workflow_test.go, cmd/rhiza/testdata/script/plan-workflow-merge-main-moved-often.txtar",
+          "statement": "When a plan or plan-milestone run's merge finds origin/main has moved past the PR's checked head, the run goes back to rebase onto the new main (settling rendered-only conflicts by rendering again), waits for the rebased head's CI and merges it, up to 6 times (rebase, wait-rebased, rebased-green and merge each max_visits 6, ship-change's cap), instead of ending the run with 'Not merged'"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6MTA2NY5E0GWS0NDWVNEA6D",
+        "id": "01M7AQEZ1338KC9M56JTX09JMP",
+        "link": "01M7AQEZ1338KC9M56JTV3MF0E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AQEYHR99BXC70GVCCW2Q06",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7AQ89397MPNWGFSAYG3BK77",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AQEZ4S9J9P1243QVQX5C63",
+  "type": "ops",
+  "v": 1
+}

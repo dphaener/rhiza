@@ -1,0 +1,79 @@
+{
+  "actor": "01M7B1FSN9GMTN2XSACZ08A2F1",
+  "after": [
+    "01M79Q9888T03Q7T1MVDKFAJ6J"
+  ],
+  "at": "2026-11-13T18:09:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestLayoutGolden|TestHeaderNoProjectList' passes with the goldens regenerated from the new header: the picker button carries the needs-you count and points at /picker, the nav names Home, Runs and Roadmap with aria-current on the current page, and a two-project root's page names no project but the current one anywhere in its body (failure case: a project with nothing waiting shows no count badge).",
+          "statement": "Every web page shares one header as in pages/frame-and-spacing.html and pages/home.html: the Rhiza wordmark, the project picker button with the current project's needs-you count (the count web-picker-menu defines, read from that project alone), the Home, Runs and Roadmap nav, the daemon pill and the live indicator; 56px tall on a phone with the nav on its own 44px row, 52px on desktop; no list of project names in the header or anywhere in the page's markup, the picker's list being loaded from /picker when the button opens it."
+        },
+        "handle": "web-frame-header",
+        "id": "01M79Q90M4F549HKEWB6AGGPKX",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M79Q90M4F549HKEWB54K9B9P",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestProjectPicker|TestSwitcherNamesReadOnlyForPages' passes: TestProjectPicker GETs /picker for a page of a two-project root and finds both listed with live state and needs-you counts, the one with items first, each link keeping the page kind (from /p/a/roadmap, b links to /p/b/roadmap), All projects linking to the merged inbox, and the search field present only with six or more projects; TestSwitcherNamesReadOnlyForPages, rewritten, fails if an asset, a fragment or a page render under /p/<project>/ calls the ProjectsSource, and if one GET /picker does not call it exactly once.",
+          "statement": "The header's project button opens a picker (a bottom sheet on a phone, a menu on desktop, as in pages/project-picker.html) listing every registered project with whether it is live and its needs-you count, projects with something waiting first, plus an All projects entry for the merged inbox; switching keeps the same kind of page, and a search field appears once there are more than five projects. The list is not in the page: the root serves it at /picker, given the current page's path, and reads the ProjectsSource only for that request, so assets, fragments and page renders still never read it. A project's live state is Running plus Waiting above zero, and its needs-you count is a new ProjectView field holding the same count Home's 'things need you' title shows: open questions, sign-offs, failed runs, stuck runs and holds. The header's inline project-name switcher and its ProjectNames list are retired."
+        },
+        "handle": "web-picker-menu",
+        "id": "01M79Q90P3FHK31R498P3V0Z8Z",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M79Q90P3FHK31R498K33EAVR",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestPartialsGolden|TestSpacingRules' passes: the goldens are regenerated, and TestSpacingRules parses static/css/rhiza.css and fails unless the page head's gap between kicker and title is var(--space-3) (12px), the panel head's gap between kicker and title is var(--space-1) (4px), the panel head's margin to the content is var(--space-4) (16px), the gap between panels is var(--space-5) (24px), the gap between page sections is var(--space-6) (32px), and panel padding is var(--space-4) (16px) by default and var(--space-5) (24px) inside the desktop media query; it also fails on any heading rule with a margin and any template with an inline margin style (failure case: a stylesheet with the panel gap at 16px fails).",
+          "statement": "Every web page follows the spacing rules in pages/frame-and-spacing.html: kicker to page title 12px, panel kicker to panel title 4px, panel title to content 16px, panels 24px apart, page sections 32px, panel padding 16px on a phone and 24px on desktop, gaps set on the parent and headings with no margin of their own."
+        },
+        "handle": "web-spacing-rules",
+        "id": "01M79Q90R4MS5J2BXQ7GGKTZ36",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M79Q90R4MS5J2BXQ7DGXA1TS",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestTypeScale passes: it parses static/css/rhiza-tokens.css for the scale's tokens with exactly the sizes and line heights above, and fails on any font-size, line-height or font shorthand in static/css/rhiza.css or a template's inline style that does not use one of them (failure case: a 28px/32px section title fails).",
+          "statement": "Every web page sets its text from one type scale as in pages/frame-and-spacing.html and pages/project-picker.html, defined once as tokens in static/css/rhiza-tokens.css: page title 36/40, section title 28/34 and panel title 20/26 in the display face; lead 17, body 15/22, rows and tables 14/20, meta 13/18 and labels 12/16 in the body face; static/css/rhiza.css and the templates set no font size outside those tokens."
+        },
+        "handle": "web-type-scale",
+        "id": "01M7B1K2MDGPBDPTQ7EJFZEKJQ",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7B1K2MDGPBDPTQ7EFZYG1NH",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M7B1K2MDGPBDPTQ7EFZYG1NH",
+        "id": "01M7B1K2R6ZDMF1321ED2JJHHN",
+        "link": "01M7B1K2R6ZDMF1321EADAFJ8B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6NG83GYEE2C1ZJED0FY",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B1K2V88FW1C4XS3RE84787",
+  "type": "ops",
+  "v": 1
+}

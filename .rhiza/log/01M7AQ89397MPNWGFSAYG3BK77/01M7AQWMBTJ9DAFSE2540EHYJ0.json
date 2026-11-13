@@ -1,0 +1,30 @@
+{
+  "actor": "01M7AQTDWJ06REHRF2V35KX039",
+  "after": [
+    "01M7AQFBDT0H50FM27WMYQTZ81"
+  ],
+  "at": "2026-11-13T15:19:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "In internal/workflow/workflow_test.go, TestPlanBuiltin's caps map has rebase, wait-rebased, rebased-green and merge at 6 (wait-pr 3, pr-green 4 and every other cap unchanged) and still checks merge fail routes to rebase, and fails if any of the four is 3; TestBuiltinPlanMilestone still finds plan-milestone's steps equal to plan's; TestPlanRerunsCIFlakes, for both the built-in plan and plan-milestone workflows, wants max_visits 6 for wait-rebased and rebased-green (wait-pr 3 and pr-green 4 unchanged); go test -trimpath ./internal/workflow -run 'TestPlanBuiltin|TestBuiltinPlanMilestone|TestPlanRerunsCIFlakes' passes; cmd/rhiza/testdata/script/plan-workflow-merge-main-moved.txtar still passes as written; a new testscript cmd/rhiza/testdata/script/plan-workflow-merge-main-moved-often.txtar, modelled on it, has the fake gh push a commit to origin's main after each of the first three rebased-green checks: the run's log shows merge (visits 1, 2 and 3) fail then rebase, merge (visit 4) pass then close-out, gh.log has exactly one pr merge call, pinned to the fourth rebased head, no 'went over max_visits' appears, and the run ends succeeded. Files: internal/workflow/builtin/plan.toml, internal/workflow/builtin/plan-milestone.toml (the steps and the 'up to 3 times' comments), internal/workflow/workflow_test.go (TestPlanBuiltin, TestPlanRerunsCIFlakes), cmd/rhiza/testdata/script/plan-workflow-merge-main-moved-often.txtar",
+          "statement": "When a plan or plan-milestone run's merge finds origin/main has moved past the PR's checked head, the run goes back to rebase onto the new main (settling rendered-only conflicts by rendering again), waits for the rebased head's CI and merges it, up to 6 times (rebase, wait-rebased, rebased-green and merge each max_visits 6, ship-change's cap), instead of ending the run with 'Not merged'"
+        },
+        "handle": "plan-merge-loop-six-tries",
+        "id": "01M7AQFB7ZKZJHBNDRABDWYDP9",
+        "key": "zzzzzzw",
+        "kind": "capability",
+        "node": "01M7AQFB7ZKZJHBNDRAAS8NVHK",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      }
+    ]
+  },
+  "change_set": "01M7AQ89397MPNWGFSAYG3BK77",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AQWMBTJ9DAFSE2540EHYJ0",
+  "type": "ops",
+  "v": 1
+}

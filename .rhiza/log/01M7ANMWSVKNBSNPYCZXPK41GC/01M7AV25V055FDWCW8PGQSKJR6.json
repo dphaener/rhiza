@@ -1,0 +1,40 @@
+{
+  "actor": "01M7ATQ0P4PX1ZSP154EYH0SSK",
+  "after": [
+    "01M7ATJJ9GF80BTQYA00ZGXZ1P"
+  ],
+  "at": "2026-11-13T16:15:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1: built go build -trimpath ./cmd/rhiza to a scratch path (and the merge-base build for comparison). In a scratch Rhiza root/repo, a hold-workflow plan run with rhiza.autonomy.accept auto gated two change sets and journaled accepted for both on a plan branch; main got only their proposed log entries (change ls: proposed). rhiza inbox --json: base binary listed two accept items 'waiting for acceptance' (the bug); the built binary listed none. Dropping one accepted line from the run journal: the built binary listed exactly one accept item, for that change set, next rhiza accept --rule owner --change <id>, in --json and plain text. With rhiza.autonomy.accept owner (gated, no accepted entry): both accept items listed; after rhiza accept --rule owner on one, only the other remains. Scoped go test ./internal/api -run TestInbox and TestScripts/(inbox-owner-run-accept|stage-autonomy) both pass (ok)."
+        },
+        "handle": "inbox-skips-run-accepted-gated-qa-1",
+        "id": "01M7AV25RPB7YDM74JMD7PM3B1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AV25RPB7YDM74JMCY63SBN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AV25RPB7YDM74JMCY63SBN",
+        "id": "01M7AV25T200BJRHER4GGJM5PX",
+        "link": "01M7AV25T200BJRHER4EACGJ5Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7ANT7A4WT45GF5PDBXQ0C57",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7ANMWSVKNBSNPYCZXPK41GC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AV25V055FDWCW8PGQSKJR6",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,12 @@
+name = "plan-review"
+
+# Reviews a plan that is already in the model: a change set proposed with
+# leaves, outside a plan run (a chat-planned milestone's change sets, say).
+# It is plan without its interview, so it enters at milestone-check, runs
+# the plan review, and its gate accepts the change set (autonomously, under
+# rhiza.autonomy.accept = auto). No planner session is opened.
+[step.plan]
+kind = "workflow"
+workflow = "plan"
+skip = ["interview"]
+on.pass = "done"
