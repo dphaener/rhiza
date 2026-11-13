@@ -1,0 +1,40 @@
+{
+  "actor": "01M792J1EQKMKZV0P2JF3W4SS3",
+  "after": [
+    "01M7929VFYXCEBRDN529BXTV6M"
+  ],
+  "at": "2026-11-12T23:48:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at ec2d8a5bf (attempt 2). go test -trimpath ./internal/api -run ShipMergeRefused (and -run ShipMerge) pass: TestShipMergeRefusedStops, with a fake gh pr merge failing 'the base branch policy prohibits the merge' (bare, and as gh's full messages 'X Pull request owner/repo#7 is not mergeable: the base branch policy prohibits the merge.' with and without the X), asserts ship merge exits 75 with a stop naming that reason and records no merge commit; gh's full 'not up to date' and 'cannot be cleanly created' messages, plus behind/conflict variants, still fail (exit 1, to gate-rebase-merge). go test -trimpath ./internal/workflow -run ShipChange passes: TestShipChangeMergeRefusedStops checks merge's on.fail is gate-rebase-merge and on.pass wait-main, and go test ./internal/run -run StopExitStopsRun passes, showing an exit-75 command stops the run without taking on.fail, so a refused merge never visits gate-rebase-merge. Diff read: the attempt-1 finding is fixed ('not mergeable' dropped from shipMergeCurable, which now matches only the reason after gh's prefix); execIn passes gh's stderr into the error text, so the real message reaches shipMergeRefusal; describe-golden and cli.md updated for the stop field."
+        },
+        "handle": "ship-merge-refused-stops-verified",
+        "id": "01M792KKZ2EAH7CHEY8BNAEVG1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M792KKZ2EAH7CHEY8AEGQWN3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M792KKZ2EAH7CHEY8AEGQWN3",
+        "id": "01M792KKZYPSHN3HZK42C9YRJR",
+        "link": "01M792KKZYPSHN3HZK3ZVH4S8W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76YXZ5T5BQGQXD3VNC24CFS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M792KM25GQBV32F6JD9BEW4J",
+  "type": "ops",
+  "v": 1
+}

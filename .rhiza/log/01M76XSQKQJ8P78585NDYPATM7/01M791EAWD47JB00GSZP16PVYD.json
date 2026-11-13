@@ -1,0 +1,40 @@
+{
+  "actor": "01M791C4SA19WM8454HMFZAWYP",
+  "after": [
+    "01M79195DDSKPZPKZCB18BDX91"
+  ],
+  "at": "2026-11-12T23:28:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 41f90bd44, ran go test -trimpath -count=1 ./internal/api -run ShipGHRetry -v: TestShipGHRetryRecovers (gh pr create failing twice with 'HTTP 502', and twice with 'GraphQL: Something went wrong', passes after 3 calls with two growing injected waits via ctx.Sleep, no real sleep), TestShipGHRetryGivesUp (repeated HTTP 503 fails open-pr after 4 calls/3 waits with the message naming HTTP 503), TestShipGHRetrySkipsOtherErrors (HTTP 422 and 'no pull requests found' fail after 1 call, no wait) all PASS. go test -run Ship and go vet ./internal/api pass. Diff read: every gh call goes through gh() in internal/api/ship.go, which wraps ctx.Exec in retryGH (waits 2s/6s/18s; transient = HTTP 5xx, timeout/timed out, 'something went wrong')."
+        },
+        "handle": "ship-gh-transient-retry-verified",
+        "id": "01M791EATH5Q10BWJYWXAGJB6C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M791EATH5Q10BWJYWSYJ9SHJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M791EATH5Q10BWJYWSYJ9SHJ",
+        "id": "01M791EAVEGEQKDFT5YCXR1KF8",
+        "link": "01M791EAVEGEQKDFT5Y9129CK8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG3ZRYA9NTD3SF6QWY0K",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M791EAWD47JB00GSZP16PVYD",
+  "type": "ops",
+  "v": 1
+}

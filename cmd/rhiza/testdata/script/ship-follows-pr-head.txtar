@@ -1,8 +1,10 @@
 # Someone else pushes to the PR branch (the orchestrator fixing a conflict):
 # rhiza ship rebase and ship land fast-forward the clean worktree to it
 # before committing or pushing, so the worktree's HEAD equals the pushed
-# head and land's push succeeds. A worktree with uncommitted changes, or
-# with a local commit origin lacks, is refused naming them, and HEAD stays.
+# head and land's push succeeds. A worktree with uncommitted changes is
+# refused naming them, and HEAD stays. A local commit origin lacks is merged
+# with origin's commits when that is clean; a conflicting one is refused
+# naming origin's commits, with no merge left in progress and HEAD unchanged.
 
 chmod 755 bin/gh
 env PATH=$WORK/bin:$PATH
@@ -79,23 +81,45 @@ cp stdout $WORK/land-head.txt
 exec git --git-dir=$ORIGIN rev-parse refs/heads/cs/ship-it
 cmp stdout $WORK/land-head.txt
 
-# A local commit origin lacks, with origin ahead, is refused naming it.
+# A local commit origin lacks, with origin ahead on another file, merges
+# origin's commit in and keeps both.
 cd $WORK/second
 exec git pull -q --ff-only origin cs/ship-it
 cp $WORK/feature.txt fourth.txt
 exec git add fourth.txt
 exec git commit -qm 'Fourth upstream'
 exec git push -q origin cs/ship-it
+exec git rev-parse HEAD
+cp stdout $WORK/fourth-head.txt
 cd $WORK/repo
 cp $WORK/feature.txt local.txt
 exec git add local.txt
 exec git commit -qm 'Local only commit'
 exec git rev-parse HEAD
 cp stdout $WORK/local-head.txt
-! exec rhiza ship rebase --change 01M5PWGEF85Y185JZ2ZGCNH40N
-stderr 'Local only commit'
+exec rhiza ship rebase --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec sh -c 'git merge-base --is-ancestor $(cat $WORK/local-head.txt) HEAD'
+exec sh -c 'git merge-base --is-ancestor $(cat $WORK/fourth-head.txt) HEAD'
+
+# A conflicting origin commit is refused naming it; no merge is left in
+# progress and HEAD stays.
+cd $WORK/second
+exec git pull -q --ff-only origin cs/ship-it
+exec sh -c 'echo theirs > clash.txt'
+exec git add clash.txt
+exec git commit -qm 'Origin clash'
+exec git push -q origin cs/ship-it
+cd $WORK/repo
+exec sh -c 'echo ours > clash.txt'
+exec git add clash.txt
+exec git commit -qm 'Local clash'
 exec git rev-parse HEAD
-cmp stdout $WORK/local-head.txt
+cp stdout $WORK/clash-head.txt
+! exec rhiza ship rebase --change 01M5PWGEF85Y185JZ2ZGCNH40N
+stderr 'Origin clash'
+! exec git rev-parse -q --verify MERGE_HEAD
+exec git rev-parse HEAD
+cmp stdout $WORK/clash-head.txt
 
 -- other.mod --
 module example.com/other

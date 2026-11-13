@@ -1,0 +1,40 @@
+{
+  "actor": "01M79209XGTFDMB817VXERYAX2",
+  "after": [
+    "01M791EAWD47JB00GSZP16PVYD"
+  ],
+  "at": "2026-11-12T23:40:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 609344f55. go test -trimpath ./internal/api -run ShipLand: ok; TestShipLandNodeChangedMergesMain asserts an exit-3 'cannot land change set X: node N changed' head-build failure returns a conflict naming node N and the conflicted file, with the merge conflict recorded; TestShipLandOtherHeadFailureStaysPlain asserts another exit-3 message and an exit-1 keep the head build's detail, merge nothing and record no conflict (TestShipLandHeadBuildErrorDetail also passes). go test -trimpath ./internal/workflow/...: ok (land-conflict-triage on.fail -> land-main-conflict-triage, which passes to conflict-fix only). go test -trimpath ./cmd/rhiza -run TestScripts/run-ship-land-conflict fails at this commit at build/check ('Evidence ... written by claude-code-..., who wrote its commit'), as does the untouched run-ship-model-conflict script: a base regression from d38f497d2 (shared actor handle), not this leaf. With 609344f55 cherry-picked onto d38f497d2^ in a scratch worktree, run-ship-land-conflict passes: case 1 goes land fail -> land-triage -> land-conflict-triage -> land-main-conflict-triage pass -> conflict-fix -> render-pr -> land visit 2 pass, never conflict-fix-landed; case 2 (other exit-3 message) fails the run at land-main-conflict-triage with no fixer. Diff read: shipLandNodeChanged requires exit status 3, no structured model conflict, and the node-changed message."
+        },
+        "handle": "land-conflict-to-fixer-verified",
+        "id": "01M7923T16VDTCPSX73PD3NE6V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7923T15GC0V00F5V2W6XMM4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7923T15GC0V00F5V2W6XMM4",
+        "id": "01M7923T2N6GJNKMS971P0XTRP",
+        "link": "01M7923T2N6GJNKMS97154M86H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG5J7ETYBRT4W550P79M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7923T6AW6WGTBS899ETSZNZ",
+  "type": "ops",
+  "v": 1
+}

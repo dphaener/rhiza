@@ -134,6 +134,9 @@ type Ctx struct {
 	DryRun bool
 	// Now is the clock.
 	Now func() time.Time
+	// Sleep waits for d; nil is time.Sleep. Tests inject it so retries
+	// with backoff do not wait.
+	Sleep func(d time.Duration)
 	// Classify reads a failed command's output and reports whether the
 	// failure is transient (worth one rerun). Nil, or any answer but a
 	// clear transient, means the failure is real: no rerun.

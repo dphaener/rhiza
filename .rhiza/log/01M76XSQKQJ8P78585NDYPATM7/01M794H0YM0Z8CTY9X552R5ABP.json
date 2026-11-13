@@ -1,0 +1,40 @@
+{
+  "actor": "01M794269KC3MXA5E1Q029BEEV",
+  "after": [
+    "01M7940W8GWEGG4ZDHSF2BT4PS"
+  ],
+  "at": "2026-11-13T00:22:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-a07aa764 at 8005f070d (attempt 2). Ran go test -trimpath -count=1 ./internal/api -run 'RecordAgentActor' -v: PASS for TestRecordAgentActorReusesSession, TestRecordAgentActorReusesInFlightSession (an in-flight change set's actor with the same session value is returned and no change set is written), TestRecordAgentActorLandedHandleOtherSession and TestRecordAgentActorInFlightHandleOtherSession (a landed or in-flight actor holding claude-code-0123abcd under another session value, sharing the UUIDv7 prefix, is not returned, the new actor gets another handle, and exactly one actor holds claude-code-0123abcd). The full ./internal/api package passes. Read the diff: recordAgentActor reuses an actor only when its session field equals the session ID (live, or in a non-terminal change set), and uniqueHandle now also avoids handles held in flight. The attempt-1 blocker is fixed: go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(run-ship-land-conflict|run-ship-change|run-ship-conflict-fix)$' passes. rhiza check, run from a clean detached worktree with this commit's build, reports no duplicate handle. Its only failures are render files for the actors of sessions live now, which is expected in a run."
+        },
+        "handle": "actor-record-no-duplicate-verified-2",
+        "id": "01M794H0TMZVSP6T72RSV6MYVH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M794H0TMZVSP6T72RPJY4A01",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M794H0TMZVSP6T72RPJY4A01",
+        "id": "01M794H0WTCDRWBPDVG3A8AT6R",
+        "link": "01M794H0WTCDRWBPDVFZMJEQSF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG6D3HR7G5Y6MHENHMB5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M794H0YM0Z8CTY9X552R5ABP",
+  "type": "ops",
+  "v": 1
+}

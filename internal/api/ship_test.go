@@ -463,6 +463,55 @@ func TestShipMergeNotMerged(t *testing.T) {
 	}
 }
 
+func TestShipMergeRefusedStops(t *testing.T) {
+	f, g, state := shipFixture(t)
+	if err := writeShipState(state, shipState{PR: 7, Branch: "cs/ship-it", Head: "abc1234def"}); err != nil {
+		t.Fatal(err)
+	}
+	mainHeld(g)
+	g.answers[shipMergeArg] = "!the base branch policy prohibits the merge"
+	resp, err := callOp(t, f.ctx, "ship.merge", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := resp.(ShipMergeResponse)
+	if m.ExitCode() != 75 || !strings.Contains(m.Stop, "base branch policy prohibits the merge") || m.MergeCommit != "" {
+		t.Errorf("merge = %+v", m)
+	}
+	if got := human(t, m); !strings.HasPrefix(got, "stop: GitHub refused to merge pull request #7: ") {
+		t.Errorf("human = %q", got)
+	}
+	if st, _ := readShipState(state); st.MergeCommit != "" {
+		t.Errorf("state = %+v", st)
+	}
+	// gh's own message carries a "not mergeable" prefix: still a refusal.
+	for _, msg := range []string{
+		"X Pull request owner/repo#7 is not mergeable: the base branch policy prohibits the merge.",
+		"Pull request owner/repo#7 is not mergeable: the base branch policy prohibits the merge.",
+	} {
+		g.answers[shipMergeArg] = "!" + msg
+		resp, err = callOp(t, f.ctx, "ship.merge", `{}`)
+		if err != nil {
+			t.Fatalf("%q: %v", msg, err)
+		}
+		if m := resp.(ShipMergeResponse); m.ExitCode() != 75 || !strings.Contains(m.Stop, "the base branch policy prohibits the merge") {
+			t.Errorf("%q: merge = %+v", msg, m)
+		}
+	}
+	// Behind main or conflicting is no refusal: the merge fails to rebase.
+	for _, msg := range []string{
+		"X Pull request owner/repo#7 is not mergeable: the head branch is not up to date with the base branch.",
+		"X Pull request owner/repo#7 is not mergeable: the merge commit cannot be cleanly created.",
+		"Pull request is not mergeable: the head branch is not up to date with the base branch",
+		"Pull request #7 has conflicts and cannot be merged",
+		"the base branch policy prohibits the merge: head branch is behind",
+	} {
+		g.answers[shipMergeArg] = "!" + msg
+		_, err = callOp(t, f.ctx, "ship.merge", `{}`)
+		wantExit(t, err, 1)
+	}
+}
+
 func TestShipTargetWithoutWorktree(t *testing.T) {
 	f, g, _ := shipFixture(t)
 	if err := os.RemoveAll(f.worktree); err != nil {
@@ -1581,15 +1630,16 @@ func TestShipRebaseRefusals(t *testing.T) {
 	if !strings.Contains(err.Error(), "on main") {
 		t.Errorf("err = %v", err)
 	}
-	// origin's branch has a commit the local branch lacks: no merge, no
-	// push.
+	// origin's branch has a commit the local branch lacks and merging it
+	// conflicts (the fake's merge fails): refused, nothing pushed.
 	f, _ = shipRebaseFixture(t)
 	delete(f.git.out, "merge-base --is-ancestor "+rebaseOrigin+" HEAD")
+	f.git.out["status --porcelain --untracked-files=no"] = ""
 	_, err = callOp(t, f.ctx, "ship.rebase", `{}`)
 	wantExit(t, err, 3)
 	for _, c := range f.git.calls {
-		if strings.HasPrefix(c, "merge ") || strings.HasPrefix(c, "push") {
-			t.Errorf("git call %q with origin's branch ahead", c)
+		if strings.HasPrefix(c, "push") {
+			t.Errorf("git call %q with origin's branch conflicting", c)
 		}
 	}
 	f.ctx.DryRun = true
@@ -1634,17 +1684,29 @@ func TestShipFollowRefusesDirtyWorktree(t *testing.T) {
 	}
 }
 
-func TestShipFollowRefusesLocalCommits(t *testing.T) {
+// HEAD and origin's branch have diverged: origin's commits are merged in,
+// and a conflicting merge (the fake's merge fails) is aborted and refused,
+// naming origin's commits. Nothing is reset, rebased or pushed.
+func TestShipFollowRefusesConflictingOrigin(t *testing.T) {
 	f := shipFollowFixture(t)
 	delete(f.git.out, "merge-base --is-ancestor HEAD "+rebaseOrigin)
-	f.git.out["rev-list --oneline "+rebaseOrigin+"..HEAD"] = "abc1234 Local only commit\n"
+	f.git.out["rev-list --oneline HEAD.."+rebaseOrigin] = "def5678 Origin only commit\n"
+	f.git.out["status --porcelain --untracked-files=no"] = ""
+	f.git.out["merge --abort"] = ""
 	_, err := callOp(t, f.ctx, "ship.rebase", `{}`)
-	if err == nil || !strings.Contains(err.Error(), "Local only commit") {
+	wantExit(t, err, 3)
+	if !strings.Contains(err.Error(), "Origin only commit") {
 		t.Fatalf("err = %v", err)
 	}
+	if !slices.Contains(f.git.calls, "merge --no-edit -m Merge origin/cs/ship-it into cs/ship-it "+rebaseOrigin) {
+		t.Errorf("origin's branch was not merged; calls %q", f.git.calls)
+	}
+	if !slices.Contains(f.git.calls, "merge --abort") {
+		t.Errorf("the conflicting merge was not aborted; calls %q", f.git.calls)
+	}
 	for _, c := range f.git.calls {
-		if strings.HasPrefix(c, "merge ") || strings.HasPrefix(c, "reset") || strings.HasPrefix(c, "push") {
-			t.Errorf("git call %q moved the worktree", c)
+		if strings.HasPrefix(c, "reset") || strings.HasPrefix(c, "rebase") || strings.HasPrefix(c, "push") {
+			t.Errorf("git call %q moved the branch", c)
 		}
 	}
 }
