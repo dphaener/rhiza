@@ -1,0 +1,60 @@
+{
+  "actor": "01M7943SS28JENDAYKG8XMZY4B",
+  "after": [
+    "01M794A0RHECAPKY6YG245G9F2"
+  ],
+  "at": "2026-11-13T00:18:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M7948KX29FV2FF2J93GANPJE",
+        "id": "01M794A1B349VD1G1EEC2QVRCB",
+        "link": "01M794A1B349VD1G1EEBSGBVQG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7949F09B7VWF6S1H3D2KMBX",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "With a temporary delay injected at the race (not committed), go test -trimpath ./cmd/rhiza -run 'TestScripts/headless-run-agent-tabs$' fails before the fix and passes after it on 3 consecutive runs; a new regression test in internal/api (or internal/run) that writes a session's Evidence after the cache has kept an answer, inside the debounce window, fails without the fix and passes with it; without the delay go test -trimpath ./cmd/rhiza -run 'TestScripts/headless-run-agent-tabs$' -count=5 passes, as do go test -trimpath ./internal/api/... and go test -trimpath ./internal/run/... when those packages changed; the script is not quarantined, unless the race could not be reproduced or fixed, in which case it is skipped with a bug request filed via rhiza request --kind bug and the reason written as a note on this change set",
+          "statement": "A leaves step judges a session that has just ended (a verifier's Evidence, a builder's or fixer's leaf commit) against a model caught up past that session's writes, never an answer the run driver's model cache (internal/api/run_model_cache.go: readModel, catchUpModel, refreshDue, revalidate) kept from before them, so a verifier that wrote Evidence while another leaf's session wrote concurrently is judged passed, and headless-run-agent-tabs no longer flakes"
+        },
+        "handle": "verifier-verdict-reads-fresh-model",
+        "id": "01M794A1BTCCFC0G1V1RA6RGTP",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M794A1BTCCFC0G1V1MPQ5V89",
+        "op": "node.create",
+        "parent": "01M5YX3BA0JVJ2PHZ2N4TX9SX9"
+      },
+      {
+        "decision": null,
+        "from": "01M794A1BTCCFC0G1V1MPQ5V89",
+        "id": "01M794A1CR5HGJRCMZRXK1VB8B",
+        "link": "01M794A1CR5HGJRCMZRV2DA41R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7948KX29FV2FF2J93GANPJE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M794A1BTCCFC0G1V1MPQ5V89",
+        "id": "01M794A1DRJBGTKHC46VK4N9KN",
+        "link": "01M794A1DRJBGTKHC46T0VJV4X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7949F09B7VWF6S1H3D2KMBX",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M7942GRFNQ82YV0V8F4A9VNA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M794A1EN4YXZZB95QGG4EE76",
+  "type": "ops",
+  "v": 1
+}
