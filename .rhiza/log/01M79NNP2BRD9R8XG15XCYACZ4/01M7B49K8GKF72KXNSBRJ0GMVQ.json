@@ -1,0 +1,151 @@
+{
+  "actor": "01M7B47027DDH6KDKN81X6QG5V",
+  "after": [
+    "01M79QA9SFCAGTWFB5D4QDXCTY"
+  ],
+  "at": "2026-11-13T18:56:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestWebToken shows pages without action controls and POST refused when no token is set, a POST refused with a wrong or missing token, the cookie set after a ?token= visit, and a bearer header accepted; go test -trimpath ./internal/api -run TestWebTokenSetting shows daemon.set accepts rhiza.web.token and the daemon's web handler (web_root.go) gates POSTs on the token it reads from that setting.",
+          "statement": "A web token (rhiza.web.token, set with rhiza daemon set and read by the daemon's web handler) turns on the web UI's actions: a browser presents it once with ?token= and keeps it in an HttpOnly cookie, a script sends it as a bearer header; without a token set, pages show no action controls and every POST is refused, and pages stay readable as today."
+        },
+        "handle": "web-token",
+        "id": "01M79Q8PX68N5R6XWD5RHK7GNX",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M79Q8PX68N5R6XWD5MHV6FKJ",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestWebAnswer|TestWebApprove' answers a question and approves a sign-off through POST with the token and the CSRF field, shows the confirmation, and refuses an answer or approve POST missing the CSRF field.",
+          "statement": "From the web UI the owner answers an open question (question.answer) and approves a sign-off (inbox.approve or run.approve), and the page then says what happened ('Answered. The run continues.')."
+        },
+        "handle": "web-action-answer",
+        "id": "01M79Q8PZE56YE4MSC7SZA7AP2",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M79Q8PZE56YE4MSC7P9GS5RT",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestWebPause|TestWebActionsOnly' pauses and resumes the daemon and a project through POST with the token and the CSRF field, refuses a pause or resume POST missing the CSRF field, and gets 404 or 405 for a POST to any other path, retry, abandon and merge included.",
+          "statement": "From the web UI the owner pauses or resumes the daemon or one project (rhiza.daemon.paused, rhiza.project.paused), and no other action exists: every other POST path is refused."
+        },
+        "handle": "web-action-pause",
+        "id": "01M79Q8Q1X2SDBPR5CNAZ07TAC",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M79Q8Q1X2SDBPR5CNADZJAS1",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "base": "01M6PFEKF6584S58PGZPT6E2Q3",
+        "handle": null,
+        "id": "01M7B49JRW65BCBVFBEXY0KBVY",
+        "node": "01M6PFEKF6584S58PGZP17YAF2",
+        "op": "node.update",
+        "set": {
+          "statement": "The daemon serves a web UI on localhost for monitoring Rhiza: the daemon, runs, the inbox and the roadmap. It is read-only except for the safe actions behind the web token (answer an inbox item, approve a sign-off, pause or resume)."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6PFEKAMCWXEK0XHHW1812MQ",
+        "handle": null,
+        "id": "01M7B49JSXP0YQZ19ZMZK57PSE",
+        "node": "01M6PFEKAMCWXEK0XHHRQ4C088",
+        "op": "node.update",
+        "set": {
+          "statement": "The first web UI is served by the daemon process on localhost, and that first pass was read-only and for monitoring only (web-safe-actions since adds the safe actions behind the web token); the owner handles any port forwarding."
+        },
+        "unset": []
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestWebCSRF shows action forms carry the CSRF field, a cookie-authenticated POST with the right CSRF field passes the gate, and one with a missing or wrong CSRF field is refused.",
+          "statement": "Every web UI POST authenticated by the token cookie must carry a CSRF field that the page's action forms include; a cookie POST with a missing or wrong CSRF field is refused, whatever action it names."
+        },
+        "handle": "web-csrf",
+        "id": "01M7B49JW37Q5ECBXE07P0NN2C",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M7B49JW37Q5ECBXE03TZF2EQ",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M7B49JW37Q5ECBXE03TZF2EQ",
+        "id": "01M7B49K0EFWC3725ZGA6ER4EK",
+        "link": "01M7B49K0EFWC3725ZG7942FDG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6RCJKBRMGSRMA5A3G1A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7B49JW37Q5ECBXE03TZF2EQ",
+        "id": "01M7B49K2DDG0ZDPGEZEJV1XZG",
+        "link": "01M7B49K2DDG0ZDPGEZBTTKFXK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8PX68N5R6XWD5MHV6FKJ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8PZE56YE4MSC7P9GS5RT",
+        "id": "01M7B49K39E9XBZ3RTH432A2VE",
+        "link": "01M7B49K39E9XBZ3RTH1N6QF0H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8PX68N5R6XWD5MHV6FKJ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8PZE56YE4MSC7P9GS5RT",
+        "id": "01M7B49K4CFFZQXESMXM6BMBTJ",
+        "link": "01M7B49K4CFFZQXESMXJVBCSTN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B49JW37Q5ECBXE03TZF2EQ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8Q1X2SDBPR5CNADZJAS1",
+        "id": "01M7B49K5VVYP6XZ3N5VYR2X4S",
+        "link": "01M7B49K5VVYP6XZ3N5VKP8A2B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8PX68N5R6XWD5MHV6FKJ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8Q1X2SDBPR5CNADZJAS1",
+        "id": "01M7B49K7A13S6R13T7Y7G7Y09",
+        "link": "01M7B49K7A13S6R13T7Y58QPN4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B49JW37Q5ECBXE03TZF2EQ",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M79NNP2BRD9R8XG15XCYACZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B49K8GKF72KXNSBRJ0GMVQ",
+  "type": "ops",
+  "v": 1
+}
