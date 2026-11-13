@@ -1,0 +1,33 @@
+{
+  "actor": "01M7AA7MB7KATWSPG9CPYAHQDD",
+  "after": [
+    "01M7AA6QGX335J8XPJX5CNN2A5"
+  ],
+  "at": "2026-11-13T11:22:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "5b327cadf591e7fbf5a5d3bb0c306f4b63b0c12423239c4617a4bb6a4fe8ae14",
+          "session": "5fa83e6d-6fde-4e55-98fe-01a1d4a3ae5e",
+          "summary": "Autonomous plan run for a bug request; no owner interview. The intent reports that rhiza session message writes its file under the run's worktree while verifier and review-check sessions run in detached checkouts under the git common dir's rhiza/checkouts, so the relative pointer names a file that does not exist where the session runs. Code reading: messageFolder in internal/api/session_message.go joins session.Record.Worktree; the record's Dir field already holds the checkout a verifier or check session runs in (internal/session/session.go). messageFolder serves both session.message and the arbiter's Deliver (internal/api/run.go), so one fix covers both. The intent allows either writing the file in the session's own working directory or an absolute pointer; the planner chose the working directory, keeping the relative pointer, because an agent reading a path outside its working directory may be refused or prompted. The checkout's .rhiza/.gitignore ignores local/, so the file stays untracked there. Not severe: a workaround existed and no data was lost. Not breaking: no command, flag or JSON shape changes. Nothing is left open.",
+          "title": "Plan: fix rhiza session message in checkouts (autonomous)"
+        },
+        "handle": "plan-fix-rhiza-session-message",
+        "id": "01M7AAACQS5Z4ERKP5BFHC21ZG",
+        "key": null,
+        "kind": "source",
+        "node": "01M7AAACQS5Z4ERKP5BDFWHF1A",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7AA6QGX335J8XPJX3D6T4DJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AAACRA33AZT8PD03W2583C",
+  "type": "ops",
+  "v": 1
+}
