@@ -51,13 +51,13 @@ can act without re-diagnosing.
 
 <!-- shared: test-scope -->
 
-<!-- shared: command-budget -->
+<!-- shared: command-budget nested -->
 
 ## Must not do
 
 Never edit code.
 
-<!-- shared: never-list -->
+<!-- shared: never-list nested -->
 
 ## Context
 

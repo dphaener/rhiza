@@ -10,22 +10,31 @@ func TestVerifierText(t *testing.T) {
 	if !ok || v.Skill {
 		t.Fatalf("verifier: found %v, skill %v; want a topic", ok, v.Skill)
 	}
-	at := -1
-	for _, h := range []string{"## Task\n", "## Expected outcome\n", "## Read first\n", "## Must do\n", "## Must not do\n", "## Context\n"} {
-		i := strings.Index(v.Body, h)
-		if i < 0 || i < at {
-			t.Fatalf("verifier: heading %q missing or out of order", strings.TrimSpace(h))
+	want := []string{"## Task", "## Expected outcome", "## Read first", "## Must do", "## Must not do", "## Context"}
+	var got []string
+	for _, l := range strings.Split(v.Body, "\n") {
+		if strings.HasPrefix(l, "## ") {
+			got = append(got, l)
 		}
-		at = i
+	}
+	if strings.Join(got, "|") != strings.Join(want, "|") {
+		t.Fatalf("verifier: sections %q, want exactly %q in order", got, want)
 	}
 	shared := sharedFiles(t)
 	for _, blk := range []string{"session-done", "test-scope", "command-budget", "never-list"} {
-		if !strings.Contains(v.Body, strings.TrimRight(shared[blk+".md"], "\n")) {
+		text := strings.TrimRight(shared[blk+".md"], "\n")
+		if !strings.Contains(v.Body, text) && !strings.Contains(v.Body, demote(text)) {
 			t.Errorf("verifier lacks the %s block", blk)
 		}
 	}
+	if !strings.Contains(sectionOf(v.Body, "## Must do"), demote(strings.TrimRight(shared["command-budget.md"], "\n"))) {
+		t.Errorf("verifier: the command-budget block is not inside Must do")
+	}
+	if !strings.Contains(sectionOf(v.Body, "## Must not do"), demote(strings.TrimRight(shared["never-list.md"], "\n"))) {
+		t.Errorf("verifier: the never-list block is not inside Must not do")
+	}
 	checkPhrases(t, "verifier", map[string][]string{
-		"checkout": {"detached checkout at the leaf's commit", "Never edit code", "fakes only"},
+		"checkout": {"detached checkout at the leaf's commit", "Never edit code", "fakes only,\nnever real Rex, agents or `gh`"},
 		"reruns": {
 			"Re-run every command in the commit's `Checks:` block", "every acceptance command",
 			"A different exit code, or no `Checks:` block, is a finding naming the command",

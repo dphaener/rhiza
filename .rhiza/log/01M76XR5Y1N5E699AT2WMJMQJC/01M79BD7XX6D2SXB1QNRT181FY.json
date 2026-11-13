@@ -1,0 +1,101 @@
+{
+  "actor": "01M79BA9GYDPRSQ54G4RBBRSJ8",
+  "after": [
+    "01M79B55DQQ9HP9NJK7FS97QHK"
+  ],
+  "at": "2026-11-13T02:22:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M76XY462ZXBJ1BQB0SA63540",
+        "handle": null,
+        "id": "01M79BD7JR6Q7GEHX5VXBR3G1N",
+        "node": "01M76XY462ZXBJ1BQB0RJ5FA66",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide -run TestVerifierText asserts verifier.md says to re-run every command in the Checks: block and every acceptance command, and that a missing Checks: block or a different exit code is a finding naming the command.",
+          "statement": "The verifier guide topic (rhiza guide verifier, so the rhiza-verifier skill) tells a verifier to re-run every command in the leaf commit's Checks: block and every acceptance command, and to record a finding naming the command when one exits differently from what was reported or the commit has no Checks: block."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M76NZQCFT6X0GC0F3FK0NJWR",
+        "handle": null,
+        "id": "01M79BD7KWND4N81MQHJ121JFD",
+        "node": "01M6YCRMA48VMM2KTZ2Q92EY10",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestClaudeMDScopedTests finds AGENTS.md's scoped-tests rule unchanged plus the unstable-CI reproduce-locally rule; go test -trimpath ./internal/guide -run 'TestBuilderText|TestReviewText|TestSharedPhrasesInExactlyOneFile' finds the rule in the shared unstable-ci block, which the builder topic carries, and in the review text",
+          "statement": "This repo's AGENTS.md, the builder guide topic (through the shared unstable-ci block) and the review guide topic, so the rhiza-builder and rhiza-review skills, keep scoped tests as the default and add that, while CI is unstable or a red is not explained by the change, an agent reproduces the failing test locally and pushes only after it and the touched packages pass, never pushing or rerunning CI to see"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M76NZQD5WKTMCVK7C8XGRKZN",
+        "handle": null,
+        "id": "01M79BD7NC7DBDS4YSVWKMAVEE",
+        "node": "01M6ZCM35BZXJ8X5SQ96639XZ4",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestBuilderText|TestReviewText|TestSharedPhrasesInExactlyOneFile' finds the delay-injection rule (inject a delay at the suspected race; never busy loops or parallel stress on the host) in the shared unstable-ci block the builder topic carries and in the review topic, each beside the unstable-CI rule; go test -trimpath ./cmd/rhiza -run TestClaudeMDScopedTests finds the same rule in AGENTS.md beside the unstable-CI reproduce-locally rule, with that rule unchanged",
+          "statement": "The builder guide topic (through the shared unstable-ci block) and the review guide topic, so the rhiza-builder and rhiza-review skills, and this repo's AGENTS.md tell builders, checks and fixers to reproduce a timing flake by injecting a delay at the suspected race, and never by busy loops, CPU stress or parallel stress runs on the shared host"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6M0EPMPD72KB5AZWCC513DP",
+        "handle": null,
+        "id": "01M79BD7PQZGR5Y57HCQ10CVHA",
+        "node": "01M6M0EPMPD72KB5AZWBB9MRGM",
+        "op": "node.update",
+        "set": {
+          "acceptance": "TestBuilderText and TestVerifierText in internal/guide assert the builder and verifier topics carry the shared test-scope block, TestSharedPhrasesInExactlyOneFile that the block states the rule for builders and verifiers, and TestReviewText that review.md states it for checks, critics and fixers; TestBuilderText and TestReviewText assert the builder and review texts contain no go test, make or testscript; go test -trimpath ./internal/guide passes",
+          "statement": "The builder, verifier and review guide topics, and so the rhiza-builder, rhiza-verifier and rhiza-review skills, tell builders, verifiers, checks, critics and fixers to run only the tests covering what their change touches, with the repo's own scoped commands, and never the repo's full suite, because the PR's CI runs it before merge; the rule names no Go, make or testscript command"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M76XY4EE4QA5EKNQXJ5YKPT7",
+        "handle": null,
+        "id": "01M79BD7QQTP2EKQK12SW4Y5T3",
+        "node": "01M76XY4EE4QA5EKNQXHR7R9XH",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestBuilderText|TestVerifierText|TestSharedPhrasesInExactlyOneFile|TestBuildReviewCommandBudget' asserts the shared command-budget block holds the budget rule (no sleep or poll, about four minutes per command, background once and wait once), that the builder and verifier topics carry it inside Must do, and that review.md holds it naming no Go, make or Rhiza-repo command.",
+          "statement": "The builder, verifier and review guide topics tell builders, verifiers, checks and fixers never to sleep or poll, never to run a single command longer than about four minutes, and to run a long build or test once in the background and wait for it once, in language-neutral words; the builder and verifier topics carry it as the shared command-budget block inside Must do."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6505JJY04DWHQZ3ETT2ZYS2",
+        "handle": null,
+        "id": "01M79BD7RYQB6TNW8MGNK0V1BS",
+        "node": "01M6505JJY04DWHQZ3EQRFCHAM",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestVerifierText|TestSharedTextsWithinCap' finds the fakes-only rule in the verifier topic, naming Rex, agents and gh, and the topic stays within TopicCap",
+          "statement": "rhiza guide verifier (the rhiza-verifier skill) tells verifiers to test runs with fakes only, never real Rex, agents or gh"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M76XY3S1VF65NT8YXT5MS28P",
+        "handle": null,
+        "id": "01M79BD7VQ8BHZCT5FWN6WCQT2",
+        "node": "01M76XY3S1VF65NT8YXQKZ4VZC",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestBuilderText|TestVerifierText|TestReviewText|TestSharedPhrasesInExactlyOneFile' asserts the shared session-done block holds the own-command rule, that the builder and verifier topics carry it and that review.md holds it; go test -trimpath ./internal/workflow asserts no prompt in internal/workflow/builtin/*.toml contains '; rhiza session done' or '&& rhiza session done' and every prompt that names rhiza session done also says it is the very last action.",
+          "statement": "The builder, verifier and review guide topics (the builder and verifier through the shared session-done block) and every builtin workflow prompt that ends with rhiza session done say to run it as its own command, only after the recording command (rhiza run findings, rhiza run verdict, the Evidence write or the commit) succeeded, never chained after it with ; or &&."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79BD7XX6D2SXB1QNRT181FY",
+  "type": "ops",
+  "v": 1
+}
