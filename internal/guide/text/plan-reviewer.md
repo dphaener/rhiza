@@ -30,7 +30,7 @@ The plan's change sets are `RHIZA_CHANGE` and every change set serving an intent
      assumes something about the codebase (a file, function, flag or behaviour) that the
      code does not bear out is a contradiction: check each such assumption against the code.
    - `uncovered-intent`: a clause of the change set's intent that no leaf serves.
-   - `oversized-leaf`: a leaf with more than one concern.
+   - `oversized-leaf`: a leaf with more than one concern, or too large for one fresh session.
 2. For each plan change set run `rhiza overlaps --change <cs> --json`: it lists the in-flight
    change sets that write the same node or link. Record each overlap that contradicts the
    plan as a `contradiction` finding naming the other change set; skip one that fits the plan.
