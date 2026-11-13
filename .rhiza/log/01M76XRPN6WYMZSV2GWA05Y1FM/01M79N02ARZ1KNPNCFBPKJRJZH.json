@@ -1,0 +1,40 @@
+{
+  "actor": "01M79MWTMTSHGG3WER5BRD9Z9E",
+  "after": [
+    "01M79MR428EG2VGQT07GVJ4ZMY"
+  ],
+  "at": "2026-11-13T05:10:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3bf8cdfaa re-ran the Checks: block: go test -trimpath ./internal/guide/... (exit 0, includes the acceptance command), go test -trimpath ./cmd/rhiza -run TestScripts/guide (exit 0), go test -trimpath ./internal/api -run Guide (exit 0), rhiza ship generate (exit 0), rhiza render (exit 0, no tracked changes). Read the diff: internal/guide/text/plan-reviewer.md has the six sections in order, all seven run.Kinds, the vague/unrunnable acceptance rule as missing-acceptance, the unvalidated codebase assumption as contradiction, rhiza overlaps per change set, the line that rhiza check findings are not recorded, the rhiza run findings heredoc and the empty-round rule, and expands the command-budget, never-list, severities and session-done blocks; TestPlanReviewerText asserts each of these (kinds iterated from run.Kinds) plus a negative case for rhiza run verdict, rhiza apply and verdicts. guide.go, guide_test.go and guide.txtar register the topic; only the leaf's files and its actor record changed; no stubs or TODOs."
+        },
+        "handle": "plan-reviewer-topic-verified",
+        "id": "01M79N01Y45JK9V7XZCM55RJ9N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79N01Y45JK9V7XZCGZQ46XF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79N01Y45JK9V7XZCGZQ46XF",
+        "id": "01M79N0225VT688YJP021C8D5G",
+        "link": "01M79N0225VT688YJNZYSHXBF9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH5P0K3C4P0VH374J64XE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79N02ARZ1KNPNCFBPKJRJZH",
+  "type": "ops",
+  "v": 1
+}
