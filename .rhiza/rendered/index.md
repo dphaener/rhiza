@@ -7091,6 +7091,7 @@
 - [claude-code-5bbe85fb](actor/claude-code-5bbe85fb.md)
 - [claude-code-5bc7fdce](actor/claude-code-5bc7fdce.md)
 - [claude-code-5bd4263a](actor/claude-code-5bd4263a.md)
+- [claude-code-5becbb8d](actor/claude-code-5becbb8d.md)
 - [claude-code-5bfa25c3](actor/claude-code-5bfa25c3.md)
 - [claude-code-5bfbb64f](actor/claude-code-5bfbb64f.md)
 - [claude-code-5c0fd537](actor/claude-code-5c0fd537.md)
