@@ -559,7 +559,7 @@ func launchEnv(rec session.Record) (set, unset []string) {
 	default:
 		unset = append(unset, envCheck, envCycle)
 	}
-	if rec.Leaf != "" || rec.Check != "" || rec.Cycle > 0 {
+	if rec.Leaf != "" || rec.Check != "" || rec.Cycle > 0 || rec.Parent != "" {
 		set = append(set, envRole+"="+rec.Role)
 	} else {
 		unset = append(unset, envRole)

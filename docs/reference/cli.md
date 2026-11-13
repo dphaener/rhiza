@@ -103,6 +103,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza run review-check`](#rhiza-run-review-check)
 - [`rhiza run round-recorded`](#rhiza-run-round-recorded)
 - [`rhiza run send-back`](#rhiza-run-send-back)
+- [`rhiza run spawn`](#rhiza-run-spawn)
 - [`rhiza run start`](#rhiza-run-start)
 - [`rhiza run status`](#rhiza-run-status)
 - [`rhiza run summary`](#rhiza-run-summary)
@@ -1810,6 +1811,39 @@ Output (`--json` fields):
 - `queued` (boolean): True when the sign-off was journalled and the run's continuation queued for the daemon, which drives it headless, rather than driven in this process; absent otherwise
 - `run` (object): The run after it was continued; in a dry run, or when queued, as it stands. The command exits 1 when the run failed
 - `signoff` (object): The sign-off journalled, or in a dry run the one that would be
+
+Exit code: set by the result, besides the shared codes.
+
+## rhiza run spawn
+
+Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage or machine hold is on) and print its outcome.
+
+```
+rhiza run spawn --role <role> --brief <brief> [--leaf <leaf>] [--model <model>]
+```
+
+Appends to the log.
+
+Arguments and flags:
+
+- `--role`: The child's role, such as builder or verifier: the guide it follows (required)
+- `--leaf`: A leaf of the run's change set the child works on, by handle; default none
+- `--brief`: A file holding the caller's brief for the child: its brief.md holds the contract section, then this file (required)
+- `--model`: The model the child's agent starts on; default the agent's
+
+Output (`--json` fields):
+
+- `brief` (string): The child's brief.md, an absolute path
+- `detail` (string): The child's exit, or why it failed
+- `dry_run` (boolean): True if nothing was started or journaled
+- `held` (boolean): True if the spawn waited on a usage or machine hold before it started the child
+- `leaf` (string): The leaf it worked on
+- `outcome` (string): pass when the child's agent exited 0, else fail
+- `parent` (string): The calling session
+- `role` (string): The child's role
+- `run` (string): The run's full ID
+- `session` (string): The child's session; absent in a dry run
+- `step` (string): The calling step the child is a child of
 
 Exit code: set by the result, besides the shared codes.
 

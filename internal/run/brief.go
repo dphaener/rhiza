@@ -71,11 +71,44 @@ func RenderBrief(in BriefInput) string {
 	}
 
 	b.WriteString("\n## Contract\n\n")
-	b.WriteString("Build or check only what your role's prompt names, to the leaves' acceptance above.\n")
-	b.WriteString("Run only the tests your change touches, record what you ran, never rewrite history,\n")
-	b.WriteString("and end with `rhiza session done` as its own command.\n")
-	b.WriteString(ContractLastLine + "\n")
+	b.WriteString(contractSection)
 	return b.String()
+}
+
+// contractSection is the body of a brief's Contract section, which every
+// session's brief.md ends with or, for a spawned child's, begins with.
+const contractSection = "Build or check only what your role's prompt names, to the leaves' acceptance above.\n" +
+	"Run only the tests your change touches, record what you ran, never rewrite history,\n" +
+	"and end with `rhiza session done` as its own command.\n" +
+	ContractLastLine + "\n"
+
+// RenderSpawnBrief renders a spawned child's brief.md: the contract section
+// only, then the caller's brief file as the caller wrote it under its own
+// heading.
+func RenderSpawnBrief(callerBrief string) string {
+	var b strings.Builder
+	b.WriteString("# Brief\n\n## Contract\n\n")
+	b.WriteString(contractSection)
+	b.WriteString("\n## Brief\n\n")
+	b.WriteString(callerBrief)
+	if !strings.HasSuffix(callerBrief, "\n") {
+		b.WriteString("\n")
+	}
+	return b.String()
+}
+
+// WriteBriefFile creates dir and writes brief.md alone there: a spawned
+// child's directory holds no slice.json. A directory or file that cannot be
+// created is an error naming its path.
+func WriteBriefFile(dir, brief string) error {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return fmt.Errorf("create session directory %s: %w", dir, err)
+	}
+	path := filepath.Join(dir, "brief.md")
+	if err := os.WriteFile(path, []byte(brief), 0o644); err != nil {
+		return fmt.Errorf("write %s: %w", path, err)
+	}
+	return nil
 }
 
 // SessionDirs name a session's directory under a run's. Each is the

@@ -68,7 +68,10 @@ type Record struct {
 	Root string `json:"root,omitempty"`
 	// Brief is the directory holding the session's brief.md, slice.json and,
 	// on a hand-back, handback.md, for a session a run started.
-	Brief          string    `json:"brief,omitempty"`
+	Brief string `json:"brief,omitempty"`
+	// Parent is the session that spawned this one with rhiza run spawn;
+	// empty for every other session.
+	Parent         string    `json:"parent,omitempty"`
 	Actor          string    `json:"actor"`
 	For            string    `json:"for"`
 	PermissionMode string    `json:"permission_mode"`

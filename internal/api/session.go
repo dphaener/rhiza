@@ -128,6 +128,8 @@ type SessionStartRequest struct {
 	dir, root string
 	// briefDir is the session record's Brief. Only a run's starts set it.
 	briefDir string
+	// parent is the session record's Parent. Only rhiza run spawn sets it.
+	parent string
 	// briefFor, when set, fills the session's directory once its ID is
 	// allocated and returns it as briefDir. Only a run's StartArbiter and
 	// StartAdvisor set it.
@@ -292,7 +294,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode, Prompt: r.Prompt,
 		Worktree: worktree, Branch: branch, Tab: tab, StartedAt: ctx.Now().UTC().Truncate(time.Second),
 		Advises: r.advises, Writes: r.writes, WritesRecord: r.writesRecord, Leaf: r.leaf, Attempt: r.attempt, Role: r.role, Commit: r.commit, Model: r.model,
-		Check: r.check, Cycle: r.cycle, Dir: r.dir, Root: r.root, Brief: r.briefDir,
+		Check: r.check, Cycle: r.cycle, Dir: r.dir, Root: r.root, Brief: r.briefDir, Parent: r.parent,
 	}
 	self := ctx.Self
 	if self == "" {
