@@ -86,6 +86,16 @@ fetch, timer or job) and run the example normally a few times. Never use busy
 loops, CPU stress or parallel stress runs on the host: it is shared by every
 live run.
 
+This repo's local ship gate is the scoped `make gate` (`tools/gate`): from
+`RHIZA_GATE_BASE` it runs go test on the packages the branch changes and their
+reverse dependencies, cmd/rhiza's scripts only for the changed txtar files and
+those the change set's leaf acceptance checks name, then `make self-check`. It
+falls back to `make test` plus `make self-check` when the base is empty or
+go.mod, go.sum, the Makefile, tools/gate, cmd/rhiza/main_test.go or a file
+outside every Go package (other than `.rhiza/`, since tests read docs) changed. Set
+it with `git config rhiza.ship.localGate 'make gate'` (or `rhiza daemon set
+rhiza.ship.localGate 'make gate'`). `make gate ARGS=-dry-run` prints its plan.
+
 Outside a run (a person at a terminal), run `make check` before calling a
 change done.
 

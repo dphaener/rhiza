@@ -2605,3 +2605,75 @@ func TestAgentRejoinRexUnreachable(t *testing.T) {
 		t.Errorf("rejoin failure not logged: %q", lines)
 	}
 }
+
+// scriptedOutRunner is a fakeCondRunner whose failing check reports the
+// next scripted output.
+type scriptedOutRunner struct {
+	*fakeRunner
+	outs []string
+}
+
+func (f *scriptedOutRunner) Condition(step workflow.Step, env []string) (int, string, error) {
+	n := f.polls[step.Name]
+	f.polls[step.Name]++
+	if n >= len(f.outs) {
+		return 0, "", nil
+	}
+	return 1, f.outs[n], nil
+}
+
+// A wait with max_interval doubles its sleep while the check's output stays
+// the same, stops at max_interval, and returns to interval on a change.
+func TestWaitBackoff(t *testing.T) {
+	e, r, c, _ := setup(t, `
+name = "wf"
+[step.ci]
+kind = "wait"
+until = "gh pr checks"
+interval = "30s"
+max_interval = "2m"
+timeout = "1h"
+on.pass = "done"
+on.timeout = "failed"
+`)
+	e.Runner = &scriptedOutRunner{fakeRunner: r, outs: []string{"a", "a", "a", "a", "a", "b", "b"}}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded {
+		t.Fatalf("result %q steps %v", st.Result, outcomes(st))
+	}
+	s := time.Second
+	// Outputs a a a a a b b: the sixth check changed, so its sleep is back to 30s.
+	want := []time.Duration{30 * s, 60 * s, 120 * s, 120 * s, 120 * s, 30 * s, 60 * s}
+	if !reflect.DeepEqual(c.sleeps, want) {
+		t.Fatalf("sleeps = %v, want %v", c.sleeps, want)
+	}
+}
+
+// Backoff never sleeps past the step's timeout.
+func TestWaitBackoffStopsAtTimeout(t *testing.T) {
+	e, r, c, _ := setup(t, `
+name = "wf"
+[step.ci]
+kind = "wait"
+until = "gh pr checks"
+interval = "30s"
+max_interval = "2m"
+timeout = "5m"
+on.pass = "done"
+on.timeout = "failed"
+`)
+	e.Runner = &scriptedOutRunner{fakeRunner: r, outs: make([]string, 100)}
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	var total time.Duration
+	for _, d := range c.sleeps {
+		total += d
+	}
+	if total != 5*time.Minute {
+		t.Fatalf("slept %v in %v, want exactly the 5m timeout", total, c.sleeps)
+	}
+}

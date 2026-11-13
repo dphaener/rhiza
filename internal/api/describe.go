@@ -49,7 +49,12 @@ func init() {
 
 func runDescribe(_ *Ctx, req any) (any, error) {
 	r := req.(DescribeRequest)
-	ops := Operations()
+	var ops []Operation
+	for _, o := range Operations() {
+		if !o.Hidden {
+			ops = append(ops, o)
+		}
+	}
 	if r.Op != "" {
 		o, ok := Lookup(r.Op)
 		if !ok {

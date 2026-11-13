@@ -1,0 +1,40 @@
+{
+  "actor": "01M78XZTZNS7V8AVJ4QVGET1QE",
+  "after": [
+    "01M78Y66WM9021Z30KTCFCVTN3"
+  ],
+  "at": "2026-11-12T22:32:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 5fe205c8d: go test -trimpath -count=1 ./internal/api/... ./internal/adapter/claudecode/... -run UsageScan passes (TestUsageScanOncePerPoll); also -race -count=2, ./internal/adapter/... in full and ./internal/api -run Usage pass, go vet clean. The test uses a fake ctx.Now clock and 120 transcripts and counts claudecode.UsageScanStats walks and reads across polls that each call usageRecordsFor twice (two projects): first poll 1 walk, 120 reads; 10s later 0 walks, 0 reads; one file appended 1 read, 0 walks; a new file within the minute is not walked, and the poll a minute later does 1 walk and 1 read and picks it up; final records reflect.DeepEqual a full UsageRecords read. Diff read: usageRecordsFor passes ctx.Now() to the new adapter.UsageReaderAt; the claude-code adapter walks a root at most once per usageWalkEvery (1m), otherwise Lstats only its known files and rereads only size/mtime changes, dropping vanished ones."
+        },
+        "handle": "usage-scan-once-per-poll-verified",
+        "id": "01M78Y7JXYV7YDQ0GRECS5BEM1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M78Y7JXYV7YDQ0GRECM77G38",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M78Y7JXYV7YDQ0GRECM77G38",
+        "id": "01M78Y7JYV237GQMK5YNXZMCZ6",
+        "link": "01M78Y7JYV237GQMK5YMQF3ECR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78V4WPDAC0P0JMCA17H4TC9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78TV0ZFXRBX1M08V6G7H19C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M78Y7K0MH6KDNZN3732JV99Z",
+  "type": "ops",
+  "v": 1
+}

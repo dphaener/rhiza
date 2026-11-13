@@ -1,0 +1,41 @@
+{
+  "actor": "01M7947GTYFV63ST5W1EQ8WRQG",
+  "after": [
+    "01M79474DKKM2Y2Z5H2Y20ESRF"
+  ],
+  "at": "2026-11-13T00:17:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question's evidence shows leaf b's verifier did write Evidence and its verifies link (the fake claude exits 1 otherwise), yet the run judged 'neither Evidence nor findings' while leaf a's verifier wrote concurrently. In run_model_cache.go, readModel serves kept answers until catchUpModel refreshes, and refreshDue only refreshes after pollDebounce has passed or inside a writeSettle window that the runner opens for its own writes (wrote()), not for a session's writes; so a read right after a session ends can return an answer kept from before its writes, and another session's concurrent write can move the stamp in a way revalidate keeps a stale per-change-set answer. That makes the failure a product bug that could fail a real run's leaf (and burn builder retries), so quarantining alone would hide it. The change set's intent already says reproduce, then fix or quarantine; AGENTS.md says to reproduce timing flakes by injecting a delay, never by stress runs, and to quarantine with a bug filed when a fix is not possible. Fixing at the read (force a catch-up before judging an ended session) stays within the change set's intent.",
+          "statement": "Treat this as a real bug in the run driver, not a test flake: reproduce it locally by injecting a delay at the suspected race (e.g. hold leaf a's verifier write or the driver's post-session read in internal/api/run_model_cache.go) and running headless-run-agent-tabs a few times, then fix it so that the verdict on a session that has just ended is always read from a model caught up past that session's writes (the debounced catch-up in refreshDue and the answers kept across revalidate must not serve a pre-session answer). Add a regression test at the internal/api or internal/run level that fails without the fix. Quarantine the testscript (skip with a bug request filed via rhiza request --kind bug) only if the race cannot be reproduced or fixed within this change set.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "verifier-evidence-read-fresh",
+        "id": "01M7948KX29FV2FF2J94XCXV0W",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7948KX29FV2FF2J93GANPJE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7948KX29FV2FF2J93GANPJE",
+        "id": "01M7948KXVNAVHXF9RGD30C3DR",
+        "link": "01M7948KXVNAVHXF9RG9MKN23J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7947261QQBNQHAXG9GKNDC0",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7942GRFNQ82YV0V8F4A9VNA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7948KZBVSA6GPJGKFMFHQVB",
+  "type": "ops",
+  "v": 1
+}

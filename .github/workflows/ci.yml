@@ -22,8 +22,9 @@ concurrency:
 
 # Each job is one slice of `make check`, run in parallel; `check` aggregates
 # them into the single verdict Ship and branch protection read. `changes`
-# decides first: a pull request whose paths all lie under .rhiza/ runs only
-# `model`, everything else (and every dispatched run) runs the Go jobs.
+# decides first: a pull request with no path outside .rhiza/ changed since its
+# last green commit (or since its base, with none) runs only `model`, everything else (and every dispatched run) runs the
+# Go jobs.
 jobs:
   changes:
     runs-on: ubuntu-26.04
@@ -36,23 +37,36 @@ jobs:
         ref: ${{ inputs.sha || github.sha }}
         fetch-depth: 0
 
-    - name: Decide whether anything outside .rhiza/ changed
+    - name: Find the pull request's last green commit
+      id: green
+      if: github.event_name == 'pull_request'
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR: ${{ github.event.pull_request.number }}
+        PR_HEAD: ${{ github.event.pull_request.head.sha }}
+      run: |
+        # The pull request's commits, newest first, its head excluded: the
+        # first whose check run named check succeeded.
+        green=
+        for sha in $(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/commits" --paginate --jq '.[].sha' | tac | grep -v "^$PR_HEAD$" || true); do
+          state=$(gh api "repos/$GITHUB_REPOSITORY/commits/$sha/check-runs" \
+            --jq '[.check_runs[] | select(.name == "check")] | map(.conclusion) | first // ""')
+          if [ "$state" = success ]; then green=$sha; break; fi
+        done
+        echo "sha=$green" >> "$GITHUB_OUTPUT"
+
+    - name: Decide whether anything outside .rhiza/ changed since then
       id: diff
       env:
         EVENT: ${{ github.event_name }}
         BASE: ${{ github.event.pull_request.base.sha }}
+        GREEN: ${{ steps.green.outputs.sha }}
       run: |
         if [ "$EVENT" != pull_request ]; then
           echo "code=true" >> "$GITHUB_OUTPUT"
           exit 0
         fi
-        base=$(git merge-base "$BASE" HEAD)
-        outside=$(git diff --name-only "$base" HEAD | grep -v '^\.rhiza/' || true)
-        if [ -n "$outside" ]; then
-          echo "code=true" >> "$GITHUB_OUTPUT"
-        else
-          echo "code=false" >> "$GITHUB_OUTPUT"
-        fi
+        .github/scripts/ci-changes.sh "$BASE" "$GREEN" >> "$GITHUB_OUTPUT"
 
   model:
     needs: changes

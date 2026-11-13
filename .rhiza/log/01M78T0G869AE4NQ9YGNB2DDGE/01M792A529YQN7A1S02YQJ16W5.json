@@ -1,0 +1,40 @@
+{
+  "actor": "01M7928Q93NA3RGNN61XDJ177R",
+  "after": [
+    "01M7926XY8YNQ1JE744QF5R46Q"
+  ],
+  "at": "2026-11-12T23:43:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3927f7838: go test -trimpath ./internal/api -run TestShipLocalGate passes, including subtest 'gate environment names the head and the merge-base', where a gate command echoing env:$RHIZA_GATE_HEAD:$RHIZA_GATE_BASE: prints the worktree's rev-parse HEAD and the git merge-base HEAD origin/main answer, and prints an empty base when merge-base fails (no origin/main). go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes, and the golden ship.gate summary names RHIZA_GATE_HEAD and RHIZA_GATE_BASE. Diff read: shipLocalGate appends both variables to os.Environ(); the real Exec (cmd/rhiza execIn) returns stdout only, so a failed merge-base yields an empty RHIZA_GATE_BASE, not error text."
+        },
+        "handle": "ship-gate-base-env-verified",
+        "id": "01M792A50H19JDRS9MRACMZH4F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M792A50H19JDRS9MR876TYEB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M792A50H19JDRS9MR876TYEB",
+        "id": "01M792A51CN7HSY50MN3HSYCZY",
+        "link": "01M792A51CN7HSY50MN1WMHT97",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78TAJC7RKC9QNK7T52NFT62",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78T0G869AE4NQ9YGNB2DDGE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M792A529YQN7A1S02YQJ16W5",
+  "type": "ops",
+  "v": 1
+}

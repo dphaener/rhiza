@@ -8,6 +8,8 @@ package api
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -25,7 +27,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "ship.gate",
-		Summary:  "Before a push, while CI is unstable, run the project's local gate command (rhiza.ship.localGate) in the change set's worktree and fail if it does; with CI stable or no gate set, do nothing",
+		Summary:  "Before a push, while CI is unstable, run the project's local gate command (rhiza.ship.localGate) in the change set's worktree and fail if it does; with CI stable or no gate set, do nothing. The command gets RHIZA_GATE_HEAD (the commit it checks) and RHIZA_GATE_BASE (the merge-base of that head with origin/main, empty if none is found) in its environment, so it can check only what the branch changes",
 		Request:  reflect.TypeFor[ShipGateRequest](),
 		Response: reflect.TypeFor[ShipGateResponse](),
 		Run:      runShipGate,
@@ -189,15 +191,22 @@ func shipLocalGate(ctx *Ctx, t *shipTarget) (ShipGateResponse, error) {
 	if err != nil {
 		return ShipGateResponse{}, err
 	}
-	if head != "" && st.Gated == head && shipTreeClean(ctx, t.dir()) {
-		resp.Passed, resp.Head, resp.Reason = true, head, v.Reason+"; it already passed on "+shortSHA(head)
+	clean := head != "" && shipTreeClean(ctx, t.dir())
+	tree := ""
+	if clean {
+		tree = shipCodeTree(ctx, t.dir())
+	}
+	if tree != "" && st.GatedTree == tree && st.GatedCommand == gate && st.Gated != "" {
+		resp.Passed, resp.Head = true, head
+		resp.Reason = v.Reason + "; it already passed on " + shortSHA(st.Gated) + " with the same code outside .rhiza/, so the gate was not run again"
 		return resp, nil
 	}
 	c, cancel := context.WithTimeout(context.Background(), shipGateTimeout)
 	defer cancel()
 	cmd := exec.CommandContext(c, "sh", "-c", gate)
 	cmd.Dir = t.dir()
-	cmd.Env = os.Environ()
+	base, _ := gitAt(ctx, t.dir(), "merge-base", "HEAD", "origin/"+shipMain)
+	cmd.Env = append(os.Environ(), "RHIZA_GATE_HEAD="+head, "RHIZA_GATE_BASE="+strings.TrimSpace(base))
 	var out bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &out
 	cmd.WaitDelay = time.Second
@@ -215,12 +224,12 @@ func shipLocalGate(ctx *Ctx, t *shipTarget) (ShipGateResponse, error) {
 		resp.Error = runErr.Error()
 	default:
 		resp.Passed, resp.Head = true, head
-		if head != "" && shipTreeClean(ctx, t.dir()) {
+		if clean {
 			st, err := readShipState(t.statePath())
 			if err != nil {
 				return ShipGateResponse{}, err
 			}
-			st.Gated = head
+			st.Gated, st.GatedTree, st.GatedCommand = head, tree, gate
 			if err := writeShipState(t.statePath(), st); err != nil {
 				return ShipGateResponse{}, err
 			}
@@ -307,4 +316,25 @@ func shipWriteGateLog(ctx *Ctx, t *shipTarget, out []byte) string {
 func shipTreeClean(ctx *Ctx, dir string) bool {
 	out, err := gitAt(ctx, dir, "status", "--porcelain", "--untracked-files=no")
 	return err == nil && strings.TrimSpace(out) == ""
+}
+
+// shipCodeTree hashes HEAD's tree with the top-level .rhiza/ entry left out,
+// so commits that change only the model, its rendered files or the log keep
+// the hash. Empty if it cannot be worked out: nothing is then reused.
+func shipCodeTree(ctx *Ctx, dir string) string {
+	out, err := gitAt(ctx, dir, "ls-tree", "HEAD")
+	if err != nil || strings.TrimSpace(out) == "" {
+		return ""
+	}
+	h := sha256.New()
+	for _, l := range strings.Split(out, "\n") {
+		if l == "" {
+			continue
+		}
+		if _, name, ok := strings.Cut(l, "\t"); ok && name == ".rhiza" {
+			continue
+		}
+		io.WriteString(h, l+"\n")
+	}
+	return hex.EncodeToString(h.Sum(nil))
 }

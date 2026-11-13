@@ -1,0 +1,30 @@
+{
+  "actor": "01M7943SS28JENDAYKG8XMZY4B",
+  "after": [
+    "01M7942GRFNQ82YV0V8GNHBY0Z"
+  ],
+  "at": "2026-11-13T00:16:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "65c81086-02c4-4705-8890-01a1d241b16b",
+          "statement": "Flaky TestScripts/headless-run-agent-tabs (PR #513, attempt 1 of run 43333843332): leaf b's verifier exited after `rhiza add evidence` + `rhiza link ... verifies` (the fake claude exits 1 if either fails), yet the run judged it 'verifier ended with neither Evidence nor findings'; builder retries then failed (b.txt already committed). Leaf a's verifier ran concurrently and passed. So the run can miss a verifier's Evidence written while another session writes — likely a stale answer from the run's cached model/index (internal/api/run_model_cache.go readModel/catchUpModel) or a read racing the write. How should this change set proceed?"
+        },
+        "handle": "question-65c81086-1",
+        "id": "01M7947261QQBNQHAXG9T0QCT4",
+        "key": null,
+        "kind": "question",
+        "node": "01M7947261QQBNQHAXG9GKNDC0",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7942GRFNQ82YV0V8F4A9VNA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79474DKKM2Y2Z5H2Y20ESRF",
+  "type": "ops",
+  "v": 1
+}

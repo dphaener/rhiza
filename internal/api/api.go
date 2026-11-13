@@ -48,6 +48,9 @@ type Operation struct {
 	// operations with it. Write does not stand for it, since it only means
 	// appending to the log.
 	ReadOnly bool
+	// Hidden keeps the operation out of help, the reference docs and the
+	// unfiltered describe listing; it still runs and describes by name.
+	Hidden bool
 	// Record reports whether the operation takes Ctx.Record. Run refuses
 	// Ctx.Record with a usage error for an operation without it.
 	Record bool

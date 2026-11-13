@@ -471,6 +471,13 @@ type shipState struct {
 	// Gated is the last head the local gate (ship.gate) passed on, with a
 	// clean worktree, so a later gate on that same head passes at once.
 	Gated string `json:"gated,omitempty"`
+	// GatedTree is the hash of Gated's tree with the top-level .rhiza/ entry
+	// left out, and GatedCommand the gate command that passed: a later gate
+	// on a clean worktree whose HEAD has the same command and the same tree
+	// passes at once. A state without them (written before they existed)
+	// reruns the gate once.
+	GatedTree    string `json:"gated_tree,omitempty"`
+	GatedCommand string `json:"gated_command,omitempty"`
 	// GateFailed is the unpushed head ship.rebase left on the branch after
 	// the local gate failed on it (origin's main merged into the branch),
 	// so ship gate --failed routes it to a fixer and ship check fails on it.

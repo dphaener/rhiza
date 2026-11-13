@@ -117,6 +117,7 @@ kind = "wait"
 until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
+max_interval = "2m"
 max_visits = 10
 on.pass = "pr-green"
 
@@ -187,6 +188,7 @@ kind = "wait"
 until = "rhiza ship check --settled --changed --rerun-infra"
 timeout = "6h"
 interval = "30s"
+max_interval = "2m"
 max_visits = 3
 on.pass = "pr-green"
 
@@ -243,6 +245,7 @@ kind = "wait"
 until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
+max_interval = "2m"
 max_visits = 6
 on.pass = "rebased-green"
 
@@ -320,6 +323,7 @@ kind = "wait"
 until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
+max_interval = "2m"
 on.pass = "landed-green"
 
 # landed-green is entered once from wait-landed and once more from each of
@@ -402,6 +406,7 @@ kind = "wait"
 until = "rhiza ship check --settled --changed --rerun-infra"
 timeout = "6h"
 interval = "30s"
+max_interval = "2m"
 max_visits = 3
 on.pass = "landed-green"
 
@@ -450,6 +455,7 @@ kind = "wait"
 until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
+max_interval = "2m"
 max_visits = 6
 on.pass = "rebased-merge-green"
 
@@ -479,6 +485,7 @@ kind = "wait"
 until = "rhiza ship check --main --settled"
 timeout = "1h"
 interval = "30s"
+max_interval = "2m"
 on.pass = "main-green"
 
 [step.main-green]

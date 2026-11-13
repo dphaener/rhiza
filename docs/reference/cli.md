@@ -2363,7 +2363,7 @@ Exit code: set by the result, besides the shared codes.
 
 ## rhiza ship gate
 
-Before a push, while CI is unstable, run the project's local gate command (rhiza.ship.localGate) in the change set's worktree and fail if it does; with CI stable or no gate set, do nothing.
+Before a push, while CI is unstable, run the project's local gate command (rhiza.ship.localGate) in the change set's worktree and fail if it does; with CI stable or no gate set, do nothing. The command gets RHIZA_GATE_HEAD (the commit it checks) and RHIZA_GATE_BASE (the merge-base of that head with origin/main, empty if none is found) in its environment, so it can check only what the branch changes.
 
 ```
 rhiza ship gate [--failed]

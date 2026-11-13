@@ -1,0 +1,73 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7936C635TB14ENSGMWD2WDS"
+  ],
+  "at": "2026-11-13T00:14:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "7a96ac202aae8f55b2f0adfcd46d0e0c70574172",
+          "pr": "https://github.com/dphaener/rhiza/pull/513",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #513 (https://github.com/dphaener/rhiza/pull/513) passed CI at 7a96ac2",
+          "status": "verified"
+        },
+        "handle": "pr-513-a-passing-local-gate-is-reused",
+        "id": "01M7942JJAVG9Y4GVR884AB1R1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7942JJAVG9Y4GVR84QD2G2X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7942JJAVG9Y4GVR84QD2G2X",
+        "id": "01M7942JKPQPJ0RV5YY8JQ6HFF",
+        "link": "01M7942JKPQPJ0RV5YY6PZC6V4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78TAJ9VCKZHPQZN5WS0A6DF",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7942JJAVG9Y4GVR84QD2G2X",
+        "id": "01M7942JNT4YB917K9SMPRCVEM",
+        "link": "01M7942JNT4YB917K9SKWH9373",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78TAJC7RKC9QNK7T52NFT62",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7942JJAVG9Y4GVR84QD2G2X",
+        "id": "01M7942JRF2WR3MBZBGESQNRWE",
+        "link": "01M7942JRF2WR3MBZBGE24SMX4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M78TAJENDS93MS29H076VKXT",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7942JJAVG9Y4GVR84QD2G2X",
+        "id": "01M7942JWYGKTQ1RSX6ZWYDHDB",
+        "link": "01M7942JWYGKTQ1RSX6ZW43TQ9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRKT22SQQH70HYX1GPFZW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M78T0G869AE4NQ9YGNB2DDGE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7942K8GBWQCXT9R2NBRVAZJ",
+  "type": "ops",
+  "v": 1
+}

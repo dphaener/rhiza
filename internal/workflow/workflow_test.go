@@ -2367,3 +2367,46 @@ func TestShipChangeMergeRefusedStops(t *testing.T) {
 		t.Errorf("merge = %+v", s)
 	}
 }
+
+func TestWaitMaxInterval(t *testing.T) {
+	src := "[step.w]\nkind = \"wait\"\nuntil = \"true\"\ntimeout = \"1h\"\ninterval = \"30s\"\n"
+	d, err := Parse("w", []byte(src+"max_interval = \"2m\"\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := d.Steps["w"].MaxInterval; got != 2*time.Minute {
+		t.Errorf("MaxInterval = %v, want 2m", got)
+	}
+	d, err = Parse("w", []byte(src))
+	if err != nil || d.Steps["w"].MaxInterval != 0 {
+		t.Errorf("no max_interval: %v, %v", d.Steps["w"].MaxInterval, err)
+	}
+	_, err = Parse("w", []byte(src+"max_interval = \"10s\"\n"))
+	if err == nil || !strings.Contains(err.Error(), "below interval") {
+		t.Errorf("max_interval below interval: err = %v", err)
+	}
+	_, err = Parse("w", []byte("[step.c]\nkind = \"command\"\nrun = \"true\"\nmax_interval = \"1m\"\n"))
+	if err == nil || !strings.Contains(err.Error(), "max_interval is only for wait steps") {
+		t.Errorf("max_interval on command: err = %v", err)
+	}
+}
+
+func TestMaxIntervalShipChangeCIWaits(t *testing.T) {
+	data, _ := Builtin("ship-change")
+	def, err := ParseWith("ship-change", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	n := 0
+	for name, step := range def.Steps {
+		if step.Kind == KindWait && strings.Contains(step.Until, "ship check") {
+			n++
+			if step.Interval != 30*time.Second || step.MaxInterval != 2*time.Minute {
+				t.Errorf("step %s: interval %v max_interval %v, want 30s and 2m", name, step.Interval, step.MaxInterval)
+			}
+		}
+	}
+	if n == 0 {
+		t.Error("no CI wait steps found")
+	}
+}

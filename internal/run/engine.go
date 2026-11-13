@@ -755,6 +755,7 @@ func (r *running) wait(step workflow.Step, env []string) result {
 	}
 	began := c.Now()
 	last := ""
+	prev, sleep := "", interval
 	for polls := 1; ; polls++ {
 		held := false
 		if cr, ok := r.e.Runner.(Conditioner); ok {
@@ -792,8 +793,16 @@ func (r *running) wait(step workflow.Step, env []string) result {
 			}
 			return result{outcome: workflow.OutcomeTimeout, detail: d}
 		}
+		// With max_interval, a check whose output matches the last one
+		// doubles the sleep up to it; a changed output resets it.
+		if step.MaxInterval > interval && polls > 1 && last == prev {
+			sleep = min(sleep*2, step.MaxInterval)
+		} else {
+			sleep = interval
+		}
+		prev = last
 		// Sleep at most to the deadline, so the last check falls on it.
-		c.Sleep(min(interval, step.Timeout-elapsed))
+		c.Sleep(min(sleep, step.Timeout-elapsed))
 	}
 }
 
