@@ -48,3 +48,5 @@ Run it and stop. The step checks for your Decision once you are done.
 - Write anything else: no code, no other nodes, no links but the one above.
 - Ask anyone or raise a question. There is no one to ask; asking fails the arbiter step and
   the run.
+
+<!-- shared: contract-ref -->
