@@ -354,7 +354,7 @@ a.rz-session-who:hover b { color: var(--teal); }
   .rz-rows-head { display: none; }
   .rz-row {
     grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "id step time" "title title title" "pill pill pill";
-    row-gap: 4px; padding: 12px var(--space-4);
+    row-gap: 4px; padding: 10px var(--space-4);
   }
   .rz-row > .rz-id { grid-area: id; }
   .rz-row > .rz-row-title { grid-area: title; white-space: normal; }

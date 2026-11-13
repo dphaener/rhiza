@@ -165,9 +165,23 @@ func TestPageHeadSpacing(t *testing.T) {
 		t.Errorf("page head to content = %q, want var(--space-6)", got)
 	}
 
-	pad := strings.Fields(declared(rules, "", ".rz-row", "padding"))
-	if len(pad) == 0 || pad[0] != "10px" || (len(pad) >= 3 && pad[2] != "10px") {
-		t.Errorf("list row padding = %q, want 10px above and below", pad)
+	// Rows sit 10px above and below at every width: the default rule and
+	// the phone override (when it sets padding) must both say so.
+	const phone = "(max-width: 720px)"
+	for _, media := range []string{"", phone} {
+		v := declared(rules, media, ".rz-row", "padding")
+		if v == "" && media != "" {
+			continue
+		}
+		pad := strings.Fields(v)
+		if len(pad) == 0 || pad[0] != "10px" || (len(pad) >= 3 && pad[2] != "10px") {
+			t.Errorf("list row padding (media %q) = %q, want 10px above and below", media, v)
+		}
+		for _, side := range []string{"padding-top", "padding-bottom"} {
+			if got := declared(rules, media, ".rz-row", side); got != "" && got != "10px" {
+				t.Errorf("list row %s (media %q) = %q, want 10px", side, media, got)
+			}
+		}
 	}
 	if got := declared(rules, "", ".rz-row", "border-bottom"); got != "var(--rule) solid var(--line)" {
 		t.Errorf("list row border-bottom = %q, want var(--rule) solid var(--line)", got)
