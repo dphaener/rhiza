@@ -526,6 +526,36 @@ func runPermissionAll(st run.State, live bool, sessions *session.Store) []RunPer
 	return out
 }
 
+// RunAPIError is a session whose last turn ended on an API error.
+type RunAPIError struct {
+	Step    string
+	Session string
+	Detail  string // "stopped on an API error: <text>"
+	Since   string
+}
+
+// runAPIErrorAll is every session of the current step of a live, unfinished
+// run whose hook report is idle with the API-error detail. The next hook
+// report of the session replaces it.
+func runAPIErrorAll(st run.State, live bool, sessions *session.Store) []RunAPIError {
+	if !live || st.Ended || sessions == nil {
+		return nil
+	}
+	var out []RunAPIError
+	for _, sid := range stepSessions(st) {
+		rec, err := sessions.Read(sid)
+		if err != nil {
+			continue
+		}
+		rep, src := session.Resolve(rec)
+		if src != session.SourceHook || rep.State != session.StateIdle || !strings.HasPrefix(rep.Detail, session.APIErrorDetail) {
+			continue
+		}
+		out = append(out, RunAPIError{Step: st.Current, Session: sid, Detail: strings.TrimSpace(rep.Detail), Since: rfc3339(rep.At)})
+	}
+	return out
+}
+
 // stepSessions are the sessions of the run's current step that can still
 // be working, in the order runStalledAll checks them. A session whose pane
 // is closed is gone.

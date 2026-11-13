@@ -1040,3 +1040,35 @@ func TestSkillGlobs(t *testing.T) {
 		t.Errorf("unsafe name got globs %v", g)
 	}
 }
+
+func TestAPIError(t *testing.T) {
+	const cf = "Please run /login · API Error: 403 Attention Required! | Cloudflare"
+	apiLine := `{"type":"assistant","isApiErrorMessage":true,"message":{"model":"<synthetic>","content":[{"type":"text","text":"` + cf + `"}]}}` + "\n"
+	limitLine := `{"type":"assistant","isApiErrorMessage":true,"message":{"model":"<synthetic>","content":[{"type":"text","text":"Claude AI usage limit reached|1700000000"}]}}` + "\n"
+	work := `{"type":"user","message":{"content":"work"}}` + "\n"
+	model := `{"type":"assistant","message":{"model":"claude-opus-4","content":[{"type":"text","text":"done"}]}}` + "\n"
+	got, ok := Adapter{}.APIError([]byte(work + apiLine))
+	if !ok || got != cf {
+		t.Errorf("APIError = %q, %v; want %q", got, ok, cf)
+	}
+	if got, ok := (Adapter{}).APIError([]byte(work + limitLine)); ok {
+		t.Errorf("usage limit: APIError = %q, true; want none", got)
+	}
+	if _, ok := (Adapter{}).UsageLimit([]byte(work + limitLine)); !ok {
+		t.Error("UsageLimit must still report the limit")
+	}
+	if got, ok := (Adapter{}).APIError([]byte(work + apiLine + model)); ok {
+		t.Errorf("went on: APIError = %q, true; want none", got)
+	}
+	for name, line := range map[string]string{
+		"model prose":    `{"type":"assistant","message":{"model":"claude-opus-4","content":[{"type":"text","text":"API Error: 403 handled"}]}}`,
+		"tool_use input": `{"type":"assistant","message":{"model":"claude-opus-4","content":[{"type":"tool_use","id":"t1","name":"Bash","input":{"command":"echo API Error"}}]}}`,
+	} {
+		if got, ok := (Adapter{}).APIError([]byte(line + "\n")); ok {
+			t.Errorf("%s: APIError = %q, true; want none", name, got)
+		}
+	}
+	if _, ok := (Adapter{}).APIError(nil); ok {
+		t.Error("an empty transcript has no API error")
+	}
+}
