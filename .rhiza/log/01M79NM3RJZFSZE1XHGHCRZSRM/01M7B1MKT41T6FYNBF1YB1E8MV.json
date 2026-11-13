@@ -1,0 +1,206 @@
+{
+  "actor": "01M7B1HE5KA12S4RVX4KYW6097",
+  "after": [
+    "01M7B1KQNZGGYFSNAWD6N0YKHE"
+  ],
+  "at": "2026-11-13T18:10:10Z",
+  "body": {
+    "drop": [
+      "01M79Q8KP644DJDDTTN2XB3B0M",
+      "01M79Q8KSS42PHGQRV83ZF0X1W"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestHomeNeedsYou covers one fixture of each kind (question, sign-off, failed run, stuck run, load hold) with its reason text, order oldest first, the count in the title, actions shown only for question and sign-off and pause for a hold, and the empty state; a run with a journal entry 5 minutes ago is not stuck; the stuck run's card names its leaf by statement and its run by title, and no node handle or ULID appears in the rendered cards.",
+          "statement": "Home opens with what needs the owner, as in pages/home-phone.html: every open question, sign-off, failed run, stuck run (no journal entry for 20 minutes while in an agent step) and hold, oldest first, each with its kind, a title, the reason in words, its age, a link to its run or change set and only the safe actions that apply; the reason names a leaf by its statement and a run or change set by its title, never by a handle or ID (unlike the mock's stuck card); the title counts them ('3 things need you'), and with none it says nothing needs the owner."
+        },
+        "handle": "web-home-needs-you",
+        "id": "01M79Q8KK9D7VB062YN555X87D",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M79Q8KK9D7VB062YN1ASJC7B",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestHomeRunning shows a run in build with leaf n of m and the leaf's statement and no node handle or ULID, a run in review, a run in ship, the phase bar's lit segment for each, elapsed time, and the title 'N runs, X of Y slots'.",
+          "statement": "Home lists the running runs, each with its change set's short title, what it is doing in words (for example 'Building leaf 3 of 6: the compliance check reads its topic'), naming a leaf by its statement and never by its handle or ID, a plan, build, review, ship bar with the current phase lit and its elapsed time, and the slots in use in the panel title."
+        },
+        "handle": "web-home-running",
+        "id": "01M79Q8KMEKXQ87W0GD1WBVWYY",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M79Q8KMEKXQ87W0GCYQFDMXM",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8KK9D7VB062YN1ASJC7B",
+        "id": "01M7B1MJKME8CAJY2B7PJAVV7K",
+        "link": "01M7B1MJKME8CAJY2B7NDFSQK7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8PZE56YE4MSC7P9GS5RT",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8KK9D7VB062YN1ASJC7B",
+        "id": "01M7B1MJQBXYH4JY55BP5FCT5V",
+        "link": "01M7B1MJQBXYH4JY55BP2RD25Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8Q1X2SDBPR5CNADZJAS1",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestHomeWaitingPR lists a PR red again after its rerun and a green unmerged PR held for the owner, each with its reason text, age and PR link, counts them in the title, and leaves out a PR whose CI is still running.",
+          "statement": "Home's needs-the-owner list includes each waiting PR: a change set's open PR the watchdog no longer acts on (its CI red again after the rerun, its run's retry budget spent, or green but unmerged and held for the owner), with the reason in words, its age, the change set's title and links to the PR and its run, in the same oldest-first order and count as the other items."
+        },
+        "handle": "web-home-waiting-pr",
+        "id": "01M7B1MJTM4B76DF6R9N2V2RC3",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7B1MJTM4B76DF6R9HRNP962",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M7B1MJTM4B76DF6R9HRNP962",
+        "id": "01M7B1MJXDN62BVDHEWERT550K",
+        "link": "01M7B1MJXDN62BVDHEWBX92WB6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8KK9D7VB062YN1ASJC7B",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7B1MJTM4B76DF6R9HRNP962",
+        "id": "01M7B1MK19VYN4MW8YG9NQH4ZS",
+        "link": "01M7B1MK19VYN4MW8YG70X171F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR7247MFEZRXRCW6B9PCA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestHomeShippedToday shows today's merges newest first with times and leaves yesterday's out.",
+          "statement": "Home shows what shipped today: the change sets merged since local midnight, newest first, each with its merge time."
+        },
+        "handle": "web-home-shipped-today",
+        "id": "01M7B1MK3SR2X8VHSDFB89KQ5N",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7B1MK3SR2X8VHSDF99YM5DA",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M7B1MK3SR2X8VHSDF99YM5DA",
+        "id": "01M7B1MK5YP0DDJKPEC0J2GZ0F",
+        "link": "01M7B1MK5YP0DDJKPEBWTJPEF9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6FNDYY7AFVCN7H8KZV6",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestHomeMilestone shows the open milestone's landed, accepted and withdrawn counts and the segmented bar's segments in proportion.",
+          "statement": "Home shows the open milestone's progress: its landed, accepted and withdrawn change sets counted, with a segmented bar."
+        },
+        "handle": "web-home-milestone",
+        "id": "01M7B1MK7HVMPK3DQ4NFAB6KRV",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M7B1MK7HVMPK3DQ4NERBA4DB",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M7B1MK7HVMPK3DQ4NERBA4DB",
+        "id": "01M7B1MK9TG2M0J1KWBPFJFGJY",
+        "link": "01M7B1MK9TG2M0J1KWBNK3J208",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6FNDYY7AFVCN7H8KZV6",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestHomeDaemonPanel shows the panel's load, version and usage from a fixture daemon, marks the panel desktop-only, and shows the pause control only when actions are on.",
+          "statement": "On desktop, Home shows a daemon panel with the daemon's load, version and usage, adding them to what the web UI reads of the daemon, and a pause control when actions are on; the phone layout leaves the panel out."
+        },
+        "handle": "web-home-daemon-panel",
+        "id": "01M7B1MKCMM0T6XWAVPQDC7J5X",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M7B1MKCMM0T6XWAVPMMX4THS",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M7B1MKCMM0T6XWAVPMMX4THS",
+        "id": "01M7B1MKE8T0M7PFV46MMK1C8N",
+        "link": "01M7B1MKE8T0M7PFV46KXZC918",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6FNDYY7AFVCN7H8KZV6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7B1MKCMM0T6XWAVPMMX4THS",
+        "id": "01M7B1MKGEER21C1QJGEAQBH4J",
+        "link": "01M7B1MKGEER21C1QJGE2TCDCT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8Q1X2SDBPR5CNADZJAS1",
+        "type": "depends-on"
+      },
+      {
+        "base": "01M6PFJX06P8P1JQS8RQWAP76A",
+        "id": "01M7B1MKKPZNTAJPPEWTDA497B",
+        "node": "01M6PFJX06P8P1JQS8RKY327J2",
+        "op": "node.retire",
+        "reason": "Home replaces the Overview page at /; the daemon panel is now web-home-daemon-panel (plan review finding f5)."
+      },
+      {
+        "base": "01M6PFJX11CXNAKJWHN1040ND6",
+        "id": "01M7B1MKMZQDRJRDT52TVAW47R",
+        "node": "01M6PFJX11CXNAKJWHMY772YAF",
+        "op": "node.retire",
+        "reason": "Home replaces the Overview page at /; its running runs are now web-home-running (plan review finding f5)."
+      },
+      {
+        "base": "01M6PFJX24XAF6CBGRW996Q9M2",
+        "id": "01M7B1MKP6K9Y234Z791JPR6ZD",
+        "node": "01M6PFJX24XAF6CBGRW7W837AV",
+        "op": "node.retire",
+        "reason": "Home replaces the Overview page at /; what waits on the owner is now web-home-needs-you and web-home-waiting-pr (plan review finding f5)."
+      },
+      {
+        "base": "01M6PFJX3BQYXMYH08ZCCC2279",
+        "id": "01M7B1MKR882J3AGHYYQZMC8CJ",
+        "node": "01M6PFJX3BQYXMYH08ZAQN0ER8",
+        "op": "node.retire",
+        "reason": "Home replaces the Overview page at /; the open milestone's progress is now web-home-milestone (plan review finding f5)."
+      }
+    ]
+  },
+  "change_set": "01M79NM3RJZFSZE1XHGHCRZSRM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B1MKT41T6FYNBF1YB1E8MV",
+  "type": "ops",
+  "v": 1
+}

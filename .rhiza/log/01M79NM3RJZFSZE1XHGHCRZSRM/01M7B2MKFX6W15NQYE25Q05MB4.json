@@ -1,0 +1,41 @@
+{
+  "actor": "01M7B2K7M6T669ZHC6988ZE4AZ",
+  "after": [
+    "01M7B2JFE91AZKF6CJJAZ497C1"
+  ],
+  "at": "2026-11-13T18:27:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Of the two ways out (drop health from / and retire web-overview-fast, or keep health in the panel), keeping it is the smaller and safer change. Health is part of answering 'does anything need me?' (web-first-job-needs-me): a bad health part is something the owner may need to act on, and retiring it would take away what / shows today with nothing to replace it. The code already has the cached, background-refreshed health report and pending state (internal/web/daemon.go HealthPending, HealthPill), which web-overview-fast was verified on (PR 327), so keeping it costs a panel row rather than new reads, and keeps that verified speed fix from being orphaned. The phone mock (internal/web/pages/home-phone.html) shows no daemon panel, consistent with the panel being desktop-only, so the pills follow the panel. Rewording web-overview-fast rather than retiring it keeps its guarantee that / never blocks on a slow health check, which Home needs just as Overview did.",
+          "statement": "Home's desktop daemon panel keeps the health pills: besides load, version and usage it shows each health part with its ok, warn or bad state from the web UI's cached health report, pending (not failed) until the first report lands. web-overview-fast stays standing and is reworded to name Home at / and its daemon fragment instead of the Overview page, with its speed guarantee unchanged (answer at once from the cached report, at most one background refresh when older than about 30 s). web-home-daemon-panel's statement and acceptance add the health pills: its test shows them pending before the first report and shown once it lands. The phone layout still leaves the panel, and so the pills, out.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "web-home-daemon-panel-keeps-health",
+        "id": "01M7B2MKC256DQRVZASN37V5N8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7B2MKC256DQRVZASJ853WVG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B2MKC256DQRVZASJ853WVG",
+        "id": "01M7B2MKDRYMX2BCN1QM4JQ6VF",
+        "link": "01M7B2MKDRYMX2BCN1QH9G6AH8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B2D2RHM6AYH1RBN2K5H8BN",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M79NM3RJZFSZE1XHGHCRZSRM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B2MKFX6W15NQYE25Q05MB4",
+  "type": "ops",
+  "v": 1
+}
