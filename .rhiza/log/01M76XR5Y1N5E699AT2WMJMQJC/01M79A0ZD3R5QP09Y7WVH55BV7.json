@@ -1,0 +1,40 @@
+{
+  "actor": "01M799Z1YKDD665CQQEHCFNTYN",
+  "after": [
+    "01M799WYPMY6FHCKT2EBXV8F66"
+  ],
+  "at": "2026-11-13T01:58:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at eba9d2913 (detached checkout): re-ran every Checks: command; go test -trimpath -count=1 ./internal/guide/... exit 0 (TestBuildRetryText PASS), ./internal/api -run Guide exit 0, ./cmd/rhiza -run TestScripts/guide exit 0, rhiza ship generate exit 0 (0 changed), rhiza render exit 0 (only this verifier's own actor rendered). Read the diff: internal/guide/text/build-retry.md registered as topic build-retry; the test asserts inspect the working tree + earlier attempts' commits, `rhiza run status --json`, Address every finding exactly as written, one fix commit with the same `Leaf:` trailer, Never rewrite history; asserts tokens <= TopicCap/3 (192 of 333) and that none of the builder's shared blocks (test-scope, unstable-ci, command-budget, outside-work, never-list, session-done) are repeated."
+        },
+        "handle": "build-retry-topic-verified",
+        "id": "01M79A0ZAEK8K9ZK6KS4GCVQQX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79A0ZAEK8K9ZK6KS0N2GWHB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79A0ZAEK8K9ZK6KS0N2GWHB",
+        "id": "01M79A0ZBMK9X4YSZ88T60GX8H",
+        "link": "01M79A0ZBMK9X4YSZ88QA4K3YR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974G5P60MM2EHVR5M79X51",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79A0ZD3R5QP09Y7WVH55BV7",
+  "type": "ops",
+  "v": 1
+}

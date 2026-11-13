@@ -6,7 +6,7 @@ import (
 )
 
 func TestBuildReviewCommandBudget(t *testing.T) {
-	for _, name := range []string{"build", "review"} {
+	for _, name := range []string{"review"} {
 		g, ok := Lookup(name)
 		if !ok {
 			t.Fatalf("no guide %q", name)

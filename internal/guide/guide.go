@@ -5,12 +5,15 @@
 // The guide comes in three layers, each with a size cap measured in
 // estimated tokens (Tokens): the session start a hook prints (StartCap),
 // a skill (SkillCap) and a topic (TopicCap). The texts are markdown files
-// embedded from text/; this package only looks them up and measures them.
+// embedded from text/; a line `<!-- shared: <block> -->` in one is replaced
+// by text/shared/<block>.md when the guide loads; this package only looks them up and measures them.
 package guide
 
 import (
 	"embed"
+	"fmt"
 	"slices"
+	"strings"
 )
 
 // The size caps, in estimated tokens.
@@ -48,7 +51,7 @@ func (t Text) Cap() int {
 	return TopicCap
 }
 
-//go:embed text/*.md
+//go:embed text/*.md text/shared/*.md
 var files embed.FS
 
 // entry is one text's name, file and description.
@@ -97,6 +100,8 @@ var topics = []entry{
 	{name: "apply", file: "apply.md", description: "The rhiza apply file format: many writes in one JSON file."},
 	{name: "arbiter", file: "arbiter.md", description: "The arbiter: deciding one question in an autonomous run, the one answering Decision and its wording and reasoning, then done."},
 	{name: "build", file: "build.md", description: "Building a change set's leaves: a builder's one commit with a Leaf: trailer, outside work as a question or a discovered-from draft change set, a verifier's Evidence or findings. Load it when you run as a builder or verifier of a build run."},
+	{name: "build-retry", file: "build-retry.md", description: "A builder's later attempt: inspect the working tree and the earlier attempts' commits for partial work, read the previous attempt's findings, address every finding as written, add one fix commit with the same Leaf: trailer, never rewrite history. Load it when RHIZA_ATTEMPT is above 1."},
+	{name: "builder", file: "builder.md", description: "The builder of a build run: one leaf, its acceptance as the contract, read the slice and the existing pattern first, the pre-handoff checklist and a Checks: block, one commit with the trailers and the staged actor record, then session done. Load it when you run as the builder of a leaf."},
 	{name: "carving", file: "carving.md", description: "Carving: moving nodes from one change set to another under the same IDs, what moves, the rules."},
 	{name: "change-sets", file: "change-sets.md", description: "Change sets: intention and record, the lifecycle, which change set a write goes into, --record."},
 	{name: "import", file: "import.md", description: "Import: bringing an existing repo with built code into Rhiza in seven steps: init, survey, record built capabilities, bring in decisions, retire planning documents into Sources, draft change sets for unbuilt work, verify."},
@@ -104,6 +109,7 @@ var topics = []entry{
 	{name: "reopening", file: "reopening.md", description: "Reopening: taking a change set landed only on its branch back to accepted, the refusal once it is on main, never deleting log entries."},
 	{name: "review", file: "review.md", description: "Reviewing a built change set: five checks' findings with severities from the merge-base, a critic's verdicts that add no finding, fixers' commits with a Leaf: or Review: trailer, outside work as a question or a discovered-from draft change set, the QA check's Evidence. Load it when you run as a check, critic or fixer of a review run."},
 	{name: "sources", file: "sources.md", description: "Source nodes: the stored fields, the raw material's hash, and how scrub feeds rhiza source add."},
+	{name: "verifier", file: "verifier.md", description: "The verifier of a build run: a detached checkout at the leaf's commit, re-run the Checks: block and the acceptance, read the diff, never edit code, fakes only, then Evidence or findings that name a file, command or acceptance point, then session done. Load it when you run as the verifier of a leaf."},
 	{name: "workflows", file: "workflows.md", description: "Writing a custom workflow: the resolution layers, step kinds and their keys, outcomes and reserved targets, includes, dispatch.toml and request --workflow, and the loop of workflow ls, new, describe, check and run start --dry-run."},
 }
 
@@ -115,7 +121,11 @@ var texts = func() []Text {
 		if err != nil {
 			panic("guide: " + err.Error())
 		}
-		out = append(out, Text{Name: e.name, Description: e.description, Body: string(b), Skill: e.skill})
+		body, err := Expand(string(b), loadShared)
+		if err != nil {
+			panic("guide: " + e.file + ": " + err.Error())
+		}
+		out = append(out, Text{Name: e.name, Description: e.description, Body: body, Skill: e.skill})
 	}
 	return out
 }()
@@ -145,4 +155,57 @@ func Lookup(name string) (Text, bool) {
 // rounded up.
 func Tokens(s string) int {
 	return (len(s) + 3) / 4
+}
+
+// Expand replaces each line `<!-- shared: <block> -->` of body with the
+// text of that block, as block returns it. A block it does not know is an
+// error naming the block. A marker `<!-- shared: <block> nested -->`
+// demotes the block's headings one level, so the block sits inside the
+// section that holds the marker instead of opening a section of its own.
+func Expand(body string, block func(name string) (string, bool)) (string, error) {
+	lines := strings.Split(body, "\n")
+	for i, l := range lines {
+		l = strings.TrimSpace(l)
+		name, ok := strings.CutPrefix(l, "<!-- shared:")
+		if !ok {
+			continue
+		}
+		name, ok = strings.CutSuffix(name, "-->")
+		if !ok {
+			continue
+		}
+		name = strings.TrimSpace(name)
+		name, nested := strings.CutSuffix(name, " nested")
+		name = strings.TrimSpace(name)
+		text, found := block(name)
+		if !found {
+			return "", fmt.Errorf("unknown shared block %q", name)
+		}
+		text = strings.TrimRight(text, "\n")
+		if nested {
+			text = demote(text)
+		}
+		lines[i] = text
+	}
+	return strings.Join(lines, "\n"), nil
+}
+
+// demote adds one level to every markdown heading line of text.
+func demote(text string) string {
+	lines := strings.Split(text, "\n")
+	for i, l := range lines {
+		if strings.HasPrefix(l, "#") {
+			lines[i] = "#" + l
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+// loadShared reads the shared block called name from text/shared/.
+func loadShared(name string) (string, bool) {
+	b, err := files.ReadFile("text/shared/" + name + ".md")
+	if err != nil {
+		return "", false
+	}
+	return string(b), true
 }

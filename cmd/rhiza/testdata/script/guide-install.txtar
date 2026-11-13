@@ -3,7 +3,7 @@
 # repository's .claude/skills/rhiza with --project. HOME is $WORK/home,
 # set by the harness, never the real one.
 
-# A user install needs no repository and writes the seven files.
+# A user install needs no repository and writes the ten files.
 ! exists .rhiza
 exec rhiza guide install --agent claude
 cmpenv stdout first.txt
@@ -13,6 +13,9 @@ exists $HOME/.claude/skills/rhiza/SKILL.md
 exists $HOME/.claude/skills/rhiza/skills/rhiza-scrub/SKILL.md
 exists $HOME/.claude/skills/rhiza/skills/rhiza-plan/SKILL.md
 exists $HOME/.claude/skills/rhiza/skills/rhiza-build/SKILL.md
+exists $HOME/.claude/skills/rhiza/skills/rhiza-build-retry/SKILL.md
+exists $HOME/.claude/skills/rhiza/skills/rhiza-builder/SKILL.md
+exists $HOME/.claude/skills/rhiza/skills/rhiza-verifier/SKILL.md
 exists $HOME/.claude/skills/rhiza/skills/rhiza-review/SKILL.md
 
 # Each SKILL.md starts with its frontmatter, then the guide text.
@@ -32,7 +35,27 @@ exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-build/SKILL.md
 cp stdout build-body.txt
 exec rhiza guide build
 cmp stdout build-body.txt
-grep '^Leaf: export-csv$' $HOME/.claude/skills/rhiza/skills/rhiza-build/SKILL.md
+grep 'rhiza guide builder' $HOME/.claude/skills/rhiza/skills/rhiza-build/SKILL.md
+
+# The builder, verifier and build-retry topics are skills the same way.
+exec head -4 $HOME/.claude/skills/rhiza/skills/rhiza-builder/SKILL.md
+stdout '\A---\nname: rhiza-builder\ndescription: "The builder of a build run: .*"\n---\n\z'
+exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-builder/SKILL.md
+cp stdout builder-body.txt
+exec rhiza guide builder
+cmp stdout builder-body.txt
+exec head -4 $HOME/.claude/skills/rhiza/skills/rhiza-verifier/SKILL.md
+stdout '\A---\nname: rhiza-verifier\ndescription: "The verifier of a build run: .*"\n---\n\z'
+exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-verifier/SKILL.md
+cp stdout verifier-body.txt
+exec rhiza guide verifier
+cmp stdout verifier-body.txt
+exec head -4 $HOME/.claude/skills/rhiza/skills/rhiza-build-retry/SKILL.md
+stdout '\A---\nname: rhiza-build-retry\ndescription: "A builder.s later attempt: .*"\n---\n\z'
+exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-build-retry/SKILL.md
+cp stdout retry-body.txt
+exec rhiza guide build-retry
+cmp stdout retry-body.txt
 
 # The review topic is installed as the rhiza-review skill the same way.
 exec head -4 $HOME/.claude/skills/rhiza/skills/rhiza-review/SKILL.md
@@ -122,7 +145,7 @@ exec sh -c 'rhiza guide install --agent claude 2>/dev/null; echo exit $?'
 stdout '^exit 3$'
 cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json foreign-plugin.json
 
-# --force writes the seven files and keeps the others.
+# --force writes the ten files and keeps the others.
 exec rhiza guide install --agent claude --force
 cmpenv stdout first.txt
 cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json plugin.json
@@ -142,13 +165,16 @@ mkdir proj
 cd proj
 exec rhiza init
 exec rhiza guide install --agent claude --project
-stdout '^Installed the Rhiza guide in .*/proj/\.claude/skills/rhiza \(7 written, 0 unchanged\)\.$'
+stdout '^Installed the Rhiza guide in .*/proj/\.claude/skills/rhiza \(10 written, 0 unchanged\)\.$'
 cmp .claude/skills/rhiza/.claude-plugin/plugin.json $WORK/plugin.json
 cmp .claude/skills/rhiza/hooks/hooks.json $WORK/hooks.json
 exists .claude/skills/rhiza/SKILL.md
 exists .claude/skills/rhiza/skills/rhiza-scrub/SKILL.md
 exists .claude/skills/rhiza/skills/rhiza-plan/SKILL.md
 exists .claude/skills/rhiza/skills/rhiza-build/SKILL.md
+exists .claude/skills/rhiza/skills/rhiza-build-retry/SKILL.md
+exists .claude/skills/rhiza/skills/rhiza-builder/SKILL.md
+exists .claude/skills/rhiza/skills/rhiza-verifier/SKILL.md
 exists .claude/skills/rhiza/skills/rhiza-review/SKILL.md
 fold-ok
 
@@ -156,7 +182,7 @@ fold-ok
 # install's partial write, not foreign: the install writes plugin.json back.
 exec sh -c 'rm .claude/skills/rhiza/.claude-plugin/plugin.json'
 exec rhiza guide install --agent claude --project
-stdout '\(1 written, 6 unchanged\)'
+stdout '\(1 written, 9 unchanged\)'
 cmp .claude/skills/rhiza/.claude-plugin/plugin.json $WORK/plugin.json
 
 # A project conflict's next keeps --project.
@@ -165,28 +191,31 @@ exec sh -c 'rm .claude/skills/rhiza/.claude-plugin/plugin.json && echo mine > .c
 stderr '^next: rhiza guide install --agent claude --force --project$'
 
 -- first.txt --
-Installed the Rhiza guide in $HOME/.claude/skills/rhiza (7 written, 0 unchanged).
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (10 written, 0 unchanged).
 
 - wrote .claude-plugin/plugin.json
 - wrote SKILL.md
 - wrote hooks/hooks.json
+- wrote skills/rhiza-build-retry/SKILL.md
 - wrote skills/rhiza-build/SKILL.md
+- wrote skills/rhiza-builder/SKILL.md
 - wrote skills/rhiza-plan/SKILL.md
 - wrote skills/rhiza-review/SKILL.md
 - wrote skills/rhiza-scrub/SKILL.md
+- wrote skills/rhiza-verifier/SKILL.md
 -- again.txt --
-Installed the Rhiza guide in $HOME/.claude/skills/rhiza (0 written, 7 unchanged).
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (0 written, 10 unchanged).
 -- version.txt --
-Installed the Rhiza guide in $HOME/.claude/skills/rhiza (1 written, 6 unchanged).
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (1 written, 9 unchanged).
 
 - wrote .claude-plugin/plugin.json
 -- restored.txt --
-Installed the Rhiza guide in $HOME/.claude/skills/rhiza (1 written, 6 unchanged).
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (1 written, 9 unchanged).
 
 - wrote skills/rhiza-plan/SKILL.md
 -- plugin.json --
 {
-  "description": "The Rhiza agent guide: the rhiza, rhiza-scrub, rhiza-plan, rhiza-build and rhiza-review skills, and a SessionStart hook that runs rhiza status --hook.",
+  "description": "The Rhiza agent guide: the rhiza, rhiza-scrub, rhiza-plan, rhiza-build, rhiza-builder, rhiza-verifier, rhiza-build-retry and rhiza-review skills, and a SessionStart hook that runs rhiza status --hook.",
   "name": "rhiza",
   "rhiza": {
     "installed_by": "rhiza guide install"

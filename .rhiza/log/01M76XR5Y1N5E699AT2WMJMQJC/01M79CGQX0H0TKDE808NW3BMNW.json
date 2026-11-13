@@ -1,0 +1,40 @@
+{
+  "actor": "01M79CEY6D6RW273AZKC2XMM7M",
+  "after": [
+    "01M79CCRS30XAB1TEHK0F4S9C7"
+  ],
+  "at": "2026-11-13T02:41:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 90cf3007a, attempt 5, as verifier: go test -trimpath -count=1 ./internal/api -run GuideInstall passed, incl. TestGuideInstallRoleSkills (rhiza-builder, rhiza-verifier, rhiza-build-retry SKILL.md written with topic description and expanded body; second install reports them in Unchanged) and the pluginPaths written/unchanged round trip. go test -trimpath -count=1 ./internal/guide/... passed; TestBuildIsAnIndex asserts the build index names builder, verifier and build-retry each by skill (/rhiza-builder etc.) and `rhiza guide` route, and that the topics exist. go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(guide|guide-install|build-evidence-commit)$' passed: guide.txtar checks guide ls lists build-retry, builder, verifier; guide-install.txtar checks the three new skill paths in the install output and their frontmatter/body against `rhiza guide <topic>`; build-evidence-commit.txtar's fake builder evals the actor-record git add line from `rhiza guide builder`. A scratch build's `rhiza guide build` prints the short index naming the three role topics and which role loads each."
+        },
+        "handle": "build-role-skills-installed-verified-5",
+        "id": "01M79CGQTFJHSWJRH7JPK35BRQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79CGQTFJHSWJRH7JM499BQM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79CGQTFJHSWJRH7JM499BQM",
+        "id": "01M79CGQVSMMEKQBK8QT815RDK",
+        "link": "01M79CGQVSMMEKQBK8QQ4V8PAV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974G8PCWZ6YB020VYE5FRB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79CGQX0H0TKDE808NW3BMNW",
+  "type": "ops",
+  "v": 1
+}

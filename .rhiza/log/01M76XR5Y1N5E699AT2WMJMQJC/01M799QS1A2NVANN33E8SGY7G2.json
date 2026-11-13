@@ -1,0 +1,40 @@
+{
+  "actor": "01M799NRHTFB97Y68QMF92X0BV",
+  "after": [
+    "01M799CCTZ8A1VK8GJ43JXB3M4"
+  ],
+  "at": "2026-11-13T01:53:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At efc2f11f8 (detached) re-ran every Checks: command: go test -trimpath -count=1 ./internal/guide/... exit 0, ./internal/api -run Guide exit 0, ./cmd/rhiza -run TestScripts/guide exit 0, rhiza ship generate exit 0 (0 files changed), rhiza render exit 0 (no tracked changes). Acceptance go test -trimpath ./internal/guide/... passes. Read the diff: internal/guide/verifier_test.go TestVerifierText checks the six headings in order, the session-done, test-scope, command-budget and never-list shared blocks expanded, detached checkout, Never edit code, fakes only, the Checks: and acceptance re-run with the missing-block/different-exit-code finding naming the command (TestBuildVerifierRerunsChecks removed from build_test.go), the scope and no-stubs points, the Evidence apply example, the rhiza run findings heredoc and the finding-names-file/command/acceptance-point rule, plus a negative case banning builder commit/trailer instructions. rhiza guide verifier prints the expanded text; guide ls count and List order updated. No stubs or changes outside the leaf."
+        },
+        "handle": "verifier-topic-verified",
+        "id": "01M799QRXRQ6YK5DCJ81N02Y7X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M799QRXRQ6YK5DCJ80RZQVC3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M799QRXRQ6YK5DCJ80RZQVC3",
+        "id": "01M799QRZ7N41SB1DK214W96F2",
+        "link": "01M799QRZ7N41SB1DK1YAWGDPS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974G189EFBV82T8PZ626EZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M799QS1A2NVANN33E8SGY7G2",
+  "type": "ops",
+  "v": 1
+}

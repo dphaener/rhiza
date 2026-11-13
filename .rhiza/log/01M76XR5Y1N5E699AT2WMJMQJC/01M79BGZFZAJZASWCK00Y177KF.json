@@ -1,0 +1,41 @@
+{
+  "actor": "01M79BFT02K47X3JQ99HV3NEDD",
+  "after": [
+    "01M79BD7XX6D2SXB1QNRT181FY"
+  ],
+  "at": "2026-11-13T02:24:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6M0F9J7KPR4WJWBDNEQAQJ7",
+        "handle": null,
+        "id": "01M79BGZDFT6QZGP0P29RH6KA0",
+        "node": "01M6M0F9J7KPR4WJWBDMZ4X2WP",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestBuiltinRolePromptsScopeTests loads the built-in build and review workflows and asserts each check, critic and fixer prompt carries the rule, skipping the one-line /rhiza-builder and /rhiza-verifier prompts, and that none contains go test, make check, make test or testscript; go test -trimpath ./internal/guide -run 'TestBuilderText|TestVerifierText' asserts the builder and verifier topics carry the shared test-scope block; each cmd/rhiza testscript whose golden output prints these prompts passes, run by name with go test -trimpath ./cmd/rhiza -run 'TestScripts/<name>'",
+          "statement": "Every check, critic and fixer prompt of the built-in build and review workflows tells the agent to run only the tests covering what its change touches and never the repo's full suite, which the PR's CI runs; the build roles' one-line /rhiza-builder and /rhiza-verifier prompts carry no rule and get it instead from the builder and verifier guide topics' shared test-scope block. No prompt names a Go, make or testscript command"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M76XY43WSHZDCT6WSDQ2H20G",
+        "handle": null,
+        "id": "01M79BGZES175FH5CMBB6R8JHP",
+        "node": "01M76XY43WSHZDCT6WSCK7ATYJ",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide -run TestBuilderText asserts internal/guide/text/builder.md's Must do section names the acceptance commands, rhiza ship generate, rhiza render and the Checks: block with exit codes, and that the Checks: block sits above the one final trailer paragraph (guides-one-final-paragraph still holds).",
+          "statement": "The builder guide topic (rhiza guide builder) tells a builder, before its one leaf commit, to run the leaf's acceptance commands, then rhiza ship generate and rhiza render, fold every file they change into the commit, and list each command it ran with its exit code in a Checks: block of the commit body, above the trailer paragraph. The one-line builder prompt only points at the topic."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79BGZFZAJZASWCK00Y177KF",
+  "type": "ops",
+  "v": 1
+}
