@@ -2765,6 +2765,39 @@ func TestGateStep(t *testing.T) {
 			t.Errorf("detail %q", st.Steps[0].Detail)
 		}
 	})
+	t.Run("included gate keeps output in the run directory", func(t *testing.T) {
+		const outer = "name = \"wf\"\n[step.sub]\nkind = \"workflow\"\nworkflow = \"inner\"\n"
+		const inner = "name = \"inner\"\n[step.ig]\nkind = \"gate\"\ncommands = [\"boom\"]\n"
+		def, err := workflow.ParseWith("wf", []byte(outer), func(string) ([]byte, error) { return []byte(inner), nil })
+		if err != nil {
+			t.Fatal(err)
+		}
+		store := newStore(t)
+		if err := Start(store, runID, Started{Workflow: "wf", Definition: outer, Includes: def.Includes, Change: "CS1"}, t0, def); err != nil {
+			t.Fatal(err)
+		}
+		r := newFakeRunner()
+		r.store = store
+		r.codes["inner/ig"] = []int{4}
+		e := &Engine{Store: store, Runner: outputRunner{r, map[string]string{"boom": "inner-out\n"}}, Clock: &fakeClock{}, Now: func() time.Time { return at(1) }}
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		path := filepath.Join(store.RunDir(runID), "gate-inner_ig-1-1.log")
+		var d string
+		for _, s := range st.Steps {
+			if s.Step == "inner/ig" {
+				d = s.Detail
+			}
+		}
+		if !strings.Contains(d, "full output: "+path) {
+			t.Errorf("detail %q lacks %q", d, path)
+		}
+		if got, err := os.ReadFile(path); err != nil || string(got) != "inner-out\n" {
+			t.Errorf("kept %q, %v", got, err)
+		}
+	})
 	t.Run("runner error fails the run", func(t *testing.T) {
 		e, r, _, _ := setup(t, gateWF)
 		r.failOn["gate"] = errors.New("sh: not found")

@@ -775,7 +775,7 @@ func (r *running) gate(step workflow.Step, env []string) result {
 		}
 		line := fmt.Sprintf("command %d `%s`: exit %d", i+1, c, code)
 		dir := r.e.Store.RunDir(r.j.ID)
-		path := filepath.Join(dir, fmt.Sprintf("gate-%s-%d-%d.log", step.Name, visit, i+1))
+		path := filepath.Join(dir, fmt.Sprintf("gate-%s-%d-%d.log", safeName(step.Name), visit, i+1))
 		if err := os.MkdirAll(dir, 0o755); err == nil {
 			err = os.WriteFile(path, []byte(out), 0o644)
 		}
