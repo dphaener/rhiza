@@ -16,9 +16,24 @@ import (
 
 func TestChangeSetPage(t *testing.T) {
 	ctx := fixtureCtx(t)
-	// A dependency, landed.
+	// The done point the landed change set serves.
+	newChange(t, ctx, "Milestones", "record")
+	callJSON(t, ctx, "add", `{"kind":"intent","handle":"reliable","fields":["statement=Deliveries are reliable","milestone=1"]}`)
+	callJSON(t, ctx, "land", `{}`)
+
+	// A dependency, landed: three verified leaves, a PR, why it exists.
 	base := newChange(t, ctx, "Base work", "intention")
-	callJSON(t, ctx, "add", `{"kind":"capability","handle":"base-cap","fields":["statement=Base capability","acceptance=Base check"]}`)
+	callJSON(t, ctx, "link", `{"from":"`+base+`","type":"serves","to":"reliable"}`)
+	for _, l := range []string{"one", "two", "three"} {
+		callJSON(t, ctx, "add", `{"kind":"capability","handle":"base-`+l+`","fields":["statement=Base capability `+l+`","acceptance=Base check `+l+`"]}`)
+		callJSON(t, ctx, "add", `{"kind":"evidence","handle":"base-`+l+`-ok","fields":["statement=Ran check `+l+`","result=PASS","status=verified"]}`)
+		callJSON(t, ctx, "link", `{"from":"base-`+l+`-ok","type":"verifies","to":"base-`+l+`"}`)
+	}
+	callJSON(t, ctx, "add", `{"kind":"evidence","handle":"base-pr","fields":["statement=Base PR passed CI","result=ok","pr=https://github.com/x/y/pull/498","status=verified"]}`)
+	callJSON(t, ctx, "add", `{"kind":"decision","handle":"base-dec","fields":["statement=Base work ships first","question=What ships first?","wording=Base first"]}`)
+	callJSON(t, ctx, "link", `{"from":"base-one","type":"decided-by","to":"base-dec"}`)
+	callJSON(t, ctx, "add", `{"kind":"question","handle":"base-q","fields":["statement=Does base work need a flag?"]}`)
+	callJSON(t, ctx, "add", `{"kind":"source","handle":"base-src","fields":["title=Base planning talk","summary=Scrubbed talk","raw_sha256=`+strings.Repeat("b", 64)+`"]}`)
 	callJSON(t, ctx, "propose", `{}`)
 	callJSON(t, ctx, "accept", `{}`)
 	callJSON(t, ctx, "land", `{}`)
@@ -36,17 +51,25 @@ func TestChangeSetPage(t *testing.T) {
 	callJSON(t, ctx, "link", `{"from":"gone-q","type":"blocks","to":"retry-b"}`)
 	callJSON(t, ctx, "propose", `{}`)
 
-	var whyIDs []string
-	for _, h := range []string{"retry-dec", "gone-q", "retry-src"} {
-		b, _ := json.Marshal(callJSON(t, ctx, "show", `{"ref":"`+h+`","view":"what-if:`+cs+`"}`))
-		var sv struct {
-			Node struct {
-				ID string `json:"id"`
-			} `json:"node"`
+	nodeIDs := func(view string, handles ...string) []string {
+		var ids []string
+		for _, h := range handles {
+			b, _ := json.Marshal(callJSON(t, ctx, "show", `{"ref":"`+h+`","view":"`+view+`"}`))
+			var sv struct {
+				Node struct {
+					ID string `json:"id"`
+				} `json:"node"`
+			}
+			json.Unmarshal(b, &sv)
+			if sv.Node.ID == "" {
+				t.Fatalf("no ID for %s in %s", h, view)
+			}
+			ids = append(ids, sv.Node.ID)
 		}
-		json.Unmarshal(b, &sv)
-		whyIDs = append(whyIDs, sv.Node.ID)
+		return ids
 	}
+	whyIDs := nodeIDs("what-if:"+cs, "retry-dec", "gone-q", "retry-src")
+	baseWhyIDs := nodeIDs("as-is", "base-dec", "base-q", "base-src")
 
 	// The dependency comes from another change set, as a landed plan's does.
 	newChange(t, ctx, "Plan the order", "intention")
@@ -70,6 +93,20 @@ func TestChangeSetPage(t *testing.T) {
 	if err := rs.Create("runone", run.Entry{Type: run.TypeStarted, At: at, Step: "build",
 		Started: &run.Started{Workflow: "build", Change: cs}}); err != nil {
 		t.Fatal(err)
+	}
+	// A finished run on the landed change set, four and a half minutes long.
+	if err := rs.Create("runbase", run.Entry{Type: run.TypeStarted, At: at.Add(-time.Hour), Step: "build",
+		Started: &run.Started{Workflow: "ship", Change: base}}); err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range []run.Entry{
+		{Type: run.TypeEntered, At: at.Add(-time.Hour), Step: "build", Visit: 1},
+		{Type: run.TypeEnded, At: at.Add(-time.Hour + 4*time.Minute + 30*time.Second), Step: "build", Visit: 1, Outcome: "pass"},
+		{Type: run.TypeFinished, At: at.Add(-time.Hour + 4*time.Minute + 30*time.Second), Step: "build", End: run.Succeeded},
+	} {
+		if err := rs.Append("runbase", e); err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	h := web.Handler(api.ReadOnlyHandler(ctx))
@@ -101,7 +138,7 @@ func TestChangeSetPage(t *testing.T) {
 			t.Errorf("missing %q in:\n%s", s, body)
 		}
 	}
-	for _, h := range []string{"retry-a", "gone-q", "base-cap"} {
+	for _, h := range []string{"retry-a", "gone-q", "base-one"} {
 		if strings.Contains(body, h) {
 			t.Errorf("the page shows handle %s", h)
 		}
@@ -115,9 +152,38 @@ func TestChangeSetPage(t *testing.T) {
 		t.Fatalf("/changes/%s: %d %s", base, rec.Code, rec.Body)
 	}
 	body = rec.Body.String()
-	for _, s := range []string{"Base work", "landed", "Base capability", "Base check", "Shipped", "2026-10-24 12:00", "1 leaf, 0 with evidence"} {
+	for _, s := range []string{
+		"Base work", "landed", "3 leaves, 3 with evidence",
+		"Base capability one", "Base check one", "Base capability two", "Base check two", "Base capability three", "Base check three",
+		"<dt>Shipped</dt><dd>2026-10-24 12:00</dd>",
+		`<dt>Pull request</dt><dd><a href="https://github.com/x/y/pull/498">PR #498</a></dd>`,
+		`<dt>Run</dt><dd><a href="/runs/runbase">ship, 4m 30s</a></dd>`,
+		`<dt>Serves</dt><dd><a href="/roadmap">Deliveries are reliable</a></dd>`,
+		"Base work ships first", "Does base work need a flag?", "Base planning talk",
+		"<span>Proposed</span>", "<span>Accepted</span>", "<span>Landed</span>",
+	} {
 		if !strings.Contains(body, s) {
 			t.Errorf("landed page: missing %q in:\n%s", s, body)
+		}
+	}
+	if n := strings.Count(body, "Verified, has evidence"); n != 3 {
+		t.Errorf("landed page: %d verified leaves, want 3", n)
+	}
+	if strings.Contains(body, base) {
+		t.Error("the landed page shows the change set's ID")
+	}
+	for _, h := range []string{"base-one", "base-dec", "base-q", "base-src"} {
+		if strings.Contains(body, h) {
+			t.Errorf("the landed page shows handle %s", h)
+		}
+	}
+	scoped = serve(root, "GET", "/p/proj/changes/"+base)
+	if scoped.Code != 200 {
+		t.Fatalf("scoped landed: %d %s", scoped.Code, scoped.Body)
+	}
+	for _, id := range baseWhyIDs {
+		if !strings.Contains(scoped.Body.String(), `href="/p/proj/nodes/`+id+`"`) {
+			t.Errorf("landed page: no link to /p/proj/nodes/%s", id)
 		}
 	}
 	// A draft with no leaves says it has none yet.
