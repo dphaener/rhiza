@@ -1,0 +1,24 @@
+{{define "content"}}<div class="rz-grid rz-grid--2">
+  <div class="rz-stack">
+    <div class="rz-detailhead">
+      <p class="rz-kicker rz-nodekind">{{template "glyph" (Glyph .Data.Kind)}}{{.Data.KindLabel}}{{if .Data.Retired}} · retired{{end}}</p>
+      <h1>{{.Data.Statement}}</h1>
+      {{if .Data.Summary}}<p class="rz-lede">{{.Data.Summary}}</p>{{end}}
+    </div>
+    {{if .Data.Quote}}<figure class="rz-quote"><p class="rz-kicker">In your words</p>
+      <blockquote>“{{.Data.Quote}}”</blockquote>
+      {{if or .Data.QuoteWhere .Data.Question}}<figcaption>{{if .Data.QuoteWhere}}{{.Data.QuoteWhere}}{{end}}{{if .Data.Question}}{{if .Data.QuoteWhere}}, {{end}}answering: {{.Data.Question}}{{end}}</figcaption>{{end}}</figure>
+    {{else if .Data.Wording}}<figure class="rz-quote"><p class="rz-kicker">Picked by you</p>
+      <blockquote>{{.Data.Wording}}</blockquote>
+      {{if .Data.Question}}<figcaption>Answering: {{.Data.Question}}</figcaption>{{end}}</figure>
+    {{else if .Data.Question}}<figure class="rz-quote"><p class="rz-kicker">Answering</p><p class="rz-lede">{{.Data.Question}}</p></figure>{{end}}
+    {{range .Data.Groups}}<section class="rz-nodegroup"><p class="rz-kicker">{{.Title}}</p>
+      <ul class="rz-links">{{range .Links}}<li><a class="rz-lk" href="{{.Href}}">{{template "glyph" (Glyph .Glyph)}}<span><b>{{.Text}}</b>{{if .Sub}}<small>{{.Sub}}</small>{{end}}</span></a></li>{{end}}</ul></section>{{end}}
+  </div>
+  <div class="rz-stack">
+    <section class="rz-panel"><div class="rz-panel-head"><div><p class="rz-kicker">Where it came from</p></div></div>
+      {{if .Data.Origins}}<ul class="rz-links">{{range .Data.Origins}}<li><a class="rz-lk" href="{{.Href}}">{{template "glyph" (Glyph .Glyph)}}<span><b>{{.Text}}</b>{{if .Sub}}<small>{{.Sub}}</small>{{end}}</span></a></li>{{end}}</ul>{{else}}<p class="rz-meta">Nothing recorded.</p>{{end}}</section>
+    <section class="rz-panel"><div class="rz-panel-head"><div><p class="rz-kicker">History</p></div></div>
+      <ul class="rz-history">{{range .Data.History}}<li>{{if .Datetime}}<time datetime="{{.Datetime}}">{{.Time}}</time>{{else}}<time>{{.Time}}</time>{{end}}<a href="{{.Href}}">{{.Text}}</a></li>{{else}}<li><span>No history yet</span></li>{{end}}</ul></section>
+  </div>
+</div>{{end}}
