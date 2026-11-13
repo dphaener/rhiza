@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M79NM3RJZFSZE1XHGHMH2QMV"
+  ],
+  "at": "2026-11-13T05:49:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestHomeNeedsYou covers one fixture of each kind (question, sign-off, failed run, stuck run, load hold) with its reason text, order oldest first, the count in the title, actions shown only for question and sign-off and pause for a hold, and the empty state; a run with a journal entry 5 minutes ago is not stuck.",
+          "statement": "Home opens with what needs the owner, as in pages/home-phone.html: every open question, sign-off, failed run, stuck run (no journal entry for 20 minutes while in an agent step) and hold, oldest first, each with its kind, a title, the reason in words, its age, a link to its run or change set and only the safe actions that apply; the title counts them ('3 things need you'), and with none it says nothing needs the owner."
+        },
+        "handle": "web-home-needs-you",
+        "id": "01M79Q8KK9D7VB062YN555X87D",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M79Q8KK9D7VB062YN1ASJC7B",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestHomeRunning shows a run in build with leaf n of m and the leaf's handle, a run in review, a run in ship, the phase bar's lit segment for each, elapsed time, and the title 'N runs, X of Y slots'.",
+          "statement": "Home lists the running runs, each with its change set's short title, what it is doing in words (for example 'Building leaf 3 of 6, check-compliance-topic'), a plan, build, review, ship bar with the current phase lit and its elapsed time, and the slots in use in the panel title."
+        },
+        "handle": "web-home-running",
+        "id": "01M79Q8KMEKXQ87W0GD1WBVWYY",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M79Q8KMEKXQ87W0GCYQFDMXM",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestHomeShipped shows today's merges newest first with times, yesterday's left out, the milestone's counts and segmented bar, and the daemon panel's load, version and usage.",
+          "statement": "Home shows what shipped today (change sets merged since local midnight, newest first, with times) and the open milestone's progress (landed, accepted and withdrawn change sets), and on desktop the daemon's load, version and usage, with a pause control when actions are on."
+        },
+        "handle": "web-home-shipped",
+        "id": "01M79Q8KP644DJDDTTN2XB3B0M",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M79Q8KP644DJDDTTMZMS5JH7",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8KK9D7VB062YN1ASJC7B",
+        "id": "01M79Q8KQEKKT4RNPDB9GGNGWK",
+        "link": "01M79Q8KQEKKT4RNPDB9B93MSC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR7247MFEZRXRCW6B9PCA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8KMEKXQ87W0GCYQFDMXM",
+        "id": "01M79Q8KRKKN2J5T36197WHJFJ",
+        "link": "01M79Q8KRKKN2J5T361774NBMV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6FNDYY7AFVCN7H8KZV6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8KP644DJDDTTMZMS5JH7",
+        "id": "01M79Q8KSS42PHGQRV83ZF0X1W",
+        "link": "01M79Q8KSS42PHGQRV806XWWR9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6FNDYY7AFVCN7H8KZV6",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79NM3RJZFSZE1XHGHCRZSRM",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79Q8KV7N4WNWEM1PQHE2NND",
+  "type": "ops",
+  "v": 1
+}

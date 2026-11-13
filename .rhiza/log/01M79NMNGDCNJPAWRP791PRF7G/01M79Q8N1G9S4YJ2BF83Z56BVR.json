@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M79NMNGDCNJPAWRP7CQ4Y2HJ"
+  ],
+  "at": "2026-11-13T05:49:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestRoadmapMilestones shows, for a two-project root, no row from the other project, the groups in order, titles from the change set's title field with the intent as the clamped sub-line, the state words, and finished milestones folded into one link.",
+          "statement": "The roadmap shows only its project's open milestones, as in pages/roadmap.html: each with its state in words (building, planned, designing), a segmented progress bar and counts, its done points folded, and its change sets grouped (building now, accepted, landed, drafts) with the short title, the intent clamped to two lines and a state pill; finished milestones fold into one link."
+        },
+        "handle": "web-roadmap-milestones",
+        "id": "01M79Q8MV18S71H4YZNBMM8CGS",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M79Q8MV0X9S3F52QJ8HB6ZRM",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestChangeSetPage shows a landed change set's facts, three leaves with statement, acceptance and a verified Evidence line, its decision, question and source linking to /p/<project>/nodes/<ref>, and its history; a draft with no leaves says it has none yet.",
+          "statement": "A change set's page shows, as in pages/change-set.html: its title, state and full intent; facts (when it shipped and its PR, its run and duration, the done point it serves, its ID); its leaves with statement, acceptance and Evidence state; why it exists (decisions, questions, sources), each linking to its model page; and its history."
+        },
+        "handle": "web-change-set-detail",
+        "id": "01M79Q8MWE8XTM6BXCY52RD8HK",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M79Q8MWE8XTM6BXCY3EXST92",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8MV0X9S3F52QJ8HB6ZRM",
+        "id": "01M79Q8MY9MPK8QNBJBSPCBVGM",
+        "link": "01M79Q8MY9MPK8QNBJBNQX5FVY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6FNDYY7AFVCN7H8KZV6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8MWE8XTM6BXCY3EXST92",
+        "id": "01M79Q8MZW00348GN5PRP3XW9J",
+        "link": "01M79Q8MZW00348GN5PN4FMAMN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6FNDYY7AFVCN7H8KZV6",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79NMNGDCNJPAWRP791PRF7G",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79Q8N1G9S4YJ2BF83Z56BVR",
+  "type": "ops",
+  "v": 1
+}
