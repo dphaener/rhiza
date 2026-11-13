@@ -1,0 +1,41 @@
+{
+  "actor": "01M7B2NG2HZ4N3F4WWDQF7EWWP",
+  "after": [
+    "01M7B2MKFX6W15NQYE25Q05MB4"
+  ],
+  "at": "2026-11-13T18:28:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding is right that web-overview-live names four retired sections and that no Home leaf says it is live. Retiring web-overview-live would drop a shipped behaviour (TestOverviewSectionsAreLive, the SSE stream in events.go, the section wrapper in sections.go) that Home needs even more than Overview did, since its whole job is answering 'does anything need me?' at a glance (web-first-job-needs-me) and a stale page answers it wrongly. So the guarantee carries over to Home rather than being dropped. This follows the same pattern the f4 ruling used for web-overview-fast (keep it standing, reword it to name Home and its daemon fragment). The events chosen are the existing five kinds (change, run, log, inbox, daemon): needs-you mixes inbox items, stuck runs (run journal and session state), waiting PRs (change set moves) and load/pause holds (daemon status), so it listens to all four; running shows phases and slots in use (run, daemon); shipped today and milestone progress move only when change sets do; the daemon panel, with the health pills kept by the f4 ruling, moves on daemon status. Rewording one standing node keeps the plan small and avoids adding a liveness clause to every Home leaf.",
+          "statement": "Home's sections stay live the way the Overview's were: web-overview-live stays standing and is reworded to name Home at / instead of the Overview page. Each Home section is a live section (sections.go's wrapper, data-rz-events) whose fragment URL renders that section alone and which re-renders on its events: the needs-you list (with its waiting PRs and holds) on inbox, run, change and daemon events; the running list and its slots title on run and daemon events; shipped today and the milestone on change events; the desktop daemon panel on daemon events. web-overview-live's acceptance is reworded the same way: a web package test asserts each Home section declares those events and that each section's fragment URL renders it alone. No new event kind is added.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "web-home-sections-live",
+        "id": "01M7B2Q063MJHRQ89ZDXFCF549",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7B2Q063MJHRQ89ZDST3PSHH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B2Q063MJHRQ89ZDST3PSHH",
+        "id": "01M7B2Q09QYX1B0N4ZA8A31Y15",
+        "link": "01M7B2Q09QYX1B0N4ZA7GBSM07",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B2D2V078FJWJFAAN8HS800",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M79NM3RJZFSZE1XHGHCRZSRM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B2Q0F76SF6W9C2FKSAFE9C",
+  "type": "ops",
+  "v": 1
+}

@@ -55,3 +55,5 @@ and `rhiza why <node> --change <cs> --json`, and the code and tests it names.
 
 Run `rhiza session done` only once the last `rhiza apply` has succeeded. A fresh plan review
 reads what you wrote.
+
+<!-- shared: contract-ref -->

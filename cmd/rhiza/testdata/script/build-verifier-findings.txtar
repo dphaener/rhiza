@@ -37,7 +37,7 @@ exec git add -A
 exec git commit -qm leaves
 
 ! exec rhiza run start --foreground --workflow build --permission-mode manual
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 
 # Every refusal in first's verifier exited 2 and left the journal as it
 # was; its two real calls each appended one entry.

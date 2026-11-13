@@ -53,10 +53,10 @@ exec sh -c '! grep -e --autonomous $WORK/detach.log'
 exec git config rhiza.autonomy.accept auto
 exec rhiza change new 'Plan B' --kind record --title 'Plan B' --json
 exec rhiza add intent want-b
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/before'
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
 exec rhiza run start --foreground --workflow hold --autonomous --no-wait
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runb'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runb'
 exec rhiza land
 exec sh -c 'rhiza change new "Serve B one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/b1'
 exec sh -c 'rhiza link $(cat $WORK/b1) serves want-b'
@@ -70,10 +70,10 @@ stdout '"state": "proposed"'
 # declaring accept = owner leaves its drafts proposed while the setting is auto.
 exec rhiza change new 'Plan C' --title 'Plan C' --json
 exec rhiza add intent want-c
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/before'
 cp $WORK/plan-hold.toml .rhiza/workflows/plan.toml
 exec rhiza run start --foreground --workflow plan --autonomous --no-wait
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runc'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runc'
 exec rhiza propose
 exec rhiza accept --reason ok
 exec rhiza land

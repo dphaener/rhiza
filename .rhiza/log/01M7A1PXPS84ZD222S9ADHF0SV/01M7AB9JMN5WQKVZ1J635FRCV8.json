@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AB1P1C480KQ8XMW1FXWEV4",
+  "after": [
+    "01M7A3NF9BGQF1M6HJ022SXGW1"
+  ],
+  "at": "2026-11-13T11:39:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 208a5fb re-ran the Checks block: go test -trimpath ./internal/workflow/... ok (TestBuiltinPlanReview: start plan/milestone-check, no interview or planner step, gate present); go test -trimpath ./cmd/rhiza -run TestScripts/plan-review-workflow ok (workflow describe lists no interview; run start --workflow plan-review --autonomous reaches plan/gate via milestone-check and review, only the reviewer prompt opens, change set accepted under rule autonomous); go test -trimpath ./cmd/rhiza -run 'TestScripts/(workflow-ls|plan-workflow|health|plan-milestone)' ok; rhiza ship generate exit 0; rhiza render exit 0. Diff touches only plan-review.toml (include plan, skip interview), workflow_test.go and the new txtar plus the actor record; no stubs or TODOs; fakes only for rex, claude and gh."
+        },
+        "handle": "plan-review-workflow-verified",
+        "id": "01M7AB9JJSRETXTBJGW2XM5WZG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AB9JJSRETXTBJGW0B90FD1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AB9JJSRETXTBJGW0B90FD1",
+        "id": "01M7AB9JKSNPJZWC0C6DQPHGH6",
+        "link": "01M7AB9JKSNPJZWC0C6BMY58C2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A26C10VA8H52GYENGK7NC4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7A1PXPS84ZD222S9ADHF0SV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AB9JMN5WQKVZ1J635FRCV8",
+  "type": "ops",
+  "v": 1
+}

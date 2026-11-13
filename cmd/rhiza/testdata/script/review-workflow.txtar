@@ -91,7 +91,7 @@ exec sh -c 'cd ../repo.review-me && rhiza show alpha-qa-1 --json'
 stdout '"kind": "evidence"'
 
 # build-check still passes: qa's Evidence by its own actor breaks nothing.
-exec sh -c 'RHIZA_RUN=$(ls .git/rhiza/runs | sed "s/\.jsonl$//") rhiza run build-check; echo exit=$?'
+exec sh -c 'RHIZA_RUN=$(ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//") rhiza run build-check; echo exit=$?'
 stdout '^exit=0$'
 
 # The owner approves: the run ends done, and the change set is still

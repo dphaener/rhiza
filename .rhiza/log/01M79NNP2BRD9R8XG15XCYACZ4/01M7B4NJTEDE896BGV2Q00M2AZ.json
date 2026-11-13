@@ -1,0 +1,69 @@
+{
+  "actor": "01M7B4KJ62Y6BTYFCEVVPNNVMH",
+  "after": [
+    "01M7B49K8GKF72KXNSBRJ0GMVQ"
+  ],
+  "at": "2026-11-13T19:03:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestWebToken shows every POST refused when no token is set, a POST refused with a wrong or missing token, the cookie set after a ?token= visit, and a bearer header accepted; go test -trimpath ./internal/api -run TestWebTokenSetting shows daemon.set accepts rhiza.web.token, the daemon's web handler (web_root.go) gates POSTs on the token it reads from that setting, and neither daemon.settings nor an unauthenticated GET /api/daemon.settings through WebProjectHandler returns the token's value.",
+          "statement": "A web token (rhiza.web.token, set with rhiza daemon set and read by the daemon's web handler) turns on the web UI's actions: a browser presents it once with ?token= and keeps it in an HttpOnly cookie, a script sends it as a bearer header; the token's value is never shown, so daemon.settings and the web UI's read-only API (GET /api/daemon.settings) report only whether it is set; without a token set, pages show no action controls and every POST is refused, and pages stay readable as today."
+        },
+        "handle": "web-token",
+        "id": "01M79Q8PX68N5R6XWD5RHK7GNX",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M79Q8PX68N5R6XWD5MHV6FKJ",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestWebAnswer|TestWebApprove' shows the answer and approve forms carry the CSRF field and are absent when no token is set, answers a question and approves a sign-off through POST with the token and the CSRF field, shows the confirmation, and refuses an answer or approve POST missing the CSRF field; go test -trimpath ./internal/api -run 'TestWebAnswerAction|TestWebApproveAction' shows a POST through WebProjectHandler, and through WebRootHandler's merged inbox at the root, runs the real question.answer and inbox.approve or run.approve on the project's log.",
+          "statement": "From the web UI the owner answers an open question (question.answer) and approves a sign-off (inbox.approve or run.approve), and the page then says what happened ('Answered. The run continues.')."
+        },
+        "handle": "web-action-answer",
+        "id": "01M79Q8PZE56YE4MSC7SZA7AP2",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M79Q8PZE56YE4MSC7P9GS5RT",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestWebPause|TestWebActionsOnly' shows the pause and resume forms carry the CSRF field and are absent when no token is set, pauses and resumes the daemon and a project through POST with the token and the CSRF field, refuses a pause or resume POST missing the CSRF field, and gets 404 or 405 for a POST to any other path, retry, abandon and merge included; go test -trimpath ./internal/api -run TestWebPauseAction shows a POST through WebProjectHandler and WebRootHandler writes rhiza.daemon.paused and the named project's rhiza.project.paused through daemon.set.",
+          "statement": "From the web UI the owner pauses or resumes the daemon or one project (rhiza.daemon.paused, rhiza.project.paused), and no other action exists: every other POST path is refused."
+        },
+        "handle": "web-action-pause",
+        "id": "01M79Q8Q1X2SDBPR5CNAZ07TAC",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M79Q8Q1X2SDBPR5CNADZJAS1",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestWebCSRF shows, through a test handler behind the gate, that a cookie-authenticated POST with the right CSRF field passes the gate and one with a missing or wrong CSRF field is refused, and that the CSRF value the gate hands pages for their forms is the one it accepts.",
+          "statement": "Every web UI POST authenticated by the token cookie must carry a CSRF field that the page's action forms include; a cookie POST with a missing or wrong CSRF field is refused, whatever action it names."
+        },
+        "handle": "web-csrf",
+        "id": "01M7B49JW37Q5ECBXE07P0NN2C",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M7B49JW37Q5ECBXE03TZF2EQ",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      }
+    ]
+  },
+  "change_set": "01M79NNP2BRD9R8XG15XCYACZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B4NJTEDE896BGV2Q00M2AZ",
+  "type": "ops",
+  "v": 1
+}

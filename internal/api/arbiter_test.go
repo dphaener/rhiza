@@ -3,11 +3,14 @@ package api
 import (
 	"fmt"
 	"math/rand"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/canon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
@@ -415,5 +418,124 @@ func TestArbiterPaneClosesAfterVerdict(t *testing.T) {
 				t.Errorf("verdict journalled at each close: %v, want it journalled before the one close", journalledAtClose)
 			}
 		})
+	}
+}
+
+// briefStart starts the arbiter (kind "arbiter") or an advisor (kind
+// "advisor") and returns its session record and the slice.json bytes
+// `rhiza slice --json` prints for the change set.
+func briefStart(t *testing.T, f *sessionFixture, r *stepRunner, kind, question string) (session.Record, []byte) {
+	t.Helper()
+	sc := *testCtx(f.worktree)
+	sc.ChangeRef = r.change
+	sl, err := callOp(t, &sc, "slice", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want, err := canon.Marshal(sl)
+	if err != nil {
+		t.Fatal(err)
+	}
+	step := workflow.Step{Name: workflow.ArbiterName, Kind: workflow.KindArbiter, Interval: workflow.DefaultInterval}
+	var sid string
+	if kind == "arbiter" {
+		sid, err = r.StartArbiter(step, question, nil)
+	} else {
+		sid, err = r.StartAdvisor(step, "S-asker", "Which store?", nil)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	rec, rerr := r.sessions.Read(sid)
+	if rerr != nil {
+		t.Fatal(rerr)
+	}
+	return rec, want
+}
+
+// An arbiter and an advisor each get their own directory keyed on the
+// session's ID, holding brief.md and slice.json as every run session's do,
+// with RHIZA_BRIEF and RHIZA_SLICE set; a second advisor for the same
+// asker gets another directory and leaves the first's files alone.
+func TestArbiterBrief(t *testing.T) {
+	f, r, wctx := arbiterFixture(t)
+	q := mustWrite(t, wctx, "add", `{"kind":"question","handle":"which-store","fields":["statement=Which store?"]}`).Nodes[0]
+	cs, err := id.Parse(r.change)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := copyChangeSetLog(f.ctx.Root, f.worktree, cs); err != nil {
+		t.Fatal(err)
+	}
+	checkBrief := func(kind string, rec session.Record, wantSlice []byte) string {
+		t.Helper()
+		want := filepath.Join(f.common, "rhiza", "runs", r.run, kind, rec.ID)
+		if rec.Brief != want {
+			t.Fatalf("%s: Brief = %q, want %q", kind, rec.Brief, want)
+		}
+		if b, ok := envOf(rec, envBrief); !ok || b != filepath.Join(want, "brief.md") {
+			t.Errorf("%s: RHIZA_BRIEF = %q, %v", kind, b, ok)
+		}
+		if s, ok := envOf(rec, envSlice); !ok || s != filepath.Join(want, "slice.json") {
+			t.Errorf("%s: RHIZA_SLICE = %q, %v", kind, s, ok)
+		}
+		got, err := os.ReadFile(filepath.Join(want, "slice.json"))
+		if err != nil || string(got) != string(wantSlice) {
+			t.Errorf("%s: slice.json differs (%v)\n got %s\nwant %s", kind, err, got, wantSlice)
+		}
+		if md, err := os.ReadFile(filepath.Join(want, "brief.md")); err != nil || len(md) == 0 {
+			t.Errorf("%s: brief.md %q (%v)", kind, md, err)
+		}
+		return want
+	}
+	arb, arbSlice := briefStart(t, f, r, "arbiter", q.String())
+	if arb.Prompt != fmt.Sprintf(arbiterPrompt, q) {
+		t.Errorf("arbiter prompt changed: %q", arb.Prompt)
+	}
+	checkBrief("arbiter", arb, arbSlice)
+	a1, s1 := briefStart(t, f, r, "advisor", "")
+	if a1.Prompt != fmt.Sprintf(advisorPrompt, "Which store?") {
+		t.Errorf("advisor prompt changed: %q", a1.Prompt)
+	}
+	d1 := checkBrief("advisor", a1, s1)
+	if err := os.WriteFile(filepath.Join(d1, "brief.md"), []byte("first\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	a2, s2 := briefStart(t, f, r, "advisor", "")
+	if d2 := checkBrief("advisor", a2, s2); d2 == d1 {
+		t.Errorf("two advisors share %s", d1)
+	}
+	if md, _ := os.ReadFile(filepath.Join(d1, "brief.md")); string(md) != "first\n" {
+		t.Errorf("first advisor's brief.md overwritten: %q", md)
+	}
+}
+
+// TestAdvisorBrief is TestArbiterBrief's advisor half under its own name.
+func TestAdvisorBrief(t *testing.T) { TestArbiterBrief(t) }
+
+// An unwritable runs directory fails the arbiter's start with its path and
+// starts no session.
+func TestArbiterBriefUnwritable(t *testing.T) {
+	f, r, wctx := arbiterFixture(t)
+	q := mustWrite(t, wctx, "add", `{"kind":"question","handle":"which-store","fields":["statement=Which store?"]}`).Nodes[0]
+	cs, _ := id.Parse(r.change)
+	if err := copyChangeSetLog(f.ctx.Root, f.worktree, cs); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(f.common, "rhiza"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	runs := filepath.Join(f.common, "rhiza", "runs")
+	if err := os.WriteFile(runs, []byte("not a directory"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	f.rex.calls = nil
+	step := workflow.Step{Name: workflow.ArbiterName, Kind: workflow.KindArbiter, Interval: workflow.DefaultInterval}
+	_, err := r.StartArbiter(step, q.String(), nil)
+	if err == nil || !strings.Contains(err.Error(), runs) {
+		t.Fatalf("error = %v, want one naming %s", err, runs)
+	}
+	if len(f.rex.calls) != 0 {
+		t.Errorf("rex called: %q", f.rex.calls)
 	}
 }

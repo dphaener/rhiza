@@ -38,7 +38,7 @@ exec git add -A
 exec git commit -qm review
 
 exec rhiza run start --foreground --workflow review --permission-mode manual
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 
 # Every refusal exited 2 and left the journal as it was; each real call
 # appended one entry.

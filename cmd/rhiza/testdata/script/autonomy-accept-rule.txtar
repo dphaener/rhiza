@@ -13,7 +13,7 @@ mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
 exec sh -c 'ls .git/rhiza/runs 2>/dev/null | sed "s/\.jsonl$//" > $WORK/before; true'
 exec rhiza run start --foreground --workflow hold --no-wait
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/run'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/run'
 exec rhiza propose
 
 # accept owner: refused as usage, nothing written.

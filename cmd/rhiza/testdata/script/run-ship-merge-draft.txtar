@@ -55,7 +55,7 @@ stdout '^0$'
 
 # The owner marks it ready and resumes: the run merges it.
 exec rm $WORK/draft
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 exec sh -c 'rhiza run resume --foreground "$(cat $WORK/runid)"; echo exit=$?'
 stdout '^Run \S+ succeeded$'
 exec sh -c 'grep -c "^pr merge" $WORK/gh.log'

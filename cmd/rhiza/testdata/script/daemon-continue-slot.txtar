@@ -22,7 +22,7 @@ exec git commit -qm init
 exec rhiza change new Three --title Three
 ! exec rhiza run start --foreground --workflow flaky
 stdout '^Run [0-9A-Z]{26} failed$'
-exec sh -c 'ls .git/rhiza/runs | sed "s/\..*//"'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\..*//"'
 cp stdout $WORK/run
 
 exec rhiza change new One --title One

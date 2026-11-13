@@ -1,0 +1,41 @@
+{
+  "actor": "01M7B2H7W4RVK2BM60JFW6TNBE",
+  "after": [
+    "01M7B2GNP3249FVA6YHSJRJ0FT"
+  ],
+  "at": "2026-11-13T18:26:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The critic confirmed the double count: watchdogCIRerun (internal/api/daemon_watchdog.go) only reads ended runs with Result Failed waiting on CI, and on red-again sets CIDone and leaves the run Failed, so inboxItems (internal/api/inbox.go:371) still lists it as InboxFailed. Every red-again PR therefore has a failed-run card too, so dropping the waiting-PR item would make the leaf empty, and keeping both breaks the intent's 'at a glance' count. The waiting-PR card carries the more specific reason (red again after the rerun, the PR link) and what to do, so it is the card to keep. The leaf already settles the parallel case for holds by showing one card and counting once; this extends the same rule to failed runs, and the acceptance gains the missing check.",
+          "statement": "A PR whose CI is red again after the watchdog's rerun is shown once on Home, as the waiting-PR item (CI red again after the rerun, its age, the change set's title, links to the PR and its run), and counted once in the title. Its failed run, which the inbox lists as InboxFailed, gets no separate failed-run card: web-home-needs-you leaves out a failed run that web-home-waiting-pr shows, the same way a held PR is shown only as its hold. web-home-waiting-pr's acceptance checks that such a PR, with its run ended Failed and listed in the inbox as failed, gives exactly one card and one count.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "web-home-red-pr-one-card",
+        "id": "01M7B2JFARC85N13Q2WKDQKHSS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7B2JFARC85N13Q2WFVVM2SD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B2JFARC85N13Q2WFVVM2SD",
+        "id": "01M7B2JFC3B1MHQWG50MZ2MEAQ",
+        "link": "01M7B2JFC3B1MHQWG50JMK30AV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B2D2NWZ5P34YAV2P6A5FCY",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M79NM3RJZFSZE1XHGHCRZSRM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B2JFE91AZKF6CJJAZ497C1",
+  "type": "ops",
+  "v": 1
+}

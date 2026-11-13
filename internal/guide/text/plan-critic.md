@@ -53,3 +53,5 @@ EOF
 
 Run `rhiza session done` only once `rhiza run verdict` has succeeded. A reviser fixes the
 confirmed major findings.
+
+<!-- shared: contract-ref -->

@@ -16,7 +16,7 @@ exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/
 exec rhiza add intent want-s
 exec rhiza run start --foreground --workflow shape --no-wait
 stdout '^Run (01[0-9A-Z]{24}) stopped$'
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 exec sh -c 'sed -i s/\"workflow\":\"shape\"/\"workflow\":\"ship-change\"/ .git/rhiza/runs/*.jsonl'
 exec rhiza land
 exec sh -c 'rhiza change show $(cat $WORK/cs) --json'

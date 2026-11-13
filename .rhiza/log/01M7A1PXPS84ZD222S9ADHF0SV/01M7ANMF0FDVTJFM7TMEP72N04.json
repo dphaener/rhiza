@@ -1,0 +1,86 @@
+{
+  "actor": "01M7AN6PZJ82JCK3MC9WSHKB7Y",
+  "after": [
+    "01M7AN174NWAKNJNC2QYW8WK0Z"
+  ],
+  "at": "2026-11-13T14:40:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a fresh build of the branch (go build -trimpath to a scratch path), in a scratch root with Rex faked and RHIZA_TEST_DETACH_LOG: rhiza daemon --once --permission-mode manual --max-runs 4 started 'run start --foreground <cs> --workflow plan-review --autonomous --permission-mode manual' for the two proposals with a leaf and no run and for one whose only run was abandoned; started nothing for a proposal with no leaves, one a finished plan-review run gated, one whose plan-review run failed, or one a plan-milestone run on another change set gated. With a live plan-review run on a proposal it was not restarted; --permission-mode auto passed through; an accepted change set went to the ship pick; with one slot used and --max-runs 2 the plan-review start took the free slot and the ship pick waited; with --max-runs 1 and the slot used nothing started; nothing started under rhiza.daemon.paused true or with low disk. A pending start is held only within one daemon process (separate --once processes restart it), as for ship starts. Scoped tests: go test -trimpath ./internal/api -run 'Proposals|Inbox' and TestScripts/daemon-plans-proposals pass."
+        },
+        "handle": "daemon-plans-uncovered-proposals-qa-1",
+        "id": "01M7ANME9MD0K3WFXAST66TX6P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ANME9MD0K3WFXASPB18WKT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ANME9MD0K3WFXASPB18WKT",
+        "id": "01M7ANMECTN2J4NA2DZ3CAWWM6",
+        "link": "01M7ANMECTN2J4NA2DZ26TPG7Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A26C4ZRFSRVS8ND06BE7NJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the scratch build: rhiza inbox --json listed each proposal with a leaf and no covering run as one accept item, detail 'waiting for acceptance: no plan run covers it', next 'rhiza accept --rule owner --change <id>', under rhiza.autonomy.accept auto; a proposal gated by a plan-review or plan-milestone run kept its single 'waiting for acceptance' item and was not listed twice; one whose plan-review run failed showed only its failed item; after rhiza accept (the item's next) and after a live plan-review run journaled, the item was gone; rhiza ready still says 'not accepted: proposed'. Rough edge: plain-text inbox and inbox open print 'run ,' for these run-less items (minor finding). TestScripts/inbox-uncovered-proposal and inbox-owner-run-accept pass."
+        },
+        "handle": "inbox-lists-uncovered-proposals-qa-1",
+        "id": "01M7ANMEK32WF805VJCHP76P2C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ANMEK32WF805VJCE83D7AB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ANMEK32WF805VJCE83D7AB",
+        "id": "01M7ANMEP7P6WQQG74GQVQBS65",
+        "link": "01M7ANMEP7P6WQQG74GMH0B3G9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A26CAT1FTRENTDNPR4XD18",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the scratch build: rhiza workflow ls lists plan-review as builtin; rhiza workflow describe plan-review starts at plan/milestone-check, includes plan, and lists no interview step or planner prompt (review, critic, check, revise, gate, PR steps); rhiza run start on an unknown change set with --workflow plan-review exits 4 with 'no change set'. go test -trimpath ./internal/workflow/... and TestScripts/plan-review-workflow, workflow-ls and plan-workflow pass (the end-to-end run reaching the gate and accepting under rule autonomous)."
+        },
+        "handle": "plan-review-workflow-qa-1",
+        "id": "01M7ANMESFBJQ6S45DTG9E45Z7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ANMESFBJQ6S45DTEB4QRQN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ANMESFBJQ6S45DTEB4QRQN",
+        "id": "01M7ANMEWQN2VZR72YTVEQH6KW",
+        "link": "01M7ANMEWQN2VZR72YTV7THKVT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A26C10VA8H52GYENGK7NC4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7A1PXPS84ZD222S9ADHF0SV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ANMF0FDVTJFM7TMEP72N04",
+  "type": "ops",
+  "v": 1
+}

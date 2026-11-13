@@ -45,3 +45,5 @@ Run it and stop.
 - Answer the question: no Decision, no message to the asking session.
 - Write anything else: no code, no nodes, no links.
 - Ask anyone or raise a question.
+
+<!-- shared: contract-ref -->

@@ -1,0 +1,1 @@
+See `rhiza guide contract`.

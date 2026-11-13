@@ -40,7 +40,8 @@ Runs one agent session with a prompt. It passes when the session says it is done
 
 Keys:
 
-- `prompt` (required): The agent's first prompt, a template over {change}, {slug}, {title}, {run} and {step}
+- `invoke` (required): The text the agent's session starts with, a template over {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf} and {attempt}; prompt is an alias, and a step sets only one of them
+- `handback`: The text a hand-back sends the agent's session, a template over the same placeholders
 - `agent`: The agent adapter's name; unset takes the run's, else the default
 - `permission_mode`: The agent's permission mode; unset takes the run's
 - `models`: Models in order of the attempt, visit or cycle; the last stays for every later one; unset takes the agent's default
@@ -144,7 +145,8 @@ Outcomes: `pass`, `fail`.
 
 A role (a builder, verifier, critic or fixer table, or one check) takes:
 
-- `prompt` (required): The role's first prompt to its agent
+- `invoke` (required): The text the role's session starts with, a template over the placeholders below; prompt is an alias, and a table sets only one of them
+- `handback`: The text a hand-back sends the role's session, a template over the same placeholders
 - `agent`: The agent adapter's name; unset takes the run's, else the default
 - `permission_mode`: The agent's permission mode; unset takes the run's
 - `models`: Models in order of the attempt, visit or cycle; the last stays for every later one; unset takes the agent's default
@@ -155,7 +157,7 @@ A role (a builder, verifier, critic or fixer table, or one check) takes:
 
 A prompt may use only these names in braces, such as `{change}`:
 
-- agent step prompt: {change}, {slug}, {title}, {run}, {step}
-- leaves builder and verifier, checks verifier: {change}, {slug}, {title}, {run}, {step}, {leaf}, {attempt}
-- checks check and critic: {change}, {slug}, {title}, {run}, {step}, {check}, {cycle}
-- checks fixer: {change}, {slug}, {title}, {run}, {step}, {leaf}, {cycle}
+- agent step prompt: {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}
+- leaves builder and verifier, checks verifier: {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}
+- checks check and critic: {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}, {check}, {cycle}
+- checks fixer: {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}, {cycle}

@@ -2,7 +2,7 @@
 
 ## Task
 
-Fix the confirmed findings of a review run. Fix only the findings your prompt names.
+Fix only the findings your prompt names.
 
 ## Expected outcome
 
@@ -76,3 +76,4 @@ Never reproduce a hit as a failing test. Ends like any fixer: one commit trailed
 
 When findings are unfixed, name which and why as the last thing you write before
 `rhiza session done`.
+<!-- shared: contract-ref -->

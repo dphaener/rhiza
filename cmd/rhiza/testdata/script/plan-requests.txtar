@@ -112,7 +112,7 @@ exec sh -c 'rhiza request ls --json | grep -B3 -A6 "$(cat $WORK/req1)"'
 stdout '"state": "planned"'
 stdout '"change": "[0-9A-Z]{26}"'
 exec sh -c 'rhiza request ls --json | grep -B3 -A6 "$(cat $WORK/req1)" | sed -n "s/^      \"run\": \"\(.*\)\",$/\1/p" > $WORK/run1'
-exec sh -c 'ls .git/rhiza/runs | grep -c "$(cat $WORK/run1)"'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | grep -c "$(cat $WORK/run1)"'
 stdout '^1$'
 
 # The daemon detached the plan run into its run's log, <run>.log, so run log
