@@ -49,6 +49,10 @@ const (
 	// expanded when the file is parsed: the definition holds the inner
 	// workflow's steps, named <workflow>/<step>, and no workflow step.
 	KindWorkflow = "workflow"
+	// KindGate runs its commands, ones the daemon owns and never an agent,
+	// in order in the run's worktree. It passes only when every one exits
+	// 0; a failing one's full output is kept in the run directory.
+	KindGate = "gate"
 )
 
 // Leaves step roles: the sub-tables of a leaves step. A checks step has a
@@ -82,6 +86,14 @@ const (
 	TargetDone   = "done"
 	TargetFailed = "failed"
 )
+
+// HandbackPrefix starts an `on.<outcome>` target that hands the run back to
+// an agent step of the same workflow: `handback:<agent step>`.
+const HandbackPrefix = "handback:"
+
+// DefaultHandbackCap is how many times a run may hand back when the file
+// sets no handback_cap.
+const DefaultHandbackCap = 3
 
 // Outcomes the step kinds produce.
 const (
@@ -151,6 +163,7 @@ var kindOutcomes = map[string][]string{
 	// A workflow step passes when the inner workflow ends done and fails
 	// when it ends failed.
 	KindWorkflow: {OutcomePass, OutcomeFail},
+	KindGate:     {OutcomePass, OutcomeFail},
 }
 
 // Definition is a loaded, validated workflow.
@@ -186,6 +199,11 @@ type Definition struct {
 	// the run's steps start. {run_tmp} in a value is the run's own temp
 	// folder; see EnvPairs. Only the file's own.
 	Env map[string]string
+
+	// HandbackCap is the file's handback_cap: how many times a run may
+	// hand back to an agent step before the next red parks it. It is
+	// DefaultHandbackCap when the file sets none. Only the file's own.
+	HandbackCap int
 }
 
 // RunTmpToken stands for the run's own temp folder in an [env] value.
@@ -334,6 +352,8 @@ type Step struct {
 	Kind string
 	// Run is a command step's shell command.
 	Run string
+	// Commands is a gate step's shell commands, run in order.
+	Commands []string
 	// Until is a wait step's condition, a shell command; exit 0 means it
 	// holds. On an agent step it is optional: the step also passes when
 	// its session is idle at its prompt and the condition holds, leaving
@@ -641,8 +661,23 @@ func (e End) String() string {
 	}
 }
 
+// HandbackTarget is the agent step an `on.<outcome>` entry of step hands
+// the run back to (`handback:<agent step>`), and whether it does.
+func (d *Definition) HandbackTarget(step, outcome string) (string, bool) {
+	s, ok := d.Steps[step]
+	if !ok {
+		return "", false
+	}
+	t, ok := s.On[outcome]
+	if !ok {
+		return "", false
+	}
+	return strings.CutPrefix(t, HandbackPrefix)
+}
+
 // Next decides where a run goes after step ends with outcome. An
-// `on.<outcome>` entry wins: a step name continues there, done ends the run
+// `on.<outcome>` entry wins: a step name continues there (for
+// `handback:<agent step>`, that agent step), done ends the run
 // succeeded, failed ends it failed. With no entry, `pass` ends the run
 // succeeded and any other outcome ends it failed. A step the definition does
 // not have ends the run failed.
@@ -664,6 +699,7 @@ func (d *Definition) Next(step, outcome string) (next string, end End) {
 	case TargetFailed:
 		return "", EndFailed
 	}
+	target = strings.TrimPrefix(target, HandbackPrefix)
 	return target, EndNone
 }
 
@@ -680,6 +716,9 @@ type fileDef struct {
 	Cleanup []fileCleanup `toml:"cleanup"`
 	// Env is the [env] table.
 	Env map[string]string `toml:"env"`
+	// HandbackCap is decoded loosely so a bad value is refused with a
+	// message naming the key.
+	HandbackCap any `toml:"handback_cap"`
 }
 
 type fileCleanup struct {
@@ -715,6 +754,7 @@ func buildCleanup(in []fileCleanup) ([]Cleanup, error) {
 type fileStep struct {
 	Kind           string            `toml:"kind"`
 	Run            string            `toml:"run"`
+	Commands       []string          `toml:"commands"`
 	Until          string            `toml:"until"`
 	UntilWhen      string            `toml:"until_when"`
 	Timeout        string            `toml:"timeout"`
@@ -830,7 +870,11 @@ func parse(name string, data []byte, resolve Resolver, stack []string, includes 
 	if err != nil {
 		return nil, err
 	}
-	d := &Definition{Name: name, Steps: make(map[string]Step, len(f.Step)), autonomy: aut, Cleanup: cleanup, Env: env}
+	hcap, err := parseHandbackCap(f.HandbackCap)
+	if err != nil {
+		return nil, err
+	}
+	d := &Definition{Name: name, Steps: make(map[string]Step, len(f.Step)), autonomy: aut, Cleanup: cleanup, Env: env, HandbackCap: hcap}
 	d.Order = stepOrder(md.Keys(), f.Step)
 	arbiter := ""
 	for _, n := range d.Order {
@@ -866,6 +910,22 @@ func parse(name string, data []byte, resolve Resolver, stack []string, includes 
 		return nil, err
 	}
 	return d, nil
+}
+
+// parseHandbackCap reads the file's handback_cap: a whole number of at least
+// 1, DefaultHandbackCap when the file sets none.
+func parseHandbackCap(v any) (int, error) {
+	if v == nil {
+		return DefaultHandbackCap, nil
+	}
+	n, ok := v.(int64)
+	if !ok {
+		return 0, fmt.Errorf("handback_cap is %v; want a whole number of at least 1", v)
+	}
+	if n < 1 {
+		return 0, fmt.Errorf("handback_cap is %d; want a whole number of at least 1", n)
+	}
+	return int(n), nil
 }
 
 // undecoded is md.Undecoded without the keys under [autonomy], which
@@ -995,6 +1055,7 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		Name:           name,
 		Kind:           fs.Kind,
 		Run:            fs.Run,
+		Commands:       fs.Commands,
 		Until:          fs.Until,
 		UntilWhen:      fs.UntilWhen,
 		Agent:          fs.Agent,
@@ -1010,11 +1071,11 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	}
 
 	switch fs.Kind {
-	case KindAgent, KindWait, KindCommand, KindArbiter, KindLeaves, KindChecks, KindSignoff, KindWorkflow:
+	case KindAgent, KindWait, KindCommand, KindArbiter, KindLeaves, KindChecks, KindSignoff, KindWorkflow, KindGate:
 	case "":
-		return fail("no kind: want agent, wait, command, arbiter, leaves, checks, signoff or workflow")
+		return fail("no kind: want agent, wait, command, arbiter, leaves, checks, signoff, workflow or gate")
 	default:
-		return fail("unknown kind %q: want agent, wait, command, arbiter, leaves, checks, signoff or workflow", fs.Kind)
+		return fail("unknown kind %q: want agent, wait, command, arbiter, leaves, checks, signoff, workflow or gate", fs.Kind)
 	}
 	if fs.Kind != KindWorkflow {
 		if fs.Workflow != "" {
@@ -1024,7 +1085,13 @@ func buildStep(name string, fs fileStep) (Step, error) {
 			return fail("skip is only for workflow steps; %s step cannot have it", article(fs.Kind))
 		}
 	}
+	if fs.Commands != nil && fs.Kind != KindGate {
+		return fail("commands is only for gate steps; %s step cannot have it", article(fs.Kind))
+	}
 	if fs.Models != nil && fs.Kind != KindAgent {
+		if fs.Kind == KindGate {
+			return fail("a gate step cannot have models: it runs commands the daemon owns, never an agent; remove it")
+		}
 		if fs.Kind == KindChecks {
 			return fail("a checks step cannot have models: each check and role has its own; set it under [[step.%s.check]] or the role's table", name)
 		}
@@ -1086,6 +1153,8 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		return buildSignoff(s, fs, fail)
 	case KindWorkflow:
 		return buildWorkflow(s, fs, fail)
+	case KindGate:
+		return buildGate(s, fs, fail)
 	}
 
 	if fs.Run != "" && fs.Kind != KindCommand {
@@ -1370,6 +1439,44 @@ func buildSignoff(s Step, fs fileStep, fail func(string, ...any) (Step, error)) 
 	return s, nil
 }
 
+// buildGate finishes a gate step: it needs commands, none of them empty, and
+// refuses every key that belongs to an agent or another kind of step.
+func buildGate(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (Step, error) {
+	runs := "it runs commands the daemon owns, never an agent"
+	refused := []struct {
+		key string
+		set bool
+	}{
+		{"prompt", fs.Prompt != ""},
+		{"handback", fs.Handback != ""},
+		{"agent", fs.Agent != ""},
+		{"permission_mode", fs.PermissionMode != ""},
+		{"run", fs.Run != ""},
+		{"until", fs.Until != ""},
+		{"until_when", fs.UntilWhen != ""},
+		{"timeout", fs.Timeout != ""},
+		{"interval", fs.Interval != ""},
+		{"max_interval", fs.MaxInterval != ""},
+	}
+	for _, r := range refused {
+		if r.set {
+			return fail("a gate step cannot have %s: %s; remove it", r.key, runs)
+		}
+	}
+	if len(fs.Commands) == 0 {
+		return fail("a gate step needs commands = [\"<shell command>\", ...]")
+	}
+	for i, c := range fs.Commands {
+		if strings.TrimSpace(c) == "" {
+			return fail("commands[%d] is empty; each is a shell command", i)
+		}
+	}
+	if fs.MaxVisits < 0 {
+		return fail("max_visits is %d; want 0 or more (0 means 1)", fs.MaxVisits)
+	}
+	return s, nil
+}
+
 // buildRole checks one session role of a checks step, named what in its
 // errors: a prompt using only names among its placeholders, and models.
 // does is what the prompt is asked to say the role should do.
@@ -1495,6 +1602,16 @@ func checkTargets(s Step, steps map[string]Step) error {
 		}
 		t := s.On[o]
 		if t == TargetDone || t == TargetFailed {
+			continue
+		}
+		if h, ok := strings.CutPrefix(t, HandbackPrefix); ok {
+			ts, ok := steps[h]
+			if !ok {
+				return fmt.Errorf("step %q: on.%s hands back to %q, which is not a step of this workflow; want handback:<agent step>", s.Name, o, h)
+			}
+			if ts.Kind != KindAgent {
+				return fmt.Errorf("step %q: on.%s hands back to %q, which is %s step; want handback:<agent step>", s.Name, o, h, article(ts.Kind))
+			}
 			continue
 		}
 		if w, _, ok := strings.Cut(t, "/"); ok {

@@ -1,0 +1,155 @@
+{
+  "actor": "01M7BE37X2VYZ326WCTG5MZK6K",
+  "after": [
+    "01M7BDWG79EJEAWD2CYYAWTYKJ"
+  ],
+  "at": "2026-11-13T21:55:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA cycle 1 with a fresh scratch build (go build -trimpath ./cmd/rhiza) in a scratch Rhiza root: rhiza run start --foreground on a gate step with commands [true-ish, 5000 lines + stderr + exit 3, touch marker] failed with the detail 'command 2 `...`: exit 3; full output: <run dir>/gate-gate-1-2.log' (5002 lines, stderr included), the third command still ran, and all ran in the run's worktree; an all-green gate passed. rhiza workflow check refused no commands, commands = [], a blank command, and prompt, agent and models on a gate, and commands on a command step. Broken: a gate step in an included workflow (outer [step.sub] kind = workflow, workflow = inner, inner gate ig) failed with 'its output could not be kept': the step name inner/ig makes gate-inner/ig-1-1.log a path under a directory that is never created. Scoped tests TestGateStep (workflow, run) pass."
+        },
+        "handle": "gate-step-qa-1",
+        "id": "01M7BEHMTBTTC7YEX0S5DDME28",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BEHMTBTTC7YEX0S3RNSEC8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BEHMTBTTC7YEX0S3RNSEC8",
+        "id": "01M7BEHMVJWRP998C784NY3QZQ",
+        "link": "01M7BEHMVJWRP998C783C8H1V0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCDGXDFMJJ3WEZ2G4H51",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, scratch build, fake rex/claude shims: workflow agent build -> command check with on.fail = handback:build and no handback_cap; check red every time: the agent session was resumed 3 times (same session ID), the journal held 3 handback entries, and the 4th red parked the run stopped; rhiza inbox showed a handback item naming step check and the cause ('went fail after 3 hand-backs to build: exit 1 / tests red 4') with next rhiza run resume. Resume re-parked on red, then succeeded on green. handback_cap = 1 parked after one hand-back. A hand-back inside an included workflow (ihb/check -> ihb/build) works. workflow check refused handback_cap 0, -2, \"3\", 2.5, handback:nope, handback:check (a command step) and handback: with the step named."
+        },
+        "handle": "handback-route-qa-1",
+        "id": "01M7BEHMX3S02HG4SN1PBRGA2Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BEHMX3S02HG4SN1KS62GG7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BEHMX3S02HG4SN1KS62GG7",
+        "id": "01M7BEHMZA5YQJ115S180ZZV72",
+        "link": "01M7BEHMZA5YQJ115S16T6H8P1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHW9B0Y6HMMVGBQ4QX4Z3W",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, scratch build: the resumed agent session read handback.md: for a red command step it named `check` and the output tail 'tests red 3'; for a red gate step it named `check` with 'output in <run dir>/gate-gate-1-2.log'. Each resume carried the step's handback text ('Fix it, see <session dir>/handback.md') with claude --resume and the same session ID. A session whose transcript is gone failed the step with 'session <id> cannot be resumed: no transcript ...'; an agent step with no handback template failed it naming the step and session. Scoped tests TestHandbackDeliver and TestScripts/run-handback pass."
+        },
+        "handle": "run-handback-qa-1",
+        "id": "01M7BEHN0YVWS4HMCXAJVH97MZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BEHN0YVWS4HMCXAFN5HVEB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BEHN0YVWS4HMCXAFN5HVEB",
+        "id": "01M7BEHN2SECS4NT3SQ1232AAF",
+        "link": "01M7BEHN2SECS4NT3SPXATE25Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCETKJR0AX7B576P4C76",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, scratch build: outside a run, rhiza run spawn exits 2 naming RHIZA_RUN; from an agent step's session, rhiza run spawn --role verifier --leaf myleaf --model opus --brief <file> --json started a child in the run's worktree (argv had --model opus and --permission-mode manual), wrote spawn/<sid>/brief.md as '## Contract' section then '## Brief' with the caller's file, journaled spawn then spawn-ended under step build, and printed outcome pass, detail exit 0, exit 0; a child exiting 7 gave outcome fail, detail exit 7, exit 1; a missing --brief nope.md exits 2 naming the path. With machine_hold in daemon.state.json the spawn journaled spawn-held 'machine hold: load 99 over 8', and once the state was cleared it started the child and reported held true. Scoped tests TestRunSpawn and TestScripts/run-spawn, describe-golden pass."
+        },
+        "handle": "run-spawn-qa-1",
+        "id": "01M7BEHN48EFRFCEKHK09TT2EN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BEHN48EFRFCEKHJYQGBQ50",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BEHN48EFRFCEKHJYQGBQ50",
+        "id": "01M7BEHN5FKK5H323PW7N575EM",
+        "link": "01M7BEHN5FKK5H323PW5XEN8QP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCATRS9TD6XGS3C3KYY6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, scratch build: with a spawned child blocked on a fifo, kill -9 of the foreground driver only (the spawn process lived on), then rhiza run resume --foreground: the driver reattached, waited on the step, and after the child was released the journal held exactly one spawn-ended (the spawn process and the driver did not both record it) and the run finished from step build. Scoped test TestSpawnResume passes."
+        },
+        "handle": "spawn-durable-qa-1",
+        "id": "01M7BEHN6Z4QEKMP5FGGCF5KS1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BEHN6Z4QEKMP5FGFPR24AE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BEHN6Z4QEKMP5FGFPR24AE",
+        "id": "01M7BEHN8RK33NR2MEP9MA3WMK",
+        "link": "01M7BEHN8RK33NR2MEP6WMN8BS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCGPWP3YX3Q5GRCFA0B0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, scratch build: rhiza run status listed '## Spawned sessions' with '- build, verifier on myleaf, model opus, session <id>: ended, pass', a failed child as 'ended, fail (exit 7)' and a live one as 'running'; --json spawned[] carried step, parent, session, role, leaf, model, state, outcome, detail; rhiza session show <child id> shows the child's record. The web page and pane/message were exercised only through the scoped tests TestRunDetailSpawned, TestRunStatusSpawned and TestSpawnedSessionOpenResume, which pass (no daemon or Rex in the scratch setup)."
+        },
+        "handle": "spawn-visible-qa-1",
+        "id": "01M7BEHNAG67KCTGTMV8JMA84D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BEHNAG67KCTGTMV82YDR1E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BEHNAG67KCTGTMV82YDR1E",
+        "id": "01M7BEHNC6M5WY79MVESP68TDM",
+        "link": "01M7BEHNC6M5WY79MVEPW957TV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCC9NH1M9F5EFKVGJW69",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGRYE538GJC5NA2VNYG4K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BEHNDW9VS8D7XAGDE150N2",
+  "type": "ops",
+  "v": 1
+}

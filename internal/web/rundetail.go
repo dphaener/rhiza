@@ -38,8 +38,19 @@ type runInfo struct {
 	Detail    string        `json:"detail"`
 	StartedAt string        `json:"started_at"`
 	Steps     []runStepItem `json:"steps"`
-	Sessions  []struct {
+	Spawned   []struct {
+		Step      string `json:"step"`
+		Session   string `json:"session"`
+		Role      string `json:"role"`
+		Statement string `json:"statement"`
+		Model     string `json:"model"`
+		State     string `json:"state"`
+		Outcome   string `json:"outcome"`
+		Detail    string `json:"detail"`
+	} `json:"spawned"`
+	Sessions []struct {
 		Step     string `json:"step"`
+		Session  string `json:"session"`
 		NoTokens string `json:"no_tokens"`
 		Tokens   *struct {
 			Session struct {
@@ -94,6 +105,14 @@ func stepPill(state string) Pill {
 	return Pill{}
 }
 
+// titleCase upper-cases the first letter of a role.
+func titleCase(s string) string {
+	if s == "" {
+		return s
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
+}
+
 func fmtDuration(d time.Duration) string {
 	switch {
 	case d < 0:
@@ -110,11 +129,15 @@ func fmtDuration(d time.Duration) string {
 func buildRunDetail(ri runInfo, href string) runDetailView {
 	v := runDetailView{Pill: runPill(ri.State), Workflow: ri.Workflow,
 		NoSteps: &Empty{Title: "No steps yet", Text: "Steps appear here as the run moves."}}
+	spawnedIDs := map[string]bool{}
+	for _, sp := range ri.Spawned {
+		spawnedIDs[sp.Session] = true
+	}
 	sessions := func(step string) []Session {
 		var out []Session
 		n := 0
 		for _, s := range ri.Sessions {
-			if s.Step != step {
+			if s.Step != step || spawnedIDs[s.Session] {
 				continue
 			}
 			n++
@@ -127,6 +150,26 @@ func buildRunDetail(ri runInfo, href string) runDetailView {
 				se.Usage = "running"
 			default:
 				se.Usage = "finished"
+			}
+			out = append(out, se)
+		}
+		for _, sp := range ri.Spawned {
+			if sp.Step != step {
+				continue
+			}
+			who := titleCase(sp.Role)
+			if sp.Statement != "" {
+				who += " · " + sp.Statement
+			}
+			se := Session{Href: href, Who: who, Model: sp.Model, Usage: "running"}
+			if sp.State == "ended" {
+				se.Usage = "finished"
+				if sp.Outcome == "fail" {
+					se.Usage = "failed"
+					if sp.Detail != "" {
+						se.Usage += " · " + sp.Detail
+					}
+				}
 			}
 			out = append(out, se)
 		}

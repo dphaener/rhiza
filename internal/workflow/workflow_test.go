@@ -59,7 +59,7 @@ func TestLoadRefused(t *testing.T) {
 		file string
 		want []string
 	}{
-		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks, signoff or workflow`}},
+		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks, signoff, workflow or gate`}},
 		{"missing-target.toml", []string{`step "build": on.pass names "nope", which is not a step; want a step or done or failed`}},
 		{"bad-outcome.toml", []string{`step "build": on.sucess: a command step has no outcome "sucess"; want on.pass or on.fail`}},
 	}
@@ -157,7 +157,7 @@ func TestParseErrors(t *testing.T) {
 		want string
 	}{
 		{"unknown kind", "[step.x]\nkind = \"loop\"\n",
-			`step "x": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks, signoff or workflow`},
+			`step "x": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks, signoff, workflow or gate`},
 		{"workflow without workflow", "[step.x]\nkind = \"workflow\"\n",
 			`step "x": a workflow step needs workflow =`},
 		{"workflow on command", cmd + "workflow = \"b\"\n",
@@ -167,7 +167,7 @@ func TestParseErrors(t *testing.T) {
 		{"workflow without resolver", "[step.x]\nkind = \"workflow\"\nworkflow = \"b\"\n",
 			`step "x": workflow "b" cannot be resolved here`},
 		{"no kind", "[step.x]\nrun = \"true\"\n",
-			`step "x": no kind: want agent, wait, command, arbiter, leaves, checks, signoff or workflow`},
+			`step "x": no kind: want agent, wait, command, arbiter, leaves, checks, signoff, workflow or gate`},
 		{"missing target", cmd + "on.pass = \"nope\"\n",
 			`step "a": on.pass names "nope", which is not a step; want a step or done or failed`},
 		{"unknown step key", cmd + "retries = 2\n",
@@ -2721,5 +2721,84 @@ handback = "reverify {leaf}"
 				t.Fatalf("err = %v, want it to contain %q", err, tt.want)
 			}
 		})
+	}
+}
+
+func TestGateStep(t *testing.T) {
+	ok := "[step.g]\nkind = \"gate\"\ncommands = [\"go vet ./...\", \"go test ./...\"]\non.fail = \"fix\"\n[step.fix]\nkind = \"agent\"\nprompt = \"fix\"\n"
+	d, err := Parse("w", []byte(ok))
+	if err != nil {
+		t.Fatal(err)
+	}
+	g := d.Steps["g"]
+	if g.Kind != KindGate || !slices.Equal(g.Commands, []string{"go vet ./...", "go test ./..."}) {
+		t.Errorf("gate step = %+v", g)
+	}
+	if next, _ := d.Next("g", OutcomeFail); next != "fix" {
+		t.Errorf("fail goes to %q, want fix", next)
+	}
+	gate := "[step.g]\nkind = \"gate\"\n"
+	tests := []struct{ name, src, want string }{
+		{"no commands", gate, `step "g": a gate step needs commands`},
+		{"empty commands", gate + "commands = []\n", `step "g": a gate step needs commands`},
+		{"blank command", gate + "commands = [\"true\", \" \"]\n", `step "g": commands[1] is empty`},
+		{"prompt", gate + "commands = [\"true\"]\nprompt = \"x\"\n", `step "g": a gate step cannot have prompt`},
+		{"agent", gate + "commands = [\"true\"]\nagent = \"x\"\n", `step "g": a gate step cannot have agent`},
+		{"models", gate + "commands = [\"true\"]\nmodels = [\"opus\"]\n", `step "g": a gate step cannot have models`},
+		{"run", gate + "commands = [\"true\"]\nrun = \"true\"\n", `step "g": a gate step cannot have run`},
+		{"commands on command", "[step.a]\nkind = \"command\"\nrun = \"true\"\ncommands = [\"x\"]\n", `step "a": commands is only for gate steps`},
+		{"bad outcome", gate + "commands = [\"true\"]\non.timeout = \"done\"\n", `step "g": on.timeout: a gate step has no outcome "timeout"`},
+	}
+	for _, tt := range tests {
+		_, err := Parse("w", []byte(tt.src))
+		if err == nil || !strings.Contains(err.Error(), tt.want) {
+			t.Errorf("%s: err = %v, want %q", tt.name, err, tt.want)
+		}
+		if _, ps := Validate("w", []byte(tt.src), nil); len(ps) == 0 {
+			t.Errorf("%s: Validate found no problem", tt.name)
+		}
+	}
+	if _, ps := Validate("w", []byte(ok), nil); len(ps) != 0 {
+		t.Errorf("valid gate: %v", ps)
+	}
+}
+
+func TestHandbackTarget(t *testing.T) {
+	base := "[step.build]\nkind = \"agent\"\nprompt = \"build\"\non.pass = \"g\"\n[step.g]\nkind = \"gate\"\ncommands = [\"true\"]\non.fail = \"handback:build\"\n"
+	d, err := Parse("w", []byte(base))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d.HandbackCap != DefaultHandbackCap {
+		t.Errorf("handback_cap = %d, want %d", d.HandbackCap, DefaultHandbackCap)
+	}
+	if h, ok := d.HandbackTarget("g", OutcomeFail); !ok || h != "build" {
+		t.Errorf("HandbackTarget = %q, %v", h, ok)
+	}
+	if _, ok := d.HandbackTarget("g", OutcomePass); ok {
+		t.Error("pass has a hand-back target")
+	}
+	if next, end := d.Next("g", OutcomeFail); next != "build" || end != EndNone {
+		t.Errorf("Next = %q, %v", next, end)
+	}
+	d, err = Parse("w", []byte("handback_cap = 5\n"+base))
+	if err != nil || d.HandbackCap != 5 {
+		t.Fatalf("cap %v, %v", d, err)
+	}
+	tests := []struct{ name, src, want string }{
+		{"unknown step", "[step.g]\nkind = \"gate\"\ncommands = [\"true\"]\non.fail = \"handback:nope\"\n", `step "g": on.fail hands back to "nope", which is not a step`},
+		{"not an agent", "[step.c]\nkind = \"command\"\nrun = \"true\"\n[step.g]\nkind = \"gate\"\ncommands = [\"true\"]\non.fail = \"handback:c\"\n", `step "g": on.fail hands back to "c", which is a command step`},
+		{"cap zero", "handback_cap = 0\n" + base, "handback_cap is 0"},
+		{"cap negative", "handback_cap = -2\n" + base, "handback_cap is -2"},
+		{"cap text", "handback_cap = \"x\"\n" + base, "handback_cap is x"},
+	}
+	for _, tt := range tests {
+		_, err := Parse("w", []byte(tt.src))
+		if err == nil || !strings.Contains(err.Error(), tt.want) {
+			t.Errorf("%s: err = %v, want %q", tt.name, err, tt.want)
+		}
+		if _, ps := Validate("w", []byte(tt.src), nil); len(ps) == 0 {
+			t.Errorf("%s: Validate found no problem", tt.name)
+		}
 	}
 }

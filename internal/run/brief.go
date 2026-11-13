@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 // BriefLeaf is one leaf of the change set as brief.md lists it.
@@ -71,11 +74,44 @@ func RenderBrief(in BriefInput) string {
 	}
 
 	b.WriteString("\n## Contract\n\n")
-	b.WriteString("Build or check only what your role's prompt names, to the leaves' acceptance above.\n")
-	b.WriteString("Run only the tests your change touches, record what you ran, never rewrite history,\n")
-	b.WriteString("and end with `rhiza session done` as its own command.\n")
-	b.WriteString(ContractLastLine + "\n")
+	b.WriteString(contractSection)
 	return b.String()
+}
+
+// contractSection is the body of a brief's Contract section, which every
+// session's brief.md ends with or, for a spawned child's, begins with.
+const contractSection = "Build or check only what your role's prompt names, to the leaves' acceptance above.\n" +
+	"Run only the tests your change touches, record what you ran, never rewrite history,\n" +
+	"and end with `rhiza session done` as its own command.\n" +
+	ContractLastLine + "\n"
+
+// RenderSpawnBrief renders a spawned child's brief.md: the contract section
+// only, then the caller's brief file as the caller wrote it under its own
+// heading.
+func RenderSpawnBrief(callerBrief string) string {
+	var b strings.Builder
+	b.WriteString("# Brief\n\n## Contract\n\n")
+	b.WriteString(contractSection)
+	b.WriteString("\n## Brief\n\n")
+	b.WriteString(callerBrief)
+	if !strings.HasSuffix(callerBrief, "\n") {
+		b.WriteString("\n")
+	}
+	return b.String()
+}
+
+// WriteBriefFile creates dir and writes brief.md alone there: a spawned
+// child's directory holds no slice.json. A directory or file that cannot be
+// created is an error naming its path.
+func WriteBriefFile(dir, brief string) error {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return fmt.Errorf("create session directory %s: %w", dir, err)
+	}
+	path := filepath.Join(dir, "brief.md")
+	if err := os.WriteFile(path, []byte(brief), 0o644); err != nil {
+		return fmt.Errorf("write %s: %w", path, err)
+	}
+	return nil
 }
 
 // SessionDirs name a session's directory under a run's. Each is the
@@ -164,6 +200,43 @@ type HandbackCause struct {
 	Commands  []FailedCommand
 	CIRuns    []FailedCI
 	Conflicts []string
+	// Cause is the routing step's own account of why it went red, for a
+	// step that names no failing command; Output the tail of a failing
+	// command step's output, which keeps no file.
+	Cause  string
+	Output string
+}
+
+var gateLine = regexp.MustCompile("^command \\d+ `(.*)`: exit \\d+(?:; full output: (.+))?(?:; its output could not be kept)?$")
+
+// CauseOf is the hand-back cause of step going outcome with detail: for a
+// gate step each failing command and the path of its kept output file, read
+// from the detail; for a command step the command and the output tail its
+// detail holds (it keeps no output file); for any other routing step, such
+// as a ship check, the detail as the step gives it.
+func CauseOf(step workflow.Step, outcome, detail string) HandbackCause {
+	c := HandbackCause{Step: step.Name, Outcome: outcome}
+	switch {
+	case step.Kind == workflow.KindGate:
+		for _, line := range strings.Split(detail, "\n") {
+			if m := gateLine.FindStringSubmatch(line); m != nil {
+				c.Commands = append(c.Commands, FailedCommand{Command: m[1], OutputPath: m[2]})
+			}
+		}
+		if len(c.Commands) == 0 {
+			c.Cause = strings.TrimSpace(detail)
+		}
+	case step.Kind == workflow.KindCommand && !strings.Contains(step.Run, "ship check"):
+		c.Commands = []FailedCommand{{Command: step.Run}}
+		_, tail, _ := strings.Cut(detail, "\n")
+		c.Output = strings.TrimSpace(tail)
+		if c.Output == "" {
+			c.Cause = strings.TrimSpace(detail)
+		}
+	default:
+		c.Cause = strings.TrimSpace(detail)
+	}
+	return c
 }
 
 // RenderHandback renders handback.md for cause.
@@ -176,8 +249,18 @@ func RenderHandback(c HandbackCause) (string, error) {
 	if len(c.Commands) > 0 {
 		b.WriteString("\n## Failing commands\n\n")
 		for _, f := range c.Commands {
+			if f.OutputPath == "" {
+				fmt.Fprintf(&b, "- `%s`\n", f.Command)
+				continue
+			}
 			fmt.Fprintf(&b, "- `%s`: output in %s\n", f.Command, f.OutputPath)
 		}
+	}
+	if c.Output != "" {
+		fmt.Fprintf(&b, "\n## Output tail\n\n```\n%s\n```\n", c.Output)
+	}
+	if c.Cause != "" {
+		fmt.Fprintf(&b, "\n## Cause\n\n%s\n", c.Cause)
 	}
 	if len(c.CIRuns) > 0 {
 		b.WriteString("\n## Failed CI runs\n\n")
