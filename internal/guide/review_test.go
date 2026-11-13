@@ -187,7 +187,7 @@ func TestSeverityBlockContent(t *testing.T) {
 			t.Fatalf("%s: no critic section", tx.Name)
 		}
 		critic := tx.Body[i:]
-		if j := strings.Index(critic[3:], "\n## "); j >= 0 {
+		if j := strings.Index(critic[3:], "\n## "); j >= 0 && tx.Name != "critic" {
 			critic = critic[:j+3]
 		}
 		for _, want := range []string{"confirmed", "downgraded", "dropped", "Never add a finding"} {
