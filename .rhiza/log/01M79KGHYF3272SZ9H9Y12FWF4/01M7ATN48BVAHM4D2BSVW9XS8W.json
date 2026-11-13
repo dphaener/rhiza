@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AT8FHZNPBX478QF8CWTFKX",
+  "after": [
+    "01M7AR6AMHDSHYCFCA3W7TDVH6"
+  ],
+  "at": "2026-11-13T16:08:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 41d1705de re-ran the Checks: block: go test -trimpath ./internal/api -run TestSessionBrief (TestSessionBrief and TestSessionBriefUnwritable PASS), go test -trimpath ./cmd/rhiza -run 'TestScripts/brief-files$' (ok), every script reading .git/rhiza/runs via the grep-built regex (ok, 358s, so the attempt-1 run-nested-workflow-session failure is fixed), rhiza ship generate and rhiza render (exit 0); also TestSessionRun/TestStartCheck/TestStartFix and internal/session (ok). Diff read: prepareSession wired into StartAgent, StartLeaf (builder/verifier incl. fix cycles), StartCheck and StartFix; slice.json is canon-marshalled runSlice output, which the test compares to rhiza slice --json; launchEnv sets RHIZA_BRIEF/RHIZA_SLICE only with a Brief dir and RHIZA_HANDBACK only when handback.md exists, and unsets all three outside a run; the unwritable runs path fails the start naming the path, with no rex call and no agent (unit test and brief-files.txtar). Prompt rendering and the workflow format are unchanged; no TODOs or stubs. Extra files (session.go request field, session.Record.Brief, session_test unset lists) are needed plumbing."
+        },
+        "handle": "session-brief-wiring-verified",
+        "id": "01M7ATN448WQFSA6JZQ4S397P0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ATN448WQFSA6JZQ43ABATP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ATN448WQFSA6JZQ43ABATP",
+        "id": "01M7ATN461YHCDH2GZEZR8WM13",
+        "link": "01M7ATN461YHCDH2GZEYVGMH3W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHST8TM851DP82HM2RZ85M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ATN48BVAHM4D2BSVW9XS8W",
+  "type": "ops",
+  "v": 1
+}
