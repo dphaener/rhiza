@@ -1,0 +1,39 @@
+{
+  "actor": "01M79S65NBBRJKM3D9KTNNQ7YY",
+  "after": [
+    "01M79S4M646SATZ2HW99JP6V06"
+  ],
+  "at": "2026-11-13T06:24:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "The roadmap tab doesn't filter between projects properly, it shows things from both projects",
+              "where": "bug request, 2026-11-13"
+            }
+          ],
+          "raw_sha256": "8ede7393996eda46094dbd18ac4c5611a18a1f8f38a352c76f37b0cc4b3a3957",
+          "session": "e85a7532-fc4a-4bf1-806f-01a1d392d448",
+          "summary": "Autonomous plan run (no owner interview) for the bug 'The roadmap tab doesn't filter between projects properly'. Reading the code: internal/web/roadmap.go loadRoadmap and internal/web/change.go dependsOn read /api/roadmap?all=true through the project's ReadOnlyHandler (internal/api/web_api.go). Under a Rhiza root, runRoadmap (internal/api/plan.go) passes all=true to inboxScopes, which widens to every registered project, so /p/<project>/roadmap lists every project's change sets and milestones. health and web_milestones avoid this with the unexported local flag, which an HTTP query cannot set. The planner chose to fix it in the API: a project's web API reads that project's roadmap whatever all says, so every web caller (roadmap page, change set page's depends-on) is scoped, while the CLI's rhiza roadmap --all keeps widening across the root. The fix serves m37-roadmap ('The roadmap shows one project's milestones'). No question was raised.",
+          "title": "Plan of the bug fix: web roadmap page scoped to its project"
+        },
+        "handle": "plan-web-roadmap-project-scope",
+        "id": "01M79S98X7E9Y23AJREJ910B4Y",
+        "key": null,
+        "kind": "source",
+        "node": "01M79S98X7E9Y23AJREFNTD180",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M79S4M646SATZ2HW97GXK1MH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79S9906R3GC8FD8QMT031TG",
+  "type": "ops",
+  "v": 1
+}
