@@ -3,9 +3,7 @@ package web
 import (
 	"context"
 	"net/http"
-	"net/url"
 	"regexp"
-	"slices"
 	"strings"
 )
 
@@ -15,7 +13,6 @@ type scope struct {
 	Name   string
 	Prefix string // /p/<project>, no trailing slash
 	Tail   string // the page's path inside the project, without a leading slash
-	names  ProjectNames
 }
 
 type scopeKey struct{}
@@ -28,16 +25,6 @@ func scopeOf(r *http.Request) *scope {
 func withScope(r *http.Request, s *scope) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), scopeKey{}, s))
 }
-
-// SwitchItem is one project in the switcher: where the same kind of page is
-// in that project.
-type SwitchItem struct {
-	Name, Href string
-	Current    bool
-}
-
-// Switcher is the header's project switcher.
-type Switcher struct{ Items []SwitchItem }
 
 // pageKind is the list page of the kind of page tail is: a run's or change
 // set's own page does not exist in another project, so it keeps its list.
@@ -52,29 +39,6 @@ func pageKind(tail string) string {
 	return "/"
 }
 
-// Names reads the projects the switcher offers, the current one always
-// among them. It reads names only now, when a page is rendered.
-func (s *scope) Names() []string {
-	var names []string
-	if s.names != nil {
-		names = s.names()
-	}
-	if !slices.Contains(names, s.Name) {
-		names = append(names, s.Name)
-	}
-	return names
-}
-
-// Switcher lists the projects with the page kind kept, the current one marked.
-func (s *scope) Switcher() *Switcher {
-	kind := pageKind(s.Tail)
-	sw := &Switcher{}
-	for _, n := range s.Names() {
-		sw.Items = append(sw.Items, SwitchItem{Name: n, Href: ProjectPrefix + url.PathEscape(n) + kind, Current: n == s.Name})
-	}
-	return sw
-}
-
 var rootLink = regexp.MustCompile(`(href|src|data-rz-fragment)="/([^"]*)"`)
 
 // rewrite points the root-relative links of a page served under /p/<project>/
@@ -87,7 +51,7 @@ func (s *scope) rewrite(b []byte) []byte {
 	return rootLink.ReplaceAllFunc(b, func(m []byte) []byte {
 		sub := rootLink.FindSubmatch(m)
 		path := string(sub[2])
-		if strings.HasPrefix(path, "/") || strings.HasPrefix(path, "p/") || path == "projects" || path == "inbox" {
+		if strings.HasPrefix(path, "/") || strings.HasPrefix(path, "p/") || path == "projects" || path == "picker" || path == "inbox" {
 			return m
 		}
 		return []byte(string(sub[1]) + `="` + s.Prefix + "/" + path + `"`)

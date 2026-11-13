@@ -57,5 +57,30 @@
     const since = document.getElementById('rz-stale-since');
     if (since) since.textContent = rel(lastEvent);
   }, 15000);
+  // project picker: the header button loads the sheet from /picker for this page
+  const pickBtn = document.querySelector('[data-rz-picker]');
+  if (pickBtn) {
+    let host = null;
+    const close = () => { if (host) host.remove(); host = null; pickBtn.setAttribute('aria-expanded', 'false'); };
+    pickBtn.addEventListener('click', async () => {
+      if (host) return close();
+      try {
+        const r = await fetch(pickBtn.dataset.rzPicker + '?path=' + encodeURIComponent(location.pathname), { cache: 'no-store' });
+        if (!r.ok) return;
+        host = document.createElement('div');
+        host.className = 'rz-picker-host';
+        host.innerHTML = await r.text();
+        document.body.appendChild(host);
+        pickBtn.setAttribute('aria-expanded', 'true');
+        host.querySelector('[data-rz-picker-close]').addEventListener('click', close);
+        const q = host.querySelector('[data-rz-picker-search]');
+        if (q) q.addEventListener('input', () => {
+          const t = q.value.trim().toLowerCase();
+          host.querySelectorAll('.rz-picker-row[data-name]').forEach((a) => { a.hidden = !a.dataset.name.toLowerCase().includes(t); });
+        });
+      } catch (_) { /* the stream's own error marks the page stale */ }
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  }
   connect();
 })();

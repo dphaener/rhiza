@@ -107,8 +107,6 @@ type page struct {
 	Milestones MilestonesPanel
 	// Base is the project prefix the page is served under, empty at the root.
 	Base string
-	// Switcher is the header's project switcher; nil leaves it out.
-	Switcher *Switcher
 	// Data is what the page's own content renders.
 	Data any
 }
@@ -116,7 +114,6 @@ type page struct {
 func render(w http.ResponseWriter, r *http.Request, name string, p page) {
 	if sc := scopeOf(r); sc != nil {
 		p.Base = sc.Prefix
-		p.Switcher = sc.Switcher()
 	}
 	var buf bytes.Buffer
 	if err := pages[name].ExecuteTemplate(&buf, "layout", p); err != nil {
