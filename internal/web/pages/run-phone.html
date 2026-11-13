@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run detail on a phone · Rhiza</title>
+<!-- Design reference, milestone 37 (approved by the owner 2026-11-13). Source canvas: https://claude.ai/artifact/B2TEoC8RNuS5wWWdkoxo7a -->
+<link rel="icon" href="../static/icons/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../static/css/rhiza-tokens.css">
+<link rel="stylesheet" href="../static/css/rhiza.css">
+<style>
+body{margin:0;background:var(--ground)}
+a{color:var(--teal)}a:hover{color:var(--ink)}
+.cnt{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;font:600 12px/1 var(--font-mono)}
+.ph{position:relative;display:flex;flex-direction:column;gap:12px;padding:0 0 28px 28px}
+.ph::before{content:"";position:absolute;left:6px;top:18px;bottom:0;width:1px;background:var(--line)}
+.ph:last-child::before{display:none}
+.dot{position:absolute;left:0;top:5px;width:13px;height:13px;border-radius:999px;box-sizing:border-box}
+.ph-head{display:flex;align-items:baseline;gap:8px}
+.ph-head h2{margin:0;font:380 20px/26px var(--font-display)}
+.dur{margin-left:auto;font:400 13px/18px var(--font-mono);color:var(--ink-3)}
+.sum{margin:0;font:400 15px/22px var(--font-body);color:var(--ink-2)}
+.ses{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;padding:10px 12px;border-top:1px solid var(--line);text-decoration:none;color:var(--ink);min-height:44px;align-content:center}
+.ses:first-child{border-top:0}
+.ses b{font:500 14px/20px var(--font-body)}
+.ses small{grid-column:1;font:400 12px/16px var(--font-body);color:var(--ink-3)}
+.ok{font:400 12px/20px var(--font-mono);color:var(--teal);grid-row:1/3;grid-column:2;align-self:center}
+.bad{font:400 12px/20px var(--font-mono);color:var(--rose);grid-row:1/3;grid-column:2;align-self:center}
+.box{border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden}
+</style>
+</head>
+<body class="rz">
+<div class="rz" data-theme="dark" style="width: 390px; min-height: 2000px; box-sizing: border-box; background: var(--ground); color: var(--ink); font-family: var(--font-body);">
+
+<header style="display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 16px; background: var(--panel); border-bottom: 1px solid var(--line);">
+  <b style="font: 380 22px/1 var(--font-display); letter-spacing: -0.02em;">Rhiza</b>
+  <button type="button" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; margin-left: auto; border: 1px solid var(--line); border-radius: 999px; background: var(--ground); color: var(--ink); font: 500 15px/1 var(--font-body);">rhiza <span class="cnt" style="background: var(--rose); color: var(--on-solid);">3</span></button>
+</header>
+
+<main style="display: flex; flex-direction: column; gap: 32px; padding: 24px 16px 48px;">
+  <a href="home-phone.html" style="display: inline-flex; align-items: center; min-height: 44px; font: 500 15px/22px var(--font-body); text-decoration: none;">← Runs</a>
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 8px;"><p class="rz-kicker" style="margin: 0;">Run · ship-change</p><span class="rz-pill rz-pill--done">succeeded</span></div>
+    <h1 style="margin: 0; font: 380 28px/34px var(--font-display); letter-spacing: -0.015em;">Tiered verifier</h1>
+    <p style="margin: 0; font: 400 15px/22px var(--font-body); color: var(--ink-2);">Shipped in 2h 05m. Built 3 leaves, passed review on the third model round, then fixed a merge conflict and a red CI before merging.</p>
+    <p style="margin: 0; font: 400 13px/18px var(--font-mono); color: var(--ink-3);">02:56 → 05:02 · <a href="#" class="rz-id">01M79DC5</a></p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 51fr 38fr 37fr; gap: 3px;" aria-label="Build 51 minutes, review 38 minutes, ship 37 minutes">
+    <span style="height: 8px; border-radius: 999px 0 0 999px; background: var(--teal);"></span><span style="height: 8px; background: var(--teal); opacity: 0.7;"></span><span style="height: 8px; border-radius: 0 999px 999px 0; background: var(--teal); opacity: 0.45;"></span>
+    <span style="font: 400 11px/16px var(--font-mono); color: var(--ink-3); letter-spacing: 0.06em;">BUILD 51m</span><span style="font: 400 11px/16px var(--font-mono); color: var(--ink-3); letter-spacing: 0.06em;">REVIEW 38m</span><span style="font: 400 11px/16px var(--font-mono); color: var(--ink-3); letter-spacing: 0.06em;">SHIP 37m</span>
+  </div>
+
+  <ol style="list-style: none; margin: 0; padding: 0;">
+    <li class="ph">
+      <span class="dot" style="background: var(--teal);" aria-hidden="true"></span>
+      <div class="ph-head"><h2>Build</h2><span class="dur">02:56 · 51m</span></div>
+      <p class="sum">3 leaves, each built and then checked by a separate verifier. 10 attempts in all.</p>
+      <div class="box">
+        <a class="ses" href="#"><b>Verifier tier fields</b><small>4 attempts</small><span class="ok">verified</span></a>
+        <a class="ses" href="#"><b>Verifier tier choice</b><small>4 attempts · sent back by its verifier</small><span class="ok">verified</span></a>
+        <a class="ses" href="#"><b>Verifier tier defaults</b><small>2 attempts</small><span class="ok">verified</span></a>
+      </div>
+    </li>
+    <li class="ph">
+      <span class="dot" style="background: var(--teal);" aria-hidden="true"></span>
+      <div class="ph-head"><h2>Review</h2><span class="dur">03:47 · 38m</span></div>
+      <p class="sum">5 checks in parallel. Model needed 3 rounds and QA 2 before both passed.</p>
+      <div class="box">
+        <a class="ses" href="#"><b>Model</b><small>3 rounds · findings fixed by 2 fixer sessions</small><span class="ok">passed</span></a>
+        <a class="ses" href="#"><b>QA</b><small>2 rounds · ran the built binary in a scratch root</small><span class="ok">passed</span></a>
+        <a class="ses" href="#"><b>Compliance, quality, scope</b><small>1 round each · no findings</small><span class="ok">passed</span></a>
+      </div>
+    </li>
+    <li class="ph">
+      <span class="dot" style="background: var(--teal); opacity: 0.7;" aria-hidden="true"></span>
+      <div class="ph-head"><h2>Ship</h2><span class="dur">04:25 · 37m</span></div>
+      <p class="sum">Opened <a href="#">PR #525</a>. Main had moved, so a fixer merged it in; then CI went red and a second fixer cleared it.</p>
+      <div class="box">
+        <a class="ses" href="#"><b>Merge conflict with main</b><small>conflict fixer · 13m</small><span class="ok">fixed</span></a>
+        <a class="ses" href="#"><b>CI red</b><small>CI fixer · 1m</small><span class="ok">fixed</span></a>
+        <div class="ses"><b>CI green, landed, merged</b><small>04:58 → 05:01, then main's CI green</small><span class="ok">done</span></div>
+      </div>
+    </li>
+    <li class="ph">
+      <span class="dot" style="border: 1px solid var(--teal);" aria-hidden="true"></span>
+      <div class="ph-head"><h2>Closed out</h2><span class="dur">05:02</span></div>
+      <p class="sum">Main pulled, worktree removed.</p>
+    </li>
+  </ol>
+
+  <section style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel);">
+    <p class="rz-kicker" style="margin: 0;">Cost</p>
+    <dl style="margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 16px; font: 400 14px/20px var(--font-body);">
+      <dt style="color: var(--ink-3);">Tokens</dt><dd style="margin: 0; font-family: var(--font-mono);">149k out · 27.8M in and cache</dd>
+      
+    </dl>
+    <a href="#" style="font: 500 15px/22px var(--font-body);">Full log →</a>
+  </section>
+</main>
+</div>
+</body>
+</html>

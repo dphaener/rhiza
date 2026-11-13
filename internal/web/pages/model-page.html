@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decision page on desktop · Rhiza</title>
+<!-- Design reference, milestone 37 (approved by the owner 2026-11-13). Source canvas: https://claude.ai/artifact/B2TEoC8RNuS5wWWdkoxo7a -->
+<link rel="icon" href="../static/icons/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../static/css/rhiza-tokens.css">
+<link rel="stylesheet" href="../static/css/rhiza.css">
+<style>
+body{margin:0;background:var(--ground)}
+a{color:var(--teal)}a:hover{color:var(--ink)}
+.cnt{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;font:600 12px/1 var(--font-mono)}
+.lk{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.lk span.t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lk b{font:500 14px/20px var(--font-body)}
+.lk small{font:400 13px/18px var(--font-body);color:var(--ink-3)}
+</style>
+</head>
+<body class="rz">
+<div class="rz" data-theme="dark" style="min-height: 1000px; background: var(--ground); color: var(--ink); font-family: var(--font-body);">
+
+<header style="display: flex; align-items: center; gap: 16px; height: 52px; padding: 0 max(16px, 2rem); background: var(--panel); border-bottom: 1px solid var(--line); flex-wrap: wrap;">
+  <b style="font: 380 20px/1 var(--font-display); letter-spacing: -0.02em;">Rhiza</b>
+  <button type="button" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--ground); color: var(--ink); font: 500 14px/1 var(--font-body);">rhiza <span class="cnt" style="background: var(--rose); color: var(--on-solid);">3</span></button>
+  <nav aria-label="Pages" style="display: flex; gap: 20px; font: 500 14px/1 var(--font-body);"><a href="home.html" style="text-decoration: none;">Home</a><a href="run.html" style="text-decoration: none;">Runs</a><a href="roadmap.html" aria-current="page" style="color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--gold); padding-bottom: 4px;">Roadmap</a></nav>
+  <div style="margin-left: auto; display: flex; align-items: center; gap: 12px;"><span class="rz-pill rz-pill--running"><span class="rz-live-dot" aria-hidden="true"></span>daemon · 2/2</span><span class="rz-live"><span class="rz-live-dot" aria-hidden="true"></span>live</span></div>
+</header>
+
+<main style="max-width: 1200px; margin: 0 auto; box-sizing: border-box; padding: 32px max(16px, 2rem) 64px; display: flex; flex-direction: column; gap: 32px;">
+  <a href="roadmap.html" style="font: 500 14px/20px var(--font-body); text-decoration: none;">← Milestone 36 · Conductor workflow</a>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+    <div style="flex: 999 1 600px; min-width: 0; display: flex; flex-direction: column; gap: 32px;">
+      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 760px;">
+        <p class="rz-kicker" style="margin: 0; display: flex; align-items: center; gap: 6px;"><span class="rz-glyph rz-glyph--decision" aria-hidden="true"></span>Decision</p>
+        <h1 style="margin: 0; font: 380 36px/40px var(--font-display); letter-spacing: -0.02em;">The conductor default replaces the builtin ship-change at once</h1>
+        <p style="margin: 0; font: 400 17px/1.6 var(--font-body); color: var(--ink-2);">For every project that uses the builtin. The old workflow stays available as the builtin ship-change-classic.</p>
+      </div>
+      <figure style="margin: 0; display: flex; flex-direction: column; gap: 8px; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); max-width: 760px;">
+        <p class="rz-kicker" style="margin: 0;">In your words</p>
+        <blockquote style="margin: 0; font: 380 26px/34px var(--font-display); letter-spacing: -0.01em;">“Promote immediately, it's not going to get worse, I'm tired of this.”</blockquote>
+        <figcaption style="font: 400 13px/18px var(--font-body); color: var(--ink-3);">You, 2026-11-13, answering: Is promoting the new default to the builtin workflow part of this milestone?</figcaption>
+      </figure>
+      <section style="display: flex; flex-direction: column; gap: 4px; max-width: 760px;">
+        <p class="rz-kicker" style="margin: 0;">What it decided</p>
+        <h2 style="margin: 0 0 12px; font: 380 20px/26px var(--font-display);">3 capabilities</h2>
+        <a class="lk" href="#"><span class="rz-glyph rz-glyph--capability" aria-hidden="true" style="margin-top: 4px;"></span><span class="t"><b>The builtin ship-change is the conductor default</b><small>planned · New builtin default</small></span></a>
+        <a class="lk" href="#"><span class="rz-glyph rz-glyph--capability" aria-hidden="true" style="margin-top: 4px;"></span><span class="t"><b>The old workflow stays as ship-change-classic</b><small>planned · New builtin default</small></span></a>
+        <a class="lk" href="#"><span class="rz-glyph rz-glyph--capability" aria-hidden="true" style="margin-top: 4px;"></span><span class="t"><b>Rhiza's own repo runs the conductor default</b><small>planned · New builtin default</small></span></a>
+      </section>
+    </div>
+
+    <aside style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+      <section class="rz-panel" style="padding: 24px; display: flex; flex-direction: column; gap: 4px;">
+        <p class="rz-kicker" style="margin: 0 0 8px;">Where it came from</p>
+        <a class="lk" href="#"><span style="width: 12px; height: 12px; margin-top: 4px; border: 1px solid var(--ink-3); border-radius: 2px; box-sizing: border-box;" aria-hidden="true"></span><span class="t"><b>Conductor workflow interview</b><small>Source · the planning conversation, scrubbed</small></span></a>
+        <a class="lk" href="change-set.html"><span class="rz-glyph rz-glyph--intent" aria-hidden="true" style="margin-top: 4px;"></span><span class="t"><b>Conductor workflow</b><small>Change set · landed 05:18 in PR #526</small></span></a>
+      </section>
+      <section class="rz-panel" style="padding: 24px; display: flex; flex-direction: column; gap: 8px;">
+        <p class="rz-kicker" style="margin: 0;">History</p>
+        <ol style="list-style: none; margin: 0; padding: 0; font: 400 14px/20px var(--font-body);">
+          <li style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);"><span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3);">05:18</span>Recorded in milestone 36's plan</li>
+        </ol>
+        <p style="margin: 0; font: 400 13px/18px var(--font-body); color: var(--ink-3);">Handle <a href="#" class="rz-id">conductor-promote-builtin-now</a></p>
+      </section>
+    </aside>
+  </div>
+</main>
+</div>
+</body>
+</html>
