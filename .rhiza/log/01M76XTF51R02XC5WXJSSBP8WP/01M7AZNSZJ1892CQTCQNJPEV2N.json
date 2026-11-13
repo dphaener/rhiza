@@ -1,0 +1,41 @@
+{
+  "actor": "01M7AZKPKHWECHGPE30RBCWD8N",
+  "after": [
+    "01M7AZK59RCTKVBZGQTZED8PEM"
+  ],
+  "at": "2026-11-13T17:35:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The intent asks for deterministic lints that save the model check's cycle-1 failures (37-42%, mostly mechanical drift). The builtin review workflow's code step has no on.fail, so making lint hits fail code-check would end the run failed, the opposite of saving a cycle; routing it to a fixer would need a new step kind outside the checks step's critic/fixer loop. Handing hits to the model check as leads reuses the existing round, critic and fixer machinery, keeps false positives cheap (the model check drops them) and lets fixes land in cycle 1. Scoping to the slice matches how review works today (checks review the change set, not the whole model) and keeps an unrelated change set from failing over others' drift. For Decisions, the model has decided-by links (node -> Decision) and builders' Leaf: trailers, both readable without judgement, so they give a deterministic test; arbiter Decisions like this one link only answers, hence the exemption.",
+          "statement": "(1) A lint hit never fails `rhiza run code-check`: the code step still fails only on a rhiza check failure or a leaf lacking verifier Evidence, as today. The lints run inside code-check and their hits are journalled on the code-check entry (shown by rhiza run status) and handed to the cycle-1 model check as leads, each with its node and the reference or Decision it flags. The model check confirms each hit it agrees with as a finding of its first round (stale acceptance or statement text, an unapplied Decision or an unretired capability: major when the code contradicts the node, else minor), so the critic and fixer handle it in cycle 1 instead of a later cycle. No on.fail is added to the code step. (2) The stale-reference lint checks the run's change set's slice only: its leaves and the capabilities and other nodes it adds or changes, plus their acceptance. It does not lint the rest of the model; drift elsewhere belongs to other change sets and would only add noise. (3) A Decision is \"never applied\" when the change set adds or changes it and either no live node links to it with decided-by, or every node that does is a leaf of this change set with no commit carrying its Leaf: trailer on the branch. A Decision whose only link is answers on a question is exempt from the first clause (an answered question binds no node by itself). The lint is mechanical and makes no judgement of code meaning; that stays with the model check.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "lint-hits-feed-model-check",
+        "id": "01M7AZNSY3NEDH37CH6QAHP8KX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7AZNSY3NEDH37CH6NB8XDH5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AZNSY3NEDH37CH6NB8XDH5",
+        "id": "01M7AZNSYSYWE0MF6BVPM1E7AE",
+        "link": "01M7AZNSYSYWE0MF6BVPK7NQQP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZK2H8X4PKZZ580SMD571G",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76XTF51R02XC5WXJSSBP8WP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AZNSZJ1892CQTCQNJPEV2N",
+  "type": "ops",
+  "v": 1
+}

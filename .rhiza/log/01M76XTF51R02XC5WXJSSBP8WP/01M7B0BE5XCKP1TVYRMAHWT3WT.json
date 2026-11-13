@@ -1,0 +1,157 @@
+{
+  "actor": "01M7B077RGXYMEXF2ENPZ98T0A",
+  "after": [
+    "01M7AZSBVRED3VWP83C4ZHCJN2"
+  ],
+  "at": "2026-11-13T17:47:41Z",
+  "body": {
+    "drop": [
+      "01M7AZSBPHSBRS607PJ5QY46AB",
+      "01M7AZSBR8QN5N21J7NF9K2N3F",
+      "01M7AZSBSW3N22TDXTZH6Y63SX"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The intent asks for deterministic lints that save the model check's cycle-1 failures (37-42%, mostly mechanical drift). The builtin review workflow's code step has no on.fail, so making lint hits fail code-check would end the run failed. A failed check is fixed and re-run in the next cycle (internal/run/checks.go checkVerdict; fixes start in cycle 2), so a hit the model check confirms as a major in cycle 1 still forces cycle 2: the hits must be fixed before the checks step runs. A command step that fails to a fixer agent step, which always passes on, does that with the existing step kinds and the existing fixer role, and false positives cost only an unfixed line. Scoping the stale-reference lint to the slice matches how review works today and keeps an unrelated change set from failing over others' drift; the branch's own deleted paths are the one deterministic, branch-scoped signal for a capability outside the slice whose code this branch removed. For Decisions, the model has decided-by links (node -> Decision) and builders' Leaf: trailers, both readable without judgement, so they give a deterministic test; arbiter Decisions like this one link only answers, hence the exemption. Revised in plan review round 1 (findings f1, f2).",
+          "statement": "(1) A lint hit never fails `rhiza run code-check`: the code step still fails only on a rhiza check failure or a leaf lacking verifier Evidence, as today. The lints run inside code-check and their hits are journalled on the code-check entry (shown by rhiza run status). The hits are fixed before the checks step runs, so the cycle-1 checks already see the fixed branch: the builtin review routes the code step's pass to a `lints` command step (`rhiza run lint-check`), which passes straight to the checks step when the latest code-check entry has no hits and otherwise fails to a `lint-fix` agent step; that step runs one fixer told the hits, who fixes each hit it agrees with (stale statement or acceptance text, an unretired capability, an unapplied Decision) in one commit trailed Review:, leaves the rest listed as unfixed, and always passes on to the checks step. A confirmed model-check major forces a second cycle, so handing hits to the model check as cycle-1 leads would not save one; the model check gets no leads. No on.fail is added to the code step. (2) The stale-reference lint checks the run's change set's slice only: its leaves and the capabilities and other nodes it adds or changes, plus their acceptance. It does not lint the rest of the model; drift elsewhere belongs to other change sets and would only add noise. A live capability outside the slice is flagged only when this branch removed its code: every path it references is among the paths deleted in merge-base..HEAD or otherwise absent at head, and at least one was deleted on the branch. (3) A Decision is \"never applied\" when the change set adds or changes it and either no live node links to it with decided-by, or every node that does is a leaf of this change set with no commit carrying its Leaf: trailer on the branch. A Decision whose only link is answers on a question is exempt from the first clause (an answered question binds no node by itself). The lint is mechanical and makes no judgement of code meaning; that stays with the fixer and the model check.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "lint-hits-feed-model-check",
+        "id": "01M7AZNSY3NEDH37CH6QAHP8KX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7AZNSY3NEDH37CH6NB8XDH5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run 'TestScripts/(review-code-check|describe-golden)$' passes: in review-code-check.txtar a change set whose leaf acceptance names a missing file and which adds a Decision nothing links decided-by to, on a branch that deletes the only file a landed capability names, gets code-check exit 0 with all three hits under lints in --json and under code_checks in rhiza run status --json; failure case: the same change set with a leaf lacking verifier Evidence exits 1 and its causes name only the Evidence, not the lints. go test -trimpath ./internal/run/... ./internal/api/... passes with the code-check entry's lints round-tripping through the journal; describe-golden.txtar is regenerated with -update.",
+          "statement": "`rhiza run code-check` runs the internal/modellint lints (stale references, unapplied Decisions and capabilities whose code the branch removed) on the run's change set in the run's worktree (the head tree, the Leaf: trailers of the commits from the merge-base to HEAD and the paths deleted in merge-base..HEAD) and lists their hits as `lints` in its --json response, in its human output and on the journalled code-check entry, which `rhiza run status --json` shows under code_checks; a lint hit is never a cause and never changes `passed` or the exit code. Files: internal/api/run_codecheck.go, internal/run/journal.go, internal/api/run.go, cmd/rhiza/testdata/script/review-code-check.txtar, cmd/rhiza/testdata/script/describe-golden.txtar."
+        },
+        "handle": "code-check-runs-lints",
+        "id": "01M7AZSBEY65G73S64CHC07YEK",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M7AZSBEY65G73S64CERYNTD0",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... -run 'LintCheck' passes: a run whose latest code-check entry has two lints exits 1 with both hits in --json and the human output; failure cases: an entry with no lints and a run with no code-check entry exit 0. go test -trimpath ./internal/workflow/... passes with the review steps code, lints, lint-fix, review, render, signoff in that order, code's pass going to lints, lints' pass to review and fail to lint-fix, lint-fix's pass to review and max_visits 1, and ship-change's inner review steps including review/lints and review/lint-fix. describe-golden.txtar is regenerated with -update and go test -trimpath ./cmd/rhiza -run 'TestScripts/describe-golden$' passes.",
+          "statement": "A new operation `rhiza run lint-check` (run.lint-check) exits 0 when the run's latest code-check entry has no lint hits and exits 1 listing each hit (node, lint, reference or Decision) otherwise, with the hits in its --json response. The builtin review workflow routes the code step's pass to a `lints` command step running it (on.pass review, on.fail lint-fix) and adds a `lint-fix` agent step, max_visits 1, prompted `/rhiza-fixer Fix the model lint hits that rhiza run lint-check lists for change set {change} before the checks run: follow rhiza guide fixer.`, until true, on.pass review; ship-change's inlined review gains both steps. Files: internal/api/run_lintcheck.go, internal/api/run_lintcheck_test.go, internal/workflow/builtin/review.toml, internal/workflow/workflow_test.go, cmd/rhiza/testdata/script/describe-golden.txtar."
+        },
+        "handle": "review-lint-fix-route",
+        "id": "01M7B0BDCY9W3A1M8XAVWJB1RF",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7B0BDCY9W3A1M8XAT24DGDM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with fixer_test.go finding the lint-hit section naming `rhiza run lint-check --json`, the three fixes and the unfixed rule; failure case: the existing fixer rules (fix only the prompt's findings, the Checks: block, never push) are still found.",
+          "statement": "`rhiza guide fixer` gains a section for a lint-fix fixer (one whose prompt names `rhiza run lint-check`): read the hits from `rhiza run lint-check --json`; fix each hit it agrees with in place (rewrite stale statement or acceptance text with rhiza set in the change set, retire a capability whose code the branch removed, or link the node a Decision governs with decided-by), list each hit it judges wrong as unfixed with why, never reproduce a hit as a failing test, and end with one commit trailed Review: as any fixer, then session done. The rest of the fixer topic is unchanged. Files: internal/guide/text/fixer.md, internal/guide/fixer_test.go."
+        },
+        "handle": "fixer-lint-hits-guide",
+        "id": "01M7B0BDGMMAJBBSM9MANRGJ5V",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7B0BDGMMAJBBSM9MA9YG4QX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B0BDCY9W3A1M8XAT24DGDM",
+        "id": "01M7B0BDMW9WZR0TTN4K9GHQJ5",
+        "link": "01M7B0BDMW9WZR0TTN4GMM6MYD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZNSY3NEDH37CH6NB8XDH5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7B0BDCY9W3A1M8XAT24DGDM",
+        "id": "01M7B0BDRKFXNDPZ055QMB4KBV",
+        "link": "01M7B0BDRKFXNDPZ055N761Y1W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZSBEY65G73S64CERYNTD0",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7B0BDGMMAJBBSM9MA9YG4QX",
+        "id": "01M7B0BDT9M14Z5849E0MNTCQR",
+        "link": "01M7B0BDT9M14Z5849DY3TCCAN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZNSY3NEDH37CH6NB8XDH5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7B0BDGMMAJBBSM9MA9YG4QX",
+        "id": "01M7B0BDVSHJ98W7NCH0B7Q0RT",
+        "link": "01M7B0BDVSHJ98W7NCGWEPDVQD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B0BDCY9W3A1M8XAT24DGDM",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/modellint/... passes with table tests in internal/modellint/removed_test.go: a landed capability whose only path the deleted list holds and the head tree lacks is reported naming the capability and the path; failure cases: one with a deleted path and another path still present is not reported, one whose path is missing but not in the deleted list (removed before the branch) is not reported, a retired capability is not reported, and a capability with no path references is not reported.",
+          "statement": "internal/modellint reports as unretired each live capability outside the change set's slice (any landed or in-flight capability the change set does not write) that references at least one repo path, whose every path reference is absent from the head tree, and at least one of whose path references is among the paths deleted on the branch, given to it as input (the paths deleted in merge-base..HEAD). A capability none of whose missing paths the branch deleted is not reported. It reads only the model, an fs.FS and the deleted-path list, runs no git, and changes no file outside internal/modellint."
+        },
+        "handle": "modellint-branch-removed-code",
+        "id": "01M7B0BDZ5TW0VHH9KH5WXGKMH",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7B0BDZ5TW0VHH9KH1XMR3E1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B0BDZ5TW0VHH9KH1XMR3E1",
+        "id": "01M7B0BE0D5X0TBFVVBWJCGFH6",
+        "link": "01M7B0BE0D5X0TBFVVBW7WY1FM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZNSY3NEDH37CH6NB8XDH5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7B0BDZ5TW0VHH9KH1XMR3E1",
+        "id": "01M7B0BE1HX7WZ17GTXX6XDQXY",
+        "link": "01M7B0BE1HX7WZ17GTXVD7GH06",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZSB7XH20CA9CJCEATG154",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7AZSBEY65G73S64CERYNTD0",
+        "id": "01M7B0BE3AY91QYQC688SDJV3Y",
+        "link": "01M7B0BE3AY91QYQC685SN0NJP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B0BDZ5TW0VHH9KH1XMR3E1",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M76XTF51R02XC5WXJSSBP8WP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B0BE5XCKP1TVYRMAHWT3WT",
+  "type": "ops",
+  "v": 1
+}
