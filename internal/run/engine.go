@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -105,6 +107,33 @@ type Runner interface {
 	// open; never for a step that stopped, nor when StartAgent failed. An
 	// error is logged and changes nothing.
 	AgentEnded(step workflow.Step, session string) error
+}
+
+// Handbacker is a Runner that can hand a run back to an agent step's
+// session: it writes handback.md for cause into the session's directory and
+// sends the session the handback text, messaging a live session and
+// resuming an ended one in the same conversation. An error fails the step.
+// A Runner without it leaves the session as it is.
+type Handbacker interface {
+	Handback(step workflow.Step, session string, cause HandbackCause) error
+}
+
+// ChildState is where a spawned child session stands: Ended with its
+// Outcome and Detail once it has exited, or Gone (with Detail saying why)
+// when its session record no longer exists.
+type ChildState struct {
+	Ended   bool
+	Gone    bool
+	Outcome string
+	Detail  string
+}
+
+// ChildWatcher is a Runner that can tell where a spawned child session
+// stands, so a restarted driver can reattach to live children and record
+// the ones that ended while no driver watched. A Runner without it leaves
+// the spawns to the processes that started them.
+type ChildWatcher interface {
+	Child(session string) (ChildState, error)
 }
 
 // Question is a question node the Runner added: its ID and handle.
@@ -372,6 +401,13 @@ func (e *Engine) run(id string, retry bool, before func(State) ([]Entry, error))
 		return st, err
 	}
 	r := &running{e: e, j: j, def: def}
+	if pb := st.PendingHandback; pb != nil {
+		// A hand-back journaled before a restart and not yet delivered.
+		if step, ok := def.Steps[pb.Step]; ok {
+			c := CauseOf(step, pb.Outcome, pb.Cause)
+			r.handback = &c
+		}
+	}
 	if e.Process != nil {
 		en := Entry{Type: TypeProcess, At: r.now(), Process: e.Process}
 		if err := e.Store.Append(j.ID, en); err != nil {
@@ -415,6 +451,9 @@ type running struct {
 	leafList map[string][]Leaf
 	// lastStatus is the last report given to Engine.Status.
 	lastStatus *StatusReport
+	// handback is the cause of the hand-back the next agent step enters
+	// with, until that step delivers it.
+	handback *HandbackCause
 	// seen holds the sessions this process started (true) or has polled
 	// once already (false), so a session first polled without being started
 	// here is a rejoin (see agentStatus).
@@ -507,8 +546,50 @@ func (r *running) finish(step string, end workflow.End, detail string) (State, e
 	return r.j.State(), nil
 }
 
+// reconcileSpawns records the end of every spawned child the journal still
+// shows running: it asks the Runner (ChildWatcher) where each stands, as a
+// restarted driver must, and again on every poll while a step waits. A child
+// whose end its own spawn process already recorded is not recorded twice.
+func (r *running) reconcileSpawns() {
+	cw, ok := r.e.Runner.(ChildWatcher)
+	if !ok {
+		return
+	}
+	j, err := r.e.Store.Read(r.j.ID)
+	if err != nil {
+		r.log("spawned sessions: %v", err)
+		return
+	}
+	for _, sp := range j.State().Spawns {
+		if sp.Ended {
+			continue
+		}
+		cs, err := cw.Child(sp.Session)
+		if err != nil {
+			r.log("spawned session %s: %v", sp.Session, err)
+			continue
+		}
+		en := Entry{At: r.now(), Step: sp.Step, Parent: sp.Parent, Session: sp.Session, Outcome: cs.Outcome, Detail: cs.Detail}
+		switch {
+		case cs.Gone:
+			en.Outcome = workflow.OutcomeFail
+			if en.Detail == "" {
+				en.Detail = "session record is gone"
+			}
+		case !cs.Ended:
+			continue
+		}
+		if added, err := r.e.Store.AppendSpawnEnded(r.j.ID, en); err != nil {
+			r.log("spawned session %s: %v", sp.Session, err)
+		} else if added {
+			r.log("spawned session %s: ended %s, recorded", sp.Session, en.Outcome)
+		}
+	}
+}
+
 func (r *running) loop() (State, error) {
 	for {
+		r.reconcileSpawns()
 		st := r.j.State()
 		act, err := Decide(r.def, st)
 		if err != nil {
@@ -552,6 +633,22 @@ func (r *running) loop() (State, error) {
 		next, end := r.def.Next(step.Name, res.outcome)
 		if res.outcome == OutcomeError {
 			next, end = "", workflow.EndFailed
+		} else if target, ok := r.def.HandbackTarget(step.Name, res.outcome); ok {
+			n := len(r.j.State().Handbacks)
+			if limit := r.def.HandbackCap; n >= limit {
+				stop := fmt.Sprintf("%sstep %q went %s after %d hand-backs to %q: %s", HandbackParked, step.Name, res.outcome, n, target, res.detail)
+				if err := r.append(Entry{Type: TypeStopped, Step: step.Name, Detail: stop}); err != nil {
+					return r.j.State(), err
+				}
+				r.log("step %s: stopped, %s", step.Name, stop)
+				r.status(stop)
+				return r.j.State(), nil
+			}
+			if err := r.append(Entry{Type: TypeHandback, Step: step.Name, Next: target, Outcome: res.outcome, Detail: res.detail}); err != nil {
+				return r.j.State(), err
+			}
+			c := CauseOf(step, res.outcome, res.detail)
+			r.handback = &c
 		}
 		if err := r.append(Entry{
 			Type: TypeEnded, Step: step.Name, Visit: act.Visit, Outcome: res.outcome,
@@ -595,6 +692,8 @@ func (r *running) runStep(step workflow.Step, change string) (result, error) {
 			return res, nil
 		}
 		return r.arbitrateAsked(step, res)
+	case workflow.KindGate:
+		return r.gate(step, env), nil
 	case workflow.KindWait:
 		return r.wait(step, env), nil
 	case workflow.KindAgent:
@@ -643,6 +742,54 @@ const (
 // wait that times out adds to its detail. A Runner without it reads every non-zero exit as not held.
 type Conditioner interface {
 	Condition(step workflow.Step, env []string) (code int, detail string, err error)
+}
+
+// OutputRunner is a Runner that also gives a command's whole combined
+// output, so a gate step can keep it. A Runner without it gives a failing
+// gate command's detail (the tail of its output) to keep instead.
+type OutputRunner interface {
+	CommandOutput(step workflow.Step, env []string) (code int, output string, err error)
+}
+
+// gate runs a gate step's commands in order, every one even after a failure,
+// and passes only when all exit 0. Each failing command's full output goes
+// to its own file in the run's directory, which the step's detail names.
+func (r *running) gate(step workflow.Step, env []string) result {
+	visit := r.j.State().CurrentVisit
+	var failed []string
+	for i, c := range step.Commands {
+		cs := workflow.Step{Name: step.Name, Kind: workflow.KindCommand, Run: c}
+		var code int
+		var out string
+		var err error
+		if or, ok := r.e.Runner.(OutputRunner); ok {
+			code, out, err = or.CommandOutput(cs, env)
+		} else {
+			code, out, err = r.e.Runner.Command(cs, env)
+		}
+		if err != nil {
+			return errResult(err)
+		}
+		if code == 0 {
+			continue
+		}
+		line := fmt.Sprintf("command %d `%s`: exit %d", i+1, c, code)
+		dir := r.e.Store.RunDir(r.j.ID)
+		path := filepath.Join(dir, fmt.Sprintf("gate-%s-%d-%d.log", safeName(step.Name), visit, i+1))
+		if err := os.MkdirAll(dir, 0o755); err == nil {
+			err = os.WriteFile(path, []byte(out), 0o644)
+		}
+		if _, statErr := os.Stat(path); statErr == nil {
+			line += "; full output: " + path
+		} else {
+			line += "; its output could not be kept"
+		}
+		failed = append(failed, line)
+	}
+	if len(failed) == 0 {
+		return result{outcome: workflow.OutcomePass, detail: fmt.Sprintf("%d commands passed", len(step.Commands))}
+	}
+	return result{outcome: workflow.OutcomeFail, detail: fmt.Sprintf("gate failed: %d of %d commands\n%s", len(failed), len(step.Commands), strings.Join(failed, "\n"))}
 }
 
 func (r *running) command(step workflow.Step, env []string) result {
@@ -827,6 +974,30 @@ func (r *running) wait(step workflow.Step, env []string) result {
 // ended on while it still waits (a failed arbitration) keeps its pane.
 func (r *running) agent(step workflow.Step, env []string) (result, error) {
 	session := r.j.State().Session[step.Name]
+	cause := r.handback
+	r.handback = nil
+	if session == "" && cause != nil {
+		// The step's earlier visit ended its session: the hand-back goes to
+		// that one, and this visit journals it again as its own.
+		if session = r.j.State().LastSession(step.Name); session != "" {
+			if err := r.append(Entry{Type: TypeSession, Step: step.Name, Session: session}); err != nil {
+				return result{}, err
+			}
+		}
+	}
+	if session != "" && cause != nil {
+		if hb, ok := r.e.Runner.(Handbacker); ok {
+			r.log("step %s: handed back by %s to session %s", step.Name, cause.Step, session)
+			if err := hb.Handback(step, session, *cause); err != nil {
+				return errResult(fmt.Errorf("hand back to session %s: %v", session, err)), nil
+			}
+		}
+	}
+	if cause != nil {
+		if err := r.append(Entry{Type: TypeHandbackDelivered, Step: step.Name}); err != nil {
+			return result{}, err
+		}
+	}
 	if session == "" {
 		s, err := r.e.Runner.StartAgent(step, step.Model(r.j.State().CurrentVisit), env)
 		if err != nil {
@@ -862,6 +1033,7 @@ func (r *running) pollAgent(step workflow.Step, env []string, session string) (r
 		interval = workflow.DefaultInterval
 	}
 	for {
+		r.reconcileSpawns()
 		status, err := r.agentStatus(session)
 		if err != nil {
 			// The step ends with an error outcome: end its block first.

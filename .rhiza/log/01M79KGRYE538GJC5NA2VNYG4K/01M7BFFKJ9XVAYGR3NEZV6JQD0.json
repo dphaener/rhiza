@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BFE6A0ZP54PEGS0E6S7D9R",
+  "after": [
+    "01M7BEHNDW9VS8D7XAGDE150N2"
+  ],
+  "at": "2026-11-13T22:12:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Attempt 2 at 3b256b75d: re-ran the Checks block (go test -trimpath ./internal/run/... exit 0; go vet ./internal/run exit 0; rhiza ship generate and rhiza render exit 0 with no tree change) and the acceptance (go test -trimpath ./internal/workflow -run TestGateStep PASS, covering parsing, no/empty commands and prompt/agent/models refusals; go test -trimpath ./internal/run -run TestGateStep PASS: passes, failing gate keeps full output and runs later commands, detail names the command, new included-gate subtest keeps gate-inner_ig-1-1.log in the run dir via safeName). Diff touches only internal/run/engine.go, its test and the run's rendered/log files; no TODOs."
+        },
+        "handle": "gate-step-verified-2",
+        "id": "01M7BFFKFSATG5JX3KEYF1ZD9N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BFFKFSATG5JX3KEWDZFBAZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BFFKFSATG5JX3KEWDZFBAZ",
+        "id": "01M7BFFKH2SG39SQZ6M554ZVZZ",
+        "link": "01M7BFFKH2SG39SQZ6M4QZ6QV6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCDGXDFMJJ3WEZ2G4H51",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGRYE538GJC5NA2VNYG4K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BFFKJ9XVAYGR3NEZV6JQD0",
+  "type": "ops",
+  "v": 1
+}

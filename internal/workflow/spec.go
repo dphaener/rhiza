@@ -8,7 +8,7 @@ import "slices"
 // kinds here and the parser's in step.
 
 // Kinds lists every step kind, in the order the reference gives them.
-var Kinds = []string{KindAgent, KindCommand, KindWait, KindLeaves, KindChecks, KindSignoff, KindWorkflow, KindArbiter}
+var Kinds = []string{KindAgent, KindCommand, KindWait, KindLeaves, KindChecks, KindSignoff, KindWorkflow, KindGate, KindArbiter}
 
 // KeyDoc is one key of a step.
 type KeyDoc struct {
@@ -31,8 +31,8 @@ type KindDoc struct {
 
 // SharedKeys are the keys any step may set, where its kind allows.
 var SharedKeys = []KeyDoc{
-	{Key: "kind", Desc: "The step kind: agent, command, wait, leaves, checks, signoff, workflow or arbiter", Required: true},
-	{Key: "on.<outcome>", Desc: "The step to go to for an outcome, or done or failed to end the run"},
+	{Key: "kind", Desc: "The step kind: agent, command, wait, leaves, checks, signoff, workflow, gate or arbiter", Required: true},
+	{Key: "on.<outcome>", Desc: "The step to go to for an outcome, or done or failed to end the run, or handback:<agent step> to hand the run back to an agent step of the workflow with the cause; the run may hand back handback_cap times, then the next red parks it stopped and an inbox item names the step and the cause"},
 	{Key: "max_visits", Desc: "How often a run may enter the step; 0 or unset means once"},
 	{Key: "stall", Desc: "How long the watchdog lets the step go without progress before it acts, such as \"20m\"; unset takes the watchdog's default for the kind"},
 }
@@ -41,6 +41,7 @@ var SharedKeys = []KeyDoc{
 var FileKeys = []KeyDoc{
 	{Key: "name", Desc: "The workflow's name; unset takes the file's base name"},
 	{Key: "start", Desc: "The step the run enters first; unset takes the first step in the file"},
+	{Key: "handback_cap", Desc: "How many times a run may hand back through an on.<outcome> = \"handback:<agent step>\" before the next red parks it stopped with an inbox item; a whole number of at least 1, unset takes 3. A hand-back gives every step its full max_visits again"},
 	{Key: "autonomous", Desc: "true or false: set every autonomy stage to auto or owner at once; not with [autonomy]"},
 	{Key: "autonomy", Desc: "A table giving a mode, auto or owner, to any of the stages plan, accept, ship and signoff; a stage left out follows rhiza.autonomy.<stage>"},
 	{Key: "cleanup", Desc: "A [[cleanup]] table, repeated: a command run once when a run of the workflow ends done, failed or abandoned, in the run's worktree with the run's environment, in file order; its keys are run (the shell command, required) and name (lowercase words joined by hyphens; unset takes cleanup-<n>). A failing cleanup step is journalled and logged and never changes the run's result"},
@@ -146,6 +147,10 @@ var kindDocs = map[string]KindDoc{
 			{Key: "workflow", Desc: "The name of the workflow to include", Required: true},
 			{Key: "skip", Desc: "Steps of it to take as passed"},
 		},
+	},
+	KindGate: {
+		Summary: "Runs its commands, ones the daemon owns and never an agent, in order in the run's worktree. It passes only when every command exits 0 and fails otherwise; every command runs, and each failing command's full output is kept in a file in the run directory, named in the step's detail.",
+		Keys:    []KeyDoc{{Key: "commands", Desc: "The shell commands, run in order; at least one", Required: true}},
 	},
 	KindArbiter: {
 		Summary: "Not a state of the machine: no step goes to it. In an autonomous run the engine calls it to decide a question an agent step raised, and its outcome goes back to the step that asked. A file declares at most one, only to set its agent, permission mode and interval; its prompt is fixed. Without one a built-in arbiter is used.",

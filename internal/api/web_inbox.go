@@ -9,7 +9,7 @@ import (
 // in the CLI inbox.
 var webInboxKinds = map[string]bool{
 	InboxQuestion: true, InboxOpen: true, InboxSignoff: true,
-	InboxFailed: true, InboxGaveUp: true, InboxStalled: true, InboxPermission: true, InboxAPIError: true,
+	InboxFailed: true, InboxGaveUp: true, InboxHandback: true, InboxStalled: true, InboxPermission: true, InboxAPIError: true,
 }
 
 // WebInboxSource reads the inbox for the web UI's Overview from the
@@ -77,6 +77,8 @@ func webInboxViews(items []InboxItem) []web.InboxItemView {
 			views = append(views, view("", detail))
 		case InboxGaveUp:
 			views = append(views, view("", "interrupted again after the daemon resumed it once"))
+		case InboxHandback:
+			views = append(views, view("", "stopped after handing back too often"))
 		case InboxPermission:
 			// The prompt's message can hold commands and paths: the page only
 			// says the run waits on a permission.

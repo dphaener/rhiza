@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BA3DWXBTH1695WS8T93HAV",
+  "after": [
+    "01M7BADRTNBACC55TGDXKAFE0V"
+  ],
+  "at": "2026-11-13T20:45:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 83d3c286d (leaf commits 8fe16199f, 5d3539d80, 83d3c286d). Re-ran: go test -trimpath ./internal/api -run TestRunSpawn (exit 0; Pass, Fail exit 1, OutsideRun names RHIZA_RUN, MissingBrief names path, UsageHold and MachineHold journaled as held then lifted, MaxRunsHoldsNothing); go test -trimpath ./cmd/rhiza -run TestScripts/run-spawn$ with a fake agent (exit 0); TestScripts/describe-golden after -update (exit 0, golden unchanged); go test ./internal/run/... ./internal/session/... and the scoped internal/api set (exit 0); rhiza ship generate (0 changed) and rhiza render (exit 0); make self-check from a clean detached worktree with RHIZA_* unset (exit 0; in the run worktree it fails only on this verifier's own unrendered actor). Read the diff: the child starts in the caller's process via session.start with the run's agent and permission mode, brief.md is RenderSpawnBrief (contract section then the caller's brief, no slice.json), spawn/spawn-held/spawn-ended journal entries under the calling step, holds read from daemon state UsageHold/MachineHold as the inbox does plus the governor limit, never maxRuns. No TODOs or stubs."
+        },
+        "handle": "run-spawn-verified",
+        "id": "01M7BAGS6W5RFJGASWH5RAK50N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BAGS6W5RFJGASWH2QTEEKG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BAGS6W5RFJGASWH2QTEEKG",
+        "id": "01M7BAGSCTT68DTF4BC57Z696A",
+        "link": "01M7BAGSCTT68DTF4BC3PB311J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCATRS9TD6XGS3C3KYY6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGRYE538GJC5NA2VNYG4K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BAGSFY08ZRXCKNXFDKB8AS",
+  "type": "ops",
+  "v": 1
+}

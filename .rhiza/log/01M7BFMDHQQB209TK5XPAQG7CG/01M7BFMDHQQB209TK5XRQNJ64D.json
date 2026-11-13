@@ -1,0 +1,15 @@
+{
+  "actor": "01M7BFHN2XPK39DXZ2Y5G7KYTZ",
+  "after": [],
+  "at": "2026-11-13T22:14:45Z",
+  "body": {
+    "intent": "A hand-back gives every step of the run its full max_visits again (as a retry does), so the agent step it hands back to and the routing step may re-enter up to handback_cap times regardless of their max_visits: state this as a constraint under workflow runs",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7BFMDHQQB209TK5XPAQG7CG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BFMDHQQB209TK5XRQNJ64D",
+  "type": "open",
+  "v": 1
+}

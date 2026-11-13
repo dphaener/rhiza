@@ -1,0 +1,15 @@
+{
+  "actor": "01M7BE519KJ6G3GXPTHA7JEPZN",
+  "after": [],
+  "at": "2026-11-13T21:51:20Z",
+  "body": {
+    "intent": "State as a constraint that a hand-back (on.<outcome> = handback:<agent step>) gives every step of the run its full max_visits again, as a retry does",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7BE9FRXG650BF5S1GVWN3T9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BE9FS4S95E6HGWBF6BA9VH",
+  "type": "open",
+  "v": 1
+}

@@ -126,3 +126,21 @@ func TestEngineStatusError(t *testing.T) {
 		t.Errorf("last report %+v", last)
 	}
 }
+
+// A report lists the children the current step's sessions spawned.
+func TestDeriveStatusSpawned(t *testing.T) {
+	def, err := workflow.Parse("w", []byte(leavesWF))
+	if err != nil {
+		t.Fatal(err)
+	}
+	st := State{ID: "R1", Current: "build", Spawns: []Spawn{
+		{Step: "build", Session: "C1", Role: "builder", Leaf: "a"},
+		{Step: "other", Session: "C2", Role: "verifier"},
+		{Step: "build", Session: "C3", Role: "verifier", Leaf: "a", Ended: true, Outcome: "fail", Detail: "exit 1"},
+	}}
+	rep := deriveStatus(st, def, nil)
+	want := []Spawn{st.Spawns[0], st.Spawns[2]}
+	if !reflect.DeepEqual(rep.Spawned, want) {
+		t.Errorf("spawned %+v, want %+v", rep.Spawned, want)
+	}
+}
