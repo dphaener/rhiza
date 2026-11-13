@@ -1,0 +1,93 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7BFRM1YKVSJQ3TT696ZFVX2"
+  ],
+  "at": "2026-11-13T22:25:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "3190f8f818d503a6cd5ac7f0fdd81ebfffbde71b",
+          "pr": "https://github.com/dphaener/rhiza/pull/572",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #572 (https://github.com/dphaener/rhiza/pull/572) passed CI at 3190f8f",
+          "status": "verified"
+        },
+        "handle": "pr-572-the-daemon-offers-spawn",
+        "id": "01M7BG874G9BQ7QX7GVEGPBGTM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BG874D9V53W31Z58CA3S4F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BG874D9V53W31Z58CA3S4F",
+        "id": "01M7BG876SF7S4B0T2Q6DR2YJR",
+        "link": "01M7BG876SF7S4B0T2Q2NW43DH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCATRS9TD6XGS3C3KYY6",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BG874D9V53W31Z58CA3S4F",
+        "id": "01M7BG878QD50CBQB8W6KCE9JD",
+        "link": "01M7BG878QD50CBQB8W5DB7PWE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCC9NH1M9F5EFKVGJW69",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BG874D9V53W31Z58CA3S4F",
+        "id": "01M7BG87ACK1JFNTK17A7FW558",
+        "link": "01M7BG87ACK1JFNTK176ZAZEKT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCDGXDFMJJ3WEZ2G4H51",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BG874D9V53W31Z58CA3S4F",
+        "id": "01M7BG87EHECW4Z44CM8RGB652",
+        "link": "01M7BG87EHECW4Z44CM57SAA4P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCETKJR0AX7B576P4C76",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BG874D9V53W31Z58CA3S4F",
+        "id": "01M7BG87JCCYGGK5Y9SP1G05NB",
+        "link": "01M7BG87JCCYGGK5Y9SK3HDTFH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCGPWP3YX3Q5GRCFA0B0",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BG874D9V53W31Z58CA3S4F",
+        "id": "01M7BG87NDYWA2SF6B6HSVFB2K",
+        "link": "01M7BG87NDYWA2SF6B6ER9HTZ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHW9B0Y6HMMVGBQ4QX4Z3W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGRYE538GJC5NA2VNYG4K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BG87W82428N9HV3NKR22C3",
+  "type": "ops",
+  "v": 1
+}
