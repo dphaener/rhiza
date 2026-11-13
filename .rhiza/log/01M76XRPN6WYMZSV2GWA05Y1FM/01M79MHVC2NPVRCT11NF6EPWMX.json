@@ -1,0 +1,40 @@
+{
+  "actor": "01M79MEVZRG2XMT8GJK0D00ZVV",
+  "after": [
+    "01M79MF9F51MA2FWYH6ND92BZA"
+  ],
+  "at": "2026-11-13T05:02:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 228726468: go test -trimpath -count=1 ./internal/guide/... exit 0 (TestSeveritiesBlockShared passes; TestReviewSeverityBlockShared removed); rhiza ship generate exit 0; rhiza render exit 0 with no tree changes. Diff: severities block lives only in internal/guide/text/shared/severities.md, review.md and plan-review.md carry `<!-- shared: severities -->`; the test checks no unexpanded text holds ## Severities, review and plan-review show the expanded block, every topic naming the block shows it, uncovered-intent and oversized-leaf are major, and Expand of `<!-- shared: severity -->` errors naming severity. `rhiza guide review` shows the expanded section. No TODOs, no changes outside the leaf."
+        },
+        "handle": "shared-severities-block-verified",
+        "id": "01M79MHTPGCD5D2D2R5NJ9Z5HV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79MHTPGCD5D2D2R5KD16FKJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79MHTPGCD5D2D2R5KD16FKJ",
+        "id": "01M79MHV4EQ6079Z112EFFKSPC",
+        "link": "01M79MHV4EQ6079Z112BEK8P4T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH58V0BQMAAJ8RS4AJ9MT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79MHVC2NPVRCT11NF6EPWMX",
+  "type": "ops",
+  "v": 1
+}
