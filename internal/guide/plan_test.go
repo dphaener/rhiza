@@ -135,7 +135,7 @@ func TestPlanIndexes(t *testing.T) {
 	for _, tc := range []struct {
 		index string
 		roles []string
-	}{{"plan", roles}, {"plan-review", roles[1:]}} {
+	}{{"plan", roles}, {"plan-review", roles}} {
 		tx, ok := Lookup(tc.index)
 		if !ok {
 			t.Fatalf("no %s", tc.index)
