@@ -165,7 +165,7 @@ a.rz-row-title:hover { color: var(--teal); }
 .rz-step:last-child { padding-bottom: 0; }
 /* the hyphae thread between nodes */
 .rz-step::before {
-  content: ""; position: absolute; left: 11px; top: 22px; bottom: 0; width: 1px; background: var(--line);
+  content: ""; position: absolute; left: 10.5px; top: 22px; bottom: 0; width: 1px; background: var(--line);
 }
 .rz-step:last-child::before { display: none; }
 .rz-step.is-done::before { background: var(--ink-3); opacity: .55; }
