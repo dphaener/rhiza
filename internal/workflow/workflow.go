@@ -818,6 +818,9 @@ func unknownKey(k toml.Key) error {
 	if len(k) >= 4 && k[0] == "step" && (k[2] == RoleBuilder || k[2] == RoleVerifier || k[2] == RoleCritic || k[2] == RoleFixer) {
 		return fmt.Errorf("step %q: %s: unknown key %q; want prompt, agent, permission_mode or models (a verifier also low_risk_models and risky_paths)", k[1], k[2], toml.Key(k[3:]).String())
 	}
+	if len(k) == 4 && k[0] == "step" && k[2] == RoleCheck && (k[3] == "low_risk_models" || k[3] == "risky_paths") {
+		return fmt.Errorf("step %q: check: low_risk_models and risky_paths are only for the verifier role; a check cannot have them, set them under [step.%s.verifier]", k[1], k[1])
+	}
 	if len(k) >= 4 && k[0] == "step" && k[2] == RoleCheck {
 		return fmt.Errorf("step %q: check: unknown key %q; want name, prompt, agent, permission_mode or models", k[1], toml.Key(k[3:]).String())
 	}
@@ -921,7 +924,10 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		return fail("models is only for agent steps and a leaves step's builder and verifier; %s step cannot have it", article(fs.Kind))
 	}
 	if fs.LowRiskModels != nil || fs.RiskyPaths != nil {
-		return fail("low_risk_models and risky_paths belong to a verifier role, not a step; set them under [step.%s.verifier]", name)
+		if fs.Kind == KindLeaves || fs.Kind == KindChecks {
+			return fail("low_risk_models and risky_paths belong to the verifier role, not the step; set them under [step.%s.verifier]", name)
+		}
+		return fail("low_risk_models and risky_paths belong to a leaves or checks step's verifier role; %s step has no verifier and cannot have them", article(fs.Kind))
 	}
 	if fs.Split != "" && fs.Kind != KindLeaves && fs.Kind != KindChecks {
 		return fail("split is only for leaves and checks steps; %s step cannot have it", article(fs.Kind))
