@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BBDVSE4QFPSRXA268EJ5AZ",
+  "after": [
+    "01M7B8JXRZ4VTGVZP9V2MNBBVR"
+  ],
+  "at": "2026-11-13T21:25:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified commit c765796d3. go test -trimpath -count=1 -p 1 -run '^TestReadBudget$' ./internal/api with RHIZA_BUDGET_LOG, 3 runs one after another: at the parent 35d4cdb4d exit 0 each, driver poll idle medians 7.335/5.64/3.941 ms (cpu pressure 69/68/4%, the first two inconclusive over 5 ms); at the leaf exit 0 each, idle medians 2.164/2.442/2.399 ms (pressure 38/57/64%), so the middle value fell from 5.64 to 2.399 ms. The 'after an unrelated entry' medians were 4.4-6.7 ms against 50 ms. go test -trimpath -count=1 -run '^(TestDriverPollIsCheap|TestEvidenceReadsPastSessionWrites)$' ./internal/api: exit 0. rhiza ship generate: exit 0. rhiza render: exit 0. In the diff, the idle measure polls with leaf \"\" so f.poll skips Evidence, and a comment says why. The warm-up polls and the unrelated measure still pass driver-leaf-a. idlePollCPUBudget is still 5 ms and unrelatedPollCPUBudget 50 ms. The only code file changed is internal/api/run_model_cache_test.go, so stepRunner.Evidence and settle() are unchanged; the other files are the builder's staged actor record and its render. No TODOs or stubs."
+        },
+        "handle": "idle-poll-budget-times-idle-poll-verified",
+        "id": "01M7BCSBHFBY80D19HX6JEC8WC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BCSBHFBY80D19HX5BGAJFS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BCSBHFBY80D19HX5BGAJFS",
+        "id": "01M7BCSBJNVWYQ8YBMHDD03Y35",
+        "link": "01M7BCSBJNVWYQ8YBMHBTSYEDE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B8BJ8E3YCTNWCHPT45HN4P",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7B7P8D389GB7N94YPTXAQCS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BCSBKB1D0Y30BN9ZXSGCM0",
+  "type": "ops",
+  "v": 1
+}
