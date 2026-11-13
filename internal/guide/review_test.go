@@ -140,7 +140,7 @@ func TestSeveritiesBlockShared(t *testing.T) {
 		t.Fatalf("shared/severities.md does not open with ## Severities")
 	}
 	want := strings.TrimSuffix(strings.TrimPrefix(shared, "## Severities"), "\n")
-	for _, name := range []string{"review", "plan-review"} {
+	for _, name := range []string{"review"} {
 		if got := severityBlock(t, name); strings.TrimSuffix(got, "\n") != want {
 			t.Errorf("%s: severity block differs from the shared block:\n%s", name, got)
 		}
@@ -171,7 +171,7 @@ func TestSeveritiesBlockShared(t *testing.T) {
 }
 
 func TestReviewCriticSections(t *testing.T) {
-	for _, name := range []string{"review", "plan-review"} {
+	for _, name := range []string{"review"} {
 		tx, _ := Lookup(name)
 		i := strings.Index(tx.Body, "## Critic")
 		if i < 0 {

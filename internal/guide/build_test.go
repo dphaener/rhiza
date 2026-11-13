@@ -46,7 +46,7 @@ func finalParagraph(s string) string {
 
 func TestGuidesFeedFindingsFromStdin(t *testing.T) {
 	re := regexp.MustCompile(`rhiza run (findings|verdict)[^\n]*`)
-	for _, name := range []string{"verifier", "review", "plan-review"} {
+	for _, name := range []string{"verifier", "review", "plan-reviewer", "plan-critic"} {
 		g, ok := Lookup(name)
 		if !ok {
 			t.Fatalf("no guide %q", name)

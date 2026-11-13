@@ -27,8 +27,8 @@ func TestPlanKinds(t *testing.T) {
 	if !ok || !plan.Skill {
 		t.Fatalf("plan: found %v, skill %v; want a skill", ok, plan.Skill)
 	}
-	if !strings.HasPrefix(plan.Body, "# rhiza-plan\n") || !strings.Contains(plan.Body, "\n## Steps\n") {
-		t.Errorf("plan: want the # rhiza-plan heading and a ## Steps section")
+	if !strings.HasPrefix(plan.Body, "# Plan\n") {
+		t.Errorf("plan: want the # Plan heading")
 	}
 	// The description says when to load it: planning a milestone or a
 	// change set's leaves with the owner, in a plan run.
@@ -128,29 +128,47 @@ func TestPlanWhoRecords(t *testing.T) {
 	}
 }
 
-func TestPlanReviewText(t *testing.T) {
-	checkPhrases(t, "plan-review", map[string][]string{
-		"plan-review-guide": {
-			"missing-acceptance", "missing-provenance", "unreal-depends-on",
-			"outside-intent", "contradiction",
-			"rhiza overlaps --change <cs> --json", "naming the other change set",
-			"rhiza run findings - --json <<'EOF'", "\nEOF\n", `{"findings":[{"node":"`, `"kind":`, `"reason":`, `{"findings":[]}`,
-			"rhiza run verdict - --json <<'EOF'", `{"verdicts":[{"finding":"f1","verdict":`, "`confirmed` (keeps the severity)",
-			"serving an intent it adds", "rhiza change show", "rhiza slice", "rhiza why",
-			"Never add a finding", "confirmed major finding", "--record", "rhiza session done",
-		},
-	})
+// The plan and plan-review indexes name the four role topics with both
+// routes, and stay short.
+func TestPlanIndexes(t *testing.T) {
+	roles := []string{"planner", "plan-reviewer", "plan-critic", "plan-reviser"}
+	for _, tc := range []struct {
+		index string
+		roles []string
+	}{{"plan", roles}, {"plan-review", roles[1:]}} {
+		tx, ok := Lookup(tc.index)
+		if !ok {
+			t.Fatalf("no %s", tc.index)
+		}
+		for _, r := range tc.roles {
+			if _, ok := Lookup(r); !ok {
+				t.Errorf("%s names the %s topic, which does not exist", tc.index, r)
+			}
+			for _, w := range []string{"`/rhiza-" + r + "`", "`rhiza guide " + r + "`"} {
+				if !strings.Contains(tx.Body, w) {
+					t.Errorf("%s: no %s", tc.index, w)
+				}
+			}
+		}
+		if n := Tokens(tx.Body); n > TopicCap/3 {
+			t.Errorf("%s costs %d tokens, over a third of the cap %d", tc.index, n, TopicCap)
+		}
+		if !strings.Contains(tx.Body, "rhiza session done") {
+			t.Errorf("%s: no rhiza session done", tc.index)
+		}
+	}
+	tx, _ := Lookup("plan")
+	for _, w := range []string{"/rhiza-planner", "rhiza guide plan-review"} {
+		if !strings.Contains(tx.Body, w) {
+			t.Errorf("plan: no %q", w)
+		}
+	}
 }
 
 func TestPlanAcceptanceScoped(t *testing.T) {
 	checkPhrases(t, "plan-recipes", map[string][]string{
 		"plan-acceptance-scoped": {
 			"the tests covering that leaf, never the repo's full suite",
-		},
-	})
-	checkPhrases(t, "plan-review", map[string][]string{
-		"plan-review-acceptance-scoped": {
-			"runs the repo's full suite", "tests covering that leaf",
 		},
 	})
 	for _, name := range []string{"plan", "plan-review", "planner", "plan-recipes", "plan-interview"} {
@@ -160,16 +178,6 @@ func TestPlanAcceptanceScoped(t *testing.T) {
 				t.Errorf("%s names %q", name, bad)
 			}
 		}
-	}
-}
-
-func TestPlanReviewDoneUnchained(t *testing.T) {
-	checkPhrases(t, "plan-review", map[string][]string{
-		"plan-review-guide": {"as its own\ncommand only once the recording command", "has succeeded", "Never chain it after one with `;`"},
-	})
-	tx, _ := Lookup("plan-review")
-	if n := Tokens(tx.Body); n > TopicCap {
-		t.Errorf("plan-review costs %d tokens, cap %d", n, TopicCap)
 	}
 }
 
