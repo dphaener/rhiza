@@ -1,0 +1,28 @@
+{
+  "actor": "01M79S7P31TYSEAAW27GVDGWBK",
+  "after": [
+    "01M79RM9EZRA11REEQDPC946JX"
+  ],
+  "at": "2026-11-13T06:24:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M76FFS2561N2BAX0VAJ9HX1A",
+        "handle": null,
+        "id": "01M79S8MFGBGWPCFG6BA74Y8KM",
+        "node": "01M5WSGD28YB7NQC8BQR8MCVFM",
+        "op": "node.update",
+        "set": {
+          "statement": "A plan review round is journaled in its run: rhiza run findings <file> records the reviewer's findings, each naming a node or a link (a model link, or a link between change sets such as depends-on), one kind (missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent, oversized-leaf) and its reason; rhiza run verdict <file> records the critic's verdict on each, confirmed or dropped with a reason, and refuses a finding the round does not hold, so a critic can't add one; rhiza run status shows each round's findings and verdicts."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79S8MMY4698GFPQX7VQP2RR",
+  "type": "ops",
+  "v": 1
+}
