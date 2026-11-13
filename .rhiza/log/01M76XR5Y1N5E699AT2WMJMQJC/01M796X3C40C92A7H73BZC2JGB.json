@@ -1,0 +1,30 @@
+{
+  "actor": "01M796QQ2GWAFJDY3Q63H88PTA",
+  "after": [
+    "01M777KZ2K91NDCTAF00115ZDJ"
+  ],
+  "at": "2026-11-13T01:03:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "ab0574e9-12c9-4b2a-af3f-01a1d26b9855",
+          "statement": "Build role topics: how are the shared blocks (done rule, test scope, unstable CI, command budget, outside work, never-list) written once across the builder, verifier and builder-retry topics (and later the review and plan topics)? / Build role topics: how do the builder, verifier and builder-retry topics reach run sessions, and what happens to today's `build` topic and rhiza-build skill? / Build role topics: how does a builder retry reach the build-retry topic? / Build role topics: Rhiza's own .rhiza/workflows/docs-build.toml copies the builder and verifier prompts with a doc-prose addendum. What happens to it?"
+        },
+        "handle": "question-ab0574e9-1",
+        "id": "01M796WYTNKDNYWDP0742YWG2E",
+        "key": null,
+        "kind": "question",
+        "node": "01M796WYTNKDNYWDP070HT3QQF",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M796X3C40C92A7H73BZC2JGB",
+  "type": "ops",
+  "v": 1
+}
