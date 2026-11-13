@@ -1,0 +1,60 @@
+{
+  "actor": "01M7AJW5XGX1M491W3TTV5NYRP",
+  "after": [
+    "01M79P0H3N3V2VMH0ZMX6WAAQ3"
+  ],
+  "at": "2026-11-13T13:54:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestBuiltinShipChange shows the builtin has at most 10 steps, the conduct step declaring exactly the checks plan, code and qa, the gate step's commands including rhiza run review-check, every failure outcome routing to handback:conduct, the hand-back cap at 3, and no leaves or checks step remaining; rhiza workflow describe ship-change lists those steps.",
+          "statement": "The builtin ship-change is the conductor default: conduct (the conduct skill, its step declaring the review checks plan, code and qa), gate (every leaf has Evidence, rhiza run review-check failing on any open blocker or major finding of a declared check, rhiza check, the pre-push check, and the local gate while CI is unstable), signoff, push and open the PR, wait for CI at that head, merge the tested head, wait for main's CI, close-out; every red result hands back to conduct, at most three times."
+        },
+        "handle": "builtin-conductor-default",
+        "id": "01M79KPE0KMZHN6W97EDHJ5H21",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "id": "01M7AK04TN668SDAY0WR01JJ6T",
+        "link": "01M7AK04TN668SDAY0WPCQG5A8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPDAWDKT4JQK1KDNR5K0W",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "id": "01M7AK053H5JMCX06C3CPWVMH5",
+        "link": "01M7AK053H5JMCX06C3CHMNJ3J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPDBW0RMPYBW73RTEBNX3",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "id": "01M7AK05CRBCXEZNMP6R7JVVM0",
+        "link": "01M7AK05CRBCXEZNMP6N98CXZX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHQJAMY18Z3M41T5BJN6D8",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AK05HZNK14DCH9GW0ARKYR",
+  "type": "ops",
+  "v": 1
+}
