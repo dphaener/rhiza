@@ -1,0 +1,57 @@
+{
+  "actor": "01M7AKPGC84TY08XFTA2C9WE16",
+  "after": [
+    "01M7AJZ9A6JT9WWEMP3KDKGP4C"
+  ],
+  "at": "2026-11-13T14:07:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run -run 'TestBriefFiles|TestSessionDir|TestHandbackFile' shows brief.md's sections in order with the change set, its intent, every leaf with its acceptance, the decisions, the constraints, both check commands (and 'none' when neither is set) and the contract summary's last line; the same input rendering the same bytes twice; session directory names for an agent step on its first and second visit, a builder of a leaf at attempt 2, a checks step's check, two critics of one cycle (distinct directories) and one check across two cycles (distinct directories), all names different; handback.md naming the failing step and outcome with each failing gate command and its output path for a gate cause, each failed CI run and its saved log file for a CI cause, and each conflicted file for a conflict cause; failure cases: a directory that cannot be created returns an error naming its path, and a cause naming no failing step is refused. Touches: internal/run/brief.go (new), internal/run/brief_test.go (new). Must not touch internal/api or the workflow parser.",
+          "statement": "internal/run renders a session's context files into its directory <commondir>/rhiza/runs/<run id>/<step>-<visit>/<session>/, <session> named from what tells the step's sessions apart in the code: agent for an agent step; <role>-<leaf>-<attempt> for a leaves step's builder or verifier; <check>-<role>-<cycle> for a checks step's check or critic (as OpenCheckCheckout names its checkout); <role>-<leaf>-<cycle>-<attempt> for a checks step's leaf fixer or verifier; fixer-<cycle>-<attempt> for a checks step's change set fixer; so no two sessions of a run, parallel or in a later visit or cycle, share a directory, which is kept when the run ends and lies inside no worktree: brief.md, deterministic Markdown with these sections in order: the change set (title, ID, intent), the leaves (handle, statement, acceptance each), the decisions (statement each), the constraints (statement each), the check commands (rhiza.ship.prePushCheck and rhiza.ship.localGate when set, else none) and a short contract summary ending 'Full contract: rhiza guide contract'; slice.json, the bytes it is given; and handback.md, written from a hand-back cause of any failing step: the failing step and its outcome, each failing command with the path of its kept output (a gate step's), each failed CI run with its saved log file (rhiza ship check --json findings), and each conflicted file, by a writer that run-handback calls and that nothing else in this change set triggers."
+        },
+        "handle": "run-brief-files",
+        "id": "01M79KPBD9GFZM83ZPY08PQ97R",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M79KPBD9GFZM83ZPXXDRY6FS",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestInvokeTemplate covers invoke and handback parsing on an agent step, a leaves step's builder and verifier, and a checks step's check, critic, fixer and verifier, prompt as an alias of invoke, and rendering every placeholder; failure cases: rhiza workflow check refuses an unknown placeholder naming it, and a table setting both prompt and invoke; go test -trimpath ./internal/api -run TestInvokePrompt shows a builder at attempt 2 starting with its rendered invoke followed by the attempt line, and a leaf fixer and a change set fixer starting with their rendered invoke followed by their confirmed findings and answer lines, as with prompt today; go test -trimpath ./cmd/rhiza -run TestScripts/workflow-invoke shows a fake agent receiving '/myskill:conduct --prompt <path to its brief.md>' as its first prompt. Touches: internal/workflow/workflow.go, internal/workflow/check.go, internal/workflow/spec.go, internal/workflow/include.go, internal/workflow/workflow_test.go, internal/api/run.go, internal/api/run_leaves.go, internal/api/run_checks.go (the render calls), cmd/rhiza/testdata/script/workflow-invoke.txtar (new). Must not send hand-backs; run-handback does.",
+          "statement": "Wherever a workflow file accepts prompt today (an agent step, a leaves step's builder and verifier, a checks step's check, critic, fixer and verifier) it also accepts invoke, the template of the text the session starts with, and handback, the text a hand-back sends it, with prompt an alias of invoke; both take the placeholders {brief}, {slice} and {handback} (the session's file paths), {change}, {run}, {leaf}, {attempt} and {worktree} beside today's; the daemon renders invoke and, as it does with prompt today, appends after it unchanged the lines it adds for that session (a retried or freshly-rounded builder's retry, Decision-answer and attempt lines from leafPrompt, a leaf fixer's and a change set fixer's confirmed findings and answer lines from fixerPrompt and changeSetFixerPrompt), and the agent's adapter delivers the result as the first prompt; with no such lines the first prompt is exactly the rendered invoke; handback is rendered for run-handback to send."
+        },
+        "handle": "agent-invoke-template",
+        "id": "01M79KPBF6JT17PFXC2PEQ501Q",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M79KPBF6JT17PFXC2KD2DW6F",
+        "op": "node.create",
+        "parent": "01M5SWT9A05VXSMXQME4CPJN2D"
+      },
+      {
+        "fields": {
+          "reasoning": "Read the question, this change set's slice (run-brief-files, agent-invoke-template, guide-contract) and the code. run-brief-files already describes handback.md's content (the cause from rhiza ship check --json), so the format belongs here and the sibling only triggers; one writer avoids two formats. brief.md's sections follow the run-brief-files statement and its acceptance (TestBriefFiles names change set, intent, leaves with acceptance, decisions, constraints, prePushCheck, contract section), kept deterministic per the same-model-same-output constraint. internal/run/store.go keeps journals at <commondir>/rhiza/runs/<id>.jsonl and its listing skips directories, so <id>/ beside it is safe; TmpDir is removed at run end, so it cannot hold files a hand-back or later attempt reads, and per-session subfolders avoid clashes between parallel builder sessions of one leaves step. internal/workflow/workflow.go has prompt on agent steps, Role (builder, verifier, critic, fixer) and fileCheck, so invoke as prompt's alias must apply in each of those places.",
+          "statement": "handback.md: this change set owns the file's path, format and writer (run-brief-files ships a function that writes handback.md from a hand-back cause of any failing step: the step and outcome, a gate step's failing commands with their kept output, rhiza ship check --json's failed CI runs with their saved logs, or conflicted files; tested directly); the sibling's run-handback leaf owns triggering a hand-back and calls that writer, writing no handback.md format of its own. brief.md: deterministic Markdown, same bytes for the same model and run, with sections in this order: the change set (title, ID, intent); the leaves (handle, statement, acceptance each); decisions (statement each); constraints (statement each); check commands (rhiza.ship.prePushCheck and rhiza.ship.localGate when set, else none); the contract (a short summary of the obligations ending 'Full contract: rhiza guide contract'). Location: a durable per-run directory beside the journal, <commondir>/rhiza/runs/<run id>/, with one subdirectory per session, <step>-<visit>/<session>, <session> being agent for an agent step, <role>-<leaf>-<attempt> for a leaves step's builder or verifier, <check>-<role>-<cycle> for a checks step's check or critic, <role>-<leaf>-<cycle>-<attempt> for a checks step's leaf fixer or verifier and fixer-<cycle>-<attempt> for its change set fixer (e.g. build-1/builder-<leaf>-1), so parallel sessions and later visits or cycles never share one; it holds that session's brief.md, slice.json and handback.md, is kept when the run ends (unlike the run's temp folder) and is not inside any worktree. invoke and handback keys: accepted everywhere prompt is accepted today: an agent step, a leaves step's builder and verifier, a checks step's each check, critic, fixer and verifier; prompt stays an alias of invoke there, and setting both prompt and invoke on one table is refused by rhiza workflow check.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "brief-files-and-invoke-placement",
+        "id": "01M7AHP65F98YYYZH4ASJGNNDV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7AHP65F98YYYZH4APSDHPZR",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AKS02842F4Q2TRR492GKQF",
+  "type": "ops",
+  "v": 1
+}
