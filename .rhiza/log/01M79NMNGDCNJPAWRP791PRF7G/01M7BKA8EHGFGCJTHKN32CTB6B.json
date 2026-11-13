@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BK5JPVCBFG6YTHFDDWV2SW",
+  "after": [
+    "01M7B3XEJTX7PPZ8C8ZGCFAMBB"
+  ],
+  "at": "2026-11-13T23:19:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5ec8ca90a re-ran every Checks: command, all exit 0: go test -trimpath ./internal/api -run TestMilestonesOperation (PASS), go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden (ok; re-running with -update left the golden unchanged), rhiza ship generate (0 files changed), rhiza render (no drift), make self-check (exit 0, only pre-existing unclaimed warnings). Read the diff: internal/api/milestones.go adds a separate read-only milestones operation; roadmap is untouched. The test fixture covers each acceptance point: milestone A has draft, proposed, accepted, landed and withdrawn change sets, all with their states; A1 (landed plus withdrawn) is met; A2 (accepted) is not met; A is building, B planned, C designing, D finished; finished=1; roadmap still lists only the proposed and accepted change sets. The cli.md docs and the describe golden were regenerated, there are no TODOs, and the only other files are the actor record and the rendered files. A scratch build of rhiza milestones --json on this repo returned 36 milestones with 6 finished."
+        },
+        "handle": "web-roadmap-milestone-data-verified",
+        "id": "01M7BKA84HPKKXRRTQGWGNCH3H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BKA84HPKKXRRTQGW5DRC35",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BKA84HPKKXRRTQGW5DRC35",
+        "id": "01M7BKA89XWRVMTRPRVB510YP5",
+        "link": "01M7BKA89XWRVMTRPRV9WDDRDW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B38B8RHGSEEJ3KW7TGGNSJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NMNGDCNJPAWRP791PRF7G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BKA8EHGFGCJTHKN32CTB6B",
+  "type": "ops",
+  "v": 1
+}
