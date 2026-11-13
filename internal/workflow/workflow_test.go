@@ -9,11 +9,13 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/guide"
 	"github.com/rogpeppe/go-internal/txtar"
 )
 
@@ -1548,6 +1550,8 @@ func TestRenderStepAddsNoCommitWhenClean(t *testing.T) {
 // TestBuiltinRolePromptsScopeTests: every builder, verifier, check, critic
 // and fixer prompt of the build and review workflows tells the agent to
 // run only the tests its change touches, and names no test command.
+var guideTopic = regexp.MustCompile(`follow rhiza guide ([a-z-]+)`)
+
 func TestBuiltinRolePromptsScopeTests(t *testing.T) {
 	rule := "Run only the tests covering what your change touches, never the repo's full suite"
 	var prompts = map[string]string{}
@@ -1574,15 +1578,32 @@ func TestBuiltinRolePromptsScopeTests(t *testing.T) {
 	if len(prompts) < 9 {
 		t.Fatalf("found %d role prompts; want builder, verifiers, 4 checks, critic, fixer", len(prompts))
 	}
-prompts:
+	topicRule := []string{"only the tests covering what the change touches", "never the repo's full suite"}
 	for where, p := range prompts {
-		// The build and review roles are one line each; their guide topics carry the rule.
+		// The build and review roles are one line each; the guide topic they
+		// name carries the rule, in its expanded text.
+		oneLine := false
 		for _, one := range []string{"/rhiza-builder ", "/rhiza-verifier ", "/rhiza-check-", "/rhiza-critic ", "/rhiza-fixer "} {
-			if strings.HasPrefix(p, one) {
-				continue prompts
-			}
+			oneLine = oneLine || strings.HasPrefix(p, one)
 		}
-		if !strings.Contains(p, rule) {
+		if oneLine {
+			m := guideTopic.FindStringSubmatch(p)
+			if m == nil {
+				t.Errorf("%s prompt names no guide topic: %q", where, p)
+				continue
+			}
+			topic, ok := guide.Lookup(m[1])
+			if !ok {
+				t.Errorf("%s prompt names guide topic %q, which does not exist", where, m[1])
+				continue
+			}
+			body := strings.Join(strings.Fields(topic.Body), " ")
+			for _, r := range topicRule {
+				if !strings.Contains(body, r) {
+					t.Errorf("%s: guide topic %s lacks %q", where, m[1], r)
+				}
+			}
+		} else if !strings.Contains(p, rule) {
 			t.Errorf("%s prompt lacks the rule: %q", where, p)
 		}
 		for _, bad := range []string{"go test", "make check", "make test", "testscript"} {

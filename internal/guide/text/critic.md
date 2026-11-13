@@ -28,9 +28,8 @@ rhiza slice --change "$RHIZA_CHANGE" --json
 git diff $(git merge-base origin/main HEAD)
 ```
 
-`rhiza run status --json` is for your own check's last round only (its findings, with
-their ids, severities, places and reasons); read no other check's round and nothing of
-the build run. The slice gives the intent, the leaves with their `acceptance`, the
+`rhiza run status --json` is for your own check's last round only; read no other
+check's round. The slice gives the intent, the leaves with their `acceptance`, the
 constraints and the Decisions.
 
 ## Must do
@@ -38,14 +37,14 @@ constraints and the Decisions.
 For each blocker and major of your check's last round, re-check it against the contract
 and the code at the place it names, then give one verdict.
 
-- `confirmed`: the defect is real and its severity right. The finding keeps its severity.
+- `confirmed`: the defect is real and its severity right.
 - `downgraded`: the defect is real but its severity too high. Say the lower severity
   (`minor` or `nit`) and why.
-- `dropped`: the defect is not real (the contract does not ask for it, the code at that
-  place does what it should, or the finding misreads the diff). Say what you found.
+- `dropped`: the defect is not real (the contract does not ask for it, the code does
+  what it should, or the finding misreads the diff). Say what you found.
 
 Give every verdict a reason that names what you checked (the leaf, the acceptance point,
-`path:line`), so a fixer or the owner can follow it without re-diagnosing. When unsure,
+`path:line`), so a fixer can follow it without re-diagnosing. When unsure,
 confirm: only drop or downgrade what you can show. Record one round, one verdict per
 finding:
 
@@ -57,6 +56,8 @@ EOF
 
 Schema: `rhiza describe run.verdict`. Every verdict stays in the run journal; none is a
 Decision.
+
+<!-- shared: test-scope -->
 
 <!-- shared: command-budget nested -->
 
