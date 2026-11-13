@@ -335,6 +335,11 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 		for range daemonResumable(ctx, rs, runs, fold, host, false) {
 			ready = append(ready, "resume")
 		}
+		// A proposed change set no run covers gets a plan-review run, in a
+		// slot after the resumes and before the ship picks.
+		for range daemonUncoveredProposals(fold, runs, pending, unjournaled) {
+			ready = append(ready, "plan review")
+		}
 	}
 	if hold != nil {
 		return ready, len(ready), 0, running
