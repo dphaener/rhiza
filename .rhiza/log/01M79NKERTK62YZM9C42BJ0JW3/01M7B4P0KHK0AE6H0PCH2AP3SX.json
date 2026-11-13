@@ -1,0 +1,40 @@
+{
+  "actor": "01M7B4J0YKSFASNPKCW8HW0FSQ",
+  "after": [
+    "01M7B2MTX1BWJP79W6GZJ9DQDY"
+  ],
+  "at": "2026-11-13T19:03:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cd0c52dab re-ran the Checks block: go test -trimpath ./internal/web -run 'TestPartialsGolden|TestSpacingRules' (exit 0), go test -trimpath ./internal/web (exit 0), rhiza ship generate (exit 0), rhiza render (exit 0). Read the diff: rhiza.css sets .rz-pagehead > div gap var(--space-3), .rz-panel-head > div gap var(--space-1), .rz-panel-head margin-bottom var(--space-4), .rz-stack/.rz-grid gap var(--space-5), .rz-main gap var(--space-6), .rz-panel padding var(--space-4) with var(--space-5) in @media (min-width: 721px); inline margins removed from change.html and daemon.html, goldens regenerated; TestSpacingRules parses the stylesheet and checks each value, heading margins and inline template margins. Mutation in a scratch copy: .rz-stack gap at var(--space-4) (16px) fails TestSpacingRules; a margin-top on .rz-pagehead h1 and an inline style margin in change.html each fail it. No TODOs, nothing outside internal/web and the leaf's .rhiza records changed."
+        },
+        "handle": "web-spacing-rules-verified",
+        "id": "01M7B4P0B86J9E00N14G527C1N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B4P0B86J9E00N14CKE9NNW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B4P0B86J9E00N14CKE9NNW",
+        "id": "01M7B4P0FD8DZ9V10BVR6WCS3M",
+        "link": "01M7B4P0FD8DZ9V10BVQ7HCKYC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q90R4MS5J2BXQ7DGXA1TS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B4P0KHK0AE6H0PCH2AP3SX",
+  "type": "ops",
+  "v": 1
+}

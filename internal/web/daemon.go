@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -99,4 +100,16 @@ func (d DaemonView) Pill() Pill {
 		return Pill{State: "waiting", Text: fmt.Sprintf("daemon · paused · %d/%d", d.Slots, d.Limit)}
 	}
 	return Pill{State: "running", Text: fmt.Sprintf("daemon · %d/%d", d.Slots, d.Limit)}
+}
+
+// WithDaemon serves h with daemon as the daemon every page's header pill
+// reads, for pages served outside a project's handler (the root's projects
+// home and merged inbox). A project's handler sets its own daemon over it.
+func WithDaemon(daemon DaemonSource, h http.Handler) http.Handler {
+	if daemon == nil {
+		return h
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		h.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), daemonKey{}, daemon)))
+	})
 }

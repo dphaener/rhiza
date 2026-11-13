@@ -162,14 +162,12 @@ func TestProjectsHomeReadsTheRoot(t *testing.T) {
 		}
 	}
 
-	// The home is reachable from every page's nav.
-	for _, path := range []string{"/", "/p/alpha/runs", "/p/alpha/roadmap", "/inbox", "/p/beta/", "/p/beta/runs"} {
-		if b := serve(h, "GET", path).Body.String(); !strings.Contains(b, `<nav class="rz-nav" aria-label="Pages"><a href="/projects"`) {
-			t.Errorf("%s does not link the projects home from its nav", path)
+	// Every project page carries the picker button, which the all-projects
+	// entry in /picker leads back from.
+	for _, path := range []string{"/p/alpha/runs", "/p/alpha/roadmap", "/p/beta/", "/p/beta/runs"} {
+		if b := serve(h, "GET", path).Body.String(); !strings.Contains(b, `data-rz-picker="/picker"`) {
+			t.Errorf("%s has no project picker button", path)
 		}
-	}
-	if !strings.Contains(body, `<a href="/projects" aria-current="page">Projects</a>`) {
-		t.Errorf("/projects does not mark its nav link current")
 	}
 }
 

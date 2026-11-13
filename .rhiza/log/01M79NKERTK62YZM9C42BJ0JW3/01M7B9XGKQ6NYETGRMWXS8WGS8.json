@@ -1,0 +1,155 @@
+{
+  "actor": "01M7B9JY9ZQS9NRKE1H6KPH79F",
+  "after": [
+    "01M7B9BYDDM6HQA0YA2AHC3KR0"
+  ],
+  "at": "2026-11-13T20:34:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of HEAD run as a root daemon over a sandbox root of six projects (HOME and RHIZA_* isolated, web on 127.0.0.1:18931). With only the daemon's machine-wide load-high hold active every project's count was 0 in the header and /picker (hold not counted). A real failed run in zeta (workflow with a failing command step, run start --foreground) made zeta's header badge and picker count 1, the other five stayed 0, matching rhiza inbox in zeta."
+        },
+        "handle": "web-project-needs-you-qa-1",
+        "id": "01M7B9XFTQCRP7MXDFQJG2ERY3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B9XFTQCRP7MXDFQF19NR5H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B9XFTQCRP7MXDFQF19NR5H",
+        "id": "01M7B9XFWXC5N923Y20AET1H0K",
+        "link": "01M7B9XFWXC5N923Y20878B7ET",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25DXMVDVRKGHGYNPVZGQP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of HEAD run as a root daemon over a sandbox root of six projects (HOME and RHIZA_* isolated, web on 127.0.0.1:18931). GET /picker?path=/p/beta/roadmap listed all six projects with idle state and counts, beta aria-current, links kept the page kind (/p/x/roadmap; /p/beta/runs/<id> gave /p/x/runs; no path gave /p/x/), All projects linked /inbox, search field present at six projects; with zeta's failed run zeta sorted first and All showed 1. Unknown project or bad path query render cleanly (200, nothing current); POST /picker 404. Project pages' markup names no other project."
+        },
+        "handle": "web-picker-sheet-qa-1",
+        "id": "01M7B9XG0GY7H3591GC9BZP00M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B9XG0GY7H3591GC8FKPEG8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B9XG0GY7H3591GC8FKPEG8",
+        "id": "01M7B9XG2XZWMDC1SAYNE3ZJMC",
+        "link": "01M7B9XG2XZWMDC1SAYMPGSAFH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25DYN1X19CGG3X73K97J5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of HEAD run as a root daemon over a sandbox root of six projects (HOME and RHIZA_* isolated, web on 127.0.0.1:18931). /p/beta/, /p/beta/runs and /p/beta/roadmap each served wordmark, picker button (data-rz-picker=/picker, current project name), Home/Runs/Roadmap nav with aria-current on the current page and the live indicator; no badge when nothing waits, badge 1 on zeta with a failed run; no other project's name in the page. Served CSS: --header-h 52px, phone header min-height 56px with the nav on a 44px row. The merged /inbox and /projects pages have no picker button (finding recorded); the daemon pill shows on Home only."
+        },
+        "handle": "web-frame-header-qa-1",
+        "id": "01M7B9XG4ZQT52DS4NG668B2VZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B9XG4ZQT52DS4NG5P25MY0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B9XG4ZQT52DS4NG5P25MY0",
+        "id": "01M7B9XG70ZWKQDA21QEWV39RW",
+        "link": "01M7B9XG70ZWKQDA21QE5GPWDT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q90M4F549HKEWB54K9B9P",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of HEAD run as a root daemon over a sandbox root of six projects (HOME and RHIZA_* isolated, web on 127.0.0.1:18931). Served rhiza.css: .rz-main top padding var(--space-6) (space-7 in the desktop query, per tests), .rz-pagehead > div gap var(--space-3), .rz-main gap var(--space-6), .rz-row bottom border var(--rule), tappable rows min-height 44px; go test ./internal/web ok."
+        },
+        "handle": "web-page-head-spacing-qa-1",
+        "id": "01M7B9XG93KRSKZQKX4V1B48EA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B9XG93KRSKZQKX4R8KC9ZA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B9XG93KRSKZQKX4R8KC9ZA",
+        "id": "01M7B9XGB7KCTQ90QY7FB7EYD0",
+        "link": "01M7B9XGB7KCTQ90QY7C3Y1GB8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25EAACMG725WJG09RAG5E",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of HEAD run as a root daemon over a sandbox root of six projects (HOME and RHIZA_* isolated, web on 127.0.0.1:18931). Served rhiza.css: page head kicker-title gap space-3, panel head gap space-1, panel head margin-bottom space-4, .rz-stack gap space-5, .rz-main gap space-6; templates carry no inline margin style (grep); go test ./internal/web ok."
+        },
+        "handle": "web-spacing-rules-qa-1",
+        "id": "01M7B9XGD9JY8EP0W2BMJ9DXHC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B9XGD9JY8EP0W2BJ8HPH4T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B9XGD9JY8EP0W2BJ8HPH4T",
+        "id": "01M7B9XGET1V84G6X86D12V6H3",
+        "link": "01M7B9XGET1V84G6X86B4SRJEM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q90R4MS5J2BXQ7DGXA1TS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of HEAD run as a root daemon over a sandbox root of six projects (HOME and RHIZA_* isolated, web on 127.0.0.1:18931). Served rhiza-tokens.css holds exactly the 13 --fs and 11 --lh tokens; served rhiza.css has no font-size, line-height or font shorthand outside var() tokens (grep); go test ./internal/web ok."
+        },
+        "handle": "web-type-scale-qa-1",
+        "id": "01M7B9XGG73DH6D80Z3T8K8BVA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B9XGG73DH6D80Z3RTGJ8CD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B9XGG73DH6D80Z3RTGJ8CD",
+        "id": "01M7B9XGHV85D92M940KBSNBJ9",
+        "link": "01M7B9XGHV85D92M940G54KD9J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B1K2MDGPBDPTQ7EFZYG1NH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B9XGKQ6NYETGRMWXS8WGS8",
+  "type": "ops",
+  "v": 1
+}

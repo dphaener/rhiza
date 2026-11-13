@@ -1,0 +1,155 @@
+{
+  "actor": "01M7BB1CCV0Z5FA6WXF0N7PVRC",
+  "after": [
+    "01M7BAYJWZZCJM53RJWWR27X8D"
+  ],
+  "at": "2026-11-13T20:58:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of 4a9256c73 run as a root daemon over a sandbox root of six projects (HOME and RHIZA_* isolated, web on 127.0.0.1:18947). /p/zeta/, /p/delta/runs, /p/beta/roadmap: wordmark, picker button (data-rz-picker=/picker, current project), Home/Runs/Roadmap nav, live indicator; badge 1 on zeta and 2 on delta (failed runs), no badge on beta; /p/zeta/runs names no other project. Cycle 2 fix: /, /projects and /inbox now carry the picker button labelled All projects, and /picker?path=/inbox lists every project with All projects linking /inbox. Scoped tests (TestLayoutGolden, TestHeader*) pass."
+        },
+        "handle": "web-frame-header-qa-2",
+        "id": "01M7BB8RM4G3P1KA1D8WX7J0MQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BB8RM4G3P1KA1D8VQH7V54",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BB8RM4G3P1KA1D8VQH7V54",
+        "id": "01M7BB8RN0BAMQV6N48BAQ72H9",
+        "link": "01M7BB8RN0BAMQV6N489W5DFME",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q90M4F549HKEWB54K9B9P",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of 4a9256c73 run as a root daemon over a sandbox root of six projects (HOME and RHIZA_* isolated, web on 127.0.0.1:18947). /picker?path=/p/delta/runs/xyz listed delta (2, aria-current) and zeta (1) first, then the four idle projects at 0, links keeping the runs kind, All projects 3 linking /inbox, search field at six projects. Unknown project, ../../etc, empty and <script> paths answer 200 with no injection and safe /p/<name>/ links; POST /picker 404. Opened from the root pages (/inbox, /projects) it lists project home links. TestProjectPicker and TestSwitcherNamesReadOnlyForPages pass."
+        },
+        "handle": "web-picker-sheet-qa-2",
+        "id": "01M7BB8RPF842KBZFN7PTBW679",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BB8RPF842KBZFN7KG4M1B7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BB8RPF842KBZFN7KG4M1B7",
+        "id": "01M7BB8RQM8QS6KH9VAV4P62E9",
+        "link": "01M7BB8RQM8QS6KH9VASYTH5T7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25DYN1X19CGG3X73K97J5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of 4a9256c73 run as a root daemon over a sandbox root of six projects (HOME and RHIZA_* isolated, web on 127.0.0.1:18947). Real failed runs (command step run=false, run start --foreground): one in zeta, two in delta. Header badge and picker count were 1 and 2, every other project 0, All projects 3, matching rhiza inbox; questions added in a draft change set counted nowhere, as in rhiza inbox. TestProjectNeedsYou in internal/web and internal/api passes."
+        },
+        "handle": "web-project-needs-you-qa-2",
+        "id": "01M7BB8RSEA2445F8SWFPJDRCK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BB8RSEA2445F8SWCY8YJYR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BB8RSEA2445F8SWCY8YJYR",
+        "id": "01M7BB8RTWCQEQMR34FCH8EB27",
+        "link": "01M7BB8RTWCQEQMR34F98AGSJ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25DXMVDVRKGHGYNPVZGQP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of 4a9256c73 run as a root daemon over a sandbox root of six projects (HOME and RHIZA_* isolated, web on 127.0.0.1:18947). Served rhiza.css keeps tappable rows (.rz-row:has(a), a.rz-row) at min-height 44px and the phone header at min-height 56px; TestPageHeadSpacing passes."
+        },
+        "handle": "web-page-head-spacing-qa-2",
+        "id": "01M7BB8RW97MKJG05JA8M8NZN8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BB8RW97MKJG05JA4ZTMGKK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BB8RW97MKJG05JA4ZTMGKK",
+        "id": "01M7BB8RYS5H1JMAP80ARF5ZC7",
+        "link": "01M7BB8RYS5H1JMAP808MT23ZT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25EAACMG725WJG09RAG5E",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of 4a9256c73 run as a root daemon over a sandbox root of six projects (HOME and RHIZA_* isolated, web on 127.0.0.1:18947). Pages render with the served rhiza.css; TestSpacingRules and TestPartialsGolden pass."
+        },
+        "handle": "web-spacing-rules-qa-2",
+        "id": "01M7BB8S0VDGE2N7DVT14MNC0B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BB8S0VDGE2N7DVT07VN73X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BB8S0VDGE2N7DVT07VN73X",
+        "id": "01M7BB8S2T4ZK0YN2GWSDWP6E0",
+        "link": "01M7BB8S2T4ZK0YN2GWQ2SPY0S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q90R4MS5J2BXQ7DGXA1TS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of 4a9256c73 run as a root daemon over a sandbox root of six projects (HOME and RHIZA_* isolated, web on 127.0.0.1:18947). Pages render with the served rhiza.css and rhiza-tokens.css; TestTypeScale passes."
+        },
+        "handle": "web-type-scale-qa-2",
+        "id": "01M7BB8S46A52BXVHWDNYT955M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BB8S46A52BXVHWDM77ZJMZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BB8S46A52BXVHWDM77ZJMZ",
+        "id": "01M7BB8S570YYQ21K5F98RCMB4",
+        "link": "01M7BB8S570YYQ21K5F79XGTNG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B1K2MDGPBDPTQ7EFZYG1NH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BB8S69HSTHYG1CYTW790EH",
+  "type": "ops",
+  "v": 1
+}

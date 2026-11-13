@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-13T21:01:38Z",
+  "body": {
+    "intent": "Record agent actor claude-code-ca916780 for session ca916780-b76e-40f2-a483-01a1d6b7095d",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7BBEG4DQ5CQ1DTTGPDVJ0RK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BBEG4EBT3S3PBVPDJVHG5G",
+  "type": "open",
+  "v": 1
+}

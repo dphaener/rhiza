@@ -49,7 +49,6 @@ func twoProjectsWithRuns(t *testing.T) (http.Handler, [2]scopedProject) {
 }
 
 // Every page kind under /p/<a>/ and /p/<b>/ shows only that project's data,
-// links the other project's page of the same kind (a detail page its list),
 // and an unknown project's same page is a 404.
 func TestEveryPageKindIsScopedToItsProject(t *testing.T) {
 	h, ps := twoProjectsWithRuns(t)
@@ -81,12 +80,6 @@ func TestEveryPageKindIsScopedToItsProject(t *testing.T) {
 				if strings.Contains(body, bad) {
 					t.Errorf("%s shows project %s's %q", target, o.name, bad)
 				}
-			}
-			if w := `href="/p/` + o.name + c.otherKind + `"`; !strings.Contains(body, w) {
-				t.Errorf("%s lacks switcher link %s", target, w)
-			}
-			if w := `href="/p/` + p.name + c.otherKind + `"`; !strings.Contains(body, w) {
-				t.Errorf("%s lacks its own switcher entry %s", target, w)
 			}
 			if rec := serve(h, "GET", "/p/nope/"+c.page); rec.Code != 404 {
 				t.Errorf("/p/nope/%s: %d, want 404", c.page, rec.Code)
