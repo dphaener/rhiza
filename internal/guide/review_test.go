@@ -6,10 +6,10 @@ import (
 	"testing"
 )
 
-// reviewRoles are the nine review role topics the review index names.
-var reviewRoles = []string{"check-compliance", "check-quality", "check-qa", "check-model", "critic", "fixer", "ci-fix", "gate-fix", "conflict-fix"}
+// reviewRoles are the eleven review role topics the review index names.
+var reviewRoles = []string{"check-plan", "check-code", "check-compliance", "check-quality", "check-qa", "check-model", "critic", "fixer", "ci-fix", "gate-fix", "conflict-fix"}
 
-// reviewRoleText is the bodies of the nine review role topics, joined.
+// reviewRoleText is the bodies of the eleven review role topics, joined.
 func reviewRoleText(t *testing.T) Text {
 	t.Helper()
 	var b strings.Builder
@@ -40,6 +40,7 @@ func TestReviewIsAnIndex(t *testing.T) {
 	}
 	checkPhrases(t, "review", map[string][]string{
 		"scope": {"A check\n  named `scope` loads this one too"},
+		"runs":  {"A conductor run's three checks are check-plan, check-code and check-qa", "The classic workflows (ship-change, review, docs-review) keep the older four"},
 		"done":  {"rhiza session done"},
 	})
 	if n := Tokens(review.Body); n > TopicCap/3 {

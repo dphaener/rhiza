@@ -166,14 +166,14 @@ func TestGuideInstallReview(t *testing.T) {
 	}
 }
 
-// TestGuideInstallReviewRoles finds the nine review role topics in the
+// TestGuideInstallReviewRoles finds the eleven review role topics in the
 // installed plugin as skills, each the frontmatter plus its topic's text,
 // and a second install reporting them unchanged.
 func TestGuideInstallReviewRoles(t *testing.T) {
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
 	r := guideInstall(t, ctx, `{"agent":"claude"}`)
-	for _, topic := range []string{"check-compliance", "check-quality", "check-qa", "check-model", "critic", "fixer", "ci-fix", "gate-fix", "conflict-fix"} {
+	for _, topic := range []string{"check-plan", "check-code", "check-compliance", "check-quality", "check-qa", "check-model", "critic", "fixer", "ci-fix", "gate-fix", "conflict-fix"} {
 		rel := "skills/rhiza-" + topic + "/SKILL.md"
 		if !slices.Contains(r.Written, rel) {
 			t.Errorf("install wrote %v, want %s", r.Written, rel)
@@ -190,7 +190,7 @@ func TestGuideInstallReviewRoles(t *testing.T) {
 		}
 	}
 	r = guideInstall(t, ctx, `{"agent":"claude"}`)
-	for _, topic := range []string{"check-compliance", "check-quality", "check-qa", "check-model", "critic", "fixer", "ci-fix", "gate-fix", "conflict-fix"} {
+	for _, topic := range []string{"check-plan", "check-code", "check-compliance", "check-quality", "check-qa", "check-model", "critic", "fixer", "ci-fix", "gate-fix", "conflict-fix"} {
 		if !slices.Contains(r.Unchanged, "skills/rhiza-"+topic+"/SKILL.md") {
 			t.Errorf("second install: rhiza-%s not unchanged: %+v", topic, r)
 		}
