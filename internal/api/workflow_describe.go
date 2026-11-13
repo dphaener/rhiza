@@ -32,9 +32,11 @@ type WorkflowDescribeRequest struct {
 
 // WorkflowRoleView is one session kind of a step.
 type WorkflowRoleView struct {
-	Role   string   `json:"role" desc:"The role: agent, builder, verifier, critic, fixer or a check's name"`
-	Models []string `json:"models" desc:"The model ladder by attempt or cycle; empty means the agent's default"`
-	Prompt string   `json:"prompt" desc:"The role's first prompt template"`
+	Role          string   `json:"role" desc:"The role: agent, builder, verifier, critic, fixer or a check's name"`
+	Models        []string `json:"models" desc:"The model ladder by attempt or cycle; empty means the agent's default"`
+	LowRiskModels []string `json:"low_risk_models" desc:"A verifier's model ladder by attempt for a low-risk leaf; empty means models for every leaf"`
+	RiskyPaths    []string `json:"risky_paths" desc:"A verifier's path globs: a leaf changing a matching file verifies on models; empty means none"`
+	Prompt        string   `json:"prompt" desc:"The role's first prompt template"`
 }
 
 // WorkflowStepView is one step in order.
@@ -98,6 +100,12 @@ func (r WorkflowDescribeResponse) Human(w io.Writer) {
 		}
 		for _, ro := range s.Roles {
 			fmt.Fprintf(w, "  role %s models [%s]\n", ro.Role, strings.Join(ro.Models, ", "))
+			if len(ro.LowRiskModels) > 0 {
+				fmt.Fprintf(w, "  role %s low_risk_models [%s]\n", ro.Role, strings.Join(ro.LowRiskModels, ", "))
+			}
+			if len(ro.RiskyPaths) > 0 {
+				fmt.Fprintf(w, "  role %s risky_paths [%s]\n", ro.Role, strings.Join(ro.RiskyPaths, ", "))
+			}
 			for _, line := range strings.Split(strings.TrimRight(ro.Prompt, "\n"), "\n") {
 				fmt.Fprintf(w, "    %s\n", line)
 			}
@@ -106,7 +114,7 @@ func (r WorkflowDescribeResponse) Human(w io.Writer) {
 }
 
 func roleView(name string, r workflow.Role) WorkflowRoleView {
-	return WorkflowRoleView{Role: name, Models: append([]string{}, r.Models...), Prompt: r.Prompt}
+	return WorkflowRoleView{Role: name, Models: append([]string{}, r.Models...), LowRiskModels: append([]string{}, r.LowRiskModels...), RiskyPaths: append([]string{}, r.RiskyPaths...), Prompt: r.Prompt}
 }
 
 func stepView(s workflow.Step) WorkflowStepView {
