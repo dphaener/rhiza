@@ -174,7 +174,8 @@ func TestRoadmapRowShowsTitleThenIntent(t *testing.T) {
 
 // milestoneProject is a project with a milestone in every state of work: A
 // has a draft, a proposed, two accepted (one with a run going), seven landed
-// and a withdrawn change set; D is finished.
+// and a withdrawn change set; D is finished. A loose change set serves no
+// intent (the backlog) and one serves the umbrella U.
 func milestoneProject(t *testing.T, seed int64, prefix string) (http.Handler, *api.Ctx) {
 	t.Helper()
 	ctx := fixtureCtx(t)
@@ -186,13 +187,16 @@ func milestoneProject(t *testing.T, seed int64, prefix string) (http.Handler, *a
 		`{"kind":"intent","handle":"a2","parent":"a","fields":["statement=` + prefix + `Alpha done two"]}`,
 		`{"kind":"intent","handle":"d","fields":["statement=` + prefix + `Delta milestone","milestone=4"]}`,
 		`{"kind":"intent","handle":"d1","parent":"d","fields":["statement=` + prefix + `Delta done one"]}`,
+		`{"kind":"intent","handle":"u","fields":["statement=` + prefix + `Upkeep area","umbrella=yes"]}`,
 	} {
 		callJSON(t, ctx, "add", w)
 	}
 	callJSON(t, ctx, "land", `{}`)
 	mk := func(title, serves string, steps ...string) string {
 		cs := newChange(t, ctx, prefix+title, "intention")
-		callJSON(t, ctx, "link", `{"from":"`+cs+`","type":"serves","to":"`+serves+`"}`)
+		if serves != "" {
+			callJSON(t, ctx, "link", `{"from":"`+cs+`","type":"serves","to":"`+serves+`"}`)
+		}
 		for _, s := range steps {
 			callJSON(t, ctx, s, `{}`)
 		}
@@ -207,6 +211,8 @@ func milestoneProject(t *testing.T, seed int64, prefix string) (http.Handler, *a
 		mk(fmt.Sprintf("A landed %d", i), "a1", "propose", "accept", "land")
 	}
 	mk("D landed", "d1", "propose", "accept", "land")
+	mk("Loose work", "", "propose", "accept")
+	mk("Upkeep chore", "u", "propose")
 	rs := run.NewStore(run.Dir(filepath.Join(ctx.Root, ".git")))
 	runID := fmt.Sprintf("01RUN%d", seed)
 	if err := rs.Create(runID, run.Entry{Type: run.TypeStarted, Started: &run.Started{Workflow: "build", Change: building, Title: prefix + "A building"}}); err != nil {
@@ -252,6 +258,17 @@ func TestRoadmapMilestones(t *testing.T) {
 	pos := -1
 	for _, s := range []string{"Milestone · building", "Alpha milestone", "Building now", "A building", "Accepted, waiting", "A waiting",
 		"Proposed", "A proposed", "Landed", "A landed 1", "Drafts", "A draft"} {
+		i := strings.Index(body[pos+1:], s)
+		if i < 0 {
+			t.Fatalf("%q missing or out of order in:\n%s", s, body)
+		}
+		pos += 1 + i
+	}
+	// After the open milestone, the backlog then the umbrella, all before
+	// the finished milestones' fold.
+	pos = -1
+	for _, s := range []string{"Alpha milestone", "A draft", "Not in a milestone", "Loose work", "Umbrella", "Upkeep area", "Upkeep chore",
+		"finished milestone", "Delta milestone"} {
 		i := strings.Index(body[pos+1:], s)
 		if i < 0 {
 			t.Fatalf("%q missing or out of order in:\n%s", s, body)
