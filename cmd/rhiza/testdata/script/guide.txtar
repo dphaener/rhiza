@@ -103,7 +103,7 @@ stdout '^## Stored fields$'
 
 # guide ls lists all fifteen texts with their kinds and sizes.
 exec rhiza guide ls
-stdout -count=15 '^- '
+stdout -count=16 '^- '
 stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
 stdout '^- scrub +skill +[0-9]+ tokens  '
 stdout '^- plan +skill +[0-9]+ tokens  Plan with the owner'

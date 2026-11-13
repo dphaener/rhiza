@@ -100,6 +100,7 @@ var topics = []entry{
 	{name: "apply", file: "apply.md", description: "The rhiza apply file format: many writes in one JSON file."},
 	{name: "arbiter", file: "arbiter.md", description: "The arbiter: deciding one question in an autonomous run, the one answering Decision and its wording and reasoning, then done."},
 	{name: "build", file: "build.md", description: "Building a change set's leaves: a builder's one commit with a Leaf: trailer, outside work as a question or a discovered-from draft change set, a verifier's Evidence or findings. Load it when you run as a builder or verifier of a build run."},
+	{name: "builder", file: "builder.md", description: "The builder of a build run: one leaf, its acceptance as the contract, read the slice and the existing pattern first, the pre-handoff checklist and a Checks: block, one commit with the trailers and the staged actor record, then session done. Load it when you run as the builder of a leaf."},
 	{name: "carving", file: "carving.md", description: "Carving: moving nodes from one change set to another under the same IDs, what moves, the rules."},
 	{name: "change-sets", file: "change-sets.md", description: "Change sets: intention and record, the lifecycle, which change set a write goes into, --record."},
 	{name: "import", file: "import.md", description: "Import: bringing an existing repo with built code into Rhiza in seven steps: init, survey, record built capabilities, bring in decisions, retire planning documents into Sources, draft change sets for unbuilt work, verify."},
