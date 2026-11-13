@@ -1110,7 +1110,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	if common, cerr := gitCommonDir(ctx); cerr == nil {
 		states = daemon.NewRunStates(runs, held, host, nil, ship)
 		journal = func(skips, started []daemon.Skip) {
-			if err := daemon.JournalQueueWaits(common, ctx.Now(), states, skips, started); err != nil && ctx.Stderr != nil {
+			if err := daemon.JournalQueueWaits(common, ctx.Now(), states, runs, skips, started); err != nil && ctx.Stderr != nil {
 				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: queue wait journal: %v\n", err)
 			}
 		}

@@ -97,3 +97,26 @@ func TestQueueWaitRestartWritesNoDuplicate(t *testing.T) {
 	queueWaitPoll(t, f, 0, nil, nil, false)
 	wantQueueWaits(t, f, "no-slot")
 }
+
+// A ship-owner change set is never started by the daemon: once the owner
+// starts its run by hand, the next poll journals started at the run's start
+// time, and later polls write nothing more.
+func TestQueueWaitShipOwnerStartedOutside(t *testing.T) {
+	f := usageFix(t)
+	f.config["rhiza.autonomy.ship"] = "owner"
+	if started := queueWaitPoll(t, f, 4, nil, nil, false); len(started) != 0 {
+		t.Fatalf("started %v under an owner ship stage", started)
+	}
+	wantQueueWaits(t, f, "ship-owner")
+	at := f.ctx.Now().Add(7 * time.Minute).UTC()
+	j := run.Entry{Type: run.TypeStarted, At: at, Started: &run.Started{Change: f.target}}
+	if err := f.rs.Create("byhand", j); err != nil {
+		t.Fatal(err)
+	}
+	queueWaitPoll(t, f, 4, nil, nil, false)
+	queueWaitPoll(t, f, 4, nil, nil, false)
+	got := wantQueueWaits(t, f, "ship-owner", "started")
+	if !got[1].At.Equal(at) || got[1].Detail != daemon.QueueWaitOutside {
+		t.Fatalf("started line %+v: want at %v, detail %q", got[1], at, daemon.QueueWaitOutside)
+	}
+}

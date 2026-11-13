@@ -3,10 +3,14 @@ package daemon
 import (
 	"bufio"
 	"encoding/json"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
+
+	"github.com/dphaener/rhiza/internal/run"
 )
 
 // QueueWaitFile is the file, under Dir, that the daemon appends why an
@@ -17,6 +21,10 @@ const QueueWaitFile = "queue.wait.jsonl"
 // QueueWaitStarted is the Reason of the line written when the daemon starts
 // a change set's run.
 const QueueWaitStarted = "started"
+
+// QueueWaitOutside is the Detail of a started line for a run the daemon did
+// not start: one started by hand, or an owner-shipped change set's.
+const QueueWaitOutside = "started outside the daemon"
 
 // QueueWait is one line of the queue-wait journal.
 type QueueWait struct {
@@ -93,27 +101,47 @@ var preStartReasons = map[string]bool{
 // JournalQueueWaits appends the lines one poll owes the journal under a
 // repo's git common dir. skips are the poll's skips, each with its Title
 // filled in, and started the change sets whose runs the poll started (their
-// Title set). A skip is journaled only for a pre-start reason, only when
-// states has no post-start state for its change set (so a hold that comes on
-// while its run is live or held writes nothing), and only when it differs
-// from the change set's last journaled reason, which is read from the
-// journal, so a restarted daemon writes no duplicate. A start is always
-// journaled. It returns the first error and goes on writing.
-func JournalQueueWaits(common string, at time.Time, states *RunStates, skips, started []Skip) error {
-	last := map[string]string{}
+// Title set). First, for each change set whose last journaled line is a
+// pre-start reason, a run in runs that started after that line (a run the
+// daemon did not start: by hand, or a ship-owner change set's) is journaled
+// as started at the run's start time with QueueWaitOutside as its detail,
+// whatever the poll's filters say. A skip is journaled only for a pre-start
+// reason, only when states has no post-start state for its change set (so a
+// hold that comes on while its run is live or held writes nothing), and only
+// when it differs from the change set's last journaled reason, which is read
+// from the journal, so a restarted daemon writes no duplicate. A start is
+// always journaled. It returns the first error and goes on writing.
+func JournalQueueWaits(common string, at time.Time, states *RunStates, runs []run.Journal, skips, started []Skip) error {
+	last := map[string]QueueWait{}
 	for _, w := range ReadQueueWaits(common) {
-		last[w.Change] = w.Reason
+		last[w.Change] = w
 	}
 	var first error
-	write := func(sk Skip, reason string) {
-		w := QueueWait{At: at.UTC(), Change: sk.Change, Title: sk.Title, Reason: reason, Detail: strings.Join(sk.Detail, "; ")}
+	record := func(w QueueWait) {
 		if err := RecordQueueWait(common, w); err != nil && first == nil {
 			first = err
 		}
-		last[sk.Change] = reason
+		last[w.Change] = w
+	}
+	outside := map[string]time.Time{}
+	for _, j := range runs {
+		st := j.State()
+		w, ok := last[st.Change]
+		if st.Change == "" || !ok || !preStartReasons[w.Reason] || !st.StartedAt.After(w.At) {
+			continue
+		}
+		if t, ok := outside[st.Change]; !ok || st.StartedAt.Before(t) {
+			outside[st.Change] = st.StartedAt
+		}
+	}
+	for _, cs := range slices.Sorted(maps.Keys(outside)) {
+		record(QueueWait{At: outside[cs].UTC(), Change: cs, Title: last[cs].Title, Reason: QueueWaitStarted, Detail: QueueWaitOutside})
+	}
+	write := func(sk Skip, reason string) {
+		record(QueueWait{At: at.UTC(), Change: sk.Change, Title: sk.Title, Reason: reason, Detail: strings.Join(sk.Detail, "; ")})
 	}
 	for _, sk := range skips {
-		if sk.Change == "" || !preStartReasons[sk.Reason] || last[sk.Change] == sk.Reason || states.PostStart(sk.Change) != "" {
+		if sk.Change == "" || !preStartReasons[sk.Reason] || last[sk.Change].Reason == sk.Reason || states.PostStart(sk.Change) != "" {
 			continue
 		}
 		write(sk, sk.Reason)
