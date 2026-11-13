@@ -2083,7 +2083,7 @@ Output (`--json` fields):
 
 ## rhiza session message
 
-Send a running agent session a message: a file in its worktree and a one-line pointer, typed at its prompt or, while it works, handed over at its next tool call.
+Send a running agent session a message: a file in its checkout and a one-line pointer, typed at its prompt or, while it works, handed over at its next tool call.
 
 ```
 rhiza session message <session> <text> [--timeout <timeout>]
@@ -2100,7 +2100,7 @@ Arguments and flags:
 Output (`--json` fields):
 
 - `dry_run` (boolean): True if nothing was written or sent
-- `file` (string): The message file, an absolute path inside the session's worktree
+- `file` (string): The message file, an absolute path inside the session's checkout (its worktree, or its own checkout folder when it runs in one)
 - `from` (string): The sender's actor handle
 - `pointer` (string): The one line typed at the session's prompt
 - `session` (string): The session's full ID
