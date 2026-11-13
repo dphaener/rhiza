@@ -16,7 +16,7 @@ merge-base and the model's Evidence.
 
 One round of findings recorded with `rhiza run findings --check`, or `{"findings":[]}`
 when the code and the model agree (a check with no round fails). You change no code and
-no model: model work outside the intent goes into a discovered-from draft change set.
+no model.
 
 ## Read first
 
@@ -51,6 +51,8 @@ Schema: `rhiza describe run.findings`.
 
 A missing constraint, or other model work outside the intent, is never built in this
 run: draft it as below and name it in the finding.
+
+Test with fakes only, never real Rex, agents or `gh`.
 
 <!-- shared: test-scope -->
 

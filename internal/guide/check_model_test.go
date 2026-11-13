@@ -46,6 +46,7 @@ func TestCheckModelText(t *testing.T) {
 			"`rhiza link <new> discovered-from <this> --change <new> --json`",
 			"never built in this run",
 		},
+		"fakes": {"Test with fakes only, never real Rex, agents or `gh`"},
 		"record": {
 			`rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'`,
 			`{"findings":[]}`,

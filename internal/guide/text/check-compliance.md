@@ -54,6 +54,8 @@ EOF
 
 Schema: `rhiza describe run.findings`.
 
+Test with fakes only, never real Rex, agents or `gh`.
+
 <!-- shared: test-scope -->
 
 <!-- shared: command-budget nested -->

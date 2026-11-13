@@ -47,6 +47,7 @@ func TestCheckQualityText(t *testing.T) {
 			"Swallowed errors", "Debug output", "Commented-out code", "Unused imports",
 			"TODOs, stubs or placeholders", "Generic names", "Missing error handling",
 		},
+		"fakes": {"Test with fakes only, never real Rex, agents or `gh`"},
 		"record": {
 			`rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'`,
 			`{"findings":[]}`,

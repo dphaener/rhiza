@@ -51,7 +51,7 @@ Then walk the diff against this checklist, one pass per item:
 - Generic names: `data`, `tmp`, `util` where a specific name fits.
 - Missing error handling on a call that can fail.
 
-Grade each defect by the severities below. Write each finding as one line with its
+Write each finding as one line with its
 evidence: the leaf, the place (`path:line`), the checklist item or failing command.
 Record one round, `{"findings":[]}` when clean:
 
@@ -62,6 +62,8 @@ EOF
 ```
 
 Schema: `rhiza describe run.findings`.
+
+Test with fakes only, never real Rex, agents or `gh`.
 
 <!-- shared: test-scope -->
 

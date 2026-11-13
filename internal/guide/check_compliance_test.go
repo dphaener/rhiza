@@ -46,7 +46,8 @@ func TestCheckComplianceText(t *testing.T) {
 			"Scope creep: behaviour outside the intent and the leaves is a `major`",
 			"Unaccounted files", "is a\n  `major` if it changes behaviour and a `minor` otherwise",
 		},
-		"line": {"one line with its evidence", "re-diagnosing"},
+		"line":  {"one line with its evidence", "re-diagnosing"},
+		"fakes": {"Test with fakes only, never real Rex, agents or `gh`"},
 		"record": {
 			`rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'`,
 			`{"findings":[{"severity":"major","leaf":"<leaf>","place":"path:line","reason":`,
