@@ -1,0 +1,339 @@
+{
+  "actor": "01M79QZMMSGEC6W4Z985W11EB4",
+  "after": [
+    "01M79QSZ0R829S00PKTY9WCSGT"
+  ],
+  "at": "2026-11-13T06:05:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at HEAD 1eaad5503 with a scratch build (go build -trimpath -o <scratchpad>/rhiza-qa ./cmd/rhiza, not installed): ran rhiza-qa guide check-compliance: exit 0, renders Task, Expected outcome, Read first, Must do, Must not do, Context in order with shared blocks expanded (no unexpanded placeholders); it is listed by rhiza-qa guide ls and installed as skills/rhiza-check-compliance/SKILL.md by rhiza-qa guide install --agent claude into a scratch HOME (rerun: 0 written, 19 unchanged). Failure: rhiza-qa guide nosuch exits 4 with a next: hint. Text carries the isolation rule, under-built/scope-creep/unaccounted-files severities and the findings heredoc."
+        },
+        "handle": "check-compliance-topic-qa-1",
+        "id": "01M79R566ED0GEVSR3ZSX9V0GW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79R566ED0GEVSR3ZSV566VW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79R566ED0GEVSR3ZSV566VW",
+        "id": "01M79R56952Z4BJ8RWW3W3BHDE",
+        "link": "01M79R56952Z4BJ8RWW3A3KQMD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH1XVVY9F9AW9TFH2B12H",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at HEAD 1eaad5503 with a scratch build (go build -trimpath -o <scratchpad>/rhiza-qa ./cmd/rhiza, not installed): ran rhiza-qa guide check-quality: exit 0, renders Task, Expected outcome, Read first, Must do, Must not do, Context in order with shared blocks expanded (no unexpanded placeholders); it is listed by rhiza-qa guide ls and installed as skills/rhiza-check-quality/SKILL.md by rhiza-qa guide install --agent claude into a scratch HOME (rerun: 0 written, 19 unchanged). Failure: rhiza-qa guide nosuch exits 4 with a next: hint. Text carries the impact radius and defect checklist."
+        },
+        "handle": "check-quality-topic-qa-1",
+        "id": "01M79R56FPVDEGWX59AZARGPQS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79R56FPVDEGWX59AYX4Q4ND",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79R56FPVDEGWX59AYX4Q4ND",
+        "id": "01M79R56MQ73330TSX78DP42ZD",
+        "link": "01M79R56MQ73330TSX769YK4KQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH24A6DZDBJ5EDMH0G21T",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at HEAD 1eaad5503 with a scratch build (go build -trimpath -o <scratchpad>/rhiza-qa ./cmd/rhiza, not installed): ran rhiza-qa guide check-qa: exit 0, renders Task, Expected outcome, Read first, Must do, Must not do, Context in order with shared blocks expanded (no unexpanded placeholders); it is listed by rhiza-qa guide ls and installed as skills/rhiza-check-qa/SKILL.md by rhiza-qa guide install --agent claude into a scratch HOME (rerun: 0 written, 19 unchanged). Failure: rhiza-qa guide nosuch exits 4 with a next: hint. Text carries clean state, scratch path outside $PATH, happy/failure scenarios, bounded exploration and the Evidence example; this QA session followed it."
+        },
+        "handle": "check-qa-topic-qa-1",
+        "id": "01M79R56SGEV8PJBB3HGFJEXAQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79R56SGEV8PJBB3HDXN2JK8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79R56SGEV8PJBB3HDXN2JK8",
+        "id": "01M79R56ZE48QVCC8C33YS2W60",
+        "link": "01M79R56ZE48QVCC8C330Z2PQC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH2C9CN1F6PMN6G3SYF0Z",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at HEAD 1eaad5503 with a scratch build (go build -trimpath -o <scratchpad>/rhiza-qa ./cmd/rhiza, not installed): ran rhiza-qa guide check-model: exit 0, renders Task, Expected outcome, Read first, Must do, Must not do, Context in order with shared blocks expanded (no unexpanded placeholders); it is listed by rhiza-qa guide ls and installed as skills/rhiza-check-model/SKILL.md by rhiza-qa guide install --agent claude into a scratch HOME (rerun: 0 written, 19 unchanged). Failure: rhiza-qa guide nosuch exits 4 with a next: hint. Text carries contradiction major, missing constraint minor and the discovered-from commands."
+        },
+        "handle": "check-model-topic-qa-1",
+        "id": "01M79R572ZARBJPRCJNFNM11QX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79R572ZARBJPRCJNF1KPM6V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79R572ZARBJPRCJNF1KPM6V",
+        "id": "01M79R576TB2RS75VQPHG7W960",
+        "link": "01M79R576TB2RS75VQPGJK4T9Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH2GKFS0RH9HHFZSPX13V",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at HEAD 1eaad5503 with a scratch build (go build -trimpath -o <scratchpad>/rhiza-qa ./cmd/rhiza, not installed): ran rhiza-qa guide critic: exit 0, renders Task, Expected outcome, Read first, Must do, Must not do, Context in order with shared blocks expanded (no unexpanded placeholders); it is listed by rhiza-qa guide ls and installed as skills/rhiza-critic/SKILL.md by rhiza-qa guide install --agent claude into a scratch HOME (rerun: 0 written, 19 unchanged). Failure: rhiza-qa guide nosuch exits 4 with a next: hint. Pair: rhiza-qa guide critic --json and echo '{\"name\":\"critic\"}' | rhiza-qa api call guide - print the same bytes."
+        },
+        "handle": "critic-topic-qa-1",
+        "id": "01M79R579MYF0NFVAQ49MRKDQS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79R579MYF0NFVAQ47HY5FHY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79R579MYF0NFVAQ47HY5FHY",
+        "id": "01M79R57DJ4HHN9VJ39KT0FTHN",
+        "link": "01M79R57DJ4HHN9VJ39GFQR13K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH2PKWJWNFT52SCCKX7B0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at HEAD 1eaad5503 with a scratch build (go build -trimpath -o <scratchpad>/rhiza-qa ./cmd/rhiza, not installed): ran rhiza-qa guide fixer: exit 0, renders Task, Expected outcome, Read first, Must do, Must not do, Context in order with shared blocks expanded (no unexpanded placeholders); it is listed by rhiza-qa guide ls and installed as skills/rhiza-fixer/SKILL.md by rhiza-qa guide install --agent claude into a scratch HOME (rerun: 0 written, 19 unchanged). Failure: rhiza-qa guide nosuch exits 4 with a next: hint. Text carries ship generate, render, Checks: block and both trailer forms."
+        },
+        "handle": "fixer-topic-qa-1",
+        "id": "01M79R57GE0DX4TQ5DSW4SS547",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79R57GE0DX4TQ5DSSH9BA94",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79R57GE0DX4TQ5DSSH9BA94",
+        "id": "01M79R57KTXTWTR3E4JJA70CCN",
+        "link": "01M79R57KTXTWTR3E4JJ683W7W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH2TFR25PCV7H0T92DEDC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at HEAD 1eaad5503 with a scratch build (go build -trimpath -o <scratchpad>/rhiza-qa ./cmd/rhiza, not installed): ran rhiza-qa guide ci-fix: exit 0, renders Task, Expected outcome, Read first, Must do, Must not do, Context in order with shared blocks expanded (no unexpanded placeholders); it is listed by rhiza-qa guide ls and installed as skills/rhiza-ci-fix/SKILL.md by rhiza-qa guide install --agent claude into a scratch HOME (rerun: 0 written, 19 unchanged). Failure: rhiza-qa guide nosuch exits 4 with a next: hint. Text carries rhiza ship check --json and the flake bug request."
+        },
+        "handle": "ci-fix-topic-qa-1",
+        "id": "01M79R57QADG2YRY51HDPPNF9F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79R57QADG2YRY51HDNGKGCA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79R57QADG2YRY51HDNGKGCA",
+        "id": "01M79R57YWKJD9DAG9GYJ8ZPWR",
+        "link": "01M79R57YWKJD9DAG9GYD3AX0F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH3008VB5G7BNDF0YAHJP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at HEAD 1eaad5503 with a scratch build (go build -trimpath -o <scratchpad>/rhiza-qa ./cmd/rhiza, not installed): ran rhiza-qa guide gate-fix: exit 0, renders Task, Expected outcome, Read first, Must do, Must not do, Context in order with shared blocks expanded (no unexpanded placeholders); it is listed by rhiza-qa guide ls and installed as skills/rhiza-gate-fix/SKILL.md by rhiza-qa guide install --agent claude into a scratch HOME (rerun: 0 written, 19 unchanged). Failure: rhiza-qa guide nosuch exits 4 with a next: hint. Text carries the Full log rule and never rerunning rhiza ship gate."
+        },
+        "handle": "gate-fix-topic-qa-1",
+        "id": "01M79R583THJ404W6E0824HTBK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79R583THJ404W6E068CHRME",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79R583THJ404W6E068CHRME",
+        "id": "01M79R587Z531EN36GW6XZHGV2",
+        "link": "01M79R587Z531EN36GW5N6CZXJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH32SZK0CK9G0Z05VJX4H",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at HEAD 1eaad5503 with a scratch build (go build -trimpath -o <scratchpad>/rhiza-qa ./cmd/rhiza, not installed): ran rhiza-qa guide conflict-fix: exit 0, renders Task, Expected outcome, Read first, Must do, Must not do, Context in order with shared blocks expanded (no unexpanded placeholders); it is listed by rhiza-qa guide ls and installed as skills/rhiza-conflict-fix/SKILL.md by rhiza-qa guide install --agent claude into a scratch HOME (rerun: 0 written, 19 unchanged). Failure: rhiza-qa guide nosuch exits 4 with a next: hint. Text carries both merge and model-conflict parts."
+        },
+        "handle": "conflict-fix-topic-qa-1",
+        "id": "01M79R58AR0F20W40YK74ZMK1E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79R58AR0F20W40YK57M80CX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79R58AR0F20W40YK57M80CX",
+        "id": "01M79R58EGDY2WPYSVBV0XDYWQ",
+        "link": "01M79R58EGDY2WPYSVBQYAS3EX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH36GH3GEF9Q1XQ3B68YC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at HEAD 1eaad5503 with a scratch build (go build -trimpath -o <scratchpad>/rhiza-qa ./cmd/rhiza, not installed): ran rhiza-qa guide ls (exit 0): lists review and the nine role topics; rhiza-qa guide review prints the index naming all nine with skill and rhiza guide routes, scope routed to check-compliance; rhiza-qa guide scope exits 4 cleanly; guide install writes all ten review skills."
+        },
+        "handle": "review-guide-qa-1",
+        "id": "01M79R58HKRJF0M91XT9ZGNEGQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79R58HKRJF0M91XT6A8X92E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79R58HKRJF0M91XT6A8X92E",
+        "id": "01M79R58PRY0RYWA77PFARDNCH",
+        "link": "01M79R58PRY0RYWA77PCY2B09K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0ENY6PDKAQS7QEY0AR5RN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at HEAD 1eaad5503 with a scratch build (go build -trimpath -o <scratchpad>/rhiza-qa ./cmd/rhiza, not installed): ran rhiza-qa guide install --agent claude into an empty scratch HOME: 19 written incl. the nine role skills with their topic description in frontmatter; rerun 0 written, 19 unchanged; over an install by the old rhiza: 11 written, 8 unchanged, no --force needed; --agent bogus exits 2 with a next: hint."
+        },
+        "handle": "review-role-skills-installed-qa-1",
+        "id": "01M79R58VC6KHDAA8K96814T4Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79R58VC6KHDAA8K92XHP0DT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79R58VC6KHDAA8K92XHP0DT",
+        "id": "01M79R59031N8GJQNBP1FD2KMW",
+        "link": "01M79R59031N8GJQNBP0VTAX5F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at HEAD 1eaad5503 with a scratch build (go build -trimpath -o <scratchpad>/rhiza-qa ./cmd/rhiza, not installed): ran rhiza-qa workflow describe review and docs-review: compliance, quality, qa and model checks only (no scope), each a one-line prompt naming its topic; critic and fixer one-line; docs-review fixer starts with the builtin line and keeps the humanize/doc-prose-humanized/doc-examples-plain-commands text; rhiza-qa workflow check review and docs-review exit 0."
+        },
+        "handle": "review-prompts-one-line-qa-1",
+        "id": "01M79R5930YR5WG5KAC39W892A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79R5930YR5WG5KAC1NAFG1D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79R5930YR5WG5KAC1NAFG1D",
+        "id": "01M79R596WH8BFV65EDE6PJVD9",
+        "link": "01M79R596WH8BFV65EDC1N6PN1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH3SM4W5VEKB2SX2W6335",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at HEAD 1eaad5503 with a scratch build (go build -trimpath -o <scratchpad>/rhiza-qa ./cmd/rhiza, not installed): ran rhiza-qa workflow describe ship-change and docs: every ci-fix, gate-fix, gate-fix-merge, conflict-fix, conflict-fix-landed and model-conflict-fix step is a one-line prompt naming its topic, docs.toml's matching the builtin; rhiza-qa workflow check ship-change and docs exit 0."
+        },
+        "handle": "ship-fix-prompts-one-line-qa-1",
+        "id": "01M79R59B2M99WJ2954JHB9J0K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79R59B2M99WJ2954FZK9EKJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79R59B2M99WJ2954FZK9EKJ",
+        "id": "01M79R59EW2RNBCR36Y5GJ48HX",
+        "link": "01M79R59EW2RNBCR36Y2V2A1ZP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH3X5BDT03Z5D6GE1DYEP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at HEAD 1eaad5503 with a scratch build (go build -trimpath -o <scratchpad>/rhiza-qa ./cmd/rhiza, not installed): read the Severities block in rhiza-qa guide output for check-compliance, check-quality, check-qa, check-model, critic, fixer and plan-review: the same block, four severities, mapping names compliance, quality, qa and model and no scope check."
+        },
+        "handle": "severity-shared-block-qa-1",
+        "id": "01M79R59J6QE9F7H76SXJK93W1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79R59J6QE9F7H76ST82H5K6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79R59J6QE9F7H76ST82H5K6",
+        "id": "01M79R59N5QKE9S9H3TM8KFNP5",
+        "link": "01M79R59N5QKE9S9H3TM0H3CYN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH1SVENNRB0MBMN3TRZCZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79R59S7633D5XKW1J5A597H",
+  "type": "ops",
+  "v": 1
+}
