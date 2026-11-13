@@ -1,0 +1,40 @@
+{
+  "actor": "01M79NEF57YR17YZCWB86T4C06",
+  "after": [
+    "01M79NBBBWN3KSKQMKJGCB6PE7"
+  ],
+  "at": "2026-11-13T05:19:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c8a122646 re-ran the Checks: block: go test -trimpath ./internal/guide/... (exit 0), go test -trimpath ./internal/api -run Guide (exit 0), go test -trimpath ./cmd/rhiza -run TestScripts/guide (exit 0), rhiza ship generate (exit 0, 0 changed), rhiza render (exit 0). Read the diff: internal/guide/text/critic.md adds the topic on the six sections in order with the session-done, command-budget, never-list and severity shared blocks expanded (checked via a scratch build's rhiza guide critic), the isolation rule in Task with the own-check-last-round exception, confirmed/downgraded (with a lower severity)/dropped, the never add/raise/rewrite rule and the rhiza run verdict --check heredoc (matches rhiza describe run.verdict). internal/guide/critic_test.go TestCriticText asserts each acceptance point; TestCriticRecordsNoFindingAndNoCommit is the negative case (no rhiza run findings, no git commit/Checks:/trailers). Other changes are the registry entry, list-order and guide ls counts, a severity-test scope tweak for the critic topic, and the builder's actor record; nothing outside the leaf, no TODOs or stubs."
+        },
+        "handle": "critic-topic-verified",
+        "id": "01M79NHXW9CMRCH4R6NBJ3509A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79NHXW9CMRCH4R6NA0GWHZ8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79NHXW9CMRCH4R6NA0GWHZ8",
+        "id": "01M79NHYAKG69212S6VSGMKAQZ",
+        "link": "01M79NHYAKG69212S6VS5S7ER0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH2PKWJWNFT52SCCKX7B0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79NHYKMN1B35T4HKH7MDZJS",
+  "type": "ops",
+  "v": 1
+}
