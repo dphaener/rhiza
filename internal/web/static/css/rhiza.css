@@ -147,7 +147,8 @@
 a.rz-row-title { text-decoration: none; }
 a.rz-row-title:hover { color: var(--teal); }
 .rz-row > a.rz-row-title::after { content: ""; position: absolute; inset: 0; }
-.rz-row-title small { display: block; font-size: 12.5px; line-height: 18px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; }
+.rz-row-title small { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font-size: 12.5px; line-height: 18px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: normal; }
+.rz-row-title small.rz-row-note { display: block; -webkit-line-clamp: unset; line-clamp: unset; white-space: nowrap; }
 .rz-row-step { display: flex; align-items: center; gap: 6px; font: 400 12.5px/20px var(--font-mono); color: var(--ink-2); }
 .rz-row-step.is-live { color: var(--gold); }
 .rz-row-time { text-align: right; font: 400 12.5px/20px var(--font-mono); color: var(--ink-3); white-space: nowrap; }

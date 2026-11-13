@@ -2,6 +2,7 @@ package web_test
 
 import (
 	"encoding/json"
+	"os"
 	"strings"
 	"testing"
 
@@ -141,5 +142,26 @@ func TestRoadmapPageEmptyAndNoAPI(t *testing.T) {
 	}
 	if rec := serve(web.Handler(api.ReadOnlyHandler(ctx)), "POST", "/roadmap"); rec.Code != 405 {
 		t.Errorf("POST: %d", rec.Code)
+	}
+}
+
+func TestRoadmapRowShowsTitleThenIntent(t *testing.T) {
+	ctx := fixtureCtx(t)
+	intent := "Rework how rows are listed, which is long enough that it would run right off the end of a phone"
+	cs := newChange(t, ctx, intent, "intention")
+	_ = cs
+	callJSON(t, ctx, "propose", `{}`)
+	callJSON(t, ctx, "accept", `{}`)
+	body := serve(web.Handler(api.ReadOnlyHandler(ctx)), "GET", "/roadmap").Body.String()
+	link := `>Rework how rows are listed<small>` + intent + `</small></a>`
+	if !strings.Contains(body, link) {
+		t.Errorf("row is not title then intent in the secondary line:\n%s", body)
+	}
+	css, err := os.ReadFile("static/css/rhiza.css")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(css), ".rz-row-title small {") || !strings.Contains(string(css), "-webkit-line-clamp: 2") {
+		t.Error("stylesheet does not clamp the secondary line to two lines")
 	}
 }

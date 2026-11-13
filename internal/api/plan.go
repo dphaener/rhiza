@@ -160,6 +160,7 @@ type RoadmapChangeSet struct {
 	ID        id.ID           `json:"id" desc:"The change set's ID"`
 	State     changeset.State `json:"state" desc:"proposed or accepted"`
 	Kind      changeset.Kind  `json:"kind" desc:"intention or record"`
+	Title     string          `json:"title" desc:"The change set's display title: its set title, else the intent's first clause"`
 	Intent    string          `json:"intent" desc:"The change set's intent"`
 	Ready     bool            `json:"ready" desc:"Whether it can be worked on now (see ready)"`
 	DependsOn []id.ID         `json:"depends_on" desc:"The change sets it depends on, sorted"`
@@ -1523,6 +1524,10 @@ func roadmapOne(ctx *Ctx, view string) ([]RoadmapGroup, string, error) {
 		return nil, "", err
 	}
 	groups := []RoadmapGroup{}
+	titles := map[id.ID]string{}
+	for _, c := range in.sets {
+		titles[c.ID] = c.Open.DisplayTitle()
+	}
 	// A milestone may be only an ancestor of the intents served.
 	paths := planAncestorPaths(in.intentPath)
 	for _, g := range res.groups {
@@ -1539,7 +1544,7 @@ func roadmapOne(ctx *Ctx, view string) ([]RoadmapGroup, string, error) {
 		}
 		for _, p := range g.members {
 			rg.ChangeSets = append(rg.ChangeSets, RoadmapChangeSet{ID: p.info.ID, State: p.info.State,
-				Kind: p.info.Kind, Intent: p.info.Intent, Ready: p.ready, DependsOn: orEmpty(p.dependsOn),
+				Kind: p.info.Kind, Title: planTitle(titles, p.info), Intent: p.info.Intent, Ready: p.ready, DependsOn: orEmpty(p.dependsOn),
 				Serves: orEmpty(slices.Clone(p.serves))})
 		}
 		if len(rg.ChangeSets) > 0 {
@@ -1810,4 +1815,13 @@ func (r ReadyResponse) Human(w io.Writer) {
 			}
 		}
 	}
+}
+
+// planTitle is a change set's display title: its folded title, or the
+// intent's first clause when the folded set is not at hand.
+func planTitle(titles map[id.ID]string, info index.ChangeSetInfo) string {
+	if t := titles[info.ID]; t != "" {
+		return t
+	}
+	return changeset.Open{Intent: info.Intent}.DisplayTitle()
 }
