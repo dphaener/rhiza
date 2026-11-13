@@ -438,11 +438,6 @@ func TestShipChangeBuiltin(t *testing.T) {
 		if fx.Kind != KindAgent || fx.On[OutcomePass] != next || len(fx.On) != 1 || fx.MaxVisits != 3 {
 			t.Errorf("%s = %+v; want an agent step passing to %s, max_visits 3", n, fx, next)
 		}
-		for _, w := range []string{"Review: {run}", "rhiza ship check --json", "Change: {change}", "Actor:", "regenerate golden files", "Never push", "rhiza session done"} {
-			if !strings.Contains(fx.Prompt, w) {
-				t.Errorf("%s prompt lacks %q", n, w)
-			}
-		}
 	}
 	triage := def.Steps["ci-triage"]
 	if triage.Kind != KindCommand || triage.Run != "rhiza ship check --test-failures" || triage.On[OutcomePass] != "ci-fix" || triage.On[OutcomeFail] != "wait-ci-rerun" || len(triage.On) != 2 {
@@ -453,8 +448,8 @@ func TestShipChangeBuiltin(t *testing.T) {
 		t.Errorf("wait-ci-rerun = %+v; want a wait on ship check --settled --changed --rerun-infra, 6h, max_visits 3, pass to pr-green", rerun)
 	}
 	fix := def.Steps["ci-fix"]
-	if fix.Kind != KindAgent || fix.On[OutcomePass] != "render-pr" || !strings.Contains(fix.Prompt, "Review: {run}") || !strings.Contains(fix.Prompt, "rhiza ship check --json") {
-		t.Errorf("ci-fix = %+v; want an agent step passing to render-pr, told the Review: trailer and ship check --json", fix)
+	if fix.Kind != KindAgent || fix.On[OutcomePass] != "render-pr" || !strings.HasPrefix(fix.Prompt, "/rhiza-ci-fix ") {
+		t.Errorf("ci-fix = %+v; want an agent step passing to render-pr, on the ci-fix topic", fix)
 	}
 	caps := map[string]int{"ci-fix": 2, "ci-triage": 3, "render-pr": 10, "open-pr": 10, "wait-pr": 10, "pr-green": 10, "signoff": 8, "rebase": 6, "wait-rebased": 6, "rebased-green": 6,
 		"rebase-merge": 6, "wait-rebased-merge": 6, "rebased-merge-green": 6, "merge": 6, "conflict-fix": 3, "conflict-fix-landed": 3}
@@ -1861,31 +1856,6 @@ func TestPlanRerunsCIFlakes(t *testing.T) {
 	}
 }
 
-// The ci-fix fixer reproduces each CI finding (failing test or non-test cause) locally, fixes or quarantines
-// it with a bug filed, and commits only once the tests pass locally; the
-// prompt stays repo-agnostic, naming no Go, make or testscript command.
-func TestShipChangeCIFixPrompt(t *testing.T) {
-	data, ok := Builtin("ship-change")
-	if !ok {
-		t.Fatal("no ship-change built-in")
-	}
-	def, err := ParseWith("ship-change", data, builtinResolver)
-	if err != nil {
-		t.Fatal(err)
-	}
-	p := def.Steps["ci-fix"].Prompt
-	for _, want := range []string{"Fix the CI findings", "failing tests, and recognised non-test causes", "self-check, fmt-check, vet or build-target failure", "Reproduce each finding locally", "repeating a test until it fails again or plainly passes", "regenerate them", "quarantine it", "bug request filed and named at the skip", "Commit only once those commands and the packages you touched pass locally", "never push to see"} {
-		if !strings.Contains(p, want) {
-			t.Errorf("ci-fix prompt lacks %q", want)
-		}
-	}
-	for _, bad := range []string{"go test", "go vet", "make ", "testscript", "TestScripts", "-trimpath"} {
-		if strings.Contains(p, bad) {
-			t.Errorf("ci-fix prompt names %q", bad)
-		}
-	}
-}
-
 // ship-change runs the local gate before every push: each step that
 // pushes (open-pr, rebase, land, rebase-merge, push-merge) is reached only
 // through a gate step, which passes to it and sends a failure to a fixer.
@@ -2145,11 +2115,6 @@ func TestShipChangeModelConflictFix(t *testing.T) {
 	if fx.Kind != KindAgent || fx.On[OutcomePass] != "gate-land" || len(fx.On) != 1 || fx.MaxVisits != 3 {
 		t.Errorf("model-conflict-fix = %+v; want an agent step passing to gate-land only, max_visits 3", fx)
 	}
-	for _, want := range []string{"rhiza set <node> --rebase", "rhiza ship check --model-conflict --json", "rhiza check", "Change: {change}", "Actor:", "Review: {run}", "Model-Conflict:", "Never push", "AskUserQuestion", "rhiza session done"} {
-		if !strings.Contains(fx.Prompt, want) {
-			t.Errorf("model-conflict-fix prompt lacks %q", want)
-		}
-	}
 	if def.Steps["land"].MaxVisits != 4 || def.Steps["gate-land"].MaxVisits != 9 {
 		t.Errorf("land, gate-land max_visits = %d, %d; want 4, 9", def.Steps["land"].MaxVisits, def.Steps["gate-land"].MaxVisits)
 	}
@@ -2330,28 +2295,66 @@ func TestBuiltinPromptsDoneOwnCommand(t *testing.T) {
 	}
 }
 
-func TestFixerPromptsNameChecksBlock(t *testing.T) {
-	parse := func(name string) *Definition {
-		data, ok := Builtin(name)
-		if !ok {
-			t.Fatalf("no %s built-in", name)
+// Every agent step of the builtin ship-change is one line naming its guide
+// topic, with no session-done, Checks: or trailer text left in it, and
+// Rhiza's own ship-change and docs workflows use the same lines.
+func TestShipFixPromptsOneLine(t *testing.T) {
+	data, ok := Builtin("ship-change")
+	if !ok {
+		t.Fatal("no ship-change built-in")
+	}
+	def, err := ParseWith("ship-change", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]string{
+		"ci-fix":              "/rhiza-ci-fix Fix the CI findings of change set {change} in run {run}: follow rhiza guide ci-fix.",
+		"gate-fix":            "/rhiza-gate-fix Fix the failing local gate of change set {change} in run {run}: follow rhiza guide gate-fix.",
+		"gate-fix-merge":      "/rhiza-gate-fix Fix the failing local gate of change set {change} in run {run}: follow rhiza guide gate-fix.",
+		"conflict-fix":        "/rhiza-conflict-fix Resolve the merge conflicts of change set {change} in run {run}: follow rhiza guide conflict-fix.",
+		"conflict-fix-landed": "/rhiza-conflict-fix Resolve the merge conflicts of change set {change} in run {run}: it landed, and origin/main was merged into the branch: follow rhiza guide conflict-fix.",
+		"model-conflict-fix":  "/rhiza-conflict-fix Fix the model conflict that refused the land of change set {change} in run {run}: follow rhiza guide conflict-fix.",
+	}
+	agents := 0
+	for name, s := range def.Steps {
+		if s.Kind != KindAgent {
+			continue
 		}
-		def, err := ParseWith(name, data, builtinResolver)
+		agents++
+		w, ok := want[name]
+		if !ok {
+			t.Errorf("unexpected agent step %s", name)
+			continue
+		}
+		if s.Prompt != w {
+			t.Errorf("builtin %s prompt = %q; want %q", name, s.Prompt, w)
+		}
+		for _, bad := range []string{"session done", "Checks:", "Review:", "trailer", "\n"} {
+			if strings.Contains(s.Prompt, bad) {
+				t.Errorf("builtin %s prompt holds %q", name, bad)
+			}
+		}
+	}
+	if agents != len(want) {
+		t.Errorf("builtin ship-change has %d agent steps; want %d", agents, len(want))
+	}
+	for _, file := range []string{"ship-change", "docs"} {
+		src, err := os.ReadFile(filepath.Join("..", "..", ".rhiza", "workflows", file+".toml"))
 		if err != nil {
 			t.Fatal(err)
 		}
-		return def
-	}
-	ship := parse("ship-change")
-	prompts := map[string]string{
-		"ci-fix":       ship.Steps["ci-fix"].Prompt,
-		"gate-fix":     ship.Steps["gate-fix"].Prompt,
-		"conflict-fix": ship.Steps["conflict-fix"].Prompt,
-	}
-	for name, p := range prompts {
-		for _, w := range []string{"`Checks:` block", "`rhiza ship generate`", "`rhiza render`", "exit code"} {
-			if !strings.Contains(p, w) {
-				t.Errorf("%s prompt lacks %q", name, w)
+		d, err := ParseWith(file, src, func(name string) ([]byte, error) {
+			if b, err := os.ReadFile(filepath.Join("..", "..", ".rhiza", "workflows", name+".toml")); err == nil {
+				return b, nil
+			}
+			return builtinResolver(name)
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for name, s := range d.Steps {
+			if w, ok := want[name]; ok && s.Kind == KindAgent && s.Prompt != w {
+				t.Errorf("%s.toml %s prompt = %q; want the builtin's %q", file, name, s.Prompt, w)
 			}
 		}
 	}
