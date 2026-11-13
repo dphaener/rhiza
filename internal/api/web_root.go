@@ -14,10 +14,17 @@ import (
 // copied, as the poll goes on changing the ctx it came from.
 func WebProjectHandler(base *Ctx) http.Handler {
 	snap := *base
+	return web.WithToken(func() string { return webTokenOf(&snap) }, webProjectHandler(&snap))
+}
+
+// webProjectHandler is WebProjectHandler without its token gate, for a
+// caller that has gated the request already (the root's).
+func webProjectHandler(base *Ctx) http.Handler {
+	snap := *base
 	health := NewWebHealth(&snap)
 	needs := func() int { return len(WebNeedsYou(&snap, time.Now())) }
 	h := web.HandlerWithNeedsYou(WebDaemonSource(&snap, health), WebRunsSource(&snap), WebInboxSource(&snap), WebMilestonesSource(&snap), needs, ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap, health), web.PollEvery))
-	return web.WithToken(func() string { return webTokenOf(&snap) }, h)
+	return web.WithActions(WebActions(&snap), h)
 }
 
 // WebRootHandler is the one web UI of the root daemon: the all-projects
@@ -61,7 +68,7 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 		if b, ok := cache[name]; ok && b.dir == dir {
 			return b.h
 		}
-		h := WebProjectHandler(projectCtx(ctx, dir))
+		h := webProjectHandler(projectCtx(ctx, dir))
 		cache[name] = built{dir, h}
 		return h
 	}, WebProjectsSource(ctx, root, homeName), WebMergedInboxSource(ctx, root))))

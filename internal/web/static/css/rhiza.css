@@ -400,3 +400,9 @@ a.rz-session-who:hover b { color: var(--teal); }
   .rz-picker { position: relative; width: 340px; border: 1px solid var(--line); border-radius: 12px; max-height: 60vh; }
   .rz-picker-grip { display: none; }
 }
+
+/* An action form under an inbox row, above the row's whole-row link. */
+.rz-row-form { grid-column: 1 / -1; position: relative; z-index: 1; display: flex; gap: var(--space-2); align-items: flex-start; padding: 0 0 var(--space-2); }
+.rz-row-form textarea { flex: 1; min-width: 0; font: inherit; color: var(--ink); background: var(--panel); border: var(--rule) solid var(--line); border-radius: 4px; padding: 6px 8px; }
+.rz-row-form button { font: inherit; min-height: 44px; padding: 0 12px; color: var(--ink); background: var(--panel); border: var(--rule) solid var(--line); border-radius: 4px; cursor: pointer; }
+.rz-row-form button:hover { border-color: var(--teal); color: var(--teal); }

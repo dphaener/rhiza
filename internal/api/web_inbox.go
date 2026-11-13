@@ -1,6 +1,8 @@
 package api
 
 import (
+	"strings"
+
 	"github.com/dphaener/rhiza/internal/web"
 )
 
@@ -38,7 +40,7 @@ func webInboxViews(items []InboxItem) []web.InboxItemView {
 		if !webInboxKinds[it.Kind] {
 			continue
 		}
-		view := func(title, detail string) web.InboxItemView {
+		view := func(title, detail string, question ...string) web.InboxItemView {
 			if title == "" {
 				title = it.ChangeTitle
 			}
@@ -48,6 +50,7 @@ func webInboxViews(items []InboxItem) []web.InboxItemView {
 			return web.InboxItemView{
 				Kind: it.Kind, Title: oneLine(title), Detail: oneLine(detail),
 				Run: it.Run, Change: it.Change, Step: it.Step, At: it.At,
+				Question: strings.Join(question, ""),
 			}
 		}
 		switch it.Kind {
@@ -63,7 +66,7 @@ func webInboxViews(items []InboxItem) []web.InboxItemView {
 				if q.Blocks != "" {
 					detail = "blocks " + q.Blocks
 				}
-				views = append(views, view(q.Statement, detail))
+				views = append(views, view(q.Statement, detail, q.Handle))
 			}
 		case InboxSignoff:
 			views = append(views, view("", "waiting for your sign-off"))
