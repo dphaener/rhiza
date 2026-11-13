@@ -1,0 +1,40 @@
+{
+  "actor": "01M79A7K412VQA239QW3N7B2YS",
+  "after": [
+    "01M79A0ZD3R5QP09Y7WVH55BV7"
+  ],
+  "at": "2026-11-13T02:03:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 7ce66901a in a detached checkout. Re-ran the commit's Checks: block and the acceptance, all exit 0: go test -trimpath ./internal/api -run 'GuideInstall|SkillFile|Plugin|Status' (TestGuideInstallRoleSkills checks that rhiza-builder, rhiza-verifier and rhiza-build-retry SKILL.md are the frontmatter with the topic's description plus the expanded body, and that a second install reports them unchanged); go test -trimpath ./internal/guide/... (TestBuildIsAnIndex checks that build names builder, verifier and build-retry by their /skill and `rhiza guide` routes and stays under 250 tokens); go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|guide-install|build-evidence-commit|status|docs-commands-exist)$' (guide ls has the three topics, install output lists the new skill paths with 10 written, and build-evidence-commit's fake builder greps `rhiza guide builder`); rhiza ship generate, rhiza render (tree clean afterwards) and make self-check. Read the diff: guide_install.go writes the three skills beside the others, build.md is a short index saying which role loads which topic, the only log entries staged are the builder's own actor record, and no stubs or TODOs."
+        },
+        "handle": "build-role-skills-installed-verified",
+        "id": "01M79AA187V8FV9SWC1FKW4EQY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79AA187V8FV9SWC1BSB3KDY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79AA187V8FV9SWC1BSB3KDY",
+        "id": "01M79AA193DA18D0NV9BKJ07FS",
+        "link": "01M79AA193DA18D0NV98C8Y0X9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974G8PCWZ6YB020VYE5FRB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79AA1A3MHQSS3XZPK4WPQ6B",
+  "type": "ops",
+  "v": 1
+}

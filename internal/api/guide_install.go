@@ -31,16 +31,19 @@ const (
 	pluginSkillPath    = "SKILL.md"
 	pluginHooksPath    = "hooks/hooks.json"
 	pluginBuildPath    = "skills/rhiza-build/SKILL.md"
+	pluginRetryPath    = "skills/rhiza-build-retry/SKILL.md"
+	pluginBuilderPath  = "skills/rhiza-builder/SKILL.md"
 	pluginPlanPath     = "skills/rhiza-plan/SKILL.md"
 	pluginReviewPath   = "skills/rhiza-review/SKILL.md"
 	pluginScrubPath    = "skills/rhiza-scrub/SKILL.md"
+	pluginVerifierPath = "skills/rhiza-verifier/SKILL.md"
 )
 
 // pluginName is the plugin's name, and the folder's under .claude/skills.
 const pluginName = "rhiza"
 
 // pluginDescription is the plugin manifest's description.
-const pluginDescription = "The Rhiza agent guide: the rhiza, rhiza-scrub, rhiza-plan, rhiza-build and rhiza-review skills, and a " +
+const pluginDescription = "The Rhiza agent guide: the rhiza, rhiza-scrub, rhiza-plan, rhiza-build, rhiza-builder, rhiza-verifier, rhiza-build-retry and rhiza-review skills, and a " +
 	"SessionStart hook that runs rhiza status --hook."
 
 // pluginMarker is the manifest's ownership marker: a plugin.json holding
@@ -74,7 +77,7 @@ func init() {
 	})
 }
 
-// runGuideInstall writes the plugin's seven files, plugin.json first. A
+// runGuideInstall writes the plugin's ten files, plugin.json first. A
 // folder that exists and is not ours (see pluginForeign) is a conflict
 // unless req.Force, and so is a file where the folder goes; then nothing
 // is written. Each file is written atomically, and only when its
@@ -120,7 +123,7 @@ func runGuideInstall(ctx *Ctx, req any) (any, error) {
 	}
 
 	resp := GuideInstallResponse{Dir: dir, Written: []string{}, Unchanged: []string{}}
-	for _, p := range []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginBuildPath, pluginPlanPath, pluginReviewPath, pluginScrubPath} {
+	for _, p := range []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginRetryPath, pluginBuildPath, pluginBuilderPath, pluginPlanPath, pluginReviewPath, pluginScrubPath, pluginVerifierPath} {
 		dst := filepath.Join(dir, filepath.FromSlash(p))
 		have, err := os.ReadFile(dst)
 		if err != nil && !errors.Is(err, fs.ErrNotExist) {
@@ -185,9 +188,23 @@ func pluginFiles(version string) (map[string][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	// The build topic is a skill in the plugin, so a builder or verifier
-	// session loads it by its description without running rhiza guide build.
+	// The build topic is a skill in the plugin, an index to the three role
+	// topics, so workflows that still say /rhiza-build keep working; the
+	// builder, verifier and retry topics are skills too, so a session loads
+	// its own by its description without running rhiza guide.
 	build, err := skillFile("rhiza-build", "build")
+	if err != nil {
+		return nil, err
+	}
+	builder, err := skillFile("rhiza-builder", "builder")
+	if err != nil {
+		return nil, err
+	}
+	verifier, err := skillFile("rhiza-verifier", "verifier")
+	if err != nil {
+		return nil, err
+	}
+	retry, err := skillFile("rhiza-build-retry", "build-retry")
 	if err != nil {
 		return nil, err
 	}
@@ -202,9 +219,12 @@ func pluginFiles(version string) (map[string][]byte, error) {
 		pluginSkillPath:    skill,
 		pluginHooksPath:    hooks,
 		pluginBuildPath:    build,
+		pluginRetryPath:    retry,
+		pluginBuilderPath:  builder,
 		pluginPlanPath:     plan,
 		pluginReviewPath:   review,
 		pluginScrubPath:    scrub,
+		pluginVerifierPath: verifier,
 	}, nil
 }
 
@@ -285,7 +305,7 @@ func pluginForeign(dir string, want map[string][]byte) bool {
 		m, ok := readPluginManifest(dir)
 		return !ok || !pluginOwned(m)
 	}
-	for _, p := range []string{pluginSkillPath, pluginHooksPath, pluginBuildPath, pluginPlanPath, pluginReviewPath, pluginScrubPath} {
+	for _, p := range []string{pluginSkillPath, pluginHooksPath, pluginRetryPath, pluginBuildPath, pluginBuilderPath, pluginPlanPath, pluginReviewPath, pluginScrubPath, pluginVerifierPath} {
 		have, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(p)))
 		if errors.Is(err, fs.ErrNotExist) {
 			continue

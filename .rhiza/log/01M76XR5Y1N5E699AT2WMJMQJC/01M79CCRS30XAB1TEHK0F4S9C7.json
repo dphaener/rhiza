@@ -1,0 +1,29 @@
+{
+  "actor": "01M79CBW8AMARGG3C91YXCVYK7",
+  "after": [
+    "01M79C8NNMAZKCHMMR11WGHD7K"
+  ],
+  "at": "2026-11-13T02:39:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6MMAF8Z4XWD1JD9WHF6TTT5",
+        "handle": null,
+        "id": "01M79CCRQYSJ7YS449DHBEYR6N",
+        "node": "01M6MMAF8Z4XWD1JD9WG5PRYBR",
+        "op": "node.update",
+        "set": {
+          "acceptance": "TestGuidesFeedFindingsFromStdin in internal/guide/build_test.go asserts that each of the verifier, review and plan-review guide topics shows the `<<'EOF'` stdin form and that no `<file>` form of rhiza run findings or rhiza run verdict remains in them; go test -trimpath ./internal/guide/... passes",
+          "statement": "The verifier, review and plan-review guide topics show rhiza run findings and rhiza run verdict fed from stdin by a heredoc (`- <<'EOF'` ... `EOF`), with their existing flags (--leaf, --check, --json) and JSON shapes, so an agent records findings and verdicts without a temp file or compound shell command"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79CCRS30XAB1TEHK0F4S9C7",
+  "type": "ops",
+  "v": 1
+}

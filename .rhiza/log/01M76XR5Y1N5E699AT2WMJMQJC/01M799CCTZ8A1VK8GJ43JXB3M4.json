@@ -1,0 +1,40 @@
+{
+  "actor": "01M799AB76PYHQQZ2BW8F3WE23",
+  "after": [
+    "01M797J7SSZB40K7MG7TEV3D7P"
+  ],
+  "at": "2026-11-13T01:47:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at eaa71074c (attempt 2): go test -trimpath -count=1 ./internal/guide/... passes (TestShared*, TestBuild*, TestBuildReviewCommandBudget all PASS). Read the diff: guide.go embeds text/shared/*.md and Expand replaces each `<!-- shared: <block> -->` line at load, panicking with the file name on an unknown block. shared_test.go covers (1) every shared block expands in place and no listed text keeps a marker, (2) Expand of no-such-block errors naming it, (3) every List() text within its cap via checkCap, (4) never-list forbids sleep/poll, stubs/TODOs/placeholders, new dependency, rewriting history and chaining session done, and every budget, scoped-tests, unstable-ci, outside-work and done phrase of build_test.go and budget_test.go (now including rhiza change new, discovered-from <this>, rhiza change use <this>, the attempt-1 finding) is in exactly one shared file. build.md uses six markers; a scratch build's `rhiza guide build` prints no marker."
+        },
+        "handle": "guide-shared-blocks-verified",
+        "id": "01M799CCKHRQA53DT1KKS5CDJY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M799CCKHRQA53DT1KHSWV363",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M799CCKHRQA53DT1KHSWV363",
+        "id": "01M799CCQ3EEST3CZEPVDDF3GX",
+        "link": "01M799CCQ3EEST3CZEPSTMGDT7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974FTA4EJ8NB0P869FGVT0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M799CCTZ8A1VK8GJ43JXB3M4",
+  "type": "ops",
+  "v": 1
+}
