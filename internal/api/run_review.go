@@ -189,8 +189,9 @@ func openRun(ctx *Ctx, cmd, next string, finished bool) (reviewRun, error) {
 	return reviewRun{store: rs, id: j.ID, state: st, change: cs}, nil
 }
 
-// reviewStep is the checks step the run is in, if it is in one: then it
-// is a review run, and its findings and verdicts belong to a check.
+// reviewStep is the step the run is in, if it is a checks step or an agent
+// step declaring checks: then it is a review run, and its findings and
+// verdicts belong to one of the step's checks.
 func (r reviewRun) reviewStep() (workflow.Step, bool, error) {
 	if r.state.Current == "" {
 		return workflow.Step{}, false, nil
@@ -200,7 +201,7 @@ func (r reviewRun) reviewStep() (workflow.Step, bool, error) {
 		return workflow.Step{}, false, Errorf("run %s: its workflow no longer parses: %v", r.id, err)
 	}
 	s, ok := def.Steps[r.state.Current]
-	if !ok || s.Kind != workflow.KindChecks {
+	if !ok || (s.Kind != workflow.KindChecks && !(s.Kind == workflow.KindAgent && len(s.Checks) > 0)) {
 		return workflow.Step{}, false, nil
 	}
 	return s, true, nil
@@ -221,7 +222,7 @@ func (r reviewRun) reviewCheck(cmd, check, next string) (step workflow.Step, rev
 	case !review:
 		return workflow.Step{}, false, nil
 	case check == "":
-		return workflow.Step{}, false, Usagef("%s works in a review run with --check: run %s is in checks step %s, so name one of its checks: %s",
+		return workflow.Step{}, false, Usagef("%s works in a review run with --check: run %s is in step %s, so name one of its checks: %s",
 			cmd, r.id, step.Name, strings.Join(checkNames(step), ", ")).WithNext(next)
 	}
 	if _, ok := step.Check(check); !ok {

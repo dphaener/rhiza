@@ -290,3 +290,53 @@ func TestPlanReviewDowngradeByKind(t *testing.T) {
 		t.Fatalf("review-check with a confirmed missing-acceptance: %v", err)
 	}
 }
+
+// A run in an agent step declaring checks plan, code and qa journals
+// findings and verdicts under --check plan as that check's rounds, and
+// refuses --check scope with a message naming the declared checks.
+func TestRunFindingsCheckNames(t *testing.T) {
+	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
+	t0 := time.Date(2026, 11, 13, 12, 0, 0, 0, time.UTC)
+	store := run.NewStore(run.Dir(f.common))
+	def := "[step.conduct]\nkind = \"agent\"\nprompt = \"go\"\n" +
+		"[[step.conduct.check]]\nname = \"plan\"\n[[step.conduct.check]]\nname = \"code\"\n[[step.conduct.check]]\nname = \"qa\"\n"
+	if err := store.Create("R12", run.Entry{
+		Type: run.TypeStarted, Step: "conduct", At: t0,
+		Started: &run.Started{Workflow: "conduct", Definition: def, Change: "01M76F4G0JQ649RR29M9QPFX68", Title: "Conduct"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Append("R12", run.Entry{Type: run.TypeEntered, Step: "conduct", Visit: 1, At: t0}); err != nil {
+		t.Fatal(err)
+	}
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return "R12"
+		}
+		return ""
+	}
+	f.ctx.Stdin = strings.NewReader(`{"findings":[{"severity":"major","place":"a.go:1","reason":"r"}]}`)
+	resp, err := callOp(t, f.ctx, "run.findings", `{"check":"plan","file":"-"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := resp.(RunFindingsResponse); r.Check != "plan" || r.Round != 1 || len(r.Findings) != 1 {
+		t.Errorf("findings %+v", r)
+	}
+	f.ctx.Stdin = strings.NewReader(`{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"real"}]}`)
+	resp, err = callOp(t, f.ctx, "run.verdict", `{"check":"plan","file":"-"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := resp.(RunVerdictResponse); r.Check != "plan" || r.Round != 1 {
+		t.Errorf("verdict %+v", r)
+	}
+	for op, body := range map[string]string{"run.findings": `{"findings":[]}`, "run.verdict": `{"verdicts":[]}`} {
+		f.ctx.Stdin = strings.NewReader(body)
+		_, err = callOp(t, f.ctx, op, `{"check":"scope","file":"-"}`)
+		e := AsError(err)
+		if e == nil || !strings.Contains(e.Message, "plan, code, qa") {
+			t.Errorf("%s --check scope: %v", op, err)
+		}
+	}
+}

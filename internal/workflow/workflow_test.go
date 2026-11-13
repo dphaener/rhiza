@@ -1075,7 +1075,7 @@ func TestChecksStepRefused(t *testing.T) {
 		{"bad outcome", head + "on.timeout = \"done\"\n" + check("lint") + roles,
 			`step "review": on.timeout: a checks step has no outcome "timeout"; want on.pass or on.fail`},
 		{"check on an agent step", agent + "[[step.a.check]]\nname = \"lint\"\nprompt = \"x\"\n",
-			`step "a": check is only for checks steps; an agent step cannot have it`},
+			`step "a": check "lint": an agent step's check is only a name`},
 		{"critic on an agent step", agent + "[step.a.critic]\nprompt = \"x\"\n",
 			`step "a": critic is only for checks steps; an agent step cannot have it`},
 		{"fixer on a leaves step", leavesBase + leavesRoles + "[step.build.fixer]\nprompt = \"x\"\n",
@@ -2800,5 +2800,38 @@ func TestHandbackTarget(t *testing.T) {
 		if _, ps := Validate("w", []byte(tt.src), nil); len(ps) == 0 {
 			t.Errorf("%s: Validate found no problem", tt.name)
 		}
+	}
+}
+
+// An agent step may declare review checks by name, like a checks step; a
+// check with no name or a repeated name is refused.
+func TestAgentStepChecks(t *testing.T) {
+	src := "[step.conduct]\nkind = \"agent\"\nprompt = \"go\"\n"
+	d, err := Parse("w", []byte(src+"[[step.conduct.check]]\nname = \"plan\"\n[[step.conduct.check]]\nname = \"code\"\n[[step.conduct.check]]\nname = \"qa\"\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := d.Steps["conduct"]
+	var names []string
+	for _, c := range s.Checks {
+		names = append(names, c.Name)
+	}
+	if strings.Join(names, ",") != "plan,code,qa" {
+		t.Errorf("checks %v", names)
+	}
+	if _, ok := s.Check("code"); !ok {
+		t.Error("Check(code) not found")
+	}
+	for _, tt := range []struct{ name, src, want string }{
+		{"no name", src + "[[step.conduct.check]]\nprompt = \"x\"\n", "check 1 has no name"},
+		{"duplicate", src + "[[step.conduct.check]]\nname = \"qa\"\n[[step.conduct.check]]\nname = \"qa\"\n", `check "qa" is declared twice`},
+		{"prompt", src + "[[step.conduct.check]]\nname = \"qa\"\nprompt = \"x\"\n", "is only a name"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Parse("w", []byte(tt.src))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("error %v; want %q", err, tt.want)
+			}
+		})
 	}
 }

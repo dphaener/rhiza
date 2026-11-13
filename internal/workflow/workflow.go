@@ -1126,7 +1126,7 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		for _, r := range []struct {
 			role string
 			set  bool
-		}{{RoleCheck, fs.Check != nil}, {RoleCritic, fs.Critic != nil}, {RoleFixer, fs.Fixer != nil}} {
+		}{{RoleCheck, fs.Check != nil && fs.Kind != KindAgent}, {RoleCritic, fs.Critic != nil}, {RoleFixer, fs.Fixer != nil}} {
 			if r.set {
 				return fail("%s is only for checks steps; %s step cannot have it", r.role, article(fs.Kind))
 			}
@@ -1201,6 +1201,9 @@ func buildStep(name string, fs fileStep) (Step, error) {
 
 	switch fs.Kind {
 	case KindAgent:
+		if err := buildAgentChecks(&s, fs.Check); err != nil {
+			return fail("%v", err)
+		}
 		if strings.TrimSpace(fs.Prompt) == "" {
 			return fail("an agent step needs prompt = \"<what the agent should do>\"; it may use {%s}", strings.Join(agentPlaceholders, "}, {"))
 		}
@@ -1252,6 +1255,29 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		}
 	}
 	return s, nil
+}
+
+// buildAgentChecks reads an agent step's declared review checks: names
+// only, each valid and unique, for the run in the step to name with
+// rhiza run findings --check. The agent itself is the session of every
+// check, so a check has no prompt, handback, agent or models of its own.
+func buildAgentChecks(s *Step, checks []fileCheck) error {
+	for i, fc := range checks {
+		if fc.Name == "" {
+			return fmt.Errorf("check %d has no name: set name = \"...\"", i+1)
+		}
+		if err := checkName("check", fc.Name); err != nil {
+			return err
+		}
+		if _, dup := s.Check(fc.Name); dup {
+			return fmt.Errorf("check %q is declared twice; give each check its own name", fc.Name)
+		}
+		if fc.Prompt != "" || fc.Invoke != "" || fc.Handback != "" || fc.Agent != "" || fc.PermissionMode != "" || fc.Models != nil {
+			return fmt.Errorf("check %q: an agent step's check is only a name; its prompt, handback, agent, permission_mode and models belong to the step", fc.Name)
+		}
+		s.Checks = append(s.Checks, Check{Name: fc.Name})
+	}
+	return nil
 }
 
 // buildLeaves finishes a leaves step: it needs a builder and a verifier,
