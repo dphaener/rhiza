@@ -1,0 +1,40 @@
+{
+  "actor": "01M7954CM40G09PXH1Q8SZGED9",
+  "after": [
+    "01M794H0YM0Z8CTY9X552R5ABP"
+  ],
+  "at": "2026-11-13T00:33:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 3f47460c6 (attempt 2) in a detached checkout. go test -trimpath ./internal/api -run ShipLand -v: all PASS, including TestShipLandNodeChangedMergesMain (head build exiting 3 with 'cannot land change set X: node N changed' returns CodeConflict naming node N and the conflicted file and records the merge conflict) and TestShipLandOtherHeadFailureStaysPlain (other message / other exit stay a plain land failure with the head build's detail; TestShipLandHeadBuildErrorDetail also passes). go test -trimpath ./cmd/rhiza -run 'TestScripts/run-ship-land-conflict$': ok; the script runs ship-change with fake gh through land fail -> land-triage -> land-conflict-triage -> land-main-conflict-triage pass -> conflict-fix -> land visit 2 pass, and case 2 fails with no fixer. The cycle-1 blocker (actors shared across sessions stopping runs at build/check) no longer reproduces at this head. Also ran go test -trimpath ./internal/api -run ShipFollow: ok (quality f2's TestShipFollowRefusesLocalCommits passes). The leaf commit itself only adds .rhiza log entries."
+        },
+        "handle": "land-conflict-to-fixer-verified-2",
+        "id": "01M7955SSW577Z3GNXJQ9CD02W",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7955SSW577Z3GNXJPWZJWF0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7955SSW577Z3GNXJPWZJWF0",
+        "id": "01M7955STWCFDYJB7M1BQJM737",
+        "link": "01M7955STWCFDYJB7M1AMRQ5FT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG5J7ETYBRT4W550P79M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7955SW0ANBWM3BEFYS8BA7V",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,30 @@
+{
+  "actor": "01M793PM600TD3V0VC7Z24JPCE",
+  "after": [
+    "01M793HGP024JVZGAPFN6CNXDB"
+  ],
+  "at": "2026-11-13T00:13:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api (go test -trimpath ./internal/api -run 'RecordAgentActor') assert: recording the actor of a session whose actor an in-flight change set (another run's branch merged in) already recorded with the same session value writes no new node and returns that actor; a landed or in-flight actor holding claude-code-0123abcd under another session value is not returned, and the new actor gets a unique handle, so no two actors hold one handle; rhiza check on the result reports no duplicate handle.",
+          "statement": "Recording an agent actor for a session reuses the actor that a landed or in-flight change set already recorded for that session (its session field equals the session ID) instead of writing a second node, so review's code check no longer fails on a duplicate actor handle. Session IDs are UUIDv7, so sessions launched close together share the base handle <agent>-<first 8 hex>: an actor of another session holding that handle, landed or in flight, is never reused, and the new actor gets a unique handle of its own."
+        },
+        "handle": "actor-record-no-duplicate",
+        "id": "01M76XZG6D3HR7G5Y6MME4YED3",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M76XZG6D3HR7G5Y6MHENHMB5",
+        "op": "node.create",
+        "parent": "01M5SWS5ATK0DPJDW0M2EW38FT"
+      }
+    ]
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7940W8GWEGG4ZDHSF2BT4PS",
+  "type": "ops",
+  "v": 1
+}

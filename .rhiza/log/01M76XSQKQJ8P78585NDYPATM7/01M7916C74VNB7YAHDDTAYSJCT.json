@@ -1,0 +1,40 @@
+{
+  "actor": "01M79132QVFTY0JCBPRD2S3WZB",
+  "after": [
+    "01M777N33F51AQG2T7MC672Q5T"
+  ],
+  "at": "2026-11-12T23:23:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-5db19edc at d38f497d2: ran go test -trimpath -count=1 ./internal/api -run 'ActorRecord|SessionRun|RecordAgentActor': all PASS, incl. new TestRecordAgentActorReusesLandedHandle (a landed actor already holding claude-code-0123abcd under another session value is returned with its change set, no new change set written, exactly one actor holds the handle) and TestRecordAgentActorReusesInFlightHandle (same for an open, unlanded change set holding it). Diff read: recordAgentActor in internal/api/session.go now scans every change set's actor node.create ops for the base handle <agent>-<sid[:8]> and reuses it before falling back to uniqueHandle. Built the binary and ran rhiza check on the tree: no duplicate handle reported; the only fails are stale render files for uncommitted run actor records (run-env, unrelated)."
+        },
+        "handle": "actor-record-no-duplicate-verified",
+        "id": "01M7916C5NBJYB1RG4CCRDPF30",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7916C5NBJYB1RG4CBZ8VREJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7916C5NBJYB1RG4CBZ8VREJ",
+        "id": "01M7916C6GS3A2HV12MC2H1QZM",
+        "link": "01M7916C6GS3A2HV12M8RYQBB9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG6D3HR7G5Y6MHENHMB5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7916C74VNB7YAHDDTAYSJCT",
+  "type": "ops",
+  "v": 1
+}

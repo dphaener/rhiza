@@ -1,0 +1,132 @@
+{
+  "actor": "01M792RKPQTJ3PRA38XT83YC05",
+  "after": [
+    "01M792KM25GQBV32F6JD9BEW4J"
+  ],
+  "at": "2026-11-13T00:04:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-6b7d70a1 at ccf01f58d, hands-on with a built rhiza binary on PATH (fake gh/rex/claude from run-ship-land-conflict.txtar, bare origin, hermetic HOME). HEAD's binary cannot get a ship-change run past build/check (actor reuse, see the blocker on actor-record-no-duplicate), so these runs used HEAD built with only that reuse loop removed; the code under test here is HEAD's unchanged. Case 1: head build refuses the first land with exit 3 'cannot land change set X: node N changed' after main moved feature.txt; rhiza run status shows land fail -> land-triage -> land-conflict-triage -> land-main-conflict-triage pass -> conflict-fix (1 fixer session) -> land visit 2 pass, never conflict-fix-landed; two head-build land calls, gh pr merge ran, change set landed. Case 2 (exit 3, other message): run fails at land-main-conflict-triage, no fixer session."
+        },
+        "handle": "land-conflict-to-fixer-qa-1",
+        "id": "01M793HGF9TTJNR9W5D6WCV89Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M793HGF9TTJNR9W5D6K0FJ7P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M793HGF9TTJNR9W5D6K0FJ7P",
+        "id": "01M793HGFVMRSNEMQKFK0F6D3P",
+        "link": "01M793HGFVMRSNEMQKFFT6AH1G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG5J7ETYBRT4W550P79M",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-6b7d70a1 at ccf01f58d, hands-on with a built rhiza binary on PATH (fake gh/rex/claude from run-ship-land-conflict.txtar, bare origin, hermetic HOME). HEAD's binary cannot get a ship-change run past build/check (actor reuse, see the blocker on actor-record-no-duplicate), so these runs used HEAD built with only that reuse loop removed; the code under test here is HEAD's unchanged. Fake gh pr create failing 'HTTP 502: Bad Gateway' twice: open-pr passed on the third call, the failures 2s apart. Failing four times: open-pr failed after waits of 2s, 6s, 18s with 'HTTP 502: Bad Gateway ... (after 3 retries)' and the run failed at open-pr-triage. go test ./internal/api -run ShipGHRetry ok."
+        },
+        "handle": "ship-gh-transient-retry-qa-1",
+        "id": "01M793HGGFW6N3ND9V0ZRX5AYD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M793HGGFW6N3ND9V0W6SPQYB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M793HGGFW6N3ND9V0W6SPQYB",
+        "id": "01M793HGH2RPBKP14JVPM2F2RM",
+        "link": "01M793HGH2RPBKP14JVJPB23YF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG3ZRYA9NTD3SF6QWY0K",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-6b7d70a1 at ccf01f58d, hands-on with a built rhiza binary on PATH (fake gh/rex/claude from run-ship-land-conflict.txtar, bare origin, hermetic HOME). HEAD's binary cannot get a ship-change run past build/check (actor reuse, see the blocker on actor-record-no-duplicate), so these runs used HEAD built with only that reuse loop removed; the code under test here is HEAD's unchanged. Fake gh pr merge failing 'Pull request o/r#7 is not mergeable: the base branch policy prohibits the merge.': rhiza run approve ran gh pr merge once and the run stopped at merge with 'GitHub refused to merge pull request #7: ... the base branch policy prohibits the merge.'; gate-rebase-merge and rebase-merge only at their pre-merge visit 1, never revisited. go test ./internal/workflow -run ShipChange and ./internal/api -run ShipMergeRefused ok."
+        },
+        "handle": "ship-merge-refused-stops-qa-1",
+        "id": "01M793HGHK94ZK93ACYARC4SDZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M793HGHK94ZK93ACY8G9QPPT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M793HGHK94ZK93ACY8G9QPPT",
+        "id": "01M793HGJ9Y0GB2726AY889NXX",
+        "link": "01M793HGJ9Y0GB2726AY037BPZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76YXZ5T5BQGQXD3VNC24CFS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-6b7d70a1 at ccf01f58d, hands-on with a built rhiza binary on PATH (fake gh/rex/claude from run-ship-land-conflict.txtar, bare origin, hermetic HOME). HEAD's binary cannot get a ship-change run past build/check (actor reuse, see the blocker on actor-record-no-duplicate), so these runs used HEAD built with only that reuse loop removed; the code under test here is HEAD's unchanged. In the run worktree, pushed an origin-only commit to origin's cs/ship-it and made a local-only commit; RHIZA_RUN=... rhiza ship open-pr merged it ('Merge origin/cs/ship-it into cs/ship-it') and pushed plainly: origin's graph keeps e8ffb16 Origin-only commit. Then a conflicting origin commit on clash.txt: open-pr refused 'origin's cs/ship-it has commits that conflict with ...: b9e3c70 Origin clash', no MERGE_HEAD, local HEAD unchanged, origin untouched."
+        },
+        "handle": "ship-push-merges-own-origin-qa-1",
+        "id": "01M793HGJXFFA1DYPJ4HVHCX73",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M793HGJXFFA1DYPJ4EFRFFC5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M793HGJXFFA1DYPJ4EFRFFC5",
+        "id": "01M793HGKJ23VJQZ04RDCQJMV8",
+        "link": "01M793HGKJ23VJQZ04RD8ZX23G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG4SPZ8481AWNBER0JJS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-6b7d70a1 at ccf01f58d, hands-on with a built rhiza binary on PATH (fake gh/rex/claude from run-ship-land-conflict.txtar, bare origin, hermetic HOME). HEAD's binary cannot get a ship-change run past build/check (actor reuse, see the blocker on actor-record-no-duplicate), so these runs used HEAD built with only that reuse loop removed; the code under test here is HEAD's unchanged. Fake rex failing 'rex: server not answering' on its first two calls: the builder's tab opened on the third call (waits 1s, 3s) and the run reached sign-off. Rex always failing: four calls at 0s, +1s, +3s, +9s, then the run failed 'rex could not open the session's tab: ... server not answering (after 3 retries)'. go test ./internal/api -run SessionRun ok."
+        },
+        "handle": "rex-tab-launch-retry-qa-1",
+        "id": "01M793HGMD6CRXQE5BCKX1D8ST",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M793HGMD6CRXQE5BCKR032F9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M793HGMD6CRXQE5BCKR032F9",
+        "id": "01M793HGN94K6MBQWMVXG94VSX",
+        "link": "01M793HGN94K6MBQWMVWSBR7SG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG799KFE9QRBJNYYZ7KG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M793HGP024JVZGAPFN6CNXDB",
+  "type": "ops",
+  "v": 1
+}
