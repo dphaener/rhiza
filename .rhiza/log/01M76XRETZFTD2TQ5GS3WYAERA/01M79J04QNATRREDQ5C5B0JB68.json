@@ -1,0 +1,40 @@
+{
+  "actor": "01M79GN40MBD680ZRSXTGE8TFM",
+  "after": [
+    "01M79C6PB144KG92ZQ936A6EN9"
+  ],
+  "at": "2026-11-13T04:17:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4af78f087, re-ran the commit's Checks: go test -trimpath ./internal/guide/... exit 0, go test -trimpath ./internal/api -run Guide exit 0, rhiza ship generate exit 0 (0 files changed), rhiza render exit 0 (tree clean after). Read the diff: severity.md holds the four severities and a mapping naming compliance (now with work outside the intent major), quality, qa and model, no scope check, plus plan review's kinds, and no critic outcomes or Go/make/Rhiza-repo commands. plan-review.md and review.md include it with <!-- shared: severity -->. A scratch build's `guide plan-review` shows the expanded block. TestSeverityBlockOnceInEachTopic checks that plan-review, review and every check-*, critic and fixer topic hold the block exactly once. TestSeverityBlockContent checks the severities, the mapping, the kinds, no scope, no critic outcomes and no banned commands, and that confirmed/downgraded/dropped sit in the critic sections. The check-*, critic and fixer topics come from dependent leaves, and the tests already cover them. Nothing outside the leaf changed besides the builder's actor record. No stubs."
+        },
+        "handle": "severity-shared-block-verified",
+        "id": "01M79J04N2GYTG2DWQJMGECATH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79J04N2GYTG2DWQJKEVHKVE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79J04N2GYTG2DWQJKEVHKVE",
+        "id": "01M79J04P9SFEP4R2JE7862RC0",
+        "link": "01M79J04P9SFEP4R2JE38TQ5M8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH1SVENNRB0MBMN3TRZCZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79J04QNATRREDQ5C5B0JB68",
+  "type": "ops",
+  "v": 1
+}
