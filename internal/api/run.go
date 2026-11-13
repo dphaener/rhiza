@@ -2179,6 +2179,7 @@ func (r *stepRunner) StartArbiter(step workflow.Step, question string, _ []strin
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
 	req.Prompt = fmt.Sprintf(arbiterPrompt, question)
+	r.prepareKeyed(&req, "arbiter")
 	var err error
 	if req.writes, req.writesRecord, err = r.arbiterWrites(question); err != nil {
 		return "", err
@@ -2211,6 +2212,7 @@ func (r *stepRunner) StartAdvisor(step workflow.Step, asker, text string, _ []st
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Step, req.Change, req.Run, req.advises = advisorStep, r.change, r.run, asker
 	req.Prompt = fmt.Sprintf(advisorPrompt, text)
+	r.prepareKeyed(&req, "advisor")
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
 		return "", err

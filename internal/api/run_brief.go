@@ -40,6 +40,27 @@ func (r *stepRunner) prepareSession(req *SessionStartRequest, step, session stri
 	}
 	dir := run.SessionDir(common, r.run, step, r.runState().CurrentVisit, session)
 	req.briefDir = dir
+	return r.fillSession(dir)
+}
+
+// prepareKeyed is prepareSession for a session that is no step visit, an
+// arbiter or an advisor: it sets req to fill <runs>/<run>/<kind>/<session
+// id> once runSessionStart has allocated the session's ID, before the
+// launch.
+func (r *stepRunner) prepareKeyed(req *SessionStartRequest, kind string) {
+	req.briefFor = func(sid string) (string, error) {
+		common, err := gitCommonDir(r.ctx)
+		if err != nil {
+			return "", err
+		}
+		dir := run.KeyedSessionDir(common, r.run, kind, sid)
+		return dir, r.fillSession(dir)
+	}
+}
+
+// fillSession writes brief.md and slice.json into dir for the run's change
+// set. A dry run writes nothing.
+func (r *stepRunner) fillSession(dir string) error {
 	if r.ctx.DryRun {
 		return nil
 	}

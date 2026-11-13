@@ -128,6 +128,10 @@ type SessionStartRequest struct {
 	dir, root string
 	// briefDir is the session record's Brief. Only a run's starts set it.
 	briefDir string
+	// briefFor, when set, fills the session's directory once its ID is
+	// allocated and returns it as briefDir. Only a run's StartArbiter and
+	// StartAdvisor set it.
+	briefFor func(session string) (string, error)
 	// anchor is the tab of the session whose pane this session's pane
 	// splits, in direction split ("auto", right or below; auto follows
 	// the anchor's shape); a zero anchor opens a new tab. Only a run's
@@ -258,6 +262,11 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	sid, err := newSessionID(ctx.IDs)
 	if err != nil {
 		return nil, err
+	}
+	if r.briefFor != nil {
+		if r.briefDir, err = r.briefFor(sid); err != nil {
+			return nil, err
+		}
 	}
 	rexSession := r.RexSession
 	if rexSession == "" {

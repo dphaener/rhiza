@@ -114,6 +114,13 @@ func SessionDir(commonDir, runID, step string, visit int, session string) string
 	return filepath.Join(commonDir, "rhiza", "runs", safeName(runID), fmt.Sprintf("%s-%d", safeName(step), visit), safeName(session))
 }
 
+// KeyedSessionDir is <commondir>/rhiza/runs/<run>/<kind>/<session id>, the
+// directory of an arbiter or advisor session: no step visit, so keyed on
+// the session's own ID.
+func KeyedSessionDir(commonDir, runID, kind, session string) string {
+	return filepath.Join(commonDir, "rhiza", "runs", safeName(runID), safeName(kind), safeName(session))
+}
+
 // safeName keeps a name to one path element.
 func safeName(s string) string {
 	return strings.NewReplacer("/", "_", "\\", "_").Replace(s)
