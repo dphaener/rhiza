@@ -98,9 +98,9 @@ exec rhiza guide sources
 stdout '^# Sources$'
 stdout '^## Stored fields$'
 
-# guide ls lists all twenty-three texts with their kinds and sizes.
+# guide ls lists all twenty-four texts with their kinds and sizes.
 exec rhiza guide ls
-stdout -count=23 '^- '
+stdout -count=24 '^- '
 stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
 stdout '^- scrub +skill +[0-9]+ tokens  '
 stdout '^- plan +skill +[0-9]+ tokens  Plan with the owner'
@@ -113,6 +113,7 @@ stdout '^- builder +topic +[0-9]+ tokens  '
 stdout '^- carving +topic +[0-9]+ tokens  '
 stdout '^- change-sets +topic +[0-9]+ tokens  '
 stdout '^- import +topic +[0-9]+ tokens  '
+stdout '^- plan-critic +topic +[0-9]+ tokens  The plan critic'
 stdout '^- plan-interview +topic +[0-9]+ tokens  The plan interview'
 stdout '^- plan-recipes +topic +[0-9]+ tokens  Plan recipes'
 stdout '^- plan-review +topic +[0-9]+ tokens  Plan review'
