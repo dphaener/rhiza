@@ -1,0 +1,59 @@
+{
+  "actor": "01M7AQ95A0ZRK9T3QQTHPBNZ4X",
+  "after": [
+    "01M7AQEZ4S9J9P1243QVQX5C63"
+  ],
+  "at": "2026-11-13T15:12:32Z",
+  "body": {
+    "drop": [
+      "01M7AQEYXD7YF0FXTB24EXHCJ0"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "TestPlanRerunsCIFlakes in internal/workflow/workflow_test.go checks, for both the built-in plan and plan-milestone workflows, that merge routes fail to rebase and that rebase, wait-rebased, rebased-green and merge each have max_visits 6 (wait-pr 3 and pr-green 4 unchanged), and fails if any is 3; cmd/rhiza/testdata/script/plan-workflow-merge-main-moved.txtar still passes as written; a new testscript cmd/rhiza/testdata/script/plan-workflow-merge-main-moved-often.txtar, modelled on it, has the fake gh push a commit to origin's main after each of the first three rebased-green checks: the run's log shows merge (visits 1, 2 and 3) fail then rebase, merge (visit 4) pass then close-out, gh.log has exactly one pr merge call, pinned to the fourth rebased head, no 'went over max_visits' appears, and the run ends succeeded. Files: internal/workflow/builtin/plan.toml, internal/workflow/builtin/plan-milestone.toml (the steps and the 'up to 3 times' comments), internal/workflow/workflow_test.go, cmd/rhiza/testdata/script/plan-workflow-merge-main-moved-often.txtar",
+          "statement": "When a plan or plan-milestone run's merge finds origin/main has moved past the PR's checked head, the run goes back to rebase onto the new main (settling rendered-only conflicts by rendering again), waits for the rebased head's CI and merges it, up to 6 times (rebase, wait-rebased, rebased-green and merge each max_visits 6, ship-change's cap), instead of ending the run with 'Not merged'"
+        },
+        "handle": "plan-merge-loop-six-tries",
+        "id": "01M7AQFB7ZKZJHBNDRABDWYDP9",
+        "key": "zzzzzzw",
+        "kind": "capability",
+        "node": "01M7AQFB7ZKZJHBNDRAAS8NVHK",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M7AQFB7ZKZJHBNDRAAS8NVHK",
+        "id": "01M7AQFB95NHK2Z460NSMK0KN7",
+        "link": "01M7AQFB95NHK2Z460NSEATW2Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AQEYHR99BXC70GVCCW2Q06",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7AQFB7ZKZJHBNDRAAS8NVHK",
+        "id": "01M7AQFBAXE0CWBP9V6CVEZX2J",
+        "link": "01M7AQFBAXE0CWBP9V6A612J7D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MTA2NY5E0GWS0NDWVNEA6D",
+        "type": "supersedes"
+      },
+      {
+        "base": "01M6MTA2NY5E0GWS0NDX3FCPJV",
+        "id": "01M7AQFBC3B53HDBKHE4XRAETJ",
+        "node": "01M6MTA2NY5E0GWS0NDWVNEA6D",
+        "op": "node.retire",
+        "reason": "Superseded by plan-merge-loop-six-tries: the plan workflows' merge loop is capped at 6 visits, ship-change's cap, not 3"
+      }
+    ]
+  },
+  "change_set": "01M7AQ89397MPNWGFSAYG3BK77",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AQFBDT0H50FM27WMYQTZ81",
+  "type": "ops",
+  "v": 1
+}
