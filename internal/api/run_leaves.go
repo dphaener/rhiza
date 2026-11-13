@@ -342,6 +342,21 @@ func (r *stepRunner) Head() (string, error) {
 	return strings.TrimSpace(out), nil
 }
 
+// ChangedFiles are the paths changed between commits from and to.
+func (r *stepRunner) ChangedFiles(from, to string) ([]string, error) {
+	out, err := r.worktreeGit("diff", "--name-only", "-z", from, to)
+	if err != nil {
+		return nil, err
+	}
+	var files []string
+	for _, f := range strings.Split(out, "\x00") {
+		if f != "" {
+			files = append(files, f)
+		}
+	}
+	return files, nil
+}
+
 // LeafCommit is the newest commit in since..HEAD of the run's worktree
 // whose Leaf: trailer names leaf's handle, its trailers read as check
 // reads them (parseTrailerLog). With none, commit is "" and detail says
