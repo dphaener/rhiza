@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AQS0R9EF2X7WQQBQBR3EHT",
+  "after": [
+    "01M7AMHV48A76T8QCK6V7RTJB8"
+  ],
+  "at": "2026-11-13T15:19:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 92d4ec944: re-ran the Checks: block and acceptance. go test -trimpath ./internal/run -run 'TestBriefFiles|TestSessionDir|TestHandbackFile' exit 0 (TestBriefFiles, TestSessionDir, TestSessionDirWrite, TestHandbackFile pass); rhiza ship generate exit 0 (0 files changed); rhiza render exit 0 (only this verifier's own actor written); gofmt -l and go vet ./internal/run clean. Read the diff: only internal/run/brief.go and brief_test.go plus the builder's actor log/rendered files; internal/api and the workflow parser untouched; no TODOs. brief.md sections in order (change set title/ID/intent, leaves with acceptance, decisions, constraints, check commands with 'none' when neither set, contract ending 'Full contract: rhiza guide contract') and byte-identical re-render are tested; TestSessionDir checks all five session-name forms incl. leaf fixer/verifier and change set fixer (answering review question r3-f1) and asserts all distinct; handback.md tested for gate commands with output paths, CI runs with log files, conflicted files; failure cases tested: uncreatable directory error names its path, cause with no step refused. WriteHandback has no callers outside its package, as required."
+        },
+        "handle": "run-brief-files-verified",
+        "id": "01M7AQWK34TXZACQVJB1QXKNZY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AQWK34TXZACQVJB05T0GMD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AQWK34TXZACQVJB05T0GMD",
+        "id": "01M7AQWK5TGJ9E2GAMA6R1J9YD",
+        "link": "01M7AQWK5TGJ9E2GAMA652KWY5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBD9GFZM83ZPXXDRY6FS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AQWK9Z296SJ090R4SDGZPR",
+  "type": "ops",
+  "v": 1
+}
