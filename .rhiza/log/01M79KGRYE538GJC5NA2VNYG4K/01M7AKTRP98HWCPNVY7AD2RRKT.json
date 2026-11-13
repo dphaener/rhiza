@@ -1,0 +1,53 @@
+{
+  "actor": "01M7AKKBA56JXRQ07PFS63Z339",
+  "after": [
+    "01M7AJVN4SS0Z5VXD0M69HDHSH"
+  ],
+  "at": "2026-11-13T14:08:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestRunSpawn covers a spawned child's journal entry under the calling step, its brief.md holding the contract section then the caller's brief, the outcome returned (pass, and a failed child with exit 1 and its reason), a refusal outside a run naming RHIZA_RUN, a refusal of a missing --brief file naming the path, a wait journaled as held while a usage hold is on that ends when the hold lifts, and a wait journaled as held while the daemon state records a machine hold that ends when the state clears it, with maxRuns at 1 holding neither; go test -trimpath ./cmd/rhiza -run TestScripts/run-spawn passes with a fake agent; go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes after -update. Touches internal/api/run_spawn.go (new), internal/api/run_leaves.go, internal/api/usage_hold.go, internal/run/journal.go, the contract change set's brief.md writer (a spawn mode taking the caller's brief only), cmd/rhiza/testdata/script/run-spawn.txtar and describe-golden.txtar; it must not start the child from the daemon process or count it against rhiza.daemon.maxRuns.",
+          "statement": "An agent session in a run starts a child session with rhiza run spawn --role <role> [--leaf <leaf>] --brief <file> [--model <model>]: it starts the child in the run's worktree through the run's agent adapter with the run's permission mode, writes the child's brief.md through the contract change set's brief writer, extending that writer with a spawn mode that writes only its contract section followed by the caller's brief file, waits journaled as held while a usage hold or the machine load hold (the daemon state's MachineHold, read as the inbox reads it) is on (never on maxRuns), journals the child as a child of the calling step, and prints the child's outcome as JSON when it ends."
+        },
+        "handle": "run-spawn",
+        "id": "01M79KPCATRS9TD6XGS73BQ82D",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M79KPCATRS9TD6XGS3C3KYY6",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestHandbackDeliver shows handback.md written in the run directory with the cause, a red gate step's hand-back writing handback.md naming the failing command and the path of its kept output file, a red command step's hand-back writing handback.md naming the command and its output tail, a red ship-check step's hand-back writing the ship check cause, a live session messaged with the handback text, an ended session resumed with the same session ID, and a session that cannot be resumed failing the step with a message naming the session; go test -trimpath ./cmd/rhiza -run TestScripts/run-handback shows, with a fake agent, a command step failing twice, its agent step's session handed back each time with handback.md naming the failing command, and the run then passing. Touches internal/api/run.go (a Runner hand-back method), internal/run/engine.go, internal/api/session_message.go, the contract change set's handback.md writer (a cause argument only) and cmd/rhiza/testdata/script/run-handback.txtar; it writes no handback text of its own.",
+          "statement": "When a run hands back to an agent step, it passes the routing step's cause to the contract change set's handback.md writer, extending that writer to take it: for a gate step, the failing command and the path of its kept output file from the step's detail; for a command step, the command and the output tail its detail holds (a command step keeps no output file); for any other routing step, the cause from rhiza ship check --json as the writer reads it today. It then sends that step's session the handback text the contract change set's agent-invoke-template defines: a live session is messaged as rhiza session message does, an ended session is resumed in the same conversation through its adapter, and the run then waits on that session as on the step's first pass."
+        },
+        "handle": "run-handback",
+        "id": "01M79KPCETKJR0AX7B5A07NMS8",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M79KPCETKJR0AX7B576P4C76",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCETKJR0AX7B576P4C76",
+        "id": "01M7AKTRFNJG0XCK4SPARV1PZG",
+        "link": "01M7AKTRFNJG0XCK4SP97TKZ2W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCDGXDFMJJ3WEZ2G4H51",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M79KGRYE538GJC5NA2VNYG4K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AKTRP98HWCPNVY7AD2RRKT",
+  "type": "ops",
+  "v": 1
+}
