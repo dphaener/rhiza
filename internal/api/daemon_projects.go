@@ -373,7 +373,11 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 				return true
 			}
 			mode, err := workflowStageMode(ctx, ship.For(cs), "ship")
-			return err != nil || mode == AutonomyOwner
+			if err != nil || mode == AutonomyOwner {
+				return true
+			}
+			_, held := guideSkipOf(ctx, fold, cs)
+			return held
 		})
 		daemonPickCount.Add(1)
 		return daemon.Pick(cands, runs, held, host, nil, running+len(cands), ship)
@@ -405,6 +409,7 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 	}
 	if err == nil {
 		state.Skips = skips
+		state.GuideHolds = ctx.guideGate.state(ctx.Root)
 		state.UsageHold = usageHoldState(hold, state.UsageHold, ctx.Now())
 		if low, free := daemonDiskLow(ctx, minFree); !low {
 			state.DiskLow = nil

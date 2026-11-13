@@ -1,0 +1,97 @@
+# A builder whose start command is a skill the agent has not installed is
+# never launched: the step fails at once naming the command and
+# `rhiza guide install --agent claude`, no attempt is used up, and the run
+# sits failed with an inbox item naming it. After the guide is installed
+# and the run resumed, the builder launches as attempt 1.
+#
+# HOME holds a guide installed without rhiza-builder (and none of the
+# command stubs every script's HOME starts with). The fake rex logs
+# every call and runs the tab's command synchronously; the fake claude, as
+# a builder, logs its leaf and attempt and commits with the Leaf: trailer;
+# as a verifier it writes its own Evidence.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza guide install --agent claude
+exec rm -r $HOME/.claude/skills/rhiza/skills/rhiza-builder $HOME/.claude/commands
+
+exec rhiza change new 'Missing skill' --title 'Missing skill'
+exec rhiza add capability alpha
+mkdir .rhiza/workflows
+cp $WORK/build.toml .rhiza/workflows/build.toml
+exec git add -A
+exec git commit -qm leaves
+
+! exec rhiza run start --foreground --workflow build --permission-mode manual
+stderr 'start command /rhiza-builder unknown to claude: skill not installed; run rhiza guide install --agent claude'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+! exists $WORK/rex.log
+! exists $WORK/builders.log
+
+exec rhiza run status --json
+stdout '"state": "failed"'
+! stdout '"attempt"'
+exec sh -c 'ls .git/rhiza/sessions 2>/dev/null | wc -l'
+stdout '^0$'
+
+exec rhiza inbox
+stdout 'start command /rhiza-builder unknown to claude'
+stdout 'rhiza guide install --agent claude'
+stdout 'rhiza run resume --retry'
+
+exec rhiza guide install --agent claude
+exec sh -c 'rhiza run resume --foreground --retry "$(cat $WORK/runid)"'
+exec cat $WORK/builders.log
+stdout '^alpha 1$'
+exec rhiza run status --json
+stdout '"state": "succeeded"'
+
+fold-ok
+
+-- build.toml --
+name = "build"
+
+[step.build]
+kind = "leaves"
+on.pass = "done"
+
+[step.build.builder]
+prompt = "/rhiza-builder Build {leaf}"
+models = ["sonnet", "opus", "opus"]
+
+[step.build.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+if [ "$RHIZA_ROLE" = builder ]; then
+	echo "$RHIZA_LEAF $RHIZA_ATTEMPT" >> "$WORK/builders.log"
+	git commit -q --allow-empty -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF"
+	exit 0
+fi
+rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+exit 0

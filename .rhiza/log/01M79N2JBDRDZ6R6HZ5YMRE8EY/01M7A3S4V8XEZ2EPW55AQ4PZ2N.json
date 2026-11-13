@@ -1,0 +1,132 @@
+{
+  "actor": "01M7A357JZB9XCEF50ZEW5BDZQ",
+  "after": [
+    "01M7A2ZMVKNADDRYJZDGM15XFV"
+  ],
+  "at": "2026-11-13T09:28:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, scratch root with fake rex/claude and the branch's build (go build -trimpath to a scratch path): started rhiza daemon --permission-mode manual with a user guide at version 0.0.9 missing rhiza-verifier and an untracked project guide missing rhiza-builder; the daemon logged 'refreshed the user guide ... to <version>' and 'refreshed the project repo guide ...' before any run, both installs were back at the running version with the skills present. With the project guide committed (git add -f .claude) and stale, the daemon logged 'could not refresh the project repo guide ...: the guide is committed in the repo: refresh it with rhiza guide install --agent claude --project and commit it through a change set', left the files unchanged and git status --porcelain empty. A foreign rhiza folder (no plugin manifest) was not treated as a guide. go test -trimpath ./internal/api/... -run DaemonGuideRefresh passed."
+        },
+        "handle": "daemon-refreshes-guide-at-start-qa-1",
+        "id": "01M7A3S4G6YJ9DA5HQD10B5151",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A3S4G6YJ9DA5HQD0PR22RT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A3S4G6YJ9DA5HQD0PR22RT",
+        "id": "01M7A3S4HC3N01E2V8KPJ35GJZ",
+        "link": "01M7A3S4HC3N01E2V8KNKT0Z9X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NEZ469MM69ZTQ6F8D0EK0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, scratch root: an accepted change set, the user guide missing rhiza-builder and made read-only; rhiza daemon --autonomous logged 'could not refresh the user guide ...: permission denied', started no run (runs folder count unchanged), daemon status showed the change set skipped with reason guide-stale ('workflow ship-change starts /rhiza-builder, missing from the installed guide', the error, rhiza guide install --agent claude), and rhiza inbox held one guide-stale item naming the scope, the error and the command. After chmod u+w, the next daemon start refreshed the guide, started the ship-change run (builder launched as attempt 1) and the guide-stale item was gone. A committed stale project guide (no user guide) held the step with an item naming rhiza guide install --agent claude --project and the commit-through-a-change-set text. go test -trimpath ./internal/api/... -run DaemonGuideHold passed."
+        },
+        "handle": "daemon-holds-steps-on-stale-guide-qa-1",
+        "id": "01M7A3S4JJ48QAMBHW51YAP2PT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A3S4JJ48QAMBHW516QEHZW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A3S4JJ48QAMBHW516QEHZW",
+        "id": "01M7A3S4KD3NHZN685GQ18GZBP",
+        "link": "01M7A3S4KD3NHZN685GKP32S4M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NEZ70EHGQE9VERBQ04GFJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, scratch HOME and project with the branch's build: rhiza health --json gave guide ok '0 installed guide(s) current' with no guide, ok '1 installed guide(s) current' after guide install; warn naming the user guide and next rhiza guide install --agent claude with skills/rhiza-builder removed and with version 0.0.9 ('version 0.0.9 is not <version>'); warn with next rhiza guide install --agent claude --project for a stale project guide; a foreign rhiza folder counted as no guide (ok). Human output lists guide right after usage; with only warns, rhiza health exited 0. go test -trimpath ./internal/api/... -run HealthGuide and TestScripts/describe-golden passed."
+        },
+        "handle": "health-guide-part-qa-1",
+        "id": "01M7A3S4MAGJ3HG9KRYQRWSZB7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A3S4MAGJ3HG9KRYM9ERPT8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A3S4MAGJ3HG9KRYM9ERPT8",
+        "id": "01M7A3S4N7K8YHQ6CF8Y213JC0",
+        "link": "01M7A3S4N7K8YHQ6CF8XGEH0EG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NEZPB651MRDDMV3S2GYJZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, scratch root with fake rex/claude: rhiza run start --foreground --workflow build (builder prompt /rhiza-builder) with HOME's guide lacking rhiza-builder failed at once with 'start command /rhiza-builder unknown to claude: skill not installed; run rhiza guide install --agent claude', no rex call, no session; inbox named the command and rhiza run resume --retry. Two further resumes failed the same way with no attempt used and one inbox item; after rhiza guide install --agent claude, resume --retry launched the builder as attempt 1 (fake builder logged 'beta 1') and cleared the inbox. A non-slash verifier prompt launched normally. go test -trimpath ./internal/adapter/... and TestScripts/run-start-skill-missing passed. One defect recorded as a finding: a marketplace-plugin command is falsely refused."
+        },
+        "handle": "session-start-skill-preflight-qa-1",
+        "id": "01M7A3S4PGVF71MQE88Z495DQM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A3S4PGVF71MQE88XENYQNY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A3S4PGVF71MQE88XENYQNY",
+        "id": "01M7A3S4QSPJBY7X6PQ4GQ1Q2Z",
+        "link": "01M7A3S4QSPJBY7X6PQ1QWCEXP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NEZA13RZT7QH1TCZ113ER",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, scratch root with an asynchronous fake rex and a fake claude that runs the session's own SessionStart hook command (rhiza session hook SessionStart) with RHIZA_TEST_NOW back-dated past the 3-minute grace and then stays alive without UserPromptSubmit: rhiza run start --foreground failed the builder session at once with 'start command was never submitted', run status showed attempts [] (no attempt used), inbox held the failed run with next rhiza run resume --retry; resume --retry with a working fake builder launched attempt 1 and succeeded, inbox empty. go test -trimpath ./internal/session/... ./internal/api/... -run StartNotSubmitted passed (prompted and within-grace cases not failed)."
+        },
+        "handle": "session-start-prompt-not-submitted-qa-1",
+        "id": "01M7A3S4S46PT4QH8CZ0DA0KP0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A3S4S46PT4QH8CZ09HDP91",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A3S4S46PT4QH8CZ09HDP91",
+        "id": "01M7A3S4T79DZKBH5XQ936A9MQ",
+        "link": "01M7A3S4T79DZKBH5XQ58KZNF1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NEZJ5H07ZV0CGASQ0W2MJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79N2JBDRDZ6R6HZ5YMRE8EY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A3S4V8XEZ2EPW55AQ4PZ2N",
+  "type": "ops",
+  "v": 1
+}

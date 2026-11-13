@@ -2289,7 +2289,7 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "request": {
-                        "description": "The queued request's ID, when the skip is a request whose workflow does not resolve",
+                        "description": "The queued request's ID, when the skip is a request whose workflow does not resolve or names a skill missing from the installed guide",
                         "type": "string"
                       },
                       "title": {
@@ -2440,7 +2440,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "request": {
-                  "description": "The queued request's ID, when the skip is a request whose workflow does not resolve",
+                  "description": "The queued request's ID, when the skip is a request whose workflow does not resolve or names a skill missing from the installed guide",
                   "type": "string"
                 },
                 "title": {
@@ -2996,7 +2996,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "parts": {
-            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, load, usage, then main, ci, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project",
+            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, load, usage, guide, then main, ci, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -3028,6 +3028,7 @@ cmp stdout describe.golden.json
                     "disk",
                     "load",
                     "usage",
+                    "guide",
                     "main",
                     "ci",
                     "schedules",
@@ -3258,7 +3259,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview or workflow",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale",
                   "type": "string"
                 },
                 "next": {

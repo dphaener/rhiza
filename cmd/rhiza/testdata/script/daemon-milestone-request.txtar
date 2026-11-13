@@ -8,6 +8,7 @@ env PATH=$WORK/bin:$PATH
 env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 env RHIZA_TEST_FREE_BYTES=1099511627776
 env CLAUDE_CONFIG_DIR=$WORK/claude
+exec sh -c 'mkdir -p "$WORK/claude" && cp -r "$HOME/.claude/commands" "$WORK/claude/commands"'
 mkdir repo
 cd repo
 exec git init -q
