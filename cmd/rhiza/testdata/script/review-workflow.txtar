@@ -55,7 +55,8 @@ exec cat $WORK/claude.log
 cmp stdout $WORK/want.log
 
 exec rhiza run status
-stdout '^- code \(visit 1\): pass, then review'
+stdout '^- code \(visit 1\): pass, then lints'
+stdout '^- lints \(visit 1\): pass, then review'
 stdout '^- review \(visit 1\): pass, then render: 4 of 4 checks passed'
 stdout '^- Current step: signoff$'
 stdout '\n## Code checks\n\n- step code: pass\n'
