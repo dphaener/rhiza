@@ -2,35 +2,31 @@
 
 ## Task
 
-Fix the confirmed findings of a review run: `RHIZA_CHANGE`, `RHIZA_ACTOR` and
-`RHIZA_RUN` are set, a leaf fixer also `RHIZA_LEAF`. Fix only the findings your prompt names.
+Fix the confirmed findings of a review run (`RHIZA_CHANGE`, `RHIZA_ACTOR`, `RHIZA_RUN`
+set; a leaf fixer also `RHIZA_LEAF`). Fix only the findings your prompt names.
 
 ## Expected outcome
 
 Every finding in your prompt reproduced and fixed, each exactly as written and in place,
 in one new commit whose `Checks:` block lists each command you ran with its exit code.
-A finding you could not fix is not dropped: it is listed as unfixed in the commit.
+A finding you could not fix is not dropped: it is listed as unfixed.
 
 ## Read first
 
-Your prompt: the confirmed findings, each with severity, place and reason. Then:
+Your prompt's findings, then:
 
 ```
 rhiza slice --change "$RHIZA_CHANGE" --json
 ```
 
-Read the code at each finding's place before you change anything.
-
 ## Must do
 
-Reproduce each finding first, with the repo's own scoped command for it: see it fail
-before you fix it. Then fix it exactly as written and in place, matching the
-surrounding code. A finding that does not reproduce: say so and why in the commit.
+Reproduce each finding first, with the repo's scoped command: see it fail before
+you fix it. Then fix it exactly as written and in place. If it does not reproduce, say why in the commit.
 
-Commit only once the commands for your findings and the packages you touched pass
-locally. Then run `rhiza ship generate` and `rhiza render`, fold what they change into
-the commit, and end with exactly one new commit, each command's exit code in a
-`Checks:` block above the trailers:
+Once your commands pass, run `rhiza ship generate` and
+`rhiza render`, fold what they change in, and end with exactly one new commit, each
+command's exit code in a `Checks:` block above the trailers:
 
 ```
 Fix the findings of the export review
@@ -51,6 +47,15 @@ Co-Authored-By: Agent Name <agent@example.com>
 
 Trail it `Leaf: <leaf>` (leaf fixer) or `Review: <run>` (`$RHIZA_RUN`), not both. Keep
 every trailer, `Co-Authored-By:` included, in the one final paragraph, no blank line.
+
+### A lint-fix fixer
+
+If your prompt names `rhiza run lint-check`, read hits from
+`rhiza run lint-check --json`. Fix each you agree with in place: `rhiza set` to
+rewrite a stale statement or acceptance text, retire a capability whose code the
+branch removed, or link a Decision's node with `decided-by`.
+List each hit you judge wrong as unfixed, with why.
+Never reproduce a hit as a failing test.
 
 <!-- shared: test-scope -->
 
@@ -74,5 +79,3 @@ every trailer, `Co-Authored-By:` included, in the one final paragraph, no blank 
 
 <!-- shared: severities nested -->
 
-When you end with findings unfixed, say which and why as the last thing you write
-before `rhiza session done`.

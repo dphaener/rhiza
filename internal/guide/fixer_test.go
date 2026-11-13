@@ -47,6 +47,14 @@ func TestFixerText(t *testing.T) {
 		"unfixed":   {"A finding you could not fix is not dropped", "Drop a finding you could not fix: carry it to the end as unfixed", "Unfixed:"},
 		"never":     {"Push, rebase, force or use `--no-verify`"},
 	})
+	checkPhrases(t, "fixer", map[string][]string{
+		"lint-section": {"### A lint-fix fixer", "`rhiza run lint-check --json`"},
+		"lint-fixes":   {"`rhiza set`", "rewrite a stale statement or acceptance text", "retire a capability whose code the", "`decided-by`"},
+		"lint-unfixed": {"List each hit you judge wrong as unfixed, with why", "Never reproduce a hit as a failing test"},
+	})
+	if !strings.Contains(must, "A lint-fix fixer") {
+		t.Errorf("fixer: the lint-fix section is not inside Must do")
+	}
 	if !strings.Contains(must, "Reproduce each finding first") || !strings.Contains(never, "Fix a finding your prompt does not name") {
 		t.Errorf("fixer: reproduce-first belongs in Must do, fix-only-named in Must not do")
 	}
