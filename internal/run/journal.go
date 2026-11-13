@@ -398,7 +398,8 @@ type Block struct {
 //	           check's failure itself)
 //	code-check: Step, Outcome (pass or fail), Detail (rhiza run code-check
 //	           ran rhiza check and build-check on the run's change set while
-//	           the run was at step Step; Detail names each cause of a fail)
+//	           the run was at step Step; Detail names each cause of a fail; Lints
+//	           are the model lints' hits, never causes)
 //	pre-push:  Step, Outcome (passed or failed), Commit (the head checked),
 //	           Detail (the command: rhiza check, then the project's
 //	           prePushCheck), Text (a failure's failing lines, the end of
@@ -424,6 +425,7 @@ type Entry struct {
 	Outcome string    `json:"outcome,omitempty"`
 	Next    string    `json:"next,omitempty"`
 	Detail  string    `json:"detail,omitempty"`
+	Lints   []LintHit `json:"lints,omitempty"`
 	Session string    `json:"session,omitempty"`
 	Started *Started  `json:"started,omitempty"`
 	End     string    `json:"end,omitempty"`
@@ -1338,7 +1340,18 @@ type CodeCheck struct {
 	Step    string
 	Outcome string
 	Detail  string
-	At      time.Time
+	// Lints are the model lints' hits; they never make a fail.
+	Lints []LintHit
+	At    time.Time
+}
+
+// LintHit is one model lint hit a code-check entry carries.
+type LintHit struct {
+	Node   string `json:"node"`
+	Handle string `json:"handle,omitempty"`
+	Field  string `json:"field,omitempty"`
+	Kind   string `json:"kind"`
+	Ref    string `json:"ref,omitempty"`
 }
 
 // PrePushCheck is one pre-push entry: the check's Outcome (passed or
@@ -1577,7 +1590,7 @@ func (j Journal) State() State {
 		case TypePrePush:
 			st.PrePushChecks = append(st.PrePushChecks, PrePushCheck{Step: e.Step, Outcome: e.Outcome, Commit: e.Commit, Command: e.Detail, Output: e.Text, At: e.At})
 		case TypeCodeCheck:
-			st.CodeChecks = append(st.CodeChecks, CodeCheck{Step: e.Step, Outcome: e.Outcome, Detail: e.Detail, At: e.At})
+			st.CodeChecks = append(st.CodeChecks, CodeCheck{Step: e.Step, Outcome: e.Outcome, Detail: e.Detail, Lints: e.Lints, At: e.At})
 		case TypeCheckSession:
 			c := st.check(e)
 			c.Sessions = append(c.Sessions, CheckSession{

@@ -1,0 +1,155 @@
+{
+  "actor": "01M7B8S2J177222W58WF8ABTFS",
+  "after": [
+    "01M7B8K0QZSZ7EEET3XXRJMPR9"
+  ],
+  "at": "2026-11-13T20:21:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built ./cmd/rhiza to a scratch path and ran it in a hermetic scratch repo with a run stopped at a wait step: leaf acceptance naming internal/nope.go, an unlinked Decision and a branch deleting the only file of a landed capability. With alpha lacking verifier Evidence, run code-check exited 1 with only the Evidence cause and listed 6 lint hits (path, test, script, unapplied-decision, removed-code-capability) in human output and --json; the journal entry carried them. After Evidence it exited 0 with passed true and the same hits; resuming the run, run status (human and --json) showed the hits under code_checks for every entry. --json and api call run.code-check gave identical bytes; dry-run lints were byte-stable across runs. Scoped TestScripts/(review-code-check|describe-golden) and internal/run, internal/api -run CodeCheck pass."
+        },
+        "handle": "code-check-runs-lints-qa-1",
+        "id": "01M7B95FGHJ8R4V7AV9H6JWP0P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B95FGHJ8R4V7AV9G6HTDYY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B95FGHJ8R4V7AV9G6HTDYY",
+        "id": "01M7B95FNMKHT30XSCMGX9TQB7",
+        "link": "01M7B95FNMKHT30XSCMD58RH8N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZSBEY65G73S64CERYNTD0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "With the built binary, code-check on a scratch change set linted only its own nodes: a missing path, a missing Go test and a missing TestScripts/<name> each gave one hit; 'and/or', an https URL, internal/real.go:12, ./internal/... and backticked present paths gave none; a capability whose two paths are both gone was also reported unretired-capability. Rough edge: a backticked placeholder TestXxx in this change set's statement is linted as a missing test (finding recorded, minor). go test ./internal/modellint/... passes."
+        },
+        "handle": "modellint-stale-refs-qa-1",
+        "id": "01M7B95FTE7K9BQYDSGW41ES3P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B95FTE7K9BQYDSGTS79JFG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B95FTE7K9BQYDSGTS79JFG",
+        "id": "01M7B95FXYWZFXB6MEDYRTJXJ6",
+        "link": "01M7B95FXYWZFXB6MEDV3K0348",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZSB7XH20CA9CJCEATG154",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "With the built binary: a Decision linked decided-by only from an uncommitted leaf (zeta) was reported; one linked from a leaf with a Leaf: commit (gamma) was not; an answers-only Decision was not; a Decision with no link was reported. go test ./internal/modellint/... passes."
+        },
+        "handle": "modellint-unapplied-decisions-qa-1",
+        "id": "01M7B95G12BYWMW5VG22N8ZSN3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B95G12BYWMW5VG1Z7T9ATD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B95G12BYWMW5VG1Z7T9ATD",
+        "id": "01M7B95G5WKDK0DAWA09A8X582",
+        "link": "01M7B95G5WKDK0DAWA07KGKZFV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZSBANC9KR2Y0J1QZZTWZ9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "With the built binary: a landed capability naming the directory olddir/, whose files the branch deleted, was reported removed-code-capability with ref olddir; a landed capability naming one deleted file and one still-present file was not reported; a landed capability naming legacy/old.txt deleted on the branch was reported. go test ./internal/modellint/... passes."
+        },
+        "handle": "modellint-branch-removed-code-qa-1",
+        "id": "01M7B95G8WE9HT9PV48V984ECS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B95G8WE9HT9PV48S56CE29",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B95G8WE9HT9PV48S56CE29",
+        "id": "01M7B95GAYFZ318BVJ9CYQ67D0",
+        "link": "01M7B95GAYFZ318BVJ9CSA1GFT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B0BDZ5TW0VHH9KH1XMR3E1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built binary: workflow describe review shows code -> lints, lints pass -> review, fail -> lint-fix, lint-fix agent max_visits 1 pass -> review; workflow check review is valid. run lint-check exited 0 with no code-check entry yet, exit 2 usage with no RHIZA_RUN, and exit 1 listing all hits (human and --json) after a code-check with hits; as a workflow command step after code it failed the step. go test ./internal/workflow/... and ./internal/api -run LintCheck pass."
+        },
+        "handle": "review-lint-fix-route-qa-1",
+        "id": "01M7B95GDDQC2FJA08EH9Z1PPJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B95GDDQC2FJA08EGEH2QZ2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B95GDDQC2FJA08EGEH2QZ2",
+        "id": "01M7B95GJN4YHRZ3FJCNG717XJ",
+        "link": "01M7B95GJN4YHRZ3FJCK2FTPWT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B0BDCY9W3A1M8XAT24DGDM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built binary: rhiza guide fixer has the 'A lint-fix fixer' section naming rhiza run lint-check --json, the three fixes (rhiza set the text, retire the capability, link decided-by) and listing a wrongly judged hit as unfixed; the Checks: and never-push rules are still present. go test ./internal/guide/... passes."
+        },
+        "handle": "fixer-lint-hits-guide-qa-1",
+        "id": "01M7B95GPGTFPZ50G6MHZHXJWR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B95GPGTFPZ50G6MGG95AM3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B95GPGTFPZ50G6MGG95AM3",
+        "id": "01M7B95GSKZMBJ2E4D7CBD3J3X",
+        "link": "01M7B95GSKZMBJ2E4D7B62RY0E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B0BDGMMAJBBSM9MA9YG4QX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XTF51R02XC5WXJSSBP8WP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B95GXM58S7C3DHH8Z1BV0V",
+  "type": "ops",
+  "v": 1
+}

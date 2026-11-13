@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7B840P87CMGRM49SPXJHZCZ"
+  ],
+  "at": "2026-11-13T20:05:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Leaf fixer-lint-hits-guide failed all 3 attempts of round 1: attempt 1 verifier failed: verifier found 2 problem(s) (f1 internal/guide/text/fixer.md: the leaf statement says \"The rest of the fixer topic is unchanged\", but commit 453848a9d rewrote and dropped existing fixer rules…; f2 internal/guide/text/fixer.md \"### A lint-fix fixer\": the statement requires the section to say the lint-fix fixer ends with one commit trailed `Review:` as any…); attempt 2 builder failed: no new commit since 453848a9d655; attempt 3 builder failed: no new commit since 453848a9d655. How should it be built, or should it change?"
+        },
+        "handle": "leaf-failed-01m7b0sj-1",
+        "id": "01M7B86XM4758S3QE6K1B1HBXG",
+        "key": null,
+        "kind": "question",
+        "node": "01M7B86XM4758S3QE6K0MN1XT9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B86XM4758S3QE6K0MN1XT9",
+        "id": "01M7B874HPKKVG1956FA2954A6",
+        "link": "01M7B874HPKKVG1956F9NGXJPZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B0BDGMMAJBBSM9MA9YG4QX",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M76XTF51R02XC5WXJSSBP8WP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B877XQYAP05RT7Q49PFQW2",
+  "type": "ops",
+  "v": 1
+}
