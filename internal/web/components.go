@@ -30,6 +30,8 @@ type Glyph struct {
 // text never does. Datetime, if set, makes Time a live relative-time element.
 type Row struct {
 	Href, Title, Sub string
+	// Note is a short line kept under Sub, as a depends-on note.
+	Note string
 	// Project tags the row with the project it belongs to, on pages that
 	// merge several projects; empty elsewhere.
 	Project        string
