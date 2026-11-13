@@ -23,6 +23,7 @@ import (
 
 // stepRunner runs a checks step: it is a run.CheckRunner.
 var _ run.CheckRunner = (*stepRunner)(nil)
+var _ run.OutputRunner = (*stepRunner)(nil)
 
 // StartCheck starts the check session spec names as StartLeaf starts a
 // leaf session: a session on the run's change set, with the check's

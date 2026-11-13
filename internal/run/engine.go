@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -595,6 +597,8 @@ func (r *running) runStep(step workflow.Step, change string) (result, error) {
 			return res, nil
 		}
 		return r.arbitrateAsked(step, res)
+	case workflow.KindGate:
+		return r.gate(step, env), nil
 	case workflow.KindWait:
 		return r.wait(step, env), nil
 	case workflow.KindAgent:
@@ -643,6 +647,54 @@ const (
 // wait that times out adds to its detail. A Runner without it reads every non-zero exit as not held.
 type Conditioner interface {
 	Condition(step workflow.Step, env []string) (code int, detail string, err error)
+}
+
+// OutputRunner is a Runner that also gives a command's whole combined
+// output, so a gate step can keep it. A Runner without it gives a failing
+// gate command's detail (the tail of its output) to keep instead.
+type OutputRunner interface {
+	CommandOutput(step workflow.Step, env []string) (code int, output string, err error)
+}
+
+// gate runs a gate step's commands in order, every one even after a failure,
+// and passes only when all exit 0. Each failing command's full output goes
+// to its own file in the run's directory, which the step's detail names.
+func (r *running) gate(step workflow.Step, env []string) result {
+	visit := r.j.State().CurrentVisit
+	var failed []string
+	for i, c := range step.Commands {
+		cs := workflow.Step{Name: step.Name, Kind: workflow.KindCommand, Run: c}
+		var code int
+		var out string
+		var err error
+		if or, ok := r.e.Runner.(OutputRunner); ok {
+			code, out, err = or.CommandOutput(cs, env)
+		} else {
+			code, out, err = r.e.Runner.Command(cs, env)
+		}
+		if err != nil {
+			return errResult(err)
+		}
+		if code == 0 {
+			continue
+		}
+		line := fmt.Sprintf("command %d `%s`: exit %d", i+1, c, code)
+		dir := r.e.Store.RunDir(r.j.ID)
+		path := filepath.Join(dir, fmt.Sprintf("gate-%s-%d-%d.log", step.Name, visit, i+1))
+		if err := os.MkdirAll(dir, 0o755); err == nil {
+			err = os.WriteFile(path, []byte(out), 0o644)
+		}
+		if _, statErr := os.Stat(path); statErr == nil {
+			line += "; full output: " + path
+		} else {
+			line += "; its output could not be kept"
+		}
+		failed = append(failed, line)
+	}
+	if len(failed) == 0 {
+		return result{outcome: workflow.OutcomePass, detail: fmt.Sprintf("%d commands passed", len(step.Commands))}
+	}
+	return result{outcome: workflow.OutcomeFail, detail: fmt.Sprintf("gate failed: %d of %d commands\n%s", len(failed), len(step.Commands), strings.Join(failed, "\n"))}
 }
 
 func (r *running) command(step workflow.Step, env []string) result {

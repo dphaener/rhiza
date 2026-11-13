@@ -63,6 +63,10 @@ func NewStore(dir string) *Store { return &Store{dir: dir} }
 // TmpDir is TmpDir for a run of this store.
 func (s *Store) TmpDir(id string) string { return TmpDir(id) }
 
+// RunDir is the directory a run keeps its files in, such as a gate's failing
+// output: <store>/<id>. It is not created.
+func (s *Store) RunDir(id string) string { return filepath.Join(s.dir, id) }
+
 func (s *Store) path(id string) string { return filepath.Join(s.dir, id+".jsonl") }
 
 func validID(id string) error {

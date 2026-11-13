@@ -3,6 +3,8 @@ package run
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"reflect"
 	"slices"
 	"strconv"
@@ -2679,4 +2681,99 @@ on.timeout = "failed"
 	if total != 5*time.Minute {
 		t.Fatalf("slept %v in %v, want exactly the 5m timeout", total, c.sleeps)
 	}
+}
+
+const gateWF = `
+[step.gate]
+kind = "gate"
+commands = ["vet", "test", "lint"]
+on.pass = "done"
+on.fail = "fix"
+[step.fix]
+kind = "command"
+run = "fix"
+on.pass = "failed"
+`
+
+// outputRunner gives the fake runner a command's whole output.
+type outputRunner struct {
+	*fakeRunner
+	out map[string]string // output per command's run
+}
+
+func (o outputRunner) CommandOutput(step workflow.Step, env []string) (int, string, error) {
+	code, _, err := o.fakeRunner.Command(step, env)
+	return code, o.out[step.Run], err
+}
+
+func TestGateStep(t *testing.T) {
+	t.Run("passes", func(t *testing.T) {
+		e, r, _, _ := setup(t, gateWF)
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st.Result != Succeeded || !reflect.DeepEqual(outcomes(st), []string{"gate:pass"}) {
+			t.Fatalf("result %q steps %v", st.Result, outcomes(st))
+		}
+		if r.commands["gate"] != 3 || st.Steps[0].Detail != "3 commands passed" {
+			t.Errorf("commands %d detail %q", r.commands["gate"], st.Steps[0].Detail)
+		}
+	})
+	t.Run("fails keeping full output and running the rest", func(t *testing.T) {
+		e, r, _, _ := setup(t, gateWF)
+		r.codes["gate"] = []int{0, 1, 0}
+		e.Runner = outputRunner{r, map[string]string{"test": "line1\nline2\n--- FAIL: TestX\n"}}
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(outcomes(st), []string{"gate:fail", "fix:pass"}) {
+			t.Fatalf("steps %v", outcomes(st))
+		}
+		if r.commands["gate"] != 3 {
+			t.Errorf("gate ran %d commands, want all 3", r.commands["gate"])
+		}
+		d := st.Steps[0].Detail
+		path := filepath.Join(e.Store.RunDir(runID), "gate-gate-1-2.log")
+		for _, want := range []string{"1 of 3", "`test`", "exit 1", path} {
+			if !strings.Contains(d, want) {
+				t.Errorf("detail %q lacks %q", d, want)
+			}
+		}
+		if strings.Contains(d, "`vet`") || strings.Contains(d, "`lint`") {
+			t.Errorf("detail names a passing command: %q", d)
+		}
+		got, err := os.ReadFile(path)
+		if err != nil || string(got) != "line1\nline2\n--- FAIL: TestX\n" {
+			t.Errorf("kept output %q, %v", got, err)
+		}
+	})
+	t.Run("runner without full output keeps its detail", func(t *testing.T) {
+		e, r, _, _ := setup(t, gateWF)
+		r.codes["gate"] = []int{0, 0, 2}
+		r.details["gate"] = "tail text"
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := os.ReadFile(filepath.Join(e.Store.RunDir(runID), "gate-gate-1-3.log"))
+		if err != nil || string(got) != "tail text" {
+			t.Errorf("kept %q, %v", got, err)
+		}
+		if !strings.Contains(st.Steps[0].Detail, "`lint`: exit 2") {
+			t.Errorf("detail %q", st.Steps[0].Detail)
+		}
+	})
+	t.Run("runner error fails the run", func(t *testing.T) {
+		e, r, _, _ := setup(t, gateWF)
+		r.failOn["gate"] = errors.New("sh: not found")
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st.Result != Failed {
+			t.Errorf("result %q", st.Result)
+		}
+	})
 }

@@ -1980,6 +1980,18 @@ func (r *stepRunner) Command(step workflow.Step, env []string) (int, string, err
 	return code, tail.String(), nil
 }
 
+// CommandOutput runs one command of a gate step and returns its exit code
+// and whole combined output, which is also copied to ctx.Stderr. It is
+// run.OutputRunner, so a failing gate command's full output can be kept.
+func (r *stepRunner) CommandOutput(step workflow.Step, env []string) (int, string, error) {
+	var buf bytes.Buffer
+	code, err := r.sh("exec 2>&1\n"+step.Run, env, io.MultiWriter(r.ctx.Stderr, &buf))
+	if err != nil {
+		return 0, "", err
+	}
+	return code, buf.String(), nil
+}
+
 // lastStopLine is the text after the last "stop: " line of out.
 func lastStopLine(out string) string {
 	detail := ""

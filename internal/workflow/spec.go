@@ -8,7 +8,7 @@ import "slices"
 // kinds here and the parser's in step.
 
 // Kinds lists every step kind, in the order the reference gives them.
-var Kinds = []string{KindAgent, KindCommand, KindWait, KindLeaves, KindChecks, KindSignoff, KindWorkflow, KindArbiter}
+var Kinds = []string{KindAgent, KindCommand, KindWait, KindLeaves, KindChecks, KindSignoff, KindWorkflow, KindGate, KindArbiter}
 
 // KeyDoc is one key of a step.
 type KeyDoc struct {
@@ -31,7 +31,7 @@ type KindDoc struct {
 
 // SharedKeys are the keys any step may set, where its kind allows.
 var SharedKeys = []KeyDoc{
-	{Key: "kind", Desc: "The step kind: agent, command, wait, leaves, checks, signoff, workflow or arbiter", Required: true},
+	{Key: "kind", Desc: "The step kind: agent, command, wait, leaves, checks, signoff, workflow, gate or arbiter", Required: true},
 	{Key: "on.<outcome>", Desc: "The step to go to for an outcome, or done or failed to end the run"},
 	{Key: "max_visits", Desc: "How often a run may enter the step; 0 or unset means once"},
 	{Key: "stall", Desc: "How long the watchdog lets the step go without progress before it acts, such as \"20m\"; unset takes the watchdog's default for the kind"},
@@ -146,6 +146,10 @@ var kindDocs = map[string]KindDoc{
 			{Key: "workflow", Desc: "The name of the workflow to include", Required: true},
 			{Key: "skip", Desc: "Steps of it to take as passed"},
 		},
+	},
+	KindGate: {
+		Summary: "Runs its commands, ones the daemon owns and never an agent, in order in the run's worktree. It passes only when every command exits 0 and fails otherwise; every command runs, and each failing command's full output is kept in a file in the run directory, named in the step's detail.",
+		Keys:    []KeyDoc{{Key: "commands", Desc: "The shell commands, run in order; at least one", Required: true}},
 	},
 	KindArbiter: {
 		Summary: "Not a state of the machine: no step goes to it. In an autonomous run the engine calls it to decide a question an agent step raised, and its outcome goes back to the step that asked. A file declares at most one, only to set its agent, permission mode and interval; its prompt is fixed. Without one a built-in arbiter is used.",

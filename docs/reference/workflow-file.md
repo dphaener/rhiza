@@ -16,7 +16,7 @@ A workflow is a TOML file of named steps. Each step ends with an outcome, and it
 
 ## Keys every step may set
 
-- `kind` (required): The step kind: agent, command, wait, leaves, checks, signoff, workflow or arbiter
+- `kind` (required): The step kind: agent, command, wait, leaves, checks, signoff, workflow, gate or arbiter
 - `on.<outcome>`: The step to go to for an outcome, or done or failed to end the run
 - `max_visits`: How often a run may enter the step; 0 or unset means once
 - `stall`: How long the watchdog lets the step go without progress before it acts, such as "20m"; unset takes the watchdog's default for the kind
@@ -32,6 +32,7 @@ A kind refuses the keys that are not listed in its section.
 - [`checks`](#checks-step)
 - [`signoff`](#signoff-step)
 - [`workflow`](#workflow-step)
+- [`gate`](#gate-step)
 - [`arbiter`](#arbiter-step)
 
 ## agent step
@@ -126,6 +127,16 @@ Keys:
 
 - `workflow` (required): The name of the workflow to include
 - `skip`: Steps of it to take as passed
+
+Outcomes: `pass`, `fail`.
+
+## gate step
+
+Runs its commands, ones the daemon owns and never an agent, in order in the run's worktree. It passes only when every command exits 0 and fails otherwise; every command runs, and each failing command's full output is kept in a file in the run directory, named in the step's detail.
+
+Keys:
+
+- `commands` (required): The shell commands, run in order; at least one
 
 Outcomes: `pass`, `fail`.
 

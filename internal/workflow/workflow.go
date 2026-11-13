@@ -49,6 +49,10 @@ const (
 	// expanded when the file is parsed: the definition holds the inner
 	// workflow's steps, named <workflow>/<step>, and no workflow step.
 	KindWorkflow = "workflow"
+	// KindGate runs its commands, ones the daemon owns and never an agent,
+	// in order in the run's worktree. It passes only when every one exits
+	// 0; a failing one's full output is kept in the run directory.
+	KindGate = "gate"
 )
 
 // Leaves step roles: the sub-tables of a leaves step. A checks step has a
@@ -151,6 +155,7 @@ var kindOutcomes = map[string][]string{
 	// A workflow step passes when the inner workflow ends done and fails
 	// when it ends failed.
 	KindWorkflow: {OutcomePass, OutcomeFail},
+	KindGate:     {OutcomePass, OutcomeFail},
 }
 
 // Definition is a loaded, validated workflow.
@@ -334,6 +339,8 @@ type Step struct {
 	Kind string
 	// Run is a command step's shell command.
 	Run string
+	// Commands is a gate step's shell commands, run in order.
+	Commands []string
 	// Until is a wait step's condition, a shell command; exit 0 means it
 	// holds. On an agent step it is optional: the step also passes when
 	// its session is idle at its prompt and the condition holds, leaving
@@ -715,6 +722,7 @@ func buildCleanup(in []fileCleanup) ([]Cleanup, error) {
 type fileStep struct {
 	Kind           string            `toml:"kind"`
 	Run            string            `toml:"run"`
+	Commands       []string          `toml:"commands"`
 	Until          string            `toml:"until"`
 	UntilWhen      string            `toml:"until_when"`
 	Timeout        string            `toml:"timeout"`
@@ -995,6 +1003,7 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		Name:           name,
 		Kind:           fs.Kind,
 		Run:            fs.Run,
+		Commands:       fs.Commands,
 		Until:          fs.Until,
 		UntilWhen:      fs.UntilWhen,
 		Agent:          fs.Agent,
@@ -1010,11 +1019,11 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	}
 
 	switch fs.Kind {
-	case KindAgent, KindWait, KindCommand, KindArbiter, KindLeaves, KindChecks, KindSignoff, KindWorkflow:
+	case KindAgent, KindWait, KindCommand, KindArbiter, KindLeaves, KindChecks, KindSignoff, KindWorkflow, KindGate:
 	case "":
-		return fail("no kind: want agent, wait, command, arbiter, leaves, checks, signoff or workflow")
+		return fail("no kind: want agent, wait, command, arbiter, leaves, checks, signoff, workflow or gate")
 	default:
-		return fail("unknown kind %q: want agent, wait, command, arbiter, leaves, checks, signoff or workflow", fs.Kind)
+		return fail("unknown kind %q: want agent, wait, command, arbiter, leaves, checks, signoff, workflow or gate", fs.Kind)
 	}
 	if fs.Kind != KindWorkflow {
 		if fs.Workflow != "" {
@@ -1024,7 +1033,13 @@ func buildStep(name string, fs fileStep) (Step, error) {
 			return fail("skip is only for workflow steps; %s step cannot have it", article(fs.Kind))
 		}
 	}
+	if fs.Commands != nil && fs.Kind != KindGate {
+		return fail("commands is only for gate steps; %s step cannot have it", article(fs.Kind))
+	}
 	if fs.Models != nil && fs.Kind != KindAgent {
+		if fs.Kind == KindGate {
+			return fail("a gate step cannot have models: it runs commands the daemon owns, never an agent; remove it")
+		}
 		if fs.Kind == KindChecks {
 			return fail("a checks step cannot have models: each check and role has its own; set it under [[step.%s.check]] or the role's table", name)
 		}
@@ -1086,6 +1101,8 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		return buildSignoff(s, fs, fail)
 	case KindWorkflow:
 		return buildWorkflow(s, fs, fail)
+	case KindGate:
+		return buildGate(s, fs, fail)
 	}
 
 	if fs.Run != "" && fs.Kind != KindCommand {
@@ -1362,6 +1379,44 @@ func buildSignoff(s Step, fs fileStep, fail func(string, ...any) (Step, error)) 
 	for _, r := range refused {
 		if r.set {
 			return fail("a signoff step cannot have %s: %s; remove it", r.key, waits)
+		}
+	}
+	if fs.MaxVisits < 0 {
+		return fail("max_visits is %d; want 0 or more (0 means 1)", fs.MaxVisits)
+	}
+	return s, nil
+}
+
+// buildGate finishes a gate step: it needs commands, none of them empty, and
+// refuses every key that belongs to an agent or another kind of step.
+func buildGate(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (Step, error) {
+	runs := "it runs commands the daemon owns, never an agent"
+	refused := []struct {
+		key string
+		set bool
+	}{
+		{"prompt", fs.Prompt != ""},
+		{"handback", fs.Handback != ""},
+		{"agent", fs.Agent != ""},
+		{"permission_mode", fs.PermissionMode != ""},
+		{"run", fs.Run != ""},
+		{"until", fs.Until != ""},
+		{"until_when", fs.UntilWhen != ""},
+		{"timeout", fs.Timeout != ""},
+		{"interval", fs.Interval != ""},
+		{"max_interval", fs.MaxInterval != ""},
+	}
+	for _, r := range refused {
+		if r.set {
+			return fail("a gate step cannot have %s: %s; remove it", r.key, runs)
+		}
+	}
+	if len(fs.Commands) == 0 {
+		return fail("a gate step needs commands = [\"<shell command>\", ...]")
+	}
+	for i, c := range fs.Commands {
+		if strings.TrimSpace(c) == "" {
+			return fail("commands[%d] is empty; each is a shell command", i)
 		}
 	}
 	if fs.MaxVisits < 0 {
