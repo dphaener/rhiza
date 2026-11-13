@@ -1,0 +1,40 @@
+{
+  "actor": "01M79P66DJYV5F88EF2YJ4YQG1",
+  "after": [
+    "01M79P3Z32V1GP3NPPHF48J1E5"
+  ],
+  "at": "2026-11-13T05:31:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 91c8fa06d re-ran the Checks: block: go test -trimpath ./internal/guide/... (incl. TestConflictFixText and the negative TestConflictFixNamesNoRepoCommand), go test -trimpath ./internal/api -run Guide, go test -trimpath ./cmd/rhiza -run TestScripts/guide, rhiza ship generate, rhiza render: all exit 0. A scratch build's `rhiza guide conflict-fix` prints the six sections in order with the session-done, test-scope, command-budget and never-list blocks expanded; the code part (rhiza ship check --json merge_conflict, ship generate, render, git add -A -- .rhiza/rendered .rhiza/log, a Checks: block, Change:/Actor:/Review: trailers), the model part (rhiza ship check --model-conflict --json, rhiza set <node> --rebase, Model-Conflict: trailer), the never-end-with-the-merge-in-progress rule, the one-blocking-question rule naming both change sets, and never push, rebase or force. The diff touches only the guide topic, its registration, list-count tests and the builder's actor record; no TODOs."
+        },
+        "handle": "conflict-fix-topic-verified",
+        "id": "01M79P85R85XKJHZWRFMVWTTR5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79P85R85XKJHZWRFJJBXBKM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79P85R85XKJHZWRFJJBXBKM",
+        "id": "01M79P85TKP4SSMP9JQJ9SBA2D",
+        "link": "01M79P85TKP4SSMP9JQFGRTM2K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH36GH3GEF9Q1XQ3B68YC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79P85ZD6JNSR92WJ8FK7AK0",
+  "type": "ops",
+  "v": 1
+}

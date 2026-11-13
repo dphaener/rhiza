@@ -18,6 +18,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/canon"
@@ -27,27 +28,49 @@ import (
 // The files guide.install writes, relative to the plugin folder, with
 // slashes, sorted.
 const (
-	pluginManifestPath     = ".claude-plugin/plugin.json"
-	pluginSkillPath        = "SKILL.md"
-	pluginHooksPath        = "hooks/hooks.json"
-	pluginBuildPath        = "skills/rhiza-build/SKILL.md"
-	pluginRetryPath        = "skills/rhiza-build-retry/SKILL.md"
-	pluginBuilderPath      = "skills/rhiza-builder/SKILL.md"
-	pluginPlanPath         = "skills/rhiza-plan/SKILL.md"
-	pluginPlannerPath      = "skills/rhiza-planner/SKILL.md"
-	pluginPlanReviewerPath = "skills/rhiza-plan-reviewer/SKILL.md"
-	pluginPlanCriticPath   = "skills/rhiza-plan-critic/SKILL.md"
-	pluginPlanReviserPath  = "skills/rhiza-plan-reviser/SKILL.md"
-	pluginReviewPath       = "skills/rhiza-review/SKILL.md"
-	pluginScrubPath        = "skills/rhiza-scrub/SKILL.md"
-	pluginVerifierPath     = "skills/rhiza-verifier/SKILL.md"
+	pluginManifestPath        = ".claude-plugin/plugin.json"
+	pluginSkillPath           = "SKILL.md"
+	pluginHooksPath           = "hooks/hooks.json"
+	pluginBuildPath           = "skills/rhiza-build/SKILL.md"
+	pluginRetryPath           = "skills/rhiza-build-retry/SKILL.md"
+	pluginBuilderPath         = "skills/rhiza-builder/SKILL.md"
+	pluginPlanPath            = "skills/rhiza-plan/SKILL.md"
+	pluginPlannerPath         = "skills/rhiza-planner/SKILL.md"
+	pluginPlanReviewerPath    = "skills/rhiza-plan-reviewer/SKILL.md"
+	pluginPlanCriticPath      = "skills/rhiza-plan-critic/SKILL.md"
+	pluginPlanReviserPath     = "skills/rhiza-plan-reviser/SKILL.md"
+	pluginReviewPath          = "skills/rhiza-review/SKILL.md"
+	pluginScrubPath           = "skills/rhiza-scrub/SKILL.md"
+	pluginVerifierPath        = "skills/rhiza-verifier/SKILL.md"
+	pluginCheckCompliancePath = "skills/rhiza-check-compliance/SKILL.md"
+	pluginCheckQualityPath    = "skills/rhiza-check-quality/SKILL.md"
+	pluginCheckQAPath         = "skills/rhiza-check-qa/SKILL.md"
+	pluginCheckModelPath      = "skills/rhiza-check-model/SKILL.md"
+	pluginCriticPath          = "skills/rhiza-critic/SKILL.md"
+	pluginFixerPath           = "skills/rhiza-fixer/SKILL.md"
+	pluginCIFixPath           = "skills/rhiza-ci-fix/SKILL.md"
+	pluginGateFixPath         = "skills/rhiza-gate-fix/SKILL.md"
+	pluginConflictFixPath     = "skills/rhiza-conflict-fix/SKILL.md"
+)
+
+// pluginPaths lists every file guide.install writes, in the order it
+// reports them: the manifest, SKILL.md, the hooks, then the skills sorted by
+// path.
+var pluginPaths = slices.Concat(
+	[]string{pluginManifestPath, pluginSkillPath, pluginHooksPath},
+	slices.Sorted(slices.Values([]string{
+		pluginRetryPath, pluginBuildPath, pluginBuilderPath, pluginPlanPath, pluginPlannerPath,
+		pluginPlanReviewerPath, pluginPlanCriticPath, pluginPlanReviserPath, pluginReviewPath, pluginScrubPath, pluginVerifierPath,
+		pluginCheckCompliancePath, pluginCheckQualityPath, pluginCheckQAPath, pluginCheckModelPath, pluginCriticPath,
+		pluginFixerPath, pluginCIFixPath, pluginGateFixPath, pluginConflictFixPath,
+	})),
 )
 
 // pluginName is the plugin's name, and the folder's under .claude/skills.
 const pluginName = "rhiza"
 
 // pluginDescription is the plugin manifest's description.
-const pluginDescription = "The Rhiza agent guide: the rhiza, rhiza-scrub, rhiza-plan, rhiza-planner, rhiza-plan-reviewer, rhiza-plan-critic, rhiza-plan-reviser, rhiza-build, rhiza-builder, rhiza-verifier, rhiza-build-retry and rhiza-review skills, and a " +
+const pluginDescription = "The Rhiza agent guide: the rhiza, rhiza-scrub, rhiza-plan, rhiza-planner, rhiza-plan-reviewer, rhiza-plan-critic, rhiza-plan-reviser, rhiza-build, rhiza-builder, rhiza-verifier, rhiza-build-retry, rhiza-review and the nine review role skills, and a " +
 	"SessionStart hook that runs rhiza status --hook."
 
 // pluginMarker is the manifest's ownership marker: a plugin.json holding
@@ -127,7 +150,7 @@ func runGuideInstall(ctx *Ctx, req any) (any, error) {
 	}
 
 	resp := GuideInstallResponse{Dir: dir, Written: []string{}, Unchanged: []string{}}
-	for _, p := range []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginRetryPath, pluginBuildPath, pluginBuilderPath, pluginPlanCriticPath, pluginPlanReviewerPath, pluginPlanReviserPath, pluginPlanPath, pluginPlannerPath, pluginReviewPath, pluginScrubPath, pluginVerifierPath} {
+	for _, p := range pluginPaths {
 		dst := filepath.Join(dir, filepath.FromSlash(p))
 		have, err := os.ReadFile(dst)
 		if err != nil && !errors.Is(err, fs.ErrNotExist) {
@@ -236,7 +259,20 @@ func pluginFiles(version string) (map[string][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return map[string][]byte{
+	// The nine review role topics are skills too, so each review session loads
+	// its own by its description.
+	reviewRoles := map[string]string{
+		pluginCheckCompliancePath: "check-compliance",
+		pluginCheckQualityPath:    "check-quality",
+		pluginCheckQAPath:         "check-qa",
+		pluginCheckModelPath:      "check-model",
+		pluginCriticPath:          "critic",
+		pluginFixerPath:           "fixer",
+		pluginCIFixPath:           "ci-fix",
+		pluginGateFixPath:         "gate-fix",
+		pluginConflictFixPath:     "conflict-fix",
+	}
+	out := map[string][]byte{
 		pluginManifestPath:     manifest,
 		pluginSkillPath:        skill,
 		pluginHooksPath:        hooks,
@@ -251,7 +287,15 @@ func pluginFiles(version string) (map[string][]byte, error) {
 		pluginReviewPath:       review,
 		pluginScrubPath:        scrub,
 		pluginVerifierPath:     verifier,
-	}, nil
+	}
+	for path, topic := range reviewRoles {
+		b, err := skillFile("rhiza-"+topic, topic)
+		if err != nil {
+			return nil, err
+		}
+		out[path] = b
+	}
+	return out, nil
 }
 
 // skillFile is a SKILL.md: frontmatter naming the skill and describing it
@@ -331,7 +375,7 @@ func pluginForeign(dir string, want map[string][]byte) bool {
 		m, ok := readPluginManifest(dir)
 		return !ok || !pluginOwned(m)
 	}
-	for _, p := range []string{pluginSkillPath, pluginHooksPath, pluginRetryPath, pluginBuildPath, pluginBuilderPath, pluginPlanCriticPath, pluginPlanReviewerPath, pluginPlanReviserPath, pluginPlanPath, pluginPlannerPath, pluginReviewPath, pluginScrubPath, pluginVerifierPath} {
+	for _, p := range pluginPaths[1:] {
 		have, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(p)))
 		if errors.Is(err, fs.ErrNotExist) {
 			continue

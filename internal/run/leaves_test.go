@@ -1500,3 +1500,80 @@ func TestLeafFailsAutonomousArbiterFails(t *testing.T) {
 		t.Errorf("arbitration %+v arbiters %v", arb, r.arbiters)
 	}
 }
+
+// A leaf session whose start command was never submitted fails for the
+// machine's sake: the run fails at once with that reason (the detail its
+// inbox item carries), no attempt is journalled, the pane closes under the
+// leaf, and no leaf without an ID appears; a retry starts the role again
+// as attempt 1.
+func TestLeavesStepStartNotSubmitted(t *testing.T) {
+	const reason = "start command was never submitted"
+	e, r, _, _ := setup(t, leavesWF)
+	r.leaves = twoLeaves[:1]
+	passAll(r, twoLeaves)
+	b := leafSID("leaf-a", "builder", 1)
+	r.agentSeq[b] = []AgentStatus{{Done: true, Environment: true, Outcome: workflow.OutcomeFail, Detail: reason}}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"build:error"}) || !strings.Contains(st.Steps[0].Detail, reason) {
+		t.Fatalf("outcomes = %v, detail %q", got, st.Steps[0].Detail)
+	}
+	if !st.Ended || st.Result != Failed || !strings.Contains(st.Detail, reason) {
+		t.Errorf("run ended %v result %q detail %q, want failed naming %q", st.Ended, st.Result, st.Detail, reason)
+	}
+	if want := []string{"leaf-session leaf-a builder 1"}; !reflect.DeepEqual(leafEntries(t, e), want) {
+		t.Errorf("leaf entries = %v, want %v", leafEntries(t, e), want)
+	}
+	j, err := e.Store.Read(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var closed, voided bool
+	for _, en := range j.Entries {
+		switch en.Type {
+		case TypePaneClosed:
+			closed = true
+			if en.Session != b || en.Leaf != "L1" || en.Handle != "leaf-a" {
+				t.Errorf("pane-closed %+v, want leaf-a's builder", en)
+			}
+		case TypeLeafVoid:
+			voided = true
+			if !closed {
+				t.Errorf("leaf-void journalled before pane-closed")
+			}
+		}
+	}
+	if !closed || !voided || !reflect.DeepEqual(r.closed, []string{b}) {
+		t.Errorf("closed %v voided %v panes %v", closed, voided, r.closed)
+	}
+	for _, l := range st.Leaves {
+		if l.Leaf == "" {
+			t.Errorf("a leaf with no ID: %+v", l)
+		}
+		if len(l.Attempts) != 0 || len(l.Sessions) != 0 {
+			t.Errorf("leaf %s kept the void session: %+v", l.Handle, l)
+		}
+	}
+
+	st, err = e.Retry(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !st.Ended || st.Result != Succeeded {
+		t.Fatalf("retried run ended %v result %q: %q", st.Ended, st.Result, st.Detail)
+	}
+	var builders []int
+	for _, s := range r.leafSpecs {
+		if s.Role == workflow.RoleBuilder {
+			builders = append(builders, s.Attempt)
+		}
+	}
+	if !reflect.DeepEqual(builders, []int{1, 1}) {
+		t.Errorf("builder attempts started %v, want [1 1]", builders)
+	}
+	if a, ok := st.Leaves[0].Judged(workflow.RoleBuilder, 1); !ok || a.Outcome != workflow.OutcomePass {
+		t.Errorf("retried builder judged %+v %v", a, ok)
+	}
+}

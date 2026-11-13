@@ -1,0 +1,30 @@
+{
+  "actor": "01M79YDMMQS9YBSJZQ3Q5X33AW",
+  "after": [
+    "01M79Y0TXG08EXT1VNXXKS9KZ8"
+  ],
+  "at": "2026-11-13T08:00:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with tests that the expanded check-*, critic, fixer, plan-reviewer and plan-critic topics each contain the severities block's text exactly once, that the block has the four severities, the confirmed/downgraded/dropped critic outcomes are not in it but in the critic topic, that its mapping names compliance, quality, qa and model and no `scope` check, and that it names no Go, make or Rhiza-repo command.",
+          "statement": "The severity definitions (blocker, major, minor, nit) and the per-check mapping live once in internal/guide/text/shared/severities.md (the block plan role topics landed under that name), with the mapping naming compliance, quality, qa and model (no scope) and plan review's kinds (uncovered-intent and oversized-leaf major too), and every review role topic that grades or fixes findings includes it with `<!-- shared: severities nested -->`, as the plan reviewer and plan critic topics do."
+        },
+        "handle": "severity-shared-block",
+        "id": "01M79AH1SW4WDC8FB8KVGD5TQS",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M79AH1SVENNRB0MBMN3TRZCZ",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79YRGJ22KM7JC5PMNRXE5JA",
+  "type": "ops",
+  "v": 1
+}

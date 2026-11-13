@@ -748,7 +748,7 @@ Arguments and flags:
 
 Output (`--json` fields):
 
-- `parts` (array of object): Every part, in a fixed order: daemon, autonomy, machine, disk, load, usage, then main, ci, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project
+- `parts` (array of object): Every part, in a fixed order: daemon, autonomy, machine, disk, load, usage, guide, then main, ci, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project
 - `state` (string): The worst state of any part
 
 Exit code: set by the result, besides the shared codes.

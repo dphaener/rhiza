@@ -144,6 +144,11 @@ type AgentStatus struct {
 	// exit code is unknown. Its Outcome is fail, never pass, and only a step
 	// that waits for done may pass on it (see pollAgent).
 	Lost bool
+	// Environment is true when Done and the session failed for the
+	// machine's sake, not its role's work (its start command was never
+	// submitted): Detail says why. The run is held: the attempt is not
+	// counted, so a retry starts the role again on the same attempt.
+	Environment bool
 }
 
 // Notice tells the caller that a run's agent step became blocked on the
@@ -872,6 +877,9 @@ func (r *running) pollAgent(step workflow.Step, env []string, session string) (r
 			outcome := status.Outcome
 			if outcome == "" {
 				outcome = workflow.OutcomeFail
+			}
+			if status.Environment {
+				return errResult(errors.New(status.Detail)), nil
 			}
 			if status.Lost && step.Until != "" && step.WaitsForDone() && status.SaidDone {
 				res := r.exitedUntil(step, env, status.Detail)

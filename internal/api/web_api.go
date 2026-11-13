@@ -33,6 +33,12 @@ func ReadOnlyHandler(base *Ctx) http.Handler {
 			writeAPIError(w, http.StatusBadRequest, err)
 			return
 		}
+		// A project's web API reads that project only: all=true lists every
+		// change set of it, never the root's other projects.
+		if q, ok := req.(RoadmapRequest); ok {
+			q.local = true
+			req = q
+		}
 		ctx := *base
 		ctx.Record, ctx.DryRun, ctx.Out, ctx.JSON = false, false, nil, true
 		ctx.Stdin, ctx.Rex, ctx.Start, ctx.Detach, ctx.Interrupts = nil, nil, nil, nil, nil

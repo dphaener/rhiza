@@ -1,0 +1,30 @@
+{
+  "actor": "01M7A1RNH6WM2MQV6WGYDS8E15",
+  "after": [
+    "01M7A1PXPS84ZD222S9CTHJWGJ"
+  ],
+  "at": "2026-11-13T08:56:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "d64a7225-e14f-4ece-a633-01a1d41bff39",
+          "statement": "Change set 01M7A1P (proposed change sets no plan run covers stall): today only a plan run's gate (runRunGate) accepts, the daemon only starts plan runs from queued requests (daemonPlanRequests), and the inbox lists a proposal only when a plan run's gate proposed it (st.Gated). Which fix should the leaves build? / Change set 01M7A1P serves no intent yet. Which landed intent should it serve?"
+        },
+        "handle": "question-d64a7225-1",
+        "id": "01M7A1YT6CST3413RJMJHM5X9N",
+        "key": null,
+        "kind": "question",
+        "node": "01M7A1YT6CST3413RJMH65VY77",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7A1PXPS84ZD222S9ADHF0SV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A1YXB8T8HGHQ17DP3KP3ZR",
+  "type": "ops",
+  "v": 1
+}

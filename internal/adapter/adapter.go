@@ -143,6 +143,10 @@ type HookReport struct {
 	Kind string
 	// Detail is free text from the agent, if any.
 	Detail string
+	// Start is true for the report of the session starting, before any
+	// prompt: the agent is idle at its prompt with the start command, if
+	// it was read, not yet submitted.
+	Start bool
 }
 
 // Message is one message a session sent another through the agent.
@@ -260,6 +264,25 @@ func Names() []string {
 // prompt that a key press dismisses. It is pure.
 type PaneLimiter interface {
 	PaneUsageLimit(pane string) bool
+}
+
+// SkillChecker is implemented by an adapter whose agent runs a prompt that
+// starts with a slash command by loading the skill of that name, and
+// answers "Unknown command" with no work done when the skill is not
+// installed. Like the rest of an adapter it is pure: the caller looks for
+// the files.
+type SkillChecker interface {
+	// GuideAgent is the agent's name as `rhiza guide install --agent`
+	// takes it.
+	GuideAgent() string
+	// StartSkill returns the name of the slash command prompt starts with;
+	// the bool is false for a prompt that does not start with one.
+	StartSkill(prompt string) (string, bool)
+	// SkillGlobs returns file glob patterns for where the agent keeps the
+	// installed skill name: in its config folder (from getenv) and in the
+	// skills folder of worktree. It returns none for a name that could
+	// escape or widen a pattern.
+	SkillGlobs(name string, getenv func(string) string, worktree string) []string
 }
 
 // Truster is implemented by an adapter whose agent stops at a prompt in a

@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-13T04:40:51Z",
+  "body": {
+    "intent": "Record agent actor claude-code-cac42031 for session cac42031-6156-498e-a999-01a1d33539ea",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M79KANEQFRDG25CGGM8N8KGR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79KANEQFRDG25CGGQFEZGDP",
+  "type": "open",
+  "v": 1
+}

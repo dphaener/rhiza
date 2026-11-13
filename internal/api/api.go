@@ -155,6 +155,9 @@ type Ctx struct {
 	builtModel func(cs id.ID)
 	// daemonFold is the daemon's fold cache; the first poll creates it.
 	daemonFold *daemonFoldCache
+	// guideGate is the daemon's hold on starts while a guide is stale; nil
+	// outside the daemon and when none is.
+	guideGate *guideGate
 	// GitConfig returns the value of a git config key such as
 	// "user.email", or an error if it is unset.
 	GitConfig func(key string) (string, error)

@@ -177,7 +177,9 @@ func (Adapter) HookStatus(event string, raw []byte) (adapter.HookReport, bool, e
 	}
 	r := adapter.HookReport{SessionID: p.SessionID}
 	switch event {
-	case "SessionStart", "Stop":
+	case "SessionStart":
+		r.State, r.Start = "idle", true
+	case "Stop":
 		r.State = "idle"
 	case "PreToolUse":
 		if p.ToolName == askTool {
@@ -389,6 +391,85 @@ func (Adapter) TranscriptGlobs(sessionID string, getenv func(string) string) []s
 	}
 	if home := getenv("HOME"); home != "" {
 		add(filepath.Join(home, ".claude"))
+	}
+	return globs
+}
+
+// GuideAgent implements adapter.SkillChecker.
+func (Adapter) GuideAgent() string { return "claude" }
+
+// StartSkill implements adapter.SkillChecker: a prompt starting with "/"
+// and a command name (letters, digits, "-", "_", ":" and ".") starts with
+// that slash command.
+func (Adapter) StartSkill(prompt string) (string, bool) {
+	rest, ok := strings.CutPrefix(prompt, "/")
+	if !ok {
+		return "", false
+	}
+	name := rest
+	if i := strings.IndexFunc(rest, unicode.IsSpace); i >= 0 {
+		name = rest[:i]
+	}
+	if !safeSkillName(name) {
+		return "", false
+	}
+	return name, true
+}
+
+// safeSkillName reports whether name is a non-empty command name with no
+// path separator or glob character.
+func safeSkillName(name string) bool {
+	if name == "" || name == "." || name == ".." {
+		return false
+	}
+	for _, r := range name {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9', r == '-', r == '_', r == ':', r == '.':
+		default:
+			return false
+		}
+	}
+	return true
+}
+
+// SkillGlobs implements adapter.SkillChecker. Claude Code loads a skill
+// from <skills>/<name>/SKILL.md, or from a skills-directory plugin's
+// <skills>/<plugin>/skills/<name>/SKILL.md (a "plugin:name" command is
+// the plugin's skill), and a command from <config>/commands/<name>.md,
+// where <skills> is the skills folder of $CLAUDE_CONFIG_DIR (else
+// $HOME/.claude) or of the worktree's .claude folder. An installed
+// plugin's skills and commands sit one to five folders below
+// <config>/plugins (plugins/cache/<marketplace>/<plugin>/<version>,
+// plugins/marketplaces/<marketplace>/plugins/<plugin>, ...), so those
+// depths are searched too.
+func (Adapter) SkillGlobs(name string, getenv func(string) string, worktree string) []string {
+	if !safeSkillName(name) {
+		return nil
+	}
+	short := name
+	if i := strings.LastIndex(name, ":"); i >= 0 {
+		short = name[i+1:]
+	}
+	var globs []string
+	add := func(config string) {
+		config = globEscape(config)
+		globs = append(globs,
+			filepath.Join(config, "skills", short, "SKILL.md"),
+			filepath.Join(config, "skills", "*", "skills", short, "SKILL.md"),
+			filepath.Join(config, "commands", short+".md"))
+		plugin := filepath.Join(config, "plugins")
+		for depth := 1; depth <= 5; depth++ {
+			plugin = filepath.Join(plugin, "*")
+			globs = append(globs,
+				filepath.Join(plugin, "skills", short, "SKILL.md"),
+				filepath.Join(plugin, "commands", short+".md"))
+		}
+	}
+	if dir := configDir(getenv); dir != "" {
+		add(dir)
+	}
+	if worktree != "" {
+		add(filepath.Join(worktree, ".claude"))
 	}
 	return globs
 }

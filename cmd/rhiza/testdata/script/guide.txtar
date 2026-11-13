@@ -89,21 +89,32 @@ stdout 'rhiza reopen --change <id>'
 stdout '^## Never delete or edit log entries$'
 exec rhiza guide review
 stdout '^# Review$'
-stdout 'merge-base with the default branch'
+stdout '`/rhiza-check-compliance` \(`rhiza guide check-compliance`\)'
+stdout '`/rhiza-check-quality` \(`rhiza guide check-quality`\)'
+stdout '`/rhiza-check-qa` \(`rhiza guide check-qa`\)'
+stdout '`/rhiza-check-model` \(`rhiza guide check-model`\)'
+stdout '`/rhiza-critic` \(`rhiza guide critic`\)'
+stdout '`/rhiza-fixer` \(`rhiza guide fixer`\)'
+stdout '`/rhiza-ci-fix` \(`rhiza guide ci-fix`\)'
+stdout '`/rhiza-gate-fix` \(`rhiza guide gate-fix`\)'
+stdout '`/rhiza-conflict-fix` \(`rhiza guide conflict-fix`\)'
+exec rhiza guide check-compliance
 stdout 'rhiza run findings --check "\$RHIZA_CHECK" - <<''EOF'''
 stdout '"severity":"major","leaf":"<leaf>","place":"path:line"'
+exec rhiza guide critic
 stdout 'rhiza run verdict --check "\$RHIZA_CHECK" - <<''EOF'''
 stdout 'Never add a finding'
+exec rhiza guide fixer
 stdout '`Review: <run>`'
-stdout 'Evidence written as yourself on each leaf it exercised'
-stdout 'discovered-from draft change set'
+exec rhiza guide check-qa
+stdout 'Evidence written as yourself on'
 exec rhiza guide sources
 stdout '^# Sources$'
 stdout '^## Stored fields$'
 
-# guide ls lists all twenty-four texts with their kinds and sizes.
+# guide ls lists all thirty-three texts with their kinds and sizes.
 exec rhiza guide ls
-stdout -count=24 '^- '
+stdout -count=33 '^- '
 stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
 stdout '^- scrub +skill +[0-9]+ tokens  '
 stdout '^- plan +skill +[0-9]+ tokens  Plan with the owner'
@@ -115,6 +126,15 @@ stdout '^- build-retry +topic +[0-9]+ tokens  '
 stdout '^- builder +topic +[0-9]+ tokens  '
 stdout '^- carving +topic +[0-9]+ tokens  '
 stdout '^- change-sets +topic +[0-9]+ tokens  '
+stdout '^- check-compliance +topic +[0-9]+ tokens  The compliance check'
+stdout '^- check-model +topic +[0-9]+ tokens  The model check'
+stdout '^- conflict-fix +topic +[0-9]+ tokens  The conflict fixer'
+stdout '^- critic +topic +[0-9]+ tokens  The critic of a review check'
+stdout '^- gate-fix +topic +[0-9]+ tokens  The gate fixer'
+stdout '^- fixer +topic +[0-9]+ tokens  The fixer of a review run'
+stdout '^- check-qa +topic +[0-9]+ tokens  The QA check'
+stdout '^- check-quality +topic +[0-9]+ tokens  The quality check'
+stdout '^- ci-fix +topic +[0-9]+ tokens  The CI fixer'
 stdout '^- import +topic +[0-9]+ tokens  '
 stdout '^- plan-critic +topic +[0-9]+ tokens  The plan critic'
 stdout '^- plan-interview +topic +[0-9]+ tokens  The plan interview'

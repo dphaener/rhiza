@@ -836,6 +836,11 @@ func recordHook(ctx *Ctx, st *session.Store, rec session.Record, a adapter.Adapt
 		// A hook that arrives after the exit does not revive the session.
 		if !r.Status.Exited() && !questionPending(r.Status.Hook, report) {
 			r.Status.Hook, recorded = &report, true
+			if rep.Start {
+				r.Status.Started = &report
+			} else if report.State != session.StateIdle && r.Status.Prompted == nil {
+				r.Status.Prompted = &report
+			}
 			if reply != nil {
 				r.Status.Asked = &session.Report{State: session.StateBlocked, Kind: session.KindQuestion, Detail: rep.Detail, At: report.At}
 			}
