@@ -1,0 +1,37 @@
+{
+  "actor": "01M79BWGRZRP58NRVPQ0ARPGEB",
+  "after": [
+    "01M79BHB5M4JS702H15223S7JK"
+  ],
+  "at": "2026-11-13T02:31:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M5WSGC647VGCTM55KP1WAART",
+        "id": "01M79BY26PR224T3A2N52PJF7Q",
+        "link": "01M79BY26PR224T3A2N33V3Z65",
+        "note": "Its acceptance needs the plan index and the four role topics (planner's apply recipe included), which plan-role-skills-installed and the topics it depends on build; built after them, this leaf only checks and tightens that work.",
+        "op": "link.create",
+        "to": "01M79BH6B4G10X94QE56HC9RS4",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGD6GSZAS9X5C75R728DG",
+        "id": "01M79BY28DSZK8GJKS9BT53RZ9",
+        "link": "01M79BY28DSZK8GJKS9AXXSV97",
+        "note": "Its acceptance needs the plan-review index and the plan-reviewer, plan-critic and plan-reviser topics, which plan-role-skills-installed and the topics it depends on build; built after them, this leaf only checks and tightens that work.",
+        "op": "link.create",
+        "to": "01M79BH6B4G10X94QE56HC9RS4",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79BY29SFK9E5BZBER7DW3BJ",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,505 @@
+{
+  "actor": "01M79B610ASZ8H7B5Y375RP9EH",
+  "after": [
+    "01M79BEQCZX5B3KD12MF5330AZ"
+  ],
+  "at": "2026-11-13T02:24:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M79BD2TMFK8RCJJHZS5N5M8G",
+        "id": "01M79BH54Z0WA5J40R3S4241GV",
+        "link": "01M79BH54Z0WA5J40R3N9Z8G37",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BEQC2C08ZJVASXVB26YVK",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run/... passes with tests that run.Kinds ends with uncovered-intent then oversized-leaf and KindSeverity returns major for both; go test -trimpath ./internal/api -run 'RunFindings|ReviewCheck' passes with a round holding a confirmed uncovered-intent finding failing review-check before round 3, and (failure case) a finding of an unknown kind such as no-failure-case still refused with an error listing the seven kinds; go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes after regenerating it with -update.",
+          "statement": "`rhiza run findings` accepts two more plan-review kinds, `uncovered-intent` (a clause of the change set's intent that no leaf serves) and `oversized-leaf` (a leaf with more than one concern, or too large for one fresh session), listed after the five existing kinds in run.Kinds, and `rhiza run review-check` treats both as major, as its summary and the findings schema say."
+        },
+        "handle": "plan-finding-kinds",
+        "id": "01M79BH55KDAWPGWR01ZRDQPRS",
+        "key": "zzzzz",
+        "kind": "capability",
+        "node": "01M79BH55KDAWPGWR01WXZ38N3",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH55KDAWPGWR01WXZ38N3",
+        "id": "01M79BH56E91RGWV9H3JD1C1GJ",
+        "link": "01M79BH56E91RGWV9H3HPNMY96",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BD2TMFK8RCJJHZS5N5M8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH55KDAWPGWR01WXZ38N3",
+        "id": "01M79BH57FTDZGNP1CV4V2SYCE",
+        "link": "01M79BH57FTDZGNP1CV1N2RPEY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BEQC2C08ZJVASXVB26YVK",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with TestReviewSeverityBlockShared replaced by a test that the unexpanded texts hold the `## Severities` section only in shared/severities.md, every topic naming the block shows it expanded (review at least), the block names uncovered-intent and oversized-leaf as major, and (failure case) a text naming a misspelt block such as `<!-- shared: severity -->` fails expansion with an error naming it.",
+          "statement": "The severities block (blocker, major, minor, nit, the per-check mapping, and the plan-review mapping with missing-acceptance, contradiction, outside-intent, uncovered-intent and oversized-leaf major and the rest minor) lives once in internal/guide/text/shared/severities.md, and each topic that carries it (review, and the plan reviewer and critic topics) names it with a `<!-- shared: severities -->` line instead of its own copy."
+        },
+        "handle": "shared-severities-block",
+        "id": "01M79BH58V0BQMAAJ8RV9GW645",
+        "key": "zzzzzi",
+        "kind": "capability",
+        "node": "01M79BH58V0BQMAAJ8RS4AJ9MT",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH58V0BQMAAJ8RS4AJ9MT",
+        "id": "01M79BH5AEGAKHQYEETAQBNZNQ",
+        "link": "01M79BH5AEGAKHQYEET6VK2H5E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BD2TMFK8RCJJHZS5N5M8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH58V0BQMAAJ8RS4AJ9MT",
+        "id": "01M79BH5BT01A6EQNNH94V4ARV",
+        "link": "01M79BH5BT01A6EQNNH72FG3JN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH58V0BQMAAJ8RS4AJ9MT",
+        "id": "01M79BH5DY29VR9K372DG687TW",
+        "link": "01M79BH5DY29VR9K372ANFNCJ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BEQC2C08ZJVASXVB26YVK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH58V0BQMAAJ8RS4AJ9MT",
+        "id": "01M79BH5F42B5644P77C6JTNC2",
+        "link": "01M79BH5F42B5644P77B3SWHQT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH55KDAWPGWR01WXZ38N3",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a planner test that finds the six section headings in order; the four shared blocks expanded; the research pass in Read first, before the interview, naming `rhiza why`, searching the intent's names, the tests and the files each leaf touches; the self-check in Must do naming `rhiza slice`, intent clauses served, one concern per leaf, Decision provenance, depends-on and `rhiza check`; and the phrases plan_test.go checks in the plan topic today (apply recipe, no plan file, who records a pick, milestone, autonomous runs), moved to the planner; the text stays within its cap; a negative case asserts it names no Go, make or repo-specific command.",
+          "statement": "`rhiza guide planner` gives a planner afk's planner prompt in Rhiza's words on six sections in order (Task, Expected outcome, Read first, Must do, Must not do, Context), holding the whole planner part of today's plan topic (scope by kind, interview, recipes, who records a pick, Decisions and the Source, milestone, autonomous runs) for a plan run and for planning with the owner in a chat, plus a research pass before any Decision or leaf (the change set's slice and `rhiza why`, then the code and tests the intent touches, found by searching the names it uses, and the patterns a builder would follow; each leaf names the files it touches; a question only for what that reading cannot settle) and a self-check after writing (re-read `rhiza slice <change> --json`, check every intent clause served by a leaf, every leaf one concern with a runnable acceptance scoped to its tests, every Decision with provenance and no unreal depends-on, run `rhiza check`, and fix what it finds before session done), with the shared session-done, command-budget, never-list and outside-work blocks."
+        },
+        "handle": "planner-topic",
+        "id": "01M79BH5GS0Z8Y7DT1Y7TJXC15",
+        "key": "zzzzzr",
+        "kind": "capability",
+        "node": "01M79BH5GS0Z8Y7DT1Y7774RD7",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH5GS0Z8Y7DT1Y7774RD7",
+        "id": "01M79BH5HZQ9P3TK8SW28TQG0C",
+        "link": "01M79BH5HZQ9P3TK8SVYFSA105",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BD2TMFK8RCJJHZS5N5M8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH5GS0Z8Y7DT1Y7774RD7",
+        "id": "01M79BH5JXX0JK42XBHMZ81FEX",
+        "link": "01M79BH5JXX0JK42XBHHPZDKMF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH5GS0Z8Y7DT1Y7774RD7",
+        "id": "01M79BH5M37PQ3HQHKPSZNCMEA",
+        "link": "01M79BH5M37PQ3HQHKPQY33YVM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BEQC2C08ZJVASXVB26YVK",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a plan-reviewer test that finds the six section headings in order, every kind in run.Kinds (so a kind added in Go without the topic fails), the vague-acceptance and unvalidated-assumption rules, `rhiza overlaps`, the line that `rhiza check` findings are not recorded, the findings heredoc and the empty-round rule, and the severities, session-done, command-budget and never-list blocks expanded; a negative case asserts it carries no `rhiza run verdict` or `rhiza apply` instructions.",
+          "statement": "`rhiza guide plan-reviewer` gives a fresh plan reviewer, on the six sections, afk's Crucible checklist in Rhiza's words: find the plan's change sets and read them through `rhiza slice` and `rhiza why`, record one finding per problem of the seven kinds (the five existing plus uncovered-intent and oversized-leaf, with a vague or unrunnable acceptance a missing-acceptance and a codebase assumption the code does not bear out a contradiction), run `rhiza overlaps` per change set, never record what `rhiza check` already reports, and record the round with the `rhiza run findings` heredoc, empty when clean; it carries the shared severities, session-done, command-budget and never-list blocks."
+        },
+        "handle": "plan-reviewer-topic",
+        "id": "01M79BH5P0K3C4P0VH39NS04DW",
+        "key": "zzzzzw",
+        "kind": "capability",
+        "node": "01M79BH5P0K3C4P0VH374J64XE",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH5P0K3C4P0VH374J64XE",
+        "id": "01M79BH5QJE93S433QGF2TS7DY",
+        "link": "01M79BH5QJE93S433QGB3G7ZM6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BD2TMFK8RCJJHZS5N5M8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH5P0K3C4P0VH374J64XE",
+        "id": "01M79BH5RPF8Z45KE6SE4HGF1K",
+        "link": "01M79BH5RPF8Z45KE6SB68CRW2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH5P0K3C4P0VH374J64XE",
+        "id": "01M79BH5SZD3DCAAFPQXXMQWDP",
+        "link": "01M79BH5SZD3DCAAFPQX1XCKBW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BEQC2C08ZJVASXVB26YVK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH5P0K3C4P0VH374J64XE",
+        "id": "01M79BH5V1PBH21G597ED22K9V",
+        "link": "01M79BH5V1PBH21G597DPJRBHC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH55KDAWPGWR01WXZ38N3",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH5P0K3C4P0VH374J64XE",
+        "id": "01M79BH5VZ7Q0P68H8M7C9DD0N",
+        "link": "01M79BH5VZ7Q0P68H8M73478RX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH58V0BQMAAJ8RS4AJ9MT",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a plan-critic test that finds the six section headings in order, `rhiza run status --json`, the verdict heredoc with confirmed, downgraded (with its severity) and dropped, the never-add and never-raise rule, and the severities, session-done, command-budget and never-list blocks expanded; a negative case asserts it carries no `rhiza run findings` heredoc or `rhiza apply` instructions.",
+          "statement": "`rhiza guide plan-critic` gives a plan critic, on the six sections: read the latest round in `rhiza run status --json`, check each finding against the model and the code, and confirm it, downgrade a blocker or major one to a lower severity, or drop it, recorded with the `rhiza run verdict` heredoc; never add a finding, raise a severity or rewrite one; with the shared severities, session-done, command-budget and never-list blocks."
+        },
+        "handle": "plan-critic-topic",
+        "id": "01M79BH5XRV6CSB9GDW40FKY4Q",
+        "key": "zzzzzy",
+        "kind": "capability",
+        "node": "01M79BH5XRV6CSB9GDW3VGA5JT",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH5XRV6CSB9GDW3VGA5JT",
+        "id": "01M79BH5YS5TGFRGFKENC02P4F",
+        "link": "01M79BH5YS5TGFRGFKEHFYVQC0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BD2TMFK8RCJJHZS5N5M8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH5XRV6CSB9GDW3VGA5JT",
+        "id": "01M79BH61FVGHYADQX4SNW4708",
+        "link": "01M79BH61FVGHYADQX4SFPPM1X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH5XRV6CSB9GDW3VGA5JT",
+        "id": "01M79BH62BBAE053S5K4H669TY",
+        "link": "01M79BH62BBAE053S5K3379D4A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BEQC2C08ZJVASXVB26YVK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH5XRV6CSB9GDW3VGA5JT",
+        "id": "01M79BH635BGFT3HA5PGWZPPKP",
+        "link": "01M79BH635BGFT3HA5PGNEPVQZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH58V0BQMAAJ8RS4AJ9MT",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a plan-reviser test that finds the six section headings in order, `rhiza apply` with `--change` and `--record`, the split-an-oversized-leaf and leaf-for-an-uncovered-clause rules, the confirmed-major-only rule, the never-invent-a-quote rule, and the session-done, command-budget and never-list blocks expanded; a negative case asserts it carries no findings or verdict heredoc.",
+          "statement": "`rhiza guide plan-reviser` gives a plan reviser, on the six sections: fix each confirmed major finding of the latest round in the model and nothing else, one `rhiza apply <file> --change <cs> --json` per change set (`--record` for a node in a landed record), splitting an oversized leaf into leaves of one concern each and adding a leaf for an uncovered intent clause; never invent an owner's words (a missing quote becomes a question); with the shared session-done, command-budget and never-list blocks."
+        },
+        "handle": "plan-reviser-topic",
+        "id": "01M79BH640TST58REPFBF5VB04",
+        "key": "zzzzzz",
+        "kind": "capability",
+        "node": "01M79BH640TST58REPF7FSDXJ5",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH640TST58REPF7FSDXJ5",
+        "id": "01M79BH65QN8MNPX155CT6PHTZ",
+        "link": "01M79BH65QN8MNPX1559X2QZCR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BD2TMFK8RCJJHZS5N5M8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH640TST58REPF7FSDXJ5",
+        "id": "01M79BH676YB45JBEKRSFZWWJX",
+        "link": "01M79BH676YB45JBEKRP1CSBCN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH640TST58REPF7FSDXJ5",
+        "id": "01M79BH692BKPK219A6HDJPRZJ",
+        "link": "01M79BH692BKPK219A6E0CP0C8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BEQC2C08ZJVASXVB26YVK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH640TST58REPF7FSDXJ5",
+        "id": "01M79BH6A0E96Z9HH07NVAQTFW",
+        "link": "01M79BH6A0E96Z9HH07MP306HG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH55KDAWPGWR01WXZ38N3",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run GuideInstall passes with the four new skill files written with their topic's description and expanded body, and a second install reporting them unchanged; go test -trimpath ./internal/guide/... asserts the plan and plan-review indexes name the four topics with both routes, plan's description is unchanged, and each index stays under a third of the TopicCap; go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|guide-install)' passes with the new topics in guide ls and the new skill paths in the install output.",
+          "statement": "`rhiza guide ls` lists the planner, plan-reviewer, plan-critic and plan-reviser topics, guide install writes them as the rhiza-planner, rhiza-plan-reviewer, rhiza-plan-critic and rhiza-plan-reviser skills beside the others, and the plan topic (still installed as rhiza-plan, its description unchanged so the skill still triggers) and the plan-review topic are each a short index naming the four role topics, their skill and `rhiza guide` routes and which role loads which, so workflows and chats that still say /rhiza-plan or `rhiza guide plan-review` keep working."
+        },
+        "handle": "plan-role-skills-installed",
+        "id": "01M79BH6B4G10X94QE59QB62QG",
+        "key": "zzzzzzi",
+        "kind": "capability",
+        "node": "01M79BH6B4G10X94QE56HC9RS4",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH6B4G10X94QE56HC9RS4",
+        "id": "01M79BH6D16FKDCKPH13CVM41R",
+        "link": "01M79BH6D16FKDCKPH13BT6WDA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BD2TMFK8RCJJHZS5N5M8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH6B4G10X94QE56HC9RS4",
+        "id": "01M79BH6EDSCEBNJT7HSRNREMQ",
+        "link": "01M79BH6EDSCEBNJT7HP9FQDGA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH6B4G10X94QE56HC9RS4",
+        "id": "01M79BH6F6REW295E04P8C6Z09",
+        "link": "01M79BH6F6REW295E04MP791H4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BEQC2C08ZJVASXVB26YVK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH6B4G10X94QE56HC9RS4",
+        "id": "01M79BH6GKFY2BRH562409REG1",
+        "link": "01M79BH6GKFY2BRH5622S00J42",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH5GS0Z8Y7DT1Y7774RD7",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH6B4G10X94QE56HC9RS4",
+        "id": "01M79BH6JQX0MHSD9JGAQQ2FBG",
+        "link": "01M79BH6JQX0MHSD9JG8ZD87G6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH5P0K3C4P0VH374J64XE",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH6B4G10X94QE56HC9RS4",
+        "id": "01M79BH6N6VRJK2CM6RH6X9CSX",
+        "link": "01M79BH6N6VRJK2CM6RGVEBWPE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH5XRV6CSB9GDW3VGA5JT",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH6B4G10X94QE56HC9RS4",
+        "id": "01M79BH6R8EQ132R68RSWQWAZT",
+        "link": "01M79BH6R8EQ132R68RRF0127G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH640TST58REPF7FSDXJ5",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... passes with tests that plan.toml's and plan-milestone.toml's interview, review, critic and revise prompts equal the four one-liners (no `session done` text left in them) and the prepush-fix prompt is unchanged; go test -trimpath ./cmd/rhiza -run 'TestScripts/(plan-|bugfix-workflow-autonomous|arbiter-agent-tabs|status)' passes with fake agents matching the new prompts; the describe-golden script is regenerated only if its output changed; make self-check passes.",
+          "statement": "The builtin plan.toml and plan-milestone.toml interview, review, critic and revise prompts are one line each that carries the TASK variables and names both routes: `/rhiza-planner Plan change set {change} ({title}): follow rhiza guide planner.`, `/rhiza-plan-reviewer Review the plan of change set {change}: follow rhiza guide plan-reviewer.`, `/rhiza-plan-critic Judge the latest review round of the plan of change set {change}: follow rhiza guide plan-critic.` and `/rhiza-plan-reviser Fix the confirmed findings of the latest review round of the plan of change set {change}: follow rhiza guide plan-reviser.`; the session-done and command rules now in those prompts live in the topics, and the prepush-fix prompt is unchanged."
+        },
+        "handle": "plan-prompts-one-line",
+        "id": "01M79BH6T4DQAX8RJF22DRB811",
+        "key": "zzzzzzr",
+        "kind": "capability",
+        "node": "01M79BH6T4DQAX8RJF1YTQC0AS",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH6T4DQAX8RJF1YTQC0AS",
+        "id": "01M79BH6V041QF3R100YGR43JQ",
+        "link": "01M79BH6V041QF3R100W44WENP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BD2TMFK8RCJJHZS5N5M8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH6T4DQAX8RJF1YTQC0AS",
+        "id": "01M79BH6XVDGAGXBZD012B0EYE",
+        "link": "01M79BH6XVDGAGXBZCZZDZRGQ3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH6T4DQAX8RJF1YTQC0AS",
+        "id": "01M79BH703ECTTFE1QWSSMBZED",
+        "link": "01M79BH703ECTTFE1QWPPPF6AD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BEQC2C08ZJVASXVB26YVK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79BH6T4DQAX8RJF1YTQC0AS",
+        "id": "01M79BH71JS8699BV71E05DBXQ",
+        "link": "01M79BH71JS8699BV71DWG81XM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH6B4G10X94QE56HC9RS4",
+        "type": "depends-on"
+      },
+      {
+        "base": "01M5WSGC647VGCTM55KPA7RJZV",
+        "handle": null,
+        "id": "01M79BH73W0TPETVS2Z43T7PG3",
+        "node": "01M5WSGC647VGCTM55KP1WAART",
+        "op": "node.update",
+        "set": {
+          "acceptance": "Go guide tests: rhiza guide ls lists plan as a skill and the four plan role topics; rhiza guide plan names the four topics with their skill and rhiza guide routes; rhiza guide planner holds an apply recipe for a leaf with statement and acceptance fields and a decided-by link, and says that no plan file and no checkboxes are kept; each text stays within its cap and plan's description within MaxDescription.",
+          "statement": "rhiza guide plan, a skill installed as rhiza-plan, is the plan index: it names the planner, plan-reviewer, plan-critic and plan-reviser topics and says which a planner, reviewer, critic and reviser load; the planner topic carries what a planning session plans, in what order, and that every leaf, acceptance check, Decision and question goes into the model through rhiza apply, with no plan file and no checkboxes."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGC647VGCTM55KP1WAART",
+        "id": "01M79BH75JVJNBBM8K43W8DM73",
+        "link": "01M79BH75JVJNBBM8K42VT6S8W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BD2TMFK8RCJJHZS5N5M8G",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M5WSGD6GSZAS9X5C77BCQ98Y",
+        "handle": null,
+        "id": "01M79BH76XSR606VFM978H1PG8",
+        "node": "01M5WSGD6GSZAS9X5C75R728DG",
+        "op": "node.update",
+        "set": {
+          "acceptance": "Go guide tests: rhiza guide ls lists plan-review, plan-reviewer, plan-critic and plan-reviser; plan-review names the three role topics; plan-reviewer names every kind in run.Kinds and rhiza run findings with its format and how the plan's change sets are found; plan-critic names rhiza run verdict with its format and the rule that a critic never adds a finding; each topic stays within TopicCap.",
+          "statement": "rhiza guide plan-review is an index naming the plan-reviewer, plan-critic and plan-reviser topics: the reviewer, given only a change set ID, finds the plan's change sets (that one and every change set serving an intent it adds), reads them through rhiza slice and rhiza why and records findings of the plan-review kinds with rhiza run findings; the critic confirms, downgrades or drops each finding with rhiza run verdict, never adding one; the reviser fixes the confirmed findings in the model."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGD6GSZAS9X5C75R728DG",
+        "id": "01M79BH78AMYDSCWHKBPY4NDAC",
+        "link": "01M79BH78AMYDSCWHKBN1YM3QX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BD2TMFK8RCJJHZS5N5M8G",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79BH7A382M0297EQK51HY3G",
+  "type": "ops",
+  "v": 1
+}

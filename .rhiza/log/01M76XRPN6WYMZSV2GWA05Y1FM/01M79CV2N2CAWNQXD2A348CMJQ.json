@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M79CE5BPWBKMV1XKSTXWE0E0"
+  ],
+  "at": "2026-11-13T02:47:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on plan-guide): plan-guide (updated here) says the planner topic carries the apply recipe and the no-plan-file/no-checkboxes rule, and its acceptance checks `rhiza guide planner` holds an apply recipe for a leaf and says no plan file and no checkboxes are kept. But Decision plan-role-topics-shape and leaf planner-topic move the apply recipes, no plan file and who records a pick into the separate `plan-recipes` reference topic (planner-topic's acceptance asserts those phrases live in plan-recipes). A builder cannot satisfy both: either planner-topic's acceptance or plan-guide's fails. plan-guide's statement and acceptance should name plan-recipes for the recipe and no-plan-file rule. The critic confirmed it: plan-guide's acceptance requires `rhiza guide planner` to hold an apply recipe for a leaf (statement, acceptance, decided-by) and the no-plan-file/no-checkboxes rule, while planner-topic's statement and acceptance move the apply recipe and no plan file into plan-recipes and keep planner within TopicCap; Decision plan-role-topics-shape puts the recipes in plan-recipes. A builder must either break the split or fail plan-guide's acceptance, so the leaves contradict each other. How should it be settled?"
+        },
+        "handle": "review-01m79b59rtnjk02xet8p4db91t-r3-f1",
+        "id": "01M79CV2GRBTKSEB6Y9745KS7J",
+        "key": null,
+        "kind": "question",
+        "node": "01M79CV2GRBTKSEB6Y95AYYZJ9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79CV2GRBTKSEB6Y95AYYZJ9",
+        "id": "01M79CV2J0HWRF3NFN53TK5H72",
+        "link": "01M79CV2J0HWRF3NFN53CBCYTX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGC647VGCTM55KP1WAART",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79CV2N2CAWNQXD2A348CMJQ",
+  "type": "ops",
+  "v": 1
+}
