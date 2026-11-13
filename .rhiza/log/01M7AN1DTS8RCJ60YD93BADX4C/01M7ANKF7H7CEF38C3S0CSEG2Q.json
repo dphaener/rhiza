@@ -1,0 +1,30 @@
+{
+  "actor": "01M7ANJJS1YP2ZMBJ3MPC4FZAZ",
+  "after": [
+    "01M7AN6Z8B5MCG2EZ0PDPRMF68"
+  ],
+  "at": "2026-11-13T14:39:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A new testscript cmd/rhiza/testdata/script/apply-concurrent.txtar builds a change set with two concurrent entries writing the same op the way check.txtar's concurrent section does (hide one entry's file while a second rhiza set writes, then restore it), shows rhiza check prints the concurrent-entries warn and no fail, then runs rhiza apply on a file that adds a capability and sets a field on the existing one: apply --dry-run and apply both succeed, rhiza change show lists the new op, and rhiza check after rhiza render still prints ok with only the warn. The same script then adds a hand-written ops entry to another change set's log that drops an op ID never written (an ErrRevision fold problem) and runs rhiza apply --dry-run and rhiza apply against that change set: both fail with 'changeset: illegal revision' in stderr and the change set's log gains no entry. go test -trimpath ./cmd/rhiza -run 'TestScripts/(apply-concurrent|apply|check)$' and go test -trimpath ./internal/api -run TestApply pass.",
+          "statement": "rhiza apply (and apply --dry-run) writes to a change set whose fold reports only concurrent-entries problems (changeset.ErrConcurrent), both from its start ops and after each appended item, through scratchOps in internal/api/apply.go, while any other fold problem still fails the apply with that problem's error"
+        },
+        "handle": "apply-tolerates-concurrent-entries",
+        "id": "01M7AN6YYW3GR9468071ADXHPC",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M7AN6YYW3GR94680716HY50V",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7AN1DTS8RCJ60YD93BADX4C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ANKF7H7CEF38C3S0CSEG2Q",
+  "type": "ops",
+  "v": 1
+}

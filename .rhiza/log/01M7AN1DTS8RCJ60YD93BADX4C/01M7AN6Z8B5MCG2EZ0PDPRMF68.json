@@ -1,0 +1,85 @@
+{
+  "actor": "01M7AN2F055M2NPDW44VE6RY65",
+  "after": [
+    "01M7AN6QXCT0908PN15C9R7SCY"
+  ],
+  "at": "2026-11-13T14:33:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Fold still applies both concurrent entries in fold order, so the ops it returns are the same ones check, set, add and link work from; only ErrConcurrent is an honest-merge warning, the others mean the entry did not apply",
+          "statement": "rhiza apply's scratch fold (scratchOps in internal/api/apply.go) skips fold problems that wrap changeset.ErrConcurrent, matched with errors.Is, as rhiza check downgrades them to warnings, and still fails on the first other fold problem (ErrBody, ErrOrder, ErrTransition, ErrRevision), so an item that cannot be applied as built is still refused"
+        },
+        "handle": "apply-skips-concurrent-only",
+        "id": "01M7AN6YB7KKN3XYPSG2QRA09M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7AN6YB7KKN3XYPSG09XCS3T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AN6YB7KKN3XYPSG09XCS3T",
+        "id": "01M7AN6YDQF1YNV41Y900VD89T",
+        "link": "01M7AN6YDQF1YNV41Y8W59NMAY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AN69WJ7YGN0EXYKXP4BKNG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The apply ErrConcurrent bug fix serves m4-runs-hold-up, as the earlier rhiza session message bug fix does: plan, revise and review runs write through rhiza apply, and a change set left with a concurrent pair after a merge otherwise needs hand repair"
+        },
+        "handle": "apply-concurrent-serves-runs-hold-up",
+        "id": "01M7AN6YGQZ03KYB3R46ABZG5T",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7AN6YGQZ03KYB3R430Z5N5T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AN6YGQZ03KYB3R430Z5N5T",
+        "id": "01M7AN6YN69TGZXETJTM54MB35",
+        "link": "01M7AN6YN69TGZXETJTJAX3TRF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AN69WJ7YGN0EXYKXP4BKNG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A new testscript cmd/rhiza/testdata/script/apply-concurrent.txtar builds a change set with two concurrent entries writing the same op the way check.txtar's concurrent section does (hide one entry's file while a second rhiza set writes, then restore it), shows rhiza check prints the concurrent-entries warn and no fail, then runs rhiza apply on a file that adds a capability and sets a field on the existing one: apply --dry-run and apply both succeed, rhiza change show lists the new op, and rhiza check after rhiza render still prints ok with only the warn. go test -trimpath ./cmd/rhiza -run 'TestScripts/(apply-concurrent|apply|check)$' and go test -trimpath ./internal/api -run TestApply pass.",
+          "statement": "rhiza apply (and apply --dry-run) writes to a change set whose fold reports only concurrent-entries problems (changeset.ErrConcurrent), both from its start ops and after each appended item, through scratchOps in internal/api/apply.go, while any other fold problem still fails the apply with that problem's error"
+        },
+        "handle": "apply-tolerates-concurrent-entries",
+        "id": "01M7AN6YYW3GR9468071ADXHPC",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M7AN6YYW3GR94680716HY50V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AN6YYW3GR94680716HY50V",
+        "id": "01M7AN6Z3PZPVEQ0R5MM68FRV6",
+        "link": "01M7AN6Z3PZPVEQ0R5MGBDEQ7C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AN6YB7KKN3XYPSG09XCS3T",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7AN1DTS8RCJ60YD93BADX4C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AN6Z8B5MCG2EZ0PDPRMF68",
+  "type": "ops",
+  "v": 1
+}
