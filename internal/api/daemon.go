@@ -188,6 +188,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Before any poll starts a session: the guides installed for an older
+	// binary are rewritten, so a start command's skill is there.
+	guideScopes := refreshGuides(ctx, root, reg, homeName, func(line string) {
+		if ctx.Stderr != nil {
+			fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %s\n", line)
+		}
+	})
+	_ = guideScopes // read by the guide hold (daemon-holds-steps-on-stale-guide)
 	defer func() {
 		for _, p := range projs {
 			p.stop()
