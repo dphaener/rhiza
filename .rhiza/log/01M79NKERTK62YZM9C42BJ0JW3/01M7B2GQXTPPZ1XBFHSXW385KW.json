@@ -1,0 +1,61 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7B25EDQTYVA9WFFRK6HBMXG"
+  ],
+  "at": "2026-11-13T18:25:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on web-project-needs-you): The statement says web-home-needs-you (change set 01M79NM3RJZFSZE1XHGHCRZSRM) 'depends on this change set and builds after it' and counts Home's items with this leaf's function, but the model bears none of it out: 01M79NM3RJZFSZE1XHGHCRZSRM's leaves list no needs, it has no depends-on link to web-project-needs-you, and web-home-needs-you's statement defines its own list and its own stuck rule. Either that change set gets the dependency (its plan) or this leaf drops the claim; as written the shared-count guarantee (header, picker and Home showing the same number) has nothing enforcing it. The critic confirmed it: web-project-needs-you's statement says change set 01M79NM3RJZFSZE1XHGHCRZSRM depends on this change set and counts with this leaf's function. rhiza change show 01M79NM3RJZFSZE1XHGHCRZSRM lists only its own three node.create and three link.create operations, with no depends-on link. Its web-home-needs-you statement and acceptance (TestHomeNeedsYou) define their own list and stuck rule and never name a shared function. Nothing in the model enforces the claimed shared count, so the leaf states a dependency the model contradicts. Major holds for a contradiction. How should it be settled?"
+        },
+        "handle": "review-01m7b13vsrpbp9gad9mdp7cpvd-r3-f1",
+        "id": "01M7B2GQSBCTN0TD11H97XC59V",
+        "key": null,
+        "kind": "question",
+        "node": "01M7B2GQSBCTN0TD11H6832ZQJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B2GQSBCTN0TD11H6832ZQJ",
+        "id": "01M7B2GQSWSKGRJQXSE7CVCDNC",
+        "link": "01M7B2GQSWSKGRJQXSE3VN7HGH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25DXMVDVRKGHGYNPVZGQP",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on web-project-needs-you): The count includes 'holds' and is to be filled 'from that project's model and runs' and 'read from that project alone' (with a per-project fixture holding 'one hold'), but in the code holds are the daemon's machine-wide items, not a project's: internal/api/inbox.go's InboxItem.Project is 'absent for the daemon's machine-wide items (low disk, usage hold)', the hold kinds (InboxDiskLow, InboxUsageReserve, InboxLoadHigh, InboxMemoryLow) come from the daemon, and internal/api/web_inbox.go's webInboxKinds deliberately leaves 'disk and usage holds' out of a project's web inbox. The plan does not say which holds count or how a machine-wide hold is attributed to one project (to every project, or none). The critic confirmed it: internal/api/inbox.go:760-763 inboxMachineWide treats every hold kind (disk-low, usage-reserve, load-high, memory-low) as the daemon's, the same in every project and listed once with no project. InboxItem.Project at line 130 is documented as absent for those items. internal/api/web_inbox.go:7-13 webInboxKinds leaves disk and usage holds out of a project's web view. The leaf counts 'holds' read 'from that project alone', and its fixture puts one hold in a project, but it never says how a machine-wide hold maps to a project. The count, and the guarantee that every surface shows the same number, are therefore undefined. Major holds for a contradiction. How should it be settled?"
+        },
+        "handle": "review-01m7b13vsrpbp9gad9mdp7cpvd-r3-f2",
+        "id": "01M7B2GQTEEV1N9NYZVH7TN9Y5",
+        "key": null,
+        "kind": "question",
+        "node": "01M7B2GQTEEV1N9NYZVFPZWFGX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B2GQTEEV1N9NYZVFPZWFGX",
+        "id": "01M7B2GQV7XN1MK05W8ADBK9KZ",
+        "link": "01M7B2GQV7XN1MK05W88Y6K0WB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25DXMVDVRKGHGYNPVZGQP",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B2GQXTPPZ1XBFHSXW385KW",
+  "type": "ops",
+  "v": 1
+}
