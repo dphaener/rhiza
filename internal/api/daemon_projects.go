@@ -105,6 +105,8 @@ type daemonProj struct {
 	// modelAt is when the poll last did the model branches' network work
 	// (commit-untracked and the model PR merges), zero before the first.
 	modelAt time.Time
+	// steps times the steps of the poll in progress; nil times nothing.
+	steps *pollSteps
 }
 
 // newDaemonProj starts the daemon's work in the project at dir, whose
@@ -194,34 +196,44 @@ type daemonTurn struct {
 func (p *daemonProj) prepare(r DaemonRequest, onConf func(daemonConf)) daemonTurn {
 	ctx, state := p.ctx, &p.state
 	if ctx.Reap != nil {
-		ctx.Reap(p.common)
+		p.steps.run(p.name, "reap", func() { ctx.Reap(p.common) })
 	}
-	conf, err := daemonConfOf(ctx, r)
+	var conf daemonConf
+	var err error
+	p.steps.run(p.name, "settings", func() { conf, err = daemonConfOf(ctx, r) })
 	if err != nil {
 		p.saveState()
 		return daemonTurn{err: err}
 	}
-	reading := readMachine(ctx)
-	conf.machine = daemonMachineHold(ctx, conf, reading, state.MachineHold)
-	state.MachineHold, state.Machine = conf.machine, &reading
+	p.steps.run(p.name, "machine", func() {
+		reading := readMachine(ctx)
+		conf.machine = daemonMachineHold(ctx, conf, reading, state.MachineHold)
+		state.MachineHold, state.Machine = conf.machine, &reading
+	})
 	if onConf != nil {
-		onConf(conf)
+		p.steps.run(p.name, "housekeeping", func() { onConf(conf) })
 	}
 	state.Settings = conf.stateRows()
-	learnLimits(ctx, p.common, state)
 	var hold *usageHold
-	if runs, lerr := p.rs.List(); lerr == nil {
-		host, _ := os.Hostname()
-		var windows map[usage.Kind]usage.Window
-		var live map[usage.Kind]int64
-		windows, state.UsageWindows, live = usageWindowsNow(ctx, p.common, state.UsageWindows)
-		ratchetLimits(ctx, p.common, state, windows)
-		hold = usageHoldOf(conf.rows, state.Learned, live, runs, host, windows)
-	}
-	if hold == nil {
-		hold = governorHold(ctx, p.common)
-	}
-	ready, continues, queued, running := daemonDemand(ctx, p.rs, p.pending, p.unjournaled, conf, hold)
+	p.steps.run(p.name, "usage", func() {
+		learnLimits(ctx, p.common, state)
+		if runs, lerr := p.rs.List(); lerr == nil {
+			host, _ := os.Hostname()
+			var windows map[usage.Kind]usage.Window
+			var live map[usage.Kind]int64
+			windows, state.UsageWindows, live = usageWindowsNow(ctx, p.common, state.UsageWindows)
+			ratchetLimits(ctx, p.common, state, windows)
+			hold = usageHoldOf(conf.rows, state.Learned, live, runs, host, windows)
+		}
+		if hold == nil {
+			hold = governorHold(ctx, p.common)
+		}
+	})
+	var ready []string
+	var continues, queued, running int
+	p.steps.run(p.name, "demand", func() {
+		ready, continues, queued, running = daemonDemand(ctx, p.rs, p.pending, p.unjournaled, conf, hold)
+	})
 	// A due schedule is demand for a slot after the rest; one started and
 	// not journaled yet holds a slot.
 	if runs, lerr := p.rs.List(); lerr == nil {
@@ -395,14 +407,18 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 	minFree := conf.minFree
 	state.MaxRuns = maxRuns
 	var skips []daemon.Skip
-	startRuns, _ := p.rs.List()
-	started, resumed, planned, err := daemonPoll1(ctx, p.rs, p.pending, p.unjournaled, p.scheds.startingCount(ctx.Now(), startRuns), t.pick.Running+share, minFree, r.Autonomous, conf.mode, conf.paused, hold, conf.machine, &skips)
-	resp.Planned = append(resp.Planned, planned...)
-	if err == nil {
-		// A schedule that does not start is in the daemon log; it never
-		// fails the poll.
-		p.startSchedules(conf, hold, share-len(started)-len(resumed)-len(planned))
-	}
+	var started, resumed, planned []string
+	var err error
+	p.steps.run(p.name, "starts", func() {
+		startRuns, _ := p.rs.List()
+		started, resumed, planned, err = daemonPoll1(ctx, p.rs, p.pending, p.unjournaled, p.scheds.startingCount(ctx.Now(), startRuns), t.pick.Running+share, minFree, r.Autonomous, conf.mode, conf.paused, hold, conf.machine, &skips)
+		resp.Planned = append(resp.Planned, planned...)
+		if err == nil {
+			// A schedule that does not start is in the daemon log; it never
+			// fails the poll.
+			p.startSchedules(conf, hold, share-len(started)-len(resumed)-len(planned))
+		}
+	})
 	if err == nil {
 		state.Skips = skips
 		state.UsageHold = usageHoldState(hold, state.UsageHold, ctx.Now())
@@ -427,25 +443,33 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 		state.Unjournaled = append(state.Unjournaled, daemon.Event{Change: cs, At: pd.at.UTC(), Runs: pd.runs})
 	}
 	slices.SortFunc(state.Unjournaled, func(a, b daemon.Event) int { return strings.Compare(a.Change, b.Change) })
-	if nerr := daemonNotify(ctx, p.rs, state, p.notifyCmd); err == nil {
-		err = nerr
-	}
-	if pol := watchdogPolicyOf(t.conf.rows); pol.Enabled {
-		if werr := daemonWatchdog(ctx, p.rs, state, pol); err == nil {
-			err = werr
+	p.steps.run(p.name, "notify", func() {
+		if nerr := daemonNotify(ctx, p.rs, state, p.notifyCmd); err == nil {
+			err = nerr
 		}
-	} else if nerr := daemonNudge(ctx, p.rs, state); err == nil {
-		err = nerr
-	}
-	if eerr := daemonEvents(ctx, state, p.eventCmd); err == nil {
-		err = eerr
-	}
+	})
+	p.steps.run(p.name, "watchdog", func() {
+		if pol := watchdogPolicyOf(t.conf.rows); pol.Enabled {
+			if werr := daemonWatchdog(ctx, p.rs, state, pol); err == nil {
+				err = werr
+			}
+		} else if nerr := daemonNudge(ctx, p.rs, state); err == nil {
+			err = nerr
+		}
+	})
+	p.steps.run(p.name, "events", func() {
+		if eerr := daemonEvents(ctx, state, p.eventCmd); err == nil {
+			err = eerr
+		}
+	})
 	if p.modelNetDue(ctx.Now()) {
 		// Throttled and bounded, as the self-update's fetch is: the network
 		// cannot hold up the daemon's polls, nor spend the gh token each tick.
 		mc := boundedExecCtx(ctx, modelNetTimeout)
-		daemonCommitUntracked(mc)
-		daemonMergeModelPRs(mc)
+		p.steps.run(p.name, "model", func() {
+			daemonCommitUntracked(mc)
+			daemonMergeModelPRs(mc)
+		})
 	}
 	p.saveState()
 	return err

@@ -242,7 +242,10 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	}
 	poll := func() error {
 		pollStart := ctx.Now()
-		reg, err := rootcfg.Load(root)
+		steps := newPollSteps(ctx.Now)
+		var reg rootcfg.Config
+		var err error
+		steps.run("", "registry load", func() { reg, err = rootcfg.Load(root) })
 		if err != nil {
 			return err
 		}
@@ -263,7 +266,8 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 				skipped = append(skipped, daemon.ProjectSkip{Project: name, Reason: daemon.ProjectNotInitialised})
 				continue
 			}
-			_, err := project(name, dir)
+			var err error
+			steps.run(name, "open", func() { _, err = project(name, dir) })
 			if err != nil {
 				var held *daemon.Held
 				if errors.As(err, &held) {
@@ -291,6 +295,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			if name == homeName {
 				onConf = atHome
 			}
+			projs[name].steps = steps
 			turns[i] = projs[name].prepare(r, onConf)
 			if turns[i].err != nil {
 				continue
@@ -320,7 +325,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			}
 		}
 		if hp, ok := projs[homeName]; ok {
-			watchdogPollBehind(&hp.state, homePol, daemonPoll, ctx.Now().Sub(pollStart), ctx.Now(), func(line string) {
+			watchdogPollBehind(&hp.state, homePol, daemonPoll, ctx.Now().Sub(pollStart), ctx.Now(), steps.all(), func(line string) {
 				if ctx.Stderr != nil {
 					fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %s\n", line)
 				}
