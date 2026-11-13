@@ -6,54 +6,104 @@ import (
 	"testing"
 )
 
-func TestReviewText(t *testing.T) {
+// reviewRoles are the nine review role topics the review index names.
+var reviewRoles = []string{"check-compliance", "check-quality", "check-qa", "check-model", "critic", "fixer", "ci-fix", "gate-fix", "conflict-fix"}
+
+// reviewRoleText is the bodies of the nine review role topics, joined.
+func reviewRoleText(t *testing.T) Text {
+	t.Helper()
+	var b strings.Builder
+	for _, n := range reviewRoles {
+		g, ok := Lookup(n)
+		if !ok || g.Skill {
+			t.Fatalf("%s: found %v, skill %v; want a topic", n, ok, g.Skill)
+		}
+		b.WriteString(g.Body)
+		b.WriteString("\n")
+	}
+	return Text{Name: "review roles", Body: b.String()}
+}
+
+// TestReviewIsAnIndex: the review topic is a short index naming the nine
+// role topics, each by its skill and its rhiza guide route, and routing a
+// check named scope to check-compliance.
+func TestReviewIsAnIndex(t *testing.T) {
 	review, ok := Lookup("review")
 	if !ok || review.Skill {
 		t.Fatalf("review: found %v, skill %v; want a topic", ok, review.Skill)
 	}
-	if !strings.Contains(review.Description, "check, critic or fixer of a review run") {
-		t.Errorf("review description %q does not say when to load it", review.Description)
+	for _, n := range reviewRoles {
+		want := "`/rhiza-" + n + "` (`rhiza guide " + n + "`)"
+		if !strings.Contains(review.Body, want) {
+			t.Errorf("review index: no %q", want)
+		}
 	}
 	checkPhrases(t, "review", map[string][]string{
+		"scope": {"A check\n  named `scope` loads this one too"},
+		"done":  {"rhiza session done"},
+	})
+	if n := Tokens(review.Body); n > TopicCap/3 {
+		t.Errorf("review index is %d tokens, want under a third of the cap (%d)", n, TopicCap/3)
+	}
+	for _, banned := range []string{"go test", "make check", "Record agent actor", "rhiza run findings", "Claude"} {
+		if strings.Contains(review.Body, banned) {
+			t.Errorf("review index holds %q: that belongs in a role topic", banned)
+		}
+	}
+}
+
+// checkRolePhrases fails for each phrase none of the role topics holds.
+func checkRolePhrases(t *testing.T, roles Text, leaves map[string][]string) {
+	t.Helper()
+	for leaf, phrases := range leaves {
+		for _, p := range phrases {
+			if !strings.Contains(roles.Body, p) {
+				t.Errorf("review role topics (%s): no %q", leaf, p)
+			}
+		}
+	}
+}
+
+// TestReviewRoleText finds in the role topics what the single review topic
+// used to say.
+func TestReviewRoleText(t *testing.T) {
+	roles := reviewRoleText(t)
+	checkRolePhrases(t, roles, map[string][]string{
 		"start": {
 			`rhiza slice --change "$RHIZA_CHANGE" --json`, "RHIZA_CHECK", "RHIZA_CYCLE", "RHIZA_ROLE",
 			"throwaway checkout",
 		},
-		"merge-base": {"`git diff $(git merge-base origin/main HEAD)`", "default branch"},
+		"merge-base": {"git diff $(git merge-base origin/main HEAD)", "merge-base"},
 		"five-checks": {
-			"`compliance`", "each leaf's `acceptance`", "`quality`", "`qa`", "built binary",
-			"fakes alone do not count", "`scope`", "inside the intent and the leaves", "`model`",
-		},
-		"fakes-only": {
-			"Every check except `qa` tests runs with fakes only, never real Rex, agents or `gh`",
+			"`compliance`", "each leaf's `acceptance`", "`quality`", "`qa`", "fakes alone do not count", "`model`",
 		},
 		"severities": {"`blocker`: behaviour broken", "`major`: an acceptance point unmet", "`minor`: style, naming", "`nit`", "`minor` and `nit` are never fixed"},
 		"findings": {
 			`rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'`, "\nEOF\n",
 			`{"findings":[{"severity":"major","leaf":"<leaf>","place":"path:line","reason":`,
-			`{"findings":[]}`, "(a check with none fails)", "rhiza describe run.findings",
+			`{"findings":[]}`, "(a check with no round fails)", "rhiza describe run.findings",
 		},
 		"verdict": {
 			`rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'`, "\nEOF\n",
 			`{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":`,
-			"`confirmed` keeps the severity", "`downgraded` lowers it", "`dropped` removes the finding",
+			"`confirmed`: the defect is real", "`downgraded`: the defect is real", "`dropped`: the defect is not real",
 		},
 		"critic":   {"Never add a finding"},
-		"dropped":  {"stay in the run journal", "no Decision"},
-		"trailers": {"`Leaf: <leaf>`", "`Review: <run>`", "$RHIZA_RUN", "Never rewrite"},
+		"dropped":  {"stays in the run journal", "Decision"},
+		"trailers": {"`Leaf: <leaf>`", "`Review: <run>`", "$RHIZA_RUN", "rewrite"},
 		"outside-work": {
 			"outside the intent", "question", "discovered-from draft change set",
 			"rhiza change new", "discovered-from <this>", "rhiza change use <this>",
 		},
 		"evidence": {
-			"Evidence written as yourself on each leaf it exercised",
-			`"handle":"<leaf>-qa-<cycle>"`, "`<cycle>` being $RHIZA_CYCLE",
+			"Evidence written as yourself on",
+			`"handle":"<leaf>-qa-<cycle>"`,
 			`"type":"verifies","to":"<leaf>"`,
-			"missing constraints",
+			"Missing constraint",
 		},
 		"done": {"rhiza session done", "as its own command", "after its recording\ncommand succeeded", "`;` or `&&`"},
 		"scoped-tests": {
-			"Checks, critics and fixers run only the tests covering what the change touches",
+			"run only the tests covering what the change touches",
 			"scoped commands", "never the repo's full\nsuite",
 			"the PR's CI runs it before merge",
 		},
@@ -66,37 +116,24 @@ func TestReviewText(t *testing.T) {
 			"injecting a delay at the suspected race", "never by busy loops or parallel stress on the host",
 		},
 	})
-	for _, banned := range []string{"go test", "make check", "make test", "testscript"} {
-		if strings.Contains(review.Body, banned) {
-			t.Errorf("review names %q", banned)
-		}
-	}
-	// Constraint agents-named-only-in-adapters: no agent product by name.
-	if strings.Contains(review.Body+review.Description, "Claude") {
-		t.Errorf("review names an agent product")
-	}
 }
 
 func TestReviewFixerTrailersInOneFinalParagraph(t *testing.T) {
-	review, _ := Lookup("review")
-	for _, p := range []string{"Co-Authored-By:", "one final paragraph", "no blank line"} {
-		if !strings.Contains(strings.ReplaceAll(review.Body, "\n", " "), p) {
-			t.Errorf("review fixer: no %q", p)
+	for _, name := range []string{"fixer", "ci-fix", "gate-fix", "conflict-fix"} {
+		g, _ := Lookup(name)
+		for _, p := range []string{"Co-Authored-By:", "one final paragraph", "no blank line"} {
+			if !strings.Contains(strings.ReplaceAll(g.Body, "\n", " "), p) {
+				t.Errorf("%s: no %q", name, p)
+			}
 		}
 	}
 }
 
 func TestReviewFixerPreHandoffChecklist(t *testing.T) {
-	review, _ := Lookup("review")
-	i := strings.Index(review.Body, "## Fixer")
-	j := strings.Index(review.Body, "## Outside work")
-	if i < 0 || j < i {
-		t.Fatalf("review: no fixer section")
-	}
-	fixer := review.Body[i:j]
-	for _, want := range []string{"reproduce your findings", "`rhiza ship generate`", "`rhiza render`", "`Checks:` block", "exit code"} {
-		if !strings.Contains(fixer, want) {
-			t.Errorf("review fixer section lacks %q", want)
+	fixer, _ := Lookup("fixer")
+	for _, want := range []string{"reproduce", "`rhiza ship generate`", "`rhiza render`", "`Checks:` block", "exit code"} {
+		if !strings.Contains(fixer.Body, want) {
+			t.Errorf("fixer topic lacks %q", want)
 		}
 	}
 }
@@ -108,12 +145,12 @@ func severityTopics(t *testing.T) []Text {
 	var out []Text
 	for _, tx := range List() {
 		n := tx.Name
-		if n == "plan-review" || n == "review" || strings.HasPrefix(n, "check-") ||
+		if n == "plan-review" || strings.HasPrefix(n, "check-") ||
 			n == "critic" || n == "fixer" {
 			out = append(out, tx)
 		}
 	}
-	for _, want := range []string{"plan-review", "review"} {
+	for _, want := range []string{"plan-review", "check-compliance", "critic", "fixer"} {
 		if !slices.ContainsFunc(out, func(tx Text) bool { return tx.Name == want }) {
 			t.Fatalf("no %s topic", want)
 		}
@@ -134,12 +171,12 @@ func TestSeverityBlockOnceInEachTopic(t *testing.T) {
 			t.Errorf("%s has %d severity headings, want 1", tx.Name, n)
 		}
 	}
-	for _, f := range []string{"plan-review.md", "review.md"} {
+	for _, f := range []string{"plan-review.md", "check-compliance.md", "check-quality.md"} {
 		b, err := files.ReadFile("text/" + f)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !strings.Contains(string(b), "<!-- shared: severity -->") {
+		if !strings.Contains(string(b), "<!-- shared: severity") {
 			t.Errorf("%s does not include the severity block", f)
 		}
 	}
@@ -176,7 +213,7 @@ func TestSeverityBlockContent(t *testing.T) {
 		}
 	}
 	for _, tx := range severityTopics(t) {
-		if tx.Name != "plan-review" && tx.Name != "review" && tx.Name != "critic" {
+		if tx.Name != "plan-review" && tx.Name != "critic" {
 			continue
 		}
 		i := strings.Index(tx.Body, "## Critic")

@@ -11,8 +11,6 @@ import (
 	"github.com/dphaener/rhiza/internal/guide"
 )
 
-var pluginPaths = []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginRetryPath, pluginBuildPath, pluginBuilderPath, pluginPlanPath, pluginReviewPath, pluginScrubPath, pluginVerifierPath}
-
 func guideInstall(t *testing.T, ctx *Ctx, req string) GuideInstallResponse {
 	t.Helper()
 	resp, err := callOp(t, ctx, "guide.install", req)
@@ -161,9 +159,40 @@ func TestGuideInstallReview(t *testing.T) {
 	if !strings.HasPrefix(string(b), "---\nname: rhiza-review\ndescription: ") || !strings.HasSuffix(string(b), "\n---\n\n"+g.Body) {
 		t.Errorf("rhiza-review SKILL.md is not the frontmatter plus the review topic:\n%s", b)
 	}
-	for _, p := range []string{"rhiza run findings --check", "rhiza run verdict --check", "Review: <run>", "discovered-from"} {
+	for _, p := range []string{"/rhiza-check-compliance", "rhiza guide critic", "rhiza guide conflict-fix", "named `scope`"} {
 		if !strings.Contains(string(b), p) {
 			t.Errorf("rhiza-review SKILL.md: no %q", p)
+		}
+	}
+}
+
+// TestGuideInstallReviewRoles finds the nine review role topics in the
+// installed plugin as skills, each the frontmatter plus its topic's text,
+// and a second install reporting them unchanged.
+func TestGuideInstallReviewRoles(t *testing.T) {
+	ctx := testCtx(t.TempDir())
+	ctx.Home = t.TempDir()
+	r := guideInstall(t, ctx, `{"agent":"claude"}`)
+	for _, topic := range []string{"check-compliance", "check-quality", "check-qa", "check-model", "critic", "fixer", "ci-fix", "gate-fix", "conflict-fix"} {
+		rel := "skills/rhiza-" + topic + "/SKILL.md"
+		if !slices.Contains(r.Written, rel) {
+			t.Errorf("install wrote %v, want %s", r.Written, rel)
+			continue
+		}
+		b, err := os.ReadFile(filepath.Join(r.Dir, filepath.FromSlash(rel)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		g, _ := guide.Lookup(topic)
+		want := "---\nname: rhiza-" + topic + "\ndescription: " + yamlQuote(g.Description) + "\n---\n\n" + g.Body
+		if string(b) != want {
+			t.Errorf("%s is not the frontmatter plus the %s topic", rel, topic)
+		}
+	}
+	r = guideInstall(t, ctx, `{"agent":"claude"}`)
+	for _, topic := range []string{"check-compliance", "check-quality", "check-qa", "check-model", "critic", "fixer", "ci-fix", "gate-fix", "conflict-fix"} {
+		if !slices.Contains(r.Unchanged, "skills/rhiza-"+topic+"/SKILL.md") {
+			t.Errorf("second install: rhiza-%s not unchanged: %+v", topic, r)
 		}
 	}
 }
