@@ -1,0 +1,40 @@
+{
+  "actor": "01M79MVQS0NGPMKBHRP1YEANES",
+  "after": [
+    "01M79MQ3E2RWGB4N9Q1WC1CC70"
+  ],
+  "at": "2026-11-13T05:09:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ad9a381e0 re-ran the Checks: block: go test -trimpath ./internal/guide/... (ok, includes TestCheckQualityText and TestCheckQualityNamesNoRepoCommand), go test -trimpath ./internal/api -run Guide (ok), TestScripts/guide$ and TestScripts/guide-install$ (ok), rhiza ship generate (exit 0, 0 files changed), rhiza render (exit 0, no tracked change). Read the diff: internal/guide/text/check-quality.md has exactly the six sections in order; the built topic expands session-done, test-scope, command-budget, never-list (inside Must not do) and severity with no leftover markers; Task carries the isolation rule (knows nothing of how it was built, never rhiza run status / run show of the build run, its findings, run notes or transcripts, judges only slice contract, merge-base diff and Evidence); Read first discovers test commands from the contributor guide; Must do has the direct/integration/downstream impact radius, never silently fall back to the full suite, and the seven checklist items graded by severity. The test asserts all of these plus a negative case banning Go, make and repo-specific commands. Only the guide entry, list-order and ls-count tests, the txtar and the actor record changed; no stubs or TODOs."
+        },
+        "handle": "check-quality-topic-verified",
+        "id": "01M79MY7S9315AC7K8NMVT4FT5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79MY7S9315AC7K8NJZCNX5J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79MY7S9315AC7K8NJZCNX5J",
+        "id": "01M79MY7W1G4SG8AFZ8PTDGB9P",
+        "link": "01M79MY7W1G4SG8AFZ8KB064MN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH24A6DZDBJ5EDMH0G21T",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79MY7ZH3NJNQWNRHRYSBTCQ",
+  "type": "ops",
+  "v": 1
+}

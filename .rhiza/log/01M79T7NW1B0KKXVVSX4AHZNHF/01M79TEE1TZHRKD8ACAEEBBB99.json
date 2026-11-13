@@ -1,0 +1,63 @@
+{
+  "actor": "01M79T99M206Q7ECXD48N3D53R",
+  "after": [
+    "01M79TED5SK4F3XMYC1XVSDPMW"
+  ],
+  "at": "2026-11-13T06:45:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "The titles seem to be a description and just run off. It's not informative at all.",
+          "statement": "Web roadmap rows are named by the change set's short title (its display title: the title, else the intent's first clause), with the intent as a secondary line clamped to two lines; the roadmap operation carries that title for each change set"
+        },
+        "handle": "roadmap-rows-by-title",
+        "id": "01M79TEDXTJHD0DFEP74R2369W",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79TEDXTJHD0DFEP70R36S0M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79TEDXTJHD0DFEP70R36S0M",
+        "id": "01M79TEDYKP8TBWBPWRYBASDEV",
+        "link": "01M79TEDYKP8TBWBPWRXPV1E3W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79TE4N9H2VSZN4C6CJQQFVQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "An internal/api test asserts roadmap --json gives each change set its display title (a set title, and the intent's first clause when none is set); an internal/web roadmap test renders /roadmap over a fixture whose change set has a long intent and a short title and asserts the row's link text is the title and the intent sits in the secondary line, and the stylesheet clamps that line to two lines; describe-golden.txtar is regenerated",
+          "statement": "Each change set row on the web roadmap shows the change set's title (as change ls shows it), with its intent beneath as a secondary line clamped to two lines, and any depends-on note kept on the row; the roadmap operation's change sets carry that title as a title field"
+        },
+        "handle": "web-roadmap-row-titles",
+        "id": "01M79TEDZ8NQS65M1CQRVJ2PS6",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M79TEDZ8NQS65M1CQQ1DSE52",
+        "op": "node.create",
+        "parent": "01M6PFKAN1436CCE15SQMFT2B9"
+      },
+      {
+        "decision": null,
+        "from": "01M79TEDZ8NQS65M1CQQ1DSE52",
+        "id": "01M79TEE0J30GMTQ38TQVG342K",
+        "link": "01M79TEE0J30GMTQ38TNN5SPKZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79TEDXTJHD0DFEP70R36S0M",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79T7NW1B0KKXVVSX4AHZNHF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79TEE1TZHRKD8ACAEEBBB99",
+  "type": "ops",
+  "v": 1
+}

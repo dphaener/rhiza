@@ -1,0 +1,63 @@
+{
+  "actor": "01M79XCJMYJCPWJ3N9DQSVDJYH",
+  "after": [
+    "01M79X845278YH2J30929A4B9F"
+  ],
+  "at": "2026-11-13T07:43:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at 6f0d5d935, built binary (go build -trimpath ./cmd/rhiza) in a hermetic scratch Rhiza root (env -i, fake rex). With rhiza.autonomy.ship=owner one rhiza daemon --once journaled ship-owner for three accepted milestone change sets a, b, c. Started a's run by hand (rhiza run start --foreground, fake rex, stopped by timeout): the next two polls wrote exactly one line for a, reason started, at 07:39:55.043401079Z equal to the run journal's started entry, detail 'started outside the daemon'; b and c got nothing new. Under a real load-high hold b and c moved to load-high with the load detail and a (interrupted run) got no line. With the load guard off and one slot, the daemon resumed a's run and b and c went to no-slot. With three slots it started b and c and wrote started lines with an empty detail. Two more polls, after their run journals appeared (started a fraction of a second after those lines), wrote nothing (12 lines in all). go test -trimpath -count=1 ./internal/api/... -run QueueWait: all four QueueWait tests PASS, including TestQueueWaitShipOwnerStartedOutside."
+        },
+        "handle": "queue-wait-journal-lines-qa-2",
+        "id": "01M79XSHA210BK2MP3NPSG6B8T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79XSHA210BK2MP3NPCTBCEA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79XSHA210BK2MP3NPCTBCEA",
+        "id": "01M79XSHEFBYBVF8Z70XWJJDJK",
+        "link": "01M79XSHEFBYBVF8Z70VTYT7F0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79DE92G4FFVHC5MFPY6EFGN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: the built binary's daemon polls (separate processes) appended to <common>/rhiza/queue.wait.jsonl one whole JSON line per write with at, change, title, reason and detail, 12 lines over the session, all parseable. go test -trimpath -count=1 ./internal/daemon/... ok."
+        },
+        "handle": "queue-wait-journal-reader-qa-2",
+        "id": "01M79XSHJQ4DQBQ5FWXG1E6PN4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79XSHJQ4DQBQ5FWXDWSXR57",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79XSHJQ4DQBQ5FWXDWSXR57",
+        "id": "01M79XSHPEJBRD17JA1PJAA2EV",
+        "link": "01M79XSHPEJBRD17JA1JR36W7P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79DE919PHFX4JVJ8V97PGE5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSY0YM17EQ9K24CC4JRAK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79XSHTX2WNJPEF1GTVZZHNE",
+  "type": "ops",
+  "v": 1
+}

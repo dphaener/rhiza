@@ -1,0 +1,40 @@
+{
+  "actor": "01M79N2DEYRKKNVT7EQQKBYZE5",
+  "after": [
+    "01M79MY7ZH3NJNQWNRHRYSBTCQ"
+  ],
+  "at": "2026-11-13T05:12:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At af9fc072e re-ran the Checks block: go test -trimpath ./internal/guide/... (also -count=1: TestCheckQAText, TestCheckQANamesNoRepoCommand, TestListOrder, shared tests PASS), go test -trimpath ./internal/api -run Guide, TestScripts/guide$ and TestScripts/guide-install$, rhiza ship generate and rhiza render (scratch build of this commit): all exit 0, no tracked changes. Diff read: internal/guide/text/check-qa.md has the six sections in order, expands session-done, command-budget, never-list (inside Must not do) and severity, carries the isolation rule in Task, clean state, scratch path outside $PATH and never-install, happy and failure scenarios, bounded pairs then edge cases with no new test files, broken-behaviour-only, and the Evidence apply example with <leaf>-qa-<cycle> and verifies; check_qa_test.go asserts each, and a negative test asserts no Go, make or repo command. Only the guide registry, list tests, guide.txtar count and the leaf's own log/render files changed; no stubs or TODOs."
+        },
+        "handle": "check-qa-topic-verified",
+        "id": "01M79N5BXPXJHSVVTVADQEQ6KT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79N5BXPXJHSVVTVAB4VNE7W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79N5BXPXJHSVVTVAB4VNE7W",
+        "id": "01M79N5C3T934XKRWS7EF62F77",
+        "link": "01M79N5C3T934XKRWS7C0ZNEB4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH2C9CN1F6PMN6G3SYF0Z",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79N5C865E6Q5AHTXPMFG5ST",
+  "type": "ops",
+  "v": 1
+}

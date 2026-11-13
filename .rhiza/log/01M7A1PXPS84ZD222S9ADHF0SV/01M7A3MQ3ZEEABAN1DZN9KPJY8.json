@@ -1,0 +1,41 @@
+{
+  "actor": "01M7A3KRC1Y65S9TP3JNFHW8HH",
+  "after": [
+    "01M7A3K7GG0DNDZGK1AXBMK640"
+  ],
+  "at": "2026-11-13T09:25:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding was confirmed by the critic: the leaf bundles a pure predicate over run journals with daemon start wiring in a 2224-line daemon.go, across six files and about eleven testscript scenarios plus unit tests, more than one fresh builder session. The predicate is a natural seam: it is pure, unit-testable on its own, and both the daemon leaf and the inbox leaf need it, so building it once as its own leaf removes the hidden ordering between those two leaves. Splitting along that seam keeps uncovered-proposals-get-plan-runs, failed-plan-run-covers and plan-review-skips-interview intact and changes no behaviour, only how the work is cut. Keeping the leaf whole or dropping scenarios would leave a major finding standing or weaken the acceptance the earlier Decisions require.",
+          "statement": "Split daemon-plans-uncovered-proposals in two. A new leaf owns the shared covered predicate uncoveredProposals (new internal/api/proposals.go and proposals_test.go): which proposed change sets with leaves no run covers, by run change set, workflow and journal (live, pending start, finished plan, plan-milestone or plan-review gated runs including cross-change-set plan-milestone gating, failed and not abandoned covers, abandoned covers nothing), accepted by its unit tests. daemon-plans-uncovered-proposals keeps only the daemon's start wiring in daemonPoll1 (slot order after resumes and before queued starts and plan requests, pending-start tracking, pause, low disk, load, memory and usage holds) with its daemon testscript, and inbox-lists-uncovered-proposals consumes the predicate; both depend on the predicate leaf. The covered rules and the scenarios themselves do not change.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "split-uncovered-proposals-predicate",
+        "id": "01M7A3MPY2R9N56GAVM4MV3TKN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A3MPY2R9N56GAVM4HBFZB1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A3MPY2R9N56GAVM4HBFZB1",
+        "id": "01M7A3MQ008K3HR89Y78XER5G5",
+        "link": "01M7A3MQ008K3HR89Y75QCS13H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A3K79BFD60Y3C3PDJJC0CS",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7A1PXPS84ZD222S9ADHF0SV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A3MQ3ZEEABAN1DZN9KPJY8",
+  "type": "ops",
+  "v": 1
+}

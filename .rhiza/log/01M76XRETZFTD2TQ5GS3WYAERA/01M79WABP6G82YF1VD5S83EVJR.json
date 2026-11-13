@@ -1,0 +1,40 @@
+{
+  "actor": "01M79W27WJEZ2V2QRZTD0P4YYR",
+  "after": [
+    "01M79V10Q5X4DY8MNB79G103JR"
+  ],
+  "at": "2026-11-13T07:17:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7d6a3b395 (attempt 5): re-ran the Checks block: go build ./cmd/rhiza exit 0; rhiza-x guide check-compliance/check-quality/check-model each has 1 'fakes' line; go test -trimpath ./internal/guide/... ok; rhiza ship generate 0; rhiza render 0 with a clean tree. Acceptance: go test -trimpath ./internal/api -run GuideInstall ok; go test -trimpath ./internal/guide/... ok (review_test asserts the nine topics with their routes, scope routed to check-compliance, the index under TopicCap/3); go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|guide-install)' PASS. Diff only adds the fakes-only rule to three check topics with tests and trims two untested lines; no stubs or TODOs."
+        },
+        "handle": "review-role-skills-installed-verified-5",
+        "id": "01M79WAASK4B5GG3GS123KW4GR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79WAASK4B5GG3GS11QK7VS9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79WAASK4B5GG3GS11QK7VS9",
+        "id": "01M79WABAFGD6H1HFAA513BGBH",
+        "link": "01M79WABAFGD6H1HFAA2Q59CEH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79WABP6G82YF1VD5S83EVJR",
+  "type": "ops",
+  "v": 1
+}

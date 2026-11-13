@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7A334D59N5DGH34RWN7EF0H"
+  ],
+  "at": "2026-11-13T09:25:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (oversized-leaf on daemon-plans-uncovered-proposals): The leaf carries two concerns: the shared covered predicate uncoveredProposals (new internal/api/proposals.go and proposals_test.go over journals of workflow plan, plan-milestone and plan-review, gated, failed, abandoned, live, pending, cross-change-set plan-milestone gating), which inbox-lists-uncovered-proposals also consumes, and the daemon's start wiring in daemonPoll1 (internal/api/daemon.go, 2224 lines, plus daemon_fold.go and daemon_projects.go: pending-start tracking, slot order after resumes and before ship picks, pause, low disk, load, memory and usage holds). Its acceptance is a new daemon testscript with about eleven scenarios plus the predicate's unit tests across six files, too much for one fresh session. The predicate is its own leaf that both the daemon leaf and the inbox leaf need. The critic confirmed it: Verified against the leaf 01M7A26C4: its statement bundles two concerns, the shared covered predicate uncoveredProposals (new internal/api/proposals.go over plan, plan-milestone and plan-review journals: live, pending, gated across change sets, failed, abandoned), which the inbox leaf inbox-lists-uncovered-proposals also consumes, and the daemon's start wiring in daemonPoll1 (internal/api/daemon.go, 2224 lines), where the new starts must slot between the resumes and daemonQueuedStarts/daemonPlanRequests (daemon.go:942-1168) with pending tracking (daemonHeld) and every hold. The acceptance is a new daemon testscript of about eleven scenarios plus the predicate's unit tests, touching six files. That is more than one concern and too much for one fresh session, and the predicate is a natural seam that both the daemon leaf and the inbox leaf need. Major oversized-leaf stands. How should it be settled?"
+        },
+        "handle": "review-01m7a1pqw3n9c0af1e9c1g8ymw-r3-f1",
+        "id": "01M7A3K79BFD60Y3C3PG4JBXCW",
+        "key": null,
+        "kind": "question",
+        "node": "01M7A3K79BFD60Y3C3PDJJC0CS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A3K79BFD60Y3C3PDJJC0CS",
+        "id": "01M7A3K7A4W7352FFWVHKQBFPZ",
+        "link": "01M7A3K7A4W7352FFWVFJQ0121",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A26C4ZRFSRVS8ND06BE7NJ",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M7A1PXPS84ZD222S9ADHF0SV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A3K7GG0DNDZGK1AXBMK640",
+  "type": "ops",
+  "v": 1
+}

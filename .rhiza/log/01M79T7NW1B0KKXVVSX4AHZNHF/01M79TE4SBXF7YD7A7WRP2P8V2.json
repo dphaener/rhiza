@@ -1,0 +1,39 @@
+{
+  "actor": "01M79T99M206Q7ECXD48N3D53R",
+  "after": [
+    "01M79T7NW1B0KKXVVSX8A5SCVV"
+  ],
+  "at": "2026-11-13T06:45:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "The titles seem to be a description and just run off. It's not informative at all.",
+              "where": "bug request, 2026-11-13"
+            }
+          ],
+          "raw_sha256": "2b68fb3baac07b048190df0ab02c465b9b869485e451900fe9300ce269d7917f",
+          "session": "f9012d6a-ac8d-4507-910c-01a1d3a461d7",
+          "summary": "Autonomous plan of a bug request: the web roadmap row title is the change set's whole intent (internal/web/roadmap.go sets Row.Title to c.Intent; the roadmap operation's change sets carry no title). Planned one leaf under web-roadmap-page serving m37-roadmap (decision web-redesign-direction: clear roadmap bugs ship at once as bug requests): the roadmap operation adds each change set's display title, and the web roadmap row shows it with the intent as a secondary line clamped to two lines. The runs list already shows the change set's display title and the change set page's depends-on list already uses change.show's title, so they need no change; the overview lists milestones, not change sets. No question was raised.",
+          "title": "Plan: web roadmap rows show change set titles"
+        },
+        "handle": "plan-roadmap-row-titles",
+        "id": "01M79TE4N9H2VSZN4C6D5QNN79",
+        "key": null,
+        "kind": "source",
+        "node": "01M79TE4N9H2VSZN4C6CJQQFVQ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M79T7NW1B0KKXVVSX4AHZNHF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79TE4SBXF7YD7A7WRP2P8V2",
+  "type": "ops",
+  "v": 1
+}

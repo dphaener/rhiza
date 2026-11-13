@@ -1,0 +1,290 @@
+{
+  "actor": "01M79ZPR604RE7YRVM40SYRW89",
+  "after": [
+    "01M79ZZYJQAP7PZPY1WAFE2S1T"
+  ],
+  "at": "2026-11-13T08:23:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The scratch sweep lists the scratch folders once per sweep and matches them against the recorded sessions, instead of globbing <tmp>/claude-*/*/<id> once per session: its cost grows with sessions plus folders, not their product",
+          "wording": "(assumed, would have escalated) planner's call under autonomy: the journal ties every multi-minute poll to a leftovers sweep, and the per-session glob makes about 11M lstat calls over 4136 sessions and 2657 folders"
+        },
+        "handle": "decision-scratch-sweep-one-listing",
+        "id": "01M7A01H6Q373D893K2X5DV6G9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A01H6Q373D893K2W79TA0E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A01H6Q373D893K2W79TA0E",
+        "id": "01M7A01H89Q64DG13THXZ2N6R3",
+        "link": "01M7A01H89Q64DG13THVDWBFMW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ZZXEXW704Y9Y51WSANGQJ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The hourly leftovers sweep runs on its own goroutine, never inside a poll, one sweep at a time, so a slow disk or a large scratch tree cannot hold up starts, merges or the watchdog",
+          "wording": "(assumed, would have escalated) planner's call under autonomy: the request asks that one slow step cannot stop the loop, and the sweep touches no poll state"
+        },
+        "handle": "decision-housekeeping-off-poll",
+        "id": "01M7A01H9E023TYHPSKXJSMKXW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A01H9E023TYHPSKVBVQ6P1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A01H9E023TYHPSKVBVQ6P1",
+        "id": "01M7A01HABAVKXR4ZK613RYCKZ",
+        "link": "01M7A01HABAVKXR4ZK5XB7VR72",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ZZXEXW704Y9Y51WSANGQJ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Each git program a daemon poll runs through a project's context is killed after 30 s, the limit the model-branch work and the self-update fetch already use; the step that ran it fails for that poll and the poll goes on",
+          "wording": "(assumed, would have escalated) planner's call under autonomy: the request asks to bound a git call under load; 30 s matches modelNetTimeout and selfUpdateFetchTimeout, and kills only a hung git, not a slow one"
+        },
+        "handle": "decision-poll-git-timeout",
+        "id": "01M7A01HBFEE1QN5DWQ5SX70C7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A01HBFEE1QN5DWQ219EB4R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A01HBFEE1QN5DWQ219EB4R",
+        "id": "01M7A01HD0AAJWC7YN32Q5M7GD",
+        "link": "01M7A01HD0AAJWC7YN32ND1GBT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ZZXEXW704Y9Y51WSANGQJ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The slow step is journaled in the daemon log and the watchdog action record the poll-behind check already writes, with no new file, state field or --json shape: the after-poll line names the slowest steps with their times, and one line is written while a poll is still running past its limit, naming the step it is in",
+          "wording": "(assumed, would have escalated) planner's call under autonomy: the request asks to journal which step was slow when the watchdog fires; the existing line and record are where the owner reads it, and the in-flight line covers the minutes when Last poll stays put"
+        },
+        "handle": "decision-slow-step-in-log",
+        "id": "01M7A01HE2H14NTF2NJ8F2BT6N",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A01HE2H14NTF2NJ66KPP08",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A01HE2H14NTF2NJ66KPP08",
+        "id": "01M7A01HFN3E6645T35XDWW279",
+        "link": "01M7A01HFN3E6645T35TAFKK2T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ZZXEXW704Y9Y51WSANGQJ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "At start, each daemon image puts the child processes it already has, which only an earlier image before a re-exec can have started, on the home project's driver list, so the existing reaper waits on them by pid; the reaper still never waits on an unlisted pid",
+          "wording": "(assumed, would have escalated) planner's call under autonomy: each of the four [git] zombies started in the same second as a re-exec, and the driver list is the reaper's existing, safe way to wait on a pid nothing else waits on"
+        },
+        "handle": "decision-adopt-inherited-children",
+        "id": "01M7A01HHVCJYKX5RWMS5VPKBW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A01HHVCJYKX5RWMNZSGZ0C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A01HHVCJYKX5RWMNZSGZ0C",
+        "id": "01M7A01HKFJN7DP88S9ZZGJNZ0",
+        "link": "01M7A01HKFJN7DP88S9YKBBEQH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ZZXEXW704Y9Y51WSANGQJ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/leftovers/... ./internal/adapter/claudecode/... and go test -trimpath ./internal/api -run TestDaemonSweepLeftovers: a leftovers test records 3000 sessions (some of live runs) over a scratch tree of 1500 folders, counts directory reads through an injected reader or a counting wrapper, and asserts each scratch directory is read at most once while exactly the orphaned folders older than a day are removed and the freed bytes are counted; the claudecode test covers the scratch roots and name matching it now gives; TestDaemonSweepLeftoversPrunesOnlyOrphans still passes. Touches internal/leftovers/leftovers.go, internal/leftovers/leftovers_test.go, internal/adapter/adapter.go, internal/adapter/claudecode/claudecode.go, internal/adapter/claudecode/claudecode_test.go, internal/api/daemon_leftovers.go, internal/api/daemon_leftovers_test.go",
+          "statement": "The leftovers sweep finds the session scratch folders to remove by listing each scratch level once per sweep, <tmp>/claude-* and then each of its folders, and matching folder names against the recorded sessions of no live run, so its directory reads do not grow with the number of recorded sessions; what it removes and the line it logs are unchanged"
+        },
+        "handle": "scratch-sweep-one-listing",
+        "id": "01M7A01HP9C0SQC3RZMX9Q30N2",
+        "key": "zzzzzzzw",
+        "kind": "capability",
+        "node": "01M7A01HP9C0SQC3RZMW0R2R18",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M7A01HP9C0SQC3RZMW0R2R18",
+        "id": "01M7A01HRASTJHWD0MCE9ENTYH",
+        "link": "01M7A01HRASTJHWD0MCDGVPBMB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01H6Q373D893K2W79TA0E",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestDaemonSweepLeftovers': a test makes the sweep block on a channel, runs the home project's poll step and asserts it returns while the sweep is still blocked, that a second due poll starts no second sweep, and that the freed line is written once the sweep is released; the existing orphan-pruning test still passes. Touches internal/api/daemon.go, internal/api/daemon_leftovers.go, internal/api/daemon_leftovers_test.go, internal/daemon/sweepsched.go, internal/daemon/sweepsched_test.go",
+          "statement": "The daemon runs its hourly leftovers sweep on a goroutine of its own instead of inside the poll: a poll that finds the sweep due starts it and goes on, a poll never starts a second sweep while one runs, and the sweep's log line is unchanged"
+        },
+        "handle": "leftovers-sweep-off-poll",
+        "id": "01M7A01HSS3X0K4M3EMDSZRW9M",
+        "key": "zzzzzzzy",
+        "kind": "capability",
+        "node": "01M7A01HSS3X0K4M3EM9XWRDFJ",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M7A01HSS3X0K4M3EM9XWRDFJ",
+        "id": "01M7A01HVHM7QZC8NFFN6R30WV",
+        "link": "01M7A01HVHM7QZC8NFFN0QZQD1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01H9E023TYHPSKVBVQ6P1",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7A01HSS3X0K4M3EM9XWRDFJ",
+        "id": "01M7A01HXHP0GJW9D26Q2CS127",
+        "link": "01M7A01HXHP0GJW9D26KR9WTPC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HP9C0SQC3RZMW0R2R18",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestPollGit': with a fake ctx.Start whose git never exits and a fake clock or a shortened limit, a test runs a project context's Git and GitConfig and asserts each returns an error naming the command and the limit after the limit, the program was killed, and a git that exits in time returns its output unchanged. Touches internal/api/daemon_projects.go, internal/api/daemon.go, internal/api/daemon_projects_test.go",
+          "statement": "Every git program the daemon's poll runs through a project's context (the home project's Git and each other project's Git and GitConfig) is killed after 30 s with GIT_TERMINAL_PROMPT=0, as execWithin does for the model-branch work, and fails with an error naming the git command and the time limit, so a hung git costs a poll at most that long per call; the self-update's make and the run drivers the poll detaches are not bounded"
+        },
+        "handle": "poll-git-bounded",
+        "id": "01M7A01HZMHFKMQ821D1WBDZXK",
+        "key": "zzzzzzzz",
+        "kind": "capability",
+        "node": "01M7A01HZMHFKMQ821D1SR6BFH",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M7A01HZMHFKMQ821D1SR6BFH",
+        "id": "01M7A01J1N832NE60AMJP69AT7",
+        "link": "01M7A01J1N832NE60AMH892P8A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HBFEE1QN5DWQ219EB4R",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestWatchdogPollBehind: with a fake clock that advances inside named steps, a test runs the poll-behind check and asserts the logged line and the recorded watchdog action name the slowest steps in order with their project and rounded time, that a poll within the limit logs nothing, and that the line keeps its existing prefix. Touches internal/api/watchdog_pollbehind.go, internal/api/watchdog_pollbehind_test.go, internal/api/daemon.go, internal/api/daemon_projects.go",
+          "statement": "The daemon times each step of a poll (registry load, then per project: settings, machine and usage reads, demand, starts, notify, watchdog, events and model-branch work, plus the home project's housekeeping), and when the poll-behind check fires, its log line and watchdog action name the slowest steps with their project and time, as in 'poll took 6m28s, over its limit of 15s (3 times the 5s poll interval); slowest: rhiza watchdog 5m58s, rhiza demand 21s'"
+        },
+        "handle": "poll-behind-names-steps",
+        "id": "01M7A01J38C50QZG2X4M8SE51M",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M7A01J38C50QZG2X4JNEC3S8",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M7A01J38C50QZG2X4JNEC3S8",
+        "id": "01M7A01J4YTC5QZ015H8KEP7M7",
+        "link": "01M7A01J4YTC5QZ015H62DSQMJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HE2H14NTF2NJ66KPP08",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestWatchdogPollOverrun: a test runs a poll whose step blocks on a channel past a shortened limit and asserts exactly one in-flight line naming that step and project is written before the step is released, none for a poll within the limit, and none with poll-behind disabled. Touches internal/api/watchdog_pollbehind.go, internal/api/watchdog_pollbehind_test.go, internal/api/daemon.go",
+          "statement": "While a poll is still running past the poll-behind limit, the daemon writes one log line naming the step and project it is in and how long the poll has run, as in 'watchdog: poll still running after 15s, in rhiza watchdog', so the log shows a stuck step before the poll ends; it writes at most one such line per poll and none when the watchdog or its poll-behind check is off"
+        },
+        "handle": "poll-overrun-logged-live",
+        "id": "01M7A01J6NM4S5VW0XREJAK1MA",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7A01J6NM4S5VW0XRCPK60ZP",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M7A01J6NM4S5VW0XRCPK60ZP",
+        "id": "01M7A01J89YJMVNYHG286ZKG7B",
+        "link": "01M7A01J89YJMVNYHG26VRWPFR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HE2H14NTF2NJ66KPP08",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7A01J6NM4S5VW0XRCPK60ZP",
+        "id": "01M7A01J9HN4NCMQ5H6JY7J1HP",
+        "link": "01M7A01J9HN4NCMQ5H6G97KM8E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01J38C50QZG2X4JNEC3S8",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run 'TestReap' on Linux: a test starts a plain child it never waits on (standing for one inherited through a re-exec), runs the start-time adoption, lets the child exit, runs the reaper and finds the pid gone with no zombie and off the list, while a child os/exec starts after the adoption still gets its own exit status from Wait; off Linux adoption does nothing. Touches cmd/rhiza/drivers_linux.go, cmd/rhiza/drivers_unix.go, cmd/rhiza/drivers_other.go, cmd/rhiza/detach_other.go, cmd/rhiza/reap_test.go, cmd/rhiza/ctx.go, internal/api/api.go, internal/api/daemon.go",
+          "statement": "When a daemon image starts, on Linux, it puts every child process it already has (one an earlier image left running when it re-executed, whose waiter died with that image) on the home project's driver list as its own, before it starts any program, so the reaper waits on each by pid and none stays a defunct [git]; a child the new image starts later is never put on the list by this"
+        },
+        "handle": "daemon-adopts-inherited-children",
+        "id": "01M7A01JB2302EDM0R0PCABBZH",
+        "key": "zzzzzzzzi",
+        "kind": "capability",
+        "node": "01M7A01JB2302EDM0R0N111NEV",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M7A01JB2302EDM0R0N111NEV",
+        "id": "01M7A01JCQCY63711WN00D3ZAV",
+        "link": "01M7A01JCQCY63711WMXZK04PV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HHVCJYKX5RWMNZSGZ0C",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A01JDX03VX2HTSP4J24A1Z",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M79S2CCZNKSTJ1JJ5ND16N9F",
+  "after": [
+    "01M79R59S7633D5XKW1J5A597H"
+  ],
+  "at": "2026-11-13T06:23:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Attempt 2 at f62ce2fb9: re-ran go test -trimpath -count=1 ./internal/guide/... (exit 0; TestCheckQAText now also asserts the shared test-scope block, TestCheckQANamesNoRepoCommand passes), built rhiza to $TMPDIR and ran `guide check-qa | grep -q \"only the tests covering\"` (exit 0), `ship generate` (exit 0, 0 files changed), `render` (exit 0, no tracked changes) and make self-check (exit 0). Diff touches only check-qa.md, check_qa_test.go, rendered actors/index and the builder's actor record. The six sections stay in order, isolation, clean-state, scratch path and never-install (still under Must do), happy/failure, bounded exploration, broken-only and the <leaf>-qa-<cycle> verifies Evidence example are all still present and tested. No stubs or TODOs."
+        },
+        "handle": "check-qa-topic-verified-2",
+        "id": "01M79S5ZF9R7SF55EQW9RAHDAP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79S5ZF9R7SF55EQW6NRTX3C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79S5ZF9R7SF55EQW6NRTX3C",
+        "id": "01M79S5ZNDYC1ARQ6944WF3GMX",
+        "link": "01M79S5ZNDYC1ARQ6944A0QS8Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH2C9CN1F6PMN6G3SYF0Z",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79S5ZWRM3ZJEW2H42HZZJX8",
+  "type": "ops",
+  "v": 1
+}

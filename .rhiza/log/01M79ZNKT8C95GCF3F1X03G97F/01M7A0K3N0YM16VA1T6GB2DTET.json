@@ -1,0 +1,30 @@
+{
+  "actor": "01M7A0H6J9S2G4PV5M7HNQHP5Y",
+  "after": [
+    "01M7A0JNVM4GT8D3DFB10DXB18"
+  ],
+  "at": "2026-11-13T08:32:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/leftovers/... ./internal/adapter/... and go test -trimpath ./internal/api -run 'TestDaemonSweepLeftovers|TestRemoveRunScratch|TestSessionInterview|TestSessionHook': a leftovers test records 3000 sessions (some of live runs) over a scratch tree of 1500 folders, counts directory reads through an injected reader or a counting wrapper, and asserts each scratch directory is read at most once while exactly the orphaned folders older than a day are removed and the freed bytes are counted; the claudecode test covers the scratch parents and session ID matching it now gives (no parents widened by an unsafe ID); TestDaemonSweepLeftoversPrunesOnlyOrphans still passes over the interview adapter's one-level $HOME/scratch/<sid> layout; a run's end still removes its sessions' scratch folders. Touches internal/leftovers/leftovers.go, internal/leftovers/leftovers_test.go, internal/adapter/adapter.go, internal/adapter/adapter_test.go, internal/adapter/claudecode/claudecode.go, internal/adapter/claudecode/claudecode_test.go, internal/api/daemon_leftovers.go, internal/api/daemon_leftovers_test.go, internal/api/run_leftovers.go, internal/api/session_interview_test.go, internal/api/session_ask_test.go",
+          "statement": "The leftovers sweep finds the session scratch folders to remove by listing each scratch level once per sweep and matching folder names against the recorded sessions of no live run, so its directory reads do not grow with the number of recorded sessions; what it removes and the line it logs are unchanged. The levels come from each adapter: the Adapter interface's ScratchGlobs gives way to a per-adapter list of scratch parents, glob patterns of the folders whose direct children are session folders named by session ID (Claude Code's <tmp>/claude-*/*, the interview test adapter's $HOME/scratch, none for the ask and adapter_test fakes), and the run-end cleanup in run_leftovers.go removes <parent>/<session ID> under the same parents"
+        },
+        "handle": "scratch-sweep-one-listing",
+        "id": "01M7A01HP9C0SQC3RZMX9Q30N2",
+        "key": "zzzzzzzw",
+        "kind": "capability",
+        "node": "01M7A01HP9C0SQC3RZMW0R2R18",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A0K3N0YM16VA1T6GB2DTET",
+  "type": "ops",
+  "v": 1
+}

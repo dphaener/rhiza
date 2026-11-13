@@ -88,7 +88,7 @@ func TestSharedPhrasesInExactlyOneFile(t *testing.T) {
 	for _, p := range []string{
 		"## Command budget", "Never sleep and never poll", "about four\nminutes",
 		"runs once in the background and is\nwaited for once",
-		"Builders and verifiers run only the tests covering what the change touches",
+		"Run only the tests covering what the change touches",
 		"scoped commands", "never the repo's full\nsuite", "the PR's CI runs it before merge",
 		"While CI is unstable", "not explained by your change", "do not push or rerun CI to see",
 		"Reproduce the\nfailing test locally", "push only after it and the\ntouched packages pass locally",

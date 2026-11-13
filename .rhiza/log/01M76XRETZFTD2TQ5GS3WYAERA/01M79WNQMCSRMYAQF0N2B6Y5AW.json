@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M79WABP6G82YF1VD5S83EVJR"
+  ],
+  "at": "2026-11-13T07:24:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Review check model still fails after 3 cycles: finding f1 (major at internal/guide/text/shared/test-scope.md:1) on leaf review-role-skills-installed: guides-scoped-tests and role-prompts-scoped-tests (both updated in this change set) say every review role topic tells checks, critics and fixers to run only th…. Its last cycle: cycle 3: confirmed f1 (major). How should it be fixed, or should leaf review-role-skills-installed change?"
+        },
+        "handle": "leaf-failed-01m79dzc-1",
+        "id": "01M79WN5S2GY3TM2ETWV5PB2MB",
+        "key": null,
+        "kind": "question",
+        "node": "01M79WN5S2GY3TM2ETWSV2VYB4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79WN5S2GY3TM2ETWSV2VYB4",
+        "id": "01M79WNHANVV352QVVWADANMPE",
+        "link": "01M79WNHANVV352QVVW9EXW5H9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79WNQMCSRMYAQF0N2B6Y5AW",
+  "type": "ops",
+  "v": 1
+}

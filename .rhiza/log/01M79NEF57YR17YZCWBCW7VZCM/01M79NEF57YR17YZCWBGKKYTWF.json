@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-13T05:17:53Z",
+  "body": {
+    "intent": "Record agent actor claude-code-c290ab42 for session c290ab42-f8d5-4293-ae10-01a1d3570b99",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M79NEF57YR17YZCWBCW7VZCM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79NEF57YR17YZCWBGKKYTWF",
+  "type": "open",
+  "v": 1
+}

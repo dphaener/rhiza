@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-13T08:29:59Z",
+  "body": {
+    "intent": "Record agent actor claude-code-ddb96028 for session ddb96028-dd1c-416a-8e49-01a1d40701f3",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7A0E7MJ8TF673SY62EXATZH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A0E7MJ8TF673SY64SB8YG4",
+  "type": "open",
+  "v": 1
+}

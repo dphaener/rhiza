@@ -1,0 +1,27 @@
+{
+  "actor": "01M79ZPR604RE7YRVM40SYRW89",
+  "after": [
+    "01M79ZZXH3M2HK3N99RWXDQD7B"
+  ],
+  "at": "2026-11-13T08:22:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M79ZNKT8C95GCF3F1X03G97F",
+        "id": "01M79ZZYHAY9PASJ2WFNP9GRY6",
+        "link": "01M79ZZYHAY9PASJ2WFHV6J342",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEM51ZKB5VM5YCY867AR0A",
+        "type": "serves"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79ZZYJQAP7PZPY1WAFE2S1T",
+  "type": "ops",
+  "v": 1
+}

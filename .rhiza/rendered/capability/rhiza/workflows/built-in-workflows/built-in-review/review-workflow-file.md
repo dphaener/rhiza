@@ -8,7 +8,7 @@ A testscript with fake agents runs `rhiza run start review` on a built change se
 
 ## statement
 
-Rhiza ships a built-in `review` workflow: the code check, then a checks step with compliance, quality, qa, scope and model checks and their critic on opus, and the sign-off, ending done without landing the change set.
+Rhiza ships a built-in `review` workflow: the code check, then a checks step with compliance, quality, qa and model checks and their critic on opus, and the sign-off, ending done without landing the change set.
 
 ## Links
 
@@ -26,13 +26,16 @@ Rhiza ships a built-in `review` workflow: the code check, then a checks step wit
 - decided-by [review-ruling-14](../../../../../decision/review-ruling-14.md)
 - decided-by [review-ruling-23](../../../../../decision/review-ruling-23.md)
 - decided-by [review-ruling-24](../../../../../decision/review-ruling-24.md)
+- decided-by [review-role-topics-shape](../../../../../decision/review-role-topics-shape.md)
 
 ### In
 
 - verifies [review-workflow-file-verified](../../../../../evidence/review-workflow-file-verified.md)
 - verifies [review-workflow-file-head-verified](../../../../../evidence/review-workflow-file-head-verified.md)
 - verifies [pr-45-the-review-workflow](../../../../../evidence/pr-45-the-review-workflow.md)
+- verifies [pr-537-review-role-topics](../../../../../evidence/pr-537-review-role-topics.md)
 
 ## History
 
 - `01M5WPTZ1V0JVVW8FPX0QYMRWJ` The review workflow: fresh sessions check compliance, quality, hands-on QA, scope and the model, a critic that can't add findings settles failed checks, fixes go back per leaf at most twice, and the owner signs off with rhiza run approve.
+- `01M76XRETZFTD2TQ5GS3WYAERA` Review roles get afk's shipit/forge prompts in Rhiza's words, one guide topic each on the six-section skeleton: compliance (absorbing the scope check: under-built, scope creep, unaccounted files), quality (impact radius, checklist), qa (clean state, scratch build outside PATH, happy and failure cases), model, critic, fixer, ci-fix, gate-fix and conflict-fix; checks are isolated from build history; the scope check leaves review.toml. Source: prompt-gap.md sections 2.5-2.8 and 5 (CS1, CS8).
