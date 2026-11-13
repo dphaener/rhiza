@@ -1,0 +1,30 @@
+{
+  "actor": "01M79WTTKRD6Y1TAFED8EMKNC5",
+  "after": [
+    "01M79WHTBK5S4VTQ95RTFXXQJQ"
+  ],
+  "at": "2026-11-13T07:30:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... -run QueueWait: polls that skip a change set for no-slot twice, then for usage-reserve, then for load-high under a machine hold, then start it, then skip it as held and then live journal exactly four lines (no-slot, usage-reserve, load-high, started) with its change, title and detail; a change set started on its first poll journals only a started line; a fresh daemon over the same journal writes no line for an unchanged reason; a change set skipped as ship-owner whose run is then started outside the daemon journals ship-owner then started, the started line's at being the run journal's start time and its detail 'started outside the daemon'",
+          "statement": "Each daemon poll appends a queue-wait line for an accepted change set only when its pre-start wait changes: when a poll first skips it for a pre-start reason, with the poll's Skip reason and detail (no-slot, not-ready, no-milestone, no-leaves, disk-low, load-high, memory-low, usage-reserve, paused, ship-owner and workflow-unresolved), when that reason changes, and a started line when its run starts. A run the daemon starts is journaled as started when the daemon starts it. A run the daemon did not start (one started by hand, or a ship-owner change set's) is journaled on the next poll, before any pre-start filter: when a run journal under <common>/rhiza/runs/ has a started entry for a change set later than its last line and that line is a pre-start reason, the poll appends a started line whose at is the run's start time and whose detail is 'started outside the daemon'. The post-start Skip reasons (live, held, unjournaled, failed and shipped, which the daemon gives a change set whose run has already started: internal/daemon/pick.go, internal/api/daemon.go) are never journaled, so after started nothing more is written for that change set until a poll skips it for a pre-start reason again (a retried or reopened change set waiting anew). The last reason per change set is taken from the journal, so a restarted daemon writes no duplicate line"
+        },
+        "handle": "queue-wait-journal-lines",
+        "id": "01M79DE92G4FFVHC5MFT3J66G7",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M79DE92G4FFVHC5MFPY6EFGN",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      }
+    ]
+  },
+  "change_set": "01M76XSY0YM17EQ9K24CC4JRAK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79X0VZR24VE5BJAA4T937P1",
+  "type": "ops",
+  "v": 1
+}

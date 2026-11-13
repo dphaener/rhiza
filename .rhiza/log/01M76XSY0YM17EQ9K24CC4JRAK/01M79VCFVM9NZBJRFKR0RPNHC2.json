@@ -1,0 +1,40 @@
+{
+  "actor": "01M79V9DN9TZNC0BENPNDVFYYD",
+  "after": [
+    "01M79EANC40GPMVRJHM3XGVTG9"
+  ],
+  "at": "2026-11-13T07:01:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At eb1b5eb22 re-ran the Checks block: go test -trimpath ./internal/daemon/... -run QueueWait (exit 0, also -race -count=3 exit 0), rhiza ship generate (exit 0), rhiza render (exit 0, only this verifier's own actor rendered). Read the diff: internal/daemon/queuewait.go defines QueueWait (at, change, title, reason, detail), RecordQueueWait appends one marshalled line with a single O_APPEND write to queue.wait.jsonl under Dir(common), ReadQueueWaits reads lines oldest first skipping unparseable ones and returns nil on a missing file. queuewait_test.go covers each acceptance point: round trip with every field in order, a malformed line between two good ones skipped, missing file reads as no lines, 50 concurrent goroutine appends all read back whole and distinct. Nothing outside the leaf changed besides the builder's actor record; no stubs or TODOs; gofmt and go vet clean."
+        },
+        "handle": "queue-wait-journal-reader-verified",
+        "id": "01M79VCFRRG477YCWNYCGMXM6R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79VCFRRG477YCWNYBHVAHHV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79VCFRRG477YCWNYBHVAHHV",
+        "id": "01M79VCFTRMAPRZNQ9DTJ90QM8",
+        "link": "01M79VCFTRMAPRZNQ9DRM665AF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79DE919PHFX4JVJ8V97PGE5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSY0YM17EQ9K24CC4JRAK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79VCFVM9NZBJRFKR0RPNHC2",
+  "type": "ops",
+  "v": 1
+}
