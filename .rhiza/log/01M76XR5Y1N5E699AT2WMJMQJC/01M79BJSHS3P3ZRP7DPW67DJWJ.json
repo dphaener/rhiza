@@ -1,0 +1,40 @@
+{
+  "actor": "01M79BF5MKFXDDZKKXFM836K7S",
+  "after": [
+    "01M79BGZFZAJZASWCK00Y177KF"
+  ],
+  "at": "2026-11-13T02:25:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier attempt 2 at 8dfc21dab: go test -trimpath ./internal/guide/... exit 0; TestVerifierText passes and now asserts the exact six ## headings (Task, Expected outcome, Read first, Must do, Must not do, Context) with command-budget nested in Must do and never-list nested in Must not do, plus session-done/test-scope blocks, detached checkout, Never edit code, fakes only, Checks:/acceptance re-run with missing block or different exit code a finding naming the command, scope and no-stub points, the Evidence apply example, the rhiza run findings heredoc, findings naming file/command/acceptance point, and the negative case banning builder commit/trailer instructions. A scratch build's `rhiza guide verifier` prints only those six ## sections (### Command budget, ### Never nested). Re-ran every Checks: command: the -run TestBuilderText|TestVerifierText|TestReviewText|TestShared|TestBuildReviewCommandBudget run, go test ./cmd/rhiza -run TestClaudeMDScopedTests, go test ./internal/workflow, rhiza ship generate, rhiza render (tree stayed clean), make self-check: all exit 0. Diff touches only verifier.md, verifier_test.go and .rhiza records; the seven stale guide nodes (verifier-reruns-reported-checks, unstable-ci-guidance, delay-repro-guidance, guides-scoped-tests, command-budget-guide, build-guide-fakes-only, done-own-command-guide) no longer name build.md or TestBuildText. Review findings f1 (quality, qa) and f3 (model) are addressed."
+        },
+        "handle": "verifier-topic-verified-2",
+        "id": "01M79BJSF7GM4BM0FGCTEKTGCJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79BJSF7GM4BM0FGCT3F0K5W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79BJSF7GM4BM0FGCT3F0K5W",
+        "id": "01M79BJSGECNJJ6E3Z0PWRVBCA",
+        "link": "01M79BJSGECNJJ6E3Z0KQHSGF0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974G189EFBV82T8PZ626EZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79BJSHS3P3ZRP7DPW67DJWJ",
+  "type": "ops",
+  "v": 1
+}
