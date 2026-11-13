@@ -340,3 +340,85 @@ func TestRunFindingsCheckNames(t *testing.T) {
 		}
 	}
 }
+
+// In a conductor run (conduct declares plan, code and qa) review-check,
+// run from the later gate step, counts each check's latest round under
+// conduct: minor rounds pass, a blocker with no verdict or a confirmed
+// major fails, a downgraded blocker or dropped major passes.
+func TestReviewCheckConductor(t *testing.T) {
+	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
+	t0 := time.Date(2026, 11, 13, 12, 0, 0, 0, time.UTC)
+	store := run.NewStore(run.Dir(f.common))
+	def := "[step.conduct]\nkind = \"agent\"\nprompt = \"go\"\n" +
+		"[[step.conduct.check]]\nname = \"plan\"\n[[step.conduct.check]]\nname = \"code\"\n[[step.conduct.check]]\nname = \"qa\"\n" +
+		"[step.gate]\nkind = \"command\"\nrun = \"true\"\n"
+	if err := store.Create("R13", run.Entry{
+		Type: run.TypeStarted, Step: "conduct", At: t0,
+		Started: &run.Started{Workflow: "conduct", Definition: def, Change: "01M76F4G0JQ649RR29M9QPFX68", Title: "Conduct"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	app := func(e run.Entry) {
+		t.Helper()
+		e.At = t0
+		if err := store.Append("R13", e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	app(run.Entry{Type: run.TypeEntered, Step: "conduct", Visit: 1})
+	app(run.Entry{Type: run.TypeEntered, Step: "gate", Visit: 1})
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return "R13"
+		}
+		return ""
+	}
+	findings := func(check string, fs ...run.Finding) {
+		app(run.Entry{Type: run.TypeFindings, Step: "conduct", Check: check, Cycle: 1, Findings: fs})
+	}
+	verdict := func(check string, v run.Verdict) {
+		app(run.Entry{Type: run.TypeVerdict, Step: "conduct", Check: check, Cycle: 1, Verdicts: []run.Verdict{v}})
+	}
+	fd := func(id, sev string) run.Finding {
+		return run.Finding{ID: id, Severity: sev, Place: "a.go:1", Reason: "r " + id}
+	}
+	pass := func(what string) {
+		t.Helper()
+		if _, err := callOp(t, f.ctx, "run.review-check", `{}`); err != nil {
+			t.Fatalf("%s: %v", what, err)
+		}
+	}
+	fail := func(what string, names ...string) {
+		t.Helper()
+		_, err := callOp(t, f.ctx, "run.review-check", `{}`)
+		e := AsError(err)
+		if e == nil || strings.Contains(e.Message, "has no review round yet") {
+			t.Fatalf("%s: %v", what, err)
+		}
+		for _, n := range names {
+			if !strings.Contains(e.Message, n) {
+				t.Errorf("%s: %q missing from %v", what, n, e.Message)
+			}
+		}
+	}
+	findings("plan", fd("f1", "minor"), fd("f2", "nit"))
+	findings("code")
+	findings("qa", fd("f1", "minor"))
+	pass("minor rounds")
+	findings("code", fd("f1", "blocker"))
+	fail("blocker with no verdict", "code", "r f1")
+	findings("code", fd("f1", "major"))
+	verdict("code", run.Verdict{Finding: "f1", Verdict: run.Confirmed, Reason: "real"})
+	fail("confirmed major", "code")
+	findings("code", fd("f1", "blocker"))
+	verdict("code", run.Verdict{Finding: "f1", Verdict: run.Downgraded, Severity: "minor", Original: "blocker", Reason: "small"})
+	pass("downgraded blocker")
+	findings("qa", fd("f1", "major"))
+	verdict("qa", run.Verdict{Finding: "f1", Verdict: run.Dropped, Reason: "no"})
+	pass("dropped major")
+	// Only the latest round counts: an old major is superseded.
+	findings("plan", fd("f1", "major"))
+	fail("new major in plan", "plan")
+	findings("plan")
+	pass("latest plan round clean")
+}
