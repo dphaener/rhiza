@@ -1684,17 +1684,29 @@ func TestShipFollowRefusesDirtyWorktree(t *testing.T) {
 	}
 }
 
-func TestShipFollowRefusesLocalCommits(t *testing.T) {
+// HEAD and origin's branch have diverged: origin's commits are merged in,
+// and a conflicting merge (the fake's merge fails) is aborted and refused,
+// naming origin's commits. Nothing is reset, rebased or pushed.
+func TestShipFollowRefusesConflictingOrigin(t *testing.T) {
 	f := shipFollowFixture(t)
 	delete(f.git.out, "merge-base --is-ancestor HEAD "+rebaseOrigin)
-	f.git.out["rev-list --oneline "+rebaseOrigin+"..HEAD"] = "abc1234 Local only commit\n"
+	f.git.out["rev-list --oneline HEAD.."+rebaseOrigin] = "def5678 Origin only commit\n"
+	f.git.out["status --porcelain --untracked-files=no"] = ""
+	f.git.out["merge --abort"] = ""
 	_, err := callOp(t, f.ctx, "ship.rebase", `{}`)
-	if err == nil || !strings.Contains(err.Error(), "Local only commit") {
+	wantExit(t, err, 3)
+	if !strings.Contains(err.Error(), "Origin only commit") {
 		t.Fatalf("err = %v", err)
 	}
+	if !slices.Contains(f.git.calls, "merge --no-edit -m Merge origin/cs/ship-it into cs/ship-it "+rebaseOrigin) {
+		t.Errorf("origin's branch was not merged; calls %q", f.git.calls)
+	}
+	if !slices.Contains(f.git.calls, "merge --abort") {
+		t.Errorf("the conflicting merge was not aborted; calls %q", f.git.calls)
+	}
 	for _, c := range f.git.calls {
-		if strings.HasPrefix(c, "merge ") || strings.HasPrefix(c, "reset") || strings.HasPrefix(c, "push") {
-			t.Errorf("git call %q moved the worktree", c)
+		if strings.HasPrefix(c, "reset") || strings.HasPrefix(c, "rebase") || strings.HasPrefix(c, "push") {
+			t.Errorf("git call %q moved the branch", c)
 		}
 	}
 }
