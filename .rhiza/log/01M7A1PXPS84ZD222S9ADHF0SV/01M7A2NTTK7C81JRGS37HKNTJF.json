@@ -1,0 +1,44 @@
+{
+  "actor": "01M7A2M8R1B6DRPHVN778MNNSG",
+  "after": [
+    "01M7A26CFMTJSYCM6PDC8AJE1Q"
+  ],
+  "at": "2026-11-13T09:09:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "A plan-review run that fails before its gate (milestone-check, a stuck review) journals no gated entry; under the arbiter's rule alone the daemon would start a new run on every poll. The failed run is already an inbox item with rhiza run resume --retry next, so the proposal is not silent",
+          "statement": "A run on the change set of any workflow, plan-review included, that ended failed and was not abandoned also covers it: the daemon does not start another, and the inbox lists the failure with its retry instead of an uncovered proposal; an abandoned run covers nothing",
+          "wording": "(derived by the planner from the arbiter's Decision uncovered-proposals-get-plan-runs, which names live runs and gated finished runs)"
+        },
+        "handle": "failed-plan-run-covers",
+        "id": "01M7A26BZ35TBJ2K6MWCQ1S5PD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A26BZ2KESAHX4212BR36EK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A new cmd/rhiza/testdata/script/daemon-plans-proposals.txtar (Rex faked, RHIZA_TEST_DETACH_LOG): a change set proposed with a leaf and no run makes rhiza daemon --once start one plan-review run naming it with --autonomous and the daemon's permission mode; a second poll while that start is pending starts nothing more; a proposed change set with no leaves, one a finished plan run's gated entry names, one a finished plan-review run's gated entry names (started --workflow plan-review without --new, gate left it proposed under rhiza.autonomy.accept owner), one whose plan-review run ended failed and one whose plan run ended failed start nothing on this or a following poll; one whose only run was abandoned gets a start; with --max-runs 1 and a ready accepted change set the proposal's start and the ship pick share the slot without exceeding it; under rhiza daemon pause nothing starts. internal/api/proposals_test.go covers uncoveredProposals over journals of workflow plan, plan-milestone and plan-review, gated, failed, abandoned and live. go test -trimpath ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/daemon-' pass. Touches internal/api/daemon.go, internal/api/daemon_fold.go, internal/api/daemon_projects.go, internal/api/proposals.go, internal/api/proposals_test.go, cmd/rhiza/testdata/script/daemon-plans-proposals.txtar",
+          "statement": "Each daemon poll starts, as a detached rhiza run start --foreground <change> --workflow plan-review --autonomous --permission-mode <the daemon's mode>, a plan-review run for every proposed change set with leaves that no run covers. Covered is defined by a run's change set, workflow and journal, never by run.State.IsPlanRun or isPlanWorkflow (which know only plan and plan-milestone, and stay unchanged): a change set is covered while any run on it is live or its start is pending and not yet journaled, when a finished run on it whose workflow is plan, plan-milestone or plan-review (or that run.State.IsPlanRun reports) has a latest gated entry naming it, or when any run on it, plan-review included, ended failed and was not abandoned. These starts count against max-runs after the resumes and before the ship picks, and stop under pause, low disk, the load and memory holds and a usage hold like any other start; one shared predicate (uncoveredProposals in internal/api) decides covered, for the daemon and the inbox"
+        },
+        "handle": "daemon-plans-uncovered-proposals",
+        "id": "01M7A26C4ZRFSRVS8ND0XV82TY",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7A26C4ZRFSRVS8ND06BE7NJ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7A1PXPS84ZD222S9ADHF0SV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A2NTTK7C81JRGS37HKNTJF",
+  "type": "ops",
+  "v": 1
+}

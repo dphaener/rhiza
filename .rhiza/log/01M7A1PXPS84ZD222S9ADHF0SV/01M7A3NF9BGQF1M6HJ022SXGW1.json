@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7A3N9B04HTZZKDNG8VS5BBB"
+  ],
+  "at": "2026-11-13T09:26:22Z",
+  "body": {
+    "reason": "autonomous run 01M7A1PQW3N9C0AF1E9C1G8YMW",
+    "rule": "autonomous"
+  },
+  "change_set": "01M7A1PXPS84ZD222S9ADHF0SV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A3NF9BGQF1M6HJ022SXGW1",
+  "type": "accept",
+  "v": 1
+}
