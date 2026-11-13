@@ -1,0 +1,96 @@
+{
+  "actor": "01M79CQMWMWCFRXWSQQBCT6HT7",
+  "after": [
+    "01M79CYATDEWMN8VY2P6G12JYT"
+  ],
+  "at": "2026-11-13T02:49:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Tests in internal/workflow parse a verifier with both fields, refuse them on a builder, a fixer, a check and an agent step, refuse a blank model and an empty glob, and match `**/testdata/**`, `*_test.go` and `.github/**` against sample paths; cmd/rhiza testscript workflow-describe shows both fields for a verifier that sets them (describe-golden regenerated if the --json shape changes).",
+          "statement": "A leaves or checks step's verifier role takes `low_risk_models` (a model ladder by attempt) and `risky_paths` (path globs, `**` matching any number of directories) beside its `models`, which stays the ladder for risky leaves; setting either on a builder, fixer, check or agent step is refused with an error naming the verifier role, a blank model or empty glob is refused, a role setting neither behaves exactly as today, and `rhiza workflow describe` (text and --json) shows both fields."
+        },
+        "handle": "verifier-tier-fields",
+        "id": "01M79CZ27B7NJD16PRCJHH40BW",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M79CZ27B7NJD16PRCG0YJ54R",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M79CZ27B7NJD16PRCG0YJ54R",
+        "id": "01M79CZ28HE0C54X4RZWJ60GJ4",
+        "link": "01M79CZ28HE0C54X4RZW8HQJHA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CX5B3P4T9BGG2V38PA0XS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/run start verifiers from a role with low_risk_models = [\"sonnet\"], models = [\"opus\"] and risky_paths = [\".github/**\"] and find the journalled leaf-session model sonnet for a first-attempt commit touching only internal/x/x.go, and opus for a commit touching .github/workflows/ci.yml, for attempt 2, for a fresh round, for review cycle 2, and when the start HEAD cannot be diffed; a role without low_risk_models starts on models as before.",
+          "statement": "When the conductor launches a verifier whose role sets `low_risk_models`, it starts it on that ladder only when the leaf is low-risk, and on `models` when the leaf is risky: a file changed between the builder's or fixer's journalled start HEAD and the commit under verification matches one of the role's `risky_paths`, the attempt within the round is past 1, the leaf is in a fresh round, the review cycle is past 1, or the diff cannot be read; the choice is deterministic, with no agent call, and the leaf-session entry journals the model chosen."
+        },
+        "handle": "verifier-tier-choice",
+        "id": "01M79CZ29TQH0XYRCP3BR0G1WK",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M79CZ29TQH0XYRCP38C2X9DK",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M79CZ29TQH0XYRCP38C2X9DK",
+        "id": "01M79CZ2AWC44HKVHWVQHR50TX",
+        "link": "01M79CZ2AWC44HKVHWVNSKWBJC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CX5B3P4T9BGG2V38PA0XS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/workflow loads the built-in build and review workflows and finds those ladders and globs on both verifier roles; cmd/rhiza testscript workflow-describe shows them for `rhiza workflow describe build`; `make self-check` passes.",
+          "statement": "The built-in build workflow's verifier and review workflow's fixed-leaf verifier keep models = [\"opus\"] and ship low_risk_models = [\"sonnet\"] and risky_paths covering test infrastructure (*_test.go, **/*_test.go, **/testdata/**, **/main_test.go), hooks (.githooks/**, **/hooks/**), CI (.github/**), workflow files (.rhiza/workflows/**, internal/workflow/builtin/**), migrations (**/migrations/**, **/migrate/**) and retry code (**/*retry*); a project changes them by overriding the workflow, with no new rhiza.* setting."
+        },
+        "handle": "verifier-tier-defaults",
+        "id": "01M79CZ2BQEZSPC3KEFB0AFRZW",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M79CZ2BQEZSPC3KEF7PZH5G0",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M79CZ2BQEZSPC3KEF7PZH5G0",
+        "id": "01M79CZ2D3TT3AZ513X3V74QQG",
+        "link": "01M79CZ2D3TT3AZ513X2Z9JCJ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CX5B3P4T9BGG2V38PA0XS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79CZ2BQEZSPC3KEF7PZH5G0",
+        "id": "01M79CZ2EJWY3S232BED89CQJA",
+        "link": "01M79CZ2EJWY3S232BE9XM6JHM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CZ27B7NJD16PRCG0YJ54R",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M76XS745J8S0J74SZFEHQ17Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79CZ2FKV4AEXS5A0M4N2A9A",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,30 @@
+{
+  "actor": "01M79CQMWMWCFRXWSQQBCT6HT7",
+  "after": [
+    "01M777MK7RMG03853D1D9EFA5N"
+  ],
+  "at": "2026-11-13T02:47:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "03f1e4cd-1fae-4504-9df6-01a1d2cbb3c5",
+          "statement": "Tiered verifier: what decides that a leaf is risky and gets the strongest verifier model? / Tiered verifier: which model verifies a low-risk leaf? / Tiered verifier: where are the risky paths and the two model ladders configured? / Tiered verifier: which verifier sessions does the tiering cover?"
+        },
+        "handle": "question-03f1e4cd-1",
+        "id": "01M79CTRMM1S9SKRRNTRGES168",
+        "key": null,
+        "kind": "question",
+        "node": "01M79CTRMM1S9SKRRNTQTRA3VG",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76XS745J8S0J74SZFEHQ17Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79CTTT5HB9146YJRJQA06F5",
+  "type": "ops",
+  "v": 1
+}
