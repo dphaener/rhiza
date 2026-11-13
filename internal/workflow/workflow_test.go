@@ -1029,7 +1029,7 @@ func TestChecksStepRefused(t *testing.T) {
 		{"check with no name", head + "[[step.review.check]]\nprompt = \"x\"\n" + roles,
 			`step "review": check 1 has no name: set name = "..."`},
 		{"blank check prompt", head + "[[step.review.check]]\nname = \"lint\"\nprompt = \" \"\n" + roles,
-			`step "review": check "lint" needs prompt = "<what the check should do>"; it may use {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {check}, {cycle}`},
+			`step "review": check "lint" needs prompt = "<what the check should do>"; it may use {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}, {check}, {cycle}`},
 		{"unknown check key", head + check("lint") + "retries = 3\n" + roles,
 			`step "review": check: unknown key "retries"; want name, invoke (or prompt), handback, agent, permission_mode or models`},
 		{"unknown critic key", head + check("lint") + critic + "retries = 3\n" + fixer + verifier,
@@ -1044,10 +1044,10 @@ func TestChecksStepRefused(t *testing.T) {
 			`step "review": a checks step needs a [step.review.verifier] table with prompt = `},
 		{"blank critic prompt", head + check("lint") + "[step.review.critic]\nprompt = \"\"\n" + fixer + verifier,
 			`step "review": critic needs prompt = "<what the critic should do>"`},
-		{"unknown check placeholder", head + "[[step.review.check]]\nname = \"lint\"\nprompt = \"do {leaf}\"\n" + roles,
-			`step "review": check "lint": prompt uses unknown placeholder {leaf}; want one of {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {check}, {cycle}`},
+		{"unknown check placeholder", head + "[[step.review.check]]\nname = \"lint\"\nprompt = \"do {nope}\"\n" + roles,
+			`step "review": check "lint": prompt uses unknown placeholder {nope}; want one of {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}, {check}, {cycle}`},
 		{"check placeholder on the fixer", head + check("lint") + critic + "[step.review.fixer]\nprompt = \"fix {check}\"\n" + verifier,
-			`step "review": fixer: prompt uses unknown placeholder {check}; want one of {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {cycle}`},
+			`step "review": fixer: prompt uses unknown placeholder {check}; want one of {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}, {cycle}`},
 		{"cycle placeholder on the verifier", head + check("lint") + critic + fixer + "[step.review.verifier]\nprompt = \"verify {cycle}\"\n",
 			`step "review": verifier: prompt uses unknown placeholder {cycle}`},
 		{"blank check model", head + check("lint") + "models = [\"\"]\n" + roles,
@@ -2565,12 +2565,16 @@ kind = "checks"
 name = "qa"
 invoke = "check {check} {cycle}"
 handback = "recheck {check}"
+[[step.review.check]]
+name = "leafy"
+invoke = "check [{leaf}] [{attempt}]"
+handback = "recheck [{leaf}] [{attempt}]"
 [step.review.critic]
 invoke = "critic {cycle}"
-handback = "again {worktree}"
+handback = "again {worktree} [{leaf}] [{attempt}]"
 [step.review.fixer]
 invoke = "fix {leaf} {cycle}"
-handback = "fix again {leaf}"
+handback = "fix again {leaf} [{attempt}]"
 [step.review.verifier]
 invoke = "verify {leaf}"
 handback = "reverify {leaf}"
@@ -2626,15 +2630,25 @@ handback = "reverify {leaf}"
 	if got := r.Critic.RenderCheckPrompt(cv); got != "critic 3" {
 		t.Errorf("critic invoke = %q", got)
 	}
-	if got := r.Critic.RenderCheckHandback(cv); got != "again /wt" {
-		t.Errorf("critic handback = %q", got)
+	if got := r.Critic.RenderCheckHandback(cv); got != "again /wt [] []" {
+		t.Errorf("critic handback = %q, want {leaf} {attempt} empty", got)
 	}
-	fv := FixerVars{PromptVars: pv, Leaf: "lf", Cycle: 1}
+	lc, _ := r.Check("leafy")
+	if got := lc.Role.RenderCheckPrompt(cv); got != "check [] []" {
+		t.Errorf("check {leaf} {attempt} invoke = %q, want them empty", got)
+	}
+	if got := lc.Role.RenderCheckHandback(cv); got != "recheck [] []" {
+		t.Errorf("check {leaf} {attempt} handback = %q, want them empty", got)
+	}
+	fv := FixerVars{PromptVars: pv, Leaf: "lf", Attempt: 2, Cycle: 1}
 	if got := r.Fixer.RenderFixerPrompt(fv); got != "fix lf 1" {
 		t.Errorf("fixer invoke = %q", got)
 	}
-	if got := r.Fixer.RenderFixerHandback(fv); got != "fix again lf" {
+	if got := r.Fixer.RenderFixerHandback(fv); got != "fix again lf [2]" {
 		t.Errorf("fixer handback = %q", got)
+	}
+	if got := r.Fixer.RenderFixerHandback(FixerVars{PromptVars: pv, Cycle: 1}); got != "fix again  []" {
+		t.Errorf("fixer handback with no leaf or attempt = %q, want them empty", got)
 	}
 	if got := r.Verifier.RenderPrompt(lv); got != "verify lf" {
 		t.Errorf("checks verifier invoke = %q", got)

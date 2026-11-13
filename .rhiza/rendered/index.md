@@ -10515,6 +10515,7 @@
 - [claude-code-ffbf3f20](actor/claude-code-ffbf3f20.md)
 - [claude-code-ffe30b85](actor/claude-code-ffe30b85.md)
 - [claude-code-ffeb440c](actor/claude-code-ffeb440c.md)
+- [claude-code-fff7e797](actor/claude-code-fff7e797.md)
 - [claude-code-orchestrator](actor/claude-code-orchestrator.md)
 - [claude-code-task-11](actor/claude-code-task-11.md)
 - [darin-haener](actor/darin-haener.md)

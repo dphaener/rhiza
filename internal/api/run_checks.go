@@ -104,7 +104,7 @@ func (r *stepRunner) StartFix(spec run.FixSpec) (string, error) {
 // instruction to fix them in one new commit with the trailer
 // `Review: <run>`.
 func changeSetFixerPrompt(role workflow.Role, spec run.FixSpec, vars workflow.PromptVars) string {
-	p := role.RenderFixerPrompt(workflow.FixerVars{PromptVars: vars, Cycle: spec.Cycle})
+	p := role.RenderFixerPrompt(workflow.FixerVars{PromptVars: vars, Attempt: spec.Attempt, Cycle: spec.Cycle})
 	head := fmt.Sprintf("Confirmed findings to fix in review cycle %d", spec.Cycle)
 	if spec.Owner {
 		head = "The owner requested these changes"

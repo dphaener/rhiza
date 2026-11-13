@@ -131,12 +131,13 @@ var agentPlaceholders = append(slices.Clone(placeholders), "leaf", "attempt")
 // checks step's verifier.
 var leafPlaceholders = append(slices.Clone(placeholders), "leaf", "attempt")
 
-// Placeholders a checks step's check or critic prompt may use.
-var checkPlaceholders = append(slices.Clone(placeholders), "check", "cycle")
+// Placeholders a checks step's check or critic prompt may use; {leaf} and
+// {attempt} render empty, since a check or critic builds no leaf.
+var checkPlaceholders = append(slices.Clone(placeholders), "leaf", "attempt", "check", "cycle")
 
 // Placeholders a checks step's fixer prompt may use; {leaf} is empty for
 // the fixer of findings that name no leaf.
-var fixerPlaceholders = append(slices.Clone(placeholders), "leaf", "cycle")
+var fixerPlaceholders = append(slices.Clone(placeholders), "leaf", "attempt", "cycle")
 
 // kindOutcomes lists the outcomes each step kind can produce.
 var kindOutcomes = map[string][]string{
@@ -489,16 +490,17 @@ func (r Role) RenderCheckHandback(v CheckVars) string {
 }
 
 func (v CheckVars) checkValues() map[string]string {
-	return map[string]string{"check": v.Check, "cycle": fmt.Sprint(v.Cycle)}
+	return map[string]string{"leaf": "", "attempt": "", "check": v.Check, "cycle": fmt.Sprint(v.Cycle)}
 }
 
 // FixerVars are the values a checks step's fixer prompt placeholders
-// take: a step's, plus the leaf's handle ("" for findings naming no leaf)
-// and the cycle.
+// take: a step's, plus the leaf's handle ("" for findings naming no leaf),
+// the fixer's attempt (rendered empty when 0) and the cycle.
 type FixerVars struct {
 	PromptVars
-	Leaf  string
-	Cycle int
+	Leaf    string
+	Attempt int
+	Cycle   int
 }
 
 // RenderFixerPrompt fills a fixer's prompt placeholders from v.
@@ -513,7 +515,11 @@ func (r Role) RenderFixerHandback(v FixerVars) string {
 }
 
 func (v FixerVars) fixerValues() map[string]string {
-	return map[string]string{"leaf": v.Leaf, "cycle": fmt.Sprint(v.Cycle)}
+	attempt := ""
+	if v.Attempt > 0 {
+		attempt = fmt.Sprint(v.Attempt)
+	}
+	return map[string]string{"leaf": v.Leaf, "attempt": attempt, "cycle": fmt.Sprint(v.Cycle)}
 }
 
 // Role is a leaves step's builder or verifier, or a checks step's critic,
