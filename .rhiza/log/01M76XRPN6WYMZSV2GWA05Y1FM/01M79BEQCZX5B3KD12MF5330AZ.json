@@ -1,0 +1,33 @@
+{
+  "actor": "01M79B610ASZ8H7B5Y375RP9EH",
+  "after": [
+    "01M79BD2WKC4N3JTZ2X8TK845T"
+  ],
+  "at": "2026-11-13T02:23:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "b881fb6685f6c5ef815b7664d2a79b5f0d7b4675bea670df420e523ded8c8da0",
+          "session": "3c4cbc82-631f-48a7-a942-01a1d2b2e5e4",
+          "summary": "Autonomous plan run for change set 01M76XRP (Plan role topics), serving m35-afk-prompts. No owner present. The planner read the change set intent, prompt-gap.md sections 2.1, 2.2, 4 (rec 15) and 5, the planned sibling Build role topics (01M76XR5, Decision build-role-topics-shape, its shared-block mechanism), the Leaf contract change set's intent (01M76XT3, which also names plan-review kinds), internal/guide/text/plan.md and plan-review.md, internal/guide/plan_test.go and review_test.go, internal/run/journal.go (Kinds, KindSeverity), internal/api/run_review.go, internal/api/guide_install.go and the builtin plan.toml and plan-milestone.toml prompts. It raised one question bundling four choices (delivery and the fate of the plan and plan-review topics, which change set adds the uncovered-intent and oversized-leaf kinds and at what severity, how the research pass and self-check work, how shared blocks and the severity block are reused). The arbiter answered with Decision plan-role-topics-shape: four new topics planner, plan-reviewer, plan-critic and plan-reviser installed as rhiza-planner, rhiza-plan-reviewer, rhiza-plan-critic and rhiza-plan-reviser; plan and plan-review stay as short indexes (not breaking); plan.toml and plan-milestone.toml prompts shrink to one line per role; this change set adds both kinds to run.Kinds as major, Leaf contract keeps no-failure-case and the review-check move; research pass and self-check are planner prose only; this change set depends on Build role topics and its shared blocks, and the severity block moves to internal/guide/text/shared/severities.md. The planner then wrote eight leaves under plan-workflow and linked the change set depends-on 01M76XR5, since that change set's nodes are not landed and a leaf cannot link to them.",
+          "title": "Plan role topics plan (autonomous)"
+        },
+        "handle": "plan-role-topics-interview",
+        "id": "01M79BEQC3M2VCH9VVSJ0169BH",
+        "key": null,
+        "kind": "source",
+        "node": "01M79BEQC2C08ZJVASXVB26YVK",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79BEQCZX5B3KD12MF5330AZ",
+  "type": "ops",
+  "v": 1
+}

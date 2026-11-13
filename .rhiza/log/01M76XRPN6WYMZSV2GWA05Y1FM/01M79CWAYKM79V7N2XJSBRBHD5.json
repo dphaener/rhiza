@@ -1,0 +1,41 @@
+{
+  "actor": "01M79CVG41DFMKXDX0MX25B0XS",
+  "after": [
+    "01M79CV2N2CAWNQXD2A348CMJQ"
+  ],
+  "at": "2026-11-13T02:48:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the question, plan-guide, planner-topic and Decision plan-role-topics-shape. The Decision, which decides both leaves, puts the apply recipes and who records a pick in the plan-recipes reference topic because the planner part of today's plan topic (about 2000 tokens) cannot fit one topic under TopicCap 1000; planner-topic's statement and acceptance carry that split, asserting the apply recipe and no plan file move to plan-recipes. plan-guide was only updated to point at the new topics and still names the planner topic for the recipe, which is the older wording. Moving the recipe back into planner would break TopicCap and the Decision; rewording plan-guide costs nothing and keeps the content (the rule is still in the guide, one topic away, named from planner's Read first). The review finding itself proposes this fix and the critic confirmed it. No CLI, flag or file format changes, so no breaking note.",
+          "statement": "Settle the contradiction in favour of the split: plan-guide follows Decision plan-role-topics-shape and leaf planner-topic. The apply recipe for a leaf (statement and acceptance fields, a decided-by link), the no-plan-file and no-checkboxes rule, and who records a pick live in `rhiza guide plan-recipes`, not in `rhiza guide planner`. plan-guide's statement and acceptance are reworded to say so: the planner topic carries what a planning session plans, in what order, and that every leaf, acceptance check, Decision and question goes into the model through rhiza apply, and its Read first names plan-recipes and plan-interview; plan-guide's acceptance checks that rhiza guide plan names the four role topics, that rhiza guide planner names plan-recipes, and that rhiza guide plan-recipes holds the leaf apply recipe and says no plan file and no checkboxes are kept. planner-topic and the Decision are unchanged.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "plan-guide-follows-recipes-split",
+        "id": "01M79CWAVQCJY9J3Q69RN68EAT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79CWAVQCJY9J3Q69R22D0Y9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79CWAVQCJY9J3Q69R22D0Y9",
+        "id": "01M79CWAX1R8J0S99VJJW4GX84",
+        "link": "01M79CWAX1R8J0S99VJHZX49M0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CV2GRBTKSEB6Y95AYYZJ9",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79CWAYKM79V7N2XJSBRBHD5",
+  "type": "ops",
+  "v": 1
+}
