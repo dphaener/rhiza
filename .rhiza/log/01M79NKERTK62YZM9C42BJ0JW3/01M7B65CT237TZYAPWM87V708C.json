@@ -1,0 +1,40 @@
+{
+  "actor": "01M7B62CF4STNF5NKZWTPXWFV4",
+  "after": [
+    "01M7B5A732N6PX4TPNM0M7277D"
+  ],
+  "at": "2026-11-13T19:29:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ebedabfa3 re-ran the Checks block: go test -trimpath ./internal/web -run 'TestProjectPicker|TestSwitcherNamesReadOnlyForPages' -v (both PASS, exit 0), go test -trimpath ./internal/web/... (ok), go test -trimpath ./internal/api -run Web (ok), rhiza ship generate (exit 0, 0 changed), rhiza render (exit 0, tracked tree unchanged). Read the diff: picker.go serves /picker from the ProjectsSource once per request, listing initialised projects with live state (N running / idle) and needs-you counts, sorted with items first, links keeping the page kind via pageKind (detail pages keep their list), an All projects row linking /inbox, and search only from six projects; TestProjectPicker asserts each of these (2 vs 6 initialised projects for search). RootWithSwitcher, ProjectNames, WebProjectNames, scope.Switcher and the inline switcher template are removed with no remaining references; TestSwitcherNamesReadOnlyForPages now asserts assets, fragments and page renders under /p/a/ never read the source and one GET /picker reads it once. CSS uses defined tokens (bottom sheet by default, menu from 721px); no TODOs or stubs; tests use fakes only."
+        },
+        "handle": "web-picker-sheet-verified",
+        "id": "01M7B65CPXPKX0HSQNJ4ZHDK6N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B65CPXPKX0HSQNJ2SA2ZYR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B65CPXPKX0HSQNJ2SA2ZYR",
+        "id": "01M7B65CRT50R4C4XP253DEYH2",
+        "link": "01M7B65CRT50R4C4XP23XK5DWB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25DYN1X19CGG3X73K97J5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B65CT237TZYAPWM87V708C",
+  "type": "ops",
+  "v": 1
+}

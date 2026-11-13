@@ -107,16 +107,26 @@ type page struct {
 	Milestones MilestonesPanel
 	// Base is the project prefix the page is served under, empty at the root.
 	Base string
-	// Switcher is the header's project switcher; nil leaves it out.
-	Switcher *Switcher
+	// Project is the project the page is served for, empty at the root.
+	Project string
+	// Root marks one of the root's own pages (the all-projects home, the
+	// merged inbox): unscoped, yet served beside /picker, so the header
+	// still carries the picker button, naming all projects.
+	Root bool
+	// NeedsYou is the project's needs-you count in the header's picker
+	// button; zero shows no badge.
+	NeedsYou int
 	// Data is what the page's own content renders.
 	Data any
 }
 
 func render(w http.ResponseWriter, r *http.Request, name string, p page) {
 	if sc := scopeOf(r); sc != nil {
-		p.Base = sc.Prefix
-		p.Switcher = sc.Switcher()
+		p.Base, p.Project = sc.Prefix, sc.Name
+	}
+	p.NeedsYou = needsYouOf(r)
+	if p.Daemon.Text == "" {
+		p.Daemon = daemonOf(r).Pill()
 	}
 	var buf bytes.Buffer
 	if err := pages[name].ExecuteTemplate(&buf, "layout", p); err != nil {
@@ -155,6 +165,25 @@ func HandlerWithInbox(daemon DaemonSource, runs RunsSource, inbox InboxSource, a
 // HandlerWithMilestones is HandlerWithInbox with the source of the open
 // milestones the Overview shows the progress of; nil shows none.
 func HandlerWithMilestones(daemon DaemonSource, runs RunsSource, inbox InboxSource, milestones MilestonesSource, api http.Handler, events ...http.Handler) http.Handler {
+	return HandlerWithNeedsYou(daemon, runs, inbox, milestones, nil, api, events...)
+}
+
+// NeedsYouSource reads how many things wait on the owner in the project.
+type NeedsYouSource func() int
+
+type needsYouKey struct{}
+
+func needsYouOf(r *http.Request) int {
+	if src, _ := r.Context().Value(needsYouKey{}).(NeedsYouSource); src != nil {
+		return src()
+	}
+	return 0
+}
+
+// HandlerWithNeedsYou is HandlerWithMilestones with the source of the
+// project's needs-you count, which the header's picker button shows; nil
+// shows no count.
+func HandlerWithNeedsYou(daemon DaemonSource, runs RunsSource, inbox InboxSource, milestones MilestonesSource, needs NeedsYouSource, api http.Handler, events ...http.Handler) http.Handler {
 	mux := http.NewServeMux()
 	for _, e := range events {
 		if e != nil {
@@ -194,6 +223,9 @@ func HandlerWithMilestones(daemon DaemonSource, runs RunsSource, inbox InboxSour
 		}
 		if milestones != nil {
 			r = r.WithContext(context.WithValue(r.Context(), milestonesKey{}, milestones))
+		}
+		if needs != nil {
+			r = r.WithContext(context.WithValue(r.Context(), needsYouKey{}, needs))
 		}
 		mux.ServeHTTP(w, withAPI(r, api))
 	})

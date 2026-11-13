@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-13T19:55:58Z",
+  "body": {
+    "intent": "Fix flaky test TestReadBudget: failed then passed on a rerun in PR #567 at head c5cc453c8b33b60fd6078c0aeaf5e1331ce3239f; reproduce it locally, repeatedly, then fix it or quarantine it",
+    "kind": "intention",
+    "request_kind": "bug",
+    "sources": []
+  },
+  "change_set": "01M7B7P8D389GB7N94YPTXAQCS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B7P8D4PQDKHAC8KAF2PY9P",
+  "type": "open",
+  "v": 4
+}

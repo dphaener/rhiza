@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/rootcfg"
 	"github.com/dphaener/rhiza/internal/web"
@@ -14,7 +15,8 @@ import (
 func WebProjectHandler(base *Ctx) http.Handler {
 	snap := *base
 	health := NewWebHealth(&snap)
-	return web.HandlerWithMilestones(WebDaemonSource(&snap, health), WebRunsSource(&snap), WebInboxSource(&snap), WebMilestonesSource(&snap), ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap, health), web.PollEvery))
+	needs := func() int { return len(WebNeedsYou(&snap, time.Now())) }
+	return web.HandlerWithNeedsYou(WebDaemonSource(&snap, health), WebRunsSource(&snap), WebInboxSource(&snap), WebMilestonesSource(&snap), needs, ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap, health), web.PollEvery))
 }
 
 // WebRootHandler is the one web UI of the root daemon: the all-projects
@@ -35,7 +37,10 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 		h   http.Handler
 	}
 	cache := map[string]built{}
-	return web.RootWithSwitcher(home, homeName, func(name string) http.Handler {
+	// The root's own pages (the projects home, the merged inbox) carry the
+	// daemon pill too; it reads no health, so its health never refreshes.
+	pill := WebDaemonSource(ctx, newWebHealth(func() []web.HealthPill { return nil }, healthRefreshEvery, time.Now))
+	return web.WithDaemon(pill, web.RootWithInbox(home, homeName, func(name string) http.Handler {
 		reg, err := rootcfg.Load(root)
 		if err != nil {
 			return nil
@@ -58,26 +63,7 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 		h := WebProjectHandler(projectCtx(ctx, dir))
 		cache[name] = built{dir, h}
 		return h
-	}, WebProjectsSource(ctx, root, homeName), WebMergedInboxSource(ctx, root), WebProjectNames(root))
-}
-
-// WebProjectNames lists the initialised projects registered in the root for
-// a project page's switcher: names only, from rhiza.toml and each
-// project's .rhiza/, never its runs, inbox or health.
-func WebProjectNames(root string) web.ProjectNames {
-	return func() []string {
-		reg, err := rootcfg.Load(root)
-		if err != nil {
-			return nil
-		}
-		var names []string
-		for _, name := range reg.Names() {
-			if projectInitialised(reg.Dir(root, name)) {
-				names = append(names, name)
-			}
-		}
-		return names
-	}
+	}, WebProjectsSource(ctx, root, homeName), WebMergedInboxSource(ctx, root)))
 }
 
 // WebProjectsSource reads every project registered in the root for the web
@@ -108,6 +94,7 @@ func WebProjectsSource(ctx *Ctx, root, homeName string) web.ProjectsSource {
 					}
 				}
 				v.Inbox = len(WebInboxSource(c)())
+				v.NeedsYou = len(WebNeedsYou(c, time.Now()))
 				mu.Lock()
 				h := healths[name]
 				if h == nil {

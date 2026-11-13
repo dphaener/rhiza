@@ -16,11 +16,23 @@ exec rhiza init
 exec rhiza add actor builder --record
 exec rhiza add actor verifier --record
 exec rhiza render
+mkdir internal legacy
+cp $WORK/real.go internal/real.go
+cp $WORK/real.go legacy/old.txt
 exec git add -A
 exec git commit -qm init
+exec rhiza change new "Legacy" --title "Legacy"
+exec rhiza add capability legacy --field 'statement=Lives in legacy/old.txt'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+exec rhiza render
+exec git add -A
+exec git commit -qm legacy
 exec sh -c 'rhiza change new "Code check" --title "Code check" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cs'
 grep '^[0-9A-Z]{26}$' $WORK/cs
-exec rhiza add capability alpha --field 'statement=Does alpha'
+exec rhiza add capability alpha --field 'statement=Does alpha' --field 'acceptance=internal/real.go and internal/nope.go hold'
+exec rhiza add decision unapplied-choice --field 'statement=Pick the first way'
 exec rhiza add capability beta --field 'statement=Does beta'
 mkdir .rhiza/workflows
 cp $WORK/code.toml .rhiza/workflows/code.toml
@@ -43,6 +55,9 @@ exec sh -c 'cd $WORK/repo.code-check && echo a > alpha.txt && git add alpha.txt 
 exec sh -c 'cd $WORK/repo.code-check && echo b > beta.txt && git add beta.txt && git commit -qm beta --trailer "Change: $(cat $WORK/cs)" --trailer "Actor: builder" --trailer "Leaf: beta"'
 exec sh -c 'cd $WORK/repo.code-check && RHIZA_ACTOR=verifier rhiza add evidence beta-ok --field "statement=beta works" --field result=PASS --change $(cat $WORK/cs) && RHIZA_ACTOR=verifier rhiza link beta-ok verifies beta --change $(cat $WORK/cs)'
 
+# The branch deletes the only file the landed capability legacy names.
+exec sh -c 'cd $WORK/repo.code-check && git rm -q legacy/old.txt && git commit -qm drop-legacy --trailer "Change: $(cat $WORK/cs)" --trailer "Actor: builder"'
+
 # alpha lacks Evidence: it fails, exit 1, naming alpha and nothing of
 # rhiza check, and journals the failure with its cause.
 exec sh -c 'cd $WORK/repo.code-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check; echo exit=$?'
@@ -51,6 +66,21 @@ stdout '^- leaf alpha: no Evidence verifies it$'
 ! stdout 'beta'
 ! stdout 'rhiza check'
 stdout '^exit=1$'
+
+# Three lint hits are listed, in the human output and --json, and are not
+# causes: the failure case names only the Evidence.
+stdout '^lints: 3 hits$'
+stdout '^- path alpha acceptance: internal/nope\.go$'
+stdout '^- unapplied-decision unapplied-choice$'
+stdout '^- removed-code-capability legacy statement: legacy/old\.txt$'
+exec sh -c 'cd $WORK/repo.code-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check --json; true'
+stdout '"kind": "path"'
+stdout '"ref": "internal/nope.go"'
+stdout '"kind": "unapplied-decision"'
+stdout '"kind": "removed-code-capability"'
+stdout '"ref": "legacy/old.txt"'
+exec sh -c 'cd $WORK/repo.code-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check --json | grep -c "internal/nope"'
+stdout '^1$'
 exec sh -c 'cd $WORK/repo.code-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check --json; echo exit=$?'
 stdout '"passed": false'
 stdout '"causes": \[\n *"leaf alpha: no Evidence verifies it"\n *\]'
@@ -88,6 +118,23 @@ exec sh -c 'cd $WORK/repo.code-check && git checkout -q .rhiza/rendered/index.md
 exec sh -c 'cd $WORK/repo.code-check && RHIZA_ACTOR=verifier rhiza add evidence alpha-verified --field "statement=alpha works" --field result=PASS --change $(cat $WORK/cs) && RHIZA_ACTOR=verifier rhiza link alpha-verified verifies alpha --change $(cat $WORK/cs)'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check; echo exit=$?'
 stdout '^code-check passed: rhiza check is ok and 2 leaves have Evidence by a verifier$'
+stdout '^exit=0$'
+
+# The lint hits stay on a pass: listed in --json and the human output,
+# with passed true and exit 0.
+stdout '^lints: 3 hits$'
+stdout '^- path alpha acceptance: internal/nope\.go$'
+stdout '^- unapplied-decision unapplied-choice$'
+stdout '^- removed-code-capability legacy statement: legacy/old\.txt$'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check --json; echo exit=$?'
+stdout '"passed": true'
+stdout '"lints": \['
+stdout '"kind": "path"'
+stdout '"ref": "internal/nope.go"'
+stdout '"kind": "unapplied-decision"'
+stdout '"handle": "unapplied-choice"'
+stdout '"kind": "removed-code-capability"'
+stdout '"ref": "legacy/old.txt"'
 stdout '^exit=0$'
 
 # The generated reference and the docs-command rule are judged by the
@@ -147,10 +194,12 @@ exec sh -c 'grep "\"type\":\"code-check\"" .git/rhiza/runs/$(cat $WORK/runid).js
 stdout '"step":"code","outcome":"pass"'
 exec rhiza run status
 stdout '^- code \(visit 1\): pass, then end: exit 0'
-stdout '\n## Code checks\n\n(- .*\n)*- step code: pass\n'
+stdout '\n## Code checks\n\n(- .*\n|  - .*\n)*- step code: pass\n  - lint path alpha acceptance: internal/nope\.go\n  - lint unapplied-decision unapplied-choice\n  - lint removed-code-capability legacy statement: legacy/old\.txt\n'
 stdout '\n- step gate: fail \(leaf alpha: no Evidence verifies it\)\n'
 exec rhiza run status --json
 stdout '"code_checks": \['
+# The passing code step's entry carries all three hits.
+stdout '"handle": "alpha",\n *"kind": "path",\n *"node": "[0-9A-Z]+",\n *"ref": "internal/nope\.go"\n *\},\n *\{\n *"handle": "unapplied-choice",\n *"kind": "unapplied-decision",\n *"node": "[0-9A-Z]+"\n *\},\n *\{\n *"field": "statement",\n *"handle": "legacy",\n *"kind": "removed-code-capability",\n *"node": "[0-9A-Z]+",\n *"ref": "legacy/old\.txt"\n *\}\n *\],\n *"outcome": "pass",\n *"step": "code"\n'
 
 # Outside an unfinished run it is usage.
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check --json; echo exit=$?'
@@ -174,3 +223,6 @@ on.timeout = "failed"
 kind = "command"
 run = "rhiza run code-check"
 on.pass = "done"
+
+-- real.go --
+package real

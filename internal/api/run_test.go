@@ -674,6 +674,36 @@ func TestRunInfoAcceptsAndQuestions(t *testing.T) {
 	}
 }
 
+// runInfo carries each code check's lint hits, and the human status lists
+// them under the check's line.
+func TestRunInfoCodeCheckLints(t *testing.T) {
+	at := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+	st := run.State{ID: "R1", CodeChecks: []run.CodeCheck{{Step: "code", Outcome: run.CodeCheckPass, At: at, Lints: []run.LintHit{
+		{Node: "01NODEA", Handle: "alpha", Field: "acceptance", Kind: "path", Ref: "internal/nope.go"},
+		{Node: "01NODEB", Handle: "use-x", Kind: "unapplied-decision"},
+		{Node: "01NODEC", Handle: "legacy", Field: "statement", Kind: "removed-code-capability", Ref: "legacy/old.txt"},
+	}}}}
+	info := runInfo(nil, st, false, nil)
+	want := []RunLintHit{
+		{Node: "01NODEA", Handle: "alpha", Field: "acceptance", Kind: "path", Ref: "internal/nope.go"},
+		{Node: "01NODEB", Handle: "use-x", Kind: "unapplied-decision"},
+		{Node: "01NODEC", Handle: "legacy", Field: "statement", Kind: "removed-code-capability", Ref: "legacy/old.txt"},
+	}
+	if len(info.CodeChecks) != 1 || !slices.Equal(info.CodeChecks[0].Lints, want) {
+		t.Fatalf("code checks = %+v", info.CodeChecks)
+	}
+	out := human(t, info)
+	for _, s := range []string{
+		"  - lint path alpha acceptance: internal/nope.go\n",
+		"  - lint unapplied-decision use-x\n",
+		"  - lint removed-code-capability legacy statement: legacy/old.txt\n",
+	} {
+		if !strings.Contains(out, s) {
+			t.Errorf("markdown lacks %q:\n%s", s, out)
+		}
+	}
+}
+
 func TestRexReportEncoder(t *testing.T) {
 	long := strings.Repeat("é", 200) // 400 bytes
 	msg := "line one\nline two\x1b[31m\tend" + strings.Repeat("x", 3000)

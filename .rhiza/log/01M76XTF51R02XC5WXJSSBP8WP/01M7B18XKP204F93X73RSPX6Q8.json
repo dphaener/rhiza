@@ -1,0 +1,40 @@
+{
+  "actor": "01M7B166BDMMBJM22JXDHRD60V",
+  "after": [
+    "01M7B11BHYNAB3YM84ED4FSG73"
+  ],
+  "at": "2026-11-13T18:03:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 931bbb81e re-ran the Checks: block: go test -trimpath ./internal/modellint/... exit 0 (TestUnappliedDecisions -v: all 7 subtests pass), rhiza ship generate exit 0 (0 changed), rhiza render exit 0 (no tracked change). go vet and gofmt clean. Read the diff: internal/modellint/decisions.go adds UnappliedDecisions over the Decisions cs writes (writtenNodes, factored out of refs.go with StaleRefs unchanged in behaviour); decisions_test.go table covers no decided-by link (reported), answers-only (not), landed capability applies (not), leaf without Leaf: commit (reported), leaf committed by handle and by ID (not), and the failure case of another change set's unapplied Decision (not). No change outside internal/modellint besides the staged actor record and rendered files; no stubs or TODOs; tests use in-memory models only."
+        },
+        "handle": "modellint-unapplied-decisions-verified",
+        "id": "01M7B18XBT9Z2CQJEBHMYA5H9J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B18XBT9Z2CQJEBHHQTF8EF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B18XBT9Z2CQJEBHHQTF8EF",
+        "id": "01M7B18XEAB8MS4XGTA4JRE4AE",
+        "link": "01M7B18XEAB8MS4XGTA0JV9NM4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZSBANC9KR2Y0J1QZZTWZ9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XTF51R02XC5WXJSSBP8WP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B18XKP204F93X73RSPX6Q8",
+  "type": "ops",
+  "v": 1
+}

@@ -59,6 +59,13 @@ func TestWebRootHandlerServesEveryProject(t *testing.T) {
 	if code, body := get("/"); code != 200 || !strings.Contains(body, "/p/alpha/") || !strings.Contains(body, "/p/beta/") {
 		t.Errorf("/: %d, want the projects home listing both:\n%s", code, body)
 	}
+	// The root's own pages carry the daemon pill in their header.
+	for _, path := range []string{"/projects", "/inbox"} {
+		_, body := get(path)
+		if head, _, _ := strings.Cut(body, "</header>"); !strings.Contains(head, "daemon · ") {
+			t.Errorf("%s: header has no daemon pill:\n%s", path, head)
+		}
+	}
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/runs", nil))
 	if rec.Code != http.StatusFound || rec.Header().Get("Location") != "/p/alpha/runs" {

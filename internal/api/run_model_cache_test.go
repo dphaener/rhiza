@@ -207,7 +207,7 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 	// The verifier session's actor, whose Evidence each poll judges.
 	verifier := recordAda(t, mk, "driver-verifier@example.com")
 	f := newDriverFixture(t, g.root, g.indexPath, cs, verifier, 0)
-	measure := func(label string, budget time.Duration, runs int, between func()) {
+	measure := func(label, leaf string, budget time.Duration, runs int, between func()) {
 		t.Helper()
 		var per []time.Duration
 		var laps []quiettest.Lap
@@ -220,7 +220,7 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 			time.Sleep(2 * pollDebounce)
 			sw := quiettest.Start()
 			start := cpuTime()
-			f.poll(t, "driver-leaf-a")
+			f.poll(t, leaf)
 			per = append(per, cpuTime()-start)
 			laps = append(laps, sw.Stop())
 		}
@@ -243,7 +243,10 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 	f.poll(t, "driver-leaf-a")
 	time.Sleep(2200 * time.Millisecond)
 	f.poll(t, "driver-leaf-a")
-	measure("idle", idlePollCPUBudget, readBudgetRuns, nil)
+	// An idle driver polls the leaves, answers and session status and
+	// judges no Evidence: a leaf's Evidence is read only once a verifier
+	// has ended, and that forced catch-up is not an idle poll's cost.
+	measure("idle", "", idlePollCPUBudget, readBudgetRuns, nil)
 
 	// An entry in another small change set that is in flight. (A new change
 	// set would have the index compute its views again, and the change sets
@@ -255,7 +258,7 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 	other.ChangeSet = newChange(t, other, `{"intent":"Unrelated to the driver"}`).ChangeSet
 	f.poll(t, "driver-leaf-a")
 	n := 0
-	measure("after an unrelated entry", unrelatedPollCPUBudget, 9, func() {
+	measure("after an unrelated entry", "driver-leaf-a", unrelatedPollCPUBudget, 9, func() {
 		n++
 		req := fmt.Sprintf(`{"kind":"capability","handle":"unrelated-%d"}`, n)
 		if _, err := callOp(t, other, "add", req); err != nil {
