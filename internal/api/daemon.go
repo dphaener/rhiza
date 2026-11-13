@@ -1105,9 +1105,29 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 			}
 		}
 	}
+	var journal func(skips, started []daemon.Skip)
+	var states *daemon.RunStates
+	if common, cerr := gitCommonDir(ctx); cerr == nil {
+		states = daemon.NewRunStates(runs, held, host, nil, ship)
+		journal = func(skips, started []daemon.Skip) {
+			if err := daemon.JournalQueueWaits(common, ctx.Now(), states, skips, started); err != nil && ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: queue wait journal: %v\n", err)
+			}
+		}
+		journal(*skips, nil)
+	}
 	for _, cs := range picked {
 		if err := daemonStart(ctx, fold, cs, autonomous, mode); err != nil {
 			return started, resumed, milestoned, err
+		}
+		if journal != nil {
+			title := ""
+			if c, err := id.Parse(cs); err == nil {
+				if c, ok := fold.changeSet(c); ok {
+					title = c.Open.DisplayTitle()
+				}
+			}
+			journal(nil, []daemon.Skip{{Change: cs, Title: title}})
 		}
 		pending[cs] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, cs)}
 		started = append(started, cs)

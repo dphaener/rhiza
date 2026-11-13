@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -79,4 +80,46 @@ func ReadQueueWaitsIn(dir string) []QueueWait {
 			return out
 		}
 	}
+}
+
+// preStartReasons are the Skip reasons of a change set that waits before its
+// run starts: the only ones the journal records.
+var preStartReasons = map[string]bool{
+	SkipNoSlot: true, SkipNotReady: true, SkipNoMilestone: true, SkipNoLeaves: true,
+	SkipDiskLow: true, SkipLoadHigh: true, SkipMemoryLow: true, SkipUsageReserve: true,
+	SkipPaused: true, SkipShipOwner: true, SkipWorkflow: true,
+}
+
+// JournalQueueWaits appends the lines one poll owes the journal under a
+// repo's git common dir. skips are the poll's skips, each with its Title
+// filled in, and started the change sets whose runs the poll started (their
+// Title set). A skip is journaled only for a pre-start reason, only when
+// states has no post-start state for its change set (so a hold that comes on
+// while its run is live or held writes nothing), and only when it differs
+// from the change set's last journaled reason, which is read from the
+// journal, so a restarted daemon writes no duplicate. A start is always
+// journaled. It returns the first error and goes on writing.
+func JournalQueueWaits(common string, at time.Time, states *RunStates, skips, started []Skip) error {
+	last := map[string]string{}
+	for _, w := range ReadQueueWaits(common) {
+		last[w.Change] = w.Reason
+	}
+	var first error
+	write := func(sk Skip, reason string) {
+		w := QueueWait{At: at.UTC(), Change: sk.Change, Title: sk.Title, Reason: reason, Detail: strings.Join(sk.Detail, "; ")}
+		if err := RecordQueueWait(common, w); err != nil && first == nil {
+			first = err
+		}
+		last[sk.Change] = reason
+	}
+	for _, sk := range skips {
+		if sk.Change == "" || !preStartReasons[sk.Reason] || last[sk.Change] == sk.Reason || states.PostStart(sk.Change) != "" {
+			continue
+		}
+		write(sk, sk.Reason)
+	}
+	for _, sk := range started {
+		write(sk, QueueWaitStarted)
+	}
+	return first
 }
