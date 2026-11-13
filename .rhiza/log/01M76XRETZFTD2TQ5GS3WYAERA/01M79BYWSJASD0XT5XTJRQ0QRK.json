@@ -1,0 +1,41 @@
+{
+  "actor": "01M79BX0CM0SX4ET3ZT74DCH6M",
+  "after": [
+    "01M79BVYK4SC6Y499JHKSKK5Q3"
+  ],
+  "at": "2026-11-13T02:32:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the question, done-own-command-guide (acceptance pins the rule to build.md and review.md; review_test.go 'done' reads review.md), Decision review-role-topics-shape and leaf review-role-skills-installed (review.md becomes a short index; its old phrases checked by review_test.go must be found in the role topics), and the role topic leaves, whose acceptances already require the shared done block expanded. The node is stale, not the plan: keeping the rule in the index would duplicate it and contradict the index shape already chosen. This matches the rulings on the sibling findings (scoped-tests-in-role-topics, command-budget-in-role-topics, unstable-ci-in-role-topics), so every shared-block rule is settled the same way. All nine topics end with rhiza session done, so all nine carry the block, and no role the node covered loses the rule. The workflow half stays: the one-line prompts drop session-done text, which the existing prompt test already allows. No CLI command, flag, --json shape, rhiza.* setting or .rhiza/ format changes, so no breaking note.",
+          "statement": "done-own-command-guide is updated in this change set to follow the split, not by keeping the rule in the review index: build.md keeps the own-command rule for builders and verifiers unchanged, and on the review side the rule lives in the shared done block expanded into every review role topic (check-compliance, check-quality, check-qa, check-model, critic, fixer, ci-fix, gate-fix and conflict-fix), not in review.md. Its statement names the build topic, the review role topics and the builtin prompts, and its acceptance becomes: go test -trimpath ./internal/guide/... asserts build.md and each of the nine expanded review role topics hold the own-command rule (run rhiza session done as its own command, only after the recording command succeeded, never chained with ; or &&); go test -trimpath ./internal/workflow asserts no prompt in internal/workflow/builtin/*.toml contains '; rhiza session done' or '&& rhiza session done' and every prompt that still names rhiza session done says it is the very last action (one-line /rhiza-<role> prompts that no longer name it pass).",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "done-own-command-in-role-topics",
+        "id": "01M79BYWK41YAXH8WS8J4ESMJQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79BYWK41YAXH8WS8EWSATG5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79BYWK41YAXH8WS8EWSATG5",
+        "id": "01M79BYWNQNPBJHQX0E3EC4FMM",
+        "link": "01M79BYWNQNPBJHQX0E04450Q4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BMA8DWCJ6DYPQZHA58QQP",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79BYWSJASD0XT5XTJRQ0QRK",
+  "type": "ops",
+  "v": 1
+}

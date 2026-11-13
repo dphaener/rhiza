@@ -697,9 +697,11 @@ func copyNewFile(src, dst string) error {
 // in a landed record change set written by the launcher, and returns its
 // handle: <agent>-<first 8 hex of the session ID>, made unique.
 //
-// A live actor node already carrying this session ID is reused: its handle
-// and the change set that recorded it come back and nothing is written, so
-// stamping a session twice never adds a second record.
+// An actor node already carrying this session ID, live or in an in-flight
+// change set, is reused: its handle and the change set that recorded it
+// come back and nothing is written, so stamping a session twice never adds
+// a second record. An actor of another session holding the same handle is
+// never reused.
 func recordAgentActor(ww *workspace, agent, sid string, cs, launcher, forID id.ID) (string, id.ID, error) {
 	m := ww.model(id.ID{})
 	for _, n := range m.Children(op.KindActor, id.ID{}) {
@@ -716,9 +718,32 @@ func recordAgentActor(ww *workspace, agent, sid string, cs, launcher, forID id.I
 			}
 		}
 	}
-	handle := uniqueHandle(handleSlug(agent+"-"+sid[:8]), func(h string) bool {
+	// An actor this session recorded in an in-flight change set (another
+	// run's branch merged in) is reused too. Only the session field names
+	// the owner: session IDs are UUIDv7, so sessions launched close together
+	// share the first 8 hex and so the base handle.
+	inFlight := map[string]bool{}
+	for _, c := range ww.changeSets() {
+		if c.State.Terminal() {
+			continue
+		}
+		for _, o := range c.Ops {
+			if o.Type != op.TypeNodeCreate || o.Kind != op.KindActor {
+				continue
+			}
+			var got string
+			if raw, ok := o.Fields["session"]; ok && json.Unmarshal(raw, &got) == nil && got == sid {
+				return o.Handle, c.ID, nil
+			}
+			inFlight[o.Handle] = true
+		}
+	}
+	// Another session's actor, landed or in flight, keeps its handle: this
+	// one gets a unique handle of its own.
+	base := handleSlug(agent + "-" + sid[:8])
+	handle := uniqueHandle(base, func(h string) bool {
 		_, taken := m.HandleTaken(h)
-		return taken
+		return taken || inFlight[h]
 	})
 	node, err := ww.ids.New()
 	if err != nil {
@@ -816,11 +841,44 @@ func openSessionPane(ctx *Ctx, tab, anchor session.Tab, split, label, worktree, 
 		}
 	}
 	args := rexWindowArgs(tab, worktree, self, sid)
-	out, err := ctx.Exec("rex", args, worktree, nil)
-	if err == nil {
-		tab, err = parseRexWindow(tab, out)
+	opened, err := retryRex(ctx, func() (session.Tab, error) {
+		out, err := ctx.Exec("rex", args, worktree, nil)
+		if err != nil {
+			return tab, err
+		}
+		return parseRexWindow(tab, out)
+	})
+	if err != nil {
+		return tab, args, err
 	}
-	return tab, args, err
+	return opened, args, nil
+}
+
+// rexTabWaits are the waits before the retries of a failed Rex tab open:
+// up to three retries, each wait longer than the last.
+var rexTabWaits = []time.Duration{time.Second, 3 * time.Second, 9 * time.Second}
+
+// retryRex runs open, and reruns it after each wait of rexTabWaits while it
+// fails (Rex not answering, or no window ID returned). After the last
+// retry it fails with Rex's last error. ctx.Sleep sleeps; nil is
+// time.Sleep.
+func retryRex(ctx *Ctx, open func() (session.Tab, error)) (session.Tab, error) {
+	sleep := ctx.Sleep
+	if sleep == nil {
+		sleep = time.Sleep
+	}
+	tab, err := open()
+	for _, wait := range rexTabWaits {
+		if err == nil {
+			return tab, nil
+		}
+		sleep(wait)
+		tab, err = open()
+	}
+	if err != nil {
+		return tab, fmt.Errorf("%v (after %d retries)", err, len(rexTabWaits))
+	}
+	return tab, nil
 }
 
 // splitPane splits the anchor block in direction split when that is right

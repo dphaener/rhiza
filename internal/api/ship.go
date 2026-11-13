@@ -240,7 +240,7 @@ type ShipMergeResponse struct {
 	Head          string `json:"head" desc:"The head commit the merge was pinned to"`
 	MergeCommit   string `json:"merge_commit" desc:"The squash commit on main"`
 	AlreadyMerged bool   `json:"already_merged,omitempty" desc:"True if an earlier ship merge had merged it and recorded the merge commit"`
-	Stop          string `json:"stop,omitempty" desc:"Why nothing was merged and the run should stop, not fail: the pull request is a draft, to be marked ready before resuming; the command exits 75"`
+	Stop          string `json:"stop,omitempty" desc:"Why nothing was merged and the run should stop, not fail: the pull request is a draft, to be marked ready before resuming, or GitHub refused the merge for a reason a rebase cannot cure (a branch-protection rule, a required check, a merge method the repo does not allow), with its message; the command exits 75"`
 }
 
 // shipDraftStop is the stop: line for a draft pull request. Rhiza never
@@ -249,7 +249,62 @@ func shipDraftStop(pr int) string {
 	return fmt.Sprintf("pull request #%d is a draft: mark it ready for review, then resume the run", pr)
 }
 
-// ExitCode is run.StopExit when the pull request is a draft, 1 when ship
+// shipMergeRefusalMarks are the phrases of gh pr merge failures that no
+// rebase onto main can cure: a branch-protection rule, a required check, a
+// merge method the repo does not allow.
+var shipMergeRefusalMarks = []string{
+	"policy prohibits the merge",
+	"required status check",
+	"required check",
+	"protected branch",
+	"branch protection",
+	"review is required",
+	"reviews required",
+	"merge commits are not allowed",
+	"squash merges are not allowed",
+	"rebase merges are not allowed",
+	"merge method",
+}
+
+// shipMergeCurable are the phrases of a merge refused because the head is
+// behind main or conflicts: gate-rebase-merge's to cure. They win over a
+// refusal mark in the same message. gh prefixes every refusal with "Pull
+// request owner/repo#N is not mergeable: ", so they match the reason after
+// it, never that prefix.
+var shipMergeCurable = []string{
+	"not up to date",
+	"out of date",
+	"behind",
+	"conflict",
+	"cannot be cleanly created",
+	"head branch was modified",
+	"base branch was modified",
+}
+
+// shipMergeRefusal reports whether gh's failure message is a refusal of
+// the merge itself, and the message to name as its reason.
+func shipMergeRefusal(msg string) (string, bool) {
+	low := strings.ToLower(msg)
+	for _, c := range shipMergeCurable {
+		if strings.Contains(low, c) {
+			return "", false
+		}
+	}
+	for _, m := range shipMergeRefusalMarks {
+		if strings.Contains(low, m) {
+			return strings.TrimSpace(msg), true
+		}
+	}
+	return "", false
+}
+
+// shipMergeRefusedStop is the stop: line for a merge GitHub refused.
+func shipMergeRefusedStop(pr int, reason string) string {
+	return fmt.Sprintf("GitHub refused to merge pull request #%d: %s", pr, reason)
+}
+
+// ExitCode is run.StopExit when the pull request is a draft or GitHub
+// refused the merge, 1 when ship
 // merge merged nothing because main moved.
 func (r ShipMergeResponse) ExitCode() int {
 	if r.Stop != "" {
@@ -520,7 +575,51 @@ func gh(ctx *Ctx, dir string, args ...string) ([]byte, error) {
 	if ctx.Exec == nil {
 		return nil, Errorf("shipping needs gh, and no programs can be run here")
 	}
-	return ctx.Exec("gh", args, dir, nil)
+	return retryGH(ctx, func() ([]byte, error) { return ctx.Exec("gh", args, dir, nil) })
+}
+
+// ghWaits are the waits before the retries of a gh call that failed with a
+// transient GitHub error: up to three retries, each wait longer than the
+// last.
+var ghWaits = []time.Duration{2 * time.Second, 6 * time.Second, 18 * time.Second}
+
+var ghServerError = regexp.MustCompile(`HTTP 5\d\d`)
+
+// transientGH reports whether a gh failure is a GitHub blip worth a retry:
+// an HTTP 5xx, a timeout or a GraphQL "Something went wrong" error. Any
+// other failure (a 4xx, no pull request, a refused merge) is not.
+func transientGH(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	low := strings.ToLower(msg)
+	return ghServerError.MatchString(msg) ||
+		strings.Contains(low, "something went wrong") ||
+		strings.Contains(low, "timeout") ||
+		strings.Contains(low, "timed out")
+}
+
+// retryGH runs call, and reruns it after each wait of ghWaits while it
+// fails with a transient GitHub error. After the last retry it fails with
+// the last error. ctx.Sleep sleeps; nil is time.Sleep.
+func retryGH(ctx *Ctx, call func() ([]byte, error)) ([]byte, error) {
+	sleep := ctx.Sleep
+	if sleep == nil {
+		sleep = time.Sleep
+	}
+	out, err := call()
+	for _, wait := range ghWaits {
+		if !transientGH(err) {
+			return out, err
+		}
+		sleep(wait)
+		out, err = call()
+	}
+	if transientGH(err) {
+		return out, fmt.Errorf("%v (after %d retries)", err, len(ghWaits))
+	}
+	return out, err
 }
 
 // noPR reports whether a gh failure says there is no pull request.
@@ -1631,6 +1730,10 @@ func runShipMerge(ctx *Ctx, _ any) (any, error) {
 		return resp, nil
 	}
 	if _, err := gh(ctx, dir, "pr", "merge", pr, "--squash", "--match-head-commit", st.Head); err != nil {
+		if reason, ok := shipMergeRefusal(err.Error()); ok {
+			resp.Stop = shipMergeRefusedStop(st.PR, reason)
+			return resp, nil
+		}
 		return nil, Errorf("%v", err)
 	}
 	out, err := gh(ctx, dir, "pr", "view", pr, "--json", "mergeCommit,state")

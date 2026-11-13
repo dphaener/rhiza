@@ -11,7 +11,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/store"
@@ -85,6 +87,7 @@ func newSessionFixture(t *testing.T, slug string) *sessionFixture {
 	f.rex = &fakeExec{out: rexWindowJSON}
 	ctx.Git = f.git.run
 	ctx.Exec = f.rex.run
+	ctx.Sleep = func(time.Duration) {}
 	ctx.Self = "/opt/bin/rhiza"
 	return f
 }
@@ -1089,4 +1092,101 @@ func TestSessionRunWorkflowEnv(t *testing.T) {
 	if fi, err := os.Stat(tmp); err != nil || !fi.IsDir() {
 		t.Errorf("run temp folder %s not made: %v", tmp, err)
 	}
+}
+
+// actorCreate is a node.create op of an actor with handle h and session sid.
+func actorCreate(t *testing.T, ww *workspace, h, sid string) op.Op {
+	t.Helper()
+	node, _ := ww.ids.New()
+	opID, _ := ww.ids.New()
+	fields, err := textFields(map[string]string{"name": h, "agent": "claude-code", "session": sid})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return op.Op{ID: opID, Type: op.TypeNodeCreate, Node: node, Kind: op.KindActor, Handle: h, Fields: fields}
+}
+
+func TestRecordAgentActorLandedHandleOtherSession(t *testing.T) {
+	ww := testWorkspace(t, false)
+	launcher, _ := ww.ids.New()
+	cs, _ := ww.ids.New()
+	const sid = "0123abcd-0000-4000-8000-000000000000"
+	// Another session (UUIDv7: same first 8 hex) landed the base handle.
+	held, _, err := ww.writeRecord("held", []op.Op{actorCreate(t, ww, "claude-code-0123abcd", "0123abcd-0001-4000-8000-000000000000")}, launcher, launcher)
+	if err != nil {
+		t.Fatal(err)
+	}
+	h, got, err := recordAgentActor(ww, "claude-code", sid, cs, launcher, launcher)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if h == "claude-code-0123abcd" || got == held {
+		t.Errorf("got %s %s, want a new actor, not the other session's", h, got)
+	}
+	if n := countActorHandle(ww, "claude-code-0123abcd"); n != 1 {
+		t.Errorf("%d actors hold claude-code-0123abcd", n)
+	}
+	if n := countActorHandle(ww, h); n != 1 {
+		t.Errorf("%d actors hold %s", n, h)
+	}
+}
+
+func TestRecordAgentActorReusesInFlightSession(t *testing.T) {
+	ww := testWorkspace(t, false)
+	launcher, _ := ww.ids.New()
+	cs, _ := ww.ids.New()
+	const sid = "0123abcd-0000-4000-8000-000000000000"
+	// An in-flight (open, unlanded) change set holds this session's actor.
+	open, _, err := ww.openChangeSet(changeset.Open{Kind: changeset.KindRecord, Intent: "other run"}, launcher, launcher)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ww.appendEntry(open, changeset.Ops{Ops: []op.Op{actorCreate(t, ww, "claude-code-0123abcd", sid)}}, launcher, launcher); err != nil {
+		t.Fatal(err)
+	}
+	before := len(ww.changeSets())
+	h, got, err := recordAgentActor(ww, "claude-code", sid, cs, launcher, launcher)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if h != "claude-code-0123abcd" || got != open || len(ww.changeSets()) != before {
+		t.Errorf("got %s %s, want the in-flight actor %s", h, got, open)
+	}
+}
+
+func TestRecordAgentActorInFlightHandleOtherSession(t *testing.T) {
+	ww := testWorkspace(t, false)
+	launcher, _ := ww.ids.New()
+	cs, _ := ww.ids.New()
+	const sid = "0123abcd-0000-4000-8000-000000000000"
+	// An in-flight change set holds the base handle for another session.
+	open, _, err := ww.openChangeSet(changeset.Open{Kind: changeset.KindRecord, Intent: "other run"}, launcher, launcher)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ww.appendEntry(open, changeset.Ops{Ops: []op.Op{actorCreate(t, ww, "claude-code-0123abcd", "0123abcd-0001-4000-8000-000000000000")}}, launcher, launcher); err != nil {
+		t.Fatal(err)
+	}
+	h, got, err := recordAgentActor(ww, "claude-code", sid, cs, launcher, launcher)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if h == "claude-code-0123abcd" || got == open {
+		t.Errorf("got %s %s, want a new actor, not the other session's", h, got)
+	}
+	if n := countActorHandle(ww, "claude-code-0123abcd"); n != 1 {
+		t.Errorf("%d actors hold claude-code-0123abcd", n)
+	}
+}
+
+func countActorHandle(ww *workspace, h string) int {
+	n := 0
+	for _, c := range ww.changeSets() {
+		for _, o := range c.Ops {
+			if o.Type == op.TypeNodeCreate && o.Kind == op.KindActor && o.Handle == h {
+				n++
+			}
+		}
+	}
+	return n
 }

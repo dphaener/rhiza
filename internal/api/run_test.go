@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -127,7 +128,7 @@ func TestRunStartAgentRefusalsBeforeWrite(t *testing.T) {
 		exit            int
 		message         string
 	}{
-		{"NoMode", agentWorkflow, `{"workflow":"w"}`, 2, "no permission mode"},
+		{"NoMode", agentWorkflow, `{"workflow":"w"}`, 2, "no permission mode: give --permission-mode, set rhiza.daemon.permissionMode"},
 		{"Bypass", agentWorkflow, `{"workflow":"w","permission_mode":"bypassPermissions"}`, 1, `trust = "dedicated"`},
 		{"StepBypass", agentWorkflow + "permission_mode = \"bypassPermissions\"\n", `{"workflow":"w","permission_mode":"manual"}`, 1, `trust = "dedicated"`},
 		{"UnknownAgent", agentWorkflow, `{"workflow":"w","permission_mode":"manual","agent":"nobody"}`, 2, "unknown agent"},
@@ -144,8 +145,15 @@ func TestRunStartAgentRefusalsBeforeWrite(t *testing.T) {
 			if e := AsError(err); !strings.Contains(e.Message, `step "build"`) || !strings.Contains(e.Message, c.message) {
 				t.Errorf("message %q lacks the step or %q", e.Message, c.message)
 			}
-			if len(f.git.calls) != 0 || len(f.rex.calls) != 0 || len(sh.programs) != 0 {
-				t.Errorf("a refused run ran git %v, rex %v or %d programs", f.git.calls, f.rex.calls, len(sh.programs))
+			// Reading settings (git config --get) stands in for the daemon's mode.
+			var gitCalls []string
+			for _, c := range f.git.calls {
+				if !strings.HasPrefix(fmt.Sprint(c), "[config --get ") && !strings.HasPrefix(fmt.Sprint(c), "config --get ") {
+					gitCalls = append(gitCalls, fmt.Sprint(c))
+				}
+			}
+			if len(gitCalls) != 0 || len(f.rex.calls) != 0 || len(sh.programs) != 0 {
+				t.Errorf("a refused run ran git %v, rex %v or %d programs", gitCalls, f.rex.calls, len(sh.programs))
 			}
 			if _, err := os.Stat(run.Dir(f.common)); !os.IsNotExist(err) {
 				t.Errorf("a refused run wrote %s: %v", run.Dir(f.common), err)
@@ -1025,5 +1033,24 @@ func TestPersonalWorkflowsDirFallsBackToHome(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", "/x")
 	if got := personalWorkflowsDir(); got != "/x/rhiza/workflows" {
 		t.Errorf("with XDG_CONFIG_HOME: %q", got)
+	}
+}
+
+func TestQueuedCheckModeStandsInDaemonMode(t *testing.T) {
+	f := newSessionFixture(t, "x")
+	f.git.out["config --get rhiza.daemon.permissionMode"] = "manual\n"
+	for _, c := range []struct {
+		name string
+		r    RunStartRequest
+		want string
+	}{
+		{"Queued", RunStartRequest{}, "manual"},
+		{"Named", RunStartRequest{PermissionMode: "plan"}, "plan"},
+		{"Foreground", RunStartRequest{Foreground: true}, ""},
+	} {
+		got, err := queuedCheckMode(f.ctx, c.r)
+		if err != nil || got != c.want {
+			t.Errorf("%s: mode %q, %v; want %q", c.name, got, err, c.want)
+		}
 	}
 }

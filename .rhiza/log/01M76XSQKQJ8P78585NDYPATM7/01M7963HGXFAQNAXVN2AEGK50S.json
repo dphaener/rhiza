@@ -1,0 +1,155 @@
+{
+  "actor": "01M795FA4AJT7E1K283JX9GPKD",
+  "after": [
+    "01M795CYTE5HVXMRSNW3MCZ1SQ"
+  ],
+  "at": "2026-11-13T00:49:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-dc3d533e at 99e340d22 (cycle 2), hands-on with the built binary driving real ship-change runs (rhiza run start/approve --foreground) in a scratch Rhiza root with a bare origin and fake gh, rex and claude on PATH: with RHIZA_TEST_NOW/SEED set, the builder and verifier sessions (a6fe1895-5d81-... and a6fe1895-5d86-...) share the 8-hex prefix that broke cycle 1; they got distinct actors claude-code-a6fe1895 and claude-code-a6fe1895-N, build/check passed, the run succeeded, and rhiza check on the result printed ok with no duplicate handle. Also go test -trimpath ./internal/api -run RecordAgentActor passes, and the 19 run-* testscripts cycle 1 found red (run-ship-change, run-ship-model-conflict, run-ship-conflict-fix, run-ship-land-conflict, ...) all pass."
+        },
+        "handle": "actor-record-no-duplicate-qa-2",
+        "id": "01M7963H041AE8AQKGX38XN1KN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7963H041AE8AQKGWZP6FQ6B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7963H041AE8AQKGWZP6FQ6B",
+        "id": "01M7963H14PK8D1SWQMV9F8492",
+        "link": "01M7963H14PK8D1SWQMST5GX5V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG6D3HR7G5Y6MHENHMB5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-dc3d533e at 99e340d22 (cycle 2), hands-on with the built binary driving real ship-change runs (rhiza run start/approve --foreground) in a scratch Rhiza root with a bare origin and fake gh, rex and claude on PATH: with a head build (SHIP_HEAD_RHIZA) that refuses the first land with exit 3 'cannot land change set X: node N changed' after main moved feature.txt, land failed with exit 3 reporting the conflict and leaving the merge for the fixer, land-main-conflict-triage passed to conflict-fix (not conflict-fix-landed), one fixer session, land visit 2 passed and the change set landed. With 'it depends on Y (draft)' instead, the run fails with no fixer (run-ship-land-conflict case 2 passes). go test -trimpath ./internal/api -run ShipLand passes."
+        },
+        "handle": "land-conflict-to-fixer-qa-2",
+        "id": "01M7963H23TDTMFD4XS7T61CCM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7963H23TDTMFD4XS70XDXPS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7963H23TDTMFD4XS70XDXPS",
+        "id": "01M7963H32XDTFKHF1Y45G3MFP",
+        "link": "01M7963H32XDTFKHF1Y0ZDK64G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG5J7ETYBRT4W550P79M",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-dc3d533e at 99e340d22 (cycle 2), hands-on with the built binary driving real ship-change runs (rhiza run start/approve --foreground) in a scratch Rhiza root with a bare origin and fake gh, rex and claude on PATH: with fake rex failing its first 2 tab opens ('rex: server not answering'), the builder's tab opened on the third try and the run went on to ship; with 4 failures the run failed at build/build naming 'rex: server not answering (after 3 retries)'. go test -trimpath ./internal/api -run SessionRunRexRetry passes."
+        },
+        "handle": "rex-tab-launch-retry-qa-2",
+        "id": "01M7963H4F5KKDBCC4RQGFNZDW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7963H4F5KKDBCC4RKSW49E5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7963H4F5KKDBCC4RKSW49E5",
+        "id": "01M7963H643SB2ZEPK9JYAF66N",
+        "link": "01M7963H643SB2ZEPK9FX104Y5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG799KFE9QRBJNYYZ7KG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-dc3d533e at 99e340d22 (cycle 2), hands-on with the built binary driving real ship-change runs (rhiza run start/approve --foreground) in a scratch Rhiza root with a bare origin and fake gh, rex and claude on PATH: gh pr create failing twice with 'HTTP 502: Bad Gateway' then succeeding: open-pr passed after 3 pr create calls; failing 4 times: open-pr failed after 4 calls naming the 502 '(after 3 retries)'; 'HTTP 422: Validation Failed': open-pr failed after 1 call (not retried). go test -trimpath ./internal/api -run ShipGHRetry passes."
+        },
+        "handle": "ship-gh-transient-retry-qa-2",
+        "id": "01M7963H8HBK4B64P1R5H3R78B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7963H8HBK4B64P1R3XS4K54",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7963H8HBK4B64P1R3XS4K54",
+        "id": "01M7963HAA0GNCQ81AP0PY0ETW",
+        "link": "01M7963HAA0GNCQ81ANX0K20W3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG3ZRYA9NTD3SF6QWY0K",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-dc3d533e at 99e340d22 (cycle 2), hands-on with the built binary driving real ship-change runs (rhiza run start/approve --foreground) in a scratch Rhiza root with a bare origin and fake gh, rex and claude on PATH: gh pr merge failing with 'the base branch policy prohibits the merge': the run stopped once at merge with detail 'GitHub refused to merge pull request #7: ... the base branch policy prohibits the merge', one pr merge call, gate-rebase-merge visited once (before merge only). Merge refused once with 'the head branch is not up to date with the base branch': merge went to gate-rebase-merge visit 2, rebase-merge, and merged on visit 2; run succeeded. go test ./internal/api -run ShipMergeRefused and ./internal/workflow -run ShipChange pass."
+        },
+        "handle": "ship-merge-refused-stops-qa-2",
+        "id": "01M7963HBSPMVHXYFXHQATTB38",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7963HBSPMVHXYFXHQA4HKAF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7963HBSPMVHXYFXHQA4HKAF",
+        "id": "01M7963HCSSN12Z38N3JP4CA2D",
+        "link": "01M7963HCSSN12Z38N3HSE7299",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76YXZ5T5BQGQXD3VNC24CFS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA claude-code-dc3d533e at 99e340d22 (cycle 2), hands-on with the built binary driving real ship-change runs (rhiza run start/approve --foreground) in a scratch Rhiza root with a bare origin and fake gh, rex and claude on PATH: the builder pushed its branch then a separate clone pushed 'Earlier push' (a new file) to origin's cs/ship-it: open-pr merged it ('Merge origin/cs/ship-it into cs/ship-it'), pushed, origin's history kept the Earlier push commit, no force push, and the run reached merge. With the origin commit conflicting with a later local commit on feature.txt, open-pr failed exit 3 with 'origin's cs/ship-it has commits that conflict with ...: 659e515 Earlier push; reconcile them before shipping', no MERGE_HEAD left, origin unchanged. go test -trimpath ./internal/api -run ShipPushDiverged passes."
+        },
+        "handle": "ship-push-merges-own-origin-qa-2",
+        "id": "01M7963HDR6E70Y76T9691DGEM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7963HDR6E70Y76T92TFZD2M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7963HDR6E70Y76T92TFZD2M",
+        "id": "01M7963HF2XNSP35VXM7537WB4",
+        "link": "01M7963HF2XNSP35VXM63JE4GB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG4SPZ8481AWNBER0JJS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7963HGXFAQNAXVN2AEGK50S",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-13T02:34:07Z",
+  "body": {
+    "intent": "Record agent actor claude-code-a907950b for session a907950b-22c5-42a2-8096-01a1d2c11fa9",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M79C2K25KZWBD86J22VS4KE5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79C2K25KZWBD86J26QYFMS3",
+  "type": "open",
+  "v": 1
+}
