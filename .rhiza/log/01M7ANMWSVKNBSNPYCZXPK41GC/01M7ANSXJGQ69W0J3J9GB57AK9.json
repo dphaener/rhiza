@@ -1,0 +1,33 @@
+{
+  "actor": "01M7ANP8AFBMRXBXATFCH1MR3J",
+  "after": [
+    "01M7ANMWSVKNBSNPYD00ZK1WV4"
+  ],
+  "at": "2026-11-13T14:43:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "c1f75440e3a57b82a080ffd0503298727f81cb4199264b50ccb617669137703b",
+          "session": "f54a56fc-1d63-4d1c-b35a-01a1d55af362",
+          "summary": "Autonomous plan-bug run, no owner present. Bug: rhiza inbox raised kind 'accept' items ('waiting for acceptance', next rhiza accept --rule owner) for change sets 01M79KGRYE, 01M79KGHYF and 01M79KGZ51 whose autonomous plan runs had already journaled 'accepted' at their gate, because the inbox reads main's model, where the change set stays proposed until the plan PR merges. Research: inboxItems (internal/api/inbox.go) raises an accept item for each change set in st.Gated that main's model says is proposed; the run's own accept is in its journal as a TypeAccepted entry (st.Accepts, written by autonomousGate.journal in internal/api/lifecycle.go when the gate accepts under rule autonomous or autonomy). The bug offers two remedies: raise no accept item, or label it 'accepted on branch, PR #N merging'. The planner chose to raise no item: the change set needs nothing from the owner, the run already carries it to merge, and a label would still list a non-actionable item and need a PR lookup the inbox does not do. Scope: the gated accept item only; the change set serves m4-orchestrated-by-rhiza (the owner accepts plans and answers the inbox), as the sibling inbox fix 01M7A1PX does.",
+          "title": "Plan of the inbox accept-item bug, autonomous plan-bug run"
+        },
+        "handle": "inbox-run-accepted-plan",
+        "id": "01M7ANSXHE8VTQFW47RSPSNTNN",
+        "key": null,
+        "kind": "source",
+        "node": "01M7ANSXHE8VTQFW47RR2AVVA8",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7ANMWSVKNBSNPYCZXPK41GC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ANSXJGQ69W0J3J9GB57AK9",
+  "type": "ops",
+  "v": 1
+}
