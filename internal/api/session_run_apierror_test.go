@@ -1,7 +1,9 @@
 package api
 
 import (
+	"bytes"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -184,8 +186,13 @@ func TestSessionRunAPIErrorCancelledByAssistantLine(t *testing.T) {
 
 func TestSessionRunAPIErrorGivesUpAfterThree(t *testing.T) {
 	r := startAPIErr(t, true, "")
-	r.write("ERR 403 Cloudflare")
-	r.waitMsgs(3)
+	tr := "ERR 403 Cloudflare"
+	r.write(tr)
+	for i := 1; i <= 3; i++ {
+		r.waitMsgs(i)
+		tr += "\nmsg\nERR 403 Cloudflare"
+		r.write(tr)
+	}
 	for end := time.Now().Add(5 * time.Second); ; {
 		rep, _ := session.Resolve(func() session.Record { rec, _ := r.st.Read(r.sid); return rec }())
 		if strings.HasPrefix(rep.Detail, session.APIErrorDetail) {
@@ -292,5 +299,96 @@ func TestSessionRunAPIErrorUsageLimitKeepsPause(t *testing.T) {
 	}
 	if n := r.count(); n != 0 {
 		t.Errorf("%d messages at the usage limit, want none", n)
+	}
+}
+
+// watchFixture is an apiErrorWatch on a fresh session store in dir, with
+// the messages it sends counted and its diagnostics kept.
+func watchFixture(t *testing.T, autonomous bool) (w *apiErrorWatch, dir string, stderr *bytes.Buffer, sent *int) {
+	t.Helper()
+	dir = filepath.Join(t.TempDir(), "sessions")
+	st := session.NewStore(dir)
+	if err := st.Write(session.Record{ID: "s1"}); err != nil {
+		t.Fatal(err)
+	}
+	stderr, sent = &bytes.Buffer{}, new(int)
+	old, oldBackoff := sendAPIErrorMessage, apiErrorBackoff
+	t.Cleanup(func() { sendAPIErrorMessage, apiErrorBackoff = old, oldBackoff })
+	sendAPIErrorMessage = func(*Ctx, string, string) error { *sent++; return nil }
+	ctx := &Ctx{Now: time.Now, Stderr: stderr}
+	w = &apiErrorWatch{ctx: ctx, a: apiErrAdapter{}, st: st, sid: "s1", autonomous: autonomous}
+	return w, dir, stderr, sent
+}
+
+// A record that cannot be written is reported, and written on a later poll.
+func TestAPIErrorWatchReportsFailedRecord(t *testing.T) {
+	w, dir, stderr, _ := watchFixture(t, false)
+	if err := os.Chmod(dir, 0o555); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.Chmod(dir, 0o755) })
+	w.poll([]byte("ERR boom"))
+	if !strings.Contains(stderr.String(), "session s1") {
+		t.Errorf("stderr %q: want the failed record reported", stderr.String())
+	}
+	if err := os.Chmod(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	w.poll([]byte("ERR boom"))
+	rec, err := w.st.Read("s1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rec.Status.Hook == nil || rec.Status.Hook.Detail != session.APIErrorDetail+"boom" {
+		t.Errorf("hook report %+v: want the API error recorded on a later poll", rec.Status.Hook)
+	}
+}
+
+// A fourth consecutive API error goes to the inbox at once, whatever the
+// third wait.
+func TestAPIErrorWatchFourthErrorAtOnce(t *testing.T) {
+	w, _, _, sent := watchFixture(t, true)
+	apiErrorBackoff = []time.Duration{0, 0, 0}
+	tr := "ERR a"
+	for i := 0; i < 3; i++ {
+		w.poll([]byte(tr))
+		if i == 2 {
+			apiErrorBackoff = []time.Duration{0, 0, time.Hour}
+		}
+		w.poll([]byte(tr))
+		if *sent != i+1 {
+			t.Fatalf("%d messages, want %d", *sent, i+1)
+		}
+		tr += "\nmsg\nERR again"
+	}
+	w.poll([]byte(tr))
+	rec, err := w.st.Read("s1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rec.Status.Hook == nil || rec.Status.Hook.Detail != session.APIErrorDetail+"again" {
+		t.Errorf("hook report %+v: want the fourth error recorded at once", rec.Status.Hook)
+	}
+	if *sent != 3 {
+		t.Errorf("%d messages, want 3", *sent)
+	}
+}
+
+// Each later wait runs from when the new error is seen, not from the send.
+func TestAPIErrorWatchWaitsFromErrorSeen(t *testing.T) {
+	w, _, _, sent := watchFixture(t, true)
+	apiErrorBackoff = []time.Duration{0, time.Second, time.Second}
+	w.poll([]byte("ERR a"))
+	w.poll([]byte("ERR a"))
+	if *sent != 1 {
+		t.Fatalf("%d messages, want 1", *sent)
+	}
+	time.Sleep(700 * time.Millisecond)
+	tr := []byte("ERR a\nmsg\nERR b")
+	w.poll(tr)
+	time.Sleep(400 * time.Millisecond)
+	w.poll(tr)
+	if *sent != 1 {
+		t.Errorf("%d messages 400ms after the second error, want the wait to run from it", *sent)
 	}
 }

@@ -12,9 +12,9 @@ import (
 	"github.com/dphaener/rhiza/internal/session"
 )
 
-// apiErrorBackoff is how long a session's API error stands before each
-// re-prompt, from when the error is seen or the last message sent; its
-// length is the most consecutive errors re-prompted. Tests shorten it.
+// apiErrorBackoff is how long a session's API error stands, from when it
+// is seen, before each re-prompt; its length is the most consecutive errors
+// re-prompted. Tests shorten it.
 var apiErrorBackoff = []time.Duration{time.Minute, 2 * time.Minute, 4 * time.Minute}
 
 // sendAPIErrorMessage sends the session a message, as session.message does.
@@ -34,16 +34,20 @@ type apiErrorWatch struct {
 	autonomous bool
 
 	sent     int       // messages sent for the current run of errors
+	sentAt   int       // transcript length at the last send: a new error lies past it
 	deadline time.Time // when the standing error is acted on; zero if not waiting
 	recorded bool      // the record already says the session stopped
 }
 
 // poll acts on the transcript past this start's base: t. A transcript that
 // does not end in an API error resets the count and cancels a pending send.
+// Each wait starts when an error is seen: after a send, only a new error
+// line, past what the transcript held then, starts the next one, and a new
+// error once every re-prompt is spent goes to the inbox at once.
 func (w *apiErrorWatch) poll(t []byte) {
 	text, ok := w.a.APIError(t)
 	if !ok {
-		w.sent, w.deadline, w.recorded = 0, time.Time{}, false
+		w.sent, w.sentAt, w.deadline, w.recorded = 0, 0, time.Time{}, false
 		return
 	}
 	if w.recorded {
@@ -54,49 +58,69 @@ func (w *apiErrorWatch) poll(t []byte) {
 		return
 	}
 	if w.deadline.IsZero() {
-		w.deadline = time.Now().Add(apiErrorBackoff[min(w.sent, len(apiErrorBackoff)-1)])
+		if w.sent > 0 {
+			if len(t) < w.sentAt {
+				return
+			}
+			if _, fresh := w.a.APIError(t[w.sentAt:]); !fresh {
+				return
+			}
+		}
+		if w.sent >= len(apiErrorBackoff) {
+			w.stop(text)
+			return
+		}
+		w.deadline = time.Now().Add(apiErrorBackoff[w.sent])
 		return
 	}
 	if time.Now().Before(w.deadline) {
 		return
 	}
-	if w.sent >= len(apiErrorBackoff) {
-		w.stop(text)
-		return
-	}
-	w.send(text)
+	w.send(text, len(t))
 }
 
-// stop records the session for the inbox: idle, with the error's text.
+// stop records the session for the inbox: idle, with the error's text. A
+// record that fails is reported and tried again on the next poll.
 func (w *apiErrorWatch) stop(text string) {
-	w.recorded = true
-	w.recordIdle(session.APIErrorDetail + text)
+	w.recorded = w.recordIdle(session.APIErrorDetail+text, "record its API error")
 }
 
-// send puts the session at its prompt in the record and sends the message.
-func (w *apiErrorWatch) send(text string) {
-	w.sent++
-	w.deadline = time.Now().Add(apiErrorBackoff[min(w.sent, len(apiErrorBackoff)-1)])
+// send puts the session at its prompt in the record and sends the message;
+// size is the transcript's length now, before the message lands in it. A
+// record it cannot read is tried again on the next poll; a message that
+// fails counts, and the standing error starts the next wait.
+func (w *apiErrorWatch) send(text string, size int) {
 	rec, err := w.st.Read(w.sid)
 	if err != nil {
 		return
 	}
+	w.sent, w.sentAt, w.deadline = w.sent+1, size, time.Time{}
 	if rep, _ := session.Resolve(rec); rep.State != session.StateIdle {
-		w.recordIdle("")
+		w.recordIdle("", "record it idle before a re-prompt")
 	}
 	msg := fmt.Sprintf("Your last turn ended on an API error: %s. Carry on where you left off.", text)
-	if err := sendAPIErrorMessage(w.ctx, w.sid, msg); err != nil && w.ctx.Stderr != nil {
-		fmt.Fprintf(w.ctx.Stderr, "rhiza: session %s: re-prompt after an API error: %v\n", w.sid, err)
+	if err := sendAPIErrorMessage(w.ctx, w.sid, msg); err != nil {
+		w.sentAt = 0
+		if w.ctx.Stderr != nil {
+			fmt.Fprintf(w.ctx.Stderr, "rhiza: session %s: re-prompt after an API error: %v\n", w.sid, err)
+		}
 	}
 }
 
 // recordIdle records an idle hook report with detail, unless the session
-// has exited.
-func (w *apiErrorWatch) recordIdle(detail string) {
+// has exited. A failed write goes to Stderr, saying what it was for; it
+// reports whether the write succeeded.
+func (w *apiErrorWatch) recordIdle(detail, what string) bool {
 	rep := session.Report{State: session.StateIdle, Detail: detail, At: w.ctx.Now().UTC()}
-	_, _ = w.st.Update(w.sid, func(r *session.Record) {
+	if _, err := w.st.Update(w.sid, func(r *session.Record) {
 		if !r.Status.Exited() {
 			r.Status.Hook = &rep
 		}
-	})
+	}); err != nil {
+		if w.ctx.Stderr != nil {
+			fmt.Fprintf(w.ctx.Stderr, "rhiza: session %s: %s: %v\n", w.sid, what, err)
+		}
+		return false
+	}
+	return true
 }
