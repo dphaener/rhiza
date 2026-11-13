@@ -15,6 +15,7 @@ mkdir .git/rhiza/runs
 
 exec $WORK/mkcs.sh fresh
 exec $WORK/mkcs.sh other
+exec $WORK/mkcs.sh broken
 
 exec git config rhiza.autonomy.accept auto
 exec rhiza inbox --json
@@ -22,9 +23,14 @@ stdout 'waiting for acceptance: no plan run covers it'
 stdout '"kind": "accept"'
 stdout 'rhiza accept --rule owner --change '
 exec sh -c 'rhiza inbox --json | grep -c "no plan run covers it" > $WORK/n'
-exec grep -x 2 $WORK/n
+exec grep -x 3 $WORK/n
 
 exec git config rhiza.autonomy.accept owner
+exec sh -c 'rhiza inbox --json | grep -c "no plan run covers it" > $WORK/n'
+exec grep -x 3 $WORK/n
+
+# A plan run on broken that ended failed covers it: its item is gone.
+exec $WORK/mkrun.sh 01M5PWGZZZZZZZZZZZZZZZZZ02 plan broken failed 'boom'
 exec sh -c 'rhiza inbox --json | grep -c "no plan run covers it" > $WORK/n'
 exec grep -x 2 $WORK/n
 

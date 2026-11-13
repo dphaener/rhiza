@@ -77,8 +77,9 @@ func uncoveredProposals(proposed []string, runs []run.Journal, held map[string]b
 // leaves that no run covers (uncoveredProposals), whatever
 // rhiza.autonomy.accept says: nothing is going to accept it. Only the
 // proposed change sets are folded when the fold has an index; a leaf is then
-// read from the change set's own ops.
-func inboxUncoveredProposals(runs []run.Journal, fold *inboxFold) []InboxItem {
+// read from the change set's own ops. A change set that already has an
+// accept item in items (a gate left it for the owner) is not listed again.
+func inboxUncoveredProposals(items []InboxItem, runs []run.Journal, fold *inboxFold) []InboxItem {
 	if fold.load() != nil {
 		return nil
 	}
@@ -100,19 +101,34 @@ func inboxUncoveredProposals(runs []run.Journal, fold *inboxFold) []InboxItem {
 		}
 	}
 	slices.Sort(proposed)
-	var items []InboxItem
+	return uncoveredAcceptItems(items, proposed, runs)
+}
+
+// uncoveredAcceptItems is one accept item per change set of proposed that
+// uncoveredProposals leaves uncovered and that has no accept item in items.
+func uncoveredAcceptItems(items []InboxItem, proposed []string, runs []run.Journal) []InboxItem {
+	listed := map[string]bool{}
+	for _, it := range items {
+		if it.Kind == InboxAccept {
+			listed[it.Change] = true
+		}
+	}
+	var out []InboxItem
 	for _, cs := range uncoveredProposals(proposed, runs, nil) {
+		if listed[cs] {
+			continue
+		}
 		cid, err := id.Parse(cs)
 		if err != nil {
 			continue
 		}
 		at := ulid.Time(ulid.ULID(cid).Time()).UTC().Format(time.RFC3339)
 		sum := sha256.Sum256([]byte(strings.Join([]string{InboxAccept, cs, "uncovered"}, "\x00")))
-		items = append(items, InboxItem{
+		out = append(out, InboxItem{
 			ID: hex.EncodeToString(sum[:])[:7], Kind: InboxAccept, At: at, Change: cs,
 			Detail: "waiting for acceptance: no plan run covers it",
 			Next:   ownerAcceptNext(cs),
 		})
 	}
-	return items
+	return out
 }
