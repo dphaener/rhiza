@@ -58,7 +58,7 @@ stdout '"state": "proposed"'
 ! grep '"type":"accepted"' $WORK/repo/.git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
 
 # RHIZA_RUN naming the unfinished autonomous run: accepted, with the run in the reason.
-exec sh -c 'ls .git/rhiza/runs | grep -v 01M5PWGJC82P7YGZTWYFFZ0VJG | sed "s/\.jsonl$//" > $WORK/autorun'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | grep -v 01M5PWGJC82P7YGZTWYFFZ0VJG | sed "s/\.jsonl$//" > $WORK/autorun'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/autorun) rhiza accept --rule autonomous --json'
 stdout '"rule": "autonomous"'
 stdout '"reason": "autonomous run 01[0-9A-Z]{24}"'

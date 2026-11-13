@@ -47,10 +47,21 @@ func TestFixerText(t *testing.T) {
 		"unfixed":   {"A finding you could not fix is not dropped", "Drop a finding you could not fix: carry it to the end as unfixed", "Unfixed:"},
 		"never":     {"Push, rebase, force or use `--no-verify`"},
 	})
+	checkPhrases(t, "fixer", map[string][]string{
+		"lint-section": {"### A lint-fix fixer", "`rhiza run lint-check --json`"},
+		"lint-fixes":   {"`rhiza set`", "rewrite a stale statement or acceptance text", "retire a capability whose code the", "`decided-by`"},
+		"lint-unfixed": {"List each hit you judge wrong as unfixed, with why", "Never reproduce a hit as a failing test"},
+	})
+	checkPhrases(t, "fixer", map[string][]string{
+		"restored": {"Read the code at each finding's place before you change it", "matching the surrounding", "Commit only once the finding's commands and the touched packages pass locally", "listed as unfixed in the commit", "name which and why as the last thing you write before", "one commit trailed\n`Review:`, then `rhiza session done`"},
+	})
+	if !strings.Contains(must, "A lint-fix fixer") {
+		t.Errorf("fixer: the lint-fix section is not inside Must do")
+	}
 	if !strings.Contains(must, "Reproduce each finding first") || !strings.Contains(never, "Fix a finding your prompt does not name") {
 		t.Errorf("fixer: reproduce-first belongs in Must do, fix-only-named in Must not do")
 	}
-	i := strings.Index(f.Body, "\nFix the findings of the export review\n")
+	i := strings.Index(f.Body, "\nFix the export review findings\n")
 	if i < 0 {
 		t.Fatal("fixer: no commit example")
 	}

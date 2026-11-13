@@ -1,0 +1,30 @@
+{
+  "actor": "01M7B6EVJG2RDJVW69NJHAQ5XT",
+  "after": [
+    "01M7B60W5YK1BYZ6DN1E2P0P04"
+  ],
+  "at": "2026-11-13T19:35:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestPickNoLeaves|TestDaemonPicks' shows a leafless, milestone-serving change set dispatched to a workflow starting with an agent step that declares checks picked, the same change set dispatched to a workflow starting with a leaves step skipped as no-leaves, a leafless backlog change set still skipped, and an umbrella change set still not ready. go test -trimpath ./cmd/rhiza -run TestScripts/run-ship-needs-leaves shows rhiza run start --workflow ship-change still refusing a leafless change set with 'has no leaves' and next 'rhiza run start --workflow plan' when ship-change starts with a command or leaves step, and starting the run on the same leafless change set when the repo's ship-change starts with an agent step that declares checks (a fake agent, nothing reaching Claude Code, GitHub or Rex). Touches internal/api/daemon.go, internal/api/daemon_picks_test.go, internal/api/run.go, cmd/rhiza/testdata/script/run-ship-needs-leaves.txtar.",
+          "statement": "The daemon picks an accepted, ready change set that serves a milestone and has no leaves when its dispatch resolves to the conductor default (a workflow whose first step is an agent step that declares checks), instead of skipping it; backlog change sets with no leaves and change sets dispatched to a classic workflow keep the no-leaves skip, and umbrella change sets stay not ready. rhiza run start lets such a leafless change set start: its no-leaves refusal (checkShipLeaves) applies to ship-change only when the workflow's first step is not an agent step that declares checks, so a ship-change overridden by the conductor default starts on a leafless change set and a classic ship-change still refuses one with the plan-first next command."
+        },
+        "handle": "conduct-plans-leaves",
+        "id": "01M79KPD9T4QSDZCWH4QPW1G7C",
+        "key": "zzzzzzzy",
+        "kind": "capability",
+        "node": "01M79KPD9T4QSDZCWH4NQ577EA",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      }
+    ]
+  },
+  "change_set": "01M79KGZ51V2F5YYWMMQTGR6NW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B6GBMQDSEH9F5QC77CDQR4",
+  "type": "ops",
+  "v": 1
+}

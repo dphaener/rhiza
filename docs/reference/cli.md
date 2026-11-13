@@ -93,6 +93,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza run code-check`](#rhiza-run-code-check)
 - [`rhiza run findings`](#rhiza-run-findings)
 - [`rhiza run gate`](#rhiza-run-gate)
+- [`rhiza run lint-check`](#rhiza-run-lint-check)
 - [`rhiza run log`](#rhiza-run-log)
 - [`rhiza run ls`](#rhiza-run-ls)
 - [`rhiza run milestone-check`](#rhiza-run-milestone-check)
@@ -1539,6 +1540,7 @@ Output (`--json` fields):
 - `check` (object): rhiza check's report on the run's worktree
 - `dry_run` (boolean): True if nothing was journalled
 - `leaves` (array of object): build-check's leaves of the change set, in leaf order
+- `lints` (array of object): The model lints' hits (stale references, unapplied Decisions, capabilities whose code the branch removed); a hit is never a cause and does not change passed
 - `passed` (boolean): True if rhiza check found no failure and every leaf is OK
 - `run` (string): The run's full ID
 - `step` (string): The step the run is at, which the code-check entry names
@@ -1591,6 +1593,23 @@ Output (`--json` fields):
 - `commit` (string): The commit that renders and commits .rhiza on the run's branch; absent when there was nothing to commit, or in a dry run
 - `dry_run` (boolean): True if nothing was written or journalled
 - `open` (array of object): Every question the plan left with no live answering Decision: the review's questions and each question node created in the plan's change sets, in order; empty when none
+- `run` (string): The run's full ID
+
+Exit code: set by the result, besides the shared codes.
+
+## rhiza run lint-check
+
+Pass when the latest code-check entry of the run RHIZA_RUN names has no model lint hits, else fail listing each hit.
+
+```
+rhiza run lint-check
+```
+
+Output (`--json` fields):
+
+- `change` (string): The run's change set
+- `lints` (array of object): The lint hits of the run's latest code-check entry: node, lint kind and the reference or Decision; empty when it has none
+- `passed` (boolean): True if the latest code-check entry has no lint hits, or the run has none
 - `run` (string): The run's full ID
 
 Exit code: set by the result, besides the shared codes.

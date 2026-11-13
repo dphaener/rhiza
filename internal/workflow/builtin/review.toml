@@ -6,6 +6,23 @@ name = "review"
 [step.code]
 kind = "command"
 run = "rhiza run code-check"
+on.pass = "lints"
+
+# lints reads the model lint hits code-check journalled. Hits never fail
+# the code check; here a hit sends the run to lint-fix, one attempt, and
+# then on to the checks whatever it did, so the model check sees the rest.
+[step.lints]
+kind = "command"
+run = "rhiza run lint-check"
+on.pass = "review"
+on.fail = "lint-fix"
+
+[step.lint-fix]
+kind = "agent"
+prompt = "/rhiza-fixer Fix the model lint hits that rhiza run lint-check lists for change set {change} before the checks run: follow rhiza guide fixer."
+until = "true"
+until_when = "done"
+max_visits = 1
 on.pass = "review"
 
 # The checks step runs every check at once, each a fresh session in a

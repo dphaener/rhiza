@@ -1,0 +1,41 @@
+{
+  "actor": "01M7B87RDRQF70J8DF1RDSQH5E",
+  "after": [
+    "01M7B877XQYAP05RT7Q49PFQW2"
+  ],
+  "at": "2026-11-13T20:06:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Attempt 1's verifier found two problems: f1, existing fixer rules rewritten and dropped, and f2, the Review:/session-done sentence missing. Attempts 2 and 3 made no commit, because the related question fixer-lint-section-over-topic-cap showed that the restored topic costs 994 of 1000 tokens, so an unchanged topic leaves no room for the section. Raising TopicCap (option a) would loosen a limit on every guide topic, which goes beyond this change set's intent (model lints in review). A new lint-fix topic (option b) would add files and a pointer outside the leaf's named files, and it would still need trimming. Shortening wording while keeping every rule (option c) meets what the leaf is for: a fixer that keeps all its existing duties. It touches only the two files the leaf names. It also fixes both of attempt 1's findings directly, since f1 was about rules being lost, not about words changing. Attempt 1's diff shows the existing text can be shortened by roughly the ~120 tokens the section needs.",
+          "statement": "Build @{01M7B0BDGMMAJBBSM9MA9YG4QX} inside the existing TopicCap of 1000 by tightening the fixer topic's wording, not by raising the cap or adding a topic. Read \"the rest of the fixer topic is unchanged\" as: every existing rule is kept, though its wording may be shortened. Attempt 1 (453848a9d) dropped rules, and the next attempt restores each of them in short form: read the code at each finding's place before changing it; fix it matching the surrounding code; commit only once the finding's commands and the touched packages pass locally; a finding that could not be fixed is listed as unfixed in the commit; and the closing line that names the unfixed findings and why before `rhiza session done`. The \"A lint-fix fixer\" section also says it ends like any fixer, with one commit trailed `Review:` and then `rhiza session done` (verifier finding f2). fixer_test.go checks for those restored rules as well as the lint-fix phrases, and the topic stays under TopicCap. The builder adds a fix commit on top of 453848a9d and does not rewrite it.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "fixer-lint-section-tighten-keep-rules",
+        "id": "01M7B892BTN9P0E7BAGJAGBVJ0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7B892BS9CV8FADZYGD0QYAF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B892BS9CV8FADZYGD0QYAF",
+        "id": "01M7B892CWSB8GK24NMBSMPEPJ",
+        "link": "01M7B892CWSB8GK24NM8PKEJT1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B86XM4758S3QE6K0MN1XT9",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76XTF51R02XC5WXJSSBP8WP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B892E8411NM40G47REAA9K",
+  "type": "ops",
+  "v": 1
+}

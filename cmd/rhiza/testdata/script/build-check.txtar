@@ -29,7 +29,7 @@ exec git commit -qm leaves
 exec rhiza run start --foreground --workflow hold --no-wait
 stdout '^Run (01[0-9A-Z]{24}) stopped$'
 stdout '^- Worktree: .*/repo\.build-check$'
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 
 # No RHIZA_RUN: usage, with a next.
 exec sh -c 'rhiza run build-check --json; echo exit=$?'

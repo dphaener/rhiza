@@ -64,8 +64,11 @@ type Record struct {
 	// Dir is where the agent runs when that is not Worktree: a verifier's
 	// throwaway checkout of the commit it checks. Root is then the Rhiza
 	// root its rhiza writes go to (its RHIZA_ROOT), in Worktree.
-	Dir            string    `json:"dir,omitempty"`
-	Root           string    `json:"root,omitempty"`
+	Dir  string `json:"dir,omitempty"`
+	Root string `json:"root,omitempty"`
+	// Brief is the directory holding the session's brief.md, slice.json and,
+	// on a hand-back, handback.md, for a session a run started.
+	Brief          string    `json:"brief,omitempty"`
 	Actor          string    `json:"actor"`
 	For            string    `json:"for"`
 	PermissionMode string    `json:"permission_mode"`

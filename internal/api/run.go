@@ -224,10 +224,11 @@ func runStageAutonomy(in []run.StageAutonomy) []RunStageAutonomy {
 // RunCodeCheck is one code check: rhiza check and build-check on the
 // run's change set.
 type RunCodeCheck struct {
-	Step    string `json:"step,omitempty" desc:"The step the run was at"`
-	Outcome string `json:"outcome" enum:"pass,fail" desc:"pass or fail"`
-	Detail  string `json:"detail,omitempty" desc:"A fail's causes, separated by semicolons"`
-	At      string `json:"at" desc:"When it ran, RFC 3339 UTC"`
+	Step    string       `json:"step,omitempty" desc:"The step the run was at"`
+	Outcome string       `json:"outcome" enum:"pass,fail" desc:"pass or fail"`
+	Detail  string       `json:"detail,omitempty" desc:"A fail's causes, separated by semicolons"`
+	Lints   []RunLintHit `json:"lints,omitempty" desc:"The model lints' hits; they never make a fail"`
+	At      string       `json:"at" desc:"When it ran, RFC 3339 UTC"`
 }
 
 // RunPrePush is a pre-push check's result.
@@ -2116,9 +2117,10 @@ func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (s
 	if err != nil {
 		return "", err
 	}
-	req.Prompt = step.RenderPrompt(workflow.PromptVars{
-		Change: t.cs.String(), Slug: t.slug, Title: t.title, Run: r.run, Step: step.Name,
-	})
+	req.Prompt = step.RenderPrompt(r.promptVars(t, step.Name, run.AgentSessionName()))
+	if err := r.prepareSession(&req, step.Name, run.AgentSessionName()); err != nil {
+		return "", err
+	}
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
 		return "", err
@@ -2178,6 +2180,7 @@ func (r *stepRunner) StartArbiter(step workflow.Step, question string, _ []strin
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
 	req.Prompt = fmt.Sprintf(arbiterPrompt, question)
+	r.prepareKeyed(&req, "arbiter")
 	var err error
 	if req.writes, req.writesRecord, err = r.arbiterWrites(question); err != nil {
 		return "", err
@@ -2210,6 +2213,7 @@ func (r *stepRunner) StartAdvisor(step workflow.Step, asker, text string, _ []st
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Step, req.Change, req.Run, req.advises = advisorStep, r.change, r.run, asker
 	req.Prompt = fmt.Sprintf(advisorPrompt, text)
+	r.prepareKeyed(&req, "advisor")
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
 		return "", err
@@ -3015,7 +3019,7 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 		})
 	}
 	for _, c := range st.CodeChecks {
-		info.CodeChecks = append(info.CodeChecks, RunCodeCheck{Step: c.Step, Outcome: c.Outcome, Detail: c.Detail, At: rfc3339(c.At)})
+		info.CodeChecks = append(info.CodeChecks, RunCodeCheck{Step: c.Step, Outcome: c.Outcome, Detail: c.Detail, Lints: runLintHits(c.Lints), At: rfc3339(c.At)})
 	}
 	if c, ok := st.LatestPrePush(); ok {
 		info.PrePush = &RunPrePush{Step: c.Step, Outcome: c.Outcome, Head: c.Commit, Command: c.Command, Output: c.Output, At: rfc3339(c.At)}
@@ -3363,6 +3367,9 @@ func (r RunInfo) Human(w io.Writer) {
 				fmt.Fprintf(w, " (%s)", oneLine(c.Detail))
 			}
 			fmt.Fprintf(w, "\n")
+			for _, h := range c.Lints {
+				fmt.Fprintf(w, "  - lint %s\n", h.line())
+			}
 		}
 	}
 	if len(r.Signoffs) > 0 {
@@ -3649,4 +3656,13 @@ func abandonedCleanup(ctx *Ctx, rs *run.Store, common string, j run.Journal, ses
 	if err := e.Cleanup(j.ID); err != nil && ctx.Stderr != nil {
 		fmt.Fprintf(ctx.Stderr, "rhiza: run %s: cleanup: %v\n", j.ID, err)
 	}
+}
+
+// runLintHits is the journal's lint hits as the response form.
+func runLintHits(in []run.LintHit) []RunLintHit {
+	var out []RunLintHit
+	for _, h := range in {
+		out = append(out, RunLintHit{Node: h.Node, Handle: h.Handle, Field: h.Field, Kind: h.Kind, Ref: h.Ref})
+	}
+	return out
 }

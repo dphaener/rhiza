@@ -74,3 +74,5 @@ Keep every trailer, `Co-Authored-By:` included, in the one final paragraph, no b
 The ship run reaches you after a red PR whose CI named a failing test or a recognised
 cause; an infra failure waits for a rerun instead. You run at most twice, so a third red
 head with findings fails the run.
+
+<!-- shared: contract-ref -->
