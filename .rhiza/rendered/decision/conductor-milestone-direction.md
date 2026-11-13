@@ -19,6 +19,11 @@ Rhiza's runs move from a daemon-driven workflow of about 56 steps to a conductor
 ### In
 
 - decided-by [milestone-36](../intent/milestone-36.md)
+- decided-by [run-brief-files](../capability/rhiza/workflows/workflow-runs/run-brief-files.md)
+- decided-by [agent-invoke-template](../capability/rhiza/workflows/workflow-definitions/agent-invoke-template.md)
+- decided-by [guide-contract](../capability/rhiza/guide/agent-guide/guide-contract.md)
+- decided-by [session-brief-wiring](../capability/rhiza/workflows/workflow-runs/session-brief-wiring.md)
+- decided-by [arbiter-advisor-brief](../capability/rhiza/workflows/workflow-runs/arbiter-advisor-brief.md)
 
 ## History
 
