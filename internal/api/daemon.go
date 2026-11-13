@@ -213,7 +213,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		webUI = &web.Manager{Factory: webFactory, Handler: WebRootHandler(ctx, root, homeName, home)}
 		defer webUI.Close()
 	}
+	// The leftovers sweep runs off the poll, on a goroutine of its own: the
+	// daemon waits for a running one before it returns (--once, a stop), so
+	// no folder is left half-deleted and its freed line is written.
 	var leftSweep daemon.SweepSchedule
+	defer leftSweep.Wait()
 	// lastTurn is the project that took the last run slot: the next poll's
 	// round-robin starts after it, so turns rotate across polls instead of
 	// restarting at the home project.
@@ -359,6 +363,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		return resp, poll()
 	}
 	reexec := daemonReexec()
+	if reexec != nil && reexec.Exec != nil {
+		// An exec replaces this image: a running leftovers sweep ends first.
+		exec := reexec.Exec
+		reexec.Exec = func(path string, argv, env []string) error {
+			leftSweep.Wait()
+			return exec(path, argv, env)
+		}
+	}
 	update := &daemon.SelfUpdate{Now: ctx.Now, Every: daemon.SelfUpdateEvery}
 	var chanUpdate *daemon.ChannelUpdate
 	autoUpdate := func() {
