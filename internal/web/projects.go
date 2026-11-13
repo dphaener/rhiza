@@ -83,6 +83,6 @@ func ProjectsHome(src ProjectsSource) http.Handler {
 		if src != nil {
 			projects = src()
 		}
-		render(w, r, "projects", page{Title: "Projects", Nav: "projects", Data: projects})
+		render(w, r, "projects", page{Title: "Projects", Nav: "projects", Root: true, Data: projects})
 	})
 }

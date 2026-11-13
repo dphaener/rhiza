@@ -44,3 +44,13 @@ func TestHeaderNoBadgeWhenNothingWaits(t *testing.T) {
 		t.Errorf("a project with nothing waiting shows a count badge")
 	}
 }
+
+func TestHeaderPickerOnRootPages(t *testing.T) {
+	h := headerRoot(t, 3)
+	for _, path := range []string{"/inbox", "/projects"} {
+		body := serve(h, "GET", path).Body.String()
+		if !strings.Contains(body, `data-rz-picker="/picker"`) || !strings.Contains(body, `<span class="rz-picker-cur">All projects</span>`) {
+			t.Errorf("%s has no picker button for all projects:\n%s", path, body)
+		}
+	}
+}

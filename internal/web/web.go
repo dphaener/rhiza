@@ -109,6 +109,10 @@ type page struct {
 	Base string
 	// Project is the project the page is served for, empty at the root.
 	Project string
+	// Root marks one of the root's own pages (the all-projects home, the
+	// merged inbox): unscoped, yet served beside /picker, so the header
+	// still carries the picker button, naming all projects.
+	Root bool
 	// NeedsYou is the project's needs-you count in the header's picker
 	// button; zero shows no badge.
 	NeedsYou int

@@ -17,7 +17,7 @@
 <div class="rz-app">
 <header class="rz-header">
   <a class="rz-wordmark" href="/"><b>Rhiza</b><span>monitor</span></a>
-{{if .Base}}<button type="button" class="rz-picker-btn" data-rz-picker="/picker" aria-haspopup="dialog" aria-expanded="false"><span class="rz-picker-cur">{{.Project}}</span>{{if .NeedsYou}}<span class="rz-count is-due" aria-label="{{.NeedsYou}} need you">{{.NeedsYou}}</span>{{end}}<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>{{end}}
+{{if or .Base .Root}}<button type="button" class="rz-picker-btn" data-rz-picker="/picker" aria-haspopup="dialog" aria-expanded="false"><span class="rz-picker-cur">{{if .Project}}{{.Project}}{{else}}All projects{{end}}</span>{{if .NeedsYou}}<span class="rz-count is-due" aria-label="{{.NeedsYou}} need you">{{.NeedsYou}}</span>{{end}}<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>{{end}}
   <nav class="rz-nav" aria-label="Pages"><a href="/"{{if eq .Nav "overview"}} aria-current="page"{{end}}>Home</a><a href="/runs"{{if eq .Nav "runs"}} aria-current="page"{{end}}>Runs</a><a href="/roadmap"{{if eq .Nav "roadmap"}} aria-current="page"{{end}}>Roadmap</a></nav>
   <div class="rz-header-end">{{if .Daemon.Text}}{{template "pill" .Daemon}}{{end}}<span class="rz-live" title="Live stream connected"><span class="rz-live-dot" aria-hidden="true"></span>live</span></div>
 </header>
