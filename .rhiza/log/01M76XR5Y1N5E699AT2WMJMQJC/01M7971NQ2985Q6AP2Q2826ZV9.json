@@ -1,0 +1,41 @@
+{
+  "actor": "01M796XNJ6ENJGV9SZR9PHBB9V",
+  "after": [
+    "01M796X3C40C92A7H73BZC2JGB"
+  ],
+  "at": "2026-11-13T01:06:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the change set intent (one guide topic per role on the six-section skeleton, shared blocks written once, builtin build prompts shrink to one line), the Source and prompt-gap.md sections 2.3, 2.4 and 5, which say each role topic is a skill installed by guide_install.go, the builtin prompt becomes `/rhiza-<role> <vars>` and shared blocks live in one place included in each topic. internal/guide/guide.go embeds text/*.md with no include mechanism, so a load-time expansion of marker lines is the smallest way to write a block once while every reader (CLI topic, installed skill, size cap) still gets the full text; copying blocks byte for byte with a test, afk's way, keeps drift possible and spends edits. guide_install.go already maps topics to skills (build -> rhiza-build), so new role skills fit that pattern. AGENTS.md treats removing something existing users rely on as breaking; custom workflows such as docs-build call /rhiza-build, so the build topic and skill survive as an index instead of being deleted. Retries today reuse the builder prompt with {attempt} and RHIZA_ATTEMPT, and prompt templates have no conditionals; routing in the builder topic needs no workflow schema or Go change, keeping this change set guide + toml as prompt-gap's CS1 row says, while CS9 owns verbatim findings in retry prompts. docs-build.toml's prompts already lag the builtin ones (no pre-handoff checklist, older done rule), the drift this change set exists to end, and internal/workflow/include.go inlines whole workflows without per-step prompt overrides, so it keeps its own prompts but reduced to the builtin one-liners plus its addendum.",
+          "statement": "Shared blocks: each block (done rule, test scope, unstable CI, command budget, outside work, never-list) is one markdown file under internal/guide/text/shared/, and a role topic names it on a line of its own as `<!-- shared: <block> -->`; internal/guide expands those lines when it loads the embedded texts, so `rhiza guide <topic>`, the installed skills and the TopicCap all see the expanded body, an unknown block name panics at load (caught by the guide tests), and the review and plan role topics reuse the same files later. Delivery: three new topics, `builder`, `verifier` and `build-retry`, installed by guide.install as the skills rhiza-builder, rhiza-verifier and rhiza-build-retry; the builtin build.toml prompts shrink to one line each that carries the TASK variables and names both routes, e.g. `/rhiza-builder Build leaf {leaf} of change set {change} ({title}), attempt {attempt}: follow rhiza guide builder.` and `/rhiza-verifier Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT: follow rhiza guide verifier.`; everything else now in those prompts (pre-handoff checklist, Checks: block, session done as its own command, test scope) moves into the topics. The `build` topic and the rhiza-build skill stay, cut to a short index that names the three role topics and says which to load, so custom workflows whose prompts still say /rhiza-build or `rhiza guide build` keep working; nothing is removed, so no breaking note. Retry: no new workflow key or Go routing; the builder prompt keeps {attempt}, and the builder topic's TASK section says that on attempt > 1 (RHIZA_ATTEMPT > 1) the session also loads build-retry (/rhiza-build-retry or `rhiza guide build-retry`) before anything else; build-retry holds only the retry-specific part (inspect the partial work left in the tree, read the previous attempt's findings and address each one as written) and leaves verbatim findings in the prompt to CS9. docs-build.toml: kept as its own workflow (includes cannot override a step's prompt), its builder prompt rewritten as the new builtin builder line plus its doc-prose addendum unchanged, its verifier prompt the builtin verifier line byte for byte, so it gains the checklist and done rule it has drifted from through the topics instead of copies.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "build-role-topics-shape",
+        "id": "01M7971NN172332AAGJMVMF4M4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7971NN172332AAGJJ6NNW8R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7971NN172332AAGJJ6NNW8R",
+        "id": "01M7971NP75BC446FEM53K94AF",
+        "link": "01M7971NP75BC446FEM3FNH5XY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M796WYTNKDNYWDP070HT3QQF",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7971NQ2985Q6AP2Q2826ZV9",
+  "type": "ops",
+  "v": 1
+}
