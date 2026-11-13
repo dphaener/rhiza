@@ -7473,6 +7473,7 @@
 - [claude-code-770ebe55](actor/claude-code-770ebe55.md)
 - [claude-code-7712db35](actor/claude-code-7712db35.md)
 - [claude-code-77397f96](actor/claude-code-77397f96.md)
+- [claude-code-7748e27a](actor/claude-code-7748e27a.md)
 - [claude-code-775b644f](actor/claude-code-775b644f.md)
 - [claude-code-77708b30](actor/claude-code-77708b30.md)
 - [claude-code-77790765](actor/claude-code-77790765.md)
