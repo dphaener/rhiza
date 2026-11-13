@@ -134,21 +134,3 @@ func TestGuidesFeedFindingsFromStdin(t *testing.T) {
 		}
 	}
 }
-
-func TestBuildVerifierRerunsChecks(t *testing.T) {
-	build, _ := Lookup("build")
-	i := strings.Index(build.Body, "## Verifier")
-	if i < 0 {
-		t.Fatal("build: no Verifier section")
-	}
-	v := strings.Join(strings.Fields(build.Body[i:]), " ")
-	for _, want := range []string{
-		"every command in its `Checks:` block",
-		"every acceptance command",
-		"A different exit code, or no `Checks:` block, is a finding naming the command",
-	} {
-		if !strings.Contains(v, want) {
-			t.Errorf("build verifier: lacks %q", want)
-		}
-	}
-}

@@ -108,6 +108,7 @@ var topics = []entry{
 	{name: "reopening", file: "reopening.md", description: "Reopening: taking a change set landed only on its branch back to accepted, the refusal once it is on main, never deleting log entries."},
 	{name: "review", file: "review.md", description: "Reviewing a built change set: five checks' findings with severities from the merge-base, a critic's verdicts that add no finding, fixers' commits with a Leaf: or Review: trailer, outside work as a question or a discovered-from draft change set, the QA check's Evidence. Load it when you run as a check, critic or fixer of a review run."},
 	{name: "sources", file: "sources.md", description: "Source nodes: the stored fields, the raw material's hash, and how scrub feeds rhiza source add."},
+	{name: "verifier", file: "verifier.md", description: "The verifier of a build run: a detached checkout at the leaf's commit, re-run the Checks: block and the acceptance, read the diff, never edit code, fakes only, then Evidence or findings that name a file, command or acceptance point, then session done. Load it when you run as the verifier of a leaf."},
 	{name: "workflows", file: "workflows.md", description: "Writing a custom workflow: the resolution layers, step kinds and their keys, outcomes and reserved targets, includes, dispatch.toml and request --workflow, and the loop of workflow ls, new, describe, check and run start --dry-run."},
 }
 
