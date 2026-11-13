@@ -1,0 +1,86 @@
+{
+  "actor": "01M79GBGPSSRFV7Y5680TMNTKC",
+  "after": [
+    "01M79G8M7SPHGGMZZVG3NHY8T4"
+  ],
+  "at": "2026-11-13T03:53:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dde99439c with a scratch build (go build -trimpath -o $TMPDIR/rhiza-qa ./cmd/rhiza), in a scratch Rhiza root and repo with fake rex and fake claude scripts (the fake claude logs role, leaf, attempt and --model; builders commit one file per leaf, verifiers write Evidence), run under env -i. rhiza run start --foreground --workflow build on three chained leaves: plain (commits internal/x/plain.go), risky (.github/workflows/ci.yml), testy (internal/x/x_test.go). Run succeeded; the journal's leaf-session models were plain verifier sonnet, risky verifier opus, testy verifier opus, builders sonnet. With plain's first verifier failing: plain builder 2 opus, plain verifier attempt 2 opus (retry stays strong), others as before, run succeeded. With a project .rhiza/workflows/build.toml overriding the verifier to models [opus] only: all three verifiers opus (no tiering, as before). With an override of low_risk_models [haiku], risky_paths [internal/x/risky.go, **/*.yml]: plain haiku, risky opus, testy haiku. Review's fixed-leaf verifier was not driven hands-on; go test -trimpath ./internal/run -run 'TestVerifierTier|TestVerifierRisky' ok."
+        },
+        "handle": "verifier-tier-choice-qa-1",
+        "id": "01M79GKZQBTVVJP5REMC8Q5NDK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79GKZQBTVVJP5REM9R3W1SM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79GKZQBTVVJP5REM9R3W1SM",
+        "id": "01M79GKZR4AKVMFJWP9JVNW82S",
+        "link": "01M79GKZR4AKVMFJWP9HBX2MMH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CZ29TQH0XYRCP38C2X9DK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dde99439c with a scratch build (go build -trimpath -o $TMPDIR/rhiza-qa ./cmd/rhiza), in a scratch Rhiza root and repo with fake rex and fake claude scripts (the fake claude logs role, leaf, attempt and --model; builders commit one file per leaf, verifiers write Evidence), run under env -i. rhiza workflow describe build and describe review each print role verifier models [opus], low_risk_models [sonnet] and the twelve risky_paths globs (*_test.go, **/*_test.go, **/testdata/**, **/main_test.go, .githooks/**, **/hooks/**, .github/**, .rhiza/workflows/**, internal/workflow/builtin/**, **/migrations/**, **/migrate/**, **/*retry*). A run of the built-in build workflow verified a leaf changing internal/x/plain.go on sonnet and leaves changing .github/workflows/ci.yml and internal/x/x_test.go on opus. go test -trimpath ./internal/workflow/... ok. Note: cmd/rhiza testscript build-workflow still expects opus verifiers for its low-risk leaves and now fails (passes at the merge-base), recorded as a finding."
+        },
+        "handle": "verifier-tier-defaults-qa-1",
+        "id": "01M79GKZS1Z75X718ZYQW3P48J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79GKZS1Z75X718ZYQE9DGBN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79GKZS1Z75X718ZYQE9DGBN",
+        "id": "01M79GKZSTK8PF8WZTE71DE2VA",
+        "link": "01M79GKZSTK8PF8WZTE5AZ2P8M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CZ2BQEZSPC3KEF7PZH5G0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dde99439c with a scratch build (go build -trimpath -o $TMPDIR/rhiza-qa ./cmd/rhiza), in a scratch Rhiza root and repo with fake rex and fake claude scripts (the fake claude logs role, leaf, attempt and --model; builders commit one file per leaf, verifiers write Evidence), run under env -i. rhiza workflow check on project workflows: a leaves verifier with low_risk_models [haiku] and risky_paths [docs/**] is valid, as is a checks step's verifier with both; refused with a message naming the verifier role: low_risk_models on a leaves builder, risky_paths on a check (\"set them under [step.review.verifier]\"), low_risk_models on a checks fixer, low_risk_models on an agent step (\"has no verifier\"); refused: low_risk_models [\" \"] (entry 1 is blank), risky_paths [\"\"] (entry 1 is empty), risky_paths [\"a/[b\"] (not a valid glob). rhiza workflow describe shows role verifier low_risk_models [haiku] and risky_paths [docs/**]; --json carries low_risk_models and risky_paths on each role (empty for the builder). go test -trimpath ./cmd/rhiza -run 'TestScripts/(workflow-describe|describe-golden)$' ok."
+        },
+        "handle": "verifier-tier-fields-qa-1",
+        "id": "01M79GKZTFPNZJBH1D0M35KR1W",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79GKZTFPNZJBH1D0KFE3QSG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79GKZTFPNZJBH1D0KFE3QSG",
+        "id": "01M79GKZV6E9CBQF38980AZYFF",
+        "link": "01M79GKZV6E9CBQF3897TN4CPJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CZ27B7NJD16PRCG0YJ54R",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XS745J8S0J74SZFEHQ17Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79GKZW66SH7PJRY9XRT11AH",
+  "type": "ops",
+  "v": 1
+}
