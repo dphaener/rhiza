@@ -67,11 +67,11 @@ func sweepSessionScratch(ctx *Ctx, common string) leftovers.Freed {
 	}
 	getenv := ctxGetenv(ctx)
 	return leftovers.Scratch(ss, func(id string) bool { return open[id] },
-		func(s leftovers.Session) []string {
-			a, ok := adapter.Lookup(s.Agent)
+		func(agent string) []string {
+			a, ok := adapter.Lookup(agent)
 			if !ok {
 				return nil
 			}
-			return a.ScratchGlobs(s.ID, getenv)
-		}, ctx.Now())
+			return a.ScratchParents(getenv)
+		}, nil, ctx.Now())
 }

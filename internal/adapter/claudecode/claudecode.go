@@ -393,18 +393,19 @@ func (Adapter) TranscriptGlobs(sessionID string, getenv func(string) string) []s
 	return globs
 }
 
-// ScratchGlobs implements adapter.Adapter. Claude Code makes a session's
+// ScratchParents implements adapter.Adapter. Claude Code makes a session's
 // scratch folder at <tmp>/claude-<uid>/<encoded cwd>/<session-id>, where
-// <tmp> is $TMPDIR when set and /tmp otherwise.
-func (Adapter) ScratchGlobs(sessionID string, getenv func(string) string) []string {
-	if !safeSessionID(sessionID) || getenv == nil {
+// <tmp> is $TMPDIR when set and /tmp otherwise; the parents are the
+// <encoded cwd> folders.
+func (Adapter) ScratchParents(getenv func(string) string) []string {
+	if getenv == nil {
 		return nil
 	}
 	tmp := getenv("TMPDIR")
 	if tmp == "" {
 		tmp = "/tmp"
 	}
-	return []string{filepath.Join(globEscape(tmp), "claude-*", "*", sessionID)}
+	return []string{filepath.Join(globEscape(tmp), "claude-*", "*")}
 }
 
 // safeSessionID reports whether id can stand as one literal path element in
