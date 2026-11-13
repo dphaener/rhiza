@@ -1,0 +1,63 @@
+{
+  "actor": "01M79W56WVAX72D6WRQYSP0NRZ",
+  "after": [
+    "01M79VZAATEQM60JFXZ9ZGMN7D"
+  ],
+  "at": "2026-11-13T07:22:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1: built this branch (go build ./cmd/rhiza) and ran it in a hermetic scratch Rhiza root (env -i, fake rex, RHIZA_TEST_DETACH_LOG). Real rhiza daemon --once polls wrote <common>/rhiza/queue.wait.jsonl, one JSON line per append with at, change, title, reason and detail; the file grew across separate daemon processes and every line parsed. go test -trimpath ./internal/daemon/... -run QueueWait ok."
+        },
+        "handle": "queue-wait-journal-reader-qa-1",
+        "id": "01M79WHSY4308FW8K87ZC7CJ54",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79WHSY4308FW8K87VN02QQA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79WHSY4308FW8K87VN02QQA",
+        "id": "01M79WHT19DAXV9X2QVMGTATZ0",
+        "link": "01M79WHT19DAXV9X2QVJ5TEBQ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79DE919PHFX4JVJ8V97PGE5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, built binary, scratch root with three accepted milestone change sets and real rhiza daemon --once polls: two picked ones got started lines and the third got no-slot. A second daemon process wrote no duplicate no-slot. With rhiza.autonomy.ship=owner each change set got a ship-owner line (no-slot to ship-owner and started to ship-owner when no run existed). Under RHIZA_TEST_LOAD1=5, two polls journaled load-high once per change set with the detail '1-minute load 5.00 per core, over the limit of 3.00', then started lines once the load cleared. A change set with a live (hand-written) run journal got no line under ship-owner or load-high. Gap: a run started outside the daemon gets no started line (see the qa finding)."
+        },
+        "handle": "queue-wait-journal-lines-qa-1",
+        "id": "01M79WHT4X6BDSMKZ38ZS4X6S6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79WHT4X6BDSMKZ38ZK4DZ98",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79WHT4X6BDSMKZ38ZK4DZ98",
+        "id": "01M79WHT8M3C0G8AK8K8RGFP4M",
+        "link": "01M79WHT8M3C0G8AK8K5X9TE96",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79DE92G4FFVHC5MFPY6EFGN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSY0YM17EQ9K24CC4JRAK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79WHTBK5S4VTQ95RTFXXQJQ",
+  "type": "ops",
+  "v": 1
+}
