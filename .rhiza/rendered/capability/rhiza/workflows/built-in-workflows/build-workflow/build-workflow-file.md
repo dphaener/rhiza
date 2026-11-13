@@ -8,7 +8,7 @@ A testscript with fake agents runs `rhiza run start build` on a change set of tw
 
 ## statement
 
-Rhiza ships a built-in `build` workflow: a leaves step (builder models sonnet, opus, opus; verifier opus; split auto) followed by `rhiza run build-check`, ending done without landing the change set.
+Rhiza ships a built-in `build` workflow: a leaves step (builder models sonnet, opus, opus; verifier opus for risky leaves, sonnet for low-risk ones; split auto) followed by `rhiza run build-check`, ending done without landing the change set.
 
 ## Links
 
@@ -29,7 +29,9 @@ Rhiza ships a built-in `build` workflow: a leaves step (builder models sonnet, o
 
 - verifies [build-workflow-file-verified](../../../../../evidence/build-workflow-file-verified.md)
 - verifies [pr-44-the-build-workflow](../../../../../evidence/pr-44-the-build-workflow.md)
+- verifies [pr-525-tiered-verifier](../../../../../evidence/pr-525-tiered-verifier.md)
 
 ## History
 
 - `01M5WPTY7P14SSHQ1FJ0WA8ZR4` The build workflow: Rhiza's run engine conducts a change set's leaves, a builder session and then a fresh verifier session per leaf in panes of its tab, with only the verifier writing the leaf's Evidence and retries capped on stronger models.
+- `01M76XS745J8S0J74SZFEHQ17Z` Build verifiers run on a cheaper model for low-risk leaves and on the strongest model for risky ones (test infrastructure, hooks, CI, workflow files, migrations, retries), still writing non-author Evidence. Evidence: the verifier is the largest single bucket, 16.9% of ship-change wall (prompt-gap rec 13).
