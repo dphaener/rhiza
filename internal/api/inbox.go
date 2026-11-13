@@ -797,6 +797,7 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 	fold := newInboxFold(ctx)
 	defer fold.close()
 	items := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxTabOf(ctx, common))
+	items = append(items, inboxUncoveredProposals(runs, fold)...)
 	blockers, err := inboxBlockers(ctx, questionAdvice(runs))
 	if err != nil {
 		return nil, err
@@ -1191,6 +1192,7 @@ func findInboxItems(ctx *Ctx, ref string) ([]InboxItem, map[string]run.State, er
 	fold := newInboxFold(ctx)
 	defer fold.close()
 	all := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxTabOf(ctx, common))
+	all = append(all, inboxUncoveredProposals(runs, fold)...)
 	blockers, err := inboxBlockers(ctx, questionAdvice(runs))
 	if err != nil {
 		return nil, nil, err
