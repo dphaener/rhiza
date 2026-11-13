@@ -11,3 +11,6 @@ func detachProgram(p apiProgram, logPath string) error {
 
 // reapDrivers is api.Ctx.Reap; there is nothing to reap.
 func reapDrivers(common string) {}
+
+// adoptChildren is api.Ctx.Adopt; there is nothing to adopt.
+func adoptChildren(common string) {}

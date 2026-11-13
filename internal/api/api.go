@@ -188,6 +188,12 @@ type Ctx struct {
 	// whose git common dir is common that have exited and that this process
 	// still parents, so none stays a zombie. Nil means nothing to reap.
 	Reap func(common string)
+	// Adopt is called once when a daemon image starts, before it starts any
+	// program: it puts every child this process already has (one an earlier
+	// image left running across a re-exec, whose waiter died with that image)
+	// on the driver list of the repo whose git common dir is common, so Reap
+	// waits on it. Nil means nothing to adopt.
+	Adopt func(common string)
 	// RexSession is the Rex session the caller runs in (the CLI's
 	// REX_SESSION), empty if none: session.start opens its tab there
 	// unless the request names another.

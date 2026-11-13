@@ -104,3 +104,58 @@ func isZombie(pid int) bool {
 }
 
 func itoa(n int) string { return strconv.Itoa(n) }
+
+// TestReapAdopt: a child nothing waits on (standing for one inherited
+// through a re-exec) is listed by the start-time adoption and reaped, while a
+// child started after the adoption is not listed and keeps its exit status.
+func TestReapAdopt(t *testing.T) {
+	common := t.TempDir()
+	list := filepath.Join(common, "rhiza", "drivers")
+
+	inherited := exec.Command("true")
+	if err := inherited.Start(); err != nil {
+		t.Fatal(err)
+	}
+	pid := inherited.Process.Pid
+
+	adoptChildren(common)
+	listed := false
+	for _, e := range readDrivers(list) {
+		if e.Pid == pid && e.By == selfID() {
+			listed = true
+		}
+	}
+	if !listed {
+		t.Fatalf("pid %d not on the driver list after adoption: %v", pid, readDrivers(list))
+	}
+
+	later := exec.Command("sh", "-c", "exit 4")
+	if err := later.Start(); err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range readDrivers(list) {
+		if e.Pid == later.Process.Pid {
+			t.Errorf("later child %d was listed by adoption", e.Pid)
+		}
+	}
+
+	deadline := time.Now().Add(5 * time.Second)
+	for (!isZombie(pid) || !isZombie(later.Process.Pid)) && time.Now().Before(deadline) {
+		time.Sleep(10 * time.Millisecond)
+	}
+	if !isZombie(pid) {
+		t.Fatal("inherited child did not become a zombie")
+	}
+	reapDrivers(common)
+	if _, err := os.Stat("/proc/" + itoa(pid)); err == nil {
+		t.Errorf("pid %d still exists after reap", pid)
+	}
+	if got := readDrivers(list); len(got) != 0 {
+		t.Errorf("driver list = %v, want empty", got)
+	}
+	err := later.Wait()
+	ee, ok := err.(*exec.ExitError)
+	if !ok || ee.ExitCode() != 4 {
+		t.Errorf("later child Wait = %v, want exit status 4", err)
+	}
+}

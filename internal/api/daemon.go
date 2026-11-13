@@ -165,6 +165,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if ctx.Stderr != nil {
 		fmt.Fprintf(ctx.Stderr, "rhiza: daemon running, process %s\n", self)
 	}
+	// Children an earlier image left (a re-exec keeps the pid) have no
+	// waiter now: list them before this image starts any program.
+	if ctx.Adopt != nil {
+		ctx.Adopt(common)
+	}
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}, Planned: []string{}}
 	projs := map[string]*daemonProj{}
 	// project is the daemon's working state for a registered project,
