@@ -1,0 +1,40 @@
+{
+  "actor": "01M798YYHN9CXWSXK37FSZA6T2",
+  "after": [
+    "01M7995DNM3HJG307J1PETHK6B"
+  ],
+  "at": "2026-11-13T01:45:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 401ac36c0 as claude-code-0b7369d7. Read the diff: run.go adds queuedCheckMode (the start's own mode, else rhiza.daemon.permissionMode for a queued start, none for --foreground) and passes it to both checkAgentSteps calls in runRunStart; queueRunStart still records r.PermissionMode, so the queued start holds no mode, and daemonQueuedStarts fills an empty mode with the daemon's own. go test -trimpath ./internal/api/ -run 'TestQueuedCheckMode|TestRunStart|TestDaemon': ok (TestQueuedCheckModeStandsInDaemonMode covers Queued->manual, Named->plan, Foreground->empty; TestRunStartAgentRefusalsBeforeWrite still passes). go test -trimpath ./cmd/rhiza -run 'TestScripts/run-start-queue$' -testwork: PASS. In its log, with rhiza.daemon.permissionMode=nonsense, run start --workflow plan is refused with 'claude-code: unknown permission mode \"nonsense\"' (exit 2) and nothing is queued (the next start on the same change set queues without 'already has a run queued'); with it set to manual, run start --workflow plan --autonomous queues, starts.json has 0 permission_mode keys, and rhiza daemon --max-runs 3 --once starts it. I opened the kept work dir: the daemon-started run's journal for that change set records permission_mode manual and autonomous true, so the daemon passed its own setting. Minor: the script does not assert that journal mode itself; I checked it by hand."
+        },
+        "handle": "queued-start-daemon-mode-verified",
+        "id": "01M7998QSGV3EA5G65FNN1DAAX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7998QSGV3EA5G65FJPYSN3S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7998QSGV3EA5G65FJPYSN3S",
+        "id": "01M7998QTQS1ZDXVC67Q0Y5YX0",
+        "link": "01M7998QTQS1ZDXVC67N3SY49J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7982F0JXM91XG2GD8WQZ75C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M797TRSFCEHV3FXTYVRV7D74",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7998QVKB7WSBBNKG4QC27JJ",
+  "type": "ops",
+  "v": 1
+}

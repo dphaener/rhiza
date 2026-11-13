@@ -1,0 +1,40 @@
+{
+  "actor": "01M7993KQ9VN67PQ61XE1P942W",
+  "after": [
+    "01M7986JBC5BXFZ3ED05K3MZ0K"
+  ],
+  "at": "2026-11-13T01:43:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 240df0cec: read the diff (internal/api/run.go checkAgentStep message now 'give --permission-mode, set rhiza.daemon.permissionMode (for a run the daemon starts), or set permission_mode on the step'; run_test.go NoMode case checks that text; run-start-queue.txtar adds the unset and --foreground cases). Ran go test -trimpath ./internal/api -run 'TestRunStartAgentRefusalsBeforeWrite|TestRunStart|TestQueuedCheckMode' -count=1: ok. Ran go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-start-queue|daemon-picks)$' -count=1 -v: both PASS. In run-start-queue, with rhiza.daemon.permissionMode unset, 'rhiza run start --workflow plan' fails with stderr naming rhiza.daemon.permissionMode and starts.json holds 0 change entries before and after; with the setting = manual, 'rhiza run start --workflow plan --foreground' exits 2 with stderr: step \"interview\" is an agent step with no permission mode: give --permission-mode, set rhiza.daemon.permissionMode (for a run the daemon starts), or set permission_mode on the step."
+        },
+        "handle": "no-mode-refusal-names-setting-verified",
+        "id": "01M7995DHGX0BE78A20CG58HGZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7995DHF02QZC0R9640EQ5X8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7995DHF02QZC0R9640EQ5X8",
+        "id": "01M7995DM7MSWD4HX2DNK7VATP",
+        "link": "01M7995DM7MSWD4HX2DJ910TYZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7982F49NA91KNX67QHP9914",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M797TRSFCEHV3FXTYVRV7D74",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7995DNM3HJG307J1PETHK6B",
+  "type": "ops",
+  "v": 1
+}
