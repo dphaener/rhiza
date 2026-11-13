@@ -147,7 +147,8 @@ func TestWatchdogPollOverrun(t *testing.T) {
 }
 
 // TestWatchdogPollOverrunFirstPoll covers the first poll of a daemon image:
-// it starts under the shipped defaults, which watch it, and a policy read
+// it starts under the home settings read at startup (the shipped defaults,
+// which watch it, when none is set), and a policy read
 // mid-poll re-arms the watch, timed from the poll's start.
 func TestWatchdogPollOverrunFirstPoll(t *testing.T) {
 	if def := defaultWatchdogPolicy(); !def.Enabled || def.PollBehind != DefaultPollBehind {

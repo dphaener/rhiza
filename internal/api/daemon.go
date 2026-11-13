@@ -224,9 +224,10 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	lastTurn := ""
 	// atHome is told the home project's settings at each poll: the root-wide
 	// parts of the daemon follow them. Until the first poll reads them, the
-	// watchdog works under the shipped defaults, so that poll is watched too;
-	// rearmPoll hands the poll's in-flight watch the policy just read.
-	homePol := defaultWatchdogPolicy()
+	// watchdog works under the home settings read at startup, so that poll is
+	// watched (or not) as the owner set it; rearmPoll hands the poll's
+	// in-flight watch the policy just read.
+	homePol := watchdogPolicyOf(conf.rows)
 	rearmPoll := func(WatchdogPolicy) {}
 	atHome := func(conf daemonConf) {
 		homePol = watchdogPolicyOf(conf.rows)

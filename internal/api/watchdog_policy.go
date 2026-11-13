@@ -120,7 +120,7 @@ func watchdogPolicyOf(rows []Setting) WatchdogPolicy {
 }
 
 // defaultWatchdogPolicy is the policy of the shipped defaults: the one a
-// daemon works under before it has read any project's settings.
+// daemon works under when the owner has set none of its keys.
 func defaultWatchdogPolicy() WatchdogPolicy {
 	rows := make([]Setting, 0, len(watchdogNames))
 	for _, w := range watchdogNames {
