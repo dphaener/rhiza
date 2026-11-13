@@ -853,7 +853,12 @@ func daemonResumable(ctx *Ctx, rs *run.Store, runs []run.Journal, fold *daemonFo
 			}
 		}
 	}
-	return resumable
+	// A run whose workflow names a skill the held guide lacks is not
+	// resumed while the hold stands.
+	return slices.DeleteFunc(resumable, func(id string) bool {
+		i := slices.IndexFunc(runs, func(j run.Journal) bool { return j.ID == id })
+		return i >= 0 && guideHoldsRun(ctx, runs[i])
+	})
 }
 
 // daemonSlotKept details a no-slot skip whose slot is kept for a queued
@@ -1265,7 +1270,7 @@ func daemonQueuedContinues(ctx *Ctx, rs *run.Store, runs []run.Journal, running,
 			if !daemonContinueCanStart(rs, runs, c) {
 				continue
 			}
-			if running >= max {
+			if running >= max || guideHoldsRun(ctx, runs[slices.IndexFunc(runs, func(j run.Journal) bool { return j.ID == c.Run })]) {
 				keep = append(keep, c)
 				continue
 			}
@@ -1576,7 +1581,7 @@ type DaemonEvent struct {
 // poll.
 type DaemonSkip struct {
 	Change  string   `json:"change" desc:"The change set's ID; empty for a queued request that was not started"`
-	Request string   `json:"request,omitempty" desc:"The queued request's ID, when the skip is a request whose workflow does not resolve"`
+	Request string   `json:"request,omitempty" desc:"The queued request's ID, when the skip is a request whose workflow does not resolve or names a skill missing from the installed guide"`
 	Title   string   `json:"title" desc:"The change set's display title, or the request's text"`
 	Reason  string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, load-high, memory-low, usage-reserve, ship-owner or workflow-unresolved"`
 	Detail  []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; the free space, when disk-low; the load or memory reading and limit, when load-high or memory-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty"`

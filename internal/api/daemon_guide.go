@@ -19,6 +19,7 @@ import (
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/rootcfg"
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
 
@@ -253,17 +254,71 @@ func guideSkipOf(ctx *Ctx, fold *daemonFolded, cs string) (daemon.Skip, bool) {
 	if err != nil {
 		return daemon.Skip{}, false
 	}
-	_, def, _, err := resolveWorkflow(ctx.Root, name)
+	detail, held := guideHeldWorkflow(ctx, name)
+	if !held {
+		return daemon.Skip{}, false
+	}
+	return daemon.Skip{Change: cs, Reason: daemon.SkipGuideStale, Detail: detail}, true
+}
+
+// guideRequestSkipOf is the skip for queued request q when the workflow its
+// plan run starts names a skill the held guide lacks: the skip, and true.
+func guideRequestSkipOf(ctx *Ctx, q daemon.Request) (daemon.Skip, bool) {
+	g := ctx.guideGate
+	if g == nil || len(g.holds(ctx.Root)) == 0 {
+		return daemon.Skip{}, false
+	}
+	name, err := requestWorkflow(ctx.Root, q)
 	if err != nil {
 		return daemon.Skip{}, false
 	}
-	skill := g.missingSkill(ctx.Root, def)
-	if skill == "" {
+	detail, held := guideHeldWorkflow(ctx, name)
+	if !held {
 		return daemon.Skip{}, false
 	}
+	return daemon.Skip{Request: q.ID, Title: q.Text, Reason: daemon.SkipGuideStale, Detail: detail}, true
+}
+
+// guideHeldWorkflow is the skip detail for the workflow name when it names
+// a skill the held guide lacks, and true.
+func guideHeldWorkflow(ctx *Ctx, name string) ([]string, bool) {
+	_, def, _, err := resolveWorkflow(ctx.Root, name)
+	if err != nil {
+		return nil, false
+	}
+	return guideHeldDef(ctx, name, def)
+}
+
+// guideHeldDef is the skip detail for workflow def, named name, when it
+// names a skill the held guide lacks, and true.
+func guideHeldDef(ctx *Ctx, name string, def *workflow.Definition) ([]string, bool) {
+	g := ctx.guideGate
+	if g == nil {
+		return nil, false
+	}
+	skill := g.missingSkill(ctx.Root, def)
+	if skill == "" {
+		return nil, false
+	}
 	hs := g.holds(ctx.Root)
-	return daemon.Skip{Change: cs, Reason: daemon.SkipGuideStale, Detail: []string{
-		"workflow " + name + " starts /" + skill + ", missing from the installed guide", hs[0].Err, hs[0].Next()}}, true
+	return []string{"workflow " + name + " starts /" + skill + ", missing from the installed guide", hs[0].Err, hs[0].Next()}, true
+}
+
+// guideHoldsRun reports whether run j's resume is held: the workflow it
+// started with, as its journal keeps it, names a skill the held guide
+// lacks.
+func guideHoldsRun(ctx *Ctx, j run.Journal) bool {
+	g := ctx.guideGate
+	if g == nil || len(g.holds(ctx.Root)) == 0 {
+		return false
+	}
+	st := j.State()
+	def, err := st.ParseDefinition()
+	if err != nil {
+		return false
+	}
+	_, held := guideHeldDef(ctx, st.Workflow, def)
+	return held
 }
 
 // guideHoldItems is one guide-stale item per hold.

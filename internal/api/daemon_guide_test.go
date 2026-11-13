@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/dphaener/rhiza/internal/rootcfg"
+	"github.com/dphaener/rhiza/internal/run"
 )
 
 func realExec(name string, args []string, dir string, env []string) ([]byte, error) {
@@ -298,5 +299,93 @@ func TestDaemonGuideHold(t *testing.T) {
 	}
 	if items := guideHoldItems(ctx.guideGate.state(ctx.Root)); len(items) != 0 {
 		t.Fatalf("items after the install: %+v", items)
+	}
+}
+
+// While a refresh failed, a queued request whose plan run's workflow names
+// a skill the guide lacks starts no plan run and is skipped as guide-stale,
+// and an interrupted run whose workflow names one is not resumed; both go
+// on once the guide is installed.
+func TestDaemonGuideHoldPlansAndResumes(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root writes into an unwritable folder")
+	}
+	f := usageFix(t)
+	ctx := f.ctx
+	ctx.Version = "1.2.3"
+	ctx.Home = t.TempDir()
+	home := oldGuide(t, ctx, ctx.Home, false)
+	if err := os.RemoveAll(filepath.Join(home, "skills", "rhiza-planner")); err != nil {
+		t.Fatal(err)
+	}
+	skills := filepath.Join(home, "skills")
+	if err := os.Chmod(skills, 0o555); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.Chmod(skills, 0o755) })
+	scopes := refreshGuides(ctx, t.TempDir(), rootcfg.Config{}, func(string) {})
+	if len(scopes) != 1 || scopes[0].Refreshed {
+		t.Fatalf("refresh: %+v", scopes)
+	}
+	ctx.guideGate = newGuideGate(ctx, scopes)
+
+	// A queued bug request: plan-bug's planner starts /rhiza-planner.
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := daemon.UpdateRequests(common, func(reqs []daemon.Request) ([]daemon.Request, error) {
+		return append(reqs, daemon.Request{ID: "Q1", Kind: daemon.KindBug, Text: "Broken", At: ctx.Now()}), nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	f.picked = nil
+	var skips []daemon.Skip
+	started, err := daemonPlanRequests(ctx, f.rs, nil, 0, 4, "auto", "", &skips)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(started)+len(f.picked) != 0 {
+		t.Fatalf("started %v (detached %v) over a stale guide", started, f.picked)
+	}
+	if len(skips) != 1 || skips[0].Reason != daemon.SkipGuideStale || skips[0].Request == "" ||
+		!strings.Contains(strings.Join(skips[0].Detail, " "), "/rhiza-planner") {
+		t.Fatalf("skips %+v: want the request held for the guide", skips)
+	}
+
+	// An interrupted run of ship-change, whose builder starts /rhiza-builder.
+	_, def, data, err := resolveWorkflow(ctx.Root, shipChangeWorkflow)
+	if err != nil {
+		t.Fatal(err)
+	}
+	at := ctx.Now().Add(-time.Hour)
+	j := run.Journal{ID: "RUN1", Entries: []run.Entry{{Type: run.TypeStarted, At: at,
+		Started: &run.Started{Workflow: shipChangeWorkflow, Definition: string(data), Includes: def.Includes, Change: f.target}}}}
+	if st := j.State(); st.Liveness("", nil) != run.LiveInterrupted {
+		t.Fatalf("fixture run is %v, want interrupted", st.Liveness("", nil))
+	}
+	fold, err := daemonFoldOf(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := daemonResumable(ctx, f.rs, []run.Journal{j}, fold, "", false); len(got) != 0 {
+		t.Fatalf("resumable %v over a stale guide", got)
+	}
+
+	// The owner installs the guide: the request starts, the run resumes.
+	if err := os.Chmod(skills, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	guideInstall(t, ctx, `{"agent":"claude"}`)
+	skips = nil
+	started, err = daemonPlanRequests(ctx, f.rs, nil, 0, 4, "auto", "", &skips)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(started) != 1 || len(skips) != 0 {
+		t.Fatalf("after the install started %v, skips %+v", started, skips)
+	}
+	if got := daemonResumable(ctx, f.rs, []run.Journal{j}, fold, "", false); len(got) != 1 {
+		t.Fatalf("after the install resumable %v, want RUN1", got)
 	}
 }

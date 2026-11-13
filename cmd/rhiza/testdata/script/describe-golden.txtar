@@ -2289,7 +2289,7 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "request": {
-                        "description": "The queued request's ID, when the skip is a request whose workflow does not resolve",
+                        "description": "The queued request's ID, when the skip is a request whose workflow does not resolve or names a skill missing from the installed guide",
                         "type": "string"
                       },
                       "title": {
@@ -2440,7 +2440,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "request": {
-                  "description": "The queued request's ID, when the skip is a request whose workflow does not resolve",
+                  "description": "The queued request's ID, when the skip is a request whose workflow does not resolve or names a skill missing from the installed guide",
                   "type": "string"
                 },
                 "title": {
