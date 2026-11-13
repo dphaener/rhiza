@@ -18,13 +18,13 @@ on.pass = "render"
 # leaf.
 [step.build.builder]
 models = ["sonnet", "opus", "opus"]
-prompt = "/rhiza-build Build leaf {leaf} of change set {change} ({title}), attempt {attempt}, as the builder: follow `rhiza guide build`. End with exactly one new commit whose trailers name the change set, you and `Leaf: {leaf}`. Your very last action, once that commit is made, is to run `rhiza session done`: this run moves on only then, never because you sit idle. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge. This is a doc change: draft or revise every line of doc prose with the owner's humanize skill (load it with the Skill tool) before you commit, under constraints doc-prose-humanized and doc-examples-plain-commands: show model writes as plain `rhiza add`, `link` and `set` commands, never `rhiza apply` with a JSON file as a reader's first write. Generated reference tables are exempt."
+prompt = "/rhiza-builder Build leaf {leaf} of change set {change} ({title}), attempt {attempt}: follow rhiza guide builder. This is a doc change: draft or revise every line of doc prose with the owner's humanize skill (load it with the Skill tool) before you commit, under constraints doc-prose-humanized and doc-examples-plain-commands: show model writes as plain `rhiza add`, `link` and `set` commands, never `rhiza apply` with a JSON file as a reader's first write. Generated reference tables are exempt."
 
 # A verifier works in a detached checkout at the builder's commit
 # ($RHIZA_COMMIT) and passes only with Evidence written as itself.
 [step.build.verifier]
 models = ["opus"]
-prompt = "/rhiza-build Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT, as the verifier: follow `rhiza guide build`. Never edit code. End with Evidence written as yourself that verifies {leaf}, or with findings recorded by `rhiza run findings --leaf {leaf}`, then run `rhiza session done` as your very last action. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+prompt = "/rhiza-verifier Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT: follow rhiza guide verifier."
 
 # Build's sessions register actors and write Evidence, which leaves
 # .rhiza/rendered stale. Render and commit the rendered folder on the

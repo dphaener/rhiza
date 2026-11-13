@@ -1,0 +1,40 @@
+{
+  "actor": "01M79BV1X5K19E6J0PBDJ0WX5B",
+  "after": [
+    "01M79BJSHS3P3ZRP7DPW67DJWJ"
+  ],
+  "at": "2026-11-13T02:31:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Attempt 3 verifier at e78b3b302 (detached). Re-ran every Checks: command of e78b3b302 and 41132e7d0: go test -trimpath ./internal/workflow -run 'TestBuiltinRolePromptsScopeTests|TestBuildBuiltin' (exit 0), go test -trimpath ./internal/guide -run 'TestBuilderText|TestVerifierText' (exit 0), rhiza ship generate and rhiza render with this commit's build (exit 0, no tracked diff), make self-check (exit 0, only pre-existing unclaimed warnings). Re-ran the leaf acceptance: go test -trimpath ./internal/workflow/... ok (incl. the docs-build/docs-review test at workflow_test.go:2420), go test -trimpath ./cmd/rhiza -run 'TestScripts/(build-evidence-commit|docs-commands-exist|describe-golden)$' ok. Read build.toml:18/24, review.toml:67, .rhiza/workflows/docs-build.toml:21/27 and docs-review.toml:70: the one-line builder/verifier prompts match the statement byte for byte, docs-build keeps its humanize addendum. Model findings f1/f2 are addressed: role-prompts-scoped-tests now exempts the one-line /rhiza-builder and /rhiza-verifier prompts (rule comes from the topics' shared test-scope block), and builder-prehandoff-checklist names the builder topic and TestBuilderText and drops the prompt-points-at-checklist clause."
+        },
+        "handle": "build-prompts-one-line-verified-3",
+        "id": "01M79BXW5TVDTSJQXW8115HQ2J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79BXW5TVDTSJQXW80BDWSYY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79BXW5TVDTSJQXW80BDWSYY",
+        "id": "01M79BXW7BAGSBFDP6CYRT4YZA",
+        "link": "01M79BXW7BAGSBFDP6CY703EEC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974GD79WS6HEB3RMEMQ7W9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79BXW8DAVH6WCVVBWMY2NKM",
+  "type": "ops",
+  "v": 1
+}

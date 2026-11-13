@@ -11,7 +11,7 @@ import (
 	"github.com/dphaener/rhiza/internal/guide"
 )
 
-var pluginPaths = []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginBuildPath, pluginPlanPath, pluginReviewPath, pluginScrubPath}
+var pluginPaths = []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginRetryPath, pluginBuildPath, pluginBuilderPath, pluginPlanPath, pluginReviewPath, pluginScrubPath, pluginVerifierPath}
 
 func guideInstall(t *testing.T, ctx *Ctx, req string) GuideInstallResponse {
 	t.Helper()
@@ -48,7 +48,7 @@ func TestYAMLQuote(t *testing.T) {
 }
 
 func TestSkillFileFrontmatter(t *testing.T) {
-	for _, tc := range []struct{ name, text string }{{"rhiza", "rhiza"}, {"rhiza-scrub", "scrub"}, {"rhiza-plan", "plan"}, {"rhiza-build", "build"}, {"rhiza-review", "review"}} {
+	for _, tc := range []struct{ name, text string }{{"rhiza", "rhiza"}, {"rhiza-scrub", "scrub"}, {"rhiza-plan", "plan"}, {"rhiza-build", "build"}, {"rhiza-builder", "builder"}, {"rhiza-verifier", "verifier"}, {"rhiza-build-retry", "build-retry"}, {"rhiza-review", "review"}} {
 		b, err := skillFile(tc.name, tc.text)
 		if err != nil {
 			t.Fatal(err)
@@ -107,9 +107,39 @@ func TestGuideInstallBuild(t *testing.T) {
 	if !strings.HasPrefix(string(b), "---\nname: rhiza-build\ndescription: ") || !strings.HasSuffix(string(b), "\n---\n\n"+g.Body) {
 		t.Errorf("rhiza-build SKILL.md is not the frontmatter plus the build topic:\n%s", b)
 	}
-	for _, p := range []string{"Leaf: ", "discovered-from", "rhiza run findings --leaf"} {
+	for _, p := range []string{"/rhiza-builder", "/rhiza-verifier", "/rhiza-build-retry", "rhiza guide builder"} {
 		if !strings.Contains(string(b), p) {
 			t.Errorf("rhiza-build SKILL.md: no %q", p)
+		}
+	}
+}
+
+// TestGuideInstallRoleSkills finds the builder, verifier and build-retry
+// topics in the installed plugin as their own skills, and a second install
+// reports them unchanged.
+func TestGuideInstallRoleSkills(t *testing.T) {
+	ctx := testCtx(t.TempDir())
+	ctx.Home = t.TempDir()
+	r := guideInstall(t, ctx, `{"agent":"claude"}`)
+	for _, tc := range []struct{ skill, text string }{{"rhiza-builder", "builder"}, {"rhiza-verifier", "verifier"}, {"rhiza-build-retry", "build-retry"}} {
+		p := "skills/" + tc.skill + "/SKILL.md"
+		if !slices.Contains(r.Written, p) {
+			t.Fatalf("install wrote %v, want %s", r.Written, p)
+		}
+		b, err := os.ReadFile(filepath.Join(r.Dir, filepath.FromSlash(p)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		g, _ := guide.Lookup(tc.text)
+		want := "---\nname: " + tc.skill + "\ndescription: " + yamlQuote(g.Description) + "\n---\n\n" + g.Body
+		if string(b) != want {
+			t.Errorf("%s is not the frontmatter plus the %s topic", p, tc.text)
+		}
+	}
+	r = guideInstall(t, ctx, `{"agent":"claude"}`)
+	for _, s := range []string{"rhiza-builder", "rhiza-verifier", "rhiza-build-retry"} {
+		if !slices.Contains(r.Unchanged, "skills/"+s+"/SKILL.md") {
+			t.Errorf("second install: %s not unchanged: %+v", s, r)
 		}
 	}
 }
