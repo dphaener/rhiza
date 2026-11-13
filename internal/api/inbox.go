@@ -354,7 +354,13 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 		// (the accept setting is owner, or the review did not pass): each
 		// waits for acceptance.
 		if !retried {
+			// A change set the same run journaled accepted needs nothing
+			// from the owner: main's model says proposed only until the
+			// plan PR merges.
 			for _, g := range st.Gated {
+				if runAccepted(st, g) {
+					continue
+				}
 				if state, ok := changeState(g); ok && state == string(changeset.StateProposed) {
 					add(InboxAccept, g, st.GatedAt, InboxItem{Detail: "waiting for acceptance", Next: ownerAcceptNext(g)})
 					items[len(items)-1].Change = g
@@ -1531,4 +1537,15 @@ func workflowItems(common string, skips []daemon.Skip) []InboxItem {
 		})
 	}
 	return items
+}
+
+// runAccepted reports whether the run journaled an accepted entry for the
+// change set.
+func runAccepted(st run.State, change string) bool {
+	for _, a := range st.Accepts {
+		if a.Change == change && a.Verb == run.TypeAccepted {
+			return true
+		}
+	}
+	return false
 }
