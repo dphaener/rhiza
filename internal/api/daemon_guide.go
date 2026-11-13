@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/rootcfg"
@@ -195,16 +196,24 @@ func (g *guideGate) missingSkill(dir string, def *workflow.Definition) string {
 }
 
 // workflowStartSkills are the skill names, in order of first use, that the
-// start commands (prompts opening with a slash) of def's claude steps and
-// roles name.
+// start commands of def's steps and roles name, each read by the adapter of
+// its agent (the default adapter for none); an agent whose adapter reads no
+// slash commands names none.
 func workflowStartSkills(def *workflow.Definition) []string {
 	var out []string
 	add := func(agent, prompt string) {
-		prompt = strings.TrimSpace(prompt)
-		if !strings.HasPrefix(prompt, "/") || (agent != "" && agent != "claude") {
+		a := adapter.Default()
+		if agent != "" {
+			a, _ = adapter.Lookup(agent)
+		}
+		sc, ok := a.(adapter.SkillChecker)
+		if !ok {
 			return
 		}
-		name, _, _ := strings.Cut(prompt[1:], " ")
+		name, ok := sc.StartSkill(strings.TrimSpace(prompt))
+		if !ok {
+			return
+		}
 		name = strings.TrimPrefix(name, pluginName+":")
 		if name != "" && !slices.Contains(out, name) {
 			out = append(out, name)
