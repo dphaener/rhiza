@@ -1,0 +1,40 @@
+{
+  "actor": "01M79YY62WP256YK9FV7AEJW0G",
+  "after": [
+    "01M79P2RXMJ1JKD7FN1XMTQ359"
+  ],
+  "at": "2026-11-13T08:06:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 0e1e57d1e re-ran the Checks: block: go test -trimpath ./internal/adapter/... exit 0; go test -trimpath ./cmd/rhiza -run TestScripts/run-start-skill-missing exit 0; the builtin-workflow scripts pattern (bugfix-workflow-autonomous|usage-live-record|daemon-milestone-request|plan-milestone-workflow|workflow-plan-autonomy|run-start-skill-missing) exit 0; rhiza ship generate exit 0; rhiza render exit 0. Read the diff (63532bb2e): claudecode StartSkill/SkillGlobs with TestStartSkill (slash and non-slash prompts) and TestSkillGlobs (installed, missing, plugin and worktree skills); api checkStartSkill fails before launch with 'start command /<name> unknown to claude: skill not installed; run rhiza guide install --agent claude' and writes no session record. run-start-skill-missing.txtar asserts no rex call, run failed with that reason, no attempt, no sessions, an inbox item naming rhiza guide install --agent claude and resume --retry, and after reinstalling and resuming the builder runs as attempt 1. No TODOs or stubs; fakes only."
+        },
+        "handle": "session-start-skill-preflight-verified",
+        "id": "01M79Z3KTC8BDXYV95YKJ6KCM0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79Z3KTC8BDXYV95YJJZS3H5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79Z3KTC8BDXYV95YJJZS3H5",
+        "id": "01M79Z3M28CZ2S76V8EBKJ5BQ0",
+        "link": "01M79Z3M28CZ2S76V8E87QG4JY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NEZA13RZT7QH1TCZ113ER",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79N2JBDRDZ6R6HZ5YMRE8EY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79Z3M6N65WNMGWEJE060NZA",
+  "type": "ops",
+  "v": 1
+}
