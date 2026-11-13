@@ -1,6 +1,7 @@
 package guide
 
 import (
+	"slices"
 	"strings"
 	"testing"
 )
@@ -100,39 +101,90 @@ func TestReviewFixerPreHandoffChecklist(t *testing.T) {
 	}
 }
 
-// severityBlock is a topic's "## Severities" section.
-func severityBlock(t *testing.T, name string) string {
+// severityTopics are the topics that grade or fix findings: plan-review,
+// review, and every check-*, critic and fixer topic.
+func severityTopics(t *testing.T) []Text {
 	t.Helper()
-	tx, ok := Lookup(name)
-	if !ok {
-		t.Fatalf("%s: no topic", name)
+	var out []Text
+	for _, tx := range List() {
+		n := tx.Name
+		if n == "plan-review" || n == "review" || strings.HasPrefix(n, "check-") ||
+			n == "critic" || n == "fixer" {
+			out = append(out, tx)
+		}
 	}
-	i := strings.Index(tx.Body, "## Severities")
-	if i < 0 {
-		t.Fatalf("%s: no severity block", name)
+	for _, want := range []string{"plan-review", "review"} {
+		if !slices.ContainsFunc(out, func(tx Text) bool { return tx.Name == want }) {
+			t.Fatalf("no %s topic", want)
+		}
 	}
-	rest := tx.Body[i+len("## Severities"):]
-	if j := strings.Index(rest, "\n## "); j >= 0 {
-		rest = rest[:j]
-	}
-	return rest
+	return out
 }
 
-func TestReviewSeverityBlockShared(t *testing.T) {
-	review, plan := severityBlock(t, "review"), severityBlock(t, "plan-review")
-	if review != plan {
-		t.Errorf("review and plan-review severity blocks differ:\n%s\n---\n%s", review, plan)
+func TestSeverityBlockOnceInEachTopic(t *testing.T) {
+	block := strings.TrimRight(sharedFiles(t)["severity.md"], "\n")
+	if block == "" {
+		t.Fatal("no severity shared block")
+	}
+	for _, tx := range severityTopics(t) {
+		if n := strings.Count(tx.Body, block); n != 1 {
+			t.Errorf("%s holds the severity block %d times, want 1", tx.Name, n)
+		}
+		if n := strings.Count(tx.Body, "## Severities"); n != 1 {
+			t.Errorf("%s has %d severity headings, want 1", tx.Name, n)
+		}
+	}
+	for _, f := range []string{"plan-review.md", "review.md"} {
+		b, err := files.ReadFile("text/" + f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(string(b), "<!-- shared: severity -->") {
+			t.Errorf("%s does not include the severity block", f)
+		}
+	}
+}
+
+func TestSeverityBlockContent(t *testing.T) {
+	block := sharedFiles(t)["severity.md"]
+	for _, sev := range []string{"`blocker`:", "`major`:", "`minor`:", "`nit`:"} {
+		if strings.Count(block, sev) != 1 {
+			t.Errorf("severity block defines %q %d times, want 1", sev, strings.Count(block, sev))
+		}
+	}
+	for _, c := range []string{"`compliance`", "`quality`", "`qa`", "`model`"} {
+		if !strings.Contains(block, c) {
+			t.Errorf("severity mapping lacks %s", c)
+		}
+	}
+	for _, k := range []string{"`missing-acceptance`", "`contradiction`", "`outside-intent`"} {
+		if !strings.Contains(block, k) {
+			t.Errorf("severity mapping lacks plan review kind %s", k)
+		}
+	}
+	if strings.Contains(block, "`scope`") {
+		t.Errorf("severity mapping names a `scope` check")
+	}
+	for _, out := range []string{"confirmed", "downgraded", "dropped"} {
+		if strings.Contains(block, out) {
+			t.Errorf("severity block names critic outcome %q", out)
+		}
 	}
 	for _, banned := range []string{"go ", "Go ", "make ", "rhiza check", "rhiza render", "rhiza ship", "testscript"} {
-		if strings.Contains(review, banned) {
+		if strings.Contains(block, banned) {
 			t.Errorf("severity block names %q", banned)
 		}
 	}
-	for _, name := range []string{"review", "plan-review"} {
-		tx, _ := Lookup(name)
+	for _, tx := range severityTopics(t) {
+		if tx.Name != "plan-review" && tx.Name != "review" && tx.Name != "critic" {
+			continue
+		}
 		i := strings.Index(tx.Body, "## Critic")
+		if tx.Name == "critic" {
+			i = 0
+		}
 		if i < 0 {
-			t.Fatalf("%s: no critic section", name)
+			t.Fatalf("%s: no critic section", tx.Name)
 		}
 		critic := tx.Body[i:]
 		if j := strings.Index(critic[3:], "\n## "); j >= 0 {
@@ -140,7 +192,7 @@ func TestReviewSeverityBlockShared(t *testing.T) {
 		}
 		for _, want := range []string{"confirmed", "downgraded", "dropped", "Never add a finding"} {
 			if !strings.Contains(critic, want) {
-				t.Errorf("%s critic section lacks %q", name, want)
+				t.Errorf("%s critic section lacks %q", tx.Name, want)
 			}
 		}
 	}
