@@ -124,8 +124,8 @@ func (r *stepRunner) fillSession(dir string) error {
 const unboundedSliceBudget = SliceBudget(math.MaxInt32)
 
 // briefInput is what brief.md is rendered from, over the uncut slice sl of
-// change set cs: its decisions are the change set's own (focus) Decisions,
-// then the other decisions that apply.
+// change set cs: its decisions and constraints are the change set's own
+// (focus) ones, then the others that apply.
 func (r *stepRunner) briefInput(c *Ctx, cs id.ID, sl SliceResponse) (run.BriefInput, error) {
 	in := run.BriefInput{ChangeID: cs.String()}
 	if sl.Change != nil {
@@ -150,8 +150,8 @@ func (r *stepRunner) briefInput(c *Ctx, cs id.ID, sl SliceResponse) (run.BriefIn
 			Handle: l.Handle, Statement: nodeField(n.Fields, "statement"), Acceptance: nodeField(n.Fields, "acceptance"),
 		})
 	}
-	in.Decisions = decisionStatements(sl)
-	in.Constraints = itemStatements(sl.Constraints)
+	in.Decisions = focusStatements(sl, op.KindDecision, sl.Decisions)
+	in.Constraints = focusStatements(sl, op.KindConstraint, sl.Constraints)
 	in.PrePushCheck = r.configValue(PrePushCheckKey)
 	in.LocalGate = r.configValue(LocalGateKey)
 	return in, nil
@@ -166,19 +166,19 @@ func nodeField(fields map[string]json.RawMessage, name string) string {
 	return s
 }
 
-// decisionStatements are the statements of sl's live focus decisions, then
-// of its decisions not among them.
-func decisionStatements(sl SliceResponse) []string {
+// focusStatements are the statements of sl's live focus nodes of kind (the
+// change set's own), then of items not among them.
+func focusStatements(sl SliceResponse, kind op.Kind, items []slice.DocItem) []string {
 	var out []string
 	seen := map[id.ID]bool{}
 	for _, f := range sl.Focus {
-		if f.Kind != op.KindDecision || f.Retired {
+		if f.Kind != kind || f.Retired {
 			continue
 		}
 		seen[f.ID] = true
 		out = append(out, f.Statement)
 	}
-	for _, it := range sl.Decisions {
+	for _, it := range items {
 		if !seen[it.ID] {
 			out = append(out, itemStatements([]slice.DocItem{it})...)
 		}

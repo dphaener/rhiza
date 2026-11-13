@@ -190,3 +190,32 @@ func TestSessionBriefDecisions(t *testing.T) {
 		}
 	}
 }
+
+// brief.md lists the change set's own decisions and constraints, which the
+// slice holds in focus, each by its statement.
+func TestSessionBriefOwnDecisionsConstraints(t *testing.T) {
+	f := newSessionFixture(t, "brief-own")
+	cs := newChange(t, f.ctx, `{"intent":"Readable tabs"}`).ChangeSet
+	if _, err := applyFile(t, f.ctx, `{"writes":[
+	  {"op":"add","kind":"capability","handle":"alpha","fields":["statement=Alpha"]},
+	  {"op":"add","kind":"capability","handle":"beta","fields":["statement=Beta"]},
+	  {"op":"add","kind":"decision","handle":"dec1","fields":["statement=Use maps."]},
+	  {"op":"add","kind":"constraint","handle":"con1","fields":["statement=No network."]}
+	]}`); err != nil {
+		t.Fatal(err)
+	}
+	r := &stepRunner{ctx: f.ctx, change: cs.String(), run: "R1", worktree: filepath.Join(t.TempDir(), "none")}
+	dir := filepath.Join(t.TempDir(), "session")
+	if err := r.fillSession(dir); err != nil {
+		t.Fatal(err)
+	}
+	md, err := os.ReadFile(filepath.Join(dir, "brief.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, w := range []string{"## Decisions\n\n- Use maps.", "## Constraints\n\n- No network."} {
+		if !strings.Contains(string(md), w) {
+			t.Errorf("brief.md lacks %q:\n%s", w, md)
+		}
+	}
+}
