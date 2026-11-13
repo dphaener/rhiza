@@ -1539,6 +1539,7 @@ Output (`--json` fields):
 - `check` (object): rhiza check's report on the run's worktree
 - `dry_run` (boolean): True if nothing was journalled
 - `leaves` (array of object): build-check's leaves of the change set, in leaf order
+- `lints` (array of object): The model lints' hits (stale references, unapplied Decisions, capabilities whose code the branch removed); a hit is never a cause and does not change passed
 - `passed` (boolean): True if rhiza check found no failure and every leaf is OK
 - `run` (string): The run's full ID
 - `step` (string): The step the run is at, which the code-check entry names
