@@ -1,0 +1,40 @@
+{
+  "actor": "01M7A8G0VMX9F5FPN8E6A8GJFY",
+  "after": [
+    "01M7A5SR1BDJ8R5CX3J790M723"
+  ],
+  "at": "2026-11-13T10:53:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Attempt 2 at 9ff80444b: acceptance `go test -trimpath ./internal/api -run TestWatchdogPollOverrun` exit 0 (covers TestWatchdogPollOverrun: one in-flight line naming step and project before release, none within limit, none with watchdog or poll-behind off; and TestWatchdogPollOverrunFirstPoll: re-arm from zero to enabled logs once at the new limit, re-arm to off or after stop logs nothing). Checks: `go test -trimpath -race -count=1 ./internal/api -run TestWatchdogPoll` exit 0. gofmt clean, go vet ./internal/api clean, `make self-check` exit 0 in a clean detached worktree with a clean env (the in-place failures were only this session's unrendered actor and untracked logs). Diff read: daemon starts with defaultWatchdogPolicy so the first poll is watched; atHome re-arms the poll's watch synchronously from prepare in the poll goroutine, timed from the poll's start, at most one line per poll; a stale rearm after stop is a no-op. watchdog_policy.go gains only the defaultWatchdogPolicy helper the fix needs. No TODOs or stubs; tests use fakes only."
+        },
+        "handle": "poll-overrun-logged-live-verified-2",
+        "id": "01M7A8N4SGD7AAS1TBG3KFYYFW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A8N4SGD7AAS1TBFZT6BHJP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A8N4SGD7AAS1TBFZT6BHJP",
+        "id": "01M7A8N4TQC92Y6GSKRXRQ80B8",
+        "link": "01M7A8N4TQC92Y6GSKRTBRXW99",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01J6NM4S5VW0XRCPK60ZP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A8N4VTANRT6YXDRXC7C7ED",
+  "type": "ops",
+  "v": 1
+}

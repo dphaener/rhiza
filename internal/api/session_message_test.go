@@ -382,3 +382,51 @@ func TestSessionMessageSaysWhenStatusChanges(t *testing.T) {
 		t.Errorf("error %q", AsError(err).Message)
 	}
 }
+
+// setCheckout gives the session a Dir, a separate checkout folder as a
+// verifier's has, and returns it.
+func (f *messageFixture) setCheckout(t *testing.T) string {
+	t.Helper()
+	dir := t.TempDir()
+	if _, err := f.st.Update(f.sid, func(r *session.Record) { r.Dir = dir }); err != nil {
+		t.Fatal(err)
+	}
+	return dir
+}
+
+// TestSessionMessageInSessionCheckout puts the message file, in a dry run
+// and a real one, under the session's Dir, never under its worktree.
+func TestSessionMessageInSessionCheckout(t *testing.T) {
+	f := newMessageFixture(t)
+	dir := f.setCheckout(t)
+	folder := filepath.Join(dir, ".rhiza", "local", "messages", f.sid)
+	rel := ".rhiza/local/messages/" + f.sid + "/0001.md"
+
+	f.ctx.DryRun = true
+	resp, err := callOp(t, f.ctx, "session.message", `{"session":"`+f.sid+`","text":"hello"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := resp.(SessionMessageResponse); r.File != filepath.Join(folder, "0001.md") {
+		t.Errorf("dry run file %q, want it under %s", r.File, folder)
+	}
+	f.ctx.DryRun = false
+	f.setHook(t, session.StateIdle, "")
+	resp, err = callOp(t, f.ctx, "session.message", `{"session":"`+f.sid+`","text":"hello"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := resp.(SessionMessageResponse)
+	if r.File != filepath.Join(folder, "0001.md") {
+		t.Errorf("file %q, want it under %s", r.File, folder)
+	}
+	if !strings.Contains(r.Pointer, "read "+rel+" and") {
+		t.Errorf("pointer %q does not name %s", r.Pointer, rel)
+	}
+	if _, err := os.Stat(r.File); err != nil {
+		t.Errorf("message not in the checkout: %v", err)
+	}
+	if _, err := os.Stat(f.messageFile("0001.md")); !errors.Is(err, os.ErrNotExist) {
+		t.Errorf("a message was written under the worktree: %v", err)
+	}
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7A48NFPPNY0YD3H82NKX9Z9",
+  "after": [
+    "01M7A2BM91JC9BN5KKPP4DQXE0"
+  ],
+  "at": "2026-11-13T09:39:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b76122f41 (with d2fd2bd84) re-ran the Checks block: go test -trimpath ./internal/api -run 'TestPollGit' exit 0 (TestPollGitBounded, TestPollGitBoundedHome pass); go test -trimpath ./internal/api -run 'TestDaemon|TestPollGit|TestFetchMain|TestExecWithin|TestModel' exit 0; rhiza ship generate exit 0; rhiza render exit 0 with no tracked change. Read the diff: projectCtx and daemonHome's own-project branch both route Git and GitConfig through boundedExecCtx (execWithin, GIT_TERMINAL_PROMPT=0) with pollGitTimeout 30 s; a timeout returns timeoutError naming the command and limit, and GitConfig now passes it through instead of 'not set'. Tests use a fake ctx.Start whose git hangs, a 10ms limit, assert both errors name 'git -C <dir> ... timed out after 10ms', every started git was killed and had GIT_TERMINAL_PROMPT=0, a fast fake git returns its output unchanged, and daemonHome at the home project's own dir yields a bounded ctx (fake unbounded Git/GitConfig/Exec t.Fatal if used). Changes confined to internal/api/daemon_projects.go, its test and the .rhiza log/rendered files; no TODOs or stubs; fakes only."
+        },
+        "handle": "poll-git-bounded-verified",
+        "id": "01M7A4CX2SYQJPA0RRFPT7NGPQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A4CX2SYQJPA0RRFN5N3E9H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A4CX2SYQJPA0RRFN5N3E9H",
+        "id": "01M7A4CX6MZ9TKVFV68ACY5RQ9",
+        "link": "01M7A4CX6MZ9TKVFV6880CXDWB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HZMHFKMQ821D1SR6BFH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A4CX8VW0PW4JH8X3AZ2M9Q",
+  "type": "ops",
+  "v": 1
+}

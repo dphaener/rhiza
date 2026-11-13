@@ -22401,7 +22401,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "file": {
-            "description": "The message file, an absolute path inside the session's worktree",
+            "description": "The message file, an absolute path inside the session's checkout (its worktree, or its own checkout folder when it runs in one)",
             "type": "string"
           },
           "from": {
@@ -22430,7 +22430,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Send a running agent session a message: a file in its worktree and a one-line pointer, typed at its prompt or, while it works, handed over at its next tool call",
+      "summary": "Send a running agent session a message: a file in its checkout and a one-line pointer, typed at its prompt or, while it works, handed over at its next tool call",
       "write": true
     },
     {

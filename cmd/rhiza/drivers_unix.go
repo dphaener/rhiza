@@ -123,3 +123,8 @@ func dropLocked(list string, drop ...driverEntry) {
 func reapDrivers(common string) {
 	reapList(filepath.Join(common, "rhiza", "drivers"), selfID())
 }
+
+// adoptChildren is api.Ctx.Adopt.
+func adoptChildren(common string) {
+	adoptList(filepath.Join(common, "rhiza", "drivers"), selfID())
+}

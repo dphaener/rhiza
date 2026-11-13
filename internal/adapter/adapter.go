@@ -56,12 +56,12 @@ type Adapter interface {
 	// pure: it reads nothing, and returns no patterns for a session ID that
 	// could escape or widen a pattern.
 	TranscriptGlobs(sessionID string, getenv func(string) string) []string
-	// ScratchGlobs returns file glob patterns for the scratch folders the
-	// agent made for the session under the temp folder: they hold nothing
-	// Rhiza keeps, so they go when the session's run ends. getenv looks up
-	// an environment variable. It is pure, and returns no patterns for a
-	// session ID that could escape or widen a pattern.
-	ScratchGlobs(sessionID string, getenv func(string) string) []string
+	// ScratchParents returns glob patterns of the folders whose direct
+	// children are the scratch folders the agent made for sessions, each
+	// named by session ID, under the temp folder: they hold nothing Rhiza
+	// keeps, so they go when the session's run ends. getenv looks up an
+	// environment variable. It is pure: it reads nothing.
+	ScratchParents(getenv func(string) string) []string
 	// Answers returns every question in transcript that the agent asked and
 	// the owner answered, in transcript order; the questions of one call keep
 	// their order. Unreadable entries are skipped, not fatal.

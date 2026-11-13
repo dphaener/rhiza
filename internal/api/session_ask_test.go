@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -58,7 +59,7 @@ func (askAdapter) HookMessage(string, []byte) (adapter.Message, bool, error) {
 	return adapter.Message{}, false, nil
 }
 func (askAdapter) TranscriptGlobs(string, func(string) string) []string { return nil }
-func (askAdapter) ScratchGlobs(string, func(string) string) []string    { return nil }
+func (askAdapter) ScratchParents(func(string) string) []string          { return nil }
 func (askAdapter) Answers([]byte) ([]adapter.Answer, error)             { return nil, nil }
 func (askAdapter) TokenUse([]byte) (adapter.TokenUse, error)            { return adapter.TokenUse{}, nil }
 
@@ -215,3 +216,25 @@ func (askAdapter) ContextReply(string, string) ([]byte, bool, error)       { ret
 func (askAdapter) GuardReply(string, []byte, string) ([]byte, bool, error) { return nil, false, nil }
 func (askAdapter) UsageLimit([]byte) (adapter.UsageLimit, bool)            { return adapter.UsageLimit{}, false }
 func (askAdapter) APIError([]byte) (string, bool)                          { return "", false }
+
+// TestDeliverInSessionCheckout writes the arbiter's answer under the
+// session's Dir when it runs in a separate checkout.
+func TestDeliverInSessionCheckout(t *testing.T) {
+	f := askFixture(t, true)
+	r := &stepRunner{ctx: f.ctx, sessions: f.st}
+	askHook(t, f.ctx, "PreToolUse", `{"session_id":"`+f.sid+`","ask":"Which store?"}`)
+	askHook(t, f.ctx, "Stop", `{"session_id":"`+f.sid+`"}`)
+	dir := t.TempDir()
+	if _, err := f.st.Update(f.sid, func(x *session.Record) { x.Dir = dir }); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.Deliver(f.sid, "01QUESTION", "use-sqlite", "Use SQLite.\n"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.ReadFile(filepath.Join(dir, ".rhiza", "local", "messages", f.sid, "0001.md")); err != nil {
+		t.Errorf("answer not in the checkout: %v", err)
+	}
+	if _, err := os.Stat(f.messageFile("0001.md")); err == nil {
+		t.Error("answer written under the worktree")
+	}
+}

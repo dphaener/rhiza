@@ -1,0 +1,40 @@
+{
+  "actor": "01M7A4EPCQ4FHHVR6V0HWEG2ME",
+  "after": [
+    "01M7A4CX8VW0PW4JH8X3AZ2M9Q"
+  ],
+  "at": "2026-11-13T09:41:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 35e6f758: re-ran the commit's Checks. go test -trimpath ./internal/api -run TestWatchdogPollOverrun exits 0, also under -race -count=5 with TestWatchdogPoll*. rhiza ship generate and rhiza render both exit 0. go vet and gofmt are clean. The diff touches only watchdog_pollbehind.go, its test, daemon.go and .rhiza records. watchPollOverrun arms a time.AfterFunc at PollBehind x interval. When it fires it logs one 'watchdog: poll still running after <limit>, in <project> <step>' line, using pollSteps' mutex-guarded running stack. Stop suppresses the line, and a disabled watchdog or pollBehind<1 arms nothing. daemon.go defers it around each poll and writes the line to stderr. The test blocks a step on a channel and asserts exactly one line naming 'rhiza watchdog' and 20ms before release. It also asserts no line within the limit and none when the check is disabled (Enabled=false or PollBehind=0). No stubs or TODOs."
+        },
+        "handle": "poll-overrun-logged-live-verified",
+        "id": "01M7A4HBAVWDXTHD9PYTCJ827E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A4HBAVWDXTHD9PYPPQVNMB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A4HBAVWDXTHD9PYPPQVNMB",
+        "id": "01M7A4HBGQQ8W9JWPCJHVYBFZ2",
+        "link": "01M7A4HBGQQ8W9JWPCJETHJKSV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01J6NM4S5VW0XRCPK60ZP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A4HBPZB0Q9C6XMRENTARZX",
+  "type": "ops",
+  "v": 1
+}

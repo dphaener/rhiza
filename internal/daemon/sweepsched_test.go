@@ -43,3 +43,23 @@ func TestSweepSchedule(t *testing.T) {
 		t.Fatal("urgent sweep within 10 minutes of the urgent one")
 	}
 }
+
+func TestSweepScheduleStartOnce(t *testing.T) {
+	var s SweepSchedule
+	t0 := time.Date(2026, 11, 5, 12, 0, 0, 0, time.UTC)
+	if !s.Start(t0, 0, 0, false) {
+		t.Fatal("no start at first")
+	}
+	if s.Start(t0.Add(2*time.Hour), 0, 0, false) {
+		t.Fatal("second start while one runs")
+	}
+	s.Finish()
+	s.Wait()
+	if s.Start(t0.Add(time.Minute), 0, 0, false) {
+		t.Fatal("start right after a sweep")
+	}
+	if !s.Start(t0.Add(time.Hour), 0, 0, false) {
+		t.Fatal("no start an hour on")
+	}
+	s.Finish()
+}
