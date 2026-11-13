@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AFYKNSX323EGESDPQGM61V",
+  "after": [
+    "01M7ADEM1MA0M1RN5B8PEQZMJS"
+  ],
+  "at": "2026-11-13T13:31:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified attempt 2 at 706598253. Re-ran: go vet ./internal/api/ (exit 0); go test -trimpath ./internal/api/ -run 'TestAPIErrorWatch|TestSessionRunAPIError|TestSessionRun' -count=2 (exit 0); acceptance go test -trimpath ./internal/api/ -run SessionRunAPIError -v: all 7 TestSessionRunAPIError* pass (reprompt after backoff with plain idle record and no inbox item, cancel by assistant line, gives up after three consecutive errors leaving the APIErrorDetail record, re-prompts after recovery, attended records at once with no message, error before base is nothing, usage limit keeps pause with no message); rhiza ship generate and rhiza render exit 0 and leave the tree clean; make self-check exit 0. Read the diff: poll now starts each wait when a new error past the send's transcript length is seen, a fourth error goes to the inbox at once, recordIdle reports write failures and stop retries on the next poll; covered by the new TestAPIErrorWatchReportsFailedRecord/FourthErrorAtOnce/WaitsFromErrorSeen. The commit touches only session_run_apierror.go, its test and .rhiza records; no TODOs or stubs; fakes only. The full go test ./internal/api/... could not finish here: on a host at load 11-13 it hit the test timeout twice with no failing test, running a different unrelated test each time (TestRootIdlePoll, its production-sized fixture, then TestDaemonAutoUpdateRelease), so it is left to the PR's CI."
+        },
+        "handle": "session-run-reprompts-api-error-verified-2",
+        "id": "01M7AHPRAAY7602HE75DQW72J9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AHPRAAY7602HE75ARAM5N5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AHPRAAY7602HE75ARAM5N5",
+        "id": "01M7AHPRD91V15J769X7C1S3N7",
+        "link": "01M7AHPRD91V15J769X4XA0V9V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C4DABT4TTGNKQ5JFRSV9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7A949Q4VGB6D4PPY9A5GZEK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AHPRJBCH9833GTE2SX2B50",
+  "type": "ops",
+  "v": 1
+}
