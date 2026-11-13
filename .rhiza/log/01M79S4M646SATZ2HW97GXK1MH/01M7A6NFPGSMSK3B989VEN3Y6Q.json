@@ -1,0 +1,40 @@
+{
+  "actor": "01M7A5SFK83RS1DY6CF3EJZD7N",
+  "after": [
+    "01M79SE44DD5FR4ZK98QAD162Y"
+  ],
+  "at": "2026-11-13T10:18:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 003b4ffad: go test -trimpath ./internal/api/... ./internal/web/... exit 0; go test -trimpath ./cmd/rhiza -run 'TestScripts/.*roadmap.*' exit 0 (roadmap --all scripts still widen across the root); rhiza ship generate and rhiza render exit 0 with no changes to tracked files. New TestWebRootRoadmapIsProjectScoped (internal/api/web_roadmap_scope_test.go) registers alpha and beta under one root with their own milestone and change sets, serves WebRootHandler, and checks that /p/<x>/roadmap lists only its own milestone and change sets and that /p/<x>/api/roadmap?all=true returns only its own 2 change sets. Reverting the web_api.go fix (ReadOnlyHandler forces RoadmapRequest.local) makes the test fail with beta's API returning alpha's change sets (4, want 2). The diff touches only web_api.go, the new test and run records; it has no stubs or TODOs."
+        },
+        "handle": "web-roadmap-project-scoped-verified",
+        "id": "01M7A6NFMP4B6QKX63ZYTNTHSC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A6NFMP4B6QKX63ZY2XFVYR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A6NFMP4B6QKX63ZY2XFVYR",
+        "id": "01M7A6NFNKV06DSE9NJ0QKD66S",
+        "link": "01M7A6NFNKV06DSE9NHZCTFBKD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79S9N7DZZ35JRWW20V549XS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79S4M646SATZ2HW97GXK1MH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A6NFPGSMSK3B989VEN3Y6Q",
+  "type": "ops",
+  "v": 1
+}
