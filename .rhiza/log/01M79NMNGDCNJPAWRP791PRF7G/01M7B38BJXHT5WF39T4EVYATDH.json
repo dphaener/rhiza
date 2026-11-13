@@ -1,0 +1,99 @@
+{
+  "actor": "01M7B35S44JF7WN2XHB4XPXXQ2",
+  "after": [
+    "01M79Q9QNA3S02J2PVMJE678TA"
+  ],
+  "at": "2026-11-13T18:38:26Z",
+  "body": {
+    "drop": [
+      "01M79Q8MV18S71H4YZNBMM8CGS",
+      "01M79Q8MY9MPK8QNBJBSPCBVGM"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestChangeSetPage shows a landed change set's facts and no change set ID, three leaves with statement, acceptance and a verified Evidence line, its decision, question and source linking to /p/<project>/nodes/<ref>, and its history; a draft with no leaves says it has none yet.",
+          "statement": "A change set's page shows, as in pages/change-set.html: its title, state and full intent; facts (when it shipped and its PR, its run and duration, the done point it serves), with no change set ID; its leaves with statement, acceptance and Evidence state; why it exists (decisions, questions, sources), each linking to its model page; and its history."
+        },
+        "handle": "web-change-set-detail",
+        "id": "01M79Q8MWE8XTM6BXCY52RD8HK",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M79Q8MWE8XTM6BXCY3EXST92",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M79NMNGDCNJPAWRP791PRF7G",
+        "id": "01M7B38B82PV4R3JX0BPY6FWTH",
+        "link": "01M7B38B82PV4R3JX0BMMXMJ07",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NN43PGK6HDXTRY33VNC1E",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestRoadmapMilestoneData returns, for a fixture milestone with a draft, a proposed, an accepted and a landed change set and two done points one met, every change set with its state, both done points with met set right, the milestone's state word, and the finished count; go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes with the golden regenerated.",
+          "statement": "The roadmap operation gives each of a project's milestones its state word (building, planned, designing, finished), its done points (its child intents) with whether each is met, and its change sets in every state (draft, proposed, accepted, landed) with each one's state, and counts how many of the project's milestones are finished."
+        },
+        "handle": "web-roadmap-milestone-data",
+        "id": "01M7B38B8RHGSEEJ3KWBJQWPHS",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M7B38B8RHGSEEJ3KW7TGGNSJ",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M7B38B8RHGSEEJ3KW7TGGNSJ",
+        "id": "01M7B38BAYGND4VS2B9AM9DVGC",
+        "link": "01M7B38BAYGND4VS2B9A1QZ124",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6FNDYY7AFVCN7H8KZV6",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestRoadmapMilestones shows, for a two-project root, no row from the other project, the groups in order with a change set whose run is going under building now, titles from the change set's title field with the intent as the clamped sub-line, the state words, a progress bar whose segments and counts match the milestone's change sets, the done points inside a closed fold, and the finished milestones in one in-page fold with no link to another page.",
+          "statement": "The roadmap page shows only its project's open milestones, as in pages/roadmap.html: each with its state in words, a segmented progress bar and counts, its done points folded, and its change sets grouped (building now, from the runs; accepted; landed; drafts) with the short title, the intent clamped to two lines and a state pill; the finished milestones, and a group's change sets past those shown, fold into disclosures that expand in place on the roadmap, opening no other page."
+        },
+        "handle": "web-roadmap-milestone-page",
+        "id": "01M7B38BDN8999D5B70MAAFP94",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M7B38BDN8999D5B70GG5HASC",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M7B38BDN8999D5B70GG5HASC",
+        "id": "01M7B38BF96XJ9EZCNQDY4Q0TF",
+        "link": "01M7B38BF96XJ9EZCNQA1TWV8D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6FNDYY7AFVCN7H8KZV6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7B38BDN8999D5B70GG5HASC",
+        "id": "01M7B38BGCS3RNZD34H25GATZT",
+        "link": "01M7B38BGCS3RNZD34H1WPTMM3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B38B8RHGSEEJ3KW7TGGNSJ",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M79NMNGDCNJPAWRP791PRF7G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B38BJXHT5WF39T4EVYATDH",
+  "type": "ops",
+  "v": 1
+}
