@@ -1,0 +1,40 @@
+{
+  "actor": "01M79PNNPJMKVKM9JB43ZGWA81",
+  "after": [
+    "01M79P85ZD6JNSR92WJ8FK7AK0"
+  ],
+  "at": "2026-11-13T05:40:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 300a91dd4 re-ran the Checks: block and acceptance: go test -trimpath ./internal/guide/... (TestReviewIsAnIndex: index names all nine topics as `/rhiza-<t>` (`rhiza guide <t>`), routes scope to check-compliance, under TopicCap/3; TestReviewRoleText finds the old review.md phrases in the role topics; budget_test covers the nine topics) exit 0; go test -trimpath ./internal/api -run GuideInstall (TestGuideInstallReviewRoles: nine skill files equal frontmatter with topic description plus body, second install reports them unchanged) exit 0; go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|guide-install)' (guide ls lists the nine topics, install output lists the nine new skill paths, 19 written) exit 0; rhiza ship generate exit 0 (0 changed); rhiza render exit 0. Diff read: guide_install.go writes the nine role skills, review.md is a short index, only leaf files and the builder's actor record changed, no TODOs or stubs; tests use fakes only."
+        },
+        "handle": "review-role-skills-installed-verified",
+        "id": "01M79PQZFXHESFSSPJSKKHDWKG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79PQZFXHESFSSPJSHBWPBVG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79PQZFXHESFSSPJSHBWPBVG",
+        "id": "01M79PQZJ24G1G10ENTG4ZPGBC",
+        "link": "01M79PQZJ24G1G10ENTE7BWTXQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79PQZM77YVARGP00Q63F56K",
+  "type": "ops",
+  "v": 1
+}

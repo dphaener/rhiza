@@ -1,0 +1,72 @@
+package guide
+
+import (
+	"strings"
+	"testing"
+)
+
+func TestCheckComplianceText(t *testing.T) {
+	c, ok := Lookup("check-compliance")
+	if !ok || c.Skill {
+		t.Fatalf("check-compliance: found %v, skill %v; want a topic", ok, c.Skill)
+	}
+	want := []string{"## Task", "## Expected outcome", "## Read first", "## Must do", "## Must not do", "## Context"}
+	var got []string
+	for _, l := range strings.Split(c.Body, "\n") {
+		if strings.HasPrefix(l, "## ") {
+			got = append(got, l)
+		}
+	}
+	if strings.Join(got, "|") != strings.Join(want, "|") {
+		t.Fatalf("check-compliance: sections %q, want exactly %q in order", got, want)
+	}
+	shared := sharedFiles(t)
+	for _, blk := range []string{"session-done", "test-scope", "command-budget", "never-list", "severities"} {
+		text := strings.TrimRight(shared[blk+".md"], "\n")
+		if !strings.Contains(c.Body, text) && !strings.Contains(c.Body, demote(text)) {
+			t.Errorf("check-compliance lacks the %s block", blk)
+		}
+	}
+	if strings.Contains(c.Body, "<!-- shared:") {
+		t.Errorf("check-compliance: an unexpanded shared marker")
+	}
+	if !strings.Contains(sectionOf(c.Body, "## Must not do"), demote(strings.TrimRight(shared["never-list.md"], "\n"))) {
+		t.Errorf("check-compliance: the never-list block is not inside Must not do")
+	}
+	checkPhrases(t, "check-compliance", map[string][]string{
+		"isolation": {
+			"You know nothing of how the work was built",
+			"Never run `rhiza run status` or\nrhiza run show (or tail) on the build run",
+			"its findings, its run notes or its\nsession transcripts",
+			"the contract from the slice, the diff from the\nmerge-base and the model's Evidence",
+		},
+		"criteria": {
+			"Under-built: a leaf with nothing in the diff for it is a `blocker`",
+			"an acceptance point\n  that is unmet or only partly met is a `major`",
+			"Scope creep: behaviour outside the intent and the leaves is a `major`",
+			"Unaccounted files", "is a\n  `major` if it changes behaviour and a `minor` otherwise",
+		},
+		"line":  {"one line with its evidence", "re-diagnosing"},
+		"fakes": {"Test with fakes only, never real Rex, agents or `gh`"},
+		"record": {
+			`rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'`,
+			`{"findings":[{"severity":"major","leaf":"<leaf>","place":"path:line","reason":`,
+			`{"findings":[]}`,
+		},
+	})
+	if !strings.Contains(sectionOf(c.Body, "## Task"), "Never run `rhiza run status`") {
+		t.Errorf("check-compliance: the isolation rule belongs in Task")
+	}
+}
+
+// TestCheckComplianceNamesNoRepoCommand is the negative case: the topic serves
+// any repo, so it names no Go, make or Rhiza-repo command and gives no commit
+// or trailer instruction.
+func TestCheckComplianceNamesNoRepoCommand(t *testing.T) {
+	c, _ := Lookup("check-compliance")
+	for _, banned := range []string{"go test", "go build", "go vet", "gofmt", "make ", "testscript", "-trimpath", "internal/", "cmd/rhiza", "tools/gate", "Claude", "Checks:", "trailer", "Co-Authored-By", "Leaf:", "git commit"} {
+		if strings.Contains(c.Body+c.Description, banned) {
+			t.Errorf("check-compliance names %q", banned)
+		}
+	}
+}

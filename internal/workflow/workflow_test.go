@@ -9,11 +9,13 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/guide"
 	"github.com/rogpeppe/go-internal/txtar"
 )
 
@@ -438,11 +440,6 @@ func TestShipChangeBuiltin(t *testing.T) {
 		if fx.Kind != KindAgent || fx.On[OutcomePass] != next || len(fx.On) != 1 || fx.MaxVisits != 3 {
 			t.Errorf("%s = %+v; want an agent step passing to %s, max_visits 3", n, fx, next)
 		}
-		for _, w := range []string{"Review: {run}", "rhiza ship check --json", "Change: {change}", "Actor:", "regenerate golden files", "Never push", "rhiza session done"} {
-			if !strings.Contains(fx.Prompt, w) {
-				t.Errorf("%s prompt lacks %q", n, w)
-			}
-		}
 	}
 	triage := def.Steps["ci-triage"]
 	if triage.Kind != KindCommand || triage.Run != "rhiza ship check --test-failures" || triage.On[OutcomePass] != "ci-fix" || triage.On[OutcomeFail] != "wait-ci-rerun" || len(triage.On) != 2 {
@@ -453,8 +450,8 @@ func TestShipChangeBuiltin(t *testing.T) {
 		t.Errorf("wait-ci-rerun = %+v; want a wait on ship check --settled --changed --rerun-infra, 6h, max_visits 3, pass to pr-green", rerun)
 	}
 	fix := def.Steps["ci-fix"]
-	if fix.Kind != KindAgent || fix.On[OutcomePass] != "render-pr" || !strings.Contains(fix.Prompt, "Review: {run}") || !strings.Contains(fix.Prompt, "rhiza ship check --json") {
-		t.Errorf("ci-fix = %+v; want an agent step passing to render-pr, told the Review: trailer and ship check --json", fix)
+	if fix.Kind != KindAgent || fix.On[OutcomePass] != "render-pr" || !strings.HasPrefix(fix.Prompt, "/rhiza-ci-fix ") {
+		t.Errorf("ci-fix = %+v; want an agent step passing to render-pr, on the ci-fix topic", fix)
 	}
 	caps := map[string]int{"ci-fix": 2, "ci-triage": 3, "render-pr": 10, "open-pr": 10, "wait-pr": 10, "pr-green": 10, "signoff": 8, "rebase": 6, "wait-rebased": 6, "rebased-green": 6,
 		"rebase-merge": 6, "wait-rebased-merge": 6, "rebased-merge-green": 6, "merge": 6, "conflict-fix": 3, "conflict-fix-landed": 3}
@@ -1158,7 +1155,7 @@ func TestSignoffStepRefused(t *testing.T) {
 }
 
 // The built-in review workflow: code-check (no on.fail), then a checks
-// step with compliance, quality, qa, scope and model checks, its critic,
+// step with compliance, quality, qa and model checks, its critic,
 // fixer and verifier, all on opus, each prompt following a guide and
 // ending in rhiza session done, then the sign-off, which goes back to the
 // checks on changes and ends done without landing.
@@ -1206,21 +1203,27 @@ func TestReviewBuiltin(t *testing.T) {
 				t.Errorf("check %s prompt uses {%s}; want only {check}, {change}, {cycle}", c.Name, p)
 			}
 		}
-		for _, w := range []string{"/rhiza-review", "{check}", "{change}", "rhiza guide review", "rhiza run findings --check", "rhiza session done"} {
-			if !strings.Contains(c.Prompt, w) {
-				t.Errorf("check %s prompt lacks %q: %q", c.Name, w, c.Prompt)
+		want := "/rhiza-check-" + c.Name + " Run the " + c.Name + " check of change set {change} (cycle {cycle}): follow rhiza guide check-" + c.Name + "."
+		if c.Prompt != want {
+			t.Errorf("check %s prompt = %q; want %q", c.Name, c.Prompt, want)
+		}
+		for _, w := range []string{"session done", "Checks:", "full suite", "{check}"} {
+			if strings.Contains(c.Prompt, w) {
+				t.Errorf("check %s prompt holds %q: %q", c.Name, w, c.Prompt)
 			}
 		}
 	}
-	if want := []string{"compliance", "quality", "qa", "scope", "model"}; !slices.Equal(names, want) {
+	if want := []string{"compliance", "quality", "qa", "model"}; !slices.Equal(names, want) {
 		t.Errorf("checks = %v; want %v", names, want)
 	}
+	const criticLine = "/rhiza-critic Criticise the latest round of the {check} check of change set {change} (cycle {cycle}): follow rhiza guide critic."
+	const fixerLine = "/rhiza-fixer Fix the findings below for change set {change} in review cycle {cycle}: follow rhiza guide fixer."
 	roles := map[string]struct {
 		r    *Role
 		want []string
 	}{
-		"critic":   {review.Critic, []string{"/rhiza-review", "{check}", "{change}", "rhiza guide review", "rhiza run verdict --check", "never add a finding", "rhiza session done"}},
-		"fixer":    {review.Fixer, []string{"/rhiza-review", "{change}", "{cycle}", "rhiza guide review", "rhiza session done"}},
+		"critic":   {review.Critic, []string{criticLine}},
+		"fixer":    {review.Fixer, []string{fixerLine}},
 		"verifier": {review.Verifier, []string{"/rhiza-verifier", "{leaf}", "{change}", "$RHIZA_COMMIT", "rhiza guide verifier"}},
 	}
 	for name, tt := range roles {
@@ -1538,6 +1541,8 @@ func TestRenderStepAddsNoCommitWhenClean(t *testing.T) {
 // TestBuiltinRolePromptsScopeTests: every builder, verifier, check, critic
 // and fixer prompt of the build and review workflows tells the agent to
 // run only the tests its change touches, and names no test command.
+var guideTopic = regexp.MustCompile(`follow rhiza guide ([a-z-]+)`)
+
 func TestBuiltinRolePromptsScopeTests(t *testing.T) {
 	rule := "Run only the tests covering what your change touches, never the repo's full suite"
 	var prompts = map[string]string{}
@@ -1561,15 +1566,35 @@ func TestBuiltinRolePromptsScopeTests(t *testing.T) {
 			}
 		}
 	}
-	if len(prompts) < 10 {
-		t.Fatalf("found %d role prompts; want builder, verifiers, 5 checks, critic, fixer", len(prompts))
+	if len(prompts) < 9 {
+		t.Fatalf("found %d role prompts; want builder, verifiers, 4 checks, critic, fixer", len(prompts))
 	}
+	topicRule := []string{"only the tests covering what the change touches", "never the repo's full suite"}
 	for where, p := range prompts {
-		// The build roles are one line each; their guide topics carry the rule.
-		if strings.HasPrefix(p, "/rhiza-builder ") || strings.HasPrefix(p, "/rhiza-verifier ") {
-			continue
+		// The build and review roles are one line each; the guide topic they
+		// name carries the rule, in its expanded text.
+		oneLine := false
+		for _, one := range []string{"/rhiza-builder ", "/rhiza-verifier ", "/rhiza-check-", "/rhiza-critic ", "/rhiza-fixer "} {
+			oneLine = oneLine || strings.HasPrefix(p, one)
 		}
-		if !strings.Contains(p, rule) {
+		if oneLine {
+			m := guideTopic.FindStringSubmatch(p)
+			if m == nil {
+				t.Errorf("%s prompt names no guide topic: %q", where, p)
+				continue
+			}
+			topic, ok := guide.Lookup(m[1])
+			if !ok {
+				t.Errorf("%s prompt names guide topic %q, which does not exist", where, m[1])
+				continue
+			}
+			body := strings.Join(strings.Fields(topic.Body), " ")
+			for _, r := range topicRule {
+				if !strings.Contains(body, r) {
+					t.Errorf("%s: guide topic %s lacks %q", where, m[1], r)
+				}
+			}
+		} else if !strings.Contains(p, rule) {
 			t.Errorf("%s prompt lacks the rule: %q", where, p)
 		}
 		for _, bad := range []string{"go test", "make check", "make test", "testscript"} {
@@ -1843,31 +1868,6 @@ func TestPlanRerunsCIFlakes(t *testing.T) {
 	}
 }
 
-// The ci-fix fixer reproduces each CI finding (failing test or non-test cause) locally, fixes or quarantines
-// it with a bug filed, and commits only once the tests pass locally; the
-// prompt stays repo-agnostic, naming no Go, make or testscript command.
-func TestShipChangeCIFixPrompt(t *testing.T) {
-	data, ok := Builtin("ship-change")
-	if !ok {
-		t.Fatal("no ship-change built-in")
-	}
-	def, err := ParseWith("ship-change", data, builtinResolver)
-	if err != nil {
-		t.Fatal(err)
-	}
-	p := def.Steps["ci-fix"].Prompt
-	for _, want := range []string{"Fix the CI findings", "failing tests, and recognised non-test causes", "self-check, fmt-check, vet or build-target failure", "Reproduce each finding locally", "repeating a test until it fails again or plainly passes", "regenerate them", "quarantine it", "bug request filed and named at the skip", "Commit only once those commands and the packages you touched pass locally", "never push to see"} {
-		if !strings.Contains(p, want) {
-			t.Errorf("ci-fix prompt lacks %q", want)
-		}
-	}
-	for _, bad := range []string{"go test", "go vet", "make ", "testscript", "TestScripts", "-trimpath"} {
-		if strings.Contains(p, bad) {
-			t.Errorf("ci-fix prompt names %q", bad)
-		}
-	}
-}
-
 // ship-change runs the local gate before every push: each step that
 // pushes (open-pr, rebase, land, rebase-merge, push-merge) is reached only
 // through a gate step, which passes to it and sends a failure to a fixer.
@@ -2127,11 +2127,6 @@ func TestShipChangeModelConflictFix(t *testing.T) {
 	if fx.Kind != KindAgent || fx.On[OutcomePass] != "gate-land" || len(fx.On) != 1 || fx.MaxVisits != 3 {
 		t.Errorf("model-conflict-fix = %+v; want an agent step passing to gate-land only, max_visits 3", fx)
 	}
-	for _, want := range []string{"rhiza set <node> --rebase", "rhiza ship check --model-conflict --json", "rhiza check", "Change: {change}", "Actor:", "Review: {run}", "Model-Conflict:", "Never push", "AskUserQuestion", "rhiza session done"} {
-		if !strings.Contains(fx.Prompt, want) {
-			t.Errorf("model-conflict-fix prompt lacks %q", want)
-		}
-	}
 	if def.Steps["land"].MaxVisits != 4 || def.Steps["gate-land"].MaxVisits != 9 {
 		t.Errorf("land, gate-land max_visits = %d, %d; want 4, 9", def.Steps["land"].MaxVisits, def.Steps["gate-land"].MaxVisits)
 	}
@@ -2326,29 +2321,66 @@ func TestBuiltinPromptsDoneOwnCommand(t *testing.T) {
 	}
 }
 
-func TestFixerPromptsNameChecksBlock(t *testing.T) {
-	parse := func(name string) *Definition {
-		data, ok := Builtin(name)
-		if !ok {
-			t.Fatalf("no %s built-in", name)
+// Every agent step of the builtin ship-change is one line naming its guide
+// topic, with no session-done, Checks: or trailer text left in it, and
+// Rhiza's own ship-change and docs workflows use the same lines.
+func TestShipFixPromptsOneLine(t *testing.T) {
+	data, ok := Builtin("ship-change")
+	if !ok {
+		t.Fatal("no ship-change built-in")
+	}
+	def, err := ParseWith("ship-change", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]string{
+		"ci-fix":              "/rhiza-ci-fix Fix the CI findings of change set {change} in run {run}: follow rhiza guide ci-fix.",
+		"gate-fix":            "/rhiza-gate-fix Fix the failing local gate of change set {change} in run {run}: follow rhiza guide gate-fix.",
+		"gate-fix-merge":      "/rhiza-gate-fix Fix the failing local gate of change set {change} in run {run}: follow rhiza guide gate-fix.",
+		"conflict-fix":        "/rhiza-conflict-fix Resolve the merge conflicts of change set {change} in run {run}: follow rhiza guide conflict-fix.",
+		"conflict-fix-landed": "/rhiza-conflict-fix Resolve the merge conflicts of change set {change} in run {run}: it landed, and origin/main was merged into the branch: follow rhiza guide conflict-fix.",
+		"model-conflict-fix":  "/rhiza-conflict-fix Fix the model conflict that refused the land of change set {change} in run {run}: follow rhiza guide conflict-fix.",
+	}
+	agents := 0
+	for name, s := range def.Steps {
+		if s.Kind != KindAgent {
+			continue
 		}
-		def, err := ParseWith(name, data, builtinResolver)
+		agents++
+		w, ok := want[name]
+		if !ok {
+			t.Errorf("unexpected agent step %s", name)
+			continue
+		}
+		if s.Prompt != w {
+			t.Errorf("builtin %s prompt = %q; want %q", name, s.Prompt, w)
+		}
+		for _, bad := range []string{"session done", "Checks:", "Review:", "trailer", "\n"} {
+			if strings.Contains(s.Prompt, bad) {
+				t.Errorf("builtin %s prompt holds %q", name, bad)
+			}
+		}
+	}
+	if agents != len(want) {
+		t.Errorf("builtin ship-change has %d agent steps; want %d", agents, len(want))
+	}
+	for _, file := range []string{"ship-change", "docs"} {
+		src, err := os.ReadFile(filepath.Join("..", "..", ".rhiza", "workflows", file+".toml"))
 		if err != nil {
 			t.Fatal(err)
 		}
-		return def
-	}
-	review, ship := parse("review"), parse("ship-change")
-	prompts := map[string]string{
-		"review fixer": review.Steps["review"].Fixer.Prompt,
-		"ci-fix":       ship.Steps["ci-fix"].Prompt,
-		"gate-fix":     ship.Steps["gate-fix"].Prompt,
-		"conflict-fix": ship.Steps["conflict-fix"].Prompt,
-	}
-	for name, p := range prompts {
-		for _, w := range []string{"`Checks:` block", "`rhiza ship generate`", "`rhiza render`", "exit code"} {
-			if !strings.Contains(p, w) {
-				t.Errorf("%s prompt lacks %q", name, w)
+		d, err := ParseWith(file, src, func(name string) ([]byte, error) {
+			if b, err := os.ReadFile(filepath.Join("..", "..", ".rhiza", "workflows", name+".toml")); err == nil {
+				return b, nil
+			}
+			return builtinResolver(name)
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for name, s := range d.Steps {
+			if w, ok := want[name]; ok && s.Kind == KindAgent && s.Prompt != w {
+				t.Errorf("%s.toml %s prompt = %q; want the builtin's %q", file, name, s.Prompt, w)
 			}
 		}
 	}
@@ -2453,6 +2485,51 @@ func TestBuildVerifierPromptsShared(t *testing.T) {
 					t.Errorf("docs-build builder prompt = %q; want the builtin line plus the humanize addendum", st.Builder.Prompt)
 				}
 			}
+		}
+	}
+}
+
+// Rhiza's docs-review drops the scope check, shares the builtin check and
+// critic prompts byte for byte, and its fixer prompt is the builtin line
+// followed by the doc clause.
+func TestDocsReviewMatchesBuiltinReview(t *testing.T) {
+	bdata, ok := Builtin("review")
+	if !ok {
+		t.Fatal("no review built-in")
+	}
+	bdef, err := Parse("review", bdata)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(filepath.Join("..", "..", ".rhiza", "workflows", "docs-review.toml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ddef, err := Parse("docs-review", data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, d := bdef.Steps["review"], ddef.Steps["review"]
+	if len(d.Checks) != len(b.Checks) {
+		t.Fatalf("docs-review has %d checks; want the builtin's %d", len(d.Checks), len(b.Checks))
+	}
+	for i, c := range d.Checks {
+		if c.Name == "scope" {
+			t.Errorf("docs-review has a scope check")
+		}
+		if c.Name != b.Checks[i].Name || c.Prompt != b.Checks[i].Prompt {
+			t.Errorf("docs-review check %s prompt = %q; want the builtin's %q", c.Name, c.Prompt, b.Checks[i].Prompt)
+		}
+	}
+	if d.Critic.Prompt != b.Critic.Prompt {
+		t.Errorf("docs-review critic prompt = %q; want %q", d.Critic.Prompt, b.Critic.Prompt)
+	}
+	if !strings.HasPrefix(d.Fixer.Prompt, b.Fixer.Prompt) {
+		t.Errorf("docs-review fixer prompt = %q; want it to start with %q", d.Fixer.Prompt, b.Fixer.Prompt)
+	}
+	for _, w := range []string{"humanize", "doc-prose-humanized", "doc-examples-plain-commands"} {
+		if !strings.Contains(d.Fixer.Prompt, w) {
+			t.Errorf("docs-review fixer prompt lacks %q", w)
 		}
 	}
 }

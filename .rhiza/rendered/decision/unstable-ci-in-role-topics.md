@@ -1,0 +1,25 @@
+# unstable-ci-in-role-topics
+
+decision · `01M79BVYGCGGYP17GEN5S3CR7D`
+
+## reasoning
+
+Read the question, unstable-ci-guidance (acceptance pins the rule to review.md via TestReviewText 'unstable-ci'), review.md today (the rule sits beside the scoped-tests rule for checks, critics and fixers), Decision review-role-topics-shape and leaf review-guide (review becomes a short index; role topics carry the rules via shared blocks), leaf review-role-skills-installed (review.md's old phrases checked by review_test.go must be found in the role topics), and the fixer-topic, ci-fix-topic and gate-fix-topic leaves, whose acceptances already require the shared unstable-CI block expanded. The node is stale, not the plan: keeping the rule in the index would duplicate it and contradict the index shape already chosen, matching the rulings on the sibling findings (scoped-tests-in-role-topics, command-budget-in-role-topics). I weighed adding the block to the check and critic topics too, as was done for scoped tests, but the rule is about not pushing or rerunning CI to see a red; checks and critics never push or commit, and conflict-fix resolves merges rather than CI reds, so the three fixer topics are its natural and complete home. No CLI command, flag, --json shape, rhiza.* setting or .rhiza/ format changes, so no breaking note.
+
+## statement
+
+unstable-ci-guidance is updated in this change set to follow the split, not by keeping the rule in the review index: AGENTS.md and the rhiza-build topic keep the unstable-CI reproduce-locally rule unchanged (TestClaudeMDScopedTests and TestBuildText as today), and on the review side the rule lives in the shared unstable-CI block expanded into the fixer, ci-fix and gate-fix topics, the roles that fix a red and commit after it; the node's statement names those topics instead of rhiza-review, and its acceptance finds the rule in their texts through the guide package tests instead of TestReviewText on review.md.
+
+## wording
+
+(assumed, would have escalated)
+
+## Links
+
+### Out
+
+- answers [review-01m79a41352xbz4fc2fjt5903j-r3-f4](../question/review-01m79a41352xbz4fc2fjt5903j-r3-f4.md)
+
+## History
+
+- `01M76XRETZFTD2TQ5GS3WYAERA` Review roles get afk's shipit/forge prompts in Rhiza's words, one guide topic each on the six-section skeleton: compliance (absorbing the scope check: under-built, scope creep, unaccounted files), quality (impact radius, checklist), qa (clean state, scratch build outside PATH, happy and failure cases), model, critic, fixer, ci-fix, gate-fix and conflict-fix; checks are isolated from build history; the scope check leaves review.toml. Source: prompt-gap.md sections 2.5-2.8 and 5 (CS1, CS8).

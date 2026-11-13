@@ -1,0 +1,40 @@
+{
+  "actor": "01M79NYMX0JMK7MZA7SP288QCT",
+  "after": [
+    "01M79NT7X2MM7MJPHKJFJJBGSG"
+  ],
+  "at": "2026-11-13T05:29:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cee308e74 re-ran the Checks: block: go test -trimpath ./internal/guide/... exit 0 (TestGateFixText checks the six sections in order, the session-done, test-scope, unstable-ci, command-budget and never-list blocks expanded, never-list inside Must not do, rhiza.ship.localGate and rhiza.ship.prePushCheck, rhiza run status --json and the Full log: rule, never rerun rhiza ship gate in Must do and Must not do, the flake quarantine with rhiza request --kind bug named at the skip, the Checks: block above the trailers and a Review: trailer with no Leaf:; TestGateFixNamesNoRepoCommand is the negative case banning go/make/repo commands), go test -trimpath ./internal/api -run Guide exit 0, go test -trimpath ./cmd/rhiza -run TestScripts/guide exit 0, rhiza ship generate exit 0 (0 changed), rhiza render exit 0 (no tracked change). Read the diff and the rendered rhiza guide gate-fix: only the guide topic, its registration, list tests and guide.txtar count changed; no stubs or TODOs."
+        },
+        "handle": "gate-fix-topic-verified",
+        "id": "01M79P3YVZQ5AS86ATX4CX1FT1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79P3YVZQ5AS86ATX3QA2FT7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79P3YVZQ5AS86ATX3QA2FT7",
+        "id": "01M79P3YZ38N3KN6MDHKKSM9M4",
+        "link": "01M79P3YZ38N3KN6MDHJQ0KGSP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH32SZK0CK9G0Z05VJX4H",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79P3Z32V1GP3NPPHF48J1E5",
+  "type": "ops",
+  "v": 1
+}

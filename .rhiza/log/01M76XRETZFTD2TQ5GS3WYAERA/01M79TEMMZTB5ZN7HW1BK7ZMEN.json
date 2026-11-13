@@ -1,0 +1,40 @@
+{
+  "actor": "01M79T95HHW1188S98Z1KHW2T0",
+  "after": [
+    "01M79T5FTP941Y99Z2B40HG5MF"
+  ],
+  "at": "2026-11-13T06:45:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier attempt 2 at 848c4e08e (review cycle 2 fix commit, .rhiza records only: node.update on the eight review-rule nodes command-budget-guide, done-own-command-guide, guides-scoped-tests, unstable-ci-guidance, delay-repro-guidance, guides-stdin-findings, guides-one-final-paragraph, role-prompts-scoped-tests, plus actor records and rendered files). Read the ops: each statement now puts the rule in the shared blocks expanded into the nine review role topics and says the review index does not hold it; each acceptance names tests that exist (TestReviewRoleText, TestBuildReviewCommandBudget, TestGuidesFeedFindingsFromStdin, TestReviewFixerTrailersInOneFinalParagraph, TestCriticRecordsNoFindingAndNoCommit, TestSharedPhrasesInExactlyOneFile and the nine per-topic Text tests) and no longer TestReviewText, which grep confirms is gone from internal/ and cmd/. Re-ran every Checks: command, all exit 0: rhiza slice --change 01M76XRETZFTD2TQ5GS3WYAERA --json; go test -trimpath ./internal/guide/...; go test -trimpath ./internal/workflow -run 'TestBuiltinRolePromptsScopeTests|TestBuiltin'; go test -trimpath ./cmd/rhiza -run TestClaudeMDScopedTests; rhiza ship generate; rhiza render (tree stayed clean apart from this session's actor log); make self-check. Re-ran the leaf acceptance: go test -trimpath ./internal/api -run GuideInstall ok; go test -trimpath ./internal/guide/... ok; go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|guide-install)' ok with both scripts PASS under -v. No code, stubs or TODOs in the diff."
+        },
+        "handle": "review-role-skills-installed-verified-2",
+        "id": "01M79TEM7RXXFFT21M230XC713",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79TEM7RXXFFT21M225F67H2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79TEM7RXXFFT21M225F67H2",
+        "id": "01M79TEMCKDVVSZS19EF00MGSQ",
+        "link": "01M79TEMCKDVVSZS19EB622VRN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79TEMMZTB5ZN7HW1BK7ZMEN",
+  "type": "ops",
+  "v": 1
+}

@@ -3,7 +3,7 @@
 # repository's .claude/skills/rhiza with --project. HOME is $WORK/home,
 # set by the harness, never the real one.
 
-# A user install needs no repository and writes the fourteen files.
+# A user install needs no repository and writes the twenty-three files.
 ! exists .rhiza
 exec rhiza guide install --agent claude
 cmpenv stdout first.txt
@@ -21,6 +21,15 @@ exists $HOME/.claude/skills/rhiza/skills/rhiza-build-retry/SKILL.md
 exists $HOME/.claude/skills/rhiza/skills/rhiza-builder/SKILL.md
 exists $HOME/.claude/skills/rhiza/skills/rhiza-verifier/SKILL.md
 exists $HOME/.claude/skills/rhiza/skills/rhiza-review/SKILL.md
+exists $HOME/.claude/skills/rhiza/skills/rhiza-check-compliance/SKILL.md
+exists $HOME/.claude/skills/rhiza/skills/rhiza-check-model/SKILL.md
+exists $HOME/.claude/skills/rhiza/skills/rhiza-check-qa/SKILL.md
+exists $HOME/.claude/skills/rhiza/skills/rhiza-check-quality/SKILL.md
+exists $HOME/.claude/skills/rhiza/skills/rhiza-ci-fix/SKILL.md
+exists $HOME/.claude/skills/rhiza/skills/rhiza-conflict-fix/SKILL.md
+exists $HOME/.claude/skills/rhiza/skills/rhiza-critic/SKILL.md
+exists $HOME/.claude/skills/rhiza/skills/rhiza-fixer/SKILL.md
+exists $HOME/.claude/skills/rhiza/skills/rhiza-gate-fix/SKILL.md
 
 # Each SKILL.md starts with its frontmatter, then the guide text.
 exec head -3 $HOME/.claude/skills/rhiza/SKILL.md
@@ -63,12 +72,60 @@ cmp stdout retry-body.txt
 
 # The review topic is installed as the rhiza-review skill the same way.
 exec head -4 $HOME/.claude/skills/rhiza/skills/rhiza-review/SKILL.md
-stdout '\A---\nname: rhiza-review\ndescription: "Reviewing a built change set: .*"\n---\n\z'
+stdout '\A---\nname: rhiza-review\ndescription: "Reviewing a built change set: an index .*"\n---\n\z'
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-review/SKILL.md
 cp stdout review-body.txt
 exec rhiza guide review
 cmp stdout review-body.txt
-grep 'rhiza run findings --check' $HOME/.claude/skills/rhiza/skills/rhiza-review/SKILL.md
+grep 'rhiza guide check-compliance' $HOME/.claude/skills/rhiza/skills/rhiza-review/SKILL.md
+
+# The nine review role topics are installed as skills beside it, each the
+# frontmatter and its topic's text.
+exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-check-compliance/SKILL.md
+cp stdout check-compliance-body.txt
+exec rhiza guide check-compliance
+cmp stdout check-compliance-body.txt
+grep '^name: rhiza-check-compliance$' $HOME/.claude/skills/rhiza/skills/rhiza-check-compliance/SKILL.md
+exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-check-model/SKILL.md
+cp stdout check-model-body.txt
+exec rhiza guide check-model
+cmp stdout check-model-body.txt
+grep '^name: rhiza-check-model$' $HOME/.claude/skills/rhiza/skills/rhiza-check-model/SKILL.md
+exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-check-qa/SKILL.md
+cp stdout check-qa-body.txt
+exec rhiza guide check-qa
+cmp stdout check-qa-body.txt
+grep '^name: rhiza-check-qa$' $HOME/.claude/skills/rhiza/skills/rhiza-check-qa/SKILL.md
+exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-check-quality/SKILL.md
+cp stdout check-quality-body.txt
+exec rhiza guide check-quality
+cmp stdout check-quality-body.txt
+grep '^name: rhiza-check-quality$' $HOME/.claude/skills/rhiza/skills/rhiza-check-quality/SKILL.md
+exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-ci-fix/SKILL.md
+cp stdout ci-fix-body.txt
+exec rhiza guide ci-fix
+cmp stdout ci-fix-body.txt
+grep '^name: rhiza-ci-fix$' $HOME/.claude/skills/rhiza/skills/rhiza-ci-fix/SKILL.md
+exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-conflict-fix/SKILL.md
+cp stdout conflict-fix-body.txt
+exec rhiza guide conflict-fix
+cmp stdout conflict-fix-body.txt
+grep '^name: rhiza-conflict-fix$' $HOME/.claude/skills/rhiza/skills/rhiza-conflict-fix/SKILL.md
+exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-critic/SKILL.md
+cp stdout critic-body.txt
+exec rhiza guide critic
+cmp stdout critic-body.txt
+grep '^name: rhiza-critic$' $HOME/.claude/skills/rhiza/skills/rhiza-critic/SKILL.md
+exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-fixer/SKILL.md
+cp stdout fixer-body.txt
+exec rhiza guide fixer
+cmp stdout fixer-body.txt
+grep '^name: rhiza-fixer$' $HOME/.claude/skills/rhiza/skills/rhiza-fixer/SKILL.md
+exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-gate-fix/SKILL.md
+cp stdout gate-fix-body.txt
+exec rhiza guide gate-fix
+cmp stdout gate-fix-body.txt
+grep '^name: rhiza-gate-fix$' $HOME/.claude/skills/rhiza/skills/rhiza-gate-fix/SKILL.md
 
 # The rhiza-plan skill's body, after the frontmatter and a blank line, is
 # rhiza guide plan's text.
@@ -149,7 +206,7 @@ exec sh -c 'rhiza guide install --agent claude 2>/dev/null; echo exit $?'
 stdout '^exit 3$'
 cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json foreign-plugin.json
 
-# --force writes the fourteen files and keeps the others.
+# --force writes the twenty-three files and keeps the others.
 exec rhiza guide install --agent claude --force
 cmpenv stdout first.txt
 cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json plugin.json
@@ -169,7 +226,7 @@ mkdir proj
 cd proj
 exec rhiza init
 exec rhiza guide install --agent claude --project
-stdout '^Installed the Rhiza guide in .*/proj/\.claude/skills/rhiza \(14 written, 0 unchanged\)\.$'
+stdout '^Installed the Rhiza guide in .*/proj/\.claude/skills/rhiza \(23 written, 0 unchanged\)\.$'
 cmp .claude/skills/rhiza/.claude-plugin/plugin.json $WORK/plugin.json
 cmp .claude/skills/rhiza/hooks/hooks.json $WORK/hooks.json
 exists .claude/skills/rhiza/SKILL.md
@@ -186,7 +243,7 @@ fold-ok
 # install's partial write, not foreign: the install writes plugin.json back.
 exec sh -c 'rm .claude/skills/rhiza/.claude-plugin/plugin.json'
 exec rhiza guide install --agent claude --project
-stdout '\(1 written, 13 unchanged\)'
+stdout '\(1 written, 22 unchanged\)'
 cmp .claude/skills/rhiza/.claude-plugin/plugin.json $WORK/plugin.json
 
 # A project conflict's next keeps --project.
@@ -195,7 +252,7 @@ exec sh -c 'rm .claude/skills/rhiza/.claude-plugin/plugin.json && echo mine > .c
 stderr '^next: rhiza guide install --agent claude --force --project$'
 
 -- first.txt --
-Installed the Rhiza guide in $HOME/.claude/skills/rhiza (14 written, 0 unchanged).
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (23 written, 0 unchanged).
 
 - wrote .claude-plugin/plugin.json
 - wrote SKILL.md
@@ -203,6 +260,15 @@ Installed the Rhiza guide in $HOME/.claude/skills/rhiza (14 written, 0 unchanged
 - wrote skills/rhiza-build-retry/SKILL.md
 - wrote skills/rhiza-build/SKILL.md
 - wrote skills/rhiza-builder/SKILL.md
+- wrote skills/rhiza-check-compliance/SKILL.md
+- wrote skills/rhiza-check-model/SKILL.md
+- wrote skills/rhiza-check-qa/SKILL.md
+- wrote skills/rhiza-check-quality/SKILL.md
+- wrote skills/rhiza-ci-fix/SKILL.md
+- wrote skills/rhiza-conflict-fix/SKILL.md
+- wrote skills/rhiza-critic/SKILL.md
+- wrote skills/rhiza-fixer/SKILL.md
+- wrote skills/rhiza-gate-fix/SKILL.md
 - wrote skills/rhiza-plan-critic/SKILL.md
 - wrote skills/rhiza-plan-reviewer/SKILL.md
 - wrote skills/rhiza-plan-reviser/SKILL.md
@@ -212,18 +278,18 @@ Installed the Rhiza guide in $HOME/.claude/skills/rhiza (14 written, 0 unchanged
 - wrote skills/rhiza-scrub/SKILL.md
 - wrote skills/rhiza-verifier/SKILL.md
 -- again.txt --
-Installed the Rhiza guide in $HOME/.claude/skills/rhiza (0 written, 14 unchanged).
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (0 written, 23 unchanged).
 -- version.txt --
-Installed the Rhiza guide in $HOME/.claude/skills/rhiza (1 written, 13 unchanged).
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (1 written, 22 unchanged).
 
 - wrote .claude-plugin/plugin.json
 -- restored.txt --
-Installed the Rhiza guide in $HOME/.claude/skills/rhiza (1 written, 13 unchanged).
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (1 written, 22 unchanged).
 
 - wrote skills/rhiza-plan/SKILL.md
 -- plugin.json --
 {
-  "description": "The Rhiza agent guide: the rhiza, rhiza-scrub, rhiza-plan, rhiza-planner, rhiza-plan-reviewer, rhiza-plan-critic, rhiza-plan-reviser, rhiza-build, rhiza-builder, rhiza-verifier, rhiza-build-retry and rhiza-review skills, and a SessionStart hook that runs rhiza status --hook.",
+  "description": "The Rhiza agent guide: the rhiza, rhiza-scrub, rhiza-plan, rhiza-planner, rhiza-plan-reviewer, rhiza-plan-critic, rhiza-plan-reviser, rhiza-build, rhiza-builder, rhiza-verifier, rhiza-build-retry, rhiza-review and the nine review role skills, and a SessionStart hook that runs rhiza status --hook.",
   "name": "rhiza",
   "rhiza": {
     "installed_by": "rhiza guide install"

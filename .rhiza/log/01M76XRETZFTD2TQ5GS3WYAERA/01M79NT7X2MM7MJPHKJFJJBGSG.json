@@ -1,0 +1,40 @@
+{
+  "actor": "01M79NPVMTC2T776FPD1DBTC7Z",
+  "after": [
+    "01M79NHYKMN1B35T4HKH7MDZJS"
+  ],
+  "at": "2026-11-13T05:24:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 436b8f29 re-ran the Checks: block: go test -trimpath ./internal/guide/... (TestFixerText, TestFixerNamesNoRepoCommand, TestListOrder pass with -count=1), go test -trimpath ./internal/api -run Guide, go test -trimpath ./cmd/rhiza -run TestScripts/guide, rhiza ship generate, rhiza render: all exit 0, tree clean. Diff read: fixer.md has the six sections in order, done/test-scope/unstable-ci/command-budget/outside-work/never-list/severity shared blocks expanded (no markers left in a built `rhiza guide fixer`), fix-only-named, reproduce-first, rhiza ship generate, rhiza render, Checks: above the single final trailer paragraph, Leaf:/Review: forms, unfixed-never-dropped and never push/rebase/force/--no-verify, each asserted by TestFixerText; TestFixerNamesNoRepoCommand is the negative case for Go/make/repo commands. Only guide files, guide.txtar count and the builder's actor record changed; no stubs or TODOs."
+        },
+        "handle": "fixer-topic-verified",
+        "id": "01M79NT7G1HQ192AT461CCECJJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79NT7G1HQ192AT460DSHYQX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79NT7G1HQ192AT460DSHYQX",
+        "id": "01M79NT7MXSRWV760AMEZE7AB1",
+        "link": "01M79NT7MXSRWV760AMCG62ZA7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH2TFR25PCV7H0T92DEDC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79NT7X2MM7MJPHKJFJJBGSG",
+  "type": "ops",
+  "v": 1
+}

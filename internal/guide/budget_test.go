@@ -6,7 +6,7 @@ import (
 )
 
 func TestBuildReviewCommandBudget(t *testing.T) {
-	for _, name := range []string{"review"} {
+	for _, name := range []string{"check-compliance", "check-quality", "check-qa", "check-model", "critic", "fixer", "ci-fix", "gate-fix", "conflict-fix"} {
 		g, ok := Lookup(name)
 		if !ok {
 			t.Fatalf("no guide %q", name)
@@ -24,7 +24,7 @@ func TestBuildReviewCommandBudget(t *testing.T) {
 			continue
 		}
 		sec := g.Body[i:]
-		if j := strings.Index(sec[3:], "\n## "); j >= 0 {
+		if j := strings.Index(sec[3:], "\n#"); j >= 0 {
 			sec = sec[:j+3]
 		}
 		for _, banned := range []string{"go ", "make", "rhiza", "testscript", "Claude"} {

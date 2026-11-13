@@ -28,40 +28,35 @@ on.pass = "render"
 [[step.review.check]]
 name = "compliance"
 models = ["opus"]
-prompt = "/rhiza-review Run the {check} check of change set {change} (cycle {cycle}): follow `rhiza guide review`. Record one round with `rhiza run findings --check {check}`. Your very last action is to run `rhiza session done`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+prompt = "/rhiza-check-compliance Run the compliance check of change set {change} (cycle {cycle}): follow rhiza guide check-compliance."
 
 [[step.review.check]]
 name = "quality"
 models = ["opus"]
-prompt = "/rhiza-review Run the {check} check of change set {change} (cycle {cycle}): follow `rhiza guide review`. Record one round with `rhiza run findings --check {check}`. Your very last action is to run `rhiza session done`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+prompt = "/rhiza-check-quality Run the quality check of change set {change} (cycle {cycle}): follow rhiza guide check-quality."
 
 [[step.review.check]]
 name = "qa"
 models = ["opus"]
-prompt = "/rhiza-review Run the {check} check of change set {change} (cycle {cycle}): follow `rhiza guide review`. Record one round with `rhiza run findings --check {check}`. Your very last action is to run `rhiza session done`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
-
-[[step.review.check]]
-name = "scope"
-models = ["opus"]
-prompt = "/rhiza-review Run the {check} check of change set {change} (cycle {cycle}): follow `rhiza guide review`. Record one round with `rhiza run findings --check {check}`. Your very last action is to run `rhiza session done`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+prompt = "/rhiza-check-qa Run the qa check of change set {change} (cycle {cycle}): follow rhiza guide check-qa."
 
 [[step.review.check]]
 name = "model"
 models = ["opus"]
-prompt = "/rhiza-review Run the {check} check of change set {change} (cycle {cycle}): follow `rhiza guide review`. Record one round with `rhiza run findings --check {check}`. Your very last action is to run `rhiza session done`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+prompt = "/rhiza-check-model Run the model check of change set {change} (cycle {cycle}): follow rhiza guide check-model."
 
 # A critic confirms or drops each blocker and major of its check's latest
 # round, and never adds a finding.
 [step.review.critic]
 models = ["opus"]
-prompt = "/rhiza-review Criticise the latest round of the {check} check of change set {change} (cycle {cycle}), as its critic: follow `rhiza guide review`. Record your verdicts with `rhiza run verdict --check {check}`; never add a finding. Your very last action is to run `rhiza session done`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge."
+prompt = "/rhiza-critic Criticise the latest round of the {check} check of change set {change} (cycle {cycle}): follow rhiza guide critic."
 
 # A fixer is told the confirmed findings (appended to this prompt) and
 # fixes them in one new commit: a leaf's with `Leaf: {leaf}`, the change
 # set's ({leaf} empty) with `Review: <run>`.
 [step.review.fixer]
 models = ["opus"]
-prompt = "/rhiza-review Fix the findings below for change set {change} in review cycle {cycle}: follow `rhiza guide review`. Your very last action, once your one new commit is made, is to run `rhiza session done`. Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge. This is a doc change: draft or revise every line of doc prose with the owner's humanize skill (load it with the Skill tool) before you commit, under constraints doc-prose-humanized and doc-examples-plain-commands: show model writes as plain `rhiza add`, `link` and `set` commands, never `rhiza apply` with a JSON file as a reader's first write. Generated reference tables are exempt."
+prompt = "/rhiza-fixer Fix the findings below for change set {change} in review cycle {cycle}: follow rhiza guide fixer. This is a doc change: draft or revise every line of doc prose with the owner's humanize skill (load it with the Skill tool) before you commit, under constraints doc-prose-humanized and doc-examples-plain-commands: show model writes as plain `rhiza add`, `link` and `set` commands, never `rhiza apply` with a JSON file as a reader's first write. Generated reference tables are exempt."
 
 # A fixed leaf's verifier works in a detached checkout at the fixer's
 # commit ($RHIZA_COMMIT) and passes only with Evidence written as itself.

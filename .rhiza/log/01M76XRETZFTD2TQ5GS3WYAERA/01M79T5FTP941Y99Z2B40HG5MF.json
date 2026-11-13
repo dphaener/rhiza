@@ -1,0 +1,113 @@
+{
+  "actor": "01M79T31CSR6W2V3E61CFEB31V",
+  "after": [
+    "01M79SBABT6534CCMDJW542P7Q"
+  ],
+  "at": "2026-11-13T06:40:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M79BD7QQTP2EKQK12SW4Y5T3",
+        "handle": null,
+        "id": "01M79T5EVAW8Y069Z6M2VV5D4M",
+        "node": "01M76XY4EE4QA5EKNQXHR7R9XH",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes: TestBuilderText, TestVerifierText and TestSharedPhrasesInExactlyOneFile assert the shared command-budget block holds the budget rule (no sleep or poll, about four minutes per command, background once and wait once) and that the builder and verifier topics carry it inside Must do; TestBuildReviewCommandBudget loops over the nine expanded review role topics and asserts each holds the rule and that its Command budget section names no Go, make or Rhiza-repo command.",
+          "statement": "The builder and verifier guide topics and every review role topic (check-compliance, check-quality, check-qa, check-model, critic, fixer, ci-fix, gate-fix and conflict-fix) tell builders, verifiers, checks, critics and fixers never to sleep or poll, never to run a single command longer than about four minutes, and to run a long build or test once in the background and wait for it once, in language-neutral words; each carries it as the shared command-budget block (the builder and verifier inside Must do), and the review index does not hold it."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M79BD7VQ8BHZCT5FWN6WCQT2",
+        "handle": null,
+        "id": "01M79T5EYCCASFFGV3NPKTC6P7",
+        "node": "01M76XY3S1VF65NT8YXQKZ4VZC",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes: TestBuilderText, TestVerifierText and TestSharedPhrasesInExactlyOneFile assert the shared session-done block holds the own-command rule and the builder and verifier topics carry it, each of the nine review role topic tests (TestCheckComplianceText, TestCheckQualityText, TestCheckQAText, TestCheckModelText, TestCriticText, TestFixerText, TestCIFixText, TestGateFixText, TestConflictFixText) asserts its expanded topic carries the session-done block, and TestReviewRoleText finds the rule (run rhiza session done as its own command, after the recording command succeeded, never with ; or &&) in the role topics; go test -trimpath ./internal/workflow asserts no prompt in internal/workflow/builtin/*.toml contains '; rhiza session done' or '&& rhiza session done' and every prompt that names rhiza session done says it is the very last action (one-line /rhiza-<role> prompts that no longer name it pass).",
+          "statement": "The builder and verifier guide topics and every review role topic (check-compliance, check-quality, check-qa, check-model, critic, fixer, ci-fix, gate-fix and conflict-fix), each through the shared session-done block, and every builtin workflow prompt that still names rhiza session done say to run it as its own command, only after the recording command (rhiza run findings, rhiza run verdict, the Evidence write or the commit) succeeded, never chained after it with ; or &&; the review index does not hold the rule, and one-line /rhiza-<role> prompts leave it to their topic."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M79BD7PQZGR5Y57HCQ10CVHA",
+        "handle": null,
+        "id": "01M79T5F59H5HR3X0FAZ15NWMC",
+        "node": "01M6M0EPMPD72KB5AZWBB9MRGM",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes: TestBuilderText and TestVerifierText assert the builder and verifier topics carry the shared test-scope block and TestSharedPhrasesInExactlyOneFile that the block states the rule; each of the nine review role topic tests (TestCheckComplianceText, TestCheckQualityText, TestCheckQAText, TestCheckModelText, TestCriticText, TestFixerText, TestCIFixText, TestGateFixText, TestConflictFixText) asserts its expanded topic carries the test-scope block and TestReviewRoleText finds the rule in the role topics; TestBuilderText and the role topics' NamesNoRepoCommand tests (and TestCriticRecordsNoFindingAndNoCommit) assert none of them contains go test, make or testscript",
+          "statement": "The builder and verifier guide topics and every review role topic (check-compliance, check-quality, check-qa, check-model, critic, fixer, ci-fix, gate-fix and conflict-fix), and so the rhiza-builder, rhiza-verifier and review role skills, tell builders, verifiers, checks, critics and fixers to run only the tests covering what their change touches, with the repo's own scoped commands, and never the repo's full suite, because the PR's CI runs it before merge; each carries it as the shared test-scope block, the review index does not hold it, and the rule names no Go, make or testscript command"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M79BD7KWND4N81MQHJ121JFD",
+        "handle": null,
+        "id": "01M79T5F9F31PPZ53EFN198TKF",
+        "node": "01M6YCRMA48VMM2KTZ2Q92EY10",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestClaudeMDScopedTests finds AGENTS.md's scoped-tests rule unchanged plus the unstable-CI reproduce-locally rule; go test -trimpath ./internal/guide/... passes, with TestSharedPhrasesInExactlyOneFile finding the rule in the shared unstable-ci block, TestBuilderText, TestFixerText, TestCIFixText and TestGateFixText asserting the builder, fixer, ci-fix and gate-fix topics carry that block, and TestReviewRoleText finding the rule in the expanded review role topics",
+          "statement": "This repo's AGENTS.md, the builder guide topic and the fixer, ci-fix and gate-fix review role topics (each through the shared unstable-ci block), so the rhiza-builder, rhiza-fixer, rhiza-ci-fix and rhiza-gate-fix skills, keep scoped tests as the default and add that, while CI is unstable or a red is not explained by the change, an agent reproduces the failing test locally and pushes only after it and the touched packages pass, never pushing or rerunning CI to see; the review index does not hold the rule"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M79BD7NC7DBDS4YSVWKMAVEE",
+        "handle": null,
+        "id": "01M79T5FFSYZ135Y48R9KTS78Q",
+        "node": "01M6ZCM35BZXJ8X5SQ96639XZ4",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes, with TestSharedPhrasesInExactlyOneFile finding the delay-injection rule (inject a delay at the suspected race; never busy loops or parallel stress on the host) in the shared unstable-ci block beside the unstable-CI rule, TestBuilderText, TestFixerText, TestCIFixText and TestGateFixText asserting the builder, fixer, ci-fix and gate-fix topics carry that block, and TestReviewRoleText finding the rule in the expanded review role topics; go test -trimpath ./cmd/rhiza -run TestClaudeMDScopedTests finds the same rule in AGENTS.md beside the unstable-CI reproduce-locally rule, with that rule unchanged",
+          "statement": "The builder guide topic and the fixer, ci-fix and gate-fix review role topics (each through the shared unstable-ci block, beside the unstable-CI rule), so the rhiza-builder, rhiza-fixer, rhiza-ci-fix and rhiza-gate-fix skills, and this repo's AGENTS.md tell builders and those three fixer roles to reproduce a timing flake by injecting a delay at the suspected race, and never by busy loops, CPU stress or parallel stress runs on the shared host; the review index does not hold the rule"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M79CCRQYSJ7YS449DHBEYR6N",
+        "handle": null,
+        "id": "01M79T5FM4GWH5E3AEB6BEBASC",
+        "node": "01M6MMAF8Z4XWD1JD9WG5PRYBR",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes: TestGuidesFeedFindingsFromStdin asserts the verifier, check-compliance, critic and plan-review topics show the `<<'EOF'` stdin form and no `<file>` form of rhiza run findings or rhiza run verdict; TestCheckComplianceText, TestCheckQualityText, TestCheckQAText and TestCheckModelText assert each check topic shows `rhiza run findings --check \"$RHIZA_CHECK\" - <<'EOF'`, TestCriticText that the critic topic shows `rhiza run verdict --check \"$RHIZA_CHECK\" - <<'EOF'`, and TestReviewRoleText finds both heredocs and {\"findings\":[]} in the role topics",
+          "statement": "The verifier guide topic, the plan-review guide topic, the four check topics (check-compliance, check-quality, check-qa, check-model) and the critic topic show rhiza run findings and rhiza run verdict fed from stdin by a heredoc (`- <<'EOF'` ... `EOF`), with their existing flags (--leaf, --check, --json) and JSON shapes ({\"findings\":[]} when clean), so an agent records findings and verdicts without a temp file or compound shell command; the review index shows neither"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M62RE2VD8QDWJ0BQN7YJEQW2",
+        "handle": null,
+        "id": "01M79T5FP3REV0PTK4QMYA0M0V",
+        "node": "01M62RE2VD8QDWJ0BQN4Y56F9K",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes: TestBuilderText asserts the builder example keeps every trailer in one final paragraph, TestReviewFixerTrailersInOneFinalParagraph asserts each of the fixer, ci-fix, gate-fix and conflict-fix topics holds Co-Authored-By:, one final paragraph and no blank line, and TestFixerText, TestCIFixText, TestGateFixText and TestConflictFixText fail when their example puts Co-Authored-By in a paragraph apart from Change:, Actor:, Leaf: or Review:.",
+          "statement": "The builder guide topic's example commit and the fixer, ci-fix, gate-fix and conflict-fix topics, the review roles that commit, show every trailer, Co-Authored-By included, in one final paragraph with no blank line; the review index holds no fixer instruction."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M79BGZDFT6QZGP0P29RH6KA0",
+        "handle": null,
+        "id": "01M79T5FR9XFSKN5YMV81XFGWP",
+        "node": "01M6M0F9J7KPR4WJWBDMZ4X2WP",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestBuiltinRolePromptsScopeTests loads the built-in build and review workflows and asserts each builder, verifier, check, critic and fixer prompt either carries the rule or names a `rhiza guide <topic>` whose topic text (with shared blocks expanded) carries it, and that no prompt contains go test, make check, make test or testscript; go test -trimpath ./internal/guide/... passes, with TestBuilderText, TestVerifierText and the review role topic tests asserting those topics carry the shared test-scope block; each cmd/rhiza testscript whose golden output prints these prompts passes, run by name with go test -trimpath ./cmd/rhiza -run 'TestScripts/<name>'",
+          "statement": "Every builder, verifier, check, critic and fixer of the built-in build and review workflows is told to run only the tests covering what its change touches and never the repo's full suite, which the PR's CI runs, either in its prompt or through the guide topic its prompt names, whose text includes the shared test-scope block: the one-line /rhiza-builder and /rhiza-verifier prompts reach it through the builder and verifier topics, and the review workflow's check, critic and fixer prompts through check-<check>, critic and fixer. No prompt names a Go, make or testscript command"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79T5FTP941Y99Z2B40HG5MF",
+  "type": "ops",
+  "v": 1
+}

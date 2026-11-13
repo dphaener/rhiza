@@ -1,0 +1,40 @@
+{
+  "actor": "01M79S8B9VMPWE436NVD5MEWG7",
+  "after": [
+    "01M79S5ZWRM3ZJEW2H42HZZJX8"
+  ],
+  "at": "2026-11-13T06:26:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d73afba27 (attempt 2): go test -trimpath -count=1 ./internal/guide/... exit 0 (TestCheckModelText checks the six sections in order, the session-done, test-scope, command-budget, outside-work, never-list and severity blocks expanded, the isolation rule in Task, major/minor grading and the discovered-from draft commands; the negative test TestCheckModelNamesNoRepoCommand passes). A scratch build of `rhiza guide check-model | grep -q \"only the tests covering\"` exits 0. `rhiza ship generate` changed 0 files and exited 0. `rhiza render` exited 0, writing only rendered actors from this session's untracked log. `rhiza check` exits 0. The diff touches only check-model.md, its test and the builder's actor record. The trims keep every acceptance phrase, and it leaves no TODOs."
+        },
+        "handle": "check-model-topic-verified-2",
+        "id": "01M79SBA48W4Z76PPJR3FD6WZ2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79SBA475CG0ESWBFK3RCHJZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79SBA475CG0ESWBFK3RCHJZ",
+        "id": "01M79SBA72TMHF4T67GHMH2M2Z",
+        "link": "01M79SBA72TMHF4T67GGV0X4VB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH2GKFS0RH9HHFZSPX13V",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79SBABT6534CCMDJW542P7Q",
+  "type": "ops",
+  "v": 1
+}

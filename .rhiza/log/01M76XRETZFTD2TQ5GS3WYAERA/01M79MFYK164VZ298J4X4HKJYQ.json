@@ -1,0 +1,40 @@
+{
+  "actor": "01M79KANEQFRDG25CGGHJ4NWWT",
+  "after": [
+    "01M79J04QNATRREDQ5C5B0JB68"
+  ],
+  "at": "2026-11-13T05:01:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e4f397d03 re-ran the Checks: block: go test -trimpath ./internal/guide/... exit 0 (TestCIFixText checks the six sections in order, the session-done/test-scope/unstable-ci/command-budget/never-list blocks expanded with never-list inside Must not do, rhiza ship check --json, reproduce-first and never-push-to-see, the flake quarantine with rhiza request --kind bug, the Checks: block and Review: trailer; TestCIFixNamesNoRepoCommand is the negative case for go/make/repo commands); go test -trimpath ./internal/api -run Guide exit 0; TestScripts/guide$ and TestScripts/guide-install$ exit 0; rhiza ship generate exit 0 (0 files changed) and rhiza render exit 0 with a scratch build of this commit. Read the diff: only internal/guide (ci-fix.md, registry entry, tests), guide.txtar count, and the builder's actor record changed; rhiza guide ci-fix renders with no unexpanded shared markers; no TODOs or stubs."
+        },
+        "handle": "ci-fix-topic-verified",
+        "id": "01M79MFYDMKNANVND3W3WRM7K7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79MFYDMKNANVND3W12Y6RGE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79MFYDMKNANVND3W12Y6RGE",
+        "id": "01M79MFYF5E8DC08NB3V34X7ZP",
+        "link": "01M79MFYF5E8DC08NB3RX2ZBND",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH3008VB5G7BNDF0YAHJP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79MFYK164VZ298J4X4HKJYQ",
+  "type": "ops",
+  "v": 1
+}
