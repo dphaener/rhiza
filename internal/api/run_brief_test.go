@@ -67,6 +67,16 @@ func TestSessionBrief(t *testing.T) {
 			return r.StartCheck(run.CheckSpec{Step: workflow.Step{Name: "review", Verifier: &workflow.Role{Prompt: "v"}},
 				Role: workflow.RoleVerifier, Check: workflow.Check{Name: "alpha"}, Cycle: 1})
 		},
+		// A checks step's leaf verifier: StartLeaf with a cycle, as
+		// run's checks step starts it.
+		"checks verifier": func() (string, error) {
+			return r.StartLeaf(run.LeafSpec{Step: workflow.Step{Name: "checks", Verifier: &workflow.Role{Prompt: "v"}},
+				Role: workflow.RoleVerifier, Leaf: leaf, Attempt: 1, Cycle: 1})
+		},
+	}
+	// wantBase is the directory name a start must get, where it is fixed.
+	wantBase := map[string]string{
+		"checks verifier": run.LeafFixSessionName(workflow.RoleVerifier, leaf.Handle, 1, 1),
 	}
 	dirs := map[string]bool{}
 	for name, start := range starts {
@@ -88,6 +98,9 @@ func TestSessionBrief(t *testing.T) {
 			t.Errorf("%s: directory %s is shared or outside the run's", name, dir)
 		}
 		dirs[dir] = true
+		if w, ok := wantBase[name]; ok && filepath.Base(dir) != w {
+			t.Errorf("%s: directory %s, want one named %s", name, dir, w)
+		}
 		if sp, _ := envOf(rec, envSlice); sp != filepath.Join(dir, "slice.json") {
 			t.Errorf("%s: RHIZA_SLICE = %q", name, sp)
 		}
