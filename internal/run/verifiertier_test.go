@@ -146,9 +146,55 @@ func TestVerifierTierFreshRound(t *testing.T) {
 	}
 }
 
-// A checks step's verifier in review cycle 2 starts on models whatever the
-// diff, and the journal holds that choice.
+// A checks step's verifier on the review's first fix (cycle 2, first try)
+// is tiered like a build's first attempt: sonnet for a low-risk diff, opus
+// for a risky one, and the journal holds that choice.
 func TestVerifierTierReviewCycle(t *testing.T) {
+	cases := []struct {
+		name  string
+		files []string
+		want  string
+	}{
+		{"low risk", []string{"internal/x/x.go"}, "sonnet"},
+		{"risky path", []string{".github/workflows/ci.yml"}, "opus"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			e, r, _, _ := setup(t, checksWF+"models = [\"opus\"]\nlow_risk_models = [\"sonnet\"]\nrisky_paths = [\".github/**\"]\n")
+			r.leaves = fixLeaves
+			a := fixLeaves[0]
+			r.changed = c.files
+			passChecks(r, 1, threeChecks...)
+			passChecks(r, 2, "alpha")
+			r.findings[checkSID("alpha", "check", 1)] = []Finding{onLeaf(sev("f1", SeverityMajor), a)}
+			r.outcome[checkSID("alpha", "critic", 1)] = workflow.OutcomePass
+			passFixes(r, 2, a)
+			st, err := e.Run(runID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+				t.Fatalf("outcomes = %v", got)
+			}
+			var cycles []int
+			for _, s := range r.leafSpecs {
+				if s.Role == workflow.RoleVerifier {
+					cycles = append(cycles, s.Cycle)
+				}
+			}
+			if !reflect.DeepEqual(cycles, []int{2}) || !reflect.DeepEqual(verifierModels(r), []string{c.want}) {
+				t.Errorf("verifier cycles %v models %q, want [2] [%s]", cycles, verifierModels(r), c.want)
+			}
+			if got, want := journalledVerifierModels(t, e), []string{"leaf-a 2 " + c.want}; !reflect.DeepEqual(got, want) {
+				t.Errorf("journalled verifier models = %q, want %q", got, want)
+			}
+		})
+	}
+}
+
+// A review fix's retry within cycle 2 verifies on opus though its first
+// try was low-risk.
+func TestVerifierTierReviewRetry(t *testing.T) {
 	e, r, _, _ := setup(t, checksWF+"models = [\"opus\"]\nlow_risk_models = [\"sonnet\"]\nrisky_paths = [\".github/**\"]\n")
 	r.leaves = fixLeaves
 	a := fixLeaves[0]
@@ -158,28 +204,18 @@ func TestVerifierTierReviewCycle(t *testing.T) {
 	r.findings[checkSID("alpha", "check", 1)] = []Finding{onLeaf(sev("f1", SeverityMajor), a)}
 	r.outcome[checkSID("alpha", "critic", 1)] = workflow.OutcomePass
 	passFixes(r, 2, a)
-	st, err := e.Run(runID)
-	if err != nil {
+	r.outcome[leafSID(a.Handle, workflow.RoleVerifier, leafFixAttempt(2, 1))] = workflow.OutcomeFail
+	if _, err := e.Run(runID); err != nil {
 		t.Fatal(err)
 	}
-	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
-		t.Fatalf("outcomes = %v", got)
-	}
-	var cycles []int
-	for _, s := range r.leafSpecs {
-		if s.Role == workflow.RoleVerifier {
-			cycles = append(cycles, s.Cycle)
-		}
-	}
-	if !reflect.DeepEqual(cycles, []int{2}) || !reflect.DeepEqual(verifierModels(r), []string{"opus"}) {
-		t.Errorf("verifier cycles %v models %q, want [2] [opus]", cycles, verifierModels(r))
-	}
-	if got, want := journalledVerifierModels(t, e), []string{"leaf-a 2 opus"}; !reflect.DeepEqual(got, want) {
+	want := []string{"leaf-a " + attemptStr(leafFixAttempt(2, 1)) + " sonnet", "leaf-a " + attemptStr(leafFixAttempt(2, 2)) + " opus"}
+	if got := journalledVerifierModels(t, e); !reflect.DeepEqual(got, want) {
 		t.Errorf("journalled verifier models = %q, want %q", got, want)
 	}
 }
 
-// A fresh round and a review cycle past 1 are risky whatever the diff.
+// A fresh round, a review cycle past 2 and a review fix's retry are
+// risky whatever the diff.
 func TestVerifierRiskyRetryStates(t *testing.T) {
 	role := workflow.Role{Models: []string{"opus"}, LowRiskModels: []string{"sonnet"}, RiskyPaths: []string{".github/**"}}
 	r := newFakeRunner()
@@ -193,8 +229,21 @@ func TestVerifierRiskyRetryStates(t *testing.T) {
 	if !verifierRisky(r, role, l, LeafSpec{Round: 2, RoundAttempt: 1}, a) {
 		t.Error("fresh round is not risky")
 	}
-	a.cycle = 2
-	if !verifierRisky(r, role, l, spec, a) {
-		t.Error("review cycle 2 is not risky")
+	// A review fix: cycle 2's first try is not a retry; a later try of
+	// the cycle, or a cycle past 2, is.
+	fl := LeafState{Sessions: []LeafSession{
+		{Role: workflow.RoleFixer, Attempt: leafFixAttempt(2, 1), Commit: "H0"},
+		{Role: workflow.RoleFixer, Attempt: leafFixAttempt(2, 2), Commit: "H0"},
+		{Role: workflow.RoleFixer, Attempt: leafFixAttempt(3, 1), Commit: "H0"},
+	}}
+	fs := LeafSpec{Round: 1, RoundAttempt: leafFixAttempt(2, 1)}
+	if verifierRisky(r, role, fl, fs, leafAction{attempt: leafFixAttempt(2, 1), commit: "C1", cycle: 2}) {
+		t.Error("review cycle 2's first fix, low-risk diff is risky")
+	}
+	if !verifierRisky(r, role, fl, fs, leafAction{attempt: leafFixAttempt(2, 2), commit: "C1", cycle: 2}) {
+		t.Error("review cycle 2's second fix try is not risky")
+	}
+	if !verifierRisky(r, role, fl, fs, leafAction{attempt: leafFixAttempt(3, 1), commit: "C1", cycle: 3}) {
+		t.Error("review cycle 3 is not risky")
 	}
 }
