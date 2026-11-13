@@ -23,6 +23,8 @@ Designed pages from model data (Recommended), picked by the owner
 ### In
 
 - decided-by [m37-model-pages](../intent/milestone-37/m37-model-pages.md)
+- decided-by [web-node-pages](../capability/rhiza/web-monitor/web-node-pages.md)
+- decided-by [web-links-resolve](../capability/rhiza/web-monitor/web-links-resolve.md)
 
 ## History
 
