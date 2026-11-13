@@ -851,6 +851,7 @@
 - [root-daemon-idle-poll-no-work](capability/root-daemon-idle-poll-no-work.md)
 - [usage-scan-once-per-poll](capability/usage-scan-once-per-poll.md)
 - [ci-wait-backs-off](capability/ci-wait-backs-off.md)
+- [apply-tolerates-concurrent-entries](capability/apply-tolerates-concurrent-entries.md)
 
 ## Intents
 
@@ -1172,8 +1173,10 @@
 - [app-plan-interactive-ship-autonomous](decision/app-plan-interactive-ship-autonomous.md)
 - [app-runs-open-rex-tabs](decision/app-runs-open-rex-tabs.md)
 - [append-only-log](decision/append-only-log.md)
+- [apply-concurrent-serves-runs-hold-up](decision/apply-concurrent-serves-runs-hold-up.md)
 - [apply-is-main-write](decision/apply-is-main-write.md)
 - [apply-latency-out-of-scope](decision/apply-latency-out-of-scope.md)
+- [apply-skips-concurrent-only](decision/apply-skips-concurrent-only.md)
 - [arbiter](decision/arbiter.md)
 - [arbiter-answer-by-message](decision/arbiter-answer-by-message.md)
 - [arbiter-answers-where-question-lives](decision/arbiter-answers-where-question-lives.md)
@@ -2400,6 +2403,8 @@
 - [answer-refuses-closed-or-unblocking-verified-2](evidence/answer-refuses-closed-or-unblocking-verified-2.md)
 - [api-tests-free-disk-hermetic-qa-1](evidence/api-tests-free-disk-hermetic-qa-1.md)
 - [api-tests-free-disk-hermetic-verified](evidence/api-tests-free-disk-hermetic-verified.md)
+- [apply-tolerates-concurrent-entries-qa-1](evidence/apply-tolerates-concurrent-entries-qa-1.md)
+- [apply-tolerates-concurrent-entries-verified](evidence/apply-tolerates-concurrent-entries-verified.md)
 - [apply-validates-from-index-qa-1](evidence/apply-validates-from-index-qa-1.md)
 - [apply-validates-from-index-verified](evidence/apply-validates-from-index-verified.md)
 - [arbiter-answer-to-session-verified](evidence/arbiter-answer-to-session-verified.md)
@@ -3645,6 +3650,7 @@
 - [pr-546-fix-the-web-roadmap-shows-each](evidence/pr-546-fix-the-web-roadmap-shows-each.md)
 - [pr-548-fix-run-sessions-that-hit-an](evidence/pr-548-fix-run-sessions-that-hit-an.md)
 - [pr-549-fix-rows-on-the-web-roadmap-s](evidence/pr-549-fix-rows-on-the-web-roadmap-s.md)
+- [pr-556-fix-rhiza-apply-refuses-to](evidence/pr-556-fix-rhiza-apply-refuses-to.md)
 - [pr-61-leaf-trailer-split-paragraphs](evidence/pr-61-leaf-trailer-split-paragraphs.md)
 - [pr-64-resume-only-in-flight-runs](evidence/pr-64-resume-only-in-flight-runs.md)
 - [pr-65-tui-shell-and-read-apps](evidence/pr-65-tui-shell-and-read-apps.md)
@@ -4619,6 +4625,7 @@
 - [agents-never-start-runs-plan](source/agents-never-start-runs-plan.md)
 - [anchors-plan-session](source/anchors-plan-session.md)
 - [api-error-reprompt-plan](source/api-error-reprompt-plan.md)
+- [apply-concurrent-plan](source/apply-concurrent-plan.md)
 - [autonomy-per-workflow-interview](source/autonomy-per-workflow-interview.md)
 - [bug-workflows-plan](source/bug-workflows-plan.md)
 - [build-review-render-plan](source/build-review-render-plan.md)
