@@ -40,6 +40,7 @@ func TestContract(t *testing.T) {
 		"`Change:`", "`Actor:`", "`Leaf:`", "Evidence", "`rhiza run findings`", "`rhiza session done`",
 		"gate",
 		"{brief}", "{slice}", "{handback}", "{change}", "{run}", "{leaf}", "{attempt}", "{worktree}",
+		"{slug}", "{title}", "{step}", "{check}", "{cycle}",
 		"RHIZA_BRIEF", "RHIZA_SLICE", "RHIZA_HANDBACK", "RHIZA_CHANGE", "RHIZA_RUN", "RHIZA_LEAF", "RHIZA_ATTEMPT",
 		"brief.md", "slice.json", "handback.md",
 	} {

@@ -14,9 +14,12 @@ this page; it never removes from it.
 
 ## Invoke placeholders
 
-An `invoke` or `handback` template in a workflow file takes `{brief}`, `{slice}`,
-`{handback}` (the session's file paths), `{change}`, `{run}`, `{leaf}`, `{attempt}` and
-`{worktree}`. `prompt` is an alias of `invoke`; `rhiza workflow check` refuses an
+Every `invoke` or `handback` template in a workflow file takes `{change}`, `{slug}`,
+`{title}`, `{run}`, `{step}`, `{brief}`, `{slice}`, `{handback}` (the session's file
+paths) and `{worktree}`. A leaves step's builder and verifier, and a checks step's
+verifier, add `{leaf}` and `{attempt}`; a checks step's fixer adds `{leaf}` (empty when
+its findings name no leaf) and `{cycle}`; a checks step's check and critic add `{check}`
+and `{cycle}`. `prompt` is an alias of `invoke`; `rhiza workflow check` refuses an
 unknown placeholder.
 
 ## Environment
