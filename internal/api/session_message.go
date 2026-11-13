@@ -1,8 +1,9 @@
 package api
 
 // This file holds session.message, which sends a running agent session a
-// message: the text goes into a file inside the session's worktree (under
-// the gitignored .rhiza/local/messages/<session>/), and a one-line pointer
+// message: the text goes into a file inside the session's checkout, its
+// Dir when it runs apart from its worktree and its worktree otherwise
+// (under the gitignored .rhiza/local/messages/<session>/), and a one-line pointer
 // to that file is typed into the session's terminal tab. The pointer is
 // typed only while the session waits at its prompt (resolved status idle),
 // never over an open menu or question; otherwise the command waits.
@@ -31,7 +32,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "session.message",
-		Summary:  "Send a running agent session a message: a file in its worktree and a one-line pointer, typed at its prompt or, while it works, handed over at its next tool call",
+		Summary:  "Send a running agent session a message: a file in its checkout and a one-line pointer, typed at its prompt or, while it works, handed over at its next tool call",
 		Write:    true,
 		Request:  reflect.TypeFor[SessionMessageRequest](),
 		Response: reflect.TypeFor[SessionMessageResponse](),
@@ -67,7 +68,7 @@ type SessionMessageRequest struct {
 // would be.
 type SessionMessageResponse struct {
 	Session string `json:"session" desc:"The session's full ID"`
-	File    string `json:"file" desc:"The message file, an absolute path inside the session's worktree"`
+	File    string `json:"file" desc:"The message file, an absolute path inside the session's checkout (its worktree, or its own checkout folder when it runs in one)"`
 	Pointer string `json:"pointer" desc:"The one line typed at the session's prompt"`
 	From    string `json:"from" desc:"The sender's actor handle"`
 	Waited  string `json:"waited" desc:"How long it waited for the prompt, a Go duration"`
@@ -227,18 +228,25 @@ func messageSender(ctx *Ctx) (sender, error) {
 }
 
 // messageFolder is the session's message folder, absolute, and the same
-// folder relative to the session's worktree, slash-separated. Root's
-// folder within the git repository is the same in every worktree.
+// folder relative to the session's checkout, slash-separated. The checkout
+// is the record's Dir when the agent runs apart from its worktree (a
+// verifier or review check in a detached checkout), else its Worktree, so
+// the relative pointer names a file that exists where the session runs.
+// Root's folder within the git repository is the same in every checkout.
 func messageFolder(ctx *Ctx, rec session.Record) (dir, rel string, err error) {
 	if ctx.Git == nil {
-		return "", "", Errorf("messages need git: they live in the session's worktree")
+		return "", "", Errorf("messages need git: they live in the session's checkout")
 	}
 	prefix, err := ctx.Git("rev-parse", "--show-prefix")
 	if err != nil {
 		return "", "", Errorf("%v", err)
 	}
 	rel = strings.TrimSpace(prefix) + store.Dir + "/" + localDir + "/" + messagesDir + "/" + rec.ID
-	return filepath.Join(rec.Worktree, filepath.FromSlash(rel)), rel, nil
+	base := rec.Worktree
+	if rec.Dir != "" {
+		base = rec.Dir
+	}
+	return filepath.Join(base, filepath.FromSlash(rel)), rel, nil
 }
 
 // messageContent is the message file: a heading and list naming the
@@ -262,7 +270,7 @@ func messageContent(from sender, rec session.Record, at, text string) string {
 }
 
 // messagePointer is the line typed at the session's prompt, naming the
-// message file relative to the session's worktree. It is one line: every
+// message file relative to the session's checkout. It is one line: every
 // control character becomes a space.
 func messagePointer(handle, rel string) string {
 	return oneLine("rhiza: message from " + handle + ": read " + rel + " and act on it.")

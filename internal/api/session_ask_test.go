@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -214,3 +215,25 @@ func TestDeliver(t *testing.T) {
 func (askAdapter) ContextReply(string, string) ([]byte, bool, error)       { return nil, false, nil }
 func (askAdapter) GuardReply(string, []byte, string) ([]byte, bool, error) { return nil, false, nil }
 func (askAdapter) UsageLimit([]byte) (adapter.UsageLimit, bool)            { return adapter.UsageLimit{}, false }
+
+// TestDeliverInSessionCheckout writes the arbiter's answer under the
+// session's Dir when it runs in a separate checkout.
+func TestDeliverInSessionCheckout(t *testing.T) {
+	f := askFixture(t, true)
+	r := &stepRunner{ctx: f.ctx, sessions: f.st}
+	askHook(t, f.ctx, "PreToolUse", `{"session_id":"`+f.sid+`","ask":"Which store?"}`)
+	askHook(t, f.ctx, "Stop", `{"session_id":"`+f.sid+`"}`)
+	dir := t.TempDir()
+	if _, err := f.st.Update(f.sid, func(x *session.Record) { x.Dir = dir }); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.Deliver(f.sid, "01QUESTION", "use-sqlite", "Use SQLite.\n"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.ReadFile(filepath.Join(dir, ".rhiza", "local", "messages", f.sid, "0001.md")); err != nil {
+		t.Errorf("answer not in the checkout: %v", err)
+	}
+	if _, err := os.Stat(f.messageFile("0001.md")); err == nil {
+		t.Error("answer written under the worktree")
+	}
+}
