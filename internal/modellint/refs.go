@@ -27,6 +27,8 @@ const (
 	KindScript = "script"
 	// KindUnretired is a capability whose path references are all gone.
 	KindUnretired = "unretired-capability"
+	// KindUnapplied is a Decision no live node applies with decided-by.
+	KindUnapplied = "unapplied-decision"
 )
 
 // Hit is one lint finding on a node.
@@ -56,18 +58,7 @@ var fields = []string{"statement", "acceptance"}
 // are sorted by node, field, then position of the reference. Nodes cs did
 // not write are never looked at.
 func StaleRefs(m model.Model, cs changeset.ChangeSet, head fs.FS) []Hit {
-	written := map[id.ID]bool{}
-	for _, o := range cs.Ops {
-		switch o.Type {
-		case op.TypeNodeCreate, op.TypeNodeUpdate, op.TypeNodeMove:
-			written[o.Node] = true
-		}
-	}
-	ids := make([]id.ID, 0, len(written))
-	for i := range written {
-		ids = append(ids, i)
-	}
-	slices.SortFunc(ids, id.Compare)
+	ids := writtenNodes(cs)
 
 	c := &checker{head: head}
 	var out []Hit
@@ -116,6 +107,23 @@ func StaleRefs(m model.Model, cs changeset.ChangeSet, head fs.FS) []Hit {
 		}
 	}
 	return out
+}
+
+// writtenNodes returns the nodes cs creates, updates or moves, sorted by ID.
+func writtenNodes(cs changeset.ChangeSet) []id.ID {
+	written := map[id.ID]bool{}
+	for _, o := range cs.Ops {
+		switch o.Type {
+		case op.TypeNodeCreate, op.TypeNodeUpdate, op.TypeNodeMove:
+			written[o.Node] = true
+		}
+	}
+	ids := make([]id.ID, 0, len(written))
+	for i := range written {
+		ids = append(ids, i)
+	}
+	slices.SortFunc(ids, id.Compare)
+	return ids
 }
 
 func fieldText(n model.Node, field string) string {
