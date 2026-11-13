@@ -120,6 +120,23 @@ exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check; echo exit=$?'
 stdout '^code-check passed: rhiza check is ok and 2 leaves have Evidence by a verifier$'
 stdout '^exit=0$'
 
+# The lint hits stay on a pass: listed in --json and the human output,
+# with passed true and exit 0.
+stdout '^lints: 3 hits$'
+stdout '^- path alpha acceptance: internal/nope\.go$'
+stdout '^- unapplied-decision unapplied-choice$'
+stdout '^- removed-code-capability legacy statement: legacy/old\.txt$'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check --json; echo exit=$?'
+stdout '"passed": true'
+stdout '"lints": \['
+stdout '"kind": "path"'
+stdout '"ref": "internal/nope.go"'
+stdout '"kind": "unapplied-decision"'
+stdout '"handle": "unapplied-choice"'
+stdout '"kind": "removed-code-capability"'
+stdout '"ref": "legacy/old.txt"'
+stdout '^exit=0$'
+
 # The generated reference and the docs-command rule are judged by the
 # installed binary, not the run's change: a stale docs/reference and a
 # README naming a command the registry lacks fail rhiza check, and the
@@ -177,12 +194,12 @@ exec sh -c 'grep "\"type\":\"code-check\"" .git/rhiza/runs/$(cat $WORK/runid).js
 stdout '"step":"code","outcome":"pass"'
 exec rhiza run status
 stdout '^- code \(visit 1\): pass, then end: exit 0'
-stdout '\n## Code checks\n\n(- .*\n|  - .*\n)*- step code: pass\n  - lint path alpha acceptance: internal/nope\.go\n'
+stdout '\n## Code checks\n\n(- .*\n|  - .*\n)*- step code: pass\n  - lint path alpha acceptance: internal/nope\.go\n  - lint unapplied-decision unapplied-choice\n  - lint removed-code-capability legacy statement: legacy/old\.txt\n'
 stdout '\n- step gate: fail \(leaf alpha: no Evidence verifies it\)\n'
 exec rhiza run status --json
 stdout '"code_checks": \['
-stdout '"lints": \['
-stdout '"kind": "removed-code-capability"'
+# The passing code step's entry carries all three hits.
+stdout '"handle": "alpha",\n *"kind": "path",\n *"node": "[0-9A-Z]+",\n *"ref": "internal/nope\.go"\n *\},\n *\{\n *"handle": "unapplied-choice",\n *"kind": "unapplied-decision",\n *"node": "[0-9A-Z]+"\n *\},\n *\{\n *"field": "statement",\n *"handle": "legacy",\n *"kind": "removed-code-capability",\n *"node": "[0-9A-Z]+",\n *"ref": "legacy/old\.txt"\n *\}\n *\],\n *"outcome": "pass",\n *"step": "code"\n'
 
 # Outside an unfinished run it is usage.
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check --json; echo exit=$?'
