@@ -437,7 +437,11 @@ func safeSkillName(name string) bool {
 // <skills>/<plugin>/skills/<name>/SKILL.md (a "plugin:name" command is
 // the plugin's skill), and a command from <config>/commands/<name>.md,
 // where <skills> is the skills folder of $CLAUDE_CONFIG_DIR (else
-// $HOME/.claude) or of the worktree's .claude folder.
+// $HOME/.claude) or of the worktree's .claude folder. An installed
+// plugin's skills and commands sit one to five folders below
+// <config>/plugins (plugins/cache/<marketplace>/<plugin>/<version>,
+// plugins/marketplaces/<marketplace>/plugins/<plugin>, ...), so those
+// depths are searched too.
 func (Adapter) SkillGlobs(name string, getenv func(string) string, worktree string) []string {
 	if !safeSkillName(name) {
 		return nil
@@ -453,6 +457,13 @@ func (Adapter) SkillGlobs(name string, getenv func(string) string, worktree stri
 			filepath.Join(config, "skills", short, "SKILL.md"),
 			filepath.Join(config, "skills", "*", "skills", short, "SKILL.md"),
 			filepath.Join(config, "commands", short+".md"))
+		plugin := filepath.Join(config, "plugins")
+		for depth := 1; depth <= 5; depth++ {
+			plugin = filepath.Join(plugin, "*")
+			globs = append(globs,
+				filepath.Join(plugin, "skills", short, "SKILL.md"),
+				filepath.Join(plugin, "commands", short+".md"))
+		}
 	}
 	if dir := configDir(getenv); dir != "" {
 		add(dir)

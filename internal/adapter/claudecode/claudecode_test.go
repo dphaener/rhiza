@@ -1027,6 +1027,17 @@ func TestSkillGlobs(t *testing.T) {
 	if !found(t, Adapter{}.SkillGlobs("mine", getenv, wt)) {
 		t.Error("worktree skill not found")
 	}
+	if found(t, Adapter{}.SkillGlobs("design:design-critique", getenv, wt)) {
+		t.Error("missing plugin command found")
+	}
+	write(filepath.Join(home, ".claude", "plugins", "cache", "mkt", "design", "1.0.0", "skills", "design-critique", "SKILL.md"))
+	if !found(t, Adapter{}.SkillGlobs("design:design-critique", getenv, wt)) {
+		t.Error("marketplace plugin skill not found")
+	}
+	write(filepath.Join(home, ".claude", "plugins", "marketplaces", "mkt", "plugins", "loop", "commands", "cancel-loop.md"))
+	if !found(t, Adapter{}.SkillGlobs("loop:cancel-loop", getenv, wt)) {
+		t.Error("marketplace plugin command not found")
+	}
 	if g := (Adapter{}).SkillGlobs("../x", getenv, wt); g != nil {
 		t.Errorf("unsafe name got globs %v", g)
 	}
