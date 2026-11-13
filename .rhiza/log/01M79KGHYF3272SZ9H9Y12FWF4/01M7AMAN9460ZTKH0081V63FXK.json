@@ -1,0 +1,61 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7AKS02842F4Q2TRR492GKQF"
+  ],
+  "at": "2026-11-13T14:17:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (missing-acceptance on run-brief-files): The statement names five kinds of session directory, but TestSessionDir checks only three: an agent step, a leaves step's builder, and a checks step's check and critic. It never checks a checks step's leaf fixer or verifier (<role>-<leaf>-<cycle>-<attempt>) or its change set fixer (fixer-<cycle>-<attempt>). Those are the names most likely to collide, since a leaf fixer and the change set fixer both have the role fixer in one cycle. Add them to the 'all names different' case. The critic confirmed it: Real: run-brief-files' statement and the decision brief-files-and-invoke-placement give five session-directory forms, but TestSessionDir's acceptance names only an agent step on two visits, a builder, a check, two critics and one check across two cycles. It never checks <role>-<leaf>-<cycle>-<attempt> for a checks step's leaf fixer or verifier, or fixer-<cycle>-<attempt> for its change set fixer. Those forms were added in the round-2 revision to stop collisions, and nothing tests them, so the 'all names different' case does not cover the stated scheme. Major, as the missing-acceptance kind is graded. How should it be settled?"
+        },
+        "handle": "review-01m7ah6rhkmzrahgjkjfm4vtnt-r3-f1",
+        "id": "01M7AMAMP79YB822F2TSP4J0B1",
+        "key": null,
+        "kind": "question",
+        "node": "01M7AMAMP79YB822F2TPS54Z7B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AMAMP79YB822F2TPS54Z7B",
+        "id": "01M7AMAMS0DDG10SJF154TJJZ7",
+        "link": "01M7AMAMS0DDG10SJF13PCC7AP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBD9GFZM83ZPXXDRY6FS",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on arbiter-advisor-brief): Decision brief-files-and-invoke-placement gives every session its own subdirectory at <step>-<visit>/<session>, so that later visits or cycles never share one. This leaf names the arbiter's directory <arbiter step>/arbiter-<question id>, with no visit, and the advisor's advisor/advisor-<asking session id>. A session that asks the owner two questions starts two advisors (StartAdvisor in internal/api/run.go runs once per question asked), and both get the same directory, so the second overwrites the first's brief.md and slice.json. Key the advisor's directory on something unique to each advisor, such as the question or the advisor's own session, and keep the arbiter in line with the <step>-<visit> layout, or record why these two sessions differ. The critic confirmed it: Real: the decision gives every session its own <step>-<visit>/<session> directory so that no two sessions share one. arbiter-advisor-brief names the advisor's directory advisor/advisor-<asking session id>. In internal/run/engine.go, block() journals a new block whenever the session is not already blocked, so a session can block again after an answer. advise() then calls StartAdvisor with the same asker session each time (engine.go:1090), and both advisors get the same directory, the second overwriting the first's brief.md and slice.json. The arbiter's <arbiter step>/arbiter-<question id> also drops the decision's -<visit>. The leaf contradicts the decision: major, as the contradiction kind is graded. How should it be settled?"
+        },
+        "handle": "review-01m7ah6rhkmzrahgjkjfm4vtnt-r3-f2",
+        "id": "01M7AMAMVDCNQMNT4J49PSY7TX",
+        "key": null,
+        "kind": "question",
+        "node": "01M7AMAMVDCNQMNT4J45Q5QWVS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AMAMVDCNQMNT4J45Q5QWVS",
+        "id": "01M7AMAMYP8JXV5SK040EARKP5",
+        "link": "01M7AMAMYP8JXV5SK03ZRY49TB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AJZ8CQ9MFGF06EWDVC1JAJ",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AMAN9460ZTKH0081V63FXK",
+  "type": "ops",
+  "v": 1
+}
