@@ -46,6 +46,11 @@ func TestCheckPlanText(t *testing.T) {
 			"Scope creep: behaviour outside the intent and the leaves is a `major`",
 			"Unaccounted files", "is a\n  `major` if it changes behaviour and a `minor` otherwise",
 		},
+		"model": {
+			"code against the slice's constraints and Decisions",
+			"Code contradicts a node: code that does what a leaf, Decision or constraint forbids, or\n  the reverse, is a `major`",
+			"Missing constraint: a rule the change introduced that no constraint states is a `minor`",
+		},
 		"line":  {"one line with its evidence", "re-diagnosing"},
 		"fakes": {"Test with fakes only, never real Rex, agents or `gh`"},
 		"record": {
@@ -56,6 +61,12 @@ func TestCheckPlanText(t *testing.T) {
 	})
 	if !strings.Contains(sectionOf(c.Body, "## Task"), "Never run `rhiza run status`") {
 		t.Errorf("check-plan: the isolation rule belongs in Task")
+	}
+	if !strings.Contains(sectionOf(c.Body, "## Must not do"), "the code check does that") {
+		t.Errorf("check-plan: Must not do does not leave style to the code check")
+	}
+	if n := Tokens(c.Body); n > TopicCap {
+		t.Errorf("check-plan costs %d tokens, cap %d", n, TopicCap)
 	}
 }
 

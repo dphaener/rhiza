@@ -56,6 +56,12 @@ func TestCheckCodeText(t *testing.T) {
 	if !strings.Contains(sectionOf(c.Body, "## Task"), "Never run `rhiza run status`") {
 		t.Errorf("check-code: the isolation rule belongs in Task")
 	}
+	if !strings.Contains(sectionOf(c.Body, "## Must not do"), "the plan check does that") {
+		t.Errorf("check-code: Must not do does not leave acceptance to the plan check")
+	}
+	if n := Tokens(c.Body); n > TopicCap {
+		t.Errorf("check-code costs %d tokens, cap %d", n, TopicCap)
+	}
 	if n := strings.Count(sectionOf(c.Body, "## Must do"), "\n- "); n < 10 {
 		t.Errorf("check-code: Must do has %d bullets, want the radius and the seven checklist items", n)
 	}

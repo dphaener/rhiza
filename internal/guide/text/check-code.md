@@ -72,7 +72,7 @@ Test with fakes only, never real Rex, agents or `gh`.
 ## Must not do
 
 <!-- shared: never-list nested -->
-- Judge whether acceptance is met: the compliance check does that.
+- Judge whether acceptance is met: the plan check does that.
 - Edit code: a fixer acts on your findings.
 
 ## Context

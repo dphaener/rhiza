@@ -112,14 +112,15 @@ func TestGuideInstallBuild(t *testing.T) {
 	}
 }
 
-// TestGuideInstallRoleSkills finds the builder, verifier and build-retry
-// topics in the installed plugin as their own skills, and a second install
-// reports them unchanged.
+// TestGuideInstallRoleSkills finds the builder, verifier, build-retry,
+// planner, plan review, check-plan and check-code topics in the installed
+// plugin as their own skills beside the old review role skills, and a second
+// install reports them unchanged.
 func TestGuideInstallRoleSkills(t *testing.T) {
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
 	r := guideInstall(t, ctx, `{"agent":"claude"}`)
-	for _, tc := range []struct{ skill, text string }{{"rhiza-builder", "builder"}, {"rhiza-verifier", "verifier"}, {"rhiza-build-retry", "build-retry"}, {"rhiza-planner", "planner"}, {"rhiza-plan-reviewer", "plan-reviewer"}, {"rhiza-plan-critic", "plan-critic"}, {"rhiza-plan-reviser", "plan-reviser"}} {
+	for _, tc := range []struct{ skill, text string }{{"rhiza-builder", "builder"}, {"rhiza-verifier", "verifier"}, {"rhiza-build-retry", "build-retry"}, {"rhiza-planner", "planner"}, {"rhiza-plan-reviewer", "plan-reviewer"}, {"rhiza-plan-critic", "plan-critic"}, {"rhiza-plan-reviser", "plan-reviser"}, {"rhiza-check-plan", "check-plan"}, {"rhiza-check-code", "check-code"}} {
 		p := "skills/" + tc.skill + "/SKILL.md"
 		if !slices.Contains(r.Written, p) {
 			t.Fatalf("install wrote %v, want %s", r.Written, p)
@@ -134,8 +135,13 @@ func TestGuideInstallRoleSkills(t *testing.T) {
 			t.Errorf("%s is not the frontmatter plus the %s topic", p, tc.text)
 		}
 	}
+	for _, s := range []string{"rhiza-check-compliance", "rhiza-check-model", "rhiza-check-quality"} {
+		if !slices.Contains(r.Written, "skills/"+s+"/SKILL.md") {
+			t.Errorf("install wrote %v, want skills/%s/SKILL.md beside check-plan and check-code", r.Written, s)
+		}
+	}
 	r = guideInstall(t, ctx, `{"agent":"claude"}`)
-	for _, s := range []string{"rhiza-builder", "rhiza-verifier", "rhiza-build-retry", "rhiza-planner", "rhiza-plan-reviewer", "rhiza-plan-critic", "rhiza-plan-reviser"} {
+	for _, s := range []string{"rhiza-builder", "rhiza-verifier", "rhiza-build-retry", "rhiza-planner", "rhiza-plan-reviewer", "rhiza-plan-critic", "rhiza-plan-reviser", "rhiza-check-plan", "rhiza-check-code"} {
 		if !slices.Contains(r.Unchanged, "skills/"+s+"/SKILL.md") {
 			t.Errorf("second install: %s not unchanged: %+v", s, r)
 		}

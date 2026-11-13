@@ -60,7 +60,7 @@ Test with fakes only, never real Rex, agents or `gh`.
 ## Must not do
 
 <!-- shared: never-list nested -->
-- Judge style, naming or test quality: the quality check does that.
+- Judge style, naming or test quality: the code check does that.
 - Edit code, or write model nodes into the change set under review: a fixer acts on your findings.
 
 ## Context
