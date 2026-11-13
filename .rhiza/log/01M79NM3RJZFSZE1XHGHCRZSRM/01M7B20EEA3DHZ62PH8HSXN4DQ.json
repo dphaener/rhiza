@@ -1,0 +1,30 @@
+{
+  "actor": "01M7B1ZBMQBW1WA4QPY0MH7JFG",
+  "after": [
+    "01M7B1MKT41T6FYNBF1YB1E8MV"
+  ],
+  "at": "2026-11-13T18:16:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestHomeWaitingPR lists a PR red again after its rerun with its reason text, age and PR link and counts it in the title; leaves out a PR whose CI is still running; and for a green unmerged PR held for the owner and a PR whose retry budget is spent, shows exactly one card each (the hold) and counts each once in the title.",
+          "statement": "Home's needs-the-owner list includes each waiting PR the watchdog no longer acts on and holds nothing for: a change set's open PR whose CI is red again after the rerun, with the reason in words, its age, the change set's title and links to the PR and its run, in the same oldest-first order and count as the other items. A PR the watchdog holds (green but unmerged and held for the owner, or its run's retry budget spent) is not a waiting-PR item: it is shown once, as the hold web-home-needs-you lists, and counted once."
+        },
+        "handle": "web-home-waiting-pr",
+        "id": "01M7B1MJTM4B76DF6R9N2V2RC3",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7B1MJTM4B76DF6R9HRNP962",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      }
+    ]
+  },
+  "change_set": "01M79NM3RJZFSZE1XHGHCRZSRM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B20EEA3DHZ62PH8HSXN4DQ",
+  "type": "ops",
+  "v": 1
+}

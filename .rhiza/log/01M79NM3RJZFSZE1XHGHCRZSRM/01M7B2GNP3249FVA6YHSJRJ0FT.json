@@ -1,0 +1,41 @@
+{
+  "actor": "01M7B2FNVKP2RP0EF08AFN81EF",
+  "after": [
+    "01M7B2F06V26QNZ2FZP63RNPXG"
+  ],
+  "at": "2026-11-13T18:25:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The intent says Home shows every inbox item, and this plan retires web-overview-inbox, so anything Home omits that the Overview shows today is a regression: permission-blocked sessions, runs the daemon gave up on, open items and API errors would vanish from the web. webInboxKinds (internal/api/web_inbox.go:10) already defines and renders that set owner-safe (webInboxViews), so reusing it is the smallest change that keeps parity. Extending to every CLI inbox kind (blocker, overlap, accept, skipped, interview, workflow, guide-stale…) would widen scope beyond the at-a-glance goal and add kinds with no web rendering yet; webInboxKinds' own comment records the choice that those stay in the CLI, so 'every inbox item' is read as every item the web inbox carries.",
+          "statement": "Home's needs-you list covers at least every inbox kind today's web Overview lists (webInboxKinds: question, open, sign-off, failed, gave-up, stalled/stuck, permission, api-error) plus holds, each with its reason in words and only the safe actions that apply; the web-home-needs-you leaf and its acceptance are widened to name these kinds with a fixture each. Inbox kinds the web Overview leaves to the CLI today (blocker, overlap, skipped, accept and the like) stay out of Home in this change set.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "web-home-needs-you-all-web-inbox-kinds",
+        "id": "01M7B2GNK8HJDQV41AYGYWK7CN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7B2GNK8HJDQV41AYDMVQ3E4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B2GNK8HJDQV41AYDMVQ3E4",
+        "id": "01M7B2GNMKGYM5JD2BWRBYY05F",
+        "link": "01M7B2GNMKGYM5JD2BWMSWJMH4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B2D2JDAZ5Z95JRP4VWG1NZ",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M79NM3RJZFSZE1XHGHCRZSRM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B2GNP3249FVA6YHSJRJ0FT",
+  "type": "ops",
+  "v": 1
+}
