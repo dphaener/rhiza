@@ -34,8 +34,7 @@ func planCoverWorkflow(name string) bool {
 //   - a plan, plan-milestone or plan-review run (or any plan run), whatever
 //     its own change set, has a latest gated entry naming it: a plan-milestone
 //     run on the record change set gates every change set it serves;
-//   - a run on it ended failed and was not abandoned (the owner retries it),
-//     or a run of those workflows on it ended without failing.
+//   - a run on it ended failed and was not abandoned (the owner retries it).
 //
 // An abandoned run covers nothing, but the gated entry it journaled still
 // does.
@@ -59,8 +58,6 @@ func uncoveredProposals(proposed []string, runs []run.Journal, held map[string]b
 			covered[st.Change] = true
 		case st.Abandoned():
 		case st.Result == run.Failed:
-			covered[st.Change] = true
-		case planCoverWorkflow(st.Workflow) || st.IsPlanRun():
 			covered[st.Change] = true
 		}
 	}

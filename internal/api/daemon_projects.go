@@ -287,14 +287,14 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 	}
 	host, _ := os.Hostname()
 	fold, ferr := daemonFoldOf(ctx)
-	accepted := func(change string) bool {
+	startable := func(change string) bool {
 		if ferr != nil {
 			return false
 		}
 		st, ok := fold.stateOf(change)
-		return ok && st == string(changeset.StateAccepted)
+		return ok && (st == string(changeset.StateAccepted) || st == string(changeset.StateProposed))
 	}
-	held := daemonHeld(pending, unjournaled, runs, accepted, ctx.Now())
+	held := daemonHeld(pending, unjournaled, runs, startable, ctx.Now())
 	running := 0
 	live := map[string]bool{}
 	var sig strings.Builder

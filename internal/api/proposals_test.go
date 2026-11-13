@@ -45,7 +45,7 @@ func TestUncoveredProposals(t *testing.T) {
 		{"failed plan-review covers", []run.Journal{proposalRun("r1", "plan-review", a, nil, run.Failed, "boom")}, nil, []string{b}},
 		{"failed plan covers", []run.Journal{proposalRun("r1", "plan", a, nil, run.Failed, "boom")}, nil, []string{b}},
 		{"abandoned run covers nothing", []run.Journal{proposalRun("r1", "plan-review", a, nil, run.Failed, run.AbandonedPrefix+"the owner")}, nil, []string{a, b}},
-		{"finished plan-review without a gate covers", []run.Journal{proposalRun("r1", "plan-review", a, nil, run.Succeeded, "")}, nil, []string{b}},
+		{"finished plan-review without a gate covers nothing", []run.Journal{proposalRun("r1", "plan-review", a, nil, run.Succeeded, "")}, nil, []string{a, b}},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -109,6 +109,22 @@ func TestDaemonPlansProposalsPending(t *testing.T) {
 	}
 	if len(f.picked) != 4 {
 		t.Fatalf("started %v, want the 3 proposals and the ready change set", f.picked)
+	}
+	// Past the grace the starts never journaled: they are held as not
+	// journaled, not started again, until daemonUnjournaledHold passes.
+	at := f.clock
+	f.ctx.Now = func() time.Time { return at.Add(daemonStartGrace + time.Second) }
+	poll(f, 10, false)
+	f.ctx.Now = func() time.Time { return at.Add(daemonUnjournaledHold - time.Second) }
+	poll(f, 10, false)
+	if len(f.picked) != 4 {
+		t.Fatalf("an unjournaled plan-review start was started again within the hold: %v", f.picked)
+	}
+	f.ctx.Now = func() time.Time { return at.Add(daemonUnjournaledHold + time.Minute) }
+	poll(f, 10, false)
+	// The hold lapsed for the ship pick too: all four start again, once.
+	if !slices.Equal(f.picked[4:], f.picked[:4]) {
+		t.Fatalf("after the hold started %v, want the 3 proposals and the ready change set again", f.picked)
 	}
 }
 
