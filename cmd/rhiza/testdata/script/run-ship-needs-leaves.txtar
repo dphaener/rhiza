@@ -4,6 +4,9 @@
 # with a leaf starts the run. The repo overrides ship-change with one
 # command step, so nothing reaches Claude Code, GitHub or Rex.
 
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
 mkdir repo
 cd repo
 exec git init -q
@@ -34,6 +37,36 @@ exec rhiza add capability thing --field 'statement=A thing'
 exec rhiza run start --foreground --workflow ship-change
 stdout '^Run [0-9A-Z]{26} succeeded$'
 exists .git/rhiza/runs
+
+# A ship-change that starts with an agent step declaring checks is the
+# conductor default: it plans a leafless change set itself, so the run
+# starts (a dry run, so the fake agent never runs).
+exec rhiza change new 'Conduct me' --title 'Conduct'
+! exec rhiza run start --foreground --workflow ship-change --dry-run
+stderr 'has no leaves'
+cp ../ship-change-conductor.toml .rhiza/workflows/ship-change.toml
+exec git add -A
+exec git commit -qm conductor
+exec rhiza run start --foreground --workflow ship-change --permission-mode manual --dry-run
+stdout 'would start'
+! stderr 'has no leaves'
+
+-- bin/rex --
+#!/bin/sh
+exit 0
+-- bin/claude --
+#!/bin/sh
+exit 0
+-- ship-change-conductor.toml --
+name = "ship-change"
+
+[step.conduct]
+kind = "agent"
+prompt = "Conduct change set {change}"
+on.pass = "done"
+
+[[step.conduct.check]]
+name = "plan"
 
 -- ship-change.toml --
 name = "ship-change"

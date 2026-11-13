@@ -31,6 +31,7 @@ import (
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/web"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 func init() {
@@ -1413,6 +1414,31 @@ func repoFreeBytes(ctx *Ctx) (uint64, error) {
 // a function that fails the test, so none reads the host's disk.
 var diskFreeBytes = daemon.FreeBytes
 
+// conductorWorkflow reports whether workflow ref is a conductor default: its
+// first step is an agent step that declares checks, so it plans a change set's
+// leaves itself.
+func conductorWorkflow(def *workflow.Definition) bool {
+	if def == nil {
+		return false
+	}
+	first, ok := def.Steps[def.Start]
+	if !ok && len(def.Order) > 0 {
+		first, ok = def.Steps[def.Order[0]]
+	}
+	return ok && first.Kind == workflow.KindAgent && len(first.Checks) > 0
+}
+
+// changeConducts reports whether the workflow dispatch picks for the change
+// set with open record o is a conductor default.
+func changeConducts(root string, o changeset.Open) bool {
+	name, err := readyWorkflow(root, o)
+	if err != nil {
+		return false
+	}
+	_, def, _, err := resolveWorkflow(root, name)
+	return err == nil && conductorWorkflow(def)
+}
+
 // daemonSchedule is the repo's scheduling rule as daemonCandidates applies
 // it: Backlog is a policy backlog value, or "" when it is unknown, and then
 // Detail says why, for the skips. Since is when a change set was last
@@ -1421,6 +1447,10 @@ type daemonSchedule struct {
 	Backlog string
 	Detail  []string
 	Since   func(id.ID) time.Time
+	// Conducts says whether a change set's dispatched workflow is the
+	// conductor default, which plans a leafless change set itself; nil
+	// means none is.
+	Conducts func(id.ID) bool
 }
 
 // daemonCandidates are the accepted, ready change sets that hasLeaves, each
@@ -1450,7 +1480,7 @@ func daemonCandidates(res planResult, hasLeaves func(id.ID) bool, sched daemonSc
 			switch {
 			case !p.ready:
 				skips = append(skips, daemon.Skip{Change: p.info.ID.String(), Reason: daemon.SkipNotReady, Detail: slices.Clone(p.reasons)})
-			case !hasLeaves(p.info.ID):
+			case !hasLeaves(p.info.ID) && (g.backlog || sched.Conducts == nil || !sched.Conducts(p.info.ID)):
 				skips = append(skips, daemon.Skip{Change: p.info.ID.String(), Reason: daemon.SkipNoLeaves})
 			case g.backlog:
 				backlog = append(backlog, p.info.ID.String())

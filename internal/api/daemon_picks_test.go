@@ -10,6 +10,7 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/policy"
 	"github.com/dphaener/rhiza/internal/run"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 func pickJournal(cs string, entries ...run.Entry) run.Journal {
@@ -198,5 +199,63 @@ func TestDaemonCandidatesBacklog(t *testing.T) {
 		if sk.Reason != daemon.SkipNoMilestone || !slices.Equal(sk.Detail, []string{"bad value"}) {
 			t.Errorf("unknown: skip = %+v", sk)
 		}
+	}
+}
+
+// A leafless, milestone-serving change set is a candidate when its dispatched
+// workflow is a conductor default (an agent step first, declaring checks);
+// under a classic workflow it keeps the no-leaves skip, a leafless backlog
+// change set is still skipped, and an umbrella change set is still not ready.
+func TestPickNoLeaves(t *testing.T) {
+	f := newPlanFix()
+	m := f.intent("m", id.ID{}, "a")
+	f.milestone(m)
+	plain := f.intent("plain", id.ID{}, "b")
+	mk := func(name string, serves id.ID) id.ID {
+		cs := f.cs(name, changeset.StateAccepted)
+		f.serve(cs, serves)
+		return cs
+	}
+	conducted, classic, backlog := mk("conducted", m), mk("classic", m), mk("backlog", plain)
+	first := mk("first", m)
+	notReady := mk("not-ready", m)
+	f.dep(notReady, first)
+
+	hasLeaves := func(cs id.ID) bool { return cs == first }
+	sched := daemonSchedule{Backlog: policy.BacklogAfter, Conducts: func(cs id.ID) bool { return cs == conducted || cs == backlog || cs == notReady }}
+	cands, skips := daemonCandidates(f.core(), hasLeaves, sched)
+	reasons := map[string]string{}
+	for _, sk := range skips {
+		reasons[sk.Change] = sk.Reason
+	}
+	if !slices.Contains(cands, conducted.String()) {
+		t.Errorf("candidates = %v, want the conducted change set", cands)
+	}
+	for cs, want := range map[id.ID]string{classic: daemon.SkipNoLeaves, backlog: daemon.SkipNoLeaves, notReady: daemon.SkipNotReady} {
+		if reasons[cs.String()] != want {
+			t.Errorf("skip of %s = %q, want %q (skips %v)", cs, reasons[cs.String()], want, skips)
+		}
+		if slices.Contains(cands, cs.String()) {
+			t.Errorf("%s is a candidate: %v", cs, cands)
+		}
+	}
+}
+
+// conductorWorkflow is true only for a workflow whose first step is an agent
+// step that declares checks.
+func TestConductorWorkflow(t *testing.T) {
+	load := func(src string) *workflow.Definition {
+		t.Helper()
+		def, err := workflow.Parse("w", []byte(src))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return def
+	}
+	conductor := load("[step.conduct]\nkind = \"agent\"\nprompt = \"Conduct {change}\"\non.pass = \"done\"\n\n[[step.conduct.check]]\nname = \"plan\"\n")
+	plainAgent := load("[step.only]\nkind = \"agent\"\nprompt = \"Do {change}\"\non.pass = \"done\"\n")
+	command := load("[step.only]\nkind = \"command\"\nrun = \"true\"\non.pass = \"done\"\n")
+	if !conductorWorkflow(conductor) || conductorWorkflow(plainAgent) || conductorWorkflow(command) || conductorWorkflow(nil) {
+		t.Errorf("conductor %v, plain agent %v, command %v", conductorWorkflow(conductor), conductorWorkflow(plainAgent), conductorWorkflow(command))
 	}
 }
