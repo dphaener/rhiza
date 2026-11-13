@@ -337,7 +337,6 @@
         - [plan-run-opens-pr](capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-run-opens-pr.md)
         - [plan-run-merges-closes-out](capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-run-merges-closes-out.md)
         - [plan-guide-who-records](capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-guide-who-records.md)
-        - [plan-run-merge-rebases](capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-run-merge-rebases.md)
         - [plan-guide-new-change-set](capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-guide-new-change-set.md)
         - [review-question-handle-unique](capability/rhiza/workflows/built-in-workflows/plan-workflow/review-question-handle-unique.md)
         - [plan-run-reruns-ci-flakes](capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-run-reruns-ci-flakes.md)
@@ -354,6 +353,7 @@
         - [plan-reviser-topic](capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-reviser-topic.md)
         - [plan-role-skills-installed](capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-role-skills-installed.md)
         - [plan-prompts-one-line](capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-prompts-one-line.md)
+        - [plan-merge-loop-six-tries](capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-merge-loop-six-tries.md)
       - [build-workflow](capability/rhiza/workflows/built-in-workflows/build-workflow.md)
         - [build-leaves-step](capability/rhiza/workflows/built-in-workflows/build-workflow/build-leaves-step.md)
           - [verifier-verdict-reads-fresh-model](capability/rhiza/workflows/built-in-workflows/build-workflow/build-leaves-step/verifier-verdict-reads-fresh-model.md)
@@ -1617,6 +1617,7 @@
 - [plan-guide-follows-recipes-split](decision/plan-guide-follows-recipes-split.md)
 - [plan-landed-resume-narrows-skipped-run-in-inbox](decision/plan-landed-resume-narrows-skipped-run-in-inbox.md)
 - [plan-leaves-after-stacking](decision/plan-leaves-after-stacking.md)
+- [plan-merge-loop-cap-six](decision/plan-merge-loop-cap-six.md)
 - [plan-merge-loops-to-rebase](decision/plan-merge-loops-to-rebase.md)
 - [plan-pr-merges-without-landing](decision/plan-pr-merges-without-landing.md)
 - [plan-record-lands-early](decision/plan-record-lands-early.md)
@@ -3326,6 +3327,8 @@
 - [plan-guide-who-records-qa-2](evidence/plan-guide-who-records-qa-2.md)
 - [plan-guide-who-records-verified](evidence/plan-guide-who-records-verified.md)
 - [plan-interview-verified](evidence/plan-interview-verified.md)
+- [plan-merge-loop-six-tries-qa-1](evidence/plan-merge-loop-six-tries-qa-1.md)
+- [plan-merge-loop-six-tries-verified](evidence/plan-merge-loop-six-tries-verified.md)
 - [plan-milestone-workflow-qa-2-01m6vy7h](evidence/plan-milestone-workflow-qa-2-01m6vy7h.md)
 - [plan-milestone-workflow-verified](evidence/plan-milestone-workflow-verified.md)
 - [plan-milestone-workflow-verified-2](evidence/plan-milestone-workflow-verified-2.md)
@@ -3656,6 +3659,7 @@
 - [pr-549-fix-rows-on-the-web-roadmap-s](evidence/pr-549-fix-rows-on-the-web-roadmap-s.md)
 - [pr-556-fix-rhiza-apply-refuses-to](evidence/pr-556-fix-rhiza-apply-refuses-to.md)
 - [pr-557-fix-the-inbox-asks-the-owner](evidence/pr-557-fix-the-inbox-asks-the-owner.md)
+- [pr-558-fix-watchdog-unmerged-pr-at-01m7aq89397m](evidence/pr-558-fix-watchdog-unmerged-pr-at-01m7aq89397m.md)
 - [pr-61-leaf-trailer-split-paragraphs](evidence/pr-61-leaf-trailer-split-paragraphs.md)
 - [pr-64-resume-only-in-flight-runs](evidence/pr-64-resume-only-in-flight-runs.md)
 - [pr-65-tui-shell-and-read-apps](evidence/pr-65-tui-shell-and-read-apps.md)
@@ -4743,6 +4747,7 @@
 - [plan-inbox-gate-fast](source/plan-inbox-gate-fast.md)
 - [plan-inbox-gate-stop-missed](source/plan-inbox-gate-stop-missed.md)
 - [plan-landed-resumable-interview](source/plan-landed-resumable-interview.md)
+- [plan-merge-race-research](source/plan-merge-race-research.md)
 - [plan-merge-rebases-interview](source/plan-merge-rebases-interview.md)
 - [plan-milestone-number-clash](source/plan-milestone-number-clash.md)
 - [plan-paging-log-roadmap-why](source/plan-paging-log-roadmap-why.md)
@@ -10597,6 +10602,7 @@
 - capability daemon-self-update `01M6FES89JR3Z5XA751AGCD3RV` — Superseded by root-daemon-self-update: the root daemon self-updates from the project rhiza.toml names as self_update_project, with selfUpdate a machine setting in rhiza.toml (m29-settings-split).
 - capability requests-app-milestone `01M6JE40PG6Z1ZG27N7DMFH3FF` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): the old requests app and its milestone field are deleted; the new request form has no milestone field
 - capability ship-check-ci-test-findings `01M6MC4GXTJ7SWF8NV4SYXD3F9` — Replaced by ci-logs-to-fixer: ci-triage hands the fix agent the failed CI logs instead of parsing Go test output.
+- capability plan-run-merge-rebases `01M6MTA2NY5E0GWS0NDWVNEA6D` — Superseded by plan-merge-loop-six-tries: the plan workflows' merge loop is capped at 6 visits, ship-change's cap, not 3
 - capability go-build-cache-sweep `01M6NREHKHFKZWMXYWG2F38AM5` — Replaced by rhiza-own-workflows-go-cleanup: Rhiza's own workflow cleanup phase trims the Go build cache and stale go-build folders; gosweep leaves the daemon.
 - capability daemon-trims-go-cache `01M6NRETPP5SJ8RMGV901X4G33` — Replaced by daemon-no-go-cache-trim and rhiza-own-workflows-go-cleanup: the daemon no longer trims the Go build cache; Rhiza's cleanup phase does.
 - capability root-daemon-self-update `01M6RN85F2T3NMVDRKV706VSZB` — Replaced by daemon-auto-update: rhiza.daemon.selfUpdate and rhiza.toml's self_update_project are removed; autoUpdate=main finds Rhiza's source checkout by its module path.

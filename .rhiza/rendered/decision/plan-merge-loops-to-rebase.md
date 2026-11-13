@@ -18,7 +18,8 @@ A plan run's merge step that merges nothing because origin/main moved past the c
 
 ### In
 
-- decided-by [plan-run-merge-rebases](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-run-merge-rebases.md)
+- decided-by plan-run-merge-rebases (retired)
+- supersedes [plan-merge-loop-cap-six](plan-merge-loop-cap-six.md)
 
 ## History
 
