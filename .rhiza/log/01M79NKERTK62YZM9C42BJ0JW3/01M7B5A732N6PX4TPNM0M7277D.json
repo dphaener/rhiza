@@ -1,0 +1,40 @@
+{
+  "actor": "01M7B57T7BTEW33JRRCMZFM9WG",
+  "after": [
+    "01M7B56M81VPPQWCM89W5JGRYF"
+  ],
+  "at": "2026-11-13T19:14:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f41bce522 (attempt 2): go test -trimpath ./internal/web -run TestTypeScale exit 0 and go test -trimpath ./internal/web/... exit 0, as in the Checks: block. Attempt 1's finding is fixed: .rz-step::before is back to left: 10.5px, and across both leaf commits (980db15cb, f41bce522) rhiza.css and templates/change.html change only font, font-size and line-height values, all now var(--fs-*)/var(--lh-*); rhiza-tokens.css adds exactly the 13 size and 11 line-height tokens. The listed moves are in place (10.5px to 11px, 11.5px to 12px, 12.5px to 12px, 13.5/20 to 14/20, stat 28/32 to 28/34, phone titles to 32/36 and 28/34). The test reads pages/*.html. In a scratch copy, a 28px/32px stat value and a 10.5px row head in rhiza.css each make TestTypeScale fail. No TODOs, no new dependencies."
+        },
+        "handle": "web-type-scale-verified",
+        "id": "01M7B5A6ZXAF5F2XSTD00YNAW6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B5A6ZXAF5F2XSTCWDP5ENP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B5A6ZXAF5F2XSTCWDP5ENP",
+        "id": "01M7B5A70RGPKR4PYK09J39PBR",
+        "link": "01M7B5A70RGPKR4PYK06WPEJNS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B1K2MDGPBDPTQ7EFZYG1NH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B5A732N6PX4TPNM0M7277D",
+  "type": "ops",
+  "v": 1
+}
