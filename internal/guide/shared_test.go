@@ -48,6 +48,17 @@ func TestSharedBlockExpandsInPlace(t *testing.T) {
 	}
 }
 
+func TestSharedNestedBlockDemotesHeadings(t *testing.T) {
+	block := func(string) (string, bool) { return "## Title\nbody\n### Sub\n", true }
+	got, err := Expand("## Section\n<!-- shared: x nested -->\nb\n", block)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := "## Section\n### Title\nbody\n#### Sub\nb\n"; got != want {
+		t.Errorf("nested expand = %q, want %q", got, want)
+	}
+}
+
 func TestSharedUnknownBlockFails(t *testing.T) {
 	_, err := Expand("x\n<!-- shared: no-such-block -->\n", loadShared)
 	if err == nil || !strings.Contains(err.Error(), "no-such-block") {

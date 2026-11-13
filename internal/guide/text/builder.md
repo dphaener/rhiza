@@ -58,13 +58,13 @@ On a retry (`RHIZA_ATTEMPT` > 1), load `/rhiza-build-retry` (`rhiza guide build-
 
 <!-- shared: unstable-ci -->
 
-<!-- shared: command-budget -->
+<!-- shared: command-budget nested -->
 
-<!-- shared: outside-work -->
+<!-- shared: outside-work nested -->
 
 ## Must not do
 
-<!-- shared: never-list -->
+<!-- shared: never-list nested -->
 
 ## Context
 

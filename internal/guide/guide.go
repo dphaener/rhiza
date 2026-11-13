@@ -158,7 +158,9 @@ func Tokens(s string) int {
 
 // Expand replaces each line `<!-- shared: <block> -->` of body with the
 // text of that block, as block returns it. A block it does not know is an
-// error naming the block.
+// error naming the block. A marker `<!-- shared: <block> nested -->`
+// demotes the block's headings one level, so the block sits inside the
+// section that holds the marker instead of opening a section of its own.
 func Expand(body string, block func(name string) (string, bool)) (string, error) {
 	lines := strings.Split(body, "\n")
 	for i, l := range lines {
@@ -172,13 +174,30 @@ func Expand(body string, block func(name string) (string, bool)) (string, error)
 			continue
 		}
 		name = strings.TrimSpace(name)
+		name, nested := strings.CutSuffix(name, " nested")
+		name = strings.TrimSpace(name)
 		text, found := block(name)
 		if !found {
 			return "", fmt.Errorf("unknown shared block %q", name)
 		}
-		lines[i] = strings.TrimRight(text, "\n")
+		text = strings.TrimRight(text, "\n")
+		if nested {
+			text = demote(text)
+		}
+		lines[i] = text
 	}
 	return strings.Join(lines, "\n"), nil
+}
+
+// demote adds one level to every markdown heading line of text.
+func demote(text string) string {
+	lines := strings.Split(text, "\n")
+	for i, l := range lines {
+		if strings.HasPrefix(l, "#") {
+			lines[i] = "#" + l
+		}
+	}
+	return strings.Join(lines, "\n")
 }
 
 // loadShared reads the shared block called name from text/shared/.
