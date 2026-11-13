@@ -203,6 +203,7 @@ func HandlerWithNeedsYou(daemon DaemonSource, runs RunsSource, inbox InboxSource
 	}
 	mux.HandleFunc("POST "+AnswerPath, serveAnswer)
 	mux.HandleFunc("POST "+ApprovePath, serveApprove)
+	mux.HandleFunc("POST "+PausePath, servePause)
 	mux.HandleFunc("GET /roadmap", serveRoadmap)
 	mux.HandleFunc("GET /changes/{id}", serveChange)
 	mux.HandleFunc("GET "+FragmentPrefix+"{name}", serveFragment)

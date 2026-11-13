@@ -12,6 +12,11 @@ import (
 type DaemonView struct {
 	Running bool
 	Paused  bool
+	// ProjectPaused is whether the project the page is of is paused.
+	ProjectPaused bool
+	// CSRF is the field value of the pause forms, empty when the request
+	// carried no web token: the panel then shows no form.
+	CSRF string
 	// Slots is how many runs hold a slot, of Limit.
 	Slots, Limit int
 	// Live and Starting split Slots: the live runs and the starts not
@@ -78,9 +83,11 @@ type daemonKey struct{}
 // daemonOf is the DaemonView a request's handler serves.
 func daemonOf(r *http.Request) DaemonView {
 	if src, _ := r.Context().Value(daemonKey{}).(DaemonSource); src != nil {
-		return src()
+		v := src()
+		v.CSRF = CSRF(r)
+		return v
 	}
-	return DaemonView{}
+	return DaemonView{CSRF: CSRF(r)}
 }
 
 func init() {
@@ -90,6 +97,9 @@ func init() {
 		Data:     func(r *http.Request) any { return daemonOf(r) },
 	})
 }
+
+// PausePath is where the panel's forms post, under the project's prefix.
+func (d DaemonView) PausePath() string { return PausePath }
 
 // Pill is the header's daemon pill.
 func (d DaemonView) Pill() Pill {

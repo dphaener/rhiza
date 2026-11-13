@@ -16,6 +16,9 @@ type Actions struct {
 	Answer func(run, question, text string) (string, error)
 	// Approve signs off the run waiting at a sign-off step.
 	Approve func(run string) (string, error)
+	// Pause pauses (paused true) or resumes the daemon (scope "daemon")
+	// or the project the page is of (scope "project").
+	Pause func(scope string, paused bool) (string, error)
 }
 
 // ActionError is a refusal an action reports: Status is the HTTP status
@@ -41,6 +44,7 @@ func WithActions(a Actions, h http.Handler) http.Handler {
 const (
 	AnswerPath  = "/actions/answer"
 	ApprovePath = "/actions/approve"
+	PausePath   = "/actions/pause"
 )
 
 // formSpec is how a page builds its rows' action forms: none without the
@@ -120,5 +124,26 @@ func serveApprove(w http.ResponseWriter, r *http.Request) {
 			return "", &ActionError{Status: http.StatusNotFound, Message: "approving is not available here"}
 		}
 		return a.Approve(r.PostFormValue("run"))
+	})
+}
+
+func servePause(w http.ResponseWriter, r *http.Request) {
+	serveAction(w, r, func(a Actions) (string, error) {
+		if a.Pause == nil {
+			return "", &ActionError{Status: http.StatusNotFound, Message: "pausing is not available here"}
+		}
+		scope := r.PostFormValue("scope")
+		if scope != "daemon" && scope != "project" {
+			return "", &ActionError{Status: http.StatusBadRequest, Message: "Nothing to pause: say the daemon or the project."}
+		}
+		var paused bool
+		switch r.PostFormValue("paused") {
+		case "true":
+			paused = true
+		case "false":
+		default:
+			return "", &ActionError{Status: http.StatusBadRequest, Message: "Say whether to pause or resume."}
+		}
+		return a.Pause(scope, paused)
 	})
 }

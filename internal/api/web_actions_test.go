@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -174,5 +175,68 @@ func TestWebApproveAction(t *testing.T) {
 		if rec.Code != http.StatusUnauthorized || signoffs(rs) != 0 {
 			t.Errorf("approve without the token = %d, signoffs %d", rec.Code, signoffs(rs))
 		}
+	})
+}
+
+// A POST through the project's web handler, and through the root's at
+// /p/<project>/, writes rhiza.daemon.paused and the project's
+// rhiza.project.paused through daemon.set.
+func TestWebPauseAction(t *testing.T) {
+	read := func(t *testing.T, ctx *Ctx, key string) string {
+		t.Helper()
+		out, err := runDaemonSettings(ctx, DaemonSettingsRequest{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, s := range out.(DaemonSettingsResponse).Settings {
+			if s.Key == key {
+				return s.Value
+			}
+		}
+		t.Fatalf("no setting %s", key)
+		return ""
+	}
+	check := func(t *testing.T, ctx *Ctx, h http.Handler, prefix string) {
+		t.Helper()
+		for _, c := range []struct{ scope, key string }{{"daemon", "rhiza.daemon.paused"}, {"project", "rhiza.project.paused"}} {
+			rec := webPost(h, prefix+web.PausePath, url.Values{"scope": {c.scope}, "paused": {"true"}})
+			if rec.Code != 200 || read(t, ctx, c.key) != "true" {
+				t.Fatalf("pause %s = %d %s; %s = %s", c.scope, rec.Code, rec.Body, c.key, read(t, ctx, c.key))
+			}
+			rec = webPost(h, prefix+web.PausePath, url.Values{"scope": {c.scope}, "paused": {"false"}})
+			if rec.Code != 200 || read(t, ctx, c.key) != "false" {
+				t.Fatalf("resume %s = %d %s", c.scope, rec.Code, rec.Body)
+			}
+		}
+		if rec := webPost(h, prefix+web.PausePath, url.Values{"scope": {"other"}, "paused": {"true"}}); rec.Code != http.StatusBadRequest {
+			t.Errorf("bad scope = %d", rec.Code)
+		}
+	}
+	// realGit runs git in the fixture's project, so git config is written.
+	realGit := func(f *sessionFixture) {
+		if out, err := exec.Command("git", "init", "-q", f.ctx.Root).CombinedOutput(); err != nil {
+			t.Fatalf("git init: %v %s", err, out)
+		}
+		f.ctx.Git = func(args ...string) (string, error) {
+			out, err := exec.Command("git", append([]string{"-C", f.ctx.Root}, args...)...).Output()
+			return string(out), err
+		}
+	}
+	t.Run("project", func(t *testing.T) {
+		f, _ := signoffRaceFixture(t)
+		realGit(f)
+		setWebToken(t, f.ctx)
+		check(t, f.ctx, WebProjectHandler(f.ctx), "")
+	})
+	t.Run("root", func(t *testing.T) {
+		f, _ := signoffRaceFixture(t)
+		realGit(f)
+		root := filepath.Dir(f.ctx.Root)
+		setWebToken(t, f.ctx)
+		rootCtx := *f.ctx
+		rootCtx.Root, rootCtx.Wd = root, root
+		rootCtx.Exec = nil
+		h := WebRootHandler(&rootCtx, root, "repo", WebProjectHandler(f.ctx))
+		check(t, f.ctx, h, "/p/repo")
 	})
 }

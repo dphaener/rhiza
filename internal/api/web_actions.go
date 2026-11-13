@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/web"
@@ -28,7 +29,28 @@ func WebActions(base *Ctx) web.Actions {
 		}
 		return &web.ActionError{Status: status, Message: "Nothing to do: it is already handled, or no longer waits for you."}
 	}
+	setPaused := func(key string, paused bool) error {
+		_, err := runDaemonSet(ctx(), DaemonSetRequest{Key: key, Value: strconv.FormatBool(paused)})
+		return err
+	}
 	return web.Actions{
+		Pause: func(scope string, paused bool) (string, error) {
+			key, what := "rhiza.daemon.paused", "The daemon"
+			switch scope {
+			case "daemon":
+			case "project":
+				key, what = "rhiza.project.paused", "This project"
+			default:
+				return "", &web.ActionError{Status: http.StatusBadRequest, Message: "Nothing to pause: say the daemon or the project."}
+			}
+			if err := setPaused(key, paused); err != nil {
+				return "", &web.ActionError{Status: apiStatus(err), Message: "That did not work: " + strings.ToLower(what) + " was not changed. The CLI has the details."}
+			}
+			if paused {
+				return what + " is paused.", nil
+			}
+			return what + " is resumed.", nil
+		},
 		Answer: func(run, question, text string) (string, error) {
 			if strings.TrimSpace(run) == "" || strings.TrimSpace(question) == "" {
 				return "", &web.ActionError{Status: http.StatusBadRequest, Message: "Nothing to answer: the question is missing."}

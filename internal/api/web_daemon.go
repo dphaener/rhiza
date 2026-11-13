@@ -93,6 +93,13 @@ func WebDaemonSource(base *Ctx, health *WebHealth) web.DaemonSource {
 				}
 			}
 		}
+		if out, err := runDaemonSettings(c, DaemonSettingsRequest{}); err == nil {
+			for _, set := range out.(DaemonSettingsResponse).Settings {
+				if set.Key == "rhiza.project.paused" {
+					v.ProjectPaused = set.Value == "true"
+				}
+			}
+		}
 		pills, have := cache.get()
 		v.Health, v.HealthPending = pills, !have
 		return v
