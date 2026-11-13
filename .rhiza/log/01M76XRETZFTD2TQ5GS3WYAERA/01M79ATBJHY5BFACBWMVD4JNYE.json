@@ -1,0 +1,51 @@
+{
+  "actor": "01M79ARW6PA5YJDVPVNPGVC7K7",
+  "after": [
+    "01M79AH8QC0P3H26SF6E0NG404"
+  ],
+  "at": "2026-11-13T02:12:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... passes with the review workflow test expecting the checks compliance, quality, qa and model, each check prompt naming its own topic and holding no session-done, test-scope or Checks: text, the critic and fixer prompts equal to the one-line forms, and a test reading .rhiza/workflows/docs-review.toml that asserts no scope check, its check and critic prompts equal the builtin ones, and its fixer prompt starts with the builtin fixer line and still names the humanize skill, doc-prose-humanized and doc-examples-plain-commands; go test -trimpath ./cmd/rhiza -run 'TestScripts/(review-workflow|review-checks-step|autonomous-review|review-summary)' passes with fakes that no longer expect a scope check; describe-golden is regenerated only if its output changed; make self-check passes.",
+          "statement": "The builtin review workflow has four checks (compliance, quality, qa, model; no scope), each check's prompt the one line `/rhiza-check-<check> Run the <check> check of change set {change} (cycle {cycle}): follow rhiza guide check-<check>.`, its critic prompt `/rhiza-critic Criticise the latest round of the {check} check of change set {change} (cycle {cycle}): follow rhiza guide critic.` and its fixer prompt `/rhiza-fixer Fix the findings below for change set {change} in review cycle {cycle}: follow rhiza guide fixer.`; Rhiza's .rhiza/workflows/docs-review.toml drops its scope check, uses the same check and critic lines byte for byte, and its fixer prompt is the builtin fixer line followed by its doc clause, kept as today: draft or revise every line of doc prose with the owner's humanize skill before committing, under constraints doc-prose-humanized and doc-examples-plain-commands (model writes shown as plain `rhiza add`, `link` and `set` commands; generated reference tables exempt)."
+        },
+        "handle": "review-prompts-one-line",
+        "id": "01M79AH3SM4W5VEKB2T0YZ2CRR",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M79AH3SM4W5VEKB2SX2W6335",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "base": "01M5Z0EFR7RVGGDDPQF80B4EGE",
+        "handle": null,
+        "id": "01M79ATBBP7YQ9CWBF1QRSTS7G",
+        "node": "01M5Z0EFR7RVGGDDPQF4B9TQN4",
+        "op": "node.update",
+        "set": {
+          "statement": "The review workflow reviews a built change set: a code check first, then fresh check sessions for compliance (which also judges scope: under-built, scope creep and unaccounted files), quality, hands-on QA and the model, a critic that can't add findings settling failed checks, fixes routed per leaf at most twice, and the owner's sign-off with rhiza run approve."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EFR7RVGGDDPQF4B9TQN4",
+        "id": "01M79ATBF1CDP8W13W44HFQAXF",
+        "link": "01M79ATBF1CDP8W13W43P24W4W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79ATBJHY5BFACBWMVD4JNYE",
+  "type": "ops",
+  "v": 1
+}

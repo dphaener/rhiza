@@ -1,0 +1,30 @@
+{
+  "actor": "01M79A4T813VSP0PEWE74BRCHQ",
+  "after": [
+    "01M779AT4SPY96W8TEDGFD47ZB"
+  ],
+  "at": "2026-11-13T02:03:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "acb282c4-2fe3-4a89-a050-01a1d2a244a4",
+          "statement": "Review role topics: what are the review role topics called, how do they reach sessions, and what happens to today's `review` topic and rhiza-review skill? / Review role topics: how are checks and critics isolated from build history? / Review role topics: the scope check leaves review.toml. Where do its criteria go, and is removing it breaking? / Review role topics: which ship-change fixer steps use which topic, and do their prompts shrink to one line?"
+        },
+        "handle": "question-acb282c4-1",
+        "id": "01M79A9PYREHKK41K21575KP4Y",
+        "key": null,
+        "kind": "question",
+        "node": "01M79A9PYREHKK41K2141PN15H",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79A9SNBAB2Q5HQGHC6FYX69",
+  "type": "ops",
+  "v": 1
+}

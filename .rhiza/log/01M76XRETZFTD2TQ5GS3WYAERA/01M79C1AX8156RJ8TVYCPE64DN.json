@@ -1,0 +1,41 @@
+{
+  "actor": "01M79BZMGYY1ZH1YHEH829YPNE",
+  "after": [
+    "01M79BYWSJASD0XT5XTJRQ0QRK"
+  ],
+  "at": "2026-11-13T02:33:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding and the critic agree the node is stale: it pins the heredocs to the review guide via review_test.go, while review-guide makes review an index and the role topics carry the work. The sibling rulings on the same round (scoped-tests-in-role-topics, command-budget-in-role-topics, done-own-command-in-role-topics, unstable-ci-in-role-topics) all settle this shape the same way, by updating the node to name the role topics rather than keeping text in the index, so this follows them. check-compliance-topic and critic-topic acceptances already name the findings and verdict heredocs, but check-quality, check-qa and check-model do not, though each check must record findings (a check with none fails); adding the heredoc there keeps the node's coverage for every check rather than silently dropping it. Fixers record no findings or verdicts, so they are left out; the critic's negative case (no findings example) stays consistent.",
+          "statement": "guides-stdin-findings is updated in this change set to follow the split, not by keeping the heredocs in the review index: the build and plan-review guides keep their heredocs unchanged (build_test.go and plan_test.go as today), and on the review side the `rhiza run findings --check` heredoc lives in each check topic (check-compliance, check-quality, check-qa, check-model) and the `rhiza run verdict --check` heredoc in the critic topic, each with its existing flags and JSON shape ({\"findings\":[]} when clean); the review index shows neither. Its statement becomes: the build guide, the plan-review guide and the four check topics and the critic topic show rhiza run findings and rhiza run verdict fed from stdin by a heredoc. Its acceptance becomes: tests in internal/guide assert build.md and plan-review.md as today, assert each check topic shows the `- <<'EOF'` form of rhiza run findings and the critic topic that of rhiza run verdict, and that no `<file>` form of either command remains in any of them; go test -trimpath ./internal/guide/... passes. check-quality, check-qa and check-model, whose acceptances do not name the findings heredoc today, gain it so every check can record its findings.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "stdin-findings-in-role-topics",
+        "id": "01M79C1ASS1P13DDNGR5RDAQES",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79C1ASS1P13DDNGR36CR9HS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79C1ASS1P13DDNGR36CR9HS",
+        "id": "01M79C1AV477G2N3GMS96Z5GJ3",
+        "link": "01M79C1AV477G2N3GMS6XM78W3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BMAAH71RTH51EG7GKHH89",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79C1AX8156RJ8TVYCPE64DN",
+  "type": "ops",
+  "v": 1
+}

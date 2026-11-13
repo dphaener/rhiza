@@ -1,0 +1,651 @@
+{
+  "actor": "01M79A4T813VSP0PEWE74BRCHQ",
+  "after": [
+    "01M79AF2HM41Q2B60K29X6TFV9"
+  ],
+  "at": "2026-11-13T02:07:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M79ADQKB796M6D1PD488C1M9",
+        "id": "01M79AH1RG8GWYZN1KTSFZPMME",
+        "link": "01M79AH1RG8GWYZN1KTP7DC2WZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AF2GX203GH9MK0Y5T0S8V",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with tests that the expanded plan-review topic and the check-*, critic and fixer topics each contain the severity block's text exactly once, that the block has the four severities, the confirmed/downgraded/dropped critic outcomes are not in it but in the critic topic, that its mapping names compliance, quality, qa and model and no `scope` check, and that it names no Go, make or Rhiza-repo command.",
+          "statement": "The severity definitions (blocker, major, minor, nit) and the per-check mapping live once in internal/guide/text/shared/severity.md, with the mapping naming compliance, quality, qa and model (no scope) and plan review's kinds, and plan-review.md and every review role topic that grades or fixes findings include it with `<!-- shared: severity -->`."
+        },
+        "handle": "severity-shared-block",
+        "id": "01M79AH1SW4WDC8FB8KVGD5TQS",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M79AH1SVENNRB0MBMN3TRZCZ",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH1SVENNRB0MBMN3TRZCZ",
+        "id": "01M79AH1W1YJTBDQ6TVZ1NSM1S",
+        "link": "01M79AH1W1YJTBDQ6TVVBRN44F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a check-compliance test that finds the six section headings in order (Task, Expected outcome, Read first, Must do, Must not do, Context), the shared done, test-scope, command-budget, never-list and severity blocks expanded, the isolation rule (knows nothing of how the work was built; never `rhiza run status` or `rhiza run show` of the build run, its findings, run notes or session transcripts; judges only the contract from the slice, the diff from the merge-base and the model's Evidence), the under-built, scope-creep and unaccounted-files criteria with their severities, the one-line-with-evidence rule and the `rhiza run findings --check` heredoc with `{\"findings\":[]}` when clean; a negative case asserts it names no Go, make or repo-specific command and no commit or trailer instruction.",
+          "statement": "`rhiza guide check-compliance` gives the compliance check afk's compliance prompt in Rhiza's words on the six sections: each leaf's acceptance met as written, line by line, plus the scope criteria graded beside it: under-built (a leaf missing: blocker; an acceptance point unmet: major), scope creep (behaviour outside the intent and the leaves: major) and unaccounted files (a changed file no leaf or the intent accounts for: major if it changes behaviour, minor otherwise), each finding one line with its evidence so a fixer can act without re-diagnosing, recorded with `rhiza run findings --check`."
+        },
+        "handle": "check-compliance-topic",
+        "id": "01M79AH1XVVY9F9AW9TH1GMK1F",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M79AH1XVVY9F9AW9TFH2B12H",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH1XVVY9F9AW9TFH2B12H",
+        "id": "01M79AH1Z72S34APGF0HG09S1B",
+        "link": "01M79AH1Z72S34APGF0FE4KV7Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH1XVVY9F9AW9TFH2B12H",
+        "id": "01M79AH20VCHTJGEZ1HEYZVTMC",
+        "link": "01M79AH20VCHTJGEZ1HC2TC5YQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH1XVVY9F9AW9TFH2B12H",
+        "id": "01M79AH22580YD7M9KB2M0NK7R",
+        "link": "01M79AH22580YD7M9KB2FTNKK2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH1SVENNRB0MBMN3TRZCZ",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a check-quality test that finds the six section headings in order (Task, Expected outcome, Read first, Must do, Must not do, Context), the shared done, test-scope, command-budget, never-list and severity blocks expanded, the isolation rule (knows nothing of how the work was built; never `rhiza run status` or `rhiza run show` of the build run, its findings, run notes or session transcripts; judges only the contract from the slice, the diff from the merge-base and the model's Evidence), discover-commands-from-the-contributor-guide, the impact radius (direct, integration, downstream), the never-fall-back-to-the-full-suite rule and the seven checklist items; a negative case asserts it names no Go, make or repo-specific command.",
+          "statement": "`rhiza guide check-quality` gives the quality check afk's quality prompt in Rhiza's words on the six sections: discover the test commands from the repo's contributor guide, map each changed file to the tests that cover it (direct, integration, downstream) as the impact radius, run those scoped commands and never silently fall back to the full suite, and walk a checklist (swallowed errors, debug output, commented-out code, unused imports, TODOs, generic names, missing error handling), each defect graded by the severity block."
+        },
+        "handle": "check-quality-topic",
+        "id": "01M79AH24A6DZDBJ5EDNE69JQB",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M79AH24A6DZDBJ5EDMH0G21T",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH24A6DZDBJ5EDMH0G21T",
+        "id": "01M79AH26E6HT1F14H821ZY03G",
+        "link": "01M79AH26E6HT1F14H7YV8TWB6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH24A6DZDBJ5EDMH0G21T",
+        "id": "01M79AH28DH8N9VQ2NPW80QGST",
+        "link": "01M79AH28DH8N9VQ2NPV2MWJQ3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH24A6DZDBJ5EDMH0G21T",
+        "id": "01M79AH2B3KJ53N178696M9ATN",
+        "link": "01M79AH2B3KJ53N17865WNRDGP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH1SVENNRB0MBMN3TRZCZ",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a check-qa test that finds the six section headings in order (Task, Expected outcome, Read first, Must do, Must not do, Context), the shared done, command-budget, never-list and severity blocks expanded, the isolation rule (knows nothing of how the work was built; never `rhiza run status` or `rhiza run show` of the build run, its findings, run notes or session transcripts; judges only the contract from the slice, the diff from the merge-base and the model's Evidence), the clean-state rule, the scratch path outside $PATH and never-install rule, happy and failure scenarios, bounded exploration with no new test files, the broken-behaviour-only rule and the Evidence apply example with `<leaf>-qa-<cycle>` and `verifies`; a negative case asserts it names no Go, make or repo-specific command.",
+          "statement": "`rhiza guide check-qa` gives the QA check afk's hands-on QA prompt in Rhiza's words on the six sections: start from a clean state, build what changed to a scratch path outside $PATH and never install a binary, run each leaf's happy and failure scenarios with the built program (fakes alone do not count), explore in bounded pairs then edge cases without writing new test files, report only broken behaviour (never a missing test or style point), and write Evidence as itself on each leaf it exercised."
+        },
+        "handle": "check-qa-topic",
+        "id": "01M79AH2C9CN1F6PMN6JW29WY6",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M79AH2C9CN1F6PMN6G3SYF0Z",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH2C9CN1F6PMN6G3SYF0Z",
+        "id": "01M79AH2DBGGH7A8R408E9G35Z",
+        "link": "01M79AH2DBGGH7A8R405QVGNDK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH2C9CN1F6PMN6G3SYF0Z",
+        "id": "01M79AH2EEEJVG0KXYRS6XJSAA",
+        "link": "01M79AH2EEEJVG0KXYRRV1XMA8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH2C9CN1F6PMN6G3SYF0Z",
+        "id": "01M79AH2FGM0NJ64TGG6BK6Y85",
+        "link": "01M79AH2FGM0NJ64TGG429RAEW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH1SVENNRB0MBMN3TRZCZ",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a check-model test that finds the six section headings in order (Task, Expected outcome, Read first, Must do, Must not do, Context), the shared done, command-budget, outside-work, never-list and severity blocks expanded, the isolation rule (knows nothing of how the work was built; never `rhiza run status` or `rhiza run show` of the build run, its findings, run notes or session transcripts; judges only the contract from the slice, the diff from the merge-base and the model's Evidence), the code-contradicts-model and missing-constraint rules with their severities and the discovered-from draft commands; a negative case asserts it names no Go, make or repo-specific command.",
+          "statement": "`rhiza guide check-model` gives the model check its prompt on the six sections: the to-be model of the change set (slice, leaves, constraints, Decisions) matches the code on the branch, code that contradicts a node is a major and a missing constraint a minor, and a missing constraint or other model work outside the change set's intent goes into a discovered-from draft change set, never built in the run."
+        },
+        "handle": "check-model-topic",
+        "id": "01M79AH2GKFS0RH9HHG2W0ZA4N",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M79AH2GKFS0RH9HHFZSPX13V",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH2GKFS0RH9HHFZSPX13V",
+        "id": "01M79AH2J7DVWZK090MQ53QR59",
+        "link": "01M79AH2J7DVWZK090MPFKSD4X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH2GKFS0RH9HHFZSPX13V",
+        "id": "01M79AH2KT49C5D40A8M7NM5P6",
+        "link": "01M79AH2KT49C5D40A8JND91N0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH2GKFS0RH9HHFZSPX13V",
+        "id": "01M79AH2NTK3AP1EB6HBQ9BPWG",
+        "link": "01M79AH2NTK3AP1EB6H8TX57J6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH1SVENNRB0MBMN3TRZCZ",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a critic test that finds the six section headings in order (Task, Expected outcome, Read first, Must do, Must not do, Context), the shared done, command-budget, never-list and severity blocks expanded, the isolation rule with the own-check-last-round exception, confirmed, downgraded (with a lower severity) and dropped, the never-add/raise/rewrite rule and the `rhiza run verdict --check` heredoc; a negative case asserts it carries no `rhiza run findings` example and no commit instruction.",
+          "statement": "`rhiza guide critic` gives a review check's critic afk's adversarial-critic prompt in Rhiza's words on the six sections: read only its own check's last round of this review run, re-check each blocker and major against the contract and the diff, and confirm, downgrade (the defect is real but its severity too high) or drop each with a reason, never adding a finding, raising a severity or rewriting one, recorded with `rhiza run verdict --check`."
+        },
+        "handle": "critic-topic",
+        "id": "01M79AH2PKWJWNFT52SE9CWXYH",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M79AH2PKWJWNFT52SCCKX7B0",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH2PKWJWNFT52SCCKX7B0",
+        "id": "01M79AH2QN02XGJCQB5ZAC59YF",
+        "link": "01M79AH2QN02XGJCQB5YTRRPGN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH2PKWJWNFT52SCCKX7B0",
+        "id": "01M79AH2RGDZY1ZTA5C8B3PEWY",
+        "link": "01M79AH2RGDZY1ZTA5C85035KF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH2PKWJWNFT52SCCKX7B0",
+        "id": "01M79AH2S8RHNS0XPE4VNFS8QE",
+        "link": "01M79AH2S8RHNS0XPE4QPGXAE6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH1SVENNRB0MBMN3TRZCZ",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a fixer test that finds the six section headings in order (Task, Expected outcome, Read first, Must do, Must not do, Context), the shared done, test-scope, unstable-CI, command-budget, outside-work, never-list and severity blocks expanded, fix-only-the-named-findings, reproduce-first, `rhiza ship generate`, `rhiza render` and the Checks: block above the one final trailer paragraph, both trailer forms, the unfixed-never-dropped rule and never push, rebase, force or --no-verify; a negative case asserts it names no Go, make or repo-specific command.",
+          "statement": "`rhiza guide fixer` gives a review fixer afk's fix prompt in Rhiza's words on the six sections: fix only the confirmed findings in its prompt, each exactly as written and in place, reproduce each first, run the pre-handoff checklist (`rhiza ship generate`, `rhiza render`, a Checks: block of exit codes), make one new commit trailed Change:, Actor: and Leaf: <leaf> (leaf fixer) or Review: <run>, carry a finding it could not fix into the session's end as unfixed instead of dropping it, never push, rebase, force or use --no-verify, then session done as its own command."
+        },
+        "handle": "fixer-topic",
+        "id": "01M79AH2TFR25PCV7H0WK3XWCJ",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M79AH2TFR25PCV7H0T92DEDC",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH2TFR25PCV7H0T92DEDC",
+        "id": "01M79AH2VP2593QWQ2AD4NQTNN",
+        "link": "01M79AH2VP2593QWQ2AAT3CART",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH2TFR25PCV7H0T92DEDC",
+        "id": "01M79AH2WZSFZBG5MGHA2ETM29",
+        "link": "01M79AH2WZSFZBG5MGH8J558E6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH2TFR25PCV7H0T92DEDC",
+        "id": "01M79AH2YVBEY918QAYV42QHA2",
+        "link": "01M79AH2YVBEY918QAYQCYAF1S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH1SVENNRB0MBMN3TRZCZ",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a ci-fix test that finds the six section headings in order (Task, Expected outcome, Read first, Must do, Must not do, Context), the shared done, test-scope, unstable-CI, command-budget and never-list blocks expanded, `rhiza ship check --json`, reproduce-before-fix and never-push-to-see, the flake quarantine with `rhiza request --kind bug`, the Checks: block and the Review: trailer; a negative case asserts it names no Go, make or repo-specific command.",
+          "statement": "`rhiza guide ci-fix` gives the ship's CI fixer its prompt on the six sections: read the CI findings (failing tests and non-test causes with their log lines) from `rhiza ship check --json`, reproduce each locally with the repo's own scoped command and never push to see, fix it or regenerate stale files, quarantine a non-reproducing flake with a bug request named at the skip, commit once those and the touched packages pass, with the pre-handoff checklist and a `Review: <run>` trailer, then session done as its own command."
+        },
+        "handle": "ci-fix-topic",
+        "id": "01M79AH3008VB5G7BNDG0NE6SQ",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M79AH3008VB5G7BNDF0YAHJP",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3008VB5G7BNDF0YAHJP",
+        "id": "01M79AH30ZVWW2TY1RBK33J6EX",
+        "link": "01M79AH30ZVWW2TY1RBG8E91T4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3008VB5G7BNDF0YAHJP",
+        "id": "01M79AH31XRCXRXGE07C9QAN34",
+        "link": "01M79AH31XRCXRXGE078Y0BPAT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a gate-fix test that finds the six section headings in order (Task, Expected outcome, Read first, Must do, Must not do, Context), the shared done, test-scope, unstable-CI, command-budget and never-list blocks expanded, rhiza.ship.localGate and rhiza.ship.prePushCheck, the `Full log:` rule and never rerun `rhiza ship gate`, the flake quarantine with a bug request, the Checks: block and the Review: trailer; a negative case asserts it names no Go, make or repo-specific command.",
+          "statement": "`rhiza guide gate-fix` gives the ship's gate fixer its prompt on the six sections: read the failed local gate or pre-push check's kept output and its full log in `rhiza run status --json` instead of rerunning `rhiza ship gate`, reproduce the failing test with its own scoped command until it fails again or plainly passes, fix it or quarantine it with a bug request named at the skip, commit once it and the touched packages pass, with the pre-handoff checklist and a `Review: <run>` trailer, then session done as its own command."
+        },
+        "handle": "gate-fix-topic",
+        "id": "01M79AH32SZK0CK9G0Z2CM44TF",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M79AH32SZK0CK9G0Z05VJX4H",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH32SZK0CK9G0Z05VJX4H",
+        "id": "01M79AH33S69GDH7SPXBYT076H",
+        "link": "01M79AH33S69GDH7SPXA28P1KS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH32SZK0CK9G0Z05VJX4H",
+        "id": "01M79AH35A6D8E90N6JXP8PY4Y",
+        "link": "01M79AH35A6D8E90N6JWYDH7NM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a conflict-fix test that finds the six section headings in order (Task, Expected outcome, Read first, Must do, Must not do, Context), the shared done, test-scope, command-budget and never-list blocks expanded, both parts with `rhiza ship check --json` merge_conflict and `rhiza ship check --model-conflict --json`, `rhiza set <node> --rebase`, `git add -A -- .rhiza/rendered .rhiza/log`, the Review: and Model-Conflict: trailers, the never-end-with-the-merge-in-progress rule, the one-blocking-question rule and never push, rebase or force; a negative case asserts it names no Go, make or repo-specific command.",
+          "statement": "`rhiza guide conflict-fix` gives the ship's conflict fixer its prompt on the six sections with two parts: a code merge left in progress (read both sides from `rhiza ship check --json`, resolve so both sides' behaviour holds, regenerate and render, stage .rhiza/rendered and .rhiza/log, commit the merge with the Checks: block and Change:, Actor:, Review: trailers, never end with the merge in progress) and a model conflict that refused the land (read it from `rhiza ship check --model-conflict --json`, move each stale update with `rhiza set <node> --rebase` so both edits hold, commit with the Model-Conflict: trailer); on a real clash it commits nothing and asks one blocking question naming both change sets; it never pushes, rebases or forces."
+        },
+        "handle": "conflict-fix-topic",
+        "id": "01M79AH36GH3GEF9Q1XTJJF52M",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M79AH36GH3GEF9Q1XQ3B68YC",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH36GH3GEF9Q1XQ3B68YC",
+        "id": "01M79AH37SPWVYWVYKMXAP90VD",
+        "link": "01M79AH37SPWVYWVYKMTD170YT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH36GH3GEF9Q1XQ3B68YC",
+        "id": "01M79AH39PPHF520YVSTT2EGWG",
+        "link": "01M79AH39PPHF520YVSQPYE4RZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run GuideInstall passes with the nine new skill files written with their topic's description and expanded body and a re-run reporting them unchanged; go test -trimpath ./internal/guide/... asserts the review index names all nine topics with both their skill and `rhiza guide` routes and routes `scope` to check-compliance, stays under a third of the TopicCap, and that review.md's old phrases checked by review_test.go and budget_test.go are now found in the role topics; go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|guide-install)' passes with the new topics listed and the new skill paths in the install output.",
+          "statement": "`rhiza guide ls` lists the nine review role topics, guide install writes them as the skills rhiza-check-compliance, rhiza-check-quality, rhiza-check-qa, rhiza-check-model, rhiza-critic, rhiza-fixer, rhiza-ci-fix, rhiza-gate-fix and rhiza-conflict-fix beside the others, and the review topic (still installed as rhiza-review) is a short index naming the nine topics and which role loads which, a check named scope loading check-compliance, so workflows that still say /rhiza-review or `rhiza guide review` keep working."
+        },
+        "handle": "review-role-skills-installed",
+        "id": "01M79AH3C4ZPMBZ7TH00RR2C0Z",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "id": "01M79AH3DVPRM8CPBFRWHHNEN7",
+        "link": "01M79AH3DVPRM8CPBFRSFMVWBF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "id": "01M79AH3EZCQKFE3ZV83CTKD02",
+        "link": "01M79AH3EZCQKFE3ZV81MA7WT8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH1XVVY9F9AW9TFH2B12H",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "id": "01M79AH3G8CS943HG3YN880W9S",
+        "link": "01M79AH3G8CS943HG3YKN1VBXA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH24A6DZDBJ5EDMH0G21T",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "id": "01M79AH3HHS1KYCRQEZPVCVRW3",
+        "link": "01M79AH3HHS1KYCRQEZPTP9F0S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH2C9CN1F6PMN6G3SYF0Z",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "id": "01M79AH3KBHTM20NMF3HMS4WH0",
+        "link": "01M79AH3KBHTM20NMF3FXDF5W1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH2GKFS0RH9HHFZSPX13V",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "id": "01M79AH3MKGV7KFHC684WTDWKG",
+        "link": "01M79AH3MKGV7KFHC682YMYETV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH2PKWJWNFT52SCCKX7B0",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "id": "01M79AH3NJ0H7FSGEM2D7B67ZD",
+        "link": "01M79AH3NJ0H7FSGEM2BMEMPYF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH2TFR25PCV7H0T92DEDC",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "id": "01M79AH3PK2KRGEQQZ44CE78RB",
+        "link": "01M79AH3PK2KRGEQQZ41YC548F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH3008VB5G7BNDF0YAHJP",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "id": "01M79AH3QKKF5Q0WCB6XZ3PZT3",
+        "link": "01M79AH3QKKF5Q0WCB6V2VWSNB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH32SZK0CK9G0Z05VJX4H",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "id": "01M79AH3RRJP8S9KAXJ5C1QYRW",
+        "link": "01M79AH3RRJP8S9KAXJ326NN5P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH36GH3GEF9Q1XQ3B68YC",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... passes with the review workflow test expecting the checks compliance, quality, qa and model, each check prompt naming its own topic and holding no session-done, test-scope or Checks: text, the critic and fixer prompts equal to the one-line forms, and a test reading .rhiza/workflows/docs-review.toml that asserts no scope check and its check, critic and fixer prompts equal the builtin ones; go test -trimpath ./cmd/rhiza -run 'TestScripts/(review-workflow|review-checks-step|autonomous-review|review-summary)' passes with fakes that no longer expect a scope check; describe-golden is regenerated only if its output changed; make self-check passes.",
+          "statement": "The builtin review workflow has four checks (compliance, quality, qa, model; no scope), each check's prompt the one line `/rhiza-check-<check> Run the <check> check of change set {change} (cycle {cycle}): follow rhiza guide check-<check>.`, its critic prompt `/rhiza-critic Criticise the latest round of the {check} check of change set {change} (cycle {cycle}): follow rhiza guide critic.` and its fixer prompt `/rhiza-fixer Fix the findings below for change set {change} in review cycle {cycle}: follow rhiza guide fixer.`; Rhiza's .rhiza/workflows/docs-review.toml drops its scope check and uses the same check, critic and fixer lines byte for byte."
+        },
+        "handle": "review-prompts-one-line",
+        "id": "01M79AH3SM4W5VEKB2T0YZ2CRR",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M79AH3SM4W5VEKB2SX2W6335",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3SM4W5VEKB2SX2W6335",
+        "id": "01M79AH3TV4SMBF3KDK02PB1MY",
+        "link": "01M79AH3TV4SMBF3KDJYQYBC7P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3SM4W5VEKB2SX2W6335",
+        "id": "01M79AH3VY7KPD3P2BTV44GEXF",
+        "link": "01M79AH3VY7KPD3P2BTQMJT05J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... passes with a test that every agent step of the builtin ship-change.toml has a one-line prompt naming its topic (ci-fix, gate-fix for gate-fix and gate-fix-merge, conflict-fix for conflict-fix, conflict-fix-landed and model-conflict-fix) with no session-done, Checks: or trailer text left in it, and a test reading .rhiza/workflows/ship-change.toml and .rhiza/workflows/docs.toml that asserts each of their fix steps' prompts equals the builtin step's; go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship-ci-fix|run-ship-ci-lint-fix|run-ship-conflict-fix|run-ship-change)' passes; make self-check passes.",
+          "statement": "The builtin ship-change workflow's fix steps each have a one-line prompt naming its topic and its task variables: ci-fix `/rhiza-ci-fix Fix the CI findings of change set {change} in run {run}: follow rhiza guide ci-fix.`, gate-fix and gate-fix-merge `/rhiza-gate-fix ...: follow rhiza guide gate-fix.`, conflict-fix and conflict-fix-landed `/rhiza-conflict-fix Resolve the merge conflicts ...: follow rhiza guide conflict-fix.` and model-conflict-fix `/rhiza-conflict-fix Fix the model conflict that refused the land ...: follow rhiza guide conflict-fix.`; Rhiza's .rhiza/workflows/ship-change.toml and docs.toml use the same lines byte for byte."
+        },
+        "handle": "ship-fix-prompts-one-line",
+        "id": "01M79AH3X5BDT03Z5D6H9Y6MSR",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M79AH3X5BDT03Z5D6GE1DYEP",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3X5BDT03Z5D6GE1DYEP",
+        "id": "01M79AH3YBN1HJWMN2M78CNAZD",
+        "link": "01M79AH3YBN1HJWMN2M3BGPT9Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79AH3X5BDT03Z5D6GE1DYEP",
+        "id": "01M79AH3Z7TRTSEV4542AWGDB7",
+        "link": "01M79AH3Z7TRTSEV453ZD3FEZ7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH3C4ZPMBZ7TGZZCQG3P6",
+        "type": "depends-on"
+      },
+      {
+        "base": "01M5Z0ENY6PDKAQS7QF0N0739K",
+        "handle": null,
+        "id": "01M79AH4074CEV80E26407ZNR9",
+        "node": "01M5Z0ENY6PDKAQS7QEY0AR5RN",
+        "op": "node.update",
+        "set": {
+          "acceptance": "`rhiza guide ls` lists review and the nine role topics; go test -trimpath ./internal/guide/... finds the nine names in the review index and the merge-base, findings, verdict, trailer, Evidence and discovered-from rules in the role topics, each within TopicCap; `rhiza guide install` writes all ten as skills.",
+          "statement": "`rhiza guide review` is the review index: it names the check-compliance, check-quality, check-qa, check-model, critic, fixer, ci-fix, gate-fix and conflict-fix topics and says which role loads which (a check named scope loads check-compliance); the role topics carry reviewing from the merge-base, isolation from the build's history, the findings and verdict formats and the shared severity block, the fixers' trailers, outside work as a question or a discovered-from draft, the QA check's Evidence and the model check's missing constraints in a discovered-from draft; guide install installs them all."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0ENY6PDKAQS7QEY0AR5RN",
+        "id": "01M79AH419GMA42DVF17PPRM40",
+        "link": "01M79AH419GMA42DVF13QXFRGC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M5Z0EPGNJBA661QHJB419MAM",
+        "handle": null,
+        "id": "01M79AH42E5R9F5BWDEVEMRJQJ",
+        "node": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "op": "node.update",
+        "set": {
+          "statement": "Rhiza ships a built-in `review` workflow: the code check, then a checks step with compliance, quality, qa and model checks and their critic on opus, and the sign-off, ending done without landing the change set."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "id": "01M79AH43Q6ZBGEWD1RWJMGYW7",
+        "link": "01M79AH43Q6ZBGEWD1RSC8JHNP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M76XZGFGB9C8J6GA5S2NG66K",
+        "handle": null,
+        "id": "01M79AH452H2GP2EE26HWA89TR",
+        "node": "01M76XZGFGB9C8J6GA5NF3RBQE",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'Severity|Critic|Plan' asserts the expanded plan-review topic and the review critic topic contain the severity block byte for byte, that both critic texts name confirmed, downgraded and dropped, and that the block names no Go, make or Rhiza-repo command.",
+          "statement": "The review role topics and the plan-review topic hold one shared severity block (internal/guide/text/shared/severity.md, included by marker): blocker (behaviour broken, a build or test fails, or a leaf is missing), major (an acceptance point unmet or a real defect), minor (style, naming, docs or a non-blocking follow-up) and nit, with a mapping per check; and the critic topics say confirm, downgrade or drop, never add or raise."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M76XZGFGB9C8J6GA5NF3RBQE",
+        "id": "01M79AH46SQ1D78A4Z4SWFVDBB",
+        "link": "01M79AH46SQ1D78A4Z4RG2XEA6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79ADQKB796M6D1PD488C1M9",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79AH4A0NZ07NX4NHGVEHCFZ",
+  "type": "ops",
+  "v": 1
+}
