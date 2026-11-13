@@ -8,7 +8,7 @@ A testscript in a review run records findings for two checks and a verdict on on
 
 ## statement
 
-In a review run `rhiza run findings` and `rhiza run verdict` take the check they belong to, and each review finding has a severity (blocker, major, minor, nit), the leaf it is about when there is one, a place (file:line or node) and a reason, while plan review findings keep their five kinds; `rhiza run status` shows each check's rounds with findings and verdicts.
+In a review run `rhiza run findings` and `rhiza run verdict` take the check they belong to, and each review finding has a severity (blocker, major, minor, nit), the leaf it is about when there is one, a place (file:line or node) and a reason, while plan review findings keep their seven kinds (missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent, oversized-leaf); `rhiza run status` shows each check's rounds with findings and verdicts.
 
 ## Links
 
@@ -24,7 +24,9 @@ In a review run `rhiza run findings` and `rhiza run verdict` take the check they
 - depends-on [review-guide](review-guide.md)
 - verifies [review-findings-verified](../../../../../evidence/review-findings-verified.md)
 - verifies [pr-45-the-review-workflow](../../../../../evidence/pr-45-the-review-workflow.md)
+- verifies [pr-533-plan-role-topics](../../../../../evidence/pr-533-plan-role-topics.md)
 
 ## History
 
 - `01M5WPTZ1V0JVVW8FPX0QYMRWJ` The review workflow: fresh sessions check compliance, quality, hands-on QA, scope and the model, a critic that can't add findings settles failed checks, fixes go back per leaf at most twice, and the owner signs off with rhiza run approve.
+- `01M76XRPN6WYMZSV2GWA05Y1FM` Plan roles get afk's shipit/forge prompts in Rhiza's words, one guide topic each on the six-section skeleton: planner (a codebase research pass before deciding, a self-check re-reading the slice after writing), plan reviewer (Crucible checklist, uncovered-intent and oversized-leaf kinds, nothing a deterministic check already checks), plan critic and reviser. Source: prompt-gap.md sections 2.1, 2.2 and 5 (CS1, rec 15).
