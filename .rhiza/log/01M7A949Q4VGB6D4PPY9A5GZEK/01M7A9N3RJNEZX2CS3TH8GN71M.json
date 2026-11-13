@@ -1,0 +1,30 @@
+{
+  "actor": "01M7A9M442W616Z4FAWDHJWZ1P",
+  "after": [
+    "01M7A9C4KCG0J9E1EBCT3JDBH8"
+  ],
+  "at": "2026-11-13T11:11:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/session (go test -trimpath ./internal/session/...): an autonomous session idle 21 minutes with the API-error detail is not Stalled while one with a plain idle detail is. cmd/rhiza/testdata/script/inbox-api-error.txtar (go test -trimpath ./cmd/rhiza -run TestScripts/inbox-api-error): with a live run journal and a session record whose hook report is idle with the API-error detail, rhiza inbox --json has one item of kind api-error with the session, the run, the error text and the session message next step, and none of kind stalled at T+21m; the text inbox shows it; after a later working hook report the item is gone. Go tests in internal/api (go test -trimpath ./internal/api/ -run 'WebInbox|InboxNotice'): webInboxViews keeps an api-error item (webInboxKinds lists the new kind) with the change set's title and a detail naming the API error, and no session or run ID or handle in its title or detail; inboxNotice gives an api-error item its own line saying a session stopped on an API error, not the default gave-up line, with no handle or ID. A Go test in internal/tui/inboxapp (go test -trimpath ./internal/tui/inboxapp/...): an api-error item is a row, ActionFor gives it ActionShow, and Enter shows its kind and detail (the error text) and calls inbox.open on it. describe-golden.txtar is regenerated for the new kind (go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden). Touches internal/session/status.go, internal/session/status_test.go, internal/api/run.go, internal/api/inbox.go, internal/api/daemon.go, internal/api/daemon_notice_test.go, internal/api/web_inbox.go, internal/api/web_inbox_test.go, internal/tui/inboxapp/inboxapp_test.go, cmd/rhiza/testdata/script/inbox-api-error.txtar, cmd/rhiza/testdata/script/describe-golden.txtar",
+          "statement": "A live run's step session whose hook report is idle with a detail starting 'stopped on an API error: ' (session.APIErrorDetail) is listed by rhiza inbox as an item of kind api-error naming the session, its run and the error, with `rhiza session message <session> <text>` as the next step, and the daemon's notice, the web inbox and the inbox app show it; such a session is never stalled, and its next hook report clears the item"
+        },
+        "handle": "inbox-lists-api-error-sessions",
+        "id": "01M7A9C4G0XBK7HYT3S77A2AJQ",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M7A9C4G0XBK7HYT3S4EJ6254",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      }
+    ]
+  },
+  "change_set": "01M7A949Q4VGB6D4PPY9A5GZEK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A9N3RJNEZX2CS3TH8GN71M",
+  "type": "ops",
+  "v": 1
+}

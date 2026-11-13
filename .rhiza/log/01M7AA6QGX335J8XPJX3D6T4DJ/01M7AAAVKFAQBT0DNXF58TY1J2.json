@@ -1,0 +1,63 @@
+{
+  "actor": "01M7AA7MB7KATWSPG9CPYAHQDD",
+  "after": [
+    "01M7AAACRA33AZT8PD03W2583C"
+  ],
+  "at": "2026-11-13T11:22:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A session message is written under the folder the session runs in (its record's Dir, a verifier's or review check's checkout, when set; its Worktree otherwise), and the pointer stays relative to that folder.",
+          "wording": "the planner's choice between the two fixes the bug request names (write in the session's own working directory, or an absolute pointer), made in an autonomous plan run: an agent reading outside its working directory may be refused or prompted"
+        },
+        "handle": "message-file-in-session-dir",
+        "id": "01M7AAAVHDCE62QVD8Z114Y4GR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7AAAVHCY0H138EBW8W8HGMV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AAAVHCY0H138EBW8W8HGMV",
+        "id": "01M7AAAVHWA4707TVXH22J0DRQ",
+        "link": "01M7AAAVHWA4707TVXGYZJ3FE8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AAACQS5Z4ERKP5BDFWHF1A",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "New tests in internal/api/session_message_test.go and internal/api/session_ask_test.go set a session record's Dir to a separate checkout folder and show: session message (and its dry run's File) puts 0001.md under <Dir>/.rhiza/local/messages/<session>/ and nothing under the Worktree's folder, with the pointer naming .rhiza/local/messages/<session>/0001.md; Deliver writes the answer there too; a session with no Dir still writes under its Worktree. go test -trimpath ./internal/api -run 'TestSessionMessage|TestDeliver|TestTypePointer' and go test -trimpath ./cmd/rhiza -run 'TestScripts/(session-message|describe-golden)' pass, describe-golden.txtar regenerated if the File description changes.",
+          "statement": "A message to a session that runs in a detached checkout (a verifier or review check, its record's Dir set) is written under that checkout's .rhiza/local/messages/<session>/, so the relative pointer names a file that exists where the session runs; this holds for rhiza session message, its dry run, and the arbiter's answers that Deliver sends, through messageFolder in internal/api/session_message.go, whose File response description and doc comments stop saying the run's worktree."
+        },
+        "handle": "message-file-in-session-checkout",
+        "id": "01M7AAAVJE3QMNAYAZKHGY1RQH",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M7AAAVJE3QMNAYAZKHG3ASHW",
+        "op": "node.create",
+        "parent": "01M5TYN2ZKGF19DS99BZ7RRRCD"
+      },
+      {
+        "decision": null,
+        "from": "01M7AAAVJE3QMNAYAZKHG3ASHW",
+        "id": "01M7AAAVJX5CFH9HW962XKJ0YN",
+        "link": "01M7AAAVJX5CFH9HW95ZSFJ6SV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AAAVHCY0H138EBW8W8HGMV",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7AA6QGX335J8XPJX3D6T4DJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AAAVKFAQBT0DNXF58TY1J2",
+  "type": "ops",
+  "v": 1
+}
