@@ -1106,40 +1106,42 @@ func actorCreate(t *testing.T, ww *workspace, h, sid string) op.Op {
 	return op.Op{ID: opID, Type: op.TypeNodeCreate, Node: node, Kind: op.KindActor, Handle: h, Fields: fields}
 }
 
-func TestRecordAgentActorReusesLandedHandle(t *testing.T) {
+func TestRecordAgentActorLandedHandleOtherSession(t *testing.T) {
 	ww := testWorkspace(t, false)
 	launcher, _ := ww.ids.New()
 	cs, _ := ww.ids.New()
 	const sid = "0123abcd-0000-4000-8000-000000000000"
-	// Another record landed the handle under a different session value.
-	held, _, err := ww.writeRecord("held", []op.Op{actorCreate(t, ww, "claude-code-0123abcd", "other")}, launcher, launcher)
+	// Another session (UUIDv7: same first 8 hex) landed the base handle.
+	held, _, err := ww.writeRecord("held", []op.Op{actorCreate(t, ww, "claude-code-0123abcd", "0123abcd-0001-4000-8000-000000000000")}, launcher, launcher)
 	if err != nil {
 		t.Fatal(err)
 	}
-	before := len(ww.changeSets())
 	h, got, err := recordAgentActor(ww, "claude-code", sid, cs, launcher, launcher)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if h != "claude-code-0123abcd" || got != held || len(ww.changeSets()) != before {
-		t.Errorf("got %s %s (%d sets, was %d), want the held actor", h, got, len(ww.changeSets()), before)
+	if h == "claude-code-0123abcd" || got == held {
+		t.Errorf("got %s %s, want a new actor, not the other session's", h, got)
+	}
+	if n := countActorHandle(ww, "claude-code-0123abcd"); n != 1 {
+		t.Errorf("%d actors hold claude-code-0123abcd", n)
 	}
 	if n := countActorHandle(ww, h); n != 1 {
 		t.Errorf("%d actors hold %s", n, h)
 	}
 }
 
-func TestRecordAgentActorReusesInFlightHandle(t *testing.T) {
+func TestRecordAgentActorReusesInFlightSession(t *testing.T) {
 	ww := testWorkspace(t, false)
 	launcher, _ := ww.ids.New()
 	cs, _ := ww.ids.New()
 	const sid = "0123abcd-0000-4000-8000-000000000000"
-	// An in-flight (open, unlanded) change set holds the handle.
+	// An in-flight (open, unlanded) change set holds this session's actor.
 	open, _, err := ww.openChangeSet(changeset.Open{Kind: changeset.KindRecord, Intent: "other run"}, launcher, launcher)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := ww.appendEntry(open, changeset.Ops{Ops: []op.Op{actorCreate(t, ww, "claude-code-0123abcd", "other")}}, launcher, launcher); err != nil {
+	if _, err := ww.appendEntry(open, changeset.Ops{Ops: []op.Op{actorCreate(t, ww, "claude-code-0123abcd", sid)}}, launcher, launcher); err != nil {
 		t.Fatal(err)
 	}
 	before := len(ww.changeSets())
@@ -1149,6 +1151,31 @@ func TestRecordAgentActorReusesInFlightHandle(t *testing.T) {
 	}
 	if h != "claude-code-0123abcd" || got != open || len(ww.changeSets()) != before {
 		t.Errorf("got %s %s, want the in-flight actor %s", h, got, open)
+	}
+}
+
+func TestRecordAgentActorInFlightHandleOtherSession(t *testing.T) {
+	ww := testWorkspace(t, false)
+	launcher, _ := ww.ids.New()
+	cs, _ := ww.ids.New()
+	const sid = "0123abcd-0000-4000-8000-000000000000"
+	// An in-flight change set holds the base handle for another session.
+	open, _, err := ww.openChangeSet(changeset.Open{Kind: changeset.KindRecord, Intent: "other run"}, launcher, launcher)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ww.appendEntry(open, changeset.Ops{Ops: []op.Op{actorCreate(t, ww, "claude-code-0123abcd", "0123abcd-0001-4000-8000-000000000000")}}, launcher, launcher); err != nil {
+		t.Fatal(err)
+	}
+	h, got, err := recordAgentActor(ww, "claude-code", sid, cs, launcher, launcher)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if h == "claude-code-0123abcd" || got == open {
+		t.Errorf("got %s %s, want a new actor, not the other session's", h, got)
+	}
+	if n := countActorHandle(ww, "claude-code-0123abcd"); n != 1 {
+		t.Errorf("%d actors hold claude-code-0123abcd", n)
 	}
 }
 

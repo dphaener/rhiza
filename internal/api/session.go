@@ -697,9 +697,11 @@ func copyNewFile(src, dst string) error {
 // in a landed record change set written by the launcher, and returns its
 // handle: <agent>-<first 8 hex of the session ID>, made unique.
 //
-// A live actor node already carrying this session ID is reused: its handle
-// and the change set that recorded it come back and nothing is written, so
-// stamping a session twice never adds a second record.
+// An actor node already carrying this session ID, live or in an in-flight
+// change set, is reused: its handle and the change set that recorded it
+// come back and nothing is written, so stamping a session twice never adds
+// a second record. An actor of another session holding the same handle is
+// never reused.
 func recordAgentActor(ww *workspace, agent, sid string, cs, launcher, forID id.ID) (string, id.ID, error) {
 	m := ww.model(id.ID{})
 	for _, n := range m.Children(op.KindActor, id.ID{}) {
@@ -716,20 +718,32 @@ func recordAgentActor(ww *workspace, agent, sid string, cs, launcher, forID id.I
 			}
 		}
 	}
-	// The handle is derived from the session, so a live actor already
-	// holding it, landed or in an in-flight change set, is this session's:
-	// reuse it rather than write a second node with the same handle.
-	base := handleSlug(agent + "-" + sid[:8])
+	// An actor this session recorded in an in-flight change set (another
+	// run's branch merged in) is reused too. Only the session field names
+	// the owner: session IDs are UUIDv7, so sessions launched close together
+	// share the first 8 hex and so the base handle.
+	inFlight := map[string]bool{}
 	for _, c := range ww.changeSets() {
+		if c.State.Terminal() {
+			continue
+		}
 		for _, o := range c.Ops {
-			if o.Type == op.TypeNodeCreate && o.Kind == op.KindActor && o.Handle == base {
-				return base, c.ID, nil
+			if o.Type != op.TypeNodeCreate || o.Kind != op.KindActor {
+				continue
 			}
+			var got string
+			if raw, ok := o.Fields["session"]; ok && json.Unmarshal(raw, &got) == nil && got == sid {
+				return o.Handle, c.ID, nil
+			}
+			inFlight[o.Handle] = true
 		}
 	}
+	// Another session's actor, landed or in flight, keeps its handle: this
+	// one gets a unique handle of its own.
+	base := handleSlug(agent + "-" + sid[:8])
 	handle := uniqueHandle(base, func(h string) bool {
 		_, taken := m.HandleTaken(h)
-		return taken
+		return taken || inFlight[h]
 	})
 	node, err := ww.ids.New()
 	if err != nil {
