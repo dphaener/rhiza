@@ -669,7 +669,11 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	// Refuse a start whose agent steps cannot run before the change set or
 	// its worktree is resolved, so a refused start runs no git and writes
 	// nothing.
-	if err := checkAgentSteps(ctx, def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
+	checkMode, err := queuedCheckMode(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+	if err := checkAgentSteps(ctx, def, checkMode, r.Agent, r.Autonomous, runStartNext); err != nil {
 		return nil, err
 	}
 	var t changeWorktree
@@ -692,7 +696,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		if err := planOwnerRefuses(def, path, r.Autonomous, runStartNext); err != nil {
 			return nil, err
 		}
-		if err := checkAgentSteps(ctx, def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
+		if err := checkAgentSteps(ctx, def, checkMode, r.Agent, r.Autonomous, runStartNext); err != nil {
 			return nil, err
 		}
 	}
@@ -1640,6 +1644,21 @@ func loadWorkflow(root, path, ref string) (*workflow.Definition, []byte, error) 
 		return nil, nil, Usagef("workflow %s: %v", path, err).WithNext(runStartNext)
 	}
 	return def, data, nil
+}
+
+// queuedCheckMode is the mode run start checks agent steps with: the
+// start's own, else, for a start queued for the daemon, rhiza.daemon.permissionMode,
+// which the daemon starts the run with as it does its own picks. The queued
+// start still records no mode. A --foreground start has no stand-in.
+func queuedCheckMode(ctx *Ctx, r RunStartRequest) (string, error) {
+	if r.PermissionMode != "" || r.Foreground {
+		return r.PermissionMode, nil
+	}
+	rows, err := settingsOf(ctx, nil)
+	if err != nil {
+		return "", err
+	}
+	return settingValue(rows, "rhiza.daemon.permissionMode"), nil
 }
 
 // checkAgentSteps checks every agent step's effective adapter and

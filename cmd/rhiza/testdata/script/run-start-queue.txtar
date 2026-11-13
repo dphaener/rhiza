@@ -56,6 +56,21 @@ stdout -count=1 '^Started a run of '
 exec sh -c 'grep -c "\"change\"" .git/rhiza/starts.json || true'
 stdout '^0$'
 
+# With rhiza.daemon.permissionMode set, a queued start that names no mode is
+# checked with it and queued recording none; --foreground has no stand-in; a
+# mode the agent rejects refuses the queue.
+exec rhiza change new DaemonMode --title DaemonMode
+exec git config rhiza.daemon.permissionMode nonsense
+! exec rhiza run start --workflow plan
+stderr 'nonsense'
+exec git config rhiza.daemon.permissionMode manual
+exec rhiza run start --workflow plan --autonomous
+stdout 'Queued a plan run'
+exec sh -c 'grep -c "permission_mode" .git/rhiza/starts.json || true'
+stdout '^0$'
+exec rhiza daemon --max-runs 3 --once
+stdout 'Started a run of '
+
 # Stop the child through the pid its journal names.
 exec sh -c 'for f in .git/rhiza/runs/*.jsonl; do kill $(sed -n "s/.*\"pid\":\([0-9]*\).*/\1/p" $f | head -1); done'
 -- bin/rex --
