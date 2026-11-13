@@ -436,6 +436,7 @@ func (r *stepRunner) Evidence(leaf run.Leaf, session string) (bool, string, erro
 		ok     bool
 		detail string
 	}
+	r.settle()
 	// Kept under the run's change set: every node of its view, and the
 	// change set that created it, is in what that view reads (as-is and
 	// the change set with its in-flight dependencies), so an entry in an
