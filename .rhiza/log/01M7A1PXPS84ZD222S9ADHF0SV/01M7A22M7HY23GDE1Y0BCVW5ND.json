@@ -1,0 +1,41 @@
+{
+  "actor": "01M7A1ZN3PXQA185X0VHCV1YKK",
+  "after": [
+    "01M7A1YXB8T8HGHQ17DP3KP3ZR"
+  ],
+  "at": "2026-11-13T08:58:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent names both remedies ('the daemon starts a plan (review) run for a proposed change set that no plan run covers, as it does for a draft with no leaves; or the inbox lists such proposals') and its title has two defects: the proposal is never accepted, and nothing says so. Only the daemon half removes the hand step (the orchestrator ran rhiza run start --workflow plan for nine change sets), and only the inbox half covers accept = owner, where an auto-started run cannot accept. Starting a plan run rather than accepting directly in the daemon keeps acceptance in one place (runRunGate, internal/api/run_review.go) and gives proposals written outside a run the same plan review that run-made proposals get. The inbox today lists only st.Gated proposals (internal/api/inbox.go:344), so widening it to uncovered proposals is a small change in the same code. For the intent: @{01M61R4RCY7AE9N46F2YDNX0WD} says change sets ship with the daemon orchestrating and no orchestrator session, which this stall broke. The closest earlier fix, 01M797TR (hand-queued plan runs get the daemon's permission mode), serves the same intent. @{01M61R4RRY5ZEVDSZ0E2M11DRB} is about runs that finish without repair, and here no run had started.",
+          "statement": "The leaves build both halves of the fix. (1) The daemon starts an autonomous plan run for every proposed change set that already has leaves and that no plan run covers (no live run on it, and no finished plan run whose gated entry names it). It counts against maxRuns and the load holds like any other start, and it takes the daemon's permission mode. The plan run reviews the existing leaves and reaches its gate, so runRunGate stays the only place that accepts, and rhiza.autonomy.accept decides there as it does today. (2) The inbox lists such a proposal as waiting for acceptance whenever no plan run covers it yet or the gate left it for the owner, so a proposed change set is never silent. rhiza ready keeps its 'not accepted: proposed' reason. Change set 01M7A1P serves the landed intent @{01M61R4RCY7AE9N46F2YDNX0WD}.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "uncovered-proposals-get-plan-runs",
+        "id": "01M7A22M37FB7599ZNJ8FYJC22",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A22M37FB7599ZNJ6J69TWA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A22M37FB7599ZNJ6J69TWA",
+        "id": "01M7A22M5HAE9BCE8WSCBQCTMJ",
+        "link": "01M7A22M5HAE9BCE8WS8JFK9QY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A1YT6CST3413RJMH65VY77",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7A1PXPS84ZD222S9ADHF0SV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A22M7HY23GDE1Y0BCVW5ND",
+  "type": "ops",
+  "v": 1
+}

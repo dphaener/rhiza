@@ -1,0 +1,184 @@
+{
+  "actor": "01M7A1RNH6WM2MQV6WGYDS8E15",
+  "after": [
+    "01M7A257AKCKCSAKTHQJV98H2E"
+  ],
+  "at": "2026-11-13T09:00:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The proposals were planned with the owner; a fresh interview would rewrite owner-made leaves with no owner present. A workflow step with skip = [\"interview\"] is the existing pattern (plan-bug includes plan, ship-change skips signoff), so no engine change is needed",
+          "statement": "The daemon's run on an uncovered proposal is a builtin plan-review workflow that includes plan and takes its interview as passed, so the run reviews the leaves already written and reaches the gate without re-planning them",
+          "wording": "(derived by the planner from the arbiter's Decision uncovered-proposals-get-plan-runs: the plan run reviews the existing leaves and reaches its gate)"
+        },
+        "handle": "plan-review-skips-interview",
+        "id": "01M7A26BX61YZYFY128JY1R3PP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A26BX61YZYFY128GYJN8N3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A26BX61YZYFY128GYJN8N3",
+        "id": "01M7A26BY84TDVE6AMQGNG1Z8S",
+        "link": "01M7A26BY84TDVE6AMQCRTAYTW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A255MHCF19H738M4774SJF",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "A plan-review run that fails before its gate (milestone-check, a stuck review) journals no gated entry; under the arbiter's rule alone the daemon would start a new run on every poll. The failed run is already an inbox item with rhiza run resume --retry next, so the proposal is not silent",
+          "statement": "A plan run on the change set that ended failed and was not abandoned also covers it: the daemon does not start another, and the inbox lists the failure with its retry instead of an uncovered proposal; an abandoned run covers nothing",
+          "wording": "(derived by the planner from the arbiter's Decision uncovered-proposals-get-plan-runs, which names live runs and gated finished runs)"
+        },
+        "handle": "failed-plan-run-covers",
+        "id": "01M7A26BZ35TBJ2K6MWCQ1S5PD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A26BZ2KESAHX4212BR36EK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A26BZ2KESAHX4212BR36EK",
+        "id": "01M7A26BZQ5WQ3XPN04KY92XSF",
+        "link": "01M7A26BZQ5WQ3XPN04K447YGC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A255MHCF19H738M4774SJF",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... covers parsing plan-review (its first step after expansion is the included milestone-check, no interview step); a new cmd/rhiza/testdata/script/plan-review-workflow.txtar shows rhiza workflow describe plan-review listing no interview step and a rhiza run start --workflow plan-review --autonomous --no-wait on a proposed change set with a leaf, with the review and critic faked as the plan-workflow scripts fake them, reaching the gate, which accepts it under rule autonomous with rhiza.autonomy.accept auto; testscripts that list the builtin workflow names (go test -trimpath ./cmd/rhiza -run 'TestScripts/(workflow-ls|plan-workflow)') pass, updated where they print the list. Touches internal/workflow/builtin/plan-review.toml, internal/workflow/workflow_test.go, cmd/rhiza/testdata/script/plan-review-workflow.txtar",
+          "statement": "A builtin workflow plan-review (internal/workflow/builtin/plan-review.toml) is one workflow step that includes plan with skip = [\"interview\"], so rhiza run start <change> --workflow plan-review on a proposed change set with leaves enters at milestone-check, then the plan review, then the gate, and never opens a planner session"
+        },
+        "handle": "plan-review-workflow",
+        "id": "01M7A26C10VA8H52GYEQPJNVR9",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M7A26C10VA8H52GYENGK7NC4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A26C10VA8H52GYENGK7NC4",
+        "id": "01M7A26C1XZ30TYXDP2SDCNRXC",
+        "link": "01M7A26C1XZ30TYXDP2S6H9Q85",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A26BX61YZYFY128GYJN8N3",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7A26C10VA8H52GYENGK7NC4",
+        "id": "01M7A26C2WZ50DPNZ00YTPHVAY",
+        "link": "01M7A26C2WZ50DPNZ00V2P97ZH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A22M37FB7599ZNJ6J69TWA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A new cmd/rhiza/testdata/script/daemon-plans-proposals.txtar (Rex faked, RHIZA_TEST_DETACH_LOG): a change set proposed with a leaf and no plan run makes rhiza daemon --once start one plan-review run naming it with --autonomous and the daemon's permission mode; a second poll while that start is pending starts nothing more; a proposed change set with no leaves, one a finished plan run's gated entry names, and one whose run ended failed start nothing; with --max-runs 1 and a ready accepted change set the proposal's start and the ship pick share the slot without exceeding it; under rhiza daemon pause nothing starts. go test -trimpath ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/daemon-' pass. Touches internal/api/daemon.go, internal/api/daemon_fold.go, internal/api/daemon_projects.go, internal/api/proposals.go, internal/api/proposals_test.go, cmd/rhiza/testdata/script/daemon-plans-proposals.txtar",
+          "statement": "Each daemon poll starts, as a detached rhiza run start --foreground <change> --workflow plan-review --autonomous --permission-mode <the daemon's mode>, a plan run for every proposed change set with leaves that no plan run covers; a plan run covers it while a run on it is live or its start is pending and not yet journaled, when a finished plan run's latest gated entry names it, or when a run on it ended failed and was not abandoned; these starts count against max-runs after the resumes and before the ship picks, and stop under pause, low disk, the load and memory holds and a usage hold like any other start; one shared predicate (uncoveredProposals in internal/api) decides covered, for the daemon and the inbox"
+        },
+        "handle": "daemon-plans-uncovered-proposals",
+        "id": "01M7A26C4ZRFSRVS8ND0XV82TY",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7A26C4ZRFSRVS8ND06BE7NJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A26C4ZRFSRVS8ND06BE7NJ",
+        "id": "01M7A26C65WMX8W63DQXNNY7BG",
+        "link": "01M7A26C65WMX8W63DQTKJTKNQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A22M37FB7599ZNJ6J69TWA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7A26C4ZRFSRVS8ND06BE7NJ",
+        "id": "01M7A26C7H5TS5XX5SRCMCACHQ",
+        "link": "01M7A26C7H5TS5XX5SR9RPC845",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A26BZ2KESAHX4212BR36EK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7A26C4ZRFSRVS8ND06BE7NJ",
+        "id": "01M7A26C8MHJBXY1Q2506AATDR",
+        "link": "01M7A26C8MHJBXY1Q24YS5GCXX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A26C10VA8H52GYENGK7NC4",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A new cmd/rhiza/testdata/script/inbox-uncovered-proposal.txtar: a change set proposed by hand with a leaf and no run shows in rhiza inbox --json as one accept item with that detail and next, under accept auto and under accept owner; once a plan run on it is live (or ended failed) the accept item is gone; once accepted it is gone; inbox-owner-run-accept.txtar still lists a gated proposal once. go test -trimpath ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/(inbox-|ready)' pass. Touches internal/api/inbox.go, internal/api/inbox_test.go, cmd/rhiza/testdata/script/inbox-uncovered-proposal.txtar",
+          "statement": "rhiza inbox lists every proposed change set that no plan run covers (uncoveredProposals) as an accept item, detail 'waiting for acceptance: no plan run covers it', next rhiza accept --rule owner --change <id>, whatever rhiza.autonomy.accept says; a proposal a gate left for the owner keeps its existing gated accept item, and no change set is listed twice; rhiza ready keeps its 'not accepted: proposed' reason"
+        },
+        "handle": "inbox-lists-uncovered-proposals",
+        "id": "01M7A26CAT1FTRENTDNQ0TKWQB",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7A26CAT1FTRENTDNPR4XD18",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A26CAT1FTRENTDNPR4XD18",
+        "id": "01M7A26CBXQR2P6R1AXPKCBQ1B",
+        "link": "01M7A26CBXQR2P6R1AXJSQXFK7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A22M37FB7599ZNJ6J69TWA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7A26CAT1FTRENTDNPR4XD18",
+        "id": "01M7A26CCT2MX93X0MD5D917R1",
+        "link": "01M7A26CCT2MX93X0MD3PPYYDW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A26BZ2KESAHX4212BR36EK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7A26CAT1FTRENTDNPR4XD18",
+        "id": "01M7A26CE92HFT9M97XPPAANSD",
+        "link": "01M7A26CE92HFT9M97XKVRWM6W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A26C4ZRFSRVS8ND06BE7NJ",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7A1PXPS84ZD222S9ADHF0SV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A26CFMTJSYCM6PDC8AJE1Q",
+  "type": "ops",
+  "v": 1
+}

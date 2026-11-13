@@ -1,0 +1,33 @@
+{
+  "actor": "01M7A1RNH6WM2MQV6WGYDS8E15",
+  "after": [
+    "01M7A22M7HY23GDE1Y0BCVW5ND"
+  ],
+  "at": "2026-11-13T08:59:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "ff1d235d6949ef452df06bed2f558eea01ab7913326d94ce73f312ae799d65af",
+          "session": "d64a7225-e14f-4ece-a633-01a1d41bff39",
+          "summary": "Autonomous plan run of bug change set 01M7A1P: change sets proposed outside a plan run (by a PR) are never accepted, since only a plan run's gate (runRunGate) accepts, the daemon starts plan runs only from queued requests (daemonPlanRequests), and the inbox lists a proposal only when a plan run's gate named it. No owner was present. The planner asked two questions (the fix's shape, which intent it serves); the arbiter answered with Decision uncovered-proposals-get-plan-runs: the daemon starts an autonomous plan run for every proposed change set with leaves that no plan run covers (no live run on it, no finished plan run whose gated entry names it), within maxRuns and the holds and with the daemon's permission mode; the run reviews the existing leaves and reaches its gate, which stays the only place that accepts under rhiza.autonomy.accept; the inbox lists such a proposal as waiting for acceptance while no plan run covers it or when the gate left it for the owner; rhiza ready keeps 'not accepted: proposed'; the change set serves m4-orchestrated-by-rhiza. The planner derived two rulings from that: the run is a builtin plan-review workflow that includes plan and skips its interview, so the leaves are reviewed, not re-planned; and a plan run on the change set that ended failed (not abandoned) also covers it, so a failing run is not restarted every poll. Nothing is left open.",
+          "title": "Plan of the uncovered-proposal fix, autonomous, with the arbiter"
+        },
+        "handle": "uncovered-proposal-plan",
+        "id": "01M7A255MHCF19H738M80RZ9RP",
+        "key": null,
+        "kind": "source",
+        "node": "01M7A255MHCF19H738M4774SJF",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7A1PXPS84ZD222S9ADHF0SV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A255NNX73Y44VVYXMG9602",
+  "type": "ops",
+  "v": 1
+}
