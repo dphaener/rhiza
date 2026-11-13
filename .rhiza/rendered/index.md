@@ -852,6 +852,7 @@
 - [usage-scan-once-per-poll](capability/usage-scan-once-per-poll.md)
 - [ci-wait-backs-off](capability/ci-wait-backs-off.md)
 - [apply-tolerates-concurrent-entries](capability/apply-tolerates-concurrent-entries.md)
+- [inbox-skips-run-accepted-gated](capability/inbox-skips-run-accepted-gated.md)
 
 ## Intents
 
@@ -1741,6 +1742,7 @@
 - [roadmap-rows-by-title](decision/roadmap-rows-by-title.md)
 - [role-prompts-scoped-tests-via-topics](decision/role-prompts-scoped-tests-via-topics.md)
 - [root-intents-and-constraints](decision/root-intents-and-constraints.md)
+- [run-accepted-no-inbox-item](decision/run-accepted-no-inbox-item.md)
 - [run-drivers-rebase-resolution](decision/run-drivers-rebase-resolution.md)
 - [run-ends-blocked-on-review-question](decision/run-ends-blocked-on-review-question.md)
 - [run-journal](decision/run-journal.md)
@@ -3100,6 +3102,8 @@
 - [inbox-question-text-verified](evidence/inbox-question-text-verified.md)
 - [inbox-signoff-qa-1](evidence/inbox-signoff-qa-1.md)
 - [inbox-signoff-verified](evidence/inbox-signoff-verified.md)
+- [inbox-skips-run-accepted-gated-qa-1](evidence/inbox-skips-run-accepted-gated-qa-1.md)
+- [inbox-skips-run-accepted-gated-verified](evidence/inbox-skips-run-accepted-gated-verified.md)
 - [inbox-stalled-items-qa-01m6n9af-1](evidence/inbox-stalled-items-qa-01m6n9af-1.md)
 - [inbox-stalled-items-qa-1](evidence/inbox-stalled-items-qa-1.md)
 - [inbox-stalled-items-qa-2](evidence/inbox-stalled-items-qa-2.md)
@@ -3651,6 +3655,7 @@
 - [pr-548-fix-run-sessions-that-hit-an](evidence/pr-548-fix-run-sessions-that-hit-an.md)
 - [pr-549-fix-rows-on-the-web-roadmap-s](evidence/pr-549-fix-rows-on-the-web-roadmap-s.md)
 - [pr-556-fix-rhiza-apply-refuses-to](evidence/pr-556-fix-rhiza-apply-refuses-to.md)
+- [pr-557-fix-the-inbox-asks-the-owner](evidence/pr-557-fix-the-inbox-asks-the-owner.md)
 - [pr-61-leaf-trailer-split-paragraphs](evidence/pr-61-leaf-trailer-split-paragraphs.md)
 - [pr-64-resume-only-in-flight-runs](evidence/pr-64-resume-only-in-flight-runs.md)
 - [pr-65-tui-shell-and-read-apps](evidence/pr-65-tui-shell-and-read-apps.md)
@@ -4668,6 +4673,7 @@
 - [idle-stall-plan](source/idle-stall-plan.md)
 - [import-guide-decision-plan](source/import-guide-decision-plan.md)
 - [inbox-question-fix-plan](source/inbox-question-fix-plan.md)
+- [inbox-run-accepted-plan](source/inbox-run-accepted-plan.md)
 - [inbox-stale-interview](source/inbox-stale-interview.md)
 - [landed-green-retry-plan](source/landed-green-retry-plan.md)
 - [landed-run-resume-plan](source/landed-run-resume-plan.md)
