@@ -1,6 +1,8 @@
 package web_test
 
 import (
+	"encoding/json"
+	"net/http"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -24,11 +26,27 @@ func TestChangeSetPage(t *testing.T) {
 	cs := newChange(t, ctx, "Retry deliveries with backoff", "intention")
 	callJSON(t, ctx, "add", `{"kind":"capability","handle":"retry-a","fields":["statement=A failed delivery is retried","acceptance=Run the backoff test"]}`)
 	callJSON(t, ctx, "add", `{"kind":"capability","handle":"retry-b","fields":["statement=A 429 waits for Retry-After","acceptance=Run the header test"]}`)
-	callJSON(t, ctx, "add", `{"kind":"evidence","handle":"retry-a-ok","fields":["statement=Ran it","result=PASS"]}`)
+	callJSON(t, ctx, "add", `{"kind":"evidence","handle":"retry-a-ok","fields":["statement=Ran it","result=PASS","status=verified"]}`)
+	callJSON(t, ctx, "add", `{"kind":"evidence","handle":"retry-pr","fields":["statement=PR passed CI","result=ok","pr=https://github.com/x/y/pull/525","status=verified"]}`)
+	callJSON(t, ctx, "add", `{"kind":"decision","handle":"retry-dec","fields":["statement=Retries back off exponentially","question=How should retries wait?","wording=Exponential"]}`)
+	callJSON(t, ctx, "link", `{"from":"retry-a","type":"decided-by","to":"retry-dec"}`)
+	callJSON(t, ctx, "add", `{"kind":"source","handle":"retry-src","fields":["title=Retry planning talk","summary=Scrubbed talk","raw_sha256=`+strings.Repeat("a", 64)+`"]}`)
 	callJSON(t, ctx, "link", `{"from":"retry-a-ok","type":"verifies","to":"retry-a"}`)
 	callJSON(t, ctx, "add", `{"kind":"question","handle":"gone-q","fields":["statement=Should a 410 stop retries at once?"]}`)
 	callJSON(t, ctx, "link", `{"from":"gone-q","type":"blocks","to":"retry-b"}`)
 	callJSON(t, ctx, "propose", `{}`)
+
+	var whyIDs []string
+	for _, h := range []string{"retry-dec", "gone-q", "retry-src"} {
+		b, _ := json.Marshal(callJSON(t, ctx, "show", `{"ref":"`+h+`","view":"what-if:`+cs+`"}`))
+		var sv struct {
+			Node struct {
+				ID string `json:"id"`
+			} `json:"node"`
+		}
+		json.Unmarshal(b, &sv)
+		whyIDs = append(whyIDs, sv.Node.ID)
+	}
 
 	// The dependency comes from another change set, as a landed plan's does.
 	newChange(t, ctx, "Plan the order", "intention")
@@ -55,6 +73,18 @@ func TestChangeSetPage(t *testing.T) {
 	}
 
 	h := web.Handler(api.ReadOnlyHandler(ctx))
+	// Under its project, the decision, question and source link to their model pages.
+	root := web.RootWithProjects(web.Handler(nil), func(string) http.Handler { return h },
+		func() []web.ProjectView { return []web.ProjectView{{Name: "proj", Initialised: true}} })
+	scoped := serve(root, "GET", "/p/proj/changes/"+cs)
+	if scoped.Code != 200 {
+		t.Fatalf("scoped: %d %s", scoped.Code, scoped.Body)
+	}
+	for _, id := range whyIDs {
+		if !strings.Contains(scoped.Body.String(), `href="/p/proj/nodes/`+id+`"`) {
+			t.Errorf("no link to /p/proj/nodes/%s", id)
+		}
+	}
 	rec := serve(h, "GET", "/changes/"+cs)
 	if rec.Code != 200 {
 		t.Fatalf("/changes/%s: %d %s", cs, rec.Code, rec.Body)
@@ -63,7 +93,7 @@ func TestChangeSetPage(t *testing.T) {
 	for _, s := range []string{
 		"Retry deliveries with backoff", "intention", "proposed",
 		"A failed delivery is retried", "Run the backoff test", "A 429 waits for Retry-After", "Run the header test",
-		"has evidence", "no evidence yet", "2 leaves, 1 with evidence",
+		"Verified, has evidence", "no evidence yet", "Retries back off exponentially", "Retry planning talk", "PR #525", "2 leaves, 1 with evidence",
 		"Should a 410 stop retries at once?", "Base work", `href="/changes/` + base + `"`, "landed",
 		`href="/runs/runone"`, "build run", "2026-10-24 11:00", "Proposed",
 	} {
@@ -85,10 +115,15 @@ func TestChangeSetPage(t *testing.T) {
 		t.Fatalf("/changes/%s: %d %s", base, rec.Code, rec.Body)
 	}
 	body = rec.Body.String()
-	for _, s := range []string{"Base work", "landed", "Base capability", "Base check", "1 leaf, 0 with evidence"} {
+	for _, s := range []string{"Base work", "landed", "Base capability", "Base check", "Shipped", "2026-10-24 12:00", "1 leaf, 0 with evidence"} {
 		if !strings.Contains(body, s) {
 			t.Errorf("landed page: missing %q in:\n%s", s, body)
 		}
+	}
+	// A draft with no leaves says it has none yet.
+	draft := newChange(t, ctx, "Empty draft", "intention")
+	if body := serve(h, "GET", "/changes/"+draft).Body.String(); !strings.Contains(body, "has none yet") {
+		t.Errorf("draft page:\n%s", body)
 	}
 	for _, target := range []string{"/changes/01ZZZZZZZZZZZZZZZZZZZZZZZZ", "/changes/nope"} {
 		if rec := serve(h, "GET", target); rec.Code != 404 {

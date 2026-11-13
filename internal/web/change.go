@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -58,6 +60,16 @@ func (s *showJSON) field(name string) string {
 	return v
 }
 
+func (s *showJSON) liveOut(typ string) []string {
+	var out []string
+	for _, l := range s.Node.LinksOut {
+		if l.Type == typ && !l.Retired {
+			out = append(out, l.Other.ID)
+		}
+	}
+	return out
+}
+
 func (s *showJSON) liveIn(typ string) []string {
 	var out []string
 	for _, l := range s.Node.LinksIn {
@@ -77,9 +89,19 @@ type Rel struct {
 
 // LeafView is a leaf with its acceptance and whether it has Evidence.
 type LeafView struct {
-	Statement, Acceptance string
-	Evidence              bool
+	Href, Statement, Acceptance string
+	Evidence, Verified          bool
 }
+
+// WhyItem is a decision, question or source behind the change set, linking
+// to its model page.
+type WhyItem struct {
+	Href, Text, Sub, Glyph string
+}
+
+// Fact is one line of the facts panel: a label and its value, with a link
+// to where it leads when it has one.
+type Fact struct{ Label, Text, Href string }
 
 // HistoryItem is one lifecycle event.
 type HistoryItem struct{ Time, Datetime, Text string }
@@ -92,6 +114,9 @@ type ChangeView struct {
 	Leaves              []LeafView
 	WithEvidence        int
 	Questions           []string
+	FactList            []Fact
+	runFact             *Fact
+	Why                 []WhyItem
 	Runs                []Row
 	History             []HistoryItem
 }
@@ -178,6 +203,22 @@ func loadChange(r *http.Request, ref string) (*ChangeView, error) {
 		v.DependsOn = append(v.DependsOn, Rel{Href: "/changes/" + d.ID, Text: t, Pill: Pill{d.State, d.State}})
 	}
 
+	whySeen := map[string]bool{}
+	whyKinds := map[string]bool{"decision": true, "question": true, "source": true}
+	var pr, prURL string
+	addWhy := func(id string) {
+		if whySeen[id] {
+			return
+		}
+		whySeen[id] = true
+		n, err := showRef(r, &cs, id)
+		if err != nil || n.Node.Retired || !whyKinds[n.Node.Kind] {
+			return
+		}
+		if t := n.words(); t != "" {
+			v.Why = append(v.Why, WhyItem{Href: "/nodes/" + id, Text: t, Sub: kindLabels[n.Node.Kind], Glyph: nodeGlyph(n.Node.Kind)})
+		}
+	}
 	qs := map[string]bool{}
 	var qorder []string
 	addQ := func(id string) {
@@ -191,11 +232,17 @@ func loadChange(r *http.Request, ref string) (*ChangeView, error) {
 		if err != nil {
 			continue
 		}
-		lv := LeafView{Statement: s.field("statement"), Acceptance: s.field("acceptance")}
+		lv := LeafView{Href: "/nodes/" + lf.ID, Statement: s.field("statement"), Acceptance: s.field("acceptance")}
 		for _, e := range s.liveIn("verifies") {
 			if en, err := showRef(r, &cs, e); err == nil && !en.Node.Retired {
 				lv.Evidence = true
+				if en.field("status") == "verified" {
+					lv.Verified = true
+				}
 			}
+		}
+		for _, d := range s.liveOut("decided-by") {
+			addWhy(d)
 		}
 		if lv.Evidence {
 			v.WithEvidence++
@@ -206,10 +253,27 @@ func loadChange(r *http.Request, ref string) (*ChangeView, error) {
 		v.Leaves = append(v.Leaves, lv)
 	}
 	for _, n := range cs.Changes.Nodes {
-		if n.Kind == "question" && n.Action == "created" {
+		if n.Action != "created" {
+			continue
+		}
+		switch n.Kind {
+		case "question":
 			addQ(n.Node)
+			addWhy(n.Node)
+		case "decision", "source":
+			addWhy(n.Node)
+		case "evidence":
+			if en, err := showRef(r, &cs, n.Node); err == nil && prURL == "" && !en.Node.Retired {
+				if u := en.field("pr"); u != "" {
+					prURL = u
+					if m := prNumber.FindStringSubmatch(u); m != nil {
+						pr = "#" + m[1]
+					}
+				}
+			}
 		}
 	}
+	sort.SliceStable(v.Why, func(i, j int) bool { return whyRank[v.Why[i].Sub] < whyRank[v.Why[j].Sub] })
 	for _, id := range qorder {
 		q, err := showRef(r, &cs, id)
 		if err != nil || q.Node.Retired || len(q.liveIn("answers")) > 0 {
@@ -249,8 +313,21 @@ func loadChange(r *http.Request, ref string) (*ChangeView, error) {
 				row.Datetime, row.Time = ru.StartedAt, t.UTC().Format("2006-01-02 15:04")
 			}
 			v.Runs = append(v.Runs, row)
+			if v.runFact == nil && (ru.State == "succeeded" || ru.State == "failed") {
+				v.runFact = &Fact{Label: "Run", Text: ru.Workflow, Href: row.Href}
+				var ri runInfo
+				if t, err := time.Parse(time.RFC3339, ru.StartedAt); err == nil && apiGet(r, "/api/run.status?run="+url.QueryEscape(ru.ID), &ri) == nil && len(ri.Steps) > 0 {
+					if end, err := time.Parse(time.RFC3339, ri.Steps[len(ri.Steps)-1].At); err == nil {
+						if d := fmtDuration(end.Sub(t)); d != "" {
+							v.runFact.Text += ", " + d
+						}
+					}
+				}
+			}
 		}
 	}
+
+	v.facts(&cs, pr, prURL)
 
 	for _, h := range cs.History {
 		item := HistoryItem{Text: lifecycleWords[h.Type]}
@@ -263,6 +340,35 @@ func loadChange(r *http.Request, ref string) (*ChangeView, error) {
 		v.History = append(v.History, item)
 	}
 	return v, nil
+}
+
+var prNumber = regexp.MustCompile(`(\d+)/?$`)
+
+var whyRank = map[string]int{"Decision": 0, "Question": 1, "Source": 2}
+
+// facts fills the facts panel: when it shipped and its PR, its run and how
+// long it took, and the done point it serves. Nothing shows the change set's ID.
+func (v *ChangeView) facts(cs *changeJSON, pr, prURL string) {
+	if cs.State == "landed" {
+		f := Fact{Label: "Shipped", Text: "landed"}
+		for _, h := range cs.History {
+			if h.Type == "land" {
+				if t, err := time.Parse(time.RFC3339, h.At); err == nil {
+					f.Text = t.UTC().Format("2006-01-02 15:04")
+				}
+			}
+		}
+		v.FactList = append(v.FactList, f)
+	}
+	if pr != "" {
+		v.FactList = append(v.FactList, Fact{Label: "Pull request", Text: "PR " + pr, Href: prURL})
+	}
+	if v.runFact != nil {
+		v.FactList = append(v.FactList, *v.runFact)
+	}
+	for _, s := range v.Serves {
+		v.FactList = append(v.FactList, Fact{Label: "Serves", Text: s.Text, Href: s.Href})
+	}
 }
 
 func (v *ChangeView) Facts() string {
