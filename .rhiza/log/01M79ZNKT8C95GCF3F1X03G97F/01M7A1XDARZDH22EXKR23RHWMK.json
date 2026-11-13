@@ -1,0 +1,40 @@
+{
+  "actor": "01M7A1FGEYPDJWRD3V5MSA7GK8",
+  "after": [
+    "01M7A1STA6Z2CWKK4PEGZCQSR9"
+  ],
+  "at": "2026-11-13T08:55:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e2f56e49a re-ran the Checks: block: go test -trimpath ./internal/api -run TestWatchdogPollBehind (exit 0; TestWatchdogPollBehind and TestWatchdogPollBehindSteps PASS), go test -trimpath ./internal/api -run 'TestWatchdogPollBehind|Daemon|Poll' (exit 0, 259s), rhiza ship generate (exit 0), rhiza render (exit 0, tree unchanged); gofmt -l and go vet ./internal/api clean. Diff read: pollSteps times registry load, open, and per project reap/settings/machine/housekeeping/usage/demand/starts/notify/watchdog/events/model steps; projects poll sequentially so no race. TestWatchdogPollBehindSteps uses a fake clock advanced inside named steps and asserts the exact line keeps the 'watchdog: poll took ... poll interval' prefix and ends '; slowest: rhiza watchdog 5m58s, rhiza demand 21s, other events 3s' (slowest first, project and rounded time), that the recorded watchdog action carries it, and that a poll within the limit logs nothing. Only the four named Go files plus the builder's actor record and rendered files changed; no TODOs or stubs."
+        },
+        "handle": "poll-behind-names-steps-verified",
+        "id": "01M7A1XD2N786832PFHMD57B7E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A1XD2N786832PFHKX6YF5X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A1XD2N786832PFHKX6YF5X",
+        "id": "01M7A1XD6XKKZ4NPAMR659YRA7",
+        "link": "01M7A1XD6XKKZ4NPAMR4KY8W2A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01J38C50QZG2X4JNEC3S8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A1XDARZDH22EXKR23RHWMK",
+  "type": "ops",
+  "v": 1
+}
