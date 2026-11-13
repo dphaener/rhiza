@@ -1,0 +1,33 @@
+{
+  "actor": "01M79SNVN0KMM975SGJ6F7KYT5",
+  "after": [
+    "01M79SVQY7TWF4731GJ5KRRPBZ"
+  ],
+  "at": "2026-11-13T06:35:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "ddbb4541cb271b686e92560fe1ca2cc64303da75a6acf7415438223ce23fe8b4",
+          "session": "7eecefee-f9fc-4ec9-8bdc-01a1d39abb61",
+          "summary": "Autonomous plan run for bug change set 01M79SMG (roadmap rows sometimes 404). No owner was present. The planner traced the cause: loadRoadmap (internal/web/roadmap.go) reads /api/roadmap?all=true, which reaches across a root's registered projects, and links rows as /changes/<id>; under /p/<project>/ these are rewritten to that project's prefix, so another project's rows 404. Accepted change set 01M79S4M (web-roadmap-project-scoped) already scopes each project's API to that project. The planner asked how to shape this change set (depend on 01M79S4M, fold into it, or fix independently). The arbiter ruled (Decision roadmap-row-404-plan, assumed, would have escalated): plan it as a follow-on depending on 01M79S4M, with a click-every-row two-project test as acceptance, fixing any 404 that test still finds (unreadable change sets, un-prefixed links such as the change page's depends-on links). The change set serves m37-roadmap (milestone 37), whose statement says every link on the roadmap opens a page that exists.",
+          "title": "Plan interview: roadmap rows 404 (autonomous)"
+        },
+        "handle": "roadmap-row-404-interview",
+        "id": "01M79SWA4CZG832Y0QVTPW7MWG",
+        "key": null,
+        "kind": "source",
+        "node": "01M79SWA4CZG832Y0QVRJD3AEA",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M79SMGMW0DCEBFZDHXTDTFEZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79SWA55BP5NMGZT2PDBJ3RF",
+  "type": "ops",
+  "v": 1
+}
