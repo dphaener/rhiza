@@ -120,7 +120,7 @@ func TestGuideInstallRoleSkills(t *testing.T) {
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
 	r := guideInstall(t, ctx, `{"agent":"claude"}`)
-	for _, tc := range []struct{ skill, text string }{{"rhiza-builder", "builder"}, {"rhiza-verifier", "verifier"}, {"rhiza-build-retry", "build-retry"}, {"rhiza-planner", "planner"}, {"rhiza-plan-reviewer", "plan-reviewer"}, {"rhiza-plan-critic", "plan-critic"}, {"rhiza-plan-reviser", "plan-reviser"}, {"rhiza-check-plan", "check-plan"}, {"rhiza-check-code", "check-code"}} {
+	for _, tc := range []struct{ skill, text string }{{"rhiza-builder", "builder"}, {"rhiza-verifier", "verifier"}, {"rhiza-build-retry", "build-retry"}, {"rhiza-planner", "planner"}, {"rhiza-plan-reviewer", "plan-reviewer"}, {"rhiza-plan-critic", "plan-critic"}, {"rhiza-plan-reviser", "plan-reviser"}, {"rhiza-check-plan", "check-plan"}, {"rhiza-check-code", "check-code"}, {"rhiza-conduct", "conduct"}} {
 		p := "skills/" + tc.skill + "/SKILL.md"
 		if !slices.Contains(r.Written, p) {
 			t.Fatalf("install wrote %v, want %s", r.Written, p)
@@ -141,7 +141,7 @@ func TestGuideInstallRoleSkills(t *testing.T) {
 		}
 	}
 	r = guideInstall(t, ctx, `{"agent":"claude"}`)
-	for _, s := range []string{"rhiza-builder", "rhiza-verifier", "rhiza-build-retry", "rhiza-planner", "rhiza-plan-reviewer", "rhiza-plan-critic", "rhiza-plan-reviser", "rhiza-check-plan", "rhiza-check-code"} {
+	for _, s := range []string{"rhiza-builder", "rhiza-verifier", "rhiza-build-retry", "rhiza-planner", "rhiza-plan-reviewer", "rhiza-plan-critic", "rhiza-plan-reviser", "rhiza-check-plan", "rhiza-check-code", "rhiza-conduct"} {
 		if !slices.Contains(r.Unchanged, "skills/"+s+"/SKILL.md") {
 			t.Errorf("second install: %s not unchanged: %+v", s, r)
 		}

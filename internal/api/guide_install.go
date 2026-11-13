@@ -53,6 +53,7 @@ const (
 	pluginCIFixPath           = "skills/rhiza-ci-fix/SKILL.md"
 	pluginGateFixPath         = "skills/rhiza-gate-fix/SKILL.md"
 	pluginConflictFixPath     = "skills/rhiza-conflict-fix/SKILL.md"
+	pluginConductPath         = "skills/rhiza-conduct/SKILL.md"
 )
 
 // pluginPaths lists every file guide.install writes, in the order it
@@ -64,7 +65,7 @@ var pluginPaths = slices.Concat(
 		pluginRetryPath, pluginBuildPath, pluginBuilderPath, pluginPlanPath, pluginPlannerPath,
 		pluginPlanReviewerPath, pluginPlanCriticPath, pluginPlanReviserPath, pluginReviewPath, pluginScrubPath, pluginVerifierPath,
 		pluginCheckCompliancePath, pluginCheckQualityPath, pluginCheckPlanPath, pluginCheckCodePath, pluginCheckQAPath, pluginCheckModelPath, pluginCriticPath,
-		pluginFixerPath, pluginCIFixPath, pluginGateFixPath, pluginConflictFixPath,
+		pluginFixerPath, pluginCIFixPath, pluginGateFixPath, pluginConflictFixPath, pluginConductPath,
 	})),
 )
 
@@ -72,7 +73,7 @@ var pluginPaths = slices.Concat(
 const pluginName = "rhiza"
 
 // pluginDescription is the plugin manifest's description.
-const pluginDescription = "The Rhiza agent guide: the rhiza, rhiza-scrub, rhiza-plan, rhiza-planner, rhiza-plan-reviewer, rhiza-plan-critic, rhiza-plan-reviser, rhiza-build, rhiza-builder, rhiza-verifier, rhiza-build-retry, rhiza-review and the eleven review role skills, and a " +
+const pluginDescription = "The Rhiza agent guide: the rhiza, rhiza-scrub, rhiza-plan, rhiza-planner, rhiza-plan-reviewer, rhiza-plan-critic, rhiza-plan-reviser, rhiza-build, rhiza-builder, rhiza-verifier, rhiza-build-retry, rhiza-review, rhiza-conduct and the eleven review role skills, and a " +
 	"SessionStart hook that runs rhiza status --hook."
 
 // pluginMarker is the manifest's ownership marker: a plugin.json holding
@@ -276,7 +277,12 @@ func pluginFiles(version string) (map[string][]byte, error) {
 		pluginGateFixPath:         "gate-fix",
 		pluginConflictFixPath:     "conflict-fix",
 	}
+	conduct, err := skillFile("rhiza-conduct", "conduct")
+	if err != nil {
+		return nil, err
+	}
 	out := map[string][]byte{
+		pluginConductPath:      conduct,
 		pluginManifestPath:     manifest,
 		pluginSkillPath:        skill,
 		pluginHooksPath:        hooks,
