@@ -14,10 +14,9 @@ merge-base and the model's Evidence.
 
 ## Expected outcome
 
-One round of findings recorded with `rhiza run findings --check`, each finding one line
-with its evidence, or `{"findings":[]}` when the code and the model agree (a check with
-no round fails). You change no code and no model: model work outside the change set's
-intent goes into a discovered-from draft change set.
+One round of findings recorded with `rhiza run findings --check`, or `{"findings":[]}`
+when the code and the model agree (a check with no round fails). You change no code and
+no model: model work outside the intent goes into a discovered-from draft change set.
 
 ## Read first
 
@@ -38,8 +37,7 @@ Read each node the slice names, then find where the diff honours it. Grade as fo
 - Missing constraint: a rule the change introduced that the code now obeys but no
   constraint states is a `minor`.
 
-Write each finding as one line with its evidence, so a fixer can act without
-re-diagnosing: the leaf, the place (`path:line`), the node it contradicts or the
+Write each finding as one line, so a fixer can act without re-diagnosing: the leaf, the place (`path:line`), the node it contradicts or the
 constraint that is missing, and what the code does instead. Record one round,
 `{"findings":[]}` when clean:
 
@@ -51,9 +49,10 @@ EOF
 
 Schema: `rhiza describe run.findings`.
 
-A missing constraint, or any other model work outside the change set's intent, is never
-built in this run: draft it as a discovered-from change set as below, and name it in the
-finding.
+A missing constraint, or other model work outside the intent, is never built in this
+run: draft it as below and name it in the finding.
+
+<!-- shared: test-scope -->
 
 <!-- shared: command-budget nested -->
 
@@ -71,5 +70,4 @@ finding.
 
 <!-- shared: severity nested -->
 
-A critic then confirms, downgrades or drops your blockers and majors; fixers act on
-what stays.
+A critic then confirms, downgrades or drops your blockers and majors.
