@@ -2839,3 +2839,20 @@ func TestHandbackRoute(t *testing.T) {
 		}
 	})
 }
+
+func TestHandbackCauseOf(t *testing.T) {
+	gate := workflow.Step{Name: "gate", Kind: workflow.KindGate}
+	c := CauseOf(gate, "fail", "gate failed: 1 of 2 commands\ncommand 2 `make gate`: exit 1; full output: /r/g.log")
+	if len(c.Commands) != 1 || c.Commands[0] != (FailedCommand{"make gate", "/r/g.log"}) {
+		t.Errorf("gate cause %+v", c)
+	}
+	cmd := workflow.Step{Name: "check", Kind: workflow.KindCommand, Run: "make check"}
+	c = CauseOf(cmd, "fail", "exit 1\nFAIL x")
+	if len(c.Commands) != 1 || c.Commands[0].Command != "make check" || c.Commands[0].OutputPath != "" || c.Output != "FAIL x" {
+		t.Errorf("command cause %+v", c)
+	}
+	c = CauseOf(workflow.Step{Name: "s", Kind: workflow.KindCommand, Run: "rhiza ship check --json"}, "fail", "exit 1\n{}")
+	if len(c.Commands) != 0 || c.Cause != "exit 1\n{}" {
+		t.Errorf("ship check cause %+v", c)
+	}
+}

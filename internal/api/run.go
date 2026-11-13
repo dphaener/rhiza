@@ -2485,6 +2485,104 @@ func (r *stepRunner) Deliver(sid, question, decision, statement string) error {
 	return nil
 }
 
+// defaultHandbackText is the text a hand-back sends when the step sets no
+// handback template.
+const defaultHandbackText = "Step %s went %s. Read %s for what failed, fix it and carry on."
+
+// Handback hands the run back to the agent step's session sid: it writes
+// handback.md for cause into the session's directory, then sends the
+// handback text the step's handback template renders, as session.message
+// does to a live session. An ended session is resumed in the same
+// conversation through its adapter, in a new tab, with that text as its
+// prompt; one that cannot be resumed is an error naming the session.
+func (r *stepRunner) Handback(step workflow.Step, sid string, cause run.HandbackCause) error {
+	rec, err := readSession(r.sessions, sid)
+	if err != nil {
+		return err
+	}
+	if rec.Brief == "" {
+		return fmt.Errorf("session %s has no session directory to hold handback.md", sid)
+	}
+	if err := run.WriteHandback(rec.Brief, cause); err != nil {
+		return err
+	}
+	v := workflow.PromptVars{Change: r.change, Run: r.run, Step: step.Name, Worktree: r.worktree}
+	if t, err := resolveChangeWorktreeIn(r.ctx, r.change, "no agent can work on it", true); err == nil {
+		v = r.promptVars(t, step.Name, run.AgentSessionName())
+	}
+	v.Brief, v.Slice, v.Handback = filepath.Join(rec.Brief, briefFile), filepath.Join(rec.Brief, sliceFile), filepath.Join(rec.Brief, handbackFile)
+	text := strings.TrimSpace(step.RenderHandback(v))
+	if text == "" {
+		text = fmt.Sprintf(defaultHandbackText, cause.Step, cause.Outcome, v.Handback)
+	}
+	if !rec.Status.Exited() {
+		return r.messageSession(rec, text)
+	}
+	return r.resumeSession(rec, text)
+}
+
+// messageSession sends a live session text as a message from the run's
+// caller (see Deliver).
+func (r *stepRunner) messageSession(rec session.Record, text string) error {
+	if err := messageable(rec); err != nil {
+		return err
+	}
+	from, err := messageSender(r.ctx)
+	if err != nil {
+		return err
+	}
+	dir, rel, err := messageFolder(r.ctx, rec)
+	if err != nil {
+		return err
+	}
+	name, err := writeMessage(dir, messageContent(from, rec, rfc3339(r.ctx.Now()), text))
+	if err != nil {
+		return err
+	}
+	if _, err := typePointer(r.ctx, r.sessions, rec.ID, messagePointer(from.Handle, rel+"/"+name), defaultMessageTimeout); err != nil {
+		return withNote(err, "the hand-back is in "+filepath.Join(dir, name))
+	}
+	return nil
+}
+
+// resumeSession continues the ended session rec in its agent's own
+// conversation with text as its prompt: the record's exit and marks are
+// cleared, the text kept for session run, and a tab opened for it.
+func (r *stepRunner) resumeSession(rec session.Record, text string) error {
+	a, ok := adapter.Lookup(rec.Agent)
+	if !ok {
+		return fmt.Errorf("session %s cannot be resumed: it names agent %q, which this rhiza does not know", rec.ID, rec.Agent)
+	}
+	if _, err := readTranscript(r.ctx, a, rec.ID); err != nil {
+		return fmt.Errorf("session %s cannot be resumed: %v", rec.ID, err)
+	}
+	if r.ctx.Self == "" || r.ctx.Exec == nil {
+		return fmt.Errorf("session %s cannot be resumed: this caller starts no programs", rec.ID)
+	}
+	if _, err := r.sessions.Update(rec.ID, func(x *session.Record) {
+		x.Resume = text
+		x.Status = session.Status{}
+	}); err != nil {
+		return fmt.Errorf("session %s cannot be resumed: %v", rec.ID, err)
+	}
+	fail := func(err error) error {
+		msg := fmt.Sprintf("resume failed: %v", err)
+		_, _ = r.sessions.Update(rec.ID, func(x *session.Record) {
+			x.Resume = ""
+			x.Status.Exit = &session.Report{State: session.StateError, Detail: msg, At: r.ctx.Now().UTC()}
+		})
+		return fmt.Errorf("session %s cannot be resumed: %v", rec.ID, err)
+	}
+	tab, _, err := openSessionPane(r.ctx, rec.Tab, session.Tab{}, "", "", rec.Worktree, r.ctx.Self, rec.ID)
+	if err != nil {
+		return fail(err)
+	}
+	if _, err := r.sessions.Update(rec.ID, func(x *session.Record) { x.Tab = tab }); err != nil {
+		return fail(err)
+	}
+	return nil
+}
+
 // arbiterAnswer is Answer's verdict over model m on question q.
 func arbiterAnswer(m Model, q id.ID) run.Answer {
 	if n, ok := m.Node(q); !ok || n.Retired {

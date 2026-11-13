@@ -71,7 +71,11 @@ type Record struct {
 	Brief string `json:"brief,omitempty"`
 	// Parent is the session that spawned this one with rhiza run spawn;
 	// empty for every other session.
-	Parent         string    `json:"parent,omitempty"`
+	Parent string `json:"parent,omitempty"`
+	// Resume is the text a hand-back resumes an ended session with: session
+	// run continues the agent's conversation with it as the prompt, then
+	// clears it.
+	Resume         string    `json:"resume,omitempty"`
 	Actor          string    `json:"actor"`
 	For            string    `json:"for"`
 	PermissionMode string    `json:"permission_mode"`

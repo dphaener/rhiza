@@ -1990,6 +1990,17 @@ func (st State) BlockOf(session string) (SessionBlock, bool) {
 	return SessionBlock{}, false
 }
 
+// LastSession is the session of step's latest visit that had one, "" for
+// none.
+func (st State) LastSession(step string) string {
+	for i := len(st.Steps) - 1; i >= 0; i-- {
+		if d := st.Steps[i]; d.Step == step && d.Session != "" {
+			return d.Session
+		}
+	}
+	return ""
+}
+
 // CapVisits is how many visits of step count against its max_visits: those
 // since the run's last retried or handback entry, or all of them when it
 // has none.

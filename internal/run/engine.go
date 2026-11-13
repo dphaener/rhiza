@@ -109,6 +109,15 @@ type Runner interface {
 	AgentEnded(step workflow.Step, session string) error
 }
 
+// Handbacker is a Runner that can hand a run back to an agent step's
+// session: it writes handback.md for cause into the session's directory and
+// sends the session the handback text, messaging a live session and
+// resuming an ended one in the same conversation. An error fails the step.
+// A Runner without it leaves the session as it is.
+type Handbacker interface {
+	Handback(step workflow.Step, session string, cause HandbackCause) error
+}
+
 // Question is a question node the Runner added: its ID and handle.
 type Question struct {
 	ID     string
@@ -417,6 +426,9 @@ type running struct {
 	leafList map[string][]Leaf
 	// lastStatus is the last report given to Engine.Status.
 	lastStatus *StatusReport
+	// handback is the cause of the hand-back the next agent step enters
+	// with, until that step delivers it.
+	handback *HandbackCause
 	// seen holds the sessions this process started (true) or has polled
 	// once already (false), so a session first polled without being started
 	// here is a rejoin (see agentStatus).
@@ -568,6 +580,8 @@ func (r *running) loop() (State, error) {
 			if err := r.append(Entry{Type: TypeHandback, Step: step.Name, Next: target, Outcome: res.outcome, Detail: res.detail}); err != nil {
 				return r.j.State(), err
 			}
+			c := CauseOf(step, res.outcome, res.detail)
+			r.handback = &c
 		}
 		if err := r.append(Entry{
 			Type: TypeEnded, Step: step.Name, Visit: act.Visit, Outcome: res.outcome,
@@ -893,6 +907,25 @@ func (r *running) wait(step workflow.Step, env []string) result {
 // ended on while it still waits (a failed arbitration) keeps its pane.
 func (r *running) agent(step workflow.Step, env []string) (result, error) {
 	session := r.j.State().Session[step.Name]
+	cause := r.handback
+	r.handback = nil
+	if session == "" && cause != nil {
+		// The step's earlier visit ended its session: the hand-back goes to
+		// that one, and this visit journals it again as its own.
+		if session = r.j.State().LastSession(step.Name); session != "" {
+			if err := r.append(Entry{Type: TypeSession, Step: step.Name, Session: session}); err != nil {
+				return result{}, err
+			}
+		}
+	}
+	if session != "" && cause != nil {
+		if hb, ok := r.e.Runner.(Handbacker); ok {
+			r.log("step %s: handed back by %s to session %s", step.Name, cause.Step, session)
+			if err := hb.Handback(step, session, *cause); err != nil {
+				return errResult(fmt.Errorf("hand back to session %s: %v", session, err)), nil
+			}
+		}
+	}
 	if session == "" {
 		s, err := r.e.Runner.StartAgent(step, step.Model(r.j.State().CurrentVisit), env)
 		if err != nil {
