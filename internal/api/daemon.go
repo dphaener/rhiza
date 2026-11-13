@@ -532,11 +532,12 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	// A session blocked on a permission prompt notifies like any other
 	// item; it needs the session records, so the repository's common dir.
 	var blocked func(st run.State) []RunPermission
+	var apiErrored func(st run.State) []RunAPIError
 	var tabOf func(sid string) session.Tab
 	if common, err := gitCommonDir(ctx); err == nil {
-		blocked, tabOf = inboxBlockedOf(ctx, common), inboxTabOf(ctx, common)
+		blocked, apiErrored, tabOf = inboxBlockedOf(ctx, common), inboxAPIErrorOf(ctx, common), inboxTabOf(ctx, common)
 	}
-	items := inboxItems(runs, host, nil, rs.Live, stateOf, nil, blocked, tabOf)
+	items := inboxItems(runs, host, nil, rs.Live, stateOf, nil, blocked, apiErrored, tabOf)
 	items = append(items, overlaps...)
 	// This poll's disk-low state, not the one saved after the last poll.
 	items = append(items, diskLowItems(state.DiskLow)...)
@@ -633,6 +634,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return what + ": a plan waits for your acceptance"
 	case InboxStalled:
 		return what + ": a session stalled"
+	case InboxAPIError:
+		return what + ": a session stopped on an API error"
 	case InboxPermission:
 		msg := what + ": a session waits on a permission prompt"
 		if d := strings.TrimSpace(it.Detail); d != "" {

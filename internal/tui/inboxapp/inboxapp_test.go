@@ -1056,3 +1056,29 @@ func TestMachineHoldItemsRender(t *testing.T) {
 		}
 	}
 }
+
+func TestAPIErrorItemShowsDetailAndOpensTab(t *testing.T) {
+	const apiErr = `{"items":[{"id":"z1","kind":"api-error","change":"C5","change_title":"Five","step":"build","run":"R5","session":"S5","detail":"session S5 stopped on an API error: API Error: 403"}]}`
+	var calls []call
+	m := NewModel(fake(apiErr, &calls))
+	rows := m.Rows()
+	if len(rows) != 1 || !strings.HasPrefix(rows[0], "api-error · Five · build") {
+		t.Fatalf("rows = %q", rows)
+	}
+	if ActionFor(api.InboxAPIError) != ActionShow {
+		t.Errorf("action = %v", ActionFor(api.InboxAPIError))
+	}
+	enter(m)
+	if last := calls[len(calls)-1]; !slices.Equal(last.args, []string{"z1"}) || last.op != "inbox.open" {
+		t.Fatalf("calls: %+v", calls)
+	}
+	v := m.View().Content
+	for _, w := range []string{"api-error", "Five", "API Error: 403"} {
+		if !strings.Contains(v, w) {
+			t.Errorf("detail lacks %q:\n%s", w, v)
+		}
+	}
+	if p, _ := m.Picked(); p.Action != ActionShow {
+		t.Errorf("pick = %+v", p)
+	}
+}

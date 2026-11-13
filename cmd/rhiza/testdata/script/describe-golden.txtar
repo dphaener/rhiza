@@ -3247,7 +3247,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "detail": {
-                  "description": "A failed run: why it failed; a sign-off: what it waits for; a permission item: the prompt's message",
+                  "description": "A failed run: why it failed; a sign-off: what it waits for; a permission item: the prompt's message; an api-error item: the session and the error it stopped on",
                   "type": "string"
                 },
                 "handle": {
@@ -3259,7 +3259,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, permission, api-error, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale",
                   "type": "string"
                 },
                 "next": {
@@ -3337,7 +3337,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "session": {
-                  "description": "A question: the asking session; an interview: the interview's session; a stalled item: the stalled session; a permission item: the blocked session",
+                  "description": "A question: the asking session; an interview: the interview's session; a stalled item: the stalled session; a permission item: the blocked session; an api-error item: the session that stopped",
                   "type": "string"
                 },
                 "step": {
