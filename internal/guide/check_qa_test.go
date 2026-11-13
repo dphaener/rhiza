@@ -21,7 +21,7 @@ func TestCheckQAText(t *testing.T) {
 		t.Fatalf("check-qa: sections %q, want exactly %q in order", got, want)
 	}
 	shared := sharedFiles(t)
-	for _, blk := range []string{"session-done", "command-budget", "never-list", "severity"} {
+	for _, blk := range []string{"session-done", "test-scope", "command-budget", "never-list", "severity"} {
 		text := strings.TrimRight(shared[blk+".md"], "\n")
 		if !strings.Contains(c.Body, text) && !strings.Contains(c.Body, demote(text)) {
 			t.Errorf("check-qa lacks the %s block", blk)

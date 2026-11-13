@@ -14,8 +14,8 @@ merge-base and the model's Evidence.
 ## Expected outcome
 
 Each leaf exercised, with Evidence written as yourself on it, and one round of findings
-recorded with `rhiza run findings --check`, each finding one line with its evidence, or
-`{"findings":[]}` when nothing is broken (a check with no round fails). You change no code.
+recorded with `rhiza run findings --check`, or `{"findings":[]}` when nothing is broken
+(a check with no round fails). You change no code.
 
 ## Read first
 
@@ -30,7 +30,7 @@ git diff $(git merge-base origin/main HEAD)
 Start from a clean state: no leftovers of an earlier run, no stale build.
 
 Build what changed, fresh, to a scratch path outside `$PATH`, with the repo's own build
-command from its contributor guide, and run that build by its full path. Never install a
+command, and run that build by its full path. Never install a
 binary onto `$PATH`: other runs share it.
 
 For each leaf, run its scenarios with the built program:
@@ -46,9 +46,9 @@ Then explore, bounded, and write no new test files:
 - Then edge cases: empty, large, repeated, out of order.
 
 Report a finding only for behaviour that is broken, never for a missing test or a style
-point. Grade it by the severities below. Write each finding as one line with its
-evidence: the leaf, the place (`path:line`, or the command you ran), what you saw and
-what you expected. Record one round, `{"findings":[]}` when clean:
+point. Grade it by the severities below. Write each finding as one line: the leaf, the
+place (`path:line` or the command), what you saw and expected. Record one round,
+`{"findings":[]}` when clean:
 
 ```
 rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'
@@ -67,12 +67,13 @@ Also write Evidence as yourself on each leaf you exercised, with
 {"op":"link","from":"<leaf>-qa-<cycle>","type":"verifies","to":"<leaf>"}]}
 ```
 
+<!-- shared: test-scope -->
+
 <!-- shared: command-budget nested -->
 
 ## Must not do
 
 <!-- shared: never-list nested -->
-- Install a binary onto `$PATH`.
 - Write new test files, or edit code: a fixer acts on your findings.
 
 ## Context
