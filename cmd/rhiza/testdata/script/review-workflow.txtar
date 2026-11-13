@@ -49,7 +49,8 @@ stdout '^exit=0$'
 
 # Cycle 1 ran the five checks in order and quality's critic; cycle 2 ran
 # alpha's fixer, its verifier, then quality alone. Every session ran on
-# opus.
+# opus but alpha's verifier: its first fix touches no risky path, so the
+# tiered verifier runs on sonnet.
 exec cat $WORK/claude.log
 cmp stdout $WORK/want.log
 
@@ -114,7 +115,7 @@ role=check check=qa cycle=1 leaf= model=opus
 role=check check=model cycle=1 leaf= model=opus
 role=critic check=quality cycle=1 leaf= model=opus
 role=fixer check= cycle=2 leaf=alpha model=opus
-role=verifier check= cycle=2 leaf=alpha model=opus
+role=verifier check= cycle=2 leaf=alpha model=sonnet
 role=check check=quality cycle=2 leaf= model=opus
 -- want.checks --
 compliance: cycle 1 passed: check

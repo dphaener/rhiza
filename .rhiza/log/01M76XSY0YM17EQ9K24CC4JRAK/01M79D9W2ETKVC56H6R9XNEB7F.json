@@ -1,0 +1,30 @@
+{
+  "actor": "01M79D6R9KAGKGR41V5H1KRDYJ",
+  "after": [
+    "01M779B8N4FB1SHP3A7WH93RCS"
+  ],
+  "at": "2026-11-13T02:55:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "6785417f-0423-45fb-8791-01a1d2d346d4",
+          "statement": "Where does the daemon journal why an accepted change set waits before its run starts? (Today daemon.state.json keeps only the last poll's skip reasons.) / How does the perf analysis read the queue-wait journal? / Is the queue-wait journal trimmed?"
+        },
+        "handle": "question-6785417f-1",
+        "id": "01M79D9SYNJBVVE0EG9VF47SWD",
+        "key": null,
+        "kind": "question",
+        "node": "01M79D9SYNJBVVE0EG9TRH0RSN",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76XSY0YM17EQ9K24CC4JRAK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79D9W2ETKVC56H6R9XNEB7F",
+  "type": "ops",
+  "v": 1
+}

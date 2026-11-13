@@ -59,6 +59,15 @@ prompt = "/rhiza-fixer Fix the findings below for change set {change} in review 
 # commit ($RHIZA_COMMIT) and passes only with Evidence written as itself.
 [step.review.verifier]
 models = ["opus"]
+low_risk_models = ["sonnet"]
+risky_paths = [
+  "*_test.go", "**/*_test.go", "**/testdata/**", "**/main_test.go",
+  ".githooks/**", "**/hooks/**",
+  ".github/**",
+  ".rhiza/workflows/**", "internal/workflow/builtin/**",
+  "**/migrations/**", "**/migrate/**",
+  "**/*retry*",
+]
 prompt = "/rhiza-verifier Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT: follow rhiza guide verifier."
 
 # Fixers, verifiers and checks write records (actors, Evidence), which

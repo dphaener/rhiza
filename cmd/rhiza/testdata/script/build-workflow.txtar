@@ -3,7 +3,8 @@
 # first: first is built and verified, then second; build-check passes;
 # the run succeeds and the change set stays accepted, unlanded. Each
 # leaf's Evidence is committed by the engine. Builders run on the first
-# model of their ladder (sonnet) and verifiers on opus.
+# model of their ladder (sonnet), and verifiers of these low-risk leaves
+# on sonnet too.
 #
 # The fake rex runs the tab's command synchronously in the window's
 # directory. The fake claude logs its role, leaf, attempt and model. As a
@@ -41,7 +42,7 @@ stdout '"workflow": "build"'
 stdout '^exit=0$'
 
 # first was built and verified before second's builder started; each
-# builder ran on sonnet, each verifier on opus.
+# builder ran on sonnet, each verifier on sonnet (low-risk leaves).
 exec cat $WORK/claude.log
 cmp stdout $WORK/want.log
 
@@ -76,9 +77,9 @@ fold-ok
 
 -- want.log --
 role=builder leaf=first attempt=1 model=sonnet
-role=verifier leaf=first attempt=1 model=opus
+role=verifier leaf=first attempt=1 model=sonnet
 role=builder leaf=second attempt=1 model=sonnet
-role=verifier leaf=second attempt=1 model=opus
+role=verifier leaf=second attempt=1 model=sonnet
 -- bin/rex --
 #!/bin/sh
 dir=

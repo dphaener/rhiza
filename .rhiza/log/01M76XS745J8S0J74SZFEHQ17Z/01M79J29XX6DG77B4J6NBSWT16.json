@@ -1,0 +1,86 @@
+{
+  "actor": "01M79HX7CFJ4ARY2BX1MW1S9F8",
+  "after": [
+    "01M79HW36PYWH55RXEGMYEQKPZ"
+  ],
+  "at": "2026-11-13T04:18:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1a07d6cae with a scratch build (go build -trimpath), in a scratch Rhiza root and repo with fake rex and a fake claude logging role, cycle, leaf, attempt and --model (builders and fixers commit one file per leaf: plain -> internal/x/plain.go, risky -> .github/workflows/ci.yml; checks record majors, critics confirm them, verifiers write Evidence), run under env -i. A build run then a review run with a project review.toml (one check, verifier models [opus], low_risk_models [sonnet], risky_paths [*_test.go, .github/**]). Build: plain verifier sonnet, risky verifier opus. Review with majors on both leaves in cycle 1: cycle 2 first fix, journalled leaf-session plain verifier attempt 2 sonnet, risky verifier attempt 2 opus. With plain's first cycle-2 verifier failing: plain verifier attempt 3 (second try of cycle 2) opus. With a major on plain again in cycle 2: cycle 3 fix, plain verifier attempt 5 opus. Fixers stay on opus. Both runs succeeded. go test -trimpath ./internal/run -run 'TestVerifierTier|TestVerifierRisky' ok."
+        },
+        "handle": "verifier-tier-choice-qa-2",
+        "id": "01M79J29SPPBR1VKNKKGS3RZMG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79J29SPPBR1VKNKKF6QAD4G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79J29SPPBR1VKNKKF6QAD4G",
+        "id": "01M79J29TGZJCPTNDKCK7J12DZ",
+        "link": "01M79J29TGZJCPTNDKCH37FSBE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CZ29TQH0XYRCP38C2X9DK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1a07d6cae with a scratch build (go build -trimpath), in a scratch Rhiza root and repo with fake rex and a fake claude logging role, cycle, leaf, attempt and --model (builders and fixers commit one file per leaf: plain -> internal/x/plain.go, risky -> .github/workflows/ci.yml; checks record majors, critics confirm them, verifiers write Evidence), run under env -i. rhiza workflow describe review prints role verifier models [opus], low_risk_models [sonnet] and the twelve risky_paths globs; the built-in build workflow verified the plain leaf on sonnet and the .github leaf on opus and build-check passed. go test -trimpath ./cmd/rhiza -run 'TestScripts/(build-workflow|workflow-describe|describe-golden)$' ok (cycle 1's build-workflow failure is fixed); go test -trimpath ./internal/workflow/... ok."
+        },
+        "handle": "verifier-tier-defaults-qa-2",
+        "id": "01M79J29V6MPHQ7QSNNA9SZ7J3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79J29V6MPHQ7QSNN6G407XS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79J29V6MPHQ7QSNN6G407XS",
+        "id": "01M79J29VTZ807Z6HKFQKPQMP2",
+        "link": "01M79J29VTZ807Z6HKFP9J7GK4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CZ2BQEZSPC3KEF7PZH5G0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1a07d6cae with a scratch build (go build -trimpath), in a scratch Rhiza root and repo with fake rex and a fake claude logging role, cycle, leaf, attempt and --model (builders and fixers commit one file per leaf: plain -> internal/x/plain.go, risky -> .github/workflows/ci.yml; checks record majors, critics confirm them, verifiers write Evidence), run under env -i. A project review.toml setting low_risk_models and risky_paths on a checks step's verifier loaded and drove the run, and rhiza workflow describe review shows both fields on the verifier role. go test -trimpath ./internal/workflow/... and ./cmd/rhiza TestScripts/(workflow-describe|describe-golden) ok."
+        },
+        "handle": "verifier-tier-fields-qa-2",
+        "id": "01M79J29WGRGYT85B5WS1JPJ8Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79J29WGRGYT85B5WPARQT7S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79J29WGRGYT85B5WPARQT7S",
+        "id": "01M79J29X8H0N4T27HMYV68KEB",
+        "link": "01M79J29X8H0N4T27HMXGAQRF2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CZ27B7NJD16PRCG0YJ54R",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XS745J8S0J74SZFEHQ17Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79J29XX6DG77B4J6NBSWT16",
+  "type": "ops",
+  "v": 1
+}

@@ -80,7 +80,7 @@ Also write Evidence as yourself on each leaf you exercised, with
 
 <!-- shared: session-done -->
 
-<!-- shared: severity nested -->
+<!-- shared: severities nested -->
 
 A critic then confirms, downgrades or drops your blockers and majors; fixers act on
 what stays.

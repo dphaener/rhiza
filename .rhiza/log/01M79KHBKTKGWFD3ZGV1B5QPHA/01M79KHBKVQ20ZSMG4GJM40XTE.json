@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T04:44:30Z",
+  "body": {
+    "intent": "rhiza skill check runs a skill against a fixture change set and reports which gates pass, and rhiza workflow check warns about unresolved invoke, uncapped hand-back loops and a merge with no gate",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M79KHBKTKGWFD3ZGV1B5QPHA",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79KHBKVQ20ZSMG4GJM40XTE",
+  "type": "open",
+  "v": 1
+}

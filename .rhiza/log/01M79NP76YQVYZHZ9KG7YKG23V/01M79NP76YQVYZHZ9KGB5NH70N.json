@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T05:22:08Z",
+  "body": {
+    "intent": "Web runs list and run detail: each run's change set, phase in words, elapsed time and state; a run detail as a timeline of phases with every session's role, leaf, model, outcome and findings, including conductor-spawned sessions",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M79NP76YQVYZHZ9KG7YKG23V",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79NP76YQVYZHZ9KGB5NH70N",
+  "type": "open",
+  "v": 1
+}

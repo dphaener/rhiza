@@ -1,0 +1,33 @@
+{
+  "actor": "01M79D6R9KAGKGR41V5H1KRDYJ",
+  "after": [
+    "01M79DCE8RYW2EN2WJKA43WQVB"
+  ],
+  "at": "2026-11-13T02:57:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "040c32c4b1e094f9453d120692b60eb7d0cff27d30494e0efd6422f902b3df14",
+          "session": "6785417f-0423-45fb-8791-01a1d2d346d4",
+          "summary": "Autonomous plan run for change set 01M76XSY (Queue wait journal), serving m35-ship-40m. No owner took part. The planner read the daemon's pick code: every poll works out a Skip reason for each accepted change set (internal/daemon/pick.go, daemonPoll1 in internal/api/daemon.go), but daemon.state.json keeps only the last poll's skips, so a wait leaves no history. The machine hold already reports as the Skip reasons load-high and memory-low (internal/daemon/load.go). The planner raised three questions: where the wait is journaled, how the perf analysis reads it, and whether it is trimmed. The arbiter answered with Decision queue-wait-journal-file: an append-only queue.wait.jsonl in the daemon's per-clone folder, a line only when a change set's wait starts, changes reason, or its run starts, a typed line and reader in internal/daemon, read directly by the perf analysis, no CLI command, never trimmed. The planner wrote two leaves under daemon-picks: the daemon's journal lines, and the line type and reader.",
+          "title": "Queue wait journal plan (autonomous)"
+        },
+        "handle": "queue-wait-journal-plan",
+        "id": "01M79DDV1SRFJE2R3VCK64XBAM",
+        "key": null,
+        "kind": "source",
+        "node": "01M79DDV1SRFJE2R3VCGSCP391",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76XSY0YM17EQ9K24CC4JRAK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79DDV27F1TPHEX78TCX28EX",
+  "type": "ops",
+  "v": 1
+}

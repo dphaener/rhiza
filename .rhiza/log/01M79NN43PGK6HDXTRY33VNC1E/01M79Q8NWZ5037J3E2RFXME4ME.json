@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M79NN43PGK6HDXTRY5DVYG8R"
+  ],
+  "at": "2026-11-13T05:49:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestNodePages renders a capability, a decision with a quote, a decision with wording and question, a question, a source and an intent, each with its groups of links and history; an unknown ref answers 404 with a page naming the ref.",
+          "statement": "Every model node has a page at /p/<project>/nodes/<ref>, as in pages/model-page.html: its kind and statement; for a decision, the owner's quote shown as 'In your words' with the question it answered, or the agent's wording marked as picked by the owner; what it decided or links to, grouped; where it came from (sources and change sets); and its history."
+        },
+        "handle": "web-node-pages",
+        "id": "01M79Q8NR43ZG57MNBDTKS3986",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M79Q8NR43ZG57MNBDSN6KVJS",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestLinksResolve crawls Home, the roadmap, a change set page, a run page and a node page of a two-project fixture root and gets 200 for every internal link.",
+          "statement": "Every link the web UI renders inside a project resolves to a page that exists in that project."
+        },
+        "handle": "web-links-resolve",
+        "id": "01M79Q8NS7D874K7TVBXA85K40",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M79Q8NS7D874K7TVBX23DXGA",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8NR43ZG57MNBDSN6KVJS",
+        "id": "01M79Q8NTA8VVH2PBFY9ZTGPWM",
+        "link": "01M79Q8NTA8VVH2PBFY7143521",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6XJF08QR1Q1W1XXCWB6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8NS7D874K7TVBX23DXGA",
+        "id": "01M79Q8NVHAPBXSDF7KJ0JQ2NG",
+        "link": "01M79Q8NVHAPBXSDF7KFQRPZ4S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6XJF08QR1Q1W1XXCWB6",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79NN43PGK6HDXTRY33VNC1E",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79Q8NWZ5037J3E2RFXME4ME",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M79RB17P1H9SGFY1TTM3BZXB",
+  "after": [
+    "01M79QSQWWRZ74Z2G6GNR8199A"
+  ],
+  "at": "2026-11-13T06:10:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 979015256 re-ran the Checks block: grep -n oversized-leaf internal/guide/text/plan-reviewer.md (exit 0, line 33 now 'more than one concern, or too large for one fresh session'), go test -trimpath ./internal/guide/... (exit 0; TestPlanReviewerText passes uncached with -count=1), go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|plan-review)' (exit 0), rhiza ship generate (exit 0, 0 changed), rhiza render (exit 0, no tracked change). TestPlanReviewerText asserts the six headings in order, every run.Kinds kind (all seven), the vague-acceptance and codebase-assumption rules, rhiza overlaps, check findings not recorded, the findings heredoc and empty round, the expanded severities/session-done/command-budget/never-list blocks, and the negative case (no rhiza run verdict or rhiza apply; built guide output has 0 matches). Diff touches only plan-reviewer.md plus the builder's actor record; no stubs or TODOs."
+        },
+        "handle": "plan-reviewer-topic-verified-2",
+        "id": "01M79RDYZ8PXEHE6XR5MMQXM49",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79RDYZ8PXEHE6XR5MKVWBN8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79RDYZ8PXEHE6XR5MKVWBN8",
+        "id": "01M79RDZ4587WZWV8QHZSKHNDF",
+        "link": "01M79RDZ4587WZWV8QHX7T8NKK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH5P0K3C4P0VH374J64XE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79RDZ8STY5DVFRKFAKGX9S9",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T05:21:52Z",
+  "body": {
+    "intent": "Safe actions in the web UI behind a required web token: answer an inbox item, approve a sign-off, pause or resume the daemon or a project; nothing else",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M79NNP2BRD9R8XG15XCYACZ4",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79NNP2BRD9R8XG15ZKJ3JQQ",
+  "type": "open",
+  "v": 1
+}

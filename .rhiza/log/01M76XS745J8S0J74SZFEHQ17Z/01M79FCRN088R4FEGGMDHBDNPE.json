@@ -1,0 +1,40 @@
+{
+  "actor": "01M79ES4ANFVSDP6PDFB6KR7E2",
+  "after": [
+    "01M79CZ2FKV4AEXS5A0M4N2A9A"
+  ],
+  "at": "2026-11-13T03:32:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d357c3a0f (detached checkout) I ran go test -trimpath ./internal/workflow/... (ok), go test -trimpath ./cmd/rhiza -run 'TestScripts/(workflow-describe|describe-golden)$' (ok) and go test -trimpath ./internal/api/... (ok). TestVerifierTierLoads parses a leaves and a checks verifier with models, low_risk_models and risky_paths, and confirms a role setting neither has nil fields. TestVerifierTierRefused refuses both keys on a builder, fixer, critic, check and agent step, and refuses a blank model, an empty glob and a malformed glob. TestRisky matches **/testdata/**, *_test.go and .github/** against sample paths, positive and negative. workflow-describe.txtar checks both fields in text and --json, and describe-golden carries the new shape. Reading the diffs (333601a65 + d357c3a0f) showed risk.go matching, parse and validation in workflow.go, and describe output in internal/api/workflow_describe.go. Both attempt-1 findings are fixed: a scratch build's `workflow describe` on a check setting risky_paths now says 'check: low_risk_models and risky_paths are only for the verifier role; a check cannot have them, set them under [step.review.verifier]', and on an agent step it says 'belong to a leaves or checks step's verifier role; an agent step has no verifier and cannot have them'. The tests assert both messages."
+        },
+        "handle": "verifier-tier-fields-verified",
+        "id": "01M79FCRJHQ14961MYN7EPGGM1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79FCRJHQ14961MYN5WF0XS7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79FCRJHQ14961MYN5WF0XS7",
+        "id": "01M79FCRKXNVCXAVHJ3FPSHK82",
+        "link": "01M79FCRKXNVCXAVHJ3FC8H9GF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CZ27B7NJD16PRCG0YJ54R",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XS745J8S0J74SZFEHQ17Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79FCRN088R4FEGGMDHBDNPE",
+  "type": "ops",
+  "v": 1
+}

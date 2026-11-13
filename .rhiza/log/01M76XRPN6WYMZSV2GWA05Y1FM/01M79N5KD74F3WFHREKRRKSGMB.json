@@ -1,0 +1,40 @@
+{
+  "actor": "01M79N316FS03TK6SSEB4Q3AR5",
+  "after": [
+    "01M79N02ARZ1KNPNCFBPKJRJZH"
+  ],
+  "at": "2026-11-13T05:13:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7a0a398f0 re-ran the Checks block: go test -trimpath ./internal/guide/... ok (TestPlanCriticText: six sections in order, rhiza run status --json in Read first, verdict heredoc with confirmed/downgraded+severity/dropped, never add/raise rules, command-budget/never-list/severities/session-done expanded, negative case bans rhiza run findings, rhiza apply and a findings heredoc), go test ./cmd/rhiza -run TestScripts/guide ok, go test ./internal/api -run Guide ok, rhiza ship generate exit 0 (0 changed), rhiza render exit 0 with a clean tree. Read the diff: only the plan-critic topic, its registration, list-order/guide.txtar counts and the build's log/rendered entries; no stubs or TODOs; rendered `rhiza guide plan-critic` matches the run verdict input schema."
+        },
+        "handle": "plan-critic-topic-verified",
+        "id": "01M79N5K8AZVKYCPP3WEVSK0RX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79N5K8AZVKYCPP3WE26G0YP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79N5K8AZVKYCPP3WE26G0YP",
+        "id": "01M79N5KA4740JAFXN6AK9VAAC",
+        "link": "01M79N5KA4740JAFXN6A02BGFG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH5XRV6CSB9GDW3VGA5JT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79N5KD74F3WFHREKRRKSGMB",
+  "type": "ops",
+  "v": 1
+}

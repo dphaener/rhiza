@@ -85,7 +85,7 @@ Keys:
 Tables:
 
 - `step.<name>.builder` (required): The builder role: prompt, agent, permission_mode, models by attempt
-- `step.<name>.verifier` (required): The verifier role, with the same keys
+- `step.<name>.verifier` (required): The verifier role, with the same keys plus low_risk_models and risky_paths
 
 Outcomes: `pass`, `fail`.
 
@@ -148,6 +148,8 @@ A role (a builder, verifier, critic or fixer table, or one check) takes:
 - `agent`: The agent adapter's name; unset takes the run's, else the default
 - `permission_mode`: The agent's permission mode; unset takes the run's
 - `models`: Models in order of the attempt, visit or cycle; the last stays for every later one; unset takes the agent's default
+- `low_risk_models`: Verifier role only: the models by attempt for a low-risk leaf; models stays the ladder for a risky one. Unset means models for every leaf
+- `risky_paths`: Verifier role only: path globs (** matches any number of directories; a glob without a slash matches a file name at any depth); a leaf changing a matching file is risky
 
 ## Prompt placeholders
 

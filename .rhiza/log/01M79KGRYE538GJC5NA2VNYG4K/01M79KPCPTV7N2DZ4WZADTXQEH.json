@@ -1,0 +1,132 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M79KGRYE538GJC5NA6D1HM8X"
+  ],
+  "at": "2026-11-13T04:47:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestRunSpawn covers a spawned child's journal entry, its brief with the contract section added, the outcome returned to the caller, a refusal outside a run, and a hold while a usage hold is on; go test -trimpath ./cmd/rhiza -run TestScripts/run-spawn passes with a fake agent.",
+          "statement": "An agent session in a run starts a child session with rhiza run spawn --role <role> [--leaf <leaf>] --brief <file> [--model <model>]: the daemon starts it in the run's worktree through the agent adapter, with the run's permission mode, counts it against the slot and usage holds, journals it as a child of the calling step, and returns its outcome as JSON when it finishes."
+        },
+        "handle": "run-spawn",
+        "id": "01M79KPCATRS9TD6XGS73BQ82D",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M79KPCATRS9TD6XGS3C3KYY6",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestRunStatusSpawned and go test -trimpath ./internal/web -run TestRunDetailSpawned show two children of one step with role, leaf, model, state and outcome, a running child marked running, and a failed child with its reason.",
+          "statement": "rhiza run status, its --json and the web run page list every spawned session under the step that spawned it, with its role, leaf, model, state and outcome, and open or resume it like any other session."
+        },
+        "handle": "spawn-visible",
+        "id": "01M79KPCC9NH1M9F5EFPG2YV1R",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M79KPCC9NH1M9F5EFKVGJW69",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestGateStep covers parsing and rhiza workflow check refusing a gate with no commands; go test -trimpath ./internal/run -run TestGateStep shows a passing gate, a failing gate keeping the failing command's full output in the run directory, and the journal naming the failing command.",
+          "statement": "A workflow step of kind gate runs a list of commands the daemon owns, never an agent, in the run's worktree; it passes only when every command exits 0, and on failure keeps each failing command's full output for the step it routes to."
+        },
+        "handle": "gate-step",
+        "id": "01M79KPCDGXDFMJJ3WF1NSJF4M",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M79KPCDGXDFMJJ3WEZ2G4H51",
+        "op": "node.create",
+        "parent": "01M5SWT9A05VXSMXQME4CPJN2D"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run -run TestHandback shows a live session messaged, an ended session resumed in the same conversation, the step re-entered, and the fourth failure parking the run with an inbox item; go test -trimpath ./cmd/rhiza -run TestScripts/run-handback shows a gate failing twice and then passing, and rhiza workflow check warning about a hand-back loop with no cap.",
+          "statement": "A step's on.fail (or another outcome) may be handback:<agent step>: the daemon writes handback.md with the cause and sends that step's session its handback text, resuming the session in the same conversation when it is no longer live, then continues from that step; after handback_cap hand-backs in one run (default 3) the run parks with an inbox item naming the cause."
+        },
+        "handle": "run-handback",
+        "id": "01M79KPCETKJR0AX7B5A07NMS8",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M79KPCETKJR0AX7B576P4C76",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run -run TestSpawnResume kills the driver while a child runs and while a hand-back is pending, restarts it, and shows the child's outcome recorded once and the run continuing from the same step.",
+          "statement": "Killing the daemon while a run waits on a spawned session or a hand-back loses nothing: on restart it reattaches to live children, records children that ended while it was down, and resumes the waiting step."
+        },
+        "handle": "spawn-durable",
+        "id": "01M79KPCGPWP3YX3Q5GS5D86V1",
+        "key": "zzzzzzzw",
+        "kind": "capability",
+        "node": "01M79KPCGPWP3YX3Q5GRCFA0B0",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCATRS9TD6XGS3C3KYY6",
+        "id": "01M79KPCJ1HEXV84DTVG501M7B",
+        "link": "01M79KPCJ1HEXV84DTVESY7W35",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVQKMABKSY7Q0ZZC4JZF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCC9NH1M9F5EFKVGJW69",
+        "id": "01M79KPCJYDH3X40TH25NZ8JX3",
+        "link": "01M79KPCJYDH3X40TH22F07PKM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVQKMABKSY7Q0ZZC4JZF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCDGXDFMJJ3WEZ2G4H51",
+        "id": "01M79KPCKWM1R304VRK6959EH8",
+        "link": "01M79KPCKWM1R304VRK3JJZ1GV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVPGCBYHVX9H9WB8P5SM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCETKJR0AX7B576P4C76",
+        "id": "01M79KPCMSVX1AK078SEBRZ5RF",
+        "link": "01M79KPCMSVX1AK078SB6MAXEC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVPGCBYHVX9H9WB8P5SM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCGPWP3YX3Q5GRCFA0B0",
+        "id": "01M79KPCNT3JX6XMRA71AZM6G9",
+        "link": "01M79KPCNT3JX6XMRA70GE6SG7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVPGCBYHVX9H9WB8P5SM",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79KGRYE538GJC5NA2VNYG4K",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79KPCPTV7N2DZ4WZADTXQEH",
+  "type": "ops",
+  "v": 1
+}

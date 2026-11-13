@@ -21,7 +21,7 @@ func TestCheckComplianceText(t *testing.T) {
 		t.Fatalf("check-compliance: sections %q, want exactly %q in order", got, want)
 	}
 	shared := sharedFiles(t)
-	for _, blk := range []string{"session-done", "test-scope", "command-budget", "never-list", "severity"} {
+	for _, blk := range []string{"session-done", "test-scope", "command-budget", "never-list", "severities"} {
 		text := strings.TrimRight(shared[blk+".md"], "\n")
 		if !strings.Contains(c.Body, text) && !strings.Contains(c.Body, demote(text)) {
 			t.Errorf("check-compliance lacks the %s block", blk)

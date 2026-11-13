@@ -8,7 +8,7 @@ autonomous = false
 # model: the plan is the model, so no step writes or reads a plan file.
 [step.interview]
 kind = "agent"
-prompt = "/rhiza-plan Plan change set {change} ({title}) with the owner, straight into the model, following the rhiza-plan skill (`rhiza guide plan`). Your very last action, once the plan is written, is to run `rhiza session done` as its own command, never chained with `;` or `&&`: this run moves on to a fresh review only then, never because you sit idle."
+prompt = "/rhiza-planner Plan change set {change} ({title}): follow rhiza guide planner."
 until = "true"
 until_when = "done"
 on.pass = "milestone-check"
@@ -27,7 +27,7 @@ on.pass = "review"
 # check goes to the reviser and back to a fresh review.
 [step.review]
 kind = "agent"
-prompt = "Review the plan of change set {change} as the reviewer: follow `rhiza guide plan-review`. Your very last action is to run `rhiza session done` as a separate command, only once `rhiza run findings` succeeded, never chained after it with `;` or `&&`."
+prompt = "/rhiza-plan-reviewer Review the plan of change set {change}: follow rhiza guide plan-reviewer."
 # The visit must have journaled a round (empty for a clean review): else
 # review-check would judge the previous round again.
 until = "rhiza run round-recorded"
@@ -46,7 +46,7 @@ on.fail = "fresh"
 
 [step.critic]
 kind = "agent"
-prompt = "Judge the latest review round of the plan of change set {change} as the critic: follow `rhiza guide plan-review`. Your very last action is to run `rhiza session done` as a separate command, only once `rhiza run verdict` succeeded, never chained after it with `;` or `&&`."
+prompt = "/rhiza-plan-critic Judge the latest review round of the plan of change set {change}: follow rhiza guide plan-critic."
 until = "true"
 until_when = "done"
 max_visits = 3
@@ -70,7 +70,7 @@ on.fail = "revise"
 
 [step.revise]
 kind = "agent"
-prompt = "Fix the confirmed findings of the latest review round of the plan of change set {change} as the reviser: follow `rhiza guide plan-review`. Your very last action is to run `rhiza session done` as a separate command, only once your `rhiza apply` succeeded, never chained after it with `;` or `&&`."
+prompt = "/rhiza-plan-reviser Fix the confirmed findings of the latest review round of the plan of change set {change}: follow rhiza guide plan-reviser."
 until = "true"
 until_when = "done"
 max_visits = 2

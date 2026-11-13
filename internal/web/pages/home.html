@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home on desktop · Rhiza</title>
+<!-- Design reference, milestone 37 (approved by the owner 2026-11-13). Source canvas: https://claude.ai/artifact/B2TEoC8RNuS5wWWdkoxo7a -->
+<link rel="icon" href="../static/icons/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../static/css/rhiza-tokens.css">
+<link rel="stylesheet" href="../static/css/rhiza.css">
+<style>
+body{margin:0;background:var(--ground)}
+a{color:var(--teal)}a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:999px;font:500 14px/1 var(--font-body);text-decoration:none;border:1px solid var(--line);background:transparent;color:var(--ink)}
+.btn--you{border-color:var(--rose);background:var(--rose-soft);color:var(--rose)}
+.btn--quiet{color:var(--teal)}
+.cnt{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;font:600 12px/1 var(--font-mono)}
+.need{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:16px;align-items:start;padding:16px 24px;border-top:1px solid var(--line)}
+.run{display:grid;grid-template-columns:minmax(0,1fr) 200px 72px;gap:16px;align-items:center;padding:12px 24px;border-top:1px solid var(--line)}
+.bars{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+.bars span{height:4px;border-radius:999px;background:var(--line)}
+</style>
+</head>
+<body class="rz">
+<div class="rz" data-theme="dark" style="min-height: 1180px; background: var(--ground); color: var(--ink); font-family: var(--font-body);">
+
+<header style="position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 16px; height: 52px; padding: 0 max(16px, 2rem); background: var(--panel); border-bottom: 1px solid var(--line); flex-wrap: wrap;">
+  <b style="font: 380 20px/1 var(--font-display); letter-spacing: -0.02em;">Rhiza</b>
+  <button type="button" aria-haspopup="menu" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--ground); color: var(--ink); font: 500 14px/1 var(--font-body);">
+    rhiza <span class="cnt" style="background: var(--rose); color: var(--on-solid);">3</span>
+    <svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+  </button>
+  <nav aria-label="Pages" style="display: flex; gap: 20px; font: 500 14px/1 var(--font-body);"><a href="#" aria-current="page" style="color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--gold); padding-bottom: 4px;">Home</a><a href="#" style="text-decoration: none;">Runs</a><a href="#" style="text-decoration: none;">Roadmap</a></nav>
+  <div style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+    <span class="rz-pill rz-pill--running"><span class="rz-live-dot" aria-hidden="true"></span>daemon · 2/2</span>
+    <span class="rz-live" title="Live stream connected"><span class="rz-live-dot" aria-hidden="true"></span>live</span>
+  </div>
+</header>
+
+<main style="max-width: 1200px; margin: 0 auto; box-sizing: border-box; padding: 48px max(16px, 2rem) 64px; display: flex; flex-direction: column; gap: 32px;">
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <p class="rz-kicker" style="margin: 0; color: var(--rose);">Needs you</p>
+    <h1 style="margin: 0; font: 380 36px/40px var(--font-display); letter-spacing: -0.02em;">3 things need you</h1>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+
+    <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+      <section class="rz-panel rz-panel--flush" style="padding: 0; overflow: hidden;">
+        <div class="need">
+          <span class="rz-pill rz-pill--waiting">question</span>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+            <span style="font: 500 16px/22px var(--font-body);">Should the daemon refresh skill installs by itself?</span>
+            <span style="font: 400 14px/20px var(--font-body); color: var(--ink-2);">Asked while planning the fix for sessions that started with an unknown skill. The planner recommends refreshing on every binary update.</span>
+            <span style="font: 400 13px/18px var(--font-body); color: var(--ink-3);">Fix Runs started agent sessions · <a href="#" class="rz-id">01M79N2F</a> · 12m ago</span>
+          </div>
+          <div style="display: flex; gap: 8px;"><a href="#" class="btn btn--you">Answer</a></div>
+        </div>
+        <div class="need">
+          <span class="rz-pill rz-pill--waiting">stuck</span>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+            <span style="font: 500 16px/22px var(--font-body);">Plan role topics is not moving</span>
+            <span style="font: 400 14px/20px var(--font-body); color: var(--ink-2);">Its builder for shared-severities-block opened with an unknown skill and never got its task. No progress for 26 minutes.</span>
+            <span style="font: 400 13px/18px var(--font-body); color: var(--ink-3);">build · leaf 2 of 5 · attempt 1 · <a href="#" class="rz-id">01M79EVF</a></span>
+          </div>
+          <div style="display: flex; gap: 8px;"><a href="#" class="btn btn--quiet">Open run</a></div>
+        </div>
+        <div class="need">
+          <span class="rz-pill rz-pill--interrupted">hold</span>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+            <span style="font: 500 16px/22px var(--font-body);">New runs are held: the machine is loaded</span>
+            <span style="font: 400 14px/20px var(--font-body); color: var(--ink-2);">Load averaged 16.3 over five minutes, so run slots went from 3 to 2. Running work continues; queued work waits.</span>
+            <span style="font: 400 13px/18px var(--font-body); color: var(--ink-3);">since 05:30</span>
+          </div>
+          <div style="display: flex; gap: 8px;"><a href="#" class="btn">Pause daemon</a></div>
+        </div>
+      </section>
+
+      <section class="rz-panel rz-panel--flush" style="padding: 0; overflow: hidden;">
+        <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 24px 24px 16px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;"><p class="rz-kicker" style="margin: 0;">Running now</p><h2 style="margin: 0; font: 380 20px/26px var(--font-display);">3 runs, 2 of 2 slots</h2></div>
+          <a href="#" style="font: 500 14px/20px var(--font-body);">All runs →</a>
+        </div>
+        <div class="run">
+          <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;"><a href="#" style="font: 500 15px/22px var(--font-body); color: var(--ink); text-decoration: none;">Review role topics</a><span style="display: flex; align-items: center; gap: 6px; font: 400 14px/20px var(--font-body); color: var(--gold);"><span class="rz-live-dot" aria-hidden="true"></span>Building leaf 3 of 6, check-compliance-topic</span></div>
+          <div style="display: flex; flex-direction: column; gap: 6px;"><div class="bars" aria-label="Phase 2 of 4: build"><span style="background: var(--teal);"></span><span style="background: var(--gold); box-shadow: var(--glow);"></span><span></span><span></span></div><span style="font: 400 11px/16px var(--font-mono); letter-spacing: 0.08em; color: var(--ink-3);">PLAN BUILD REVIEW SHIP</span></div>
+          <span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3); text-align: right;">2h 23m</span>
+        </div>
+        <div class="run">
+          <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;"><a href="#" style="font: 500 15px/22px var(--font-body); color: var(--ink); text-decoration: none;">Plan role topics</a><span style="font: 400 14px/20px var(--font-body); color: var(--rose);">Stuck in build, leaf 2 of 5</span></div>
+          <div class="bars" aria-label="Phase 2 of 4: build, stuck"><span style="background: var(--teal);"></span><span style="background: var(--rose);"></span><span></span><span></span></div>
+          <span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3); text-align: right;">2h 07m</span>
+        </div>
+        <div class="run" style="padding-bottom: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;"><a href="#" style="font: 500 15px/22px var(--font-body); color: var(--ink); text-decoration: none;">Fix Runs started agent sessions</a><span style="display: flex; align-items: center; gap: 6px; font: 400 14px/20px var(--font-body); color: var(--gold);"><span class="rz-live-dot" aria-hidden="true"></span>Planning the fix, opening its PR</span></div>
+          <div class="bars" aria-label="Phase 1 of 4: plan"><span style="background: var(--gold); box-shadow: var(--glow);"></span><span></span><span></span><span></span></div>
+          <span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3); text-align: right;">19m</span>
+        </div>
+      </section>
+    </div>
+
+    <aside style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+      <section class="rz-panel" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;"><p class="rz-kicker" style="margin: 0;">Shipped today</p><h2 style="margin: 0; font: 380 20px/26px var(--font-display);">12 merged since midnight</h2></div>
+        <ol style="list-style: none; margin: 0; padding: 0;">
+          <li style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);"><span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3);">05:18</span><span style="font: 400 14px/20px var(--font-body);">Plan milestone 36: conductor workflow</span></li>
+          <li style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);"><span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3);">05:01</span><span style="font: 400 14px/20px var(--font-body);">Tiered verifier</span></li>
+          <li style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);"><span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3);">03:22</span><span style="font: 400 14px/20px var(--font-body);">Queue wait journal</span></li>
+          <li style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);"><span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3);">03:06</span><span style="font: 400 14px/20px var(--font-body);">Build role topics</span></li>
+          <li style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);"><span style="font: 400 13px/20px var(--font-mono); color: var(--ink-3);">02:56</span><span style="font: 400 14px/20px var(--font-body);">Tiered verifier plan</span></li>
+        </ol>
+        <a href="#" style="font: 500 14px/20px var(--font-body);">All 12 →</a>
+      </section>
+
+      <section class="rz-panel" style="padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;"><p class="rz-kicker" style="margin: 0;">Milestone 35</p><h2 style="margin: 0; font: 380 20px/26px var(--font-display);">Efficient build cycle, 8 of 15 landed</h2></div>
+        <div style="display: flex; height: 8px; border-radius: 999px; overflow: hidden; gap: 2px;" aria-label="8 landed, 6 accepted, 1 withdrawn"><span style="flex: 8; background: var(--teal);"></span><span style="flex: 6; background: var(--teal); opacity: 0.42;"></span><span style="flex: 1; background: var(--ink-3); opacity: 0.55;"></span></div>
+        <p style="margin: 0; font: 400 13px/18px var(--font-mono); color: var(--ink-3);">8 landed · 6 accepted · 1 withdrawn</p>
+        <p style="margin: 0; font: 400 14px/20px var(--font-body); color: var(--ink-2);">Next up: milestone 36, conductor workflow (planned, waiting on 3 builds).</p>
+        <a href="#" style="font: 500 14px/20px var(--font-body);">Roadmap →</a>
+      </section>
+
+      <section class="rz-panel" style="padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;"><p class="rz-kicker" style="margin: 0;">Daemon</p><h2 style="margin: 0; font: 380 20px/26px var(--font-display);">Running, slots cut to 2 for load</h2></div>
+        <dl style="margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 16px; font: 400 14px/20px var(--font-body);">
+          <dt style="color: var(--ink-3);">Load</dt><dd style="margin: 0; font-family: var(--font-mono);">18.8 · 16.3 · 13.1</dd>
+          <dt style="color: var(--ink-3);">Version</dt><dd style="margin: 0; font-family: var(--font-mono);">v0.1.0-48 · up to date</dd>
+          <dt style="color: var(--ink-3);">Usage</dt><dd style="margin: 0;">well within the weekly limit</dd>
+        </dl>
+        <div style="display: flex; gap: 8px;"><a href="#" class="btn">Pause daemon</a></div>
+      </section>
+    </aside>
+
+  </div>
+</main>
+</div>
+</body>
+</html>

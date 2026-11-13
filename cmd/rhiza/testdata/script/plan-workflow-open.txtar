@@ -160,7 +160,7 @@ has_acceptance() {
 	rhiza show export-csv --change "$(cat "$WORK/cs")" --json | grep -q '"acceptance"'
 }
 case "$last" in
-/rhiza-plan*)
+/rhiza-planner*)
 	rec=$RHIZA_CHANGE
 	cp "$WORK/transcript.jsonl" "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
 	rhiza source add plan-interview "$WORK/source.json" --raw-session "$RHIZA_SESSION" --json >> "$WORK/agent.out" || fail source
@@ -172,15 +172,15 @@ case "$last" in
 	rhiza apply "$WORK/leaf.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail leaf
 	rhiza add question park-disk --field 'statement=Which disk holds the exports?' --change "$(cat "$WORK/cs")" >> "$WORK/agent.out" || fail question
 	;;
-*'as the reviewer'*)
+/rhiza-plan-reviewer*)
 	rhiza run findings "$WORK/clean.json" --json >> "$WORK/agent.out" || fail findings
 	;;
-*'as the critic'*)
+/rhiza-plan-critic*)
 	;;
 *'as check '*)
 	rhiza run findings --check "$RHIZA_CHECK" "$WORK/clean.json" --json >> "$WORK/agent.out" || fail check
 	;;
-*'as the reviser'*)
+/rhiza-plan-reviser*)
 	rhiza apply "$WORK/fix.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail fix
 	;;
 *)

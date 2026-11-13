@@ -1,0 +1,201 @@
+{
+  "actor": "01M79QF35CM4SRSHHQW6WQAZ3E",
+  "after": [
+    "01M79Q9W32HX369BJ8GBY7VGZD"
+  ],
+  "at": "2026-11-13T05:58:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from 3d6baba6c (go build -trimpath) and ran it in a hermetic scratch root and repo (env -i, own HOME, project added, a held 'hold' wait-step run giving RHIZA_RUN): `rhiza run findings - --json` heredoc with an uncovered-intent finding on cap-a and an oversized-leaf on cap-b recorded round 1, f1 and f2, both severity major; a no-failure-case finding was refused exit 2 listing the seven kinds ending uncovered-intent, oversized-leaf; after a verdict confirming f2, `rhiza run review-check` exited 1 naming f2 oversized-leaf on cap-b."
+        },
+        "handle": "plan-finding-kinds-qa-1",
+        "id": "01M79QSP0DANJY7812G2TPA9CS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79QSP0C913YM682SCP2T7ER",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79QSP0C913YM682SCP2T7ER",
+        "id": "01M79QSP6TNMYYEG59G6WYSSKP",
+        "link": "01M79QSP6TNMYYEG59G647Z7ZY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH55KDAWPGWR01WXZ38N3",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from 3d6baba6c (go build -trimpath) and ran it in a hermetic scratch root and repo (env -i, own HOME, project added, a held 'hold' wait-step run giving RHIZA_RUN): `rhiza guide plan-critic` prints the six sections in order, Read first names `rhiza run status --json`, the verdict heredoc with confirmed, downgraded+severity and dropped, never add/raise rules and severities, command-budget, never and session-done blocks expanded, no findings heredoc or rhiza apply; its verdict heredoc ran as written (`rhiza run verdict - --json`) with f1 downgraded to minor and f2 confirmed, and run status showed 'downgraded from major to minor'."
+        },
+        "handle": "plan-critic-topic-qa-1",
+        "id": "01M79QSPAPX3FB1KX10XVVYXGV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79QSPAPX3FB1KX10TBSXAWV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79QSPAPX3FB1KX10TBSXAWV",
+        "id": "01M79QSPF7VK4EH59GEND5WPYD",
+        "link": "01M79QSPF7VK4EH59GEKSPA5R1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH5XRV6CSB9GDW3VGA5JT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from 3d6baba6c (go build -trimpath) and ran it in a hermetic scratch root and repo (env -i, own HOME, project added, a held 'hold' wait-step run giving RHIZA_RUN): `rhiza guide plan-reviewer` prints the six sections in order, the seven kinds incl. uncovered-intent and oversized-leaf, the vague-acceptance and codebase-assumption rules, `rhiza overlaps`, never recording what rhiza check reports, the empty-round rule and the severities/command-budget/never/session-done blocks expanded, no verdict or apply; its findings heredoc ran as written (`rhiza run findings - --json`) and journalled round 1."
+        },
+        "handle": "plan-reviewer-topic-qa-1",
+        "id": "01M79QSPKNCNEXK3QG6S8Q5B5S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79QSPKNCNEXK3QG6QFY3NTJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79QSPKNCNEXK3QG6QFY3NTJ",
+        "id": "01M79QSPPEB3MGZNZNY36P0M9D",
+        "link": "01M79QSPPEB3MGZNZNY27DVKW0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH5P0K3C4P0VH374J64XE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from 3d6baba6c (go build -trimpath) and ran it in a hermetic scratch root and repo (env -i, own HOME, project added, a held 'hold' wait-step run giving RHIZA_RUN): `rhiza guide plan-reviser` prints the six sections in order, `rhiza apply <file> --change <cs> --json` and `--record`, the split-oversized-leaf and leaf-for-uncovered-clause rules, confirmed-major-only, never-invent-a-quote, and the command-budget/never/session-done blocks expanded, with no findings or verdict heredoc."
+        },
+        "handle": "plan-reviser-topic-qa-1",
+        "id": "01M79QSPY01VYEGSE5VSP9ZKAH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79QSPY01VYEGSE5VQ1BHAZ7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79QSPY01VYEGSE5VQ1BHAZ7",
+        "id": "01M79QSQ0C8EBVV8JK6NC4VHHY",
+        "link": "01M79QSQ0C8EBVV8JK6MXKE452",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH640TST58REPF7FSDXJ5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from 3d6baba6c (go build -trimpath) and ran it in a hermetic scratch root and repo (env -i, own HOME, project added, a held 'hold' wait-step run giving RHIZA_RUN): `rhiza guide planner` prints Task, Expected outcome, Read first, Must do, Must not do, Context in order; Read first names plan-recipes and plan-interview and the research pass (rhiza why, searching the intent's names, files each leaf touches); Must do ends in the self-check (rhiza slice, intent clauses served, one concern, provenance, depends-on, rhiza check); autonomous runs in Context. `rhiza guide ls` lists planner (823), plan-recipes (746), plan-interview (646) as topics."
+        },
+        "handle": "planner-topic-qa-1",
+        "id": "01M79QSQ2T7XQCCT2KRGYQJGSQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79QSQ2T7XQCCT2KRFC3BADT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79QSQ2T7XQCCT2KRFC3BADT",
+        "id": "01M79QSQ7P9PY556KY6XFX0YNW",
+        "link": "01M79QSQ7P9PY556KY6VPZWDJ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH5GS0Z8Y7DT1Y7774RD7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from 3d6baba6c (go build -trimpath) and ran it in a hermetic scratch root and repo (env -i, own HOME, project added, a held 'hold' wait-step run giving RHIZA_RUN): `rhiza guide ls` lists planner, plan-reviewer, plan-critic, plan-reviser; `rhiza guide install --agent claude --json` wrote skills/rhiza-planner, rhiza-plan-reviewer, rhiza-plan-critic, rhiza-plan-reviser SKILL.md beside rhiza-plan (rhiza-plan-critic frontmatter carries the topic's description), and a second install listed all of them unchanged, written empty; `rhiza guide plan` and `plan-review` print short indexes naming the role topics with /rhiza-<topic> and `rhiza guide <topic>` routes."
+        },
+        "handle": "plan-role-skills-installed-qa-1",
+        "id": "01M79QSQ9FFDFQ8FANJ4AMWF0D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79QSQ9FFDFQ8FANJ246NX3J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79QSQ9FFDFQ8FANJ246NX3J",
+        "id": "01M79QSQC9NRGW6KF8GD037PPF",
+        "link": "01M79QSQC9NRGW6KF8G9V2G2JB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH6B4G10X94QE56HC9RS4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from 3d6baba6c (go build -trimpath) and ran it in a hermetic scratch root and repo (env -i, own HOME, project added, a held 'hold' wait-step run giving RHIZA_RUN): `rhiza workflow describe plan` shows the interview, review, critic and revise prompts as the four one-liners (/rhiza-planner ... follow rhiza guide planner., /rhiza-plan-reviewer ..., /rhiza-plan-critic ..., /rhiza-plan-reviser ...) with no session done text."
+        },
+        "handle": "plan-prompts-one-line-qa-1",
+        "id": "01M79QSQEJGVSGT2ADKBHBVXZQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79QSQEJGVSGT2ADK9BVFTB9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79QSQEJGVSGT2ADK9BVFTB9",
+        "id": "01M79QSQHVC2CQYA6S89SKS426",
+        "link": "01M79QSQHVC2CQYA6S89GK8SN5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH6T4DQAX8RJF1YTQC0AS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from 3d6baba6c (go build -trimpath) and ran it in a hermetic scratch root and repo (env -i, own HOME, project added, a held 'hold' wait-step run giving RHIZA_RUN): `rhiza guide plan-reviewer`, `plan-critic` and `review` each print the expanded Severities section; the plan-review mapping names missing-acceptance, contradiction, outside-intent, uncovered-intent and oversized-leaf major, matching run findings' severity output for the new kinds."
+        },
+        "handle": "shared-severities-block-qa-1",
+        "id": "01M79QSQP6NPKZRNT25G515A41",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79QSQP6NPKZRNT25EKJJFD5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79QSQP6NPKZRNT25EKJJFD5",
+        "id": "01M79QSQRVDM16MB42AZCBBZR9",
+        "link": "01M79QSQRVDM16MB42AXZHA4TP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BH58V0BQMAAJ8RS4AJ9MT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRPN6WYMZSV2GWA05Y1FM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79QSQWWRZ74Z2G6GNR8199A",
+  "type": "ops",
+  "v": 1
+}

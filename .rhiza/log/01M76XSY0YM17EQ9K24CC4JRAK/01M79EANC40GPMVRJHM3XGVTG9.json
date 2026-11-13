@@ -1,0 +1,41 @@
+{
+  "actor": "01M79E9BV7FNDFXKBJH9GA8QD5",
+  "after": [
+    "01M79E8SYNZ4T8NXKW2BHM5XAS"
+  ],
+  "at": "2026-11-13T03:13:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding is right: in internal/api/daemon.go (~1020-1037) the ship-owner filter removes candidates before Pick and before the live check, so the daemon never starts an owner-shipped change set and never sees it go live; the Decision's started line would never be written. Limiting the claim to daemon-started runs would leave ship-owner waits, which the intent names as one of the causes (policy), open-ended in the perf analysis, and it would mislabel the accepted-to-ship-start time the perf report (rec 10) measures. Fixing it is cheap and needs no new data: the poll already lists every run journal (rs.List in daemonPoll1), and each journal opens with a TypeStarted entry carrying the change set and the start time (internal/run/engine.go). Taking at from that entry makes the line exact even when the poll runs late or the daemon was down when the run began, and checking it independently of the filters avoids depending on filter order. The rest of queue-wait-journal-file stands: lines only on change, no post-start reasons, no trimming.",
+          "statement": "A start the daemon did not make is journaled too. On every poll, before the ship-owner filter and the other pre-start filters, the daemon checks each change set whose last queue-wait line is a pre-start reason: if a run journal under <common>/rhiza/runs/ has a started entry for that change set later than that line, the daemon appends a started line for it. That line's at is the run journal's started time, not the poll's time, and its detail says the run was not started by the daemon (for example 'started outside the daemon'). A started line the daemon writes for its own start keeps detail empty or 'started by the daemon'. So every change set's lines end at started however its run began, including ship-owner change sets and runs started by hand, and the first-line-to-started sum gives the accepted to ship-start time for all of them. The capability queue-wait-journal-lines and its acceptance check gain this case: a change set skipped as ship-owner whose run is then started outside the daemon journals ship-owner then started, with the run's start time.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "queue-wait-journal-outside-starts",
+        "id": "01M79EAN9N4Z20Y6RX8WJH42P9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79EAN9N4Z20Y6RX8TXBWE8V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79EAN9N4Z20Y6RX8TXBWE8V",
+        "id": "01M79EANAWKTXE8E0ME6H13MW5",
+        "link": "01M79EANAWKTXE8E0ME2N5VM8E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79E76C7DF26DQQKYJG6SC34",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76XSY0YM17EQ9K24CC4JRAK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79EANC40GPMVRJHM3XGVTG9",
+  "type": "ops",
+  "v": 1
+}

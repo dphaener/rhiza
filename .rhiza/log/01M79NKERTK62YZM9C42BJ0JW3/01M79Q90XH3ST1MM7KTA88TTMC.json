@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M79NKERTK62YZM9C46BC6CES"
+  ],
+  "at": "2026-11-13T05:49:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestLayoutGolden|TestHeaderNoProjectList' passes with the goldens regenerated from the new header: the picker button carries the needs-you count, the nav names Home, Runs and Roadmap with aria-current on the current page, and a two-project root's header names no project but the current one (failure case: a project with nothing waiting shows no count badge).",
+          "statement": "Every web page shares one header as in pages/frame-and-spacing.html and pages/home.html: the Rhiza wordmark, the project picker button with the project's needs-you count, the Home, Runs and Roadmap nav, the daemon pill and the live indicator; 56px tall on a phone with the nav on its own 44px row, 52px on desktop; no list of project names in the header."
+        },
+        "handle": "web-frame-header",
+        "id": "01M79Q90M4F549HKEWB6AGGPKX",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M79Q90M4F549HKEWB54K9B9P",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestProjectPicker shows, for a root of two projects, both listed with live state and needs-you counts, the one with items first, each link keeping the page kind (/p/<project>/roadmap to the other's roadmap), All projects linking to the merged inbox, and the search field present only with six or more projects.",
+          "statement": "The header's project button opens a picker (a bottom sheet on a phone, a menu on desktop, as in pages/project-picker.html) listing every registered project with whether it is live and how many things need the owner there, projects with something waiting first, plus an All projects entry for the merged inbox; switching keeps the same kind of page, and a search field appears once there are more than five projects."
+        },
+        "handle": "web-picker-menu",
+        "id": "01M79Q90P3FHK31R498P3V0Z8Z",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M79Q90P3FHK31R498K33EAVR",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestPartialsGolden|TestSpacingRules' passes: the goldens are regenerated, and TestSpacingRules reads static/css/rhiza.css for the rule values and fails on any template that sets a margin on a heading or an inline margin style.",
+          "statement": "Every web page follows the spacing rules in pages/frame-and-spacing.html: kicker to page title 12px, panel kicker to panel title 4px, panel title to content 16px, panels 24px apart, page sections 32px, panel padding 16px on a phone and 24px on desktop, gaps set on the parent and headings with no margin of their own."
+        },
+        "handle": "web-spacing-rules",
+        "id": "01M79Q90R4MS5J2BXQ7GGKTZ36",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M79Q90R4MS5J2BXQ7DGXA1TS",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q90M4F549HKEWB54K9B9P",
+        "id": "01M79Q90SEJXX0Z86CPM9PXXGY",
+        "link": "01M79Q90SEJXX0Z86CPM6538AB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6H7J2EJMZSYNCAYC1RQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q90P3FHK31R498K33EAVR",
+        "id": "01M79Q90T74N735BSJRVY4NT6R",
+        "link": "01M79Q90T74N735BSJRVN3WPZR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6H7J2EJMZSYNCAYC1RQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q90R4MS5J2BXQ7DGXA1TS",
+        "id": "01M79Q90VEZGH47QC7JTW928GT",
+        "link": "01M79Q90VEZGH47QC7JQDQZGC0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6NG83GYEE2C1ZJED0FY",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79Q90XH3ST1MM7KTA88TTMC",
+  "type": "ops",
+  "v": 1
+}

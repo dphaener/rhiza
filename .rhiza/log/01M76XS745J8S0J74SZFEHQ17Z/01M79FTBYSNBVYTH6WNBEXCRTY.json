@@ -1,0 +1,40 @@
+{
+  "actor": "01M79FMA8S3FPFVPA5E6ZCFEWS",
+  "after": [
+    "01M79FCRN088R4FEGGMDHBDNPE"
+  ],
+  "at": "2026-11-13T03:39:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6af6a212a: go test -trimpath -count=1 ./internal/workflow/... ok (TestBuiltinVerifierTierDefaults parses the built-in build and review workflows and asserts models [opus], low_risk_models [sonnet] and the twelve risky_paths globs on both verifier roles); go test -trimpath ./cmd/rhiza -run 'TestScripts/(workflow-describe|describe-golden)$' ok; a scratch build's `rhiza workflow describe build` and `describe review` both print role verifier models [opus], low_risk_models [sonnet] and risky_paths [*_test.go, **/*_test.go, **/testdata/**, **/main_test.go, .githooks/**, **/hooks/**, .github/**, .rhiza/workflows/**, internal/workflow/builtin/**, **/migrations/**, **/migrate/**, **/*retry*]. The diff only touches build.toml, review.toml, the test and the testscript; it adds no rhiza.* setting. make self-check in a clean detached checkout with env -i fails only on rendered-file staleness (actor/claude-code-57cdad9f.md missing, index.md differs). The identical failure is present at parent dee8a4784 (the run's evidence commit), so it is run-machinery render drift that `rhiza render` at ship will fix. Every other self-check step passes."
+        },
+        "handle": "verifier-tier-defaults-verified",
+        "id": "01M79FTBX76W9J224BVR3Y3044",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79FTBX76W9J224BVQM7XAMM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79FTBX76W9J224BVQM7XAMM",
+        "id": "01M79FTBXWESQKNVEJM2PKVKQM",
+        "link": "01M79FTBXWESQKNVEJM1Q7RJY2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CZ2BQEZSPC3KEF7PZH5G0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XS745J8S0J74SZFEHQ17Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79FTBYSNBVYTH6WNBEXCRTY",
+  "type": "ops",
+  "v": 1
+}

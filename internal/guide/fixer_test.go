@@ -21,7 +21,7 @@ func TestFixerText(t *testing.T) {
 		t.Fatalf("fixer: sections %q, want exactly %q in order", got, want)
 	}
 	shared := sharedFiles(t)
-	for _, blk := range []string{"session-done", "test-scope", "unstable-ci", "command-budget", "outside-work", "never-list", "severity"} {
+	for _, blk := range []string{"session-done", "test-scope", "unstable-ci", "command-budget", "outside-work", "never-list", "severities"} {
 		text := strings.TrimRight(shared[blk+".md"], "\n")
 		if !strings.Contains(f.Body, text) && !strings.Contains(f.Body, demote(text)) {
 			t.Errorf("fixer lacks the %s block", blk)

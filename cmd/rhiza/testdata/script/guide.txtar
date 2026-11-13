@@ -40,11 +40,11 @@ stdout '^## Steps$'
 
 # The plan skill.
 exec rhiza guide plan
-stdout '^# rhiza-plan$'
-stdout '^## Steps$'
-stdout 'rhiza source add <handle> <file.json> --raw-session "\$RHIZA_SESSION" --json'
-stdout '"op":"link","from":"export-csv","type":"decided-by","to":"csv-streaming"'
-stdout 'RHIZA_AUTONOMOUS=1'
+stdout '^# Plan$'
+stdout '/rhiza-planner'
+stdout 'rhiza guide plan-reviewer'
+stdout 'rhiza guide plan-critic'
+stdout 'rhiza guide plan-reviser'
 
 # Each topic.
 exec rhiza guide apply
@@ -77,8 +77,11 @@ stdout '^# Import$'
 stdout '(?s)## 1\. Init.*## 2\. Survey.*## 3\. Record built.*## 4\. Bring in.*## 5\. Retire.*## 6\. Write unbuilt.*## 7\. Verify'
 exec rhiza guide plan-review
 stdout '^# Plan review$'
-stdout '^## Critic$'
+stdout '/rhiza-plan-critic'
+stdout 'rhiza guide plan-reviser'
+exec rhiza guide plan-reviewer
 stdout 'rhiza run findings - --json <<''EOF'''
+exec rhiza guide plan-critic
 stdout 'rhiza run verdict - --json <<''EOF'''
 exec rhiza guide reopening
 stdout '^# Reopening$'
@@ -109,9 +112,9 @@ exec rhiza guide sources
 stdout '^# Sources$'
 stdout '^## Stored fields$'
 
-# guide ls lists all twenty-seven texts with their kinds and sizes.
+# guide ls lists all thirty-three texts with their kinds and sizes.
 exec rhiza guide ls
-stdout -count=27 '^- '
+stdout -count=33 '^- '
 stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
 stdout '^- scrub +skill +[0-9]+ tokens  '
 stdout '^- plan +skill +[0-9]+ tokens  Plan with the owner'
@@ -133,7 +136,13 @@ stdout '^- check-qa +topic +[0-9]+ tokens  The QA check'
 stdout '^- check-quality +topic +[0-9]+ tokens  The quality check'
 stdout '^- ci-fix +topic +[0-9]+ tokens  The CI fixer'
 stdout '^- import +topic +[0-9]+ tokens  '
+stdout '^- plan-critic +topic +[0-9]+ tokens  The plan critic'
+stdout '^- plan-interview +topic +[0-9]+ tokens  The plan interview'
+stdout '^- plan-recipes +topic +[0-9]+ tokens  Plan recipes'
 stdout '^- plan-review +topic +[0-9]+ tokens  Plan review'
+stdout '^- plan-reviewer +topic +[0-9]+ tokens  The plan reviewer'
+stdout '^- plan-reviser +topic +[0-9]+ tokens  The plan reviser'
+stdout '^- planner +topic +[0-9]+ tokens  The planner'
 stdout '^- reopening +topic +[0-9]+ tokens  '
 stdout '^- review +topic +[0-9]+ tokens  Reviewing a built change set'
 stdout '^- sources +topic +[0-9]+ tokens  '

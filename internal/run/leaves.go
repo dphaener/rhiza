@@ -450,6 +450,13 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 	}
 	if role := step.Role(a.role); role != nil {
 		spec.Model = role.Model(spec.RoundAttempt)
+		if a.role == workflow.RoleVerifier && len(role.LowRiskModels) > 0 {
+			if !verifierRisky(lr, *role, l, spec, a) {
+				// Only a first try is low-risk, so the cheap ladder starts
+				// at its first model, even for a review fix's attempt 2.
+				spec.Model = lowRiskModel(role, 1)
+			}
+		}
 	}
 	if rd, ok := l.LastRound(); ok && a.role == workflow.RoleBuilder {
 		spec.Question, spec.Decision, spec.Retry = rd.Question, rd.Decision, rd.Retry
@@ -516,6 +523,60 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 		}
 	}
 	return result{}, false, nil
+}
+
+// lowRiskModel is the model of a verifier role's low-risk ladder at attempt.
+func lowRiskModel(role *workflow.Role, attempt int) string {
+	return workflow.Role{Models: role.LowRiskModels}.Model(attempt)
+}
+
+// ChangedFiler is a LeafRunner that can name the files a commit range
+// changes. Without it every verifier leaf counts as risky.
+type ChangedFiler interface {
+	// ChangedFiles are the slash-separated paths changed between from and to.
+	ChangedFiles(from, to string) ([]string, error)
+}
+
+// verifierRisky decides, deterministically and without an agent call,
+// whether a verifier launch is risky and so stays on the role's models: the
+// session is a retry, the diff from the builder's or fixer's journalled
+// start HEAD to the commit under verification cannot be read, or a changed
+// file matches one of the role's risky paths. On a leaves step a retry is
+// an attempt within the round past 1 or a fresh round. On a checks step
+// fixes start in cycle 2, so a retry is read from the review's first fix:
+// a cycle past 2, or a fix try past the cycle's first (leafFixAttempt).
+func verifierRisky(lr LeafRunner, role workflow.Role, l LeafState, spec LeafSpec, a leafAction) bool {
+	if a.cycle > 0 {
+		if a.cycle > 2 || a.attempt != leafFixAttempt(a.cycle, 1) || spec.Round > 1 {
+			return true
+		}
+	} else if spec.RoundAttempt > 1 || spec.Round > 1 {
+		return true
+	}
+	cf, ok := lr.(ChangedFiler)
+	if !ok {
+		return true
+	}
+	from := ""
+	for _, r := range []string{workflow.RoleBuilder, workflow.RoleFixer} {
+		if s, ok := l.Session(r, a.attempt); ok && s.Commit != "" {
+			from = s.Commit
+			break
+		}
+	}
+	if from == "" || a.commit == "" {
+		return true
+	}
+	files, err := cf.ChangedFiles(from, a.commit)
+	if err != nil {
+		return true
+	}
+	for _, f := range files {
+		if role.Risky(f) {
+			return true
+		}
+	}
+	return false
 }
 
 // pollLeaf polls a's session once. When it has exited or its agent said

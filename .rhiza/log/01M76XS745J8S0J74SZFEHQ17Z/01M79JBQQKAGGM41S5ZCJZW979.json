@@ -1,0 +1,40 @@
+{
+  "actor": "01M79J7A1J30W04RV9FG8AJZ5P",
+  "after": [
+    "01M79J5W2SHX4X80GNS5KWMBFS"
+  ],
+  "at": "2026-11-13T04:23:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 28fe31869: go test -trimpath ./internal/workflow/... passes, and TestBuiltinVerifierTierDefaults parses the built-in build and review workflows and finds models [opus], low_risk_models [sonnet] and the full risky_paths list (test infra, hooks, .github, workflow files, migrations, *retry*) on both verifier roles. go test -trimpath ./cmd/rhiza -run 'TestScripts/(workflow-describe|build-workflow)$' passes; workflow-describe asserts 'role verifier low_risk_models [sonnet]' and the risky_paths line for `rhiza workflow describe build`. make self-check passes (rc=0) in a clean detached worktree at 28fe31869 under env -i. In the live run worktree it fails only on this verifier's own untracked actor render. Read build.toml and review.toml: no new rhiza.* setting. The earlier finding is fixed: build-workflow-file's statement now reads 'verifier opus for risky leaves, sonnet for low-risk ones'."
+        },
+        "handle": "verifier-tier-defaults-verified-3",
+        "id": "01M79JBQP6REMSW3KTEHEZJFR8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79JBQP6REMSW3KTEGH8SKQ2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79JBQP6REMSW3KTEGH8SKQ2",
+        "id": "01M79JBQPVY8Z7JENVRB8QVV7Y",
+        "link": "01M79JBQPVY8Z7JENVR9XNZ5EQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CZ2BQEZSPC3KEF7PZH5G0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XS745J8S0J74SZFEHQ17Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79JBQQKAGGM41S5ZCJZW979",
+  "type": "ops",
+  "v": 1
+}

@@ -21,6 +21,15 @@ prompt = "/rhiza-builder Build leaf {leaf} of change set {change} ({title}), att
 # ($RHIZA_COMMIT) and passes only with Evidence written as itself.
 [step.build.verifier]
 models = ["opus"]
+low_risk_models = ["sonnet"]
+risky_paths = [
+  "*_test.go", "**/*_test.go", "**/testdata/**", "**/main_test.go",
+  ".githooks/**", "**/hooks/**",
+  ".github/**",
+  ".rhiza/workflows/**", "internal/workflow/builtin/**",
+  "**/migrations/**", "**/migrate/**",
+  "**/*retry*",
+]
 prompt = "/rhiza-verifier Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT: follow rhiza guide verifier."
 
 # Build's sessions register actors and write Evidence, which leaves

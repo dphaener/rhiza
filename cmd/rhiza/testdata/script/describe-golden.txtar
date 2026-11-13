@@ -3795,7 +3795,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "kind": {
-                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                                   "type": "string"
                                 },
                                 "leaf": {
@@ -4449,7 +4449,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -4658,7 +4658,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -5000,7 +5000,7 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "kind": {
-                      "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                      "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                       "type": "string"
                     },
                     "leaf": {
@@ -5628,7 +5628,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "kind": {
-                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                                   "type": "string"
                                 },
                                 "leaf": {
@@ -6282,7 +6282,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -6491,7 +6491,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -6833,7 +6833,7 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "kind": {
-                      "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                      "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                       "type": "string"
                     },
                     "leaf": {
@@ -9362,7 +9362,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "kind": {
-                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                                   "type": "string"
                                 },
                                 "leaf": {
@@ -10016,7 +10016,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -10225,7 +10225,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -11031,7 +11031,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "kind": {
-                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                                   "type": "string"
                                 },
                                 "leaf": {
@@ -11685,7 +11685,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -11894,7 +11894,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -12236,7 +12236,7 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "kind": {
-                      "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                      "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                       "type": "string"
                     },
                     "leaf": {
@@ -12611,7 +12611,9 @@ cmp stdout describe.golden.json
                     "missing-provenance",
                     "unreal-depends-on",
                     "outside-intent",
-                    "contradiction"
+                    "contradiction",
+                    "uncovered-intent",
+                    "oversized-leaf"
                   ]
                 },
                 "leaf": {
@@ -12718,7 +12720,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                   "type": "string"
                 },
                 "leaf": {
@@ -13662,7 +13664,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "kind": {
-                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                                   "type": "string"
                                 },
                                 "leaf": {
@@ -14316,7 +14318,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -14525,7 +14527,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -14867,7 +14869,7 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "kind": {
-                      "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                      "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                       "type": "string"
                     },
                     "leaf": {
@@ -15375,7 +15377,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "kind": {
-                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                                   "type": "string"
                                 },
                                 "leaf": {
@@ -16029,7 +16031,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -16238,7 +16240,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -16597,7 +16599,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                   "type": "string"
                 },
                 "leaf": {
@@ -16718,7 +16720,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent major, the rest minor), fail with one before round 3, else leave each as a question and pass",
+      "summary": "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent, uncovered-intent, oversized-leaf major, the rest minor), fail with one before round 3, else leave each as a question and pass",
       "write": true
     },
     {
@@ -17158,7 +17160,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "kind": {
-                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                                   "type": "string"
                                 },
                                 "leaf": {
@@ -17812,7 +17814,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -18021,7 +18023,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -18363,7 +18365,7 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "kind": {
-                      "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                      "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                       "type": "string"
                     },
                     "leaf": {
@@ -18905,7 +18907,7 @@ cmp stdout describe.golden.json
                                   "type": "string"
                                 },
                                 "kind": {
-                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                                   "type": "string"
                                 },
                                 "leaf": {
@@ -19559,7 +19561,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -19768,7 +19770,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                             "type": "string"
                           },
                           "leaf": {
@@ -20463,7 +20465,7 @@ cmp stdout describe.golden.json
                               "type": "string"
                             },
                             "kind": {
-                              "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                              "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                               "type": "string"
                             },
                             "leaf": {
@@ -21117,7 +21119,7 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "kind": {
-                        "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                        "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                         "type": "string"
                       },
                       "leaf": {
@@ -21326,7 +21328,7 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "kind": {
-                        "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                        "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent (an intent clause no leaf serves) or oversized-leaf (a leaf with more than one concern or too large for one session); absent for a leaf's or a review check's finding",
                         "type": "string"
                       },
                       "leaf": {
@@ -26925,6 +26927,13 @@ cmp stdout describe.golden.json
                   "items": {
                     "additionalProperties": false,
                     "properties": {
+                      "low_risk_models": {
+                        "description": "A verifier's model ladder by attempt for a low-risk leaf; empty means models for every leaf",
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
                       "models": {
                         "description": "The model ladder by attempt or cycle; empty means the agent's default",
                         "items": {
@@ -26936,14 +26945,23 @@ cmp stdout describe.golden.json
                         "description": "The role's first prompt template",
                         "type": "string"
                       },
+                      "risky_paths": {
+                        "description": "A verifier's path globs: a leaf changing a matching file verifies on models; empty means none",
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
                       "role": {
                         "description": "The role: agent, builder, verifier, critic, fixer or a check's name",
                         "type": "string"
                       }
                     },
                     "required": [
+                      "low_risk_models",
                       "models",
                       "prompt",
+                      "risky_paths",
                       "role"
                     ],
                     "type": "object"

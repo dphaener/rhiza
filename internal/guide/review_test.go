@@ -138,19 +138,19 @@ func TestReviewFixerPreHandoffChecklist(t *testing.T) {
 	}
 }
 
-// severityTopics are the topics that grade or fix findings: plan-review,
-// review, and every check-*, critic and fixer topic.
+// severityTopics are the topics that grade or fix findings: every check-*,
+// critic and fixer topic, and the plan reviewer and plan critic.
 func severityTopics(t *testing.T) []Text {
 	t.Helper()
 	var out []Text
 	for _, tx := range List() {
 		n := tx.Name
-		if n == "plan-review" || strings.HasPrefix(n, "check-") ||
-			n == "critic" || n == "fixer" {
+		if strings.HasPrefix(n, "check-") || n == "critic" || n == "fixer" ||
+			n == "plan-reviewer" || n == "plan-critic" {
 			out = append(out, tx)
 		}
 	}
-	for _, want := range []string{"plan-review", "check-compliance", "critic", "fixer"} {
+	for _, want := range []string{"plan-reviewer", "plan-critic", "check-compliance", "critic", "fixer"} {
 		if !slices.ContainsFunc(out, func(tx Text) bool { return tx.Name == want }) {
 			t.Fatalf("no %s topic", want)
 		}
@@ -159,63 +159,96 @@ func severityTopics(t *testing.T) []Text {
 }
 
 func TestSeverityBlockOnceInEachTopic(t *testing.T) {
-	block := strings.TrimRight(sharedFiles(t)["severity.md"], "\n")
+	block := strings.TrimRight(sharedFiles(t)["severities.md"], "\n")
 	if block == "" {
-		t.Fatal("no severity shared block")
+		t.Fatal("no severities shared block")
 	}
 	for _, tx := range severityTopics(t) {
-		if n := strings.Count(tx.Body, block); n != 1 {
-			t.Errorf("%s holds the severity block %d times, want 1", tx.Name, n)
+		if n := strings.Count(tx.Body, block); n != 1 { // matches the nested (demoted) form too
+			t.Errorf("%s holds the severities block %d times, want 1", tx.Name, n)
 		}
 		if n := strings.Count(tx.Body, "## Severities"); n != 1 {
 			t.Errorf("%s has %d severity headings, want 1", tx.Name, n)
 		}
 	}
-	for _, f := range []string{"plan-review.md", "check-compliance.md", "check-quality.md"} {
+	for _, f := range []string{"plan-reviewer.md", "plan-critic.md", "check-compliance.md", "check-quality.md"} {
 		b, err := files.ReadFile("text/" + f)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !strings.Contains(string(b), "<!-- shared: severity") {
-			t.Errorf("%s does not include the severity block", f)
+		if !strings.Contains(string(b), "<!-- shared: severities") {
+			t.Errorf("%s does not include the severities block", f)
 		}
 	}
 }
 
-func TestSeverityBlockContent(t *testing.T) {
-	block := sharedFiles(t)["severity.md"]
+func TestSeveritiesBlockShared(t *testing.T) {
+	ents, err := files.ReadDir("text")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range ents {
+		if e.IsDir() {
+			continue
+		}
+		raw, err := files.ReadFile("text/" + e.Name())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(string(raw), "## Severities") {
+			t.Errorf("%s holds its own ## Severities section", e.Name())
+		}
+	}
+	block := sharedFiles(t)["severities.md"]
+	if !strings.HasPrefix(block, "## Severities") {
+		t.Fatalf("shared/severities.md does not open with ## Severities")
+	}
+	for _, tx := range List() {
+		raw, _ := files.ReadFile("text/" + tx.Name + ".md")
+		if strings.Contains(string(raw), "<!-- shared: severities") && !strings.Contains(tx.Body, "## Severities") {
+			t.Errorf("%s names the severities block but does not show it", tx.Name)
+		}
+	}
 	for _, sev := range []string{"`blocker`:", "`major`:", "`minor`:", "`nit`:"} {
 		if strings.Count(block, sev) != 1 {
-			t.Errorf("severity block defines %q %d times, want 1", sev, strings.Count(block, sev))
+			t.Errorf("severities block defines %q %d times, want 1", sev, strings.Count(block, sev))
 		}
 	}
 	for _, c := range []string{"`compliance`", "`quality`", "`qa`", "`model`"} {
 		if !strings.Contains(block, c) {
-			t.Errorf("severity mapping lacks %s", c)
+			t.Errorf("severities mapping lacks %s", c)
 		}
 	}
-	for _, k := range []string{"`missing-acceptance`", "`contradiction`", "`outside-intent`"} {
+	for _, k := range []string{"`missing-acceptance`", "`contradiction`", "`outside-intent`", "`uncovered-intent`", "`oversized-leaf`"} {
 		if !strings.Contains(block, k) {
-			t.Errorf("severity mapping lacks plan review kind %s", k)
+			t.Errorf("severities mapping lacks plan review kind %s", k)
 		}
+	}
+	if !strings.Contains(block, "`uncovered-intent` and `oversized-leaf` major") {
+		t.Errorf("severities block does not make uncovered-intent and oversized-leaf major")
 	}
 	if strings.Contains(block, "`scope`") {
-		t.Errorf("severity mapping names a `scope` check")
+		t.Errorf("severities mapping names a `scope` check")
 	}
 	for _, out := range []string{"confirmed", "downgraded", "dropped"} {
 		if strings.Contains(block, out) {
-			t.Errorf("severity block names critic outcome %q", out)
+			t.Errorf("severities block names critic outcome %q", out)
 		}
 	}
 	for _, banned := range []string{"go ", "Go ", "make ", "rhiza check", "rhiza render", "rhiza ship", "testscript"} {
 		if strings.Contains(block, banned) {
-			t.Errorf("severity block names %q", banned)
+			t.Errorf("severities block names %q", banned)
 		}
 	}
-	for _, tx := range severityTopics(t) {
-		if tx.Name != "plan-review" && tx.Name != "critic" {
-			continue
-		}
+	_, err = Expand("x\n<!-- shared: severity -->\n", loadShared)
+	if err == nil || !strings.Contains(err.Error(), "severity") {
+		t.Errorf("misspelt block: Expand = %v, want an error naming severity", err)
+	}
+}
+
+func TestReviewCriticSections(t *testing.T) {
+	for _, name := range []string{"critic"} {
+		tx, _ := Lookup(name)
 		i := strings.Index(tx.Body, "## Critic")
 		if tx.Name == "critic" {
 			i = 0

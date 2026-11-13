@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M79NNP2BRD9R8XG15ZKJ3JQQ"
+  ],
+  "at": "2026-11-13T05:49:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestWebToken shows pages without action controls and POST refused when no token is set, a POST refused with a wrong or missing token, the cookie set after a ?token= visit, and a bearer header accepted.",
+          "statement": "A web token (rhiza.web.token) turns on the web UI's actions: a browser presents it once with ?token= and keeps it in an HttpOnly cookie, a script sends it as a bearer header; without a token set, pages show no action controls and every POST is refused, and pages stay readable as today."
+        },
+        "handle": "web-token",
+        "id": "01M79Q8PX68N5R6XWD5RHK7GNX",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M79Q8PX68N5R6XWD5MHV6FKJ",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestWebAnswer|TestWebApprove' answers a question and approves a sign-off through POST with the token and the CSRF field, shows the confirmation, and refuses a POST missing the CSRF field.",
+          "statement": "From the web UI the owner answers an open question (question.answer) and approves a sign-off (inbox.approve or run.approve), with a CSRF check, and the page then says what happened ('Answered. The run continues.')."
+        },
+        "handle": "web-action-answer",
+        "id": "01M79Q8PZE56YE4MSC7SZA7AP2",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M79Q8PZE56YE4MSC7P9GS5RT",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestWebPause|TestWebActionsOnly' pauses and resumes the daemon and a project, and gets 404 or 405 for a POST to any other path, retry, abandon and merge included.",
+          "statement": "From the web UI the owner pauses or resumes the daemon or one project (rhiza.daemon.paused, rhiza.project.paused), and no other action exists: every other POST path is refused."
+        },
+        "handle": "web-action-pause",
+        "id": "01M79Q8Q1X2SDBPR5CNAZ07TAC",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M79Q8Q1X2SDBPR5CNADZJAS1",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8PX68N5R6XWD5MHV6FKJ",
+        "id": "01M79Q8Q3XNH2QZA0PQN9XEQ36",
+        "link": "01M79Q8Q3XNH2QZA0PQKFVB8GF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6RCJKBRMGSRMA5A3G1A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8PZE56YE4MSC7P9GS5RT",
+        "id": "01M79Q8Q58BGZTVN6PJQ04R993",
+        "link": "01M79Q8Q58BGZTVN6PJNX00CZQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6RCJKBRMGSRMA5A3G1A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q8Q1X2SDBPR5CNADZJAS1",
+        "id": "01M79Q8Q8F0DYG0M3ZS3BPZ2MA",
+        "link": "01M79Q8Q8F0DYG0M3ZRZWWEZ7E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6RCJKBRMGSRMA5A3G1A",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79NNP2BRD9R8XG15XCYACZ4",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79Q8QAZJD8XWRM90A5X795Q",
+  "type": "ops",
+  "v": 1
+}

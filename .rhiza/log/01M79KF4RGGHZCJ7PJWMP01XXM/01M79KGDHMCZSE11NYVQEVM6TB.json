@@ -1,0 +1,88 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M79KF4RGGHZCJ7PJWQAP4BB3"
+  ],
+  "at": "2026-11-13T04:43:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "I'm dumbfounded as to how things are still taking so long and how we still have to babysit this process. it's getting frustrating.",
+              "where": "2026-11-13, to the orchestrator"
+            },
+            {
+              "by": "owner",
+              "text": "i was looking at the default workflow today and it has a massive amount of steps. it seems like we may be over doing it there and may need to rethink that.",
+              "where": "2026-11-13, to the orchestrator"
+            },
+            {
+              "by": "owner",
+              "text": "in afk, the majority of these things were handled by agents. i understand the addition of change sets and leaves and what not but i don't feel like it should add that much overhead",
+              "where": "2026-11-13, to the orchestrator"
+            },
+            {
+              "by": "owner",
+              "text": "we also need to keep in mind that people should be able to bring their own workflows. the daemon should be dumb but durable. the original ask for orchestrating from the daemon was determinism but we're not getting that. the Damon should provide useful hooks for things that agents can't do, or shouldn't do. it should be as flexible as we can make it, but useful.",
+              "where": "2026-11-13, to the orchestrator"
+            },
+            {
+              "by": "owner",
+              "text": "My reasoning for separately spawned sessions: I like the visibility of being able to see what is happening on a run easily. You can with sub agents but it's not as easy.",
+              "where": "2026-11-13, on the proposal"
+            },
+            {
+              "by": "owner",
+              "text": "I would assume that their skills would already be installed in their repo and/or their user level claude/codex settings. What if they want every conduct session to be invoked with something like \"/myteam:conduct --prompt ${filename}\" or something similar? How do they get the slice?",
+              "where": "2026-11-13, on the proposal"
+            },
+            {
+              "by": "owner",
+              "text": "Promote immediately, it's not going to get worse, I'm tired of this.",
+              "where": "2026-11-13, interview, on promoting the new default to the builtin workflow"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Inside the conductor; All spawned sessions; Three: Plan, Code, QA",
+              "where": "interview, shape"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Retire it; After m35's in-flight builds",
+              "where": "interview, milestone-35 overlap"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "≤ 40 min, planning included; ≤ 1 in 10 runs",
+              "where": "interview, targets"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "1–4 now, 5–7 later; Write it as listed",
+              "where": "interview, change sets"
+            }
+          ],
+          "raw_sha256": "c735c2b0c6aa544514ae2db6de642ae286bc41828a19f52ffc9fcdfc465c32da",
+          "summary": "On 2026-11-12/13, after a night in which the orchestrator kept stepping into runs (a leafless milestone left a slot idle, a hand-queued plan run stopped at a permission prompt, a fixer waited on a test that had already exited), the owner said the process still takes too long and still needs babysitting, and that the default ship-change workflow has far too many steps. The orchestrator measured it: 56 steps, of which every run walks the same 33 and the 23 recovery branches fired 6 times in 8 runs; a change takes about 56 minutes to ship plus about 19 to plan; CI runs three to four times per change; review spawns about 11 sessions per cycle and 76% of runs need two cycles; the scope check confirmed 0 findings in 8 runs and qa 1. The owner pointed at afk, where most of this was handled by agents. afk's archive (107 tasks, nebari's not read) shows a median of 37.6 minutes from launch to merge with planning included: 31 minutes in one conductor session and 6.6 minutes of daemon shipping with one CI round, and CI failures handed back to the writing session in 7 of 107 tasks. The owner set the direction: the daemon should be dumb but durable and give agents hooks for what they can't or shouldn't do; determinism, the original reason for orchestrating from the daemon, was not achieved; people must be able to bring their own workflows, skills and agents. The orchestrator proposed a conductor agent per change set that spawns builder, verifier and reviewer sessions through the daemon, a daemon of a few primitives (agent, spawn, gate, push/pr, wait, merge, signoff, hook) with hand-back of every red result to the conductor and a cap to the inbox, a gate-checked agent contract, templated invocation with brief, slice and hand-back files, and a conformance check. The owner preferred separately spawned sessions over sub-agents for visibility, and asked how teams with their own installed skills get invoked and get the slice. Decided in the interview: leaves are planned inside the conductor; every role is a spawned session; review runs three checks (Plan, Code, QA) with a critic only on a blocker or major finding; milestone-35's parallel-leaf-builds change set is retired; the new milestone builds after milestone-35's three in-flight builds land; targets are a median of 40 minutes or less from start to merge with planning included and at most 1 run in 10 needing a person, over 30 runs; the new default replaces the builtin ship-change at once, keeping the old one as ship-change-classic; change sets 1 to 4 get their leaves now and 5 to 7 later. Left open: the exact brief.md format and the adapter for Codex.",
+          "title": "Conductor workflow interview"
+        },
+        "handle": "conductor-workflow-interview",
+        "id": "01M79KGDGSN0ZQSVP8XYEZ22Y9",
+        "key": null,
+        "kind": "source",
+        "node": "01M79KGDGRD1HSEP361MFQ46MP",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M79KF4RGGHZCJ7PJWMP01XXM",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79KGDHMCZSE11NYVQEVM6TB",
+  "type": "ops",
+  "v": 1
+}

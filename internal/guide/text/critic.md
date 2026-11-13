@@ -71,6 +71,6 @@ Decision.
 
 <!-- shared: session-done -->
 
-<!-- shared: severity nested -->
+<!-- shared: severities nested -->
 
 Fixers act on the findings you confirm or downgrade; a dropped finding is not fixed.

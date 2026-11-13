@@ -72,7 +72,7 @@ every trailer, `Co-Authored-By:` included, in the one final paragraph, no blank 
 
 <!-- shared: session-done -->
 
-<!-- shared: severity nested -->
+<!-- shared: severities nested -->
 
 When you end with findings unfixed, say which and why as the last thing you write
 before `rhiza session done`.

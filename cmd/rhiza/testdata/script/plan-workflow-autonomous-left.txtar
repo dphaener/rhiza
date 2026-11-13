@@ -52,8 +52,8 @@ stdout '^2$'
 exec sh -c 'grep "\"type\":\"arbitrated\"" .git/rhiza/runs/*.jsonl | grep -c "\"outcome\":\"pass\""'
 stdout '^2$'
 exec cat $WORK/prompts.log
-stdout -count=3 'as the reviewer'
-stdout -count=2 'as the reviser'
+stdout -count=3 '^/rhiza-plan-reviewer '
+stdout -count=2 '^/rhiza-plan-reviser '
 stdout -count=2 '^Decide question [0-9A-Z]{26}: follow rhiza guide arbiter\.$'
 
 # Each arbiter answered in the run's draft intention change set, where
@@ -158,7 +158,7 @@ fail() {
 	exit 1
 }
 case "$last" in
-/rhiza-plan*)
+/rhiza-planner*)
 	rec=$RHIZA_CHANGE
 	cp "$WORK/transcript.jsonl" "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl" 2>/dev/null
 	rhiza source add plan-interview "$WORK/source.json" --raw-session "$RHIZA_SESSION" --json >> "$WORK/agent.out" 2>&1
@@ -185,13 +185,13 @@ case "$last" in
 	printf '{"writes":[{"op":"add","kind":"decision","handle":"%s","fields":["statement=Settle it","wording=(assumed, would have escalated)","reasoning=The plan says so"]},{"op":"link","from":"%s","type":"answers","to":"%s"}]}\n' "$h" "$h" "$q" > "$WORK/decision.json"
 	rhiza apply "$WORK/decision.json" --json >> "$WORK/agent.out" 2>> "$WORK/claude.err" || fail arbiter apply
 	;;
-*'as the reviewer'*)
+/rhiza-plan-reviewer*)
 	rhiza run findings "$WORK/findings.json" --json >> "$WORK/agent.out" || fail findings
 	;;
-*'as the critic'*)
+/rhiza-plan-critic*)
 	rhiza run verdict "$WORK/verdict.json" --json >> "$WORK/agent.out" || fail verdict
 	;;
-*'as the reviser'*)
+/rhiza-plan-reviser*)
 	;;
 *)
 	fail "unexpected prompt: $last"
