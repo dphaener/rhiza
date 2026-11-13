@@ -1,0 +1,40 @@
+{
+  "actor": "01M7A1PM05YDQM4H3DFSNQP66V",
+  "after": [
+    "01M7A0XNR8GDMAQEVMRHT9J6TS"
+  ],
+  "at": "2026-11-13T08:53:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6defe991e re-ran the commit's Checks: go test -trimpath ./internal/leftovers/... ./internal/adapter/... (exit 0); go test -trimpath ./internal/api -run 'TestDaemonSweepLeftovers|TestRemoveRunScratch|TestSessionInterview|TestSessionHook' (exit 0: TestDaemonSweepLeftoversPrunesOnlyOrphans over the interview adapter's $HOME/scratch/<sid> layout, TestRemoveRunScratchTakesOnlyTheEndedRunsSessions, TestSessionInterview*, TestSessionHook* pass); rhiza ship generate (exit 0, 0 files changed); rhiza render (exit 0, no tracked diff). Read the diff: Adapter.ScratchGlobs is replaced by ScratchParents(getenv) in adapter.go, claudecode (<tmp>/claude-*/*), the interview fake ($HOME/scratch) and nil for ask/adapter_test fakes; leftovers.Scratch groups orphaned safe IDs by agent, globs each parent once, lists each through an injectable ReadDir and removes only matching child folders older than ScratchMaxAge, counting bytes; run_leftovers.go removes <parent>/<id> via leftovers.RemoveSession, which refuses unsafe IDs. TestScratchReadsEachParentOnce records 3000 sessions (1500 folders in 3 parents, 10% of live runs, plus 1500 ghosts), counts reads through a wrapper, asserts each of the 3 directories is read exactly once and 1350 folders / 6750 bytes freed with the live run's 50 left; TestScratchRemovesOnlyOldOrphans keeps fresh and live folders; TestRemoveSessionSafeIDOnly covers ../ and * IDs; TestScratchParents covers the Claude Code parents. Only the leaf's listed files plus the actor record and rendered files changed; no TODOs or stubs."
+        },
+        "handle": "scratch-sweep-one-listing-verified",
+        "id": "01M7A1ST065DKCVWH1G0KVDGRA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A1ST065DKCVWH1FZP6SSH9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A1ST065DKCVWH1FZP6SSH9",
+        "id": "01M7A1ST6QNSR7HEVTHWQADQ8J",
+        "link": "01M7A1ST6QNSR7HEVTHS4E0HX6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HP9C0SQC3RZMW0R2R18",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A1STA6Z2CWKK4PEGZCQSR9",
+  "type": "ops",
+  "v": 1
+}
