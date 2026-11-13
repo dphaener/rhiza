@@ -125,6 +125,9 @@ func render(w http.ResponseWriter, r *http.Request, name string, p page) {
 		p.Base, p.Project = sc.Prefix, sc.Name
 	}
 	p.NeedsYou = needsYouOf(r)
+	if p.Daemon.Text == "" {
+		p.Daemon = daemonOf(r).Pill()
+	}
 	var buf bytes.Buffer
 	if err := pages[name].ExecuteTemplate(&buf, "layout", p); err != nil {
 		http.Error(w, "render: "+err.Error(), http.StatusInternalServerError)

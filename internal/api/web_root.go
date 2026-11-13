@@ -37,7 +37,10 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 		h   http.Handler
 	}
 	cache := map[string]built{}
-	return web.RootWithInbox(home, homeName, func(name string) http.Handler {
+	// The root's own pages (the projects home, the merged inbox) carry the
+	// daemon pill too; it reads no health, so its health never refreshes.
+	pill := WebDaemonSource(ctx, newWebHealth(func() []web.HealthPill { return nil }, healthRefreshEvery, time.Now))
+	return web.WithDaemon(pill, web.RootWithInbox(home, homeName, func(name string) http.Handler {
 		reg, err := rootcfg.Load(root)
 		if err != nil {
 			return nil
@@ -60,7 +63,7 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 		h := WebProjectHandler(projectCtx(ctx, dir))
 		cache[name] = built{dir, h}
 		return h
-	}, WebProjectsSource(ctx, root, homeName), WebMergedInboxSource(ctx, root))
+	}, WebProjectsSource(ctx, root, homeName), WebMergedInboxSource(ctx, root)))
 }
 
 // WebProjectsSource reads every project registered in the root for the web
