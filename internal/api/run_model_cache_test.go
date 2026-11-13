@@ -279,3 +279,48 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 		t.Errorf("driver polls read the log %d times", *f.reads)
 	}
 }
+
+// A verifier's Evidence is judged against a model caught up past the
+// session's writes, even inside the debounce window of an answer kept before
+// them, and another session's write in the same window changes nothing.
+func TestEvidenceReadsPastSessionWrites(t *testing.T) {
+	tmp := t.TempDir()
+	root := filepath.Join(tmp, "repo")
+	if err := os.Mkdir(root, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	setup := testCtx(root)
+	setup.IndexPath = filepath.Join(tmp, "index.db")
+	if _, err := callOp(t, setup, "init", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	cs := newChange(t, setup, `{"intent":"Build"}`).ChangeSet
+	mustWrite(t, setup, "add", `{"kind":"capability","handle":"leaf-a"}`)
+	mustWrite(t, setup, "add", `{"kind":"capability","handle":"leaf-b"}`)
+	ada := recordAda(t, setup, "ada@example.com")
+	bob := recordAda(t, setup, "bob@example.com")
+
+	// A debounce no test outlasts: only a forced catch-up sees a write.
+	f := newDriverFixture(t, root, setup.IndexPath, cs, ada, time.Hour)
+	leaves, err := f.r.Leaves(cs.String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	a := leafOf(leaves, "leaf-a")
+	if ok, _, err := f.r.Evidence(a, "S-v"); err != nil || ok {
+		t.Fatalf("Evidence before any write = %v, %v; want false", ok, err)
+	}
+
+	// The verifier writes its Evidence, and another session writes too.
+	v := *setup
+	v.Actor = ada
+	mustWrite(t, &v, "add", `{"kind":"evidence","handle":"leaf-a-ok","fields":["statement=works","result=PASS"]}`)
+	mustWrite(t, &v, "link", `{"from":"leaf-a-ok","type":"verifies","to":"leaf-a"}`)
+	o := *setup
+	o.Actor = bob
+	mustWrite(t, &o, "add", `{"kind":"capability","handle":"leaf-c"}`)
+
+	if ok, why, err := f.r.Evidence(a, "S-v"); err != nil || !ok {
+		t.Fatalf("Evidence after the session's writes = %v, %q, %v; want true", ok, why, err)
+	}
+}

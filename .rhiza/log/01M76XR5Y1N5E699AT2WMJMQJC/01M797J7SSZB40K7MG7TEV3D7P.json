@@ -1,0 +1,43 @@
+{
+  "actor": "01M797D4FZAP5DNS7WBD27A0XA",
+  "after": [
+    "01M7974GHNDC77RPPKDX57HCVD"
+  ],
+  "at": "2026-11-13T01:15:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run GuideInstall passes with the three new skill files written with their topic's description and expanded body, and re-running install reports them unchanged; go test -trimpath ./internal/guide/... asserts the build index names builder, verifier and build-retry and both their skill and `rhiza guide` routes; go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|guide-install|build-evidence-commit)' passes with the new topics in guide ls, the new skill paths in the install output, and build-evidence-commit's fake builder reading the actor-record line from `rhiza guide builder`.",
+          "statement": "`rhiza guide ls` lists the builder, verifier and build-retry topics, guide install writes them as the rhiza-builder, rhiza-verifier and rhiza-build-retry skills beside the others, and the build topic (still installed as rhiza-build) is a short index that names the three role topics and says which one each role loads, so workflows that still say /rhiza-build or `rhiza guide build` keep working. cmd/rhiza/testdata/script/build-evidence-commit.txtar's fake builder, which greps the topic for the actor-record `git add` line, reads `rhiza guide builder` instead of `rhiza guide build`."
+        },
+        "handle": "build-role-skills-installed",
+        "id": "01M7974G8PCWZ6YB020YS18RNY",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M7974G8PCWZ6YB020VYE5FRB",
+        "op": "node.create",
+        "parent": "01M5YX3HRZCS9HFYWGDSC5TGS8"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... passes with the builtin builder and verifier prompt tests updated to the one-line prompts (no checklist, Checks:, session done or test-scope text left in them) and a test that review.toml's verifier prompt equals build.toml's; a test reads .rhiza/workflows/docs-build.toml and .rhiza/workflows/docs-review.toml and asserts each one's verifier prompt equals the builtin one and docs-build's builder prompt starts with the builtin line and keeps the humanize addendum; go test -trimpath ./cmd/rhiza -run 'TestScripts/(build-evidence-commit|docs-commands-exist)' passes; the describe-golden script is regenerated only if its output changed; make self-check passes.",
+          "statement": "The builtin build workflow's builder prompt is the one line `/rhiza-builder Build leaf {leaf} of change set {change} ({title}), attempt {attempt}: follow rhiza guide builder.` and its verifier prompt, and review.toml's leaf verifier prompt, the one line `/rhiza-verifier Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT: follow rhiza guide verifier.`; Rhiza's .rhiza/workflows/docs-build.toml uses the builder line plus its unchanged doc-prose addendum and the verifier line byte for byte, and .rhiza/workflows/docs-review.toml's leaf verifier prompt is the verifier line byte for byte."
+        },
+        "handle": "build-prompts-one-line",
+        "id": "01M7974GD79WS6HEB3RP5D59XT",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M7974GD79WS6HEB3RMEMQ7W9",
+        "op": "node.create",
+        "parent": "01M5YX3HRZCS9HFYWGDSC5TGS8"
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M797J7SSZB40K7MG7TEV3D7P",
+  "type": "ops",
+  "v": 1
+}

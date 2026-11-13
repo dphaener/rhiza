@@ -1903,6 +1903,9 @@ type stepRunner struct {
 	// the runner's own write ends.
 	debounce   time.Duration
 	writeUntil time.Time
+	// catchUpNext makes the next read of the model catch the index up
+	// whatever the debounce says (see settle).
+	catchUpNext bool
 }
 
 // Command runs the step's command, its standard output and error

@@ -1,0 +1,33 @@
+{
+  "actor": "01M797VMESZ317SF9SNWN4A8QS",
+  "after": [
+    "01M7981VS8RAGP56G06HKKFVND"
+  ],
+  "at": "2026-11-13T01:23:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "e8d794ab6c0ce726b122107598b44b7f2502892b648ad5973016885323fe349b",
+          "session": "16742c4a-fa0f-4ac5-b6a2-01a1d27db9cb",
+          "summary": "Autonomous plan run of bug change set 01M797T (no owner). The planner read run.go (checkAgentSteps refuses a queued start with no --permission-mode at queue time), queueRunStart (records the start's mode, possibly empty) and daemon.go's queued-start loop (fills an empty mode with rhiza.daemon.permissionMode). On this dedicated VM a dry-run with bypassPermissions passes the trust check; with no mode it is refused ('agent step with no permission mode'). The planner asked two questions (queue-time check, and the no-mode case); the arbiter answered both with Decision queued-run-daemon-mode: check at queue time with the daemon's setting standing in, queue with no mode so the daemon applies its setting at start; keep the refusal when the setting is unset or the start is --foreground, with the message naming rhiza.daemon.permissionMode. The change set serves m4-orchestrated-by-rhiza: the incident needed an orchestrator to kill processes by PID. Leaves are under run-start-through-daemon. Not breaking (only a refusal becomes a queue), not severe.",
+          "title": "Plan interview: a queued run takes the daemon's permission mode"
+        },
+        "handle": "queued-run-mode-interview",
+        "id": "01M7982437J52G5PWT1WKYH13D",
+        "key": null,
+        "kind": "source",
+        "node": "01M7982437J52G5PWT1THXVQCS",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M797TRSFCEHV3FXTYVRV7D74",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7982450KV4GB5Q7EC8ZZ75Z",
+  "type": "ops",
+  "v": 1
+}
