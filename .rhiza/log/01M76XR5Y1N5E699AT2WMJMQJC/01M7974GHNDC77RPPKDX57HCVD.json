@@ -1,0 +1,287 @@
+{
+  "actor": "01M796QQ2GWAFJDY3Q63H88PTA",
+  "after": [
+    "01M7973DNSQNXTGFGB4B88FYM6"
+  ],
+  "at": "2026-11-13T01:07:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M7971NN172332AAGJJ6NNW8R",
+        "id": "01M7974FSB5KE7RA0H9YHRNCK8",
+        "link": "01M7974FSB5KE7RA0H9XVHAE1J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7973DMXFE7BE30JE4EGSWVR",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with tests that (1) a topic naming a shared block prints its full text in place of the marker line, with no marker left in any listed text; (2) the expansion of a text naming an unknown block fails with an error naming the block (the load panics on it); (3) every listed text, expanded, stays within its cap; (4) the never-list block forbids sleeping or polling, stubs, TODOs and placeholders, new dependencies, rewriting history and chaining session done; and the budget, scoped-tests, unstable-CI, outside-work and done phrases build_test.go and budget_test.go check today are found in the shared files, each in exactly one file.",
+          "statement": "The guide keeps each shared block (session done rule, test scope, unstable CI, command budget, outside work, never-list) once as a markdown file under internal/guide/text/shared/, and a topic line `<!-- shared: <block> -->` is replaced by that block when the guide loads, so `rhiza guide <topic>`, the installed skills and the TopicCap all see the expanded text."
+        },
+        "handle": "guide-shared-blocks",
+        "id": "01M7974FTA4EJ8NB0P87ME3WP4",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M7974FTA4EJ8NB0P869FGVT0",
+        "op": "node.create",
+        "parent": "01M5YX3HRZCS9HFYWGDSC5TGS8"
+      },
+      {
+        "decision": null,
+        "from": "01M7974FTA4EJ8NB0P869FGVT0",
+        "id": "01M7974FV74WTW1QJRS8S9ER07",
+        "link": "01M7974FV74WTW1QJRS5TETCAE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7971NN172332AAGJJ6NNW8R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7974FTA4EJ8NB0P869FGVT0",
+        "id": "01M7974FW0NFFPX8WZFZFBMAET",
+        "link": "01M7974FW0NFFPX8WZFXHJQ83F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7973DMXFE7BE30JE4EGSWVR",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a builder test that finds the six section headings in order, the shared done, test-scope, unstable-CI, command-budget, outside-work and never-list blocks expanded, the read-patterns-first and question-before-work rules, the acceptance commands, rhiza ship generate, rhiza render and the Checks: block above the one final trailer paragraph (the builder-prehandoff-checklist and guides-one-final-paragraph points, moved from build.md's tests), the actor-record git add line, and the RHIZA_ATTEMPT > 1 rule naming both /rhiza-build-retry and `rhiza guide build-retry`; a negative case asserts the builder text names no Go, make or repo-specific command.",
+          "statement": "`rhiza guide builder` gives a leaf's builder afk's builder prompt in Rhiza's words on six sections in order (Task, Expected outcome, Read first, Must do, Must not do, Context): the leaf's acceptance is the contract; read the slice, the leaf and the existing code and tests that follow the pattern before writing; raise a question the owner must answer before starting work, not midway; run the pre-handoff checklist and report a Checks: block; end with one commit carrying the trailers and the staged actor record, then session done as its own command; no stubs, TODOs, placeholders or new dependencies; and on attempt > 1 (RHIZA_ATTEMPT > 1) load build-retry first."
+        },
+        "handle": "builder-topic",
+        "id": "01M7974FWT13ZEJX4QK31M74FT",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M7974FWT13ZEJX4QJZQKJBFB",
+        "op": "node.create",
+        "parent": "01M5YX3HRZCS9HFYWGDSC5TGS8"
+      },
+      {
+        "decision": null,
+        "from": "01M7974FWT13ZEJX4QJZQKJBFB",
+        "id": "01M7974FXKCDTRW8F4CM04VEJF",
+        "link": "01M7974FXKCDTRW8F4CJY106AG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7971NN172332AAGJJ6NNW8R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7974FWT13ZEJX4QJZQKJBFB",
+        "id": "01M7974FYBNJA48VJ82WNMBGZ3",
+        "link": "01M7974FYBNJA48VJ82TCB2743",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7974FWT13ZEJX4QJZQKJBFB",
+        "id": "01M7974G0B9QNMHKYCC41EK2SQ",
+        "link": "01M7974G0B9QNMHKYCC2HZSEBR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974FTA4EJ8NB0P869FGVT0",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a verifier test that finds the six section headings in order, the shared done, test-scope, command-budget and never-list blocks expanded, the detached checkout, Never edit code, fakes only, the re-run of the Checks: block and acceptance commands with a missing block or a different exit code a finding naming the command (the verifier-reruns-reported-checks points, moved from build.md's tests), the scope and no-stub points, the Evidence apply example and the rhiza run findings heredoc, and the rule that each finding names a file, command or acceptance point; a negative case asserts it carries no builder commit or trailer instructions.",
+          "statement": "`rhiza guide verifier` gives a leaf's verifier afk's verifier prompt in Rhiza's words on the same six sections: in a detached checkout at the leaf's commit it re-runs every command of the Checks: block and every acceptance command, reads the diff and confirms each acceptance point is met and tested, nothing outside the leaf changed and no stubs or TODOs were left; it never edits code and uses fakes only; it ends with Evidence written as itself or with findings, each naming the file, command or acceptance point and what to change so a fixer can act without re-diagnosing, then session done as its own command."
+        },
+        "handle": "verifier-topic",
+        "id": "01M7974G189EFBV82T8QDZZJVE",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M7974G189EFBV82T8PZ626EZ",
+        "op": "node.create",
+        "parent": "01M5YX3HRZCS9HFYWGDSC5TGS8"
+      },
+      {
+        "decision": null,
+        "from": "01M7974G189EFBV82T8PZ626EZ",
+        "id": "01M7974G29TKYSM6W1CDTWYA90",
+        "link": "01M7974G29TKYSM6W1CAP6Y91W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7971NN172332AAGJJ6NNW8R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7974G189EFBV82T8PZ626EZ",
+        "id": "01M7974G3HJ68SMPP8PN30980G",
+        "link": "01M7974G3HJ68SMPP8PJ2V95TZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7974G189EFBV82T8PZ626EZ",
+        "id": "01M7974G4FG8QH81663QH6RKKK",
+        "link": "01M7974G4FG8QH81663KSRDQVF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974FTA4EJ8NB0P869FGVT0",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a build-retry test that finds the inspect-the-working-tree rule, rhiza run status --json, address every finding as written, the same `Leaf:` trailer fix commit and never rewrite history, and asserts the text stays under a third of the TopicCap and repeats none of the builder topic's shared blocks.",
+          "statement": "`rhiza guide build-retry` tells a builder on a later attempt only what a retry adds: inspect the working tree and the earlier attempts' commits for their partial work, read the previous attempt's findings (in the prompt when there, else `rhiza run status --json`), address every finding exactly as written, and add one fix commit with the same Leaf: trailer, never rewriting history."
+        },
+        "handle": "build-retry-topic",
+        "id": "01M7974G5P60MM2EHVR8C5XF21",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M7974G5P60MM2EHVR5M79X51",
+        "op": "node.create",
+        "parent": "01M5YX3HRZCS9HFYWGDSC5TGS8"
+      },
+      {
+        "decision": null,
+        "from": "01M7974G5P60MM2EHVR5M79X51",
+        "id": "01M7974G71HB2B42RB3KD39JET",
+        "link": "01M7974G71HB2B42RB3HWTPJ40",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7971NN172332AAGJJ6NNW8R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7974G5P60MM2EHVR5M79X51",
+        "id": "01M7974G7SD33PQ6BHVPS41ABV",
+        "link": "01M7974G7SD33PQ6BHVP2AD4ZX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974FTA4EJ8NB0P869FGVT0",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run GuideInstall passes with the three new skill files written with their topic's description and expanded body, and re-running install reports them unchanged; go test -trimpath ./internal/guide/... asserts the build index names builder, verifier and build-retry and both their skill and `rhiza guide` routes; go test -trimpath ./cmd/rhiza -run 'TestScripts/(guide|guide-install)' passes with the new topics in guide ls and the new skill paths in the install output.",
+          "statement": "`rhiza guide ls` lists the builder, verifier and build-retry topics, guide install writes them as the rhiza-builder, rhiza-verifier and rhiza-build-retry skills beside the others, and the build topic (still installed as rhiza-build) is a short index that names the three role topics and says which one each role loads, so workflows that still say /rhiza-build or `rhiza guide build` keep working."
+        },
+        "handle": "build-role-skills-installed",
+        "id": "01M7974G8PCWZ6YB020YS18RNY",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M7974G8PCWZ6YB020VYE5FRB",
+        "op": "node.create",
+        "parent": "01M5YX3HRZCS9HFYWGDSC5TGS8"
+      },
+      {
+        "decision": null,
+        "from": "01M7974G8PCWZ6YB020VYE5FRB",
+        "id": "01M7974G9XP7VTDZ894YWR8PG8",
+        "link": "01M7974G9XP7VTDZ894WTJMK9C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7971NN172332AAGJJ6NNW8R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7974G8PCWZ6YB020VYE5FRB",
+        "id": "01M7974GARVTKVEYHSBMNVXAQ0",
+        "link": "01M7974GARVTKVEYHSBKT1AR4G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974FWT13ZEJX4QJZQKJBFB",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7974G8PCWZ6YB020VYE5FRB",
+        "id": "01M7974GBNNEGADKQNAJAZVKZX",
+        "link": "01M7974GBNNEGADKQNAHCYGPF2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974G189EFBV82T8PZ626EZ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7974G8PCWZ6YB020VYE5FRB",
+        "id": "01M7974GCGESHZJGDH7G67PCB9",
+        "link": "01M7974GCGESHZJGDH7ENMA210",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974G5P60MM2EHVR5M79X51",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... passes with the builtin builder and verifier prompt tests updated to the one-line prompts (no checklist, Checks:, session done or test-scope text left in them) and a test that review.toml's verifier prompt equals build.toml's; a test reads .rhiza/workflows/docs-build.toml and asserts its verifier prompt equals the builtin one and its builder prompt starts with the builtin line and keeps the humanize addendum; go test -trimpath ./cmd/rhiza -run 'TestScripts/(build-evidence-commit|docs-commands-exist)' passes; the describe-golden script is regenerated only if its output changed; make self-check passes.",
+          "statement": "The builtin build workflow's builder prompt is the one line `/rhiza-builder Build leaf {leaf} of change set {change} ({title}), attempt {attempt}: follow rhiza guide builder.` and its verifier prompt, and review.toml's leaf verifier prompt, the one line `/rhiza-verifier Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT: follow rhiza guide verifier.`; Rhiza's .rhiza/workflows/docs-build.toml uses the builder line plus its unchanged doc-prose addendum and the verifier line byte for byte."
+        },
+        "handle": "build-prompts-one-line",
+        "id": "01M7974GD79WS6HEB3RP5D59XT",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M7974GD79WS6HEB3RMEMQ7W9",
+        "op": "node.create",
+        "parent": "01M5YX3HRZCS9HFYWGDSC5TGS8"
+      },
+      {
+        "decision": null,
+        "from": "01M7974GD79WS6HEB3RMEMQ7W9",
+        "id": "01M7974GE21YB25YE83JWXN3ET",
+        "link": "01M7974GE21YB25YE83H9D37C6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7971NN172332AAGJJ6NNW8R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7974GD79WS6HEB3RMEMQ7W9",
+        "id": "01M7974GEXYX35M93QCKCZPQ7F",
+        "link": "01M7974GEXYX35M93QCK5KTJAQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XMNKREKEH8K8E1ETGVR0H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7974GD79WS6HEB3RMEMQ7W9",
+        "id": "01M7974GFPMCB19PQNW5HNTJYF",
+        "link": "01M7974GFPMCB19PQNW31XZRJR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974G8PCWZ6YB020VYE5FRB",
+        "type": "depends-on"
+      },
+      {
+        "base": "01M5YX3HRZCS9HFYWGDSNSNMZW",
+        "handle": null,
+        "id": "01M7974GGH05P2M5M9FFMEFG0R",
+        "node": "01M5YX3HRZCS9HFYWGDSC5TGS8",
+        "op": "node.update",
+        "set": {
+          "acceptance": "`rhiza guide ls` lists the build, builder, verifier and build-retry topics; go test -trimpath ./internal/guide/... finds the trailer, the outside-work rule and the Evidence-or-findings rule in the role topics and the three names in the build index; `rhiza guide install` writes all four as skills.",
+          "statement": "`rhiza guide build` is the build index: it names the builder, verifier and build-retry topics and says which a builder, a verifier and a retrying builder load; the role topics carry where to start, the Leaf: trailer, needed outside work as a question and noticed-only work as a discovered-from draft change set never built in the run, and the verifier's Evidence or findings; guide install installs them all."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7974GHNDC77RPPKDX57HCVD",
+  "type": "ops",
+  "v": 1
+}
