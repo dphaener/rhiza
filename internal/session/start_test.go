@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func TestNeverSubmitted(t *testing.T) {
+func TestStartNotSubmitted(t *testing.T) {
 	now := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
 	old := now.Add(-StartGrace - time.Second)
 	idle := func(at time.Time) *Report { return &Report{State: StateIdle, At: at} }
