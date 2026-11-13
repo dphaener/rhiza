@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7AHPRJBCH9833GTE2SX2B50"
+  ],
+  "at": "2026-11-13T14:36:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "e6c3b56837e808621ada348c94f7acf4e105fede",
+          "pr": "https://github.com/dphaener/rhiza/pull/548",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #548 (https://github.com/dphaener/rhiza/pull/548) passed CI at e6c3b56",
+          "status": "verified"
+        },
+        "handle": "pr-548-fix-run-sessions-that-hit-an",
+        "id": "01M7ANE3WAZ4WWGQJDFP6M9PZ7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ANE3WAZ4WWGQJDFJBD0WVQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ANE3WAZ4WWGQJDFJBD0WVQ",
+        "id": "01M7ANE3Y1S7RF8NN34Z2XR9EP",
+        "link": "01M7ANE3Y1S7RF8NN34WV91P90",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C4BPN1BANYKJJREMJNFR",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7ANE3WAZ4WWGQJDFJBD0WVQ",
+        "id": "01M7ANE3ZB3RSEH9AXA63T8DRT",
+        "link": "01M7ANE3ZB3RSEH9AXA3252DYG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C4DABT4TTGNKQ5JFRSV9",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7ANE3WAZ4WWGQJDFJBD0WVQ",
+        "id": "01M7ANE40WP27VRTY61H67R490",
+        "link": "01M7ANE40WP27VRTY61GZ41TJB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C4G0XBK7HYT3S4EJ6254",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7A949Q4VGB6D4PPY9A5GZEK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ANE4783GBRG811KPCPGD65",
+  "type": "ops",
+  "v": 1
+}

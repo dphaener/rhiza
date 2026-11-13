@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AC2DVMS5ZXVQQX1VXE7N0Y",
+  "after": [
+    "01M7ABGK44JB637F49NKNB9WY9"
+  ],
+  "at": "2026-11-13T11:54:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8f6535fa8: go test -trimpath ./internal/api/ -run SessionRunAPIError passed (7 tests, also -count=3); the Checks: block re-ran with exit 0 (go test ./internal/api -run 'SessionRunAPIError|SessionRun|UsageLearn|SessionInterview|SessionAsk', go test ./internal/adapter/..., rhiza ship generate, rhiza render); gofmt and go vet clean, no TODOs. Diff read: watchLimit now polls apiErrorWatch on the transcript past base; autonomous sessions get a session.message naming the error after the backoff, with a plain idle hook report first (asserted at the first send; later sends find it already idle), cancelled by a later assistant line, at most 3 then recorded with the 'stopped on an API error: ' detail; attended sessions recorded at once with no message; usage-limit pause unchanged; errors before base ignored. Inbox checks use runAPIErrorAll, the func inboxItems is given. Only the three named files plus the builder's actor record changed."
+        },
+        "handle": "session-run-reprompts-api-error-verified",
+        "id": "01M7AC5CBJ0EKSSQ31J99FFP18",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AC5CBJ0EKSSQ31J71SWTHC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AC5CBJ0EKSSQ31J71SWTHC",
+        "id": "01M7AC5CCM59EWB0ZCSSD527S7",
+        "link": "01M7AC5CCM59EWB0ZCSR5T8MK4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C4DABT4TTGNKQ5JFRSV9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7A949Q4VGB6D4PPY9A5GZEK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AC5CDZE659K17EDPZV2SQH",
+  "type": "ops",
+  "v": 1
+}

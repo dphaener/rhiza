@@ -661,15 +661,9 @@ func (l limitLine) text() string {
 	return strings.Join(parts, "\n")
 }
 
-var limitReset = regexp.MustCompile(`(?i)usage limit reached\|(\d{9,})`)
-
-// UsageLimit implements adapter.Adapter. The session is limited when the
-// last assistant line of its transcript is the synthetic API-error message
-// saying so in its text: "usage limit reached", with the reset as a Unix
-// time after a bar, or "hit your limit". The phrases anywhere else, in the
-// model's prose or a tool call's input, do not count. Any later assistant
-// line means the session went on.
-func (Adapter) UsageLimit(transcript []byte) (adapter.UsageLimit, bool) {
+// lastAssistant returns the last assistant line of transcript, the zero line
+// when there is none.
+func lastAssistant(transcript []byte) limitLine {
 	var last limitLine
 	for _, line := range bytes.Split(transcript, []byte("\n")) {
 		line = bytes.TrimSpace(line)
@@ -682,12 +676,48 @@ func (Adapter) UsageLimit(transcript []byte) (adapter.UsageLimit, bool) {
 		}
 		last = l
 	}
+	return last
+}
+
+// isLimitText reports whether text is the usage-limit message.
+func isLimitText(text string) bool {
+	lower := strings.ToLower(text)
+	return strings.Contains(lower, "usage limit reached") || strings.Contains(lower, "hit your limit")
+}
+
+// APIError implements adapter.Adapter. The session's last turn ended on an
+// API error when the last assistant line of its transcript is the synthetic
+// API-error message and its text is not the usage-limit message (UsageLimit
+// reports that one). It returns the message's text. The phrase in the
+// model's prose or a tool call's input does not count, and any later
+// assistant line means the session went on.
+func (Adapter) APIError(transcript []byte) (string, bool) {
+	last := lastAssistant(transcript)
+	if !last.apiError() {
+		return "", false
+	}
+	text := strings.TrimSpace(last.text())
+	if text == "" || isLimitText(text) {
+		return "", false
+	}
+	return text, true
+}
+
+var limitReset = regexp.MustCompile(`(?i)usage limit reached\|(\d{9,})`)
+
+// UsageLimit implements adapter.Adapter. The session is limited when the
+// last assistant line of its transcript is the synthetic API-error message
+// saying so in its text: "usage limit reached", with the reset as a Unix
+// time after a bar, or "hit your limit". The phrases anywhere else, in the
+// model's prose or a tool call's input, do not count. Any later assistant
+// line means the session went on.
+func (Adapter) UsageLimit(transcript []byte) (adapter.UsageLimit, bool) {
+	last := lastAssistant(transcript)
 	if !last.apiError() {
 		return adapter.UsageLimit{}, false
 	}
 	text := last.text()
-	lower := strings.ToLower(text)
-	if !strings.Contains(lower, "usage limit reached") && !strings.Contains(lower, "hit your limit") {
+	if !isLimitText(text) {
 		return adapter.UsageLimit{}, false
 	}
 	var out adapter.UsageLimit
