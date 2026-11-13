@@ -84,6 +84,7 @@ func TestSharedPhrasesInExactlyOneFile(t *testing.T) {
 		"injecting a delay at the suspected race",
 		"raise a question", "linked `blocks` to the leaf",
 		"discovered-from draft change set, never built in this run",
+		"rhiza change new", "discovered-from <this>", "rhiza change use <this>",
 		"rhiza session done", "as its own command", "after its recording\ncommand succeeded", "`;` or `&&`",
 	} {
 		n := 0
