@@ -37,7 +37,7 @@ stdout 'ship-change/build/build'
 exec rhiza run status --json
 stdout '"step": "ship-change/review/review"'
 stdout '"step": "ship-change/build/build"'
-exec sh -c 'cat .git/rhiza/runs/*'
+exec sh -c 'cat .git/rhiza/runs/*.jsonl'
 stdout 'ship-change/build/build'
 
 -- wrap.toml --
