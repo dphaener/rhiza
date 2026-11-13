@@ -1,0 +1,86 @@
+{
+  "actor": "01M7AC98YMP0MJQ4ZZNQBYB55S",
+  "after": [
+    "01M7AC5CDZE659K17EDPZV2SQH"
+  ],
+  "at": "2026-11-13T12:17:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1: built rhiza from the branch to a scratch path and ran rhiza run start --foreground in a hermetic Rhiza root with a fake rex and a fake claude whose transcript ended in the synthetic isApiErrorMessage line 'Please run /login · API Error: 403 Attention Required! | Cloudflare' after a model line. The Claude Code adapter recognised it end to end: the error text reached the session record, the inbox and the re-prompt messages verbatim. go test -trimpath ./internal/adapter/... and ./internal/api -run 'SessionRun|UsageLearn|SessionInterview|SessionAsk' pass."
+        },
+        "handle": "adapter-reads-api-error-qa-1",
+        "id": "01M7ADEKQCBSNDR8473EW9A41F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ADEKQCBSNDR8473DKAV91R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ADEKQCBSNDR8473DKAV91R",
+        "id": "01M7ADEKRQ232KKGEQ1ASFG46J",
+        "link": "01M7ADEKRQ232KKGEQ1AS8VR8Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C4BPN1BANYKJJREMJNFR",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1: with the built binary, an owner-attended run whose session ended on an API error showed in rhiza inbox --json as kind api-error with the session, run, step build, detail 'session <id> stopped on an API error: Please run /login · API Error: 403 ...' and next 'rhiza session message <id> <text>'; the text inbox showed the same; no stalled item. A working hook report (rhiza session hook UserPromptSubmit) cleared the item. Scoped tests for internal/session, internal/tui/inboxapp, internal/api -run 'WebInbox|InboxNotice' and TestScripts/inbox-api-error and describe-golden pass."
+        },
+        "handle": "inbox-lists-api-error-sessions-qa-1",
+        "id": "01M7ADEKSPY3C2666ZV96X1HA4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ADEKSPY3C2666ZV6SNKN3E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ADEKSPY3C2666ZV6SNKN3E",
+        "id": "01M7ADEKTJGTGM97AAVMAMN6XQ",
+        "link": "01M7ADEKTJGTGM97AAVKD6PWP3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C4G0XBK7HYT3S4EJ6254",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1: built binary, autonomous run (--autonomous) whose fake claude ended its transcript in the Cloudflare API error and stayed open. session run recorded idle with no detail and sent three re-prompts via rex send at 12:05:47, 12:08:17 and 12:12:17 (1m, 2m, 4m backoff after the 30s poll), each message 'Your last turn ended on an API error: <text>. Carry on where you left off.'; inbox snapshots every 15s listed no api-error and no stalled item during retries; after the fourth backoff (12:16:47) the record held 'stopped on an API error: <text>', the inbox listed it once, and no fourth message went out. An owner-attended run's session sent no message and was recorded at the first poll. go test -trimpath ./internal/api/ -run SessionRunAPIError passes."
+        },
+        "handle": "session-run-reprompts-api-error-qa-1",
+        "id": "01M7ADEKVGSPC9DR60VRQX3ZHT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ADEKVGSPC9DR60VP23JF26",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ADEKVGSPC9DR60VP23JF26",
+        "id": "01M7ADEKXHJX1MTNRQQWVJVDQE",
+        "link": "01M7ADEKXHJX1MTNRQQTNKDRFM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C4DABT4TTGNKQ5JFRSV9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7A949Q4VGB6D4PPY9A5GZEK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ADEM1MA0M1RN5B8PEQZMJS",
+  "type": "ops",
+  "v": 1
+}

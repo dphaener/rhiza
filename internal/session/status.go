@@ -136,13 +136,17 @@ const StallAfter = 20 * time.Minute
 // at its usage limit gets in place of idle.
 const LimitPausedDetail = "paused at its usage limit"
 
+// APIErrorDetail is the start of the detail of the idle report a session
+// whose last turn ended on an API error gets; the error's text follows.
+const APIErrorDetail = "stopped on an API error: "
+
 // Stalled reports whether the session has been silent for more than
 // StallAfter at now. Only a live session whose hook status resolves to
 // working, or idle in a session an autonomous run launched, which has not
 // said it is done and is not waiting on an answer, can stall: an idle
 // prompt counts even when a background shell is open. An idle session of
 // an owner-attended run never stalls, as it may be waiting on the owner.
-// Blocked, exited and usage-paused sessions never do.
+// Blocked, exited, usage-paused and API-errored sessions never do.
 func Stalled(r Record, now time.Time) bool {
 	if !Stallable(r) {
 		return false
@@ -164,7 +168,7 @@ func Stallable(r Record) bool {
 	if r.Status.SaidDone() || r.Status.Asked != nil {
 		return false
 	}
-	if strings.HasPrefix(rep.Detail, LimitPausedDetail) {
+	if strings.HasPrefix(rep.Detail, LimitPausedDetail) || strings.HasPrefix(rep.Detail, APIErrorDetail) {
 		return false
 	}
 	return true

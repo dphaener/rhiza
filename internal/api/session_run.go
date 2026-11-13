@@ -224,7 +224,7 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 			follow.stop()
 			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("start %s: %v", a.Name(), err))
 		}
-		stopWatch := watchLimit(ctx, a, rec.ID, base, p)
+		stopWatch := watchLimit(ctx, a, st, rec, base, p)
 		code, err = p.Wait()
 		stopWatch()
 		if err != nil {
@@ -322,8 +322,11 @@ func transcriptLen(ctx *Ctx, a adapter.Adapter, sid string) int {
 // watchLimit kills p once what the agent wrote to the session's transcript
 // past base shows it stopped at its usage limit: an interactive agent stays
 // open at its prompt there instead of exiting, so the pause would never
-// come. The returned stop ends the watching and waits until it has.
-func watchLimit(ctx *Ctx, a adapter.Adapter, sid string, base int, p Process) (stop func()) {
+// come. It also re-prompts a session whose last turn ended on an API error
+// (apiErrorWatch). The returned stop ends the watching and waits until it has.
+func watchLimit(ctx *Ctx, a adapter.Adapter, st *session.Store, rec session.Record, base int, p Process) (stop func()) {
+	sid := rec.ID
+	w := &apiErrorWatch{ctx: ctx, a: a, st: st, sid: sid, autonomous: rec.Autonomous}
 	if ctx.Home == "" && ctx.Getenv == nil {
 		return func() {}
 	}
@@ -346,6 +349,7 @@ func watchLimit(ctx *Ctx, a adapter.Adapter, sid string, base int, p Process) (s
 				p.Kill()
 				return
 			}
+			w.poll(t[base:])
 		}
 	}()
 	return func() {

@@ -76,6 +76,10 @@ type Adapter interface {
 	// its usage limit, and when the limit resets if the agent said. It
 	// reads nothing itself.
 	UsageLimit(transcript []byte) (UsageLimit, bool)
+	// APIError reports whether transcript ends with the agent's last turn
+	// stopped by an API error that is not its usage limit, and returns the
+	// error's text. It reads nothing itself.
+	APIError(transcript []byte) (string, bool)
 }
 
 // UsageLimit is a session stopped by the agent's usage limit.

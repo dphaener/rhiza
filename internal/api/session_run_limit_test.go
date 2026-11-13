@@ -35,6 +35,7 @@ func (limitAdapter) Command(l adapter.Launch) ([]string, error) {
 func (limitAdapter) TranscriptGlobs(sid string, getenv func(string) string) []string {
 	return []string{filepath.Join(getenv("HOME"), "limit", sid+".txt")}
 }
+func (limitAdapter) APIError([]byte) (string, bool) { return "", false }
 func (limitAdapter) UsageLimit(t []byte) (adapter.UsageLimit, bool) {
 	return adapter.UsageLimit{}, strings.Contains(string(t), "limited")
 }

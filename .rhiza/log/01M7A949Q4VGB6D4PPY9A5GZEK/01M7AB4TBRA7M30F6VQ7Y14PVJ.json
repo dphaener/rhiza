@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AB2224JKSCCWJY5WQ0BE31",
+  "after": [
+    "01M7AA5R6SQA9A1HK3B4E55SC2"
+  ],
+  "at": "2026-11-13T11:37:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e453aa321 re-ran the Checks block: go test -trimpath ./internal/adapter/... (ok, TestAPIError passes with -count=1), go test -trimpath ./internal/api/ -run 'SessionRun|UsageLearn|SessionInterview|SessionAsk' (ok), rhiza ship generate and rhiza render (exit 0, no tracked changes); go build ./... and go vet ./... clean. Diff adds APIError to adapter.Adapter and the Claude Code adapter (last assistant line is synthetic/isApiErrorMessage and not the usage-limit text, returns its text), sharing lastAssistant/isLimitText with UsageLimit. TestAPIError covers the Cloudflare 403 line (reports its text), the usage-limit line (none, UsageLimit still reports), an API error followed by a model line (none), 'API Error' in model prose and in tool_use input (none) and an empty transcript (none). Fake adapters in internal/adapter and internal/api tests gained the method. Only the listed files plus the builder's actor record changed; no stubs or TODOs."
+        },
+        "handle": "adapter-reads-api-error-verified",
+        "id": "01M7AB4T2EW9SJ7N7R44S7TT46",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AB4T2EW9SJ7N7R41JWDXY2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AB4T2EW9SJ7N7R41JWDXY2",
+        "id": "01M7AB4T73VGN4GKZKN4BKVNZA",
+        "link": "01M7AB4T73VGN4GKZKN306J0YN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C4BPN1BANYKJJREMJNFR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7A949Q4VGB6D4PPY9A5GZEK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AB4TBRA7M30F6VQ7Y14PVJ",
+  "type": "ops",
+  "v": 1
+}
